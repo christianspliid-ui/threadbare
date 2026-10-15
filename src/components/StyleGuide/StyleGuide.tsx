@@ -1062,7 +1062,7 @@ export default function StyleGuide() {
                   <div><Label>sm/default</Label><IconButton icon={<span>⚙</span>} size="sm" /></div>
                   <div><Label>md/close</Label><IconButton icon={<span>✕</span>} variant="close" /></div>
                   <div><Label>active</Label><IconButton icon={<span>★</span>} active /></div>
-                  <div><Label>with badge</Label><IconButton icon={<span>🔔</span>} badge={3} /></div>
+                  <div><Label>with badge</Label><IconButton icon={<span>🔔</span>} badge={3} badgeOf="styleguide-iconbutton" /></div>
                   <div><Label>disabled</Label><IconButton icon={<span>⚙</span>} disabled /></div>
                 </Row>
               </GameErrorBoundary>

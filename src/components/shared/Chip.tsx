@@ -313,12 +313,17 @@ export function shownCount(count: number): number | null {
   return whole > 0 ? whole : null;
 }
 
+/** A count on a control that already speaks for it: the badge or inline form. */
+function isCompactCount(props: CountChipFullProps | CountChipBadgeProps): props is CountChipBadgeProps {
+  return props.form === 'badge' || props.form === 'inline';
+}
+
 function CountChip(props: CountChipFullProps | CountChipBadgeProps) {
   const n = shownCount(props.count);
   if (n === null) return null;
   const countAttrs = { 'data-count': n, 'data-count-of': props.of };
 
-  if (props.form === 'badge' || props.form === 'inline') {
+  if (isCompactCount(props)) {
     const pinned: CSSProperties =
       props.form === 'badge'
         ? { position: 'absolute', top: `${CHIP_BADGE_OFFSET_PX}px`, right: `${CHIP_BADGE_OFFSET_PX}px` }
