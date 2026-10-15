@@ -1,0 +1,839 @@
+/**
+ * The Tannery Fire (slug tannery-fire) - slot 4 of the master-everyday-3 batch (THR-1840).
+ * 
+ * Brief: `Docs/plans/encounters/master-everyday-3-brief.md` (slot 4, binding).
+ * Pipeline: tannery-fire-draft / -editorial / -revised / -systems / -final / -package (gated GREEN, check:encounter --package).
+ * Model packages (structure only): tourney-marshal, hill-conduit (master batch 2).
+ * plotHookRolled: hook.festival_of_fools, hook.gods_fall, hook.environmental_gauntlet
+ * plotHookTaken:  hook.environmental_gauntlet - the burning quarter is ground the master must hold and
+ *                 then cut through, the fire itself the gauntlet. festival_of_fools and gods_fall set
+ *                 aside: no feast and no fallen god in a tannery fire.
+ * Rolled constraints (brief, binding): reach iron - steps iron 0.76 -> iron 0.82 - settings urban (rolled
+ * arcane survives as the dyers' and tanners' vats, whose fumes take fire) - shape danger -> confrontation
+ * -> aftermath (rolled personality fork, overridden by the brief) - consequence hand standing + place -
+ * p3Shape mystery (read as: what the vats give off, carried into the failure reaction) - opposition
+ * rival_agent (greed): the master tanner - disposition hostile - agentRole bystander_pulled_in (the watch
+ * sends for the master) - scale region (read as the quarter and the street beyond it) - rarityTier 2 -
+ * scale local - intrinsicTier shaping.
+ * 
+ * --- The narrator's 12 questions, answered ---
+ *   1 P1 arrival?      {actor} arrives in {location} as the fire bell rings over the tanners' quarter.
+ *   2 P2 events?       A dry wind spreads the fire; the vats' fumes burn too; three roofs are alight;
+ *                      the watch has formed bucket lines from the river stair.
+ *   3 P3 one stake?    Danger: hold the lines, or the fire reaches the next street.
+ *   4 <=80 words?      77 (opening + step-0 spine).
+ *   5 Read aloud?      Every sentence is a report.
+ *   6 Stated?          The wind, the fumes, the breaking lines and the stake are stated, never encoded.
+ *   7 Every sentence works? Challenge, test or outcome.
+ *   8 Nothing unintroduced? The wind, the lines and the stair in the step-0 spine; the sheds, the hides
+ *                      and the master tanner in step 1's, before any card acts on them.
+ *   9 One named person? Step 0 {cast:sergeant}; step 1 {cast:tanner}.
+ *  10 Stake in a sentence? Can the master hold the bucket lines and pull down the master tanner's sheds
+ *                      before the fire takes the street beyond the quarter?
+ *  11 Cards verb+noun? Still The Wind, Steady The Line, Crack The Timbers, Show The Danger. No effect
+ *                      line shares a word with its name; no digits.
+ *  12 Opening per class? urban, written.
+ * 
+ * --- Mechanical design block ---
+ *   Crux            Fire has taken the tanners' quarter, and the watch has sent for the agent to hold
+ *                   the bucket lines and pull down the master tanner's sheds for a firebreak.
+ *   Shape           Danger - Confrontation - Aftermath. iron 0.76 (continue_weakened) -> iron 0.82
+ *                   (fail_action). Linear, branch count 0. Mean 0.79. A step-0 critical_failure ends
+ *                   the action.
+ *   Forecast sums   step 0: 0.76 + 0.10 + 0.08 = 0.94 - step 1: 0.82 + 0.10 + 0.08 = 1.00.
+ *   Fight system    None. The master tanner and the journeymen are faced down, not fought; no fight,
+ *                   confront, monster or rank gate.
+ *   Consequence hand (binding): standing + place, no swap.
+ *     standing      reputation_with $here +0.06 on step 1 success, -0.06 on step 1 failure, -0.02 on
+ *                   step 0 failure (the master's name before the town).
+ *     place         apply_condition trait.condition.location.under_watch on $here on step 1 success
+ *                   (the watch keeps men posted in the burnt quarter against looters);
+ *                   apply_condition trait.condition.location.plague_scare on $here on step 1 failure
+ *                   (the tanning pits burst into the river, and word of sickness keeps travellers out).
+ *   Extras          bond_change $cast:tanner -0.08 on step 1 success (the tanner's greed outlives the
+ *                   fire: the master pulled down the sheds and the stock with them); bond_change
+ *                   $cast:sergeant on both failure routes, so the critical_failure chips are backed on
+ *                   both routes.
+ *   Cost channels   All specials essence-priced. No Heavy Hand, no rider, no grant.
+ *   Cool failure    The mortal is not hurt past a burn, jailed or branded. Two streets burn, the river
+ *                   goes foul, and the master's name is spent before the town that sent for them.
+ *   Accepted limits The success_at_cost cost (two hook men hurt) is prose only. Plague Scare is chipped
+ *                   on failure only, because critical_failure is shared with the step-0 route where it
+ *                   never fires.
+ *   Systems quota   cast + reputation + conditions (place) - three, plus bonds.
+ * 
+ * --- Trait hooks ---
+ *   Gate? None. Variant? trait.personality.iron.virtue (Brave) +0.04, trait.reputation.iron.negative
+ *   (Brutal Thug) -0.04. Trait-only nudge? None. Trait fragment? None.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.tannery_fire',
+  stakes: {
+    goal: 'stop a fire spreading out of the tanners\' quarter',
+    risk: 'see the fire burn on past the quarter until dawn',
+    won: 'stopped a fire spreading out of the tanners\' quarter',
+    lost: 'lost two streets before the fire was stopped',
+    lostBadly: 'saw the fire burn on past the quarter until dawn',
+  },
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Tannery Fire',
+  reach: 'iron',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['courage_prudence', 'mercy_ruthlessness'],
+  settings: ['urban'],
+  openings: {
+    urban: '{actor} arrives in {location} as the fire bell rings over the tanners\' quarter.',
+  },
+  steps: [
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.76,
+      purposeLine: 'Hold the bucket lines',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'A dry wind is spreading the fire. The fumes from the dye vats burn as well, and three roofs are '
+        + 'alight. {cast:sergeant} of the town watch has formed bucket lines from the river stair.\n\n'
+        + 'Each time a roof falls, men drop their buckets and run. {cast:sergeant} sends for {actor} to '
+        + 'hold the lines. If the lines break, the fire will reach the next street.',
+      criticalSuccessAfterimage: 'The lines held through every falling roof, and the water reached the fire faster than it spread.',
+      successAfterimage: 'The lines held, and the fire stopped gaining on the street.',
+      nearMissAfterimage: 'The lines held, but a gap at the top of the stair let one more roof catch.',
+      successAtCostAfterimage: 'The lines held, but {actor} took a burn across the arm pulling a man from under a beam.',
+      failureAfterimage: 'The lines broke twice, and the fire took the drying yard along the river.',
+      criticalFailureAfterimage: 'The lines broke and did not form again, and the fire crossed into the next street.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:sergeant',
+            sentimentDelta: -0.04,
+            trustDelta: -0.05,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['might', 'labor'],
+      },
+      nudges: [
+        {
+          id: 'tannery.still_the_wind',
+          name: 'Still The Wind',
+          sphere: 'order',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.ward',
+          effectLine: 'Calm the moving air for a while, so nothing light is carried far.',
+          bandProse: {
+            critical_success: 'The wind dropped as the lines formed, and the sparks fell back into the burning roofs.',
+            success: 'The wind slackened, and the sparks stopped carrying to the next row of roofs.',
+            near_miss: 'The wind slackened for a while, then gusted once and carried a spark over the stair.',
+            failure: 'The wind slackened, but the vats\' fumes kept the fire going without it.',
+          },
+        },
+        {
+          id: 'tannery.steady_the_line',
+          name: 'Steady The Line',
+          sphere: 'mind',
+          essenceCost: 1,
+          forecastDelta: 0.08,
+          imageTag: 'generic.focus',
+          effectLine: 'Settle the fear in a working crowd, so each person keeps their place when danger comes close.',
+          bandProse: {
+            success: 'When the next roof fell, the men on the stair kept passing buckets.',
+            success_at_cost: 'The men held their places, and {actor} went in alone for the one who fell.',
+            failure: 'The men on the stair held, but the men at the river end ran.',
+            critical_failure: 'The men held their places a moment too long, and a falling wall broke the line in two.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'iron',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.82,
+      purposeLine: 'Pull down the sheds',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'The fire has reached the lane at the edge of the quarter. The drying sheds beside the lane '
+        + 'belong to {cast:tanner}, the master tanner, and a season\'s hides hang in them. {cast:tanner} '
+        + 'stands in the doorway with the journeymen and says no one touches the stock. The sheds must come '
+        + 'down for a firebreak. Without one, the next street burns tonight, and the town will blame '
+        + '{actor}.',
+      criticalSuccessAfterimage: '{cast:tanner} stood aside, and the journeymen helped the hook crews pull the sheds down.',
+      successAfterimage: '{actor} got the hook crews past the journeymen, and the sheds came down across the lane.',
+      successAtCostAfterimage: 'The sheds came down, but the journeymen fought the hook crews first, and two men were hurt.',
+      failureAfterimage: '{cast:tanner} held the doorway until the sheds caught, and the fire went over them into the next '
+        + 'lane.',
+      criticalFailureAfterimage: 'The journeymen drove the hook crews off, and the fire took the street beyond the quarter.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'The bucket lines are holding the fire at the river stair.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'The fire has stopped gaining on the street.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'They are working with a burned arm.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'One more roof caught at the top of the stair.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'The fire has taken the drying yard along the river.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+      },
+      successMetadata: {
+        effects: [
+          {
+            kind: 'apply_condition',
+            conditionTraitId: 'trait.condition.location.under_watch',
+            targetLocationId: '$here',
+            intensity: 0.5,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.06,
+          },
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:tanner',
+            sentimentDelta: -0.08,
+            trustDelta: -0.06,
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'apply_condition',
+            conditionTraitId: 'trait.condition.location.plague_scare',
+            targetLocationId: '$here',
+            intensity: 0.5,
+          },
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:sergeant',
+            sentimentDelta: -0.1,
+            trustDelta: -0.12,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['might', 'presence'],
+      },
+      nudges: [
+        {
+          id: 'tannery.crack_the_timbers',
+          name: 'Crack The Timbers',
+          sphere: 'entropy',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.decay',
+          effectLine: 'Eat old beams hollow from inside, so a building comes down at the first pull.',
+          bandProse: {
+            critical_success: 'The first shed folded at one pull of the hooks, and the next two went with it.',
+            success: 'The posts gave at the first pull, and the shed came down across the lane.',
+            near_miss: 'The posts gave, but the roof hung on its ridge beam and had to be pulled twice.',
+            failure: 'The posts gave, but the journeymen stood under the roof so no one would pull.',
+          },
+        },
+        {
+          id: 'tannery.show_the_danger',
+          name: 'Show The Danger',
+          sphere: 'light',
+          essenceCost: 1,
+          forecastDelta: 0.08,
+          opposes: 'tanner',
+          imageTag: 'generic.light',
+          effectLine: 'Make a coming harm plain to see, so a stubborn person cannot pretend it is far off.',
+          bandProse: {
+            success: '{cast:tanner} saw the sparks landing on the shed roof and stepped out of the doorway.',
+            success_at_cost: '{cast:tanner} saw the sparks and gave way, but the journeymen did not.',
+            failure: '{cast:tanner} saw the sparks, and sent the journeymen in to carry out the hides first.',
+            critical_failure: '{cast:tanner} saw the sparks, and barred the shed door to save the stock inside.',
+          },
+        },
+      ],
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.personality.iron.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being Brave, they stay on the stair while roofs fall.',
+    },
+    {
+      traitId: 'trait.reputation.iron.negative',
+      forecastDelta: -0.04,
+      factorLine: 'Known as a Brutal Thug, they are not trusted to give orders to frightened men.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'sergeant',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['guard'],
+      supportRole: 'tannery_watch_sergeant',
+      spawnNpcRole: 'guard',
+      spawnName: 'Hob Ketteridge',
+    },
+    {
+      kind: 'actor',
+      key: 'tanner',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      supportRole: 'tannery_master_tanner',
+      spawnNpcRole: 'merchant',
+      spawnName: 'Gerold Ashby',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'Fire has taken the tanners\' quarter, and the watch has sent for someone to stop it spreading.',
+    success: '{actor} held the bucket lines and cut a firebreak, and the fire stopped at the edge of the '
+      + 'quarter.',
+    failure: 'The fire spread out of the tanners\' quarter, and {actor} could not stop it.',
+  },
+  aftermathConfig: {
+    branchOnStep: 1,
+    variants: {},
+    fallback: {
+      overview: 'The fire bell stops, and the watch walks the burnt quarter until dawn.',
+      changes: [],
+      byOutcome: {
+        critical_success: {
+          overview: 'The fire went out at the gap where the sheds had stood. Not one house beyond the quarter burned, '
+            + 'and no one was hurt at the sheds.',
+          changes: [
+            {
+              id: 'tannery.cs.tanner',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'A Season\'s Stock',
+              detail: '{cast:tanner} counts the lost hides against {actor}.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:tanner',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'counts',
+                  tooltipId: 'ui.reputation_with',
+                },
+              ],
+            },
+            {
+              id: 'tannery.cs.watch',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'Under Watch',
+                entityId: 'trait.condition.location.under_watch',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'Guards in the Ashes',
+              detail: 'The watch keeps men posted in the burnt quarter of {location}.',
+            },
+            {
+              id: 'tannery.cs.regard',
+              kind: 'reputation',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Town\'s Regard',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'tannery.cs.help_rebuild',
+              label: 'Ask the town to rebuild the sheds',
+              intent: 'The mortal asks the council to pay for the master tanner\'s sheds. The tanner may let the grudge '
+                + 'go, and the town will ask why it should pay.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:tanner',
+                  sentimentDelta: 0.08,
+                },
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: -0.02,
+                },
+              ],
+            },
+            {
+              id: 'tannery.cs.name_the_watch',
+              label: 'Give the watch the credit',
+              intent: 'The mortal tells the town the bucket lines saved the street. The sergeant will remember it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:sergeant',
+                  sentimentDelta: 0.08,
+                },
+              ],
+            },
+          ],
+        },
+        success: {
+          overview: 'The fire burned out at the gap where the sheds had stood. Half the tanners\' quarter is ash, and '
+            + 'the street beyond it stands.',
+          changes: [
+            {
+              id: 'tannery.s.tanner',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'A Season\'s Stock',
+              detail: '{cast:tanner} counts the lost hides against {actor}.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:tanner',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'counts',
+                  tooltipId: 'ui.reputation_with',
+                },
+              ],
+            },
+            {
+              id: 'tannery.s.watch',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'Under Watch',
+                entityId: 'trait.condition.location.under_watch',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'Guards in the Ashes',
+              detail: 'The watch keeps men posted in the burnt quarter of {location}.',
+            },
+            {
+              id: 'tannery.s.regard',
+              kind: 'reputation',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Town\'s Regard',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'tannery.s.help_rebuild',
+              label: 'Ask the town to rebuild the sheds',
+              intent: 'The mortal asks the council to pay for the master tanner\'s sheds. The tanner may let the grudge '
+                + 'go, and the town will ask why it should pay.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:tanner',
+                  sentimentDelta: 0.08,
+                },
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: -0.02,
+                },
+              ],
+            },
+            {
+              id: 'tannery.s.name_the_watch',
+              label: 'Give the watch the credit',
+              intent: 'The mortal tells the town the bucket lines saved the street. The sergeant will remember it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:sergeant',
+                  sentimentDelta: 0.08,
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The fire burned out at the gap, and the street beyond the quarter stands, but it was a closer '
+            + 'thing than the watch wanted. The journeymen blame {actor} for the sheds.',
+          changes: [
+            {
+              id: 'tannery.sac.tanner',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'A Season\'s Stock',
+              detail: '{cast:tanner} counts the lost hides against {actor}.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:tanner',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'counts',
+                  tooltipId: 'ui.reputation_with',
+                },
+              ],
+            },
+            {
+              id: 'tannery.sac.watch',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'Under Watch',
+                entityId: 'trait.condition.location.under_watch',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'Guards in the Ashes',
+              detail: 'The watch keeps men posted in the burnt quarter of {location}.',
+            },
+            {
+              id: 'tannery.sac.regard',
+              kind: 'reputation',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Town\'s Regard',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'tannery.sac.help_rebuild',
+              label: 'Ask the town to rebuild the sheds',
+              intent: 'The mortal asks the council to pay for the master tanner\'s sheds. The tanner may let the grudge '
+                + 'go, and the town will ask why it should pay.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:tanner',
+                  sentimentDelta: 0.08,
+                },
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: -0.02,
+                },
+              ],
+            },
+            {
+              id: 'tannery.sac.name_the_watch',
+              label: 'Give the watch the credit',
+              intent: 'The mortal tells the town the bucket lines saved the street. The sergeant will remember it.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:sergeant',
+                  sentimentDelta: 0.08,
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview: 'By morning the fire was out, two streets past the sheds. The tanning pits burst in the heat and '
+            + 'fouled the river. The watch had sent for {actor} to stop exactly this.',
+          changes: [
+            {
+              id: 'tannery.f.plague',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'Plague Scare',
+                entityId: 'trait.condition.location.plague_scare',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: 'Plague Scare',
+                  entityId: 'trait.condition.location.plague_scare',
+                  visualKind: 'attachment',
+                },
+              ],
+              title: 'Foul Water',
+              detail: 'Travellers keep away from {location}, for fear of sickness.',
+            },
+            {
+              id: 'tannery.f.regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Town\'s Regard',
+              detail: '{location} thinks less of {actor} now.',
+            },
+            {
+              id: 'tannery.f.sergeant',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The Watch\'s Trust',
+              detail: '{cast:sergeant} trusts {actor} less.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:sergeant',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.reputation_with',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'tannery.f.house_the_burned_out',
+              label: 'Find roofs for the burned-out families',
+              intent: 'The mortal spends the next day finding beds for the families the fire turned out. The town will '
+                + 'see who stayed.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.02,
+                },
+              ],
+            },
+            {
+              id: 'tannery.f.ask_about_the_vats',
+              label: 'Ask the tanners what caught first',
+              intent: 'The mortal asks the tanners what caught first and why it spread so fast, and keeps the answer.',
+              effects: [
+                {
+                  kind: 'intelligence',
+                  category: 'cultural_knowledge',
+                  label: 'The Tanners\' Vats',
+                  detail: 'The dye vats and the lime pits of a tanners\' quarter give off fumes that take fire on a dry '
+                    + 'wind.',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The fire spread past the tanners\' quarter and did not stop until the wind turned at dawn. '
+            + '{actor} was the one the watch sent for.',
+          changes: [
+            {
+              id: 'tannery.cf.regard',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Lost Before the Town',
+              detail: '{location} thinks less of {actor} now.',
+            },
+            {
+              id: 'tannery.cf.sergeant',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The Watch\'s Trust',
+              detail: '{cast:sergeant} trusts {actor} less.',
+              stateNoun: {
+                text: 'reputation with {target}',
+                entityId: '$cast:sergeant',
+                visualKind: 'agent',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.reputation_with',
+                },
+              ],
+            },
+          ],
+          reactions: [
+            {
+              id: 'tannery.cf.house_the_burned_out',
+              label: 'Find roofs for the burned-out families',
+              intent: 'The mortal spends the next day finding beds for the families the fire turned out. The town will '
+                + 'see who stayed.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.02,
+                },
+              ],
+            },
+            {
+              id: 'tannery.cf.ask_about_the_vats',
+              label: 'Ask the tanners what caught first',
+              intent: 'The mortal asks the tanners what caught first and why it spread so fast, and keeps the answer.',
+              effects: [
+                {
+                  kind: 'intelligence',
+                  category: 'cultural_knowledge',
+                  label: 'The Tanners\' Vats',
+                  detail: 'The dye vats and the lime pits of a tanners\' quarter give off fumes that take fire on a dry '
+                    + 'wind.',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'Fire has taken the tanners\' quarter on a dry wind. Someone has to hold the bucket lines at the '
+    + 'river stair, then pull down the master tanner\'s sheds for a firebreak before the fire reaches '
+    + 'the next street.',
+  locationSubtypes: expandSettings(['urban']),
+  consequenceDraw: ['standing', 'place'],
+};
+
+export const TANNERY_FIRE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

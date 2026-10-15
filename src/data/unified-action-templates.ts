@@ -262,6 +262,7 @@ import { BOUNDARY_SURVEY_TEMPLATE } from './encounters/boundary-survey';
 import { MILL_LEASE_SEQUELS } from './encounters/mill-lease-sequels';
 import { CHARTER_INQUEST_SEQUELS } from './encounters/charter-inquest-sequels';
 import { EASTER_RECKONING_SEQUELS } from './encounters/easter-reckoning-sequels';
+import { RETURNED_HEIR_SEQUELS } from './encounters/returned-heir-sequels';
 import { MILL_LEASE_AUCTION_TEMPLATE } from './encounters/mill-lease-auction';
 import { INHERITANCE_WAKE_TEMPLATE } from './encounters/inheritance-wake';
 import { FLOOD_DYKE_MENDING_TEMPLATE } from './encounters/flood-dyke-mending';
@@ -282,6 +283,13 @@ import { TOURNEY_MARSHAL_TEMPLATE } from './encounters/tourney-marshal';
 import { HILL_CONDUIT_TEMPLATE } from './encounters/hill-conduit';
 import { EASTER_RECKONING_TEMPLATE } from './encounters/easter-reckoning';
 import { POISONED_FEAST_TEMPLATE } from './encounters/poisoned-feast';
+import { TANNERY_FIRE_TEMPLATE } from './encounters/tannery-fire';
+import { BLOODLETTING_HOUR_TEMPLATE } from './encounters/bloodletting-hour';
+import { WOOL_STAPLE_TEMPLATE } from './encounters/wool-staple';
+import { GALLOWS_PARDON_TEMPLATE } from './encounters/gallows-pardon';
+import { SILVER_DRIFT_RESCUE_TEMPLATE } from './encounters/silver-drift-rescue';
+import { FUGITIVE_FRIAR_TEMPLATE } from './encounters/fugitive-friar';
+import { RETURNED_HEIR_TEMPLATE } from './encounters/returned-heir';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -6024,6 +6032,8 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...CHARTER_INQUEST_SEQUELS,
   // THR-1757 — the Easter reckoning appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
   ...EASTER_RECKONING_SEQUELS,
+  // THR-1840 — the returned heir appointment's kept and missed sequels: seed-only (`drawable: false`), registry-only.
+  ...RETURNED_HEIR_SEQUELS,
   MILL_LEASE_AUCTION_TEMPLATE,
   INHERITANCE_WAKE_TEMPLATE,
   FLOOD_DYKE_MENDING_TEMPLATE,
@@ -6044,6 +6054,13 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   HILL_CONDUIT_TEMPLATE,
   EASTER_RECKONING_TEMPLATE,
   POISONED_FEAST_TEMPLATE,
+  TANNERY_FIRE_TEMPLATE,
+  BLOODLETTING_HOUR_TEMPLATE,
+  WOOL_STAPLE_TEMPLATE,
+  GALLOWS_PARDON_TEMPLATE,
+  SILVER_DRIFT_RESCUE_TEMPLATE,
+  FUGITIVE_FRIAR_TEMPLATE,
+  RETURNED_HEIR_TEMPLATE,
 ];
 
 /**
@@ -6218,6 +6235,13 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   HILL_CONDUIT_TEMPLATE,
   EASTER_RECKONING_TEMPLATE,
   POISONED_FEAST_TEMPLATE,
+  TANNERY_FIRE_TEMPLATE,
+  BLOODLETTING_HOUR_TEMPLATE,
+  WOOL_STAPLE_TEMPLATE,
+  GALLOWS_PARDON_TEMPLATE,
+  SILVER_DRIFT_RESCUE_TEMPLATE,
+  FUGITIVE_FRIAR_TEMPLATE,
+  RETURNED_HEIR_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**

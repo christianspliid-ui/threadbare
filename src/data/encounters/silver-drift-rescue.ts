@@ -1,0 +1,954 @@
+/**
+ * The Fallen Silver Drift (slug silver-drift-rescue) - slot 7 of the master-everyday-3 batch (THR-1840).
+ * 
+ * Brief: `Docs/plans/encounters/master-everyday-3-brief.md`.
+ * Final packet: `Docs/plans/encounters/silver-drift-rescue-final.md`. Draft: `silver-drift-rescue-draft.md`.
+ * plotHookRolled: hook.long_road, hook.masterwork_completion, hook.shifting_shape
+ * plotHookTaken:  hook.shifting_shape - the mountain changes shape under the miners: the new drift broke
+ *                 into old workings nobody had mapped, the roof came down, and the ground keeps moving
+ *                 while the master reads it, props it and brings the men out.
+ * Seed dice: p3 choice (dig through the fall, or around it through the old workings) - opposition beast
+ *            (hunger), read as the hungry mountain: the rock and the bad air, never a monster - agentRole
+ *            judge_asked_to_rule (the reeve asks the master to rule where to dig) - scale region (overridden
+ *            to the village and its mine; the brief's scale floor counts slot 7 as settlement) - setting
+ *            ruin, overridden to rural, surviving as the old workings the drift broke into.
+ * 
+ * --- The narrator's 12 questions, answered ---
+ *   1 P1 arrival?      Yes: {actor} comes up the mine track above {location}, sent for by the reeve.
+ *   2 P2 events?       The drift fell in; it broke into old workings; four miners are behind the fall,
+ *                      knocking; the air behind a fall goes bad.
+ *   3 P3 one stake?    Choice (rolled): dig through the fall or around it, before the air runs out.
+ *   4 <=80 words?      73 / 80 (opening + step-0 spine).
+ *   5 Read aloud?      Report throughout; no interior sensation.
+ *   6 Stated?          "They are alive." "Behind a fall the air goes bad." Stated plainly.
+ *   7 Every sentence works? Challenge, test or outcome.
+ *   8 Nothing unintroduced? Drift, fall, old workings, miners, reeve in step 0; props, timber and loose rock
+ *                      in step 1; the bad air, the passage and the Builders Fellowship in step 2.
+ *   9 One named person? {cast:reeve} in step 0, nobody named in step 1, {cast:miner} in step 2.
+ *  10 Stake in a sentence? Can {actor} bring the four miners out of the fallen drift before the air goes bad?
+ *  11 Cards verb+noun? Carry Faint Knocking, Remember Lost Tunnels, Harden Green Timber, Still Loose Rock,
+ *                      Stir Dead Air, Rouse Weary Bodies.
+ *  12 Opening per class? rural, written.
+ * 
+ * --- Mechanical design block ---
+ *   Crux            A silver drift has fallen in on four miners, and the reeve asks {actor} where to dig before the air goes bad.
+ *   Shape           Query prize on a three-step read -> shore -> bring-out spine. stone 0.74 (continue_weakened)
+ *                   -> stone 0.80 (continue_weakened) -> stone 0.84 (fail_action). Linear, branch count 0.
+ *   Consequence hand (binding): condition + membership. No swap.
+ *                   condition - condition_attachment trait.condition.wounded on $cast:miner on every step's
+ *                   failure: the fall comes down on the trapped men's side. Person-borne (not $here), so it
+ *                   wires `condition`, not `place`. Not on $actor: the brief caps personal conditions on the
+ *                   mortal, and a master's failure costs the name, never the body.
+ *                   membership - membership_change join builders_fellowship ($actor, chronicle) on step 2
+ *                   success: the Fellowship that holds the mine takes in whoever brings its people out.
+ *   Query prize     Step 2 rewardPool { possession: 1 } tagFilters [#stone, #tool]: a tool from the mine's
+ *                   store, given by the miners in thanks (iron tongs, a master chisel, a salvage kit ...).
+ *   Standing        bond_change $cast:reeve +0.12 / -0.12 on step 2; -0.04 on step 0 and step 1 failure.
+ *                   reputation_with $here +0.05 / -0.06 on step 2; -0.02 on step 0 and step 1 failure (backs
+ *                   the critical_failure chips on every route: a critical failure at any step ends the action).
+ *   Cost channels   All specials essence-priced. No Heavy Hand, no rider, no Undertow.
+ *   Cool failure    No one dies. The mortal is not hurt, jailed or branded. Failure: the fall crushes a miner's
+ *                   leg, the miners wait alive for another crew, and the reeve's trust is gone. Critical failure:
+ *                   the fall comes down again on the miner, and the reeve tells the village the master read the
+ *                   rock wrong. The cost is the name.
+ *   Ends warm       Success: all four out alive, the miners' gift, the Fellowship's rolls.
+ *   Gender          Reeve and miner are bound cast (reuse-first): prose never genders either.
+ *   Accepted limit  An early-step failure followed by a final success wounds the miner without a chip on the
+ *                   success_at_cost page (the step afterimage tells it); success_at_cost can also be reached
+ *                   by a near miss alone, so its page cannot claim the wound.
+ *   Systems         cast, rewards, conditions, factions, reputation = 5.
+ *   Not colliding   Stone masters: strike a vault's centering, bring water down a hill conduit. Stone experts:
+ *                   shore a bell tower, mend a dyke. This one digs living men out of a fallen mine.
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.silver_drift_rescue',
+  stakes: {
+    goal: 'bring the four trapped miners out of the fallen drift',
+    risk: 'see the fall crush a miner and lose the reeve\'s trust',
+    won: 'brought the four trapped miners out of the fallen drift',
+    lost: 'left the trapped miners for another crew to bring out',
+    lostBadly: 'brought the fall down on a miner and lost the reeve\'s trust',
+  },
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Fallen Silver Drift',
+  reach: 'stone',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['sacrifice_survival', 'courage_prudence'],
+  settings: ['rural'],
+  openings: {
+    rural: '{actor} comes up the mine track above {location}, sent for by the mine\'s reeve.',
+  },
+  steps: [
+    {
+      reach: 'stone',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.74,
+      purposeLine: 'Read the fall',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The new silver drift has fallen in. It broke into old workings no one had mapped, and the roof '
+        + 'came down behind four miners. They are alive. The diggers can hear them knocking. Behind a fall '
+        + 'the air goes bad.\n\n'
+        + '{cast:reeve} can send the diggers through the fall, or around it through the old workings, and '
+        + 'asks {actor} to choose.',
+      criticalSuccessAfterimage: '{actor} read the fall in an hour. The old workings ran around it under sound rock, and the '
+        + 'diggers went in through them at once.',
+      successAfterimage: '{actor} chose the old workings. Their roof was sound, and they ran around the fall to a few '
+        + 'yards from the trapped men.',
+      successAtCostAfterimage: '{actor} chose the old workings, but stood on the fall too long reading it. A second slide came '
+        + 'down where they had stood, and the diggers lost the morning clearing it.',
+      failureAfterimage: '{actor} chose to dig through the fall. The rock shifted when the diggers opened it, and a stone '
+        + 'came down on {cast:miner} on the far side.',
+      criticalFailureAfterimage: '{actor} sent the diggers into the fall, and it came down again on the far side, on {cast:miner}. '
+        + '{cast:reeve} called the diggers out and would not send them back on the master\'s word.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'condition_attachment',
+            templateId: 'trait.condition.wounded',
+            targetAgentId: '$cast:miner',
+          },
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:reeve',
+            sentimentDelta: -0.04,
+            trustDelta: -0.05,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['craft', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'drift.carry_faint_knocking',
+          name: 'Carry Faint Knocking',
+          sphere: 'matter',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.matter',
+          effectLine: 'Make the trapped men\'s taps travel clear through the rock, so they show where the men lie.',
+          bandProse: {
+            critical_success: 'The taps rang clear through the rock, and {actor} could point to the yard where the men lay.',
+            success: 'The taps came clear through the rock, from beyond the old workings\' far end.',
+            near_miss: 'The taps came clear only by evening, after a day of guessing.',
+            failure: 'The taps rang through every crack at once, and seemed to come from all sides.',
+          },
+        },
+        {
+          id: 'drift.remember_lost_tunnels',
+          name: 'Remember Lost Tunnels',
+          sphere: 'mind',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.memory',
+          effectLine: 'Wake the oldest diggers\' memory of the old workings, so they can name a path around the fall.',
+          bandProse: {
+            success: 'An old digger remembered where the old workings ran, and drew them in the dust.',
+            success_at_cost: 'An old digger remembered the old workings, and remembered a man who died in them, and would not '
+              + 'go in.',
+            failure: 'The old diggers remembered three different workings, and argued about all three until noon.',
+            critical_failure: 'An old digger remembered the workings wrong, and swore to it, and the reeve believed the old '
+              + 'digger.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'stone',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.8,
+      purposeLine: 'Shore the drift',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'The diggers go in where {actor} said. Every yard they clear must be propped with timber before '
+        + 'they clear the next, or the roof comes down on them too. Loose rock hangs over the whole length. '
+        + '{actor} must set the props as fast as the diggers clear.',
+      criticalSuccessAfterimage: 'Every prop {actor} set held. The diggers cleared the whole length in a day and a night, and the '
+        + 'roof stayed up over all of it.',
+      successAfterimage: 'The props held. Loose rock came down twice between them and missed the diggers both times.',
+      successAtCostAfterimage: 'The props held, but {actor} took the timber from the hoist house to set them. The mine cannot '
+        + 'lift ore until it is replaced.',
+      failureAfterimage: 'A prop gave way at the far end, and the last yard of roof came down. The rock fell on '
+        + '{cast:miner}\'s side too, and the knocking stopped for an hour.',
+      criticalFailureAfterimage: 'The roof came down along half the drift, and the fall slid again on {cast:miner}\'s side. The '
+        + 'diggers got out, and {cast:reeve} would not send them back under the master\'s props.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'They found a sound path to the trapped men.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'They chose the old workings, under sound rock.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The diggers lost a morning to a second slide.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'They chose where to dig only after a long day.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'They sent the diggers through the fall itself.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'condition_attachment',
+            templateId: 'trait.condition.wounded',
+            targetAgentId: '$cast:miner',
+          },
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:reeve',
+            sentimentDelta: -0.04,
+            trustDelta: -0.05,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.02,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['labor', 'craft'],
+      },
+      nudges: [
+        {
+          id: 'drift.harden_green_timber',
+          name: 'Harden Green Timber',
+          sphere: 'life',
+          essenceCost: 2,
+          forecastDelta: 0.1,
+          imageTag: 'generic.strength',
+          effectLine: 'Toughen the fresh-cut props, so they bear the roof longer than new wood should.',
+          bandProse: {
+            critical_success: 'The fresh props took the roof\'s weight without a creak, all the way to the far end.',
+            success: 'The green props bent and held, where new wood should have split.',
+            near_miss: 'The props held only after two of them split and were set again.',
+            failure: 'The props held, and the rock between them did not.',
+            critical_failure: 'The props held so hard that the roof broke around them instead.',
+          },
+        },
+        {
+          id: 'drift.still_loose_rock',
+          name: 'Still Loose Rock',
+          sphere: 'order',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.ward',
+          effectLine: 'Hold the cracked stone above the drift in place while the props go in.',
+          bandProse: {
+            success: 'The cracked stone overhead stayed where it hung until every prop was in.',
+            success_at_cost: 'The stone overhead held, but a slide at the side buried a digger\'s lamp.',
+            failure: 'The stone overhead held for a day, then came down all at once.',
+            critical_failure: 'The stone held until the diggers were deepest in, then let go.',
+          },
+        },
+      ],
+    },
+    {
+      reach: 'stone',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.84,
+      purposeLine: 'Bring the miners out',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+      narrativeTemplate: 'On the second night the diggers break through. The air behind the fall is bad, and a lamp will '
+        + 'not stay lit in it. {cast:miner} and the three others are too weak to climb. They must be '
+        + 'carried out through the narrow passage the diggers made, under a roof that will not hold much '
+        + 'longer.\n\n'
+        + 'The Builders Fellowship holds this mine. It takes in whoever brings its people out.',
+      criticalSuccessAfterimage: '{actor} got all four out on their feet, and the props held behind the last of them. {cast:miner} '
+        + 'walked down to the village unhelped.',
+      successAfterimage: '{actor} sent the weakest out first. All four miners came out into the daylight alive.',
+      successAtCostAfterimage: 'All four miners came out alive. The roof came down behind the last of them, and the new drift is '
+        + 'lost.',
+      failureAfterimage: 'The air went bad before the men could be carried, and the fall slid again and crushed '
+        + '{cast:miner}\'s leg. {actor} got the diggers out, but not the miners.',
+      criticalFailureAfterimage: 'The roof came down on the passage while {cast:miner} was in it. The diggers pulled the miner '
+        + 'free with a crushed leg, and {cast:reeve} called everyone out of the drift.',
+      carryoverFactorLines: {
+        critical_success: {
+          text: 'The props they set held the whole length.',
+          polarity: 'for',
+          forecastDelta: 0.06,
+        },
+        success: {
+          text: 'The props they set are holding.',
+          polarity: 'for',
+          forecastDelta: 0.04,
+        },
+        success_at_cost: {
+          text: 'The mine gave up its hoist timber for the props.',
+          polarity: 'against',
+          forecastDelta: -0.02,
+        },
+        near_miss: {
+          text: 'Two of their props split and were set again.',
+          polarity: 'against',
+          forecastDelta: -0.03,
+        },
+        failure: {
+          text: 'The roof came down on the last yard they propped.',
+          polarity: 'against',
+          forecastDelta: -0.05,
+        },
+      },
+      successMetadata: {
+        rewardPool: {
+          categoryWeights: {
+            possession: 1,
+          },
+          tagFilters: ['#stone', '#tool'],
+        },
+        effects: [
+          {
+            kind: 'membership_change',
+            factionId: 'builders_fellowship',
+            op: 'join',
+            targetAgentId: '$actor',
+            chronicle: true,
+          },
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:reeve',
+            sentimentDelta: 0.12,
+            trustDelta: 0.12,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: 0.05,
+          },
+        ],
+      },
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'condition_attachment',
+            templateId: 'trait.condition.wounded',
+            targetAgentId: '$cast:miner',
+          },
+          {
+            kind: 'bond_change',
+            withAgentId: '$cast:reeve',
+            sentimentDelta: -0.12,
+            trustDelta: -0.12,
+          },
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.06,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['labor', 'peril'],
+      },
+      nudges: [
+        {
+          id: 'drift.stir_dead_air',
+          name: 'Stir Dead Air',
+          sphere: 'chaos',
+          essenceCost: 2,
+          forecastDelta: 0.07,
+          imageTag: 'generic.energy',
+          effectLine: 'Move the foul vapour out from behind the fall, so the men can breathe and the lamps stay lit.',
+          bandProse: {
+            critical_success: 'Clean air came down the passage like a draught from an open door, and every lamp burned bright.',
+            success: 'The bad air moved off, and the lamps stayed lit long enough to carry the men out.',
+            near_miss: 'The air cleared only after the first lamp had gone out twice.',
+            failure: 'The air moved, and drew the bad air from the old workings in behind it.',
+          },
+        },
+        {
+          id: 'drift.rouse_weary_bodies',
+          name: 'Rouse Weary Bodies',
+          sphere: 'life',
+          essenceCost: 2,
+          forecastDelta: 0.08,
+          imageTag: 'generic.vigor',
+          effectLine: 'Put strength back into the trapped men\'s legs, so they can crawl part of the distance '
+            + 'themselves.',
+          bandProse: {
+            success: '{cast:miner} found the strength to crawl, and the others followed.',
+            success_at_cost: 'The men crawled out on their own, and one of them fainted at the mouth of the drift.',
+            failure: 'The men found the strength to stand, stood too soon, and the passage roof cracked over them.',
+            critical_failure: '{cast:miner} tried to climb out first, and brought the passage roof down.',
+          },
+        },
+      ],
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.personality.stone.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being Careful, they test every prop before a digger stands under it.',
+    },
+    {
+      traitId: 'trait.core.core_humility.vice',
+      forecastDelta: -0.05,
+      factorLine: 'Being Proud, they will not wait for the reeve\'s timber.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'reeve',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['elder', 'steward'],
+      supportRole: 'silver_drift_reeve',
+      spawnNpcRole: 'elder',
+      spawnName: 'Wat Corley',
+    },
+    {
+      kind: 'actor',
+      key: 'miner',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      supportRole: 'silver_drift_trapped_miner',
+      spawnNpcRole: 'mason',
+      spawnName: 'Ivo Tenney',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A silver mine has fallen in above a village, and its reeve sends for a master to bring out the '
+      + 'four miners behind the fall.',
+    success: 'The four miners came out of the fallen drift alive.',
+    failure: 'Another crew was sent for to bring the miners out, and the reeve no longer trusts the master\'s '
+      + 'reading of rock.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {},
+    fallback: {
+      overview: 'The rescue at the silver drift is over, and {location} waits to see what the mine does next.',
+      changes: [],
+      reactions: [
+        {
+          id: 'drift.seal_the_old_workings',
+          label: 'Seal the old workings',
+          intent: 'The mortal has the reeve wall up the old workings. The village sleeps easier, and the mine gives '
+            + 'up the ore past the fall.',
+          effects: [
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.03,
+            },
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:reeve',
+              sentimentDelta: -0.06,
+            },
+          ],
+        },
+        {
+          id: 'drift.prop_a_road_through',
+          label: 'Prop a road for the crews',
+          intent: 'The mortal sets props past the fall, so the mine can dig there. The reeve is grateful; the '
+            + 'miners\' families are not.',
+          effects: [
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:reeve',
+              sentimentDelta: 0.08,
+            },
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: -0.02,
+            },
+          ],
+        },
+      ],
+      byOutcome: {
+        critical_success: {
+          overview: '{location} rang its bell for the four miners when they came home. The miners give {actor} a tool '
+            + 'from the mine\'s store in thanks.',
+          changes: [
+            {
+              id: 'drift.crit.fellowship_rolls',
+              kind: 'faction_reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'a membership',
+                entityId: '$faction:builders_fellowship',
+                visualKind: 'faction',
+                tooltipId: 'ui.faction_member',
+              },
+              concepts: [
+                {
+                  text: 'the Builders Fellowship',
+                  entityId: '$faction:builders_fellowship',
+                  visualKind: 'faction',
+                },
+              ],
+              title: 'Taken In',
+              causeClause: 'Brought its miners out',
+              detail: '{actor} is on the Builders Fellowship\'s rolls now.',
+            },
+            {
+              id: 'drift.crit.reeve_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:reeve}',
+                  entityId: '$cast:reeve',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Reeve\'s Trust',
+              detail: '{cast:reeve} trusts {actor} now.',
+            },
+            {
+              id: 'drift.crit.village_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Well Regarded',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+        },
+        success: {
+          overview: 'The four miners are back with their families in {location}. They give {actor} a tool from the '
+            + 'mine\'s store in thanks.',
+          changes: [
+            {
+              id: 'drift.win.fellowship_rolls',
+              kind: 'faction_reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'a membership',
+                entityId: '$faction:builders_fellowship',
+                visualKind: 'faction',
+                tooltipId: 'ui.faction_member',
+              },
+              concepts: [
+                {
+                  text: 'the Builders Fellowship',
+                  entityId: '$faction:builders_fellowship',
+                  visualKind: 'faction',
+                },
+              ],
+              title: 'Taken In',
+              causeClause: 'Brought its miners out',
+              detail: '{actor} is on the Builders Fellowship\'s rolls now.',
+            },
+            {
+              id: 'drift.win.reeve_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:reeve}',
+                  entityId: '$cast:reeve',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Reeve\'s Trust',
+              detail: '{cast:reeve} trusts {actor} now.',
+            },
+            {
+              id: 'drift.win.village_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Well Regarded',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The miners give {actor} a tool from the mine\'s store in thanks. {cast:reeve} is counting what '
+            + 'the rescue cost the mine.',
+          changes: [
+            {
+              id: 'drift.cost.fellowship_rolls',
+              kind: 'faction_reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'a membership',
+                entityId: '$faction:builders_fellowship',
+                visualKind: 'faction',
+                tooltipId: 'ui.faction_member',
+              },
+              concepts: [
+                {
+                  text: 'the Builders Fellowship',
+                  entityId: '$faction:builders_fellowship',
+                  visualKind: 'faction',
+                },
+              ],
+              title: 'Taken In',
+              causeClause: 'Brought its miners out',
+              detail: '{actor} is on the Builders Fellowship\'s rolls now.',
+            },
+            {
+              id: 'drift.cost.reeve_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:reeve}',
+                  entityId: '$cast:reeve',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Reeve\'s Trust',
+              detail: '{cast:reeve} trusts {actor} now.',
+            },
+            {
+              id: 'drift.cost.village_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks well of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Well Regarded',
+              detail: '{location} thinks well of {actor} now.',
+            },
+          ],
+        },
+        failure: {
+          overview: '{cast:reeve} has sent down the valley for another crew to dig the miners out. They are alive '
+            + 'behind the fall. The reeve sent for a master, and now has to send again.',
+          changes: [
+            {
+              id: 'drift.fail.miner_wounded',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'Wounded',
+                entityId: 'trait.condition.wounded',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{cast:miner}',
+                  entityId: '$cast:miner',
+                  visualKind: 'agent',
+                },
+              ],
+              title: 'Crushed Leg',
+              detail: '{cast:miner} is wounded from the fall.',
+            },
+            {
+              id: 'drift.fail.reeve_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:reeve}',
+                  entityId: '$cast:reeve',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Reeve\'s Trust',
+              detail: '{cast:reeve} trusts {actor} less now.',
+            },
+            {
+              id: 'drift.fail.village_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Found Wanting',
+              detail: '{location} thinks less of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'drift.fail.wait_at_the_mine_mouth',
+              label: 'Wait at the mine mouth',
+              intent: 'The mortal waits at the mine mouth until the other crew brings the miners out. The miners\' '
+                + 'families see who stayed.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:miner',
+                  sentimentDelta: 0.1,
+                },
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.02,
+                },
+              ],
+            },
+            {
+              id: 'drift.fail.leave_before_the_crew',
+              label: 'Leave before the other crew comes',
+              intent: 'The mortal goes down the valley before the other master arrives, and does not watch another crew '
+                + 'finish the work. The village marks who did not stay.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: -0.03,
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The miners are alive, and another crew is coming up the valley for them. {cast:reeve} tells '
+            + '{location} that the master read the rock wrong.',
+          changes: [
+            {
+              id: 'drift.critfail.miner_wounded',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'Wounded',
+                entityId: 'trait.condition.wounded',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{cast:miner}',
+                  entityId: '$cast:miner',
+                  visualKind: 'agent',
+                },
+              ],
+              title: 'Crushed Leg',
+              detail: '{cast:miner} is wounded from the fall.',
+            },
+            {
+              id: 'drift.critfail.reeve_trust',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:reeve}',
+                  entityId: '$cast:reeve',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Reeve\'s Trust',
+              detail: '{cast:reeve} trusts {actor} less now.',
+            },
+            {
+              id: 'drift.critfail.village_regard',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: 'thinks less of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'Out of Favour',
+              detail: '{location} thinks less of {actor} now.',
+            },
+          ],
+          reactions: [
+            {
+              id: 'drift.critfail.wait_at_the_mine_mouth',
+              label: 'Wait at the mine mouth',
+              intent: 'The mortal waits at the mine mouth until the other crew brings the miners out. The miners\' '
+                + 'families see who stayed.',
+              effects: [
+                {
+                  kind: 'bond_change',
+                  withAgentId: '$cast:miner',
+                  sentimentDelta: 0.1,
+                },
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: 0.02,
+                },
+              ],
+            },
+            {
+              id: 'drift.critfail.leave_before_the_crew',
+              label: 'Leave before the other crew comes',
+              intent: 'The mortal goes down the valley before the other master arrives, and does not watch another crew '
+                + 'finish the work. The village marks who did not stay.',
+              effects: [
+                {
+                  kind: 'reputation_with',
+                  targetLocationId: '$here',
+                  delta: -0.03,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A silver mine above a village has fallen in, and four miners are alive behind the fall. Someone '
+    + 'has to say where to dig, prop the drift, and bring them out before the air goes bad.',
+  locationSubtypes: expandSettings(['rural']),
+  consequenceDraw: ['condition', 'membership'],
+};
+
+export const SILVER_DRIFT_RESCUE_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);
