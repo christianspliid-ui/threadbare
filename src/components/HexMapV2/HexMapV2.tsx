@@ -657,8 +657,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       loader.load(
         texturePath,
         (tex) => {
-          tex.wrapS = THREE.RepeatWrapping;
-          tex.wrapT = THREE.RepeatWrapping;
+          // THR-1902: the overlay samples in world space, so the paper repeats across the
+          // map; mirrored repeats meet edge to edge and hide the texture's own dark rim.
+          tex.wrapS = THREE.MirroredRepeatWrapping;
+          tex.wrapT = THREE.MirroredRepeatWrapping;
           tex.colorSpace = THREE.SRGBColorSpace;
           parchmentTextureRef.current = tex;
           // Update fog overlay texture if already created

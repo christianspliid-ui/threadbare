@@ -38,8 +38,8 @@ import { getActivePalette } from '../palette/activePalette';
 export const UNCHARTED_FILL_CONSTANTS = {
   /** Width, in hexes, of the fade from parchment to the off-grid dark at the grid's edge. */
   UNCHARTED_VIGNETTE_HEXES: 1.5,
-  /** World units one repeat of the parchment texture spans — about a dozen hexes. */
-  PARCHMENT_WORLD_SPAN: 60,
+  /** World units one repeat of the parchment texture spans — a third of a medium map. */
+  PARCHMENT_WORLD_SPAN: 180,
 } as const;
 
 /** What an unexplored hex is showing — read by `__DEBUG.getMapChrome().fog`. */
