@@ -9,9 +9,22 @@
 //
 // It records every encounter-kind action The First takes part in (as actor or as
 // target, on either the unified-action path or the legacy encounterProgress path),
-// then checks two numbers per seed:
+// and watches every journey The First makes. Per seed it gates:
 //   - the tick of The First's first encounter   ≤ FIRST_FIRST_ENCOUNTER_MAX_TICK
-//   - the longest gap between consecutive encounters ≤ FIRST_ENCOUNTER_MAX_GAP_TICKS
+//   - zero journey faults — the three THR-1639 defects, each read directly:
+//       no-pull           a journey to an encounter carries no `motivationPull`, so
+//                         the first re-check compares against zero and abandons it
+//       target-lost       a decision-phase reroute to a better encounter drops
+//                         `targetEncounterId`
+//       goal-cut          on arrival the goal is `dropped` while the encounter it
+//                         walked to still stands at the destination (the cap or the
+//                         breath cut it)
+//
+// The longest gap between encounters is reported, not gated (THR-1930). It was the
+// S2 gate's proxy for these defects, and on seed 42 it moves between 19 and 40 when
+// one unrelated template is added or removed: THR-1840's 37-tick gap was a 19-tick
+// walk to a kept goal that a fatigue-driven rest then outvoted — the board deciding,
+// not a defect — with zero faults on all three seeds.
 // The tail after the last encounter is reported but not gated: a run that ends
 // mid-journey says nothing about the rhythm.
 //
@@ -24,15 +37,24 @@ import { runTick, resetEventCounter, resetDecisionCache } from '../src/engine/or
 import { deriveCosmologyFromIdentity } from '../src/engine/remembrance';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
+import { getTimeline } from '../src/engine/encounterTimeline';
+import type { MovementState } from '../src/types/movement';
 import { CONTENT_OBJECT_KINDS } from '../src/data/content-objects';
 
 /** S2 acceptance: The First's first encounter must start by this tick (attended, per seed). */
 export const FIRST_FIRST_ENCOUNTER_MAX_TICK = 30;
-/** S2 acceptance: longest stretch between two of The First's encounters (attended, 150 ticks). */
+/**
+ * S2's original bound on The First's longest gap between encounters (attended, 150
+ * ticks). Reported against, no longer gated — a single-seed gap is chaotic under any
+ * change to the template pool (THR-1930); the journey faults are the gate.
+ */
 export const FIRST_ENCOUNTER_MAX_GAP_TICKS = 30;
 
 const encKind = CONTENT_OBJECT_KINDS.find(k => k.id === 'encounter_template');
 const isEncounter = (id: string) => !!encKind && encKind.idPrefixes.some(p => id.startsWith(p));
+
+export type JourneyFaultKind = 'no-pull' | 'target-lost' | 'goal-cut';
+export interface JourneyFault { tick: number; kind: JourneyFaultKind; detail: string }
 
 export interface FirstRhythm {
   seed: number;
@@ -42,8 +64,16 @@ export interface FirstRhythm {
   longestGap: number;
   gapFrom: number | null;
   tailGap: number;
+  /** Distinct journeys The First made toward a named encounter (destination × goal). */
+  journeys: number;
+  /** Arrival decisions that found the goal on the board / found it gone. */
+  arrivalsKept: number;
+  arrivalsDropped: number;
+  faults: JourneyFault[];
   pass: boolean;
 }
+
+interface JourneySnapshot { dest: string; queued: number; pull: number | undefined; goal: string | undefined }
 
 export function measureFirstRhythm(seed: number, ticks: number): FirstRhythm {
   resetEventCounter(); resetReputationTraitInit(); resetDecisionCache();
@@ -73,8 +103,48 @@ export function measureFirstRhythm(seed: number, ticks: number): FirstRhythm {
       if (!seen.has(key)) seen.set(key, p.startedTick);
     }
   };
+
+  const journey = (): JourneySnapshot | null => {
+    const m = firstId ? state.graph.getNode(firstId)?.properties?.movementState as MovementState | undefined : undefined;
+    return m ? { dest: m.destinationId, queued: m.movementQueue?.length ?? 0, pull: m.motivationPull, goal: m.targetEncounterId } : null;
+  };
+  const faults: JourneyFault[] = [];
+  const journeyKeys = new Set<string>();
+  let arrivalsKept = 0; let arrivalsDropped = 0;
+  let before = journey();
+
   harvest();
-  for (let i = 0; i < ticks; i++) { state = runTick(state, [], runtime); harvest(); }
+  for (let i = 0; i < ticks; i++) {
+    // The timeline is module-global and keyed by agent id, so a second seed in the
+    // same process appends to the first's: read only what this tick wrote.
+    const eventsBefore = firstId ? getTimeline(firstId).length : 0;
+    state = runTick(state, [], runtime); harvest();
+    const now = journey();
+    if (now && now.queued > 0 && now.goal) {
+      journeyKeys.add(`${now.dest}|${now.goal}`);
+      if (!(typeof now.pull === 'number' && now.pull > 0)) {
+        faults.push({ tick: state.tick, kind: 'no-pull', detail: `${now.goal} → ${now.dest}` });
+      }
+    }
+    for (const e of firstId ? getTimeline(firstId).slice(eventsBefore) : []) {
+      // Only the decision-phase reroute is always to an encounter. The movement-phase
+      // reroute may follow the P0 drift heuristic, which names no encounter, and a
+      // board pick of another family (an undertaking, a ruin) is not a reroute at all.
+      if (e.phase === 'REROUTE' && e.reason === 'better_encounter' && now && now.queued > 0 && !now.goal) {
+        faults.push({ tick: e.tick, kind: 'target-lost', detail: `${e.oldTarget} → ${e.newTarget}` });
+      }
+      if (e.phase !== 'DECIDE' || !e.journeyGoal) continue;
+      if (e.journeyGoal === 'kept') { arrivalsKept++; continue; }
+      arrivalsDropped++;
+      // A goal that is genuinely gone (resolved by someone else, expired) is a fair
+      // drop. One whose cache entry still stands at the destination was cut.
+      const goal = before?.goal; const dest = before?.dest;
+      if (goal && dest && runtime.encounterCache?.getEntriesForLocation(dest).some(x => x.templateId === goal)) {
+        faults.push({ tick: e.tick, kind: 'goal-cut', detail: `${goal} at ${dest}` });
+      }
+    }
+    before = now;
+  }
 
   const starts = [...new Set(seen.values())].sort((a, b) => a - b);
   let longestGap = 0; let gapFrom: number | null = null;
@@ -86,8 +156,11 @@ export function measureFirstRhythm(seed: number, ticks: number): FirstRhythm {
   const tailGap = starts.length > 0 ? state.tick - starts[starts.length - 1] : state.tick;
   const pass = firstTick !== null
     && firstTick <= FIRST_FIRST_ENCOUNTER_MAX_TICK
-    && longestGap <= FIRST_ENCOUNTER_MAX_GAP_TICKS;
-  return { seed, firstId, starts, firstTick, longestGap, gapFrom, tailGap, pass };
+    && faults.length === 0;
+  return {
+    seed, firstId, starts, firstTick, longestGap, gapFrom, tailGap,
+    journeys: journeyKeys.size, arrivalsKept, arrivalsDropped, faults, pass,
+  };
 }
 
 const isMain = typeof process !== 'undefined' && process.argv[1] && /first-(encounter-)?gate/.test(process.argv[1]);
@@ -95,11 +168,12 @@ if (isMain) {
   const seeds = (process.argv[2] ?? '42,99,11').split(',').map(Number);
   const ticks = Number(process.argv[3] ?? 150);
   let failed = 0;
-  console.log(`The First's encounter rhythm — attended, medium, ${ticks} ticks (gate: first ≤ ${FIRST_FIRST_ENCOUNTER_MAX_TICK}, longest gap ≤ ${FIRST_ENCOUNTER_MAX_GAP_TICKS})`);
+  console.log(`The First's encounter rhythm — attended, medium, ${ticks} ticks (gate: first ≤ ${FIRST_FIRST_ENCOUNTER_MAX_TICK}, zero journey faults; longest gap reported against ${FIRST_ENCOUNTER_MAX_GAP_TICKS}, not gated)`);
   for (const seed of seeds) {
     const r = measureFirstRhythm(seed, ticks);
     if (!r.pass) failed++;
-    console.log(`  seed ${seed}: ${r.pass ? 'PASS' : 'FAIL'} — ${r.starts.length} encounters, first at t${r.firstTick ?? '—'}, longest gap ${r.longestGap} (from t${r.gapFrom ?? '—'}), tail ${r.tailGap}`);
+    console.log(`  seed ${seed}: ${r.pass ? 'PASS' : 'FAIL'} — ${r.starts.length} encounters, first at t${r.firstTick ?? '—'}, journeys ${r.journeys}, arrivals kept ${r.arrivalsKept} / dropped ${r.arrivalsDropped}, faults ${r.faults.length}; longest gap ${r.longestGap} (from t${r.gapFrom ?? '—'}), tail ${r.tailGap}`);
+    for (const f of r.faults) console.log(`    fault t${f.tick} ${f.kind}: ${f.detail}`);
     console.log(`    starts: ${r.starts.join(' ')}`);
   }
   if (failed > 0) process.exitCode = 1;
