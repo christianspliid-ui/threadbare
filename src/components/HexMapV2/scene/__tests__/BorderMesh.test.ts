@@ -15,6 +15,8 @@ import type { HexTile, TerrainType } from '../../../../types';
 import type { RealmProjection, RealmProjectionEntry } from '../../../../engine/realmProjection';
 import { createBorderMesh } from '../BorderMesh';
 import { createCapitalMarkers } from '../CapitalMarkers';
+import { BORDER_INK, holderHeraldicInk } from '../borderInk';
+import { GOLDEN_HOUR } from '../../palette/paletteTheme';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -199,5 +201,88 @@ describe('createCapitalMarkers', () => {
     const result = createCapitalMarkers(projection);
     const points = result.children.filter(c => c instanceof THREE.Points) as THREE.Points[];
     expect(points[0].geometry.getAttribute('position').count).toBe(1);
+  });
+});
+
+// ─── Holder ink (THR-1902) ────────────────────────────────────────────────────
+
+/** Distinct vertex colours in a mesh, as rounded strings. */
+function vertexColors(mesh: THREE.Mesh | THREE.Points): Set<string> {
+  const attr = mesh.geometry.getAttribute('color');
+  const out = new Set<string>();
+  if (!attr) return out;
+  for (let i = 0; i < attr.count; i++) {
+    out.add([attr.getX(i), attr.getY(i), attr.getZ(i)].map(v => v.toFixed(3)).join(','));
+  }
+  return out;
+}
+
+/** Widest hue gap (degrees) between any two vertex colours. */
+function hueSpread(mesh: THREE.Mesh): number {
+  const hues = [...vertexColors(mesh)].map(k => {
+    const [r, g, b] = k.split(',').map(Number);
+    const hsl = { h: 0, s: 0, l: 0 };
+    new THREE.Color(r, g, b).getHSL(hsl);
+    return hsl.h * 360;
+  });
+  let max = 0;
+  for (const a of hues) for (const b of hues) {
+    const d = Math.abs(a - b) % 360;
+    max = Math.max(max, Math.min(d, 360 - d));
+  }
+  return max;
+}
+
+describe('createBorderMesh — holder ink', () => {
+  const tiles = [makeTile(0, 0), makeTile(1, 0), makeTile(2, 0), makeTile(3, 0)];
+  const twoRealms = makeProjection(new Map([['0,0', 'faction_0'], ['1,0', 'faction_0'], ['2,0', 'faction_1'], ['3,0', 'faction_1']]));
+
+  it('draws in one call, with a colour per vertex, at the ink opacity', () => {
+    const mesh = createBorderMesh(twoRealms, tiles, { holderIndexByRealm: new Map([['faction_0', 1], ['faction_1', 2]]) }).realmMesh;
+    const mat = mesh.material as THREE.MeshBasicMaterial;
+    expect(mat.vertexColors).toBe(true);
+    expect(mat.opacity).toBe(BORDER_INK.OPACITY);
+    const pos = mesh.geometry.getAttribute('position');
+    expect(mesh.geometry.getAttribute('color').count).toBe(pos.count);
+  });
+
+  it('two holders draw two inks; one holder on both sides draws one', () => {
+    const two = createBorderMesh(twoRealms, tiles, { holderIndexByRealm: new Map([['faction_0', 1], ['faction_1', 2]]) }).realmMesh;
+    const same = createBorderMesh(twoRealms, tiles, { holderIndexByRealm: new Map([['faction_0', 1], ['faction_1', 1]]) }).realmMesh;
+    // Each hex's terrain shade differs a little (seeded brightness noise), so compare hues.
+    expect(hueSpread(two)).toBeGreaterThan(30);
+    expect(hueSpread(same)).toBeLessThan(5);
+  });
+
+  it('where two Realms meet, each draws its own half on its own side', () => {
+    const projection = makeProjection(new Map([['0,0', 'faction_0'], ['1,0', 'faction_1']]));
+    const pair = [makeTile(0, 0), makeTile(1, 0)];
+    const shared = createBorderMesh(projection, pair).realmMesh.geometry.getAttribute('position').count;
+    const onlyA = createBorderMesh(makeProjection(new Map([['0,0', 'faction_0']])), pair).realmMesh.geometry.getAttribute('position').count;
+    // Both hexes draw their own six edges' worth; with only A claimed, only A draws.
+    expect(shared).toBe(onlyA * 2);
+  });
+
+  it('a Realm with no holder index draws the palette unheld ink (fail-soft)', () => {
+    const mesh = createBorderMesh(twoRealms, tiles).realmMesh;
+    const unheld = new THREE.Color(GOLDEN_HOUR.borderInkUnheld);
+    const colors = [...vertexColors(mesh)];
+    expect(colors).toEqual([[unheld.r, unheld.g, unheld.b].map(v => v.toFixed(3)).join(',')]);
+  });
+});
+
+describe('createCapitalMarkers — holder ink', () => {
+  it("each seat takes its holder's ink", () => {
+    const projection = makeProjection(
+      new Map([['0,0', 'faction_0'], ['2,0', 'faction_1']]),
+      { faction_0: { col: 0, row: 0 }, faction_1: { col: 2, row: 0 } },
+    );
+    const group = createCapitalMarkers(projection, new Map([['faction_0', 1], ['faction_1', 4]]));
+    const points = group.children[0] as THREE.Points;
+    expect((points.material as THREE.PointsMaterial).vertexColors).toBe(true);
+    const expected = new THREE.Color(holderHeraldicInk(1)!);
+    const attr = points.geometry.getAttribute('color');
+    expect(attr.getX(0)).toBeCloseTo(expected.r, 5);
+    expect(vertexColors(points).size).toBe(2);
   });
 });

@@ -460,6 +460,22 @@ export interface DebugViewCacheStats {
   bySelector: Record<string, { hits: number; misses: number; rebuilds: number; fallbacks: number }>;
 }
 
+/**
+ * Result of `getMapChrome()` (THR-1878 plan § Debug inspection). Each slice of the map
+ * chrome plan registers its own half; THR-1902 registers `fog`.
+ */
+export interface DebugMapChromeResult {
+  fog: {
+    /** Fog of war is drawn at all (off under `?nofog`). */
+    enabled: boolean;
+    /** What an unexplored in-grid hex shows: the parchment texture, or the palette's flat tint. */
+    unexplored: 'parchment' | 'tint';
+    textureLoaded: boolean;
+    /** Hexes the parchment currently covers. */
+    unexploredHexes: number;
+  };
+}
+
 /** Result of `getDominionLens()`. THR-1750 */
 export interface DebugDominionLensResult {
   on: boolean;
@@ -2338,6 +2354,10 @@ export interface DebugBridge {
   getDominionLens: () => Promise<DebugDominionLensResult | null>;
   /** THR-1750 — a hex's projected band, the place that lent it, and frontier membership. Null for water or before a game. */
   getDominionHex: (col: number, row: number) => Promise<DebugDominionHexResult | null>;
+  /** THR-1902 — the map's chrome state (`fog`: what uncharted land shows). Null before the map mounts. */
+  getMapChrome: () => Promise<DebugMapChromeResult | null>;
+  /** @internal HexMapV2 registers the map-chrome bridge here (THR-1902). */
+  _registerMapChromeBridge: (bridge: { get: () => DebugMapChromeResult }) => void;
   /** @internal GameView registers the Dominion lens bridge here (THR-1750). */
   _registerDominionLensBridge: (bridge: {
     set: (on: boolean) => boolean;

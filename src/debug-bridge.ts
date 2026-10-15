@@ -173,6 +173,8 @@ if (import.meta.env.DEV) {
     get: () => import('./debug-bridge.d').DebugDominionLensResult;
     hex: (col: number, row: number) => import('./debug-bridge.d').DebugDominionHexResult | null;
   } | null = null;
+  // THR-1902 — the map chrome (fog today), registered by HexMapV2.
+  let _mapChrome: { get: () => import('./debug-bridge.d').DebugMapChromeResult } | null = null;
   // THR-1822 — the view-model seam, registered by GameView.
   let _viewBridge: {
     get: (id: string, args?: unknown) => unknown;
@@ -1127,6 +1129,10 @@ if (import.meta.env.DEV) {
     getDominionHex: async (col: number, row: number) => _dominionLens?.hex(col, row) ?? null,
     /** @internal GameView registers the lens here */
     _registerDominionLensBridge: (bridge) => { _dominionLens = bridge as typeof _dominionLens; },
+    /** THR-1902 — the map chrome's state: `fog` says what uncharted land shows. */
+    getMapChrome: async () => _mapChrome?.get() ?? null,
+    /** @internal HexMapV2 registers the map chrome here */
+    _registerMapChromeBridge: (bridge) => { _mapChrome = bridge; },
     /** THR-1822 — the view model a screen is given, by selector id (args default to the screen's own). */
     getView: async (id: string, args?: unknown) => _viewBridge?.get(id, args) ?? null,
     /** THR-1822 — every registered view-model selector with its invalidation class. */

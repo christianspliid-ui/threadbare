@@ -46,8 +46,9 @@ import { mapCompaniesSelector } from '../../engine/views/map/companies';
 import { mapActivitySelector } from '../../engine/views/map/activityIcons';
 import { mapPlacesSelector } from '../../engine/views/map/places';
 import { mapArmiesAndBattlesSelector } from '../../engine/views/map/armiesAndBattles';
+import { mapRealmInkSelector } from '../../engine/views/map/realmInk';
 import { lensViewSelector, dominionProjectionStamp } from '../../engine/views/lenses/lensView';
-import { toAgentRenderData, toArmyRenderData, toActivityIconData, type AvatarPaint } from './map/mapViewAdapters';
+import { toAgentRenderData, toArmyRenderData, toActivityIconData, toRealmHolderIndex, type AvatarPaint } from './map/mapViewAdapters';
 import { ViewSourceContext, type ViewSource } from '../../contexts/ViewSourceContext';
 import { getSphereColor, getSphereSymbol } from '../../data/sphereIcons';
 import { avatarGodTitleLine } from '../../data/avatar-framing';
@@ -985,6 +986,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [mapArmiesAndBattles],
   );
   const battleRenderData: BattleIndicatorData[] = mapArmiesAndBattles.battles;
+
+  // ── Realm border ink — map.realmInk (THR-1902): each Realm's holder, keyed for the scene ──
+  const mapRealmInk = readView(runtime, gameState, mapRealmInkSelector, undefined, tiles);
+  const realmHolderIndex = useMemo(() => toRealmHolderIndex(mapRealmInk), [mapRealmInk]);
 
   // ── Notification preferences hook ──
   const {
@@ -4430,6 +4435,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 lakeIds={lakeIds}
                 areaProjection={areaProjection}
                 realmProjection={realmProjection}
+                realmHolderIndex={realmHolderIndex}
                 locationNodes={locationNodes}
                 anomalyNodes={anomalyNodes}
                 roadPaths={roadPaths}

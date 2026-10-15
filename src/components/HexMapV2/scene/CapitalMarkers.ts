@@ -20,6 +20,7 @@ import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { getActivePalette } from '../palette/activePalette';
+import { capitalInk } from './borderInk';
 
 // ─── Capital marker constants (NFP #1: Tunability) ────────────────────────────
 
@@ -37,12 +38,18 @@ const CAPITAL_Z = 0.04;
  * @param realmProjection - The political partition, projected from `controls` (THR-1155)
  * @returns THREE.Group containing one THREE.Points, or empty when no Realm is seated
  */
-export function createCapitalMarkers(realmProjection: RealmProjection): THREE.Group {
+export function createCapitalMarkers(
+  realmProjection: RealmProjection,
+  holderIndexByRealm?: ReadonlyMap<string, number>,
+): THREE.Group {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.LOCATIONS;
 
   const size = HEX_CONSTANTS.HEX_SIZE;
   const positions: number[] = [];
+  const colors: number[] = [];
+  const unheldInk = getActivePalette().borderInkUnheld;
+  const linear = new THREE.Color();
 
   for (const realm of realmProjection.realms) {
     // A court with no hall draws no dot rather than a dot at the origin — the
@@ -50,6 +57,9 @@ export function createCapitalMarkers(realmProjection: RealmProjection): THREE.Gr
     if (!realm.seatHex) continue;
     const { x: wx, y: wy } = hexToWorld(realm.seatHex, size);
     positions.push(wx, wy, CAPITAL_Z);
+    // THR-1902: the seat takes its holder's ink, like the border round it.
+    linear.set(capitalInk(holderIndexByRealm?.get(realm.id) ?? -1, unheldInk));
+    colors.push(linear.r, linear.g, linear.b);
   }
 
   // NFP #4 Fail-soft: empty input produces an empty group
@@ -57,12 +67,13 @@ export function createCapitalMarkers(realmProjection: RealmProjection): THREE.Gr
 
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
   const mat = new THREE.PointsMaterial({
-    color: getActivePalette().capitalColor,
+    color: 0xffffff,
     size: REALM_SEAT_SIZE,
     sizeAttenuation: false,
-    vertexColors: false,
+    vertexColors: true,
   });
 
   const points = new THREE.Points(geo, mat);
