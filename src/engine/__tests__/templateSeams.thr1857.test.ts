@@ -1,0 +1,141 @@
+/**
+ * THR-1857 — template seams found by warm playtest round 2.
+ *
+ *  - "Kael Thornweaver work with…": `{name} work{s}` dropped the s for a they/them bearer.
+ *  - "They wants to trace the vector": a hard-coded verb after `{pronoun.subject_capitalized}`.
+ *  - "Inn pays its tithe": a genome sublocation named by its bare type label.
+ *  - "Wilderness (14, 14)": a movement waypoint named by its coordinates.
+ *
+ * The icon-label seam ("reputation with {target}") is pinned in
+ * `buildAftermathConsequences.test.ts`.
+ */
+import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  bindNameSubjectVerbs,
+  NAME_SUBJECT_TOKENS,
+  PRONOUN_SUBJECT_HARDCODED_S,
+} from '../subjectVerbAgreement';
+import { resolveForeshadowingPlaceholders } from '../foreshadowing/genericFallback';
+import { WorldGraph } from '../graph';
+import { findOrCreateLocationAtHex, WAYPOINT_LOCATION_ID_PREFIX } from '../hexMovementPath';
+import { genomeSublocationName } from '../settlementGenome/materialize';
+import { composeWaypointName, WAYPOINT_DEFAULT_GROUND } from '../../data/waypoint-names';
+
+const DATA_DIR = join(__dirname, '..', '..', 'data');
+const COORDINATE_NAME = /\(\s*-?\d+\s*,\s*-?\d+\s*\)/;
+
+function dataFiles(): Array<{ file: string; text: string }> {
+  return readdirSync(DATA_DIR)
+    .filter(f => f.endsWith('.ts'))
+    .map(f => ({ file: f, text: readFileSync(join(DATA_DIR, f), 'utf8') }));
+}
+
+describe('name-subject verb agreement (THR-1857)', () => {
+  it('binds {s} after a name subject to "s"', () => {
+    expect(bindNameSubjectVerbs('{name} work{s} with the patient')).toBe('{name} works with the patient');
+    expect(bindNameSubjectVerbs('{Actor} nod{s}.')).toBe('{Actor} nods.');
+    expect(bindNameSubjectVerbs('{agent.name} wait{s}')).toBe('{agent.name} waits');
+    expect(bindNameSubjectVerbs('{name} either join{s} today')).toBe('{name} either joins today');
+  });
+
+  it('leaves pronoun-agreement {s} for the pronoun pass', () => {
+    expect(bindNameSubjectVerbs('{They} work{s}, and {name} wait{s}')).toBe('{They} work{s}, and {name} waits');
+    expect(bindNameSubjectVerbs('{They} pause{s}.')).toBe('{They} pause{s}.');
+  });
+
+  it('content lint: no name-subject {s} survives the binder anywhere in src/data', () => {
+    // A `{name} <word> <verb>{s}` the binder cannot see (a new adverb, a second word)
+    // would resolve by pronoun and drop the s for they/them. Add the adverb to
+    // NAME_SUBJECT_ADVERBS or restructure the line.
+    const tokens = NAME_SUBJECT_TOKENS.map(t => t.replace('.', '\\.')).join('|');
+    const leak = new RegExp(`\\{(?:${tokens})\\}(?:\\s+[A-Za-z'-]+){1,2}\\{s\\}`, 'g');
+    const offenders: string[] = [];
+    for (const { file, text } of dataFiles()) {
+      for (const m of bindNameSubjectVerbs(text).matchAll(leak)) offenders.push(`${file}: ${m[0]}`);
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('content lint: no hard-coded verb after {pronoun.subject} ("They wants")', () => {
+    const offenders: string[] = [];
+    for (const { file, text } of dataFiles()) {
+      for (const m of text.matchAll(PRONOUN_SUBJECT_HARDCODED_S)) offenders.push(`${file}: ${m[0]}`);
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('the lint itself catches the shapes it guards', () => {
+    expect([...'{pronoun.subject_capitalized} wants to'.matchAll(PRONOUN_SUBJECT_HARDCODED_S)]).toHaveLength(1);
+    const tokens = NAME_SUBJECT_TOKENS.map(t => t.replace('.', '\\.')).join('|');
+    const leak = new RegExp(`\\{(?:${tokens})\\}(?:\\s+[A-Za-z'-]+){1,2}\\{s\\}`, 'g');
+    expect(bindNameSubjectVerbs('{name} slowly work{s}').match(leak)).not.toBeNull();
+  });
+});
+
+describe('foreshadowing pronoun agreement (THR-1857)', () => {
+  const line = '{pronoun.subject_capitalized} want{s} to trace it; {pronoun.subject_capitalized} approach{es}.';
+  it('reads "They want" for they/them', () => {
+    expect(resolveForeshadowingPlaceholders(line, 'Kael Thornweaver', 'Plague', 'they'))
+      .toBe('They want to trace it; They approach.');
+  });
+  it('reads "She wants" for she/her', () => {
+    expect(resolveForeshadowingPlaceholders(line, 'Kael Thornweaver', 'Plague', 'she'))
+      .toBe('She wants to trace it; She approaches.');
+  });
+  it('a name subject keeps its s whatever the pronoun', () => {
+    expect(resolveForeshadowingPlaceholders('{name.first} move{s} on.', 'Kael Thornweaver', 'Plague', 'they'))
+      .toBe('Kael moves on.');
+  });
+});
+
+describe('waypoint names (THR-1857)', () => {
+  it('names a waypoint for its ground and the nearest settlement, never a coordinate', () => {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'loc_hawkgate', type: 'location', name: 'Hawkgate',
+      properties: { hexCol: 6, hexRow: 6, locationSubtype: 'town' },
+    });
+    const id = findOrCreateLocationAtHex(graph, { col: 4, row: 6 }, 'temperate_forest');
+    const name = graph.getNode(id)!.name;
+    expect(name).toBe('the forest near Hawkgate');
+    expect(name).not.toMatch(COORDINATE_NAME);
+  });
+
+  it('falls back to the ground alone when no settlement is in reach', () => {
+    const graph = new WorldGraph();
+    const id = findOrCreateLocationAtHex(graph, { col: 40, row: 40 });
+    expect(graph.getNode(id)!.name).toBe(WAYPOINT_DEFAULT_GROUND);
+    expect(composeWaypointName('hills', undefined)).toBe('the hills');
+  });
+
+  it('renames a pre-THR-1857 coordinate-named waypoint on reuse', () => {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: `${WAYPOINT_LOCATION_ID_PREFIX}2.3`, type: 'location', name: 'Wilderness (2, 3)',
+      properties: { hexCol: 2, hexRow: 3, locationType: 'wilderness', terrain: 'marsh' },
+    });
+    const id = findOrCreateLocationAtHex(graph, { col: 2, row: 3 });
+    expect(graph.getNode(id)!.name).toBe('the marsh');
+  });
+});
+
+describe('genome sublocation names (THR-1857)', () => {
+  const rng = () => 0.42;
+  it('an inn or a tavern gets a generated house name, never the bare label', () => {
+    for (const typeId of ['sublocation-type.inn', 'sublocation-type.tavern']) {
+      const name = genomeSublocationName(typeId, 'Wraithwood', undefined, rng);
+      expect(name).not.toBe('Inn');
+      expect(name).not.toBe('Tavern');
+      expect(name.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('any other type reads "<label> (<settlement>)", the label from the type table', () => {
+    expect(genomeSublocationName('sublocation-type.market-district', 'Wraithwood', undefined, rng))
+      .toBe('Market District (Wraithwood)');
+    expect(genomeSublocationName('sublocation-type.unknown-hall', 'Wraithwood', undefined, rng))
+      .toBe('Unknown Hall (Wraithwood)');
+  });
+});

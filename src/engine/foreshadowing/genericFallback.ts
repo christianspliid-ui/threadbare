@@ -12,6 +12,8 @@
  * encounter-specific variants are backfilled by content passes.
  */
 
+import { bindNameSubjectVerbs } from '../subjectVerbAgreement';
+
 /**
  * @deprecated THR-631 — the resolvers no longer use this single-string fallback;
  * the composed-generic path (`composeGeneric.ts`) replaced it because this string
@@ -27,6 +29,7 @@ export const GLOBAL_FORESHADOWING_FALLBACK_TEMPLATE =
  *   {encounter.heading}           → encounter template name / heading
  *   {pronoun.subject}             → they/he/she
  *   {pronoun.subject_capitalized} → They/He/She
+ *   {s} / {es}                    → verb agreement with the pronoun (THR-1857): "" for they, else s / es
  */
 /**
  * @deprecated THR-631 — replaced by the composed-generic path (`composeGeneric.ts`).
@@ -36,7 +39,7 @@ export const GLOBAL_FORESHADOWING_FALLBACK_TEMPLATE =
  */
 export const GENERIC_FORESHADOWING_FALLBACK =
   '{name.first} has heard of trouble in {encounter.heading}. ' +
-  '{pronoun.subject_capitalized} believes {pronoun.subject} can be useful there, ' +
+  '{pronoun.subject_capitalized} believe{s} {pronoun.subject} can be useful there, ' +
   'though {pronoun.subject} cannot yet say how.';
 
 /**
@@ -52,10 +55,13 @@ export function resolveForeshadowingPlaceholders(
 ): string {
   const firstName = agentName.split(' ')[0] ?? agentName;
   const capitalized = pronounSubject.charAt(0).toUpperCase() + pronounSubject.slice(1);
+  const plural = pronounSubject.toLowerCase() === 'they';
 
-  return template
+  return bindNameSubjectVerbs(template)
     .replace(/\{name\.first\}/g, firstName)
     .replace(/\{encounter\.heading\}/g, encounterHeading)
     .replace(/\{pronoun\.subject_capitalized\}/g, capitalized)
-    .replace(/\{pronoun\.subject\}/g, pronounSubject);
+    .replace(/\{pronoun\.subject\}/g, pronounSubject)
+    .replace(/\{es\}/g, plural ? '' : 'es')
+    .replace(/\{s\}/g, plural ? '' : 's');
 }

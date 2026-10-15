@@ -821,6 +821,26 @@ describe('the state noun (THR-1082)', () => {
     });
     expect(chips[0].icon?.entityId).toBe('f1');
   });
+
+  it('THR-1857 — the icon is named by the resolved noun, never a raw {target}', () => {
+    const chips = buildAftermathConsequences({
+      changes: [change({
+        kind: 'faction_reputation',
+        polarity: 'gain',
+        stateNoun: { text: 'reputation with {target}', entityId: 'f1', visualKind: 'faction' },
+        direction: 'gain',
+      })],
+      enrich: (text: string) => text.replace('{target}', 'the Mason Guild'),
+      link: passthrough.link,
+      resolveIcon: (concept) => ({
+        entityId: concept.entityId ?? concept.text,
+        kind: concept.visualKind as 'agent' | 'faction' | 'artifact',
+        name: concept.visualName ?? concept.text,
+      }),
+    });
+    expect(chips[0].icon?.name).toBe('reputation with the Mason Guild');
+    expect(chips[0].icon?.name).not.toContain('{');
+  });
 });
 
 describe('the delta cluster (THR-1082)', () => {

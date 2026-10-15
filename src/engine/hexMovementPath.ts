@@ -12,6 +12,8 @@ import { findHexPath } from './pathfinding';
 import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
 import { getTerrainTax } from '../data/movement-content';
 import { hexKeyFromCoord } from '../lib/hexKey';
+import { nearestSettlement } from './nearestSettlement';
+import { composeWaypointName, WAYPOINT_NAME_SETTLEMENT_RADIUS_HEXES } from '../data/waypoint-names';
 
 /** Id prefix of a waypoint Location minted by movement pathing. */
 export const WAYPOINT_LOCATION_ID_PREFIX = 'loc.transient.';
@@ -24,6 +26,9 @@ export const WAYPOINT_LOCATION_ID_PREFIX = 'loc.transient.';
  * encounter cache reads first, so the encounters a waypoint draws are unchanged.
  */
 export const WAYPOINT_LOCATION_SUBTYPE = 'wilderness_waypoint';
+
+/** A pre-THR-1857 waypoint name: "Wilderness (14, 14)". */
+const COORDINATE_NAME = /\(\s*-?\d+\s*,\s*-?\d+\s*\)/;
 
 /**
  * Find an existing location node at the given hex, or create a waypoint one.
@@ -44,6 +49,13 @@ export function findOrCreateLocationAtHex(
       if (loc.id.startsWith(WAYPOINT_LOCATION_ID_PREFIX) && !loc.properties.locationSubtype) {
         loc.properties.locationSubtype = WAYPOINT_LOCATION_SUBTYPE;
       }
+      // A waypoint minted before THR-1857 carries a coordinate name — rename it on reuse.
+      if (loc.id.startsWith(WAYPOINT_LOCATION_ID_PREFIX) && COORDINATE_NAME.test(loc.name)) {
+        loc.name = composeWaypointName(
+          (loc.properties.terrain as TerrainType | undefined) ?? terrain,
+          nearestSettlement(graph, hex, WAYPOINT_NAME_SETTLEMENT_RADIUS_HEXES)?.name,
+        );
+      }
       return loc.id;
     }
   }
@@ -54,7 +66,11 @@ export function findOrCreateLocationAtHex(
     graph.addNode({
       id: transientId,
       type: 'location',
-      name: `Wilderness (${hex.col}, ${hex.row})`,
+      // THR-1857 — never a coordinate: the thread view shows this name to the player.
+      name: composeWaypointName(
+        terrain,
+        nearestSettlement(graph, hex, WAYPOINT_NAME_SETTLEMENT_RADIUS_HEXES)?.name,
+      ),
       properties: {
         hexCol: hex.col,
         hexRow: hex.row,

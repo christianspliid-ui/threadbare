@@ -83,6 +83,7 @@ import { resolveEconomicMood } from './economicContext';
 import type { SphereName } from '../types/index';
 import type { SphereAlignment } from '../types/influence';
 import { getDominantSphere, getNodeSphereAffinity } from './sphereAffinity';
+import { bindNameSubjectVerbs } from './subjectVerbAgreement';
 import {
   getSocialApproachForTemplate,
   getSphereFlavorPhrase,
@@ -807,6 +808,11 @@ export function enrichProse(
     // Residual strip: malformed {frag:*} tokens (e.g. spaces in the slot) never leak.
     result = result.replace(/\{frag:[^}]*\}/g, '');
   }
+
+  // THR-1857 — `{name} work{s}`: a name subject always takes the "s", whatever the
+  // bearer's pronouns. Bound before the name tokens resolve, while the subject is still
+  // visible; the pronoun `{s}` pass below handles the rest.
+  result = bindNameSubjectVerbs(result);
 
   // Simple replacements
   result = result.replace(/{name}/g, ctx.agentName);

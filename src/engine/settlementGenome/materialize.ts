@@ -1,5 +1,45 @@
 import type { WorldGraph } from '../graph';
 import type { GenomeResult } from './types';
+import { mulberry32 } from '../../lib/prng';
+import { generateTavernName } from '../../data/tavern-names';
+import { SUBTYPE_SUBLOCATION_MAP, TAVERN_SUBLOCATION_TYPE_ID } from '../sublocation';
+
+/**
+ * THR-1857 — sublocation types whose instances get a generated house name ("The Drowned
+ * Lantern") instead of the type label. The inn is a tavern with rooms; both read as a
+ * place a person names, and the bare label "Inn" read as a town called Inn.
+ */
+const NAMED_HOUSE_TYPE_IDS: ReadonlySet<string> = new Set([
+  TAVERN_SUBLOCATION_TYPE_ID,
+  'sublocation-type.inn',
+]);
+
+/** Type id → authored label, read from the one sublocation type table. */
+let typeLabels: Map<string, string> | undefined;
+function typeLabelFor(typeId: string): string {
+  typeLabels ??= new Map(
+    Object.values(SUBTYPE_SUBLOCATION_MAP).flat().map(def => [def.id, def.name] as const),
+  );
+  return typeLabels.get(typeId) ?? typeId
+    .replace('sublocation-type.', '')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+/**
+ * Player-facing name for a genome sublocation. Mirrors `ensureSublocations`
+ * (sublocation.ts): a tavern or inn gets a generated name; anything else reads
+ * "<Type label> (<Settlement>)", never the bare type label, which reads as a place name.
+ */
+export function genomeSublocationName(
+  typeId: string,
+  settlementName: string,
+  culture: string | undefined,
+  rng: () => number,
+): string {
+  if (NAMED_HOUSE_TYPE_IDS.has(typeId)) return generateTavernName(rng, culture);
+  return `${typeLabelFor(typeId)} (${settlementName})`;
+}
 
 /**
  * Convert a GenomeResult into actual graph nodes (sublocation instances + contains edges).
@@ -9,7 +49,7 @@ export function materializeGenome(
   graph: WorldGraph,
   locationId: string,
   result: GenomeResult,
-  _seed: number,
+  seed: number,
 ): void {
   const loc = graph.getNode(locationId);
   if (!loc) return;
@@ -31,15 +71,15 @@ export function materializeGenome(
       .filter(Boolean),
   );
 
+  const rng = mulberry32(seed);
+  const culture = typeof loc.properties.culture === 'string' ? loc.properties.culture : undefined;
+
   for (let i = 0; i < result.sublocations.length; i++) {
     const sub = result.sublocations[i];
     if (existingTypeIds.has(sub.id)) continue;
 
     const subId = `${locationId}_sub_${sub.id.replace('sublocation-type.', '')}_${i}`;
-    const subName = sub.id
-      .replace('sublocation-type.', '')
-      .replace(/-/g, ' ')
-      .replace(/\b\w/g, c => c.toUpperCase());
+    const subName = genomeSublocationName(sub.id, loc.name, culture, rng);
 
     graph.addNode({
       id: subId,
