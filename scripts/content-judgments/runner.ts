@@ -28,6 +28,7 @@ import { buildBaseQuestions, buildQuestionsForEntry } from './encounterQuestions
 import { judge, JevAuthError, readApiKey, redact } from './jevClient';
 import {
   calibrateThresholds,
+  calibrationLabelsProblem,
   errorRow,
   PLACEHOLDER_THRESHOLDS,
   renderReport,
@@ -71,7 +72,8 @@ export interface RunnerIO {
   readonly sourceCommit: () => string;
   /** The previous artifact from `origin/ops`, or null when absent / unreadable. */
   readonly readPrevious: () => EncounterCoverageArtifact | null;
-  readonly readCalibrationLabels: (path: string) => CalibrationLabel[];
+  /** The parsed labels file, shape unchecked; the runner validates it before any paid call. */
+  readonly readCalibrationLabels: (path: string) => unknown;
   /** Write the artifact JSON and report markdown; returns the paths written. */
   readonly writeOutputs: (artifactJson: string, reportMd: string) => string[];
   /** Publish the written paths to `ops`; returns false on failure. */
@@ -131,10 +133,16 @@ export async function runEncounterCoverage(
   // Read the labels before any paid call, so a bad path costs nothing.
   let labels: CalibrationLabel[] | null = null;
   if (args.calibrationPath) {
+    let problem: string | null;
     try {
-      labels = io.readCalibrationLabels(args.calibrationPath);
+      const parsed: unknown = io.readCalibrationLabels(args.calibrationPath);
+      problem = calibrationLabelsProblem(parsed);
+      if (!problem) labels = parsed as CalibrationLabel[];
     } catch (err) {
-      io.log(`judge:encounters: stopped — cannot read calibration labels at ${args.calibrationPath}: ${err instanceof Error ? err.message : String(err)}`);
+      problem = err instanceof Error ? err.message : String(err);
+    }
+    if (problem) {
+      io.log(`judge:encounters: stopped — cannot use calibration labels at ${args.calibrationPath}: ${problem}`);
       return { exitCode: 1, artifact: null };
     }
   }
@@ -244,8 +252,12 @@ export async function runEncounterCoverage(
 
   // A `--limit` run covers part of the corpus; publishing it would replace the full map
   // on `ops` and report every other finding as resolved. It stays local.
+  // A partial run is the same hazard: its errored rows have no answers, so publishing it
+  // would report their findings as resolved. It stays local for the operator to re-run.
   if (args.publish && args.limit !== null) {
     io.log('judge:encounters: --limit run — written locally, not published to ops');
+  } else if (args.publish && partial) {
+    io.log('judge:encounters: partial run — written locally, not published to ops; re-run to fill the errored rows');
   } else if (args.publish && !io.publish(paths)) {
     io.log(`judge:encounters: publish failed — retry with: bash scripts/ops-publish.sh -m "content-judgments: encounter coverage" ${paths.join(' ')}`);
     return { exitCode: 1, artifact };

@@ -108,9 +108,12 @@ describe('judge:encounters runner (THR-1723)', () => {
 
   it('keeps a failed row with a redacted error, and marks the run partial above the error share', async () => {
     const fetchImpl = vi.fn(async () => new Response(`bad request for ${FAKE_KEY}`, { status: 422 }));
-    const { io, logs, written } = harness({ fetchImpl: fetchImpl as unknown as typeof fetch });
+    const publish = vi.fn(() => true);
+    const { io, logs, written } = harness({ fetchImpl: fetchImpl as unknown as typeof fetch, publish });
     const res = await runEncounterCoverage(states, args(), io);
     expect(res.exitCode).toBe(1);
+    expect(publish).not.toHaveBeenCalled();
+    expect(logs.join('\n')).toContain('partial run — written locally, not published');
     const artifact = JSON.parse(written[0]) as EncounterCoverageArtifact;
     expect(artifact.partial).toBe(true);
     expect(artifact.rows[0].error).toContain('HTTP 422');
@@ -154,7 +157,16 @@ describe('judge:encounters runner (THR-1723)', () => {
     expect(res.exitCode).toBe(1);
     expect(io.fetchImpl).not.toHaveBeenCalled();
     expect(written).toHaveLength(0);
-    expect(logs.join('\n')).toContain('cannot read calibration labels');
+    expect(logs.join('\n')).toContain('cannot use calibration labels');
+  });
+
+  it('rejects a malformed labels file before any paid call', async () => {
+    const { io, logs, written } = harness({ readCalibrationLabels: () => ({ labels: [] }) });
+    const res = await runEncounterCoverage(states, args(['--calibration', 'labels.json']), io);
+    expect(res.exitCode).toBe(1);
+    expect(io.fetchImpl).not.toHaveBeenCalled();
+    expect(written).toHaveLength(0);
+    expect(logs.join('\n')).toContain('expected a JSON array of labels');
   });
 
   it('drops carried thresholds when the model or question version changed', async () => {

@@ -8,6 +8,7 @@ import {
   buildReachAgreement,
   buildSphereColumn,
   calibrateThresholds,
+  calibrationLabelsProblem,
   chooseChoiceThreshold,
   chooseNoulThreshold,
   computeFindings,
@@ -114,6 +115,22 @@ describe('coverage rollup (THR-1723)', () => {
       'reach_mislabel|b|heart',
       'unearned_tag|d|#trade',
     ]);
+  });
+
+  it('does not call a confident "none" Reach a mislabel, nor count it against agreement', () => {
+    const diffuse = [row('n', { reach: 'iron' }, { reach: 'none', activity: 'duel', walk: 'combat' })];
+    expect(computeFindings(diffuse, T).some(x => x.class === 'reach_mislabel')).toBe(false);
+    const agr = buildReachAgreement(diffuse, T);
+    expect(agr.cells.iron.none).toBe(1);
+    expect(agr.compared).toBe(0);
+  });
+
+  it('names what is wrong with a malformed labels file', () => {
+    expect(calibrationLabelsProblem({ labels: [] })).toBe('expected a JSON array of labels');
+    expect(calibrationLabelsProblem([{ id: 'a', reach: 'iron', activity: 'duel', walk_of_life: 'combat' }]))
+      .toBe("label 0 has no 'spheres' object");
+    expect(calibrationLabelsProblem([{ id: 'a', reach: 'iron', activity: 'duel', walk_of_life: 'combat', spheres: {} }]))
+      .toBeNull();
   });
 
   it('raises possible-missing-theme only at or above the no-match share', () => {

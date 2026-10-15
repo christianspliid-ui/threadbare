@@ -293,6 +293,26 @@ export function selectCalibrationSample(
   return out;
 }
 
+/**
+ * Why a parsed labels file cannot be used, or `null` when it can. Checked before any paid
+ * call, so a malformed file costs nothing.
+ */
+export function calibrationLabelsProblem(labels: unknown): string | null {
+  if (!Array.isArray(labels)) return 'expected a JSON array of labels';
+  for (const [i, l] of labels.entries()) {
+    const label = l as Partial<CalibrationLabel> | null;
+    if (!label || typeof label !== 'object') return `label ${i} is not an object`;
+    for (const key of ['id', 'reach', 'activity', 'walk_of_life'] as const) {
+      if (typeof label[key] !== 'string') return `label ${i} has no string '${key}'`;
+    }
+    if (!label.spheres || typeof label.spheres !== 'object') return `label ${i} has no 'spheres' object`;
+    if (label.tagFit !== undefined && (label.tagFit === null || typeof label.tagFit !== 'object')) {
+      return `label ${i} has a 'tagFit' that is not an object`;
+    }
+  }
+  return null;
+}
+
 /** Thresholds from the reader's labels. An axis with no qualifying `c` comes back `null`. */
 export function calibrateThresholds(
   rows: readonly EncounterJudgmentRow[],
@@ -409,6 +429,8 @@ export function buildReachAgreement(rows: readonly EncounterJudgmentRow[], t: Co
     if (judged === null) continue;
     const d = (REACH_DOMAINS as readonly string[]).includes(row.declared.reach) ? row.declared.reach : 'other';
     cells[d][judged]++;
+    // `none` is shown in the table but is not a Reach to agree or disagree with.
+    if (judged === NO_MATCH_OPTION) continue;
     compared++;
     if (judged === d) agreed++;
   }
@@ -446,7 +468,8 @@ export function computeFindings(rows: readonly EncounterJudgmentRow[], t: Covera
     if (row.error) continue;
 
     const reach = confidentChoice(row, 'reach', t);
-    if (reach !== null && reach !== row.declared.reach && eight.includes(row.declared.reach)) {
+    // A confident `none` means "no single Reach", not a different one: review, not mislabel.
+    if (reach !== null && reach !== NO_MATCH_OPTION && reach !== row.declared.reach && eight.includes(row.declared.reach)) {
       out.push(finding('reach_mislabel', row.id, reach,
         `declared ${row.declared.reach}, judged ${reach} (confidence ${readAxis(row, 'reach').confidence})`));
     }
@@ -581,7 +604,7 @@ export function renderReport(
   const agreement = buildReachAgreement(rows, t);
   lines.push('## Declared vs judged Reach');
   lines.push('');
-  lines.push(`Agreement among confident answers: **${agreement.agreed}/${agreement.compared}** (${(agreement.rate * 100).toFixed(1)}%).`);
+  lines.push(`Agreement among confident answers (judged \`none\` excluded): **${agreement.agreed}/${agreement.compared}** (${(agreement.rate * 100).toFixed(1)}%).`);
   lines.push('');
   lines.push(`| declared \\ judged | ${REACH_OPTIONS.join(' | ')} |`);
   lines.push(`|---|${REACH_OPTIONS.map(() => '---').join('|')}|`);

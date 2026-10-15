@@ -20,7 +20,7 @@ import { collectAuthoredProse } from '../src/engine/content-eval/collectAuthored
 import type { UnifiedActionTemplate } from '../src/types/unifiedAction';
 import { buildEncounterState } from './content-judgments/encounterState';
 import { parseRunnerArgs, runEncounterCoverage } from './content-judgments/runner';
-import type { CalibrationLabel, EncounterCoverageArtifact } from './content-judgments/coverageRollup';
+import type { EncounterCoverageArtifact } from './content-judgments/coverageRollup';
 import {
   COVERAGE_ARTIFACT_FILE,
   COVERAGE_OUTPUT_DIR,
@@ -67,7 +67,7 @@ async function main(): Promise<void> {
         return null;
       }
     },
-    readCalibrationLabels: p => JSON.parse(fs.readFileSync(p, 'utf8')) as CalibrationLabel[],
+    readCalibrationLabels: p => JSON.parse(fs.readFileSync(p, 'utf8')) as unknown,
     writeOutputs: (json, md) => {
       fs.mkdirSync(COVERAGE_OUTPUT_DIR, { recursive: true });
       fs.writeFileSync(path.join(COVERAGE_OUTPUT_DIR, COVERAGE_ARTIFACT_FILE), json);
