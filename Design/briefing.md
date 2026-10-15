@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 00:55 local (22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 01:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,13 +29,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 25 ready, one in progress.** [Realm borders in their holder's ink, with uncharted land as parchment](https://linear.app/threadbare/issue/THR-1902/realm-borders-in-their-holders-ink-and-uncharted-land-as-parchment) merged via [#2432](https://github.com/christianspliid-ui/threadbare/pull/2432) and is live. The builder is now on [map markers and labels: one steady marker size per zoom, portraits push place names aside](https://linear.app/threadbare/issue/THR-1899/map-markers-and-labels-one-steady-marker-size-per-zoom-band-portraits) (started 00:30, its run still active).
+**Backed up: 24 ready, one in progress.** [Map markers and labels: one steady marker size per zoom, portraits push place names aside](https://linear.app/threadbare/issue/THR-1899/map-markers-and-labels-one-steady-marker-size-per-zoom-band-portraits) merged via [#2434](https://github.com/christianspliid-ui/threadbare/pull/2434) and is live. The builder is now on [the faction purse](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a) (started 01:31, its run still active), the first of the kingdom-economy builds.
 
-- High, waiting: the [faction purse](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a) and [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them) build plans. [War aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) joined them tonight; it can be claimed from Friday 20:47 and waits on the purse.
+- High, waiting: the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them) and [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) build plans, both after the purse.
 - Five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Your six economy bugs are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
 - Nothing is older than a week, and no job is parked.
 
 ## Health
 
-All green. Main's checks pass, and the live site is serving the latest game commit. No pull request is waiting. Every scheduled lane is on schedule, and the builder is mid-run. The game runs at 128 ms per tick, 5% above the weekly median of 121. The tidy-up job last ran at 00:52 and found 538 old worktrees and 5 items needing a decision; that is the builder's housekeeping, not yours. The older silence-check gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet. You sent no new Discord messages.
+- **The game ran much slower in this hour's speed check:** tick cost 308 ms/tick steady, 153% above the 7-day median (122, 136 rows since 125801e0); top phase agent_decision, 619 agents. Name the merges between 125801e0 and d6b6e3d2: `git log --oneline --merges 125801e0..d6b6e3d2`. The last check, an hour ago, read 128. The builder was mid-run on the same computer during this measurement, so this may be load on the machine rather than slower code; the next hour's check will tell. That is the builder's to chase, not yours.
+- Everything else is green. Main's checks pass, and the live site is serving the latest commit. No pull request is waiting. Every scheduled lane is on schedule. The tidy-up job last ran at 01:40 (538 old worktrees, 5 items needing a decision; builder housekeeping). The older silence-check gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet. You sent no new Discord messages.
