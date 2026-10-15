@@ -209,6 +209,14 @@ describe('judge:encounters runner (THR-1723)', () => {
     expect(CALIBRATED_THRESHOLDS.activity).toBeNull();
   });
 
+  it('a committed calibration with no labels in the artifact names its source, never "on 0 entries"', async () => {
+    const { io, written } = harness();
+    await runEncounterCoverage(states, args(), io);
+    const md = written[1];
+    expect(md).toContain('committed calibration measured');
+    expect(md).not.toContain('on 0 entries');
+  });
+
   it('reports a failed publish with the retry command and exits 1', async () => {
     const { io, logs } = harness({ publish: () => false });
     const res = await runEncounterCoverage(states, args(), io);

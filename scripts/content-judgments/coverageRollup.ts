@@ -595,9 +595,12 @@ export function renderReport(
   lines.push('');
   lines.push(`**${artifact.partial ? 'PARTIAL · ' : ''}${rows.length} entries · ${u.requests} requests · ${u.reusedRows} reused rows · ${u.inputTokens} input tokens · $${u.usdEstimate.toFixed(4)} · ${u.wallSeconds}s · ${artifact.model} · questions v${artifact.questionsVersion} · thresholds reach ${fmt(t.reach)} / activity ${fmt(t.activity)} / walk of life ${fmt(t.walkOfLife)} / sphere yes ${fmt(t.sphereYes)} / tag-fit no ${fmt(t.tagFitNo)}**`);
   lines.push('');
-  lines.push(t.calibratedAt
-    ? `Thresholds calibrated against a blind Claude reader subagent (a model, not a human) on ${artifact.calibration?.sampleIds.length ?? 0} entries, ${t.calibratedAt}.`
-    : 'Thresholds are pre-calibration placeholders; no answer here has been calibrated yet.');
+  lines.push(!t.calibratedAt
+    ? 'Thresholds are pre-calibration placeholders; no answer here has been calibrated yet.'
+    : artifact.calibration
+      ? `Thresholds calibrated against a blind Claude reader subagent (a model, not a human) on ${artifact.calibration.sampleIds.length} entries, ${t.calibratedAt}.`
+      // Committed or carried thresholds with no labels in this artifact (THR-1850): name where they came from.
+      : `Thresholds are the committed calibration measured ${t.calibratedAt} (\`CALIBRATED_*\` in \`scripts/content-judgments/constants.ts\`); this artifact carries no reader labels — the run that measured them holds the tables in \`ops\` history.`);
   lines.push(`Source commit \`${artifact.sourceCommit}\` · ran ${artifact.ranAt}${artifact.coldStart ? ' · cold start (no previous artifact)' : ''}${errored ? ` · ${errored} errored rows` : ''}.`);
   lines.push('');
 
