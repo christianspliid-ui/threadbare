@@ -120,6 +120,6 @@ describe('THR-1855 — the rung-opening words name the gift', () => {
     expect(patch.ascendantBeats?.pending?.beatId).toBe('beat.rung.2.signature.secondary');
     const line = patch.chronicleEntries?.find(c => c.title === RUNG_BEAT_PRESENTATION[2].title)?.prose ?? '';
     expect(line).not.toContain('{');
-    expect(line).toContain(faceName(REACH_SIGNATURE_ID_BY_REACH.stone)!);
+    expect(line).toContain(faceName(REACH_SIGNATURE_ID_BY_REACH.stone!)!);
   });
 });

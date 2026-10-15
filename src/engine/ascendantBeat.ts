@@ -607,6 +607,16 @@ export function forceOfferBeatById(
       def: milestoneDef,
     };
   }
+  // THR-1855: rung gifts are queued by `phaseAscendantProgression` once a rung opens, never
+  // drawn — `__DEBUG.fireBeat('beat.rung.2.signature.secondary')` force-offers one so the
+  // gift modal and its card toast can be browser-verified without farming three marks.
+  const rungDef = rungGiftDefinition(beatId);
+  if (rungDef) {
+    return {
+      next: offer(beats, rungDef, rungDef.trigger, turn, 0, [], /*advanceSpine*/ false),
+      def: rungDef,
+    };
+  }
   return null;
 }
 
