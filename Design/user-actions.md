@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-15 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-15 03:59 local (01:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -32,6 +32,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-15: a test guard no longer flips on any new content** ([THR-1930](https://linear.app/threadbare/issue/THR-1930/journeykeepsgoals-seed-42-never-quiet-for-long-guard-flips-on-any)). Merged via [#2411](https://github.com/christianspliid-ui/threadbare/pull/2411) and live; master batch 3 can now finish.
 - **2026-10-15: a gift now names its card before and after you receive it** ([THR-1855](https://linear.app/threadbare/issue/THR-1855/a-gift-never-says-what-it-gave-it-gives-you-this-one-freely-names-no)). Merged via [#2409](https://github.com/christianspliid-ui/threadbare/pull/2409) and live.
 - **2026-10-15: screens now read prepared view data** ([THR-1822](https://linear.app/threadbare/issue/THR-1822/design-a-view-model-seam-screens-read-prepared-view-data-from-the)). Merged via [#2408](https://github.com/christianspliid-ui/threadbare/pull/2408) and live; the game-screen split is unblocked.
 - **2026-10-15: the mortal economy map's questions are all decided** ([THR-1863](https://linear.app/threadbare/issue/THR-1863/wayfinder-map-mortal-economy-making-wealth-and-want-drive-what-agents)): the design lane answered the last one ([THR-1870](https://linear.app/threadbare/issue/THR-1870/what-the-player-sees-of-the-economy-prosperity-unrest-tolls-and)) with a veto open, so the "which are yours alone" ask is withdrawn. Carve-up into build plans is next.
@@ -41,7 +42,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-14: popups no longer steal the player's clicks** ([THR-1853](https://linear.app/threadbare/issue/THR-1853/recurs-after-fix-popups-steal-the-players-clicks-a-held-gift-enters-2)). Merged via [#2395](https://github.com/christianspliid-ui/threadbare/pull/2395) and live.
 - **2026-10-14: the First's journey choices now land and never repeat** ([THR-1854](https://linear.app/threadbare/issue/THR-1854/the-firsts-journey-choices-change-nothing-and-repeat-applybeatchoice)). Merged via [#2396](https://github.com/christianspliid-ui/threadbare/pull/2396) and live.
 - **2026-10-14: God's Will names the deed, not a raw id** ([THR-1852](https://linear.app/threadbare/issue/THR-1852/recurs-after-fix-gods-will-prints-raw-ids-compelled-toward)). Merged via [#2394](https://github.com/christianspliid-ui/threadbare/pull/2394) and live.
-- **2026-10-14: the component library and the UI-debt ratchet shipped** ([THR-1821](https://linear.app/threadbare/issue/THR-1821/design-finish-the-component-library-tabs-chip-overlay-panel-card)). Merged via [#2393](https://github.com/christianspliid-ui/threadbare/pull/2393) and live.
 
 ---
 
