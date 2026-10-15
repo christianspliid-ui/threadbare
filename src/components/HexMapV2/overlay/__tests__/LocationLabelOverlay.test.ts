@@ -29,18 +29,18 @@ import {
 } from '../LocationLabelOverlay';
 
 describe('LocationLabelOverlay exports', () => {
-  it('LOCATION_LABEL_FONT_SIZES has correct values', () => {
+  it('LOCATION_LABEL_FONT_SIZES are the first-step sizes (THR-1899)', () => {
     expect(LOCATION_LABEL_FONT_SIZES.capital).toBe(16);
-    expect(LOCATION_LABEL_FONT_SIZES.city).toBe(13);
+    expect(LOCATION_LABEL_FONT_SIZES.city).toBe(14);
     expect(LOCATION_LABEL_FONT_SIZES.town).toBe(13);
-    expect(LOCATION_LABEL_FONT_SIZES.small).toBe(11);
+    expect(LOCATION_LABEL_FONT_SIZES.small).toBe(12);
   });
 
-  it('LOCATION_LABEL_FONT_WEIGHTS are all bold', () => {
-    expect(LOCATION_LABEL_FONT_WEIGHTS.capital).toBe(700);
+  it('LOCATION_LABEL_FONT_WEIGHTS weigh by importance: 800 / 700 / 500 / 400 (THR-1833 § 5)', () => {
+    expect(LOCATION_LABEL_FONT_WEIGHTS.capital).toBe(800);
     expect(LOCATION_LABEL_FONT_WEIGHTS.city).toBe(700);
-    expect(LOCATION_LABEL_FONT_WEIGHTS.town).toBe(700);
-    expect(LOCATION_LABEL_FONT_WEIGHTS.small).toBe(700);
+    expect(LOCATION_LABEL_FONT_WEIGHTS.town).toBe(500);
+    expect(LOCATION_LABEL_FONT_WEIGHTS.small).toBe(400);
   });
 
   it('LOCATION_MIN_ZOOM is CONTINENTAL_MAX (5) — labels hidden below continental', () => {

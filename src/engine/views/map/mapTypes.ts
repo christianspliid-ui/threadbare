@@ -19,6 +19,8 @@ export interface MapAgentVM {
   /** Index into the scene's heraldic palette (0–5). */
   factionIndex: number;
   isRetinue: boolean;
+  /** The god holds a thread to this mortal (THR-1899: drawn as a medallion, a label obstacle). */
+  isThreaded: boolean;
   isAvatar: boolean;
   name: string;
   currentRoadType?: 'major' | 'trail';

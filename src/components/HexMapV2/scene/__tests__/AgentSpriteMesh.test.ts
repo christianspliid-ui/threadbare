@@ -115,23 +115,23 @@ describe('createAgentSpriteMesh', () => {
     expect(result.spriteMap.size).toBe(2);
   });
 
-  it('spriteMap entry has sprite, materials, and scales', () => {
+  it('spriteMap entry has sprite, materials and its MAP_MARKERS kind', () => {
     const agents = [makeAgent('agent-1', 5, 3)];
     const result = createAgentSpriteMesh(agents);
     const entry = result.spriteMap.get('agent-1')!;
     expect(entry.sprite).toBeInstanceOf(THREE.Sprite);
     expect(entry.materials.portrait).toBeDefined();
     expect(entry.materials.dot).toBeDefined();
-    expect(entry.scales.portrait).toBe(9); // AGENT_PORTRAIT_RADIUS (4.5) × 2
-    expect(entry.scales.dot).toBe(3);      // AGENT_TOKEN_RADIUS (1.5) × 2
+    expect(entry.materials.pip).toBeDefined();
+    expect(entry.kind).toBe('agent');
   });
 
-  it('stores baseScale in sprite.userData', () => {
+  it('stores baseScale in sprite.userData (the close-up px at the hero-local reference zoom)', () => {
     const agents = [makeAgent('agent-1', 5, 3)];
     const result = createAgentSpriteMesh(agents);
     const entry = result.spriteMap.get('agent-1')!;
-    // Starts with portrait scale
-    expect(entry.sprite.userData.baseScale).toBe(9);
+    // 48 px portrait / k 20
+    expect(entry.sprite.userData.baseScale).toBeCloseTo(48 / 20, 6);
   });
 
   it('multiple agents on same hex get different positions', () => {
@@ -151,22 +151,15 @@ describe('createAgentSpriteMesh', () => {
     expect(unique.size).toBe(3);
   });
 
-  it('creates continental material for retinue agents', () => {
-    const agents = [makeAgent('retinue-1', 5, 3, 0, true)];
-    const result = createAgentSpriteMesh(agents);
-    const entry = result.spriteMap.get('retinue-1')!;
-    expect(entry.materials.continental).toBeDefined();
-    expect(entry.scales.continental).toBe(5); // AGENT_DOT_RADIUS (2.5) × 2
-    expect(entry.isRetinue).toBe(true);
-  });
-
-  it('does not create continental material for non-retinue agents', () => {
-    const agents = [makeAgent('regular-1', 5, 3, 0, false)];
-    const result = createAgentSpriteMesh(agents);
-    const entry = result.spriteMap.get('regular-1')!;
-    expect(entry.materials.continental).toBeUndefined();
-    expect(entry.scales.continental).toBeUndefined();
-    expect(entry.isRetinue).toBe(false);
+  it('a threaded mortal is the threadedAgent kind; the avatar is the avatar kind', () => {
+    const result = createAgentSpriteMesh([
+      { ...makeAgent('threaded-1', 5, 3, 0, true), isThreaded: true },
+      makeAvatarAgent('avatar-1', 6, 3),
+      makeAgent('group-1', 7, 3),
+    ]);
+    expect(result.spriteMap.get('threaded-1')!.kind).toBe('threadedAgent');
+    expect(result.spriteMap.get('avatar-1')!.kind).toBe('avatar');
+    expect(result.spriteMap.get('group-1')!.kind).toBe('agent');
   });
 
   it('dispose function exists and can be called', () => {
@@ -188,54 +181,51 @@ describe('updateZoomVisibility', () => {
     updateZoomVisibility = mod.updateZoomVisibility;
   });
 
-  it('hero-local tier: portrait material and scale', () => {
+  it('hero-local tier: portrait material', () => {
     const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(result, 'hero-local');
+    updateZoomVisibility(result, 'hero-local', 20);
     const entry = result.spriteMap.get('a')!;
     expect(entry.sprite.material).toBe(entry.materials.portrait);
     expect(entry.sprite.visible).toBe(true);
-    expect(entry.sprite.userData.baseScale).toBe(entry.scales.portrait);
   });
 
-  it('regional tier: dot material and scale', () => {
+  it('regional tier: an unthreaded mortal is a faction dot', () => {
     const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(result, 'regional');
+    updateZoomVisibility(result, 'regional', 10);
     const entry = result.spriteMap.get('a')!;
     expect(entry.sprite.material).toBe(entry.materials.dot);
     expect(entry.sprite.visible).toBe(true);
-    expect(entry.sprite.userData.baseScale).toBe(entry.scales.dot);
   });
 
-  it('continental tier: all agents get dot material (agents_dot=true takes precedence)', () => {
+  it('regional and continental: a threaded mortal is a medallion (its portrait material)', () => {
+    const result = createAgentSpriteMesh([{ ...makeAgent('t', 0, 0, 0, true), isThreaded: true }]);
+    const entry = result.spriteMap.get('t')!;
+    updateZoomVisibility(result, 'regional', 10);
+    expect(entry.sprite.material).toBe(entry.materials.portrait);
+    updateZoomVisibility(result, 'continental', 3);
+    expect(entry.sprite.material).toBe(entry.materials.portrait);
+  });
+
+  it('full-world tier: an unthreaded mortal is hidden; a threaded one is a gold pip', () => {
     const result = createAgentSpriteMesh([
-      makeAgent('regular', 0, 0, 0, false),
-      makeAgent('retinue', 1, 0, 0, true),
+      makeAgent('a', 0, 0),
+      { ...makeAgent('t', 1, 0, 0, true), isThreaded: true },
     ]);
-    updateZoomVisibility(result, 'continental');
-    // agents_dot=true at continental, so dot material takes precedence for all agents
-    const regular = result.spriteMap.get('regular')!;
-    expect(regular.sprite.material).toBe(regular.materials.dot);
-    expect(regular.sprite.visible).toBe(true);
-    const retinue = result.spriteMap.get('retinue')!;
-    expect(retinue.sprite.material).toBe(retinue.materials.dot);
-    expect(retinue.sprite.visible).toBe(true);
-  });
-
-  it('full-world tier: sprite hidden', () => {
-    const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(result, 'full-world');
-    const entry = result.spriteMap.get('a')!;
-    expect(entry.sprite.visible).toBe(false);
+    updateZoomVisibility(result, 'full-world', 1);
+    expect(result.spriteMap.get('a')!.sprite.visible).toBe(false);
+    const t = result.spriteMap.get('t')!;
+    expect(t.sprite.visible).toBe(true);
+    expect(t.sprite.material).toBe(t.materials.pip);
   });
 
   it('updates baseScale on zoom swap for settle bounce', () => {
     const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(result, 'hero-local');
+    updateZoomVisibility(result, 'hero-local', 20);
     const entry = result.spriteMap.get('a')!;
-    expect(entry.sprite.userData.baseScale).toBe(entry.scales.portrait);
+    expect(entry.sprite.userData.baseScale).toBeCloseTo(48 / 20, 6);
 
-    updateZoomVisibility(result, 'regional');
-    expect(entry.sprite.userData.baseScale).toBe(entry.scales.dot);
+    updateZoomVisibility(result, 'regional', 10);
+    expect(entry.sprite.userData.baseScale).toBeCloseTo(14 / 10, 6);
   });
 });
 
@@ -272,13 +262,12 @@ describe('avatar visual treatment', () => {
     tickAvatarPulse = mod.tickAvatarPulse;
   });
 
-  it('avatar sprite gets AVATAR_SCALE_MULTIPLIER (1.3×) scale boost', () => {
+  it('the avatar keeps its 82 px close-up (MAP_MARKERS avatar row)', () => {
     const agents = [makeAvatarAgent('avatar-1', 5, 3)];
     const result = createAgentSpriteMesh(agents);
+    updateZoomVisibility(result, 'hero-local', 20);
     const entry = result.spriteMap.get('avatar-1')!;
-    // Normal portrait scale = AGENT_PORTRAIT_RADIUS(4.5) × 2 = 9
-    // Avatar = 9 × 1.3 = 11.7
-    expect(entry.scales.portrait).toBeCloseTo(11.7, 1);
+    expect(entry.sprite.scale.x * 20).toBeCloseTo(82, 6);
     expect(entry.isAvatar).toBe(true);
   });
 

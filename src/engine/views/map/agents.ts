@@ -76,6 +76,7 @@ export const mapAgentsSelector: ViewSelector<MapAgentsArgs, MapAgentVM[]> = {
           : (getAgentPortraitUrlFromProperties(n.properties as Record<string, unknown>) ?? undefined),
         factionIndex: i % 6,
         isRetinue: retinueIds.has(n.id),
+        isThreaded: threadedAgentIds.has(n.id),
         isAvatar,
         name: n.name,
         currentRoadType: movState?.currentRoadType as 'major' | 'trail' | undefined,

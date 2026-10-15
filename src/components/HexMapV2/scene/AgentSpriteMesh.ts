@@ -2,9 +2,10 @@
  * AgentSpriteMesh.ts — Three.js scene module for agent sprite rendering.
  *
  * Single-sprite-per-agent design: each agent has one THREE.Sprite with
- * pre-built materials for each zoom tier (portrait, dot, continental).
- * On zoom tier changes, updateZoomVisibility swaps the sprite's material
- * and scale — instant swap, no cross-fade needed.
+ * pre-built materials for each draw kind (portrait, dot, pip). On zoom changes,
+ * updateZoomVisibility picks the zoom band, reads the agent's marker kind from
+ * MAP_MARKERS (THR-1899) for the draw kind and screen size, and sets the sprite's
+ * world scale to sizePx / k — one steady size per band, whatever the zoom inside it.
  *
  * Multiple agents on the same hex are distributed via fixed edge-midpoint
  * slots using getFixedSlotOffset from movementPath.ts. Stable sort by agent
@@ -23,7 +24,6 @@ import {
   FACTION_HERALDIC_COLORS,
   AGENT_SPRITE_Z,
   PORTRAIT_TEXTURE_SIZE,
-  AVATAR_SCALE_MULTIPLIER,
   AVATAR_Z_BUMP,
   AVATAR_PULSE_PERIOD_S,
   AVATAR_PULSE_OPACITY,
@@ -32,7 +32,13 @@ import {
   ACTIVITY_HALO_SCALE_FRACTION,
 } from '../agents/agentSpriteTypes';
 import type { ZoomTier } from './ZoomVisibilityMatrix';
-import { ZOOM_VISIBILITY_MATRIX } from './ZoomVisibilityMatrix';
+import {
+  agentMarkerKind,
+  markerDrawIn,
+  markerSizePx,
+  type MapMarkerKind,
+  type ZoomBand,
+} from '../../../data/map-markers';
 import {
   buildFactionDotTextureCache,
   buildRetinueDotTexture,
@@ -51,9 +57,6 @@ import { getFixedSlotOffset } from '../../../lib/movementPath';
 import {
   SLOT_RING_RADIUS,
   EDGE_MID_ANGLES_DEG,
-  AGENT_TOKEN_RADIUS,
-  AGENT_PORTRAIT_RADIUS,
-  AGENT_DOT_RADIUS,
   MAX_RING_AGENTS,
 } from '../../../data/agent-visual-content';
 
@@ -66,19 +69,19 @@ import {
 export interface AgentSpriteEntry {
   /** The single sprite for this agent (material swapped on zoom change) */
   sprite: THREE.Sprite;
-  /** Pre-built materials for each zoom tier */
+  /**
+   * Pre-built materials per draw kind. `portrait` also draws the medallion (the
+   * portrait in its ring, smaller); `dot` is the faction dot; `pip` the gold-ringed
+   * dot a threaded mortal shows when the whole world is in view.
+   */
   materials: {
     portrait: THREE.SpriteMaterial;
     dot: THREE.SpriteMaterial;
-    continental?: THREE.SpriteMaterial;
+    pip: THREE.SpriteMaterial;
   };
-  /** Pre-computed scales for each zoom tier */
-  scales: {
-    portrait: number;
-    dot: number;
-    continental?: number;
-  };
-  /** Whether this agent is a retinue member (has continental tier) */
+  /** Which MAP_MARKERS row sizes and draws this agent (THR-1899). */
+  kind: MapMarkerKind;
+  /** Whether this agent is a retinue member (gold portrait ring) */
   isRetinue: boolean;
   /** Whether this agent is the player's avatar */
   isAvatar?: boolean;
@@ -104,24 +107,21 @@ export interface AgentSpriteGroup {
   dispose: () => void;
 }
 
-// ── Scale helpers ────────────────────────────────────────────────────────────
-
-/** Convert SVG-unit radius to Three.js sprite scale (diameter in world units). */
-function agentSpriteScale(radiusInSvgUnits: number): number {
-  return radiusInSvgUnits * 2;
-}
-
 // ── Pre-built texture cache ───────────────────────────────────────────────────
 
 const dotTextureCache = buildFactionDotTextureCache(FACTION_HERALDIC_COLORS);
 
-const retinueDotTextureCache = new Map<number, THREE.CanvasTexture>();
+/** Gold-ringed dots: the `pip` a threaded mortal shows at full-world zoom. */
+const pipTextureCache = new Map<number, THREE.CanvasTexture>();
 for (let i = 0; i < FACTION_HERALDIC_COLORS.length; i++) {
-  retinueDotTextureCache.set(i, buildRetinueDotTexture(FACTION_HERALDIC_COLORS[i]));
+  pipTextureCache.set(i, buildRetinueDotTexture(FACTION_HERALDIC_COLORS[i]));
 }
 
 // Lazy cache: color hex string → halo ring texture. At most ~9 distinct colors.
 const activityHaloTextureCache = new Map<string, THREE.CanvasTexture>();
+
+/** Avatar pulse ring size as a share of the sprite (unchanged since before THR-1899). */
+const AVATAR_PULSE_RING_SCALE = 1.2;
 
 // ── Factory ──────────────────────────────────────────────────────────────────
 
@@ -194,22 +194,20 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         depthWrite: false,
       });
 
-      let continentalMaterial: THREE.SpriteMaterial | undefined;
-      if (agent.isRetinue) {
-        const contTexture = retinueDotTextureCache.get(agent.factionIndex)
-          ?? retinueDotTextureCache.get(0)!;
-        continentalMaterial = new THREE.SpriteMaterial({
-          map: contTexture,
-          transparent: true,
-          depthWrite: false,
-        });
-      }
+      // The pip: the avatar keeps its sigil dot; a threaded mortal a gold-ringed dot.
+      const pipTexture = agent.isAvatar
+        ? factionTexture
+        : (pipTextureCache.get(agent.factionIndex) ?? pipTextureCache.get(0)!);
+      const pipMaterial = new THREE.SpriteMaterial({
+        map: pipTexture,
+        transparent: true,
+        depthWrite: false,
+      });
 
-      // Pre-compute scales (avatar gets AVATAR_SCALE_MULTIPLIER boost)
-      const scaleMult = agent.isAvatar ? AVATAR_SCALE_MULTIPLIER : 1;
-      const portraitScale = agentSpriteScale(AGENT_PORTRAIT_RADIUS) * scaleMult;
-      const dotScale = agentSpriteScale(AGENT_TOKEN_RADIUS) * scaleMult;
-      const continentalScale = agent.isRetinue ? agentSpriteScale(AGENT_DOT_RADIUS) * scaleMult : undefined;
+      const kind = agentMarkerKind(agent);
+      // Starting world scale: the close-up size at the hero-local reference zoom.
+      // updateZoomVisibility replaces it with sizePx / k on the first zoom pass.
+      const portraitScale = (markerSizePx(kind, 'heroLocal') ?? 0) / BAND_REFERENCE_K.heroLocal;
 
       // Avatar z-bump ensures avatar renders above other agents on same hex
       const spriteZ = agent.isAvatar ? AGENT_SPRITE_Z + AVATAR_Z_BUMP : AGENT_SPRITE_Z;
@@ -233,7 +231,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         });
         pulseRingSprite = new THREE.Sprite(ringMaterial);
         // Ring is slightly larger than the portrait
-        const ringScale = portraitScale * 1.2;
+        const ringScale = portraitScale * AVATAR_PULSE_RING_SCALE;
         pulseRingSprite.scale.set(ringScale, ringScale, 1);
         pulseRingSprite.position.set(wx, wy, spriteZ - 0.001); // Just behind portrait
         group.add(pulseRingSprite);
@@ -270,13 +268,9 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         materials: {
           portrait: portraitMaterial,
           dot: dotMaterial,
-          continental: continentalMaterial,
+          pip: pipMaterial,
         },
-        scales: {
-          portrait: portraitScale,
-          dot: dotScale,
-          continental: continentalScale,
-        },
+        kind,
         isRetinue: agent.isRetinue,
         isAvatar: agent.isAvatar,
         pulseRingSprite,
@@ -311,9 +305,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
     for (const entry of spriteMap.values()) {
       entry.materials.portrait.dispose();
       entry.materials.dot.dispose();
-      if (entry.materials.continental) {
-        entry.materials.continental.dispose();
-      }
+      entry.materials.pip.dispose();
       if (entry.pulseRingSprite) {
         entry.pulseRingSprite.material.dispose();
       }
@@ -329,90 +321,78 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
 
 // ── Zoom Visibility ──────────────────────────────────────────────────────────
 
-/**
- * Reference zoom level where sprite scale is 1:1 (no compensation).
- * Above this zoom, sprites are scaled down to maintain consistent screen size.
- * NFP #1: Named constant for tunability.
- */
-const SPRITE_SCALE_REFERENCE_ZOOM = 7;
+/** ZoomTier → the MAP_MARKERS band name. */
+export const ZOOM_BAND_OF_TIER: Record<ZoomTier, ZoomBand> = {
+  'full-world': 'fullWorld',
+  'continental': 'continental',
+  'regional': 'regional',
+  'hero-local': 'heroLocal',
+};
 
 /**
- * Swaps each agent sprite's material and scale for the current zoom tier.
+ * The zoom assumed for a band when a caller passes no k (tests, the first build).
+ * Inside each band's range; NFP #1.
+ */
+export const BAND_REFERENCE_K: Record<ZoomBand, number> = {
+  fullWorld: 1,
+  continental: 3,
+  regional: 10,
+  heroLocal: 20,
+};
+
+/**
+ * Sets each agent sprite's material, visibility and size for the zoom (THR-1899).
  *
- * Uses ZOOM_VISIBILITY_MATRIX to determine which tier to show:
- * - hero-local: portrait material + portrait scale
- * - regional/continental: dot material + dot scale (continental retinue: continental material)
- * - full-world: sprite hidden
- *
- * At zoom levels above SPRITE_SCALE_REFERENCE_ZOOM, sprites are scaled down
- * proportionally so they maintain a consistent apparent screen size instead of
- * growing as the camera zooms in.
+ * The band comes from the tier; the agent's marker kind (avatar, threaded mortal,
+ * other) picks a draw kind and a screen size from MAP_MARKERS. The world scale is
+ * `sizePx / k` (a world unit is k CSS px), so the marker holds one steady screen
+ * size inside a band. A kind with no size in a band is hidden there. The avatar's
+ * pulse ring and the activity halo show only with the portrait (hero-local).
  *
  * Also updates userData.baseScale so settle bounce uses the correct multiplier.
  *
  * @param group — the AgentSpriteGroup to update
  * @param tier — current zoom tier (from getZoomTier)
- * @param zoomK — current d3-zoom scale level (optional, defaults to no compensation)
+ * @param zoomK — current d3-zoom scale; defaults to the band's reference zoom
  */
 export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier, zoomK?: number): void {
-  const showPortrait = ZOOM_VISIBILITY_MATRIX.agents_portrait[tier];
-  const showDot = ZOOM_VISIBILITY_MATRIX.agents_dot[tier];
-  const showRetinue = ZOOM_VISIBILITY_MATRIX.agents_retinue[tier];
-
-  // Compute zoom compensation factor: 1.0 at reference zoom, smaller at higher zooms
-  const zoomCompensation = (zoomK !== undefined && zoomK > SPRITE_SCALE_REFERENCE_ZOOM)
-    ? SPRITE_SCALE_REFERENCE_ZOOM / zoomK
-    : 1.0;
+  const band = ZOOM_BAND_OF_TIER[tier];
+  const k = zoomK !== undefined && zoomK > 0 ? zoomK : BAND_REFERENCE_K[band];
 
   for (const [, entry] of group.spriteMap) {
-    let baseScale: number;
-    if (showPortrait) {
-      entry.sprite.material = entry.materials.portrait;
-      baseScale = entry.scales.portrait;
-      entry.sprite.visible = true;
-    } else if (showDot) {
-      entry.sprite.material = entry.materials.dot;
-      baseScale = entry.scales.dot;
-      entry.sprite.visible = true;
-    } else if (showRetinue && entry.isRetinue && entry.materials.continental) {
-      entry.sprite.material = entry.materials.continental;
-      baseScale = entry.scales.continental!;
-      entry.sprite.visible = true;
-    } else {
+    const px = markerSizePx(entry.kind, band);
+    if (px === null) {
       entry.sprite.visible = false;
-      baseScale = 0; // Not used but needed for type safety
+      if (entry.pulseRingSprite) entry.pulseRingSprite.visible = false;
+      if (entry.activityHaloSprite) entry.activityHaloSprite.visible = false;
+      continue;
     }
+    const draw = markerDrawIn(entry.kind, band);
+    entry.sprite.material = draw === 'dot'
+      ? entry.materials.dot
+      : draw === 'pip'
+        ? entry.materials.pip
+        : entry.materials.portrait;
+    entry.sprite.visible = true;
 
-    // Update scale and visibility only if sprite is visible
-    if (entry.sprite.visible) {
-      const compensatedScale = baseScale * zoomCompensation;
-      entry.sprite.scale.setScalar(compensatedScale);
-      entry.sprite.userData.baseScale = compensatedScale;
+    const scale = px / k;
+    entry.sprite.scale.set(scale, scale, 1);
+    entry.sprite.userData.baseScale = scale;
 
-      // Pulse ring tracks main sprite visibility and scale
-      if (entry.pulseRingSprite) {
-        entry.pulseRingSprite.visible = showPortrait;
-        if (showPortrait) {
-          const ringScale = compensatedScale * 1.2;
-          entry.pulseRingSprite.scale.set(ringScale, ringScale, 1);
-        }
+    const showPortrait = draw === 'portrait';
+    if (entry.pulseRingSprite) {
+      entry.pulseRingSprite.visible = showPortrait;
+      if (showPortrait) {
+        const ringScale = scale * AVATAR_PULSE_RING_SCALE;
+        entry.pulseRingSprite.scale.set(ringScale, ringScale, 1);
       }
-      // Activity halo — visible only at hero-local (portrait tier)
-      if (entry.activityHaloSprite) {
-        entry.activityHaloSprite.visible = showPortrait;
-        if (showPortrait) {
-          const haloBase = entry.activityHaloSprite.userData.baseScale as number;
-          const haloScale = haloBase * zoomCompensation;
-          entry.activityHaloSprite.scale.set(haloScale, haloScale, 1);
-        }
-      }
-    } else {
-      // Ensure satellite sprites are hidden when main sprite is hidden
-      if (entry.pulseRingSprite) {
-        entry.pulseRingSprite.visible = false;
-      }
-      if (entry.activityHaloSprite) {
-        entry.activityHaloSprite.visible = false;
+    }
+    if (entry.activityHaloSprite) {
+      entry.activityHaloSprite.visible = showPortrait;
+      if (showPortrait) {
+        const haloScale = scale * ACTIVITY_HALO_SCALE_FRACTION;
+        entry.activityHaloSprite.scale.set(haloScale, haloScale, 1);
+        entry.activityHaloSprite.userData.baseScale = haloScale;
       }
     }
   }
@@ -423,8 +403,8 @@ export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier, zo
 /**
  * Asynchronously loads portrait images and updates pre-built materials.
  *
- * Updates both portrait and dot materials (shared by reference) so the
- * change is visible immediately when those materials are active on the sprite.
+ * Updates the portrait material (which also draws the medallion) so the change
+ * is visible immediately when it is active on the sprite.
  *
  * @param group — the AgentSpriteGroup containing sprites to update
  * @param agents — source AgentRenderData for portrait URLs and ring colors
@@ -446,11 +426,10 @@ export async function loadAgentPortraits(
         avatarSigil: agent.avatarSigil,
       });
 
-      // Update both portrait and dot materials
+      // The portrait material draws both the portrait and the medallion. The dot
+      // keeps the faction colour (MAP_MARKERS: a plain mortal far out is a dot).
       entry.materials.portrait.map = texture;
       entry.materials.portrait.needsUpdate = true;
-      entry.materials.dot.map = texture;
-      entry.materials.dot.needsUpdate = true;
     });
 
   await Promise.allSettled(loads);

@@ -1,5 +1,6 @@
 import {
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -108,7 +109,15 @@ import type { WebGLDiagnosticsSnapshot } from './diagnostics/WebGLDiagnostics';
 import type { FollowModeState } from './camera/FollowMode';
 import { screenToHex, worldToScreen, pickAgentAtScreen, pickArmyAtScreen, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
-import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
+import {
+  LocationLabelOverlay,
+  emptyLabelPassStats,
+  type LabelPassStats,
+  type LocationLabelData,
+} from './overlay/LocationLabelOverlay';
+import { computeMarkerObstacleBoxes } from './overlay/markerObstacles';
+import { ZOOM_BAND_OF_TIER } from './scene/AgentSpriteMesh';
+import { MAP_MARKER_KINDS, markerSizePx, type MapMarkerKind } from '../../data/map-markers';
 import { AgentPulseOverlay } from './overlay/AgentPulseOverlay';
 import type { ScreenBBox } from './overlay/labelCollision';
 import { HexTooltip } from './interaction/HexTooltip';
@@ -628,6 +637,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     locationOffsetRef.current = buildLocationOffsetLookup(locations);
     // Shared bbox ref: RegionLabelOverlay writes placed bboxes; LocationLabelOverlay reads to avoid overlaps
     const regionPlacedBBoxesRef = useRef<ScreenBBox[]>([]);
+    // THR-1899: what the last place-name pass did (getMapChrome().labels)
+    const labelPassStatsRef = useRef<LabelPassStats>(emptyLabelPassStats());
 
     // Fog culling refs — populated in scene init, read in fog update effect
     const fillResultRef        = useRef<HexFillMeshResult | null>(null);
@@ -1588,11 +1599,50 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tiles, cols, rows, seed, riverPaths, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths]);
 
-    // ── Debug bridge: getMapChrome() — THR-1902 registers its `fog` half ──
+    // The zoom as last applied, for readers outside React's render (THR-1899).
+    const zoomStateRef = useRef({ k: zoomK, tier: zoomTier });
+    zoomStateRef.current = { k: zoomK, tier: zoomTier };
+
+    // THR-1899: markers that place names step aside for, as screen boxes, per label pass.
+    const getMarkerObstacles = useCallback(
+      () => computeMarkerObstacleBoxes(
+        agentSpriteGroupRef.current,
+        cameraRef.current,
+        canvasDimensions.w,
+        canvasDimensions.h,
+        ZOOM_BAND_OF_TIER[zoomStateRef.current.tier],
+      ),
+      [canvasDimensions.w, canvasDimensions.h],
+    );
+
+    // ── Debug bridge: getMapChrome() — THR-1902 registers `fog`, THR-1899 the zoom band, markers and labels ──
     useEffect(() => {
       if (!import.meta.env.DEV || !window.__DEBUG) return;
       window.__DEBUG._registerMapChromeBridge({
-        get: () => ({ fog: getFogOverlayStatus(fogOverlayRef.current) }),
+        get: () => {
+          const { k, tier } = zoomStateRef.current;
+          const band = ZOOM_BAND_OF_TIER[tier];
+          const byKind: Partial<Record<MapMarkerKind, number>> = {};
+          const visibleByKind: Partial<Record<MapMarkerKind, number>> = {};
+          const drawnPx: Partial<Record<MapMarkerKind, number>> = {};
+          for (const entry of agentSpriteGroupRef.current?.spriteMap.values() ?? []) {
+            byKind[entry.kind] = (byKind[entry.kind] ?? 0) + 1;
+            if (entry.sprite.visible) {
+              visibleByKind[entry.kind] = (visibleByKind[entry.kind] ?? 0) + 1;
+              drawnPx[entry.kind] = Math.round(entry.sprite.scale.x * k * 100) / 100;
+            }
+          }
+          const sizePx: Partial<Record<MapMarkerKind, number | null>> = {};
+          for (const kind of MAP_MARKER_KINDS) sizePx[kind] = markerSizePx(kind, band);
+          return {
+            fog: getFogOverlayStatus(fogOverlayRef.current),
+            k,
+            tier,
+            band,
+            markers: { byKind, visibleByKind, sizePx, drawnPx },
+            labels: { ...labelPassStatsRef.current },
+          };
+        },
       });
     }, []);
 
@@ -2054,6 +2104,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             canvasHeight={canvasDimensions.h}
             zoomLevel={zoomLevel}
             prePlacedBBoxesRef={regionPlacedBBoxesRef}
+            getMarkerObstacles={getMarkerObstacles}
+            labelPassStatsRef={labelPassStatsRef}
           />
         )}
         {/* Agent spotlight pulse — world view → encounter handoff (THR-340) */}

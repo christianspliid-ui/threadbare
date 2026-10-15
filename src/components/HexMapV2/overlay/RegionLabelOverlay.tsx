@@ -64,13 +64,27 @@ const LABEL_BASE: CSSProperties = {
 
 const palette = getActivePalette();
 
+/**
+ * Realm names switch faces at this rendered size (THR-1833 § 5): Cinzel 600 at
+ * 22 px and up, Alegreya Sans 700 below — Cinzel is a display face, never small.
+ */
+export const CINZEL_MIN_PX = 22;
+
+/** Realm names: title case as authored, tracked at 0.02em (THR-1831 § 6; no uppercase). */
+export const REALM_LABEL_LETTER_SPACING = '0.02em';
+
+/** The face and weight a realm name takes at its rendered px. */
+export function realmLabelFace(px: number): { fontFamily: string; fontWeight: number } {
+  return px >= CINZEL_MIN_PX
+    ? { fontFamily: 'var(--font-display)', fontWeight: 600 }
+    : { fontFamily: 'var(--font-body)', fontWeight: 700 };
+}
+
 const REALM_STYLE: CSSProperties = {
   ...LABEL_BASE,
-  fontFamily: 'var(--font-display)',
+  ...realmLabelFace(20),
   fontSize: '20px',
-  fontWeight: 700,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
+  letterSpacing: REALM_LABEL_LETTER_SPACING,
   color: palette.labelLandColor,
   textShadow: LAND_HALO,
   lineHeight: '1.1',
@@ -190,7 +204,7 @@ function toTitleCase(text: string): string {
 
 /** Apply display text transform per tier */
 function displayText(label: RegionLabel): string {
-  // Realm: uppercase handled by CSS textTransform: 'uppercase'
+  // Realm: title case as authored (THR-1899 dropped the uppercase transform)
   // Area/River: title case
   if (label.tier === 'realm') return label.text;
   return toTitleCase(label.text);
@@ -364,6 +378,8 @@ export function RegionLabelOverlay({
               // Collision-hidden labels: visibility hidden (preserves DOM, stable rendering)
               visibility: pl.visible ? 'visible' : 'hidden',
               ...(scaledFontSize ? { fontSize: `${scaledFontSize}px` } : {}),
+              // Realm names change face with their rendered size (THR-1899).
+              ...(pl.tier === 'realm' ? realmLabelFace(scaledFontSize ?? TIER_BASE_FONT_SIZE.realm) : {}),
             }}
           >
             {displayText(baseLabel)}
