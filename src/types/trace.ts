@@ -2102,6 +2102,12 @@ export interface MovementTrace extends TraceBase {
    * an undertaking, an appointment or idle — unlike the DECIDE timeline event's copy.
    */
   arrivalGoal?: 'kept' | 'dropped';
+  /**
+   * For a `dropped` arrival goal: the stage that should have kept the goal and cut it
+   * instead (the THR-1639 defect). Absent when an eligibility stage dropped it, which
+   * is fair (threat, reputation, prerequisites, visibility).
+   */
+  arrivalGoalCutBy?: 'story_breath' | 'cap';
   fromLocationId?: string;
   fromLocationName?: string;
   toLocationId?: string;

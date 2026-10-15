@@ -16,9 +16,9 @@
 //                         the first re-check compares against zero and abandons it
 //       target-lost       a decision-phase reroute to a better encounter drops
 //                         `targetEncounterId`
-//       goal-cut          on arrival the goal is `dropped` while the encounter it
-//                         walked to still stands at the destination (the cap or the
-//                         breath cut it)
+//       goal-cut          on arrival the goal is `dropped` because the story breath
+//                         or the cap cut it — the two stages that must keep it
+//                         (an eligibility drop is fair: the mortal changed en route)
 //
 // The longest gap between encounters is reported, not gated (THR-1930). It was the
 // S2 gate's proxy for these defects, and on seed 42 it moves between 19 and 40 when
@@ -147,11 +147,12 @@ export function measureFirstRhythm(seed: number, ticks: number): FirstRhythm {
       if (t.category !== 'movement' || t.event !== 'arrival_goal') continue;
       if (t.arrivalGoal === 'kept') { arrivalsKept++; continue; }
       arrivalsDropped++;
-      // A goal that is genuinely gone (resolved by someone else, expired) is a fair
-      // drop. One whose cache entry still stands at the destination was cut.
-      const goal = t.encounterId; const dest = t.destinationId;
-      if (goal && dest && runtime.encounterCache?.getEntriesForLocation(dest).some(x => x.templateId === goal)) {
-        faults.push({ tick: t.tick, kind: 'goal-cut', detail: `${goal} at ${dest}` });
+      // A goal an eligibility stage drops (threat, reputation, prerequisites — the
+      // mortal changed on the road) is a fair drop. One the story breath or the cap
+      // cut, the two stages that must keep it, is the defect. The encounter cache is
+      // static per location, so it cannot tell the two apart; the pipeline can.
+      if (t.arrivalGoalCutBy) {
+        faults.push({ tick: t.tick, kind: 'goal-cut', detail: `${t.encounterId} at ${t.destinationId} (cut by ${t.arrivalGoalCutBy})` });
       }
     }
   }

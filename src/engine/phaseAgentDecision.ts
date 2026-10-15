@@ -1175,6 +1175,9 @@ export function phaseAgentDecision(
           agentName: actor.name,
           event: 'arrival_goal',
           arrivalGoal,
+          ...(!goalOnBoard && filterResult.journeyGoalCutBy
+            ? { arrivalGoalCutBy: filterResult.journeyGoalCutBy }
+            : {}),
           encounterId: goalId,
           destinationId: arrivedState.destinationId,
           summary: `${actor.name} arrives for ${goalId}: goal ${arrivalGoal}`,
