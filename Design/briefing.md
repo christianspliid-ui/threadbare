@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-15 20:50 local (18:50 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-15 20:55 local (18:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -24,7 +24,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 19 ready, nothing in progress.** The builder started a fresh run at 20:44 after the silence. [Escape on an aftermath](https://linear.app/threadbare/issue/THR-1856/escape-on-an-aftermath-blanks-the-screen-and-the-aftermath-comes-back) merged via [#2425](https://github.com/christianspliid-ui/threadbare/pull/2425) and is live.
+**Backed up: 18 ready, one in progress.** The builder's 20:44 run is working on [the template seams in player prose](https://linear.app/threadbare/issue/THR-1857/new-template-seams-in-player-prose-they-wants-kael-thornweaver-work) ("They wants", "Kael Thornweaver work with…"). [Escape on an aftermath](https://linear.app/threadbare/issue/THR-1856/escape-on-an-aftermath-blanks-the-screen-and-the-aftermath-comes-back) merged via [#2425](https://github.com/christianspliid-ui/threadbare/pull/2425) and is live.
 
 - High, waiting: the [faction purse](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a) build plan.
 - Your six economy bugs from yesterday are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
@@ -32,5 +32,5 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **All lanes were silent from about 14:50 to 20:44 local today** (a weekday, no pause marker). Every lane came back together at 20:44, which looks like the computer waking. It is covered by the "open at login" ask above. The repo cleaner's last run was 14:40 for the same reason; its next hourly run should catch up.
-- Everything else is green. Main's checks pass, and the live site serves the latest commit. No pull request is waiting. The game runs at 144 ms per tick, 20% above the weekly median of 120, inside the normal range. Every scheduled lane is on schedule now. The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- **All lanes were silent from about 14:50 to 20:44 local today** (a weekday, no pause marker). Every lane came back together at 20:44, which looks like the computer waking. It is covered by the "open at login" ask above. The repo cleaner caught up at 20:49.
+- Everything else is green. Main's checks pass, and the live site serves the latest commit. No pull request is waiting. The game runs at 127 ms per tick, 5% above the weekly median of 121. Every scheduled lane is on schedule now. The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
