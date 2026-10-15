@@ -159,6 +159,7 @@ import {
   isEncounterAutoOpenSuppressed,
   isStepNotificationSupersededByAftermath,
   resolveNotificationsOnAftermathAcknowledge,
+  resolveNotificationsOnVeilLeave,
   runEncounterAutoOpenScan,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForDisplay,
@@ -2294,6 +2295,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [setGameState]);
 
   const handleEncounterDisregard = useCallback(() => {
+    // THR-1856 — leaving an aftermath (Escape, the context strip) is an
+    // acknowledgement: nothing on it is pending, so there is no step to mark
+    // disregarded, and it must resolve what "Return to the world" resolves or a
+    // sibling step notification reopens the same aftermath.
+    if (tieredEncounterState?.notification?.id && tieredEncounterState.notification.kind === 'aftermath') {
+      suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+      setInterruptSuppressedUntilTick(gameState.tick + 1);
+      setGameState(prev => ({
+        ...prev,
+        encounterNotifications: resolveNotificationsOnVeilLeave(
+          prev.encounterNotifications ?? [],
+          tieredEncounterState.notification,
+          tieredEncounterState.activeActionId,
+        ),
+      }));
+      closeEncounterModalAndResume(tieredEncounterState.openedAsInterrupt);
+      return;
+    }
     if (tieredEncounterState?.notification?.id) {
       suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
       setInterruptSuppressedUntilTick(gameState.tick + 1);

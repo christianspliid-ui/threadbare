@@ -597,6 +597,66 @@ describe('aftermath mode', () => {
     },
   };
 
+  // THR-1856 — Escape on an aftermath is an acknowledgement, never a
+  // disregard: the disregard path resolved only the record on screen, and a
+  // sibling step notification reopened the same ending behind a black fade.
+  it('acknowledges rather than disregards on Escape, even with a minimise wired', () => {
+    const onDisregard = vi.fn();
+    const onMinimize = vi.fn();
+    const onAcknowledgeAftermath = vi.fn();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={aftermathModel}
+        onDisregard={onDisregard}
+        onMinimize={onMinimize}
+        onAcknowledgeAftermath={onAcknowledgeAftermath}
+      />,
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onAcknowledgeAftermath).toHaveBeenCalledTimes(1);
+    expect(onDisregard).not.toHaveBeenCalled();
+    expect(onMinimize).not.toHaveBeenCalled();
+  });
+
+  // THR-1856 — the reaction choice and the exit share one block pinned to the
+  // bottom of the scroll column, so neither can sit below the fold.
+  it('pins the reactions and the exit in one sticky block', () => {
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{
+          ...aftermathModel,
+          aftermath: {
+            ...aftermathModel.aftermath!,
+            reactionPrompt: 'What does this leave behind?',
+            reactions: [
+              { id: 'r1', label: 'A debt' },
+              { id: 'r2', label: 'A grudge' },
+            ],
+          },
+        }}
+      />,
+    );
+    const pinned = screen.getByTestId('aftermath-pinned-exit');
+    expect(pinned.style.position).toBe('sticky');
+    expect(pinned.style.bottom).toBe('0px');
+    expect(within(pinned).getByText('Return to the world')).toBeInTheDocument();
+    expect(within(pinned).getByText('A debt')).toBeInTheDocument();
+    expect(within(pinned).getByText('A grudge')).toBeInTheDocument();
+  });
+
+  // THR-1856 — a wheel over the art or the void beside the column scrolls it.
+  it('forwards a wheel outside the content column to the column', () => {
+    render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
+    const column = screen.getByTestId('aftermath-content-column');
+    fireEvent.wheel(screen.getByRole('dialog'), { deltaY: 120 });
+    expect(column.scrollTop).toBe(120);
+    // Inside the column the browser scrolls natively; nothing is added twice.
+    fireEvent.wheel(screen.getByText('Return to the world'), { deltaY: 120 });
+    expect(column.scrollTop).toBe(120);
+  });
+
   // ── Encounter identity chrome (THR-1003) ─────────────────────────
   //
   // The ending is the last page of one encounter, so it must say which

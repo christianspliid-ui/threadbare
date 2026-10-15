@@ -176,6 +176,33 @@ export function resolveNotificationsOnAftermathAcknowledge(
 }
 
 /**
+ * Which records leaving the veil without its exit button resolves (THR-1856).
+ *
+ * Escape and the context strip's leave control called `onDisregard`, which
+ * resolved only the record on screen. On an aftermath that is the THR-1778
+ * bounce through a second door: a sibling step notification of the same action
+ * became openable again, the auto-open scan remounted the aftermath, and its
+ * fade-in delays made the remount read as a black screen. An aftermath has
+ * nothing pending to keep, so leaving it any way is an acknowledgement and
+ * resolves exactly what "Return to the world" resolves. Any other kind keeps
+ * the old rule: the record on screen, and nothing else.
+ */
+export function resolveNotificationsOnVeilLeave(
+  notifications: readonly EncounterNotification[],
+  onScreen: Pick<EncounterNotification, 'id' | 'kind' | 'actionId' | 'agentId' | 'encounterId'>,
+  fallbackActionId?: string,
+): EncounterNotification[] {
+  if (onScreen.kind === 'aftermath') {
+    return resolveNotificationsOnAftermathAcknowledge(notifications, onScreen, fallbackActionId);
+  }
+  return notifications.map(notification =>
+    notification.id === onScreen.id && !notification.resolved
+      ? { ...notification, resolved: true }
+      : notification,
+  );
+}
+
+/**
  * Drive the one auto-interrupt slot down the notification queue until a surface
  * actually opens (investigated under THR-1005).
  *
