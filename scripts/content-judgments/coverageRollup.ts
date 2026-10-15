@@ -17,6 +17,12 @@ import {
   CALIBRATION_STEP,
   CALIBRATION_TARGET_AGREEMENT,
   COVERAGE_THIN_CELL,
+  CALIBRATED_ACTIVITY_CONFIDENCE,
+  CALIBRATED_AT,
+  CALIBRATED_REACH_CONFIDENCE,
+  CALIBRATED_SPHERE_YES,
+  CALIBRATED_TAG_FIT_NO,
+  CALIBRATED_WALK_OF_LIFE_CONFIDENCE,
   DEFAULT_CHOICE_CONFIDENCE,
   DEFAULT_SPHERE_YES,
   DEFAULT_TAG_FIT_NO,
@@ -117,6 +123,16 @@ export const PLACEHOLDER_THRESHOLDS: CoverageThresholds = {
   sphereYes: DEFAULT_SPHERE_YES,
   tagFitNo: DEFAULT_TAG_FIT_NO,
   calibratedAt: null,
+};
+
+/** The committed calibration (THR-1850): applies to a run answered on `JEV_MODEL` with nothing carried. */
+export const CALIBRATED_THRESHOLDS: CoverageThresholds = {
+  reach: CALIBRATED_REACH_CONFIDENCE,
+  activity: CALIBRATED_ACTIVITY_CONFIDENCE,
+  walkOfLife: CALIBRATED_WALK_OF_LIFE_CONFIDENCE,
+  sphereYes: CALIBRATED_SPHERE_YES,
+  tagFitNo: CALIBRATED_TAG_FIT_NO,
+  calibratedAt: CALIBRATED_AT,
 };
 
 // ─── Rows ───────────────────────────────────────────────────────────

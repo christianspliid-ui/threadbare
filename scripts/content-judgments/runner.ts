@@ -13,6 +13,7 @@
  *   7. write the artifact and report, mark `partial` above the error share.
  */
 import {
+  CALIBRATED_QUESTIONS_VERSION,
   CONTENT_JUDGMENTS_DOCTRINE,
   ENCOUNTER_COVERAGE_QUESTIONS_VERSION,
   ESTIMATE_CHARS_PER_TOKEN,
@@ -30,6 +31,7 @@ import {
   calibrateThresholds,
   calibrationLabelsProblem,
   errorRow,
+  CALIBRATED_THRESHOLDS,
   PLACEHOLDER_THRESHOLDS,
   renderReport,
   reusableRow,
@@ -222,11 +224,16 @@ export async function runEncounterCoverage(
 
   const model = answeredModel ?? previous?.model ?? JEV_MODEL;
   // Thresholds were measured against one model and one question set; a change to either
-  // drops them back to the placeholders until calibration runs again.
+  // drops them back to the placeholders until calibration runs again. With nothing to
+  // carry, the committed calibration applies when its model and question set still hold.
   const carry = previous !== null
     && previous.model === model
     && previous.questionsVersion === ENCOUNTER_COVERAGE_QUESTIONS_VERSION;
-  let thresholds = carry && previous ? previous.thresholds : PLACEHOLDER_THRESHOLDS;
+  const committedHolds = model === JEV_MODEL
+    && ENCOUNTER_COVERAGE_QUESTIONS_VERSION === CALIBRATED_QUESTIONS_VERSION;
+  let thresholds = carry && previous
+    ? previous.thresholds
+    : committedHolds ? CALIBRATED_THRESHOLDS : PLACEHOLDER_THRESHOLDS;
   let calibration = carry && previous ? previous.calibration : null;
   if (labels) {
     const result = calibrateThresholds(ordered, labels, ranAt.toISOString());
