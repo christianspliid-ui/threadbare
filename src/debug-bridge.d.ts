@@ -267,6 +267,14 @@ export interface DebugInterruptState {
   homedSurfaces: Array<{ kind: string; surfaceId: string; home: 'stage' | 'dialog' | 'ceremony'; stopsTime: boolean }>;
 }
 
+/** One mounted count chip (THR-1885) — `getCountChips()`. */
+export interface DebugCountChip {
+  /** The owner's short key, e.g. 'notables'. */
+  of: string;
+  /** The number the chip shows. */
+  count: number;
+}
+
 /** One open escape layer (THR-1884) — `getEscapeLayers()`. */
 export interface DebugEscapeLayer {
   label: string;
@@ -1909,6 +1917,13 @@ export interface DebugBridge {
    * `Z_BAND` value. The read behind every Escape-order assertion. Async.
    */
   getEscapeLayers(): Promise<DebugEscapeLayer[]>;
+  /**
+   * Every mounted count chip (THR-1885, plan THR-1821 § Debug inspection), read from its
+   * `data-count-of` / `data-count` attributes — the top bar's Notables and Rivals badges
+   * today. The read behind "opening the list did not clear the count" (Law 40). A count of
+   * zero renders no chip, so it is absent here. Async.
+   */
+  getCountChips(): Promise<DebugCountChip[]>;
   /**
    * The Stellaris clock (THR-1608, plan `2026-09-27-thr-1605-the-opening.md` § S3).
    * What stops the world right now, and what the clock returns to when it closes.

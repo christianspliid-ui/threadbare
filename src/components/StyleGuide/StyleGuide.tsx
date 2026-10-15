@@ -15,6 +15,13 @@ import { ListRow } from '../shared/ListRow';
 import { Modal, modalPanelStyle } from '../shared/Modal';
 import { Overlay, type OverlayBackdrop } from '../shared/Overlay';
 import { Panel } from '../shared/Panel';
+import { Icon, type IconSize } from '../shared/Icon';
+import { Chip, type ChipStateTint } from '../shared/Chip';
+import { Tabs } from '../shared/Tabs';
+import { ICON_CREDITS, ICON_REGISTRY, type IconName } from '../../data/icons/iconRegistry';
+import { RefRouterProvider } from '../../contexts/RefRouterContext';
+import type { RefRouter } from '../../hooks/useRefRouter';
+import type { AnyRef } from '../../types/contentRef';
 import { Z_BAND, type OverlayBand } from '../shared/zBands';
 import { getEscapeLayers, type EscapeLayerReading } from '../shared/useEscapeLayer';
 import { glowShadow } from '../shared/sphereTint';
@@ -120,6 +127,9 @@ const SECTIONS = [
   { id: 'radius-shadow', label: 'Tokens · Radius and shadow (THR-1821)' },
   { id: 'buttons', label: 'Button' },
   { id: 'iconbutton', label: 'IconButton' },
+  { id: 'icon', label: 'Icon (THR-1885)' },
+  { id: 'chip', label: 'Chip (THR-1885)' },
+  { id: 'tabs', label: 'Tabs (THR-1885)' },
   { id: 'panel-card', label: 'Panel and Card (THR-1884)' },
   { id: 'listrow', label: 'ListRow' },
   { id: 'modal', label: 'Modal' },
@@ -701,6 +711,195 @@ function PanelCardSection() {
   );
 }
 
+// ─── Icon, Chip and Tabs (THR-1885) ──────────────────────────────────────────
+
+const ICON_SIZES: readonly IconSize[] = ['floor', 'chip', 'list', 'alone'];
+const ICON_DEMO_TINTS = ['var(--text-primary)', 'var(--sphere-mind-bright)', 'var(--sphere-life-bright)'] as const;
+
+/** The Law 10 audit sheet: every registry name, all four sizes, its meaning and source. */
+function IconSection() {
+  const names = Object.keys(ICON_REGISTRY) as IconName[];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Label>every IconName — sizes floor 14 · chip 18 · list 24 · alone 34 (px at 1080p), tinted through the parent's colour</Label>
+      {names.map((name) => {
+        const entry = ICON_REGISTRY[name];
+        return (
+          <div key={name} data-testid={`icon-sheet-${name}`} style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', minWidth: 120 }}>{name}</code>
+            {ICON_DEMO_TINTS.map((color) => (
+              <span key={color} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color }}>
+                {ICON_SIZES.map((size) => (
+                  <Icon key={size} name={name} size={size} decorative />
+                ))}
+              </span>
+            ))}
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              {entry.meaning} · {entry.source.family === 'own' ? 'our own drawing' : 'game-icons.net'}
+            </span>
+          </div>
+        );
+      })}
+      <Label>meaning-bearing (label → role="img" + aria-label) beside its decorative twin (aria-hidden, a word beside it)</Label>
+      <Row gap={24}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+          <Icon name="fallback" size="alone" label="Not drawn yet" />
+          <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>accessible name: "Not drawn yet"</code>
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+          <Icon name="fallback" size="list" decorative />
+          <span style={{ fontSize: 'var(--text-sm)' }}>Not drawn yet</span>
+        </span>
+      </Row>
+      <Label>
+        credits: {ICON_CREDITS.length === 0 ? 'no game-icons.net shape vendored yet (THR-1879 adds them with the credits line)' : ICON_CREDITS.join(', ')}
+      </Label>
+    </div>
+  );
+}
+
+const STUB_ROUTE_TARGET: AnyRef = { kind: 'agent', id: 'ind_0' };
+const STUB_IDENTITY_VISUAL: EntityVisualDescriptor = {
+  tier: 'fallback',
+  glyph: 'S',
+  gradientIndex: gradientIndexForId('ind_0'),
+  alt: 'Shutash',
+  kind: 'agent',
+};
+
+/**
+ * A stand-in router: the styleguide has no world, so this one prints the ref an identity chip
+ * opened instead of opening a card. Only the members `Chip` calls do anything; the rest are
+ * inert. The cast is the price of standing up a `RefRouter` without a graph.
+ */
+function useStubRouter(onOpen: (ref: AnyRef) => void): RefRouter {
+  return useMemo(
+    () =>
+      ({
+        open: (ref: AnyRef) => onOpen(ref),
+        canOpen: () => true,
+        armHover: () => {},
+        disarmHover: () => {},
+        closeHover: () => {},
+        hoverCard: null,
+      }) as unknown as RefRouter,
+    [onOpen],
+  );
+}
+
+const CHIP_STATE_SAMPLES: readonly { label: string; tint: ChipStateTint }[] = [
+  { label: 'Calm', tint: 'neutral' },
+  { label: 'Healing', tint: 'positive' },
+  { label: 'Wounded', tint: 'negative' },
+  { label: 'Dreaming', tint: { sphere: 'mind' } },
+];
+
+function ChipSection() {
+  const [opened, setOpened] = useState<string>('nothing yet');
+  const [countOpens, setCountOpens] = useState(0);
+  const [boostOn, setBoostOn] = useState(true);
+  const [rareOn, setRareOn] = useState(false);
+  const onOpen = useMemo(() => (ref: AnyRef) => setOpened(`${ref.kind}:${ref.id}`), []);
+  const router = useStubRouter(onOpen);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <RefRouterProvider router={router}>
+        <Label>identity — image, name, router link (a stub router prints the ref it opens); a dead ref reads as plain text</Label>
+        <Row>
+          {(['sm', 'md'] as const).map((size) => (
+            <Chip key={size} role="identity" size={size} target={STUB_ROUTE_TARGET} label="Shutash" visual={STUB_IDENTITY_VISUAL} />
+          ))}
+          <Chip role="identity" target={null} label="The Drowned Abbot" visual={STUB_IDENTITY_VISUAL} />
+        </Row>
+        <code data-testid="chip-router-readout" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+          opened: {opened}
+        </code>
+      </RefRouterProvider>
+
+      <Label>state — the word always; tints neutral · positive · negative · sphere; optional magnitude (Law 15)</Label>
+      {(['sm', 'md'] as const).map((size) => (
+        <Row key={size}>
+          {CHIP_STATE_SAMPLES.map(({ label, tint }) => (
+            <Chip key={label} role="state" size={size} label={label} tint={tint} icon="fallback" />
+          ))}
+          <Chip
+            role="state"
+            size={size}
+            label="Bond"
+            tint="positive"
+            magnitude={<DeltaCluster direction="gain" count={2} label="Bond rose two steps" />}
+          />
+        </Row>
+      ))}
+
+      <Label>count — 0 renders nothing · 1 shows the number · 12; opening never clears it (Law 40)</Label>
+      <Row>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Chip role="count" count={0} of="styleguide-zero" icon="fallback" label="Nothing needs you" />
+          <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>count 0 — renders nothing</code>
+        </span>
+        <Chip role="count" count={1} of="styleguide-one" icon="fallback" label="1 thing needs you" />
+        <Chip
+          role="count"
+          count={12}
+          of="styleguide-twelve"
+          icon="fallback"
+          label="12 things need you"
+          tint="gold"
+          onOpen={() => setCountOpens((n) => n + 1)}
+        />
+        <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>opened {countOpens}× — still 12</code>
+      </Row>
+      <Label>count, badge form — on an IconButton that already carries the name and tooltip</Label>
+      <Row>
+        <IconButton icon={<span aria-hidden="true">N</span>} badge={3} badgeOf="styleguide-badge" aria-label="3 notables" />
+        <IconButton icon={<span aria-hidden="true">N</span>} badge={0} badgeOf="styleguide-badge-zero" aria-label="0 notables" />
+      </Row>
+
+      <Label>keyword — the vocabulary word; a toggle for filter rows (aria-pressed)</Label>
+      <Row>
+        <Chip role="keyword" keyword="Boost" icon="fallback" pressed={boostOn} onToggle={setBoostOn} />
+        <Chip role="keyword" keyword="Rare" accent="var(--rarity-rare, var(--text-secondary))" pressed={rareOn} onToggle={setRareOn} />
+        <Chip role="keyword" keyword="Ward" size="md" />
+      </Row>
+    </div>
+  );
+}
+
+const TABS_SAMPLE_PROSE = { fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' } as const;
+
+function TabsSection() {
+  const [tab, setTab] = useState('now');
+  const [lens, setLens] = useState<string | null>('dominion');
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Label>kind="tabs" — ←/→ and Home/End move focus and selection; the unread count follows the word</Label>
+      <div style={{ maxWidth: 480 }}>
+        <Tabs kind="tabs" value={tab} onChange={setTab} label="Chronicle">
+          <Tabs.Tab value="now" label="Now" />
+          <Tabs.Tab value="years" label="Years" />
+          <Tabs.Tab value="ledger" label="Ledger" count={{ value: 2, label: '2 new chapters' }} />
+          <Tabs.Panel value="now"><p style={TABS_SAMPLE_PROSE}>What is happening this season.</p></Tabs.Panel>
+          <Tabs.Panel value="years"><p style={TABS_SAMPLE_PROSE}>The chronicle, year by year.</p></Tabs.Panel>
+          <Tabs.Panel value="ledger"><p style={TABS_SAMPLE_PROSE}>Chapters closed, and what they cost.</p></Tabs.Panel>
+        </Tabs>
+      </div>
+      <Label>kind="toggle" allowNone — the lens bar: one at a time, press again to turn it off; key caps drawn, keys bound by the owner</Label>
+      <div style={{ maxWidth: 640 }}>
+        <Tabs kind="toggle" value={lens} onChange={setLens} allowNone label="Map lenses">
+          <Tabs.Tab value="dominion" label="Dominion" keyCap="1" />
+          <Tabs.Tab value="threads" label="Threads" keyCap="2" />
+          <Tabs.Tab value="trouble" label="Trouble" keyCap="3" />
+          <Tabs.Tab value="trade" label="Trade" keyCap="4" />
+        </Tabs>
+      </div>
+      <code data-testid="tabs-lens-readout" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+        lens: {lens ?? 'none'}
+      </code>
+    </div>
+  );
+}
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export default function StyleGuide() {
@@ -863,9 +1062,37 @@ export default function StyleGuide() {
                   <div><Label>sm/default</Label><IconButton icon={<span>⚙</span>} size="sm" /></div>
                   <div><Label>md/close</Label><IconButton icon={<span>✕</span>} variant="close" /></div>
                   <div><Label>active</Label><IconButton icon={<span>★</span>} active /></div>
-                  <div><Label>with badge</Label><IconButton icon={<span>🔔</span>} badge={3} /></div>
+                  <div><Label>with badge</Label><IconButton icon={<span>🔔</span>} badge={3} badgeOf="styleguide-iconbutton" /></div>
                   <div><Label>disabled</Label><IconButton icon={<span>⚙</span>} disabled /></div>
                 </Row>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Icon, Chip and Tabs (THR-1885) ─────────────────── */}
+          <section id="section-icon" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Icon</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <IconSection />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          <section id="section-chip" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Chip — one component, four roles</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <ChipSection />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          <section id="section-tabs" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Tabs — one tab bar, and the same bar as a toggle row</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <TabsSection />
               </GameErrorBoundary>
             </div>
           </section>

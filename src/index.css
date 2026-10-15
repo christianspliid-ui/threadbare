@@ -864,6 +864,21 @@
     border-color: var(--veil-gold) !important;
     box-shadow: 0 0 14px rgb(var(--veil-gold-rgb) / 0.28);
   }
+
+  /* THR-1885 — the interactive Chip and the Tabs bar answer hover and press at
+     once (Laws 23, 47). Classes, because `:hover` / `:active` cannot be inline.
+     The focus ring comes from `.focus-ring`, which both also carry. Never gold:
+     gold stays the god's attention (Law 31). */
+  .chip-interactive:hover:not(:disabled) {
+    background-color: var(--bg-hover) !important;
+  }
+  .chip-interactive:active:not(:disabled) {
+    filter: brightness(1.15);
+  }
+  .tab-button:hover:not(:disabled) {
+    background-color: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

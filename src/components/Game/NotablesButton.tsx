@@ -36,7 +36,8 @@ export function NotablesButton({ gameState, onOpenChange }: NotablesButtonProps)
         <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
           <IconButton
             icon={<span>♛</span>}
-            badge={notableCount > 0 ? notableCount : undefined}
+            badge={notableCount}
+            badgeOf="notables"
             active={open}
             aria-label={`${notableCount} notable${notableCount !== 1 ? 's' : ''}`}
             onClick={() => setOpen(o => !o)}

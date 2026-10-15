@@ -49,6 +49,9 @@ export {
   MEDALLION_SIZE_LG,
 } from './Medallion';
 export { Modal } from './Modal';
+export { Chip } from './Chip';
+export { Icon } from './Icon';
+export { Tabs } from './Tabs';
 export { Overlay } from './Overlay';
 export { Panel, panelStyle } from './Panel';
 export { OddsPips, CostPips } from './OddsPips';

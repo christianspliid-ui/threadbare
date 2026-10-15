@@ -1,11 +1,18 @@
 import { forwardRef } from 'react';
+import { Chip } from './Chip';
 
 type IconButtonSize = 'sm' | 'md';
 type IconButtonVariant = 'default' | 'close';
 
 interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: React.ReactNode;
+  /**
+   * A count (a number) renders the count chip's badge form (THR-1885): `aria-hidden`, no
+   * tooltip of its own, nothing at zero. A string keeps the legacy text badge until its caller moves.
+   */
   badge?: number | string;
+  /** The owner's short key for a numeric badge (`notables`), read by `__DEBUG.getCountChips()`. */
+  badgeOf?: string;
   active?: boolean;
   size?: IconButtonSize;
   variant?: IconButtonVariant;
@@ -14,7 +21,7 @@ interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 const SIZE_PX: Record<IconButtonSize, number> = { sm: 28, md: 32 };
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
-  { icon, badge, active, size = 'md', variant = 'default', disabled, style, className, ...rest },
+  { icon, badge, badgeOf, active, size = 'md', variant = 'default', disabled, style, className, ...rest },
   ref,
 ) {
   const px = SIZE_PX[size];
@@ -105,7 +112,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       {...rest}
     >
       <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
-      {badge !== undefined && (
+      {typeof badge === 'number' ? (
+        <Chip role="count" form="badge" count={badge} of={badgeOf ?? 'unnamed'} />
+      ) : badge !== undefined && (
         <span aria-hidden="true" style={badgeStyle}>
           {badge}
         </span>

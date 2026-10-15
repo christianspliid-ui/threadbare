@@ -42,7 +42,9 @@ export type RefOpenAdapter =
   | 'detail-link'
   | 'detail-cta'
   // THR-1851 — an introduction beat's "Attend", which opens the people it names.
-  | 'beat';
+  | 'beat'
+  // THR-1885 — an identity chip (`Chip role="identity"`).
+  | 'chip';
 
 /** The three rungs of Law 20's ladder that the router can put on screen. */
 export type RefOpenMode = 'hover' | 'card' | 'sheet';

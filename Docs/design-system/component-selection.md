@@ -53,6 +53,9 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 
 | Need | Component | Notes |
 |------|-----------|-------|
+| A small pill that names a thing, says how it is, counts what is waiting, or tags what kind it is | `Chip` (shared primitive) | THR-1885. One component, four roles: `identity` (image + name + router link, Law 21; a dead ref reads as text), `state` (the word always, optional icon and a `DeltaCluster` / `OddsPips` magnitude, tints neutral · positive · negative · sphere), `count` (a whole number; zero renders nothing; opening never clears it, Law 40; `form="badge"` on an `IconButton`, `form="inline"` after a tab's word), `keyword` (the vocabulary word, optional `pressed`/`onToggle`). **Name clash:** in the ubiquitous language "chip" alone means a **Consequence Chip** — that is `Chip role="state"` with a kind tag, not a different component. Never write a local pill. |
+| A row of tabs, or a row of one-at-a-time toggles (the lens bar) | `Tabs` (shared primitive) | THR-1885. `kind="tabs"` is WAI-ARIA tabs (arrows and Home/End move focus and selection; `Tabs.Panel` children); `kind="toggle"` is a toolbar of pressed buttons, `allowNone` lets the pressed one turn off. One look for both: sentence-case label, 2 px underline in `--text-primary` when on, **never gold**. `count` draws an inline count chip; `keyCap` draws the owner's hotkey. |
+| An icon | `Icon` (shared primitive) | THR-1885. `name` is an `IconName` from `src/data/icons/iconRegistry.ts`, drawn through the one resolver `iconShape.ts` (Law 3); sizes `floor` / `chip` / `list` / `alone`; fills `currentColor`. Pass `decorative` when a word sits beside it, `label` when it carries meaning alone — an unlabelled meaning-bearing icon does not compile. `tooltipId` adds the first-contact tooltip (Law 12). Never draw an emoji or a symbol glyph as an icon. |
 | A bounded surface — a rail, a popover, a legend, an inset inside a panel | `Panel` (shared primitive) | THR-1884. `level` says what it **is**: `page` (a dialog, the Stage, the Inspector in Full) ⊃ `panel` (rails, cards, popovers) ⊃ `inset` (rows inside a panel). `floating` adds the level's shadow; `material="glass"` for small panels over the map. Radius and shadow come from the level tokens — never write a shell by hand. |
 | A bounded surface with a title row (header/body/footer) | `Card` (shared primitive) | **The titled panel** (THR-1884): `Panel level="panel"` plus Card.Header, Card.Body, Card.Footer. Variants: surface, raised (floating), glass. **A bounded surface is a `Panel`; a bounded surface with a title row is a `Card`; a playing card is `CardFace`** — "card" means the god's cards everywhere else in this game. |
 | Domain reach tier display | `DomainCard` | Shows reach art thumbnail + tier prose. |
@@ -173,7 +176,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | Primitive | Purpose | When to use |
 |-----------|---------|-------------|
 | `Button` | Themable action button | Any clickable action. 4 variants: primary, secondary, ghost, danger. 3 sizes. |
-| `IconButton` | Icon-only compact button | Toolbar actions, close buttons, toggle controls. Has badge slot. |
+| `IconButton` | Icon-only compact button | Toolbar actions, close buttons, toggle controls. Has badge slot. A numeric `badge` (with `badgeOf`) renders the count chip's badge form (THR-1885). |
 | `Card` | Content wrapper | Any bounded content area. Use Header/Body/Footer compounds. |
 | `Modal` | Dialog overlay | Any centered overlay dialog. Escape to close, backdrop click. |
 | `RevealCard` | Ceremonial reveal surface | A minor element the player just gained, with nothing to decide. Composed on Modal. Use `RevealCard.Frame` inside an existing modal. |
