@@ -85,7 +85,6 @@ import { GameViewTopBar } from './GameView/GameViewTopBar';
 import { ActionDrawer } from './ActionDrawer';
 import type { OutcomeBand } from '../../engine/outcomeConsequences';
 import { AgentInfoCard } from './AgentInfoCard';
-import { ThreadsPanel } from './ThreadsPanel';
 import { prepareEncounterHandoff } from './encounterHandoff';
 import { shouldCenterOnAgentMove } from './cameraInteractionGate';
 import { REACH_TO_SPHERE, SPHERE_COLORS } from '../icons/constants';
@@ -102,8 +101,8 @@ import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../shared/Modal';
 import { useEscapeLayer, ESCAPE_LAYER_Z_PANEL } from '../shared/useEscapeLayer';
 import { AgentProfileModal } from './AgentProfileModal';
 import { countThreadedChapters } from './ChapterLedger';
-import { useFirstScreenReveal, unreadChapterCount } from './GameView/firstScreenReveal';
-import { useOpeningReveal, NEWLY_REVEALED_STYLE } from './GameView/openingReveal';
+import { useFirstScreenReveal } from './GameView/firstScreenReveal';
+import { useOpeningReveal } from './GameView/openingReveal';
 import { OpeningDirectionLine } from './OpeningDirectionLine';
 import { getPronouns } from '../../data/domain-prose';
 import { OPENING_REVEAL_TOAST_MS } from '../../data/ui-content';
@@ -117,8 +116,6 @@ import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
 import { getLatestEncounterDecisionForAgent, getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetry';
 import { AvatarHUD } from './AvatarHUD';
-import { WorldPulse } from './WorldPulse';
-import { ChroniclePanel } from './ChroniclePanel';
 import { readWorldPastForPlayer } from '../../engine/worldPast';
 import { buildBeforeYouWoke, worldHasPast } from '../../engine/worldPastWords';
 import { ToastStack } from './ToastStack';
@@ -136,7 +133,9 @@ import {
 } from '../../types/worldRefAdapters';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { IdentityChip } from './IdentityChip';
-import { AscendantBar } from './ascendant-bar/AscendantBar';
+import { GodRail } from './frame/GodRail';
+import { LedgerRail } from './frame/LedgerRail';
+import { GameScreenStateProvider, useGameScreenStore } from './frame/GameScreenState';
 import type { CodexRunStateFilter } from '../Codex/codexRunState';
 import { AscendantSheet } from './AscendantSheet';
 import { courtPositionToThreadTier } from './encounter-stage/types';
@@ -339,29 +338,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const [scryState, setScryState] = useState<ScryState>(createScryState);
 
   // ── Read the Threads panel state ──
-  const [readThreadsOpen, setReadThreadsOpen] = useState(false);
-  const [lastReadThreadsTick, setLastReadThreadsTick] = useState(0);
-  // THR-603: Chapter Ledger overlay open/close.
-  const [chapterLedgerOpen, setChapterLedgerOpen] = useState(false);
-  // THR-1648 (S5): the launcher badge counts chapters that appeared since the
-  // ledger was last opened, not the running total. UI-local; resets on reload.
-  const [chapterLedgerSeenCount, setChapterLedgerSeenCount] = useState(0);
-  const chapterLedgerButtonRef = useRef<HTMLButtonElement>(null);
-  const chapterLedgerWasOpenRef = useRef(false);
-  useEffect(() => {
-    const wasOpen = chapterLedgerWasOpenRef.current;
-    chapterLedgerWasOpenRef.current = chapterLedgerOpen;
-    if (!wasOpen || chapterLedgerOpen) return;
-    // THR-1648 (S5): the dialog hands focus back to its invoker (Law 50), which
-    // for the ledger is the launcher — so the next Enter reopened it. Return
-    // focus to the game surface instead. The dialog's cleanup runs before this
-    // effect in the same commit; the frame delay covers any later restore.
-    const frame = requestAnimationFrame(() => {
-      const btn = chapterLedgerButtonRef.current;
-      if (btn && document.activeElement === btn) btn.blur();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [chapterLedgerOpen]);
+  // THR-1881 step e: the dialog-open flags the rails, top bar and DialogHost share
+  // live in one GameScreenState reducer (frame/GameScreenState.tsx).
+  const gameScreen = useGameScreenStore();
+  const {
+    state: { readThreadsOpen, chapterLedgerOpen, codexOpen, doomDetailOpen, mandateDetailOpen },
+    setReadThreadsOpen, setChapterLedgerOpen, setChapterLedgerSeenCount, setCodexOpen, setDoomDetailOpen,
+  } = gameScreen;
+  const [lastReadThreadsTick,setLastReadThreadsTick] = useState(0);
+  // THR-603 / THR-1648: the Chapter Ledger flags live in GameScreenState; its
+  // launcher (and the launcher's blur-on-close) lives in frame/LedgerRail.
 
   // ── Last viewed tick tracking (drives "new" badges on digest entries) ──
   const { markViewed, getLastViewedTick } = useLastViewedTick();
@@ -507,7 +493,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const [ascendantSheetOpen, setAscendantSheetOpen] = useState(false);
 
   // ── Codex overlay (THR-613 Slice 3b-tail): full three-state path catalog ──
-  const [codexOpen, setCodexOpen] = useState(false);
   const [codexInitialFilter, setCodexInitialFilter] = useState<CodexRunStateFilter>('all');
   const [codexInitialEntryId, setCodexInitialEntryId] = useState<string | null>(null);
   const openCodex = useCallback((filter: CodexRunStateFilter = 'all') => {
@@ -547,9 +532,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     };
   }, []);
 
-  // ── Doom clock and mandate detail modals ──
-  const [doomDetailOpen, setDoomDetailOpen] = useState(false);
-  const [mandateDetailOpen, setMandateDetailOpen] = useState(false);
   // THR-1853: the top bar's Rivals and Notables dropdowns, reported up so a queued
   // arrival or a waiting gift never mounts over them.
   const [rivalsOpen, setRivalsOpen] = useState(false);
@@ -4247,6 +4229,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       <DetailModalStackValueProvider value={refRouter.stack}>
       <RefRouterProvider router={refRouter}>
       <DetailPageOpenerProvider value={openDetailNodeRef}>
+      <GameScreenStateProvider value={gameScreen}>
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
       {/* ═══ Top bar — extracted to GameViewTopBar (THR-579) ═══ */}
       <GameViewTopBar
@@ -4312,35 +4295,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       {/* ═══ Main content area ═══ */}
       <div className="flex flex-1 overflow-hidden">
-        {/* ── Left rail: Ascendant Bar (THR-184) ── */}
-        <AscendantBar
+        {/* ── Left rail: the God rail, the Ascendant Bar (THR-184; THR-1881 step e) ── */}
+        <GodRail
           gameState={gameState}
+          setGameState={setGameState}
           archetype={archetype}
           ascendantIdentity={ascendantIdentity ?? null}
           avatarName={avatarName}
           worldVersion={runtime.worldVersion}
-          onOpenSheet={() => setAscendantSheetOpen(true)}
-          onOpenMandate={() => setMandateDetailOpen(true)}
-          onOpenCodex={openCodex}
-          // THR-1330 — a Hooks chip's link half. Deliberately the same setter the
-          // aftermath consequence chip uses (THR-1120), so the condition the player
-          // was granted at the end of an encounter and the condition sitting on their
-          // bar afterwards open the one sheet. A second attachment surface for the
-          // same concept class is what Law 3 exists to prevent.
-          onOpenAttachment={setAttachmentSheetId}
+          setAscendantSheetOpen={setAscendantSheetOpen}
+          openCodex={openCodex}
+          setAttachmentSheetId={setAttachmentSheetId}
           showMandate={firstScreenReveal.mandate}
           opening={openingReveal}
-          onCenterOnSeat={handleCenterOnHex}
-          onMove={handleAvatarMoveClick}
-          onInvestiture={handleScryWithMutex}
-          onReleaseControl={(effectId) =>
-            // Queue a voluntary release; phaseControlEffects lapses it next tick (THR-613 §3.4).
-            // The row leaves the panel immediately because selectCovenantRows hides queued ids.
-            setGameState((prev) => ({
-              ...prev,
-              pendingControlReleases: [...(prev.pendingControlReleases ?? []), effectId],
-            }))
-          }
+          handleCenterOnHex={handleCenterOnHex}
+          handleAvatarMoveClick={handleAvatarMoveClick}
+          handleScryWithMutex={handleScryWithMutex}
         />
 
         {/* ── Center: map / hex zoom / location ── */}
@@ -4651,114 +4621,37 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               )}
             </AnimateMount>
 
-            {/* Sidebar — always rendered */}
-            <div
-              data-testid="right-sidebar"
-              className="flex-shrink-0 overflow-y-auto"
-              style={{
-                width: 'var(--rail-right-w)', // THR-1819 Ledger rail: 340 at 1080p, 420 at 1440p
-                background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-                borderLeft: '1px solid var(--border-subtle)',
-              }}
-            >
-              <div style={{ padding: 'var(--panel-padding)' }}>
-                {openingReveal.show.threads && (
-                <ThreadsPanel
-                  threadedNodes={threadedNodes}
-                  selectedNodeId={selectedThreadNode?.nodeId ?? null}
-                  onNodeSelect={handleThreadNodeSelect}
-                  onCenterOnHex={handleCenterOnHex}
-                  onZoomToLocation={handleZoomToLocation}
-                  activeEncounters={retinueActiveEncounters}
-                  agentEncounterDecisions={latestThreadEncounterDecisions}
-                  onToggleAttentionMode={handleToggleAttentionMode}
-                  agentStrategicSummaries={agentStrategicSummaries}
-                  appointmentBadges={appointmentBadges}
-                  encounterStakesLines={encounterStakesLines}
-                  encounterBadges={encounterBadges}
-                  onOpenEncounterBadge={handleOpenEncounterBadge}
-                  tugBadges={tugBadges}
-                  onAttendTugBadge={attendThreadTug}
-                  noticeBadges={noticeBadges}
-                  onOpenNoticeBadge={handleOpenNoticeBadge}
-                  momentBadges={momentBadges}
-                  onOpenMomentBadge={handleOpenMomentBadge}
-                  sustainedControls={sustainedControls}
-                  // THR-1500 — `openAgentSheetForId`, not `openAgentProfileForId`.
-                  // The chip names a champion who need not be the selected mortal
-                  // (any threaded row can carry one), and the bare opener sets only
-                  // the modal id while the card is memoised on `selectedAgentId`:
-                  // the chip then showed nothing, or the previously selected
-                  // mortal's sheet under the champion's id (Laws 1, 21, 33).
-                  onChampionChipClick={openAgentSheetForId}
-                />
-                )}
-                {/* THR-603: open the Chapter Ledger — every encounter, always readable.
-                    THR-1837: it arrives with The First's first chapter. */}
-                {openingReveal.show.chapter_ledger && (
-                <button
-                  ref={chapterLedgerButtonRef}
-                  type="button"
-                  data-testid="chapter-ledger-launcher"
-                  onClick={() => {
-                    setChapterLedgerSeenCount(countThreadedChapters(gameState));
-                    setChapterLedgerOpen(true);
-                  }}
-                  data-newly-revealed={openingReveal.newly.has('chapter_ledger') ? 'true' : undefined}
-                  style={{
-                    ...(openingReveal.newly.has('chapter_ledger') ? NEWLY_REVEALED_STYLE : {}),
-                    marginTop: 'var(--panel-padding)',
-                    width: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    padding: '8px',
-                    background: 'var(--bg-panel, rgba(255,255,255,0.02))',
-                    border: '1px solid var(--border-subtle, #40382c)',
-                    borderRadius: '8px',
-                    color: 'var(--text-secondary)',
-                    cursor: 'pointer',
-                    fontSize: 'var(--text-sm)',
-                  }}
-                  aria-label="Open the Chapter Ledger"
-                >
-                  📖 Chapter Ledger
-                  <span
-                    data-testid="chapter-ledger-unread"
-                    style={{ color: 'var(--text-tertiary, #6a6255)', fontSize: 'var(--text-xs)' }}
-                    title="New chapters since you last opened the ledger"
-                  >
-                    {/* THR-1604: counts what the ledger lists by default (threaded
-                        chapters), not every encounter the world has archived.
-                        THR-1648: only the ones not yet seen. */}
-                    {unreadChapterCount(countThreadedChapters(gameState), chapterLedgerSeenCount)}
-                  </span>
-                </button>
-                )}
-                {/* THR-1837: World Pulse arrives with A Path Opens. */}
-                {openingReveal.show.world_pulse && (
-                <div
-                  data-newly-revealed={openingReveal.newly.has('world_pulse') ? 'true' : undefined}
-                  style={{ marginTop: 'var(--panel-padding)', ...(openingReveal.newly.has('world_pulse') ? NEWLY_REVEALED_STYLE : {}) }}
-                >
-                  <WorldPulse
-                    gameState={gameState}
-                    season={seasonName}
-                    year={year}
-                    speed={speed}
-                    onSpeedChange={setSpeed}
-                  />
-                </div>
-                )}
-                {/* THR-1656: the chronicle mounts from minute one when the world has a past. */}
-                {openingReveal.show.chronicle && (gameState.chronicleEntries.length > 0 || beforeYouWoke.length > 0) && (
-                  <div style={{ marginTop: 'var(--panel-padding)' }}>
-                    <ChroniclePanel entries={gameState.chronicleEntries} currentTick={gameState.tick} past={beforeYouWoke} />
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* Sidebar — always rendered: the Ledger rail (THR-1881 step e) */}
+            <LedgerRail
+              gameState={gameState}
+              openingReveal={openingReveal}
+              threadedNodes={threadedNodes}
+              selectedThreadNodeId={selectedThreadNode?.nodeId ?? null}
+              handleThreadNodeSelect={handleThreadNodeSelect}
+              handleCenterOnHex={handleCenterOnHex}
+              handleZoomToLocation={handleZoomToLocation}
+              retinueActiveEncounters={retinueActiveEncounters}
+              latestThreadEncounterDecisions={latestThreadEncounterDecisions}
+              handleToggleAttentionMode={handleToggleAttentionMode}
+              agentStrategicSummaries={agentStrategicSummaries}
+              appointmentBadges={appointmentBadges}
+              encounterStakesLines={encounterStakesLines}
+              encounterBadges={encounterBadges}
+              handleOpenEncounterBadge={handleOpenEncounterBadge}
+              tugBadges={tugBadges}
+              attendThreadTug={attendThreadTug}
+              noticeBadges={noticeBadges}
+              handleOpenNoticeBadge={handleOpenNoticeBadge}
+              momentBadges={momentBadges}
+              handleOpenMomentBadge={handleOpenMomentBadge}
+              sustainedControls={sustainedControls}
+              openAgentSheetForId={openAgentSheetForId}
+              seasonName={seasonName}
+              year={year}
+              speed={speed}
+              setSpeed={setSpeed}
+              beforeYouWoke={beforeYouWoke}
+            />
           </div>
         )}
       </div>
@@ -4781,12 +4674,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleAgentSelect={handleAgentSelect}
         warmStart={warmStart}
         warmFirstName={warmFirstName}
-        chapterLedgerOpen={chapterLedgerOpen}
-        setChapterLedgerOpen={setChapterLedgerOpen}
-        setChapterLedgerSeenCount={setChapterLedgerSeenCount}
         openAgentSheetForId={openAgentSheetForId}
-        readThreadsOpen={readThreadsOpen}
-        setReadThreadsOpen={setReadThreadsOpen}
         lastReadThreadsTick={lastReadThreadsTick}
         setLastReadThreadsTick={setLastReadThreadsTick}
         attentionPool={attentionPool}
@@ -4804,15 +4692,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         beatProseOverride={beatProseOverride}
         avatarName={avatarName}
         beatSubjectRef={beatSubjectRef}
-        codexOpen={codexOpen}
-        setCodexOpen={setCodexOpen}
         codexInitialFilter={codexInitialFilter}
         codexInitialEntryId={codexInitialEntryId}
-        doomDetailOpen={doomDetailOpen}
-        setDoomDetailOpen={setDoomDetailOpen}
         doomJourneyLabel={doomJourneyLabel}
-        mandateDetailOpen={mandateDetailOpen}
-        setMandateDetailOpen={setMandateDetailOpen}
         interruptResolution={interruptResolution}
         currentPopup={currentPopup}
         notificationState={notificationState}
@@ -5042,6 +4924,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} />
       )}
     </div>
+      </GameScreenStateProvider>
       </DetailPageOpenerProvider>
       </RefRouterProvider>
       </DetailModalStackValueProvider>
