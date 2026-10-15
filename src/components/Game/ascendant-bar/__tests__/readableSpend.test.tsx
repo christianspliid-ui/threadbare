@@ -174,6 +174,26 @@ describe('EssenceBlock', () => {
     expect(screen.queryByTestId('essence-spend-mind')).toBeNull();
   });
 
+  // THR-1858 (warm round 2): a Chaos price drained a pool hidden in the fold.
+  it('a charge to an elder pool opens the Elder powers fold, and the player can fold it again', () => {
+    const pool = fullPool();
+    const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    expect(screen.queryByTestId('essence-row-chaos')).toBeNull();
+    rerender(<EssenceBlock rows={rowsFor({ ...pool, chaos: pool.chaos - 4 })} />);
+    expect(screen.getByTestId('essence-elder-fold').getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getByTestId('essence-row-chaos')).toBeTruthy();
+    fireEvent.click(screen.getByTestId('essence-elder-fold'));
+    expect(screen.queryByTestId('essence-row-chaos')).toBeNull();
+  });
+
+  it('an elder pool refilling does not open the fold', () => {
+    const pool = fullPool();
+    pool.chaos -= 10;
+    const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    rerender(<EssenceBlock rows={rowsFor({ ...pool, chaos: pool.chaos + 3 })} />);
+    expect(screen.getByTestId('essence-elder-fold').getAttribute('aria-expanded')).toBe('false');
+  });
+
   it('lights the row a hovered card would draw from, opening the fold if needed', () => {
     render(<EssenceBlock rows={rowsFor(fullPool())} />);
     act(() => { setEssencePreviewSphere('mind'); });

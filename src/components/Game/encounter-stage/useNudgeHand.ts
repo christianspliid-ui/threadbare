@@ -27,6 +27,20 @@ import type {
 } from './types';
 import type { SphereName } from '../../../types/index';
 
+/** THR-1858 — a probability shift smaller than this is float noise, not a move. */
+export const FORECAST_MOVE_EPSILON = 1e-6;
+
+/**
+ * THR-1858 — has the hand moved the odds? A tier change, or any shift inside
+ * one tier larger than float noise.
+ */
+export function forecastHasMoved(
+  base: Pick<EncounterStageForecastModel, 'tier' | 'probability'>,
+  now: Pick<EncounterStageForecastModel, 'tier' | 'probability'>,
+): boolean {
+  return now.tier !== base.tier || Math.abs(now.probability - base.probability) > FORECAST_MOVE_EPSILON;
+}
+
 /**
  * THR-1706 — what is left in the paying sphere's own pool after the current
  * selection. Only cards billed to that sphere count against it: a gated card
@@ -47,6 +61,35 @@ export function budgetSphereRemaining(
     if (card?.payingSphere === sphere) spent += Math.max(0, card.essenceCost);
   }
   return { sphere, remaining: Math.max(0, (phase.budgetSphereEssence ?? 0) - spent) };
+}
+
+/**
+ * THR-1858 — what is left in every paying sphere's pool after the selection,
+ * budget sphere first, then the others in the order the hand offers them.
+ * Each card counts only against its own payer. Empty when the phase names no
+ * payer (no identity). Pure — the hook and its tests share it.
+ */
+export function payingSpheresRemaining(
+  phase: EncounterStageNudgePhaseModel | undefined,
+  selectedIds: readonly string[],
+): Array<{ sphere: SphereName; remaining: number }> {
+  if (!phase) return [];
+  const order: SphereName[] = [];
+  if (phase.budgetSphere) order.push(phase.budgetSphere);
+  for (const card of phase.cards) {
+    if (card.payingSphere && !order.includes(card.payingSphere)) order.push(card.payingSphere);
+  }
+  return order.map((sphere) => {
+    const pool = sphere === phase.budgetSphere
+      ? (phase.budgetSphereEssence ?? phase.payingSphereEssence?.[sphere] ?? 0)
+      : (phase.payingSphereEssence?.[sphere] ?? 0);
+    let spent = 0;
+    for (const id of selectedIds) {
+      const card = phase.cards.find((c) => c.id === id);
+      if (card?.payingSphere === sphere) spent += Math.max(0, card.essenceCost);
+    }
+    return { sphere, remaining: Math.max(0, pool - spent) };
+  });
 }
 
 /**
@@ -119,7 +162,13 @@ export interface UseNudgeHandResult {
    * agrees with that sphere's bar after the commit.
    */
   budget?: { sphere: SphereName; remaining: number };
-  /** True when the selection has moved the forecast off its base tier. */
+  /** THR-1858 — every paying sphere's pool after the selection (budget sphere first). */
+  payers: Array<{ sphere: SphereName; remaining: number }>;
+  /**
+   * True when the selection has moved the odds at all — a tier change, or a
+   * shift inside one tier (THR-1858: a +0.10 card inside "Uncertain" showed no
+   * movement, so the player read the card as dead).
+   */
   forecastMoved: boolean;
   toggle: (nudgeId: string) => void;
   clear: () => void;
@@ -170,6 +219,7 @@ export function useNudgeHand(
   const availableEssence = phase?.availableEssence ?? 0;
   const remainingEssence = Math.max(0, availableEssence - selectedCost);
   const budget = useMemo(() => budgetSphereRemaining(phase, selectedIds), [phase, selectedIds]);
+  const payers = useMemo(() => payingSpheresRemaining(phase, selectedIds), [phase, selectedIds]);
 
   const forecast = useMemo((): EncounterStageForecastModel => {
     if (!phase) return { tier: 'uncertain', word: FORECAST_TIER_WORDS.uncertain, probability: 0 };
@@ -212,7 +262,8 @@ export function useNudgeHand(
     selectedCost,
     remainingEssence,
     budget,
-    forecastMoved: !!phase && forecast.tier !== phase.baseForecast.tier,
+    payers,
+    forecastMoved: !!phase && forecastHasMoved(phase.baseForecast, forecast),
     toggle,
     clear,
   };

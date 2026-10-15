@@ -44,5 +44,13 @@ export const AnimateMount = React.memo(function AnimateMount({
 
   if (!shouldRender) return null;
 
-  return <div className={animClass}>{children}</div>;
+  // THR-1858: an exiting surface stays mounted for `duration` ms while it fades.
+  // It must not take clicks in that window — a closing dropdown ate the click
+  // meant for the row beneath it (warm round 2).
+  const exiting = animClass.endsWith('-exit');
+  return (
+    <div className={animClass} style={exiting ? { pointerEvents: 'none' } : undefined}>
+      {children}
+    </div>
+  );
 });

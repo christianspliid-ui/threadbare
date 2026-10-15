@@ -181,6 +181,37 @@ interface EssenceBlockProps {
   rows: EssenceRowView[];
 }
 
+/**
+ * THR-1858 — true once any elder pool has dropped by a spend
+ * ({@link ESSENCE_SPEND_FLASH_MIN_DROP} or more) since the block mounted. The
+ * baseline is the first reading, so a pool that only refills never trips it.
+ */
+function useElderCharge(elderRows: readonly EssenceRowView[]): boolean {
+  const baseline = useRef<Map<string, number> | null>(null);
+  const [charged, setCharged] = useState(false);
+  const levels = elderRows.map((r) => `${r.sphere}:${r.level}`).join('|');
+  useEffect(() => {
+    if (charged) return;
+    if (baseline.current === null) {
+      baseline.current = new Map(elderRows.map((r) => [r.sphere, r.level]));
+      return;
+    }
+    for (const r of elderRows) {
+      const before = baseline.current.get(r.sphere);
+      if (before === undefined || r.level > before) {
+        baseline.current.set(r.sphere, r.level);
+        continue;
+      }
+      if (before - r.level >= ESSENCE_SPEND_FLASH_MIN_DROP) {
+        setCharged(true);
+        return;
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `levels` is the content key of `elderRows`
+  }, [levels, charged]);
+  return charged;
+}
+
 export function EssenceBlock({ rows }: EssenceBlockProps) {
   const [elderOpen, setElderOpen] = useState(!ESSENCE_FOUNDATION_FOLDED_DEFAULT);
   const preview = useSyncExternalStore(
@@ -188,6 +219,16 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
     getEssencePreviewSphere,
     getEssencePreviewSphere,
   );
+
+  const ownRows = rows.filter((r) => !r.isElder);
+  const elderRows = rows.filter((r) => r.isElder);
+  // THR-1858 — the first charge to an elder pool opens the fold: a Chaos card's
+  // price drained a pool the player could not see (warm round 2). It opens once;
+  // the player may fold it again afterwards.
+  const elderCharged = useElderCharge(elderRows);
+  useEffect(() => {
+    if (elderCharged) setElderOpen(true);
+  }, [elderCharged]);
 
   if (rows.length === 0) {
     return (
@@ -197,8 +238,6 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
     );
   }
 
-  const ownRows = rows.filter((r) => !r.isElder);
-  const elderRows = rows.filter((r) => r.isElder);
   // A hovered card that draws on an elder power opens the fold for as long as it
   // is hovered — the preview must land on a row the player can see.
   const elderShown = elderOpen || elderRows.some((r) => r.sphere === preview);

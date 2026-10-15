@@ -1085,7 +1085,9 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.essence.foundation_fold': {
     label: 'Elder powers',
-    desc: 'Elder powers — you have not yet learned to draw on these. They are older than the spheres you chose, found rather than taken.',
+    // THR-1858 — the old line said "you have not yet learned to draw on these"
+    // while a Chaos card was on offer and charging this very pool.
+    desc: 'Elder powers — older than the spheres you chose, found rather than taken. Some cards draw on them; when one does, this fold opens on the pool it spends.',
   },
 
   // The god's quintessence, named beside its word on the identity strip. Distinct

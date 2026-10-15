@@ -101,4 +101,23 @@ describe('Dropdown', () => {
     fireEvent.keyDown(screen.getByText('Option'), { key: 'Enter' });
     expect(fn).toHaveBeenCalledOnce();
   });
+
+  // THR-1858 (warm round 2): the panel stays mounted ~200 ms while it fades out.
+  // In that window it must let clicks through to whatever sits beneath it.
+  it('an exiting panel takes no clicks (pointer-events: none)', () => {
+    const { rerender } = render(
+      <Dropdown trigger={<button>Open</button>} open onOpenChange={() => {}}>
+        <div>Menu</div>
+      </Dropdown>,
+    );
+    rerender(
+      <Dropdown trigger={<button>Open</button>} open={false} onOpenChange={() => {}}>
+        <div>Menu</div>
+      </Dropdown>,
+    );
+    const panel = screen.getByTestId('dropdown-panel');
+    const exitWrapper = panel.parentElement as HTMLElement;
+    expect(exitWrapper.className).toContain('anim-fade-down-exit');
+    expect(exitWrapper.style.pointerEvents).toBe('none');
+  });
 });
