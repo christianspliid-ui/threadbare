@@ -181,6 +181,21 @@ function updateFunnelCounters(
 export interface FilterResult {
   candidates: EncounterCacheEntry[];
   trace: FilterPipelineTrace;
+  /**
+   * THR-1930: set when the entry flagged `journeyGoal` entered a stage that must
+   * keep it — the story breath or the cap — and did not leave it. That is the
+   * THR-1639 defect. An eligibility stage dropping the goal is a fair drop and
+   * leaves this unset.
+   */
+  journeyGoalCutBy?: 'story_breath' | 'cap';
+}
+
+/** THR-1930: did a stage that guarantees the journey goal let it through? */
+function journeyGoalLost(
+  before: readonly EncounterCacheEntry[],
+  after: readonly EncounterCacheEntry[],
+): boolean {
+  return before.some(e => e.journeyGoal === true) && !after.some(e => e.journeyGoal === true);
 }
 
 // ─── Stage 1: Awareness + Faction ───────────────────────────────
@@ -1125,11 +1140,14 @@ export function runFilterPipeline(
 
   // Stage 3b: Story breath (THR-1715). Counted inside the prerequisites funnel
   // bucket — it is an eligibility gate, and the funnel's gate set is fixed.
+  let journeyGoalCutBy: FilterResult['journeyGoalCutBy'];
+  const beforeStoryBreath = current;
   try {
     current = filterByStoryBreath(current, agentId, graph, tick);
   } catch {
     // Keep previous stage's output
   }
+  if (journeyGoalLost(beforeStoryBreath, current)) journeyGoalCutBy = 'story_breath';
   const afterStoryBreath = current.length;
   const s3 = (funnel && s0) ? templateIdSet(current) : null;
 
@@ -1150,6 +1168,7 @@ export function runFilterPipeline(
   } catch {
     // Keep previous stage's output
   }
+  if (journeyGoalLost(beforeCap, current)) journeyGoalCutBy = 'cap';
   const afterCap = current.length;
   // THR-1633 S1 / impediment #239: a positional cut is otherwise an absence, not a count.
   const capCutTemplates = afterThreat > MAX_SCORED_CANDIDATES
@@ -1177,6 +1196,7 @@ export function runFilterPipeline(
       capReport.localOrder,
       afterStoryBreath,
     ),
+    ...(journeyGoalCutBy ? { journeyGoalCutBy } : {}),
   };
 }
 

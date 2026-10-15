@@ -1165,6 +1165,23 @@ export function phaseAgentDecision(
           boardArrivalGoal = { templateId: goalId, locationId: goalCandidate.entry.locationId };
         }
         arrivalGoal = goalOnBoard ? 'kept' : 'dropped';
+        // THR-1930: the DECIDE timeline event carries this verdict only when an
+        // encounter is selected; this trace carries it on every exit (undertaking,
+        // appointment, idle), so a goal cut on arrival is visible however it ends.
+        emitTrace({
+          category: 'movement',
+          tick: state.tick,
+          agentId,
+          agentName: actor.name,
+          event: 'arrival_goal',
+          arrivalGoal,
+          ...(!goalOnBoard && filterResult.journeyGoalCutBy
+            ? { arrivalGoalCutBy: filterResult.journeyGoalCutBy }
+            : {}),
+          encounterId: goalId,
+          destinationId: arrivedState.destinationId,
+          summary: `${actor.name} arrives for ${goalId}: goal ${arrivalGoal}`,
+        });
         // Consumed in place: later writes in this iteration spread the actor's
         // properties snapshot, which shares this movementState object.
         arrivedState.targetEncounterId = undefined;
