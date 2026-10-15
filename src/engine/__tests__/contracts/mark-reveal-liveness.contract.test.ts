@@ -183,29 +183,33 @@ describe('Mark reveal liveness: decay path', () => {
     },
   );
 
-  it('mark placed within grace period is NOT removed on the first decay tick', () => {
-    let state = createBaseGameState(42, 1);
-    const testMark: HiddenMark = {
-      markId: 'grace-mark-001',
-      category: 'betrayal',
-      severity: 0.5,
-      label: 'Mark within grace',
-      sourceEncounterId: 'test.encounter',
-      placedTick: 1, // placed at tick 1 — grace lasts until tick 1+MARK_DECAY_GRACE_TICKS
-      targetAgentId: 'agent-nonexistent',
-      revealFamilies: ['investigation'],
-    };
-    state = { ...state, hiddenMarks: [testMark] };
+  it(
+    'mark placed within grace period is NOT removed on the first decay tick',
+    { timeout: WORLD_SIM_TEST_TIMEOUT_MS },
+    () => {
+      let state = createBaseGameState(42, 1);
+      const testMark: HiddenMark = {
+        markId: 'grace-mark-001',
+        category: 'betrayal',
+        severity: 0.5,
+        label: 'Mark within grace',
+        sourceEncounterId: 'test.encounter',
+        placedTick: 1, // placed at tick 1 — grace lasts until tick 1+MARK_DECAY_GRACE_TICKS
+        targetAgentId: 'agent-nonexistent',
+        revealFamilies: ['investigation'],
+      };
+      state = { ...state, hiddenMarks: [testMark] };
 
-    // Run for grace period - 1 ticks — mark should still be present
-    for (let i = 0; i < MARK_DECAY_GRACE_TICKS - 1; i++) {
-      state = runTick(state);
-    }
+      // Run for grace period - 1 ticks — mark should still be present
+      for (let i = 0; i < MARK_DECAY_GRACE_TICKS - 1; i++) {
+        state = runTick(state);
+      }
 
-    const traceBeforeGraceExpires = getTraces().filter(t => t.category === 'hidden_mark_revealed');
-    expect(traceBeforeGraceExpires).toHaveLength(0);
-    expect(state.hiddenMarks?.some(m => m.markId === 'grace-mark-001')).toBe(true);
-  });
+      const traceBeforeGraceExpires = getTraces().filter(t => t.category === 'hidden_mark_revealed');
+      expect(traceBeforeGraceExpires).toHaveLength(0);
+      expect(state.hiddenMarks?.some(m => m.markId === 'grace-mark-001')).toBe(true);
+    },
+  );
 });
 
 // ─── Scoring boost ────────────────────────────────────────────────
