@@ -6559,7 +6559,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         {
           id: 'plague_outbreak.expert',
           when: { intelligenceTier: 'expert' },
-          template: '{name.first} has encountered this before. The disease has a pattern and it follows it. {pronoun.subject_capitalized} approach{es} with grim clarity, already planning the quarantine, already mourning what it will cost.',
+          template: '{name.first} has encountered this before. The disease has a pattern and it follows it. {pronoun.subject_capitalized} arrive{s} with grim clarity, already planning the quarantine, already mourning what it will cost.',
         },
         {
           id: 'plague_outbreak.threat',
