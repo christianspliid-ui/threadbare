@@ -7,7 +7,7 @@ import type { UnifiedActionTemplate } from '../../src/types/unifiedAction';
 import { buildEncounterState } from '../content-judgments/encounterState';
 import { parseRunnerArgs, runEncounterCoverage, type RunnerIO } from '../content-judgments/runner';
 import { judge, JevAuthError, readApiKey } from '../content-judgments/jevClient';
-import type { EncounterCoverageArtifact } from '../content-judgments/coverageRollup';
+import { PLACEHOLDER_THRESHOLDS, type EncounterCoverageArtifact } from '../content-judgments/coverageRollup';
 
 const FAKE_KEY = 'tsk-FIXTURE-KEY-must-never-print-4242';
 
@@ -134,6 +134,37 @@ describe('judge:encounters runner (THR-1723)', () => {
     expect((await runEncounterCoverage(huge, args(), refused.io)).exitCode).toBe(1);
     expect(refused.io.fetchImpl).not.toHaveBeenCalled();
     expect(refused.logs.join('\n')).toContain('pass --force');
+  });
+
+  it('never publishes a --limit run', async () => {
+    const publish = vi.fn(() => true);
+    const { io, logs, written } = harness({ publish });
+    const res = await runEncounterCoverage(states, args(['--limit', '1']), io);
+    expect(res.exitCode).toBe(0);
+    expect(written).toHaveLength(2);
+    expect(publish).not.toHaveBeenCalled();
+    expect(logs.join('\n')).toContain('not published to ops');
+  });
+
+  it('reads calibration labels before any paid call, and stops on a bad path', async () => {
+    const { io, logs, written } = harness({
+      readCalibrationLabels: () => { throw new Error('ENOENT labels.jsn'); },
+    });
+    const res = await runEncounterCoverage(states, args(['--calibration', 'labels.jsn']), io);
+    expect(res.exitCode).toBe(1);
+    expect(io.fetchImpl).not.toHaveBeenCalled();
+    expect(written).toHaveLength(0);
+    expect(logs.join('\n')).toContain('cannot read calibration labels');
+  });
+
+  it('drops carried thresholds when the model or question version changed', async () => {
+    const calibrated = { ...PLACEHOLDER_THRESHOLDS, reach: 0.42, calibratedAt: '2026-10-01T00:00:00.000Z' };
+    const base = { questionsVersion: 1, model: 'jev-1.13.0', rows: [], thresholds: calibrated, calibration: null };
+    const same = harness({ readPrevious: () => base as unknown as EncounterCoverageArtifact });
+    expect((await runEncounterCoverage(states, args(), same.io)).artifact?.thresholds.reach).toBe(0.42);
+    const moved = harness({ readPrevious: () => ({ ...base, model: 'jev-1.12.0' }) as unknown as EncounterCoverageArtifact });
+    const res = await runEncounterCoverage(states, args(), moved.io);
+    expect(res.artifact?.thresholds).toEqual(PLACEHOLDER_THRESHOLDS);
   });
 
   it('reports a failed publish with the retry command and exits 1', async () => {

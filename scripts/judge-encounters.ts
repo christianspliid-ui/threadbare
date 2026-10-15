@@ -21,10 +21,19 @@ import type { UnifiedActionTemplate } from '../src/types/unifiedAction';
 import { buildEncounterState } from './content-judgments/encounterState';
 import { parseRunnerArgs, runEncounterCoverage } from './content-judgments/runner';
 import type { CalibrationLabel, EncounterCoverageArtifact } from './content-judgments/coverageRollup';
-import { COVERAGE_ARTIFACT_FILE, COVERAGE_OUTPUT_DIR, COVERAGE_REPORT_FILE } from './content-judgments/constants';
+import {
+  COVERAGE_ARTIFACT_FILE,
+  COVERAGE_OUTPUT_DIR,
+  COVERAGE_REPORT_FILE,
+  GIT_SHOW_MAX_BUFFER_BYTES,
+} from './content-judgments/constants';
 
 function git(args: string[]): string {
-  return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+  return execFileSync('git', args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+    maxBuffer: GIT_SHOW_MAX_BUFFER_BYTES,
+  }).trim();
 }
 
 function buildStates() {

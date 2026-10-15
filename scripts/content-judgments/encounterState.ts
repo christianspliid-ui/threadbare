@@ -14,6 +14,7 @@ import { runnableStepSites } from '../../src/types/unifiedAction';
 import { authoredTags, type ContentCatalogEntry } from '../../src/data/contentEntryTags';
 import { axisOfContentTag } from '../../src/data/content-tags';
 import { ENCOUNTER_STATE_MAX_CHARS } from './constants';
+import { buildQuestionsForEntry } from './encounterQuestions';
 
 export interface EncounterState {
   readonly encounter: {
@@ -133,6 +134,16 @@ export function declaredLabels(template: UnifiedActionTemplate): DeclaredLabels 
   };
 }
 
+/**
+ * The cache key's content half: the state **and** the exact questions this entry is asked.
+ * The tag-fit questions depend on the worn family tags, which are kept out of the state, so
+ * hashing the state alone would reuse a row that lacks an answer for a newly worn tag. Any
+ * edit to a question or a quoted catalog line also changes the hash, so it re-asks.
+ */
+export function requestHash(state: EncounterState, familyTags: readonly string[]): string {
+  return fnv1a(JSON.stringify({ state, questions: buildQuestionsForEntry(familyTags) }));
+}
+
 export function buildEncounterState(
   template: UnifiedActionTemplate,
   collectorFields: Readonly<Record<string, string>> | undefined,
@@ -140,12 +151,13 @@ export function buildEncounterState(
 ): BuiltEncounterState {
   const { text, truncated, chars } = capFields(encounterProseFields(template, collectorFields), maxChars);
   const state: EncounterState = { encounter: { title: template.name, text } };
+  const declared = declaredLabels(template);
   return {
     id: template.id,
     state,
-    contentHash: fnv1a(JSON.stringify(state)),
+    contentHash: requestHash(state, declared.familyTags),
     truncated,
-    declared: declaredLabels(template),
+    declared,
     chars,
   };
 }

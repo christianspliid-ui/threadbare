@@ -128,6 +128,17 @@ export async function runEncounterCoverage(
     return { exitCode: 0, artifact: null };
   }
 
+  // Read the labels before any paid call, so a bad path costs nothing.
+  let labels: CalibrationLabel[] | null = null;
+  if (args.calibrationPath) {
+    try {
+      labels = io.readCalibrationLabels(args.calibrationPath);
+    } catch (err) {
+      io.log(`judge:encounters: stopped — cannot read calibration labels at ${args.calibrationPath}: ${err instanceof Error ? err.message : String(err)}`);
+      return { exitCode: 1, artifact: null };
+    }
+  }
+
   const previous = io.readPrevious();
   const startedAt = io.now();
   const rows = new Map<string, EncounterJudgmentRow>();
@@ -185,10 +196,15 @@ export async function runEncounterCoverage(
   const partial = ordered.length > 0 && errored / ordered.length > RUN_PARTIAL_ERROR_SHARE;
   const ranAt = io.now();
 
-  let thresholds = previous?.thresholds ?? PLACEHOLDER_THRESHOLDS;
-  let calibration = previous?.calibration ?? null;
-  if (args.calibrationPath) {
-    const labels = io.readCalibrationLabels(args.calibrationPath);
+  const model = answeredModel ?? previous?.model ?? JEV_MODEL;
+  // Thresholds were measured against one model and one question set; a change to either
+  // drops them back to the placeholders until calibration runs again.
+  const carry = previous !== null
+    && previous.model === model
+    && previous.questionsVersion === ENCOUNTER_COVERAGE_QUESTIONS_VERSION;
+  let thresholds = carry && previous ? previous.thresholds : PLACEHOLDER_THRESHOLDS;
+  let calibration = carry && previous ? previous.calibration : null;
+  if (labels) {
     const result = calibrateThresholds(ordered, labels, ranAt.toISOString());
     thresholds = result.thresholds;
     calibration = {
@@ -203,7 +219,7 @@ export async function runEncounterCoverage(
   const artifact: EncounterCoverageArtifact = {
     schema: 1,
     questionsVersion: ENCOUNTER_COVERAGE_QUESTIONS_VERSION,
-    model: answeredModel ?? previous?.model ?? JEV_MODEL,
+    model,
     doctrine: CONTENT_JUDGMENTS_DOCTRINE,
     ranAt: ranAt.toISOString(),
     sourceCommit: io.sourceCommit(),
@@ -226,7 +242,11 @@ export async function runEncounterCoverage(
   io.log(`judge:encounters: wrote ${paths.join(', ')}`);
   if (partial) io.log(`judge:encounters: PARTIAL — ${errored} of ${ordered.length} rows errored`);
 
-  if (args.publish && !io.publish(paths)) {
+  // A `--limit` run covers part of the corpus; publishing it would replace the full map
+  // on `ops` and report every other finding as resolved. It stays local.
+  if (args.publish && args.limit !== null) {
+    io.log('judge:encounters: --limit run — written locally, not published to ops');
+  } else if (args.publish && !io.publish(paths)) {
     io.log(`judge:encounters: publish failed — retry with: bash scripts/ops-publish.sh -m "content-judgments: encounter coverage" ${paths.join(' ')}`);
     return { exitCode: 1, artifact };
   }

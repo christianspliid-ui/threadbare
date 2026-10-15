@@ -1,6 +1,7 @@
 /**
- * THR-1723 — the question set quotes canon verbatim. A cosmology or tag-catalog edit fails
- * here, which is the cue to bump ENCOUNTER_COVERAGE_QUESTIONS_VERSION.
+ * THR-1723 — the question set quotes canon verbatim. A cosmology edit fails the quote tests;
+ * any question-text edit (a tag-catalog line included) fails the fingerprint pin. Either is
+ * the cue to bump ENCOUNTER_COVERAGE_QUESTIONS_VERSION.
  */
 import * as fs from 'fs';
 import * as path from 'path';
@@ -10,6 +11,7 @@ import { SPHERE_NAMES } from '../../src/types/index';
 import { getContentTag, SPHERE_TAG_DESCRIPTIONS } from '../../src/data/content-tags';
 import {
   ACTIVITY_TAGS,
+  ENCOUNTER_COVERAGE_QUESTIONS_FINGERPRINT,
   ENCOUNTER_COVERAGE_QUESTIONS_VERSION,
   NO_MATCH_OPTION,
   WALK_OF_LIFE_TAGS,
@@ -21,6 +23,7 @@ import {
   SPHERE_CANON_LINES,
   type ChoiceQuestion,
 } from '../content-judgments/encounterQuestions';
+import { fnv1a } from '../content-judgments/encounterState';
 
 const cosmology = fs.readFileSync(path.resolve(__dirname, '../../Docs/canon/cosmology.md'), 'utf8');
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -28,6 +31,12 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 describe('encounter coverage questions (THR-1723)', () => {
   it('is version 1 until a quote or option changes', () => {
     expect(ENCOUNTER_COVERAGE_QUESTIONS_VERSION).toBe(1);
+  });
+
+  it('pins the question text: any edit, including a tag-catalog line, fails until the version is bumped', () => {
+    // A failure here means the questions changed. Bump ENCOUNTER_COVERAGE_QUESTIONS_VERSION
+    // and set ENCOUNTER_COVERAGE_QUESTIONS_FINGERPRINT to the received value.
+    expect(fnv1a(JSON.stringify(buildBaseQuestions()))).toBe(ENCOUNTER_COVERAGE_QUESTIONS_FINGERPRINT);
   });
 
   it('quotes every Reach line from cosmology § The Eight Reaches verbatim', () => {

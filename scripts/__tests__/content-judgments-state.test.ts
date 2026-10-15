@@ -8,6 +8,7 @@ import {
   buildEncounterState,
   capFields,
   fnv1a,
+  requestHash,
 } from '../content-judgments/encounterState';
 
 const step = (over: Record<string, unknown> = {}) => ({
@@ -83,8 +84,15 @@ describe('buildEncounterState (THR-1723)', () => {
     const a = buildEncounterState(fixture, undefined);
     const b = buildEncounterState(fixture, undefined);
     expect(a.contentHash).toBe(b.contentHash);
-    expect(a.contentHash).toBe(fnv1a(JSON.stringify(a.state)));
+    expect(a.contentHash).toBe(requestHash(a.state, a.declared.familyTags));
     expect(fnv1a('')).toBe('811c9dc5');
+  });
+
+  it('changes the hash when a newly worn tag changes the questions, though the state does not', () => {
+    const before = buildEncounterState(fixture, undefined);
+    const after = buildEncounterState({ ...fixture, tags: ['#trade', '#relic', '#combat'] } as UnifiedActionTemplate, undefined);
+    expect(after.state).toEqual(before.state);
+    expect(after.contentHash).not.toBe(before.contentHash);
   });
 
   it('holds on the live corpus: every Encounter-kind state is title + text only', () => {
