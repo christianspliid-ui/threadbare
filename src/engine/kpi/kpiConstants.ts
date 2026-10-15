@@ -143,7 +143,7 @@ export const KPI_FORECAST_PARITY_MAX = 0.02;
 export const EVERYDAY_FLOOR_BY_BAND: Readonly<Record<'journeyman' | 'expert' | 'master', number>> = {
   journeyman: 3,
   expert: 2,
-  master: 2,
+  master: 3,
 };
 /** Location subtypes that count as "where mortals stand" for the everyday board. */
 export const EVERYDAY_SETTLEMENT_SUBTYPES: readonly string[] = ['hamlet', 'village', 'town', 'city', 'capital'];

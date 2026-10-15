@@ -95,6 +95,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   rarityTier: 2,
   intrinsicTier: 'background',
+  // THR-1526: a seed target (The Wool Staple plants it, THR-1840) whose opening stands alone.
+  drawable: true,
   name: 'The Last Lot at the Exchange',
   reach: 'gold',
   consequenceSwap: {

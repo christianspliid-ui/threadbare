@@ -231,7 +231,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'bargain'],
     reaches: ['heart', 'eye'],
     source: 'THR-1479 — the appointment primitive (A Bargain at the Crossroads → The Full Moon Collection / The Stranger Finds Them)',
-    usedBy: ['encounter.town.forged_charter_inquest'],
+    usedBy: ['encounter.town.forged_charter_inquest', 'encounter.town.returned_heir'],
   },
   {
     id: 'hook.desperate_escort',
@@ -311,7 +311,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['faith', 'bargain'],
     reaches: ['veil', 'shadow'],
     source: 'vault: Archetypes/Adventure & Quest — Sacred Crime',
-    usedBy: [],
+    usedBy: ['encounter.town.fugitive_friar', 'encounter.town.sin_eater'],
   },
   {
     id: 'hook.lost_civilization',
@@ -553,7 +553,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['craft', 'justice'],
     reaches: ['stone', 'heart'],
     source: 'vault: Archetypes/Event — The Great Building',
-    usedBy: [],
+    usedBy: ['encounter.town.gallows_pardon'],
   },
   {
     id: 'hook.ritual_of_undeath',
@@ -595,7 +595,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['bargain', 'conflict'],
     reaches: ['heart', 'gold'],
     source: 'vault: Archetypes/Ordeal — Negotiation Under Pressure',
-    usedBy: ['encounter.realm.court_summons'],
+    usedBy: ['encounter.realm.court_summons', 'encounter.town.wool_staple'],
   },
   {
     id: 'hook.rebuilding_trust',
@@ -651,7 +651,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['journey', 'scarcity'],
     reaches: ['stone', 'iron'],
     source: 'vault: Archetypes/Ordeal — The Environmental Gauntlet',
-    usedBy: ['encounter.town.masons_commission'],
+    usedBy: ['encounter.town.masons_commission', 'encounter.town.tannery_fire'],
   },
   {
     id: 'hook.political_labyrinth',
@@ -691,7 +691,7 @@ export const PLOT_HOOKS: readonly PlotHook[] = [
     themes: ['transformation', 'power'],
     reaches: ['veil', 'star'],
     source: 'vault: Archetypes/Ordeal — The Veering',
-    usedBy: [],
+    usedBy: ['encounter.town.bloodletting_hour', 'encounter.town.silver_drift_rescue'],
   },
   {
     id: 'hook.impossible_bargain',

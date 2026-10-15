@@ -24,14 +24,14 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 188 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 126 |  |
-| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 128 |  |
-| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 123 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 149 |  |
-| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 166 |  |
-| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 100 |  |
-| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 128 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 189 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 127 |  |
+| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 129 |  |
+| `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 124 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 151 |  |
+| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 168 |  |
+| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 101 |  |
+| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 129 |  |
 
 ## sphere
 
@@ -131,7 +131,7 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#travel` | Of the road, and of getting somewhere else. | item 9 · condition 1 · power 1 | 11 |  |
 | `#discovery` | Of finding what nobody had found. | item 5 · power 1 | 6 |  |
 | `#patronage` | Of being owed a favour by someone who matters. | item 1 · power 1 | 2 |  |
-| `#territorial` | Of ground held, claimed, or argued over. | encounter 3 · item 2 · condition 1 | 6 |  |
+| `#territorial` | Of ground held, claimed, or argued over. | encounter 4 · item 2 · condition 1 | 7 |  |
 | `#wilderness` | Of the unsettled country. | item 14 · power 5 · condition 3 | 22 |  |
 | `#wilds` | Of the deep wild, past where the roads go. | companion 5 | 5 |  |
 | `#ruins` | Of places that were something else first. | item 5 · power 2 · condition 1 | 8 |  |

@@ -1,0 +1,1512 @@
+/**
+ * The Sin-Eater (slug sin-eater) - slot 8 of the master-everyday-3 batch (THR-1840).
+ */
+
+import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+
+/**
+ * The annotated literal: excess-property checking on the real type is this
+ * file's deep validator ('check:typecheck' fails on any unknown field).
+ * 'consequenceDraw' is STAMPED from the binding draw (THR-1145) — edit it only
+ * by re-running the compiler or recording a 'consequenceSwap'.
+ */
+const TEMPLATE_BASE: UnifiedActionTemplate = {
+  id: 'encounter.town.sin_eater',
+  stakes: {
+    goal: 'eat a dead merchant\'s sins before his burial',
+    risk: 'be called a forger before the whole parish',
+    won: 'ate the merchant\'s sins and told the parish his crime',
+    lost: 'was not believed, and the household set the watch',
+    lostBadly: 'was called a forger before the whole parish',
+    arms: {
+      negative: {
+        won: 'ate the merchant\'s sins and buried his crime with him',
+        lost: 'left the merchant to be buried unclean',
+        lostBadly: 'left the merchant unclean, and the parish blamed them',
+      },
+    },
+  },
+  rarityTier: 2,
+  intrinsicTier: 'shaping',
+  name: 'The Sin-Eater',
+  reach: 'veil',
+  crudType: 'update',
+  scale: 'local',
+  apCost: 1,
+  actorAffinities: ['individual'],
+  motivations: ['revelation_discretion'],
+  settings: ['urban', 'rural'],
+  openings: {
+    urban: '{actor} arrives in {location} at dusk, sent for by the parish.',
+    rural: '{actor} comes to {location} at dusk, sent for by the parish.',
+  },
+  steps: [
+    {
+      reach: 'veil',
+      duration: {
+        min: 1,
+        max: 2,
+      },
+      difficulty: 0.78,
+      purposeLine: 'Eat the sins',
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+      narrativeTemplate: 'A rich merchant lies dead in his hall, to be buried at dawn. His eldest, {cast:eldest}, has '
+        + 'paid for a sin-eater, so the merchant goes to the grave clean. Bread and salt lie on the dead '
+        + 'man\'s chest.\n\n'
+        + '{actor} must eat it all before the household and take every sin whole. A sin-eater who leaves '
+        + 'a sin on the dead is not sent for again.',
+      criticalSuccessAfterimage: '{actor} ate the bread and salt to the last crumb, and the household saw the merchant go clean. '
+        + 'Under the bread lay a folded paper in the merchant\'s own hand.',
+      successAfterimage: '{actor} ate the bread and salt and took the sins whole. Under the bread lay a folded paper in '
+        + 'the merchant\'s own hand.',
+      successAtCostAfterimage: '{actor} took the sins whole, but choked on the salt in front of the household. Under the bread '
+        + 'lay a folded paper in the merchant\'s own hand.',
+      failureAfterimage: '{actor} could not finish the bread, and the household saw a sin left on the dead. Under the '
+        + 'bread lay a folded paper in the merchant\'s own hand.',
+      criticalFailureAfterimage: '{actor} put the bread down half-eaten, and {cast:eldest} sent them out of the hall.',
+      failureMetadata: {
+        effects: [
+          {
+            kind: 'reputation_with',
+            targetLocationId: '$here',
+            delta: -0.03,
+          },
+        ],
+      },
+      deal: {
+        count: 3,
+        tags: ['lore', 'insight'],
+      },
+      nudges: [
+        {
+          id: 'sineater.seal_the_lips',
+          name: 'Seal The Lips',
+          sphere: 'darkness',
+          essenceCost: 1,
+          forecastDelta: 0.06,
+          poleLean: {
+            axis: 'revelation_discretion',
+            toward: 'negative',
+          },
+          imageTag: 'generic.dark',
+          effectLine: 'Lay a vow of silence on them. They lean toward keeping what they learn hidden.',
+          bandProse: {
+            success: '{actor} ate in silence and kept their eyes on the bread.',
+            success_at_cost: '{actor} ate in such silence that the household grew uneasy.',
+            failure: '{actor} kept silent so long that the household thought the rite had stalled.',
+          },
+        },
+        {
+          id: 'sineater.stir_the_conscience',
+          name: 'Stir The Conscience',
+          sphere: 'spirit',
+          essenceCost: 1,
+          forecastDelta: 0.06,
+          poleLean: {
+            axis: 'revelation_discretion',
+            toward: 'positive',
+          },
+          imageTag: 'generic.oath',
+          effectLine: 'Make any wrong they learn sit heavy on them. They lean toward carrying it to the people it '
+            + 'harmed.',
+          bandProse: {
+            critical_success: '{actor} ate every crumb, then read the paper under it twice.',
+            near_miss: '{actor} named the sins aloud as the rite asks, but stumbled on the last.',
+            failure: '{actor} stopped eating to read the paper, and the household saw bread left on the dead.',
+            critical_failure: '{actor} read the paper aloud in the hall before the bread was finished.',
+          },
+        },
+      ],
+    },
+    {
+      branchOnStep: 0,
+      decidedBy: {
+        axis: 'revelation_discretion',
+      },
+      variants: {
+        positive: {
+          reach: 'veil',
+          duration: {
+            min: 1,
+            max: 2,
+          },
+          difficulty: 0.8,
+          purposeLine: 'Read the confession aloud',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: 'The paper is a confession. Years ago the merchant poisoned his partner and took the business. '
+            + 'The partner\'s heir, {cast:wronged}, still keeps a stall in the market and has never known.\n\n'
+            + '{actor} will not bury it. They carry the paper to {cast:wronged} and read it before the parish '
+            + 'priest at the lych-gate. The household calls it a forgery, written by a sin-eater who wants '
+            + 'paying twice. {actor} must make the parish believe the dead man\'s own words.',
+          criticalSuccessAfterimage: 'The priest knew the merchant\'s hand and said so at the lych-gate. {cast:wronged} heard every '
+            + 'word.',
+          successAfterimage: 'The parish believed the paper, and {cast:wronged} heard how the partner died.',
+          successAtCostAfterimage: 'The parish believed the paper, but the household swore at the lych-gate that {actor} had forged '
+            + 'it.',
+          failureAfterimage: 'The parish would not take a dead man\'s paper from a sin-eater\'s hand.',
+          criticalFailureAfterimage: 'The household tore the paper from {actor}\'s hand at the lych-gate, and the parish took their '
+            + 'side.',
+          carryoverFactorLines: {
+            critical_success: {
+              text: 'They took every sin, and the household saw it.',
+              polarity: 'for',
+              forecastDelta: 0.06,
+            },
+            success: {
+              text: 'They took the sins whole.',
+              polarity: 'for',
+              forecastDelta: 0.04,
+            },
+            success_at_cost: {
+              text: 'The household saw them choke on the salt.',
+              polarity: 'against',
+              forecastDelta: -0.02,
+            },
+            near_miss: {
+              text: 'They took the sins, but slowly.',
+              polarity: 'for',
+              forecastDelta: 0.01,
+            },
+            failure: {
+              text: 'A sin is still on the dead man.',
+              polarity: 'against',
+              forecastDelta: -0.05,
+            },
+          },
+          successMetadata: {
+            effects: [
+              {
+                kind: 'assign_ambition',
+                templateId: 'ambition_uncover_secrets',
+                targetAgentId: '$actor',
+                narrativeHook: 'Found a poisoning hidden under a dead man\'s bread, and wants to know what else the rich have '
+                  + 'hidden.',
+              },
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:wronged',
+                sentimentDelta: 0.12,
+                trustDelta: 0.12,
+              },
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: 0.06,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'apply_condition',
+                conditionTraitId: 'trait.condition.location.under_watch',
+                targetLocationId: '$here',
+                intensity: 0.6,
+                durationTicks: 48,
+              },
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: -0.06,
+              },
+            ],
+          },
+          deal: {
+            count: 3,
+            tags: ['presence', 'social'],
+          },
+          nudges: [
+            {
+              id: 'sineater.wake_old_grief',
+              name: 'Wake Old Grief',
+              sphere: 'time',
+              essenceCost: 2,
+              forecastDelta: 0.1,
+              imageTag: 'generic.memory',
+              effectLine: 'Bring a past loss back to the listeners, so they ask again how it happened.',
+              bandProse: {
+                critical_success: 'The old men at the lych-gate remembered how sudden the partner\'s death was, and asked how it '
+                  + 'came.',
+                success: 'The parish remembered how fast the partner had died.',
+                failure: 'The parish remembered the partner, and remembered the merchant\'s alms to the poor as well.',
+                critical_failure: 'The parish remembered only the merchant\'s alms, and turned on {actor}.',
+              },
+            },
+            {
+              id: 'sineater.steady_the_voice',
+              name: 'Steady The Voice',
+              sphere: 'order',
+              essenceCost: 1,
+              forecastDelta: 0.06,
+              imageTag: 'generic.focus',
+              effectLine: 'Keep their speech level and slow, so each word carries to the back of a crowd.',
+              bandProse: {
+                success: '{actor} read the paper slowly, and the back of the crowd heard it.',
+                near_miss: '{actor} read steadily, but the household shouted over the last lines.',
+                failure: '{actor} read every word steadily, and the parish still did not believe.',
+              },
+            },
+          ],
+        },
+        negative: {
+          reach: 'veil',
+          duration: {
+            min: 1,
+            max: 2,
+          },
+          difficulty: 0.76,
+          purposeLine: 'Bury the sin',
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          narrativeTemplate: 'The paper is a confession. Years ago the merchant poisoned his partner and took the '
+            + 'business.\n\n'
+            + '{actor} keeps it, as a sin-eater should: a sin eaten is a sin buried. At the lych-gate, '
+            + '{cast:wronged}, the partner\'s heir, stops the bier and asks before the parish what was on the '
+            + 'dead man\'s chest. {actor} must see the merchant into the ground clean, and tell the parish no '
+            + 'lie.',
+          criticalSuccessAfterimage: '{actor} said the sins were eaten and buried, and the parish said amen. {actor} burned the paper '
+            + 'at the graveside.',
+          successAfterimage: '{actor} told {cast:wronged} the sins were eaten and buried, and the merchant went into the '
+            + 'ground clean.',
+          successAtCostAfterimage: '{cast:wronged} left the lych-gate sure the sin-eater had been paid for silence.',
+          failureAfterimage: '{actor} stumbled on the burial words, and the parish said the merchant went down unclean.',
+          criticalFailureAfterimage: '{actor} lost the burial words at the graveside, and the parish blamed the sin-eater.',
+          carryoverFactorLines: {
+            critical_success: {
+              text: 'They took every sin, and the household saw it.',
+              polarity: 'for',
+              forecastDelta: 0.06,
+            },
+            success: {
+              text: 'They took the sins whole.',
+              polarity: 'for',
+              forecastDelta: 0.04,
+            },
+            success_at_cost: {
+              text: 'The household saw them choke on the salt.',
+              polarity: 'against',
+              forecastDelta: -0.02,
+            },
+            near_miss: {
+              text: 'They took the sins, but slowly.',
+              polarity: 'for',
+              forecastDelta: 0.01,
+            },
+            failure: {
+              text: 'A sin is still on the dead man.',
+              polarity: 'against',
+              forecastDelta: -0.05,
+            },
+          },
+          successMetadata: {
+            effects: [
+              {
+                kind: 'condition_attachment',
+                templateId: 'trait.condition.location.tended_shrine',
+                targetLocationId: '$here',
+              },
+              {
+                kind: 'plant_compulsion',
+                targetAgentId: '$actor',
+                encounterBias: {
+                  assist: 0.5,
+                },
+                durationTicks: 96,
+                narrativeHook: 'Carries a poisoner\'s sin, and is driven to set it right by work for others.',
+              },
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: 0.05,
+              },
+            ],
+          },
+          failureMetadata: {
+            effects: [
+              {
+                kind: 'apply_condition',
+                conditionTraitId: 'trait.condition.location.haunted',
+                targetLocationId: '$here',
+                intensity: 0.5,
+                durationTicks: 48,
+              },
+              {
+                kind: 'bond_change',
+                withAgentId: '$cast:wronged',
+                sentimentDelta: -0.06,
+                trustDelta: -0.1,
+              },
+              {
+                kind: 'reputation_with',
+                targetLocationId: '$here',
+                delta: -0.06,
+              },
+            ],
+          },
+          deal: {
+            count: 3,
+            tags: ['lore', 'presence'],
+          },
+          nudges: [
+            {
+              id: 'sineater.ease_the_dead',
+              name: 'Ease The Dead',
+              sphere: 'spirit',
+              essenceCost: 2,
+              forecastDelta: 0.1,
+              imageTag: 'generic.blessing',
+              effectLine: 'Settle a restless spirit toward rest, so the burial rite closes without a fault.',
+              bandProse: {
+                critical_success: 'The bearers carried the bier through the lych-gate without a stop.',
+                success: 'The burial rite closed without a fault.',
+                success_at_cost: 'The rite closed, but only after the bearers stopped twice at the gate.',
+                failure: 'The rite closed, and the bearers swore the bier grew heavy at the gate.',
+              },
+            },
+            {
+              id: 'sineater.soften_hard_words',
+              name: 'Soften Hard Words',
+              sphere: 'mind',
+              essenceCost: 1,
+              forecastDelta: 0.06,
+              imageTag: 'generic.warmth',
+              effectLine: 'Cool an angry questioner\'s temper, so the questions come quieter and fewer.',
+              bandProse: {
+                success: '{cast:wronged} asked once, heard the answer, and stood aside.',
+                near_miss: '{cast:wronged} stood aside, but asked twice first.',
+                failure: '{cast:wronged} asked quietly, and kept asking.',
+                critical_failure: '{cast:wronged} asked so quietly that the whole parish leaned in to hear.',
+              },
+            },
+          ],
+        },
+      },
+      fallback: {
+        reach: 'veil',
+        duration: {
+          min: 1,
+          max: 2,
+        },
+        difficulty: 0.76,
+        purposeLine: 'Bury the sin',
+        onSuccess: [],
+        onFailure: [],
+        failBehavior: 'fail_action',
+        narrativeTemplate: 'The paper is a confession. Years ago the merchant poisoned his partner and took the '
+          + 'business.\n\n'
+          + '{actor} keeps it, as a sin-eater should: a sin eaten is a sin buried. At the lych-gate, '
+          + '{cast:wronged}, the partner\'s heir, stops the bier and asks before the parish what was on the '
+          + 'dead man\'s chest. {actor} must see the merchant into the ground clean, and tell the parish no '
+          + 'lie.',
+        criticalSuccessAfterimage: '{actor} said the sins were eaten and buried, and the parish said amen. {actor} burned the paper '
+          + 'at the graveside.',
+        successAfterimage: '{actor} told {cast:wronged} the sins were eaten and buried, and the merchant went into the '
+          + 'ground clean.',
+        successAtCostAfterimage: '{cast:wronged} left the lych-gate sure the sin-eater had been paid for silence.',
+        failureAfterimage: '{actor} stumbled on the burial words, and the parish said the merchant went down unclean.',
+        criticalFailureAfterimage: '{actor} lost the burial words at the graveside, and the parish blamed the sin-eater.',
+        carryoverFactorLines: {
+          critical_success: {
+            text: 'They took every sin, and the household saw it.',
+            polarity: 'for',
+            forecastDelta: 0.06,
+          },
+          success: {
+            text: 'They took the sins whole.',
+            polarity: 'for',
+            forecastDelta: 0.04,
+          },
+          success_at_cost: {
+            text: 'The household saw them choke on the salt.',
+            polarity: 'against',
+            forecastDelta: -0.02,
+          },
+          near_miss: {
+            text: 'They took the sins, but slowly.',
+            polarity: 'for',
+            forecastDelta: 0.01,
+          },
+          failure: {
+            text: 'A sin is still on the dead man.',
+            polarity: 'against',
+            forecastDelta: -0.05,
+          },
+        },
+        successMetadata: {
+          effects: [
+            {
+              kind: 'condition_attachment',
+              templateId: 'trait.condition.location.tended_shrine',
+              targetLocationId: '$here',
+            },
+            {
+              kind: 'plant_compulsion',
+              targetAgentId: '$actor',
+              encounterBias: {
+                assist: 0.5,
+              },
+              durationTicks: 96,
+              narrativeHook: 'Carries a poisoner\'s sin, and is driven to set it right by work for others.',
+            },
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: 0.05,
+            },
+          ],
+        },
+        failureMetadata: {
+          effects: [
+            {
+              kind: 'apply_condition',
+              conditionTraitId: 'trait.condition.location.haunted',
+              targetLocationId: '$here',
+              intensity: 0.5,
+              durationTicks: 48,
+            },
+            {
+              kind: 'bond_change',
+              withAgentId: '$cast:wronged',
+              sentimentDelta: -0.06,
+              trustDelta: -0.1,
+            },
+            {
+              kind: 'reputation_with',
+              targetLocationId: '$here',
+              delta: -0.06,
+            },
+          ],
+        },
+        deal: {
+          count: 3,
+          tags: ['lore', 'presence'],
+        },
+        nudges: [
+          {
+            id: 'sineater.ease_the_dead',
+            name: 'Ease The Dead',
+            sphere: 'spirit',
+            essenceCost: 2,
+            forecastDelta: 0.1,
+            imageTag: 'generic.blessing',
+            effectLine: 'Settle a restless spirit toward rest, so the burial rite closes without a fault.',
+            bandProse: {
+              critical_success: 'The bearers carried the bier through the lych-gate without a stop.',
+              success: 'The burial rite closed without a fault.',
+              success_at_cost: 'The rite closed, but only after the bearers stopped twice at the gate.',
+              failure: 'The rite closed, and the bearers swore the bier grew heavy at the gate.',
+            },
+          },
+          {
+            id: 'sineater.soften_hard_words',
+            name: 'Soften Hard Words',
+            sphere: 'mind',
+            essenceCost: 1,
+            forecastDelta: 0.06,
+            imageTag: 'generic.warmth',
+            effectLine: 'Cool an angry questioner\'s temper, so the questions come quieter and fewer.',
+            bandProse: {
+              success: '{cast:wronged} asked once, heard the answer, and stood aside.',
+              near_miss: '{cast:wronged} stood aside, but asked twice first.',
+              failure: '{cast:wronged} asked quietly, and kept asking.',
+              critical_failure: '{cast:wronged} asked so quietly that the whole parish leaned in to hear.',
+            },
+          },
+        ],
+      },
+    },
+  ],
+  traitVariants: [
+    {
+      traitId: 'trait.personality.veil.virtue',
+      forecastDelta: 0.04,
+      factorLine: 'Being Patient, they eat slowly and leave no crumb.',
+    },
+    {
+      traitId: 'trait.core.core_integrity.vice',
+      forecastDelta: -0.04,
+      factorLine: 'Being False, they are not trusted with a dead man\'s sins.',
+    },
+  ],
+  supportBundle: [
+    {
+      kind: 'actor',
+      key: 'eldest',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['merchant', 'trader', 'noble'],
+      supportRole: 'sin_eater_household_heir',
+      spawnNpcRole: 'merchant',
+      spawnName: 'Osric Hale',
+    },
+    {
+      kind: 'actor',
+      key: 'wronged',
+      delivery: 'lazy-materialize-on-trigger',
+      persistence: 'must-persist',
+      reuseNpcRoles: ['trader', 'weaver', 'smith'],
+      supportRole: 'sin_eater_wronged_heir',
+      spawnNpcRole: 'trader',
+      spawnName: 'Bryony Tallow',
+    },
+  ],
+  narrativeTemplates: {
+    initiation: 'A rich merchant\'s household has paid for his sins to be eaten before the burial.',
+    success: 'The sin-eater did what the rite asks, and the parish trusts them more.',
+    failure: 'The sin-eater failed the rite, and the parish trusts them less.',
+  },
+  aftermathConfig: {
+    branchOnStep: 0,
+    variants: {
+      positive: {
+        overview: '{actor} carried the confession to the lych-gate.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: 'The parish believed the merchant\'s own words, and the priest said so. {cast:wronged} knows now '
+              + 'how the partner died.',
+            changes: [
+              {
+                id: 'sineater.tell.cs.bond',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:wronged}',
+                    entityId: '$cast:wronged',
+                    visualKind: 'agent',
+                  },
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+                title: 'The Heir\'s Trust',
+                detail: '{cast:wronged} trusts {actor} now.',
+              },
+              {
+                id: 'sineater.tell.cs.rep',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Trusted by the parish',
+                detail: '{location} thinks better of {actor}\'s rites.',
+                concepts: [
+                  {
+                    text: 'thinks better of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.tell.cs.ambition',
+                kind: 'future_hook',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                stateNoun: {
+                  text: 'ambition',
+                  tooltipId: 'ui.ambition',
+                },
+                title: 'A new ambition',
+                detail: '{actor} is pursuing Uncover Ancient Secrets now.',
+                concepts: [
+                  {
+                    text: 'Uncover Ancient Secrets',
+                    tooltipId: 'ui.ambition',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: 'The parish believed the merchant\'s own words. {cast:wronged} knows now how the partner died.',
+            changes: [
+              {
+                id: 'sineater.tell.su.bond',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:wronged}',
+                    entityId: '$cast:wronged',
+                    visualKind: 'agent',
+                  },
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+                title: 'The Heir\'s Trust',
+                detail: '{cast:wronged} trusts {actor} now.',
+              },
+              {
+                id: 'sineater.tell.su.rep',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Trusted by the parish',
+                detail: '{location} thinks better of {actor}\'s rites.',
+                concepts: [
+                  {
+                    text: 'thinks better of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.tell.su.ambition',
+                kind: 'future_hook',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                stateNoun: {
+                  text: 'ambition',
+                  tooltipId: 'ui.ambition',
+                },
+                title: 'A new ambition',
+                detail: '{actor} is pursuing Uncover Ancient Secrets now.',
+                concepts: [
+                  {
+                    text: 'Uncover Ancient Secrets',
+                    tooltipId: 'ui.ambition',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: '{cast:wronged} knows now how the partner died. The household calls {actor} a forger in every '
+              + 'street.',
+            changes: [
+              {
+                id: 'sineater.tell.sc.bond',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:wronged}',
+                    entityId: '$cast:wronged',
+                    visualKind: 'agent',
+                  },
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+                title: 'The Heir\'s Trust',
+                detail: '{cast:wronged} trusts {actor} now.',
+              },
+              {
+                id: 'sineater.tell.sc.rep',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Trusted by the parish',
+                detail: '{location} thinks better of {actor}\'s rites.',
+                concepts: [
+                  {
+                    text: 'thinks better of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.tell.sc.ambition',
+                kind: 'future_hook',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                stateNoun: {
+                  text: 'ambition',
+                  tooltipId: 'ui.ambition',
+                },
+                title: 'A new ambition',
+                detail: '{actor} is pursuing Uncover Ancient Secrets now.',
+                concepts: [
+                  {
+                    text: 'Uncover Ancient Secrets',
+                    tooltipId: 'ui.ambition',
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: 'The parish buried the merchant with his name clean. His household has the watch out, looking for '
+              + 'the forger.',
+            changes: [
+              {
+                id: 'sineater.tell.fa.watch',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'A watch for the forger',
+                detail: 'Quiet work in {location} is harder now.',
+                stateNoun: {
+                  text: 'Under Watch',
+                  entityId: 'trait.condition.location.under_watch',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.tell.fa.rep',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Doubted by the parish',
+                detail: '{location} trusts {actor}\'s rites less.',
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'The parish called {actor} a forger before the whole lych-gate, and buried the merchant with '
+              + 'honour.',
+            changes: [
+              {
+                id: 'sineater.tell.cf.rep',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Doubted by the parish',
+                detail: '{location} trusts {actor}\'s rites less.',
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      negative: {
+        overview: '{actor} kept the merchant\'s confession.',
+        changes: [],
+        byOutcome: {
+          critical_success: {
+            overview: 'The merchant went into the ground clean, and the paper went into the graveside fire. {actor} '
+              + 'carries his sin now.',
+            changes: [
+              {
+                id: 'sineater.keep.cs.shrine',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A kept lych-gate',
+                detail: 'Rites in {location} take more easily now.',
+                stateNoun: {
+                  text: 'A Tended Shrine',
+                  entityId: 'trait.condition.location.tended_shrine',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.cs.rep',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Trusted by the parish',
+                detail: '{location} thinks better of {actor}\'s rites.',
+                concepts: [
+                  {
+                    text: 'thinks better of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.cs.drive',
+                kind: 'shell_state',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                stateNoun: {
+                  text: 'compulsion',
+                  tooltipId: 'ui.compulsion',
+                },
+                title: 'A carried sin',
+                detail: '{actor} is driven to help others for a while.',
+                concepts: [
+                  {
+                    text: 'driven to help others',
+                    tooltipId: 'ui.compulsion',
+                  },
+                ],
+              },
+            ],
+          },
+          success: {
+            overview: 'The merchant went into the ground clean. {actor} carries his sin now, as the rite says.',
+            changes: [
+              {
+                id: 'sineater.keep.su.shrine',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A kept lych-gate',
+                detail: 'Rites in {location} take more easily now.',
+                stateNoun: {
+                  text: 'A Tended Shrine',
+                  entityId: 'trait.condition.location.tended_shrine',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.su.rep',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Trusted by the parish',
+                detail: '{location} thinks better of {actor}\'s rites.',
+                concepts: [
+                  {
+                    text: 'thinks better of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.su.drive',
+                kind: 'shell_state',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                stateNoun: {
+                  text: 'compulsion',
+                  tooltipId: 'ui.compulsion',
+                },
+                title: 'A carried sin',
+                detail: '{actor} is driven to help others for a while.',
+                concepts: [
+                  {
+                    text: 'driven to help others',
+                    tooltipId: 'ui.compulsion',
+                  },
+                ],
+              },
+            ],
+          },
+          success_at_cost: {
+            overview: 'The merchant went into the ground clean. {cast:wronged} believes the sin-eater was bought.',
+            changes: [
+              {
+                id: 'sineater.keep.sc.shrine',
+                kind: 'trait',
+                category: 'boon',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A kept lych-gate',
+                detail: 'Rites in {location} take more easily now.',
+                stateNoun: {
+                  text: 'A Tended Shrine',
+                  entityId: 'trait.condition.location.tended_shrine',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.sc.rep',
+                kind: 'reputation',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Trusted by the parish',
+                detail: '{location} thinks better of {actor}\'s rites.',
+                concepts: [
+                  {
+                    text: 'thinks better of',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.sc.drive',
+                kind: 'shell_state',
+                category: 'path',
+                direction: 'opens',
+                polarity: 'info',
+                stateNoun: {
+                  text: 'compulsion',
+                  tooltipId: 'ui.compulsion',
+                },
+                title: 'A carried sin',
+                detail: '{actor} is driven to help others for a while.',
+                concepts: [
+                  {
+                    text: 'driven to help others',
+                    tooltipId: 'ui.compulsion',
+                  },
+                ],
+              },
+            ],
+          },
+          failure: {
+            overview: 'The parish says the merchant went down unclean, and that the sin-eater failed him.',
+            changes: [
+              {
+                id: 'sineater.keep.fa.haunt',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The restless dead',
+                detail: 'People in {location} keep to their doors after dark.',
+                stateNoun: {
+                  text: 'Haunted',
+                  entityId: 'trait.condition.location.haunted',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.fa.bond',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                stateNoun: {
+                  text: 'reputation',
+                  tooltipId: 'ui.reputation_with',
+                },
+                concepts: [
+                  {
+                    text: '{cast:wronged}',
+                    entityId: '$cast:wronged',
+                    visualKind: 'agent',
+                  },
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+                title: 'The Heir\'s Doubt',
+                detail: '{cast:wronged} trusts {actor} less now.',
+              },
+              {
+                id: 'sineater.keep.fa.rep',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Doubted by the parish',
+                detail: '{location} trusts {actor}\'s rites less.',
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+          critical_failure: {
+            overview: 'The parish says the merchant went down unclean, and will send for another sin-eater next time.',
+            changes: [
+              {
+                id: 'sineater.keep.cf.haunt',
+                kind: 'trait',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'The restless dead',
+                detail: 'People in {location} keep to their doors after dark.',
+                stateNoun: {
+                  text: 'Haunted',
+                  entityId: 'trait.condition.location.haunted',
+                  visualKind: 'attachment',
+                },
+                concepts: [
+                  {
+                    text: '{location}',
+                    entityId: '$here',
+                    visualKind: 'location',
+                  },
+                ],
+              },
+              {
+                id: 'sineater.keep.cf.rep',
+                kind: 'reputation',
+                category: 'scar',
+                direction: 'loss',
+                polarity: 'loss',
+                stateNoun: {
+                  text: 'reputation with {location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                  tooltipId: 'ui.reputation_with',
+                },
+                title: 'Doubted by the parish',
+                detail: '{location} trusts {actor}\'s rites less.',
+                concepts: [
+                  {
+                    text: 'trusts',
+                    tooltipId: 'ui.standing',
+                  },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    },
+    fallback: {
+      overview: '{actor} kept the merchant\'s confession.',
+      changes: [],
+      byOutcome: {
+        critical_success: {
+          overview: 'The merchant went into the ground clean, and the paper went into the graveside fire. {actor} '
+            + 'carries his sin now.',
+          changes: [
+            {
+              id: 'sineater.fallback.cs.shrine',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'A kept lych-gate',
+              detail: 'Rites in {location} take more easily now.',
+              stateNoun: {
+                text: 'A Tended Shrine',
+                entityId: 'trait.condition.location.tended_shrine',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.cs.rep',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Trusted by the parish',
+              detail: '{location} thinks better of {actor}\'s rites.',
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.cs.drive',
+              kind: 'shell_state',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'compulsion',
+                tooltipId: 'ui.compulsion',
+              },
+              title: 'A carried sin',
+              detail: '{actor} is driven to help others for a while.',
+              concepts: [
+                {
+                  text: 'driven to help others',
+                  tooltipId: 'ui.compulsion',
+                },
+              ],
+            },
+          ],
+        },
+        success: {
+          overview: 'The merchant went into the ground clean. {actor} carries his sin now, as the rite says.',
+          changes: [
+            {
+              id: 'sineater.fallback.su.shrine',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'A kept lych-gate',
+              detail: 'Rites in {location} take more easily now.',
+              stateNoun: {
+                text: 'A Tended Shrine',
+                entityId: 'trait.condition.location.tended_shrine',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.su.rep',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Trusted by the parish',
+              detail: '{location} thinks better of {actor}\'s rites.',
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.su.drive',
+              kind: 'shell_state',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'compulsion',
+                tooltipId: 'ui.compulsion',
+              },
+              title: 'A carried sin',
+              detail: '{actor} is driven to help others for a while.',
+              concepts: [
+                {
+                  text: 'driven to help others',
+                  tooltipId: 'ui.compulsion',
+                },
+              ],
+            },
+          ],
+        },
+        success_at_cost: {
+          overview: 'The merchant went into the ground clean. {cast:wronged} believes the sin-eater was bought.',
+          changes: [
+            {
+              id: 'sineater.fallback.sc.shrine',
+              kind: 'trait',
+              category: 'boon',
+              direction: 'gain',
+              polarity: 'gain',
+              title: 'A kept lych-gate',
+              detail: 'Rites in {location} take more easily now.',
+              stateNoun: {
+                text: 'A Tended Shrine',
+                entityId: 'trait.condition.location.tended_shrine',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.sc.rep',
+              kind: 'reputation',
+              category: 'bond',
+              direction: 'gain',
+              polarity: 'gain',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Trusted by the parish',
+              detail: '{location} thinks better of {actor}\'s rites.',
+              concepts: [
+                {
+                  text: 'thinks better of',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.sc.drive',
+              kind: 'shell_state',
+              category: 'path',
+              direction: 'opens',
+              polarity: 'info',
+              stateNoun: {
+                text: 'compulsion',
+                tooltipId: 'ui.compulsion',
+              },
+              title: 'A carried sin',
+              detail: '{actor} is driven to help others for a while.',
+              concepts: [
+                {
+                  text: 'driven to help others',
+                  tooltipId: 'ui.compulsion',
+                },
+              ],
+            },
+          ],
+        },
+        failure: {
+          overview: 'The parish says the merchant went down unclean, and that the sin-eater failed him.',
+          changes: [
+            {
+              id: 'sineater.fallback.fa.haunt',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The restless dead',
+              detail: 'People in {location} keep to their doors after dark.',
+              stateNoun: {
+                text: 'Haunted',
+                entityId: 'trait.condition.location.haunted',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.fa.bond',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation',
+                tooltipId: 'ui.reputation_with',
+              },
+              concepts: [
+                {
+                  text: '{cast:wronged}',
+                  entityId: '$cast:wronged',
+                  visualKind: 'agent',
+                },
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+              title: 'The Heir\'s Doubt',
+              detail: '{cast:wronged} trusts {actor} less now.',
+            },
+            {
+              id: 'sineater.fallback.fa.rep',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Doubted by the parish',
+              detail: '{location} trusts {actor}\'s rites less.',
+              concepts: [
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+        critical_failure: {
+          overview: 'The parish says the merchant went down unclean, and will send for another sin-eater next time.',
+          changes: [
+            {
+              id: 'sineater.fallback.cf.haunt',
+              kind: 'trait',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The restless dead',
+              detail: 'People in {location} keep to their doors after dark.',
+              stateNoun: {
+                text: 'Haunted',
+                entityId: 'trait.condition.location.haunted',
+                visualKind: 'attachment',
+              },
+              concepts: [
+                {
+                  text: '{location}',
+                  entityId: '$here',
+                  visualKind: 'location',
+                },
+              ],
+            },
+            {
+              id: 'sineater.fallback.cf.rep',
+              kind: 'reputation',
+              category: 'scar',
+              direction: 'loss',
+              polarity: 'loss',
+              stateNoun: {
+                text: 'reputation with {location}',
+                entityId: '$here',
+                visualKind: 'location',
+                tooltipId: 'ui.reputation_with',
+              },
+              title: 'Doubted by the parish',
+              detail: '{location} trusts {actor}\'s rites less.',
+              concepts: [
+                {
+                  text: 'trusts',
+                  tooltipId: 'ui.standing',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    },
+  },
+  description: 'A rich merchant lies dead, and his household has paid for his sins to be eaten before the '
+    + 'burial. Under the bread on his chest is his own written confession to a poisoning, and the '
+    + 'sin-eater has to decide whether it goes into the grave with him.',
+  locationSubtypes: expandSettings(['urban', 'rural']),
+  consequenceDraw: ['drive', 'place'],
+};
+
+export const SIN_EATER_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);
