@@ -1,5 +1,12 @@
 /**
- * BorderMesh.ts — the red border, drawn from the towns Realms hold.
+ * BorderMesh.ts — the realm border, drawn from the towns Realms hold, in each holder's ink.
+ *
+ * **In the holder's ink since THR-1902** (THR-1878 plan § D12, look from THR-1831 § 5).
+ * Every border used to be one red (`0xC83030` at 0.7, 1.5 wide), which read as the doom
+ * red and said nothing about whose land it was. Each Realm's edge now takes its holder's
+ * heraldic colour, mixed toward the shadow of the terrain on its own side
+ * (`borderInk.ts`), at 0.45 opacity and 1.0 wide. Where two Realms meet, each draws the
+ * half of the line on its own side, so a frontier reads as two inks side by side.
  *
  * **One tier since THR-1155.** The layer used to draw two: thick lines around domains
  * and thin lines around provinces, both from per-hex political stamps written once at
@@ -9,19 +16,22 @@
  * remains is the boundary of a **Realm's claim**, read from `realmProjection`, so a
  * Realm that takes a town moves its border and a Realm that loses its last one has none.
  *
- * Border strategy (the geometry is unchanged; the source is new):
- *   - Walk every hex pair once (a canonical edge key deduplicates).
- *   - Two adjacent hexes claimed by different Realms → border edge.
- *   - A claimed hex beside unclaimed ground or the map edge → border edge. Wilderness
- *     is real, so the outside of a Realm is as much a border as the line between two.
- *   - Build quad-strip geometry per edge using two triangles (same pattern as RiverMesh).
+ * Border strategy:
+ *   - Walk every claimed hex's six edges; each side of an edge draws only its own ink.
+ *   - Two adjacent hexes claimed by different Realms → each draws a half-width strip on
+ *     its own side of the shared edge.
+ *   - A claimed hex beside unclaimed ground or the map edge → one full-width strip
+ *     centred on the edge. Wilderness is real, so the outside of a Realm is as much a
+ *     border as the line between two.
+ *   - Build quad-strip geometry per edge using two triangles (same pattern as RiverMesh),
+ *     with one vertex colour per strip.
  *
  * NFP #1 Tunability: All sizes and colors in named constants.
  * NFP #2 Inspectability: one mesh, one meaning — every edge in it separates two claims.
  * NFP #3 Determinism: Pure geometry from the projection — no randomness.
  * NFP #4 Fail-soft: an unclaimed hex is skipped; an empty projection draws nothing and
  * never throws.
- * NFP #7 Performance: one merged BufferGeometry, one draw call.
+ * NFP #7 Performance: one merged BufferGeometry with vertex colours, one draw call.
  */
 
 import * as THREE from 'three';
@@ -33,23 +43,28 @@ import { getActivePalette } from '../palette/activePalette';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
+import { getHexColor } from '../palette/colorUtils';
+import { BORDER_INK, holderHeraldicInk, resolveBorderInk } from './borderInk';
 
 // ─── Border rendering constants (NFP #1: Tunability) ─────────────────────────
 
-/** Half-width of realm borders in world units (visual width = 2 * REALM_HALF_WIDTH) */
-const REALM_HALF_WIDTH = 0.75;
+/** Half-width of a realm border facing wilderness (visual width = BORDER_INK.WIDTH). */
+const REALM_HALF_WIDTH = BORDER_INK.WIDTH / 2;
+
+/**
+ * Half-width of each Realm's own half where two Realms meet: the two halves sit side by
+ * side and together are BORDER_INK.WIDTH wide.
+ */
+const SHARED_HALF_WIDTH = BORDER_INK.WIDTH / 4;
 
 /** How far to extend each edge endpoint along its direction to close corner gaps */
 const EDGE_EXTENSION = 0.35;
 
-/** Border opacity (0–1). Slightly transparent to blend with terrain. */
-const BORDER_OPACITY = 0.7;
+/** Border opacity (0–1) — BORDER_INK.OPACITY, so the terrain reads through the ink. */
+const BORDER_OPACITY = BORDER_INK.OPACITY;
 
 /** Z position for border vertices — from centralized LAYER_Z */
 const BORDER_Z = LAYER_Z.BORDERS;
-
-/** Border color — reads from active palette theme */
-const BORDER_COLOR_DEFAULT = 0xC83030;
 
 /**
  * Correct mapping from hexNeighbors() direction index to the shared hex edge.
@@ -166,12 +181,27 @@ export function getEdgePoints(hexCenter: Point2D, dir: number, size: number): { 
  * Build a THREE.BufferGeometry from a flat positions array (xyz triplets, no index needed).
  * Returns geometry with 0 vertices if positions array is empty.
  */
-function buildGeometry(positions: number[]): THREE.BufferGeometry {
+function buildGeometry(positions: number[], colors: number[]): THREE.BufferGeometry {
   const geo = new THREE.BufferGeometry();
   if (positions.length > 0) {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
   }
   return geo;
+}
+
+/** Vertices one `buildThickEdge` call appends (two triangles). */
+const VERTICES_PER_STRIP = 6;
+
+/** Options for {@link createBorderMesh}. */
+export interface BorderMeshOptions {
+  /**
+   * Realm node id → its holder's index in the heraldic palette (`map.realmInk`, THR-1902).
+   * A Realm missing from the map, or -1, draws in the palette's unheld ink.
+   */
+  holderIndexByRealm?: ReadonlyMap<string, number>;
+  /** World seed — the terrain shade under each edge uses the map's own per-hex colour. */
+  seed?: number;
 }
 
 // ─── Factory ─────────────────────────────────────────────────────────────────
@@ -187,23 +217,26 @@ function buildGeometry(positions: number[]): THREE.BufferGeometry {
  *
  * @param realmProjection - The political partition, projected from `controls` (THR-1155)
  * @param tiles - All hex tiles in the world
+ * @param options - Holder ink per Realm and the world seed (THR-1902)
  */
 export function createBorderMesh(
   realmProjection: RealmProjection,
   tiles: HexTile[],
+  options: BorderMeshOptions = {},
 ): { realmMesh: THREE.Mesh } {
   const { hexRealmId } = realmProjection;
+  const { holderIndexByRealm, seed = 42 } = options;
+  const unheldInk = getActivePalette().borderInkUnheld;
 
   const realmPositions: number[] = [];
+  const realmColors: number[] = [];
+  const linear = new THREE.Color();
 
   // Build fast tile set for O(1) lookup (only need existence check)
   const tileSet = new Set<string>();
   for (const tile of tiles) {
     tileSet.add(hexKeyFromCoord(tile.coord));
   }
-
-  // Edge dedup: canonical key per edge so we never draw the same border twice
-  const processedEdges = new Set<string>();
 
   const size = HEX_CONSTANTS.HEX_SIZE;
 
@@ -219,16 +252,18 @@ export function createBorderMesh(
 
     const hexCenter: Point2D = hexToWorld({ col, row }, size);
 
+    // This hex's side of every edge it draws takes the holder's ink shaded by this
+    // hex's own terrain — "the terrain on the Realm's side of the edge" (§ D12).
+    const terrainRgb = getHexColor(tile.terrain, seed, col, row);
+    const ink = resolveBorderInk(holderHeraldicInk(holderIndexByRealm?.get(realmA) ?? -1), terrainRgb, unheldInk);
+    // Vertex colours are read in the working (linear) space; the ink is sRGB.
+    linear.setRGB(ink[0], ink[1], ink[2], THREE.SRGBColorSpace);
+
     const neighbors = hexNeighbors({ col, row });
 
     for (let dirIdx = 0; dirIdx < 6; dirIdx++) {
       const neighbor = neighbors[dirIdx];
       const neighborKey = hexKeyFn(neighbor.col, neighbor.row);
-
-      const edgeKey = hKey < neighborKey
-        ? `${hKey}|${neighborKey}`
-        : `${neighborKey}|${hKey}`;
-      if (processedEdges.has(edgeKey)) continue;
 
       const neighborExists = tileSet.has(neighborKey);
       const realmB = neighborExists ? hexRealmId.get(neighborKey) : undefined;
@@ -237,21 +272,38 @@ export function createBorderMesh(
       // Realm, unclaimed ground, or off the map.
       if (realmB === realmA) continue;
 
-      processedEdges.add(edgeKey);
-
       const { start, end } = getEdgePoints(hexCenter, dirIdx, size);
-      buildThickEdge(start.x, start.y, end.x, end.y, REALM_HALF_WIDTH, BORDER_Z, realmPositions);
+      if (realmB === undefined) {
+        // Wilderness or the map edge: one full-width line, centred on the edge.
+        buildThickEdge(start.x, start.y, end.x, end.y, REALM_HALF_WIDTH, BORDER_Z, realmPositions);
+      } else {
+        // Two Realms meet: this Realm draws the half on its own side; the neighbour
+        // draws the other half when the walk reaches it.
+        const mx = (start.x + end.x) / 2;
+        const my = (start.y + end.y) / 2;
+        const ix = hexCenter.x - mx;
+        const iy = hexCenter.y - my;
+        const len = Math.sqrt(ix * ix + iy * iy) || 1;
+        const ox = (ix / len) * SHARED_HALF_WIDTH;
+        const oy = (iy / len) * SHARED_HALF_WIDTH;
+        buildThickEdge(start.x + ox, start.y + oy, end.x + ox, end.y + oy, SHARED_HALF_WIDTH, BORDER_Z, realmPositions);
+      }
+      for (let v = 0; v < VERTICES_PER_STRIP; v++) realmColors.push(linear.r, linear.g, linear.b);
     }
   }
 
   const mat = new THREE.MeshBasicMaterial({
-    color: getActivePalette().borderColor,
+    color: 0xffffff,
+    vertexColors: true,
     side: THREE.DoubleSide,
     transparent: true,
     opacity: BORDER_OPACITY,
+    // The corner extensions of neighbouring strips overlap; no depth write keeps an
+    // overlap from cutting a hole in the line.
+    depthWrite: false,
   });
 
-  const realmGeo = buildGeometry(realmPositions);
+  const realmGeo = buildGeometry(realmPositions, realmColors);
   const realmMesh = new THREE.Mesh(realmGeo, mat);
   realmMesh.renderOrder = RENDER_ORDER.BORDERS;
 

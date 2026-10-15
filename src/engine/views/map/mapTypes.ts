@@ -96,3 +96,23 @@ export interface MapArmiesAndBattlesVM {
   armies: MapArmyVM[];
   battles: MapBattleVM[];
 }
+
+/** One Realm the map draws a border round, and who holds it (THR-1902). */
+export interface MapRealmInkRow {
+  /** The Realm's faction node id (`faction_N`). */
+  realmId: string;
+  name: string;
+  /** The faction whose heraldic colour inks the border — the Realm's own faction. */
+  holderId: string;
+  /** Index into the scene's heraldic palette, or -1 (the scene's unheld ink). */
+  factionIndex: number;
+  /** The seated town's hex, or null when the Realm holds nothing seatable. */
+  seatHex: { col: number; row: number } | null;
+  /** Hexes the Realm claims — for inspection only. */
+  hexCount: number;
+}
+
+/** `map.realmInk` — every Realm with its holder's ink key (THR-1902, plan § D12). */
+export interface MapRealmInkVM {
+  realms: MapRealmInkRow[];
+}

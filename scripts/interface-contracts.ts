@@ -253,6 +253,9 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/HexMapV2/scene/GeoBorderMesh.ts',
       'src/components/Game/hooks/useSimulation.ts',
       'src/debug-bridge.ts',
+      // THR-1902: `map.realmInk` reads the projection to give each Realm its holder's
+      // heraldic index; the border, seat dots and capital rings take that ink.
+      'src/engine/views/map/realmInk.ts',
     ],
     verifiedLive: {
       date: '2026-09-11',

@@ -6,7 +6,7 @@
  * avatar's own paint) stay with the scene, and these one-line adapters apply them
  * after the read. Pure — no graph, no React.
  */
-import type { MapActivityVM, MapAgentVM, MapArmyVM } from '../../../engine/views/map/mapTypes';
+import type { MapActivityVM, MapAgentVM, MapArmyVM, MapRealmInkVM } from '../../../engine/views/map/mapTypes';
 import type { BalanceEvent } from '../../../types/balanceEval';
 import type { AgentRenderData } from '../../HexMapV2/agents/agentSpriteTypes';
 import { FACTION_HERALDIC_COLORS } from '../../HexMapV2/agents/agentSpriteTypes';
@@ -42,6 +42,11 @@ export function toArmyRenderData(rows: readonly MapArmyVM[]): ArmyRenderData[] {
     armySize: r.headcount ?? ARMY_SIZE_SMALL_MAX,
     isInBattle: r.isInBattle,
   }));
+}
+
+/** THR-1902: `map.realmInk` rows → Realm id → holder's heraldic index, for the border scene. */
+export function toRealmHolderIndex(vm: MapRealmInkVM): Map<string, number> {
+  return new Map(vm.realms.map(r => [r.realmId, r.factionIndex]));
 }
 
 export function toActivityIconData(rows: readonly MapActivityVM[]): ActivityIconData[] {

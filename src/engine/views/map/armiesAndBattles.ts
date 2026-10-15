@@ -12,6 +12,7 @@ import { getFactionMembershipEdges } from '../../graphQueries';
 import type { ViewSelector } from '../readView';
 import type { MapArmiesAndBattlesVM, MapArmyVM, MapBattleVM } from './mapTypes';
 import { nodeMapHex } from './mapPosition';
+import { buildFactionIndexMap } from './realmInk';
 
 /** `faction_def_{defId}` or `faction_def_{defId}_{n}` → `defId`, for the coat of arms. */
 const FACTION_DEF_ID_PATTERN = /^faction_def_(.+?)(?:_\d+)?$/;
@@ -70,11 +71,8 @@ export const mapArmiesAndBattlesSelector: ViewSelector<void, MapArmiesAndBattles
   build(ctx) {
     const graph = ctx.graph;
     const actors = graph.getNodesByType('actor');
-    const factionIdxMap = new Map<string, number>();
-    let f = 0;
-    for (const node of actors) {
-      if (node.properties.actorType === 'faction') factionIdxMap.set(node.id, f++);
-    }
+    // THR-1902: the same index a Realm's border ink reads, so the two colours agree.
+    const factionIdxMap = buildFactionIndexMap(graph);
 
     const armies: MapArmyVM[] = [];
     const battles: MapBattleVM[] = [];

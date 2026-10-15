@@ -111,8 +111,9 @@ const LAIR_TIER_SIZE_CLASS: Record<string, LocationSizeClass> = {
 // ── Capital ring texture (built once) ────────────────────────────────────────
 
 /**
- * Builds a red circle stroke texture for capital location ring markers.
- * Returns a THREE.CanvasTexture with a red circle outline on transparent background.
+ * Builds a white circle stroke texture for capital location ring markers. Each ring
+ * sprite tints it with its Realm holder's ink (THR-1902), so one texture serves every
+ * Realm; with no ink the sprite tints it the palette's `capitalRingColor`.
  *
  * NFP #4: If canvas context unavailable, returns a plain CanvasTexture.
  */
@@ -130,7 +131,7 @@ function buildCapitalRingTexture(): THREE.CanvasTexture {
       0,
       Math.PI * 2,
     );
-    ctx.strokeStyle = getActivePalette().capitalRingColor;
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 6;
     ctx.stroke();
   }
@@ -201,7 +202,15 @@ function buildSeatMarkerTexture(): THREE.CanvasTexture {
  * NFP #4: Returns empty Group if locations is empty.
  *         Silently skips unknown locationType or missing textures — never crashes.
  */
-export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
+/**
+ * @param locations - Every place drawn on the map
+ * @param capitalInkAt - THR-1902: the ink (#RRGGBB) of the Realm claiming a hex, or null
+ *   for unclaimed ground — a capital's ring takes it. Absent → the palette's ring colour.
+ */
+export function createLocationIconMesh(
+  locations: LocationNode[],
+  capitalInkAt?: (col: number, row: number) => string | null,
+): THREE.Group {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.LOCATIONS;
 
@@ -287,7 +296,7 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
 
       if (loc.isCapital) {
         if (!capitalRingTexture) capitalRingTexture = buildCapitalRingTexture();
-        addCapitalRing(group, loc, textureCache, capitalRingTexture, 0, 0);
+        addCapitalRing(group, loc, textureCache, capitalRingTexture, 0, 0, capitalInkAt);
       }
       if (loc.isHomeSeat) {
         if (!seatMarkerTexture) seatMarkerTexture = buildSeatMarkerTexture();
@@ -305,7 +314,7 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
 
       if (loc.isCapital) {
         if (!capitalRingTexture) capitalRingTexture = buildCapitalRingTexture();
-        addCapitalRing(group, loc, textureCache, capitalRingTexture, offset.x, offset.y);
+        addCapitalRing(group, loc, textureCache, capitalRingTexture, offset.x, offset.y, capitalInkAt);
       }
       if (loc.isHomeSeat) {
         if (!seatMarkerTexture) seatMarkerTexture = buildSeatMarkerTexture();
@@ -388,15 +397,18 @@ function addCapitalRing(
   capitalRingTexture: THREE.CanvasTexture,
   offsetX: number,
   offsetY: number,
+  capitalInkAt?: (col: number, row: number) => string | null,
 ): void {
   const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
   if (!iconDef) return;
+  const ringInk = capitalInkAt?.(loc.hexCol, loc.hexRow) ?? getActivePalette().capitalRingColor;
 
   const spriteSize = HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass];
   const { x: wx, y: wy } = hexToWorld({ col: loc.hexCol, row: loc.hexRow }, HEX_CONSTANTS.HEX_SIZE);
 
   const ringMaterial = new THREE.SpriteMaterial({
     map: capitalRingTexture,
+    color: new THREE.Color(ringInk),
     transparent: true,
     depthWrite: false,
   });

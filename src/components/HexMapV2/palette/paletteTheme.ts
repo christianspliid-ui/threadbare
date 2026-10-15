@@ -40,6 +40,12 @@ export interface PaletteTheme {
   readonly capitalRingColor: string;
   /** Geographic region border color (THREE.Color hex int) — dim, historical */
   readonly geoBorderColor: number;
+  /**
+   * Border ink for a Realm with no resolvable holder (#RRGGBB) — THR-1902. Every other
+   * Realm's border takes its holder's heraldic ink (`scene/borderInk.ts`); `borderColor`
+   * is no longer drawn by the realm border.
+   */
+  readonly borderInkUnheld: string;
 
   // ── Grid ─────────────────────────────────────────────────────────────────
   /** Hex grid line color (THREE.Color hex int) */
@@ -52,6 +58,13 @@ export interface PaletteTheme {
   // ── Fog ──────────────────────────────────────────────────────────────────
   /** Unexplored hex fill color (#RRGGBB) — should match sceneBackground visually */
   readonly fogUnexploredColor: string;
+  /**
+   * What an unexplored in-grid hex shows — uncharted land as parchment (THR-1902,
+   * THR-1878 plan § D12). With `texture` set and loaded, the texture (multiplied by
+   * `textureTint`, white when absent); otherwise the flat `tint`. Never the scene
+   * background: off-grid space keeps `sceneBackground` (Law 32).
+   */
+  readonly fogUnexploredFill: FogUnexploredFill;
 
   // ── Labels (CSS) ─────────────────────────────────────────────────────────
   /** Land label text color */
@@ -82,6 +95,16 @@ export interface PaletteTheme {
   readonly fallbackTerrainColor: string;
 }
 
+/** The uncharted-land fill token (THR-1902). */
+export interface FogUnexploredFill {
+  /** Public path of the parchment texture, or null for a flat tint. */
+  readonly texture: string | null;
+  /** Flat fill (#RRGGBB) — used when `texture` is null or fails to load. */
+  readonly tint: string;
+  /** Multiplies the texture (#RRGGBB); white (as authored) when absent. */
+  readonly textureTint?: string;
+}
+
 // ─── Theme Definitions ───────────────────────────────────────────────────────
 
 /**
@@ -99,9 +122,11 @@ export const GOLDEN_HOUR: PaletteTheme = {
   capitalColor:         0xC83030,
   capitalRingColor:     '#cc3333',
   geoBorderColor:       0x000000,   // black — crisp historical borders
+  borderInkUnheld:      '#3a3028',  // dark umber — a Realm whose holder cannot be read
   gridLineColor:        0x5D5E66,
   elevationTickColor:   0x2a1a0a,
   fogUnexploredColor:   '#0a0a0c',
+  fogUnexploredFill:    { texture: '/textures/parchment-512.png', tint: '#3d3025' },
   labelLandColor:       '#1a1410',
   labelRiverColor:      '#1a4070',
   labelLocationColor:   '#1a1a1a',
@@ -128,9 +153,12 @@ export const DARK_PARCHMENT: PaletteTheme = {
   capitalColor:         0x3088A0,
   capitalRingColor:     '#3090a8',
   geoBorderColor:       0x000000,   // black — crisp historical borders
+  borderInkUnheld:      '#8a8c96',  // pale slate — reads on the dark map
   gridLineColor:        0x484a52,
   elevationTickColor:   0x1a1a2a,
   fogUnexploredColor:   '#08080a',
+  // Moonlit parchment: the same paper, cooled; a slate tint when it cannot load.
+  fogUnexploredFill:    { texture: '/textures/parchment-512.png', tint: '#2a2d36', textureTint: '#a8b4c8' },
   labelLandColor:       '#c8c4b8',
   labelRiverColor:      '#70a0c0',
   labelLocationColor:   '#b8b4a8',

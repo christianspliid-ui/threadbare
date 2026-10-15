@@ -41,6 +41,7 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   lakeIds: HexMapV2Props['lakeIds'];
   areaProjection: HexMapV2Props['areaProjection'];
   realmProjection: HexMapV2Props['realmProjection'];
+  realmHolderIndex: HexMapV2Props['realmHolderIndex'];
   locationNodes: HexMapV2Props['locations'];
   anomalyNodes: HexMapV2Props['anomalies'];
   roadPaths: HexMapV2Props['roadPaths'];
@@ -97,6 +98,7 @@ export function GameMap({
   lakeIds,
   areaProjection,
   realmProjection,
+  realmHolderIndex,
   locationNodes,
   anomalyNodes,
   roadPaths,
@@ -160,6 +162,7 @@ export function GameMap({
         lakeIds={lakeIds}
         areaProjection={areaProjection}
         realmProjection={realmProjection}
+        realmHolderIndex={realmHolderIndex}
         locations={locationNodes}
         anomalies={anomalyNodes}
         roadPaths={roadPaths}

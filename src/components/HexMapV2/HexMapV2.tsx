@@ -83,7 +83,7 @@ import type { HexPulseMeshResult } from './scene/HexPulseMesh';
 import { useAgentAnimations } from './hooks/useAgentAnimations';
 import type { AgentPrevPosition } from './hooks/useAgentAnimations';
 import { useFogCulling } from './hooks/useFogCulling';
-import { createFogOverlayMesh, updateFogOverlayTexture, setFogOverlayAlpha, flushFogOverlay } from './scene/FogOverlayMesh';
+import { createFogOverlayMesh, updateFogOverlayTexture, setFogOverlayAlpha, flushFogOverlay, getFogOverlayStatus } from './scene/FogOverlayMesh';
 import type { FogOverlayResult } from './scene/FogOverlayMesh';
 import { useZoomLayerVisibility } from './hooks/useZoomLayerVisibility';
 import { RENDER_ORDER } from './scene/RenderLayers';
@@ -100,7 +100,8 @@ import type { ZoomTier } from './scene/ZoomVisibilityMatrix';
 import {
   buildOriginalColorCache,
 } from './scene/FogCulling';
-import { PARCHMENT_FOG_CONSTANTS } from './scene/fogShader';
+import { getActivePalette } from './palette/activePalette';
+import { capitalInk } from './scene/borderInk';
 import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
 import { WebGLDiagnostics } from './diagnostics/WebGLDiagnostics';
 import type { WebGLDiagnosticsSnapshot } from './diagnostics/WebGLDiagnostics';
@@ -294,6 +295,9 @@ export interface HexMapV2Props {
    *  used to read per-hex political stamps written once at worldgen, so the map could not
    *  move when a nation did. */
   realmProjection?: RealmProjection;
+  /** THR-1902: Realm node id → its holder's heraldic index (`map.realmInk`). Borders, seat
+   *  dots and capital rings take the holder's ink; a Realm missing here draws unheld ink. */
+  realmHolderIndex?: ReadonlyMap<string, number>;
   /** The Area partition, projected from the graph (THR-1155). Drives the dotted geographic
    *  borders and the geographic label tier — both of which used to read a second region
    *  partition detected inside this component and joined to the graph by list position. */
@@ -547,7 +551,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -644,13 +648,19 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     fogEnabledRef.current    = fogEnabled;
 
     // ── Load parchment texture for fog-of-war overlay ──
+    // THR-1902: the path is the palette's `fogUnexploredFill.texture`; a palette with a
+    // flat tint loads nothing and the overlay draws the tint.
     useEffect(() => {
+      const texturePath = getActivePalette().fogUnexploredFill.texture;
+      if (!texturePath) return;
       const loader = new THREE.TextureLoader();
       loader.load(
-        PARCHMENT_FOG_CONSTANTS.PARCHMENT_TEXTURE_PATH,
+        texturePath,
         (tex) => {
-          tex.wrapS = THREE.RepeatWrapping;
-          tex.wrapT = THREE.RepeatWrapping;
+          // THR-1902: the overlay samples in world space, so the paper repeats across the
+          // map; mirrored repeats meet edge to edge and hide the texture's own dark rim.
+          tex.wrapS = THREE.MirroredRepeatWrapping;
+          tex.wrapT = THREE.MirroredRepeatWrapping;
           tex.colorSpace = THREE.SRGBColorSpace;
           parchmentTextureRef.current = tex;
           // Update fog overlay texture if already created
@@ -970,10 +980,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         let borderRealmMesh: THREE.Mesh | null = null;
         let capitalMarkers: THREE.Group | null = null;
         if (realmProjection && realmProjection.hexRealmId.size > 0) {
-          borderRealmMesh = createBorderMesh(realmProjection, tiles).realmMesh;
+          borderRealmMesh = createBorderMesh(realmProjection, tiles, { holderIndexByRealm: realmHolderIndex, seed }).realmMesh;
           scene.add(borderRealmMesh);
 
-          capitalMarkers = createCapitalMarkers(realmProjection);
+          capitalMarkers = createCapitalMarkers(realmProjection, realmHolderIndex);
           scene.add(capitalMarkers);
         }
         borderRealmRef.current = borderRealmMesh;
@@ -1019,7 +1029,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Hidden by default; visible only at regional+ zoom (k >= LOCATION_ICON_THRESHOLD).
         let locationGroup: THREE.Group | null = null;
         if (locations && locations.length > 0) {
-          locationGroup = createLocationIconMesh(locations);
+          // THR-1902: a capital's ring takes the ink of the Realm claiming its hex.
+          const unheldInk = getActivePalette().borderInkUnheld;
+          const capitalInkAt = realmProjection
+            ? (col: number, row: number): string | null => {
+                const realmId = realmProjection.hexRealmId.get(`${col},${row}`);
+                return realmId ? capitalInk(realmHolderIndex?.get(realmId) ?? -1, unheldInk) : null;
+              }
+            : undefined;
+          locationGroup = createLocationIconMesh(locations, capitalInkAt);
           scene.add(locationGroup);
           locationGroup.visible = false; // Hidden until zoom reaches regional tier
 
@@ -1568,7 +1586,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // animation state (prevPositions, animStates, trailGroup) and preventing movement
     // animations from ever triggering.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths, realmProjection, areaProjection, locations, anomalies, roadPaths]);
+    }, [tiles, cols, rows, seed, riverPaths, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths]);
+
+    // ── Debug bridge: getMapChrome() — THR-1902 registers its `fog` half ──
+    useEffect(() => {
+      if (!import.meta.env.DEV || !window.__DEBUG) return;
+      window.__DEBUG._registerMapChromeBridge({
+        get: () => ({ fog: getFogOverlayStatus(fogOverlayRef.current) }),
+      });
+    }, []);
 
     // ── Fog update — delegated to useFogCulling hook ──
     useFogCulling({
