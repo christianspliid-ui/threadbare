@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback, cloneElement, isValidElement } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimateMount } from './AnimateMount';
+import { useEscapeLayer } from './useEscapeLayer';
+import { Z_BAND } from './zBands';
 
 interface DropdownProps {
   trigger: React.ReactElement;
@@ -22,7 +24,7 @@ function DropdownRoot({ trigger, open, onOpenChange, align = 'right', children }
     const pos: React.CSSProperties = {
       position: 'fixed',
       top: rect.bottom + 4,
-      zIndex: 9999,
+      zIndex: Z_BAND.menu,
     };
     if (align === 'right') {
       pos.right = window.innerWidth - rect.right;
@@ -45,23 +47,18 @@ function DropdownRoot({ trigger, open, onOpenChange, align = 'right', children }
     [onOpenChange],
   );
 
-  // Escape key
-  const handleEscape = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onOpenChange(false);
-    },
-    [onOpenChange],
-  );
+  // Escape closes the open menu alone (Law 23, THR-1884): it is the topmost
+  // surface, so the dialog or panel it opened from stays for the next Escape.
+  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
+  useEscapeLayer(open, close, Z_BAND.menu, 'menu');
 
   useEffect(() => {
     if (!open) return;
     document.addEventListener('mousedown', handleOutsideClick);
-    document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
-      document.removeEventListener('keydown', handleEscape);
     };
-  }, [open, handleOutsideClick, handleEscape]);
+  }, [open, handleOutsideClick]);
 
   // Clone trigger to attach ref
   const triggerElement = isValidElement(trigger)

@@ -3,6 +3,11 @@ import type { HarvestType } from '../../types/worldSoul';
 import { countWord, magnitudeWord, type MagnitudeBand } from '../../engine/aftermathWords';
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
+import { Overlay } from '../shared/Overlay';
+import { surfaceHomeProps } from '../shared/surfaceHomes';
+
+/** The ceremony answers no implicit close: only "Begin Next Cycle" leaves it. */
+const STAY_OPEN = () => {};
 
 interface HarvestScreenProps {
   harvest: HarvestResult;
@@ -53,8 +58,20 @@ function EchoCard({ candidate }: { candidate: HarvestEchoCandidate }) {
 export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScreenProps) {
   const style = HARVEST_STYLES[harvest.harvestType];
 
+  // The end-of-cycle harvest is a full-screen ceremony, not a dialog (Christian,
+  // chat 2026-10-14; THR-1884): it mounts on the ceremony home, and Escape and
+  // the backdrop do nothing, as before.
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <Overlay
+      open
+      onClose={STAY_OPEN}
+      label="Cycle harvest"
+      {...surfaceHomeProps('cycle-harvest')}
+      closeOnEscape={false}
+      closeOnBackdrop={false}
+      animation="none"
+      surfaceClassName="flex items-center justify-center"
+    >
       <div className={`max-w-2xl w-full mx-4 bg-gradient-to-b ${style.bg} to-stone-900 border border-amber-900/30 rounded-xl p-8`}>
         <div className="text-center mb-6">
           <Tooltip id="ui.harvest_cycle">
@@ -83,7 +100,9 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
                 Echoes Preserved — {countWord(harvest.cosmicEchoCandidates.length)} cosmic
               </h3>
             </Tooltip>
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            {/* Law 57: the echo row wraps instead of scrolling sideways, so every
+                echo is visible at once (THR-1884). */}
+            <div className="flex flex-wrap justify-center gap-3 pb-2">
               {harvest.cosmicEchoCandidates.map(c => (
                 <EchoCard key={c.echoDefinition.id} candidate={c} />
               ))}
@@ -114,6 +133,6 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
           </Button>
         </div>
       </div>
-    </div>
+    </Overlay>
   );
 }

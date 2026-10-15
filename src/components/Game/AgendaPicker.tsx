@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
 import type { AgendaTemplate } from '../../data/agenda-content';
 import type { SphereName } from '../../types';
 import { getSphereColor } from '../../data/sphereIcons';
 import { Tooltip } from '../shared/Tooltip';
+import { useEscapeLayer } from '../shared/useEscapeLayer';
+import { Z_BAND } from '../shared/zBands';
 
 interface AgendaPickerProps {
   agendas: AgendaTemplate[];
@@ -14,13 +15,9 @@ interface AgendaPickerProps {
 export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPickerProps) {
   const sphereColor = getSphereColor(sphere);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCancel();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onCancel]);
+  // Escape cancels through the one registry (Law 23, THR-1884), so a tooltip
+  // open over the picker closes first and nothing beneath closes with it.
+  useEscapeLayer(true, onCancel, Z_BAND.focused, 'agenda picker');
 
   return (
     <div

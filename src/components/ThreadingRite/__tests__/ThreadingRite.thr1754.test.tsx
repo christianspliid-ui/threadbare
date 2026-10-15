@@ -76,7 +76,7 @@ describe('THR-1754 — ThreadingRite', () => {
     expect(a.onBondWithoutHand).toHaveBeenCalledTimes(1);
     cleanup();
     const b = renderRite('short', 3);
-    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' }); // the escape registry listens on document (THR-1884)
     expect(b.onBondWithoutHand).toHaveBeenCalledTimes(1);
   });
 
@@ -85,7 +85,7 @@ describe('THR-1754 — ThreadingRite', () => {
     fireEvent.click(screen.getByTestId('threading-rite-begin'));
     expect(screen.getByTestId('threading-rite').dataset.riteStage).toBe('tests');
     expect(screen.queryByTestId('threading-rite-without-hand')).toBeNull();
-    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' }); // the escape registry listens on document (THR-1884)
     expect(onBondWithoutHand).not.toHaveBeenCalled();
   });
 

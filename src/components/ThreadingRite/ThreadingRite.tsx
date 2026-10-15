@@ -19,7 +19,7 @@
  * `closeThreadingRite` lands every outcome through the one writer (D1).
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { WorldGraph } from '../../engine/graph';
 import type { SphereName } from '../../types/index';
 import type { StoredHungerId } from '../../types/hunger';
@@ -58,6 +58,8 @@ import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import { RevealCard } from '../shared/RevealCard';
 import { Button } from '../shared/Button';
 import { Tooltip } from '../shared/Tooltip';
+import { Overlay } from '../shared/Overlay';
+import { surfaceHomeProps } from '../shared/surfaceHomes';
 
 const SCENE_BG = '#0a0a0f';
 const GOLD = '#d4af37';
@@ -171,13 +173,10 @@ export function ThreadingRite({
   }, [bondRolled, stage, onBondWithoutHand, finish, plan.seed]);
 
   // Escape is *Bond without a hand* wherever the button is (plan § Player-facing
-  // text: "dismissed by Escape"). The bond-only card's Modal handles its own Escape.
-  useEffect(() => {
-    if (plan.shape === 'bond_only' || !withoutHand) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') withoutHand(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [plan.shape, withoutHand]);
+  // text: "dismissed by Escape"). The rite's Overlay routes it through the one
+  // registry (THR-1884), so a tooltip or sheet over the rite closes first. The
+  // bond-only card's Modal handles its own Escape.
+  const escapeWithoutHand = useCallback(() => withoutHand?.(), [withoutHand]);
 
   if (plan.shape === 'bond_only' || !candidate) {
     return (
@@ -202,12 +201,18 @@ export function ThreadingRite({
   const mark = becomesFirst ? GOD_GIVEN_TRAITS.find(t => t.reach === markReach) : undefined;
 
   return (
-    <div
-      className="fixed inset-0 z-50 overflow-hidden"
-      style={{ background: SCENE_BG }}
-      data-testid="threading-rite"
-      data-rite-shape={plan.shape}
-      data-rite-stage={stage}
+    // The Threading Rite is a full-screen ceremony (THR-1829's third home, THR-1884).
+    <Overlay
+      open
+      onClose={escapeWithoutHand}
+      label="Threading Rite"
+      {...surfaceHomeProps('threading-rite')}
+      closeOnEscape={withoutHand !== null}
+      closeOnBackdrop={false}
+      animation="none"
+      surfaceClassName="relative overflow-hidden"
+      surfaceStyle={{ background: SCENE_BG }}
+      surfaceProps={{ 'data-testid': 'threading-rite', 'data-rite-shape': plan.shape, 'data-rite-stage': stage }}
     >
       {stage === 'opening' && (
         <div className="h-screen flex flex-col items-center justify-center" data-testid="threading-rite-opening">
@@ -327,7 +332,7 @@ export function ThreadingRite({
           <BondWithoutHandButton onClick={withoutHand} />
         </div>
       )}
-    </div>
+    </Overlay>
   );
 }
 

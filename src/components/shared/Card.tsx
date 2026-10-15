@@ -1,5 +1,6 @@
 import { SectionHeading } from './SectionHeading';
 import { IconButton } from './IconButton';
+import { Panel, type PanelProps } from './Panel';
 
 type CardVariant = 'surface' | 'raised' | 'glass';
 
@@ -12,39 +13,36 @@ interface CardProps {
   style?: React.CSSProperties;
 }
 
-const VARIANT_STYLES: Record<CardVariant, React.CSSProperties> = {
-  surface: {
-    backgroundColor: 'var(--bg-surface)',
-    border: '1px solid var(--border-subtle)',
-  },
-  raised: {
-    backgroundColor: 'var(--bg-raised)',
-    border: '1px solid var(--border-medium)',
-    boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-  },
-  glass: {
-    background: 'rgba(17,17,20,0.72)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid var(--border-subtle)',
-  },
+/**
+ * Card — the titled panel (THR-1884). A `Panel` at level `panel` plus
+ * `Card.Header` (title, count, trailing, close), `Card.Body` and `Card.Footer`.
+ * A bounded surface is a `Panel`; one with a title row is a `Card`; a playing
+ * card is `CardFace`.
+ *
+ * The three variants map onto Panel: `surface` → `panel`; `raised` → `panel` +
+ * `floating` (the panel shadow on the surface ground); `glass` → `panel` +
+ * `material="glass"`.
+ */
+const VARIANT_PANEL: Record<CardVariant, Pick<PanelProps, 'floating' | 'material'>> = {
+  surface: {},
+  raised: { floating: true },
+  glass: { material: 'glass' },
 };
 
 function CardRoot({ variant = 'surface', padding, children, className, style }: CardProps) {
-  const baseStyle: React.CSSProperties = {
-    ...VARIANT_STYLES[variant],
-    borderRadius: 'var(--panel-radius)',
-    overflow: 'hidden',
-    ...(padding !== undefined ? { padding } : {}),
-    ...style,
-  };
-
   return (
-    <div
+    <Panel
+      level="panel"
+      {...VARIANT_PANEL[variant]}
       className={className ?? ''}
-      style={baseStyle}
+      style={{
+        overflow: 'hidden',
+        ...(padding !== undefined ? { padding } : {}),
+        ...style,
+      }}
     >
       {children}
-    </div>
+    </Panel>
   );
 }
 

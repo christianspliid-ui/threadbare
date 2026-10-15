@@ -274,7 +274,7 @@ describe('MandateTracker', () => {
 
   it('closes popover when clicking backdrop', async () => {
     vi.useFakeTimers();
-    const { container } = render(
+    render(
       <MandateTracker
         definition={baseMandateDefinition}
         state={baseMandateState}
@@ -283,11 +283,11 @@ describe('MandateTracker', () => {
     fireEvent.click(screen.getByText('Node Dominance'));
     expect(screen.getByText('Establish control over the world-graph')).toBeInTheDocument();
 
-    // Find and click the backdrop
-    const backdrop = container.querySelector('[aria-hidden="true"]');
-    if (backdrop) {
-      fireEvent.click(backdrop);
-    }
+    // The click-catcher is the popover's Overlay backdrop (THR-1884), portalled
+    // to <body>; it must exist, or the close below would pass vacuously.
+    const backdrop = document.querySelector('[data-overlay-backdrop="none"]');
+    expect(backdrop).not.toBeNull();
+    fireEvent.click(backdrop as Element);
     // Wait for AnimateMount exit animation to complete (default 200ms)
     await act(async () => {
       vi.advanceTimersByTime(250);

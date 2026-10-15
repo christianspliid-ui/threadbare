@@ -15,16 +15,21 @@ describe('Card', () => {
     expect(el.style.backgroundColor).toBe('var(--bg-surface)');
   });
 
-  it('applies raised variant', () => {
+  // THR-1884: Card is the titled Panel. `raised` is a floating panel — the panel
+  // shadow on the surface ground (plan THR-1821 § Card adoption); `glass` reads
+  // the glass token.
+  it('applies raised variant as a floating panel', () => {
     render(<Card variant="raised">Content</Card>);
     const el = screen.getByText('Content').closest('div') as HTMLElement;
-    expect(el.style.backgroundColor).toBe('var(--bg-raised)');
+    expect(el.style.backgroundColor).toBe('var(--bg-surface)');
+    expect(el.style.boxShadow).toBe('var(--shadow-panel)');
+    expect(el.dataset.panelLevel).toBe('panel');
   });
 
-  it('applies glass variant with rgba background and backdrop-filter', () => {
+  it('applies glass variant with the glass token and backdrop-filter', () => {
     render(<Card variant="glass">Content</Card>);
     const el = screen.getByText('Content').closest('div') as HTMLElement;
-    expect(el.style.background).toContain('rgba');
+    expect(el.style.background).toBe('var(--bg-glass)');
     expect(el.style.backdropFilter).toBe('blur(10px)');
   });
 

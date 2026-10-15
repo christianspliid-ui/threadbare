@@ -13,6 +13,11 @@ import { IconButton } from '../shared/IconButton';
 import { Card } from '../shared/Card';
 import { ListRow } from '../shared/ListRow';
 import { Modal, modalPanelStyle } from '../shared/Modal';
+import { Overlay, type OverlayBackdrop } from '../shared/Overlay';
+import { Panel } from '../shared/Panel';
+import { Z_BAND, type OverlayBand } from '../shared/zBands';
+import { getEscapeLayers, type EscapeLayerReading } from '../shared/useEscapeLayer';
+import { glowShadow } from '../shared/sphereTint';
 import { dialogContextClass, type DialogContext } from '../shared/dialogContext';
 import { FRAME_TOKENS_PX, TYPE_SCALE_REM, layoutTierFor, remToPx, rootFontPx } from '../shared/layoutContract';
 import { Medallion } from '../shared/Medallion';
@@ -112,11 +117,13 @@ const SECTION_GAP = '3rem';
 
 const SECTIONS = [
   { id: 'tokens', label: 'Design Tokens' },
+  { id: 'radius-shadow', label: 'Tokens · Radius and shadow (THR-1821)' },
   { id: 'buttons', label: 'Button' },
   { id: 'iconbutton', label: 'IconButton' },
-  { id: 'card', label: 'Card' },
+  { id: 'panel-card', label: 'Panel and Card (THR-1884)' },
   { id: 'listrow', label: 'ListRow' },
   { id: 'modal', label: 'Modal' },
+  { id: 'overlay', label: 'Overlay (THR-1884)' },
   { id: 'dialog-contexts', label: 'Dialogue contexts (THR-1586)' },
   { id: 'medallion', label: 'Medallion (THR-799)' },
   { id: 'flavorquote', label: 'FlavorQuote (THR-799)' },
@@ -487,6 +494,213 @@ function Swatch({ token, hex }: { token: string; hex: string }) {
   );
 }
 
+// ─── Radius and shadow · Overlay · Panel (THR-1884) ───────────────────────────
+
+/** The four hierarchy levels as swatches (plan THR-1821 § Tokens). */
+const RADIUS_SHADOW_LEVELS = [
+  { level: 'page', radius: '--radius-page', shadow: '--shadow-page' },
+  { level: 'panel', radius: '--radius-panel', shadow: '--shadow-panel' },
+  { level: 'control', radius: '--radius-control', shadow: '--shadow-control' },
+  { level: 'chip', radius: '--radius-chip', shadow: '--shadow-chip' },
+] as const;
+
+function RadiusShadowTokens() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Row gap={24}>
+        {RADIUS_SHADOW_LEVELS.map(({ level, radius, shadow }) => (
+          <div key={level} style={{ textAlign: 'center' }}>
+            <div
+              data-token-level={level}
+              style={{
+                width: 112,
+                height: level === 'chip' ? 32 : 72,
+                background: 'var(--bg-raised)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: `var(${radius})`,
+                boxShadow: `var(${shadow})`,
+              }}
+            />
+            <Label>{level}</Label>
+            <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', display: 'block' }}>{radius}</code>
+            <code style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', display: 'block' }}>{shadow}</code>
+          </div>
+        ))}
+      </Row>
+      <Label>glowShadow(color, 'soft' | 'strong') — the one sanctioned tinted glow</Label>
+      <Row gap={24}>
+        {(['var(--accent-gold)', 'var(--sphere-mind, var(--text-secondary))'] as const).map((color) =>
+          (['soft', 'strong'] as const).map((strength) => (
+            <div key={`${color}-${strength}`} style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  background: 'var(--bg-surface)',
+                  border: `1px solid ${color}`,
+                  borderRadius: 'var(--radius-panel)',
+                  boxShadow: glowShadow(color, strength),
+                }}
+              />
+              <Label>{strength}</Label>
+            </div>
+          )),
+        )}
+      </Row>
+    </div>
+  );
+}
+
+const OVERLAY_DEMO_BACKDROPS: readonly OverlayBackdrop[] = ['dim', 'heavy', 'void', 'none'];
+const OVERLAY_DEMO_BANDS: readonly OverlayBand[] = ['focused', 'stage', 'modal', 'modalAboveInterrupt'];
+/** How often the stacking demo re-reads the escape registry while it is open. */
+const ESCAPE_READOUT_INTERVAL_MS = 250;
+
+/** A live line per open escape layer, topmost first — what `__DEBUG.getEscapeLayers()` returns. */
+function EscapeLayerReadout() {
+  const [layers, setLayers] = useState<EscapeLayerReading[]>(() => getEscapeLayers());
+  useEffect(() => {
+    const id = setInterval(() => setLayers(getEscapeLayers()), ESCAPE_READOUT_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
+  return (
+    <ol data-testid="escape-layers-readout" style={{ margin: 0, paddingLeft: '1.25rem', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+      {layers.length === 0 ? <li>no layer open</li> : layers.map((l, i) => <li key={i}>{l.label} · band {l.band}</li>)}
+    </ol>
+  );
+}
+
+function OverlaySection() {
+  const [demo, setDemo] = useState<{ backdrop: OverlayBackdrop; band: OverlayBand } | null>(null);
+  const [stackOverlayOpen, setStackOverlayOpen] = useState(false);
+  const [stackModalOpen, setStackModalOpen] = useState(false);
+  const closeDemo = () => setDemo(null);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Label>backdrop: dim | heavy | void | none (band: modal)</Label>
+      <Row>
+        {OVERLAY_DEMO_BACKDROPS.map((backdrop) => (
+          <Button key={backdrop} variant="secondary" size="sm" onClick={() => setDemo({ backdrop, band: 'modal' })}>
+            {backdrop}
+          </Button>
+        ))}
+      </Row>
+      <Label>band: focused | stage | modal | modalAboveInterrupt (backdrop: dim)</Label>
+      <Row>
+        {OVERLAY_DEMO_BANDS.map((band) => (
+          <Button key={band} variant="secondary" size="sm" onClick={() => setDemo({ backdrop: 'dim', band })}>
+            {band}
+          </Button>
+        ))}
+      </Row>
+      <Overlay
+        open={demo !== null}
+        onClose={closeDemo}
+        label={demo ? `Overlay sample (${demo.backdrop}, ${demo.band})` : 'Overlay sample'}
+        band={demo?.band ?? 'modal'}
+        backdrop={demo?.backdrop ?? 'dim'}
+        placement="center"
+      >
+        <Panel level="page" floating padding="standard" style={{ maxWidth: 420 }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 0 }}>
+            Backdrop <code>{demo?.backdrop}</code> on band <code>{demo?.band}</code> (z {demo ? Z_BAND[demo.band] : ''}).
+            Escape closes it{demo?.backdrop === 'dim' || demo?.backdrop === 'heavy' ? '; so does a click on the backdrop' : ''}.
+          </p>
+          <Button variant="primary" size="sm" onClick={closeDemo}>Close</Button>
+        </Panel>
+      </Overlay>
+
+      <Label>stacking demo — open the Overlay, open a Modal on it, press Escape: only the Modal closes (THR-1816)</Label>
+      <Row>
+        <Button variant="secondary" size="md" onClick={() => setStackOverlayOpen(true)}>
+          Open the Overlay
+        </Button>
+      </Row>
+      <EscapeLayerReadout />
+      <Overlay
+        open={stackOverlayOpen}
+        onClose={() => setStackOverlayOpen(false)}
+        label="Stacking demo overlay"
+        band="focused"
+        backdrop="heavy"
+        placement="center"
+      >
+        <Panel level="page" floating padding="standard" style={{ maxWidth: 480, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <SectionHeading>Stacking demo</SectionHeading>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>
+            Open layers, topmost first — the order Escape closes them in:
+          </p>
+          <EscapeLayerReadout />
+          <Row>
+            <Button variant="primary" size="sm" onClick={() => setStackModalOpen(true)}>Open a Modal on it</Button>
+          </Row>
+        </Panel>
+      </Overlay>
+      <Modal open={stackModalOpen} onClose={() => setStackModalOpen(false)} aria-label="Stacking demo modal" maxWidth={420}>
+        <Modal.Header onClose={() => setStackModalOpen(false)}>A Modal over the Overlay</Modal.Header>
+        <Modal.Body>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 0 }}>
+            Press Escape: this Modal closes and the Overlay beneath stays open.
+          </p>
+          <EscapeLayerReadout />
+        </Modal.Body>
+      </Modal>
+    </div>
+  );
+}
+
+function PanelCardSection() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <Label>page ⊃ panel ⊃ inset, nested once</Label>
+      <Panel level="page" padding="standard" style={{ maxWidth: 560 }}>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>level="page"</span>
+        <Panel level="panel" padding="standard" style={{ marginTop: '0.5rem' }}>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>level="panel"</span>
+          <Panel level="inset" padding="standard" style={{ marginTop: '0.5rem' }}>
+            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>level="inset" — a row inside a panel</span>
+          </Panel>
+        </Panel>
+      </Panel>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div>
+          <Label>floating (a popover or dialog) vs in-layout</Label>
+          <Row gap={16}>
+            <Panel level="panel" padding="standard"><span style={{ fontSize: 'var(--text-sm)' }}>in-layout</span></Panel>
+            <Panel level="panel" floating padding="standard"><span style={{ fontSize: 'var(--text-sm)' }}>floating</span></Panel>
+          </Row>
+        </div>
+        <div>
+          <Label>material="glass" over a map-coloured ground</Label>
+          <div style={{ padding: '1rem', borderRadius: 'var(--radius-panel)', background: 'linear-gradient(135deg, var(--terrain-grassland, var(--bg-hover)), var(--terrain-forest, var(--bg-raised)))' }}>
+            <Panel level="panel" material="glass" padding="standard"><span style={{ fontSize: 'var(--text-sm)' }}>A lens legend sits here.</span></Panel>
+          </div>
+        </div>
+      </div>
+      <Label>Card — the titled panel: header with count, trailing and close; body; footer (variants surface | raised | glass)</Label>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+        {(['surface', 'raised', 'glass'] as const).map((variant) => (
+          <div key={variant}>
+            <Label>variant="{variant}"</Label>
+            <Card variant={variant}>
+              <Card.Header title={`Card.${variant}`} count={3} onBack={() => {}} />
+              <Card.Body>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>
+                  A thread of fate is woven here. The pattern is not yet clear.
+                </p>
+              </Card.Body>
+              <Card.Footer>
+                <Button variant="ghost" size="sm">Action</Button>
+              </Card.Footer>
+            </Card>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
 export default function StyleGuide() {
@@ -600,6 +814,16 @@ export default function StyleGuide() {
             <LayoutContractColumns />
           </section>
 
+          {/* ── Tokens · Radius and shadow (THR-1821) ──────────── */}
+          <section id="section-radius-shadow" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Tokens · Radius and shadow</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <RadiusShadowTokens />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
           {/* ── Button ─────────────────────────────────────────── */}
           <section id="section-buttons" style={{ marginBottom: SECTION_GAP }}>
             <SectionHeading ornamental>Button</SectionHeading>
@@ -646,27 +870,12 @@ export default function StyleGuide() {
             </div>
           </section>
 
-          {/* ── Card ───────────────────────────────────────────── */}
-          <section id="section-card" style={{ marginBottom: SECTION_GAP }}>
-            <SectionHeading ornamental>Card</SectionHeading>
-            <div style={{ marginTop: '1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+          {/* ── Panel and Card (THR-1884) ─────────────────────── */}
+          <section id="section-panel-card" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Panel and Card</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
               <GameErrorBoundary>
-                {(['surface', 'raised', 'glass'] as const).map((variant) => (
-                  <div key={variant}>
-                    <Label>variant="{variant}"</Label>
-                    <Card variant={variant}>
-                      <Card.Header title={`Card.${variant}`} />
-                      <Card.Body>
-                        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>
-                          A thread of fate is woven here. The pattern is not yet clear.
-                        </p>
-                      </Card.Body>
-                      <Card.Footer>
-                        <Button variant="ghost" size="sm">Action</Button>
-                      </Card.Footer>
-                    </Card>
-                  </div>
-                ))}
+                <PanelCardSection />
               </GameErrorBoundary>
             </div>
           </section>
@@ -724,7 +933,7 @@ export default function StyleGuide() {
                       A distant tremor passes through the web of fate. Something ancient has noticed your intervention.
                     </p>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                      Modal uses <code>createPortal</code> — renders at z:60. Max-height: 85vh (<code>--modal-max-h</code>). Escape or backdrop click closes.
+                      Modal is an <code>Overlay</code> on the modal band (z 60) with a floating page <code>Panel</code>. Max-height: 85vh (<code>--modal-max-h</code>). Escape or backdrop click closes.
                     </p>
                   </Modal.Body>
                   <Modal.Footer>
@@ -732,6 +941,16 @@ export default function StyleGuide() {
                     <Button variant="primary" size="sm" onClick={() => setModalOpen(false)}>Acknowledge</Button>
                   </Modal.Footer>
                 </Modal>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Overlay (THR-1884) ────────────────────────────── */}
+          <section id="section-overlay" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Overlay</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <OverlaySection />
               </GameErrorBoundary>
             </div>
           </section>

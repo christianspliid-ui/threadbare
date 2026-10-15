@@ -267,6 +267,12 @@ export interface DebugInterruptState {
   homedSurfaces: Array<{ kind: string; surfaceId: string; home: 'stage' | 'dialog' | 'ceremony'; stopsTime: boolean }>;
 }
 
+/** One open escape layer (THR-1884) — `getEscapeLayers()`. */
+export interface DebugEscapeLayer {
+  label: string;
+  band: number;
+}
+
 /** `getClockHold()` (THR-1814) — who holds the clock, as the TIME readout names it. */
 export interface DebugClockHold {
   /** An interrupt holds the clock right now. */
@@ -1896,6 +1902,13 @@ export interface DebugBridge {
   getHexAtViewport(x: number, y: number): { col: number; row: number } | null;
   /** Names of currently-open modal/overlay components in GameView. */
   getOpenModals(): Promise<string[]>;
+  /**
+   * Every open escape layer, topmost first — the order Escape will close them in
+   * (THR-1884, plan THR-1821 § Debug inspection). `label` is the Overlay's label or
+   * the `useEscapeLayer` caller's (`'unlabelled'` if none); `band` is its
+   * `Z_BAND` value. The read behind every Escape-order assertion. Async.
+   */
+  getEscapeLayers(): Promise<DebugEscapeLayer[]>;
   /**
    * The Stellaris clock (THR-1608, plan `2026-09-27-thr-1605-the-opening.md` § S3).
    * What stops the world right now, and what the clock returns to when it closes.

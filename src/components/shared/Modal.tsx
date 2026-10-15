@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { IconButton } from './IconButton';
-import { useDialogFocus } from './useDialogFocus';
-import { useEscapeLayer } from './useEscapeLayer';
+import { Overlay, type OverlayAnimation, type OverlayProps } from './Overlay';
+import { PanelLevelScope, panelStyle } from './Panel';
+import { Z_BAND } from './zBands';
 import { dialogContextClass, type DialogContext } from './dialogContext';
 
 /**
@@ -16,8 +15,8 @@ import { dialogContextClass, type DialogContext } from './dialogContext';
  * stops below 70: the profile sheet has tooltips inside it, and `Tooltip` sits at
  * `70 + depth`, so raising the sheet into that band would bury its own hovers.
  */
-export const MODAL_Z_DEFAULT = 60;
-export const MODAL_Z_ABOVE_INTERRUPT = 65;
+export const MODAL_Z_DEFAULT = Z_BAND.modal;
+export const MODAL_Z_ABOVE_INTERRUPT = Z_BAND.modalAboveInterrupt;
 
 interface ModalProps {
   open: boolean;
@@ -56,15 +55,13 @@ interface ModalProps {
 
 /**
  * The panel look, shared by `Modal` and the StyleGuide's static context previews
- * (Law 27 — one copy of the panel). Every `--dlg-*` read carries today's neutral
- * value as its fallback, so a panel with no context class is unchanged.
+ * (Law 27 — one copy of the panel). It is `Panel`'s `page` level, floating, plus
+ * the dialog's width and the one height cap. Every `--dlg-*` read carries the
+ * neutral value as its fallback, so a panel with no context class is unchanged.
  */
 export function modalPanelStyle(maxWidth = 600): React.CSSProperties {
   return {
-    background: 'var(--dlg-bg, linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)))',
-    border: '1px solid var(--dlg-border, var(--border-gold))',
-    borderRadius: '12px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 1px var(--border-gold-strong)',
+    ...panelStyle('page', { floating: true }),
     maxWidth: `${maxWidth}px`,
     width: '90%',
     maxHeight: 'var(--modal-max-h)', // 85vh — the one dialog cap (Law 33, THR-1819)
@@ -73,93 +70,45 @@ export function modalPanelStyle(maxWidth = 600): React.CSSProperties {
   };
 }
 
+/** Modal's `animation` prop names the CSS class pair; Overlay names the motion. */
+const MODAL_ANIMATION: Record<NonNullable<ModalProps['animation']>, OverlayAnimation> = {
+  'anim-fade': 'fade',
+  'anim-fade-up': 'fade-up',
+};
+
+/** Modal's numeric `zIndex` prop, read back as a named band where it is one. */
+function bandFor(zIndex: number): Pick<OverlayProps, 'band' | 'zIndexOverride'> {
+  if (zIndex === Z_BAND.modal) return { band: 'modal' };
+  if (zIndex === Z_BAND.modalAboveInterrupt) return { band: 'modalAboveInterrupt' };
+  return { band: 'modal', zIndexOverride: zIndex };
+}
+
 /**
- * Modal — portal-based dialog.
- *
- * Does NOT use AnimateMount because the wrapper div it creates breaks
- * `position: fixed` when animation keyframes use `transform` (creates
- * a new containing block). Instead, the backdrop div handles its own
- * mount/unmount lifecycle and applies animation classes directly.
+ * Modal — the dialog: an `Overlay` (portal, dim backdrop, modal band, the Escape
+ * stack, focus) whose surface is a floating `page` panel (THR-1884). Its props are
+ * unchanged from before the re-base; THR-1820's `size` tiers will sit here, never
+ * on Overlay.
  */
 function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, closeOnEscape = true, 'aria-label': ariaLabel, panelClassName, context = 'neutral', children }: ModalProps) {
-  const [shouldRender, setShouldRender] = useState(open);
-  const [animClass, setAnimClass] = useState('');
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const panelRef = useRef<HTMLDivElement | null>(null);
-
-  // THR-1816 — Escape closes this modal only when it is the topmost surface.
-  useEscapeLayer(open && closeOnEscape, onClose, zIndex);
-
-  /**
-   * Law 50 — focus follows the surface. The contract lives in `useDialogFocus` so
-   * `DetailModal`, whose stacked fixed-size layout cannot compose this component,
-   * shares the implementation instead of copying it (THR-1024).
-   *
-   * Gated on `shouldRender` as well as `open` because the panel does not exist
-   * on the render where `open` first flips true — the mount effect below sets
-   * `shouldRender` a render later, and focusing before that is a no-op.
-   */
-  const { onKeyDown: handlePanelKeyDown } = useDialogFocus(panelRef, open && shouldRender);
-
-  // Mount/unmount with animation — inline to avoid AnimateMount wrapper div
-  useEffect(() => {
-    if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    if (open) {
-      setShouldRender(true);
-      requestAnimationFrame(() => setAnimClass(`${animation}-enter`));
-    } else if (shouldRender) {
-      setAnimClass(`${animation}-exit`);
-      timeoutRef.current = setTimeout(() => {
-        setShouldRender(false);
-        setAnimClass('');
-      }, 200);
-    }
-    return () => {
-      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
-    };
-  }, [open, animation, shouldRender]);
-
-  if (!shouldRender) return null;
-
-  const backdrop: React.CSSProperties = {
-    position: 'fixed',
-    inset: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    zIndex,
-    display: 'flex',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    paddingTop: '5vh',
-  };
-
-  const panel = modalPanelStyle(maxWidth);
   const panelClasses = [dialogContextClass(context), panelClassName].filter(Boolean).join(' ') || undefined;
 
-  return createPortal(
-    <div
-      className={animClass}
-      style={backdrop}
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={ariaLabel}
+  return (
+    <Overlay
+      open={open}
+      onClose={onClose}
+      label={ariaLabel ?? 'dialog'}
+      accessibleName={ariaLabel ?? false}
+      {...bandFor(zIndex)}
+      backdrop="dim"
+      placement="top"
+      closeOnEscape={closeOnEscape}
+      animation={MODAL_ANIMATION[animation]}
+      surfaceStyle={modalPanelStyle(maxWidth)}
+      surfaceClassName={panelClasses}
+      surfaceProps={{ 'data-dialog-context': context, 'data-panel-level': 'page' }}
     >
-      <div
-        ref={panelRef}
-        className={panelClasses}
-        data-dialog-context={context}
-        style={panel}
-        tabIndex={-1}
-        onKeyDown={handlePanelKeyDown}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>,
-    document.body,
+      <PanelLevelScope level="page">{children}</PanelLevelScope>
+    </Overlay>
   );
 }
 

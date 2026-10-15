@@ -1,4 +1,3 @@
-import { useEffect, useCallback } from 'react';
 import type { InterventionType, DeliveryMode, LocalEncounterMode } from '../../types/dream';
 import type { SphereName } from '../../types/index';
 import { getSphereColor } from '../../data/sphereIcons';
@@ -6,6 +5,8 @@ import { SphereIcon } from '../icons';
 import { Button } from '../shared/Button';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import { OddsPips } from '../shared/OddsPips';
+import { useEscapeLayer } from '../shared/useEscapeLayer';
+import { Z_BAND } from '../shared/zBands';
 
 export interface InterventionConfirmProps {
   interventionType: InterventionType;
@@ -57,15 +58,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
     return '';
   })();
 
-  // Escape key → cancel (matches Modal primitive behaviour)
-  const handleEscape = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') onCancel();
-  }, [onCancel]);
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [handleEscape]);
+  // Escape → cancel, through the one registry like the Modal primitive (Law 23,
+  // THR-1884): only the topmost surface answers the key.
+  useEscapeLayer(true, onCancel, Z_BAND.focused, 'intervention confirm');
 
   return (
     <div

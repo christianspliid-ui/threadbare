@@ -10,6 +10,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { REMEMBRANCE_CHOOSE_AGAIN } from '../../data/ui-content';
+import { useEscapeLayer } from '../shared/useEscapeLayer';
+import { Z_BAND } from '../shared/zBands';
 
 /** How long the chosen stirring picture holds, with "Choose again", before the flow moves on. */
 export const STIRRING_CHOSEN_HOLD_MS = 1200;
@@ -89,17 +91,10 @@ export function useRemembranceChoice<T>({
   // A hold timer never outlives the screen.
   useEffect(() => clearTimer, [clearTimer]);
 
-  // Escape undoes while a choice is up and still undoable (Law 23).
-  useEffect(() => {
-    if (chosen === null) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || lockedRef.current || !undoable) return;
-      e.preventDefault();
-      chooseAgain();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [chosen, chooseAgain, undoable]);
+  // Escape undoes while a choice is up and still undoable (Law 23), through the one
+  // registry at the ceremony band (THR-1884) — a tooltip over the row closes first.
+  // `chooseAgain` itself ignores the key once the hold has locked the choice.
+  useEscapeLayer(chosen !== null && undoable, chooseAgain, Z_BAND.focused, 'remembrance choice');
 
   return { chosen, holdEnded, choose, chooseAgain };
 }
