@@ -247,8 +247,11 @@ describe('the level-success invariant (THR-1575)', () => {
   // boards (from 16.7%) and master-band choices to 20.9% (from 7.1%). Seeds 42 / 99 / 7:
   // master 0.236 / 0.352 / 0.391 against expert 0.342 / 0.269 / 0.291 — harder on 99 and 7,
   // not on 42, so the clause stays skipped (never tuned to pass).
-  // TODO(THR-1840): un-skip once master batch 3 lifts seed 42 (plan 2026-10-13-thr-1757 § D2).
-  it.skip('masters attempt harder content than experts', () => {
+  // THR-1840 (master batch 3, K = 2 → 3 per reach) took own-master work onto 52.4% of
+  // master boards and master-band choices to 36.8%. Seeds 42 / 99 / 7: master 0.373 /
+  // 0.463 / 0.448 against expert 0.303 / 0.282 / 0.274 — harder on all three, so the
+  // clause is re-armed with its condition unchanged (plan 2026-10-13-thr-1757 § D2).
+  it('masters attempt harder content than experts', () => {
     for (const seed of [42, 99]) {
       const report = reportFor(seed);
       const expert = bandOf(report, 'expert');
