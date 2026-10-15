@@ -173,6 +173,8 @@ Docs/project-status.md
 Docs/ops/orchestrator-*.md
 Docs/ops/backlog-grooming-*.md
 Docs/ops/weekly-hygiene-*.md
+# THR-1723 — the encounter coverage artifact and report publish to `ops` only.
+Docs/ops/content-judgments/
 
 # The retrospective skill's intermediate "deterministic draft; revise into narrative
 # form" scratch file. The final `retro-<date>.md` is committed and is the artifact;

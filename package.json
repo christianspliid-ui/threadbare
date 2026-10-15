@@ -106,6 +106,7 @@
     "gameplay-report": "esbuild scripts/gameplay-report.ts --bundle --platform=node --format=esm --outfile=.cache/gameplay-report.mjs --external:fs --external:path && node .cache/gameplay-report.mjs",
     "volume-model": "esbuild scripts/encounter-volume-model.ts --bundle --platform=node --format=esm --outfile=.cache/encounter-volume-model.mjs --external:fs --external:path --external:url && node .cache/encounter-volume-model.mjs",
     "content-census": "esbuild scripts/content-census.ts --bundle --platform=node --format=esm --outfile=.cache/content-census.mjs --external:fs --external:path && node .cache/content-census.mjs",
+    "judge:encounters": "esbuild scripts/judge-encounters.ts --bundle --platform=node --format=esm --outfile=.cache/judge-encounters.mjs --external:fs --external:path --external:child_process && node .cache/judge-encounters.mjs",
     "rebuild-index": "esbuild scripts/rebuild-index.ts --bundle --platform=node --format=esm --outfile=.cache/rebuild-index.mjs --external:fs --external:path && node .cache/rebuild-index.mjs",
     "rebuild-index:dry": "esbuild scripts/rebuild-index.ts --bundle --platform=node --format=esm --outfile=.cache/rebuild-index.mjs --external:fs --external:path && node .cache/rebuild-index.mjs --dry-run",
     "rebuild-plans-index": "esbuild scripts/rebuild-plans-index.ts --bundle --platform=node --format=esm --outfile=.cache/rebuild-plans-index.mjs --external:fs --external:path && node .cache/rebuild-plans-index.mjs",
