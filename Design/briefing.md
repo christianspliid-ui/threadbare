@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-15 10:28 local (08:28 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-15 10:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,18 +25,17 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - [Should goods flow](https://linear.app/threadbare/issue/THR-1866/should-goods-flow-a-fixed-stock-map-with-shocks-today-slow-regrowth) — **food and goods regrow and get used up, and each town eats from the fields around it.** *Veto:* **"goods should move along the trade roads; the roads are the story"**, **"keep stocks fixed and make the shocks bigger"**, or **"towns should only eat what lies inside their own walls"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-14f.md)*
 - [What money means to a mortal](https://linear.app/threadbare/issue/THR-1865/what-money-means-to-a-mortal-which-choices-a-mortals-wealth-should) — **money becomes something a mortal wants first, and spends later.** Its veto window closes about 12:45 today. *Veto:* **"a mortal's purse should limit what they try from day one"**, **"desperate mortals should take worse odds"**, or **"leave money out of what mortals want"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-14e.md)*
 
-Say "veto <title>" to reverse any of these. The encounter Stage and coverage-map decisions have passed their 24-hour windows and are now settled.
+Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 23 ready** (one more than last hour). The orchestrator queued [one backdrop and one Escape order for every dialog and overlay](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack), the second shared building block for the new screen. The one job in progress is [the encounter Stage](https://linear.app/threadbare/issue/THR-1877/plan-doc-the-encounter-stage-a-mortals-moment-plays-over-the-dimmed): its first slice is [#2419](https://github.com/christianspliid-ui/threadbare/pull/2419), and a builder run is working now.
+**Backed up: 23 ready** (same as last hour). The one job in progress is [the encounter Stage](https://linear.app/threadbare/issue/THR-1877/plan-doc-the-encounter-stage-a-mortals-moment-plays-over-the-dimmed): its first slice is [#2419](https://github.com/christianspliid-ui/threadbare/pull/2419), and a builder run started at 10:51 is working now.
 
 - High, waiting: three UI build plans ([the screen frame](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the), [the Inspector](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and), [map lenses and chrome](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and)).
 - Your six economy bugs from yesterday are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
-- **Older than a week:** [the coverage map](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage) (11 days). Its veto window passed at 09:30, so it is now free to build.
+- **Older than a week:** [the coverage map](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage) (11 days), now free to build.
 
 ## Health
 
-- **[#2419](https://github.com/christianspliid-ui/threadbare/pull/2419) (encounter Stage, slice 1) failed its required check** and will not merge until it passes. A new check run is going now, and the builder run that started at 10:25 owns it.
-- **Heavy simulation tests are green on main.** Every run on main since the [THR-1927](https://linear.app/threadbare/issue/THR-1927/heavy-tests-red-on-main-for-two-days-two-simulation-tests-time-out-on) fix has passed. The red flag still counts nightly runs from before the fix. Today's nightly run started at 10:17 on the latest main and will clear it. No new ticket: the cause is already fixed.
-- Everything else is green. The game speed is back inside its normal range (147 ms per tick, 24% over the weekly median, under the 25% alarm line). The live site is current. The builder is working, not stalled. The repo cleaner ran at 09:46. The silence check's gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
+- **[#2419](https://github.com/christianspliid-ui/threadbare/pull/2419) (encounter Stage, slice 1) still fails its required check** (Test · Typecheck · Build), 93 minutes after it opened; no fix has been pushed since 09:21. It is the builder's to fix, and a builder run is working now. Not your call.
+- Everything else is green. Main's checks, including the heavy simulation tests, pass on the latest commit. The game speed is normal (122 ms per tick, 3% over the weekly median). The live site is current. The builder is working, not stalled. The repo cleaner ran at 10:40. The silence check's gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
