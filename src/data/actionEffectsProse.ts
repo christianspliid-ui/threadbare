@@ -195,6 +195,212 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Sinks a claim into the land and holds it as yours, deepening your sway there while it lasts.',
   'loc.place_of_power':
     'Wakes the deep lines under a place, and the magic gathering there grows thick.',
+
+  // ─── The market: every card the offering can deal (THR-1855) ───────────────
+  // Before THR-1855 these fell to the composed line, so cards like Amplify the Flow
+  // and Ward Against the Deep read the same sentence side by side in one offering.
+
+  // — Faction verbs —
+  'action.divine-edict':
+    'Speaks one word into a faction\'s conclave, and the side you favour carries the vote.',
+  'action.faction.stir_dissent':
+    'Breathes old grievances into a faction\'s councils, and quiet dissent gathers among its members.',
+  'action.faction.whisper_leader':
+    'Leans close to a faction\'s leader, tilting their next great decision the way you name.',
+  'action.faction.recover_doctrine':
+    'Returns a teaching you found in the ruins to the faction that lost it, and its members remember.',
+  'action.faction.surface_doubter':
+    'Lets the faction member who agrees with it least feel your gaze, and they must choose a side.',
+  'action.faction.kindle_a_calling':
+    'Fans a faction\'s hidden want into a new purpose, though you cannot choose which want rises.',
+  'action.faction.schism':
+    'Plants a split in a faction\'s faith; before long it breaks in two.',
+
+  // — Perception: ruins and the weave —
+  'divine.perceive.cast_attention':
+    'Searches a ruined hex for a buried site, and a nearby bonded mortal gains a faint lead to it.',
+  'divine.perceive.refine_the_hush':
+    'Sharpens a bonded mortal\'s faint lead to a ruin into a clear one, or plants a clear lead outright.',
+  'divine.perceive.listen_for_a_name':
+    'Draws from a ruin\'s stones the name of the people who built it, and a bonded mortal nearby learns it.',
+  'divine.perceive.read_the_threads':
+    'Reads the weave over a hex for a sleeping Place of Power, and a threaded mortal gains a lead to it.',
+  'divine.perceive.taste_the_wake':
+    'Tastes the marks other gods have left on the mortals of a hex, exposing whoever else is watching.',
+
+  // — Great works: one per sphere —
+  'invest.gold.patronage_network':
+    'Threads your patronage through a settlement\'s trade, and every deal there pays you a tithe of essence.',
+  'invest.shadow.brokers_web':
+    'Spins a web of informants through a faction, so its secrets and its levers come quietly to you.',
+  'invest.star.beacon_of_fate':
+    'Sets a light in a far mortal\'s path, and a calling takes shape around them beyond your usual reach.',
+  'invest.eye.deep_eye':
+    'Sees beneath a place into what the age buried there, and opens a path toward the lost work.',
+  'invest.heart.sworn_oath':
+    'Binds a place with an oath, and the faithful who gather there are drawn ever deeper into your service.',
+  'invest.iron.warhost':
+    'Wakes a faction\'s hunger for war, and an army musters under banners that fight for you.',
+  'invest.veil.rend_the_gate':
+    'Tears the world open at a place, and your sphere floods through the wound for as long as you hold it.',
+  'invest.stone.great_work':
+    'Raises a wonder from the land\'s deep bones at a place, with a relic set within it.',
+
+  // — Places —
+  'loc.ward':
+    'Weaves protective runes into a place\'s foundations, and the magic there gathers thicker.',
+  'loc.incite_unrest':
+    'Stirs grievance through a settlement until its people turn on those who rule them.',
+  'loc.fortify':
+    'Hardens a fortification\'s walls and the will of its garrison, so it holds longer under siege.',
+  'loc.sanctify_square':
+    'Consecrates a settlement\'s public square, and faith and your presence take root there.',
+  'loc.awaken_spirit':
+    'Wakes the spirit of a settlement to its founders and old laws, and your presence settles into its streets.',
+  'loc.sicken_wells':
+    'Sickens a settlement\'s wells for a time; its people weaken and grow restless.',
+  'loc.curse_roads':
+    'Curses the roads into a settlement for a time; caravans turn back and its people grow restless.',
+
+  // — Artifacts —
+  'artifact.enchant':
+    'Carves runes of power into an artifact, raising it one step toward legend and strengthening what it grants.',
+  'artifact.empower':
+    'Drives martial strength into an artifact\'s grain, raising it one step toward legend.',
+  'artifact.attune':
+    'Tunes an artifact to your sphere, so whoever bears it carries that sphere\'s gift.',
+  'artifact.nullify':
+    'Strips every enchantment and curse from an artifact, leaving only the object itself.',
+  'artifact.curse':
+    'Hides a curse in an artifact, and whoever carries it is slowly drained without knowing why.',
+
+  // — Places within places —
+  'sub.sanctify':
+    'Consecrates a place for as long as you hold it, and the threaded mortals who stand there grow devoted.',
+  'sub.trap':
+    'Lays an unseen snare in a place, and the mortal it waits for walks into danger there.',
+  'sub.vision':
+    'Reads the hidden history of a place, revealing the secrets held by everyone gathered there.',
+  'sub.sanctify_tavern':
+    'Warms a tavern\'s hearth for as long as you hold it, and those gathered there meet and mingle readily.',
+
+  // — The land: blessing and blight —
+  'hex.bless_land':
+    'Spreads your favour over the land, and your sway there deepens.',
+  'hex.corrupt_land':
+    'Seeds a slow blight in the land that sours it for everyone who lives there.',
+  'hex.seed_life':
+    'Pours life into barren ground, and your sway over the land grows.',
+  'hex.raise_landmark':
+    'Raises a landmark from the earth by your will, and your sway over the land grows.',
+  'hex.shift_season':
+    'Hastens the land\'s seasons of growth and rest, and your sway there grows.',
+  'hex.scorch_earth':
+    'Scorches the land and its stores, leaving a scar everyone who passes can see.',
+  'hex.rend_earth':
+    'Tears the ground apart into broken wreckage, the deepest wound you can deal the land at a stroke.',
+  'hex.attune_leyline':
+    'Weaves a new leyline through the land, and your sway there grows along it.',
+  'hex.dispel_wild':
+    'Drives wild magic out of the land, and your own sway settles in its place.',
+  'hex.cultivate':
+    'Tends the land for as long as you hold it, and its settlements prosper faster.',
+
+  // — The land: sight —
+  'hex.survey':
+    'Surveys the land and its people, laying bare the terrain, the mood and any hidden places there.',
+  'hex.dowse_resources':
+    'Seeks ore, water and buried wealth beneath the land, uncovering what is hidden under it.',
+  'hex.read_currents':
+    'Reads the currents of magic through the land, laying bare its soul and any hidden sites.',
+  'hex.read_stones':
+    'Reads the memory in a ruin\'s stones, laying bare what stood there and every hidden chamber.',
+
+  // — The land: the flow of magic —
+  'hex.shift_dominion':
+    'Breaks what stands against you in a place, so your hold can take root there.',
+  'hex.amplify_flow':
+    'Swells the magic already flowing through the land, and every place on it grows richer in power.',
+  'hex.sever_flow':
+    'Cuts the lines of magic running through the land, and the land sours.',
+  'hex.anchor_sphere':
+    'Pins the land\'s ruling sphere in place for as long as you hold it; rivals cannot shift its dominion.',
+  'hex.channel_current':
+    'Draws magic from the land around into this one for as long as you hold it, and your sway there swells.',
+
+  // — The land: makings —
+  'hex.forge_seer_token':
+    'Forges a seer\'s token that lets its bearer sense the currents of magic wherever they go.',
+  'hex.forge_instrument':
+    'Forges a divine instrument that lifts its bearer\'s craft in one reach beyond its natural limit.',
+  'hex.send_herald':
+    'Shapes a herald from your will at a place on the land, already threaded to you and acting in your name.',
+  'hex.spark_encounter':
+    'Twists fate so mortals on the land meet where they never would have, and something comes of it.',
+
+  // — The land: its people —
+  'hex.stir_people':
+    'Stirs the dreams of everyone on the land, turning their hearts toward novelty and away from cruelty.',
+  'hex.summon_congregation':
+    'Calls the mortals of the land to gather, and those who answer feel it as their own choice.',
+  'hex.bestow_vision':
+    'Plants a vision of purpose in a mortal on the land, and they wake with fresh courage and a clear aim.',
+  'hex.scatter':
+    'Hurls martial force across the land to break its gatherings, and the ground sours where it lands.',
+  'hex.smite':
+    'Calls your wrath down on the land for all to see, and the ground sours beneath it.',
+  'hex.incite_exodus':
+    'Seeds dread in the mortals of the land until leaving for something more feels like their only choice.',
+  'hex.shepherd_flock':
+    'Presses the mortals of the land toward your worship for as long as you hold it.',
+  'hex.install_champion':
+    'Raises a mortal to lead their faction under your mandate; let it lapse and they may turn or fall.',
+  'hex.impose_decree':
+    'Lays a law on the land that most mortals there obey for as long as you hold it.',
+
+  // — The land: ruins —
+  'hex.mark_ground':
+    'Marks a ruin\'s ground with a pull that wandering mortals cannot ignore.',
+  'hex.plant_dream':
+    'Sends a mortal on the land dreams of buried places, and for a time they set out to find them.',
+  'hex.whisper_intuition':
+    'Gives a threaded mortal on the land a hunch for a nearby ruin\'s dangers and rewards.',
+  'hex.consecrate_past':
+    'Recasts a ruin\'s legacy in your sphere, and your sway over the land grows.',
+  'hex.restore_fragment':
+    'Rebuilds a fragment of a ruin into a lasting place that mortals can enter.',
+  'hex.rewrite_history':
+    'Rewrites the story a ruin\'s stones remember, so mortals find the past you choose.',
+  'hex.bury_past':
+    'Closes the ground over a ruin, and the land around it sours.',
+  'hex.desecrate':
+    'Pours corruption into a ruin\'s stones, and the land around it turns dark.',
+  'hex.bind_echoes':
+    'Binds a ruin\'s echoes to your will for as long as you hold it, and rivals find them hard to wrest away.',
+  'hex.compel_exploration':
+    'Drives your threaded mortals to seek out the ruins nearby for as long as you hold it.',
+  'hex.seal_tomb':
+    'Seals a ruin against everyone for as long as you hold it, your own mortals included.',
+  'hex.ward_against_deep':
+    'Wraps a mortal delving a ruin in your protection for as long as you hold it, easing its dangers.',
+
+  // — Threads —
+  'hex.attune_thread':
+    'Tunes a thread so its mortal senses the currents of magic wherever they walk, for as long as you hold it.',
+  'hex.strengthen_thread':
+    'Pours power through a thread, lifting its mortal\'s craft in one reach for as long as you hold it.',
+  bind_thread_artifact:
+    'Draws a thread to an artifact, so you always know where it is and who carries it.',
+  'thread.dormant':
+    'Lets a thread go slack; its mortal acts on but no longer calls for your attention.',
+  'thread.reactivate':
+    'Pulls a slack thread taut again, and its mortal calls for your attention once more.',
+
+  // — Undertakings —
+  'action.undertaking.inspire':
+    'Lends a mortal at work your conviction, and the next test of their undertaking goes easier.',
+  'action.undertaking.sabotage':
+    'Whispers doubt into an undertaking, and its next test goes harder.',
 };
 
 // ─── Composed fallback ───────────────────────────────────────────────────────

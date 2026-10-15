@@ -22,7 +22,12 @@
 
 import type { GameState, TickEvent } from '../types/gameState';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
-import { GIFT_PLACEMENT_SIGNIFICANCE } from '../data/receipt-content';
+import {
+  GIFT_PLACEMENT_SIGNIFICANCE,
+  GIFT_CARDS_RECEIVED_LINE,
+  GIFT_CARDS_RECEIVED_LINE_MANY,
+  joinCardNames,
+} from '../data/receipt-content';
 import type {
   AscendantBeatState,
   BeatDefinition,
@@ -84,6 +89,7 @@ import {
 } from './godProgression';
 import { OFFERING_MIN_CANDIDATES, OFFERING_COPY } from '../data/god-progression-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { playerFacingTemplateName } from './unifiedActionResolution';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import { touchWorld, touchStructure, type SimulationRuntime } from './simulationRuntime';
 import type {
@@ -236,6 +242,42 @@ export function resolveReachSignatureGrant(
   const reach = slot === 'primary' ? ranked[0] : ranked[1];
   if (!reach) return null;
   return REACH_SIGNATURE_ID_BY_REACH[reach] ?? null;
+}
+
+/**
+ * THR-1855: the card a beat's reach-signature slot would grant if it resolved now, so
+ * the gift modal can show it before Receive. Null when the beat has no slot, the slot
+ * resolves to no reach, or the id names no template. Same resolution as the resolve
+ * path ({@link resolveReachSignatureGrant}), so the shown card is the granted card.
+ */
+export function previewReachSignatureGrant(state: GameState, beatId: string): string | null {
+  const slot = findBeatDefinition(beatId)?.grantsReachSignature;
+  if (!slot) return null;
+  const id = resolveReachSignatureGrant(state, slot);
+  return id && getUnifiedTemplateById(id) ? id : null;
+}
+
+/**
+ * THR-1855: the event a received gift raises, naming each card it put in the god's
+ * hand. Null when the gift gave no new card (or none of its ids names a template).
+ * Exported for unit testing.
+ */
+export function buildGiftCardsEvent(beatId: string, newlyGranted: readonly string[], turn: number): TickEvent | null {
+  // The card face's own name (spell name when it has one), so the toast matches the card.
+  const names = newlyGranted
+    .map(id => getUnifiedTemplateById(id))
+    .filter((t): t is NonNullable<typeof t> => !!t)
+    .map(playerFacingTemplateName);
+  if (names.length === 0) return null;
+  const line = names.length === 1 ? GIFT_CARDS_RECEIVED_LINE : GIFT_CARDS_RECEIVED_LINE_MANY;
+  return {
+    id: `beat_cards_${beatId}_${turn}`,
+    tick: turn,
+    type: 'narrative',
+    message: line.replace('{cards}', joinCardNames(names)),
+    significance: GIFT_PLACEMENT_SIGNIFICANCE,
+    notification: { channel: 'toast' },
+  };
 }
 
 /**
@@ -563,6 +605,16 @@ export function forceOfferBeatById(
     return {
       next: offer(beats, milestoneDef, milestoneDef.trigger, turn, ASCENDANT_MILESTONE_BEATS.length, [], /*advanceSpine*/ false),
       def: milestoneDef,
+    };
+  }
+  // THR-1855: rung gifts are queued by `phaseAscendantProgression` once a rung opens, never
+  // drawn — `__DEBUG.fireBeat('beat.rung.2.signature.secondary')` force-offers one so the
+  // gift modal and its card toast can be browser-verified without farming three marks.
+  const rungDef = rungGiftDefinition(beatId);
+  if (rungDef) {
+    return {
+      next: offer(beats, rungDef, rungDef.trigger, turn, 0, [], /*advanceSpine*/ false),
+      def: rungDef,
     };
   }
   return null;
@@ -1352,9 +1404,11 @@ export function resolvePendingBeat(
     // Apply grants → unlockedActionIds (dedup; one trace per newly-revealed id).
     const current = state.unlockedActionIds ?? [];
     const nextUnlocked = [...current];
+    const newlyGranted: string[] = [];
     for (const id of granted) {
       if (nextUnlocked.includes(id)) continue;
       nextUnlocked.push(id);
+      newlyGranted.push(id);
       emitTrace({
         tick: turn,
         category: 'action.unlock.granted',
@@ -1410,6 +1464,17 @@ export function resolvePendingBeat(
         anchorId: placement.anchorId,
         summary: `beat.gift_placed: ${pending.beatId} → ${placement.line}`,
       });
+    }
+    // THR-1855: a gift that put cards in the god's hand names them — a chronicle-tier
+    // line with a toast. Before this, Receive closed the gift silently and the player
+    // could only guess what "this one" was (warm playtest round 2, 3/3 testers).
+    const cardsEvent = buildGiftCardsEvent(pending.beatId, newlyGranted, turn);
+    if (cardsEvent) {
+      workingState = {
+        ...workingState,
+        tickEvents: [...(workingState.tickEvents ?? []), cardsEvent],
+        recentEvents: [...(workingState.recentEvents ?? []), cardsEvent].slice(-MAX_RECENT_EVENTS),
+      };
     }
     const contentTemplate = def.templateId && opts.templateProvider
       ? opts.templateProvider(def.templateId)

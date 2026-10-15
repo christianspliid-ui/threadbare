@@ -41,12 +41,14 @@ import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beat
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { actionEffectsProse } from '../../data/actionEffectsProse';
 import { ACTION_SCALE_WORDS } from '../../data/action-card-display';
+import { playerFacingTemplateName } from '../../engine/unifiedActionResolution';
 import { UI_TOOLTIPS } from '../../data/ui-content';
 import {
   OFFERING_COPY,
   OFFERING_TOOLTIP_IDS,
   RUNG_BEAT_PRESENTATION,
   RUNG_LATER_KEY_PRESENTATION,
+  RUNG_GIFT_UNNAMED_CARD,
 } from '../../data/god-progression-content';
 import { isRungOpeningGift, parseRungGiftBeatId, type OfferedCardView } from '../../engine/godProgression';
 
@@ -79,6 +81,14 @@ interface AscendantBeatModalProps {
   offering?: readonly OfferedCardView[];
   /** THR-1811: a rung gift is its rung's first given key (isRungOpeningOffer), so it carries the rung's words. */
   rungOpening?: boolean;
+  /**
+   * THR-1855: the card this beat's reach-signature slot will grant
+   * (`previewReachSignatureGrant`). The slot resolves per god, so the beat's static
+   * `grantsActionIds` cannot name it; without this the modal showed no card and the
+   * rung prose said "this one" about nothing. Shown on a reveal, never in a picker:
+   * a selection beat grants it unconditionally, so it is not one of the choices.
+   */
+  signatureGrantId?: string | null;
   /**
    * THR-1851: the people an introduction beat names. When present, "Attend" resolves the
    * beat and then opens that people's sheet — the popup used to lead nowhere.
@@ -152,7 +162,13 @@ function rungGiftPresentation(beatId: string, cardName: string | undefined, open
   if (!parsed) return null;
   const words = (opening ?? isRungOpeningGift(beatId)) ? RUNG_BEAT_PRESENTATION[parsed.rung] : undefined;
   const base = words ?? RUNG_LATER_KEY_PRESENTATION;
-  return { ...base, prose: base.prose.replace('{card}', cardName ?? 'a new work') };
+  return { ...base, prose: base.prose.replace('{card}', cardName ?? RUNG_GIFT_UNNAMED_CARD) };
+}
+
+/** The name the gift's card face prints (its spell name when it has one), so the prose names the card shown. */
+function firstGrantName(actionId: string | undefined): string | undefined {
+  const template = actionId ? getUnifiedTemplateById(actionId) : undefined;
+  return template ? playerFacingTemplateName(template) : undefined;
 }
 
 /**
@@ -436,6 +452,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   avatarName,
   offering,
   rungOpening,
+  signatureGrantId,
   subjectRef,
 }: AscendantBeatModalProps) {
   const router = useRefRouterContext();
@@ -445,14 +462,17 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   // rung gifts THR-1811) → enriched template prose for pool beats (THR-514, supplied by
   // GameView) → kind-derived placeholder. Eyebrow + CTA always come from the authored/kind
   // table (templates carry only title + body).
-  const firstGrant = def?.grantsActionIds?.[0];
+  const isSelection = pending.kind === 'selection';
+  const staticGrants = def?.grantsActionIds ?? [];
+  const grants = !isSelection && signatureGrantId && !staticGrants.includes(signatureGrantId)
+    ? [...staticGrants, signatureGrantId]
+    : staticGrants;
+  const firstGrant = grants[0];
   const authored = AUTHORED_BEAT_PRESENTATION[pending.beatId]
-    ?? rungGiftPresentation(pending.beatId, firstGrant ? getUnifiedTemplateById(firstGrant)?.name : undefined, rungOpening)
+    ?? rungGiftPresentation(pending.beatId, firstGrantName(firstGrant), rungOpening)
     ?? undefined;
   const kindPresentation = KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine;
   const presentation = authored ?? kindPresentation;
-  const grants = def?.grantsActionIds ?? [];
-  const isSelection = pending.kind === 'selection';
   const title = isOffering
     ? OFFERING_COPY.title
     : proseOverride?.title ?? authored?.title ?? humanizeBeatId(pending.beatId);

@@ -241,7 +241,7 @@ import { isAutonomousDecisionActor } from '../../engine/strategicKindReachabilit
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { setHomeSeat as setHomeSeatEngine } from '../../engine/influence';
-import { forceOfferBeatById, forceOffering, getBeatDefinitionById, resolvePendingBeat, settleOpeningSpineBeats } from '../../engine/ascendantBeat';
+import { forceOfferBeatById, forceOffering, getBeatDefinitionById, previewReachSignatureGrant, resolvePendingBeat, settleOpeningSpineBeats } from '../../engine/ascendantBeat';
 import {
   findDeliverySubject,
   prepareDeliveryEncounter,
@@ -6552,6 +6552,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             ? describeOffering(gameState, pendingBeat.offeredActionIds ?? [])
             : undefined}
           rungOpening={pendingBeat.kind === 'rung_gift' ? isRungOpeningOffer(gameState, pendingBeat.beatId) : undefined}
+          // THR-1855: the reach-signature card this gift grants, resolved for this god.
+          signatureGrantId={previewReachSignatureGrant(gameState, pendingBeat.beatId)}
           // THR-1851: an introduction beat's bound people, so "Attend" can open them.
           subjectRef={beatSubjectRef}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
