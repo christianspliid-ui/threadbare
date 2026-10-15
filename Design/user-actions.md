@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-15 11:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-15 12:58 local (10:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -9,10 +9,6 @@
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
 It happened again on the night of 12 to 13 Oct: no lane ran from 03:57 until 13:57 on Tuesday 13 Oct.
-
-### Set the TypeSafe key, when convenient
-
-Add `TYPESAFE_API_KEY` as a Windows user environment variable on the home computer. The key comes from [the TypeSafe console](https://console.typesafe.ai/). **Do not paste it into chat.** Checked 14 Oct: it is not set. The coverage tool ([THR-1723](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage)) can be built without it, but [the first coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev) waits on it. Say "done" when it is set. *— from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-14d.md) and the [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-14c.md)*
 
 ### Was the Claude app closed on Thursday 1 Oct afternoon and Friday 2 Oct morning? (lane silence, ended)
 
@@ -32,6 +28,9 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-15: your TypeSafe key is set and the lanes can see it** (confirmed by [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-15e.md)). [The first encounter coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev) is queued.
+- **2026-10-15: the new story typeface and type rules are live** ([THR-1879](https://linear.app/threadbare/issue/THR-1879)). Merged via [#2421](https://github.com/christianspliid-ui/threadbare/pull/2421).
+- **2026-10-15: the encounter coverage runner is live** ([THR-1723](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage)). Merged via [#2420](https://github.com/christianspliid-ui/threadbare/pull/2420).
 - **2026-10-15: the encounter Stage's first slice is live** ([THR-1877](https://linear.app/threadbare/issue/THR-1877/plan-doc-the-encounter-stage-a-mortals-moment-plays-over-the-dimmed)): every moment now has one home list and one foreground. Merged via [#2419](https://github.com/christianspliid-ui/threadbare/pull/2419) and live.
 - **2026-10-15: the game-screen split is finished** ([THR-1881](https://linear.app/threadbare/issue/THR-1881/gameview-split-cut-the-game-screen-into-hosts-for-the-frame-map-stage)). Its last step merged via [#2417](https://github.com/christianspliid-ui/threadbare/pull/2417) and is live; the new map-first screen can now be built on it.
 - **2026-10-15: master craftsmen now take on harder work than experts on every test world.** [Batch 3](https://linear.app/threadbare/issue/THR-1840/master-everyday-batch-3-eight-more-master-encounters-one-per-reach) merged via [#2410](https://github.com/christianspliid-ui/threadbare/pull/2410), so [batch 4](https://linear.app/threadbare/issue/THR-1841/master-everyday-batch-4-eight-more-master-encounters-one-per-reach) closed as not needed ([#2412](https://github.com/christianspliid-ui/threadbare/pull/2412)).
@@ -39,9 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-15: a gift now names its card before and after you receive it** ([THR-1855](https://linear.app/threadbare/issue/THR-1855/a-gift-never-says-what-it-gave-it-gives-you-this-one-freely-names-no)). Merged via [#2409](https://github.com/christianspliid-ui/threadbare/pull/2409) and live.
 - **2026-10-15: screens now read prepared view data** ([THR-1822](https://linear.app/threadbare/issue/THR-1822/design-a-view-model-seam-screens-read-prepared-view-data-from-the)). Merged via [#2408](https://github.com/christianspliid-ui/threadbare/pull/2408) and live; the game-screen split is unblocked.
 - **2026-10-15: the mortal economy map's questions are all decided** ([THR-1863](https://linear.app/threadbare/issue/THR-1863/wayfinder-map-mortal-economy-making-wealth-and-want-drive-what-agents)): the design lane answered the last one ([THR-1870](https://linear.app/threadbare/issue/THR-1870/what-the-player-sees-of-the-economy-prosperity-unrest-tolls-and)) with a veto open, so the "which are yours alone" ask is withdrawn. Carve-up into build plans is next.
-- **2026-10-14: master craftsmen get more work worthy of them** ([THR-1757](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times)): eight new master encounters, one per craft. Merged via [#2405](https://github.com/christianspliid-ui/threadbare/pull/2405) and live.
-- **2026-10-14: heavy simulation tests are green on main again** ([THR-1927](https://linear.app/threadbare/issue/THR-1927/heavy-tests-red-on-main-for-two-days-two-simulation-tests-time-out-on)). Merged via [#2404](https://github.com/christianspliid-ui/threadbare/pull/2404) and live.
-- **2026-10-14: economy reads now land** ([THR-1862](https://linear.app/threadbare/issue/THR-1862/economy-reads-that-never-land-prosperity-is-0-100-but-four-readers)). Merged via [#2397](https://github.com/christianspliid-ui/threadbare/pull/2397) and live.
 
 ---
 
