@@ -21,6 +21,8 @@ import {
   ASCENDANT_MILESTONE_BEATS,
 } from '../../../data/ascendant-milestone-beats';
 import type { PendingBeat } from '../../../types/ascendantBeat';
+import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
+import { RUNG_BEAT_PRESENTATION } from '../../../data/god-progression-content';
 
 function pendingFor(beatId: string, kind: PendingBeat['kind']): PendingBeat {
   return { beatId, kind, offeredTurn: 1 } as PendingBeat;
@@ -102,5 +104,41 @@ describe('AscendantBeatModal — renders authored copy, not the kind placeholder
       />,
     );
     expect(screen.getByText(/something in the world stands ready/i)).toBeInTheDocument();
+  });
+});
+
+describe('AscendantBeatModal — a gift shows and names its card (THR-1855)', () => {
+  const SIG = 'invest.stone.great_work';
+
+  it('the secondary-signature gift shows the resolved card and names it in the opening words', () => {
+    // The card face prints the spell name when there is one; the prose must match it.
+    const template = getUnifiedTemplateById(SIG)!;
+    const name = template.spellName ?? template.name;
+    render(
+      <AscendantBeatModal
+        open
+        pending={pendingFor('beat.rung.2.signature.secondary', 'rung_gift')}
+        onResolve={() => {}}
+        rungOpening
+        signatureGrantId={SIG}
+      />,
+    );
+    expect(screen.getByTestId('beat-unlock-cards')).toHaveTextContent(name);
+    const prose = RUNG_BEAT_PRESENTATION[2].prose.replace('{card}', name);
+    expect(screen.getByText(prose)).toBeInTheDocument();
+    expect(screen.queryByText(/\{card\}/)).not.toBeInTheDocument();
+  });
+
+  it('without a resolved signature the gift shows no card and says so plainly (fail-soft)', () => {
+    render(
+      <AscendantBeatModal
+        open
+        pending={pendingFor('beat.rung.2.signature.secondary', 'rung_gift')}
+        onResolve={() => {}}
+        rungOpening
+      />,
+    );
+    expect(screen.queryByTestId('beat-unlock-cards')).not.toBeInTheDocument();
+    expect(screen.queryByText(/\{card\}/)).not.toBeInTheDocument();
   });
 });
