@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-14
+last_validated_against: 2026-10-15
 ---
 
 # Pull Work
@@ -27,7 +27,7 @@ Run as `/pull-work` (auto-pick top Ready for Dev issue) or `/pull-work THR-123` 
 
 1. **Board scan** — consume the Step 1 board-scan (already built): **two state-filtered `list_issues` calls**, not one unfiltered 250-issue sweep. Drop candidates whose description carries a future `Claimable from:` time (THR-1694, see Step 1). Partition candidates by **Rule 0** (flow impediments with demonstrated cost outrank everything, whatever their `priority` field — see Step 1), then sort each partition by priority (1=Urgent first), then oldest `createdAt` as tie-break. Pick the top of partition 1 if non-empty, else the top of partition 2 — considering **every** queue item, not only the unassigned ones (THR-845: an assignee on `Ready for Dev` is noise, not a claim, and filtering on it hid the board's two highest-priority issues).
 1.5. **WIP gate** — if the "In Dev" slice filtered to `assignee:"me"` is empty, continue to step 2. If exactly one entry, route to Step 1.7 (resume-from-In-Dev upstream-shipped check) instead of exiting clean. If more than one entry, this is a Rule 6 violation — output the cross-session-leak trace line and exit 1.
-2. **Claim** — `save_issue(id, assignee:"me", state:"In Dev")`.
+2. **Claim** — first run Step 1.6's predecessor check (claim-time, THR-1887): two or more active pickup runs → stand down silently. Then `save_issue(id, assignee:"me", state:"In Dev")`.
 3. **Verify** — `get_issue(id)`. Confirm both `assignee` and `state` match.
    - On mismatch (silent drop, impediment #48): release claim with `save_issue(id, assignee:null)`. Output trace line (see below). Move to the next candidate. Retry up to `MAX_CLAIM_RETRIES` total attempts.
    - On all retries exhausted: output final trace line and exit the wrapper — fall back to the hand-rolled Step 1–4 path below.
@@ -324,7 +324,7 @@ The single-in-flight case routes to Step 1.6 (predecessor check) and then Step 1
 
 ### Step 1.6 — Predecessor check — is another pickup run still running?
 
-Reached from Step 1.5's single-in-flight branch and from Step 0.8's unstick predicate (c). **Run this before every other read or write on the resumed issue or the stuck PR**, including the Step 1.7 upstream grep's disposition, the Step 1.8 comment read, and any `save_issue`/`save_comment`.
+Reached from Step 1.5's single-in-flight branch, from Step 0.8's unstick predicate (c), and from Step 4 immediately before every fresh or drain claim (THR-1887). **Run this before every other read or write on the resumed issue or the stuck PR**, including the Step 1.7 upstream grep's disposition, the Step 1.8 comment read, and any `save_issue`/`save_comment`.
 
 **Why it exists.** From Linear and git, a resume and an overlap look the same. A ticket `In Dev` with no PR, or a PR left unarmed, may belong to a run that is still working. This has gone wrong for real: two complete PRs for THR-1245 (impediment #763), a near-miss onto a branch committed 3.5 minutes earlier (#743), and THR-1839 built twice on 2026-10-14 (THR-1887).
 
@@ -339,7 +339,11 @@ Count the rows with `status: "running"` whose `last_activity_at` is within `PRED
 - **Exactly one** (you): every other pickup run has ended. The predecessor is dead, so continue at once, however recently its branch was pushed.
 - **Two or more**: two pickup runs are active at the same time. Stand down. You do not need to work out which row is yours. In a race both runs stand down, and the next slot, with one run alive, goes ahead.
 
-**A resumed run checks again.** If this session was interrupted and resumed (an error, then "Try again" or "continue"), run this check again before your next write. While you were down, a new run may have started and read the board. Stand down on two or more, as above.
+**A resumed run checks again, then reads the board again.** If this session was interrupted and resumed (an error, then "Try again" or "continue"), run this check again before your next write. While you were down, a new run may have started and read the board. Stand down on two or more, as above. If you continue, and more than one cadence interval (`PICKUP_CADENCE_MINUTES`, 20) has passed since your last board read, start again from Step 1: do not act on a board read from before the gap (THR-1887).
+
+**A fresh claim checks too — immediately before the claim `save_issue` (THR-1887).** Step 4's claim and Step 1.7's resume both assume that no other pickup run is working. Before the Step 4 `save_issue(id, assignee:"me", state:"In Dev")` (and before each drain claim), run this check once more. Stand down silently on two or more. This closes the race the resume-only check left open. On 2026-10-14 the 03:31Z run, resumed at about 06:45Z, and the 06:45:26Z scheduled run both read `Ready for Dev` and both made a *fresh* claim on THR-1839, so neither run reached Step 1.6, and the result was two full builds (PRs #2366 and #2367). With the check at claim time, each run's row is `running` while it checks. Of two runs that overlap, the run that checks second always sees two rows and stands down, and the run that checks first stands down too if the other row already exists. At most one of them claims. The cost is one `list_task_runs` call per claim.
+
+**Why not a session marker on the claim comment.** THR-1887 proposed a `pickup claim <session-id>` first line that the resume path reads, with "earliest marker wins". This check replaces it. Every lane writes to Linear as the same user, so the marker would have to be written, re-read and compared. The run list is the scheduler's own record of which runs are alive, and it needs no write. It also covers the resume case without a staleness bound. A marker cannot tell a dead session from a working one, and that is the guess impediment #1194 removed from this step.
 
 **`PREDECESSOR_SILENT_MINUTES` (60) only drops a dead row; it is not a wait.** A working run writes to its session at least every few minutes; the longest silent stretch is one gate run, well under an hour. A row still marked `running` after an hour of silence belongs to a process that was killed without the app noticing. Counting it would stand the lane down on every run until someone clears it, which is the same stall this check replaced.
 
@@ -357,6 +361,9 @@ Count the rows with `status: "running"` whose `last_activity_at` is within `PRED
 [pull-work] Step 1.6: 1 pickup run active (this one) — predecessor dead. Continuing to Step 1.7.
 [pull-work] Step 1.6: 2 pickup runs active (<session ids>) — standing down silently, no writes.
 [pull-work] Step 1.6: run list unreadable — assuming overlap (fail-closed). Standing down.
+[pull-work] Step 1.6 (claim-time): 1 pickup run active (this one) — claiming THR-XXX.
+[pull-work] Step 1.6 (claim-time): 2 pickup runs active (<session ids>) — not claiming, standing down silently.
+[pull-work] Step 1.6 (resumed): last board read <N> min ago > 20 — restarting from Step 1.
 ```
 
 **Constants:**
@@ -365,6 +372,7 @@ Count the rows with `status: "running"` whose `last_activity_at` is within `PRED
 |---|---|---|
 | `PREDECESSOR_SILENT_MINUTES` | 60 | A `running` row silent for longer is a killed process, not a working run, and is not counted |
 | `PREDECESSOR_CHECK_FAIL_CLOSED` | `true` | An unreadable run list counts as an overlap |
+| `PICKUP_CADENCE_MINUTES` | 20 | A resumed run whose last board read is older than this starts again from Step 1 (THR-1887) |
 
 ### Step 1.7 — Resume-from-In-Dev — upstream-shipped check
 
@@ -566,6 +574,7 @@ Per THR-688 Rule B this whole branch is a **technical verdict** — a merge eith
 
 > **Preferred:** use `pullNextReadyForDev` (§ above) — it bundles Steps 1–4 with retry-on-silent-drop. This step-by-step is the documented fallback.
 
+0. Run Step 1.6's predecessor check (claim-time). Two or more active pickup runs → stand down silently, no write (THR-1887).
 1. First mutating call: `save_issue(id, assignee:"me", state:"In Dev")`.
 2. Immediately call `get_issue(id)` and verify both `assignee` and `state` stuck.
 3. On mismatch: release claim (`save_issue(id, assignee:null)`), move to the next candidate, retry up to `MAX_CLAIM_RETRIES = 3` total attempts.
