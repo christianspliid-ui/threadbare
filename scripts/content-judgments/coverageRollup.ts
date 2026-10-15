@@ -17,6 +17,12 @@ import {
   CALIBRATION_STEP,
   CALIBRATION_TARGET_AGREEMENT,
   COVERAGE_THIN_CELL,
+  CALIBRATED_ACTIVITY_CONFIDENCE,
+  CALIBRATED_AT,
+  CALIBRATED_REACH_CONFIDENCE,
+  CALIBRATED_SPHERE_YES,
+  CALIBRATED_TAG_FIT_NO,
+  CALIBRATED_WALK_OF_LIFE_CONFIDENCE,
   DEFAULT_CHOICE_CONFIDENCE,
   DEFAULT_SPHERE_YES,
   DEFAULT_TAG_FIT_NO,
@@ -117,6 +123,16 @@ export const PLACEHOLDER_THRESHOLDS: CoverageThresholds = {
   sphereYes: DEFAULT_SPHERE_YES,
   tagFitNo: DEFAULT_TAG_FIT_NO,
   calibratedAt: null,
+};
+
+/** The committed calibration (THR-1850): applies to a run answered on `JEV_MODEL` with nothing carried. */
+export const CALIBRATED_THRESHOLDS: CoverageThresholds = {
+  reach: CALIBRATED_REACH_CONFIDENCE,
+  activity: CALIBRATED_ACTIVITY_CONFIDENCE,
+  walkOfLife: CALIBRATED_WALK_OF_LIFE_CONFIDENCE,
+  sphereYes: CALIBRATED_SPHERE_YES,
+  tagFitNo: CALIBRATED_TAG_FIT_NO,
+  calibratedAt: CALIBRATED_AT,
 };
 
 // ─── Rows ───────────────────────────────────────────────────────────
@@ -579,9 +595,12 @@ export function renderReport(
   lines.push('');
   lines.push(`**${artifact.partial ? 'PARTIAL · ' : ''}${rows.length} entries · ${u.requests} requests · ${u.reusedRows} reused rows · ${u.inputTokens} input tokens · $${u.usdEstimate.toFixed(4)} · ${u.wallSeconds}s · ${artifact.model} · questions v${artifact.questionsVersion} · thresholds reach ${fmt(t.reach)} / activity ${fmt(t.activity)} / walk of life ${fmt(t.walkOfLife)} / sphere yes ${fmt(t.sphereYes)} / tag-fit no ${fmt(t.tagFitNo)}**`);
   lines.push('');
-  lines.push(t.calibratedAt
-    ? `Thresholds calibrated against a blind Claude reader subagent (a model, not a human) on ${artifact.calibration?.sampleIds.length ?? 0} entries, ${t.calibratedAt}.`
-    : 'Thresholds are pre-calibration placeholders; no answer here has been calibrated yet.');
+  lines.push(!t.calibratedAt
+    ? 'Thresholds are pre-calibration placeholders; no answer here has been calibrated yet.'
+    : artifact.calibration
+      ? `Thresholds calibrated against a blind Claude reader subagent (a model, not a human) on ${artifact.calibration.sampleIds.length} entries, ${t.calibratedAt}.`
+      // Committed or carried thresholds with no labels in this artifact (THR-1850): name where they came from.
+      : `Thresholds are the committed calibration measured ${t.calibratedAt} (\`CALIBRATED_*\` in \`scripts/content-judgments/constants.ts\`); this artifact carries no reader labels — the run that measured them holds the tables in \`ops\` history.`);
   lines.push(`Source commit \`${artifact.sourceCommit}\` · ran ${artifact.ranAt}${artifact.coldStart ? ' · cold start (no previous artifact)' : ''}${errored ? ` · ${errored} errored rows` : ''}.`);
   lines.push('');
 

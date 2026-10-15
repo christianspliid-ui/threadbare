@@ -36,6 +36,16 @@ artifact, so only new or edited encounters cost money. `--dry-run --limit 1` pri
 its question set with no network call. **Key unset → the runner prints
 `judge:encounters: skipped — TYPESAFE_API_KEY is not set`, exits 0 and writes nothing.**
 
+**Calibrated (THR-1850, 2026-10-15)** against a blind Claude reader subagent on the 64-entry
+sample, on `jev-1.13.0` and questions v1: Reach 0.80, Walk of life 0.50, tag-fit no 0.40 (thin:
+10 labels). **Activity and Spheres are uncalibrated** — no cut reached 85% agreement over half the
+sample, so every answer on those axes routes to review. The values are committed as `CALIBRATED_*`
+in `scripts/content-judgments/constants.ts` and apply to any run that answers on the pinned model
+with no carried thresholds. A re-calibration passes `--calibration <file>`, where the file is the
+label array or `{ readerPrompt, labels }` (the prompt then lands in the artifact). Read Jev's
+`→ eye` Reach judgments with suspicion: about 67 of the first run's 110 mislabel candidates were
+judged Eye.
+
 Outside that runner:
 
 - An ad-hoc screen from a pipeline session is allowed for a **small worklist** (one batch, tens of

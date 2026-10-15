@@ -6,7 +6,10 @@
  * `src/` imports this file, and nothing in the shipped build calls TypeSafe.
  */
 
-/** Pinned model id; thresholds are tuned against it. A model change re-runs calibration. */
+/**
+ * Pinned model id; thresholds are tuned against it. A model change re-runs calibration.
+ * Confirmed as the answering version by the first full run (THR-1850, 2026-10-15).
+ */
 export const JEV_MODEL = 'jev-1.13.0';
 
 /** HTTP endpoint (docs.typesafe.ai/api.md, read 2026-10-15). */
@@ -94,6 +97,36 @@ export const DEFAULT_SPHERE_YES = 0.7;
 
 /** Pre-calibration placeholder for tag-fit Nouls. */
 export const DEFAULT_TAG_FIT_NO = 0.3;
+
+/*
+ * Calibrated thresholds (THR-1850). Measured against `JEV_MODEL` and questions v1 on the
+ * 64-entry sample, labelled by a blind Claude reader subagent; the tables are in the
+ * `calibration` block of `origin/ops:Docs/ops/content-judgments/encounter-coverage.json`.
+ * `null` = uncalibrated: no cut reached CALIBRATION_TARGET_AGREEMENT over
+ * CALIBRATION_MIN_ADMITTED_SHARE of the sample, so every answer on that axis routes to review.
+ * They apply when a run answers on `JEV_MODEL` and has no carried thresholds of its own.
+ */
+
+/** Reach: 88.6% agreement over 35 of 64 at 0.80. */
+export const CALIBRATED_REACH_CONFIDENCE: number | null = 0.8;
+
+/** Activity: uncalibrated — 85% first appears at 0.85, which admits only 47% of the sample. */
+export const CALIBRATED_ACTIVITY_CONFIDENCE: number | null = null;
+
+/** Walk of life: 86.7% agreement over 60 of 64 at 0.50. */
+export const CALIBRATED_WALK_OF_LIFE_CONFIDENCE: number | null = 0.5;
+
+/** Sphere yes: uncalibrated — agreement stays at 62–68% until the cut admits under a third of answers. */
+export const CALIBRATED_SPHERE_YES: number | null = null;
+
+/** Tag-fit no: 0.40 (87.5% at a 0.60 cut over 8 of 10 labelled tag fits — a thin sample). */
+export const CALIBRATED_TAG_FIT_NO: number | null = 0.4;
+
+/** When the thresholds above were measured. */
+export const CALIBRATED_AT = '2026-10-15T11:57:24.635Z';
+
+/** The question-set version the thresholds above were measured on; a bump makes them stale. */
+export const CALIBRATED_QUESTIONS_VERSION = 1;
 
 /** A grid cell below this count is "thin". */
 export const COVERAGE_THIN_CELL = 3;

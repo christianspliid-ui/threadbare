@@ -13,6 +13,7 @@
  *   7. write the artifact and report, mark `partial` above the error share.
  */
 import {
+  CALIBRATED_QUESTIONS_VERSION,
   CONTENT_JUDGMENTS_DOCTRINE,
   ENCOUNTER_COVERAGE_QUESTIONS_VERSION,
   ESTIMATE_CHARS_PER_TOKEN,
@@ -30,6 +31,7 @@ import {
   calibrateThresholds,
   calibrationLabelsProblem,
   errorRow,
+  CALIBRATED_THRESHOLDS,
   PLACEHOLDER_THRESHOLDS,
   renderReport,
   reusableRow,
@@ -94,6 +96,20 @@ export function estimateInputTokens(states: readonly BuiltEncounterState[]): num
   return Math.ceil(chars / ESTIMATE_CHARS_PER_TOKEN);
 }
 
+/**
+ * A labels file is either the bare label array or `{ readerPrompt, labels }`, so the prompt
+ * the reader was given travels into the artifact's `calibration` block (plan Decision 5:
+ * "written into the artifact's `calibration` block with the prompt used").
+ * An object without a string `readerPrompt` is passed through as-is and fails validation.
+ */
+export function unwrapLabelsFile(parsed: unknown): { labels: unknown; readerPrompt: string | null } {
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+    const env = parsed as { readerPrompt?: unknown; labels?: unknown };
+    if (typeof env.readerPrompt === 'string') return { labels: env.labels, readerPrompt: env.readerPrompt };
+  }
+  return { labels: parsed, readerPrompt: null };
+}
+
 async function pool<T>(items: readonly T[], size: number, work: (item: T) => Promise<void>): Promise<void> {
   let next = 0;
   const lanes = Array.from({ length: Math.min(size, items.length) }, async () => {
@@ -132,12 +148,14 @@ export async function runEncounterCoverage(
 
   // Read the labels before any paid call, so a bad path costs nothing.
   let labels: CalibrationLabel[] | null = null;
+  let readerPrompt = '(see calibration labels file)';
   if (args.calibrationPath) {
     let problem: string | null;
     try {
-      const parsed: unknown = io.readCalibrationLabels(args.calibrationPath);
-      problem = calibrationLabelsProblem(parsed);
-      if (!problem) labels = parsed as CalibrationLabel[];
+      const envelope = unwrapLabelsFile(io.readCalibrationLabels(args.calibrationPath));
+      problem = calibrationLabelsProblem(envelope.labels);
+      if (!problem) labels = envelope.labels as CalibrationLabel[];
+      if (envelope.readerPrompt) readerPrompt = envelope.readerPrompt;
     } catch (err) {
       problem = err instanceof Error ? err.message : String(err);
     }
@@ -206,18 +224,23 @@ export async function runEncounterCoverage(
 
   const model = answeredModel ?? previous?.model ?? JEV_MODEL;
   // Thresholds were measured against one model and one question set; a change to either
-  // drops them back to the placeholders until calibration runs again.
+  // drops them back to the placeholders until calibration runs again. With nothing to
+  // carry, the committed calibration applies when its model and question set still hold.
   const carry = previous !== null
     && previous.model === model
     && previous.questionsVersion === ENCOUNTER_COVERAGE_QUESTIONS_VERSION;
-  let thresholds = carry && previous ? previous.thresholds : PLACEHOLDER_THRESHOLDS;
+  const committedHolds = model === JEV_MODEL
+    && ENCOUNTER_COVERAGE_QUESTIONS_VERSION === CALIBRATED_QUESTIONS_VERSION;
+  let thresholds = carry && previous
+    ? previous.thresholds
+    : committedHolds ? CALIBRATED_THRESHOLDS : PLACEHOLDER_THRESHOLDS;
   let calibration = carry && previous ? previous.calibration : null;
   if (labels) {
     const result = calibrateThresholds(ordered, labels, ranAt.toISOString());
     thresholds = result.thresholds;
     calibration = {
       reader: 'blind Claude reader subagent',
-      readerPrompt: '(see calibration labels file)',
+      readerPrompt,
       sampleIds: selectCalibrationSample(ordered),
       labels,
       tables: result.tables,

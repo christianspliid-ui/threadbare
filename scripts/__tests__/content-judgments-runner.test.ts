@@ -7,7 +7,7 @@ import type { UnifiedActionTemplate } from '../../src/types/unifiedAction';
 import { buildEncounterState } from '../content-judgments/encounterState';
 import { parseRunnerArgs, runEncounterCoverage, type RunnerIO } from '../content-judgments/runner';
 import { judge, JevAuthError, readApiKey } from '../content-judgments/jevClient';
-import { PLACEHOLDER_THRESHOLDS, type EncounterCoverageArtifact } from '../content-judgments/coverageRollup';
+import { CALIBRATED_THRESHOLDS, PLACEHOLDER_THRESHOLDS, type EncounterCoverageArtifact } from '../content-judgments/coverageRollup';
 
 const FAKE_KEY = 'tsk-FIXTURE-KEY-must-never-print-4242';
 
@@ -169,14 +169,52 @@ describe('judge:encounters runner (THR-1723)', () => {
     expect(logs.join('\n')).toContain('expected a JSON array of labels');
   });
 
+  it('records the reader prompt from a { readerPrompt, labels } file in the calibration block (THR-1850)', async () => {
+    const label = (id: string) => ({ id, reach: 'iron', activity: 'duel', walk_of_life: 'combat', spheres: {} });
+    const { io } = harness({
+      readCalibrationLabels: () => ({ readerPrompt: 'You are a blind reader.', labels: [label('enc.a'), label('enc.b')] }),
+    });
+    const res = await runEncounterCoverage(states, args(['--calibration', 'labels.json']), io);
+    expect(res.exitCode).toBe(0);
+    expect(res.artifact?.calibration?.readerPrompt).toBe('You are a blind reader.');
+    expect(res.artifact?.calibration?.labels).toHaveLength(2);
+    expect(res.artifact?.thresholds.calibratedAt).toBe('2026-10-15T00:00:00.000Z');
+  });
+
   it('drops carried thresholds when the model or question version changed', async () => {
     const calibrated = { ...PLACEHOLDER_THRESHOLDS, reach: 0.42, calibratedAt: '2026-10-01T00:00:00.000Z' };
     const base = { questionsVersion: 1, model: 'jev-1.13.0', rows: [], thresholds: calibrated, calibration: null };
     const same = harness({ readPrevious: () => base as unknown as EncounterCoverageArtifact });
     expect((await runEncounterCoverage(states, args(), same.io)).artifact?.thresholds.reach).toBe(0.42);
+    // Previous artifact on another model: nothing carries; this run answered on the pinned
+    // model, so the committed calibration applies (THR-1850).
     const moved = harness({ readPrevious: () => ({ ...base, model: 'jev-1.12.0' }) as unknown as EncounterCoverageArtifact });
     const res = await runEncounterCoverage(states, args(), moved.io);
+    expect(res.artifact?.thresholds).toEqual(CALIBRATED_THRESHOLDS);
+  });
+
+  it('falls back to the placeholders when the run answers on a model other than the pinned one (THR-1850)', async () => {
+    const other = new Response(JSON.stringify({ model: 'jev-1.14.0', answers: {}, usage: { input_tokens: 1, output_tokens: 0 } }), { status: 200 });
+    const { io } = harness({ fetchImpl: vi.fn(async () => other.clone()) as unknown as typeof fetch });
+    const res = await runEncounterCoverage(states, args(), io);
+    expect(res.artifact?.model).toBe('jev-1.14.0');
     expect(res.artifact?.thresholds).toEqual(PLACEHOLDER_THRESHOLDS);
+  });
+
+  it('a cold start on the pinned model uses the committed calibration (THR-1850)', async () => {
+    const { io } = harness();
+    const res = await runEncounterCoverage(states, args(), io);
+    expect(res.artifact?.thresholds).toEqual(CALIBRATED_THRESHOLDS);
+    expect(CALIBRATED_THRESHOLDS.reach).toBe(0.8);
+    expect(CALIBRATED_THRESHOLDS.activity).toBeNull();
+  });
+
+  it('a committed calibration with no labels in the artifact names its source, never "on 0 entries"', async () => {
+    const { io, written } = harness();
+    await runEncounterCoverage(states, args(), io);
+    const md = written[1];
+    expect(md).toContain('committed calibration measured');
+    expect(md).not.toContain('on 0 entries');
   });
 
   it('reports a failed publish with the retry command and exits 1', async () => {
