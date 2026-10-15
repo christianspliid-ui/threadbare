@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import type { HexCoord } from '../../../types';
 import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
-import { AGENT_PORTRAIT_RADIUS } from '../../../data/agent-visual-content';
 import type { AgentSpriteEntry } from '../scene/AgentSpriteMesh';
 
 /**
@@ -118,12 +117,11 @@ export function pickAgentAtScreen(
   zoomK: number = 1,
 ): string | null {
   let closest: { agentId: string; distPx: number } | null = null;
-  // Scale hit radius with zoom so clicking anywhere on the visual circle works.
-  // AGENT_PORTRAIT_RADIUS world units × zoomK ≈ visual pixel radius of the sprite.
-  const radius = Math.max(INTERACTION_CONSTANTS.AGENT_CLICK_RADIUS_PX, AGENT_PORTRAIT_RADIUS * zoomK);
-
   for (const [agentId, entry] of spriteMap) {
     if (!entry.sprite.visible) continue;
+    // THR-1899: the hit circle is the marker as drawn — its world scale × k is its
+    // screen size (MAP_MARKERS) — never smaller than the click floor.
+    const radius = Math.max(INTERACTION_CONSTANTS.AGENT_CLICK_RADIUS_PX, (entry.sprite.scale.x * zoomK) / 2);
     const screen = worldToScreen(entry.sprite.position, camera, canvas);
     const dx = screenX - screen.x;
     const dy = screenY - screen.y;

@@ -474,6 +474,33 @@ export interface DebugMapChromeResult {
     /** Hexes the parchment currently covers. */
     unexploredHexes: number;
   };
+  /** THR-1899 — the zoom as applied: d3 scale, tier and the MAP_MARKERS band. */
+  k: number;
+  tier: 'hero-local' | 'regional' | 'continental' | 'full-world';
+  band: 'fullWorld' | 'continental' | 'regional' | 'heroLocal';
+  /** THR-1899 — agent markers by MAP_MARKERS kind. */
+  markers: {
+    /** Sprites per kind (avatar, threadedAgent, agent). */
+    byKind: Record<string, number>;
+    /** Sprites per kind drawn in this band. */
+    visibleByKind: Record<string, number>;
+    /** The list's screen px per kind for this band (null = hidden here, or sized by its mesh). */
+    sizePx: Record<string, number | null>;
+    /** Screen px a drawn sprite of each kind measures now (world scale × k) — equals sizePx. */
+    drawnPx: Record<string, number>;
+  };
+  /** THR-1899 — the last place-name collision pass. */
+  labels: {
+    lastPassMs: number;
+    maxPassMs: number;
+    passes: number;
+    labels: number;
+    /** Marker boxes names had to step aside for. */
+    obstacles: number;
+    /** Names moved to their free slot below the anchor. */
+    moved: number;
+    hidden: number;
+  };
 }
 
 /** Result of `getDominionLens()`. THR-1750 */

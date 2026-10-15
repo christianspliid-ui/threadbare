@@ -4,11 +4,14 @@
  * Renders location name labels as positioned <div> elements over the canvas using
  * camera.project() for world→screen mapping. Follows the RegionLabelOverlay pattern.
  *
- * Features:
- * - Importance-based font sizing: capital 13px/700, city/town 11px/400, small 9px/400
- * - White halo text-shadow for legibility over varied terrain
- * - Zoom-tier visibility: all tiers at regional+, capital-only at continental
- * - Collision detection via removeOverlaps (debounced)
+ * Features (THR-1899; THR-1831 § 6, THR-1833 § 5):
+ * - Sizes stepped by zoom band (LOCATION_LABEL_SIZES), weights by importance
+ *   (capital 800, city 700, town 500, small 400), in Alegreya Sans
+ * - A dark halo (LABEL_HALO) behind light text, legible over any terrain
+ * - Zoom visibility: none below regional; small places from k 10
+ * - Collision detection via removeOverlaps (debounced). Map markers that are label
+ *   obstacles (threaded medallions, the avatar, close-up portraits) are immovable
+ *   boxes: a name that hits one moves to its free slot below its anchor, or hides
  * - pointer-events: none throughout — labels are display-only
  *
  * NFP #1 Tunability: All font sizes, weights, and zoom thresholds are named constants.
@@ -32,33 +35,99 @@ import {
   MAX_RING_LOCATIONS,
 } from '../../../data/agent-visual-content';
 import { ZOOM_THRESHOLDS } from './RegionLabelOverlay';
-import { removeOverlaps, applyCachedVisibility, type ScreenLabel, type ScreenBBox } from './labelCollision';
-import { getActivePalette, buildLandHalo } from '../palette/activePalette';
+import {
+  removeOverlaps,
+  applyCachedVisibility,
+  verdictsOf,
+  type LabelVerdict,
+  type ScreenLabel,
+  type ScreenBBox,
+} from './labelCollision';
 import { MAP_OVERLAY_Z } from './mapOverlayZ';
 
 // ── NFP #1: Tunable constants ─────────────────────────────────────────────────
 
+/** The zoom steps place names are sized by (THR-1878 plan § D14). */
+export type LocationLabelBand = 'regionalOuter' | 'regionalInner' | 'heroLocal';
+
 /**
- * Font sizes (px) per location importance tier.
- * capital=16, city/town=13, small=11.
+ * Screen px per importance and band (THR-1831 § 6). null = no name in that band.
+ * regionalOuter is k 5–10 (region names still showing), regionalInner k 10–15,
+ * heroLocal k ≥ 15. Map label sizes are screen px and do not take the root type step.
  */
-export const LOCATION_LABEL_FONT_SIZES: Record<LocationImportance, number> = {
-  capital: 16,
-  city:    13,
-  town:    13,
-  small:   11,
+export const LOCATION_LABEL_SIZES: Record<LocationLabelBand, Record<LocationImportance, number | null>> = {
+  regionalOuter: { capital: 16, city: 14, town: 13, small: null },
+  regionalInner: { capital: 19, city: 16, town: 14, small: 12 },
+  heroLocal:     { capital: 22, city: 19, town: 16, small: 14 },
 };
 
 /**
- * Font weights per location importance tier.
- * All tiers use bold (700).
+ * Font sizes (px) at the first regional step, kept for readers that want one
+ * number per importance. Small has none there (hidden); 12 is its first size.
+ */
+export const LOCATION_LABEL_FONT_SIZES: Record<LocationImportance, number> = {
+  capital: 16,
+  city:    14,
+  town:    13,
+  small:   12,
+};
+
+/**
+ * Font weights per importance (THR-1833 § 5). Alegreya Sans 800 ships with
+ * THR-1879's font slice; until then the browser draws the nearest cut (700).
  */
 export const LOCATION_LABEL_FONT_WEIGHTS: Record<LocationImportance, number> = {
-  capital: 700,
+  capital: 800,
   city:    700,
-  town:    700,
-  small:   700,
+  town:    500,
+  small:   400,
 };
+
+/** Px a place name moves down to its free slot when a marker or a bigger name holds its spot. */
+export const LABEL_ALT_SLOT_OFFSET_PX = 14;
+
+/**
+ * The dark halo behind map labels (THR-1833 § 5): the stroke paints under the fill,
+ * so only its outer half shows, as a rim around each glyph.
+ */
+export const LABEL_HALO: CSSProperties = {
+  WebkitTextStroke: '3px var(--bg-abyss)',
+  paintOrder: 'stroke fill',
+};
+
+/** Place-name ink: light on the dark halo, as in THR-1833's specimen. */
+export const PLACE_LABEL_COLOR = 'var(--text-primary)';
+
+/** The label band for a zoom, or null below regional (no place names). */
+export function locationLabelBand(zoomLevel: number): LocationLabelBand | null {
+  if (zoomLevel < ZOOM_THRESHOLDS.CONTINENTAL_MAX) return null;
+  if (zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX) return 'regionalOuter';
+  if (zoomLevel < ZOOM_THRESHOLDS.REGIONAL_MAX) return 'regionalInner';
+  return 'heroLocal';
+}
+
+/** A place name's px at a zoom, or null when that importance shows no name there. */
+export function locationLabelFontSize(importance: LocationImportance, zoomLevel: number): number | null {
+  const band = locationLabelBand(zoomLevel);
+  return band ? LOCATION_LABEL_SIZES[band][importance] : null;
+}
+
+/** What the last label pass did — read by `__DEBUG.getMapChrome().labels` (THR-1899). */
+export interface LabelPassStats {
+  /** Wall time of the last collision pass (ms). */
+  lastPassMs: number;
+  /** The slowest pass seen since mount (ms). */
+  maxPassMs: number;
+  passes: number;
+  labels: number;
+  obstacles: number;
+  moved: number;
+  hidden: number;
+}
+
+export function emptyLabelPassStats(): LabelPassStats {
+  return { lastPassMs: 0, maxPassMs: 0, passes: 0, labels: 0, obstacles: 0, moved: 0, hidden: 0 };
+}
 
 /**
  * Minimum zoom level at which location labels are rendered.
@@ -98,12 +167,13 @@ interface LocationLabelOverlayProps {
   /** Read-only ref populated by RegionLabelOverlay with already-placed region label
    *  bboxes. Location labels avoid these positions (cross-system collision). */
   prePlacedBBoxesRef?: React.RefObject<ScreenBBox[]>;
+  /** THR-1899: screen boxes of the map markers names must step aside for, read each pass. */
+  getMarkerObstacles?: () => ScreenBBox[];
+  /** THR-1899: written after each collision pass, for `__DEBUG.getMapChrome().labels`. */
+  labelPassStatsRef?: React.MutableRefObject<LabelPassStats>;
 }
 
 // ── Label styles ──────────────────────────────────────────────────────────────
-
-/** Halo text-shadow — built from active palette theme */
-const LAND_HALO = buildLandHalo();
 
 /** Shared base style for all location labels. */
 const LABEL_BASE: CSSProperties = {
@@ -113,9 +183,9 @@ const LABEL_BASE: CSSProperties = {
   whiteSpace: 'nowrap',
   transition: 'opacity 200ms ease',
   userSelect: 'none',
-  fontFamily: 'var(--font-display)',
-  color: getActivePalette().labelLocationColor,
-  textShadow: LAND_HALO,
+  fontFamily: 'var(--font-body)',
+  color: PLACE_LABEL_COLOR,
+  ...LABEL_HALO,
   lineHeight: '1.2',
 };
 
@@ -131,14 +201,7 @@ const LABEL_BASE: CSSProperties = {
  * - k < 5 (continental/full-world): no text labels (icons only)
  */
 function isLabelVisible(importance: LocationImportance, zoomLevel: number): boolean {
-  // Below regional: no text labels
-  if (zoomLevel < ZOOM_THRESHOLDS.CONTINENTAL_MAX) return false;
-  // Lower regional (region labels still showing): hide small
-  if (zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX) {
-    return importance !== 'small';
-  }
-  // Upper regional + hero-local (region labels gone): all visible
-  return true;
+  return locationLabelFontSize(importance, zoomLevel) !== null;
 }
 
 // ── Projected label state ─────────────────────────────────────────────────────
@@ -158,6 +221,7 @@ interface ProjectedLocationLabel {
 /** Project a location label to screen space, positioned below its icon. */
 function projectLocationLabel(
   loc: LocationLabelData,
+  fontSize: number,
   offsetX: number,
   offsetY: number,
   iconHalfSize: number,
@@ -193,8 +257,9 @@ function projectLocationLabel(
         id: loc.id,
         tier: importanceToTier(loc.importance),
         // The box is sized from what actually renders, hung below the icon (THR-1711).
-        fontSize: LOCATION_LABEL_FONT_SIZES[loc.importance],
+        fontSize,
         anchorY: 'top',
+        altSlotOffsetPx: LABEL_ALT_SLOT_OFFSET_PX,
         text: loc.name,
         screenX: sx,
         screenY: sy,
@@ -222,11 +287,13 @@ export function LocationLabelOverlay({
   canvasHeight,
   zoomLevel,
   prePlacedBBoxesRef,
+  getMarkerObstacles,
+  labelPassStatsRef,
 }: LocationLabelOverlayProps) {
   const [projected, setProjected] = useState<ProjectedLocationLabel[]>([]);
   const lastCollisionTime = useRef<number>(0);
   /** The last collision verdict, reapplied on the frames between recomputes (THR-1711). */
-  const lastVisibleById = useRef<Map<string, boolean>>(new Map());
+  const lastVisibleById = useRef<Map<string, LabelVerdict>>(new Map());
   const rafRef = useRef<number>(0);
 
   useEffect(() => {
@@ -282,7 +349,7 @@ export function LocationLabelOverlay({
           const iconHalfSize = iconDef
             ? HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] / 2
             : HEX_CONSTANTS.HEX_SIZE * 0.3;
-          projectLocationLabel(loc, 0, 0, iconHalfSize, camera, canvasWidth, canvasHeight, screenLabels, inViewportSet);
+          projectLocationLabel(loc, locationLabelFontSize(loc.importance, zoomLevel) ?? 0, 0, 0, iconHalfSize, camera, canvasWidth, canvasHeight, screenLabels, inViewportSet);
         }
 
         // Process ring locations (icon at ring offset)
@@ -293,16 +360,41 @@ export function LocationLabelOverlay({
           const iconHalfSize = iconDef
             ? HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] * LOCATION_RING_SCALE_FACTOR / 2
             : HEX_CONSTANTS.HEX_SIZE * 0.15;
-          projectLocationLabel(loc, offset.x, offset.y, iconHalfSize, camera, canvasWidth, canvasHeight, screenLabels, inViewportSet);
+          projectLocationLabel(loc, locationLabelFontSize(loc.importance, zoomLevel) ?? 0, offset.x, offset.y, iconHalfSize, camera, canvasWidth, canvasHeight, screenLabels, inViewportSet);
         }
       }
 
       let resolvedLabels: ScreenLabel[];
 
       if (shouldRecomputeCollision) {
-        resolvedLabels = removeOverlaps(screenLabels, prePlacedBBoxesRef?.current ?? []);
-        lastVisibleById.current = new Map(resolvedLabels.map(l => [l.id, l.visible]));
+        const passStart = performance.now();
+        const obstacles = getMarkerObstacles?.() ?? [];
+        const prePlaced = prePlacedBBoxesRef?.current ?? [];
+        resolvedLabels = removeOverlaps(
+          screenLabels,
+          obstacles.length > 0 ? [...prePlaced, ...obstacles] : prePlaced,
+        );
+        lastVisibleById.current = verdictsOf(resolvedLabels, screenLabels);
         lastCollisionTime.current = now;
+        if (labelPassStatsRef) {
+          const ms = performance.now() - passStart;
+          const prev = labelPassStatsRef.current;
+          let moved = 0;
+          let hidden = 0;
+          for (const l of resolvedLabels) {
+            if (!l.visible) hidden++;
+            else if (l.moved) moved++;
+          }
+          labelPassStatsRef.current = {
+            lastPassMs: ms,
+            maxPassMs: Math.max(prev.maxPassMs, ms),
+            passes: prev.passes + 1,
+            labels: resolvedLabels.length,
+            obstacles: obstacles.length,
+            moved,
+            hidden,
+          };
+        }
       } else {
         // THR-1711: between recomputes, keep the last verdict instead of rendering
         // the raw all-visible list — that is what flickered clusters into piles.
@@ -349,7 +441,7 @@ export function LocationLabelOverlay({
       {projected.map(pl => {
         if (!pl.inViewport) return null;
 
-        const fontSize = LOCATION_LABEL_FONT_SIZES[pl.importance];
+        const fontSize = locationLabelFontSize(pl.importance, zoomLevel) ?? LOCATION_LABEL_FONT_SIZES[pl.importance];
         const fontWeight = LOCATION_LABEL_FONT_WEIGHTS[pl.importance];
         const opacity = pl.visible ? 1 : 0;
 

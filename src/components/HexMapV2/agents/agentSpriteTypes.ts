@@ -32,6 +32,12 @@ export interface AgentRenderData {
   factionIndex: number;
   /** true = renders with gold/white retinue border instead of faction color */
   isRetinue: boolean;
+  /**
+   * The god holds a thread to this mortal (THR-1899). Drawn as the `threadedAgent`
+   * marker (MAP_MARKERS): a gold pip far out, a medallion nearer, and a place name
+   * steps aside for it. Absent = an unthreaded mortal or group.
+   */
+  isThreaded?: boolean;
   /** Activity icon key shown on the dot at regional zoom */
   activityIcon?: 'boot' | 'swords' | 'hourglass' | 'coin' | 'hammer' | 'bandage';
   /** Agent name — used for fallback initial rendering when portrait unavailable */
@@ -112,7 +118,11 @@ export const FACTION_DOT_TEXTURE_SIZE = 64;
 
 // ── Avatar Visual Treatment ──────────────────────────────────────────────────
 
-/** Scale multiplier for the avatar sprite relative to normal agents */
+/**
+ * Scale multiplier for the avatar sprite relative to normal agents.
+ * @deprecated THR-1899: marker sizes come from MAP_MARKERS (src/data/map-markers.ts);
+ * the avatar row carries its own 82 px close-up. Nothing in the scene reads this.
+ */
 export const AVATAR_SCALE_MULTIPLIER = 1.3;
 
 /** Pulsing ring animation period in seconds */

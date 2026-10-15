@@ -33,6 +33,14 @@ export interface ScreenLabel {
    * `translate(-50%, 0)`), so their box must extend downward from `screenY`.
    */
   anchorY?: 'center' | 'top';
+  /**
+   * THR-1899: when this label's box is taken, try once more this many px lower
+   * (its free slot below the anchor) before hiding it. Map markers never move;
+   * a place name steps aside for them.
+   */
+  altSlotOffsetPx?: number;
+  /** Set by `removeOverlaps` when the label was placed in its alternate slot. */
+  moved?: boolean;
 }
 
 export interface ScreenBBox {
@@ -149,12 +157,39 @@ export function removeOverlaps(labels: ScreenLabel[], prePlaced: ScreenBBox[] = 
     if (!hasOverlap) {
       placed.push(bbox);
       result.push({ ...label, visible: true });
-    } else {
-      result.push({ ...label, visible: false });
+      continue;
     }
+    // THR-1899: one alternate slot below the anchor, then hide. Labels are placed
+    // in priority order, so when both slots are taken the smaller place hides first.
+    if (label.altSlotOffsetPx) {
+      const moved = { ...label, screenY: label.screenY + label.altSlotOffsetPx };
+      const altBox = estimateBBox(moved);
+      if (!placed.some(p => intersects(altBox, p))) {
+        placed.push(altBox);
+        result.push({ ...moved, visible: true, moved: true });
+        continue;
+      }
+    }
+    result.push({ ...label, visible: false });
   }
 
   return result;
+}
+
+/** The verdict one collision run leaves for the frames until the next (THR-1711, THR-1899). */
+export interface LabelVerdict {
+  visible: boolean;
+  /** Px the label was moved down into its alternate slot (0 when it stayed put). */
+  dy: number;
+}
+
+/** Records a run's verdicts by id. */
+export function verdictsOf(resolved: readonly ScreenLabel[], original: readonly ScreenLabel[]): Map<string, LabelVerdict> {
+  const yById = new Map(original.map(l => [l.id, l.screenY]));
+  return new Map(resolved.map(l => [l.id, {
+    visible: l.visible,
+    dy: l.moved ? l.screenY - (yById.get(l.id) ?? l.screenY) : 0,
+  }]));
 }
 
 /**
@@ -169,7 +204,13 @@ export function removeOverlaps(labels: ScreenLabel[], prePlaced: ScreenBBox[] = 
  */
 export function applyCachedVisibility(
   labels: ScreenLabel[],
-  visibleById: ReadonlyMap<string, boolean>,
+  visibleById: ReadonlyMap<string, boolean | LabelVerdict>,
 ): ScreenLabel[] {
-  return labels.map(l => ({ ...l, visible: visibleById.get(l.id) ?? false }));
+  return labels.map(l => {
+    const v = visibleById.get(l.id);
+    if (v === undefined) return { ...l, visible: false };
+    if (typeof v === 'boolean') return { ...l, visible: v };
+    // A label moved into its alternate slot stays there between runs.
+    return v.dy ? { ...l, visible: v.visible, screenY: l.screenY + v.dy, moved: true } : { ...l, visible: v.visible };
+  });
 }

@@ -110,7 +110,11 @@ describe('THR-1822 map selectors reproduce the GameView memos (generated world)'
     });
     const legacy = legacyAgentRenderData(inputs);
     expect(legacy.length).toBeGreaterThan(0);
-    expect(adapted).toEqual(legacy);
+    // THR-1899 added `isThreaded` after the move (the memo predates it): compare the
+    // rest field for field, and pin the new field to the thread edges on its own.
+    expect(adapted.map(({ isThreaded: _t, ...rest }) => rest)).toEqual(legacy);
+    const threaded = new Set(inputs.threadedAgentIds);
+    for (const a of adapted) expect(a.isThreaded, a.id).toBe(threaded.has(a.id));
   });
 
   it('map.threadLines equals threadLineData', () => {
