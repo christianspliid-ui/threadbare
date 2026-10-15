@@ -188,7 +188,7 @@ function expectTheShippedDefect(api: Api) {
 describe('No surface is still wired to the bare opener (THR-1500)', () => {
   it('GameView assigns no prop the bare `openAgentProfileForId`', () => {
     // THR-1881 split: GameView's overlays moved into hosts/, which count too.
-    const source = ['GameView.tsx', 'hosts/DialogHost.tsx', 'hosts/CeremonyHost.tsx', 'hosts/StageHost.tsx']
+    const source = ['GameView.tsx', 'hosts/DialogHost.tsx', 'hosts/CeremonyHost.tsx', 'hosts/StageHost.tsx', 'frame/GodRail.tsx', 'frame/LedgerRail.tsx']
       .map(file => readFileSync(resolve(__dirname, '..', file), 'utf8'))
       .join('\n');
     const offenders = source.match(/\bon[A-Za-z]+=\{openAgentProfileForId\}/g) ?? [];

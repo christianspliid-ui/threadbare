@@ -59,6 +59,7 @@ import { EventPopup } from '../EventPopup';
 import { AgendaPicker } from '../AgendaPicker';
 import { InterventionConfirm } from '../InterventionConfirm';
 import { ChoiceSetModal } from '../ChoiceSetModal';
+import { useGameScreenState } from '../frame/GameScreenState';
 
 const Codex = lazy(() => import('../../Codex/Codex'));
 
@@ -81,14 +82,9 @@ export interface DialogHostProps {
   // Warm start
   warmStart: UseWarmStartResult;
   warmFirstName: string | null;
-  // Chapter Ledger
-  chapterLedgerOpen: boolean;
-  setChapterLedgerOpen: Dispatch<SetStateAction<boolean>>;
-  setChapterLedgerSeenCount: Dispatch<SetStateAction<number>>;
+  // Chapter Ledger (its open flag and seen-count are GameScreenState)
   openAgentSheetForId: (agentId: string) => void;
   // Read the Threads
-  readThreadsOpen: boolean;
-  setReadThreadsOpen: Dispatch<SetStateAction<boolean>>;
   lastReadThreadsTick: number;
   setLastReadThreadsTick: Dispatch<SetStateAction<number>>;
   attentionPool: number;
@@ -109,16 +105,10 @@ export interface DialogHostProps {
   avatarName: string;
   beatSubjectRef: WorldRef | undefined;
   // Codex
-  codexOpen: boolean;
-  setCodexOpen: Dispatch<SetStateAction<boolean>>;
   codexInitialFilter: CodexRunStateFilter;
   codexInitialEntryId: string | null;
   // Doom and Mandate
-  doomDetailOpen: boolean;
-  setDoomDetailOpen: Dispatch<SetStateAction<boolean>>;
   doomJourneyLabel: string | undefined;
-  mandateDetailOpen: boolean;
-  setMandateDetailOpen: Dispatch<SetStateAction<boolean>>;
   // Event popup
   interruptResolution: InterruptResolution;
   currentPopup: PopupItem | null;
@@ -143,12 +133,7 @@ export function DialogHost({
   handleAgentSelect,
   warmStart,
   warmFirstName,
-  chapterLedgerOpen,
-  setChapterLedgerOpen,
-  setChapterLedgerSeenCount,
   openAgentSheetForId,
-  readThreadsOpen,
-  setReadThreadsOpen,
   lastReadThreadsTick,
   setLastReadThreadsTick,
   attentionPool,
@@ -166,21 +151,25 @@ export function DialogHost({
   beatProseOverride,
   avatarName,
   beatSubjectRef,
-  codexOpen,
-  setCodexOpen,
   codexInitialFilter,
   codexInitialEntryId,
-  doomDetailOpen,
-  setDoomDetailOpen,
   doomJourneyLabel,
-  mandateDetailOpen,
-  setMandateDetailOpen,
   interruptResolution,
   currentPopup,
   notificationState,
   handleDismissPopup,
   handlePopupChoice,
 }: DialogHostProps) {
+  // THR-1881 step e: flags the rails and top bar also write live in GameScreenState.
+  const {
+    state: { chapterLedgerOpen, readThreadsOpen, codexOpen, doomDetailOpen, mandateDetailOpen },
+    setChapterLedgerOpen,
+    setChapterLedgerSeenCount,
+    setReadThreadsOpen,
+    setCodexOpen,
+    setDoomDetailOpen,
+    setMandateDetailOpen,
+  } = useGameScreenState();
   return (
     <>
       {/* StrandView overlay */}
