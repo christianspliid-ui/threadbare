@@ -290,6 +290,7 @@ import { GALLOWS_PARDON_TEMPLATE } from './encounters/gallows-pardon';
 import { SILVER_DRIFT_RESCUE_TEMPLATE } from './encounters/silver-drift-rescue';
 import { FUGITIVE_FRIAR_TEMPLATE } from './encounters/fugitive-friar';
 import { RETURNED_HEIR_TEMPLATE } from './encounters/returned-heir';
+import { SIN_EATER_TEMPLATE } from './encounters/sin-eater';
 import { EFFECT_SHELL_PROOF_TEMPLATES } from './effect-shell-proof-templates';
 import {
   PERCEIVE_CAST_ATTENTION_COST,
@@ -6061,6 +6062,7 @@ const RAW_UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   SILVER_DRIFT_RESCUE_TEMPLATE,
   FUGITIVE_FRIAR_TEMPLATE,
   RETURNED_HEIR_TEMPLATE,
+  SIN_EATER_TEMPLATE,
 ];
 
 /**
@@ -6242,6 +6244,7 @@ export const LOCATION_BRANCHING_ENCOUNTER_TEMPLATES: readonly UnifiedActionTempl
   SILVER_DRIFT_RESCUE_TEMPLATE,
   FUGITIVE_FRIAR_TEMPLATE,
   RETURNED_HEIR_TEMPLATE,
+  SIN_EATER_TEMPLATE,
 ] as UnifiedActionTemplate[]).map((t) => compileOpeningColoration(t));
 
 /**
