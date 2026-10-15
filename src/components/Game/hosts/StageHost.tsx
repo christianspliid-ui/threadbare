@@ -10,9 +10,15 @@
  * for the rest), so the mount point does not decide what is on top: each z-band is
  * its own, and between equal bands the one opened last wins, as before.
  *
- * Nothing here changes what the game does.
+ * THR-1877 (S1): the host renders by the home list. Each surface mounts only while the
+ * interrupt resolution names its kind in `rendering`, through one exhaustive switch
+ * over `StageHomedKind`; the resolution holds every other one (one foreground).
  */
-import type { Dispatch, RefObject, SetStateAction } from 'react';
+import { Fragment, type Dispatch, type ReactNode, type RefObject, type SetStateAction } from 'react';
+import type { HomedSurfaceKind, StageHomedKind } from '../../../data/homed-surfaces';
+import { unplacedHomedKinds } from '../interruptRegistry';
+import { HomedSurfaceFallback } from './HomedSurfaceFallback';
+import { STAGE_HOST_KINDS } from './hostKinds';
 import type { SphereName } from '../../../types';
 import type { GameState } from '../../../types/gameState';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
@@ -89,6 +95,9 @@ export interface StageHostProps {
   handleWhisperChoice: (nudge: WhisperNudge) => void;
   handleCompulsionChoice: (candidate: CompulsionCandidate) => void;
   handlePremonitionDismiss: () => void;
+  // THR-1877 — a rendering Stage kind this host has no case for (only data drift).
+  onHomedSurfaceSkip?: (kind: HomedSurfaceKind) => void;
+  onHomedSurfaceFallback?: (kind: HomedSurfaceKind) => void;
 }
 
 export function StageHost({
@@ -132,11 +141,17 @@ export function StageHost({
   handleWhisperChoice,
   handleCompulsionChoice,
   handlePremonitionDismiss,
+  onHomedSurfaceSkip,
+  onHomedSurfaceFallback,
 }: StageHostProps) {
-  return (
-    <>
-      {/* Emergence Dilemma — blocking modal when a delve awaits a divine decision (THR-153) */}
-      {gameState.pendingEmergenceDecision && (
+  // THR-1877 — the Stage renders only the kinds the resolution names (one foreground,
+  // so at most one of these), each through this exhaustive switch.
+  const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
+  const renderStageSurface = (kind: StageHomedKind): ReactNode => {
+    if (!renders.has(kind)) return null;
+    switch (kind) {
+    // Emergence Dilemma — blocking modal when a delve awaits a divine decision (THR-153)
+    case 'emergence-dilemma': return gameState.pendingEmergenceDecision && (
         <EmergenceDilemmaModal
           gameState={gameState}
           onResolve={(choice) => {
@@ -146,12 +161,12 @@ export function StageHost({
             }));
           }}
         />
-      )}
+      );
 
-      {/* EncounterVeil — unified encounter display for all encounter types.
-          Wrapped in `anim-encounter-handoff-fade-up` so the world view → encounter
-          transition lands as a 400ms fade-up (THR-340 / design plan §5.8). */}
-      {tieredEncounterState && encounterVeilModel && (
+    // EncounterVeil — unified encounter display for all encounter types.
+    // Wrapped in `anim-encounter-handoff-fade-up` so the world view → encounter
+    // transition lands as a 400ms fade-up (THR-340 / design plan §5.8).
+    case 'encounter': return tieredEncounterState && encounterVeilModel && (
         <div className="anim-encounter-handoff-fade-up" data-testid="encounter-handoff-fade-up">
           <EncounterVeil
             open={true}
@@ -234,12 +249,12 @@ export function StageHost({
             }}
           />
         </div>
-      )}
+      );
 
-      {/* Moment card — a followed mortal's undertaking said something (THR-1299 slice 3).
-          Render-gated on the other interrupts so it waits behind an encounter rather
-          than stacking on it; the slot survives, the card returns when the veil closes. */}
-      {pendingMoment && momentCardModel && interruptResolution.momentMayRender && (
+    // Moment card — a followed mortal's undertaking said something (THR-1299 slice 3).
+    // Render-gated on the other interrupts so it waits behind an encounter rather
+    // than stacking on it; the slot survives, the card returns when the veil closes.
+    case 'undertaking-moment': return pendingMoment && momentCardModel && (
         <MomentCard
           open={true}
           model={momentCardModel}
@@ -251,10 +266,10 @@ export function StageHost({
           onSelectAgent={openAgentSheetForId}
           onDivineAct={handleMomentDivineAct}
         />
-      )}
+      );
 
-      {/* Journey vignette modal (auto-interrupt for The First) */}
-      {activeVignette && interruptResolution.open.includes('JourneyVignetteModal') && (
+    // Journey vignette modal (auto-interrupt for The First)
+    case 'journey-vignette': return activeVignette && (
         <JourneyVignetteModal
           key={activeVignette.id}
           open={true}
@@ -275,20 +290,20 @@ export function StageHost({
           onChoice={handleJourneyChoice}
           vignette={activeVignette.data}
         />
-      )}
+      );
 
-      {/* Story beat modal (pacing governor) */}
-      {activeStoryBeatId && activeStoryBeatTemplate && interruptResolution.open.includes('StoryBeatModal') && (
+    // Story beat modal (pacing governor)
+    case 'story-beat': return activeStoryBeatId && activeStoryBeatTemplate && (
         <StoryBeatModal
           open={true}
           onDismiss={handleStoryBeatDismiss}
           template={activeStoryBeatTemplate}
           agentName={activeStoryBeatAgentName}
         />
-      )}
+      );
 
-      {/* Divine Premonition modal (Whisper / Compulsion) */}
-      {activePremonition && interruptResolution.open.includes('PremonitionModal') && (
+    // Divine Premonition modal (Whisper / Compulsion)
+    case 'premonition': return activePremonition && (
         <PremonitionModal
           open={true}
           premonition={activePremonition}
@@ -321,7 +336,21 @@ export function StageHost({
           onViewAgent={openAgentSheetForId}
           onDismiss={handlePremonitionDismiss}
         />
-      )}
+      );
+
+    default: {
+      const unplaced: never = kind;
+      return unplaced;
+    }
+    }
+  };
+
+  return (
+    <>
+      {STAGE_HOST_KINDS.map(kind => <Fragment key={kind}>{renderStageSurface(kind)}</Fragment>)}
+      {onHomedSurfaceSkip && unplacedHomedKinds(interruptResolution.rendering, 'stage', STAGE_HOST_KINDS).map(kind => (
+        <HomedSurfaceFallback key={kind} kind={kind} onContinue={onHomedSurfaceSkip} onFallback={onHomedSurfaceFallback} />
+      ))}
     </>
   );
 }

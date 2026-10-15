@@ -20,7 +20,7 @@ import type {
 } from './traces/mentorship-traces';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
-import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace } from './traces/ui-traces';
+import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace, StageTrace } from './traces/ui-traces';
 import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace, FightTriggerGrudgeTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
 import type {
@@ -602,6 +602,8 @@ export type TraceCategory =
   | 'ui_ref_unroutable'
   // The view-model seam — a selector fell back instead of building (THR-1822).
   | 'view_fallback'
+  // The home list — a homed surface held behind the foreground, or fallen back (THR-1877).
+  | 'ui_stage'
   // Fights — one per fight step (THR-1537). Interfaces in `src/types/traces/fight-traces.ts`.
   | 'fight.step'
   // Fights — the clock writer and the one end per fight (THR-1538).
@@ -664,6 +666,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'ui_ref_opened',
   'ui_ref_unroutable',
   'view_fallback',
+  'ui_stage',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -4634,6 +4637,7 @@ export type TraceEntry =
   | UiRefUnroutableTrace
   // The view-model seam — a selector fell back (THR-1822)
   | ViewFallbackTrace
+  | StageTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

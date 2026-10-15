@@ -13,12 +13,14 @@
  * `getInterruptState()` reports it — so the pause and the debug surface can
  * never disagree about what is open.
  *
- * Each `isOpen` mirrors its surface's render condition EXACTLY. Pausing for a
+ * Each open predicate mirrors its surface's render condition EXACTLY. Pausing for a
  * surface that cannot render holds the world behind an invisible gate.
  *
- * Adding an interrupt surface: add a field to `InterruptSnapshot`, an entry to
- * `INTERRUPT_SURFACES`, and render the surface only while its entry is open.
- * Mark it `arrival: true` when the world opens it on its own, not the player's act.
+ * **One list (THR-1877, Law 58).** The surfaces, their order, their homes and their
+ * words live in `HOMED_SURFACES` (`src/data/homed-surfaces.ts`). This module adds one
+ * open predicate per kind (`HOMED_SURFACE_OPEN_WHEN`, a type error when a kind has
+ * none) and derives `INTERRUPT_SURFACES` from the list. Adding a surface: one entry in
+ * the list, its predicate here, its case in its home's host.
  *
  * Arrivals wait their turn (THR-1853). A surface the world pushes onto the screen
  * never mounts within `INTERRUPT_QUIET_AFTER_INPUT_MS` of a click or key press,
@@ -27,7 +29,20 @@
  * inside it never makes it vanish. Warm round 2: three of three testers had a
  * click on Rivals, the Ledger or Doom land on a premonition or journey moment
  * that mounted under the pointer.
+ *
+ * One foreground (THR-1877 § D2). Ceremony and Stage surfaces share one slot: at most
+ * one of them renders. The one on screen keeps it; when the slot is free, list order
+ * decides (ceremonies first). Dialogs render over it. Everything that wants the screen
+ * and does not render is *held*, named, in list order.
  */
+import {
+  HOMED_SURFACES,
+  type HomeId,
+  type HomedSurfaceEntry,
+  type HomedSurfaceKind,
+  type HomedSurfaceWaitsTurn,
+  type StageHomedKind,
+} from '../../data/homed-surfaces';
 
 /**
  * THR-1853 — wall-clock milliseconds after the player's last pointer or key input
@@ -69,6 +84,11 @@ export interface InterruptSnapshot {
   /** A `?warm=<ticks>` warm-up is advancing the world behind its overlay (THR-1744). Optional: absent = false. */
   warmStartRunning?: boolean;
   /**
+   * THR-1877 — the cycle has ended and the harvest waits (`harvestResult !== null`).
+   * It takes part in the foreground but does not stop the clock. Optional: absent = false.
+   */
+  cycleHarvestPending?: boolean;
+  /**
    * THR-1853 — a surface the player opened is on screen and is not itself in this
    * registry (Rivals, Notables, Doom, a sheet, the drawer...). Holds arrivals.
    * Optional: absent = false.
@@ -82,7 +102,48 @@ export interface InterruptSnapshot {
    * absent = nothing was showing.
    */
   alreadyShown?: readonly string[];
+  /**
+   * THR-1877 — the previous render's `foreground`. The surface on screen keeps the
+   * foreground while its flag holds (D2, R2). Optional: absent = the slot goes by list order.
+   */
+  foregroundIncumbent?: HomedSurfaceKind | null;
+  /**
+   * THR-1877 — kinds the player set down through `HomedSurfaceFallback`'s Continue.
+   * Treated as closed until their own flag turns false once, so a surface with no
+   * screen can never hold the clock paused forever. Optional.
+   */
+  skippedKinds?: readonly HomedSurfaceKind[];
 }
+
+/**
+ * One open predicate per kind (THR-1877). The stopping ones are today's registry
+ * conditions, moved unchanged. A kind without a predicate is a type error.
+ */
+export const HOMED_SURFACE_OPEN_WHEN: Record<HomedSurfaceKind, (s: InterruptSnapshot) => boolean> = {
+  // The warm start holds the slot while it advances the world, so nothing else opens
+  // over it (THR-1744). It renders first: the overlay covers the whole game.
+  'warm-start': s => s.warmStartRunning === true,
+  'meet-the-first': s => s.meetingPending && s.hasAscendantIdentity,
+  // The Rite of the Thread (THR-1754): every thread the god binds plays one. This is
+  // the wish; `resolveInterrupts` holds it behind dialogs and the incumbent.
+  'threading-rite': s => s.threadingRitePending === true,
+  encounter: s => s.encounterOpen,
+  premonition: s => s.premonitionPending && !s.interruptsSuppressed,
+  'journey-vignette': s => s.vignettePending && !s.interruptsSuppressed,
+  'story-beat': s => s.storyBeatPending && !s.interruptsSuppressed,
+  'ascendant-beat': s => s.ascendantBeatEntered,
+  'choice-set': s => s.choiceSetPending,
+  'emergence-dilemma': s => s.emergenceDecisionPending,
+  'divine-receipt': s => s.divineReceiptPending,
+  // Reading the chapter ledger must not leak time (the Vision rhythm argument).
+  'chapter-ledger': s => s.chapterLedgerOpen,
+  // The Divine Court: arranging the retinue is a reading-and-deciding surface like
+  // the ledger, so the clock stops behind it (THR-1709).
+  'divine-court': s => s.courtOpen,
+  'undertaking-moment': s => s.momentPending,
+  'event-popup': s => s.popupQueued && !s.interruptsSuppressed,
+  'cycle-harvest': s => s.cycleHarvestPending === true,
+};
 
 export type InterruptTier = 'interrupt';
 
@@ -97,6 +158,14 @@ export interface InterruptSurface {
    * moment, for the player's surfaces to close and for every other interrupt.
    */
   arrival?: boolean;
+  /** THR-1877 — the home list's key. Absent on a hand-built entry: treated as a plain dialog. */
+  kind?: HomedSurfaceKind;
+  /** THR-1877 — where it plays. Absent = `'dialog'`. */
+  home?: HomeId;
+  /** THR-1877 — waits its turn (D2, R5). */
+  waitsTurn?: HomedSurfaceWaitsTurn;
+  /** THR-1877 — stops the world while it renders. Absent = true. */
+  stopsTime?: boolean;
 }
 
 /** Why an arrival is not on screen yet (THR-1853). */
@@ -107,51 +176,35 @@ export interface HeldArrival {
   heldBy: ArrivalHoldReason[];
 }
 
-/**
- * Surfaces that yield their slot to every other interrupt. They are held until
- * nothing else is open, so two interrupts never render at once:
- * - `MomentCard` (THR-1299 slice 3) fills its slot only when the rest is clear.
- * - `EventPopup` is the notification queue's popup channel — it waits too,
- *   which is what ends popups stacking over beats (THR-1608).
- */
-const YIELDING_SURFACE_IDS = new Set(['MomentCard', 'EventPopup']);
+/** THR-1877 — a surface that wants the screen and waits (D2, R6). */
+export interface HeldSurface {
+  kind: HomedSurfaceKind;
+  surfaceId: string;
+  /** What it waits behind: the foreground, else the first surface rendering; null when nothing renders. */
+  behind: HomedSurfaceKind | null;
+}
 
-/**
- * The Rite of the Thread waits its turn too (THR-1754): a thread can land in the
- * same tick an encounter or a beat opens, and the rite must never render under
- * them. It renders once every other blocking surface is closed — and, once
- * rendering, it holds the moment card and the popup behind it like any other.
- */
-const THREADING_RITE_ID = 'ThreadingRite';
+function toInterruptSurface(entry: HomedSurfaceEntry): InterruptSurface {
+  const kind = entry.kind as HomedSurfaceKind;
+  return {
+    id: entry.surfaceId,
+    tier: 'interrupt',
+    isOpen: HOMED_SURFACE_OPEN_WHEN[kind],
+    ...(entry.arrival ? { arrival: true } : {}),
+    kind,
+    home: entry.home,
+    ...(entry.waitsTurn ? { waitsTurn: entry.waitsTurn } : {}),
+    stopsTime: entry.stopsTime,
+  };
+}
 
-/** Every surface that stops the world, in render-priority order. */
-export const INTERRUPT_SURFACES: readonly InterruptSurface[] = [
-  // The warm start holds the slot while it advances the world, so nothing else opens
-  // over it (THR-1744). It renders first: the overlay covers the whole game.
-  { id: 'WarmStartOverlay', tier: 'interrupt', isOpen: s => s.warmStartRunning === true },
-  { id: 'EncounterVeil', tier: 'interrupt', isOpen: s => s.encounterOpen },
-  { id: 'MeetTheFirstFlow', tier: 'interrupt', isOpen: s => s.meetingPending && s.hasAscendantIdentity },
-  // The Rite of the Thread (THR-1754): every thread the god binds plays one. Its
-  // `isOpen` is the wish; `resolveInterrupts` holds it behind every other blocking
-  // surface (the meeting, the first and richest rite of all, included).
-  { id: THREADING_RITE_ID, tier: 'interrupt', isOpen: s => s.threadingRitePending === true },
-  { id: 'PremonitionModal', tier: 'interrupt', arrival: true, isOpen: s => s.premonitionPending && !s.interruptsSuppressed },
-  { id: 'JourneyVignetteModal', tier: 'interrupt', arrival: true, isOpen: s => s.vignettePending && !s.interruptsSuppressed },
-  { id: 'StoryBeatModal', tier: 'interrupt', arrival: true, isOpen: s => s.storyBeatPending && !s.interruptsSuppressed },
-  { id: 'AscendantBeatModal', tier: 'interrupt', isOpen: s => s.ascendantBeatEntered },
-  { id: 'ChoiceSetModal', tier: 'interrupt', isOpen: s => s.choiceSetPending },
-  { id: 'EmergenceDilemmaModal', tier: 'interrupt', isOpen: s => s.emergenceDecisionPending },
-  { id: 'DivineReceiptModal', tier: 'interrupt', isOpen: s => s.divineReceiptPending },
-  // Reading the chapter ledger must not leak time (the Vision rhythm argument).
-  { id: 'ChapterLedger', tier: 'interrupt', isOpen: s => s.chapterLedgerOpen },
-  // The Divine Court: arranging the retinue is a reading-and-deciding surface like
-  // the ledger, so the clock stops behind it (THR-1709).
-  { id: 'ScryOverlay', tier: 'interrupt', isOpen: s => s.courtOpen },
-  // The two yielding surfaces are resolved by `resolveInterrupts`, not here —
-  // their `isOpen` is the *wish* to open; whether they render depends on the rest.
-  { id: 'MomentCard', tier: 'interrupt', arrival: true, isOpen: s => s.momentPending },
-  { id: 'EventPopup', tier: 'interrupt', arrival: true, isOpen: s => s.popupQueued && !s.interruptsSuppressed },
-];
+/** Every homed surface, in render-priority order — the default the resolution reads. */
+export const HOMED_INTERRUPT_SURFACES: readonly InterruptSurface[] =
+  (HOMED_SURFACES as readonly HomedSurfaceEntry[]).map(toInterruptSurface);
+
+/** Every surface that stops the world, in render-priority order (derived from `HOMED_SURFACES`). */
+export const INTERRUPT_SURFACES: readonly InterruptSurface[] =
+  HOMED_INTERRUPT_SURFACES.filter(s => s.stopsTime !== false);
 
 /** Fail-soft: a surface whose `isOpen` throws is logged once and treated as closed. */
 const warnedSurfaceIds = new Set<string>();
@@ -169,7 +222,7 @@ function safeIsOpen(surface: InterruptSurface, snapshot: InterruptSnapshot): boo
 }
 
 export interface InterruptResolution {
-  /** Ids of the surfaces rendering (and stopping the world) right now. */
+  /** Ids of the surfaces rendering and stopping the world right now. */
   open: string[];
   /** True when any surface other than the moment card is open — the card's gate (THR-1299). */
   otherThanMomentOpen: boolean;
@@ -177,7 +230,7 @@ export interface InterruptResolution {
   momentMayRender: boolean;
   /** The head popup may render. */
   popupMayRender: boolean;
-  /** Anything stops the world — an open surface, or an arrival waiting to mount. */
+  /** Anything stops the world — an open surface, or one waiting its turn. */
   anyOpen: boolean;
   /**
    * THR-1853 — arrivals the world wants on screen that wait their turn, and why.
@@ -186,80 +239,128 @@ export interface InterruptResolution {
    * behind a held one could drop it unseen.
    */
   heldArrivals: HeldArrival[];
+  /** THR-1877 — every homed surface that renders now, stopping or not. The hosts read this. */
+  rendering: HomedSurfaceKind[];
+  /** THR-1877 — the one ceremony or Stage surface rendering (R1). */
+  foreground: HomedSurfaceKind | null;
+  /** THR-1877 — `foreground` when its home is the Stage. */
+  stage: StageHomedKind | null;
+  /** THR-1877 — surfaces that want the screen and wait, in list order (R6). */
+  held: HeldSurface[];
+  /** THR-1877 — every kind whose flag holds, before `skippedKinds` (the skip set's reset reads it). */
+  wished: HomedSurfaceKind[];
 }
+
+const MOMENT_ID = 'MomentCard';
+const POPUP_ID = 'EventPopup';
 
 /**
  * Resolve the registry against one snapshot. Pure; exported for tests.
  *
- * Priority: every surface the player's own act opened renders when its condition
- * holds. An arrival already on screen keeps its slot unless one of those opened. The rite renders when no
- * other blocking surface is open. A new arrival mounts only when nothing else is on
- * screen, the player has no surface of their own open and the last input is quiet
- * (THR-1853) — and only one per pass, in priority order, so two never co-render.
- * The moment card renders only when no non-yielding surface is open; the popup
- * only when neither a non-yielding surface nor the moment card is.
+ * The rule (THR-1877 § D2, with THR-1853's arrival holds kept):
+ * - **Dialogs** that do not wait their turn render whenever their flag holds (R4).
+ * - **One foreground** (R1): ceremony and Stage surfaces share one slot.
+ *   - The incumbent keeps it while its flag holds (R2). An *arrival* incumbent still
+ *     steps back for a surface the player's or the world's own act opened since (an
+ *     encounter, a gift, the ledger), as THR-1853 settled, and returns once it closes.
+ *   - When the slot is free, the first eligible surface in list order takes it (R3).
+ *     The rite and the undertaking moment may not take it while a dialog is open (R5).
+ *     A new arrival takes it only when nothing else wants the screen, the player has no
+ *     surface of their own open and the last input is quiet (THR-1853).
+ * - **The divine receipt** renders only while nothing holds the foreground (R5).
+ * - **The popup** renders only when nothing else renders and no moment waits (R5).
+ * - Everything else whose flag holds is **held** (R6).
+ *
+ * `open`, `anyOpen` and the gates keep their meaning: stopping surfaces only, so the
+ * auto-pause, `getOpenModals()` and the clock holder read as before.
  */
 export function resolveInterrupts(
   snapshot: InterruptSnapshot,
-  surfaces: readonly InterruptSurface[] = INTERRUPT_SURFACES,
+  surfaces: readonly InterruptSurface[] = HOMED_INTERRUPT_SURFACES,
 ): InterruptResolution {
-  const open: string[] = [];
   const shown = new Set(snapshot.alreadyShown ?? []);
-  const arrivalWishes: string[] = [];
-  let momentWish = false;
-  let popupWish = false;
-  let riteWish = false;
-  for (const surface of surfaces) {
-    const wish = safeIsOpen(surface, snapshot);
-    if (!wish) continue;
-    if (surface.id === 'MomentCard') momentWish = true;
-    else if (surface.id === 'EventPopup') popupWish = true;
-    else if (surface.id === THREADING_RITE_ID) riteWish = true;
-    else if (YIELDING_SURFACE_IDS.has(surface.id)) continue;
-    else if (surface.arrival) arrivalWishes.push(surface.id);
-    else open.push(surface.id);
-  }
+  const skipped = new Set<string>(snapshot.skippedKinds ?? []);
+  const homeOf = (s: InterruptSurface): HomeId => s.home ?? 'dialog';
+  const isForeground = (s: InterruptSurface) => homeOf(s) !== 'dialog';
 
-  // An arrival already on screen keeps its slot: a click inside it, or the quiet holds,
-  // never make it vanish. It yields only to a blocking surface that opened since (an
-  // encounter, the meeting, a gift), the way the moment card does: it steps back under
-  // the held list and returns once that surface closes, so the two never co-render.
-  const blockingBeforeArrivals = open.length > 0;
-  for (const id of arrivalWishes) if (shown.has(id) && !blockingBeforeArrivals) open.push(id);
-
-  const riteMayRender = riteWish && open.length === 0;
-  if (riteMayRender) open.push(THREADING_RITE_ID);
+  const wishedAll = surfaces.filter(s => safeIsOpen(s, snapshot));
+  const wishedKinds = wishedAll.flatMap(s => (s.kind ? [s.kind] : []));
+  const wish = wishedAll.filter(s => !(s.kind && skipped.has(s.kind)));
 
   const quietHolds: ArrivalHoldReason[] = [];
   if (snapshot.playerSurfaceOpen === true) quietHolds.push('player_surface');
   if (snapshot.recentInput === true) quietHolds.push('recent_input');
-
-  // The yielding pair, once on screen, keeps its slot against a new arrival.
-  const yieldingShown = (momentWish && shown.has('MomentCard'))
-    || (popupWish && !momentWish && shown.has('EventPopup'));
-
-  const heldArrivals: HeldArrival[] = [];
-  for (const id of arrivalWishes) {
-    if (open.includes(id)) continue;
-    const heldBy: ArrivalHoldReason[] = [];
-    if (open.length > 0 || yieldingShown) heldBy.push('interrupt');
-    heldBy.push(...quietHolds);
-    if (heldBy.length === 0) open.push(id);
-    else heldArrivals.push({ id, heldBy });
-  }
-
-  const blockingOpen = open.length > 0;
   const quiet = quietHolds.length === 0;
-  const momentMayRender = momentWish && !blockingOpen && (shown.has('MomentCard') || quiet);
-  const popupMayRender = popupWish && !blockingOpen && !momentWish && (shown.has('EventPopup') || quiet);
-  if (momentWish && !momentMayRender) {
-    heldArrivals.push({ id: 'MomentCard', heldBy: blockingOpen ? ['interrupt', ...quietHolds] : quietHolds });
+
+  // R4 — dialogs that do not wait their turn.
+  const dialogs = wish.filter(s => !isForeground(s) && !s.waitsTurn && !s.arrival);
+  const momentWish = wish.some(s => s.id === MOMENT_ID);
+  const popupWish = wish.find(s => s.id === POPUP_ID);
+
+  // What an arrival steps back for (THR-1853): any surface the world stops for that is
+  // not itself an arrival — except the rite and the receipt, which wait for others.
+  const nonArrivalBlocking = wish.filter(s => !s.arrival && s.id !== 'ThreadingRite' && s.waitsTurn !== 'foreground');
+  // A new arrival waits for every other surface that wants the screen, the receipt included.
+  const nonArrivalWanting = wish.filter(s => !s.arrival);
+  // A popup already on screen keeps its slot against a new arrival (THR-1853).
+  const popupShown = !!popupWish && !momentWish && shown.has(POPUP_ID);
+
+  const isShown = (s: InterruptSurface) =>
+    shown.has(s.id) || (s.kind !== undefined && s.kind === snapshot.foregroundIncumbent);
+
+  const foregroundWish = wish.filter(isForeground);
+  const mayHoldAsIncumbent = (s: InterruptSurface) =>
+    !s.arrival || nonArrivalBlocking.length === 0;
+  const mayTakeFreeSlot = (s: InterruptSurface) => {
+    if (s.waitsTurn === 'dialogs' && dialogs.length > 0) return false;
+    if (!s.arrival) return true;
+    return nonArrivalWanting.length === 0 && !popupShown && quiet;
+  };
+
+  // R2 — the incumbent (the first shown foreground surface in list order).
+  const incumbent = foregroundWish.find(s => isShown(s) && mayHoldAsIncumbent(s));
+  // R3 — the slot is free: list order.
+  const fg = incumbent ?? foregroundWish.find(mayTakeFreeSlot) ?? null;
+
+  // R5 — the receipt waits for the foreground.
+  const afterForeground = fg ? [] : wish.filter(s => s.waitsTurn === 'foreground');
+
+  const renderingSet = new Set<InterruptSurface>([...dialogs, ...afterForeground, ...(fg ? [fg] : [])]);
+  // R5 — the popup waits for everything, the waiting moment card included (today's rule).
+  if (popupWish && renderingSet.size === 0 && !momentWish && (shown.has(POPUP_ID) || quiet)) {
+    renderingSet.add(popupWish);
   }
-  if (popupWish && !popupMayRender) {
-    heldArrivals.push({ id: 'EventPopup', heldBy: blockingOpen || momentWish ? ['interrupt', ...quietHolds] : quietHolds });
+  const rendering = surfaces.filter(s => renderingSet.has(s));
+
+  const open = rendering.filter(s => s.stopsTime !== false).map(s => s.id);
+  const blockingOpen = open.some(id => id !== MOMENT_ID && id !== POPUP_ID);
+  const momentMayRender = open.includes(MOMENT_ID);
+  const popupMayRender = open.includes(POPUP_ID);
+
+  // THR-1853's held-arrival reasons, unchanged in shape.
+  const heldArrivals: HeldArrival[] = [];
+  const somethingElseRenders = rendering.length > 0;
+  for (const s of wish) {
+    if (!s.arrival || renderingSet.has(s)) continue;
+    if (s.id === MOMENT_ID) {
+      heldArrivals.push({ id: s.id, heldBy: blockingOpen ? ['interrupt', ...quietHolds] : [...quietHolds] });
+    } else if (s.id === POPUP_ID) {
+      heldArrivals.push({ id: s.id, heldBy: blockingOpen || momentWish ? ['interrupt', ...quietHolds] : [...quietHolds] });
+    } else {
+      const heldBy: ArrivalHoldReason[] = somethingElseRenders || popupShown ? ['interrupt'] : [];
+      heldBy.push(...quietHolds);
+      heldArrivals.push({ id: s.id, heldBy });
+    }
   }
-  if (momentMayRender) open.push('MomentCard');
-  if (popupMayRender) open.push('EventPopup');
+
+  // R6 — every surface that wants the screen and does not render, named.
+  const behind = (fg?.kind ?? rendering[0]?.kind ?? null) as HomedSurfaceKind | null;
+  const held: HeldSurface[] = wish
+    .filter(s => !renderingSet.has(s) && s.kind !== undefined)
+    .map(s => ({ kind: s.kind as HomedSurfaceKind, surfaceId: s.id, behind }));
+
+  const heldStopping = wish.some(s => !renderingSet.has(s) && s.stopsTime !== false);
+
   return {
     open,
     // The moment consumer's gate: everything except the card itself, the popup
@@ -267,7 +368,29 @@ export function resolveInterrupts(
     otherThanMomentOpen: blockingOpen || popupMayRender,
     momentMayRender,
     popupMayRender,
-    anyOpen: open.length > 0 || heldArrivals.length > 0,
+    // A held surface still stops the world: it is due now, only its mount waits (D8).
+    anyOpen: open.length > 0 || heldArrivals.length > 0 || heldStopping,
     heldArrivals,
+    rendering: rendering.flatMap(s => (s.kind ? [s.kind] : [])),
+    foreground: fg?.kind ?? null,
+    stage: fg && homeOf(fg) === 'stage' ? (fg.kind as StageHomedKind) : null,
+    held,
+    wished: wishedKinds,
   };
+}
+
+/**
+ * The kinds of `home` that are rendering but that a host has no case for (D1). Only data
+ * drift can produce one; the host shows `HomedSurfaceFallback` for each.
+ */
+export function unplacedHomedKinds(
+  rendering: readonly HomedSurfaceKind[],
+  home: HomeId,
+  placed: readonly HomedSurfaceKind[],
+): HomedSurfaceKind[] {
+  const known = new Set<string>(placed);
+  return rendering.filter(kind => {
+    const entry = HOMED_INTERRUPT_SURFACES.find(s => s.kind === kind);
+    return (entry?.home ?? 'dialog') === home && !known.has(kind);
+  });
 }

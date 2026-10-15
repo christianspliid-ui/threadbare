@@ -178,6 +178,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
 import { resolveInterrupts, INTERRUPT_QUIET_AFTER_INPUT_MS } from './interruptRegistry';
+import { HOMED_SURFACES, type HomedSurfaceKind } from '../../data/homed-surfaces';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
@@ -289,6 +290,14 @@ interface GameViewProps {
 
 /** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */
 const OPENING_SPINE_BEAT_ID = ASCENDANT_SPINE[0].beatId;
+
+/** `__DEBUG.getInterruptState().homedSurfaces` (THR-1877) — the home list, as data. */
+const DEBUG_HOMED_SURFACES = HOMED_SURFACES.map(e => ({
+  kind: e.kind,
+  surfaceId: e.surfaceId,
+  home: e.home,
+  stopsTime: e.stopsTime,
+}));
 /**
  * THR-1716 — how long the world must sit still with no interrupt open before the
  * first-run Play prompt shows. Stops it flashing under the arrival beat.
@@ -3780,6 +3789,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // What the registry rendered last commit: an arrival already on screen keeps its slot.
   const shownInterruptsRef = useRef<readonly string[]>([]);
   const [arrivalRecheck, setArrivalRecheck] = useState(0);
+  // THR-1877 — the previous render's foreground: the surface on screen keeps it (D2, R2).
+  const foregroundIncumbentRef = useRef<HomedSurfaceKind | null>(null);
+  // THR-1877 — kinds set down through `HomedSurfaceFallback`'s Continue, until their flag clears.
+  const [skippedHomedKinds, setSkippedHomedKinds] = useState<readonly HomedSurfaceKind[]>([]);
 
   // ── The Stellaris clock: interrupt registry + auto-pause (THR-668, THR-1608) ──
   // Every surface that stops the world is an entry in `INTERRUPT_SURFACES`
@@ -3814,12 +3827,62 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     playerSurfaceOpen: arrivalSurfaceOpen,
     recentInput: arrivalRecentInput,
     alreadyShown: shownInterruptsRef.current,
+    cycleHarvestPending: harvestResult !== null,
+    foregroundIncumbent: foregroundIncumbentRef.current,
+    skippedKinds: skippedHomedKinds,
   });
   warmOpenInterruptsRef.current = interruptResolution.open;
   const interruptOpenKey = interruptResolution.open.join('|');
   useEffect(() => {
     shownInterruptsRef.current = interruptOpenKey ? interruptOpenKey.split('|') : [];
   }, [interruptOpenKey]);
+  const interruptForeground = interruptResolution.foreground;
+  useEffect(() => {
+    foregroundIncumbentRef.current = interruptForeground;
+  }, [interruptForeground]);
+  // A set-down kind is forgotten once its own flag clears, so its next opening shows.
+  const wishedHomedKey = interruptResolution.wished.join('|');
+  useEffect(() => {
+    setSkippedHomedKinds(prev => {
+      if (prev.length === 0) return prev;
+      const wished = new Set(wishedHomedKey ? wishedHomedKey.split('|') : []);
+      const next = prev.filter(kind => wished.has(kind));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [wishedHomedKey]);
+  const handleHomedSurfaceSkip = useCallback((kind: HomedSurfaceKind) => {
+    setSkippedHomedKinds(prev => (prev.includes(kind) ? prev : [...prev, kind]));
+  }, []);
+  const handleHomedSurfaceFallback = useCallback((kind: HomedSurfaceKind) => {
+    emitTrace({
+      tick: gameState.tick,
+      category: 'ui_stage',
+      action: 'fallback',
+      kind,
+      summary: `ui_stage: fallback ${kind} — no host case renders it`,
+    });
+  }, [gameState.tick]);
+  // `ui_stage` held — once per transition: a surface starts waiting behind another (D2, R6).
+  const heldHomedKey = interruptResolution.held.map(h => `${h.kind}>${h.behind ?? ''}`).join('|');
+  const tracedHeldRef = useRef<ReadonlySet<string>>(new Set());
+  useEffect(() => {
+    const now = new Set(heldHomedKey ? heldHomedKey.split('|') : []);
+    for (const entry of now) {
+      if (tracedHeldRef.current.has(entry)) continue;
+      const [kind, behind] = entry.split('>') as [HomedSurfaceKind, string];
+      emitTrace({
+        tick: gameState.tick,
+        category: 'ui_stage',
+        action: 'held',
+        kind,
+        behind: (behind || null) as HomedSurfaceKind | null,
+        summary: `ui_stage: held ${kind}${behind ? ` behind ${behind}` : ''}`,
+      });
+    }
+    tracedHeldRef.current = now;
+    // Only a change in what is held emits; the tick is read, not watched.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heldHomedKey]);
   // A held arrival whose only wait is the quiet window looks again when it ends; the
   // clock's own ticks re-render too, but a paused clock does not.
   const arrivalWaitsOnInput = interruptResolution.heldArrivals.some(h => h.heldBy.includes('recent_input'));
@@ -4027,6 +4090,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running,
     // THR-1853: arrivals waiting their turn, and why.
     heldArrivals: interruptResolution.heldArrivals,
+    // THR-1877: what renders, the one foreground, and what waits behind it.
+    rendering: interruptResolution.rendering,
+    foreground: interruptResolution.foreground,
+    stage: interruptResolution.stage,
+    held: interruptResolution.held,
+    homedSurfaces: DEBUG_HOMED_SURFACES,
   }), [interruptResolution, interruptAutoPause, notificationState.popupQueue.length, running]);
 
   // ── Who holds the clock (THR-1814) ──
@@ -4322,6 +4391,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               onDismiss={handleDismissToast}
               onSelectAgent={handleAgentSelect}
               onNavigate={handleNotificationNavigate}
+              // THR-1877 (D7): a receipt waits while a ceremony or Stage moment holds the screen.
+              receiptOpenLocked={interruptResolution.foreground !== null}
             />
             {/* The world map: HexMapV2, lens switch, summary bar, map-anchored dialogs (THR-1881 step d) */}
             {viewLevel === 'world' && (
@@ -4660,6 +4731,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           CeremonyHost: the non-portal z-50 overlays keep their inline DOM order. */}
       <DialogHost
         gameState={gameState}
+        onHomedSurfaceSkip={handleHomedSurfaceSkip}
+        onHomedSurfaceFallback={handleHomedSurfaceFallback}
         setGameState={setGameState}
         runtime={runtime}
         archetype={archetype}
@@ -4703,6 +4776,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       />
       <CeremonyHost
         gameState={gameState}
+        onHomedSurfaceSkip={handleHomedSurfaceSkip}
+        onHomedSurfaceFallback={handleHomedSurfaceFallback}
         archetype={archetype}
         harvestResult={harvestResult}
         handleBeginNextCycle={handleBeginNextCycle}
@@ -4859,6 +4934,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           premonition. All of them portal, so this mount point decides no stacking. */}
       <StageHost
         gameState={gameState}
+        onHomedSurfaceSkip={handleHomedSurfaceSkip}
+        onHomedSurfaceFallback={handleHomedSurfaceFallback}
         setGameState={setGameState}
         interruptResolution={interruptResolution}
         openAgentSheetForId={openAgentSheetForId}

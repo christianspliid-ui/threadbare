@@ -14,10 +14,15 @@
  * their DOM order, so equal-z stacking is unchanged. Everything else here either
  * portals (`Modal`, the Scry court) or carries its own z-index.
  *
- * Nothing here changes what the game does.
+ * THR-1877 (S1): the homed dialogs (the court, the warm start, the ledger, the receipt,
+ * the gift beat, the popup) render by the home list — only while the interrupt
+ * resolution names their kind — through one exhaustive switch over `DialogHomedKind`.
+ * The tools beside them (StrandView, Read the Threads, Codex, Doom, Mandate) are not
+ * homed surfaces and mount as before.
  */
 import { lazy, Suspense } from 'react';
-import type { ComponentProps, Dispatch, SetStateAction } from 'react';
+import type { ComponentProps, Dispatch, ReactNode, SetStateAction } from 'react';
+import type { DialogHomedKind, HomedSurfaceKind } from '../../../data/homed-surfaces';
 import { SPHERE_NAMES } from '../../../types';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { ScryState } from '../../../types/scry';
@@ -44,7 +49,9 @@ import { buildCodexRunContext, type CodexRunStateFilter } from '../../Codex/code
 import { AnimateMount } from '../../shared/AnimateMount';
 import { DelveProgressPanel } from '../../ruins/DelveProgressPanel';
 import type { UseWarmStartResult } from '../hooks/useWarmStart';
-import type { InterruptResolution } from '../interruptRegistry';
+import { unplacedHomedKinds, type InterruptResolution } from '../interruptRegistry';
+import { HomedSurfaceFallback } from './HomedSurfaceFallback';
+import { DIALOG_HOST_KINDS } from './hostKinds';
 import { StrandView } from '../StrandView';
 import { ScryOverlay } from '../ScryOverlay';
 import { ScryProvider } from '../contexts/ScryContext';
@@ -115,6 +122,9 @@ export interface DialogHostProps {
   notificationState: NotificationState;
   handleDismissPopup: () => void;
   handlePopupChoice: (effect: string) => void;
+  // THR-1877 — a rendering dialog kind this host has no case for (only data drift).
+  onHomedSurfaceSkip?: (kind: HomedSurfaceKind) => void;
+  onHomedSurfaceFallback?: (kind: HomedSurfaceKind) => void;
 }
 
 export function DialogHost({
@@ -159,6 +169,8 @@ export function DialogHost({
   notificationState,
   handleDismissPopup,
   handlePopupChoice,
+  onHomedSurfaceSkip,
+  onHomedSurfaceFallback,
 }: DialogHostProps) {
   // THR-1881 step e: flags the rails and top bar also write live in GameScreenState.
   const {
@@ -170,24 +182,18 @@ export function DialogHost({
     setDoomDetailOpen,
     setMandateDetailOpen,
   } = useGameScreenState();
-  return (
-    <>
-      {/* StrandView overlay */}
-      <AnimateMount show={strandData !== null} animation="anim-fade">
-        {strandData && (
-          <StrandView
-            agentName={strandData.agentName}
-            strands={strandData.strands}
-            onClose={handleStrandClose}
-          />
-        )}
-      </AnimateMount>
-
-      {/* Scry overlay */}
-      {/* THR-1709: no AnimateMount — its animated wrapper is a stacking context
+  // THR-1877 — the homed dialogs render only while the resolution names their kind,
+  // through this exhaustive switch; each is called at the mount position it had, so
+  // equal-z stacking is unchanged. The effect choice set mounts inside the map box
+  // (`MapAnchoredDialogs`), so its case here places nothing.
+  const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
+  const renderDialog = (kind: DialogHomedKind): ReactNode => {
+    switch (kind) {
+      /* Scry overlay */
+      /* THR-1709: no AnimateMount — its animated wrapper is a stacking context
           that trapped the court under the top bar. The overlay portals itself to
-          <body> and carries its own fade-in. */}
-      {scryVisible && (
+          <body> and carries its own fade-in. */
+    case 'divine-court': return renders.has(kind) && scryVisible && (
         <ScryProvider
           value={{
             scryState,
@@ -210,19 +216,19 @@ export function DialogHost({
         >
           <ScryOverlay />
         </ScryProvider>
-      )}
+      );
 
-      {/* Warm start overlay (THR-1744) — covers the game while the warm-up runs */}
-      {warmStart.running && warmStart.progress && (
+      /* Warm start overlay (THR-1744) — covers the game while the warm-up runs */
+    case 'warm-start': return renders.has(kind) && warmStart.running && warmStart.progress && (
         <WarmStartOverlay
           progress={warmStart.progress}
           ticksPerSeason={gameState.clock?.ticksPerSeason}
           firstName={warmFirstName}
         />
-      )}
+      );
 
-      {/* Chapter Ledger — always-readable archive of every encounter (THR-603) */}
-      {chapterLedgerOpen && (
+      /* Chapter Ledger — always-readable archive of every encounter (THR-603) */
+    case 'chapter-ledger': return renders.has(kind) && chapterLedgerOpen && (
         <ChapterLedger
           gameState={gameState}
           runtime={runtime}
@@ -236,7 +242,78 @@ export function DialogHost({
           // mortal's id.
           onOpenEntity={openAgentSheetForId}
         />
-      )}
+      );
+
+      /* Divine Receipt — resolution-time outcome feedback for player action cards (THR-727) */
+    case 'divine-receipt': return renders.has(kind) && activeReceipt && (
+        <DivineReceiptModal
+          open={true}
+          receipt={activeReceipt}
+          onAcknowledge={handleAcknowledgeReceipt}
+          onReaction={handleReceiptReaction}
+        />
+      );
+
+    case 'ascendant-beat': return renders.has(kind) && pendingBeat && beatEntered && (
+        <AscendantBeatModal
+          open={true}
+          pending={pendingBeat}
+          // THR-1650: Witness on a delivery beat opens its encounter on The First.
+          onResolve={handleWitnessBeat}
+          // Enriched, run-specific prose for template-backed pool beats (THR-514).
+          proseOverride={beatProseOverride}
+          // THR-1609: Beat 0 names the avatar as the player's own shape.
+          avatarName={avatarName}
+          // THR-1811: the offering's cards with what each costs now.
+          offering={pendingBeat.kind === 'offering'
+            ? describeOffering(gameState, pendingBeat.offeredActionIds ?? [])
+            : undefined}
+          rungOpening={pendingBeat.kind === 'rung_gift' ? isRungOpeningOffer(gameState, pendingBeat.beatId) : undefined}
+          // THR-1855: the reach-signature card this gift grants, resolved for this god.
+          signatureGrantId={previewReachSignatureGrant(gameState, pendingBeat.beatId)}
+          // THR-1851: an introduction beat's bound people, so "Attend" can open them.
+          subjectRef={beatSubjectRef}
+          // Spine beats are not dismissable (onboarding); pool beats can be deferred.
+          onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
+        />
+      );
+
+      /* Event popup overlay */
+    case 'event-popup': return (
+      <EventPopup
+        popup={renders.has(kind) ? currentPopup : null}
+        queueLength={notificationState.popupQueue.length}
+        onDismiss={handleDismissPopup}
+        onChoice={handlePopupChoice}
+      />
+      );
+
+    case 'choice-set': return null;
+
+    default: {
+      const unplaced: never = kind;
+      return unplaced;
+    }
+    }
+  };
+  return (
+    <>
+      {/* StrandView overlay */}
+      <AnimateMount show={strandData !== null} animation="anim-fade">
+        {strandData && (
+          <StrandView
+            agentName={strandData.agentName}
+            strands={strandData.strands}
+            onClose={handleStrandClose}
+          />
+        )}
+      </AnimateMount>
+
+      {renderDialog('divine-court')}
+
+      {renderDialog('warm-start')}
+
+      {renderDialog('chapter-ledger')}
 
       {/* Delve progress overlay — active delves for bonded agents (THR-152) */}
       {(gameState.activeDelves?.some(d => !d.aborted && d.beatIndex <= d.totalBeats) || gameState.pendingEmergenceDecision) && (
@@ -284,15 +361,7 @@ export function DialogHost({
         }}
       />
 
-      {/* Divine Receipt — resolution-time outcome feedback for player action cards (THR-727) */}
-      {activeReceipt && (
-        <DivineReceiptModal
-          open={true}
-          receipt={activeReceipt}
-          onAcknowledge={handleAcknowledgeReceipt}
-          onReaction={handleReceiptReaction}
-        />
-      )}
+      {renderDialog('divine-receipt')}
 
       {/* Ascendant beat: thread-tug offer affordance + entered-beat modal (THR-517) */}
       {pendingBeat && !beatEntered && !interruptsSuppressed && (
@@ -307,29 +376,7 @@ export function DialogHost({
           raised={giftPillRaised}
         />
       )}
-      {pendingBeat && beatEntered && (
-        <AscendantBeatModal
-          open={true}
-          pending={pendingBeat}
-          // THR-1650: Witness on a delivery beat opens its encounter on The First.
-          onResolve={handleWitnessBeat}
-          // Enriched, run-specific prose for template-backed pool beats (THR-514).
-          proseOverride={beatProseOverride}
-          // THR-1609: Beat 0 names the avatar as the player's own shape.
-          avatarName={avatarName}
-          // THR-1811: the offering's cards with what each costs now.
-          offering={pendingBeat.kind === 'offering'
-            ? describeOffering(gameState, pendingBeat.offeredActionIds ?? [])
-            : undefined}
-          rungOpening={pendingBeat.kind === 'rung_gift' ? isRungOpeningOffer(gameState, pendingBeat.beatId) : undefined}
-          // THR-1855: the reach-signature card this gift grants, resolved for this god.
-          signatureGrantId={previewReachSignatureGrant(gameState, pendingBeat.beatId)}
-          // THR-1851: an introduction beat's bound people, so "Attend" can open them.
-          subjectRef={beatSubjectRef}
-          // Spine beats are not dismissable (onboarding); pool beats can be deferred.
-          onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
-        />
-      )}
+      {renderDialog('ascendant-beat')}
 
       {/* Codex overlay — full three-state path catalog for this incarnation (THR-613 Slice 3b-tail) */}
       {codexOpen && (
@@ -380,13 +427,10 @@ export function DialogHost({
         />
       )}
 
-      {/* Event popup overlay */}
-      <EventPopup
-        popup={interruptResolution.popupMayRender ? currentPopup : null}
-        queueLength={notificationState.popupQueue.length}
-        onDismiss={handleDismissPopup}
-        onChoice={handlePopupChoice}
-      />
+      {renderDialog('event-popup')}
+      {onHomedSurfaceSkip && unplacedHomedKinds(interruptResolution.rendering, 'dialog', DIALOG_HOST_KINDS).map(kind => (
+        <HomedSurfaceFallback key={kind} kind={kind} onContinue={onHomedSurfaceSkip} onFallback={onHomedSurfaceFallback} />
+      ))}
     </>
   );
 }

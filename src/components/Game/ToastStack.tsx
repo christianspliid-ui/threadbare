@@ -1,9 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { AnimateMount } from '../shared/AnimateMount';
 import type { ToastItem } from '../../types/notification';
 import type { NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
 import { renderProseWithIPK } from '../ProseKeyword';
+import { TOPBAR_LOCKED_SUFFIX } from '../../data/ui-content';
 // Band → left-border accent colour. Shared with the thread-row encounter badge
 // (THR-664). Fail-soft: unknown band → undefined, falls through to sphere/gold.
 import { BAND_ACCENT } from './outcomeBandAccent';
@@ -42,6 +43,12 @@ const NAV_TOOLTIPS: Record<NavigationTarget['kind'], string> = {
 /** Opacity for navigation glyph */
 const NAV_GLYPH_OPACITY = 0.6;
 
+/**
+ * THR-1877 — how long a guarded receipt toast keeps its "Opens when this chapter
+ * closes." line after a click. The shake itself runs `.anim-shake-no` (`--anim-slow`).
+ */
+const RECEIPT_LOCKED_HINT_MS = 2000;
+
 /** Maximum number of toasts visible at once — oldest are hidden when exceeded */
 const MAX_VISIBLE_TOASTS = 6;
 
@@ -52,6 +59,12 @@ interface ToastStackProps {
   onSelectAgent?: (agentId: string) => void;
   /** Called when a toast with a navigation target is clicked */
   onNavigate?: (target: NavigationTarget) => void;
+  /**
+   * THR-1877 (D7) — a ceremony or Stage moment holds the foreground. A receipt toast's
+   * click then answers with a shake and "Opens when this chapter closes." and opens
+   * nothing: the receipt waits for the moment, like the guarded top bar.
+   */
+  receiptOpenLocked?: boolean;
 }
 
 function formatCount(count: number): string {
@@ -64,9 +77,16 @@ function filterActive(toasts: ToastItem[], now: number): ToastItem[] {
 
 export const toastStackTestHelpers = { formatCount, filterActive };
 
-export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: ToastStackProps) {
+export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, receiptOpenLocked = false }: ToastStackProps) {
   // Track which toasts are in exit animation (right-click dismissed)
   const [dismissingIds, setDismissingIds] = useState<Set<string>>(new Set());
+  // THR-1877 — the receipt toast whose click was refused, and a counter that restarts its shake.
+  const [lockedHint, setLockedHint] = useState<{ id: string; n: number } | null>(null);
+  useEffect(() => {
+    if (!lockedHint) return undefined;
+    const timer = setTimeout(() => setLockedHint(null), RECEIPT_LOCKED_HINT_MS);
+    return () => clearTimeout(timer);
+  }, [lockedHint]);
 
   const handleRightClickDismiss = useCallback((e: React.MouseEvent, id: string) => {
     e.preventDefault();
@@ -102,10 +122,14 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
         const navTarget = toast.navigationTarget;
         const isNavigable = Boolean(navTarget && onNavigate) || Boolean(toast.onClick) || Boolean(toast.actorId && onSelectAgent);
         const isDismissing = dismissingIds.has(toast.id);
+        const receiptLocked = receiptOpenLocked && navTarget?.kind === 'receipt';
+        const showLockedHint = receiptLocked && lockedHint?.id === toast.id;
         return (
           <AnimateMount key={toast.id} show={!isDismissing} animation="anim-fade-up" duration={150}>
             <div
-              className="pointer-events-auto rounded-md shadow-lg backdrop-blur-sm border-l-[3px] px-3 py-2 flex items-start gap-2 cursor-pointer group"
+              key={showLockedHint ? `locked-${lockedHint?.n}` : 'toast'}
+              data-receipt-locked={receiptLocked ? 'true' : undefined}
+              className={`pointer-events-auto rounded-md shadow-lg backdrop-blur-sm border-l-[3px] px-3 py-2 flex items-start gap-2 cursor-pointer group${showLockedHint ? ' anim-shake-no' : ''}`}
               style={{
                 backgroundColor: 'var(--bg-raised)',
                 borderLeftColor: accentColor,
@@ -114,6 +138,11 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
                 borderBottom: '1px solid var(--border-subtle)',
               }}
               onClick={() => {
+                // THR-1877 — a receipt waits while a moment holds the foreground.
+                if (receiptLocked) {
+                  setLockedHint(prev => ({ id: toast.id, n: (prev?.n ?? 0) + 1 }));
+                  return;
+                }
                 // Prefer navigationTarget, fall back to legacy onClick/actorId
                 if (navTarget && onNavigate) {
                   onNavigate(navTarget);
@@ -128,7 +157,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
               role="status"
               aria-label={
                 navTarget
-                  ? `${toast.message.replace(/\*\*/g, '')} — ${NAV_TOOLTIPS[navTarget.kind]}`
+                  ? `${toast.message.replace(/\*\*/g, '')} — ${receiptLocked ? TOPBAR_LOCKED_SUFFIX : NAV_TOOLTIPS[navTarget.kind]}`
                   : toast.message.replace(/\*\*/g, '')
               }
               aria-description="Right-click to dismiss"
@@ -143,6 +172,15 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
               >
                 {/* IPK-aware: identity for plain text (THR-628) */}
                 {renderProseWithIPK(toast.message)}
+                {showLockedHint && (
+                  <span
+                    data-testid="toast-receipt-locked"
+                    className="block"
+                    style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-1)' }}
+                  >
+                    {TOPBAR_LOCKED_SUFFIX}
+                  </span>
+                )}
               </span>
               {toast.count > 1 && (
                 <span
