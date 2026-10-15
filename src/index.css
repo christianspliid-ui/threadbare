@@ -876,7 +876,7 @@
     filter: brightness(1.15);
   }
   .tab-button:hover:not(:disabled) {
-    background-color: var(--bg-hover);
+    background-color: var(--bg-hover) !important;
     color: var(--text-primary) !important;
   }
 }
