@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-15 12:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-15 13:57 local (11:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,13 +28,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready.** Two jobs finished this hour: [the encounter coverage runner](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage) merged via [#2420](https://github.com/christianspliid-ui/threadbare/pull/2420), and [the new story typeface and type rules](https://github.com/christianspliid-ui/threadbare/pull/2421) merged at 12:47. Both are live. The one job in progress is [one backdrop and one Escape order for every dialog](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack); a builder run started at 12:51.
+**Backed up: 19 ready.** One job finished this hour: [one backdrop and one Escape order for every dialog](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack) merged via [#2423](https://github.com/christianspliid-ui/threadbare/pull/2423) and is live. The one job in progress is [the first encounter coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev); a builder run started at 13:51.
 
-- Your TypeSafe key is set, so [the first encounter coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev) is queued (about $0.07 of TypeSafe tokens). *— from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-15e.md)*
-- High, waiting: four build plans — [the screen frame](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the), [the Inspector](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and), [map lenses and chrome](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and), and the new [faction purse](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a).
+- Newly queued: [labels across the kept screens go to bold sentence case, and small Cinzel goes away](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept), the label rule you confirmed on 14 Oct. *— from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-15f.md)*
+- High, waiting: the [faction purse](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a) build plan.
 - Your six economy bugs from yesterday are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
 - Nothing is older than a week, and no job is parked.
 
 ## Health
 
-All green. Main's checks, including the heavy simulation tests, pass on the latest commit, and the live site serves it. No pull requests are waiting. The game speed is normal (130 ms per tick, 9% over the weekly median). The builder is working, not stalled. Every scheduled lane is on time, and the repo cleaner ran at 12:40. The silence check's gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
+All green. Main's checks, including the heavy simulation tests, pass on the latest commit, and the live site serves it. No pull requests are waiting. The game speed is normal (119 ms per tick, 1% under the weekly median). The builder is working, not stalled. Every scheduled lane is on time, and the repo cleaner ran at 13:40. The silence check's gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
+

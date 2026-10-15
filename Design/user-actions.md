@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-15 12:58 local (10:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-15 13:57 local (11:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-15: every dialog now shares one backdrop and one Escape order** ([THR-1884](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack)). Merged via [#2423](https://github.com/christianspliid-ui/threadbare/pull/2423) and live.
+
 - **2026-10-15: your TypeSafe key is set and the lanes can see it** (confirmed by [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-15e.md)). [The first encounter coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev) is queued.
 - **2026-10-15: the new story typeface and type rules are live** ([THR-1879](https://linear.app/threadbare/issue/THR-1879)). Merged via [#2421](https://github.com/christianspliid-ui/threadbare/pull/2421).
 - **2026-10-15: the encounter coverage runner is live** ([THR-1723](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage)). Merged via [#2420](https://github.com/christianspliid-ui/threadbare/pull/2420).
@@ -37,7 +39,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-15: a test guard no longer flips on any new content** ([THR-1930](https://linear.app/threadbare/issue/THR-1930/journeykeepsgoals-seed-42-never-quiet-for-long-guard-flips-on-any)). Merged via [#2411](https://github.com/christianspliid-ui/threadbare/pull/2411) and live; master batch 3 can now finish.
 - **2026-10-15: a gift now names its card before and after you receive it** ([THR-1855](https://linear.app/threadbare/issue/THR-1855/a-gift-never-says-what-it-gave-it-gives-you-this-one-freely-names-no)). Merged via [#2409](https://github.com/christianspliid-ui/threadbare/pull/2409) and live.
 - **2026-10-15: screens now read prepared view data** ([THR-1822](https://linear.app/threadbare/issue/THR-1822/design-a-view-model-seam-screens-read-prepared-view-data-from-the)). Merged via [#2408](https://github.com/christianspliid-ui/threadbare/pull/2408) and live; the game-screen split is unblocked.
-- **2026-10-15: the mortal economy map's questions are all decided** ([THR-1863](https://linear.app/threadbare/issue/THR-1863/wayfinder-map-mortal-economy-making-wealth-and-want-drive-what-agents)): the design lane answered the last one ([THR-1870](https://linear.app/threadbare/issue/THR-1870/what-the-player-sees-of-the-economy-prosperity-unrest-tolls-and)) with a veto open, so the "which are yours alone" ask is withdrawn. Carve-up into build plans is next.
 
 ---
 
