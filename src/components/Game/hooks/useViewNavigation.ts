@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile } from '../../../types';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
@@ -6,6 +6,8 @@ import { moveAvatarToHex } from '../../../engine/avatarMove';
 import { recordPlayerAct } from '../../../engine/playerActs';
 import type { ScryState } from '../../../types/scry';
 import { visKey } from '../../../types/visibility';
+import { useEscapeLayer } from '../../shared/useEscapeLayer';
+import { Z_BAND } from '../../shared/zBands';
 
 /**
  * View level state machine:
@@ -131,21 +133,11 @@ export function useViewNavigation({
     setRunning?.(false);
   }, [setRunning]);
 
-  // IX-009: Escape key cancels move mode (no timeout — player needs time to plan route)
-  useEffect(() => {
-    if (!moveMode) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setMoveMode(false);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [moveMode]);
+  // IX-009: Escape key cancels move mode (no timeout — player needs time to plan route).
+  // Through the one registry at the map band (Law 23, THR-1884): a dialog open over
+  // the map takes Escape first, and move mode waits for the next one.
+  const cancelMoveMode = useCallback(() => setMoveMode(false), []);
+  useEscapeLayer(moveMode, cancelMoveMode, Z_BAND.mapOverlay, 'move mode');
 
   const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
     if (moveMode) {

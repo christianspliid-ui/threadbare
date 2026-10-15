@@ -68,7 +68,7 @@ describe('StirringBeat — one click (THR-1716)', () => {
     const onSelect = vi.fn();
     render(<StirringBeat images={images} onSelect={onSelect} />);
     fireEvent.click(screen.getByTestId('stirring-stirring.b'));
-    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' }); // the escape registry listens on document (THR-1884)
     act(() => { vi.advanceTimersByTime(STIRRING_CHOSEN_HOLD_MS * 2); });
     expect(onSelect).not.toHaveBeenCalled();
     // Choose again, and this time let it run.
@@ -110,7 +110,7 @@ describe('DriveBeat — one click (THR-1716)', () => {
     fireEvent.click(screen.getByTestId('drive-drive.a'));
     fireEvent.click(screen.getByTestId('remembrance-choose-again'));
     fireEvent.click(screen.getByTestId('drive-drive.b'));
-    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' }); // the escape registry listens on document (THR-1884)
     act(() => { vi.advanceTimersByTime(DRIVE_CHOSEN_HOLD_MS * 2); });
     expect(onSelect).not.toHaveBeenCalled();
     expect(screen.getByTestId('drive-drive.a')).toBeTruthy();

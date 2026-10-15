@@ -1312,6 +1312,9 @@ if (import.meta.env.DEV) {
     getViewportForHex: (col: number, row: number) => _viewportForHex?.(col, row) ?? null,
     getHexAtViewport: (x: number, y: number) => _hexAtViewport?.(x, y) ?? null,
     getOpenModals: async () => _openModalsProvider?.() ?? [],
+    // THR-1884: every open escape layer, topmost first — the order Escape closes
+    // them in. Dynamic import keeps the registry out of this module's static graph.
+    getEscapeLayers: async () => (await import('./components/shared/useEscapeLayer')).getEscapeLayers(),
     getInterruptState: async () => _interruptStateProvider?.()
       ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false, heldArrivals: [], rendering: [], foreground: null, stage: null, held: [], homedSurfaces: [] },
     getClockHold: async () => _clockHoldProvider?.()

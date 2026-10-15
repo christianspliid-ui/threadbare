@@ -1,4 +1,4 @@
-import React, { useRef, useState, useId, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useRef, useState, useId, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { TooltipContent } from '../../types/tooltip';
 import {
@@ -12,6 +12,8 @@ import {
 import { resolveTooltip } from '../../engine/tooltipResolver';
 import { FOCUSABLE_SELECTOR } from './focusableSelector';
 import { TEXT_TOKENS_REM, remToPx } from './layoutContract';
+import { useEscapeLayer } from './useEscapeLayer';
+import { Z_BAND } from './zBands';
 
 interface TooltipProps {
   id?: string;
@@ -432,18 +434,11 @@ export const Tooltip = React.memo(function Tooltip({
   const handleFocus = () => showTooltip();
   const handleBlur = () => hideTooltip();
 
-  useEffect(() => {
-    if (!isVisible) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsVisible(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isVisible]);
+  // Law 23 (THR-1884): an open tooltip is the topmost surface, so Escape closes it
+  // alone — the dialog or sheet beneath stays open for the next Escape. Nested
+  // chain tooltips sit one band step higher each, so the deepest closes first.
+  const hideNow = useCallback(() => setIsVisible(false), []);
+  useEscapeLayer(isVisible, hideNow, Z_BAND.tooltip + depth, 'tooltip');
 
   useEffect(() => {
     return () => {
@@ -470,12 +465,12 @@ export const Tooltip = React.memo(function Tooltip({
 
   // Outer wrapper style — includes gap-bridge padding for hover continuity.
   const outerStyle: React.CSSProperties = (() => {
-    if (!position) return { position: 'fixed', zIndex: 70 + depth };
+    if (!position) return { position: 'fixed', zIndex: Z_BAND.tooltip + depth };
     const base: React.CSSProperties = {
       position: 'fixed',
       left: position.left,
       maxWidth: 'var(--tooltip-max-w)',
-      zIndex: 70 + depth,
+      zIndex: Z_BAND.tooltip + depth,
       pointerEvents: isVisible ? 'auto' : 'none',
     };
 

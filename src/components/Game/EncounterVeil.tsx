@@ -53,6 +53,7 @@ import {
   NUDGE_COMMIT_LABEL,
 } from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
+import { Z_BAND } from '../shared/zBands';
 
 // ── Thread tier types ──────────────────────────────────────────────
 type ThreadTier = 'strong' | 'light' | 'watched';
@@ -413,11 +414,11 @@ const VEIL_ROOT_INSET = {
 } as const;
 
 /**
- * The veil's stacking band — the focused-overlay band in `layout-zones.md` (50),
- * below the modal band (60). Also its escape-layer rank (THR-1816): a modal over
- * the veil takes Escape first.
+ * The veil's stacking band — the Stage band in `zBands.ts` (50), below the modal
+ * band (60). Also its escape-layer rank (THR-1816): a modal over the veil takes
+ * Escape first. A re-export of `Z_BAND.stage` (THR-1884).
  */
-export const ENCOUNTER_VEIL_Z = 50;
+export const ENCOUNTER_VEIL_Z = Z_BAND.stage;
 
 /**
  * THR-1724 — the scene's two columns: prose on the left, the cast and what is

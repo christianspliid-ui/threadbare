@@ -109,7 +109,7 @@ export function homedKindsFor(home: HomeId): HomedSurfaceKind[] {
   return HOMED_SURFACES.filter(e => e.home === home).map(e => e.kind);
 }
 
-/** The ceremony kinds (THR-1821's `CEREMONY_SURFACES` derives from this when it lands). */
+/** The ceremony kinds. `CEREMONY_SURFACES` (`components/shared/surfaceHomes.ts`, THR-1884) is this list. */
 export const CEREMONY_HOMED_KINDS: readonly CeremonyHomedKind[] = HOMED_SURFACES
   .filter((e): e is Extract<HomedEntry, { home: 'ceremony' }> => e.home === 'ceremony')
   .map(e => e.kind);

@@ -22,7 +22,7 @@ are specified by this table plus their styleguide entry.
 | `ActivityIcon` | `kind`, `size?`, `color?` | 6 kinds: `boot`, `swords`, `coin`, `hammer`, `bandage`, `hourglass`. One vocabulary per element class (Law 9). | [#section-activityicon](../../src/components/StyleGuide/StyleGuide.tsx) |
 | `AnimateMount` | `show`, `animation`, `duration?`, `children` | Mount/unmount wrapper. Collapses to a plain fade under `prefers-reduced-motion` (Law 44). | #section-animatemount |
 | `Button` | `variant`, `size?`, `icon?`, `loading?`, `fullWidth?` | 4 variants (primary, secondary, ghost, danger) × 3 sizes. `loading` implies disabled. All six interaction states. | #section-buttons |
-| `Card` | `variant?`, `padding?`, `title`, `count?`, `onBack?`, `trailing?`, `scroll?` | Compound: `.Header`, `.Body`, `.Footer`. Variants surface / raised / glass. Never nest `Card` in `Card`. | #section-card |
+| `Card` | `variant?`, `padding?`, `title`, `count?`, `onBack?`, `trailing?`, `scroll?` | **The titled panel** (THR-1884): `Panel level="panel"` plus `.Header`, `.Body`, `.Footer`. Variants surface → panel, raised → panel + floating, glass → panel + glass. Never nest `Card` in `Card`. | #section-panel-card |
 | `CardKeywordChip` | `keyword`, `icon?`, `muted?` | Glyph keyed on the live card-type union — a new type without an icon is a **build failure** (Law 9). | #section-card-keyword-chip |
 | `CardFace` | `model: CardFaceModel`, `designerView`, `onToggle` | **The** card face — every card in the game renders through it (Law 28). Ten zones in one reading order: picture band, kind chips, name, alternate costs, provenance, effect line + odds, spacer, rarity, resolved band, blocked reason. Numerals live only in `designerLine` (Law 13); the price is framed and the odds are not (Law 10) — `odds.kind: 'delta'` draws pips for a card that *moves* the odds, `'forecast'` draws the tier word for one that *rolls* them. | #section-card-face |
 | `DetailBreadcrumb` | `trail`, `onNavigate` | Collapses to a leading ellipsis past `DETAIL_BREADCRUMB_COLLAPSE_AT` (4). Last crumb is never clickable. Law 24. | #section-detail-page |
@@ -30,7 +30,7 @@ are specified by this table plus their styleguide entry.
 | `Divider` | `gold?` | Plain rule; gold variant for primary separations. | #section-divider |
 | `DomainCard` | `reach`, `tier`, `agentName`, `gender?`, `revealed` | Reach art + tier prose. `revealed: false` renders the unknown state, not a blank. | #section-domaincard |
 | `ReachStanding` | `reach`, `tier`, `revealed?`, `layout?` (`stacked`/`inline`), `nameColor?`, `wordColor?`, `nameTooltip?` | Reach name · rank word · five magnitude dots — the sheet's readout (THR-1724). Tier clamps to 0–4; unrevealed shows `???` and no dots. | #section-reachstanding |
-| `Dropdown` | `trigger`, `open`, `onOpenChange`, `align?` | Portal-based (z 9999). Compound: `.Item`. Escape / outside-click close. | #section-dropdown |
+| `Dropdown` | `trigger`, `open`, `onOpenChange`, `align?` | Portal-based (`Z_BAND.menu`). Compound: `.Item`. Outside-click close; Escape closes the menu alone through the escape registry (THR-1884). | #section-dropdown |
 | `EntityLink` | `id`, `name`, `entityRef?`, `onOpenEntity?` (deprecated) | A named entity inside prose. With an `entityRef` it routes itself by kind through `useRefRouter` — hover opens a `HoverCard` after a dwell, click opens the card (THR-1490) — and reads as plain text where no router is in scope (Laws 21, 25). Lifted out of `ChapterView` by THR-1298. | #section-entity-link |
 | `HeldByLine` | `holder`, `graph?`, `onOpenFaction?` | Whose writ runs over a place — the holder's sigil, the one `ui.held_by` tooltip and a door to its sheet; renders *Unclaimed* in words for ground no faction holds (Law 4). One line for the location profile and the hex chronicle, on the `controls` edges the political border is projected from (THR-1155). | #section-held-by-line |
 | `EntityVisual` | `size`, `descriptor?`, `entity?`, `graph?`, `shape?`, `onClick?` | **The one art path** (Law 3). `hero` 16:9 · `portrait` 3:4 · `chip` 40px. Missing art → authored glyph on id-hashed gradient (Law 4). Person art knowledge-gated, fail-open (Law 8). | #section-entity-visual |
@@ -39,7 +39,9 @@ are specified by this table plus their styleguide entry.
 | `IconButton` | `icon`, `badge?`, `active?`, `size?`, `variant?` | 32×32 icon-only. Badge slot for counts. ≥24px hit area regardless of visual size (Law 46). | #section-iconbutton |
 | `ListRow` | `accentColor?`, `selected?`, `onClick?`, `trailing?` | Compound: `.Title`, `.Subtitle`, `.Leading`. The universal selectable row. | #section-listrow |
 | `Medallion` | `size?`, `accentColor?`, `title?`, `children?` | Ringed clipping disc, sm 40 / md 64 / lg 96. **Frames** an already-resolved visual — never a second art path. | #section-medallion |
-| `Modal` | `open`, `onClose`, `maxWidth?`, `animation?` | Compound: `.Header`, `.Body`, `.Footer`. max-height `var(--modal-max-h)` = 85vh (Law 33), default max-width 600px. Escape closes topmost; focus moves in and returns (Law 50). | #section-modal |
+| `Modal` | `open`, `onClose`, `maxWidth?`, `animation?`, `zIndex?`, `closeOnEscape?`, `context?` | **An `Overlay` whose surface is a floating `page` panel** (THR-1884). Compound: `.Header`, `.Body`, `.Footer`. max-height `var(--modal-max-h)` = 85vh (Law 33), default max-width 600px. Escape closes topmost; focus moves in and returns (Law 50). | #section-modal |
+| `Overlay` | `open`, `onClose`, `label`, `band?`, `backdrop?`, `placement?`, `inset?`, `modal?`, `closeOnEscape?`, `closeOnBackdrop?`, `animation?` | **The one backdrop, z-band and Escape implementation** (THR-1884). Portal; band by name from `zBands.ts` (Law 35); backdrops dim / heavy / void / none; Escape through `useEscapeLayer` with its `label` (Law 23); focus through `useDialogFocus` (Law 50). Sizes nothing. | #section-overlay |
+| `Panel` | `level?` (`page`/`panel`/`inset`), `floating?`, `material?` (`solid`/`glass`), `as?`, `padding?`, `context?` | **The one surface shell, by hierarchy level** (THR-1884). Radius and shadow from the level tokens; page ⊃ panel ⊃ inset, a wrong nesting warns once in dev. Never caps height or scrolls. | #section-panel-card |
 | `OddsPips` / `CostPips` | `value` / `cost`, `size?`, `muted?`, `emphasised?`, `framed?` | The only sanctioned magnitude glyph language (Law 15). Odds = effect on odds; cost = framed badge, deliberately distinct (Law 10). `aria-label` states the reading in words. | #section-odds-pips |
 | `DeltaCluster` | `direction`, `count`, `label`, `color?`, `size?` | THR-1082 — how much a *state* changed, on the aftermath's consequence chips. Triangles (`▲`/`▼`, the encounter hand's own family), 1–3, or a gold `◆` for a way opening, which has no scale. Distinct from `OddsPips` by Law 10: pips mean effect on the odds, these mean realised change. `label` is the whole reading in words and becomes the `aria-label` (Law 11). | #section-delta-cluster |
 | `ProgressBand` | `label`, `value`, `prose?`, `color?` | Banded readout — use when the reading is a **word**, not a fraction. | #section-progressband |
@@ -274,6 +276,10 @@ ListRow.Leading  // Left element (avatar pip, icon, sphere dot)
 
 **Replaces:** Scattered inline panel/card styling across sidebar panels, info cards, and floating panels.
 
+**Since THR-1884 Card is the titled `Panel`:** `<Panel level="panel">` plus the header, body and
+footer below. A bounded surface is a `Panel`; a bounded surface with a title row is a `Card`; a
+playing card is `CardFace`.
+
 ### API
 
 ```tsx
@@ -292,11 +298,11 @@ Card.Footer   // { children: ReactNode }  — right-aligned button row
 
 ### Variants
 
-| Variant | Background | Border | Use |
-|---------|-----------|--------|-----|
-| `surface` | `--bg-surface` | `--border-subtle` | Default cards, info panels |
-| `raised` | `--bg-raised` | `--border-medium` | Elevated cards, selected panels |
-| `glass` | `.panel-glass` class | `--border-subtle` + backdrop blur | Floating overlays, sidebar panels |
+| Variant | Panel | Background | Shadow | Use |
+|---------|-------|-----------|--------|-----|
+| `surface` | `panel` | `--bg-surface` | none | Default cards, info panels |
+| `raised` | `panel` + `floating` | `--bg-surface` | `--shadow-panel` | Popovers, elevated cards |
+| `glass` | `panel` + `material="glass"` | `--bg-glass` + 10 px blur | none | Small panels over the map canvas |
 
 ### Card.Header Render
 
@@ -315,7 +321,7 @@ Renders:
 
 ### Styling
 - Padding: `--panel-padding`
-- Radius: `--panel-radius`
+- Radius: `--radius-panel` (through `Panel`)
 - Card.Header: flex row, `border-bottom: 1px solid var(--border-subtle)`
 - Card.Body: padding `--panel-padding`, optional `overflow-y: auto`
 - Card.Footer: padding `--panel-padding`, flex row, `gap: var(--space-2)`, `justify-content: flex-end`
@@ -349,14 +355,15 @@ Modal.Footer  // { children: ReactNode }  — button row
 ```
 
 ### Behavior
-- Portals to `document.body`
-- Backdrop: `position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 60`
-- Panel: centered, `max-width` prop, `max-height: var(--modal-max-h)` (85vh — Law 33, one rule), `overflow-y: auto` on Body
-- Escape key closes (via `useEffect` listener)
+- **Re-based on `Overlay` + `Panel` (THR-1884):** `<Overlay band="modal" backdrop="dim" placement="top">`
+  whose surface is drawn with `panelStyle('page', { floating: true })`. Props unchanged.
+- Portals to `document.body`; backdrop `--scrim-dim` at `Z_BAND.modal` (60), or
+  `modalAboveInterrupt` (65) through the `zIndex` prop
+- Panel: `max-width` prop, `max-height: var(--modal-max-h)` (85vh — Law 33, one rule), `overflow-y: auto` on Body
+- Escape closes the topmost surface only, through the escape registry (THR-1816)
 - Backdrop click closes (with `e.stopPropagation()` on panel)
-- Entry/exit via `AnimateMount`
 - `aria-modal="true"`, `role="dialog"`
-- Focus trap: first focusable element on open (stretch goal — add later)
+- Focus moves in on open, Tab is trapped, focus returns to the invoker on close (Law 50, `useDialogFocus`)
 
 ### Render
 
@@ -374,10 +381,8 @@ Modal.Footer  // { children: ReactNode }  — button row
 ```
 
 ### Styling
-- Panel background: `linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))`
-- Panel border: `1px solid var(--border-subtle)`
-- Panel radius: `var(--panel-radius)` (or `12px` for modals — slightly larger)
-- Panel shadow: `0 8px 32px rgba(0,0,0,0.6)`
+- The `page` level of `Panel`: background `var(--dlg-bg, linear-gradient(180deg, var(--bg-deep), var(--bg-abyss)))`,
+  border `var(--dlg-border, var(--border-gold))`, radius `var(--radius-page)`, shadow `var(--shadow-page)`
 - Modal.Header: `--font-display`, `--text-lg`, border-bottom, close IconButton auto-appended
 - Modal.Footer: flex row, `gap: var(--space-2)`, children right-aligned
 
@@ -536,6 +541,61 @@ RevealCard.Dismiss       // { label?, onClick }     — full-width Button varian
 - Chip labels are words, never numeric stats.
 
 ---
+
+## 11. Overlay (THR-1884)
+
+**Replaces:** seventeen hand-built full-screen layers at typed-in z-indexes, and eleven `document`
+Escape listeners that each closed at the same time as whatever was above or below them (the
+THR-1816 bug class).
+
+```tsx
+<Overlay
+  open={open}
+  onClose={close}                 // Escape and backdrop click route here
+  label="Path codex"              // required: accessible name and escape-layer debug label
+  band="modal"                    // 'focused' | 'stage' | 'modal' | 'modalAboveInterrupt'
+  backdrop="dim"                  // 'dim' | 'heavy' | 'void' | 'none'
+  placement="top"                 // 'top' (5vh) | 'center' | 'fill'
+  inset="viewport"                // 'viewport' | 'belowTopBar' (the Stage, Law 52)
+  modal                           // default true: focus trap + aria-modal
+  closeOnEscape                   // default true; false registers no layer
+  closeOnBackdrop                 // default true for dim/heavy, false for void/none
+  animation="fade-up"             // 'fade' | 'fade-up' | 'none'; reduced motion → fade
+>
+  {children}
+</Overlay>
+```
+
+- **Band** from `src/components/shared/zBands.ts` (`Z_BAND`), never a number (Law 35).
+- **Escape** through `useEscapeLayer(open && closeOnEscape, onClose, Z_BAND[band], label)`: the topmost
+  layer by band, then by registration, answers the key. `await window.__DEBUG.getEscapeLayers()` lists
+  the open layers topmost first.
+- **Backdrops:** `dim` = `--scrim-dim`; `heavy` = `--scrim-heavy`; `void` = `--bg-abyss` (the full-screen
+  ceremony); `none` = transparent and pointer-transparent, unless `closeOnBackdrop` makes it an
+  invisible click-catcher.
+- **Homes:** a homed surface mounts `<Overlay {...surfaceHomeProps(kind)}>` (`shared/surfaceHomes.ts`),
+  read from the one home list `HOMED_SURFACES`; `CEREMONY_SURFACES` is its ceremony half.
+- **Not an Overlay but answers Escape** (tooltips, menus, map move mode, the armed card): register
+  through `useEscapeLayer` with a named band and a label. A `document`/`window` Escape listener
+  anywhere else is the `escape-listener` row of `npm run check:ui-debt`.
+- Overlay sizes nothing: dialog sizes are `Modal`'s, and the Inspector and the Stage have their own geometry.
+
+## 12. Panel (THR-1884)
+
+```tsx
+<Panel level="panel" floating material="solid" as="section" padding="standard">…</Panel>
+```
+
+| Level | Background | Border | Radius | Shadow |
+|---|---|---|---|---|
+| `page` | `--dlg-bg` → deep→abyss gradient | `--dlg-border` → `--border-gold` | `--radius-page` | `--shadow-page` when `floating` |
+| `panel` | `--bg-surface` (glass: `--bg-glass` + 10 px blur) | `--border-subtle` | `--radius-panel` | `--shadow-panel` when `floating` |
+| `inset` | `--bg-raised` | none | `--radius-control` | never |
+
+- `floating` separates a popover or a dialog from an in-layout rail.
+- Hierarchy page ⊃ panel ⊃ inset; a Panel at the same or a lower level than its parent warns once in dev.
+- Panel never caps its height or scrolls: a panel grows to its size limit before it scrolls (THR-1820).
+- `panelStyle(level, opts)` is the one copy of the look; `Modal` draws its surface with it.
 
 ## Usage Decision Tree
 

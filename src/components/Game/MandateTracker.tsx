@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { MandateDefinition, MandateState } from '../../types/mandate';
 import { ProgressBar } from '../shared/ProgressBar';
 import { Tooltip } from '../shared/Tooltip';
-import { AnimateMount } from '../shared/AnimateMount';
+import { Overlay } from '../shared/Overlay';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 import { sphereDeltaReading } from '../../engine/aftermathWords';
 import { DeltaCluster } from '../shared/DeltaCluster';
@@ -107,8 +107,14 @@ function SummaryPill({ label, value, color, tooltipId }: { label: string; value:
   );
 }
 
+/** Gap between the tracker and its popover (the old `mt-1`). */
+const MANDATE_POPOVER_GAP_PX = 4;
+
 export function MandateTracker({ definition, state }: MandateTrackerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  /** Where the popover hangs: just under the tracker, measured when it opens. */
+  const [anchor, setAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
+  const trackerRef = useRef<HTMLDivElement | null>(null);
   const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
   // THR-1424 (Law 15 ruling, 2026-09-10): mandate progress is a unitless proportion, and this
   // tier already renders it twice without a numeral — the stage pips and the `ProgressBar`.
@@ -123,24 +129,16 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
   const secondaryObjectiveProgress = getSecondaryObjectiveProgress(definition, state);
 
   const handleToggle = () => {
+    if (!isExpanded) {
+      const rect = trackerRef.current?.getBoundingClientRect();
+      setAnchor(rect ? { top: rect.bottom + MANDATE_POPOVER_GAP_PX, left: rect.left, width: rect.width } : null);
+    }
     setIsExpanded(!isExpanded);
   };
-
-  useEffect(() => {
-    if (!isExpanded) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsExpanded(false);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isExpanded]);
+  const collapse = useCallback(() => setIsExpanded(false), []);
 
   return (
-    <div className="flex-1 min-w-0 relative" aria-live="polite" aria-label="Mandate progress">
+    <div ref={trackerRef} className="flex-1 min-w-0 relative" aria-live="polite" aria-label="Mandate progress">
       <div
         role="button"
         tabIndex={0}
@@ -209,11 +207,22 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
         )}
       </div>
 
-      <AnimateMount show={isExpanded} animation="anim-fade-down">
+      {/* THR-1884: the popover and its click-catcher are one Overlay — an invisible
+          backdrop that closes on an outside click, the popover hung under the
+          tracker, and Escape through the one registry (Law 23). */}
+      <Overlay
+        open={isExpanded}
+        onClose={collapse}
+        label={`${definition.name} mandate details`}
+        band="focused"
+        backdrop="none"
+        closeOnBackdrop
+        modal={false}
+        animation="fade"
+        surfaceStyle={anchor ? { position: 'fixed', top: anchor.top, left: anchor.left, width: anchor.width } : undefined}
+      >
         <div
-          role="dialog"
-          aria-label={`${definition.name} mandate details`}
-          className="absolute top-full left-0 right-0 mt-1 border rounded shadow-lg p-4 z-50 max-w-md"
+          className="border rounded shadow-lg p-4 max-w-md"
           style={{
             backgroundColor: 'var(--bg-surface)',
             borderColor: 'var(--border-medium)',
@@ -331,15 +340,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             Click to close
           </div>
         </div>
-      </AnimateMount>
-
-      {isExpanded && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsExpanded(false)}
-          aria-hidden="true"
-        />
-      )}
+      </Overlay>
     </div>
   );
 }

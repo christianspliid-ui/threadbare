@@ -95,11 +95,11 @@ Overlay layers (centered, above everything):
 
 | Property | Value | Source |
 |----------|-------|--------|
-| Z-index | `60` default (`MODAL_Z_DEFAULT`), `65` raised (`MODAL_Z_ABOVE_INTERRUPT`) — via the `zIndex` prop | `Modal.tsx` |
+| Z-index | `60` default (`MODAL_Z_DEFAULT` = `Z_BAND.modal`), `65` raised (`MODAL_Z_ABOVE_INTERRUPT` = `Z_BAND.modalAboveInterrupt`) — via the `zIndex` prop | `Modal.tsx`, `zBands.ts` |
 | Max width | `600px` default (configurable via `maxWidth` prop) | `Modal.tsx:23,80` |
 | Max height | `var(--modal-max-h)` = 85vh — the one dialog cap (Law 33) | `Modal.tsx`, `index.css` |
 | Animation | `anim-fade-up` default | `Modal.tsx:23` |
-| Behavior | Centered overlay. Escape to close. Backdrop click to close. | |
+| Behavior | An `Overlay` (backdrop, band, Escape stack, focus) with a floating `page` `Panel` (THR-1884). Escape closes it when it is the topmost surface. Backdrop click to close. | `Overlay.tsx` |
 
 **Two modals at equal z resolve by DOM order** — which the JSX author never sees, and which changes whenever the render order in `GameView` is edited. `MODAL_Z_ABOVE_INTERRUPT` (65) is the one sanctioned step up, for a sheet opened *from* a modal-tier interrupt that renders later in `GameView`: `AgentProfileModal` over `PremonitionModal` (THR-1139). It deliberately stops below 70 — the profile sheet contains tooltips, and `Tooltip` sits at `70 + depth`, so raising a sheet into that band would bury its own hovers. A third band is a design decision against this table, not an implementation choice (Law 35).
 
@@ -127,6 +127,8 @@ Overlay layers (centered, above everything):
 
 ## Z-Index Stacking Order
 
+**The table is code:** `Z_BAND` in [`src/components/shared/zBands.ts`](../../src/components/shared/zBands.ts) (THR-1884) states the bands below as named constants — `mapOverlay 10 · hud 20 · topBar 30 · drawer 40 · debug 45 · focused 50 · stage 50 · modal 60 · modalAboveInterrupt 65 · tooltip 70 (+ depth) · menu 9999`. `MODAL_Z_DEFAULT`, `MODAL_Z_ABOVE_INTERRUPT`, `ESCAPE_LAYER_Z_PANEL` and `ENCOUNTER_VEIL_Z` are re-exports of it. A surface names a band (`<Overlay band="modal">`, `Z_BAND.tooltip + depth`); a z-index typed anywhere else is Law 35 debt. The same band is the surface's rank in the escape registry, so Escape closes the topmost band first (`await window.__DEBUG.getEscapeLayers()`).
+
 From bottom to top — every layer that participates in the stacking context:
 
 | Z-Index | Layer | Component(s) | Notes |
@@ -137,7 +139,7 @@ From bottom to top — every layer that participates in the stacking context:
 | 30 | Top bar | Top bar container | `relative z-30` in GameView |
 | 40 | Action card hand | `ActionDrawer` card tray | Bottom drawer cards |
 | 45 | Debug panel | `DebugPanel` | Dev-only, above cards |
-| 50 | Focused overlays | ActionDrawer backdrop, `SettingsPanel`, `EncounterVeil` | Focused card interaction, settings |
+| 50 | Focused overlays · the Stage | ActionDrawer backdrop, `SettingsPanel`, `EncounterVeil` (`Z_BAND.stage`), the full-screen ceremonies — `MeetTheFirstFlow`, `ThreadingRite`, `HarvestScreen` on `<Overlay band="focused" backdrop="void">` | Focused card interaction, settings, ceremony (THR-1884) |
 | 51 | Focused card | ActionDrawer focused card detail | Above backdrop |
 | 60 | Modals | `Modal` (shared primitive) | Standard dialogs — `MODAL_Z_DEFAULT` |
 | 62 | Held-gift pill | `AscendantBeatOfferBanner` carrying a waiting opening gift | `GIFT_PILL_Z` — above the player surfaces that hold the gift (Modal 60) so the pill stays visible over them. It rises only while nothing but the player's own surfaces or recent input holds the gift; under an interrupt or a vignette it stays at 40, below the backdrop, as does the pool-beat pill (THR-1809). Both pills sit at `PILL_TOP`, one spacing step below the top bar's rendered height (`--topbar-live-height`), never over the bar's controls (THR-1853) |

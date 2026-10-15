@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { Z_BAND } from './zBands';
 
 /**
  * Law 23 / Law 50 — Escape closes the topmost surface only (THR-1816).
@@ -18,13 +19,26 @@ import { useEffect, useRef } from 'react';
  * engine cache, so it is not owned per session.
  */
 
-/** Stacking band for a surface with no z of its own (in-map detail panels). */
-export const ESCAPE_LAYER_Z_PANEL = 10;
+/** Stacking band for a surface with no z of its own (in-map detail panels). Re-export of `Z_BAND.mapOverlay`. */
+export const ESCAPE_LAYER_Z_PANEL = Z_BAND.mapOverlay;
+
+/** The label a layer reports when its caller named none. */
+export const ESCAPE_LAYER_UNLABELLED = 'unlabelled';
 
 interface EscapeLayer {
   id: number;
   zIndex: number;
+  /** Read at report time, so a caller may rename its layer without moving it. */
+  label: () => string;
   handler: () => void;
+}
+
+/** One open escape layer, as `window.__DEBUG.getEscapeLayers()` reports it. */
+export interface EscapeLayerReading {
+  /** The Overlay's label, or the `useEscapeLayer` caller's label (`'unlabelled'` if none). */
+  label: string;
+  /** Its stacking band (a `Z_BAND` value). */
+  band: number;
 }
 
 const layers: EscapeLayer[] = [];
@@ -65,8 +79,13 @@ function syncListener(): void {
 }
 
 /** Register a layer; returns its unregister function. Exported for tests. */
-export function pushEscapeLayer(zIndex: number, handler: () => void): () => void {
-  const layer: EscapeLayer = { id: nextId++, zIndex, handler };
+export function pushEscapeLayer(
+  zIndex: number,
+  handler: () => void,
+  label: string | (() => string) = ESCAPE_LAYER_UNLABELLED,
+): () => void {
+  const readLabel = typeof label === 'function' ? label : () => label;
+  const layer: EscapeLayer = { id: nextId++, zIndex, label: readLabel, handler };
   layers.push(layer);
   syncListener();
   return () => {
@@ -82,18 +101,38 @@ export function getEscapeLayerCount(): number {
 }
 
 /**
+ * Every open layer, topmost first — the order Escape will close them in (the
+ * debug read behind every Escape-order assertion, THR-1884). Band first, then
+ * later registration within a band, matching `topLayer()`.
+ */
+export function getEscapeLayers(): EscapeLayerReading[] {
+  return layers
+    .map((layer, order) => ({ layer, order }))
+    .sort((a, b) => b.layer.zIndex - a.layer.zIndex || b.order - a.order)
+    .map(({ layer }) => ({ label: layer.label() || ESCAPE_LAYER_UNLABELLED, band: layer.zIndex }));
+}
+
+/**
  * Register `onEscape` as an escape layer while `active`. The handler may change
  * identity between renders without re-registering (which would wrongly move the
- * layer to the top of its band).
+ * layer to the top of its band); so may `label`, the name `getEscapeLayers()`
+ * reports (THR-1884).
  */
-export function useEscapeLayer(active: boolean, onEscape: () => void, zIndex: number): void {
+export function useEscapeLayer(
+  active: boolean,
+  onEscape: () => void,
+  zIndex: number,
+  label: string = ESCAPE_LAYER_UNLABELLED,
+): void {
   const handlerRef = useRef(onEscape);
+  const labelRef = useRef(label);
   useEffect(() => {
     handlerRef.current = onEscape;
-  }, [onEscape]);
+    labelRef.current = label;
+  }, [onEscape, label]);
 
   useEffect(() => {
     if (!active) return;
-    return pushEscapeLayer(zIndex, () => handlerRef.current());
+    return pushEscapeLayer(zIndex, () => handlerRef.current(), () => labelRef.current);
   }, [active, zIndex]);
 }

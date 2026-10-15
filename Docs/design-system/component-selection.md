@@ -53,7 +53,8 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 
 | Need | Component | Notes |
 |------|-----------|-------|
-| Generic content wrapper with header/body/footer | `Card` (shared primitive) | Compound: Card.Header, Card.Body, Card.Footer. Variants: surface, raised, glass. |
+| A bounded surface — a rail, a popover, a legend, an inset inside a panel | `Panel` (shared primitive) | THR-1884. `level` says what it **is**: `page` (a dialog, the Stage, the Inspector in Full) ⊃ `panel` (rails, cards, popovers) ⊃ `inset` (rows inside a panel). `floating` adds the level's shadow; `material="glass"` for small panels over the map. Radius and shadow come from the level tokens — never write a shell by hand. |
+| A bounded surface with a title row (header/body/footer) | `Card` (shared primitive) | **The titled panel** (THR-1884): `Panel level="panel"` plus Card.Header, Card.Body, Card.Footer. Variants: surface, raised (floating), glass. **A bounded surface is a `Panel`; a bounded surface with a title row is a `Card`; a playing card is `CardFace`** — "card" means the god's cards everywhere else in this game. |
 | Domain reach tier display | `DomainCard` | Shows reach art thumbnail + tier prose. |
 | A mortal's standing in one reach, as a compact readout ("STONE · Skilled ●●●○○") | `ReachStanding` (shared primitive) | THR-1724. The sheet's name · rank word · magnitude dots; `layout="stacked"` inside `DomainCard`, `layout="inline"` in the encounter title row. Not for odds (use pips) or progress (use `StepDots` directly). |
 | Rarity-accented wrapper | `RarityBorderBox` | Left-border accent by rarity tier. Wraps any content — use around a sheet or ListRow for rarity emphasis. |
@@ -63,14 +64,15 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 
 | Need | Component | Notes |
 |------|-----------|-------|
-| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. max-height `var(--modal-max-h)` = 85vh (Law 33). Escape to close. Optional `context` (`story` · `elder` · `gain`) picks the dialogue palette — a *moment* passes one, a reference surface passes none (THR-1586, `tokens.md` § Dialogue contexts). |
+| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. Built on `Overlay` + a floating `page` `Panel` (THR-1884). max-height `var(--modal-max-h)` = 85vh (Law 33). Escape closes it when it is the topmost surface. Optional `context` (`story` · `elder` · `gain`) picks the dialogue palette — a *moment* passes one, a reference surface passes none (THR-1586, `tokens.md` § Dialogue contexts). |
+| Anything full-screen or over the map that is not a sized dialog — a ceremony, the Stage, a click-catcher | `Overlay` (shared primitive) | THR-1884. The one backdrop, z-band and Escape implementation: `band` by name (`zBands.ts`, Law 35), `backdrop` dim / heavy / void / none, `label` names it to screen readers and to `__DEBUG.getEscapeLayers()`. A homed surface spreads `surfaceHomeProps(kind)` (the ceremony home: Meet the First, the Threading Rite, the cycle harvest). Never hand-build `fixed inset-0` or hang a `document` Escape listener — the ratchet counts both. |
 | Encounter dialogue with branching | `MeetingEncounterModal` | Auto-triggered on encounter. Full encounter UI. |
 | Journey flavor text | `JourneyVignetteModal` | Full-screen during movement. |
 | Obscured challenge preview | `EncounterVeil` | Unknown opponent. |
 | Premonition/divine revelation | `PremonitionModal` | Consequence preview with sphere tinting. |
 | Full-screen profile (6 tabs) | `AgentProfileModal` | Deep entity inspection. |
 
-**Rule:** For new modal features, use `Modal` (shared) and compose content inside it. Only create a custom modal component if the interaction pattern is fundamentally different from standard dialog behavior.
+**Rule:** For new modal features, use `Modal` (shared) and compose content inside it. For a surface that is not a sized dialog, use `Overlay`; something that is not an Overlay but must answer Escape (a tooltip, a menu, a map mode) registers through `useEscapeLayer` with a named band. Only create a custom modal component if the interaction pattern is fundamentally different from standard dialog behavior.
 
 #### RevealCard vs Modal vs EventPopup (THR-799)
 

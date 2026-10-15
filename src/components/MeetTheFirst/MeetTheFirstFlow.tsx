@@ -27,6 +27,11 @@ import { selectFormativeFateLine } from '../../engine/meetingFateLine';
 import { DILEMMA_TEMPLATES } from '../../data/meeting-content';
 import { SENSING_OPENING_PROSE, SENSING_OPENING_FALLBACK } from '../../data/meeting-narrative-prose';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
+import { Overlay } from '../shared/Overlay';
+import { surfaceHomeProps } from '../shared/surfaceHomes';
+
+/** The ceremony answers no implicit close: only its own beats move it on. */
+const STAY_OPEN = () => {};
 
 type MeetBeat = 'sensing' | 'testing' | 'spark' | 'bond';
 
@@ -242,7 +247,18 @@ export function MeetTheFirstFlow({
   }, [selectedCandidate, primarySphere, seed]);
 
   return (
-    <div className="fixed inset-0 z-50" style={{ background: '#0a0a0f' }}>
+    // Meet the First is a full-screen ceremony (THR-1829's third home, THR-1884):
+    // the void backdrop is its ground, and no implicit close ends it.
+    <Overlay
+      open
+      onClose={STAY_OPEN}
+      label="Meet the First"
+      {...surfaceHomeProps('meet-the-first')}
+      closeOnEscape={false}
+      closeOnBackdrop={false}
+      animation="none"
+      surfaceClassName="relative"
+    >
       {beat === 'sensing' && (
         <SensingBeat
           candidates={candidates}
@@ -299,6 +315,6 @@ export function MeetTheFirstFlow({
           onComplete={handleBondComplete}
         />
       )}
-    </div>
+    </Overlay>
   );
 }
