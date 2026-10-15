@@ -33,13 +33,17 @@ describe('ToastStack — anchored inside the map area (THR-1711)', () => {
   it('GameView mounts it inside the relative map area, before the map', () => {
     // `absolute` is only correct while the mount stays inside the map's
     // `relative` box — pin that half of the contract too.
+    // THR-1881 step d: the map itself lives in `map/GameMap.tsx`; GameView mounts
+    // that host where HexMapV2 stood, so the order is pinned against `<GameMap`.
     const src = readFileSync(resolve(__dirname, '../GameView.tsx'), 'utf8');
     const mapArea = src.indexOf('{/* ── Center: map / hex zoom / location ── */}');
     const mount = src.indexOf('<ToastStack', mapArea);
-    const map = src.indexOf('<HexMapV2', mapArea);
+    const map = src.indexOf('<GameMap', mapArea);
     expect(mapArea).toBeGreaterThan(-1);
     expect(mount).toBeGreaterThan(mapArea);
     expect(mount).toBeLessThan(map);
     expect(src.slice(mapArea, mount)).toMatch(/className="flex-1 overflow-hidden relative"/);
+    const host = readFileSync(resolve(__dirname, '../map/GameMap.tsx'), 'utf8');
+    expect(host).toContain('<HexMapV2');
   });
 });

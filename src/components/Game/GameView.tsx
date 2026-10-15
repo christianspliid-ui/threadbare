@@ -58,7 +58,6 @@ export type { ViewLevel } from './hooks/useViewNavigation';
 import { useDebugOpenModal } from './useDebugOpenModal';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import { AnimateMount } from '../shared/AnimateMount';
-import HexMapV2 from '../HexMapV2/HexMapV2';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
 import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
@@ -118,7 +117,6 @@ import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
 import { getLatestEncounterDecisionForAgent, getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetry';
 import { AvatarHUD } from './AvatarHUD';
-import { LiveLocationBar } from './LiveLocationBar';
 import { WorldPulse } from './WorldPulse';
 import { ChroniclePanel } from './ChroniclePanel';
 import { readWorldPastForPlayer } from '../../engine/worldPast';
@@ -249,7 +247,8 @@ import {
   recordUnifiedActionChoiceMemory,
   recordUnifiedActionNudgeMemory,
 } from '../../engine/encounterChoiceMemory';
-import { DialogHost, MapAnchoredDialogs } from './hosts/DialogHost';
+import { DialogHost } from './hosts/DialogHost';
+import { GameMap } from './map/GameMap';
 import { CeremonyHost } from './hosts/CeremonyHost';
 import { StageHost } from './hosts/StageHost';
 import { useLastViewedTick } from '../../hooks/useLastViewedTick';
@@ -267,7 +266,6 @@ import { DOMINION_BANDS, DOMINION_BAND_WORDS } from '../../data/dominion-content
 import { DOMINION_TOOLTIP_IDS } from '../../data/dominion-ui-content';
 import { getUITooltip } from '../../data/ui-content';
 import type { MapLensId } from '../../data/map-lenses';
-import { MapLensSwitch } from '../HexMapV2/chrome/MapLensSwitch';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -4355,94 +4353,72 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               onSelectAgent={handleAgentSelect}
               onNavigate={handleNotificationNavigate}
             />
+            {/* The world map: HexMapV2, lens switch, summary bar, map-anchored dialogs (THR-1881 step d) */}
             {viewLevel === 'world' && (
-              <>
-                <HexMapV2
-                  ref={hexMapRef}
-                  tiles={tiles}
-                  cols={COLS}
-                  rows={ROWS}
-                  seed={gameState.seed}
-                  hoveredHex={hoveredHex}
-                  selectedHex={selectedHexCoord ?? selectedHex}
-                  riverPaths={riverPaths}
-                  lakeIds={lakeIds}
-                  areaProjection={areaProjection}
-                  realmProjection={realmProjection}
-                  locations={locationNodes}
-                  anomalies={anomalyNodes}
-                  roadPaths={roadPaths}
-                  agents={agentRenderDataWithActivity}
-                  armies={armyRenderData}
-                  reachSignatureMarkers={reachSignatureMarkers}
-                  rivalInfluenceMarkers={rivalInfluenceMarkers}
-                  tradeRouteLines={tradeRouteLines}
-                  routeTooltipsByHex={routeTooltipsByHex}
-                  battles={battleRenderData}
-                  threadLines={threadLineData}
-                  companies={companyRenderData}
-                  activityIcons={activityIconData}
-                  attentionRatio={attentionRatio}
-                  visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
-                  fogEnabled={!fogDisabled}
-                  showOrganicShore={showOrganicShore}
-                  overlayOpen={scryVisible || harvestResult !== null}
-                  selectionColor={sphereColor}
-                  moveDestinationHex={avatarTargetHex}
-                  onCameraCenterHex={setCameraCenter}
-                  onHexClick={handleHexClickFull}
-                  onHexHover={setHoveredHex}
-                  onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
-                  onArmyClick={(armyId) => handleOpenProfileModal(armyId, 'army')}
-                  strategicOverlays={hexStrategicOverlays}
-                  locationActivityMap={locationActivityByHex}
-                  spotlightedAgentId={gameState.spotlightedAgent}
-                  spotlightThreadColor={spotlightThreadColor}
-                  shouldCenterOnAgent={cameraGateCallback}
-                  dominionLens={dominionLensForMap}
-                  dominionTooltip={dominionTooltip}
-                />
-
-                {/* THR-1750 — the map lens switch (lens one: Dominion), key 1 */}
-                {gameState.ascendantId && (
-                  <MapLensSwitch
-                    active={dominionLensOn ? 'dominion' : null}
-                    onToggle={toggleMapLens}
-                    bandColors={dominionBandColors}
-                  />
-                )}
-
-                {/* AvatarHUD superseded by AscendantBar (THR-184) */}
-
-                {/* Living World summary bar — top-3 active locations (THR-127) */}
-                <LiveLocationBar
-                  summaries={locationActivitySummaries}
-                  tick={gameState.tick}
-                  onCenterOnHex={(col, row) => {
-                    if (!hexMapRef.current) return;
-                    const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-                    hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
-                  }}
-                />
-
-                {/* Agenda picker, intervention confirm, effect choice set (THR-1881 step b) */}
-                <MapAnchoredDialogs
-                  gameState={gameState}
-                  setGameState={setGameState}
-                  runtime={runtime}
-                  agendaPickerOpen={agendaPickerOpen}
-                  pendingAgendas={pendingAgendas}
-                  wheelSlots={wheelSlots}
-                  pendingIntervention={pendingIntervention}
-                  handleAgendaSelect={handleAgendaSelect}
-                  handleAgendaCancel={handleAgendaCancel}
-                  selectedAgenda={selectedAgenda}
-                  handleInterventionConfirm={handleInterventionConfirm}
-                  handleInterventionCancel={handleInterventionCancel}
-                  pendingChoice={pendingChoice}
-                  setPendingChoice={setPendingChoice}
-                />
-              </>
+              <GameMap
+                gameState={gameState}
+                setGameState={setGameState}
+                runtime={runtime}
+                hexMapRef={hexMapRef}
+                tiles={tiles}
+                COLS={COLS}
+                ROWS={ROWS}
+                hoveredHex={hoveredHex}
+                selectedHexCoord={selectedHexCoord}
+                selectedHex={selectedHex}
+                riverPaths={riverPaths}
+                lakeIds={lakeIds}
+                areaProjection={areaProjection}
+                realmProjection={realmProjection}
+                locationNodes={locationNodes}
+                anomalyNodes={anomalyNodes}
+                roadPaths={roadPaths}
+                agentRenderDataWithActivity={agentRenderDataWithActivity}
+                armyRenderData={armyRenderData}
+                reachSignatureMarkers={reachSignatureMarkers}
+                rivalInfluenceMarkers={rivalInfluenceMarkers}
+                tradeRouteLines={tradeRouteLines}
+                routeTooltipsByHex={routeTooltipsByHex}
+                battleRenderData={battleRenderData}
+                threadLineData={threadLineData}
+                companyRenderData={companyRenderData}
+                activityIconData={activityIconData}
+                attentionRatio={attentionRatio}
+                fogDisabled={fogDisabled}
+                effectiveVisibilityMap={effectiveVisibilityMap}
+                showOrganicShore={showOrganicShore}
+                scryVisible={scryVisible}
+                harvestResult={harvestResult}
+                sphereColor={sphereColor}
+                avatarTargetHex={avatarTargetHex}
+                setCameraCenter={setCameraCenter}
+                handleHexClickFull={handleHexClickFull}
+                setHoveredHex={setHoveredHex}
+                handleThreadNodeSelect={handleThreadNodeSelect}
+                handleOpenProfileModal={handleOpenProfileModal}
+                hexStrategicOverlays={hexStrategicOverlays}
+                locationActivityByHex={locationActivityByHex}
+                spotlightThreadColor={spotlightThreadColor}
+                cameraGateCallback={cameraGateCallback}
+                dominionLensForMap={dominionLensForMap}
+                dominionTooltip={dominionTooltip}
+                dominionLensOn={dominionLensOn}
+                toggleMapLens={toggleMapLens}
+                dominionBandColors={dominionBandColors}
+                locationActivitySummaries={locationActivitySummaries}
+                RETINUE_EYE_ZOOM_SCALE={RETINUE_EYE_ZOOM_SCALE}
+                agendaPickerOpen={agendaPickerOpen}
+                pendingAgendas={pendingAgendas}
+                wheelSlots={wheelSlots}
+                pendingIntervention={pendingIntervention}
+                handleAgendaSelect={handleAgendaSelect}
+                handleAgendaCancel={handleAgendaCancel}
+                selectedAgenda={selectedAgenda}
+                handleInterventionConfirm={handleInterventionConfirm}
+                handleInterventionCancel={handleInterventionCancel}
+                pendingChoice={pendingChoice}
+                setPendingChoice={setPendingChoice}
+              />
             )}
 
             {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (() => {
