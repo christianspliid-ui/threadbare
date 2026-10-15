@@ -178,7 +178,7 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata, curr
       {/* Full backstory at transparent level */}
       {card.knowledgeLevel === 'transparent' && profile?.fullBackstory && (
         <section>
-          <SectionHeading as="h2">Full Account</SectionHeading>
+          <SectionHeading as="h2">Full account</SectionHeading>
           <div className="text-sm space-y-3" style={{ color: 'var(--text-secondary)' }}>
             {profile.fullBackstory.split('\n\n').map((para, idx) => (
               <p key={idx} className="leading-relaxed">{para}</p>
@@ -190,7 +190,7 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata, curr
       {/* Interaction Record at transparent level */}
       {card.knowledgeLevel === 'transparent' && profile?.dispositionRecord && profile.dispositionRecord.length > 0 && (
         <section>
-          <SectionHeading as="h2">Interaction Record</SectionHeading>
+          <SectionHeading as="h2">Interaction record</SectionHeading>
           <div className="space-y-2">
             {profile.dispositionRecord.map((record, idx) => (
               <div key={idx} className="text-xs p-2 rounded" style={{ backgroundColor: 'var(--bg-raised)', color: 'var(--text-secondary)' }}>
@@ -212,7 +212,7 @@ export function ChronicleTab({ card, profile, knowledge, scrollToNewStrata, curr
 
       {/* Completed Ambitions */}
       <section>
-        <SectionHeading as="h2">Completed Ambitions</SectionHeading>
+        <SectionHeading as="h2">Completed ambitions</SectionHeading>
         {showCompletedAmbitions && completedAmbitions.length > 0 ? (
           <div className="space-y-2">
             {completedAmbitions.map((ambition) => (

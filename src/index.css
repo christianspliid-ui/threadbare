@@ -27,6 +27,26 @@
   src: url('/fonts/alegreya-sans-700-regular.woff2') format('woff2');
   font-weight: 700; font-style: normal; font-display: swap;
 }
+/* Alegreya Sans 800 — capital labels on the map (THR-1831/1833). */
+@font-face {
+  font-family: 'Alegreya Sans';
+  src: url('/fonts/alegreya-sans-800-regular.woff2') format('woff2');
+  font-weight: 800; font-style: normal; font-display: swap;
+}
+/* Alegreya — the story face (THR-1833, THR-1879 § 1). Latin subset from Google
+   Fonts' css2 API; the roman is one variable file for 400–900. SIL OFL 1.1,
+   see /fonts/OFL.txt. */
+@font-face {
+  font-family: 'Alegreya';
+  src: url('/fonts/alegreya-variable.woff2') format('woff2-variations'),
+       url('/fonts/alegreya-variable.woff2') format('woff2');
+  font-weight: 400 900; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Alegreya';
+  src: url('/fonts/alegreya-400-italic.woff2') format('woff2');
+  font-weight: 400; font-style: italic; font-display: swap;
+}
 @import "tailwindcss";
 
 /* Radius and shadow by hierarchy level (THR-1821). Four levels named for what
@@ -54,6 +74,9 @@
    DARK TAPESTRY — Design System for Threadbearer
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* Numbers that line up — counts, costs, dates (THR-1879 § 3). */
+.figures-tabular { font-variant-numeric: var(--figures-tabular); }
+
 @layer base {
   :root {
     /* ── Typography ───────────────────────────────────────────── */
@@ -64,8 +87,12 @@
        nudge shell, one stray `<p>` inside the veil, and `PremonitionModal` —
        each spelling the same stack by hand. A font stack copied per component
        is presentation logic living outside the shared layer, and it drifts the
-       way two golds did: the copies here already disagreed on quoting. */
-    --font-prose: Georgia, 'Times New Roman', serif;
+       way two golds did: the copies here already disagreed on quoting.
+       THR-1879: the story face is Alegreya; Georgia stays only as the fallback. */
+    --font-prose: 'Alegreya', Georgia, 'Times New Roman', serif;
+    /* Numbers that line up (THR-1833): counts, costs, dates, the doom clock.
+       Use `.figures-tabular` or `fontVariantNumeric: 'var(--figures-tabular)'`. */
+    --figures-tabular: lining-nums tabular-nums;
 
     /* Type Scale (THR-1819) — six real steps, no two adjacent steps closer
        than 2px at a 16px root. px values are at 1920×1080; at 2560×1440 the
@@ -307,11 +334,14 @@
     --type-display-xl:    700 var(--text-2xl)/1.1  var(--font-display);
     --type-display-lg:    600 var(--text-xl)/1.1   var(--font-display);
     --type-display-md:    600 var(--text-lg)/1.15  var(--font-display);
-    --type-section-label: 700 var(--text-xs)/1.2   var(--font-display);
-    --type-body-prose:    400 var(--text-base)/1.6 var(--font-body);
+    /* The label rule (THR-1833 call 2, THR-1879 § 2): small labels are
+       Alegreya Sans 700, sentence case written in the string, no tracking. */
+    --type-section-label: 700 var(--text-xs)/1.2   var(--font-body);
+    /* Story prose and its italic flavour take the story face (THR-1879 § 1). */
+    --type-body-prose:    400 var(--text-base)/1.6 var(--font-prose);
     --type-body:          400 var(--text-sm)/1.4   var(--font-body);
     --type-body-small:    400 var(--text-xs)/1.4   var(--font-body);
-    --type-flavor:  italic 400 var(--text-base)/1.6 var(--font-body);
+    --type-flavor:  italic 400 var(--text-base)/1.6 var(--font-prose);
 
     /* ── Sublocation & Persistence ────────────────────────────── */
     /* Persistence badges */
@@ -489,7 +519,7 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     color: var(--text-primary);
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em; /* THR-1833: Cinzel titles are the only tracked text */
   }
 
   /* Scrollbar styling — dark theme */
@@ -558,25 +588,22 @@
     mix-blend-mode: overlay;
   }
 
-  /* Section heading style — gold-accented small caps */
+  /* Section heading — the label rule (THR-1833 call 2, THR-1879 § 2):
+     Alegreya Sans 700, sentence case in the string, tertiary, no tracking.
+     The gold ornamental variant is .section-heading-gold. */
   .section-heading {
-    font-family: var(--font-display);
-    font-size: var(--text-xs);
-    font-weight: 700;
-    color: var(--accent-gold);
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
+    font: var(--type-section-label);
+    color: var(--text-tertiary);
+    letter-spacing: 0;
   }
 
-  /* TopBar section label — neutral parchment small caps for the persistent top bar.
-     Used as the small ALLCAPS label tier above each topbar value (TIME, WORLD-SOUL,
-     ATTENTION, DOOM, OMEN, RIVALS). Distinct from .section-heading which is gold;
-     gold is reserved for active/important states per STYLE.md "single accent; sparingly". */
+  /* TopBar section label — the small label tier above each topbar value
+     ("Time", "Attention", "Doom", "Omen"). The label rule (THR-1879 § 2):
+     Alegreya Sans 700, sentence case in the string, no tracking. */
   .topbar-section-label {
     font: var(--type-section-label);
     color: var(--text-tertiary);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0;
     white-space: nowrap;
   }
 
@@ -653,14 +680,11 @@
     border-radius: var(--panel-radius);
   }
 
-  /* Ornamental section header — small caps, gold, letter-spaced */
+  /* Ornamental section header — the label rule in gold (THR-1879 § 2). */
   .section-heading-gold {
-    font-family: var(--font-display);
-    font-size: var(--text-xs);
-    font-weight: 700;
+    font: var(--type-section-label);
     color: var(--accent-gold);
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0;
   }
 
   /* Drop cap — first letter of narrative prose */
@@ -707,11 +731,10 @@
   .quote-block .quote-attr {
     display: block;
     margin-top: 8px;
-    font-size: var(--text-xs);
+    font: var(--type-section-label); /* the label rule (THR-1879 § 2) */
     color: var(--accent-gold);
     font-style: normal;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
   }
 
   /* ── Ceremonial reveal surface (THR-799) ──────────────────────
@@ -1201,10 +1224,8 @@
   flex-shrink: 0;
   margin-left: 0.5rem;
   padding: 0.25rem 0.5rem;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font: var(--type-section-label); /* the label rule (THR-1879 § 2) */
+  letter-spacing: 0;
   border-radius: 0.25rem;
   white-space: nowrap;
 }
@@ -1314,10 +1335,9 @@
 }
 
 .avail-label {
-  font-size: var(--text-xs);
+  font: var(--type-section-label); /* the label rule (THR-1879 § 2) */
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0;
   margin-bottom: 0.25rem;
 }
 

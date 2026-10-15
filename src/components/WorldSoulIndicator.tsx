@@ -64,7 +64,7 @@ export function WorldSoulIndicator({ aggregate }: WorldSoulIndicatorProps) {
       <span className="topbar-section-label">World-Soul</span>
       <div
         style={{
-          fontFamily: 'var(--font-prose, serif)',
+          fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
           color: 'var(--text-secondary, #a09880)',
           fontStyle: 'italic',

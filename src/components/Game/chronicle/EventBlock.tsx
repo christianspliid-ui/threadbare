@@ -31,10 +31,8 @@ export const EventBlock = memo(function EventBlock({ label, text }: EventBlockPr
       </div>
       <p
         style={{
-          fontFamily: 'var(--font-prose)',
+          font: 'var(--type-body-prose)',
           color: 'var(--text-secondary)',
-          fontSize: 'var(--text-xs)',
-          lineHeight: 1.7,
           margin: 0,
         }}
       >

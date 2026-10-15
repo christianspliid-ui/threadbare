@@ -48,7 +48,7 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
     <div className="space-y-2">
       <div>
         <Tooltip id="ui.rival_panel">
-          <SectionHeading as="h2" count={definitions.length}>Rival Gods</SectionHeading>
+          <SectionHeading as="h2" count={definitions.length}>Rival gods</SectionHeading>
         </Tooltip>
       </div>
       <div role="list" aria-label="Rival gods">

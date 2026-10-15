@@ -188,10 +188,7 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
             >
               <p
                 style={{
-                  fontFamily: 'var(--font-prose)',
-                  fontStyle: 'italic',
-                  fontSize: 'var(--text-xs)',
-                  lineHeight: 1.7,
+                  font: 'var(--type-flavor)',
                   color: `${sphereColor}cc`,
                   maxWidth: '600px',
                   margin: '0 auto',

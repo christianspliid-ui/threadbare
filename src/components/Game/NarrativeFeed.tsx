@@ -80,7 +80,7 @@ export function NarrativeFeed({ events }: NarrativeFeedProps) {
             key={`${evt.id}_${idx}`}
             className={`flex gap-2 text-xs py-0.5 ${dimmed ? 'opacity-50' : 'opacity-90'}`}
           >
-            <span className="text-amber-200/30 font-mono w-8 text-right flex-shrink-0">
+            <span className="text-amber-200/30 figures-tabular w-8 text-right flex-shrink-0">
               {showTickRange ? `${group.firstTick}-${group.lastTick}` : evt.tick}
             </span>
             <span
@@ -94,7 +94,7 @@ export function NarrativeFeed({ events }: NarrativeFeedProps) {
                 {renderProseWithIPK(evt.message)}
               </span>
               {group.count > 1 && (
-                <span className="text-amber-900/60 font-mono whitespace-nowrap flex-shrink-0">
+                <span className="text-amber-900/60 figures-tabular whitespace-nowrap flex-shrink-0">
                   ×{group.count}
                 </span>
               )}

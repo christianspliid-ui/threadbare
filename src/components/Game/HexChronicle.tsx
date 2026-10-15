@@ -494,10 +494,8 @@ export const HexChronicle = memo(function HexChronicle({
             Unknown Territory
           </h3>
           <p style={{
-            fontFamily: 'var(--font-prose)',
+            font: 'var(--type-body-prose)',
             color: 'var(--text-tertiary)',
-            fontSize: 'var(--text-sm)',
-            lineHeight: 1.7,
             marginTop: '12px',
           }}>
             This land lies beyond your sight. Send your avatar closer, or scry to pierce the veil.
@@ -510,11 +508,8 @@ export const HexChronicle = memo(function HexChronicle({
   // ── Prose style constants ──────────────────────────────────────
 
   const proseStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-prose)',
-    fontSize: 'var(--text-sm)',
+    font: 'var(--type-flavor)',
     color: 'var(--text-secondary)',
-    lineHeight: 1.8,
-    fontStyle: 'italic',
     margin: '0 0 16px 0',
   };
 

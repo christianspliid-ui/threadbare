@@ -142,9 +142,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
             <p className="absolute left-0 right-0 text-center transition-all duration-1000"
                style={{
                  top: 'calc(5vh + 2.2rem)',
-                 fontFamily: 'var(--font-prose)',
-                 fontStyle: 'italic',
-                 fontSize: 'var(--text-xs)',
+                 font: 'var(--type-flavor)',
                  color: 'rgba(154,138,106,0.4)',
                  letterSpacing: '0.05em',
                  opacity: textVisible ? 1 : 0,
@@ -203,10 +201,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                     />
                     <div className="px-2 pt-5 pb-2">
                       <p style={{
-                        fontFamily: 'var(--font-prose)',
-                        fontStyle: 'italic',
-                        fontSize: 'var(--text-xs)',
-                        lineHeight: '1.7',
+                        font: 'var(--type-flavor)',
                         color: isHovered ? 'rgba(212,196,138,0.8)' : 'rgba(180,170,140,0.35)',
                         transition: 'color 0.5s ease',
                       }}>
@@ -425,9 +420,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
           )}
           <p className="mt-4"
              style={{
-               fontFamily: 'var(--font-prose)',
-               fontStyle: 'italic',
-               fontSize: 'var(--text-xs)',
+               font: 'var(--type-flavor)',
                color: 'rgba(120,120,120,0.5)',
                letterSpacing: '0.05em',
              }}>

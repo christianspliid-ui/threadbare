@@ -174,7 +174,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             </span>
           </Tooltip>
           {displayText && (
-            <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
+            <span className="figures-tabular flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
               {displayText}
             </span>
           )}

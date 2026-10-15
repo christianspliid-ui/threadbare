@@ -150,10 +150,8 @@ function BeforeYouWoke({ groups }: { groups: BeforeYouWokeGroup[] }) {
                         key={line.id}
                         line={line}
                         style={{
-                          fontFamily: 'var(--font-prose)',
-                          fontSize: 'var(--text-xs)',
+                          font: 'var(--type-body-prose)',
                           color: 'var(--text-secondary)',
-                          lineHeight: 1.5,
                         }}
                       />
                     ))}
@@ -235,7 +233,7 @@ export function ChroniclePanel({ entries, currentTick, past }: ChroniclePanelPro
         {visibleEntries.length === 0 ? (
           <p
             style={{
-              fontFamily: 'var(--font-prose)',
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               color: 'var(--text-tertiary)',
               fontStyle: 'italic',

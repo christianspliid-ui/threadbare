@@ -165,7 +165,7 @@ export function NudgeReadingMarks({
         </Tooltip>
       )}
       {designerView && (
-        <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
+        <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontVariantNumeric: 'var(--figures-tabular)' }}>
           d={testPanel.difficultyValue.toFixed(2)} ({testPanel.difficultyWord})
         </span>
       )}
@@ -199,7 +199,7 @@ export function NudgeReadingMarks({
         )}
       </span>
       {designerView && (
-        <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
+        <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontVariantNumeric: 'var(--figures-tabular)' }}>
           p={forecast.probability.toFixed(3)}
           {testPanel.purposeLine ? ` · ${testPanel.purposeLine}` : ''}
         </span>

@@ -31,6 +31,7 @@ import {
 } from '../check-ui-debt.ts';
 import {
   countColourFns,
+  countDisplayFaceSmall,
   countEscapeListeners,
   countFontFaceLiterals,
   countGlyphIcons,
@@ -170,6 +171,17 @@ describe('detectors', () => {
     expect(countUppercase(tsx('export const A = () => <h2 className="normal-case" />;'))).toBe(0);
     expect(countMonospace(tsx(`export const s = { fontFamily: 'monospace' };`))).toBe(1);
     expect(countMonospace(tsx('export const A = () => <span className="tabular-nums" />;'))).toBe(0);
+  });
+
+  it('display-face-small: Cinzel below --text-lg counts; Cinzel at --text-lg or the label rule does not (THR-1879)', () => {
+    expect(countDisplayFaceSmall(tsx(`export const s = { fontFamily: 'var(--font-display)', fontSize: 'var(--text-xs)' };`))).toBe(1);
+    expect(countDisplayFaceSmall(tsx(`export const s = { font: '700 var(--text-xs)/1.2 var(--font-display)' };`))).toBe(1);
+    expect(countDisplayFaceSmall(tsx(`export const s = { fontFamily: 'Cinzel, serif', fontSize: '14px' };`))).toBe(1);
+    expect(countDisplayFaceSmall(tsx(`export const s = { fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)' };`))).toBe(0);
+    expect(countDisplayFaceSmall(tsx(`export const s = { fontFamily: 'var(--font-display)', fontSize: '1.5rem' };`))).toBe(0);
+    expect(countDisplayFaceSmall(tsx(`export const s = { font: '700 var(--text-xs)/1.2 var(--font-body)' };`))).toBe(0);
+    expect(countDisplayFaceSmall(css('.a { font-family: var(--font-display); font-size: var(--text-sm); }'))).toBe(1);
+    expect(countDisplayFaceSmall(css('.a { font-family: var(--font-display); font-size: var(--text-xl); }'))).toBe(0);
   });
 
   it('font-face-literal: one per string or CSS font-family naming a face', () => {

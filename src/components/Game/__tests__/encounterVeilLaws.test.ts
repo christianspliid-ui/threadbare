@@ -253,6 +253,12 @@ describe('Law 27 — the ceremonial prose serif lives in the token layer', () =>
     expect(() => tokenValue(read(CSS), 'font-prose')).not.toThrow();
   });
 
+  it('names Alegreya as the story face, Georgia only as its fallback (THR-1833, THR-1879)', () => {
+    const stack = tokenValue(read(CSS), 'font-prose');
+    expect(stack.replace(/["']/g, '').split(',')[0]?.trim()).toBe('Alegreya');
+    expect(stack).toMatch(/Georgia/);
+  });
+
   it('leaves no inline Georgia stack in the interrupt family', () => {
     for (const file of [VEIL, SHELL, STAGE_HEADER, PREMONITION]) {
       expect(readCode(file), `${file} still spells the serif stack inline`)

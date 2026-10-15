@@ -78,7 +78,7 @@ export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardPro
 
       {/* Domain affinities */}
       <div className="space-y-1.5">
-        <p className="section-heading">Domain Affinities</p>
+        <p className="section-heading">Domain affinities</p>
         <div className="flex flex-wrap gap-1.5">
           {domains.map(([domain, score]) => (
             <span

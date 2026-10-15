@@ -27,7 +27,7 @@ export function CosmologyPanel({ cosmology, seed, onCosmologyChange, onSeedChang
       border: '1px solid var(--border-medium)',
       borderRadius: 'var(--panel-radius)',
     }}>
-      <h2 className="section-heading">Creation Spheres</h2>
+      <h2 className="section-heading">Creation spheres</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
         {SPHERE_NAMES.map(sphere => (
           <SphereSlider key={sphere} sphere={sphere} value={cosmology[sphere]} onChange={handleSphereChange} />
@@ -62,7 +62,7 @@ export function CosmologyPanel({ cosmology, seed, onCosmologyChange, onSeedChang
       <div className="flex items-center gap-2">
         <label className="section-heading">Seed</label>
         <input type="number" value={seed} onChange={(e) => onSeedChange(parseInt(e.target.value) || 0)}
-          className="flex-1 rounded px-3 py-1.5 font-mono"
+          className="flex-1 rounded px-3 py-1.5 figures-tabular"
           style={{
             fontSize: 'var(--text-sm)',
             backgroundColor: 'var(--bg-raised)',

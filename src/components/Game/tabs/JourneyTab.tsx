@@ -192,7 +192,7 @@ export function JourneyTab({ card, knowledge, onOpenEntity, onOpenLocation, game
 
       {/* The work — what they are running now. */}
       <section>
-        <SectionHeading as="h2">The Work</SectionHeading>
+        <SectionHeading as="h2">The work</SectionHeading>
         {undertakings.length > 0 ? (
           <div className="space-y-2" data-testid="arc-undertakings">
             {undertakings.map(u => <UndertakingCard key={u.projectId} u={u} />)}
@@ -219,7 +219,7 @@ export function JourneyTab({ card, knowledge, onOpenEntity, onOpenLocation, game
       {/* The arc so far — persisted state only, oldest first. */}
       <section>
         <Tooltip id="ui.arc_strip">
-          <SectionHeading as="h2">The Arc So Far</SectionHeading>
+          <SectionHeading as="h2">The arc so far</SectionHeading>
         </Tooltip>
         {arc.length > 0 ? (
           <ol data-testid="arc-strip" className="space-y-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>

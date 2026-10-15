@@ -100,7 +100,7 @@ export function DoomBar({ definition, state, journeyLabel, locked = false }: Doo
               "how much?" (Law 13 amendment, 2026-08-12). `UNMADE` survives: it is a terminal
               state, not a proportion. */}
           {state.expired && (
-            <span className="font-mono ml-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+            <span className="figures-tabular ml-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
               UNMADE
             </span>
           )}

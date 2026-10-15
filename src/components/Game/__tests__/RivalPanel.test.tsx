@@ -173,7 +173,7 @@ describe('RivalPanel', () => {
 
   it('shows header when rivals are present', () => {
     render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
-    expect(screen.getByText(/Rival Gods/)).toBeInTheDocument();
+    expect(screen.getByText(/Rival gods/)).toBeInTheDocument();
   });
 
   it('THR-1780: a rival name opens its entry in place, and a second click closes it', () => {

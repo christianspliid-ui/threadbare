@@ -187,7 +187,7 @@ export function GuildQuestPanel({
         className="w-full flex items-center justify-between gap-2 text-left focus:outline-none"
         aria-expanded={!collapsed}
       >
-        <SectionHeading>Guild Postings</SectionHeading>
+        <SectionHeading>Guild postings</SectionHeading>
         <span
           aria-hidden="true"
           style={{

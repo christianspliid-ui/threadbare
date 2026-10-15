@@ -79,7 +79,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
     position: 'absolute',
     top: '-4px',
     right: '-4px',
-    fontFamily: 'monospace',
+    fontVariantNumeric: 'var(--figures-tabular)',
     fontSize: 'var(--text-xs)',
     lineHeight: 1,
     minWidth: '16px',

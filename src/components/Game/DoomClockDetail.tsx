@@ -427,7 +427,7 @@ function StatRow({ label, value, color, tooltipId }: { label: string; value: str
         {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
       </span>
       <span style={{
-        fontFamily: 'var(--font-mono, monospace)',
+        fontFamily: 'var(--font-body)', fontVariantNumeric: 'var(--figures-tabular)',
         color: color ?? 'var(--text-secondary)',
         fontWeight: 600,
         textAlign: 'right',

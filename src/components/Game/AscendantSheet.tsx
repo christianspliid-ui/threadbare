@@ -356,7 +356,7 @@ export function AscendantSheet({
 
           {/* Divine Nature — like agent Overview > Identity */}
           <section className="anim-fade-up-enter" style={{ animationDelay: '0ms' }}>
-            <SectionHeading as="h2">Divine Nature</SectionHeading>
+            <SectionHeading as="h2">Divine nature</SectionHeading>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               You are a god of{' '}
               <ProseKeyword sphere={primarySphere}>{capitalize(primarySphere)}</ProseKeyword>
@@ -553,7 +553,7 @@ export function AscendantSheet({
 
           {/* Divine Threads — like agent Bonds section */}
           <section className="anim-fade-up-enter" style={{ animationDelay: '150ms', animationFillMode: 'backwards' }}>
-            <SectionHeading as="h2">Divine Threads</SectionHeading>
+            <SectionHeading as="h2">Divine threads</SectionHeading>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {threadsToProseDescriptor(threadEdges.length)}
             </p>

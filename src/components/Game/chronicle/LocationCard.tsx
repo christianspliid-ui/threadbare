@@ -113,11 +113,8 @@ export const LocationCard = memo(function LocationCard({
         {flavorText && (
           <p
             style={{
-              fontFamily: 'var(--font-prose)',
+              font: 'var(--type-flavor)',
               color: 'var(--text-secondary)',
-              fontSize: 'var(--text-xs)',
-              fontStyle: 'italic',
-              lineHeight: 1.6,
               margin: '0 0 4px 0',
             }}
           >

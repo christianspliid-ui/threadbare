@@ -428,7 +428,7 @@ export function NudgePhaseShell({
           <div style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6 }}>
             Withheld from the player stage
           </div>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, fontFamily: 'monospace', fontSize: 'var(--text-xs)', color: TEXT_WARM }}>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, fontVariantNumeric: 'var(--figures-tabular)', fontSize: 'var(--text-xs)', color: TEXT_WARM }}>
             {phase.withheld.map((entry) => (
               <li key={entry.id} data-testid={`nudge-withheld-${entry.id}`}>
                 {entry.name} — {NUDGE_BLOCKED_REASONS[entry.blockedCode]} ({entry.blockedCode})

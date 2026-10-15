@@ -128,11 +128,8 @@ export const SoulCard = memo(function SoulCard({
       {flavorText && (
         <p
           style={{
-            fontFamily: 'var(--font-prose)',
+            font: 'var(--type-flavor)',
             color: 'var(--text-secondary)',
-            fontSize: 'var(--text-xs)',
-            fontStyle: 'italic',
-            lineHeight: 1.6,
             margin: '3px 0 0 0',
           }}
         >

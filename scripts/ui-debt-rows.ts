@@ -420,6 +420,42 @@ export function countFontFaceLiterals(source: CleanSource): number {
   return source.strings.filter((s) => NAMED_FACES.test(s)).length;
 }
 
+/** The Cinzel threshold (THR-1819's `CINZEL_MIN_PX`, THR-1833): names in Cinzel at 22 px and up only. */
+export const CINZEL_MIN_PX = 22;
+const ROOT_PX = 16;
+const DISPLAY_FACE = /var\(--font-display\)|\bCinzel\b/;
+const SMALL_STEP = /var\(--text-(?:xs|sm|base)\)/;
+
+/** True when a size value (or a `font` shorthand) names a size below `--text-lg` / 22 px. */
+function isSmallSize(value: string): boolean {
+  if (SMALL_STEP.test(value)) return true;
+  for (const m of value.matchAll(/(\d+(?:\.\d+)?)(px|rem)\b/g)) {
+    const px = m[2] === 'rem' ? Number(m[1]) * ROOT_PX : Number(m[1]);
+    if (px < CINZEL_MIN_PX) return true;
+  }
+  return false;
+}
+
+/**
+ * `display-face-small` (THR-1879 § 2) — one per style block (a JS object
+ * literal or a CSS rule body) that sets the display face (`var(--font-display)`
+ * or Cinzel) together with a size below `--text-lg`: `--text-xs|sm|base`, or a
+ * px/rem length under 22 px. Sanctioned: Cinzel at `--text-lg` and up, or the
+ * label rule (Alegreya Sans 700). A size set elsewhere (a class, a parent) is
+ * not seen — the row counts what a block says about itself.
+ */
+export function countDisplayFaceSmall(source: CleanSource): number {
+  let total = 0;
+  for (const block of source.blocks) {
+    const entries = Object.entries(block.props);
+    const face = entries.some(([k, v]) => /^(fontFamily|font-family|font)$/.test(k) && DISPLAY_FACE.test(v));
+    if (!face) continue;
+    const small = entries.some(([k, v]) => /^(fontSize|font-size|font)$/.test(k) && isSmallSize(v));
+    if (small) total += 1;
+  }
+  return total;
+}
+
 /** The type scale's defined steps (`--text-2xs` is NOT one — THR-1819). */
 const TYPE_SCALE_VAR = /var\(--text-(?:xs|sm|base|lg|xl|2xl)\)/g;
 const LENGTH = /\d(?:px|rem|pt|vw|vh)\b/;
@@ -606,6 +642,16 @@ export const UI_DEBT_ROWS: readonly UiDebtRow[] = [
     extensions: UI_TREE_EXTENSIONS,
     homes: [],
     count: countFontFaceLiterals,
+  },
+  {
+    id: 'display-face-small',
+    owner: 'THR-1879',
+    law: 'type system (THR-1833: Cinzel names at 22 px and up)',
+    sanctioned: 'Cinzel at var(--text-lg) and up, or Alegreya Sans 700 (the label rule)',
+    roots: ALL_UI,
+    extensions: UI_TREE_EXTENSIONS,
+    homes: [],
+    count: countDisplayFaceSmall,
   },
   {
     id: 'literal-font-size',

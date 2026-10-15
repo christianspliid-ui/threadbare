@@ -29,7 +29,7 @@ export function EventLog({ entries }: EventLogProps) {
         )}
         {[...entries].reverse().map((entry, i) => (
           <div key={i} className="flex items-start gap-2 text-xs">
-            <span className="text-amber-600/40 font-mono w-8 shrink-0 text-right">
+            <span className="text-amber-600/40 figures-tabular w-8 shrink-0 text-right">
               {entry.tick}
             </span>
             <span

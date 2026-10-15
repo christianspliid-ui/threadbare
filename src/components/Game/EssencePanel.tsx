@@ -73,12 +73,12 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
                   }}
                 >
                   <SphereIcon sphereName={sphere} size="0.8rem" className="w-3.5 text-center" />
-                  <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
+                  <span className="figures-tabular" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
                     {Math.round(value)}
                   </span>
                   {incomeSign && (
                     <span
-                      className="font-mono"
+                      className="figures-tabular"
                       style={{
                         fontSize: 'var(--text-xs)',
                         color: roundedNet! >= 0 ? 'var(--positive)' : 'var(--negative)',
@@ -107,7 +107,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
             Divine Essence
           </h2>
         </Tooltip>
-        <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+        <span className="figures-tabular" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
           {Math.round(totalEssence)} / {maxEssence * 8}
         </span>
       </div>
@@ -138,7 +138,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
                 />
               </div>
               <span
-                className="w-10 text-right font-mono"
+                className="w-10 text-right figures-tabular"
                 style={{
                   fontSize: 'var(--text-xs)',
                   color,
