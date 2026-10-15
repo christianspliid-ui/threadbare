@@ -438,10 +438,10 @@ remediation ticket or the build fails.
 - **Intent:** What the player had open when the world looked wrong is half the question; the bundle carries the same record the debug bridge serves, so the two can never disagree.
 - **Producer → Consumer:** Diagnostics & Incident Capture → Diagnostics & Incident Capture
 - **Module:** `src/components/Game/GameView.tsx`
-- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
+- **Production hits:** 7 total — 1 write, 3 read, 3 unclassified
 - **Write sites:** `src/components/Game/GameView.tsx`
 - **Read sites:** `src/components/Game/hooks/useIncidentCapture.ts`, `src/debug-bridge.ts`, `src/engine/incidentBundle.ts`
-- **Other hits:** `src/components/Game/giftDelivery.ts`, `src/data/ia-manifest.ts`
+- **Other hits:** `src/components/Game/giftDelivery.ts`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/ia-manifest.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. The composer already sat outside the `import.meta.env.DEV` guard — only its bridge *registration* is dev-gated — so the production capture path passes the very same callback the bridge registers, rather than a second composer that would drift. `incidentBundle`'s `ui` section stores it and `focus` reads its three selection ids to choose the neighbourhood to dump. Non-vacuous by `incidentBundle.test.ts`: the focus arm asserts the selected actor's neighbours resolve through `getAllEdgesForNode`, and a separate arm asserts a selection id that resolves to no node is marked `missing: true` rather than dropped — a row silently omitted is the failure this section exists to make visible.
 
 ### `agent-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1227,10 +1227,10 @@ exit
 - **Intent:** The player sees their turf and its edge (THR-1750). Hexes are not nodes, so `dominionProjection.ts` lends each land hex the band of the nearest top-level place within `DOMINION_HEX_FILL_RADIUS` (the terrain read past it) — a runtime cache owned by `ensureDominionProjection`, never stored on a tile. `dominionLensVM` feeds the HexMapV2 lens (dim, Sovereign glow, gold frontier) behind the key-1 switch; the band-drop badge reads the ledger `phaseDominion` writes.
 - **Producer → Consumer:** Spheres & Quintessence → Intelligence, Knowledge & Familiarity
 - **UL terms:** *Dominion*, *Dominion Band*
-- **Production hits:** 8 total — 2 write, 1 read, 5 unclassified
+- **Production hits:** 9 total — 2 write, 1 read, 6 unclassified
 - **Write sites:** `src/engine/dominionProjection.ts`, `src/engine/simulationRuntime.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/components/HexMapV2/scene/DominionLensLayer.ts`, `src/engine/dominionViewModels.ts`, `src/engine/views/lenses/lensView.ts`, `src/types/traces/dominion-traces.ts`
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/HexMapV2/scene/DominionLensLayer.ts`, `src/engine/dominionViewModels.ts`, `src/engine/views/lenses/lensView.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `dominion-band-scales-thread-yield-and-source-income` — 🔵 UNVERIFIED-OK
@@ -1475,10 +1475,10 @@ exit
 
 - **Intent:** A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast's price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.
 - **Producer → Consumer:** Encounters & Dilemmas → Essence & Divine Economy
-- **Production hits:** 49 total — 1 write, 2 read, 46 unclassified
+- **Production hits:** 50 total — 1 write, 2 read, 47 unclassified
 - **Write sites:** `src/engine/playerCastDispatch.ts`
 - **Read sites:** `src/components/Game/ascendant-bar/AscendantBar.tsx`, `src/components/Game/ascendant-bar/selectors.ts`
-- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts` +41 more
+- **Other hits:** `src/components/Game/AscendantSheet.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts` +42 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `faction-ambitions-drive-action` — 🟢 LIVE
@@ -1987,7 +1987,7 @@ exit
 - **Production hits:** 7 total — 2 write, 2 read, 3 unclassified
 - **Write sites:** `src/components/shared/downloadTextFile.ts`, `src/engine/incidentBundle.ts`
 - **Read sites:** `src/components/Game/hooks/useIncidentCapture.ts`, `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/debug/EncounterCacheView.tsx`, `src/components/Game/GameView.tsx`, `src/components/shared/index.ts`
+- **Other hits:** `src/components/Game/debug/EncounterCacheView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/shared/index.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. `useIncidentCapture` builds, serializes, downloads and toasts; `SettingsPanel`'s Trouble section is the control, wired through `GameViewTopBar`, and `__DEBUG.buildIncidentBundle()` calls the same assembler so the dev proof and the production path cannot diverge. The serializer is the load-bearing half: `JSON.stringify(state)` does not throw, it returns plausible JSON with the graph as `{"nodes":{},…}` and every state `Map` as `{}`, so the bundle is assembled by hand from public getters and the manifest self-check compares collections walked against collections rewritten, tagging `serialization.incomplete` rather than shipping silent. Non-vacuous by `incidentBundle.test.ts`, whose round-trip arm asserts *both* sides against the same live objects — that naive stringify really does lose the `visibilityMap` and the graph, and that the bundle really does carry them — so it fails against the trap rather than against a fixture that never had it. `downloadTextFile` also replaced the two duplicated inline Blob copies in `EncounterCacheView`.
 
 ### `incident-recorder-to-bundle` — 🟢 LIVE
@@ -1998,7 +1998,7 @@ exit
 - **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
 - **Write sites:** `src/engine/orchestrator.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/incidentBundle.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/incidentRecorder.ts`, `src/engine/itemGenerator/worldContext.ts`
+- **Other hits:** `src/components/Game/hooks/useGameDebugLevers.ts`, `src/engine/incidentRecorder.ts`, `src/engine/itemGenerator/worldContext.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. `recordTick` is called once per tick from the tick-end site beside `validateTickOutput` with `runtime` already in scope, and both rings are read by `incidentBundle`'s `events` and `census` sections plus `__DEBUG.getIncidentRecorderStats()`. Owned on `SimulationRuntime` rather than at module scope, per the load-bearing decision, so a second playthrough cannot inherit the first one's events. Non-vacuous by `src/engine/__tests__/incidentRecorder.test.ts` (wrap behaviour asserted past `INCIDENT_EVENT_RING_SIZE`, oldest-first order across the wrap, and a throwing census that increments `misses`, leaves the tick untouched, and still records the *next* tick — the last clause falsifies the guard rather than confirming it) and by `incidentBundle.test.ts`'s census/recorder assertion.
 
 ### `journey-keeps-encounter-target` — 🟢 LIVE
@@ -2114,10 +2114,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 38 total — 2 write, 1 read, 35 unclassified
+- **Production hits:** 39 total — 2 write, 1 read, 36 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +30 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +31 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
@@ -2300,10 +2300,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Offering*
 - **Module:** `src/engine/ascendantBeat.ts`
-- **Production hits:** 22 total — 1 write, 2 read, 19 unclassified
+- **Production hits:** 23 total — 1 write, 2 read, 20 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts` +14 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts` +15 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
 
 ### `one-namer-shared-primitives` — 🟢 LIVE
@@ -2372,10 +2372,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/playerReceipts.ts`
-- **Production hits:** 22 total — 1 write, 2 read, 19 unclassified
+- **Production hits:** 23 total — 1 write, 2 read, 20 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/data/receipt-content.ts`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +14 more
+- **Other hits:** `src/components/Game/ChapterView.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/components/Game/GameView.tsx` +15 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK
@@ -2451,10 +2451,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 401 total — 1 write, 1 read, 399 unclassified
+- **Production hits:** 402 total — 1 write, 1 read, 400 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +394 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +395 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2635,10 +2635,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
 - **Module:** `src/engine/phaseAscendantProgression.ts`
-- **Production hits:** 22 total — 2 write, 1 read, 19 unclassified
+- **Production hits:** 23 total — 2 write, 1 read, 20 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts` +14 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/ascendant-bar/selectors.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts` +15 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
 
 ### `rung-reads-attunement-marks` — 🟢 LIVE
@@ -2783,10 +2783,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 392 total — 1 write, 1 read, 390 unclassified
+- **Production hits:** 393 total — 1 write, 1 read, 391 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +385 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +386 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-prosperity-funds-armies` — 🟢 LIVE
@@ -2927,7 +2927,7 @@ exit
 - **Production hits:** 48 total — 3 write, 3 read, 42 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/GameView.tsx`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +37 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +37 more
 - **Verdict:** Verified 2026-09-28: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`. Re-verified 2026-09-24 under THR-1523 (unwatched builders step back): `census:undertakings` 150 ticks PASS both seeds — seed 42 3 pulled (1 swapped, 2 net-additive), 138 refusals across 116 mortals (was 215 per want), seed 99 4 pulled (1 swapped, 3 net-additive), 144 across 114 (was 235); at 300 ticks the class fires (seed 42 2 unwatched swaps, seed 99 1; 1 of 14 / 1 of 17 worldgen protagonists stepped back, kill criterion 30 %). `census:reachability -- --seeds 42,99,7` keeps merchant-expansion reachable on 2 of 3. `measure:tick-cost` medium steady within noise of main (seed 42 101 vs 109 ms, seed 99 152 vs 168 ms). Unit: `spotlightPullUnwatched.test.ts` (21). Re-verified 2026-09-28 under THR-1653 (graduation shares the budget): `readers/graduation-budget.ts 42,99 200` — deciders t0→t200 20→19 · 23→20, invariant bound 24 · 28 holds, 0 graduations on both arms (the curves are identical flag on and off); `readers/reach.ts 42,99 200` drawable fired 127 of 514 (floor 121); `readers/attended.ts 42,99 150` The First’s longest gap 25 · 21 ticks (ceiling 30), firing rows identical flag on and off. Unit: `npcGraduation.test.ts` THR-1653 block (4).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -3074,10 +3074,10 @@ exit
 - **Intent:** What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingCheckpoints.ts`
-- **Production hits:** 24 total — 3 write, 2 read, 19 unclassified
+- **Production hits:** 25 total — 3 write, 2 read, 20 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/undertakingMoments.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/MomentCard.tsx`
-- **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts`, `src/engine/agentLifecycle.ts` +14 more
+- **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts` +15 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 3. `MomentCard.tsx` renders the oldest unacknowledged interrupt-tier `UndertakingMomentRecord`; GameView fills its `pendingMoment` slot only while no other interrupt is open and renders the card only while that stays true, so collation (encounter first, never two modals) holds by construction rather than by a priority table. The card is in the interrupt registry (`interruptModalOpen`, `getDebugOpenModals` → `MomentCard`) so it auto-pauses with its cause named on the face. Acknowledge routes through `acknowledgeUndertakingMoment`, the queue's single writer, and traces `acknowledged`; the pop traces `opened`. Non-vacuous by `src/components/Game/__tests__/GameView-momentCard.test.tsx`, which renders the real GameView, follows every mortal with a live undertaking through the debug lever, drives real ticks through the tick bridge until an interrupt-tier record exists, and asserts the card is in `getDebugOpenModals`, that acknowledging it flips the record through the live state provider, and that the `opened` / `acknowledged` traces fired; plus `momentCardModel.test.ts` (chips are state-backed per class, the named-loss complication, the divine-hand chip, the forward drive link off a real outcome node, the action slot gated on a live project) and `MomentCard.test.tsx` (every class renders without numerals, acknowledge, the two-beat Inspire arm, an unaffordable verb fails inline). Browser proof at 1920×1080 on `?view=game&seeded&size=medium` via `__DEBUG.followAgent` + `__DEBUG.tick`, recorded on the closing PR.
 
 ### `undertaking-completion-grows-capability` — 🟢 LIVE
@@ -3191,7 +3191,7 @@ exit
 - **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
 - **Write sites:** `src/components/Game/actionCardModel.ts`
 - **Read sites:** `src/components/Game/ActionCard.tsx`, `src/components/shared/CardFace.tsx`, `src/components/StyleGuide/StyleGuide.tsx`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/shared/index.ts`
+- **Other hits:** `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/shared/index.ts`
 - **Verdict:** Verified 2026-09-10: THR-1002: `getTargetActionSlots` populates `templateId`, `crudType` and the hardest step's `reach` alongside the three THR-1002 readout fields; `ActionCard` renders `CardFace` through `actionCardModel` and has no layout of its own. `ActionCard.test.tsx` asserts no digit appears anywhere on a fully-populated card and no `[A-Z]{3,} · [A-Z]{3,}` type line survives; `ActionDrawer.test.tsx` asserts the same over the whole drawer plus no `\p{Extended_Pictographic}`. `NudgeCard.snapshot.test.tsx` (written before the extraction) still passes unchanged, which is the proof the nudge face was not moved to accommodate the action face.
 
 ### `world-events-mint-ambitions` — 🟢 LIVE
@@ -3259,10 +3259,10 @@ exit
 - **Producer → Consumer:** Attention, Chronicle & Narrative → Attention, Chronicle & Narrative
 - **UL terms:** *World object*
 - **Module:** `src/data/surface-registry.ts`
-- **Production hits:** 10 total — 2 write, 3 read, 5 unclassified
+- **Production hits:** 11 total — 2 write, 3 read, 6 unclassified
 - **Write sites:** `src/data/surface-registry.ts`, `src/hooks/useRefRouter.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts`, `src/debug-bridge.ts`
-- **Other hits:** `src/components/StyleGuide/StyleGuide.tsx`, `src/contexts/RefRouterContext.tsx`, `src/data/ia-manifest.ts`, `src/engine/worldPastWords.ts`, `src/hooks/useDetailNodeRefOpener.ts`
+- **Other hits:** `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/StyleGuide/StyleGuide.tsx`, `src/contexts/RefRouterContext.tsx`, `src/data/ia-manifest.ts`, `src/engine/worldPastWords.ts` +1 more
 - **Verdict:** Verified 2026-09-12: DetailModal + HoverCard mounted in GameView behind RefRouterProvider; the veil, the thread panel and notification click-through all route through it. surfaceRegistry.test.ts pins totality and reachability; refRouterAdapters.coverage.test.ts pins all three source vocabularies. __DEBUG.getSurfaceRegistry() reads the shipped record.
 
 ### `worldgen-seeds-the-living-world` — 🟢 LIVE
