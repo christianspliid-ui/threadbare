@@ -2095,7 +2095,13 @@ export interface MovementTrace extends TraceBase {
   category: 'movement';
   agentId: string;
   agentName: string;
-  event: 'step' | 'arrive' | 'sublocation_enter' | 'sublocation_return' | 'reroute' | 'depart';
+  event: 'step' | 'arrive' | 'sublocation_enter' | 'sublocation_return' | 'reroute' | 'depart' | 'arrival_goal';
+  /**
+   * For `arrival_goal` (THR-1930): whether the encounter the journey was for reached
+   * the board on arrival. Written however the decision then ends — another encounter,
+   * an undertaking, an appointment or idle — unlike the DECIDE timeline event's copy.
+   */
+  arrivalGoal?: 'kept' | 'dropped';
   fromLocationId?: string;
   fromLocationName?: string;
   toLocationId?: string;

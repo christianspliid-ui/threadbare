@@ -38,6 +38,7 @@ import { deriveCosmologyFromIdentity } from '../src/engine/remembrance';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
 import { getTimeline } from '../src/engine/encounterTimeline';
+import { enableTracing, disableTracing, isTracingEnabled, clearTraces, getTracesForAgent } from '../src/engine/traceBuffer';
 import type { MovementState } from '../src/types/movement';
 import { CONTENT_OBJECT_KINDS } from '../src/data/content-objects';
 
@@ -111,13 +112,18 @@ export function measureFirstRhythm(seed: number, ticks: number): FirstRhythm {
   const faults: JourneyFault[] = [];
   const journeyKeys = new Set<string>();
   let arrivalsKept = 0; let arrivalsDropped = 0;
-  let before = journey();
+
+  // Tracing is a passive sink (emitTrace returns early when off); it is cleared
+  // before each tick so the 500-entry ring never drops this tick's arrival.
+  const tracingWasOn = isTracingEnabled();
+  enableTracing();
 
   harvest();
   for (let i = 0; i < ticks; i++) {
     // The timeline is module-global and keyed by agent id, so a second seed in the
     // same process appends to the first's: read only what this tick wrote.
     const eventsBefore = firstId ? getTimeline(firstId).length : 0;
+    clearTraces();
     state = runTick(state, [], runtime); harvest();
     const now = journey();
     if (now && now.queued > 0 && now.goal) {
@@ -133,18 +139,24 @@ export function measureFirstRhythm(seed: number, ticks: number): FirstRhythm {
       if (e.phase === 'REROUTE' && e.reason === 'better_encounter' && now && now.queued > 0 && !now.goal) {
         faults.push({ tick: e.tick, kind: 'target-lost', detail: `${e.oldTarget} → ${e.newTarget}` });
       }
-      if (e.phase !== 'DECIDE' || !e.journeyGoal) continue;
-      if (e.journeyGoal === 'kept') { arrivalsKept++; continue; }
+    }
+    // The arrival verdict rides on a movement trace, written however the decision
+    // ends; the DECIDE timeline event carries it only when an encounter is picked,
+    // so an arrival that ends in an undertaking or idle would be invisible there.
+    for (const t of firstId ? getTracesForAgent(firstId) : []) {
+      if (t.category !== 'movement' || t.event !== 'arrival_goal') continue;
+      if (t.arrivalGoal === 'kept') { arrivalsKept++; continue; }
       arrivalsDropped++;
       // A goal that is genuinely gone (resolved by someone else, expired) is a fair
       // drop. One whose cache entry still stands at the destination was cut.
-      const goal = before?.goal; const dest = before?.dest;
+      const goal = t.encounterId; const dest = t.destinationId;
       if (goal && dest && runtime.encounterCache?.getEntriesForLocation(dest).some(x => x.templateId === goal)) {
-        faults.push({ tick: e.tick, kind: 'goal-cut', detail: `${goal} at ${dest}` });
+        faults.push({ tick: t.tick, kind: 'goal-cut', detail: `${goal} at ${dest}` });
       }
     }
-    before = now;
   }
+  clearTraces();
+  if (!tracingWasOn) disableTracing();
 
   const starts = [...new Set(seen.values())].sort((a, b) => a - b);
   let longestGap = 0; let gapFrom: number | null = null;
