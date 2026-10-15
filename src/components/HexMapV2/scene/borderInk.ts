@@ -47,12 +47,14 @@ export const RESERVED_DOMINION_GOLD = '#d4a040';
  * instead. Red and orange read as the reserved colours directly; magenta sits 33° from
  * the doom red and drifts inside 30° once mixed toward warm terrain (the test found it).
  * Agent rings and army banners keep the original heraldic colour — only the border
- * ink, which covers whole frontiers, is held off the reserved hues.
+ * ink, which covers whole frontiers, is held off the reserved hues. The targets keep the
+ * six inks spread across the wheel (95°, 150°, 190°, 209°, 258°, 300°) so two
+ * neighbouring Realms never share a hue family.
  */
 export const BORDER_INK_REMAP: Readonly<Record<string, string>> = {
-  '#e53e3e': '#2f855a', // red     → forest green
-  '#d53f8c': '#6b2c91', // magenta → plum
-  '#dd6b20': '#434190', // orange  → indigo
+  '#e53e3e': '#2f855a', // red     → forest green (150°)
+  '#d53f8c': '#9f2f9f', // magenta → violet (300°)
+  '#dd6b20': '#4a7a2a', // orange  → moss (95°)
 };
 
 // ─── Colour maths ────────────────────────────────────────────────────────────

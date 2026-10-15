@@ -6,7 +6,9 @@
  * Realm is the Realm's own faction node — the one whose `controls` edges the realm
  * projection reads — so the row carries that faction's index among the world's
  * factions, the same index an army of that faction carries (`map.armiesAndBattles`).
- * One index, so a Realm's border and its marching armies wear the same colour.
+ * One index for both, so a Realm's border starts from its armies' colour — except for
+ * the three heraldic colours border ink remaps off doom red and Dominion gold
+ * (`BORDER_INK_REMAP`), whose borders draw a fixed substitute.
  *
  * The heraldic palette, the red-and-gold remap and the terrain shading are the
  * scene's (`HexMapV2/scene/borderInk.ts`); this row carries the semantic key only.

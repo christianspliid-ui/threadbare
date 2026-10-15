@@ -18,9 +18,11 @@ import {
   RESERVED_DOOM_RED,
   capitalInk,
   holderHeraldicInk,
+  hueDistance,
   reservedHueClash,
   resolveBorderInk,
   rgbToHex,
+  rgbToHsl,
 } from '../borderInk';
 
 /** Every terrain colour any palette paints. */
@@ -64,6 +66,22 @@ describe('border ink — reserved hues', () => {
     for (const [from, to] of Object.entries(BORDER_INK_REMAP)) {
       expect(reservedHueClash(hexToThreeColor(to)), `${from} → ${to}`).toBeNull();
     }
+  });
+});
+
+describe('border ink — remap targets stand apart', () => {
+  it('each remap target is at least 30° from every other holder ink, so it reads as its own Realm', () => {
+    const inks = FACTION_HERALDIC_COLORS.map((_, i) => holderHeraldicInk(i)!);
+    const hue = (hex: string) => rgbToHsl(hexToThreeColor(hex)).h;
+    const close: string[] = [];
+    for (const target of Object.values(BORDER_INK_REMAP)) {
+      for (const other of inks) {
+        if (other === target) continue;
+        const d = hueDistance(hue(target), hue(other));
+        if (d < BORDER_INK.MIN_HUE_DISTANCE_DEG) close.push(`${target} is ${d.toFixed(0)}° from ${other}`);
+      }
+    }
+    expect(close).toEqual([]);
   });
 });
 
