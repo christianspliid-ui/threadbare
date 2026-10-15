@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-15 13:57 local (11:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-15 14:55 local (12:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,14 +28,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 19 ready.** One job finished this hour: [one backdrop and one Escape order for every dialog](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack) merged via [#2423](https://github.com/christianspliid-ui/threadbare/pull/2423) and is live. The one job in progress is [the first encounter coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev); a builder run started at 13:51.
+**Backed up: 19 ready.** One job finished this hour: [the first encounter coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev) merged via [#2424](https://github.com/christianspliid-ui/threadbare/pull/2424) and is live. The one job in progress is [Escape on an aftermath, and its exit and reactions staying on screen](https://linear.app/threadbare/issue/THR-1856/escape-on-an-aftermath-blanks-the-screen-and-the-aftermath-comes-back); it is built as [#2425](https://github.com/christianspliid-ui/threadbare/pull/2425) and will merge once its checks pass.
 
-- Newly queued: [labels across the kept screens go to bold sentence case, and small Cinzel goes away](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept), the label rule you confirmed on 14 Oct. *— from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-15f.md)*
+- Newly queued: [nine encounters wear a family tag their story does not earn](https://linear.app/threadbare/issue/THR-1941/nine-encounters-wear-a-family-tag-their-prose-does-not-earn-anomaly), the coverage run's first follow-up. *— from the [orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-15g.md)*
 - High, waiting: the [faction purse](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a) build plan.
 - Your six economy bugs from yesterday are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
 - Nothing is older than a week, and no job is parked.
 
 ## Health
 
-All green. Main's checks, including the heavy simulation tests, pass on the latest commit, and the live site serves it. No pull requests are waiting. The game speed is normal (119 ms per tick, 1% under the weekly median). The builder is working, not stalled. Every scheduled lane is on time, and the repo cleaner ran at 13:40. The silence check's gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
-
+All green. Main's checks, including the heavy simulation tests, pass on the latest commit, and the live site serves it. One pull request ([#2425](https://github.com/christianspliid-ui/threadbare/pull/2425)) is waiting on its checks and will merge on green. The game speed is normal (120 ms per tick, the same as the weekly median). The builder is working, not stalled. Every scheduled lane is on time, and the repo cleaner ran at 14:40. The silence check's gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
