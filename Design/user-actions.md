@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-15 10:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-15 11:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -32,6 +32,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-15: the encounter Stage's first slice is live** ([THR-1877](https://linear.app/threadbare/issue/THR-1877/plan-doc-the-encounter-stage-a-mortals-moment-plays-over-the-dimmed)): every moment now has one home list and one foreground. Merged via [#2419](https://github.com/christianspliid-ui/threadbare/pull/2419) and live.
 - **2026-10-15: the game-screen split is finished** ([THR-1881](https://linear.app/threadbare/issue/THR-1881/gameview-split-cut-the-game-screen-into-hosts-for-the-frame-map-stage)). Its last step merged via [#2417](https://github.com/christianspliid-ui/threadbare/pull/2417) and is live; the new map-first screen can now be built on it.
 - **2026-10-15: master craftsmen now take on harder work than experts on every test world.** [Batch 3](https://linear.app/threadbare/issue/THR-1840/master-everyday-batch-3-eight-more-master-encounters-one-per-reach) merged via [#2410](https://github.com/christianspliid-ui/threadbare/pull/2410), so [batch 4](https://linear.app/threadbare/issue/THR-1841/master-everyday-batch-4-eight-more-master-encounters-one-per-reach) closed as not needed ([#2412](https://github.com/christianspliid-ui/threadbare/pull/2412)).
 - **2026-10-15: a test guard no longer flips on any new content** ([THR-1930](https://linear.app/threadbare/issue/THR-1930/journeykeepsgoals-seed-42-never-quiet-for-long-guard-flips-on-any)). Merged via [#2411](https://github.com/christianspliid-ui/threadbare/pull/2411) and live; master batch 3 can now finish.
@@ -41,7 +42,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-14: master craftsmen get more work worthy of them** ([THR-1757](https://linear.app/threadbare/issue/THR-1757/master-work-reaches-masters-boards-the-caps-shortlist-drops-it-4-times)): eight new master encounters, one per craft. Merged via [#2405](https://github.com/christianspliid-ui/threadbare/pull/2405) and live.
 - **2026-10-14: heavy simulation tests are green on main again** ([THR-1927](https://linear.app/threadbare/issue/THR-1927/heavy-tests-red-on-main-for-two-days-two-simulation-tests-time-out-on)). Merged via [#2404](https://github.com/christianspliid-ui/threadbare/pull/2404) and live.
 - **2026-10-14: economy reads now land** ([THR-1862](https://linear.app/threadbare/issue/THR-1862/economy-reads-that-never-land-prosperity-is-0-100-but-four-readers)). Merged via [#2397](https://github.com/christianspliid-ui/threadbare/pull/2397) and live.
-- **2026-10-14: popups no longer steal the player's clicks** ([THR-1853](https://linear.app/threadbare/issue/THR-1853/recurs-after-fix-popups-steal-the-players-clicks-a-held-gift-enters-2)). Merged via [#2395](https://github.com/christianspliid-ui/threadbare/pull/2395) and live.
 
 ---
 

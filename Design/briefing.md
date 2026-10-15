@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-15 10:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-15 11:57 local (09:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,13 +29,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 23 ready** (same as last hour). The one job in progress is [the encounter Stage](https://linear.app/threadbare/issue/THR-1877/plan-doc-the-encounter-stage-a-mortals-moment-plays-over-the-dimmed): its first slice is [#2419](https://github.com/christianspliid-ui/threadbare/pull/2419), and a builder run started at 10:51 is working now.
+**Backed up: 22 ready.** [The encounter Stage's first slice](https://github.com/christianspliid-ui/threadbare/pull/2419) merged and is live. The one job in progress is now [the coverage map](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage): its pull request [#2420](https://github.com/christianspliid-ui/threadbare/pull/2420) opened at 11:45, and a builder run started at 11:31 is working on it.
 
 - High, waiting: three UI build plans ([the screen frame](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the), [the Inspector](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and), [map lenses and chrome](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and)).
+- Newly queued: [one backdrop and one Escape order for every dialog](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack).
 - Your six economy bugs from yesterday are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
-- **Older than a week:** [the coverage map](https://linear.app/threadbare/issue/THR-1723/content-categorization-runs-with-typesafe-first-run-encounter-coverage) (11 days), now free to build.
 
 ## Health
 
-- **[#2419](https://github.com/christianspliid-ui/threadbare/pull/2419) (encounter Stage, slice 1) still fails its required check** (Test · Typecheck · Build), 93 minutes after it opened; no fix has been pushed since 09:21. It is the builder's to fix, and a builder run is working now. Not your call.
-- Everything else is green. Main's checks, including the heavy simulation tests, pass on the latest commit. The game speed is normal (122 ms per tick, 3% over the weekly median). The live site is current. The builder is working, not stalled. The repo cleaner ran at 10:40. The silence check's gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
+All green. Main's checks, including the heavy simulation tests, pass on the latest commit. The live site serves it. The game speed is normal (122 ms per tick, 2% over the weekly median). The builder is working, not stalled. The repo cleaner ran at 11:40. The silence check's gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet, covered by the "open at login" ask. You sent no new Discord messages.
