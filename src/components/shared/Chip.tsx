@@ -163,7 +163,11 @@ function shellStyle(size: ChipSize, ink: Ink): CSSProperties {
     height: `${CHIP_HEIGHT_REM[size]}rem`,
     padding: `0 ${CHIP_PAD_X_REM[size]}rem`,
     borderRadius: 'var(--radius-chip)',
-    border: `1px solid ${ink.border}`,
+    // Longhands, never the `border` shorthand: a pressed keyword overrides `borderColor`, and
+    // React clears a longhand on unpress without re-applying a shorthand beside it.
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: ink.border,
     background: ink.background,
     color: ink.color,
     font: 'inherit',
