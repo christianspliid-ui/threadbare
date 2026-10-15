@@ -1,7 +1,7 @@
 ---
 name: content-judgments
 description: Where and how Threadbare uses Jev (TypeSafe's System One model) for typed judgments over authored content — narrator-mode screens, tag fit, claim-vs-write-set checks, coverage maps, fragment distinctness. Offline, advisory, never a gate. Load when a content pipeline step names it, when planning a content categorization run or audit (THR-1723), or on "Jev", "TypeSafe", "content judgments", "categorization run", "coverage map", "tag fit audit".
-last_validated_against: 2026-10-04
+last_validated_against: 2026-10-15
 validated_doctrine: prose@2
 ---
 
@@ -22,8 +22,21 @@ Do not write integration code from memory.
 
 ## Status
 
-No shared runner exists yet. **THR-1723** designs the first one (an encounter coverage map) and
-its persisted-artifact format. Until it ships:
+**The first shared runner is `npm run judge:encounters`** (THR-1723; code in
+`scripts/judge-encounters.ts` and `scripts/content-judgments/`, plan
+`Docs/plans/2026-10-14-thr-1723-encounter-coverage-map.md`). It judges every Encounter-kind
+entry on a blind state (prose only, no declared labels) and writes:
+
+- the artifact `Docs/ops/content-judgments/encounter-coverage.json` and
+- the report `Docs/ops/content-judgments/encounter-coverage.md`,
+
+both published to the **`ops` branch** (read with `git show origin/ops:<path>`), never to `main`.
+A re-run reuses every row whose `(contentHash, questionsVersion, model)` match the previous
+artifact, so only new or edited encounters cost money. `--dry-run --limit 1` prints one state and
+its question set with no network call. **Key unset → the runner prints
+`judge:encounters: skipped — TYPESAFE_API_KEY is not set`, exits 0 and writes nothing.**
+
+Outside that runner:
 
 - An ad-hoc screen from a pipeline session is allowed for a **small worklist** (one batch, tens of
   entries), and only when `TYPESAFE_API_KEY` is set in the environment.
@@ -64,7 +77,7 @@ this list is fine to try. Add the row here when it proves useful, rather than in
 | **Tag fit.** Per (entry, tag it wears): does the entry earn this tag as the catalog defines it? And per axis: which closed-vocabulary tag fits best, or none? | Noul, Choice | attachment-pipeline Pass 3, undertaking critic loop, encounter Pass 3 | `tag_vocabulary` proves the word exists, not that the entry earns it. Also the route to finding entries that should carry a DEAD tag. |
 | **Claim vs write set.** Per outcome or completion sentence, given the write set the work actually performs: does the sentence claim a change the work does not write? | Noul | undertaking critic loop (REVISE trigger 5), encounter aftermath and consequence-chip prose | The Law 56 write-set lexicon matches words, not claims. "The guild will remember this" names no lexicon word and still claims state. |
 | **Reach fit.** Per step: does the prose test the Reach the step declares, as the cosmology canon defines it? | Noul (or Choice over the 8 Reaches) | encounter-pipeline Pass 3, mislabel audits | Design conformance is a critic question today, so it is read once, per encounter, by hand. |
-| **Coverage map.** Per entry: theme, Reach and Sphere, rolled up into a grid of crowded and empty cells | Choice, Score | encounter-pipeline Step 0a ("assess what the corpus needs"), undertaking Stage 0 gap weighting | The kind × CRUD grid is structural. Nothing measures what the corpus is *about*. **THR-1723** builds this run. |
+| **Coverage map.** Per entry: theme, Reach and Sphere, rolled up into a grid of crowded and empty cells | Choice, Score | encounter-pipeline Step 0a ("assess what the corpus needs"), undertaking Stage 0 gap weighting | The kind × CRUD grid is structural. Nothing measures what the corpus is *about*. **THR-1723** built this run: `npm run judge:encounters`, artifact `origin/ops:Docs/ops/content-judgments/encounter-coverage.json`. |
 | **Fragment distinctness.** Pairs of composed samples from one skeleton: same scene in different words, or different scenes? | Noul | template-context-rewrite Pass 3 | `enumerateTemplateSurfaces` counts surfaces. It cannot tell whether they read differently. |
 
 **Corpus note:** the register scorer's corpus (`collectAuthoredProse`) does not sweep step

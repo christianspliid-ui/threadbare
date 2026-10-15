@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-10-05
+last_validated_against: 2026-10-15
 validated_doctrine: prose@2
 ---
 
@@ -223,9 +223,12 @@ constraints the story must live inside. A brief whose fiction was written first 
 mechanics fitted afterwards is rejected on sight (the ruling's words: *"clearly written
 first, and then you are trying to mash it into a game"*).
 
-To judge what the corpus needs, read the latest encounter coverage map when one exists. The run
-behind it is THR-1723, and its rules are in [`content-judgments`](../content-judgments/SKILL.md).
-Its empty theme × Reach × Sphere cells are input to the category pick, not a quota.
+To judge what the corpus needs, read the latest encounter coverage map:
+`git fetch origin ops --quiet && git show origin/ops:Docs/ops/content-judgments/encounter-coverage.md`.
+The run behind it is `npm run judge:encounters` (THR-1723), and its rules are in
+[`content-judgments`](../content-judgments/SKILL.md). Its empty and thin Reach × Activity,
+Reach × Walk-of-life and Sphere cells are input to the category pick, not a quota. When the
+file is absent (no run has published yet), proceed without it, as before.
 
 **Then** roll the premise — the hook feeds story candidates written inside the fixed
 design. Write 2–3 candidates from the rolled hooks and have review agents rank them
