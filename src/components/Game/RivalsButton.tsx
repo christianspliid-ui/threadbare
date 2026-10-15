@@ -30,7 +30,8 @@ export function RivalsButton({ definitions, states, onOpenChange }: RivalsButton
         <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
           <IconButton
             icon={<span>⚔</span>}
-            badge={definitions.length > 0 ? definitions.length : undefined}
+            badge={definitions.length}
+            badgeOf="rivals"
             active={open}
             /* THR-1451: Law 13 binds this string. An `aria-label` is prose spoken to a
                player, so `highest hostility: 73%` put a percentage in one player's ear

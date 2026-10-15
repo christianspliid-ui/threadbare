@@ -516,10 +516,10 @@ export const UI_DEBT_ROWS: readonly UiDebtRow[] = [
     id: 'raw-button',
     owner: 'THR-1821',
     law: 'Laws 26, 27',
-    sanctioned: 'Button / IconButton (Tabs.Tab, Chip when they land)',
+    sanctioned: 'Button / IconButton / Tabs.Tab / Chip',
     roots: ALL_UI,
     extensions: /\.tsx$/,
-    homes: [HOME('Button.tsx'), HOME('IconButton.tsx')],
+    homes: [HOME('Button.tsx'), HOME('IconButton.tsx'), HOME('Chip.tsx'), HOME('Tabs.tsx')],
     count: countRawButtons,
   },
   {
