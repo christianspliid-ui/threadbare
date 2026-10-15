@@ -268,7 +268,7 @@ describe('AgentProfileModal', () => {
   it('clicking Chronicle tab shows full backstory at transparent level', () => {
     render(<AgentProfileModal card={transparentCard} profile={transparentProfile} onClose={vi.fn()} />);
     clickTab('Chronicle');
-    expect(screen.getByText('Full Account')).toBeTruthy();
+    expect(screen.getByText('Full account')).toBeTruthy();
   });
 
   it('clicking Chronicle tab shows history timeline at transparent level', () => {
@@ -280,7 +280,7 @@ describe('AgentProfileModal', () => {
   it('clicking Chronicle tab shows disposition record at transparent level', () => {
     render(<AgentProfileModal card={transparentCard} profile={transparentProfile} onClose={vi.fn()} />);
     clickTab('Chronicle');
-    expect(screen.getByText('Interaction Record')).toBeTruthy();
+    expect(screen.getByText('Interaction record')).toBeTruthy();
   });
 
   it('closes on Escape key', () => {
