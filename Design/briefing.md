@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-15 21:58 local (19:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-15 22:57 local (20:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,13 +25,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 24 ready, one in progress.** The builder's 21:51 run is working on [four small faults from warm round 2](https://linear.app/threadbare/issue/THR-1858/four-small-faults-from-warm-round-2-a-chaos-price-drains-a-hidden-pool) (a hidden Chaos drain, odds that move without showing it, a dropdown that eats a click, a "Mute" chip that reads as a trait). [The template seams in player prose](https://linear.app/threadbare/issue/THR-1857/new-template-seams-in-player-prose-they-wants-kael-thornweaver-work) merged via [#2428](https://github.com/christianspliid-ui/threadbare/pull/2428).
+**Backed up: 24 ready, one in progress.** [Four small faults from warm round 2](https://linear.app/threadbare/issue/THR-1858/four-small-faults-from-warm-round-2-a-chaos-price-drains-a-hidden-pool) merged via [#2430](https://github.com/christianspliid-ui/threadbare/pull/2430) and are live. The builder's 22:31 run built [the icon, chip and tab primitives](https://linear.app/threadbare/issue/THR-1885/icon-chip-and-tabs-primitives-the-icon-registry-format-one-chip-in) ([#2431](https://github.com/christianspliid-ui/threadbare/pull/2431)); it merges itself when its checks pass.
 
 - High, waiting: the [faction purse](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a) and [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them) build plans; [mortal wealth](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money) joined behind them.
-- New this hour: five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- Since the last hour: five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Your six economy bugs from yesterday are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
 - Nothing is older than a week, and no job is parked.
 
 ## Health
 
-All green. Main's checks pass, and the live site is current (the latest commits touched only docs). No pull request is waiting. Every scheduled lane is on schedule. The game runs at 115 ms per tick, 5% below the weekly median of 121. The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+All green. Main's checks pass, and the live site is serving the latest commit. One pull request ([#2431](https://github.com/christianspliid-ui/threadbare/pull/2431)) is waiting on its checks and will merge on green. Every scheduled lane is on schedule, and the builder is shipping again. The game runs at 122 ms per tick, 1% above the weekly median of 121. The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
