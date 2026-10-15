@@ -317,7 +317,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `first` (1) | `firstMark.ts` | `THR-1644`, `THR-1755` |
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
-| `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
+| `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-1857`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
 | `fragment` (1) | `fragmentResolution.ts` | `THR-1635`, `THR-475`, `THR-573` |
 | `game` (1) | `gameInit.ts` | — |
 | `god` (2) | `godCardProgressionCheck.ts`, `godProgression.ts` | `THR-1765`, `THR-1794`, `THR-1811` |
@@ -326,7 +326,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `group` (1) | `groupShape.ts` | `THR-1297` |
 | `groups` (16) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupCommand.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-1438`, `THR-731`, `THR-732`, `THR-74` |
 | `guild` (2) | `guildJoinFunnel.ts`, `guildSeeding.ts` | `THR-1632`, `THR-1640` |
-| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-1616`, `THR-1631`, `THR-188` |
+| `hex` (7) | `hexActionBridge.ts`, `hexActorIndex.ts`, `hexGrid.ts`, `hexMovementPath.ts`, `hexRegion.ts`, `hexVignette.ts`, `hexZoom.ts` | `TB-046`, `THR-1616`, `THR-1631`, `THR-1857`, `THR-188` |
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
 | `hold` (1) | `holdStanding.ts` | `THR-1211`, `THR-1448` |
@@ -407,7 +407,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `secrets` (2) | `secretsFavorsConsequences.ts`, `secretsFromResolution.ts` | `THR-30`, `THR-724` |
 | `seed` (3) | `seedAttachments.ts`, `seedLivingWorld.ts`, `seedOnlySequels.ts` | `THR-1435`, `THR-1437`, `THR-1526`, `THR-1630`, `THR-1654` |
 | `settlement` (1) | `settlementNotable.ts` | `THR-1630`, `THR-1655` |
-| `settlementgenome` (11) | `settlementGenome/archetypes.ts`, `settlementGenome/constants.ts`, `settlementGenome/cultureBaseline.ts`, `settlementGenome/index.ts`, `settlementGenome/infrastructure.ts`, `settlementGenome/materialize.ts`, `settlementGenome/reachMenu.ts`, `settlementGenome/runGenome.ts`, `settlementGenome/sphereMenu.ts`, `settlementGenome/types.ts`, `settlementGenome/vitality.ts` | `THR-1344` |
+| `settlementgenome` (11) | `settlementGenome/archetypes.ts`, `settlementGenome/constants.ts`, `settlementGenome/cultureBaseline.ts`, `settlementGenome/index.ts`, `settlementGenome/infrastructure.ts`, `settlementGenome/materialize.ts`, `settlementGenome/reachMenu.ts`, `settlementGenome/runGenome.ts`, `settlementGenome/sphereMenu.ts`, `settlementGenome/types.ts`, `settlementGenome/vitality.ts` | `THR-1344`, `THR-1857` |
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
 | `simulation` (2) | `simulation.ts`, `simulationRuntime.ts` | `TB-086`, `TB-087` |
 | `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | `THR-1562`, `THR-1580` |
@@ -419,6 +419,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `step` (2) | `stepCast.ts`, `stepResolutionCore.ts` | `THR-1292`, `THR-1670` |
 | `strands` (1) | `strands.ts` | — |
 | `strategic` (7) | `strategicActionCandidates.ts`, `strategicActionLifecycle.ts`, `strategicActionScoring.ts`, `strategicGraphOps.ts`, `strategicKindReachability.ts`, `strategicPresentation.ts`, `strategicTelemetry.ts` | `THR-1309`, `THR-1329` |
+| `subject` (1) | `subjectVerbAgreement.ts` | `THR-1857` |
 | `sublocation` (2) | `sublocation.ts`, `sublocationShape.ts` | `THR-1177`, `THR-1183`, `THR-1193` |
 | `support` (1) | `supportRoleWords.ts` | `THR-1041` |
 | `survey` (1) | `surveyProseComposer.ts` | `THR-415` |
@@ -452,4 +453,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 108 tick phases · 215 engine domains · 683 modules._
+_Counts: 28 registered subsystems (2 dormant) · 108 tick phases · 216 engine domains · 684 modules._
