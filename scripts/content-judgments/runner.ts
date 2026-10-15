@@ -94,6 +94,20 @@ export function estimateInputTokens(states: readonly BuiltEncounterState[]): num
   return Math.ceil(chars / ESTIMATE_CHARS_PER_TOKEN);
 }
 
+/**
+ * A labels file is either the bare label array or `{ readerPrompt, labels }`, so the prompt
+ * the reader was given travels into the artifact's `calibration` block (plan Decision 5:
+ * "written into the artifact's `calibration` block with the prompt used").
+ * An object without a string `readerPrompt` is passed through as-is and fails validation.
+ */
+export function unwrapLabelsFile(parsed: unknown): { labels: unknown; readerPrompt: string | null } {
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+    const env = parsed as { readerPrompt?: unknown; labels?: unknown };
+    if (typeof env.readerPrompt === 'string') return { labels: env.labels, readerPrompt: env.readerPrompt };
+  }
+  return { labels: parsed, readerPrompt: null };
+}
+
 async function pool<T>(items: readonly T[], size: number, work: (item: T) => Promise<void>): Promise<void> {
   let next = 0;
   const lanes = Array.from({ length: Math.min(size, items.length) }, async () => {
@@ -132,12 +146,14 @@ export async function runEncounterCoverage(
 
   // Read the labels before any paid call, so a bad path costs nothing.
   let labels: CalibrationLabel[] | null = null;
+  let readerPrompt = '(see calibration labels file)';
   if (args.calibrationPath) {
     let problem: string | null;
     try {
-      const parsed: unknown = io.readCalibrationLabels(args.calibrationPath);
-      problem = calibrationLabelsProblem(parsed);
-      if (!problem) labels = parsed as CalibrationLabel[];
+      const envelope = unwrapLabelsFile(io.readCalibrationLabels(args.calibrationPath));
+      problem = calibrationLabelsProblem(envelope.labels);
+      if (!problem) labels = envelope.labels as CalibrationLabel[];
+      if (envelope.readerPrompt) readerPrompt = envelope.readerPrompt;
     } catch (err) {
       problem = err instanceof Error ? err.message : String(err);
     }
@@ -217,7 +233,7 @@ export async function runEncounterCoverage(
     thresholds = result.thresholds;
     calibration = {
       reader: 'blind Claude reader subagent',
-      readerPrompt: '(see calibration labels file)',
+      readerPrompt,
       sampleIds: selectCalibrationSample(ordered),
       labels,
       tables: result.tables,

@@ -169,6 +169,18 @@ describe('judge:encounters runner (THR-1723)', () => {
     expect(logs.join('\n')).toContain('expected a JSON array of labels');
   });
 
+  it('records the reader prompt from a { readerPrompt, labels } file in the calibration block (THR-1850)', async () => {
+    const label = (id: string) => ({ id, reach: 'iron', activity: 'duel', walk_of_life: 'combat', spheres: {} });
+    const { io } = harness({
+      readCalibrationLabels: () => ({ readerPrompt: 'You are a blind reader.', labels: [label('enc.a'), label('enc.b')] }),
+    });
+    const res = await runEncounterCoverage(states, args(['--calibration', 'labels.json']), io);
+    expect(res.exitCode).toBe(0);
+    expect(res.artifact?.calibration?.readerPrompt).toBe('You are a blind reader.');
+    expect(res.artifact?.calibration?.labels).toHaveLength(2);
+    expect(res.artifact?.thresholds.calibratedAt).toBe('2026-10-15T00:00:00.000Z');
+  });
+
   it('drops carried thresholds when the model or question version changed', async () => {
     const calibrated = { ...PLACEHOLDER_THRESHOLDS, reach: 0.42, calibratedAt: '2026-10-01T00:00:00.000Z' };
     const base = { questionsVersion: 1, model: 'jev-1.13.0', rows: [], thresholds: calibrated, calibration: null };
