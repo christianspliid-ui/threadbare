@@ -121,12 +121,9 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
               {/* God voice */}
               <p
                 style={{
-                  fontFamily: 'var(--font-prose)',
-                  fontStyle: 'italic',
-                  fontSize: 'var(--text-xs)',
+                  font: 'var(--type-flavor)',
                   color: 'rgba(212,168,122,0.7)',
                   marginBottom: '12px',
-                  lineHeight: 1.6,
                 }}
               >
                 {fillProse(godVoiceOverride ?? currentDilemma.godVoice, candidate.name, locationName)}
@@ -135,11 +132,9 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
               {/* Setup prose */}
               <p
                 style={{
-                  fontFamily: 'var(--font-prose)',
-                  fontSize: '1rem',
+                  font: 'var(--type-body-prose)',
                   color: 'rgba(200,190,170,0.85)',
                   marginBottom: '24px',
-                  lineHeight: 1.7,
                 }}
               >
                 {fillProse(currentDilemma.setup, candidate.name, locationName)}
@@ -155,15 +150,12 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
                     data-testid={`dilemma-choice-${choice.id}`}
                     className="text-left cursor-pointer transition-all duration-300"
                     style={{
-                      fontFamily: 'var(--font-prose)',
-                      fontStyle: 'italic',
-                      fontSize: 'var(--text-xs)',
+                      font: 'var(--type-flavor)',
                       color: 'rgba(180,170,160,0.7)',
                       padding: '12px 16px',
                       borderRadius: '4px',
                       background: 'rgba(255,255,255,0.02)',
                       border: '1px solid rgba(255,255,255,0.05)',
-                      lineHeight: 1.6,
                     }}
                     onMouseEnter={e => {
                       e.currentTarget.style.color = 'rgba(212,168,122,0.9)';
@@ -187,7 +179,7 @@ export function TestingBeat({ candidate, dilemmas, locationName, godVoiceOverrid
           <div
             className="absolute top-6 right-8"
             style={{
-              fontFamily: 'var(--font-prose)',
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-xs)',
               color: 'rgba(160,140,180,0.3)',
               letterSpacing: '0.1em',

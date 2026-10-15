@@ -97,7 +97,7 @@ export function InfoPanel({ tile }: InfoPanelProps) {
         <p style={{ fontSize: 'var(--text-base)', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
           {TERRAIN_DISPLAY[tile.terrain] || tile.terrain}
         </p>
-        <p className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+        <p className="figures-tabular" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
           Hex ({tile.coord.col}, {tile.coord.row})
         </p>
       </div>

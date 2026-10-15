@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { Modal } from '../shared/Modal';
 
 interface CreditsModalProps {
@@ -6,6 +7,11 @@ interface CreditsModalProps {
 }
 
 const TECH_CREDITS = ['React', 'Three.js', 'TypeScript', 'Vite'];
+
+const SECTION_LABEL: CSSProperties = {
+  font: 'var(--type-section-label)',
+  color: 'var(--text-tertiary)',
+};
 
 export function CreditsModal({ open, onClose }: CreditsModalProps) {
   return (
@@ -49,18 +55,14 @@ export function CreditsModal({ open, onClose }: CreditsModalProps) {
             A game by the creator
           </p>
 
-          {/* Technology section */}
+          {/* Technology section — the label rule (THR-1879 § 2) */}
           <p
             style={{
-              fontFamily: 'var(--font-display)',
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              fontSize: 'var(--text-sm)',
-              letterSpacing: '0.1em',
+              ...SECTION_LABEL,
               margin: '0 0 var(--space-2)',
             }}
           >
-            Built With
+            Built with
           </p>
           <ul
             style={{
@@ -85,6 +87,28 @@ export function CreditsModal({ open, onClose }: CreditsModalProps) {
               </li>
             ))}
           </ul>
+
+          {/* Fonts (THR-1879 § 8; the licence is public/fonts/OFL.txt) */}
+          <p
+            style={{
+              ...SECTION_LABEL,
+              margin: '0 0 var(--space-2)',
+            }}
+          >
+            Fonts
+          </p>
+          <p
+            data-testid="credits-fonts"
+            style={{
+              color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-base)',
+              margin: '0 0 var(--space-6)',
+            }}
+          >
+            {/* The three faces the game ships (THR-1833); JSX text, not a face literal. */}
+            Cinzel, Alegreya and Alegreya Sans, under the SIL Open Font Licence 1.1.
+          </p>
 
           {/* Separator */}
           <div

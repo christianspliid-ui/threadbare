@@ -134,7 +134,7 @@ function GlowTile({ name, core, mid, accent, deep, form }: SphereColors) {
       >
         {name}
       </span>
-      <span className="text-gray-500 font-mono text-[10px] mt-1">{core}</span>
+      <span className="text-gray-500 figures-tabular text-[10px] mt-1">{core}</span>
       <span className="text-gray-600 text-[9px] mt-1 text-center max-w-[100px] leading-tight">
         {form}
       </span>

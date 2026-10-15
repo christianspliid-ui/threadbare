@@ -73,11 +73,8 @@ export function LairMonsterCard({ monster, onSelect }: LairMonsterCardProps) {
       <div
         data-testid="lair-monster-sentence"
         style={{
-          fontFamily: 'var(--font-prose)',
-          fontStyle: 'italic',
-          fontSize: 'var(--text-xs)',
+          font: 'var(--type-flavor)',
           color: 'var(--text-secondary)',
-          lineHeight: 1.4,
         }}
       >
         {monster.sentence.map((segment, i) =>
@@ -109,7 +106,7 @@ export function LairMonsterCard({ monster, onSelect }: LairMonsterCardProps) {
         <span
           data-testid="lair-monster-clock-word"
           style={{
-            fontFamily: 'var(--font-prose)',
+            fontFamily: 'var(--font-body)',
             fontStyle: 'italic',
             fontSize: 'var(--text-xs)',
             color: 'var(--text-primary)',
@@ -126,7 +123,7 @@ export function LairMonsterCard({ monster, onSelect }: LairMonsterCardProps) {
                   type="button"
                   className="focus-ring"
                   data-testid="lair-monster-killer"
-                  style={{ ...LINK_STYLE, fontFamily: 'var(--font-prose)', minHeight: 0, padding: 0, cursor: 'pointer' }}
+                  style={{ ...LINK_STYLE, fontFamily: 'var(--font-body)', minHeight: 0, padding: 0, cursor: 'pointer' }}
                   onClick={() => onSelect(monster.slainById!)}
                 >
                   {monster.slainBy}

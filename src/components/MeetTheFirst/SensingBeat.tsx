@@ -204,7 +204,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
               {/* One line, not two: the portrait art paints its own title near its
                   foot, and a taller block would climb over it. */}
               {isFocused && (candidate.name || candidate.epithet) && (
-                <p style={{ fontFamily: 'var(--font-prose)', fontSize: 'var(--text-xs)', color: 'rgba(200,190,170,0.85)', margin: '0 0 6px' }}>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: 'rgba(200,190,170,0.85)', margin: '0 0 6px' }}>
                   {candidate.name && (
                     <span
                       data-testid={`sensing-candidate-name-${idx}`}
@@ -221,10 +221,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
               )}
               <p
                 style={{
-                  fontFamily: 'var(--font-prose)',
-                  fontStyle: 'italic',
-                  fontSize: 'var(--text-xs)',
-                  lineHeight: 1.7,
+                  font: 'var(--type-flavor)',
                   color: 'rgba(200,190,170,0.85)',
                   maxWidth: '600px',
                   margin: '0 auto',

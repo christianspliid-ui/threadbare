@@ -184,7 +184,7 @@ export function SimulationControls({
         <span className="text-2xl">{SEASON_ICONS[season] ?? '🌍'}</span>
         <div className="text-center">
           <p className="font-semibold capitalize" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{season}</p>
-          <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>Year {year}</p>
+          <p className="figures-tabular" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>Year {year}</p>
         </div>
       </div>
 
@@ -220,7 +220,7 @@ export function SimulationControls({
               disabled={speed === SPEED_STEPS[0]}
               aria-label="Decrease speed"
             />
-            <span className="flex-1 text-center font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{speed}×</span>
+            <span className="flex-1 text-center figures-tabular" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{speed}×</span>
             <IconButton
               icon={<span>▶</span>}
               size="sm"

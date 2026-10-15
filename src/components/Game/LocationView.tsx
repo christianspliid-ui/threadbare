@@ -737,7 +737,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
       <div className="flex-1 flex gap-6 p-6 min-h-0">
         {/* Left: Agents Present */}
         <div className="flex-1 min-w-0">
-          <SectionHeading count={agents.length}>Agents Present</SectionHeading>
+          <SectionHeading count={agents.length}>Agents present</SectionHeading>
 
           {agents.length === 0 ? (
             <p
@@ -1292,10 +1292,8 @@ export const LocationView = memo(function LocationView({
               testId="location-past-line"
               style={{
                 marginTop: '4px',
-                fontSize: 'var(--text-sm)',
-                fontFamily: 'var(--font-prose)',
+                font: 'var(--type-flavor)',
                 color: 'var(--text-secondary)',
-                fontStyle: 'italic',
                 maxWidth: '720px',
               }}
             />
@@ -1540,7 +1538,7 @@ export const LocationView = memo(function LocationView({
 
               return (
                 <>
-                  <SectionHeading>Agents Present</SectionHeading>
+                  <SectionHeading>Agents present</SectionHeading>
 
                   {spotlightAgents.length === 0 ? (
                     <p

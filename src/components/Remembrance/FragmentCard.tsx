@@ -64,11 +64,8 @@ export function FragmentCard({
         <p
           className="leading-relaxed transition-colors duration-500"
           style={{
-            fontFamily: 'var(--font-prose)',
-            fontStyle: 'italic',
-            fontSize: 'var(--text-xs)',
+            font: 'var(--type-flavor)',
             color: isActive ? `${accentColor}cc` : 'rgba(180,170,160,0.5)',
-            lineHeight: '1.7',
           }}
         >
           {prose}

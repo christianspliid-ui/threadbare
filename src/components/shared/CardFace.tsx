@@ -796,7 +796,7 @@ export function CardFace({
         )}
 
         {designerView && model.designerLine && (
-          <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontFamily: 'monospace' }}>
+          <span style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, fontVariantNumeric: 'var(--figures-tabular)' }}>
             {model.designerLine}
           </span>
         )}

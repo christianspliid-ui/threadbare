@@ -26,11 +26,8 @@ export const ExplorationHook = memo(function ExplorationHook({ text }: Explorati
       </span>
       <p
         style={{
-          fontFamily: 'var(--font-prose)',
+          font: 'var(--type-flavor)',
           color: 'var(--text-tertiary)',
-          fontSize: 'var(--text-xs)',
-          fontStyle: 'italic',
-          lineHeight: 1.7,
           margin: 0,
         }}
       >

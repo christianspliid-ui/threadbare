@@ -206,7 +206,7 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
       {/* Bestowed Powers */}
       {hasKnowledge(card.knowledgeLevel, 'recognised') && (
         <section data-testid="modal-gifts-burdens">
-          <SectionHeading as="h2">Bestowed Powers</SectionHeading>
+          <SectionHeading as="h2">Bestowed powers</SectionHeading>
           {visiblePowers.length > 0 ? (
             visiblePowers.map(renderVignette)
           ) : (

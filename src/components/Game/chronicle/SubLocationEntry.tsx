@@ -70,11 +70,8 @@ export const SubLocationEntry = memo(function SubLocationEntry({
       {flavorText && (
         <p
           style={{
-            fontFamily: 'var(--font-prose)',
+            font: 'var(--type-flavor)',
             color: 'var(--text-tertiary)',
-            fontSize: 'var(--text-xs)',
-            fontStyle: 'italic',
-            lineHeight: 1.5,
             margin: '2px 0 0 0',
           }}
         >
