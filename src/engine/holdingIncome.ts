@@ -7,8 +7,9 @@
  * `WEALTH_*_INCOME` constants (`src/engine/wealth.ts`) have existed since the Gold
  * Reach design and were read by no phase at all. This is their reader.
  *
- * **It pays mortals, never faction treasuries.** Faction income stays with
- * `phaseFactionActions`; this pass exists because a *mortal's* holdings yielded
+ * **It pays mortals, never faction treasuries.** Factions are paid by the
+ * `faction_purse` phase (THR-1931, `factionPurse.ts`), which runs right after this one
+ * and reuses its toll formula; this pass exists because a *mortal's* holdings yielded
  * nothing, and a `controls` edge from a faction node is skipped explicitly rather
  * than by accident (the same conflation THR-1428 R5 fixes in `armySupply`).
  *

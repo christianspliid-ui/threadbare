@@ -144,6 +144,8 @@ import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
 import { phaseHoldingIncome } from './holdingIncome';
+import { phaseFactionPurse } from './factionPurse';
+import { buildRealmProjection } from './realmProjection';
 import { phaseSublocations } from './phaseSublocations';
 import { phaseSettlementPromotion } from './phaseSettlementPromotion';
 import { phaseSettlementReassessment } from './phaseSettlementReassessment';
@@ -253,6 +255,7 @@ import {
   touchStructure,
   ensureEncounterCache,
   ensureDistanceMatrix,
+  ensureRealmProjection,
   applyEncounterCacheUpdate,
 } from './simulationRuntime';
 import { assignFringeCultureToFoundedPlaces } from './cultureGenerator';
@@ -3751,6 +3754,20 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     phaseEventCounts['holding_income'] = r.eventDelta;
   } catch {
     // fail-soft: nobody's day is ruined by an unpayable holding (NFP #4)
+  }
+
+  // Phase 6.629: Faction purse (THR-1931). Every faction's day — income from what it
+  // holds, then its armies' upkeep. Right after holding income, on the same daily gate.
+  // Land rent reads the session's cached realm projection (never a rebuild per tick).
+  try {
+    const getProjection = runtime
+      ? () => ensureRealmProjection(runtime, s.graph, s.tiles, s.tick)
+      : () => buildRealmProjection(s.graph, s.tiles);
+    const r = runInlinePhase('faction_purse', s, () => phaseFactionPurse(s, getProjection));
+    s = r.next;
+    phaseEventCounts['faction_purse'] = r.eventDelta;
+  } catch {
+    // fail-soft: a faction's purse never stops the world turning (NFP #4)
   }
 
   // Phase 6.625: Condition Decay (tick-based removal of transient condition traits)

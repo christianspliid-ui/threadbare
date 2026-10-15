@@ -1111,6 +1111,19 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Investiture',
     desc: 'Your divine court: the mortals you have raised to act in your name. Open it to see who serves you, and in what seat.',
   },
+  // THR-1931 — the faction purse (THR-1870 § 4). Words only; never an amount.
+  'ui.econ.means.faction': {
+    label: 'Means',
+    desc: 'How long this faction could pay its soldiers from what it holds now. A faction with no soldiers is judged by its coin alone.',
+  },
+  'ui.econ.pays_tax': {
+    label: 'Pays tax',
+    desc: 'This town pays its tax to this faction each day. Where two powers hold a town, only one collects.',
+  },
+  'ui.econ.yields': {
+    label: 'Yields',
+    desc: 'What this place produces pays this faction each day. Taking the place takes the income with it.',
+  },
   'ui.home_seat': {
     label: 'Seat',
     desc: 'The settlement you have taken as your home in the world. It feeds your essence every day you hold it. Click the name to find it on the map.',

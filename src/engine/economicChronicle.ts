@@ -284,6 +284,10 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     resource_scarcity: 'A Scarcity Bites',
     resource_glut: 'A Glut Descends',
     holding_income: 'A Holding Pays',
+    purse_broke: 'The Pay Stops',
+    purse_broke_bare: 'An Empty Strongbox',
+    army_unpaid_desertion: 'An Army Melts Away',
+    purse_recovered: 'Coin Returns',
   };
   return titles[trigger];
 }

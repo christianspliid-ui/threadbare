@@ -21,6 +21,7 @@ import type { ArmySizeCategory, ArmyObjective, ArmyState } from '../types/army';
 import {
   ARMY_SPAWN_IRON_TIER_MIN,
   ARMY_SPAWN_GOLD_TIER_MIN,
+  ARMY_CREATION_GOLD_COST,
   MAX_ARMIES_PER_FACTION,
   ARMY_COHESION_BASE,
   ARMY_MAINTENANCE_COST,
@@ -36,6 +37,10 @@ import type { ReachDomain } from '../types/traits';
 import { findAllShortestPaths } from './pathfinding';
 import { emitTrace } from './traceBuffer';
 import { reportWar, captureArmySide } from './armyNotifications';
+import { readWealth, applyTreasuryDelta } from './wealth';
+import { upkeepOf } from './factionPurse/upkeep';
+import { isPurseFaction } from './factionPurse/income';
+import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
 
 // ─── Army tiers ─────────────────────────────────────────────────────────
 
@@ -93,7 +98,22 @@ export function isEligibleForArmySpawn(
   const goldTier = armyReachTier(graph, factionId, 'gold');
   if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return false;
 
+  // THR-1931 — raising costs coin: the purse must cover the raise and its first day.
+  if (!canAffordArmy(graph, factionId, determineSizeCategory(goldTier))) return false;
+
   return true;
+}
+
+/**
+ * THR-1931 — whether a faction's purse covers `ARMY_CREATION_GOLD_COST` plus the first
+ * day's upkeep of an army of this size. Always true with the purse off, and for a
+ * faction outside the purse economy (monster lairs).
+ */
+export function canAffordArmy(graph: WorldGraph, factionId: string, size: ArmySizeCategory): boolean {
+  if (!FACTION_PURSE_ENABLED) return true;
+  const faction = graph.getNode(factionId);
+  if (!isPurseFaction(faction)) return true;
+  return readWealth(faction.properties) >= ARMY_CREATION_GOLD_COST + upkeepOf(size);
 }
 
 // ─── Commander Selection ────────────────────────────────────────────────
@@ -201,6 +221,10 @@ export function selectArmyObjective(
  * Creates an actor node with armyState, wires edges to commander/faction/location,
  * and emits ArmyLifecycleTrace.
  *
+ * `opts.charge` (THR-1931): an ambition or agenda raise pays `ARMY_CREATION_GOLD_COST`
+ * from the faction purse. Worldgen spawns and encounter warhosts pass nothing and pay
+ * nothing — a warhost's price was paid in its scene. Every army costs upkeep regardless.
+ *
  * Returns the army node ID, or null on failure.
  */
 export function spawnArmy(
@@ -208,6 +232,7 @@ export function spawnArmy(
   factionId: string,
   commanderId: string,
   ambitionNodeId: string,
+  opts: { charge?: boolean } = {},
 ): string | null {
   const graph = state.graph;
 
@@ -327,6 +352,25 @@ export function spawnArmy(
       headcount: ARMY_SIZE_HEADCOUNT[size],
       cohesion: ARMY_COHESION_BASE[size],
     });
+
+    // THR-1931 — the raise cost, charged after the army exists so a failed spawn costs nothing.
+    if (opts.charge && FACTION_PURSE_ENABLED && isPurseFaction(factionNode)) {
+      const wealthAfter = applyTreasuryDelta(readWealth(factionNode.properties), -ARMY_CREATION_GOLD_COST);
+      factionNode.properties.wealth = wealthAfter;
+      const raised = graph.getNode(armyId);
+      const raisedState = raised?.properties.armyState as ArmyState | undefined;
+      // The raise pays its first day: the army starts paid through today.
+      if (raised && raisedState) raised.properties.armyState = { ...raisedState, paidThroughTick: state.tick };
+      emitTrace({
+        tick: state.tick,
+        category: 'economy.purse.army_raised',
+        summary: `${factionNode.name ?? factionId} paid ${ARMY_CREATION_GOLD_COST} to raise ${armyName}`,
+        factionId,
+        armyId,
+        cost: ARMY_CREATION_GOLD_COST,
+        wealthAfter,
+      });
+    }
 
     // War news (THR-1564): reported here, where the army is raised, not read back off
     // the trace above — traces are off in normal play. Fail-soft on a bare worldgen state.

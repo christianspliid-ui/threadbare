@@ -17,6 +17,9 @@ import { emitTrace } from './traceBuffer';
 import { reportWar, captureArmySide } from './armyNotifications';
 import { deriveSupplyTier, readArmySupply, readArmySupplyMax } from './armySupply';
 import { countFactionSettlementHoldings, deriveFactionProsperity } from './factionNetwork';
+import { isPurseFaction } from './factionPurse/income';
+import { recordPurseDesertion } from './factionPurse';
+import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS } from '../data/faction-purse-constants';
 import {
   STRAINED_SUPPLY_ATTRITION_PENALTY,
   STARVING_SUPPLY_ATTRITION_PENALTY,
@@ -110,7 +113,7 @@ export function phaseArmyAttrition(state: GameState): void {
       // Check if faction can pay maintenance
       const memberOfEdges = state.graph.getOutgoingEdges(armyNode.id, 'member_of');
       const factionId = memberOfEdges[0]?.target;
-      const isUnderfunded = checkUnderfunded(state, factionId, armyState.maintenanceCost);
+      const isUnderfunded = checkUnderfunded(state, factionId, armyState.maintenanceCost, armyState);
 
       // Check if hex has an active monster lair (cleared lairs don't count)
       const hasMonsterTerritory = locationId
@@ -195,6 +198,11 @@ export function phaseArmyAttrition(state: GameState): void {
 
       // Force disbandment at Cohesion 0
       if (cohesionAfter <= 0) {
+        // THR-1931: an unpaid army that breaks up is the purse's desertion — the next
+        // pay day chronicles it (for a faction inside the player's attention).
+        if (isUnderfunded && factionId && FACTION_PURSE_ENABLED) {
+          recordPurseDesertion(state.graph, factionId, armyNode.name ?? armyNode.id, state.tick);
+        }
         disbandArmy(state, armyNode.id, 'attrition');
       }
     } catch (err) {
@@ -219,16 +227,28 @@ export function phaseArmyAttrition(state: GameState): void {
  * off the land and is never underfunded here; without that early return turning this on
  * would starve every horde. A realm that has lost every settlement is the exception: it is
  * underfunded, so losing its land costs its army.
+ *
+ * THR-1931: with the faction purse on, the predicate is the purse's — underfunded means
+ * "the purse did not pay this army on its last pay day": `tick − (paidThroughTick ??
+ * raisedTick) > PURSE_CYCLE_TICKS`. The prosperity predicate below is kept behind
+ * `FACTION_PURSE_ENABLED = false` and still governs monster factions, which the purse
+ * does not pay.
  * Exported for focused tests.
  */
 export function checkUnderfunded(
   state: GameState,
   factionId: string | undefined,
   _maintenanceCost: number,
+  armyState?: Pick<ArmyState, 'raisedTick' | 'paidThroughTick'>,
 ): boolean {
   if (!factionId) return true; // No faction = no funding
   const factionNode = state.graph.getNode(factionId);
   if (!factionNode) return true;
+
+  if (FACTION_PURSE_ENABLED && armyState && isPurseFaction(factionNode)) {
+    const paidThrough = armyState.paidThroughTick ?? armyState.raisedTick ?? 0;
+    return state.tick - paidThrough > PURSE_CYCLE_TICKS;
+  }
 
   // A landless realm has lost the land that paid for its army; any other landless faction
   // (a horde, a guild or temple paid from elsewhere) is not starved by this check.

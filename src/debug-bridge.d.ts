@@ -1363,6 +1363,31 @@ export interface DebugBridge {
    */
   getRealmProjection: () => Promise<unknown>;
   /**
+   * THR-1931 — the faction purse. One faction's last pay day (income by source, the two
+   * largest named sources, upkeep owed / paid, armies paid / unpaid, `brokeSinceTick`)
+   * plus its `wealth` and written `meansBand` — the same record the faction sheet's
+   * Purse panel reads. `null` when the id is not a faction the purse has reached
+   * (monster lairs; a save before the opening purse). Before the first pay day (tick 12)
+   * it carries only `wealth` and `meansBand` from the opening purse.
+   */
+  getFactionPurse: (factionId: string) => Promise<{
+    tick?: number;
+    income?: { townTax: number; placeYield: number; landRent: number; tolls: number; guildWork: number; guildTaxIn: number; guildTaxOut: number };
+    topSources?: { kind: 'town' | 'place' | 'land' | 'lane' | 'guild'; nodeId: string }[];
+    paysTo?: string | null;
+    upkeepOwed?: number;
+    upkeepPaid?: number;
+    armiesPaid?: string[];
+    armiesUnpaid?: string[];
+    brokeSinceTick?: number | null;
+    taxHolderOf?: string[];
+    paidBy?: string[];
+    wealth: number;
+    meansBand: 'Destitute' | 'Getting by' | 'Comfortable' | 'Wealthy' | 'Magnate';
+  } | null>;
+  /** THR-1931 — every faction's last pay day, keyed by faction id (empty before tick 12). */
+  getPurseLedger: () => Promise<Record<string, unknown>>;
+  /**
    * THR-1155 — hand a town to a Realm the way a won siege does, and report what moved:
    * `{ locationId, fromFactionId, toFactionId, structuralCacheVersion }`, or `null` when
    * either ref does not resolve (one `console.warn`, never a throw).

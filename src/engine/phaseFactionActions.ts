@@ -44,7 +44,7 @@ import {
   BOUNTY_REWARD,
   FACTION_ACTION_HISTORY_MAX,
 } from '../types/factionAction';
-import { readWealth, applyWealthDelta } from './wealth';
+import { readWealth, applyTreasuryDelta } from './wealth';
 import { emitTrace } from './traceBuffer';
 import { spawnFactionBands } from './groups/bandSpawner';
 import {
@@ -307,7 +307,7 @@ function executeCommissionQuest(
   // Deduct treasury
   const treasury = readWealth(faction.properties);
   state.graph.updateNode(faction.id, {
-    properties: { wealth: applyWealthDelta(treasury, -COMMISSION_QUEST_COST) },
+    properties: { wealth: applyTreasuryDelta(treasury, -COMMISSION_QUEST_COST) },
   });
 
   void rng(); // consume one RNG value for determinism consistency
@@ -662,7 +662,7 @@ function executeIssueBounty(
   // Deduct treasury
   const treasury = readWealth(faction.properties);
   state.graph.updateNode(faction.id, {
-    properties: { wealth: applyWealthDelta(treasury, -BOUNTY_COST) },
+    properties: { wealth: applyTreasuryDelta(treasury, -BOUNTY_COST) },
   });
 
   // Apply "hunted" condition to target

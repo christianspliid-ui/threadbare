@@ -25,6 +25,7 @@ import {
   SCHISM_WEIGHT_COHESION,
   SCHISM_WEIGHT_SPREAD,
   SCHISM_WEIGHT_DISSENT,
+  SCHISM_WEIGHT_PURSE,
 } from '../data/game-config';
 import { mulberry32 } from '../lib/prng';
 import type { SimulationRuntime } from './simulationRuntime';
@@ -80,6 +81,7 @@ export function phaseSchismResolution(state: GameState, runtime?: SimulationRunt
           cohesion: SCHISM_WEIGHT_COHESION,
           spread: SCHISM_WEIGHT_SPREAD,
           dissent: SCHISM_WEIGHT_DISSENT,
+          purse: SCHISM_WEIGHT_PURSE,
         },
       );
 
