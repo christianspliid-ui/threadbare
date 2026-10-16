@@ -6678,7 +6678,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-10-16',
       evidence:
-        'THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a three-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege\'s vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seed 42 medium over 1080 ticks: a crown forms, oath income 15% and 34% of the crowns\' full income at day 60, one-layer held on every tick, no negative wealth.',
+        'THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a three-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege\'s vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seeds 42, 99 and 7 medium over 1080 ticks: a crown forms on every seed, oath income 15–34% of the crowns\' full income at day 60, one-layer held on every tick, no negative wealth.',
     },
   },
   {

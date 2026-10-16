@@ -19,6 +19,7 @@ import { fealtyView, type FealtyPart } from '../../engine/crown/fealtySentences'
 import { FEALTY_LIST_FOLD } from '../../data/crown-constants';
 import { Tooltip } from '../shared/Tooltip';
 import { EntityLink } from '../shared/EntityLink';
+import { Button } from '../shared/Button';
 
 /** Renders a sentence's parts; a link followed by punctuation stays glued to it. */
 function Parts({ parts }: { parts: FealtyPart[] }) {
@@ -55,7 +56,7 @@ export function CrownLine({ factionId, graph }: { factionId: string; graph: Worl
           className="cursor-help"
           role="term"
           data-testid="faction-crown-chip"
-          style={{ fontSize: 'var(--text-xs)', padding: '1px 6px', borderRadius: '3px', border: '1px solid var(--accent-gold, #d4af37)', color: 'var(--accent-gold, #d4af37)', whiteSpace: 'nowrap' }}
+          style={{ fontSize: 'var(--text-xs)', padding: '1px 6px', borderRadius: '3px', border: '1px solid var(--accent-gold)', color: 'var(--accent-gold)', whiteSpace: 'nowrap' }}
         >
           Crown
         </span>
@@ -113,14 +114,15 @@ export function FealtySection({ factionId, graph, renderSection }: {
                 </span>
               ))}
               {liege.moreWords && !expanded && (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   data-testid="faction-fealty-more"
                   onClick={() => setExpanded(true)}
-                  style={{ alignSelf: 'flex-start', background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--accent-gold, #d4af37)', font: 'inherit', fontSize: 'var(--text-xs)' }}
+                  style={{ alignSelf: 'flex-start' }}
                 >
                   and {liege.moreWords} more
-                </button>
+                </Button>
               )}
             </div>
           )}

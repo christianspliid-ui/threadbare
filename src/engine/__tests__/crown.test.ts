@@ -327,6 +327,19 @@ describe('the sheet\'s words', () => {
     expect(fealtyView(g, THIEVES)).toEqual({ crown: null, vassal: null, liege: null });
   });
 
+  it('the vassal list folds past eight, the rest spelled out in words', () => {
+    const g = world();
+    const s = stateAt(g, 24);
+    for (let i = 0; i < 10; i++) {
+      g.addNode({ id: `guild_x${i}`, name: `Guild ${i}`, type: 'actor', properties: { actorType: 'faction', factionClass: 'guild', guildType: 'miners', wealth: 0 } });
+      expect(swearOathForDebug(s, `guild_x${i}`, R, 'persuaded')).toBe(true);
+    }
+    const liege = fealtyView(g, R).liege!;
+    expect(liege.vassals).toHaveLength(10);
+    expect(liege.moreWords).toBe('two');
+    expect(fealtyView(g, R).crown?.count).toBe('ten factions owe it fealty.');
+  });
+
   it('the Purse sentence names the liege only when fealty was paid today', () => {
     const g = world();
     expect(fealtyPurseSentence(g, { fealtyOut: 0, fealtyTo: R })).toBeNull();

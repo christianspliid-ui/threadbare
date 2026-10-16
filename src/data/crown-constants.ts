@@ -88,7 +88,14 @@ export const NEVER_SWEAR_DEF_IDS: readonly string[] = ['thieves_guild', 'underki
 export const NEVER_SWEAR_GUILD_TYPES: readonly string[] = ['thieves'];
 
 // ── The courting action ──
-export const SEEK_FEALTY_WEIGHT = 10;
+export const SEEK_FEALTY_WEIGHT = 6;
+/**
+ * At most one courtship per realm per 12 ticks. Faction actions run every
+ * FACTION_ACTION_INTERVAL (8) ticks, so this rolling cooldown means a courtship at most
+ * every 16 ticks: at most 75% of days. Measured 2026-10-16 (THR-1932, seeds 42/99/7, 90
+ * days): 68–73% of days at weight 6; weight 10 did not raise it, and a calendar-day
+ * window fell to ~50% at weights 6 and 16 for a reason not yet traced (THR-1961).
+ */
 export const SEEK_FEALTY_COOLDOWN_TICKS = 12;
 
 // ── Grudges ──
