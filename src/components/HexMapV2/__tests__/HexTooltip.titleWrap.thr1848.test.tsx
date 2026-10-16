@@ -48,4 +48,12 @@ describe('HexTooltip title line (THR-1848)', () => {
     expect(topOf(longBox)).toBeLessThan(topOf(shortBox));
     expect(topOf(longBox)).toBeLessThan(base.screenY - INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y);
   });
+
+  it('counts the river suffix, which wraps with the title', () => {
+    const topOf = (c: HTMLElement) => parseFloat((c.firstElementChild as HTMLElement).style.top);
+    const { container: dry } = render(<HexTooltip {...base} terrainKey="temperate_forest" />);
+    const { container: wet } = render(<HexTooltip {...base} terrainKey="temperate_forest" hasRiver />);
+    // "Temperate Forest · River" is past one line of the 180 px terrain-only box.
+    expect(topOf(wet)).toBeLessThan(topOf(dry));
+  });
 });
