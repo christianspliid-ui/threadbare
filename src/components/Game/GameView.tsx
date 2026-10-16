@@ -38,7 +38,7 @@ import {
 import { useScry } from './hooks/useScry';
 import { useAgentInteraction, unthreadedAgentTierName } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
-import { resolvePlaceHex } from './map/mapFocusTargets';
+import { resolvePlaceHex } from '../../engine/views/map/focusTargets';
 import { readView } from '../../engine/views/readView';
 import { mapAgentsSelector } from '../../engine/views/map/agents';
 import { mapThreadLinesSelector } from '../../engine/views/map/threadLines';

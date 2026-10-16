@@ -26,7 +26,7 @@ import { CAMERA_CONSTANTS } from '../../HexMapV2/camera/D3ZoomCamera';
 import { MapControls } from '../../HexMapV2/chrome/MapControls';
 import { MapCornerChrome } from '../../HexMapV2/chrome/MapCornerChrome';
 import { MAP_PAN_DIRECTIONS, type MapCommandId } from '../../../data/map-commands';
-import { resolveFirstHex, resolveSeatHex } from './mapFocusTargets';
+import { resolveFirstHex, resolveSeatHex } from '../../../engine/views/map/focusTargets';
 import { useMapHotkeys } from './useMapHotkeys';
 import { MapLensSwitch } from '../../HexMapV2/chrome/MapLensSwitch';
 import type { MapLensSwitchProps } from '../../HexMapV2/chrome/MapLensSwitch';

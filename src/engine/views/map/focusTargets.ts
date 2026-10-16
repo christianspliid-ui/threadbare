@@ -1,5 +1,5 @@
 /**
- * mapFocusTargets.ts — the hexes the map camera centres on (THR-1900, plan THR-1878 D6, D8).
+ * focusTargets.ts — the hexes the map camera centres on (THR-1900, plan THR-1878 D6, D8).
  *
  * - `resolvePlaceHex` — a place's hex, climbing `parentLocationId` so a sublocation finds its
  *   settlement's hex (THR-1792; the one climb the eye icons, the seat button and debug
@@ -10,8 +10,8 @@
  * Fail-soft: a missing node, a missing hex or no god returns null — the caller falls back.
  */
 import type { HexCoord } from '../../../types';
-import type { WorldGraph } from '../../../engine/graph';
-import { getFirstId } from '../../../engine/meetingEncounter';
+import type { WorldGraph } from '../../graph';
+import { getFirstId } from '../../meetingEncounter';
 
 /** How far up `parentLocationId` a place may climb to find a hex (sublocation → settlement). */
 const PLACE_HEX_MAX_DEPTH = 3;
