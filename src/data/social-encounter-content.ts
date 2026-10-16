@@ -290,7 +290,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         failureAfterimage:
           'At the final commitment, something closes in {target}\'s expression. ' +
           'Not anger — doubt, which is worse. {target:They} decline{target:s} and it is the right call. ' +
-          '{name} can see that now and wish{s} {they} had seen it twenty minutes earlier.',
+          '{name} can see that now and wishes {they} had seen it twenty minutes earlier.',
         criticalSuccessAfterimage:
           'The new member joins with more conviction than the script called for. ' +
           'By the end they are not just committed — they are eager, which is a different resource entirely. ' +

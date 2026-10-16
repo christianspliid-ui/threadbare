@@ -27,16 +27,16 @@ export const NAME_SUBJECT_ADVERBS = ['either', 'also', 'still', 'never', 'always
 
 const ADVERB_ALT = NAME_SUBJECT_ADVERBS.join('|');
 
-/** `<name token> [adverb] <verb>{s}`. */
+/** `<name token> [adverb] <verb>{s}` — or `{es}` for a sibilant stem (THR-1945). */
 export const NAME_SUBJECT_VERB_S = new RegExp(
-  `(\\{(?:${NAME_TOKEN_ALT})\\}\\s+(?:(?:${ADVERB_ALT})\\s+)?[A-Za-z][A-Za-z'-]*)\\{s\\}`,
+  `(\\{(?:${NAME_TOKEN_ALT})\\}\\s+(?:(?:${ADVERB_ALT})\\s+)?[A-Za-z][A-Za-z'-]*)\\{(e?s)\\}`,
   'g',
 );
 
-/** Bind `{s}` after a name subject to "s"; leave pronoun-agreement `{s}` untouched. */
+/** Bind `{s}` / `{es}` after a name subject to "s" / "es"; leave pronoun agreement untouched. */
 export function bindNameSubjectVerbs(text: string): string {
-  if (!text.includes('{s}')) return text;
-  return text.replace(NAME_SUBJECT_VERB_S, '$1s');
+  if (!text.includes('{s}') && !text.includes('{es}')) return text;
+  return text.replace(NAME_SUBJECT_VERB_S, '$1$2');
 }
 
 /**

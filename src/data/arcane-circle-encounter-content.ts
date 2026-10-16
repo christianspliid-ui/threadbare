@@ -873,7 +873,7 @@ export const ARCANE_CIRCLE_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           '{name} extends {their} awareness across the planar boundary — not entering, ' +
           'not opening, just looking. The adjacent plane resolves in partial images: ' +
           'geometry that has nothing to do with space, colors that don\'t have names in ' +
-          'any language {they\'ve} studied{s}, and something that becomes aware of ' +
+          'any language {they\'ve} studied, and something that becomes aware of ' +
           'the looking a moment after {name} begins. It doesn\'t approach. ' +
           'It simply waits, with the patience of something that has no concept of time, ' +
           'to see what {name} does next.',

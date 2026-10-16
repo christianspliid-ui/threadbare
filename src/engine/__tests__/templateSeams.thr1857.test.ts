@@ -18,6 +18,7 @@ import {
   PRONOUN_SUBJECT_HARDCODED_S,
 } from '../subjectVerbAgreement';
 import { resolveForeshadowingPlaceholders } from '../foreshadowing/genericFallback';
+import { enrichProse } from '../proseEnrichment';
 import { WorldGraph } from '../graph';
 import { findOrCreateLocationAtHex, WAYPOINT_LOCATION_ID_PREFIX } from '../hexMovementPath';
 import { genomeSublocationName } from '../settlementGenome/materialize';
@@ -25,8 +26,13 @@ import { composeWaypointName, WAYPOINT_DEFAULT_GROUND } from '../../data/waypoin
 
 const DATA_DIR = join(__dirname, '..', '..', 'data');
 const COORDINATE_NAME = /\(\s*-?\d+\s*,\s*-?\d+\s*\)/;
-/** THR-1945: `the|a|an <noun> <verb>{s|es}` — a noun subject carrying actor agreement. */
-const NOUN_SUBJECT_AGREEMENT = /\b(?:[Tt]he|[Aa]n?) [A-Za-z'-]+ [a-z]+\{(?:s|es)\}/g;
+/**
+ * THR-1945: `the|a|an <noun> <verb>{s|es}`, `the <noun>'s <noun> <verb>{s|es}` (the
+ * apostrophe may be escaped in source, `master\'s`), or `{cast:x}` / `{ally:x}` + verb —
+ * a noun subject carrying actor agreement.
+ */
+const NOUN_SUBJECT_AGREEMENT =
+  /\b(?:[Tt]he|[Aa]n?) [A-Za-z'-]+(?:\\?'s [A-Za-z-]+)? [a-z]+\{(?:s|es)\}|\{(?:cast|ally):[^}]+\} [a-z]+\{(?:s|es)\}/g;
 
 function dataFiles(): Array<{ file: string; text: string }> {
   return readdirSync(DATA_DIR)
@@ -79,6 +85,22 @@ describe('name-subject verb agreement (THR-1857)', () => {
     expect('The captain nod{s} at {name}'.match(NOUN_SUBJECT_AGREEMENT)).not.toBeNull();
     expect('the stone go{es} in'.match(NOUN_SUBJECT_AGREEMENT)).not.toBeNull();
     expect('{They} nod{s}, and the captain nods'.match(NOUN_SUBJECT_AGREEMENT)).toBeNull();
+    expect("The master\\'s workshop run{s} off".match(NOUN_SUBJECT_AGREEMENT)).not.toBeNull();
+    expect('{cast:factor} sign{s} in ink'.match(NOUN_SUBJECT_AGREEMENT)).not.toBeNull();
+  });
+
+  it('{es} binds after a name and resolves by pronoun everywhere else (THR-1945)', () => {
+    expect(bindNameSubjectVerbs('{name} watch{es} the gate')).toBe('{name} watches the gate');
+    expect(bindNameSubjectVerbs('{They} watch{es}')).toBe('{They} watch{es}');
+    const ctx = (s: string) => ({
+      agentName: 'Kael', agentId: 'agent_kael', archetypeId: 'rebel', cultureName: 'The Aurelians',
+      primaryReach: 'iron', titles: [], notableArtifacts: [], strongAllies: [], rivals: [],
+      currentLocationName: 'Hawkgate', completedPhases: [], beatHistory: [],
+      pronouns: { they: s ? 'she' : 'they', them: s ? 'her' : 'them', their: s ? 'her' : 'their', s },
+    });
+    const line = '{name} watch{es} the gate; {they} go{es} in.';
+    expect(enrichProse(line, ctx('') as never)).toBe('Kael watches the gate; they go in.');
+    expect(enrichProse(line, ctx('s') as never)).toBe('Kael watches the gate; she goes in.');
   });
 
   it('the lint itself catches the shapes it guards', () => {

@@ -39,6 +39,7 @@ function fill(text: string, name: string, p: RitePronouns, extra: Record<string,
     .replace(/\{They\}/g, p.They)
     .replace(/\{them\}/g, p.them)
     .replace(/\{s\}/g, p.s)
+    .replace(/\{es\}/g, p.s ? 'es' : '')
     .replace(/\{does\}/g, p.does)
     .replace(/\{(\w+)\}/g, (match, key: string) => extra[key] ?? match);
 }

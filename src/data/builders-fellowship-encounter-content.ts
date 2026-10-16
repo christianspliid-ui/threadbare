@@ -232,7 +232,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'The site has been staked by the commissioner\'s surveyor and found adequate. ' +
           '{name} run{s} a level line from the primary corner stake to the secondary and watch{s} ' +
           'the bubble. The surveyor was working to a less precise tolerance than the Fellowship requires. ' +
-          '{?has_artifact}The transit {name} carries catch{es} what the eye misses: a half-degree ' +
+          '{?has_artifact}The transit {name} carries catches what the eye misses: a half-degree ' +
           'fall toward the east over eighteen feet, which is not nothing when the building runs ' +
           'three storeys.{/has_artifact}' +
           '{?no_artifact}The level string tells {name} what the ground wants to tell — that what ' +
@@ -263,7 +263,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'adding the next. No air pockets. No dry patches at the perimeter where the mix got too ' +
           'close to the form edge and sanded out. ' +
           '{?has_artifact}Good aggregate makes the consistency reliable — the mix {name} carries ' +
-          'go{s} in the same way every time, corner to center.{/has_artifact} ' +
+          'goes in the same way every time, corner to center.{/has_artifact} ' +
           'The building that rises above this will have its own crises. This part does not have to be one of them.',
         successAfterimage:
           'The surface sets level to the marked datum. ' +
@@ -373,7 +373,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         narrativeTemplate:
           'The iron stock looks clean under normal light. {name} knock{s} a test piece into ' +
           'the forge to read it under heat: the color tells {name} what the metal is hiding. ' +
-          'Good stock burn{s} orange and settle{s}; impure stock blush{es} in patches and smell{s} of sulfur. ' +
+          'Good stock burns orange and settles; impure stock blushes in patches and smells of sulfur. ' +
           '{?has_artifact}The quality tongs {name} carries let {them} position the test piece ' +
           'precisely — reading the grain requires controlled contact, not guesswork.{/has_artifact}' +
           '{?no_artifact}The smithy\'s standard tongs will do if {name} account{s} for the slop ' +
@@ -529,7 +529,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'What the deed says and what the lot is are two different arguments. ' +
           '{?has_artifact}The surveying rod and transit {name} carries turn this into a formal ' +
           'record rather than an approximation — the ground drops half a degree toward the ' +
-          'north over twenty feet, which matter{s} when the drainage channel in the street was ' +
+          'north over twenty feet, which matters when the drainage channel in the street was ' +
           'designed for a narrower frontage.{/has_artifact}' +
           '{?no_artifact}Without formal instruments, {name} work{s} the lot by stretched line ' +
           'and plumb bob. The answers are honest if the process is careful; it just takes longer.{/no_artifact} ' +
@@ -565,7 +565,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'Clean plans delivered. The drainage solution is in the drawings before the walls are.',
         failureAfterimage:
           'Plans delivered. The drainage solution contains an assumption {name} will need to revisit ' +
-          'when someone else build{s} from them.',
+          'when someone else builds from them.',
       },
     ],
     narrativeTemplates: {
@@ -874,7 +874,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         },
         failureMetadata: { reputationDelta: -0.02 },
         narrativeTemplate:
-          'The crews are competent; the problem is the river. It run{s} high in the second week ' +
+          'The crews are competent; the problem is the river. It runs high in the second week ' +
           'of construction, taking out the eastern coffer dam and setting the schedule back five days. ' +
           '{name} recalculate{s} the completion date and present{s} the revised figure to the ' +
           'commissioner without framing it as a surprise, because it is not one — anyone who has ' +
@@ -1007,8 +1007,8 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         failureMetadata: { reputationDelta: -0.01 },
         narrativeTemplate:
           'The city\'s existing walls were laid in a different century by builders who ' +
-          'prioritized speed over the threat model that exist{s} now. {name} walk{s} the ' +
-          'perimeter in the early morning, when the light is low and shadow reveal{s} what ' +
+          'prioritized speed over the threat model that exists now. {name} walk{s} the ' +
+          'perimeter in the early morning, when the light is low and shadow reveals what ' +
           'the eyes edit during full light. ' +
           '{?has_artifact}The surveying instruments let {name} take precise angle measurements — ' +
           'three sections of the current wall are in dead ground relative to the main gate, ' +
@@ -1056,7 +1056,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
     ],
     narrativeTemplates: {
       initiation:
-        '{name} study{ies} the defenses of {location} and prepare{s} a fortification improvement plan.',
+        '{name} studies the defenses of {location} and prepare{s} a fortification improvement plan.',
       success:
         'The improvements are built. The northern approach is no longer the weak point it was.',
       failure:
@@ -1192,7 +1192,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'clearly for the first time and decides whether it is done or whether done is the best ' +
           'it is going to be.',
         successAfterimage:
-          'The piece submitted. The judges handle it carefully, which say{s} something before ' +
+          'The piece submitted. The judges handle it carefully, which says something before ' +
           'the voting starts.',
         failureAfterimage:
           'The piece submitted. It is good work. It is not the best piece in the competition.',
@@ -1515,7 +1515,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'The release sequence has to be precise — the previous attempts collapsed at this stage, ' +
           'not at the design stage. The design was correct; the construction method was not.',
         successAfterimage:
-          'Every calculation check{s} out. The formwork release sequence is documented. ' +
+          'Every calculation checks out. The formwork release sequence is documented. ' +
           'The vault will stand — the math says so, and the math has been checked three times.',
         failureAfterimage:
           'A fundamental flaw in the formwork release sequence. ' +
@@ -1667,13 +1667,13 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         },
         failureMetadata: { reputationDelta: -0.005 },
         narrativeTemplate:
-          'The master\'s workshop run{s} off the south lane, identifiable by the smell of oil ' +
+          'The master\'s workshop runs off the south lane, identifiable by the smell of oil ' +
           'and the sound of a wheel-lathe that has been running since before {name} arrived. ' +
           'The tour is informal: the master narrates when something is interesting and does not ' +
           'narrate when it is not. {name} keep{s} pace and hold{s} {their} questions until the end. ' +
           '{?has_artifact}The tools {name} carries are close enough to the work being shown that ' +
           '{they} can ask comparative questions rather than explanatory ones — the conversation ' +
-          'move{s} faster, go{es} deeper.{/has_artifact}' +
+          'moves faster, goes deeper.{/has_artifact}' +
           '{?no_faction}The master does not know {name} yet. The tour is what it is given to ' +
           'new visitors: complete, but not inside.{/no_faction}',
         successAfterimage:
@@ -1886,10 +1886,10 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         },
         failureMetadata: { reputationDelta: 0 },
         narrativeTemplate:
-          'The Fellowship\'s informal trading floor run{s} on the first morning of every quarter — ' +
+          'The Fellowship\'s informal trading floor runs on the first morning of every quarter — ' +
           'members bringing surplus, looking for what they are short of. ' +
           '{name} arrive{s} with a specific list and an hour to work it. ' +
-          '{?has_artifact}Having quality tools to trade as reference samples change{s} the conversation — ' +
+          '{?has_artifact}Having quality tools to trade as reference samples changes the conversation — ' +
           'craftspeople evaluate {name}\'s surplus partly by what {they} are willing to part with.{/has_artifact} ' +
           'The floor is noisy in a particular way: not the noise of argument but the noise of ' +
           'people who know what they need and are trying to find it efficiently.',
