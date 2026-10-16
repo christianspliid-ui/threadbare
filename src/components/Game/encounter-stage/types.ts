@@ -1,3 +1,4 @@
+import type { IconName } from '../../../data/icons/iconRegistry';
 import type { CourtPosition } from '../../../types/influence';
 import type { ReachDomain } from '../../../types/traits';
 import type { StepOutcome } from '../../../types/unifiedAction';
@@ -649,8 +650,10 @@ export interface EncounterStageNudgeCardModel {
    * {@link libraryCardId}. Absent ⇒ no chip.
    */
   keyword?: string;
-  /** Single glyph drawn on the keyword chip. Present whenever `keyword` is. */
+  /** Single glyph: the picture band's fallback tile. Present whenever `keyword` is. */
   keywordIcon?: string;
+  /** The carved icon the keyword chip draws (THR-1906). Present whenever `keyword` is. */
+  keywordIconName?: IconName;
   /**
    * The library type behind {@link keyword} (THR-1713) — keys the chip's
    * `ui.card.keyword.<typeId>` hover. Present whenever `keyword` is.

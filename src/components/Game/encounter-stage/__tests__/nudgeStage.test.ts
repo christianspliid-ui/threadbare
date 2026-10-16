@@ -7,6 +7,7 @@
  * handler share.
  */
 
+import { isIconName } from '../../../shared/iconShape';
 import { describe, expect, it } from 'vitest';
 import { WorldGraph } from '../../../../engine/graph';
 import type { SphereName } from '../../../../types/index';
@@ -363,6 +364,8 @@ describe('buildNudgePhaseModel — card-row display model', () => {
     const boost = NUDGE_CARD_TYPES.find((t) => t.id === 'boost')!;
     expect(card.keyword).toBe(boost.keyword);
     expect(card.keywordIcon).toBe(NUDGE_CARD_TYPE_ICONS.boost);
+    // THR-1906 — the chip's carved icon rides the same model.
+    expect(card.keywordIconName).toBe('boost');
   });
 
   it('leaves a one-off authored option chipless rather than inventing a type', () => {
@@ -396,6 +399,8 @@ describe('buildNudgePhaseModel — card-row display model', () => {
       expect(keyword, `no keyword for ${member.id}`).toBeDefined();
       expect(keyword!.keyword.length).toBeGreaterThan(0);
       expect(keyword!.icon.length).toBeGreaterThan(0);
+      // THR-1906 — every library card's chip draws a carved icon from the registry.
+      expect(isIconName(keyword!.iconName), `${member.id} → ${keyword!.iconName}`).toBe(true);
     }
   });
 

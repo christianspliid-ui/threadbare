@@ -69,8 +69,9 @@ export const NUDGE_CARD_TYPE_ICONS: Readonly<Record<NudgeCardTypeId, string>> = 
 };
 
 /**
- * The carved icon per card type (THR-1904, plan THR-1879 Appendix B). Additive: the keyword chip
- * still reads `NUDGE_CARD_TYPE_ICONS` until the sweep (THR-1907) moves it here and the glyphs go.
+ * The carved icon per card type (THR-1904, plan THR-1879 Appendix B). The keyword chip draws it
+ * (THR-1906); `NUDGE_CARD_TYPE_ICONS` stays only as the picture band's fallback glyph until S4b
+ * (THR-1907) retires the glyph column.
  * Several types draw an idea another class shares (`kindled_ambition` → `ambition`, `whisper` →
  * `reveal`): one meaning, one shape.
  */
@@ -103,6 +104,8 @@ export interface NudgeCardKeyword {
   /** Player-facing keyword, as printed on the card. */
   readonly keyword: string;
   readonly icon: string;
+  /** The carved icon for the card type (THR-1906); the chip draws it ahead of `icon`. */
+  readonly iconName: IconName;
 }
 
 /**
@@ -123,6 +126,7 @@ export function nudgeCardKeyword(libraryCardId: string | undefined): NudgeCardKe
     typeId: member.typeId,
     keyword: type.keyword,
     icon: NUDGE_CARD_TYPE_ICONS[member.typeId],
+    iconName: NUDGE_CARD_TYPE_ICON_NAMES[member.typeId],
   };
 }
 

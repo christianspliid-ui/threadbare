@@ -214,7 +214,7 @@ export interface CardFaceKeyword {
   readonly iconName?: IconName;
   /**
    * A legacy text glyph, for the classes that have no carved shape yet — card verbs wait for
-   * Christian's pick (THR-1908) — and for the nudge chip until its Stage shell moves (THR-1877).
+   * Christian's pick (THR-1908). Drawn only when `iconName` is absent.
    */
   readonly icon?: string;
   /**

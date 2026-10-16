@@ -245,6 +245,7 @@ export function NudgeCard({
               keyword: {
                 label: card.keyword,
                 icon: card.keywordIcon,
+                iconName: card.keywordIconName,
                 ...(card.keywordTypeId ? { tooltipId: `ui.card.keyword.${card.keywordTypeId}` } : {}),
               },
             }
