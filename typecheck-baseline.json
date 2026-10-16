@@ -1,5 +1,5 @@
 {
-  "total": 2783,
+  "total": 2782,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "src/__tests__/debug-bridge.test.ts": 3,
@@ -501,7 +501,7 @@
     "src/engine/cultureFlag.ts": 2,
     "src/engine/cultureGenerator.ts": 1,
     "src/engine/cultureMores.ts": 1,
-    "src/engine/cycleEnd.ts": 3,
+    "src/engine/cycleEnd.ts": 2,
     "src/engine/debugEncounterTools.ts": 1,
     "src/engine/deriveLocationActivities.ts": 4,
     "src/engine/detailPageResolvers.ts": 1,
