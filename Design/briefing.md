@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 08:57 local (06:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 09:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,15 +36,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 19 ready, one in progress.** The builder is on [the carved icon registry](https://linear.app/threadbare/issue/THR-1904/carved-icon-registry-vendor-the-229-shapes-fill-the-concept-table-ship): the 229 icon shapes, their table and the icon credits. It is shipped as [#2443](https://github.com/christianspliid-ui/threadbare/pull/2443) and will merge once its checks pass.
+**Backed up: 19 ready, one in progress.** The builder is now on [the world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with): an account record that carries across runs, each new world seeded with the last god's echoes. Work is being pushed to [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1813-world-remembers) as it goes (last push 09:28). The carved icon registry ([THR-1904](https://linear.app/threadbare/issue/THR-1904/carved-icon-registry-vendor-the-229-shapes-fill-the-concept-table-ship)) has merged and is live.
 
-- High, waiting: the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
+- High, waiting: the [map camera and controls](https://linear.app/threadbare/issue/THR-1900/map-camera-and-controls-zoom-buttons-centre-on-my-first-show-known), and the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
 - Five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Five economy bugs are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [armies besieging towns they have no quarrel with](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard).
 - Nothing is older than a week, and no job is parked.
 
 ## Health
 
-- All green. The live site serves the latest commit on main (be1eac7f), main's checks pass, and every scheduled lane is on schedule. The builder alternates short idle checks with builds; it has not stalled.
-- Speed check normal: 117 ms per tick, 4% below the weekly median of 122.
-- The tidy-up job ran at 08:40: 540 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- The live site serves the latest commit on main (9060be6a), main's checks pass, no pull request is waiting, and every scheduled lane is on schedule. The builder is mid-build; it has not stalled.
+- **Speed check flagged for the builder:** tick cost 188 ms/tick steady, 54% above the 7-day median (122, 138 rows since bd0baddf); top phase agent_decision, 616 agents. Name the merges between bd0baddf and 9060be6a: git log --oneline --merges bd0baddf..9060be6a. The only merge since the last normal reading (117 ms an hour ago) is the icon registry, which does not touch the engine, and the builder was running a build on this machine during the measurement, so the next reading will show whether this is real.
+- The tidy-up job ran at 09:40: 539 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
