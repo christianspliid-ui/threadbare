@@ -13,7 +13,8 @@
  *
  * NFP #1 (tunability): LOCATION_ICON_Z, LOCATION_ICON_THRESHOLD, ring constants are named.
  * NFP #3 (determinism): ring slots sorted by name for stable assignment.
- * NFP #4 (fail-soft): Unknown location types, missing textures silently skip — never crash.
+ * NFP #4 (fail-soft): An unknown location type draws the fallback mark at small (THR-1903);
+ *   a missing texture skips — never crash.
  */
 
 import * as THREE from 'three';
@@ -26,13 +27,17 @@ import {
   LOCATION_ICON_REGISTRY,
   LOCATION_SIZE_SCALE,
   CENTERED_SIZE_CLASSES,
+  resolvePlaceIconDef,
 } from '../locations/locationIconRegistry';
 import type { LocationSizeClass } from '../locations/locationIconRegistry';
 import {
   buildLocationIconTexture,
   buildLocationIconTextureCache,
+  notePlaceIconFallback,
+  beginPlaceIconPass,
   LAIR_SPHERE_FILL_COLORS,
   CLEARED_LAIR_FILL_COLOR,
+  PLACE_FALLBACK_TEXTURE_KEY,
 } from '../locations/locationIconTextures';
 import { getActivePalette } from '../palette/activePalette';
 import { ANOMALY_SPHERE_MAP, ANOMALY_LOCATION_TYPES } from './anomalyConstants';
@@ -213,6 +218,7 @@ export function createLocationIconMesh(
 ): THREE.Group {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.LOCATIONS;
+  beginPlaceIconPass();
 
   if (locations.length === 0) return group;
 
@@ -220,33 +226,27 @@ export function createLocationIconMesh(
   const textureCache = buildLocationIconTextureCache(LOCATION_ICON_REGISTRY);
 
   // Build sphere-tinted lair textures keyed as "lair:{sphere}" and "cleared_lair"
-  const lairDef = LOCATION_ICON_REGISTRY['lair'];
-  const clearedLairDef = LOCATION_ICON_REGISTRY['cleared_lair'];
-  if (lairDef) {
-    for (const [sphere, fillColor] of Object.entries(LAIR_SPHERE_FILL_COLORS)) {
-      const key = `lair:${sphere}`;
-      if (!textureCache.has(key)) {
-        textureCache.set(key, buildLocationIconTexture(lairDef, undefined, fillColor));
-      }
-    }
-    // Fallback for unknown sphere — use default near-black fill
-    if (!textureCache.has('lair:unknown')) {
-      textureCache.set('lair:unknown', buildLocationIconTexture(lairDef));
+  for (const [sphere, fillColor] of Object.entries(LAIR_SPHERE_FILL_COLORS)) {
+    const key = `lair:${sphere}`;
+    if (!textureCache.has(key)) {
+      textureCache.set(key, buildLocationIconTexture('lair', undefined, fillColor));
     }
   }
-  if (clearedLairDef && !textureCache.has('cleared_lair')) {
-    textureCache.set('cleared_lair', buildLocationIconTexture(clearedLairDef, undefined, CLEARED_LAIR_FILL_COLOR));
+  // Fallback for unknown sphere — use default near-black fill
+  if (!textureCache.has('lair:unknown')) {
+    textureCache.set('lair:unknown', buildLocationIconTexture('lair'));
   }
+  // The cleared lair keeps its muted fill (replaces the plain cleared_lair texture)
+  textureCache.set('cleared_lair', buildLocationIconTexture('cleared_lair', undefined, CLEARED_LAIR_FILL_COLOR));
 
   // Build sphere-tinted anomaly textures keyed as "anomaly:{locationType}:{sphere}"
   for (const [anomalyType, sphere] of Object.entries(ANOMALY_SPHERE_MAP)) {
     const fillColor = LAIR_SPHERE_FILL_COLORS[sphere];
     if (!fillColor) continue;
-    const anomalyDef = LOCATION_ICON_REGISTRY[anomalyType as keyof typeof LOCATION_ICON_REGISTRY];
-    if (!anomalyDef) continue;
+    if (!(anomalyType in LOCATION_ICON_REGISTRY)) continue;
     const key = `anomaly:${anomalyType}`;
     if (!textureCache.has(key)) {
-      textureCache.set(key, buildLocationIconTexture(anomalyDef, undefined, fillColor));
+      textureCache.set(key, buildLocationIconTexture(anomalyType, undefined, fillColor));
     }
   }
 
@@ -274,8 +274,12 @@ export function createLocationIconMesh(
     const ringEligible: LocationNode[] = [];
 
     for (const loc of hexLocs) {
-      const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
-      if (!iconDef) continue; // NFP #4: skip unknown type
+      // NFP #4 / Law 58: an unknown type draws the fallback mark at small, warning once;
+      // a subtype the map leaves off on purpose (UNDRAWN_PLACE_TYPES) draws nothing
+      const placeIcon = resolvePlaceIconDef(loc.locationType);
+      if (placeIcon.status === 'undrawn') continue;
+      if (placeIcon.status === 'unknown') notePlaceIconFallback(loc.locationType);
+      const iconDef = placeIcon.def;
 
       // Lair sizeClass override: use tier-based size, not registry default
       const effectiveSizeClass: LocationSizeClass =
@@ -349,11 +353,12 @@ function addLocationSprite(
   // Skip undiscovered anomalies — they render via shimmer layer, not as icons
   if (loc.isAnomalyLocation && !loc.discoveredByExploration) return;
 
-  const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
-  if (!iconDef) return;
+  const placeIcon = resolvePlaceIconDef(loc.locationType);
+  if (placeIcon.status === 'undrawn') return;
+  const iconDef = placeIcon.def;
 
   // Lair-specific texture key: "lair:{sphere}" for tinted active lairs
-  let textureKey = loc.locationType;
+  let textureKey = placeIcon.status === 'drawn' ? loc.locationType : PLACE_FALLBACK_TEXTURE_KEY;
   if (loc.locationType === 'lair') {
     const sphere = loc.dominantSphere ?? 'unknown';
     textureKey = `lair:${LAIR_SPHERE_FILL_COLORS[sphere] !== undefined ? sphere : 'unknown'}`;
@@ -399,7 +404,7 @@ function addCapitalRing(
   offsetY: number,
   capitalInkAt?: (col: number, row: number) => string | null,
 ): void {
-  const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+  const { def: iconDef } = resolvePlaceIconDef(loc.locationType);
   if (!iconDef) return;
   const ringInk = capitalInkAt?.(loc.hexCol, loc.hexRow) ?? getActivePalette().capitalRingColor;
 
@@ -431,7 +436,7 @@ function addSeatMarker(
   offsetY: number,
   scaleFactor: number,
 ): void {
-  const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+  const { def: iconDef } = resolvePlaceIconDef(loc.locationType);
   if (!iconDef) return;
 
   const spriteSize =

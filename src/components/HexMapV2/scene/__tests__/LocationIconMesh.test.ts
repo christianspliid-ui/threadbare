@@ -72,10 +72,12 @@ describe('createLocationIconMesh', () => {
   let createLocationIconMesh: (locations: LocationNode[]) => THREE.Group;
   let LOCATION_ICON_Z: number;
   let LOCATION_ICON_THRESHOLD: number;
+  let getPlaceIconStatus: () => { fallbacks: string[] };
 
   beforeEach(async () => {
     vi.resetModules();
     const mod = await import('../LocationIconMesh');
+    getPlaceIconStatus = (await import('../../locations/locationIconTextures')).getPlaceIconStatus;
     createLocationIconMesh = mod.createLocationIconMesh;
     LOCATION_ICON_Z = mod.LOCATION_ICON_Z;
     LOCATION_ICON_THRESHOLD = mod.LOCATION_ICON_THRESHOLD;
@@ -103,14 +105,25 @@ describe('createLocationIconMesh', () => {
     expect(group.children.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('skips locations with unknown locationType (fail-soft)', () => {
+  it('draws the fallback mark for an unknown locationType (fail-soft, Law 58 — THR-1903)', () => {
     const locations: LocationNode[] = [
       { locationType: 'unknown_type_xyz', hexCol: 1, hexRow: 1, name: 'Ghost' },
     ];
     expect(() => createLocationIconMesh(locations)).not.toThrow();
     const group = createLocationIconMesh(locations);
-    // Unknown type skipped — no sprites added
+    // Unknown type draws one fallback sprite instead of nothing, and is reported
+    expect(group.children).toHaveLength(1);
+    expect(getPlaceIconStatus().fallbacks).toContain('unknown_type_xyz');
+  });
+
+  it('draws nothing for a subtype the map leaves off on purpose (UNDRAWN_PLACE_TYPES — THR-1903)', () => {
+    const locations: LocationNode[] = [
+      { locationType: 'wilderness_waypoint', hexCol: 2, hexRow: 2, name: 'Waypoint' },
+      { locationType: 'elder_ruin', hexCol: 3, hexRow: 3, name: 'Temple Ruin' },
+    ];
+    const group = createLocationIconMesh(locations);
     expect(group.children).toHaveLength(0);
+    expect(getPlaceIconStatus().fallbacks).toEqual([]);
   });
 
   it('adds extra ring sprite for capital locations', () => {
