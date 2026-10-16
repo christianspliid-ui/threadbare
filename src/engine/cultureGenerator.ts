@@ -9,7 +9,7 @@
  * Source: Docs/plans/2026-03-07-culture-generator-design.md
  */
 
-import type { SphereName, TerrainType, CosmologyProfile } from '../types/index';
+import type { SphereName, TerrainType, CosmologyProfile, HexTile } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { CultureIdentity, CulturePhoneticSignature } from '../types/culture';
 import type { ReachDomain } from '../types/traits';
@@ -336,6 +336,15 @@ export function assignCultureToLocation(
 
 // ─── Fringe culture (THR-1632 S1d, THR-1839) ───────────────────────
 
+/** One culture link the runtime founded-place pass wrote (THR-1839 fringe, THR-1849 heartland). */
+export interface FoundedPlaceCultureLink {
+  locationId: string;
+  cultureId: string;
+  /** Hex distance to the nearest heartland for a fringe; 0 for a heartland link. */
+  dist: number;
+  kind: 'heartland' | 'fringe';
+}
+
 /** A heartland Location: one inside a culture's province, carrying a full-strength current link. */
 export interface HeartlandPlace {
   id: string;
@@ -347,8 +356,8 @@ export interface HeartlandPlace {
 /**
  * The fringe rule, shared by the worldgen pass and the runtime pass so a hamlet founded
  * at tick 200 takes its fringe by the rule worldgen uses. A place founded inside a
- * province still gets a fringe, not a heartland link: the province map is worldgen-only
- * (TODO(THR-1849): founded inside a province takes the heartland). Draw-free: nearest
+ * living culture's province takes the heartland instead (THR-1849, via the hex's
+ * `provinceCultureId` stamp); this rule covers only places outside every province. Draw-free: nearest
  * heartland by hex distance, ties by culture id, then by Location id. `null` when there
  * is no heartland at all; the caller compares `dist` against the scenario's reach.
  */
@@ -371,8 +380,8 @@ export function pickNearestHeartland(
 /**
  * The heartland as the live graph records it: every place-tier Location with a
  * current, non-fringe culture link. Worldgen reads its own `locationCultureMap`
- * instead; after worldgen this is the same set, since no runtime writer mints
- * a heartland link.
+ * instead; after worldgen this is that set plus every place founded inside a
+ * living province since (THR-1849), which takes the heartland exactly as worldgen would.
  */
 export function collectHeartlandPlaces(graph: WorldGraph): HeartlandPlace[] {
   const out: HeartlandPlace[] = [];
@@ -404,34 +413,95 @@ function needsFringeCulture(graph: WorldGraph, node: { id: string; properties: R
 }
 
 /**
- * THR-1839 — a settlement founded during play takes its people by the worldgen fringe
- * rule. Runs every tick; on a tick when nothing new was founded it reads each Location's
- * subtype and edges once and writes nothing. A Location beyond `maxHexes` of every
- * heartland stays cultureless (as at worldgen) and is re-checked next tick for free —
- * heartlands never move after worldgen, so the answer never changes.
+ * THR-1849 — stamp each hex with the living culture whose province holds it, once at
+ * worldgen, so the province map survives as far as the runtime founded-place pass needs.
+ * Same membership rule the worldgen heartland pass applies (`seedWorld` § Cultures): a
+ * province with a culture that is registered in the graph; a lost culture's province is
+ * ruin-land, not anyone's heartland. Returns the number of hexes stamped. Never throws.
+ */
+export function stampProvinceCultureOnTiles(
+  graph: WorldGraph,
+  tiles: HexTile[],
+  provinceIds: Int16Array | undefined,
+  provinces: ReadonlyArray<{ cultureId: string | null; isLost: boolean }> | undefined,
+  cols: number,
+): number {
+  if (!provinceIds || !provinces) return 0;
+  let stamped = 0;
+  try {
+    for (const tile of tiles) {
+      const provId = provinceIds[tile.coord.row * cols + tile.coord.col];
+      if (provId === undefined || provId < 0 || provId >= provinces.length) continue;
+      const province = provinces[provId];
+      if (!province.cultureId || province.isLost) continue;
+      if (graph.getNode(province.cultureId)?.properties.actorType !== 'culture') continue;
+      tile.provinceCultureId = province.cultureId;
+      stamped++;
+    }
+  } catch {
+    // Fail-soft: an unstamped hex founds fringe places, as before THR-1849.
+  }
+  return stamped;
+}
+
+/** Hex key → province culture, from the worldgen stamp. Empty when no tile carries one. */
+function provinceCultureByHex(tiles: readonly HexTile[] | undefined): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const t of tiles ?? []) {
+    if (t.provinceCultureId) out.set(`${t.coord.col},${t.coord.row}`, t.provinceCultureId);
+  }
+  return out;
+}
+
+/**
+ * THR-1839 / THR-1849 — a settlement founded during play takes its people by the worldgen
+ * rules. On a hex inside a living culture's province (the tile's `provinceCultureId`) it
+ * takes that culture as a **heartland** — current and historical links at full strength,
+ * exactly what a place seeded there at tick 0 carries. Outside every province it takes the
+ * nearest heartland's culture as a **fringe**, within `maxHexes`; the heartland branch runs
+ * even when the scenario keeps the fringe off, because worldgen's heartland pass does too.
+ *
+ * Runs every tick; on a tick when nothing new was founded it reads each Location's subtype
+ * and edges once and writes nothing. A Location beyond `maxHexes` of every heartland stays
+ * cultureless (as at worldgen) and is re-checked next tick for free — heartlands never move
+ * after worldgen, so the answer never changes.
+ *
+ * A runtime heartland link is a culture link only. It does not make the place part of a
+ * Realm's holding: Realm holding reads `controls` edges, minted at worldgen and moved by
+ * conquest, never `belongs_to` culture (ruled on THR-1849).
  *
  * Returns each link written, for the caller's trace. NFP #4: never throws.
  */
 export function assignFringeCultureToFoundedPlaces(
   graph: WorldGraph,
   maxHexes: number,
-): Array<{ locationId: string; cultureId: string; dist: number }> {
-  const linked: Array<{ locationId: string; cultureId: string; dist: number }> = [];
-  if (!(maxHexes > 0)) return linked;
+  tiles?: readonly HexTile[],
+): FoundedPlaceCultureLink[] {
+  const linked: FoundedPlaceCultureLink[] = [];
   try {
     const candidates = getLocationNodes(graph).filter((n) => needsFringeCulture(graph, n));
     if (candidates.length === 0) return linked;
-    const heartland = collectHeartlandPlaces(graph);
-    if (heartland.length === 0) return linked;
+    const provinceCulture = provinceCultureByHex(tiles);
+    // Collected before any heartland link below joins it, so the fringe a place takes
+    // never depends on the order founded places are visited in (NFP #3).
+    const heartland = maxHexes > 0 ? collectHeartlandPlaces(graph) : [];
     for (const node of candidates) {
       const here = { col: node.properties.hexCol as number, row: node.properties.hexRow as number };
+      const home = provinceCulture.get(`${here.col},${here.row}`);
+      if (home && graph.getNode(home)) {
+        assignCultureToLocation(graph, node.id, home, 'current');
+        assignCultureToLocation(graph, node.id, home, 'historical');
+        linked.push({ locationId: node.id, cultureId: home, dist: 0, kind: 'heartland' });
+        continue;
+      }
+      if (!(maxHexes > 0)) continue;
       const best = pickNearestHeartland(here, heartland);
       if (!best || best.dist > maxHexes) continue;
       assignCultureToLocation(graph, node.id, best.cultureId, 'current', {
         strength: CULTURE_FRINGE_STRENGTH,
         fringe: true,
       });
-      linked.push({ locationId: node.id, cultureId: best.cultureId, dist: best.dist });
+      linked.push({ locationId: node.id, cultureId: best.cultureId, dist: best.dist, kind: 'fringe' });
     }
   } catch {
     // Fail-soft: a place that does not take its people this tick tries again next tick.

@@ -3852,11 +3852,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // per-promotion inside the phase, which syncs encounterCacheBuiltAt to prevent full rebuilds.
   prevEventCount = s.tickEvents.length;
 
-  // Phase 6.6355: Founded places take their people (THR-1839) — a settlement founded during
-  // play gets the nearest heartland's culture as a fringe, by the worldgen rule and reach.
+  // Phase 6.6355: Founded places take their people (THR-1839, THR-1849) — a settlement founded
+  // during play inside a living province takes its heartland; outside every one, the nearest
+  // heartland's culture as a fringe, by the worldgen rules and reach.
   {
     const maxHexes = s.worldScenario?.cultureFringeMaxHexes ?? 0;
-    const linked = assignFringeCultureToFoundedPlaces(s.graph, maxHexes);
+    const linked = assignFringeCultureToFoundedPlaces(s.graph, maxHexes, s.tiles);
     if (linked.length > 0) {
       // A culture link carries a culture trait, which can gate encounters there — re-index
       // each place the way the promotion phase does, not a full rebuild.
@@ -3868,7 +3869,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       emitTrace({
         category: 'founded_place_culture',
         tick: s.tick,
-        summary: `${linked.length} founded place(s) took their people: ${linked.map((l) => `${l.locationId}→${l.cultureId}`).join(', ')}`,
+        summary: `${linked.length} founded place(s) took their people: ${linked.map((l) => `${l.locationId}→${l.cultureId} (${l.kind})`).join(', ')}`,
         maxHexes,
         linked,
       });
