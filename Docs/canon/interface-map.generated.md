@@ -2104,10 +2104,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 25 total — 2 write, 5 read, 18 unclassified
+- **Production hits:** 26 total — 2 write, 5 read, 19 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/giftDelivery.ts` +13 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/giftDelivery.ts` +14 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `location-trait-tags-have-bearers` — 🟢 LIVE
@@ -2128,10 +2128,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Location Trait*, *Trait*, *Encounter*
 - **Module:** `src/engine/phaseLocationTraits.ts`
-- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
+- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
 - **Write sites:** `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterScoring.ts`, `src/engine/locationTraitBonus.ts`
-- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/data/prose-layer-content.ts`, `src/engine/battleRecord.ts`, `src/engine/fights/fightRecord.ts` +2 more
+- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/data/prose-layer-content.ts`, `src/engine/battleRecord.ts`, `src/engine/deathSiteHaunting.ts` +3 more
 - **Verdict:** Verified 2026-09-22: THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -2255,10 +2255,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 55 total — 5 write, 3 read, 47 unclassified
+- **Production hits:** 57 total — 5 write, 3 read, 49 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +42 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +44 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE

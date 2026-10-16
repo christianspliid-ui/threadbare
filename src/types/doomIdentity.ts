@@ -74,8 +74,10 @@ export interface IdentityLocationPressure {
   /** Applied to settlements near the map centre. */
   centerDelta: number;
   /**
-   * Additional unrest applied each tick to locations where agents have died (deathCount > 0).
-   * Consumed by phaseProsperity; deathCount is incremented by phaseAgentLifecycle.
+   * Strength of death-site haunting: a place where an agent died recently is lifted
+   * once a day toward an unrest target of `bonus × DEATH_SITE_UNREST_TARGET_SCALE`
+   * (capped, fading over a window since the last death — THR-1925,
+   * `src/data/death-site-unrest-constants.ts`). Consumed by phaseProsperity.
    */
   deathSiteUnrestBonus?: number;
   /**
