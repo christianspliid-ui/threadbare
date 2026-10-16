@@ -40,6 +40,11 @@ import { getNodeSphereAffinity } from './sphereAffinity';
 import { readLocationResourceBalance } from './resourceEconomy';
 import { RESOURCE_BALANCE_PROSPERITY_WEIGHT } from '../data/resource-classes';
 import { IDENTITY_PROSPERITY_MODIFIER_CAP } from '../types/doomIdentity';
+import { computeDeathSiteUnrestTarget } from './deathSiteHaunting';
+import {
+  DEATH_SITE_HAUNTING_CADENCE_TICKS,
+  DEATH_SITE_UNREST_TARGET_PROPERTY,
+} from '../data/death-site-unrest-constants';
 import {
   LOC_HEALTH_DEFAULT_BASELINE,
   LOC_HEALTH_RECOVERY_RATE,
@@ -898,19 +903,30 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     // writes that came from elsewhere.
     loc.properties[ECON_LAST_PROSPERITY_PROP] = newProsperity;
 
-    // 9.5 Death-site haunting — locations where agents died gain unrest and Spirit pressure each tick.
-    // deathCount is incremented by phaseAgentLifecycle when an agent dies here.
+    // 9.5 Death-site haunting — locations where agents died gain unrest and Spirit pressure.
+    // deathCount and lastDeathTick are written by markMortalDead when an agent dies here.
+    // THR-1925: unrest is bounded pressure, not a per-tick add — once a day the place is
+    // lifted toward a target that is capped and fades with time since the last death,
+    // so one old death no longer pins a town at 100 (ordinary decay carries it back).
     const deathSiteUnrestBonus = identityPressure?.deathSiteUnrestBonus ?? 0;
     const deathSiteSpiritPressure = identityPressure?.deathSiteSpiritPressure ?? 0;
     let deathSiteUnrestApplied = 0;
-    if ((deathSiteUnrestBonus > 0 || deathSiteSpiritPressure > 0)) {
+    if (deathSiteUnrestBonus > 0) {
+      const deathSiteTarget = computeDeathSiteUnrestTarget(loc.properties, deathSiteUnrestBonus, tick);
+      if (deathSiteTarget > 0 || loc.properties[DEATH_SITE_UNREST_TARGET_PROPERTY] !== undefined) {
+        loc.properties[DEATH_SITE_UNREST_TARGET_PROPERTY] = deathSiteTarget;
+      }
+      if (deathSiteTarget > 0 && tick % DEATH_SITE_HAUNTING_CADENCE_TICKS === 0) {
+        const prevUnrest = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
+        if (prevUnrest < deathSiteTarget) {
+          deathSiteUnrestApplied = deathSiteTarget - prevUnrest;
+          loc.properties.unrest = deathSiteTarget;
+        }
+      }
+    }
+    if (deathSiteSpiritPressure > 0) {
       const deathCount = typeof loc.properties.deathCount === 'number' ? loc.properties.deathCount : 0;
       if (deathCount > 0) {
-        if (deathSiteUnrestBonus > 0) {
-          const prevUnrest = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
-          deathSiteUnrestApplied = deathSiteUnrestBonus;
-          loc.properties.unrest = Math.min(100, prevUnrest + deathSiteUnrestApplied);
-        }
         if (deathSiteSpiritPressure > 0) {
           deathSiteSphereEvents.push({
             targetEntityId: loc.id,
@@ -935,7 +951,7 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
       category: 'prosperity_tick',
       tick,
       agentId: loc.id,
-      summary: `${loc.name}: prosperity ${prevProsperity.toFixed(1)} → ${newProsperity.toFixed(1)} (target ${target.toFixed(1)}, ${newTier})${tierChanged ? ' [tier changed]' : ''}${deathSiteUnrestApplied > 0 ? ` [death-site unrest +${deathSiteUnrestApplied}]` : ''}`,
+      summary: `${loc.name}: prosperity ${prevProsperity.toFixed(1)} → ${newProsperity.toFixed(1)} (target ${target.toFixed(1)}, ${newTier})${tierChanged ? ' [tier changed]' : ''}${deathSiteUnrestApplied > 0 ? ` [death-site unrest +${deathSiteUnrestApplied.toFixed(1)}]` : ''}`,
       locationId: loc.id,
       // Equilibrium model
       equilibriumTarget: target,
