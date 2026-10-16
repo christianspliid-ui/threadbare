@@ -174,6 +174,18 @@ describe('HarvestScreen', () => {
     expect(screen.getByTestId('harvest-not-carried').textContent).toMatch(/will not remember it/);
   });
 
+  it('names no preserved or left-behind echo when the save failed (THR-1813 review cycle 4)', () => {
+    const harvest: HarvestResult = {
+      ...mockBitterSweetHarvest,
+      divineEchoes: [{ ...mockEchoDefinition2, id: 'echo_1_divine_loc_1', source: 'divine', name: 'The Long Barrow' }],
+    };
+    render(<HarvestScreen harvest={harvest} cycle={3} onWakeNewWorld={vi.fn()} accountSaved={false} />);
+    expect(screen.queryByTestId('harvest-leaves')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Echoes preserved/)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('harvest-not-carried')).not.toBeInTheDocument();
+    expect(screen.getByTestId('harvest-save-failed')).toBeInTheDocument();
+  });
+
   it('does not render echo candidates section when array is empty', () => {
     const harvestWithNoEchoes: HarvestResult = {
       ...mockBitterSweetHarvest,

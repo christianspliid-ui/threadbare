@@ -416,6 +416,10 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Wake in a new world',
     desc: 'This world ends. A new one wakes, shaped by what this one leaves behind.',
   },
+  'ui.harvest_wake_unremembered': {
+    label: 'Wake in a new world',
+    desc: 'This world ends. A new one wakes, and it will not remember this one.',
+  },
   'ui.harvest_cycle': {
     label: 'Cycle',
     desc: 'One complete arc of world-simulation — from first tick to harvest. Each cycle builds on echoes from the last.',

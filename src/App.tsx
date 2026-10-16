@@ -274,6 +274,7 @@ function App() {
     const devFlags = parseDevSeedFlags();
     const isDevQuickStart = viewParam === 'game' && devFlags.wantsIdentity;
     const devSeedFirst = isDevQuickStart && !devFlags.firstUnmet;
+    const shapedByAccount = !isDevQuickStart || loadedAccount.source === 'sample_param';
     // THR-1744: `?warm=<ticks>` — honoured only with `?view=game&seeded` (the parser
     // checks and warns); works on the deployed build, which is where warm playtesters play.
     const warmTicks = devFlags.firstUnmet ? 0 : parseWarmStartTicks(window.location.search);
@@ -304,10 +305,13 @@ function App() {
         onExitToTitle={handleExitToTitle}
         account={loadedAccount.account}
         // THR-1813: the dev routes stay deterministic — only `?account=sample` shapes them.
-        shapeWorldFromAccount={!isDevQuickStart || loadedAccount.source === 'sample_param'}
+        shapeWorldFromAccount={shapedByAccount}
         persistAccount={accountPersists}
         accountSaveFailed={accountSaveFailed}
-        onWakeNewWorld={handleWakeNewWorld}
+        // A world not built from the record does not fold into it: its wake carries the
+        // record unchanged, as on the Advanced path (review-gate cycle 4).
+        carriesRun={shapedByAccount}
+        onWakeNewWorld={shapedByAccount ? handleWakeNewWorld : handleWakeFromUnshapedWorld}
       />
     );
   }
