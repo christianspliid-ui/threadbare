@@ -108,6 +108,21 @@ function setWealth(graph: WorldGraph, id: string, delta: number): number {
   return after - before;
 }
 
+/**
+ * Move coin between two factions without creating or destroying any: the receiver is
+ * credited first (it may be at FACTION_TREASURY_CAP), and the payer gives up only what
+ * landed. Returns the amount moved — the figure every record reports.
+ */
+function transferCoin(graph: WorldGraph, fromId: string, toId: string, amount: number): number {
+  const from = graph.getNode(fromId);
+  if (!from || amount <= 0) return 0;
+  const available = Math.min(amount, readWealth(from.properties));
+  if (available <= 0) return 0;
+  const credited = setWealth(graph, toId, available);
+  if (credited <= 0) return 0;
+  return -setWealth(graph, fromId, -credited);
+}
+
 function pickLine(lines: readonly string[], seed: number): string {
   const i = Math.abs(seed | 0) % lines.length;
   return lines[i];
@@ -358,9 +373,7 @@ export function executeSeekFealty(
     let giftPaid = 0;
     if (pick.kind === 'bought') {
       const cost = giftCost(world, pick.id, pick.gift);
-      const paid = -setWealth(graph, R, -cost);
-      setWealth(graph, pick.id, paid);
-      giftPaid = paid;
+      giftPaid = transferCoin(graph, R, pick.id, cost);
     }
     return sworn(pick.id, pick.kind, pick.parts, giftPaid);
   }
@@ -646,8 +659,7 @@ export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPh
       const vassal = graph.getNode(edge.source);
       if (!vassal) continue;
       const paid = Math.min(due, readWealth(vassal.properties));
-      const moved = paid > 0 ? -setWealth(graph, edge.source, -paid) : 0;
-      if (moved > 0) setWealth(graph, edge.target, moved);
+      const moved = paid > 0 ? transferCoin(graph, edge.source, edge.target, paid) : 0;
       fealtyIn.set(edge.target, (fealtyIn.get(edge.target) ?? 0) + moved);
       fealtyOut.set(edge.source, { amount: moved, to: edge.target });
       graph.updateEdge(edge.id, {

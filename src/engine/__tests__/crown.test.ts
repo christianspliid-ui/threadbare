@@ -252,6 +252,17 @@ describe('the crown phase — loyalty, breaks and the tax', () => {
     expect(coercePool(w2, R).map(c => c.id)).not.toContain(GUILD);
   });
 
+  it('a liege at the treasury cap takes no fealty, and the vassal keeps its coin (none is destroyed)', () => {
+    const g = world();
+    swearOathForDebug(stateAt(g, 24), GUILD, R, 'persuaded');
+    g.getNode(R)!.properties.wealth = 1000; // FACTION_TREASURY_CAP
+    runCrownPhase(stateAt(g, 36), { getProjection: projection });
+    expect(g.getNode(R)!.properties.wealth).toBe(1000);
+    expect(g.getNode(GUILD)!.properties.wealth).toBe(50);
+    expect((g.getNode(R)!.properties[PURSE_LAST_DAY_PROP] as { fealtyIn?: number }).fealtyIn ?? 0).toBe(0);
+    expect(readOath(g.getOutgoingEdges(GUILD, 'sworn_to')[0]).taxPaidTotal).toBe(0);
+  });
+
   it('a pair on the re-swear cooldown is not a candidate, so can_court never passes for nothing', () => {
     const g = world();
     g.addEdge({ id: 'e_rel_g', source: GUILD, target: R, type: 'relates_to', properties: { sentiment: -0.3, oathBrokenTick: 24 } });
