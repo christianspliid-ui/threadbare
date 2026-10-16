@@ -17,6 +17,7 @@ import {
   UNDRAWN_PLACE_TYPES,
 } from '../locationIconRegistry';
 import {
+  beginPlaceIconPass,
   buildLocationIconTexture,
   buildMapIconTexture,
   CLEARED_LAIR_FILL_COLOR,
@@ -156,6 +157,12 @@ describe('place icons — every LocationType (Law 58)', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     expect(getPlaceIconStatus().fallbacks).toEqual(['not_a_place']);
     expect(resolvePlaceIconDef('not_a_place')).toEqual({ status: 'unknown', def: { sizeClass: 'small' } });
+    // A new map build (a new world) starts a fresh record, and the type does not warn again
+    beginPlaceIconPass();
+    expect(getPlaceIconStatus().fallbacks).toEqual([]);
+    placeIconShape('not_a_place');
+    expect(getPlaceIconStatus().fallbacks).toEqual(['not_a_place']);
+    expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
 });

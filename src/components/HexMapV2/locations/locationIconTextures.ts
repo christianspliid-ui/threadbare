@@ -140,7 +140,17 @@ export function buildMapIconTexture(
 
 // ── Places ────────────────────────────────────────────────────────────────────
 
+/** Place types that drew the fallback in the current map build (reset per build). */
 const placeIconFallbacks = new Set<string>();
+/** Place types already warned about — warn once per page, not once per rebuild. */
+const warnedPlaceTypes = new Set<string>();
+
+function recordPlaceIconFallback(type: string, message: string): void {
+  placeIconFallbacks.add(type);
+  if (warnedPlaceTypes.has(type)) return;
+  warnedPlaceTypes.add(type);
+  console.warn(message);
+}
 
 /** Whether `type` has a place shape in `PLACE_ICON`. */
 function hasPlaceIcon(type: string): type is keyof typeof PLACE_ICON {
@@ -154,21 +164,24 @@ function hasPlaceIcon(type: string): type is keyof typeof PLACE_ICON {
  */
 export function placeIconShape(type: string): IconShape {
   if (hasPlaceIcon(type)) return iconShape(PLACE_ICON[type]);
-  if (!placeIconFallbacks.has(type)) {
-    placeIconFallbacks.add(type);
-    console.warn(`[map] no place icon for location type "${type}"; drawing the fallback mark`);
-  }
+  recordPlaceIconFallback(type, `[map] no place icon for location type "${type}"; drawing the fallback mark`);
   return iconShape(FALLBACK_ICON_NAME);
 }
 
 /** Records that a place type drew the fallback because the map registry has no entry for it. */
 export function notePlaceIconFallback(type: string): void {
-  if (placeIconFallbacks.has(type)) return;
-  placeIconFallbacks.add(type);
-  console.warn(`[map] no map icon entry for location type "${type}"; drawing the fallback mark at small`);
+  recordPlaceIconFallback(type, `[map] no map icon entry for location type "${type}"; drawing the fallback mark at small`);
 }
 
-/** `__DEBUG.getMapChrome().placeIcons` — the place types that drew the fallback so far. */
+/**
+ * Starts a new map build's fallback record, so `getPlaceIconStatus()` describes the places on
+ * the map now — not every unknown type this page has ever seen (a new world after a wake).
+ */
+export function beginPlaceIconPass(): void {
+  placeIconFallbacks.clear();
+}
+
+/** `__DEBUG.getMapChrome().placeIcons` — the place types that drew the fallback in the current build. */
 export function getPlaceIconStatus(): { fallbacks: string[] } {
   return { fallbacks: [...placeIconFallbacks].sort() };
 }
@@ -176,6 +189,7 @@ export function getPlaceIconStatus(): { fallbacks: string[] } {
 /** Test hook: forget which place types already fell back. */
 export function resetPlaceIconFallbacksForTest(): void {
   placeIconFallbacks.clear();
+  warnedPlaceTypes.clear();
 }
 
 /**

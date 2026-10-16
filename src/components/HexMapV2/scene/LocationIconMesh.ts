@@ -34,6 +34,7 @@ import {
   buildLocationIconTexture,
   buildLocationIconTextureCache,
   notePlaceIconFallback,
+  beginPlaceIconPass,
   LAIR_SPHERE_FILL_COLORS,
   CLEARED_LAIR_FILL_COLOR,
   PLACE_FALLBACK_TEXTURE_KEY,
@@ -217,6 +218,7 @@ export function createLocationIconMesh(
 ): THREE.Group {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.LOCATIONS;
+  beginPlaceIconPass();
 
   if (locations.length === 0) return group;
 
