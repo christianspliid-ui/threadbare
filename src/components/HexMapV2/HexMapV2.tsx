@@ -128,6 +128,7 @@ import { useHexTooltipDelay } from './interaction/useHexTooltipDelay';
 import { avatarHoverLine } from '../../data/avatar-framing';
 import type { LocationActivitySummary } from '../../types/locationActivity';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
+import { getPlaceIconStatus } from './locations/locationIconTextures';
 import { getFixedSlotOffset } from '../../lib/movementPath';
 import {
   SLOT_RING_RADIUS,
@@ -1710,6 +1711,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               });
             })(),
             opening: mapCamera.getOpening(),
+            // THR-1903 — place types that drew the fallback mark (Law 58).
+            placeIcons: getPlaceIconStatus(),
           };
         },
       });

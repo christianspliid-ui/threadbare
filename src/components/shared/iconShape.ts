@@ -1,10 +1,9 @@
 /**
  * iconShape — the one resolver from an icon name to its shape (THR-1885, Law 3).
  *
- * Every surface that draws an icon asks here: `Icon` today, and the map's place-texture
- * builder once THR-1879 moves places onto carved shapes (`locationIconTextures.ts` already
- * rasterises the same `{ d, opacity }[]` shape), so a castle looks the same on the map and in
- * the panel.
+ * Every surface that draws an icon asks here: `Icon`, and the map's one icon texture builder
+ * (`buildMapIconTexture` in `locationIconTextures.ts`, THR-1903), so a castle looks the same on
+ * the map and in the panel.
  *
  * A name with no entry (data from content, a stale save) resolves to the designed `fallback`
  * shape and warns once per name — never a blank, never a throw (Law 4, NFP #4).

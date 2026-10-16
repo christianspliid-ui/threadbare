@@ -3,7 +3,7 @@
  *
  * Tests:
  * - All LocationType values are present in LOCATION_ICON_REGISTRY
- * - Each entry has a non-empty paths array, valid viewBox, and valid sizeClass
+ * - Each entry has a valid sizeClass (shapes are carved: placeIcons.coverage.test.ts, THR-1903)
  * - LOCATION_SIZE_SCALE has correct values for all size classes
  */
 
@@ -76,27 +76,6 @@ describe('LOCATION_ICON_REGISTRY', () => {
     expect(Object.keys(LOCATION_ICON_REGISTRY)).toHaveLength(EXPECTED_LOCATION_TYPES.length);
     for (const type of EXPECTED_LOCATION_TYPES) {
       expect(LOCATION_ICON_REGISTRY).toHaveProperty(type);
-    }
-  });
-
-  it('each entry has a non-empty paths array', () => {
-    for (const [type, def] of Object.entries(LOCATION_ICON_REGISTRY)) {
-      expect(def.paths.length, `${type} should have paths`).toBeGreaterThan(0);
-      for (const path of def.paths) {
-        expect(typeof path.d, `${type} path.d should be string`).toBe('string');
-        expect(path.d.length, `${type} path.d should be non-empty`).toBeGreaterThan(0);
-        expect(typeof path.opacity, `${type} path.opacity should be number`).toBe('number');
-      }
-    }
-  });
-
-  it('each entry has a valid viewBox string', () => {
-    for (const [type, def] of Object.entries(LOCATION_ICON_REGISTRY)) {
-      expect(typeof def.viewBox, `${type} viewBox should be string`).toBe('string');
-      const parts = def.viewBox.split(' ').map(Number);
-      expect(parts.length, `${type} viewBox should have 4 parts`).toBe(4);
-      expect(parts[2], `${type} viewBox width > 0`).toBeGreaterThan(0);
-      expect(parts[3], `${type} viewBox height > 0`).toBeGreaterThan(0);
     }
   });
 

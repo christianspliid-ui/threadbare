@@ -511,6 +511,11 @@ export interface DebugMapChromeResult {
    * the known land's centre, or the whole grid with fog off). Null before the camera is set up.
    */
   opening: { k: number; centredOn: 'first' | 'seat' | 'land' | 'grid' } | null;
+  /**
+   * THR-1903 — the carved place icons: the place types that drew the plain `fallback` mark
+   * because they have no map icon entry (Law 58). Empty when every place drew its shape.
+   */
+  placeIcons: { fallbacks: string[] };
 }
 
 /** Result of `getDominionLens()`. THR-1750 */

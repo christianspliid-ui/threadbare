@@ -1,27 +1,45 @@
 /**
- * locationIconTextures.ts — SVG path data to Three.js CanvasTexture conversion for location icons.
+ * locationIconTextures.ts — the map's one icon texture path (THR-1878 plan D13, THR-1903).
  *
- * Follows the signifierTextures.ts pattern exactly:
- * - buildLocationIconTexture: rasterizes a single LocationIconDef to a THREE.CanvasTexture
- * - buildLocationIconTextureCache: builds textures for all registry entries once at startup
+ * - buildMapIconTexture: rasterises any `IconShape` from `iconShape()` (THR-1885) to a
+ *   THREE.CanvasTexture in the map's ink — outline pass first, then fill — scaled from the
+ *   shape's own viewBox, so a carved 512-grid shape and a 100-grid drawing fill the same box.
+ *   Place icons use it today; Trouble/Trade badges and the battle sprites (Lenses II) reuse it.
+ *   No other code rasterises an icon for the map.
+ * - buildLocationIconTexture: a place type's carved shape (`PLACE_ICON` → `iconShape`) in the
+ *   near-black ink, or a lair/anomaly tint. An unknown type draws the `fallback` shape (Law 58).
+ * - buildLocationIconTextureCache: one texture per registry type, built once at scene init.
  *
- * NFP #1 (tunability): LOCATION_TEXTURE_SIZE is a named constant.
- * NFP #4 (fail-soft): buildLocationIconTexture returns valid (empty) texture for invalid viewBox.
+ * NFP #1 (tunability): texture size, ink and outline width are named constants.
+ * NFP #4 (fail-soft): a malformed viewBox falls back to 100×100; an unknown place type draws
+ *   the fallback shape and warns once — never a blank, never a throw.
  */
 
 import * as THREE from 'three';
-import type { LocationIconDef } from './locationIconRegistry';
+import { iconShape } from '../../shared/iconShape';
+import { PLACE_ICON } from '../../../data/icons/conceptIcons';
+import { FALLBACK_ICON_NAME, type IconShape } from '../../../data/icons/iconRegistry';
 
 // ── NFP #1: Tunable constants ─────────────────────────────────────────────────
 
-/** Canvas rasterization resolution in pixels (power of 2 for GPU efficiency). */
-export const LOCATION_TEXTURE_SIZE = 128;
+/**
+ * Canvas rasterization resolution in pixels (power of 2 for GPU efficiency). 256 since THR-1903:
+ * the carved silhouettes (village, medieval gate) carry detail that 128 px blurs when a
+ * full-class icon draws at about 160 px (k = 20).
+ */
+export const LOCATION_TEXTURE_SIZE = 256;
 
 /** Fill color for all location icon paths — same near-black as signifiers. */
-const LOCATION_FILL_COLOR = '#1a1a1a';
+export const LOCATION_FILL_COLOR = '#1a1a1a';
 
 /** Outline stroke color for location icons — dark outline for legibility over terrain. */
-const LOCATION_OUTLINE_COLOR = '#0a0a0a';
+export const LOCATION_OUTLINE_COLOR = '#0a0a0a';
+
+/**
+ * Outline pass width as a share of the shape's viewBox width — 2.5 on the old 100 grid,
+ * 12.8 on the carved 512 grid, so the outline is the same on screen for both.
+ */
+export const LOCATION_OUTLINE_WIDTH_FRACTION = 0.025;
 
 /** Fixed fill color for cleared lair icons — desaturated, muted relative to terrain. */
 export const CLEARED_LAIR_FILL_COLOR = '#2a2520';
@@ -42,59 +60,75 @@ export const LAIR_SPHERE_FILL_COLORS: Record<string, string> = {
   entropy: '#1f3330',
 };
 
-/** Outline stroke width in viewBox units (scaled with the icon). */
-const LOCATION_OUTLINE_WIDTH = 2.5;
+/** Source grid used when a shape's viewBox does not parse (NFP #4). */
+const FALLBACK_VIEWBOX_EXTENT = 100;
 
-// ── Texture builders ──────────────────────────────────────────────────────────
+// ── The one map icon builder ──────────────────────────────────────────────────
+
+export interface MapIconTextureOptions {
+  /** Canvas size in pixels. */
+  size: number;
+  /** Fill ink for every path. */
+  fill: string;
+  /** Outline ink, stroked under the fill. */
+  outline: string;
+  /** Outline width as a share of the shape's viewBox width. */
+  outlineWidthFraction: number;
+}
+
+/** The map's default ink for an icon texture: near-black fill and outline, at 256 px. */
+export const MAP_ICON_INK: MapIconTextureOptions = {
+  size: LOCATION_TEXTURE_SIZE,
+  fill: LOCATION_FILL_COLOR,
+  outline: LOCATION_OUTLINE_COLOR,
+  outlineWidthFraction: LOCATION_OUTLINE_WIDTH_FRACTION,
+};
 
 /**
- * Rasterizes a single LocationIconDef to a THREE.CanvasTexture.
- *
- * Draws all paths with per-path opacity onto a transparent canvas,
- * scaling from viewBox coordinates to the target pixel size.
- *
- * @param def              Icon definition (paths, viewBox, sizeClass)
- * @param size             Canvas size in pixels (default: LOCATION_TEXTURE_SIZE)
- * @param fillColorOverride Optional fill color override — used for lair sphere tints.
- *                          When provided, replaces LOCATION_FILL_COLOR for all fill passes.
- *
- * NFP #4: If viewBox is malformed, falls back to 100×100 source dimensions.
+ * How a shape's viewBox maps onto a square canvas: the scale on each axis and the outline
+ * width in viewBox units. Pure, so the "same box for any grid" rule is testable without a canvas.
  */
-export function buildLocationIconTexture(
-  def: LocationIconDef,
-  size: number = LOCATION_TEXTURE_SIZE,
-  fillColorOverride?: string,
+export function mapIconTransform(
+  viewBox: string,
+  size: number,
+  outlineWidthFraction: number,
+): { scaleX: number; scaleY: number; outlineWidth: number; vbW: number; vbH: number } {
+  const parts = viewBox.split(/[\s,]+/).map(Number);
+  const vbW = parts[2] > 0 ? parts[2] : FALLBACK_VIEWBOX_EXTENT;
+  const vbH = parts[3] > 0 ? parts[3] : FALLBACK_VIEWBOX_EXTENT;
+  return { scaleX: size / vbW, scaleY: size / vbH, outlineWidth: vbW * outlineWidthFraction, vbW, vbH };
+}
+
+/**
+ * Rasterises any icon shape to a THREE.CanvasTexture in the map's ink (plan D13).
+ * Pass 1 strokes every path with the outline ink; pass 2 fills on top. Per-path opacity
+ * (our own layered drawings) is honoured; carved shapes are one path at opacity 1.
+ */
+export function buildMapIconTexture(
+  shape: IconShape,
+  opts: MapIconTextureOptions = MAP_ICON_INK,
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = opts.size;
+  canvas.height = opts.size;
   const ctx = canvas.getContext('2d')!;
 
-  // Parse viewBox: "minX minY width height" — use width/height for scaling
-  const parts = def.viewBox.split(' ').map(Number);
-  const vbW = parts[2] || 100;
-  const vbH = parts[3] || 100;
-  const scaleX = size / vbW;
-  const scaleY = size / vbH;
-
-  const fillColor = fillColorOverride ?? LOCATION_FILL_COLOR;
+  const { scaleX, scaleY, outlineWidth } = mapIconTransform(shape.viewBox, opts.size, opts.outlineWidthFraction);
 
   ctx.save();
   ctx.scale(scaleX, scaleY);
 
-  // Pass 1: stroke outlines (drawn first so fill renders on top)
-  ctx.strokeStyle = LOCATION_OUTLINE_COLOR;
-  ctx.lineWidth = LOCATION_OUTLINE_WIDTH;
+  ctx.strokeStyle = opts.outline;
+  ctx.lineWidth = outlineWidth;
   ctx.lineJoin = 'round';
-  for (const path of def.paths) {
-    ctx.globalAlpha = path.opacity;
+  for (const path of shape.paths) {
+    ctx.globalAlpha = path.opacity ?? 1;
     ctx.stroke(new Path2D(path.d));
   }
 
-  // Pass 2: fill paths on top of outlines
-  for (const path of def.paths) {
-    ctx.globalAlpha = path.opacity;
-    ctx.fillStyle = fillColor;
+  ctx.fillStyle = opts.fill;
+  for (const path of shape.paths) {
+    ctx.globalAlpha = path.opacity ?? 1;
     ctx.fill(new Path2D(path.d));
   }
   ctx.restore();
@@ -104,19 +138,82 @@ export function buildLocationIconTexture(
   return tex;
 }
 
+// ── Places ────────────────────────────────────────────────────────────────────
+
+const placeIconFallbacks = new Set<string>();
+
+/** Whether `type` has a place shape in `PLACE_ICON`. */
+function hasPlaceIcon(type: string): type is keyof typeof PLACE_ICON {
+  return Object.prototype.hasOwnProperty.call(PLACE_ICON, type);
+}
+
 /**
- * Builds a texture cache for an entire location icon registry.
+ * The carved shape a place type draws on the map: `iconShape(PLACE_ICON[type])`. A type with
+ * no `PLACE_ICON` entry draws the `fallback` shape, warns once, and is listed in
+ * `getPlaceIconStatus().fallbacks` (Law 58).
+ */
+export function placeIconShape(type: string): IconShape {
+  if (hasPlaceIcon(type)) return iconShape(PLACE_ICON[type]);
+  if (!placeIconFallbacks.has(type)) {
+    placeIconFallbacks.add(type);
+    console.warn(`[map] no place icon for location type "${type}"; drawing the fallback mark`);
+  }
+  return iconShape(FALLBACK_ICON_NAME);
+}
+
+/** Records that a place type drew the fallback because the map registry has no entry for it. */
+export function notePlaceIconFallback(type: string): void {
+  if (placeIconFallbacks.has(type)) return;
+  placeIconFallbacks.add(type);
+  console.warn(`[map] no map icon entry for location type "${type}"; drawing the fallback mark at small`);
+}
+
+/** `__DEBUG.getMapChrome().placeIcons` — the place types that drew the fallback so far. */
+export function getPlaceIconStatus(): { fallbacks: string[] } {
+  return { fallbacks: [...placeIconFallbacks].sort() };
+}
+
+/** Test hook: forget which place types already fell back. */
+export function resetPlaceIconFallbacksForTest(): void {
+  placeIconFallbacks.clear();
+}
+
+/**
+ * Rasterises a place type's carved shape in the map's ink.
+ *
+ * @param type              Location type (a `PLACE_ICON` key; anything else draws `fallback`)
+ * @param size              Canvas size in pixels (default: LOCATION_TEXTURE_SIZE)
+ * @param fillColorOverride Optional fill — lair sphere tints and the cleared-lair fill.
+ */
+export function buildLocationIconTexture(
+  type: string,
+  size: number = LOCATION_TEXTURE_SIZE,
+  fillColorOverride?: string,
+): THREE.CanvasTexture {
+  return buildMapIconTexture(placeIconShape(type), {
+    ...MAP_ICON_INK,
+    size,
+    fill: fillColorOverride ?? LOCATION_FILL_COLOR,
+  });
+}
+
+/** Texture-cache key for the fallback mark an unknown place type draws. */
+export const PLACE_FALLBACK_TEXTURE_KEY = 'fallback';
+
+/**
+ * Builds a texture cache for an entire location icon registry, plus the fallback mark.
  * Key format: LocationType string (one texture per location type, no variants).
  *
  * Called once at scene init — no per-frame cost.
  * All textures remain alive for the scene's lifetime.
  */
 export function buildLocationIconTextureCache(
-  registry: Record<string, LocationIconDef>,
+  registry: Record<string, unknown>,
 ): Map<string, THREE.CanvasTexture> {
   const cache = new Map<string, THREE.CanvasTexture>();
-  for (const [locationType, def] of Object.entries(registry)) {
-    cache.set(locationType, buildLocationIconTexture(def));
+  for (const locationType of Object.keys(registry)) {
+    cache.set(locationType, buildLocationIconTexture(locationType));
   }
+  cache.set(PLACE_FALLBACK_TEXTURE_KEY, buildMapIconTexture(iconShape(FALLBACK_ICON_NAME)));
   return cache;
 }
