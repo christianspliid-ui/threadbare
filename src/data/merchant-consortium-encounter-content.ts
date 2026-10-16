@@ -263,7 +263,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'refusal; it is the other side doing arithmetic. {name} wait{s}. ' +
           '{?has_faction}The boilerplate is three pages the consortium has used a hundred times. ' +
           'The revisions {name} want{s} sit in the margin in {their} own hand.{/has_faction}' +
-          '{?no_faction}Without standard terms to anchor on, the conversation circle{s} longer ' +
+          '{?no_faction}Without standard terms to anchor on, the conversation circles longer ' +
           'than it should. {name} carry the room with patience instead of precedent.{/no_faction}',
         successAfterimage:
           'Ink on both copies. The supplier looks relieved, which is the tell that {name} left ' +
@@ -370,7 +370,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           '{name}\'s pocket. Breakage is tracked; replacement is expensive.{/has_artifact}',
         successAfterimage:
           'The last wagon rolls out on schedule. The manifest ticks even, down to the last crate. ' +
-          'The captain nod{s} at {name} the way a man nod{s} when he know{s} he will be watched.',
+          'The captain nods at {name} the way a man nods when he knows he will be watched.',
         failureAfterimage:
           'Three crates short at the final count. Either a clerical error or a small theft, ' +
           'and the consortium will want to know which before the month turns.',
@@ -395,7 +395,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'of the column at the halfway stop to check the inn where the guards will bed. ' +
           'The innkeeper has their usual table saved, which is either loyalty or a warning. ' +
           '{?has_ally}{ally:strongest} ride{s} with the wagons as far as the county line — the ' +
-          'consortium is not paying for the escort, but the consortium know{s} who rode.{/has_ally}',
+          'consortium is not paying for the escort, but the consortium knows who rode.{/has_ally}',
         successAfterimage:
           'Delivery at the far end: every crate accounted for, {cast:factor} sign{s} in ink that ' +
           'has not been cut with water. The split on this run will be generous.',
@@ -702,7 +702,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         reactions: [
           {
             id: 'appraisal_intel_forger',
-            label: 'The forger know{s} the craft. Find them.',
+            label: 'The forger knows the craft. Find them.',
             intent:
               'A forgery good enough to pass a first look is worth tracing. The maker will have ' +
               'left other work in circulation — and future work will pass through the same channels.',
@@ -819,7 +819,7 @@ export const MERCHANT_CONSORTIUM_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
         'The consortium intends to control the supply of a commodity in {location}. {name} is ' +
         'sent to close the door behind them.',
       success:
-        'The supply runs through the consortium now. The market adjust{s} quietly, which is the ' +
+        'The supply runs through the consortium now. The market adjusts quietly, which is the ' +
         'mark of a monopoly done well.',
       failure:
         'The suppliers held their independence. The consortium retreats and writes down the cost.',
@@ -942,7 +942,7 @@ export const MERCHANT_CONSORTIUM_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
           'The terms sit on the table in both languages: twelve articles, two currencies, three ' +
           'signatures required per side. {name} walk{s} through the numbers slowly because the ' +
           'head of delegation is checking their translator\'s work against {their} own reading. ' +
-          '{?has_faction}The consortium seal go{es} on the cover page after the last signature. ' +
+          '{?has_faction}The consortium seal goes on the cover page after the last signature. ' +
           'It is heavier than the page.{/has_faction}',
         successAfterimage:
           'A new route opens from {location} into kingdoms the consortium has been locked out of ' +
@@ -1083,7 +1083,7 @@ export const MERCHANT_CONSORTIUM_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
           'street price that includes a buyer\'s realism. The real number sits somewhere between, ' +
           'and the next two hours are spent finding exactly where. ' +
           '{?has_faction}The consortium\'s reputation as a payer of promises speed{s} the ' +
-          'negotiation — the owner know{s} the coin will arrive on time, which is a kind of ' +
+          'negotiation — the owner knows the coin will arrive on time, which is a kind of ' +
           'discount built into the relationship.{/has_faction}',
         successAfterimage:
           'The keys pass across the table. The consortium has a warehouse eighty paces from the ' +
@@ -1220,7 +1220,7 @@ export const MERCHANT_CONSORTIUM_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
           '{?has_faction}The consortium\'s fallback positions are in {name}\'s head, three levels ' +
           'deep. Nothing gets given until the third level; nothing below that survives.{/has_faction}',
         successAfterimage:
-          'The charter find{s} enough support to begin signatures on the afternoon session. The ' +
+          'The charter finds enough support to begin signatures on the afternoon session. The ' +
           'two hostile clauses are redrafted in ways nobody loves but everyone can sign.',
         failureAfterimage:
           'A coalition forms against the third article. Deadlock by the evening bell; the summit ' +
@@ -1415,7 +1415,7 @@ export const MERCHANT_CONSORTIUM_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
         failureMetadata: { reputationDelta: -0.04 },
         narrativeTemplate:
           'With the competition weakened, {name} name{s} the new price structure {location}\'s ' +
-          'market will operate under. The book price rise{s} by degrees nobody celebrates. The ' +
+          'market will operate under. The book price rises by degrees nobody celebrates. The ' +
           'street price moves with it. The quiet part — the part no broadsheet prints — is that ' +
           'everyone in the city pays the consortium for permission to do business now, whether ' +
           'or not the ledger says so. ' +
@@ -1661,7 +1661,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           'the other consortium houses open on their own tables. A discrepancy of two points in ' +
           'either direction is a conversation; ten is a problem.{/has_faction}',
         successAfterimage:
-          'The factors nod, sign, and the lead factor mention{s} a cousin\'s project {they} think ' +
+          'The factors nod, sign, and the lead factor mentions a cousin\'s project {they} think ' +
           '{name} might find interesting. That is the real approval.',
         failureAfterimage:
           'A discrepancy in the third column. Not a problem, but a question. The factors will ' +
@@ -1875,7 +1875,7 @@ export const MCT_JOIN_TEMPLATE: UnifiedActionTemplate = {
         '{?no_faction}Without a sense of what the consortium values, {name} write{s} what ' +
         '{they} would actually do, which is either honest enough to pass or naive enough to fail.{/no_faction}',
       successAfterimage:
-        'The senior factor read{s} the sheet through twice, then look{s} up. "Your reasoning on ' +
+        'The senior factor reads the sheet through twice, then looks up. "Your reasoning on ' +
         'the exclusivity clause was the point. Welcome to the consortium."',
       failureAfterimage:
         '"Come back when you have thought longer about what the contract was actually protecting." ' +
@@ -1961,7 +1961,7 @@ export const MCT_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
         'it is about whether a member can be trusted with decisions that affect the house\'s ' +
         'standing.{/has_faction}',
       successAfterimage:
-        'The senior master close{s} the folder and slide{s} a new seal across the table. ' +
+        'The senior master closes the folder and slides a new seal across the table. ' +
         '"The consortium is pleased." A clean handshake, which in this room is the point.',
       failureAfterimage:
         'The masters point to the third contract — the terms were favorable but the relationship ' +
@@ -1998,7 +1998,7 @@ export const MCT_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
           id: 'promotion_advanced',
           label: 'The seal has changed.',
           intent:
-            'The promotion is formal and recorded. The consortium treat{s} {name} differently now — ' +
+            'The promotion is formal and recorded. The consortium treats {name} differently now — ' +
             'not dramatically, but specifically.',
           effects: [
             { kind: 'reputation_tally', key: 'gold.positive', delta: 2 },

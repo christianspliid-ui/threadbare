@@ -118,11 +118,11 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           '{name} work{s} slower to compensate.{/no_artifact} ' +
           'The wall will not remember this section was weak. That is the point of repair work: the forgetting.',
         successAfterimage:
-          'The repaired section ring{s} when tapped — the sound of stone properly bedded. ' +
+          'The repaired section rings when tapped — the sound of stone properly bedded. ' +
           '{name} give{s} it three days before weight-testing. Mortar needs to cure.',
         failureAfterimage:
-          'The repair hold{s} its shape. The joint at the second course is a fraction thin — ' +
-          'visible to a mason who know{s} what to look for, invisible to the client.',
+          'The repair holds its shape. The joint at the second course is a fraction thin — ' +
+          'visible to a mason who knows what to look for, invisible to the client.',
       },
     ],
     narrativeTemplates: {
@@ -270,7 +270,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           '{name} trowel{s} the joint perimeter and leaves the site.',
         failureAfterimage:
           'A hairline appears in the northeast corner as the forms come off. Not structural. ' +
-          'The kind of thing a builder note{s}, alone, without writing it down.',
+          'The kind of thing a builder notes, alone, without writing it down.',
       },
     ],
     narrativeTemplates: {
@@ -371,7 +371,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         successMetadata: { reputationDelta: 0.01 },
         failureMetadata: { reputationDelta: -0.01 },
         narrativeTemplate:
-          'The iron stock look{s} clean under normal light. {name} knock{s} a test piece into ' +
+          'The iron stock looks clean under normal light. {name} knock{s} a test piece into ' +
           'the forge to read it under heat: the color tells {name} what the metal is hiding. ' +
           'Good stock burn{s} orange and settle{s}; impure stock blush{es} in patches and smell{s} of sulfur. ' +
           '{?has_artifact}The quality tongs {name} carries let {them} position the test piece ' +
@@ -380,7 +380,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'in the joint. Every instrument reveals something about its limits.{/no_artifact} ' +
           'The first step is not making anything. The first step is finding out what the stock will and will not give.',
         successAfterimage:
-          'The test piece burn{s} clean. The stock will answer the hammer honestly.',
+          'The test piece burns clean. The stock will answer the hammer honestly.',
         failureAfterimage:
           'A faint sulfur edge in the second heat. ' +
           'The impurity is present; its severity is not yet known.',
@@ -404,7 +404,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'not until {they} decid{es} it is done. Those are different ending conditions. ' +
           'Tools made to a deadline and not to the metal\'s will carry their deadline into every ' +
           'job they are used on. ' +
-          '{?has_artifact}Working with quality stock and quality tools, the combination close{s} ' +
+          '{?has_artifact}Working with quality stock and quality tools, the combination closes ' +
           'the margin considerably.{/has_artifact} ' +
           'The last heat, the last quench. The tools cool on the rack. ' +
           '{name} tap{s} each one with a finger, feeling the ring.',
@@ -525,10 +525,10 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         successMetadata: { reputationDelta: 0.01 },
         failureMetadata: { reputationDelta: -0.005 },
         narrativeTemplate:
-          'The patron want{s} a building on the corner lot at the east end of the market district. ' +
+          'The patron wants a building on the corner lot at the east end of the market district. ' +
           'What the deed says and what the lot is are two different arguments. ' +
           '{?has_artifact}The surveying rod and transit {name} carries turn this into a formal ' +
-          'record rather than an approximation — the ground drop{s} half a degree toward the ' +
+          'record rather than an approximation — the ground drops half a degree toward the ' +
           'north over twenty feet, which matter{s} when the drainage channel in the street was ' +
           'designed for a narrower frontage.{/has_artifact}' +
           '{?no_artifact}Without formal instruments, {name} work{s} the lot by stretched line ' +
@@ -564,7 +564,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         successAfterimage:
           'Clean plans delivered. The drainage solution is in the drawings before the walls are.',
         failureAfterimage:
-          'Plans delivered. The drainage solution contain{s} an assumption {name} will need to revisit ' +
+          'Plans delivered. The drainage solution contains an assumption {name} will need to revisit ' +
           'when someone else build{s} from them.',
       },
     ],
@@ -690,10 +690,10 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         narrativeTemplate:
           'The commission is for decorative ironwork — a merchant family upgrading their main hall ' +
           'and wanting the hinges, escutcheons, and fireplace surround to match. ' +
-          '{name} listen{s} to what the client say{s} and what the client mean{s} by it. ' +
+          '{name} listen{s} to what the client says and what the client means by it. ' +
           'The timeline they propose is aggressive, and aggressive timelines mean one of three things: ' +
           'rushed work, inflated price, or a client who does not understand what they are asking. ' +
-          '{name} name{s} a realistic completion date. The client accept{s} it, or {they} do not.',
+          '{name} name{s} a realistic completion date. The client accepts it, or {they} do not.',
         successAfterimage:
           'Fair terms agreed. The deposit is paid. The timeline is the one the work requires.',
         failureAfterimage:
@@ -881,7 +881,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'built over running water should expect this. ' +
           '{?has_artifact}The precision instruments allow real-time adjustment of the formwork ' +
           'as the arch rises — the curve is checked at each course, not assumed.{/has_artifact} ' +
-          'The keystone go{es} in on a dry morning. {name} watch{es} the scaffolding come down.',
+          'The keystone goes in on a dry morning. {name} watch{es} the scaffolding come down.',
         successAfterimage:
           'The bridge stands. {name} walk{s} across it once, feeling the solidity in the arch ' +
           'transfer underfoot. Traffic will begin using it by tomorrow.',
@@ -1045,7 +1045,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'that matters most, but that decision is documented in the record and the alternatives ' +
           'were presented. {name} is not responsible for what the council chose not to build. ' +
           '{They} are responsible for building what they did approve, correctly. ' +
-          '{name} walk{s} the site each morning. The stone go{es} where the plan says it go{es}.',
+          '{name} walk{s} the site each morning. The stone goes where the plan says it goes.',
         successAfterimage:
           'The improvements are complete. The northern approach is harder than it was. ' +
           'The gap where the gallery was not built is visible to anyone who knows to look for it.',
@@ -1308,7 +1308,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         successMetadata: { reputationDelta: 0.03 },
         failureMetadata: { reputationDelta: -0.01 },
         narrativeTemplate:
-          'The city council want{s} a monument to their founding generation — aspirational ' +
+          'The city council wants a monument to their founding generation — aspirational ' +
           'in scale, visible from the harbor. {name} spend{s} the first week reading the site: ' +
           'the angle of the morning light, the sightlines from the main boulevard, the way the ' +
           'hill rises behind the proposed location. A monument that does not work with its site ' +
@@ -1320,8 +1320,8 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'the harbor sightline requires, what the morning light on the east face will do across ' +
           'a decade of seasons.{/no_artifact}',
         successAfterimage:
-          'A design that work{s} with the hill rather than against it. ' +
-          'The council review{s} it and approve{s} unanimously.',
+          'A design that works with the hill rather than against it. ' +
+          'The council reviews it and approves unanimously.',
         failureAfterimage:
           'A design that is ambitious but front-heavy — the upper register ' +
           'will dominate the profile in a way the site does not support.',
@@ -1340,7 +1340,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'on the upper register. The marble comes from two quarries, one of which has been ' +
           'cutting that grade for thirty years and one of which has been cutting it for three. ' +
           '{name} visit{s} both. ' +
-          'The older quarry cost{s} thirty percent more. The stone read{s} consistent at every ' +
+          'The older quarry costs thirty percent more. The stone reads consistent at every ' +
           'depth sampled. {name} sign{s} with the older quarry. The choice will be invisible ' +
           'in the finished monument, which is the point of the choice.',
         successAfterimage:
@@ -1374,10 +1374,10 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'The unveiling is civic ceremony. {name} stand{s} to one side and look{s} at the proportions. ' +
           'The north face light is correct. The harbor sightline is correct.',
         successAfterimage:
-          'The monument stand{s} on the hill. The ratio works from the harbor, from the boulevard, ' +
+          'The monument stands on the hill. The ratio works from the harbor, from the boulevard, ' +
           'from the side street {name} walked to check it the week before the unveiling.',
         failureAfterimage:
-          'The monument stand{s}. The northeast corner geometry is a fraction off from the design intent — ' +
+          'The monument stands. The northeast corner geometry is a fraction off from the design intent — ' +
           'visible to someone holding the drawing, invisible to everyone else.',
       },
     ],
@@ -1516,7 +1516,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'not at the design stage. The design was correct; the construction method was not.',
         successAfterimage:
           'Every calculation check{s} out. The formwork release sequence is documented. ' +
-          'The vault will stand — the math say{s} so, and the math has been checked three times.',
+          'The vault will stand — the math says so, and the math has been checked three times.',
         failureAfterimage:
           'A fundamental flaw in the formwork release sequence. ' +
           'The wonder cannot be built as currently designed without solving this problem first.',
@@ -1543,11 +1543,11 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'By the third section the method is understood. The fourth section goes in clean. ' +
           'The formwork comes out. {name} walk{s} under the vault and does not look up for a long time.',
         successAfterimage:
-          'The vault stand{s} without interior columns. The light inside it move{s} the way ' +
+          'The vault stands without interior columns. The light inside it moves the way ' +
           '{name} calculated it would — a different quality than any covered market in the city.',
         failureAfterimage:
           'The third section has a visible deviation from the design geometry — within structural ' +
-          'tolerance, outside aesthetic tolerance. The wonder stand{s}, but not perfectly.',
+          'tolerance, outside aesthetic tolerance. The wonder stands, but not perfectly.',
       },
     ],
     narrativeTemplates: {
@@ -1669,7 +1669,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'The master\'s workshop run{s} off the south lane, identifiable by the smell of oil ' +
           'and the sound of a wheel-lathe that has been running since before {name} arrived. ' +
-          'The tour is informal: the master narrate{s} when something is interesting and does not ' +
+          'The tour is informal: the master narrates when something is interesting and does not ' +
           'narrate when it is not. {name} keep{s} pace and hold{s} {their} questions until the end. ' +
           '{?has_artifact}The tools {name} carries are close enough to the work being shown that ' +
           '{they} can ask comparative questions rather than explanatory ones — the conversation ' +
@@ -1783,7 +1783,7 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           'Everyone is in a better mood than usual, which is noticeable because the usual mood ' +
           'is not bad but is not particularly festive either. ' +
           '{name} find{s} a place at the long table and eat{s}. ' +
-          'The Fellowship trade{s} work stories the way other people trade gossip — ' +
+          'The Fellowship trades work stories the way other people trade gossip — ' +
           'what held up a foundation pour, what the commissioners never understand about curing time, ' +
           'what the younger apprentices are doing wrong that everyone did wrong once.',
         successAfterimage:
@@ -2002,7 +2002,7 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
         '{name} work{s}. The observers do not comment.',
       successAfterimage:
         'The fitting is examined, turned over, examined again. ' +
-        'One of the journeymen nod{s}. "Welcome to the Fellowship."',
+        'One of the journeymen nods. "Welcome to the Fellowship."',
       failureAfterimage:
         '"Come back when the joinery is cleaner." ' +
         'A specific critique, at least — not a generalized dismissal.',
@@ -2089,7 +2089,7 @@ export const BF_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
         'The masters examine each piece without comment. The examination takes two hours.',
       successAfterimage:
         'The masters confer for nine minutes. The outcome is in the guild ledger, ' +
-        'and in the particular way the senior master shake{s} {their} hand — like something was settled.',
+        'and in the particular way the senior master shakes {their} hand — like something was settled.',
       failureAfterimage:
         'The masters point to the second ironwork piece. The proportion decision in the center panel ' +
         'is where {name} made the case for the wrong things. Come back in six months.',
@@ -2126,7 +2126,7 @@ export const BF_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
           label: 'The rank has changed.',
           intent:
             'The promotion is formal and recorded. ' +
-            'The Fellowship treat{s} {name} differently now — not dramatically, but specifically.',
+            'The Fellowship treats {name} differently now — not dramatically, but specifically.',
           effects: [
             { kind: 'reputation_tally', key: 'stone.positive', delta: 2 },
           ],

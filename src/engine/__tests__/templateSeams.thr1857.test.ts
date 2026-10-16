@@ -25,6 +25,8 @@ import { composeWaypointName, WAYPOINT_DEFAULT_GROUND } from '../../data/waypoin
 
 const DATA_DIR = join(__dirname, '..', '..', 'data');
 const COORDINATE_NAME = /\(\s*-?\d+\s*,\s*-?\d+\s*\)/;
+/** THR-1945: `the|a|an <noun> <verb>{s|es}` — a noun subject carrying actor agreement. */
+const NOUN_SUBJECT_AGREEMENT = /\b(?:[Tt]he|[Aa]n?) [A-Za-z'-]+ [a-z]+\{(?:s|es)\}/g;
 
 function dataFiles(): Array<{ file: string; text: string }> {
   return readdirSync(DATA_DIR)
@@ -64,6 +66,19 @@ describe('name-subject verb agreement (THR-1857)', () => {
       for (const m of text.matchAll(PRONOUN_SUBJECT_HARDCODED_S)) offenders.push(`${file}: ${m[0]}`);
     }
     expect(offenders).toEqual([]);
+  });
+
+  it('content lint: no {s} after a determiner-led noun subject (THR-1945)', () => {
+    // `{s}` agrees with the scene's actor, so "The captain nod{s}" reads "The captain nod"
+    // for a they/them actor. A noun subject is never the actor: write the verb out.
+    const offenders: string[] = [];
+    for (const { file, text } of dataFiles()) {
+      for (const m of text.matchAll(NOUN_SUBJECT_AGREEMENT)) offenders.push(`${file}: ${m[0]}`);
+    }
+    expect(offenders).toEqual([]);
+    expect('The captain nod{s} at {name}'.match(NOUN_SUBJECT_AGREEMENT)).not.toBeNull();
+    expect('the stone go{es} in'.match(NOUN_SUBJECT_AGREEMENT)).not.toBeNull();
+    expect('{They} nod{s}, and the captain nods'.match(NOUN_SUBJECT_AGREEMENT)).toBeNull();
   });
 
   it('the lint itself catches the shapes it guards', () => {
