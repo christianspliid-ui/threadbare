@@ -6,7 +6,7 @@
       "filename": "Cosmology.md",
       "title": "Cosmology",
       "contentAdjacent": true,
-      "termCount": 17,
+      "termCount": 22,
       "blurb": "Content-adjacent shard. Terms covering the cosmic system: Reaches, Spheres, domain capability, prerequisites."
     },
     {
@@ -554,6 +554,150 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Cosmology.md#card-progression",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "run",
+      "name": "Run",
+      "aliases": [
+        "age (player-facing)",
+        "cycle (engine field: `GameState.cycle`",
+        "`AccountRecord.cycleCount`)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated 2026-10-16, THR-1845 via THR-1813; design-lane delegation, Christian's veto retained",
+      "oneLiner": "one god's life in one world; each run wakes in a new world (*age* on screen, *cycle* in code); notes the Harvest and Remembrance collisions",
+      "body": "One god's life in one world, from Remembrance to the harvest. Each run wakes in a **new world** (Christian, 2026-10-11, THR-1773): a new map, never a continuation of the last. The screen says *age*; the code keeps *cycle*. The god starts every run as strong as the first; what carries is the world's memory (`[[Echo]]`, `[[World Tilt]]`) and the choices open to the player.\n\n**Collision — Harvest.** *Harvest* is also the economic verb (the active harvest of a staple, `Agents.md`). The run-end screen keeps the name in code (`HarvestScreen`, `computeHarvest`); in prose, the run-end is *the end of an age*.\n\n**Collision — Remembrance.** *Remembrance* is the opening flow that makes the god (and a title word in `remembrance.ts`). Its new first step from run 2 on is *The world remembers* — a step of Remembrance, not a separate flow.",
+      "seeAlso": [
+        {
+          "raw": "Echo",
+          "termName": "Echo",
+          "resolvedSlug": "cosmology#echo"
+        },
+        {
+          "raw": "Account Record",
+          "termName": "Account Record",
+          "resolvedSlug": "cosmology#account-record"
+        },
+        {
+          "raw": "World Tilt",
+          "termName": "World Tilt",
+          "resolvedSlug": "cosmology#world-tilt"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#run",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "echo",
+      "name": "Echo",
+      "aliases": [
+        "`EchoDefinition` (`src/types/echo.ts`)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated 2026-10-16, THR-1845 via THR-1813",
+      "oneLiner": "what a run leaves the next world: Monument, Legacy, Relic or card echo; divine (the god's own) or cosmic",
+      "body": "Something a run leaves for the next world: a **Monument** (a place), a **Legacy** (a mortal's line), a **Relic** (an artifact), or a **card echo** (a nudge card in the next repertoire, THR-887). **Divine** echoes are the god's own, picked at harvest by rule (the places it held most surely, the mortals it raised highest, the relics its chosen carried); **cosmic** echoes are the world's most significant nodes. Both carry the god's bought primary and secondary spheres. One formatter names an echo everywhere: `echoDisplayName` (*The Long Barrow*, *the line of Maren Ashfold*, *the Hollow Bell*).",
+      "seeAlso": [
+        {
+          "raw": "Run",
+          "termName": "Run",
+          "resolvedSlug": "cosmology#run"
+        },
+        {
+          "raw": "Memory Word",
+          "termName": "Memory Word",
+          "resolvedSlug": "cosmology#memory-word"
+        },
+        {
+          "raw": "Account Record",
+          "termName": "Account Record",
+          "resolvedSlug": "cosmology#account-record"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#echo",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "memory-word",
+      "name": "Memory Word",
+      "aliases": [],
+      "status": "canonical",
+      "statusNote": "seated 2026-10-16, THR-1845 via THR-1813",
+      "oneLiner": "how faded an echo is, as a word: still warm / fading / almost gone",
+      "body": "How faded an echo is, never a number: *still warm* / *fading* / *almost gone* (degradation below 0.3 / 0.6 / 0.9; at 0.9 the echo is gone). Each run an echo ages one step (`ECHO_DEGRADATION_RATE`). Code: `memoryWord` in `src/data/account-content.ts`.",
+      "seeAlso": [
+        {
+          "raw": "Echo",
+          "termName": "Echo",
+          "resolvedSlug": "cosmology#echo"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#memory-word",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "account-record",
+      "name": "Account Record",
+      "aliases": [
+        "the account",
+        "`AccountRecord` (`src/types/account.ts`)"
+      ],
+      "status": "canonical",
+      "statusNote": "seated 2026-10-16, THR-1845 via THR-1813",
+      "oneLiner": "the small versioned record that carries between runs; not a world save",
+      "body": "The small versioned record that carries between runs: runs completed, the next world's seed, awake hungers, stirring hungers, open second courts, unsealed cards, live echoes, the World-Soul's fundament and resonance. **Not a world save.** It lives outside `GameState`; only `src/engine/accountStore.ts` reads or writes it to storage (browser storage, key `threadbare.account.v1`), so a cleared browser forgets it. Nothing in it touches the god's sphere points, essence, power, reaches or tiers.",
+      "seeAlso": [
+        {
+          "raw": "Run",
+          "termName": "Run",
+          "resolvedSlug": "cosmology#run"
+        },
+        {
+          "raw": "Echo",
+          "termName": "Echo",
+          "resolvedSlug": "cosmology#echo"
+        },
+        {
+          "raw": "World Tilt",
+          "termName": "World Tilt",
+          "resolvedSlug": "cosmology#world-tilt"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#account-record",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "cosmology",
+      "slug": "world-tilt",
+      "name": "World Tilt",
+      "aliases": [],
+      "status": "canonical",
+      "statusNote": "seated 2026-10-16, THR-1845 via THR-1813",
+      "oneLiner": "how far a new world leans toward the spheres earlier gods drew on, through the cosmology profile",
+      "body": "How far a new world leans toward the spheres earlier gods drew on. Each run end blends the account's fundament toward the god's bought spheres (`FUNDAMENT_BLEND_PER_RUN`) and back toward even (`FUNDAMENT_REVERT`); the next world's `[[Cosmology Profile]]` is multiplied sphere by sphere by the result (`WORLD_TILT_GAIN`). Read through the cosmology profile because the fundament's own weights are overwritten every tick. Player-facing it is a sentence, never a number: *\"This world leans a little toward Life and Spirit.\"*",
+      "seeAlso": [
+        {
+          "raw": "Account Record",
+          "termName": "Account Record",
+          "resolvedSlug": "cosmology#account-record"
+        },
+        {
+          "raw": "Cosmology Profile",
+          "termName": "Cosmology Profile",
+          "resolvedSlug": "cosmology#cosmology-profile"
+        },
+        {
+          "raw": "Run",
+          "termName": "Run",
+          "resolvedSlug": "cosmology#run"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Cosmology.md#world-tilt",
       "contentAdjacent": true
     },
     {

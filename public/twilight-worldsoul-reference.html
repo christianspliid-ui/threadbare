@@ -42,14 +42,13 @@
     (echo.ts — legacy→cultural_template, monument→location_feature, relic→quest_seed)
     has NO non-test caller. Injection hooks are built and unit-tested but nothing
     consumes them. Flag next-world seeding DESIGN.
-  - Divine echoes are a STUB: computeHarvest returns divineEchoSlots (3/2/1) and the
-    HarvestScreen literally says "(selection coming in a future update)";
-    transitionToNewCycle is called with an EMPTY divine-echo array
-    (useSimulation.ts:134). Divine echo selection = DESIGN.
-  - "Next world" is the same world continued, not regenerated: transitionToNewCycle
-    (cycleEnd.ts) returns {...state, cycle+1, tick:0, phase:'transition'} — it degrades
-    echoes, builds a chronicle Volume, resets per-cycle logs, but does NOT re-run
-    worldgen. No fresh cosmos is seeded. Flag re-seeding DESIGN.
+  - THR-1813 slice 1 (2026-10-16): divine echoes are picked BY RULE at harvest
+    (computeHarvest → pickDivineEchoes: Monument → Legacy → Relic) and the harvest
+    screen names them ("Your age leaves behind: …"). concludeRun (accountRecord.ts)
+    folds the run into the account record at harvest; "Wake in a new world" builds a
+    NEW world (fresh worldgen, derived seed) through Remembrance, tilted by the carried
+    fundament and loaded with the live echoes. transitionToNewCycle has no production
+    caller any more. Placing echoes on the new map is slice 2 (THR-1843) = DESIGN.
   - The new cycle gets a fresh Doom clock (THR-1642): createDoomClockState with the
     same archetype and DEFAULT_DOOM_TICKS, identity milestones un-fired. Before, the
     expired clock carried over and cycle 2 re-entered twilight on its first tick.
@@ -257,8 +256,8 @@
     <p>How many echoes survive depends on how the age <em>ended</em>. A world carried to a fulfilled purpose ends in a <span class="term">triumphant age</span> and keeps the most. A world that simply ran out of time ends <span class="term">somber</span> and keeps the fewest. Anything between is <span class="term">bittersweet</span>. The ending is not just a verdict on your play — it decides how much of this world reaches the next.</p>
     <div class="callout green">
       <div class="callout-title">Which things become echoes</div>
-      <p>Echoes are chosen by <em>significance</em>, not by you directly — the world offers up the mortals, places, and artifacts that were most woven into its story, and the strongest are preserved. Alongside them, the age is meant to grant a few <span class="term">divine echoes</span> — traces of the kind of god <em>you</em> were, chosen by your hand. That personal harvest is planned: the closing screen shows the slots, but the choosing arrives in a later update.</p>
-      <p>The closing screen is a full-screen ceremony, like meeting your First: the age ends on a dark ground with the world hidden behind it, and every preserved echo shows at once in rows rather than in a strip you scroll. Only <em>Begin Next Cycle</em> leaves it.</p>
+      <p>Echoes are chosen by <em>significance</em>, not by you directly — the world offers up the mortals, places, and artifacts that were most woven into its story, and the strongest are preserved. Alongside them, the age is meant to grant a few <span class="term">divine echoes</span> — traces of the kind of god <em>you</em> were, chosen by your hand. The world picks them for you, by rule: the places you held most surely, the mortals you raised highest, the relics your chosen carried. The closing screen names them — <em>"Your age leaves behind: …"</em> — or says the age leaves little to remember.</p>
+      <p>The closing screen is a full-screen ceremony, like meeting your First: the age ends on a dark ground with the world hidden behind it, and every preserved echo shows at once in rows rather than in a strip you scroll. Only <em>Wake in a new world</em> leaves it: this world ends, and a new one wakes — a new map, not this one continued — shaped by what this one left behind. You choose your next god in Remembrance; it starts as strong as your first.</p>
     </div>
   </section>
 
@@ -298,7 +297,7 @@
 
       <div class="callout red">
         <div class="callout-title">The load-bearing honest call for this page</div>
-        <p>Echoes carry across cycles, degrade, and enter the chronicle — but they do <strong>not yet mechanically seed the next world.</strong> Each <code>EchoDefinition</code> is built with an <code>injection</code> hook (<code>echo.ts</code>: <code>legacy→cultural_template</code>, <code>monument→location_feature</code>, <code>relic→quest_seed</code>), and <code>collectInjections</code> gathers the active ones — but <code>collectInjections</code> has <strong>no non-test caller</strong>. Nothing consumes the injections, so an echo's mechanical influence on the next cosmos is <span class="flag design">DESIGN</span>. Likewise <code>transitionToNewCycle</code> (<code>cycleEnd.ts</code>) does <strong>not re-run worldgen</strong> — it returns <code>{...state, cycle+1, tick:0, phase:'transition'}</code>, degrading echoes and binding a chronicle volume but continuing the <em>same</em> graph. The player layer above is written around what actually runs (echoes preserved + chronicle bound + cycle counter advanced), with the "next world reshaped by the last" marked planned.</p>
+        <p>Echoes carry across cycles, degrade, and enter the chronicle — but they do <strong>not yet mechanically seed the next world.</strong> Each <code>EchoDefinition</code> is built with an <code>injection</code> hook (<code>echo.ts</code>: <code>legacy→cultural_template</code>, <code>monument→location_feature</code>, <code>relic→quest_seed</code>), and <code>collectInjections</code> gathers the active ones — but <code>collectInjections</code> has <strong>no non-test caller</strong>. Nothing consumes the injections, so an echo's mechanical influence on the next cosmos is <span class="flag design">DESIGN</span>. Since THR-1813 the next run <strong>does</strong> re-run worldgen: a new world on a derived seed, with the account's live echoes loaded into <code>GameState.echoDefinitions</code> and the cosmology tilted by the carried fundament. Placing those echoes on the map (a monument host, a Legacy heir, an unborne relic) is slice 2, <a href="https://linear.app/threadbare/issue/THR-1843">THR-1843</a> (<span class="flag design">DESIGN</span>).</p>
       </div>
 
       <h3>Per-tick sphere aggregate <span class="flag impl">IMPL</span></h3>
@@ -318,16 +317,17 @@
         <li><code>computeHarvest(state)</code> (<code>cycleEnd.ts</code>) runs when twilight completes. It scores every individual <code>actor</code>, <code>location</code>, and <code>artifact</code> node by <code>computeSignificanceScore(edgeCount, eventCount, nodeType)</code> — edges held plus chronicle entries that name the node — and keeps the top few as cosmic echo candidates.</li>
         <li><strong>Harvest type</strong> is set by how the age closed: <code>triumphant</code> if <code>mandateState.completed</code>, else <code>somber</code> if <code>doomClock.progress &gt; 0.9</code>, else <code>bittersweet</code>. Cosmic echo counts scale with it — <code>5 / 4 / 3</code> (triumphant / bittersweet / somber) — and a one-line <code>chronicleSummary</code> is generated naming the brightest echo.</li>
         <li><strong>Echo kinds.</strong> <code>echo.ts</code> <code>nodeTypeToEchoType</code> maps <code>actor→'legacy'</code>, <code>location→'monument'</code>, <code>artifact→'relic'</code> — the player-facing Legacy / Monument / Relic. Each <code>EchoDefinition</code> takes the top-two cosmology spheres as <code>sphereAffinities</code> and a built (but unconsumed) <code>injection</code> hook.</li>
-        <li><strong>Surface.</strong> <code>HarvestScreen</code> (<code>GameView.tsx:3753</code>, fed by <code>harvestResult</code> in <code>useSimulation.ts</code>) shows the age title, the summary, the preserved cosmic echoes as cards (name, summary, sphere tags, and a banded significance word — <code>ECHO_SIGNIFICANCE_BANDS</code>, Law 13: no percentages player-facing, THR-1357), echo and slot counts spelled as words via <code>countWord</code>, and a <em>Begin Next Cycle</em> button.</li>
+        <li><strong>Surface.</strong> <code>HarvestScreen</code> (<code>GameView.tsx:3753</code>, fed by <code>harvestResult</code> in <code>useSimulation.ts</code>) shows the age title, the summary, the preserved cosmic echoes as cards (name, summary, sphere tags, and a banded significance word — <code>ECHO_SIGNIFICANCE_BANDS</code>, Law 13: no percentages player-facing, THR-1357), echo and slot counts spelled as words via <code>countWord</code>, the divine echoes it picked (<em>"Your age leaves behind: …"</em>, tooltip <code>ui.harvest_leaves</code>), and a <em>Wake in a new world</em> button (<code>ui.harvest_wake</code>). If the record could not be saved, a line under the button says so, and the next world wakes as if for the first time (THR-1813).</li>
       </ul>
 
-      <h3>Divine echoes <span class="flag design">DESIGN</span></h3>
+      <h3>Divine echoes <span class="flag impl">IMPL</span> (THR-1813)</h3>
       <ul>
-        <li><code>computeHarvest</code> returns <code>divineEchoSlots</code> (<code>3 / 2 / 1</code> by harvest type) and <code>HarvestScreen</code> renders them, but the copy reads literally <em>"(selection coming in a future update)"</em>. <code>handleBeginNextCycle</code> calls <code>transitionToNewCycle(..., [] /* divine echoes */, ...)</code> (<code>useSimulation.ts:134</code>) with an <strong>empty</strong> divine array — the player cannot yet choose the god's-own echoes. Cosmic echoes ship; divine echoes are the personal-harvest slot awaiting its picker.</li>
+        <li><code>computeHarvest</code> fills its <code>divineEchoSlots</code> (<code>3 / 2 / 1</code>) by rule in <code>pickDivineEchoes</code> (<code>cycleEnd.ts</code>): slots rotate Monument → Legacy → Relic. A Monument is a top-level place the god reads Sovereign, else Held. A Legacy is a threaded mortal, an Aspect first, then by thread tier. A Relic is an artifact a threaded mortal possesses. Ties break on significance, then id, and a kind with no candidate yields its slot. Each slot traces <code>harvest.divine_echo_picked</code>. A node picked as divine is not also carried as a cosmic echo, and every echo carries the god's bought primary and secondary, not the cosmology's top two.</li>
       </ul>
 
       <h3>Cycle transition — echo persistence &amp; chronicle binding <span class="flag impl">IMPL</span> · <span class="flag design">DESIGN</span> (re-seeding)</h3>
       <ul>
+        <li><strong>THR-1813 — a new world each run.</strong> The production path no longer calls <code>transitionToNewCycle</code>. When the harvest opens, <code>concludeRun</code> (<code>accountRecord.ts</code>) folds the run into the account record and <code>saveAccount</code> (<code>accountStore.ts</code>, key <code>threadbare.account.v1</code>) keeps it. In the record, carried echoes degrade, this run's echoes join under <code>run&lt;N&gt;_</code> ids, the fundament blends toward the god (<code>FUNDAMENT_BLEND_PER_RUN</code> 0.1) and back toward even (<code>FUNDAMENT_REVERT</code> 0.05), two sealed hungers stir, and the next seed is derived. <em>Wake in a new world</em> runs <code>resetDecisionCache()</code>, and <code>App</code> enters Remembrance on <code>nextWorldSeed</code>. <code>initializeGameStateFromIdentity(…, account)</code> then tilts the cosmology profile (<code>WORLD_TILT_GAIN</code>) and loads the live echoes, so the card echo reaches the repertoire. The paragraphs below describe <code>transitionToNewCycle</code>, which is kept for its tests.</li>
         <li><code>transitionToNewCycle</code> (<code>cycleEnd.ts</code>): degrades every surviving echo by <code>ECHO_DEGRADATION_RATE 0.15</code> (fade at <code>ECHO_FADE_THRESHOLD 0.9</code>, then pruned), keeps the survivors, appends the new cosmic echoes, and binds a chronicle <strong>Volume</strong> from this cycle's <code>chronicleEntries</code> — titled with the doom-identity chapter title when available (<code>doomIdentityMatrix.chronicleChapterTitles</code>, THR-21) and closed with the harvest summary. Echo-thread appearances are recorded. Then <code>cycle+1</code>, <code>tick:0</code>, <code>phase:'transition'</code>, and the per-cycle logs reset. The new cycle also gets a <strong>fresh Doom clock</strong> — same archetype and stage definitions, <code>DEFAULT_DOOM_TICKS</code> long, starting at stage 1 with every doom-identity milestone un-fired, and already awake (<code>wokeAtTick: 0</code>, THR-1646: a later cycle has no opening to protect, and a surviving First is already bonded) (THR-1642; before this the expired clock carried over and the next cycle fell straight back into the Unmaking on its first tick).</li>
         <li><strong>No fresh cosmos.</strong> The function does <em>not</em> re-run worldgen — the same graph continues into the next cycle. A regenerated world seeded by the last one's echoes is <span class="flag design">DESIGN</span> (and blocks on the unwired <code>collectInjections</code>, see the red callout).</li>
       </ul>
@@ -350,7 +350,7 @@
           <tr><td>TWILIGHT_TICKS</td><td>7</td><td>Length of the Unmaking countdown (wired) · <code>game-config.ts</code></td></tr>
           <tr><td>COSMIC_ECHO_CANDIDATES</td><td>10</td><td>Top nodes considered for cosmic echoes · <code>cycleEnd.ts</code></td></tr>
           <tr><td>Cosmic echo count (triumphant / bittersweet / somber)</td><td>5 / 4 / 3</td><td>Echoes preserved by harvest type · <code>cycleEnd.ts</code></td></tr>
-          <tr><td>Divine echo slots (triumphant / bittersweet / somber)</td><td>3 / 2 / 1</td><td>Divine slots shown — selection DESIGN · <code>cycleEnd.ts</code></td></tr>
+          <tr><td>Divine echo slots (triumphant / bittersweet / somber)</td><td>3 / 2 / 1</td><td>Filled by rule, Monument → Legacy → Relic (THR-1813) · <code>cycleEnd.ts</code></td></tr>
           <tr><td>Harvest-type doom threshold</td><td>0.9</td><td><code>doomClock.progress &gt; 0.9</code> → somber · <code>cycleEnd.ts</code></td></tr>
           <tr><td>ECHO_DEGRADATION_RATE</td><td>0.15</td><td>Echo fade added per cycle · <code>types/echo.ts</code></td></tr>
           <tr><td>ECHO_FADE_THRESHOLD</td><td>0.9</td><td>Degradation at which an echo is released · <code>types/echo.ts</code></td></tr>
@@ -377,7 +377,7 @@
   </details>
 
   <div class="foot">
-    Game Manual Wiki · W17 (THR-602). Player layer describes current shipped behaviour — the Unmaking begins on Doom expiry, twilight runs as a countdown, and the harvest preserves significance-scored Legacy / Monument / Relic echoes that carry across cycles, degrade, and bind into the chronicle (all <span class="flag impl">IMPL</span>). Weakened twilight play, divine-echo selection, echoes seeding the next world, a re-drawn cosmos, and the entire Fundament/Resonance ledger are <span class="flag design">DESIGN</span> and flagged as such. Every world ends — and what mattered in it becomes an ingredient of what comes next.
+    Game Manual Wiki · W17 (THR-602). Player layer describes current shipped behaviour — the Unmaking begins on Doom expiry, twilight runs as a countdown, and the harvest preserves significance-scored Legacy / Monument / Relic echoes that carry across cycles, degrade, and bind into the chronicle (all <span class="flag impl">IMPL</span>). Since THR-1813 the god's divine echoes are picked by rule and each run wakes in a new world, tilted by the last (IMPL). Weakened twilight play, echoes standing on the new map (THR-1843), and the entire Fundament/Resonance ledger are <span class="flag design">DESIGN</span> and flagged as such. Every world ends — and what mattered in it becomes an ingredient of what comes next.
   </div>
 
 </div>
