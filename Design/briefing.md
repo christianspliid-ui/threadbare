@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 10:59 local (08:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 11:57 local (09:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,15 +36,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 20 ready, one in progress.** [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) (in progress since 13 Oct) now has its first slice up for review as [pull request #2444](https://github.com/christianspliid-ui/threadbare/pull/2444): an account record that carries across runs, divine echoes at harvest, and each run waking in a new world. The builder fixed it after review this morning (last push 10:53) and is working on it now; it is not yet set to merge.
+**Backed up: 20 ready, one in progress.** [The world remembers](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with) merged at 11:39 as [pull request #2444](https://github.com/christianspliid-ui/threadbare/pull/2444) and is live. The builder has moved on to the [map camera and controls](https://linear.app/threadbare/issue/THR-1900/map-camera-and-controls-zoom-buttons-centre-on-my-first-show-known) and is working on it now.
 
-- High, waiting: the [carved places on the map](https://linear.app/threadbare/issue/THR-1903/carved-places-on-the-map-every-place-type-draws-its-carved-shape-in), the [map camera and controls](https://linear.app/threadbare/issue/THR-1900/map-camera-and-controls-zoom-buttons-centre-on-my-first-show-known), and the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
+- High, waiting: the [carved places on the map](https://linear.app/threadbare/issue/THR-1903/carved-places-on-the-map-every-place-type-draws-its-carved-shape-in), and the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
 - Five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Five economy bugs are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [armies besieging towns they have no quarrel with](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard).
 - Nothing is older than a week.
 
 ## Health
 
-- The live site serves the latest commit on main (9060be6a), main’s checks pass, and every scheduled lane is on schedule. The builder is mid-run; it has not stalled.
-- Last hour’s speed flag was noise: tick cost is back to 122 ms/tick steady, level with the 7-day median.
-- The tidy-up job ran at 10:40: 540 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- All green. The live site serves the latest commit on main (617802fb), main’s checks pass, no pull request is waiting to merge, and every scheduled lane is on schedule. The builder is mid-run; it has not stalled.
+- Tick cost 133 ms/tick steady, +9% on the 7-day median (122): within the normal band.
+- The tidy-up job ran at 11:40: 543 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.

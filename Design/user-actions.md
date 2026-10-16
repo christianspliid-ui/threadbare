@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-16 10:59 local (08:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-16 11:57 local (09:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-16: the world remembers, first slice: an account record carries across runs, divine echoes land at harvest, and each run wakes in a new world** ([THR-1813](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with)). Merged via [#2444](https://github.com/christianspliid-ui/threadbare/pull/2444) and live.
 - **2026-10-16: the carved icon registry is live: 229 icon shapes, their concept table and the icon credits** ([THR-1904](https://linear.app/threadbare/issue/THR-1904/carved-icon-registry-vendor-the-229-shapes-fill-the-concept-table-ship)). Merged via [#2443](https://github.com/christianspliid-ui/threadbare/pull/2443).
 - **2026-10-16: lines like "The captain nod at Kael" now read "The captain nods at Kael"** ([THR-1945](https://linear.app/threadbare/issue/THR-1945/noun-subjects-drop-their-verbs-s-for-a-theythem-actor-the-captain-nod)). Merged via [#2442](https://github.com/christianspliid-ui/threadbare/pull/2442).
 - **2026-10-16: the unused effect-glyph table with six broken symbols is deleted** ([THR-1874](https://linear.app/threadbare/issue/THR-1874/delete-the-unread-effect-type-glyph-table-six-malformed-escapes-never)). Merged via [#2441](https://github.com/christianspliid-ui/threadbare/pull/2441).
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-16: card labels and the library and world trails now read in sentence case** ([THR-1905](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept)). Merged via [#2436](https://github.com/christianspliid-ui/threadbare/pull/2436) and live.
 - **2026-10-16: factions now have a purse: the land fills it, war empties it, and a broke faction’s armies desert** ([THR-1931](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a)). Merged via [#2435](https://github.com/christianspliid-ui/threadbare/pull/2435) and live.
 - **2026-10-16: map markers keep one steady size per zoom, and place names step aside for portraits** ([THR-1899](https://linear.app/threadbare/issue/THR-1899/map-markers-and-labels-one-steady-marker-size-per-zoom-band-portraits)). Merged via [#2434](https://github.com/christianspliid-ui/threadbare/pull/2434) and live.
-- **2026-10-15: realm borders now wear their holder’s ink, and uncharted land shows as parchment** ([THR-1902](https://linear.app/threadbare/issue/THR-1902/realm-borders-in-their-holders-ink-and-uncharted-land-as-parchment)). Merged via [#2432](https://github.com/christianspliid-ui/threadbare/pull/2432) and live.
 
 ---
 
