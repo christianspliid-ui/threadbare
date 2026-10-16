@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { SPEED_STEPS } from '../SimulationControls';
 import { mapLensForKey, type MapLensId } from '../../../data/map-lenses';
+import { TOP_BAR_KEYS } from '../../../data/top-bar-keys';
 
 interface UseTopBarHotkeysProps {
   running: boolean;
@@ -31,6 +32,9 @@ export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onSt
         onToggleLens(lens.id);
         return;
       }
+
+      // THR-1900 — the keys this hook answers are one list, checked against the map's keys.
+      if (!TOP_BAR_KEYS.includes(e.key)) return;
 
       switch (e.key) {
         case ' ': {

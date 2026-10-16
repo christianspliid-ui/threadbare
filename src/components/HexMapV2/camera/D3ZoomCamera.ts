@@ -14,9 +14,17 @@ export const CAMERA_CONSTANTS = {
   // outline, with unexplored ground as parchment fog.
   MIN_ZOOM_FLOOR: 2,          // Default zoom-out limit; drops further when the grid needs it to fit
   ABSOLUTE_MIN_ZOOM: 0.5,     // Hard guard under MIN_ZOOM_FLOOR — never zoom out past this
-  MAX_ZOOM: 20,               // Hero-local zoom (~600px/hex apparent)
+  // A hex is HEX_SIZE × 2 × k screen px across (HEX_SIZE 10): k 20 → 400 px, k 10 → 200 px.
+  MAX_ZOOM: 20,               // Hero-local zoom (~400px/hex)
   JUMP_TO_DURATION_MS: 500,   // Smooth fly-to duration in ms (CONTEXT.md decision)
-  DEFAULT_ZOOM: 1.5,          // Starting zoom level — shows a comfortable region
+  DEFAULT_ZOOM: 1.5,          // Fallback zoom before the camera is set up (the opening view replaces it)
+  // THR-1900 (plan THR-1878 D6–D9) — the map's camera commands.
+  FOCUS_ZOOM: 10,             // Every "show me" jump: regional, ~200px/hex, the thing and its neighbours in view (THR-1831 § 1)
+  ZOOM_STEP_FACTOR: 2,        // Zoom in / out buttons and PageUp / PageDown multiply k by this
+  OPENING_ZOOM_MIN: 6,        // The opening view's zoom is the known-land fit clamped to [MIN, MAX] (THR-1831 § 3)
+  OPENING_ZOOM_MAX: 10,
+  PAN_STEP_FRACTION: 1 / 3,   // Arrow keys pan by this share of the canvas
+  PAN_DURATION_MS: 200,       // Arrow-key pan ease
   ZOOM_TARGET_LERP_IN:  0.4,  // Per-wheel-tick convergence toward selected hex when zooming in
   ZOOM_TARGET_LERP_OUT: 0.15, // Per-wheel-tick convergence toward selected hex when zooming out (slower)
   INITIAL_CENTER_COL: 48,     // Starting view centers on this hex column

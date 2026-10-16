@@ -24,7 +24,6 @@ import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
 import type { useRefRouter } from '../../../hooks/useRefRouter';
 import type { useOpeningReveal } from '../GameView/openingReveal';
 import type { ChapterAnswerRunHandle } from './useChapterAnswerRun';
-import { hexToPixel } from '../../../lib/hexMath';
 import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
 import { resolveDebugAgent, isDebugAgentMiss } from '../../../engine/debugAgentResolver';
 import { followAgent, unfollowAgent } from '../../../engine/followedAgents';
@@ -97,7 +96,6 @@ export interface GameDebugLeverContext {
   runtime: SimulationRuntime;
   tiles: HexTile[];
   hexMapRef: RefObject<HexMapV2Handle>;
-  retinueEyeZoomScale: number;
   handleAgentSelect: (agentId: string) => void;
   openAgentProfileForId: (agentId: string) => void;
   fogDisabled: boolean;
@@ -165,7 +163,6 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
     activeStoryBeatId, activeStoryBeatTemplate, handleStoryBeatDismiss,
     activePremonition, handlePremonitionDismiss, handleResolveBeat,
   } = ctx;
-  const RETINUE_EYE_ZOOM_SCALE = ctx.retinueEyeZoomScale;
 
   // ── Debug bridge: gotoAgent ───────────────────────────────────────────────
   // graphRef always holds the latest graph so the registered callback never
@@ -224,9 +221,8 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
         }
       }
 
-      if (hexCol !== undefined && hexRow !== undefined && hexMapRef.current) {
-        const px = hexToPixel({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
-        hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
+      if (hexCol !== undefined && hexRow !== undefined) {
+        hexMapRef.current?.focusOn({ col: hexCol, row: hexRow });
       }
 
       handleAgentSelect(match.id);

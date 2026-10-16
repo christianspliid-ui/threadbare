@@ -91,10 +91,13 @@ import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
 import { animateCameraTo } from './camera/CameraAnimator';
+import { createMapCamera, onZoomK, type MapCamera, type MapCameraState } from './camera/mapCamera';
+import { zoomLimits } from './camera/cameraFraming';
+import { mapControlStates } from '../../data/map-commands';
+import type { MapCameraJumpReason } from '../../types/traces/ui-traces';
 import { createRoadMesh } from './scene/RoadMesh';
 import {
   getZoomTier,
-  ZOOM_TIER_THRESHOLDS,
   ZOOM_VISIBILITY_MATRIX,
 } from './scene/ZoomVisibilityMatrix';
 import type { ZoomTier } from './scene/ZoomVisibilityMatrix';
@@ -376,6 +379,15 @@ export interface HexMapV2Props {
    * badges) draw whether or not the lens is on.
    */
   dominionLens?: DominionLensVM | null;
+  /**
+   * THR-1900 — the First's hex, for the opening view and Centre on my First. Null before
+   * the bond (`?firstunmet`) or with no god.
+   */
+  firstHex?: HexCoord | null;
+  /** THR-1900 — the god's seat hex: the fallback when there is no First. */
+  seatHex?: HexCoord | null;
+  /** THR-1900 — the game tick, stamped on `ui_map_camera_jump` traces. */
+  tick?: number;
   /** THR-1750 — the hex tooltip's Dominion lines for a hovered hex (band line while the lens is on; drop line). */
   dominionTooltip?: (col: number, row: number) => {
     line?: { prefix: string; placeName: string | null; word: string; color: string };
@@ -389,6 +401,24 @@ export interface HexMapV2Handle {
    * Matches the HexMapHandle contract from Phase 8 drop-in swap.
    */
   centerOn: (x: number, y: number, scale?: number) => void;
+  /**
+   * THR-1900 (D7) — centre on a hex at `FOCUS_ZOOM`, eased. Every "show me" calls this:
+   * Centre on my First, the seat button, the eye icons, the Stage's and the Inspector's
+   * "Show on map". Emits `ui_map_camera_jump`.
+   */
+  focusOn: (hex: HexCoord, reason?: MapCameraJumpReason) => void;
+  /** THR-1900 — zoom × factor around the canvas centre, eased; false at the limit. */
+  zoomBy: (factor: number) => boolean;
+  /** THR-1900 — fit all the land the god knows into view (the whole grid with fog off). */
+  showKnownLand: () => void;
+  /** THR-1900 — pan by a share of the canvas (+x right, +y up). */
+  panBy: (dx: number, dy: number) => void;
+  /** THR-1900 — the zoom and its limits now. */
+  getCameraState: () => MapCameraState;
+  /** THR-1900 — called now and on every zoom event; returns the unsubscribe. */
+  subscribeCamera: (listener: (state: MapCameraState) => void) => () => void;
+  /** THR-1900 — a First or a seat exists to centre on. */
+  hasFocusTarget: () => boolean;
   /**
    * Enable or disable camera follow mode for a specific agent.
    * Pass null to stop following and free the camera.
@@ -560,7 +590,7 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, firstHex = null, seatHex = null, tick = 0 },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -658,6 +688,28 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     visibilityMapRef.current = visibilityMap;
     fogEnabledRef.current    = fogEnabled;
 
+    // THR-1900 — the camera commands (focusOn, zoomBy, known land, pan, the opening view).
+    const firstHexRef = useRef<HexCoord | null>(firstHex);
+    const seatHexRef  = useRef<HexCoord | null>(seatHex);
+    const tickRef     = useRef<number>(tick);
+    const gridRef     = useRef({ cols, rows });
+    firstHexRef.current = firstHex;
+    seatHexRef.current  = seatHex;
+    tickRef.current     = tick;
+    gridRef.current     = { cols, rows };
+    const mapCameraRef = useRef<MapCamera | null>(null);
+    if (!mapCameraRef.current) {
+      mapCameraRef.current = createMapCamera({
+        canvas: () => canvasRef.current,
+        zoom: () => zoomRef.current,
+        visibilityMap: () => visibilityMapRef.current,
+        fogEnabled: () => fogEnabledRef.current,
+        tick: () => tickRef.current,
+        grid: () => gridRef.current,
+      });
+    }
+    const mapCamera = mapCameraRef.current;
+
     // ── Load parchment texture for fog-of-war overlay ──
     // THR-1902: the path is the palette's `fogUnexploredFill.texture`; a palette with a
     // flat tint loads nothing and the overlay draws the tint.
@@ -747,6 +799,27 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const zoom   = zoomRef.current;
         if (!canvas || !zoom) return;
         animateCameraTo(canvas, zoom, x, y, scale ?? CAMERA_CONSTANTS.DEFAULT_ZOOM);
+      },
+      focusOn(hex: HexCoord, reason?: MapCameraJumpReason) {
+        mapCamera.focusOn(hex, reason);
+      },
+      zoomBy(factor: number) {
+        return mapCamera.zoomBy(factor);
+      },
+      showKnownLand() {
+        mapCamera.showKnownLand();
+      },
+      panBy(dx: number, dy: number) {
+        mapCamera.panBy(dx, dy);
+      },
+      getCameraState() {
+        return mapCamera.getState();
+      },
+      subscribeCamera(listener: (state: MapCameraState) => void) {
+        return mapCamera.subscribe(listener);
+      },
+      hasFocusTarget() {
+        return firstHexRef.current != null || seatHexRef.current != null;
       },
       setFollowAgent(agentId: string | null) {
         updateFollowTarget(followModeRef.current, agentId);
@@ -1210,11 +1283,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
         // Track zoom level for label tier filtering and layer visibility (Plan 07-01)
         // Visibility toggling is handled by useZoomLayerVisibility hook — zoom handler just updates state.
-        zoom.on('zoom.labels', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
-          const k = event.transform.k;
+        // THR-1900 (D8): seeded from the transform actually applied, never from DEFAULT_ZOOM,
+        // so the opening frame draws the tier it is at. Also tells the control cluster.
+        onZoomK(zoom, canvas, 'labels', (k) => {
           setZoomLevel(k);
           setZoomTier(getZoomTier(k));
           setZoomK(k);
+          mapCamera.notify();
         });
 
         // Break follow mode on manual pan (user-initiated zoom events have sourceEvent)
@@ -1267,26 +1342,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
         updateSelectionRing(selectedHex);
 
-        // ZOOM-05: Default camera on retinue agent when fog is enabled (Plan 07-03)
-        // Centers camera on retinue at hero-local zoom so the player starts with vision
-        const currentAgents = agents ?? [];
-        const retinue = currentAgents.find(a => a.isRetinue);
-        if (retinue && fogEnabledRef.current) {
-          const retWorld = hexToWorld({ col: retinue.hexCol, row: retinue.hexRow }, HEX_CONSTANTS.HEX_SIZE);
-          // setTimeout(0) ensures zoom is fully initialized before animating
-          setTimeout(() => {
-            if (zoomRef.current && canvasRef.current) {
-              animateCameraTo(
-                canvasRef.current,
-                zoomRef.current,
-                retWorld.x,
-                retWorld.y,
-                ZOOM_TIER_THRESHOLDS.HERO_LOCAL,
-                0,
-              );
-            }
-          }, 0);
-        }
+        // THR-1900 (D8) — the opening view. ZOOM-05's hero-local close-up on the retinue is
+        // retired: the run opens centred on the First with all known land in view
+        // (k = clamp(fitKnownLand, 6, 10)), applied with no animation; falls back to the seat,
+        // the known land's centre, or (fog off) the whole-grid fit.
+        mapCamera.applyOpening(firstHexRef.current, seatHexRef.current);
 
         // Render loop
         const clock = new THREE.Clock();
@@ -1641,6 +1701,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             band,
             markers: { byKind, visibleByKind, sizePx, drawnPx },
             labels: { ...labelPassStatsRef.current },
+            // THR-1900 — the control cluster's buttons and the opening view.
+            controls: (() => {
+              const cam = mapCamera.getState();
+              return mapControlStates({
+                ...zoomLimits(cam.k, cam.minK, cam.maxK),
+                hasFocusTarget: firstHexRef.current != null || seatHexRef.current != null,
+              });
+            })(),
+            opening: mapCamera.getOpening(),
           };
         },
       });

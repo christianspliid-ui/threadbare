@@ -501,6 +501,16 @@ export interface DebugMapChromeResult {
     moved: number;
     hidden: number;
   };
+  /**
+   * THR-1900 — the control cluster's buttons in `MAP_COMMANDS` order, each disabled with its
+   * reason at a limit ("Closest view", "Widest view", "No one to centre on yet").
+   */
+  controls: { id: string; disabled: boolean; reason: string | null }[];
+  /**
+   * THR-1900 — the opening view: its zoom and what it centred on (the First, the god's seat,
+   * the known land's centre, or the whole grid with fog off). Null before the camera is set up.
+   */
+  opening: { k: number; centredOn: 'first' | 'seat' | 'land' | 'grid' } | null;
 }
 
 /** Result of `getDominionLens()`. THR-1750 */

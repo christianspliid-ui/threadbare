@@ -28,9 +28,7 @@ import type { WhisperNudge, CompulsionCandidate, PremonitionEvent } from '../../
 import type { PendingVignette } from '../../../types/journeyEngine';
 import type { RefRouter } from '../../../hooks/useRefRouter';
 import { WORLD_REF_KIND_BY_VISUAL_KIND } from '../../../types/worldRefAdapters';
-import { hexToPixel } from '../../../lib/hexMath';
 import { resolveEmergenceDecision } from '../../../engine/ruins/delveVariant';
-import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
 import { EmergenceDilemmaModal } from '../../ruins/EmergenceDilemmaModal';
 import type { courtPositionToThreadTier, EncounterStageModel } from '../encounter-stage/types';
@@ -76,7 +74,6 @@ export interface StageHostProps {
   handleChapterLetWorldTurn: () => void;
   handleChapterBackToMap: () => void;
   hexMapRef: RefObject<HexMapV2Handle>;
-  RETINUE_EYE_ZOOM_SCALE: number;
   // Moment card
   pendingMoment: UndertakingMomentRecord | null;
   momentCardModel: MomentCardModel | null;
@@ -126,7 +123,6 @@ export function StageHost({
   handleChapterLetWorldTurn,
   handleChapterBackToMap,
   hexMapRef,
-  RETINUE_EYE_ZOOM_SCALE,
   pendingMoment,
   momentCardModel,
   handleAcknowledgeMoment,
@@ -241,12 +237,7 @@ export function StageHost({
             answering={chapterAnswer.answering ?? undefined}
             onLetWorldTurn={handleChapterLetWorldTurn}
             onBackToMap={handleChapterBackToMap}
-            onShowOnMap={(col, row) => {
-              if (hexMapRef.current) {
-                const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-                hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
-              }
-            }}
+            onShowOnMap={(col, row) => hexMapRef.current?.focusOn({ col, row })}
           />
         </div>
       );

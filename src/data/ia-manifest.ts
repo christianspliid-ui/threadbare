@@ -319,20 +319,6 @@ export const IA_SURFACES: IASurface[] = [
     "openUrl": "/?view=game&seeded"
   },
   {
-    "surface": "game.avatar-hud",
-    "view": "game",
-    "mount": "always",
-    "reads": [
-      {
-        "state_path": "ascendantIdentity.embodiment",
-        "reader": "AvatarHUD",
-        "visible_when": "ascendantIdentity embodied (physical avatar present)"
-      }
-    ],
-    "notes": "Avatar-specific HUD. Only when player has a physical presence in the world.\n",
-    "openUrl": "/?view=game&seeded"
-  },
-  {
     "surface": "game.action-drawer",
     "view": "game",
     "mount": "always",
