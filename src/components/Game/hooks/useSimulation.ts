@@ -71,8 +71,8 @@ interface UseSimulationParams {
    * Default true.
    */
   persistAccount?: boolean;
-  /** THR-1813 E6 — *Wake in a new world*: hand the concluded record up to `App`. */
-  onWakeNewWorld?: (account: AccountRecord) => void;
+  /** THR-1813 E6 — *Wake in a new world*: hand the concluded record up to `App`; `saved` false = the run-end save failed. */
+  onWakeNewWorld?: (account: AccountRecord, saved: boolean) => void;
 }
 
 /** The record a finished run was folded into, and whether it was kept (THR-1813 E6). */
@@ -295,10 +295,11 @@ export function useSimulation({
     resetRuntimeCaches(runtimeRef.current);
     // A record that could not be kept is not carried either: the harvest screen told the
     // player the next world wakes as if for the first time, so it does — a new map on
-    // the derived seed, with nothing remembered (review-gate round 2).
+    // the derived seed, with nothing remembered (review-gate round 2). `App` stops this tab's
+    // writes on a failed save, so the earlier record on disk is never overwritten by it.
     onWakeNewWorld?.(concludedRun.saved
       ? concludedRun.account
-      : emptyAccount(concludedRun.account.nextWorldSeed));
+      : emptyAccount(concludedRun.account.nextWorldSeed), concludedRun.saved);
   }, [concludedRun, onWakeNewWorld]);
 
   /** THR-1813 debug lever: end the age now — run the twilight through and open the harvest. */

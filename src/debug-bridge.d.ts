@@ -2433,8 +2433,9 @@ export interface DebugBridge {
   previewRunEnd: () => Promise<import('./types/account').AccountRecord | null>;
   /**
    * THR-1813 — end the age now: the twilight runs through and the harvest opens
-   * (the record is concluded and saved as the harvest screen mounts). False when
-   * the harvest is already open or no game is running.
+   * (the record is concluded as the harvest screen mounts — and saved only off the
+   * `?view=game` dev routes and `?account=` overrides, which conclude in memory).
+   * False when the harvest is already open or no game is running.
    */
   endAge: () => Promise<boolean>;
   /** @internal GameView registers the account bridge here (THR-1813). */

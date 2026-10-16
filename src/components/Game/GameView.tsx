@@ -295,7 +295,7 @@ interface GameViewProps {
   /** THR-1813 — write the concluded record to storage (false for `?account=` override sessions). */
   persistAccount?: boolean;
   /** THR-1813 — *Wake in a new world*: the concluded record goes up to `App`. */
-  onWakeNewWorld?: (account: import('../../types/account').AccountRecord) => void;
+  onWakeNewWorld?: (account: import('../../types/account').AccountRecord, saved: boolean) => void;
 }
 
 /** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */

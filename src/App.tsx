@@ -111,6 +111,13 @@ function App() {
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
   // THR-1813 — the account record: read once per page, replaced when a run wakes a new world.
   const [loadedAccount, setLoadedAccount] = useState<LoadedAccount>(() => loadAccount(window.location.search, 42));
+  // Whether this page's runs may write the stored record. Every dev route (`?view=game…`,
+  // with or without `seeded`) and every `?account=` override concludes in memory only, and
+  // stays so across *Wake in a new world* — the URL is gone by then, the session is not.
+  // A failed run-end save also stops writes, so a later run in this tab cannot overwrite
+  // the earlier record that is still on disk (review-gate cycle 2).
+  const [accountPersists, setAccountPersists] = useState(() =>
+    viewParam !== 'game' && !isAccountOverride(loadedAccount.source));
   // A remembered run wakes the next world on the seed it left, after a reload too;
   // the dev quick-start routes keep 42 so their evidence stays comparable.
   const [seed, setSeed] = useState(() =>
@@ -153,10 +160,11 @@ function App() {
   // THR-1813 E6 — *Wake in a new world*: the run is concluded and saved; the next
   // world wakes on the derived seed, through Remembrance. The dev seeding flags go
   // with the old world (only `size` stays), or the quick-start path would re-seed it.
-  const handleWakeNewWorld = useCallback((account: AccountRecord) => {
+  const handleWakeNewWorld = useCallback((account: AccountRecord, saved = true) => {
     const size = new URLSearchParams(window.location.search).get('size');
     const query = size ? `?size=${encodeURIComponent(size)}` : '';
     window.history.replaceState(null, '', window.location.pathname + query + window.location.hash);
+    if (!saved) setAccountPersists(false);
     // A `?account=fresh` / `?account=sample` session stays a session: it never writes storage.
     setLoadedAccount(prev => ({ account, source: isAccountOverride(prev.source) ? prev.source : 'stored' }));
     setSeed(account.nextWorldSeed);
@@ -213,7 +221,7 @@ function App() {
         doomArchetype={parseDoomArchetypeParam(window.location.search)}
         onExitToTitle={handleExitToTitle}
         account={loadedAccount.account}
-        persistAccount={!isAccountOverride(loadedAccount.source)}
+        persistAccount={accountPersists}
         onWakeNewWorld={handleWakeNewWorld}
       />
     );
@@ -276,9 +284,7 @@ function App() {
         account={loadedAccount.account}
         // THR-1813: the dev routes stay deterministic — only `?account=sample` shapes them.
         shapeWorldFromAccount={!isDevQuickStart || loadedAccount.source === 'sample_param'}
-        // A dev-route harvest (e.g. `__DEBUG.endAge()` on the seed-42 world) concludes in memory only,
-        // so verification never folds a test world into the player's stored record.
-        persistAccount={!isDevQuickStart && !isAccountOverride(loadedAccount.source)}
+        persistAccount={accountPersists}
         onWakeNewWorld={handleWakeNewWorld}
       />
     );
