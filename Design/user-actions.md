@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-16 07:00 local (05:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-16 07:57 local (05:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-16: lines like "The captain nod at Kael" now read "The captain nods at Kael"** ([THR-1945](https://linear.app/threadbare/issue/THR-1945/noun-subjects-drop-their-verbs-s-for-a-theythem-actor-the-captain-nod)). Merged via [#2442](https://github.com/christianspliid-ui/threadbare/pull/2442).
 - **2026-10-16: the unused effect-glyph table with six broken symbols is deleted** ([THR-1874](https://linear.app/threadbare/issue/THR-1874/delete-the-unread-effect-type-glyph-table-six-malformed-escapes-never)). Merged via [#2441](https://github.com/christianspliid-ui/threadbare/pull/2441).
 - **2026-10-16: a hamlet founded inside a people’s own lands now takes their heartland, not their fringe** ([THR-1849](https://linear.app/threadbare/issue/THR-1849/a-hamlet-founded-inside-a-peoples-own-lands-reads-as-their-fringe)). Merged via [#2440](https://github.com/christianspliid-ui/threadbare/pull/2440) and live.
 - **2026-10-16: long place names now wrap inside the hex tooltip** ([THR-1848](https://linear.app/threadbare/issue/THR-1848)). Merged via [#2439](https://github.com/christianspliid-ui/threadbare/pull/2439) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-16: map markers keep one steady size per zoom, and place names step aside for portraits** ([THR-1899](https://linear.app/threadbare/issue/THR-1899/map-markers-and-labels-one-steady-marker-size-per-zoom-band-portraits)). Merged via [#2434](https://github.com/christianspliid-ui/threadbare/pull/2434) and live.
 - **2026-10-15: realm borders now wear their holder’s ink, and uncharted land shows as parchment** ([THR-1902](https://linear.app/threadbare/issue/THR-1902/realm-borders-in-their-holders-ink-and-uncharted-land-as-parchment)). Merged via [#2432](https://github.com/christianspliid-ui/threadbare/pull/2432) and live.
 - **2026-10-15: the icon, chip and tab primitives are live** ([THR-1885](https://linear.app/threadbare/issue/THR-1885/icon-chip-and-tabs-primitives-the-icon-registry-format-one-chip-in)). Merged via [#2431](https://github.com/christianspliid-ui/threadbare/pull/2431).
-- **2026-10-15: four small faults from warm round 2 are fixed** ([THR-1858](https://linear.app/threadbare/issue/THR-1858/four-small-faults-from-warm-round-2-a-chaos-price-drains-a-hidden-pool)): the hidden Chaos drain, odds that moved without showing it, the dropdown that ate a click, and the "Mute" chip that read as a trait. Merged via [#2430](https://github.com/christianspliid-ui/threadbare/pull/2430) and live.
 
 ---
 

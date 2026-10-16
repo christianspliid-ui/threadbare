@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 07:00 local (05:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 07:57 local (05:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,7 +36,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 20 ready, none in progress.** Since the last brief two more fixes merged: [a hamlet founded inside a people's own lands now takes their heartland, not their fringe](https://linear.app/threadbare/issue/THR-1849/a-hamlet-founded-inside-a-peoples-own-lands-reads-as-their-fringe) ([#2440](https://github.com/christianspliid-ui/threadbare/pull/2440), live) and [the unused effect-glyph table is deleted](https://linear.app/threadbare/issue/THR-1874/delete-the-unread-effect-type-glyph-table-six-malformed-escapes-never) ([#2441](https://github.com/christianspliid-ui/threadbare/pull/2441), merged, deploying).
+**Backed up: 20 ready, none in progress.** Since the last brief one more fix merged: [lines like "The captain nod at Kael" now read "The captain nods at Kael"](https://linear.app/threadbare/issue/THR-1945/noun-subjects-drop-their-verbs-s-for-a-theythem-actor-the-captain-nod) ([#2442](https://github.com/christianspliid-ui/threadbare/pull/2442), merged, deploying). The ticket closes on its own once the auto-close runs.
 
 - High, waiting: the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
 - Five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
@@ -45,6 +45,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- All green. Main's checks pass, the live site serves the latest deployed commit, and no pull request is stuck. Every scheduled lane is on schedule; the builder alternates between shipping and short idle checks, which is normal.
-- Speed check normal: 126 ms per tick, 3% above the weekly median of 122.
-- The tidy-up job ran at 06:40: 540 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- All green. Main's checks pass (CI, heavy tests, auto-close), no pull request is waiting, and every scheduled lane is on schedule. The builder shipped three fixes in the last two hours, between short idle checks.
+- The live site was still serving the previous commit (62ec7b58) when checked; [#2442](https://github.com/christianspliid-ui/threadbare/pull/2442) merged a minute earlier and is deploying.
+- Speed check normal: 137 ms per tick, 13% above the weekly median of 122.
+- The tidy-up job ran at 07:49: 540 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
