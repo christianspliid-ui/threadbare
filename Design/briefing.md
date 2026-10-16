@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 04:57 local (02:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 05:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,7 +35,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 23 ready, one in progress.** [The label sweep](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept) merged and is live. The builder has now finished [the fix for one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for) as [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438), which is waiting on its checks and will merge itself on green.
+**Backed up: 22 ready, one in progress.** Since the last brief two fixes merged and are live: [one death no longer keeps a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for) ([#2438](https://github.com/christianspliid-ui/threadbare/pull/2438)) and [long place names wrap inside the hex tooltip](https://linear.app/threadbare/issue/THR-1848) ([#2439](https://github.com/christianspliid-ui/threadbare/pull/2439)). The builder is now on [founded hamlets reading as a people's "fringe"](https://linear.app/threadbare/issue/THR-1849/a-hamlet-founded-inside-a-peoples-own-lands-reads-as-their-fringe).
 
 - High, waiting: the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
 - Five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
@@ -44,6 +44,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- All green. Main's checks pass, and the live site serves the latest commit. One pull request, [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438), is waiting on checks. Every scheduled lane is on schedule, and the builder is alternating builds with short idle runs while its pull request waits, as it should.
-- The speed check is back to normal: 124 ms per tick, 2% above the weekly median. The three slow readings before it look like machine load.
-- The tidy-up job ran at 04:40: 538 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- All green. Main's checks pass, the live site serves the latest commit, and no pull request is waiting. Every scheduled lane is on schedule; the builder is mid-run.
+- Speed check normal: 135 ms per tick, 11% above the weekly median of 122.
+- The tidy-up job ran at 05:40: 538 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.

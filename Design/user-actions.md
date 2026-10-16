@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-16 04:57 local (02:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-16 05:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-16: long place names now wrap inside the hex tooltip** ([THR-1848](https://linear.app/threadbare/issue/THR-1848)). Merged via [#2439](https://github.com/christianspliid-ui/threadbare/pull/2439) and live.
+- **2026-10-16: one death no longer keeps a town at full unrest forever** ([THR-1925](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for)). Merged via [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438) and live.
 - **2026-10-16: card labels and the library and world trails now read in sentence case** ([THR-1905](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept)). Merged via [#2436](https://github.com/christianspliid-ui/threadbare/pull/2436) and live.
 - **2026-10-16: factions now have a purse: the land fills it, war empties it, and a broke faction’s armies desert** ([THR-1931](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a)). Merged via [#2435](https://github.com/christianspliid-ui/threadbare/pull/2435) and live.
 - **2026-10-16: map markers keep one steady size per zoom, and place names step aside for portraits** ([THR-1899](https://linear.app/threadbare/issue/THR-1899/map-markers-and-labels-one-steady-marker-size-per-zoom-band-portraits)). Merged via [#2434](https://github.com/christianspliid-ui/threadbare/pull/2434) and live.
@@ -36,8 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-15: four small faults from warm round 2 are fixed** ([THR-1858](https://linear.app/threadbare/issue/THR-1858/four-small-faults-from-warm-round-2-a-chaos-price-drains-a-hidden-pool)): the hidden Chaos drain, odds that moved without showing it, the dropdown that ate a click, and the "Mute" chip that read as a trait. Merged via [#2430](https://github.com/christianspliid-ui/threadbare/pull/2430) and live.
 - **2026-10-15: the template seams in player prose are fixed** ([THR-1857](https://linear.app/threadbare/issue/THR-1857/new-template-seams-in-player-prose-they-wants-kael-thornweaver-work)): no more "They wants", and inns and waypoints carry proper names. Merged via [#2428](https://github.com/christianspliid-ui/threadbare/pull/2428).
 - **2026-10-15: Escape on an aftermath now acknowledges it, and its exit and reactions stay on screen** ([THR-1856](https://linear.app/threadbare/issue/THR-1856/escape-on-an-aftermath-blanks-the-screen-and-the-aftermath-comes-back)). Merged via [#2425](https://github.com/christianspliid-ui/threadbare/pull/2425) and live.
-- **2026-10-15: the first encounter coverage run is done** ([THR-1850](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev)). Merged via [#2424](https://github.com/christianspliid-ui/threadbare/pull/2424) and live; its first follow-up, [nine mis-tagged encounters](https://linear.app/threadbare/issue/THR-1941/nine-encounters-wear-a-family-tag-their-prose-does-not-earn-anomaly), is queued.
-- **2026-10-15: every dialog now shares one backdrop and one Escape order** ([THR-1884](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack)). Merged via [#2423](https://github.com/christianspliid-ui/threadbare/pull/2423) and live.
 
 ---
 
