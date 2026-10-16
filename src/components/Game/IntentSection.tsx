@@ -14,6 +14,12 @@ import { CATEGORY_GLYPHS, CATEGORY_COLORS, CATEGORY_LABELS } from '../../data/am
 import { SectionHeading } from '../shared/SectionHeading';
 import { EntityLink } from '../shared/EntityLink';
 
+/** The priority badge's word, sentence case (Law 14: no raw keys). */
+const PRIORITY_DISPLAY: Record<ActiveIntent['priority'], string> = {
+  primary: 'Primary',
+  secondary: 'Secondary',
+};
+
 interface IntentSectionProps {
   intents: ActiveIntent[];
   /** 'modal' uses CSS var tokens; 'panel' uses amber/stone Tailwind palette */
@@ -140,13 +146,13 @@ export function IntentSection({ intents, variant = 'modal', onOpenEntity }: Inte
                       {intent.displayName}
                     </span>
                     <span
-                      className="text-xs px-1.5 py-0.5 rounded uppercase tracking-wider"
+                      className="text-xs px-1.5 py-0.5 rounded font-bold"
                       style={{
                         color: categoryColor,
                         backgroundColor: `${categoryColor}22`,
                       }}
                     >
-                      {intent.priority}
+                      {PRIORITY_DISPLAY[intent.priority]}
                     </span>
                   </div>
 
@@ -203,8 +209,8 @@ export function IntentSection({ intents, variant = 'modal', onOpenEntity }: Inte
   return (
     <div>
       <h3
-        className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-        style={{ fontFamily: 'var(--font-display)' }}
+        className="text-amber-200/80 text-xs font-bold mb-2.5"
+        style={{ fontFamily: 'var(--font-body)' }}
       >
         Intent
       </h3>
@@ -237,10 +243,10 @@ export function IntentSection({ intents, variant = 'modal', onOpenEntity }: Inte
                     {intent.displayName}
                   </span>
                   <span
-                    className="text-xs uppercase tracking-wider flex-shrink-0"
+                    className="text-xs font-bold flex-shrink-0"
                     style={{ color: `${categoryColor}cc` }}
                   >
-                    {intent.priority}
+                    {PRIORITY_DISPLAY[intent.priority]}
                   </span>
                 </div>
 

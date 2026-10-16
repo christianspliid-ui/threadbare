@@ -19,12 +19,10 @@ export const EventBlock = memo(function EventBlock({ label, text }: EventBlockPr
       <div
         style={{
           fontSize: 'var(--text-xs)',
-          textTransform: 'uppercase',
           color: 'var(--accent-gold)',
-          letterSpacing: '0.08em',
           fontWeight: 700,
           marginBottom: '6px',
-          fontFamily: 'var(--font-display)',
+          fontFamily: 'var(--font-body)',
         }}
       >
         {label}

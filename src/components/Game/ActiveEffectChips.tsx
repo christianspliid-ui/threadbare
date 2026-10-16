@@ -31,8 +31,8 @@ export function ActiveEffectChips({ effects, heading }: ActiveEffectChipsProps) 
     <div data-testid="active-effect-chips">
       {heading && (
         <div
-          className="uppercase tracking-wider mb-1"
-          style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
+          className="mb-1"
+          style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}
         >
           {heading}
         </div>

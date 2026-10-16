@@ -39,7 +39,7 @@ export const REVEAL_CONSEQUENCE_CHIP_MAX = 4;
 
 /**
  * Category line — names the *kind* of moment, not the item. Centered
- * letterspaced display caps between two hairlines.
+ * letterspaced display type between two hairlines.
  */
 function Title({ children }: { children?: React.ReactNode }) {
   if (!children) return null;
@@ -103,10 +103,9 @@ function Banner({ children }: { children?: React.ReactNode }) {
         width: '100%',
         padding: 'var(--space-3) var(--space-4)',
         textAlign: 'center',
-        fontFamily: 'var(--font-display)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         fontSize: 'var(--text-base)',
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
         color: 'var(--text-primary)',
       }}
     >
@@ -161,8 +160,6 @@ function Consequences({ label, items }: { label: string; items: readonly Consequ
         style={{
           fontSize: 'var(--text-xs)',
           textAlign: 'center',
-          letterSpacing: '0.1em',
-          textTransform: 'uppercase',
           color: 'var(--text-tertiary)',
           margin: '0 0 var(--space-3)',
         }}

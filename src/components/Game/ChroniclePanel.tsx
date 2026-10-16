@@ -106,11 +106,10 @@ function BeforeYouWoke({ groups }: { groups: BeforeYouWokeGroup[] }) {
         <Tooltip id="ui.before_you_woke">
           <span
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               fontSize: 'var(--text-xs)',
               color: 'var(--accent-gold)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.14em',
               cursor: 'help',
             }}
           >
@@ -188,11 +187,10 @@ export function ChroniclePanel({ entries, currentTick, past }: ChroniclePanelPro
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px 8px' }}>
         <span
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             fontSize: 'var(--text-xs)',
             color: 'var(--accent-gold)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.14em',
           }}
         >
           Chronicle

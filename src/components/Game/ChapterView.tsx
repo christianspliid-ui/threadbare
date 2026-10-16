@@ -180,7 +180,7 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
                 marginBottom: 'var(--space-1, 4px)',
               }}
             >
-              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #6a6255)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #6a6255)' }}>
                 {step.label}
               </span>
               {step.outcome && (
@@ -252,7 +252,7 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
             paddingTop: 'var(--space-2, 8px)',
           }}
         >
-          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #6a6255)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 'var(--space-1, 4px)' }}>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary, #6a6255)', marginBottom: 'var(--space-1, 4px)' }}>
             Aftermath
           </div>
           {chapter.aftermathProse && <Prose text={chapter.aftermathProse} />}

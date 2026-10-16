@@ -84,10 +84,10 @@ export const LocationCard = memo(function LocationCard({
           <span
             data-loc-name
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
               color: 'var(--text-primary)',
               fontSize: 'var(--text-xs)',
-              fontWeight: 600,
+              fontWeight: 700,
               transition: 'color 0.15s ease',
             }}
           >
@@ -95,11 +95,10 @@ export const LocationCard = memo(function LocationCard({
           </span>
           <span
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               color: 'var(--accent-gold-dim)',
               fontSize: 'var(--text-xs)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
               marginLeft: 'auto',
             }}
           >

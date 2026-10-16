@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import type { RivalDefinition, RivalState } from '../../types/rival';
+import type { RivalBehavior, RivalDefinition, RivalState } from '../../types/rival';
 import { RivalIcon } from '../shared/RivalIcon';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { ListRow } from '../shared/ListRow';
 import { BEHAVIOR_COLORS, BEHAVIOR_COLOR_DEFAULT, BEHAVIOR_ICONS, getHostilityColor, hostilityLabel } from '../../data/uiColorPalette';
+
+/** The temper chip's word, sentence case (Law 14: no raw keys). */
+const BEHAVIOR_DISPLAY: Record<RivalBehavior, string> = {
+  aggressive: 'Aggressive',
+  subtle: 'Subtle',
+  territorial: 'Territorial',
+  expansionist: 'Expansionist',
+};
 
 /** The name reads as a link (the underline `EntityLink` draws) and toggles the rival's entry. */
 const RIVAL_NAME_STYLE = {
@@ -68,8 +76,8 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
               <ListRow
                 accentColor={color}
                 trailing={
-                  <span className="uppercase tracking-wider" style={{ fontSize: 'var(--text-xs)', color }}>
-                    {def.behavior}
+                  <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color }}>
+                    {BEHAVIOR_DISPLAY[def.behavior] ?? def.behavior}
                   </span>
                 }
               >
@@ -155,14 +163,13 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
                               </span>
                               {scheme.contested && !failed && !done && (
                                 <span
-                                  className="uppercase tracking-wider"
-                                  style={{ fontSize: '0.6rem', color: 'var(--color-warning, #d9a441)' }}
+                                  style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--color-warning, #d9a441)' }}
                                 >
                                   Contested
                                 </span>
                               )}
                               {done && (
-                                <span className="uppercase tracking-wider" style={{ fontSize: '0.6rem', color }}>
+                                <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color }}>
                                   Done
                                 </span>
                               )}

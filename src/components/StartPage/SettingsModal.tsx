@@ -5,11 +5,10 @@ import { VERSION_STAMP_TEXT } from './startPageConstants';
 const FOG_DEFAULT_STORAGE_KEY = 'threadbearer_fog_default';
 
 const LABEL_STYLE: React.CSSProperties = {
-  fontFamily: 'var(--font-display)',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
   fontSize: 'var(--text-sm)',
-  color: 'var(--text-muted)',
-  textTransform: 'uppercase',
-  letterSpacing: '0.1em',
+  color: 'var(--text-tertiary)',
   marginBottom: 'var(--space-2)',
 };
 
@@ -53,7 +52,7 @@ export function SettingsModal({ open, onClose, volume, onVolumeChange, muted, on
 
           {/* Volume control */}
           <div style={SECTION_STYLE}>
-            <label style={LABEL_STYLE}>Music Volume</label>
+            <label style={LABEL_STYLE}>Music volume</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
               <input
                 type="range"
@@ -95,7 +94,7 @@ export function SettingsModal({ open, onClose, volume, onVolumeChange, muted, on
 
           {/* Fog of War toggle */}
           <div style={SECTION_STYLE}>
-            <label style={LABEL_STYLE}>Fog of War on Start</label>
+            <label style={LABEL_STYLE}>Fog of war on start</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
               <input
                 type="checkbox"

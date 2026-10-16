@@ -173,10 +173,8 @@ export default function Codex({
         <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-base)',
+            fontSize: 'var(--text-lg)',
             color: 'var(--accent-gold)',
-            letterSpacing: '0.15em',
-            textTransform: 'uppercase',
           }}
         >
           Codex

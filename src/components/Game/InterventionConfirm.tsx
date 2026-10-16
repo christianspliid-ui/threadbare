@@ -101,30 +101,28 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
 
         {/* Content area */}
         <div className="px-6 pt-4 pb-5">
-          {/* Sphere · delivery line — v7 ALLCAPS Cinzel above the title */}
+          {/* Sphere · delivery line — small label above the title */}
           <p
             data-testid="sphere-delivery-line"
             className="mb-2"
             style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '10px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
               color: sphereColor,
-              fontWeight: 600,
+              fontWeight: 700,
             }}
           >
             {sphere} · {deliveryMode}
           </p>
 
-          {/* Title — italic display Cinzel per v7 */}
+          {/* Title — italic Alegreya Sans 700 (below the 22px Cinzel floor) */}
           <h3
             className="mb-3"
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
               fontSize: '18px',
               fontStyle: 'italic',
-              fontWeight: 400,
+              fontWeight: 700,
               color: 'var(--text-primary)',
               lineHeight: 1.2,
             }}
@@ -159,10 +157,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
               {props.agendaName && (
                 <span
                   style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '10px',
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
+                    fontFamily: 'var(--font-body)',
+                    fontWeight: 700,
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-tertiary)',
                     display: 'block',
                     marginBottom: '2px',
@@ -190,10 +187,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             <div>
               <span
                 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '10px',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   display: 'block',
                 }}
@@ -207,10 +203,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             <div>
               <span
                 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '10px',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   display: 'block',
                 }}
@@ -232,10 +227,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
               <div>
                 <span
                   style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '10px',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    fontFamily: 'var(--font-body)',
+                    fontWeight: 700,
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-tertiary)',
                     display: 'block',
                   }}

@@ -49,10 +49,10 @@ export const SubLocationEntry = memo(function SubLocationEntry({
         <span
           data-subloc-name
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
             color: 'var(--text-secondary)',
             fontSize: 'var(--text-xs)',
-            fontWeight: 500,
+            fontWeight: 700,
             textDecoration: 'underline',
             textDecorationColor: 'var(--border-subtle)',
             textUnderlineOffset: '2px',

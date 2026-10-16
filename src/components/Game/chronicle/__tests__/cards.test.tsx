@@ -277,13 +277,13 @@ describe('EventBlock', () => {
     expect(screen.getByText('Something stirs in the dark.')).toBeTruthy();
   });
 
-  it('renders label as uppercase', () => {
+  it('renders the label in sentence case as written, with no text-transform', () => {
     const { container } = render(
       <EventBlock label="Crisis" text="The world trembles." />,
     );
     const label = screen.getByText('Crisis');
     expect(label).toBeTruthy();
-    expect(label.style.textTransform).toBe('uppercase');
+    expect(label.style.textTransform).toBe('');
   });
 
   it('renders with correct structure', () => {

@@ -79,7 +79,7 @@ describe('DoomClockDetail — no player-facing percentage (Law 13 / Law 15, THR-
     );
     // `∞ / UNMADE` names an end state rather than answering "how much?", so the ruling leaves
     // it alone — and the surface is still free of percentages.
-    expect(screen.getByText('UNMADE')).toBeInTheDocument();
+    expect(screen.getByText('Unmade')).toBeInTheDocument();
     expect(baseElement.textContent).not.toMatch(/%/);
   });
 });

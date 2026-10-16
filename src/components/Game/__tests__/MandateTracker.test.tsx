@@ -194,7 +194,7 @@ describe('MandateTracker', () => {
       />
     );
     fireEvent.click(screen.getByText('Node Dominance'));
-    expect(screen.getByText('GRAPH-STATE')).toBeInTheDocument();
+    expect(screen.getByText('Graph-state')).toBeInTheDocument();
   });
 
   it('shows current stage conditions in expanded view', () => {
@@ -314,7 +314,7 @@ describe('MandateTracker', () => {
 
     fireEvent.click(screen.getByText('Witness Ascendancy'));
 
-    expect(screen.getByText('Omens Held')).toBeInTheDocument();
+    expect(screen.getByText('Omens held')).toBeInTheDocument();
     expect(screen.getByText('1/4')).toBeInTheDocument();
     expect(screen.getByText('Gathered Circle')).toBeInTheDocument();
   });

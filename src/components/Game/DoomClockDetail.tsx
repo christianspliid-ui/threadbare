@@ -184,10 +184,8 @@ export function DoomClockDetail({
                     fontSize: 'var(--text-xs)',
                     color: 'var(--text-muted)',
                     marginTop: '4px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
                   }}>
-                    UNMADE
+                    Unmade
                   </span>
                 </div>
               )}
@@ -195,7 +193,7 @@ export function DoomClockDetail({
 
             <div style={{ width: '100%' }}>
               <StatRow
-                label="Current Chapter"
+                label="Current chapter"
                 value={state.progress >= DOOM_CLIMAX_START ? `${state.currentStage} of 5 (Climax)` : `${state.currentStage} of 5`}
                 color={color}
               />
@@ -210,25 +208,25 @@ export function DoomClockDetail({
                 value={`${durationLabel(state.currentTick)} of ${durationLabel(state.totalTicks)}`}
               />
               <StatRow label="Remaining" value={durationLabel(ticksRemaining)} />
-              <StatRow label="Next Beat" value={nextBeatLabel} />
+              <StatRow label="Next beat" value={nextBeatLabel} />
               {journeyLabel && (
                 <StatRow label="The First" value={journeyLabel} color={color} />
               )}
               <StatRow
-                label="Counter-Omens"
+                label="Counter-omens"
                 tooltipId="ui.counter_omens"
                 value={`${state.counterOmens}`}
                 color={state.counterOmens > 0 ? '#22c55e' : undefined}
               />
               <StatRow
-                label="Doom Debt"
+                label="Doom debt"
                 tooltipId="ui.doom_debt"
                 value={state.nextEscalationSeverityModifier > 0 ? `+${state.nextEscalationSeverityModifier.toFixed(1)}` : '0'}
                 color={state.nextEscalationSeverityModifier > 0 ? '#f97316' : undefined}
               />
               {state.tickModifier !== 1.0 && (
                 <StatRow
-                  label="Speed Modifier"
+                  label="Speed modifier"
                   value={`×${state.tickModifier.toFixed(2)}`}
                   color={state.tickModifier > 1 ? '#dc2626' : '#22c55e'}
                 />
@@ -244,14 +242,13 @@ export function DoomClockDetail({
 
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              color: 'var(--text-tertiary)',
               marginBottom: '12px',
             }}>
-              Escalation & Climax
+              Escalation & climax
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -288,9 +285,9 @@ export function DoomClockDetail({
                       </div>
 
                       <span style={{
-                        fontFamily: 'var(--font-display)',
+                        fontFamily: 'var(--font-body)',
                         fontSize: 'var(--text-xs)',
-                        fontWeight: 600,
+                        fontWeight: 700,
                         color: isCurrent ? color : isPast ? 'var(--text-secondary)' : 'var(--text-muted)',
                         flex: 1,
                       }}>
@@ -301,8 +298,6 @@ export function DoomClockDetail({
                         {stage.stage === 5 && (
                           <span style={{
                             fontSize: 'var(--text-xs)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.08em',
                             color: '#fbbf24',
                           }}>
                             Climax
@@ -364,14 +359,13 @@ export function DoomClockDetail({
             {recentResolved.length > 0 && (
               <div style={{ marginTop: '16px' }}>
                 <div style={{
-                  fontFamily: 'var(--font-display)',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
                   fontSize: 'var(--text-xs)',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
+                  color: 'var(--text-tertiary)',
                   marginBottom: '8px',
                 }}>
-                  Recent Consequences
+                  Recent consequences
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   {recentResolved.map((event) => (
@@ -423,7 +417,7 @@ function StatRow({ label, value, color, tooltipId }: { label: string; value: str
       borderBottom: '1px solid #1a1a1e',
       fontSize: 'var(--text-xs)',
     }}>
-      <span style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: 'var(--text-xs)' }}>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
         {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
       </span>
       <span style={{

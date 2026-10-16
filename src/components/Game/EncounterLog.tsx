@@ -67,7 +67,8 @@ export const EncounterLog = memo(function EncounterLog({
             style={{
               fontSize: 'var(--text-sm)',
               color: isAbandoned ? 'var(--text-tertiary)' : 'var(--text-primary)',
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
             }}
           >
             {agentName} faces {template.name}
@@ -134,8 +135,8 @@ export const EncounterLog = memo(function EncounterLog({
           <div className="mb-3 cursor-help">
             <div className="flex items-center justify-between mb-1">
               <span
-                className="text-xs uppercase tracking-wider"
-                style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
+                className="text-xs"
+                style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-body)', fontWeight: 700 }}
               >
                 Leverage
               </span>
@@ -159,7 +160,7 @@ export const EncounterLog = memo(function EncounterLog({
       {currentStep && (
         <Tooltip id="ui.encounter_step">
           <p
-            className="text-xs font-semibold mb-2 uppercase tracking-wider cursor-help"
+            className="text-xs font-bold mb-2 cursor-help"
             style={{ color: 'var(--text-secondary)' }}
           >
             {`Step ${progress.currentEncounterIndex + 1}`}

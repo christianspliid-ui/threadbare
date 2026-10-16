@@ -42,10 +42,9 @@ export function DetailBreadcrumb({ trail, onNavigate }: DetailBreadcrumbProps) {
     cursor: clickable ? 'pointer' : 'default',
     color: clickable ? 'var(--text-secondary)' : 'var(--text-tertiary)',
     textDecoration: 'none',
-    fontSize: '0.7rem',
-    letterSpacing: '0.04em',
-    fontFamily: 'var(--font-display)',
-    textTransform: 'uppercase',
+    fontSize: 'var(--text-xs)',
+    fontFamily: 'var(--font-body)',
+    fontWeight: 700,
   });
 
   return (

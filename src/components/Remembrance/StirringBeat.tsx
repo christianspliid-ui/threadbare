@@ -95,10 +95,9 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
                     className="absolute left-0 right-0 text-center"
                     style={{
                       bottom: '12%',
-                      fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+                      fontFamily: 'var(--font-body)',
+                      fontWeight: 700,
                       fontSize: 'var(--text-xs)',
-                      letterSpacing: '0.18em',
-                      textTransform: 'uppercase' as const,
                       color: 'rgba(255,255,255,0.12)',
                       opacity: isHovered ? 1 : 0,
                       transform: isHovered ? 'translateY(0)' : 'translateY(6px)',
@@ -146,8 +145,6 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
             <span style={{
               fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
               fontSize: '1.5rem',
-              letterSpacing: '0.16em',
-              textTransform: 'uppercase' as const,
               color: 'rgba(255,255,255,0.2)',
               marginBottom: '16px',
             }}>

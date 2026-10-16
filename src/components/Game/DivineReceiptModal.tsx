@@ -104,10 +104,9 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
         <div
           data-testid="divine-receipt-band-word"
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             fontSize: 'var(--text-sm)',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
             color: accent,
             marginTop: 'var(--space-1)',
           }}
@@ -121,7 +120,7 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
         <p
           data-testid="divine-receipt-framing"
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-prose)',
             fontSize: 'var(--text-base)',
             color: 'var(--text-primary)',
             margin: 0,

@@ -48,8 +48,8 @@ export const CardKeywordChip = memo(function CardKeywordChip({
         background: CHIP_BG,
         color: CHIP_TEXT,
         fontSize: 'var(--text-xs)',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         whiteSpace: 'nowrap',
         opacity: muted ? 0.55 : 1,
       }}

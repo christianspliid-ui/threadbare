@@ -75,8 +75,8 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
       <div className={`max-w-2xl w-full mx-4 bg-gradient-to-b ${style.bg} to-stone-900 border border-amber-900/30 rounded-xl p-8`}>
         <div className="text-center mb-6">
           <Tooltip id="ui.harvest_cycle">
-            <p className="text-xs text-amber-200/70 uppercase tracking-widest mb-1 cursor-help">
-              Cycle {cycle} Complete
+            <p className="text-xs text-amber-200/70 mb-1 cursor-help">
+              Cycle {cycle} complete
             </p>
           </Tooltip>
           <Tooltip id="ui.harvest_type">
@@ -96,8 +96,8 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
         {harvest.cosmicEchoCandidates.length > 0 && (
           <div className="mb-6">
             <Tooltip id="ui.harvest_echo">
-              <h3 className="text-xs font-bold text-amber-100/80 uppercase tracking-wider mb-3 cursor-help">
-                Echoes Preserved — {countWord(harvest.cosmicEchoCandidates.length)} cosmic
+              <h3 className="text-xs font-bold text-amber-100/80 mb-3 cursor-help">
+                Echoes preserved — {countWord(harvest.cosmicEchoCandidates.length)} cosmic
               </h3>
             </Tooltip>
             {/* Law 57: the echo row wraps instead of scrolling sideways, so every
@@ -125,11 +125,12 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
             style={{
               backgroundColor: style.color,
               color: '#1c1917',
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               boxShadow: `0 0 20px ${style.color}40`,
             }}
           >
-            Begin Next Cycle
+            Begin next cycle
           </Button>
         </div>
       </div>

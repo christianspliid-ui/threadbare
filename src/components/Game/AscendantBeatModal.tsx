@@ -106,37 +106,37 @@ interface BeatPresentation {
 
 const KIND_PRESENTATION: Record<BeatKind, BeatPresentation> = {
   spine: {
-    eyebrow: 'A Divine Cadence',
+    eyebrow: 'A divine cadence',
     prose: 'The world turns its face toward you, and for a moment the weave is yours to touch.',
     cta: 'Receive',
   },
   introduction: {
-    eyebrow: 'The World Calls',
+    eyebrow: 'The world calls',
     prose: 'A people you have not yet known lifts its voice upward, asking to be seen.',
     cta: 'Attend',
   },
   investment: {
-    eyebrow: 'An Offering',
+    eyebrow: 'An offering',
     prose: 'Something in the world stands ready to receive your touch — a soul, a place, a thing.',
     cta: 'Bestow',
   },
   selection: {
-    eyebrow: 'A Path Opens',
+    eyebrow: 'A path opens',
     prose: 'Several shapes of power lie before you. Choose what you will become.',
     cta: 'Choose',
   },
   delivery: {
-    eyebrow: 'A Vision',
+    eyebrow: 'A vision',
     prose: 'A scene unfolds before you, delivered not by mortal pathing but by your own sight.',
     cta: 'Witness',
   },
   deepening: {
-    eyebrow: 'A Deepening',
+    eyebrow: 'A deepening',
     prose: 'The world has learned the shape of your will. Where once your urging only leaned, now it commands — something has decided you are to be obeyed in this.',
     cta: 'Receive',
   },
   milestone: {
-    eyebrow: 'A Wellspring',
+    eyebrow: 'A wellspring',
     prose: 'What you hold in the world has stopped merely belonging to you and started paying you back. A reach you had not thought to use is open to you now.',
     cta: 'Receive',
   },
@@ -342,9 +342,8 @@ const PRIMARY_BUTTON_STYLE: React.CSSProperties = {
   border: 'none',
   borderRadius: '4px',
   padding: 'var(--space-2) var(--space-6)',
-  fontFamily: 'var(--font-display)',
+  fontFamily: 'var(--font-body)',
   fontSize: 'var(--text-sm)',
-  letterSpacing: '0.06em',
   cursor: 'pointer',
   fontWeight: 700,
 };
@@ -355,9 +354,9 @@ const SECONDARY_BUTTON_STYLE: React.CSSProperties = {
   border: '1px solid var(--border-subtle)',
   borderRadius: '4px',
   padding: 'var(--space-2) var(--space-6)',
-  fontFamily: 'var(--font-display)',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
   fontSize: 'var(--text-sm)',
-  letterSpacing: '0.06em',
   cursor: 'pointer',
 };
 
@@ -628,7 +627,7 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
     // THR-1811: an offering's pill reads only "Three powers stir" — no beat id.
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
       <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
-      <span style={{ color: 'var(--accent-gold)', textTransform: 'uppercase', fontSize: 'var(--text-xs)', letterSpacing: '0.1em' }}>
+      <span style={{ color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}>
         {OFFERING_COPY.eyebrow}
       </span>
       <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Enter ▸</span>
@@ -636,7 +635,7 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
   ) : (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
       <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
-      <span style={{ color: 'var(--accent-gold)', textTransform: 'uppercase', fontSize: 'var(--text-xs)', letterSpacing: '0.1em' }}>
+      <span style={{ color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}>
         {giftWaits ? GIFT_WAITS_COPY.eyebrow : eyebrow}
       </span>
       <span style={{ color: 'var(--text-secondary)' }}>— {giftWaits ? eyebrow : humanizeBeatId(pending.beatId)}</span>
@@ -667,9 +666,9 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
         padding: 'var(--space-2) var(--space-4)',
         cursor: 'pointer',
         color: 'var(--text-primary)',
-        fontFamily: 'var(--font-display)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         fontSize: 'var(--text-sm)',
-        letterSpacing: '0.04em',
       }}
     >
       {giftWaits ? (

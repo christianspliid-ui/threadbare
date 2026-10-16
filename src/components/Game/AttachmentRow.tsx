@@ -88,16 +88,14 @@ export const AttachmentRow = React.memo(function AttachmentRow({
       {activeVow && (
         <div
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '9px',
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-xs)',
             fontWeight: 700,
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
             color: 'var(--sphere-spirit-bright)',
             marginBottom: '2px',
           }}
         >
-          Vow · Active Now
+          Vow · Active now
         </div>
       )}
       {/* Top row: glyph + name + tier */}

@@ -107,7 +107,7 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
     <Modal open onClose={onClose} maxWidth={480} aria-label="World omen details">
       <div style={{ padding: '20px' }}>
         <div style={{ marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '4px', fontFamily: 'var(--font-display)' }}>
+          <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '4px', fontFamily: 'var(--font-display)' }}>
             World Omens
           </h2>
           <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
@@ -130,8 +130,8 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
         {/* Recent history */}
         {recentHistory.length > 0 && (
           <div style={{ marginTop: '16px', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
-              Recent Omens
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: '8px' }}>
+              Recent omens
             </div>
             {recentHistory.map((h, i) => {
               const t = getOmenTemplateById(h.templateId);
