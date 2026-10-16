@@ -43,6 +43,8 @@ An empty roundel — a plain ring, outer radius 200, ring width 48, on the 512 g
 
 Five classes have no obvious period object and wait for Christian's pick ([THR-1908](https://linear.app/threadbare/issue/THR-1908)): doom kinds, strands, card verbs, places of power, rival tempers (plan Appendix C; candidates on the review sheet, `Docs/audits/2026-10-14-thr-1879-icon-table/icon-table.html`). Until then those surfaces keep today's glyph, and the six open places (convergence, time scar, shadow hollow, ley nexus, corruption, place of power) are temporary `own` copies of the map's drawings; `elder_ruin` draws the fallback. Each becomes carved by swapping its one entry.
 
+**Caveat on those six copies:** the map draws them with an outline pass, so their open line strokes show there; `Icon` only fills, so in a panel those strokes vanish and the shape reads faint (the ley nexus shows only its halo). No panel reads them yet. A reader that moves onto `PLACE_ICON` before THR-1908's pick should expect that, not a bug in `Icon`.
+
 ## Licence and credits
 
 - The shapes are **CC BY 3.0** (game-icons.net). The start page's **Credits** prints the Icons line, its author list rendered from `ICON_CREDITS` (the distinct authors of the carved entries), with links to game-icons.net and the licence. The line must ship in the same change as any new author.
