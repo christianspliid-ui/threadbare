@@ -57,12 +57,15 @@ export function insideScrollablePanel(el: Element | null, doc: Document = docume
 
 /**
  * True when the map keys must stay quiet: focus is in a text field or a composite widget,
- * an escape layer that covers the map is open, or the last pressed / focused element sits in
+ * an escape layer that covers the map is open, a modal dialog is open or holds focus, or the last pressed / focused element sits in
  * a scrollable panel (which the browser scrolls with these keys).
  */
 export function mapKeysInert(doc: Document = document): boolean {
   if (getEscapeLayers().some(layer => bandCoversMap(layer.band))) return true;
+  // A modal dialog that registers no escape layer (the DetailModal card stack) still covers the map.
+  if (doc.querySelector('[aria-modal="true"]')) return true;
   const el = doc.activeElement as HTMLElement | null;
+  if (el?.closest('[role="dialog"], [role="alertdialog"]')) return true;
   if (!el || el === doc.body) return insideScrollablePanel(lastPointerTarget, doc);
   if (insideScrollablePanel(el, doc)) return true;
   const tag = el.tagName.toLowerCase();

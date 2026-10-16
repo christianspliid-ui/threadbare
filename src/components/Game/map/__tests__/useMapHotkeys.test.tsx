@@ -80,6 +80,28 @@ describe('useMapHotkeys', () => {
   });
 });
 
+describe('useMapHotkeys — dialogs with no escape layer (review gate round 2)', () => {
+  it('is inert while an aria-modal dialog is open, and while focus sits in any dialog', () => {
+    const onCommand = vi.fn();
+    renderHook(() => useMapHotkeys(onCommand));
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    const btn = document.createElement('button');
+    dialog.appendChild(btn);
+    document.body.appendChild(dialog);
+    press('ArrowLeft');
+    press('PageUp');
+    dialog.setAttribute('aria-modal', 'false');
+    btn.focus();
+    press('Home', btn);
+    expect(onCommand).not.toHaveBeenCalled();
+    dialog.remove();
+    press('PageUp');
+    expect(onCommand).toHaveBeenCalledWith('zoom_in');
+  });
+});
+
 describe('useMapHotkeys — scrollable panels keep their keys (review gate)', () => {
   function scrollingRail(): { rail: HTMLDivElement; row: HTMLDivElement } {
     const rail = document.createElement('div');
