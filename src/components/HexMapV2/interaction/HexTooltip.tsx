@@ -17,6 +17,19 @@ import {
 const TOOLTIP_MAX_ROUTES = 3;
 
 /**
+ * THR-1848 — the title line wraps inside the box instead of spilling past it
+ * (Law 33). For the height estimate, a title is counted as this many px per
+ * character at `--text-sm` weight 600, and each wrapped line adds this height.
+ * Both are sized for the largest type step (2560, root 112.5%: ~9 px a glyph,
+ * 1.3 × ~20 px a line) — over-estimating only lifts the box a little higher,
+ * under-estimating drops it onto the hovered hex.
+ */
+export const TOOLTIP_TITLE_CHAR_PX = 9;
+export const TOOLTIP_TITLE_LINE_PX = 27;
+/** Horizontal padding inside the box (6px 10px), subtracted from the width cap. */
+const TOOLTIP_PADDING_X = 20;
+
+/**
  * THR-1818 — the river feature reads as a word, the same "River" the hex detail
  * panel's Feature row shows. No icon vocabulary owns map features, and an emoji
  * is outside every one (Law 9), so the word is the honest glyph.
@@ -158,15 +171,22 @@ export function HexTooltip({
   const battleLineHeight = (battleLines?.length ?? 0) * 18;
   const offsetY = INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y;
 
+  // Resolve terrain display name through the one display-name map (THR-1818)
+  const displayTerrainName = terrainDisplayName(terrainKey || terrainName);
+  const titleText = locationActivity ? locationActivity.locationName : displayTerrainName;
+  const showRiverSuffix = !!hasRiver && !locationActivity && displayTerrainName !== HEX_TOOLTIP_RIVER_LABEL;
+  // The river suffix sits on the title line and wraps with it, so it is measured too.
+  const titleRenderedLength = titleText.length + (showRiverSuffix ? ` · ${HEX_TOOLTIP_RIVER_LABEL}`.length : 0);
+  const titleCharsPerLine = Math.max(1, Math.floor((estimatedWidth - TOOLTIP_PADDING_X) / TOOLTIP_TITLE_CHAR_PX));
+  const titleExtraLines = Math.max(0, Math.ceil(titleRenderedLength / titleCharsPerLine) - 1);
+  const titleExtraHeight = titleExtraLines * TOOLTIP_TITLE_LINE_PX;
+
   let left = screenX - estimatedWidth / 2;
-  let top  = screenY - offsetY - estimatedHeight - avatarLineHeight - battleLineHeight;
+  let top  = screenY - offsetY - estimatedHeight - avatarLineHeight - battleLineHeight - titleExtraHeight;
 
   if (left < 4) left = 4;
   if (left + estimatedWidth > canvasWidth - 4) left = canvasWidth - estimatedWidth - 4;
   if (top < 4) top = screenY + offsetY;
-
-  // Resolve terrain display name through the one display-name map (THR-1818)
-  const displayTerrainName = terrainDisplayName(terrainKey || terrainName);
 
   const dimStyle = {
     color:      'var(--text-tertiary)',
@@ -199,16 +219,21 @@ export function HexTooltip({
     >
       {/* Primary line: location name (when available) or terrain name */}
       <div
+        data-testid="hex-tooltip-title"
         style={{
           color:       'var(--accent-gold)',
           fontSize:    'var(--text-sm)',
           fontWeight:  600,
           fontFamily: 'var(--font-body)',
           lineHeight:  1.3,
+          // THR-1848 — the box is `nowrap`; the title must not inherit it, or a
+          // long name ("The Shattered Sanctum–Hawkgate Road") runs past the border.
+          whiteSpace:  'normal',
+          overflowWrap: 'anywhere',
         }}
       >
-        {locationActivity ? locationActivity.locationName : displayTerrainName}
-        {hasRiver && !locationActivity && displayTerrainName !== HEX_TOOLTIP_RIVER_LABEL && (
+        {titleText}
+        {showRiverSuffix && (
           <span
             data-testid="hex-tooltip-river"
             style={{ color: 'var(--text-secondary)', fontWeight: 400 }}
