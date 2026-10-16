@@ -85,10 +85,7 @@ export function joinNames(names: readonly string[]): string {
 export const ACCOUNT_WORDS = {
   harvestWakeButton: 'Wake in a new world',
   /** Leads the list of divine echoes; names follow from `echoDisplayName`. */
-  harvestLeavesBehind: (names: readonly string[]) => {
-    const list = joinNames(names);
-    return `Your age leaves behind: ${list.charAt(0).toUpperCase()}${list.slice(1)}.`;
-  },
+  harvestLeavesBehind: (names: readonly string[]) => `Your age leaves behind: ${joinNames(names)}.`,
   harvestLeavesLittle: 'Your age leaves little the next world will remember.',
   harvestSaveFailed:
     "This world's memory could not be kept on this device. The next world will wake as if for the first time.",

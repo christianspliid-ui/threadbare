@@ -49,7 +49,7 @@ export function StirringBeat({ images, onSelect, notice }: StirringBeatProps) {
         Something stirs in the void. What echoes?
         {notice && (
           <span role="status" data-testid="stirring-account-notice"
-                style={{ display: 'block', marginTop: '0.75rem', fontSize: '0.875rem', fontStyle: 'normal', letterSpacing: 0, color: 'rgba(200,185,215,0.7)' }}>
+                style={{ display: 'block', marginTop: '0.75rem', fontSize: 'var(--text-sm)', fontStyle: 'normal', letterSpacing: 0, color: 'var(--text-secondary)' }}>
             {notice}
           </span>
         )}
