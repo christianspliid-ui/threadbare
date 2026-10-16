@@ -712,10 +712,10 @@ exit
 - **Intent:** Items grant abilities to their bearer (e.g. cavalry_charge).
 - **Producer → Consumer:** Attachments, Items & Possessions → Encounters & Dilemmas
 - **UL terms:** *Attachment*, *Trait*
-- **Production hits:** 24 total — 4 write, 4 read, 16 unclassified
+- **Production hits:** 23 total — 4 write, 4 read, 15 unclassified
 - **Write sites:** `src/data/anomaly-reward-catalog.ts`, `src/data/reward-attachment-catalog.ts`, `src/data/starter-attachments.ts`, `src/engine/gameInit.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/spellActivation.ts`, `src/engine/worldSeed.ts`
-- **Other hits:** `src/components/Game/attachmentGlyphs.ts`, `src/data/ambition-templates.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/temper-trait-content.ts` +11 more
+- **Other hits:** `src/data/ambition-templates.ts`, `src/data/artifact-templates.ts`, `src/data/choice-set-catalog.ts`, `src/data/temper-trait-content.ts`, `src/engine/effectExecutors.ts` +10 more
 - **Verdict:** Verified 2026-07-26: THR-737. `collectGrantedTraits` (effectQueries.ts) wraps `hasGrantedTrait` and is consumed by all three production trait gates: encounter eligibility (encounterFilterPipeline `requiredTraits` + `blockedByTraits`), spell prerequisites (spellActivation `traitKeys`), and ambition eligibility (ambitionTick `buildAmbitionAgentSnapshot` + worldSeed initial assignment). Non-vacuous by live payload intersection: `artifact-templates.ts` grants `master_smith` via `trait_grant`, and `ambition-templates.ts` consumes it on `ambition_forge_legend` — as a `boostingTraits` entry since THR-1348 (2026-09-22; it was the `requiredTraits` gate, which no seed could ever satisfy because the Anvil is a tier-4 cursed artifact `seedPossessions` never deals, so the ambition had zero holders on every seed). `grantedTraitConsumers.test.ts` asserts the boosting side: the granted key reaches the snapshot and `scoreDesirability` ranks the ambition higher with the Anvil than without, on one fixed stream. Re-verified 2026-07-26 under THR-786: all four consumers now reach the granted set through `collectBearerTraitRefs({ grantedTraits })`, covered by the site-1/4/5/6 granted-trait cases in `__tests__/contracts/traitPredicate.contract.test.ts`.
 
 ### `attachment-worldgen-starters` — 🟢 LIVE
