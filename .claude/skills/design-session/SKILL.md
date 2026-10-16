@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. (Replaced the Cowork design role, retired 2026-07-21, THR-654.) For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-10-14
+last_validated_against: 2026-10-16
 ---
 
 # design-session
@@ -285,6 +285,12 @@ Only after the plan doc is merged to `main`:
 **Parallel-safe with:** THR-XX, THR-YY (file-surface disjoint) — or "none".
 **Mutex with:** free-text of the files/surfaces this issue will collide on.
 ```
+
+**A blocker named in the handoff is also a Linear relation.** If the plan says the ticket is blocked by
+another open ticket, write it with `save_issue(id, blockedBy:["THR-YY"])` and move the ticket to **Todo**, not
+Ready for Dev; the orchestrator promotes it when the blocker merges. A blocker that exists only in comment
+prose is invisible to the pickup's queue sort: THR-1820 sat in Ready for Dev naming `Blocked by: THR-1821`,
+was claimed by the 2026-10-14 12:12Z pickup run, and had to be released (impediment #1191).
 
 **The state transition plus the handoff comment IS the handoff** — no out-of-band notification. The executor
 (`tb-opus-pickup`) polls Ready for Dev hourly and pulls the top item.

@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-10-10 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-10-16 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 0a143490be1d9b54210f64db6cbc26e1fa6f1301)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 1eda2cd30df7d4ee8b5901c6187a987a5503b613)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: aa88a60fc3cbc554497f62d8faa9a09bd5f3e580)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 636abd2bb126e15b1b9fcb29c291c2e5496f5811)
 >   - Docs/canon/undertakings.md (sha1: 851d8660d4891fac0e8193531e6abac64d7881c4)
@@ -61,8 +61,8 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 
 | Placeholder | Resolves To | Example |
 |---|---|---|
-| `{name}` | Agent name | "Kael Thornweaver" |
-| `{they}/{them}/{their}/{s}` | Gendered pronouns | "they/them/their/s" |
+| `{name}` | Agent name. A verb after a `{name}` subject always takes the suffix — `{name} work{s}` reads "works" whatever the pronouns (THR-1857) | "Kael Thornweaver" |
+| `{they}/{them}/{their}/{s}/{es}/{is}/{are}` | Gendered pronouns; `{es}` is `{s}` for a sibilant stem (THR-1945); `{is}`/`{are}` are one copula token agreeing with `{they}` (THR-1810) | "{they} watch{es}" → "she watches" / "they watch" |
 | `{They}/{Them}/{Their}` | Capitalized pronouns | "They watch..." |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |

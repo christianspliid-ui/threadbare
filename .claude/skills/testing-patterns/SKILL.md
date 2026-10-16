@@ -6,7 +6,7 @@ description: >
   "movement test", "hexmap test", "regression test", or when implementing changes that touch
   3+ files across src/engine/ and src/components/. Also load when reviewing test coverage
   or diagnosing why a change broke downstream systems.
-last_validated_against: 2026-09-06
+last_validated_against: 2026-10-16
 validated_doctrine: architecture@1
 ---
 
@@ -228,6 +228,20 @@ deterministically (seed the route, seed the steeped lair) so the guard asserts t
 not that the content happened to occur. And before building any fixed-seed probe, confirm the
 entrypoint actually produces the population (`initializeGameStateFromIdentity` worlds have zero
 threaded agents; the obvious worldgen entrypoint generates no rivers or lakes — #969/#971).
+
+### ❌ Binding to an incidental member or roll instead of what the test planted
+
+Seven rows in three weeks (#1097, #1099, #1106, #1107, #1150, #1152, #1187) share one shape: the
+assertion holds only because of something the test did not set up. Examples: the mortal's *first*
+appointment seed instead of the one the test planted (#1150), a trip priced at its shortest roll
+(#1152), and a Gate Duty flow test that needed seed 42's d100 to land a non-terminal band (#1187).
+That test broke when THR-1889 changed the roll sequence but kept the odds. Each one read as a
+regression of an unrelated change.
+
+**Fix:** look up the thing by the id the test created, never by position (`[0]`, `find` on a
+shared set). When the test is about *flow*, not odds, pin the band with
+`setOutcomePin(templateId, band)` in `beforeEach` and `clearOutcomePin()` in `afterEach` (the
+THR-1030 debug pin). Do not rely on a seed's roll.
 
 ## Your test does not get a fresh module registry (THR-940)
 
