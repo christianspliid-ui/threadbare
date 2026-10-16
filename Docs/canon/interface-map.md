@@ -200,6 +200,8 @@ vocabularies that have never intersected. Remediation: **THR-800**. Trait *minti
 `trait.condition.location.*` traits from the world's own scalars and `scoreAndSelect` reads them
 as one pool term); decay and display rows for the remaining waves are still unwritten (THR-791). A fifth minted trait, *Blood-soaked*, reads records rather than a scalar: `battles-leave-a-record-on-the-ground` (THR-1528, 2026-09-26, 🟢 LIVE) has `resolveBattle` write a `battle_fought` Event on the battle's ground, which the rule, the place MEMORY and the debug readout read; the pool and movement-tax rows above each gained a fifth trait row. Slice 2, `fights-leave-a-record-on-the-ground` (THR-1574, 2026-09-27, 🟢 LIVE), has the first fight-end dispatcher branch write a `fight_fought` Event where a fight with a real exchange was fought, read by the same three readers at a third of a battle's weight.
 
+Death-site haunting (THR-1925, 2026-10-16, 🟢 LIVE, no contract row yet) is an Agents → Economy read: `markMortalDead` (`agentLifecycle.ts`) writes `deathCount` and a new `lastDeathTick` on the place a mortal fell, and `phaseProsperity` step 9.5 reads them — plus the `lastFightTick` / `lastBattleTick` stamps above — through `computeDeathSiteUnrestTarget` (`src/engine/deathSiteHaunting.ts`) to lift unrest toward a capped target that fades over ten days. It writes `deathSiteUnrestTarget` on the place; the hunger-and-unrest S1 build (THR-1934) reads that as its `deathSite` input.
+
 **Dealt hands** — 1 contract, written 2026-08-25 (THR-1247), **LIVE since 2026-08-26 (THR-1254)**.
 `repertoire-deals-into-encounter-hand` covers the Repertoire supplying most of an encounter's
 hand: the encounter authors 0–2 specials and declares a fill, and `dealHand` mints the rest
