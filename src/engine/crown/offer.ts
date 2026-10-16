@@ -25,6 +25,7 @@ import {
   OATH_THREAT_RADIUS_HEXES,
   OATH_NO_THREAT_PROTECTION,
 } from '../../data/crown-constants';
+import { FACTION_TREASURY_CAP } from '../../data/faction-purse-constants';
 
 function pairEdges(graph: WorldGraph, a: string, b: string, type: 'relates_to' | 'hostile_to') {
   return [
@@ -66,12 +67,17 @@ export function threatTo(world: CrownWorld, c: string, r: string): number {
   return threat;
 }
 
-/** The largest gift share R can pay C, keeping OATH_GIFT_RESERVE back. 0 when C earns nothing. */
+/**
+ * The largest gift share R can pay C, keeping OATH_GIFT_RESERVE back and no more than C's
+ * treasury can hold under FACTION_TREASURY_CAP — the score never counts coin that cannot
+ * land. 0 when C earns nothing or is already at the cap.
+ */
 export function affordableGift(world: CrownWorld, c: string, r: string): number {
   const full = OATH_GIFT_DAYS * Math.max(0, world.income.get(c) ?? 0);
   if (full <= 0) return 0;
   const spare = Math.max(0, (world.wealth.get(r) ?? 0) - OATH_GIFT_RESERVE);
-  return Math.min(1, spare / full);
+  const room = Math.max(0, FACTION_TREASURY_CAP - (world.wealth.get(c) ?? 0));
+  return Math.min(1, spare / full, room / full);
 }
 
 /** Coin a gift of this share costs: giftShare × OATH_GIFT_DAYS × income(C). */

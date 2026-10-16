@@ -31,7 +31,9 @@ import {
   OATH_REFUSAL_SENTIMENT_FLOOR,
   LOYALTY_FALL_DESTITUTE,
 } from '../../data/crown-constants';
-import { PURSE_CYCLE_TICKS } from '../../data/faction-purse-constants';
+import { PURSE_CYCLE_TICKS, FACTION_TREASURY_CAP } from '../../data/faction-purse-constants';
+import { SIEGE_MAX_DURATION } from '../../types/battle';
+import { FACTION_ACTION_INTERVAL } from '../../types/factionAction';
 
 const R = 'faction_0';      // the courting realm
 const R2 = 'faction_1';     // a neighbouring realm
@@ -175,7 +177,27 @@ describe('winning an oath', () => {
     expect(rel?.properties.isRival).toBeUndefined();
   });
 
-  it('coerces a faction whose town its army has besieged for three days', () => {
+  it('a gift counts only the coin the candidate can hold under the treasury cap', () => {
+    const g = world();
+    g.addEdge({ id: 'e_hostile', source: R2, target: R, type: 'hostile_to', properties: {} });
+    setDay(g, R2, 20, 'Comfortable');
+    g.getNode(GUILD)!.properties.wealth = FACTION_TREASURY_CAP;   // no room at all
+    let w = buildCrownWorld(g, 24, projection());
+    expect(affordableGift(w, GUILD, R)).toBe(0);
+    const res = executeSeekFealty(stateAt(g, 24), g.getNode(R)!, w);
+    expect(res?.record.details?.kind).not.toBe('bought');
+    expect(g.getNode(R)!.properties.wealth).toBe(1000);           // nothing paid for nothing
+
+    g.getNode(GUILD)!.properties.wealth = FACTION_TREASURY_CAP - 10; // room for a third of the gift
+    w = buildCrownWorld(g, 24, projection());
+    expect(affordableGift(w, GUILD, R)).toBeCloseTo(10 / OATH_GIFT_DAYS);
+  });
+
+  it('the siege-forcing window spans at least two faction-action ticks before a siege must end', () => {
+    expect(SIEGE_MAX_DURATION - OATH_COERCE_MIN_SIEGE_TICKS).toBeGreaterThanOrEqual(2 * FACTION_ACTION_INTERVAL);
+  });
+
+  it('coerces a faction whose town its army has besieged for two days', () => {
     const g = world();
     g.addEdge({ id: 'e_ctl_c', source: R2, target: TOWN_C, type: 'controls', properties: {} });
     addArmy(g, 'army_r', R, TOWN_C);

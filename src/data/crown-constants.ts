@@ -62,7 +62,13 @@ export const OATH_THREAT_RADIUS_HEXES = 6;
 export const OATH_NO_THREAT_PROTECTION = 0.5;
 
 // ── Coercion and cooldowns ──
-export const OATH_COERCE_MIN_SIEGE_TICKS = 36;
+/**
+ * Two days. A siege resolves by SIEGE_MAX_DURATION (40) and faction actions run every
+ * FACTION_ACTION_INTERVAL (8) ticks, so the forcing window (this .. 39) must span at least
+ * two action ticks or most sieges end before a realm can act on them. At 36 the window
+ * held at most one action tick, and often none. Pinned by crown.test.ts.
+ */
+export const OATH_COERCE_MIN_SIEGE_TICKS = 24;
 export const OATH_COERCE_WINDOW_DAYS = 5;
 export const OATH_RESWEAR_COOLDOWN_DAYS = 20;
 export const OATH_RIVAL_MARGIN = 0.1;
