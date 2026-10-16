@@ -43,7 +43,7 @@ import {
 import { createDefaultSphereAffinity } from '../types/sphereAffinity';
 import { seedMonsterLairs } from './lairSeeding';
 import { seedElderRuins } from './ruins/elderRuinSeeding';
-import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenerator';
+import { generateCultureIdentities, toCultureForWorldgen, stampProvinceCultureOnTiles } from './cultureGenerator';
 import { mulberry32 } from '../lib/prng';
 import { selectDoomArchetype, DOOM_ARCHETYPE_FALLBACK } from './doomArchetypeSelection';
 import { emitTrace } from './traceBuffer';
@@ -177,6 +177,10 @@ export function initializeGameState(
     worldGenResult.regionData?.domains,
     worldScenario,
   );
+
+  // THR-1849 — the province map is worldgen scaffolding; stamp each hex with its living
+  // province's culture so a place founded there during play takes the heartland.
+  stampProvinceCultureOnTiles(graph, tiles, worldGenResult.provinceIds, worldGenResult.provinces, cols);
 
   // Register action template nodes so createAction can add performing edges
   for (const template of ACTION_TEMPLATES) {

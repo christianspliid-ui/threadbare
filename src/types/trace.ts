@@ -1881,7 +1881,8 @@ export interface TradeRouteUpkeepTrace extends TraceBase {
 export interface FoundedPlaceCultureTrace extends TraceBase {
   category: 'founded_place_culture';
   maxHexes: number;
-  linked: Array<{ locationId: string; cultureId: string; dist: number }>;
+  /** THR-1849: `heartland` — founded inside a living culture's province (dist 0); `fringe` — outside every one. */
+  linked: Array<{ locationId: string; cultureId: string; dist: number; kind: 'heartland' | 'fringe' }>;
 }
 
 /**

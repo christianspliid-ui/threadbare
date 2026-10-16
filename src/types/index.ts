@@ -144,6 +144,14 @@ export interface HexTile {
   // ── Positional danger (set at worldgen, read-only thereafter) ──
   /** Positional danger level (0.0–1.0). Higher = harder encounters. */
   dangerLevel?: number;
+  /**
+   * THR-1849 — the living culture whose province holds this hex (set at worldgen,
+   * read-only thereafter). The province map itself is worldgen scaffolding; this stamp is
+   * what survives, so a place founded during play on this hex takes the heartland link a
+   * place seeded here at tick 0 would. Absent → wilderness, a lost culture's ruin-land, or
+   * no province data.
+   */
+  provinceCultureId?: string;
 }
 
 /** Force overlay display modes */

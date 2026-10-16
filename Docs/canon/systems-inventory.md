@@ -106,7 +106,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | `3b` | Notable Agendas | `THR-630` |
 | `6.15` | Dominion | `THR-1748` |
 | `6.625b` | Companion expiry | `THR-1096` |
-| `6.6355` | Founded places take their people | `THR-1839` |
+| `6.6355` | Founded places take their people | `THR-1839`, `THR-1849` |
 | `6.637` | Unrest | — |
 | `6.6385` | Location Traits | `THR-790` |
 | `end` | Drift Decay — passive per-tick decay toward zero | `THR-323` |
@@ -184,7 +184,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.632` | Economic Traits | — | orchestrator |
 | `6.634` | Reputation Traits | — | orchestrator |
 | `6.635` | Settlement Tier Promotion/Demotion | — | orchestrator |
-| `6.6355` | Founded places take their people | `THR-1839` | orchestrator |
+| `6.6355` | Founded places take their people | `THR-1839`, `THR-1849` | orchestrator |
 | `6.636` | Settlement Genome Reassessment | — | orchestrator |
 | `6.637` | Unrest | — | orchestrator |
 | `6.638` | Magical Saturation | — | orchestrator |
