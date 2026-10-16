@@ -69,22 +69,14 @@ describe('retired spellings have no content refs (THR-1242)', () => {
   }
 });
 
-describe('the glyph table holds no key for a retired spelling (THR-1242)', () => {
-  it('every EFFECT_TYPE_GLYPHS key is a live effect type', () => {
+describe('the effect-type glyph table stays deleted (THR-1242, THR-1874)', () => {
+  it('attachmentGlyphs.ts carries no EFFECT_TYPE_GLYPHS table', () => {
+    // THR-1242 guarded this table against retired spellings. THR-1874 found it
+    // had no reader at all — dead data that read to the next author as a live
+    // primitive — and deleted it. A surface that later needs an effect glyph
+    // adds an entry under the THR-1879 icon rules rather than reviving this.
     const src = readFileSync(join(REPO_ROOT, 'src/components/Game/attachmentGlyphs.ts'), 'utf8');
-    const block = src.slice(
-      src.indexOf('const EFFECT_TYPE_GLYPHS'),
-      src.indexOf('const EFFECT_FALLBACK_GLYPH'),
-    );
-    const keys = [...block.matchAll(/^\s{2}(\w+):\s*'/gm)].map(m => m[1]);
-
-    // The table is `Record<string, string>`, so TypeScript cannot catch a key
-    // for a type that no longer exists — it is dead data that renders for
-    // nothing and reads to the next author as a live primitive.
-    expect(keys.length).toBeGreaterThan(20);
-    for (const spelling of RETIRED_SPELLINGS) {
-      expect(keys).not.toContain(spelling);
-    }
+    expect(src).not.toMatch(/EFFECT_TYPE_GLYPHS|getEffectTypeGlyph|EFFECT_FALLBACK_GLYPH/);
   });
 });
 
