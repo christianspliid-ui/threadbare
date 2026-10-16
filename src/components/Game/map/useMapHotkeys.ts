@@ -10,6 +10,12 @@
  * a dialog, a menu). A tooltip or an in-map panel (the `mapOverlay` band) does not mute them:
  * both open over the map constantly, and the keys still act on the map. Escape is never
  * bound here. Modifier chords (Ctrl/Meta/Alt) pass through to the browser.
+ *
+ * **Scrollable panels keep their keys** (review gate, THR-1900): after a click inside a
+ * scrolling panel (the Ledger rail, the Chronicle) the browser scrolls that panel on
+ * PageDown / arrows / Home even though focus stays on `<body>`. So the keys stand down when
+ * the last pressed or focused element sits inside a panel that can scroll; a click on the map
+ * (or anywhere that cannot scroll) gives them back.
  */
 import { useEffect, useRef } from 'react';
 import { mapCommandForKey, type MapCommandId } from '../../../data/map-commands';
@@ -28,14 +34,37 @@ export function bandCoversMap(band: number): boolean {
   return (band > Z_BAND.hud && band < Z_BAND.tooltip) || band >= Z_BAND.menu;
 }
 
+/** Where the pointer last went down — the element the browser's own key scrolling follows. */
+let lastPointerTarget: Element | null = null;
+
+/** Test seam: what the last pointer press landed on. */
+export function setLastPointerTarget(el: Element | null): void {
+  lastPointerTarget = el;
+}
+
+/** True when `el` or an ancestor scrolls (overflow auto/scroll with content past its box). */
+export function insideScrollablePanel(el: Element | null, doc: Document = document): boolean {
+  for (let node = el; node && node !== doc.body && node !== doc.documentElement; node = node.parentElement) {
+    if (!(node instanceof HTMLElement)) continue;
+    const style = doc.defaultView?.getComputedStyle(node);
+    if (!style) continue;
+    const scrollsY = /(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight;
+    const scrollsX = /(auto|scroll)/.test(style.overflowX) && node.scrollWidth > node.clientWidth;
+    if (scrollsY || scrollsX) return true;
+  }
+  return false;
+}
+
 /**
  * True when the map keys must stay quiet: focus is in a text field or a composite widget,
- * or an escape layer that covers the map is open.
+ * an escape layer that covers the map is open, or the last pressed / focused element sits in
+ * a scrollable panel (which the browser scrolls with these keys).
  */
 export function mapKeysInert(doc: Document = document): boolean {
   if (getEscapeLayers().some(layer => bandCoversMap(layer.band))) return true;
   const el = doc.activeElement as HTMLElement | null;
-  if (!el || el === doc.body) return false;
+  if (!el || el === doc.body) return insideScrollablePanel(lastPointerTarget, doc);
+  if (insideScrollablePanel(el, doc)) return true;
   const tag = el.tagName.toLowerCase();
   if (tag === 'input' || tag === 'textarea' || tag === 'select' || el.isContentEditable || el.hasAttribute('contenteditable')) {
     return true;
@@ -65,7 +94,14 @@ export function useMapHotkeys(onCommand: (id: MapCommandId) => void, enabled = t
       e.preventDefault();
       onCommandRef.current(cmd.id);
     }
+    function handlePointerDown(e: PointerEvent) {
+      lastPointerTarget = e.target instanceof Element ? e.target : null;
+    }
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handlePointerDown, true);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDown, true);
+    };
   }, [enabled]);
 }

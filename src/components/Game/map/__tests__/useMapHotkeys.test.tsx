@@ -5,11 +5,12 @@
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, renderHook, fireEvent, cleanup } from '@testing-library/react';
-import { useMapHotkeys, bandCoversMap } from '../useMapHotkeys';
+import { useMapHotkeys, bandCoversMap, setLastPointerTarget } from '../useMapHotkeys';
 import { Modal } from '../../../shared/Modal';
 import { Z_BAND } from '../../../shared/zBands';
 
 afterEach(() => {
+  setLastPointerTarget(null);
   cleanup();
   document.body.innerHTML = '';
 });
@@ -74,6 +75,58 @@ describe('useMapHotkeys', () => {
     press('PageUp');
     expect(onCommand).not.toHaveBeenCalled();
     unmount();
+    press('PageUp');
+    expect(onCommand).toHaveBeenCalledWith('zoom_in');
+  });
+});
+
+describe('useMapHotkeys — scrollable panels keep their keys (review gate)', () => {
+  function scrollingRail(): { rail: HTMLDivElement; row: HTMLDivElement } {
+    const rail = document.createElement('div');
+    rail.style.overflowY = 'auto';
+    Object.defineProperty(rail, 'scrollHeight', { value: 900 });
+    Object.defineProperty(rail, 'clientHeight', { value: 300 });
+    const row = document.createElement('div');
+    rail.appendChild(row);
+    document.body.appendChild(rail);
+    return { rail, row };
+  }
+
+  it('stands down after a click inside a panel that scrolls, and comes back after a click on the map', () => {
+    const onCommand = vi.fn();
+    renderHook(() => useMapHotkeys(onCommand));
+    const { row } = scrollingRail();
+    fireEvent.pointerDown(row);
+    press('PageDown');
+    press('ArrowDown');
+    press('Home');
+    expect(onCommand).not.toHaveBeenCalled();
+
+    const canvas = document.createElement('canvas');
+    document.body.appendChild(canvas);
+    fireEvent.pointerDown(canvas);
+    press('PageDown');
+    expect(onCommand).toHaveBeenCalledWith('zoom_out');
+  });
+
+  it('stands down while focus sits on a button inside a scrolling panel', () => {
+    const onCommand = vi.fn();
+    renderHook(() => useMapHotkeys(onCommand));
+    const { row } = scrollingRail();
+    const btn = document.createElement('button');
+    row.appendChild(btn);
+    btn.focus();
+    press('ArrowUp', btn);
+    expect(onCommand).not.toHaveBeenCalled();
+  });
+
+  it('a panel with nothing to scroll does not mute the keys', () => {
+    const onCommand = vi.fn();
+    renderHook(() => useMapHotkeys(onCommand));
+    const rail = document.createElement('div');
+    rail.style.overflowY = 'auto';
+    document.body.appendChild(rail);
+    fireEvent.pointerDown(rail);
     press('PageUp');
     expect(onCommand).toHaveBeenCalledWith('zoom_in');
   });
