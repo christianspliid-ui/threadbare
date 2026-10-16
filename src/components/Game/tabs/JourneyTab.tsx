@@ -7,7 +7,7 @@
  * + flavor + provenance), and what their arc has been so far — a strip built
  * from persisted state only, never from the day's digest.
  *
- * Every magnitude is a word (Law 13): progress via `getUndertakingProgressWord`,
+ * Every magnitude is a word (Law 13): progress via `describeWorkProgress` (THR-1962: the trouble word when halted),
  * checkpoint bands via `stepOutcomeWord`, halts as a sentence, time as
  * `ticksAgoWord`. The follow toggle, the undertaking cards and the arc strip are
  * what THR-1293 called the "second reader" of the moment stream.
@@ -27,7 +27,6 @@ import { Tooltip } from '../../shared/Tooltip';
 import { IntentSection } from '../IntentSection';
 import { FollowToggle, type FollowDescriptor } from '../FollowToggle';
 import { getAgentArc, type AgentArcEntry } from '../../../engine/agentArc';
-import { getUndertakingProgressWord } from '../../../data/domain-words';
 import { stepOutcomeWord } from '../../../data/outcome-band-content';
 import { UNDERTAKING_HALT_RATCHET_N } from '../../../data/strategic-action-constants';
 
@@ -84,7 +83,7 @@ function UndertakingCard({ u }: { u: ActiveUndertakingSummary }) {
       </div>
       <div className="flex items-center gap-2">
         <StepDots totalSteps={total} currentStepIndex={filled} variant="magnitude" size={7} />
-        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{getUndertakingProgressWord(u.percentComplete)}</span>
+        <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{u.progressWord}</span>
       </div>
       <p className="text-xs mt-1" style={{ color: 'var(--text-tertiary)', margin: 0 }}>{haltsSentence(u)}</p>
     </div>

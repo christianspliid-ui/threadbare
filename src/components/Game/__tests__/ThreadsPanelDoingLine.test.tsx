@@ -54,12 +54,16 @@ describe('the roster doing-line', () => {
     renderRoster([a], new Map([[a.id, summary(a.id, {
       activeProject: {
         displayName: 'Oswen is raising a company at Thornwall, and the ground has begun to answer.',
-        progressFraction: 0.45, progressLabel: 'underway', verb: 'establish',
-        doingLine: 'raising a company — underway', troubleWord: null,
+        progressFraction: 0.45, word: 'under way', verb: 'establish',
+        phrase: 'raising a company', doingLine: 'raising a company — under way', troubleWord: null,
       } as unknown as AgentStrategicSummary['activeProject'],
     })]]));
     const line = screen.getByTestId('thread-doing-line');
-    expect(line.textContent).toContain('raising a company — underway');
+    expect(line.textContent).toContain('raising a company');
+    // THR-1962: the word is its own non-shrinking span, so truncation never eats it.
+    const word = screen.getByTestId('thread-doing-word');
+    expect(word.textContent).toContain('— under way');
+    expect(word.style.flexShrink).toBe('0');
     expect(line.textContent).not.toMatch(/\d/);
   });
 
@@ -67,8 +71,8 @@ describe('the roster doing-line', () => {
     const a = agent('a2', 'Ashara');
     renderRoster([a], new Map([[a.id, summary(a.id, {
       activeProject: {
-        displayName: 'Ashara works at the Old Ruin.', progressFraction: 0.2, progressLabel: 'just begun', verb: 'observe',
-        doingLine: 'watching the Old Ruin — going badly', troubleWord: 'going badly',
+        displayName: 'Ashara works at the Old Ruin.', progressFraction: 0.2, word: 'going badly', verb: 'observe',
+        phrase: 'watching the Old Ruin', doingLine: 'watching the Old Ruin — going badly', troubleWord: 'going badly',
       } as unknown as AgentStrategicSummary['activeProject'],
     })]]));
     expect(screen.getByTestId('thread-doing-line').textContent).toContain('going badly');

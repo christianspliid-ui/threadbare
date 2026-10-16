@@ -426,7 +426,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                     {fp.glyph} {strategicSummary.activeProject.displayName}
                   </div>
                   <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                    {strategicSummary.activeProject.progressLabel}
+                    {strategicSummary.activeProject.word}
                   </div>
                 </div>
               );

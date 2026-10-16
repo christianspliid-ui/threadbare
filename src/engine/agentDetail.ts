@@ -105,6 +105,7 @@ function networkSizeWord(count: number): string {
   return word;
 }
 import { getStrategicTemplate } from './strategicActionCandidates';
+import { describeWorkProgress } from './workProgress';
 import { readStoredCalling } from './calling';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
@@ -296,6 +297,12 @@ export interface ActiveUndertakingSummary {
   readonly displayName: string;
   /** Completion 0–100, clamped — progress can exceed the requirement on a crit. */
   readonly percentComplete: number;
+  /**
+   * The one word for how far the work has come (THR-1962, `describeWorkProgress`):
+   * the trouble word when it has halted, else the progress word — the same word the
+   * thread row and the sheet show.
+   */
+  readonly progressWord: string;
   /** Accumulated halt-ratchet points; non-zero means the work is going badly. */
   readonly halts: number;
   /** Whether its owner has already doubled down once at the fork. */
@@ -2087,6 +2094,7 @@ export function summarizeActiveUndertakings(
       percentComplete: Math.max(0, Math.min(100, Math.round(
         (project.progress / Math.max(1, project.progressRequired)) * 100,
       ))),
+      progressWord: describeWorkProgress(project).word,
       halts: project.halts ?? 0,
       escalated: project.escalated === true,
       lastBand: project.lastCheckpoint?.band,

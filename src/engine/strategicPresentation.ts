@@ -19,8 +19,7 @@ import { getStrategicTemplate } from './strategicActionCandidates';
 import { cellActivityProse, objectDisplayName } from './undertakingProse';
 import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { UNDERTAKING_VERB_GERUNDS } from '../data/undertaking-verb-prose';
-import { getUndertakingTroubleWord } from '../data/domain-words';
-import { UNDERTAKING_HALT_RATCHET_N } from '../data/strategic-action-constants';
+import { describeWorkProgress } from './workProgress';
 
 /** "a company", "an area" — the article a doing-line needs before a kind word. */
 function withArticle(noun: string): string {
@@ -55,13 +54,8 @@ export const BEHAVIOR_FAMILY_FALLBACK = { glyph: '◆', color: '#8a8a8a', label:
 
 // ─── Tunable Constants ─────────────────────────────────────────────────────────
 
-/** Progress fraction thresholds → prose labels (NFP #5: narrative, not percentages). */
-export const PROGRESS_LABEL_THRESHOLDS: ReadonlyArray<[number, string]> = [
-  [0.00, 'just begun'],
-  [0.25, 'underway'],
-  [0.50, 'well advanced'],
-  [0.75, 'nearly complete'],
-];
+// Progress words live in `domain-words.ts` (`UNDERTAKING_PROGRESS_WORDS`) and are
+// resolved by `describeWorkProgress` (THR-1962) — one table for every surface.
 
 /** Control degradation thresholds → health prose labels. */
 export const HEALTH_LABEL_THRESHOLDS: ReadonlyArray<[number, string]> = [
@@ -93,16 +87,6 @@ export const STRATEGIC_CONTROL_OPACITY_DEGRADED  = 0.40;
 export const STRATEGIC_MARKER_TEXTURE_SIZE  = 64;     // canvas px for texture build
 
 // ─── Label Helpers ─────────────────────────────────────────────────────────────
-
-/** Map progress fraction 0–1 to a prose label (NFP #5). */
-export function getProgressLabel(fraction: number): string {
-  const clamped = Math.max(0, Math.min(1, fraction));
-  let label = PROGRESS_LABEL_THRESHOLDS[0][1];
-  for (const [threshold, l] of PROGRESS_LABEL_THRESHOLDS) {
-    if (clamped >= threshold) label = l;
-  }
-  return label;
-}
 
 /** Map degradation 0–1 to a health prose label (NFP #5). */
 export function getHealthLabel(degradation: number): string {
@@ -140,13 +124,19 @@ export interface AgentStrategicSummary {
   activeProject: {
     displayName: string;      // activityProse[0] from the template
     progressFraction: number; // 0–1
-    progressLabel: string;    // prose: "just begun" | "underway" | "well advanced" | "nearly complete"
-    verb: StrategicVerb;
     /**
-     * The roster's doing-line (THR-1434): the work as a phrase plus the progress or
-     * the trouble word — *raising a company — faltering*, *watching the Old Ruin —
-     * halfway*. Words only, never a numeral; composed here so the roster and the
-     * sheet say the same thing.
+     * The one word for how far the work has come (THR-1962, `describeWorkProgress`):
+     * the trouble word when it has halted, else the five-step progress word. Every
+     * surface shows this word, so the row, the sheet and the card never disagree.
+     */
+    word: string;
+    verb: StrategicVerb;
+    /** The work as a phrase — *raising a company at Thornwall* — without the word. */
+    phrase: string;
+    /**
+     * The roster's doing-line (THR-1434): the phrase plus the word — *raising a
+     * company — faltering*, *watching the Old Ruin — halfway*. Words only, never a
+     * numeral; composed here so the roster and the sheet say the same thing.
      */
     doingLine: string;
     /** The trouble word when the work has halted, else null. */
@@ -222,10 +212,8 @@ export function getAgentStrategicSummary(
   let projectInfo: AgentStrategicSummary['activeProject'] = null;
   if (activeProject) {
     const template = getStrategicTemplate(activeProject.templateId);
-    const progressFraction =
-      activeProject.progressRequired > 0
-        ? Math.min(1, activeProject.progress / activeProject.progressRequired)
-        : 1;
+    const workProgress = describeWorkProgress(activeProject);
+    const progressFraction = workProgress.fraction;
     // A cell's line is composed from the world (THR-1392 slice 2); a template's is
     // its first authored activity line, verbatim, as before.
     const displayName = template?.cellVariant && activeProject.objectTypeId
@@ -234,10 +222,7 @@ export function getAgentStrategicSummary(
         ? template!.activityProse[0]
         : (template?.displayName ?? activeProject.templateId);
 
-    const progressLabel = getProgressLabel(progressFraction);
-    const troubleWord = getUndertakingTroubleWord(
-      activeProject.halts ?? 0, activeProject.escalated === true, UNDERTAKING_HALT_RATCHET_N,
-    );
+    const { word, troubleWord } = workProgress;
     // The doing-line (THR-1434): a cell reads as its verb's gerund on the object the
     // world names — *watching the Old Ruin* — else on the kind with an article
     // (*raising a company*, the thing not yet made); a template reads as its activity
@@ -255,13 +240,14 @@ export function getAgentStrategicSummary(
         ? `${UNDERTAKING_VERB_GERUNDS[cellVariant]} ${kindWithArticle}${objectName ? ` at ${objectName}` : ''}`
         : `${UNDERTAKING_VERB_GERUNDS[cellVariant]} ${objectName ?? kindWithArticle}`
       : displayName;
-    const doingLine = `${phrase} — ${troubleWord ?? progressLabel}`;
+    const doingLine = `${phrase} — ${word}`;
 
     projectInfo = {
       displayName,
       progressFraction,
-      progressLabel,
+      word,
       verb: activeProject.verb,
+      phrase,
       doingLine,
       troubleWord,
     };
