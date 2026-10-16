@@ -14,8 +14,8 @@ import {
   isBadgeWorthy,
   notificationAnchorIds,
   BADGE_COUNT_DISPLAY_MAX,
-  BADGE_GLYPH_ACTIVE,
-  BADGE_GLYPH_AFTERMATH,
+  BADGE_ICON_ACTIVE,
+  BADGE_ICON_AFTERMATH,
 } from '../encounterBadgeModel';
 import { shouldAutoOpenEncounterNotification } from '../encounterNotificationRuntime';
 
@@ -140,7 +140,7 @@ describe('selectEncounterBadges', () => {
     expect(badge).toBeDefined();
     expect(badge!.count).toBe(1);
     expect(badge!.label).toBe('Plague Outbreak');
-    expect(badge!.glyph).toBe(BADGE_GLYPH_ACTIVE);
+    expect(badge!.icon).toBe(BADGE_ICON_ACTIVE);
     expect(badge!.countLabel).toBeUndefined();
   });
 
@@ -190,7 +190,7 @@ describe('selectEncounterBadges', () => {
     const badges = selectEncounterBadges([makeNotification({ kind: 'aftermath', outcomeBand: 'surge' })]);
     const badge = badges.get('agent-kael')!;
     expect(badge.kind).toBe('aftermath');
-    expect(badge.glyph).toBe(BADGE_GLYPH_AFTERMATH);
+    expect(badge.icon).toBe(BADGE_ICON_AFTERMATH);
     expect(badge.meta).toMatch(/^concluded · /);
     expect(badge.ariaLabel).toContain('concluded');
   });

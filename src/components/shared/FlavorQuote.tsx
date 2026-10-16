@@ -22,9 +22,6 @@ export interface FlavorQuoteProps {
   style?: React.CSSProperties;
 }
 
-/** The divider glyph, flanked by hairlines — same construction as `.ornamental-rule`. */
-const DIVIDER_GLYPH = '✦'; // ✦
-
 export const FlavorQuote = React.memo(function FlavorQuote({
   children,
   attribution,
@@ -55,10 +52,7 @@ export const FlavorQuote = React.memo(function FlavorQuote({
             marginBottom: 'var(--space-3)',
           }}
         >
-          <span style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, var(--border-gold-strong), transparent)' }} />
-          <span style={{ color: 'var(--accent-gold-dim)', fontSize: 'var(--text-xs)', lineHeight: 1 }}>
-            {DIVIDER_GLYPH}
-          </span>
+          {/* A plain rule (THR-1906): ornaments are not icons. */}
           <span style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, var(--border-gold-strong), transparent)' }} />
         </div>
       )}

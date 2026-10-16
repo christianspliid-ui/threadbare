@@ -1,4 +1,5 @@
 import { IconButton } from './IconButton';
+import { Icon } from './Icon';
 import { Overlay, type OverlayAnimation, type OverlayProps } from './Overlay';
 import { PanelLevelScope, panelStyle } from './Panel';
 import { Z_BAND } from './zBands';
@@ -127,7 +128,7 @@ function Header({ children, onClose }: { children: React.ReactNode; onClose?: ()
     >
       <span style={{ flex: 1 }}>{children}</span>
       {onClose && (
-        <IconButton icon={<span>×</span>} variant="close" size="sm" aria-label="Close" onClick={onClose} />
+        <IconButton icon={<Icon name="close" size="chip" decorative />} variant="close" size="sm" aria-label="Close" onClick={onClose} />
       )}
     </div>
   );

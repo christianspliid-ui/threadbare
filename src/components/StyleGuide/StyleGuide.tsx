@@ -48,7 +48,7 @@ import {
   PIP_PENALTY_TIER,
   PIP_STEP_PERCENT,
 } from '../../data/nudge-pip-vocabulary';
-import { NUDGE_CARD_TYPE_ICONS } from '../../data/nudge-card-display';
+import { NUDGE_CARD_TYPE_ICON_NAMES } from '../../data/nudge-card-display';
 import { NUDGE_CARD_TYPES } from '../../data/nudge-card-library';
 import { RivalIcon } from '../shared/RivalIcon';
 import { SectionHeading } from '../shared/SectionHeading';
@@ -1733,13 +1733,13 @@ export default function StyleGuide() {
                     <CardKeywordChip
                       key={type.id}
                       keyword={type.keyword}
-                      icon={NUDGE_CARD_TYPE_ICONS[type.id]}
+                      iconName={NUDGE_CARD_TYPE_ICON_NAMES[type.id]}
                     />
                   ))}
                 </div>
                 <Label>muted — an unaffordable card</Label>
                 <Row>
-                  <CardKeywordChip keyword="Boost" icon={NUDGE_CARD_TYPE_ICONS.boost} muted />
+                  <CardKeywordChip keyword="Boost" iconName={NUDGE_CARD_TYPE_ICON_NAMES.boost} muted />
                 </Row>
               </GameErrorBoundary>
             </div>
@@ -1750,7 +1750,7 @@ export default function StyleGuide() {
             <SectionHeading ornamental>RivalIcon</SectionHeading>
             <div style={{ marginTop: '1.25rem' }}>
               <GameErrorBoundary>
-                <Label>2–3 spheres → overlapping circles representing rival affinities</Label>
+                <Label>2–3 spheres → one small SphereIcon per affinity (THR-1906)</Label>
                 <Row gap={24}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                     <RivalIcon spheres={['chaos', 'force']} size="2rem" />

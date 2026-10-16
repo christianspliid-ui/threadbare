@@ -17,7 +17,6 @@ export const LOREKEEPERS_COVENANT_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Lorekeepers Covenant',
   description: 'Scholars, historians, and archivists dedicated to preserving knowledge and chronicling the world.',
   motto: 'To forget is to lose. To record is to endure.',
-  iconGlyph: '📜',
   themeColor: '#8B7355',
   factionType: 'guild',
   reachWeights: {

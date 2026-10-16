@@ -181,7 +181,6 @@ export const COURT_STRATEGIC_TEMPLATES: readonly StrategicActionTemplate[] = [
         nameTemplate: "{actor}'s Order of {location}",
         description: 'A chartered order, founded within living memory, still deciding what it is for.',
         motto: 'Newly sworn, and swearing still.',
-        iconGlyph: '⚜',
         themeColor: '#B8A56A',
         locationTypes: ['town', 'city', 'capital'],
         joinEncounterTemplateId: 'ag.join',

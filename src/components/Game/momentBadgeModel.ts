@@ -23,14 +23,16 @@
 import type { UndertakingMomentClass, UndertakingMomentRecord } from '../../types/strategicAction';
 import { MOMENT_BADGE_RETENTION_TICKS } from '../../data/strategic-action-constants';
 import { MOMENT_CARD_CONTENT } from '../../data/moment-card-content';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
 /** Badge count above which the label collapses to "N+" rather than an exact count. */
 export const MOMENT_BADGE_COUNT_DISPLAY_MAX = 9;
 
-/** Glyph for a turn in a long work — a checkpoint passed or failed. */
-export const MOMENT_BADGE_GLYPH = '◆';
+/** Icon for a turn in a long work — a checkpoint passed or failed (THR-1906). */
+export const MOMENT_BADGE_ICON: IconName = ICON_FOR_THREAD_ROW_MARK['badge-moment'];
 
 /**
  * Moment class → accent token. Setbacks carry the negative tone, finishes the
@@ -69,7 +71,7 @@ export interface MomentBadgeModel {
   /** Every counted record, oldest first. */
   records: UndertakingMomentRecord[];
   accentColor: string;
-  glyph: string;
+  icon: IconName;
   /** Count rendered in the badge corner, or undefined for a single record. */
   countLabel?: string;
   /** Tooltip heading — the newest record's class word. */
@@ -127,7 +129,7 @@ export function selectMomentBadges(
       count,
       records: bucket,
       accentColor: MOMENT_CLASS_ACCENT[primary.momentClass],
-      glyph: MOMENT_BADGE_GLYPH,
+      icon: MOMENT_BADGE_ICON,
       countLabel,
       label,
       meta: count > 1 ? `${primary.label} (and ${count - 1} more)` : primary.label,

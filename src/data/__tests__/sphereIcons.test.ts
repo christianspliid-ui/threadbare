@@ -2,11 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   SPHERE_ICONS,
   FOUNDATION_SPHERE_ICONS,
-  WHEEL_SLOT_GLYPHS,
   getSphereColor,
   getSphereSymbol,
-  getSphereImagePath,
-  getWheelSlotGlyph,
   type SphereIconDef,
 } from '../sphereIcons';
 
@@ -114,60 +111,6 @@ describe('sphereIcons data', () => {
     });
   });
 
-  describe('WHEEL_SLOT_GLYPHS', () => {
-    it('exports glyphs for all main slot types', () => {
-      const expected = ['scry', 'dream', 'persuade', 'deceive', 'intimidate', 'inspire', 'coincidence', 'omen', 'afflict_bless'];
-      expected.forEach((slot) => {
-        expect(WHEEL_SLOT_GLYPHS[slot]).toBeDefined();
-      });
-    });
-
-    it('each glyph is a single non-emoji Unicode character', () => {
-      Object.values(WHEEL_SLOT_GLYPHS).forEach((glyph) => {
-        expect(glyph.length).toBeLessThanOrEqual(1); // May be 0 or 1 char
-        if (glyph.length > 0) {
-          expect(/\uFE0F|\uD83D|\uD83C/.test(glyph)).toBe(false);
-        }
-      });
-    });
-
-    it('scry slot uses observation glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.scry).toBe('●');
-    });
-
-    it('dream slot uses vision glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.dream).toBe('◇');
-    });
-
-    it('persuade slot uses influence glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.persuade).toBe('◆');
-    });
-
-    it('deceive slot uses illusion glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.deceive).toBe('≋');
-    });
-
-    it('intimidate slot uses threat glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.intimidate).toBe('⚔');
-    });
-
-    it('inspire slot uses uplift glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.inspire).toBe('⬆');
-    });
-
-    it('coincidence slot uses fate glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.coincidence).toBe('⊙');
-    });
-
-    it('omen slot uses mystical glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.omen).toBe('⬟');
-    });
-
-    it('afflict_bless slot uses magic glyph', () => {
-      expect(WHEEL_SLOT_GLYPHS.afflict_bless).toBe('★');
-    });
-  });
-
   describe('getSphereColor', () => {
     it('returns color for creation spheres', () => {
       expect(getSphereColor('force')).toBe('#ff6b6b');
@@ -217,62 +160,4 @@ describe('sphereIcons data', () => {
     });
   });
 
-  describe('sphere icon image paths', () => {
-    it('every creation sphere has an imagePath', () => {
-      for (const [name, def] of Object.entries(SPHERE_ICONS)) {
-        expect(def.imagePath, `${name} missing imagePath`).toBeDefined();
-        expect(def.imagePath).toMatch(/^\/icons\/spheres\/.*\.png$/);
-      }
-    });
-
-    it('every foundation sphere has an imagePath', () => {
-      for (const [name, def] of Object.entries(FOUNDATION_SPHERE_ICONS)) {
-        expect(def.imagePath, `${name} missing imagePath`).toBeDefined();
-        expect(def.imagePath).toMatch(/^\/icons\/spheres\/.*\.png$/);
-      }
-    });
-
-    it('imagePath matches sphere name', () => {
-      for (const [name, def] of Object.entries(SPHERE_ICONS)) {
-        expect(def.imagePath).toBe(`/icons/spheres/${name}.png`);
-      }
-      for (const [name, def] of Object.entries(FOUNDATION_SPHERE_ICONS)) {
-        expect(def.imagePath).toBe(`/icons/spheres/${name}.png`);
-      }
-    });
-  });
-
-  describe('getSphereImagePath', () => {
-    it('returns image path for creation spheres', () => {
-      expect(getSphereImagePath('force')).toBe('/icons/spheres/force.png');
-      expect(getSphereImagePath('mind')).toBe('/icons/spheres/mind.png');
-    });
-
-    it('returns image path for foundation spheres', () => {
-      expect(getSphereImagePath('chaos')).toBe('/icons/spheres/chaos.png');
-      expect(getSphereImagePath('order')).toBe('/icons/spheres/order.png');
-    });
-
-    it('returns undefined for unknown sphere', () => {
-      expect(getSphereImagePath('unknown-sphere')).toBeUndefined();
-    });
-  });
-
-  describe('getWheelSlotGlyph', () => {
-    it('returns glyph for known slot IDs', () => {
-      expect(getWheelSlotGlyph('scry')).toBe('●');
-      expect(getWheelSlotGlyph('dream')).toBe('◇');
-    });
-
-    it('returns fallback for unknown slot IDs', () => {
-      expect(getWheelSlotGlyph('unknown-slot')).toBe('◯');
-    });
-
-    it('all returned glyphs are single characters', () => {
-      ['scry', 'dream', 'unknown'].forEach((slot) => {
-        const glyph = getWheelSlotGlyph(slot);
-        expect(glyph.length).toBe(1);
-      });
-    });
-  });
 });

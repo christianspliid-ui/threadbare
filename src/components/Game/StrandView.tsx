@@ -1,3 +1,4 @@
+import { Icon } from '../shared/Icon';
 import { useState, useMemo } from 'react';
 import type {
   PresenceStrandData,
@@ -322,7 +323,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
             onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
             onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
           >
-            ✕
+            <Icon name="close" size="chip" decorative />
           </button>
         </div>
 

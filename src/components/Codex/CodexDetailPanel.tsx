@@ -32,6 +32,7 @@ import type { CodexEntry } from './codexRegistry';
 import { detailConcepts, splitDetailValue } from './codexConcepts';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
+import { Icon } from '../shared/Icon';
 import { effectLabel, EFFECT_SOURCE_BADGE_COLORS } from '../../data/actionEffectSource';
 import {
   isNudgeDesignerViewEnabled,
@@ -123,9 +124,7 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
             border: 'none',
           }}
         >
-          {/* A JSX text node does not decode escapes \u2014 as `\u2715` this painted the six
-              literal characters on the close control (seen in THR-1507's capture). */}
-          {'\u2715'}
+          <Icon name="close" size="chip" decorative />
         </button>
       </div>
 

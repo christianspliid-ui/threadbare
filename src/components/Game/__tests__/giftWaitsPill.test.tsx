@@ -30,7 +30,7 @@ function Harness({ pending }: { pending: PendingBeat }) {
 }
 
 describe('AscendantBeatOfferBanner — a held opening gift', () => {
-  it('reads "A gift waits — <gift eyebrow> · Open ▸" above the player surfaces', () => {
+  it('reads "A gift waits — <gift eyebrow> · Open" above the player surfaces', () => {
     render(<AscendantBeatOfferBanner pending={pendingFor(SEAT, 'spine')} onEnter={() => {}} raised />);
     const pill = screen.getByTestId('beat-offer-banner');
     expect(pill.textContent).toContain(GIFT_WAITS_COPY.eyebrow);
@@ -57,7 +57,7 @@ describe('AscendantBeatOfferBanner — a held opening gift', () => {
     render(<AscendantBeatOfferBanner pending={pendingFor('beat.pool.some_beat', 'introduction')} onEnter={() => {}} />);
     const pill = screen.getByTestId('beat-offer-banner');
     expect(pill.textContent).not.toContain(GIFT_WAITS_COPY.eyebrow);
-    expect(pill.textContent).toContain('Enter ▸');
+    expect(pill.textContent).toContain('Enter');
     expect(pill.getAttribute('data-gift-waits')).toBeNull();
   });
 });

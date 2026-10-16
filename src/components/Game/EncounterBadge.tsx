@@ -15,6 +15,7 @@
 
 import { useState } from 'react';
 import { IconButton } from '../shared/IconButton';
+import { Icon } from '../shared/Icon';
 import { Tooltip } from '../shared/Tooltip';
 import type { EncounterBadgeModel } from './encounterBadgeModel';
 import { getUITooltip } from '../../data/ui-content';
@@ -48,7 +49,7 @@ export function EncounterBadge({ badge, onOpen }: EncounterBadgeProps) {
         // band tint; hover is handled here instead, per the dynamic-base-colour
         // pattern in the design system.
         active
-        icon={badge.glyph}
+        icon={<Icon name={badge.icon} size="chip" decorative />}
         badge={badge.countLabel}
         aria-label={badge.ariaLabel}
         data-testid="thread-encounter-badge"

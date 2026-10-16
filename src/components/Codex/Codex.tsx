@@ -13,6 +13,7 @@ import { CodexSidebar } from './CodexSidebar';
 import { CodexCard } from './CodexCard';
 import { CodexDetailPanel } from './CodexDetailPanel';
 import { CodexTagFilter } from './CodexTagFilter';
+import { Icon } from '../shared/Icon';
 import {
   codexEntryRunState,
   CODEX_RUN_STATE_FILTERS,
@@ -230,7 +231,7 @@ export default function Codex({
               cursor: 'pointer',
             }}
           >
-            Close ✕
+            Close <Icon name="close" size="floor" decorative />
           </button>
         ) : (
           <a

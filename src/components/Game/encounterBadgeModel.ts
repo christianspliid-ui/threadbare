@@ -14,6 +14,8 @@
 
 import type { EncounterNotification } from '../../types/encounterVisibility';
 import { outcomeBandWord } from '../../data/outcome-band-content';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 import { bandAccentColor } from './outcomeBandAccent';
 
 // ─── Constants ─────────────────────────────────────────────────────
@@ -24,11 +26,11 @@ export const BADGE_COUNT_DISPLAY_MAX = 9;
 /** Accent used when a notification carries no outcome band. */
 export const BADGE_DEFAULT_ACCENT = 'var(--accent-gold)';
 
-/** Glyph for a live encounter beat awaiting the player. */
-export const BADGE_GLYPH_ACTIVE = '!';
+/** Icon for a live encounter beat awaiting the player (THR-1906). */
+export const BADGE_ICON_ACTIVE: IconName = ICON_FOR_THREAD_ROW_MARK['badge-encounter'];
 
-/** Glyph for a concluded encounter whose aftermath has not been read. */
-export const BADGE_GLYPH_AFTERMATH = '✦';
+/** Icon for a concluded encounter whose aftermath has not been read (THR-1906). */
+export const BADGE_ICON_AFTERMATH: IconName = ICON_FOR_THREAD_ROW_MARK['badge-aftermath'];
 
 /** THR-1730 — registry tooltip a held (minimised, waiting) step's badge carries. */
 export const BADGE_WAITING_TOOLTIP_ID = 'ui.encounter_waiting';
@@ -47,7 +49,7 @@ export interface EncounterBadgeModel {
   /** Outcome-band tint, or the gold default. */
   accentColor: string;
   /** Glyph rendered inside the badge. */
-  glyph: string;
+  icon: IconName;
   /** Count rendered in the badge corner, or undefined for a single notification. */
   countLabel?: string;
   /** Encounter name — tooltip heading. */
@@ -187,7 +189,7 @@ export function selectEncounterBadges(
       primary,
       kind,
       accentColor: bandAccentColor(primary.outcomeBand, BADGE_DEFAULT_ACCENT),
-      glyph: kind === 'aftermath' ? BADGE_GLYPH_AFTERMATH : BADGE_GLYPH_ACTIVE,
+      icon: kind === 'aftermath' ? BADGE_ICON_AFTERMATH : BADGE_ICON_ACTIVE,
       countLabel,
       label: primary.encounterName,
       meta,

@@ -13,6 +13,7 @@
 
 import { useState } from 'react';
 import { IconButton } from '../shared/IconButton';
+import { Icon } from '../shared/Icon';
 import { Tooltip } from '../shared/Tooltip';
 import type { MomentBadgeModel } from './momentBadgeModel';
 
@@ -39,7 +40,7 @@ export function MomentBadge({ badge, onOpen }: MomentBadgeProps) {
       <IconButton
         size="sm"
         active
-        icon={badge.glyph}
+        icon={<Icon name={badge.icon} size="chip" decorative />}
         badge={badge.countLabel}
         aria-label={badge.ariaLabel}
         data-testid="thread-moment-badge"

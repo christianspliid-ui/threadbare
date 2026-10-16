@@ -12,6 +12,7 @@ import type { ChapterRecord } from '../../types/chapterRecord';
 import type { StepOutcome, UnifiedActionOutcome } from '../../types/unifiedAction';
 import { outcomePhrase } from '../../engine/aftermathWords';
 import { EntityLink } from '../shared/EntityLink';
+import { Icon } from '../shared/Icon';
 
 interface ChapterViewProps {
   chapter: ChapterRecord;
@@ -115,7 +116,7 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
             font: 'inherit',
           }}
         >
-          ← All chapters
+          <Icon name="back" size="floor" decorative /> All chapters
         </button>
       )}
 
@@ -143,12 +144,17 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
                 letterSpacing: outcomeBand.rare ? '0.02em' : undefined,
               }}
             >
-              {outcomeBand.rare && '✦ '}{outcomeBand.label}
+              {outcomeBand.label}
             </span>
           ) : (
             'unfolding'
           )}
-          {chapter.threaded && ' · ✦ threaded'}
+          {chapter.threaded && (
+            <>
+              {' · '}
+              <Icon name="threads" size="floor" decorative /> threaded
+            </>
+          )}
         </div>
       </div>
 

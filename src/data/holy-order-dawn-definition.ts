@@ -18,7 +18,6 @@ export const HOLY_ORDER_DAWN_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Holy Order of the Dawn',
   description: 'A militant religious order of knight-templars who crusade against corruption, undeath, and demonic influence.',
   motto: 'By blade and prayer, darkness is undone.',
-  iconGlyph: '☀',
   themeColor: '#FFD700',
   factionType: 'military',
   reachWeights: {

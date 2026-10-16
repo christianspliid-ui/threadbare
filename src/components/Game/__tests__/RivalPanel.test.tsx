@@ -119,14 +119,10 @@ describe('RivalPanel', () => {
 
   it('renders sphere icons for each rival (RivalIcon shows primary and secondary spheres)', () => {
     const { container } = render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
-    // RivalIcon renders sphere affinities as colored Unicode dots (●)
-    // Check that at least 3 RivalIcon components were rendered (one per rival)
-    const spanElements = container.querySelectorAll('span');
-    const dotCount = Array.from(spanElements)
-      .filter((el) => el.textContent === '●')
-      .length;
-    // Each RivalIcon renders up to 3 colored dots (primary + secondary spheres)
-    expect(dotCount).toBeGreaterThanOrEqual(3);
+    // THR-1906 — RivalIcon draws one small SphereIcon per affinity (Law 9), never a dot.
+    const marks = container.querySelectorAll('[data-testid="rival-icon"] svg');
+    expect(marks.length).toBeGreaterThanOrEqual(3);
+    expect(container.textContent).not.toContain('●');
   });
 
   it('displays hostility meter for each rival', () => {

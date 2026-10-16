@@ -1,5 +1,6 @@
 import { SectionHeading } from './SectionHeading';
 import { IconButton } from './IconButton';
+import { Icon } from './Icon';
 import { Panel, type PanelProps } from './Panel';
 
 type CardVariant = 'surface' | 'raised' | 'glass';
@@ -68,7 +69,7 @@ function Header({ title, count, onBack, trailing }: HeaderProps) {
       {trailing && <div style={{ marginLeft: 'auto' }}>{trailing}</div>}
       {onBack && (
         <IconButton
-          icon={<span>✕</span>}
+          icon={<Icon name="close" size="chip" decorative />}
           size="sm"
           aria-label="Close"
           onClick={onBack}

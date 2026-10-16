@@ -1,6 +1,7 @@
 import type { DoomClockDefinition, DoomClockState } from '../../types/doomClock';
 import { Modal } from '../shared/Modal';
 import { Tooltip } from '../shared/Tooltip';
+import { Icon } from '../shared/Icon';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
 import { DOOM_CLIMAX_START } from '../../data/game-config';
 import { durationLabel } from '../../engine/aftermathWords';
@@ -170,20 +171,14 @@ export function DoomClockDetail({
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
+                  {/* THR-1906 — the word only; the ∞ ornament is gone. */}
                   <span style={{
                     fontFamily: 'var(--font-display)',
-                    fontSize: '28px',
+                    fontSize: 'var(--text-lg)',
                     fontWeight: 700,
                     color: '#dc2626',
                     lineHeight: 1,
                     textShadow: `0 0 12px ${color}40`,
-                  }}>
-                    {'∞'}
-                  </span>
-                  <span style={{
-                    fontSize: 'var(--text-xs)',
-                    color: 'var(--text-muted)',
-                    marginTop: '4px',
                   }}>
                     Unmade
                   </span>
@@ -281,7 +276,7 @@ export function DoomClockDetail({
                         color: isPast ? color : isCurrent ? '#0a0a0e' : '#4a4a4e',
                         fontWeight: 700,
                       }}>
-                        {isPast ? '✓' : stage.stage}
+                        {isPast ? <Icon name="done" size="floor" label="Passed" /> : stage.stage}
                       </div>
 
                       <span style={{

@@ -1829,7 +1829,6 @@ export function foundFaction(
       nameTemplate: renderedName,
       description: seed.description,
       motto: seed.motto,
-      iconGlyph: seed.iconGlyph,
       themeColor: seed.themeColor,
       factionType: seed.factionType as FactionType,
       reachWeights,

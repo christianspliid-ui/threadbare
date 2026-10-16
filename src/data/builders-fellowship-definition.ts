@@ -17,7 +17,6 @@ export const BUILDERS_FELLOWSHIP_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Builders Fellowship',
   description: 'Master craftsmen, stonemasons, and architects who build the physical foundations of civilization.',
   motto: 'What we raise endures.',
-  iconGlyph: '🔨',
   themeColor: '#A0522D',
   factionType: 'guild',
   reachWeights: {

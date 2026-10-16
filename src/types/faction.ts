@@ -116,8 +116,6 @@ export interface FactionDefinition {
   description: string;
   /** Faction motto / flavor text for UI display */
   motto?: string;
-  /** Unicode glyph for alerts and compact UI */
-  iconGlyph: string;
   /** Hex color for faction-themed UI elements (Threadbare palette) */
   themeColor: string;
   /** Faction archetype */

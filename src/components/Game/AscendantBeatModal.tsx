@@ -24,6 +24,7 @@
 
 import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
+import { Icon } from '../shared/Icon';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
 import { RevealCard } from '../shared/RevealCard';
@@ -626,20 +627,20 @@ export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
   const content = isOffering ? (
     // THR-1811: an offering's pill reads only "Three powers stir" — no beat id.
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-      <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
+      <Icon name="needs-you" size="floor" decorative style={{ color: 'var(--accent-gold)' }} />
       <span style={{ color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}>
         {OFFERING_COPY.eyebrow}
       </span>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Enter ▸</span>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Enter</span>
     </span>
   ) : (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-      <span aria-hidden style={{ color: 'var(--accent-gold)' }}>✦</span>
+      <Icon name="needs-you" size="floor" decorative style={{ color: 'var(--accent-gold)' }} />
       <span style={{ color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}>
         {giftWaits ? GIFT_WAITS_COPY.eyebrow : eyebrow}
       </span>
       <span style={{ color: 'var(--text-secondary)' }}>— {giftWaits ? eyebrow : humanizeBeatId(pending.beatId)}</span>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{giftWaits ? GIFT_WAITS_COPY.cta : 'Enter ▸'}</span>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{giftWaits ? GIFT_WAITS_COPY.cta : 'Enter'}</span>
     </span>
   );
   return (

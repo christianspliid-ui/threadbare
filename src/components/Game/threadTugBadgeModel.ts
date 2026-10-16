@@ -19,14 +19,16 @@
 import type { ThreadTug } from '../../types/attention';
 import type { CourtPosition } from '../../types/influence';
 import { computeAttendCost } from '../../engine/attentionPool';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 
 // ─── Constants ─────────────────────────────────────────────────────
 
 /** Badge count above which the label collapses to "N+" rather than an exact count. */
 export const TUG_BADGE_COUNT_DISPLAY_MAX = 9;
 
-/** Glyph for an unattended tug — a wave travelling the thread. */
-export const TUG_BADGE_GLYPH = '∿';
+/** Icon for an unattended tug on the thread (THR-1906). */
+export const TUG_BADGE_ICON: IconName = ICON_FOR_THREAD_ROW_MARK['badge-tug'];
 
 /**
  * Threat level → accent token. An escalating ramp across existing semantic
@@ -64,7 +66,7 @@ export interface ThreadTugBadgeModel {
   /** Threat-level tint. */
   accentColor: string;
   /** Glyph rendered inside the badge. */
-  glyph: string;
+  icon: IconName;
   /** Count rendered in the badge corner, or undefined for a single tug. */
   countLabel?: string;
   /** Tooltip heading. */
@@ -162,7 +164,7 @@ export function selectThreadTugBadges(
       attendCost,
       affordable,
       accentColor: TUG_THREAT_ACCENT[primary.threatLevel] ?? TUG_DEFAULT_ACCENT,
-      glyph: TUG_BADGE_GLYPH,
+      icon: TUG_BADGE_ICON,
       countLabel,
       label: 'The thread pulls',
       meta,

@@ -22,9 +22,10 @@ describe('AttachmentRow', () => {
     expect(screen.getByText('Storied')).toBeTruthy();
   });
 
-  it('renders subcategory glyph', () => {
-    render(<AttachmentRow {...baseProps} />);
-    expect(screen.getByText('\u2694')).toBeTruthy();
+  it('renders the carved subcategory icon (THR-1906)', () => {
+    const { container } = render(<AttachmentRow {...baseProps} />);
+    expect(container.querySelector('[data-icon="arms"]')).toBeTruthy();
+    expect(container.textContent).not.toContain('\u2694');
   });
 
   it('applies tier color to left border', () => {

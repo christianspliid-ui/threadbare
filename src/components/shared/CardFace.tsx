@@ -63,6 +63,8 @@ import { Tooltip } from './Tooltip';
 import { SphereIcon } from './SphereIcon';
 import { ReachIcon } from '../icons';
 import { CardKeywordChip } from './CardKeywordChip';
+import { Icon } from './Icon';
+import type { IconName } from '../../data/icons/iconRegistry';
 import { CostPips, OddsPips } from './OddsPips';
 import { RarityBadge } from './RarityBadge';
 import { sphereTint, sphereBrightToken } from './sphereTint';
@@ -208,6 +210,12 @@ export interface CardFaceProvenance {
 /** One chip in the card's kind vocabulary. */
 export interface CardFaceKeyword {
   readonly label: string;
+  /** The carved icon for the chip's kind (THR-1906). Wins over `icon`. */
+  readonly iconName?: IconName;
+  /**
+   * A legacy text glyph, for the classes that have no carved shape yet — card verbs wait for
+   * Christian's pick (THR-1908). Drawn only when `iconName` is absent.
+   */
   readonly icon?: string;
   /**
    * Registry id for the concept this chip names (Law 17) — `ui.card.verb.create`,
@@ -476,6 +484,7 @@ export function CardFace({
                 <CardKeywordChip
                   keyword={model.keyword.label}
                   icon={model.keyword.icon}
+                  iconName={model.keyword.iconName}
                   muted={dimmed}
                   data-testid={`${p}-keyword-${id}`}
                 />
@@ -484,6 +493,7 @@ export function CardFace({
                 <CardKeywordChip
                   keyword={model.secondaryKeyword.label}
                   icon={model.secondaryKeyword.icon}
+                  iconName={model.secondaryKeyword.iconName}
                   // The second chip is always muted: it is a refinement of the
                   // first, and two chips at equal weight read as two kinds.
                   muted
@@ -496,6 +506,7 @@ export function CardFace({
               <CardKeywordChip
                 keyword={model.keyword.label}
                 icon={model.keyword.icon}
+                iconName={model.keyword.iconName}
                 muted={dimmed}
                 data-testid={`${p}-keyword-${id}`}
               />
@@ -630,7 +641,7 @@ export function CardFace({
                 cursor: 'pointer',
               }}
             >
-              <span aria-hidden="true">ⓘ</span>
+              <Icon name="codex" size="floor" decorative />
             </span>
           )}
         </span>

@@ -5,6 +5,7 @@
  * Shows profile, inventory, relationships, and movement status.
  */
 
+import { Icon } from '../shared/Icon';
 import React from 'react';
 import type { WorldGraph } from '../../engine/graph';
 import { getFactionMembershipEdges } from '../../engine/graphQueries';
@@ -42,7 +43,7 @@ export const AgentInfoCard: React.FC<AgentInfoCardProps> = ({ graph, agentId, on
       background: '#1a1a2e', color: '#e0e0e0', padding: 16,
       borderLeft: '2px solid #333', height: '100%', overflowY: 'auto',
     }}>
-      <button onClick={onClose} style={{ float: 'right', cursor: 'pointer' }}>✕</button>
+      <button onClick={onClose} aria-label="Close" style={{ float: 'right', cursor: 'pointer' }}><Icon name="close" size="chip" decorative /></button>
       <h2 style={{ margin: '0 0 8px 0', fontSize: 18 }}>{agent.name}</h2>
       {archetype && <div style={{ fontSize: 'var(--text-xs)', opacity: 0.7, marginBottom: 12 }}>{archetype}</div>}
 

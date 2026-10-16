@@ -167,11 +167,8 @@ export interface ChipDescriptor {
    */
   tooltipId?: string;
   /**
-   * Optional leading glyph, so a chip's *kind* reads before its word does (THR-1486).
-   *
-   * Carried over from `EntityCard`'s `content_tag_chips` block in THR-1492: the axis
-   * glyph is how the attachment sheet and the codex filter row paint one vocabulary, and
-   * a chip that lost it on the way into this model would read as a different chip.
+   * @deprecated Not drawn since THR-1906 (plan THR-1879 § 9): the chip's word is the axis.
+   * `ArtifactSheet` still sets it and retires with the Inspector (THR-1876); then this goes.
    */
   glyph?: string;
   /**

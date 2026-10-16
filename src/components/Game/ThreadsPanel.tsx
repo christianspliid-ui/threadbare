@@ -5,6 +5,8 @@ import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { BalanceEvent } from '../../types/balanceEval';
 import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
+import { Icon } from '../shared/Icon';
+import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 import { Tooltip } from '../shared/Tooltip';
 import { resolveTooltip } from '../../engine/tooltipResolver';
 import { ActivityIcon, type ActivityKind } from '../shared/ActivityIcon';
@@ -710,7 +712,7 @@ function CompactThreadRow({
                 }}
                 aria-label={`${championLabel} — open agent profile`}
               >
-                ✦ {championLabel}
+                <Icon name={ICON_FOR_THREAD_ROW_MARK.champion} size="floor" decorative /> {championLabel}
               </button>
             </div>
           )}
@@ -733,7 +735,7 @@ function CompactThreadRow({
                   }}
                   aria-label="An aspect of the god — the apex beyond the five tiers"
                 >
-                  ❂ Aspect
+                  <Icon name={ICON_FOR_THREAD_ROW_MARK.aspect} size="floor" decorative /> Aspect
                 </span>
               </Tooltip>
             </div>
@@ -800,7 +802,7 @@ function CompactThreadRow({
                   backgroundColor: 'color-mix(in srgb, var(--text-secondary) 8%, transparent)',
                 }}
               >
-                <span aria-hidden="true">⌛</span>
+                <Icon name={ICON_FOR_THREAD_ROW_MARK.appointment} size="floor" decorative />
                 <span className="truncate">{appointmentBadge.text}</span>
               </div>
             </Tooltip>
@@ -921,12 +923,12 @@ function StatusLine({
       {statusLabel}
       {costWord && (
         <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontStyle: 'normal' }}>
-          ⤓ {costWord} draw
+          {costWord} draw
         </span>
       )}
       {incomeWord && (
         <span style={{ marginLeft: 6, color: 'var(--accent-gold)', fontStyle: 'normal' }}>
-          ⤒ {incomeWord} return
+          {incomeWord} return
         </span>
       )}
     </div>

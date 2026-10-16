@@ -17,7 +17,6 @@ export const THIEVES_GUILD_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Thieves Guild',
   description: 'A criminal network of pickpockets, burglars, and fences operating from the shadows of every major settlement.',
   motto: 'What the eye does not see, the heart does not grieve.',
-  iconGlyph: '🗝',
   themeColor: '#4A4A4A',
   factionType: 'criminal',
   reachWeights: {

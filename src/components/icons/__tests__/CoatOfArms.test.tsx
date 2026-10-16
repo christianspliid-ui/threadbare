@@ -12,7 +12,6 @@ function mockFaction(overrides: Partial<FactionDefinition> = {}): FactionDefinit
     id: 'test_faction',
     nameTemplate: 'The Test Faction',
     description: 'A test faction',
-    iconGlyph: '⚔',
     themeColor: '#ff0000',
     factionType: 'military',
     reachWeights: { iron: 0.8, stone: 0.6 },
@@ -95,17 +94,6 @@ describe('buildCoatOfArmsConfig', () => {
     expect(config.foundationSphere).toBeNull();
   });
 
-  it('uses fallbackGlyph parameter if provided', () => {
-    const def = mockFaction({ reachWeights: {} });
-    const config = buildCoatOfArmsConfig(def, '★');
-    expect(config.fallbackGlyph).toBe('★');
-  });
-
-  it('falls back to def.iconGlyph when no explicit fallbackGlyph', () => {
-    const def = mockFaction({ reachWeights: {}, iconGlyph: '🏰' });
-    const config = buildCoatOfArmsConfig(def);
-    expect(config.fallbackGlyph).toBe('🏰');
-  });
 
   it('sets factionType from definition', () => {
     const def = mockFaction({ factionType: 'religious' });
@@ -115,7 +103,7 @@ describe('buildCoatOfArmsConfig', () => {
 
   it('respects prominenceLevel parameter', () => {
     const def = mockFaction();
-    const config = buildCoatOfArmsConfig(def, undefined, 'dominant');
+    const config = buildCoatOfArmsConfig(def, 'dominant');
     expect(config.prominenceLevel).toBe('dominant');
   });
 
@@ -183,17 +171,17 @@ describe('generateCoatOfArmsSvg', () => {
     expect(svg).toContain('<g transform=');
   });
 
-  it('renders fallback with text glyph when no dominantReach', () => {
+  it('renders the carved faction mark, never a text glyph, when no dominantReach (THR-1906)', () => {
     const config = makeConfig({
       dominantReach: null,
       dominantSphere: null,
       foundationSphere: null,
-      fallbackGlyph: '?',
       fallbackColor: '#123456',
     });
     const svg = generateCoatOfArmsSvg(config, 64);
-    expect(svg).toContain('<text');
-    expect(svg).toContain('?');
+    expect(svg).not.toContain('<text');
+    expect(svg).toContain('data-fallback-mark="faction"');
+    expect(svg).toContain('<path');
     expect(svg).toContain('#123456');
   });
 

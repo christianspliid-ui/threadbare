@@ -4,7 +4,7 @@ import {
   selectEntityNoticeBadges,
   resolveNoticeLabel,
   NOTICE_BADGE_COUNT_DISPLAY_MAX,
-  NOTICE_BADGE_GLYPH,
+  NOTICE_BADGE_ICON,
   NOTICE_DEFAULT_ACCENT,
   NOTICE_DEFAULT_LABEL,
   NOTICE_CATEGORY_LABEL,
@@ -59,7 +59,7 @@ describe('selectEntityNoticeBadges', () => {
   it('omits the count label for a single notice', () => {
     const badge = selectEntityNoticeBadges([notice()]).get('kael')!;
     expect(badge.countLabel).toBeUndefined();
-    expect(badge.glyph).toBe(NOTICE_BADGE_GLYPH);
+    expect(badge.icon).toBe(NOTICE_BADGE_ICON);
   });
 
   it('collapses a large count to "N+"', () => {

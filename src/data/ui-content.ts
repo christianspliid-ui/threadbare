@@ -96,7 +96,7 @@ export const REMEMBRANCE_CHOOSE_AGAIN = 'Choose again';
  */
 export const GIFT_WAITS_COPY = {
   eyebrow: 'A gift waits',
-  cta: 'Open ▸',
+  cta: 'Open',
   tooltip: 'A gift of the opening is ready. It opens when nothing else is open, or open it now.',
 } as const;
 

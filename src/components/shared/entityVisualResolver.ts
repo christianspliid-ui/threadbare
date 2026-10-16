@@ -20,6 +20,7 @@
  *   missing node, unknown kind, or absent art all resolve to a designed tile.
  */
 
+import type { IconName } from '../../data/icons/iconRegistry';
 import type { WorldGraph } from '../../engine/graph';
 import type { GraphNode } from '../../types/graph';
 import type { KnowledgeLevel } from '../../types/familiarity';
@@ -94,6 +95,11 @@ export interface EntityVisualDescriptor {
   src?: string;
   /** Always present — the fallback glyph, also the `<img>` onError swap target. */
   glyph: string;
+  /**
+   * The carved icon the fallback tile draws (THR-1906). Wins over the kind icon and the glyph;
+   * a nudge card names its type's icon here.
+   */
+  iconName?: IconName;
   /** Stable gradient index in [0, ENTITY_GRADIENT_COUNT). */
   gradientIndex: number;
   /** Alt text / accessible label. */

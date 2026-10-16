@@ -1,5 +1,6 @@
 import type { SphereName } from '../../types';
-import { getSphereSymbol, getSphereColor } from '../../data/sphereIcons';
+import { getSphereColor } from '../../data/sphereIcons';
+import { SphereIcon } from '../shared/SphereIcon';
 
 const SPHERE_LABELS: Record<SphereName, string> = {
   force: 'Force',
@@ -22,7 +23,7 @@ export function SphereSlider({ sphere, value, onChange }: SphereSliderProps) {
   const color = getSphereColor(sphere);
   return (
     <div className="flex items-center gap-3 py-1.5">
-      <span className="text-lg w-6 text-center" style={{ color }}>{getSphereSymbol(sphere)}</span>
+      <span className="w-6 flex justify-center"><SphereIcon sphere={sphere} size="1.25rem" /></span>
       <span className="font-medium w-16" style={{ fontSize: 'var(--text-xs)', color }}>
         {SPHERE_LABELS[sphere]}
       </span>

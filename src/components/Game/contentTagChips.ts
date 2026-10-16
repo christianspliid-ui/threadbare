@@ -9,22 +9,10 @@
  */
 
 import type { ChipDescriptor } from '../../types/detailPage';
-import { contentTagTooltipId, getContentTag, type ContentTagAxis } from '../../data/content-tags';
+import { contentTagTooltipId, getContentTag } from '../../data/content-tags';
 
-/**
- * One glyph per axis, so a chip's *kind* reads before its word does — the same
- * vocabulary the codex filter row paints (THR-1486).
- */
-export const TAG_AXIS_GLYPH: Readonly<Record<ContentTagAxis, string>> = {
-  form: '◇',     // ◇ — what the thing is
-  family: '○',   // ○ — what class it belongs to
-  reach: '◈',    // ◈ — the cosmology's doing axis
-  sphere: '✦',   // ✦ — the cosmology's fuelling axis
-  polarity: '●', // ● — good or ill to carry
-};
-
-/** Axis glyph for a tag the vocabulary no longer knows — a chip without one reads as broken. */
-export const TAG_GLYPH_FALLBACK = '◈';
+// The tag-axis glyphs (◇ ○ ◈ ✦ ●) are gone (THR-1906, plan THR-1879 § 9): the chip's word
+// is the axis, and its hover names it.
 
 /**
  * Chips for an authored tag list. A spelling the vocabulary no longer knows still
@@ -38,7 +26,6 @@ export function contentTagChips(tags: readonly string[]): ChipDescriptor[] {
     return {
       label: bare,
       tooltipId: def ? contentTagTooltipId(def.tag) : undefined,
-      glyph: def ? TAG_AXIS_GLYPH[def.axis] : TAG_GLYPH_FALLBACK,
       dataKey: { attribute: 'content-tag', value: tag },
     };
   });

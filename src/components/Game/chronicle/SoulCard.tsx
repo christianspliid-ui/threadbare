@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Play, Square } from 'lucide-react';
+import { Icon } from '../../shared/Icon';
 import type { RarityTier } from '../../../types/rarity';
 import { RARITY_TIER_COLORS } from '../../../types/rarity';
 
@@ -120,7 +120,8 @@ export const SoulCard = memo(function SoulCard({
               marginLeft: archetypeName ? '0' : 'auto',
             }}
           >
-            {isNarrating ? <Square size={7} /> : <Play size={8} style={{ marginLeft: '1px' }} />}
+            {/* THR-1906 — carved chrome: read aloud, and close to stop. */}
+            <Icon name={isNarrating ? 'close' : 'narrate'} decorative style={{ width: 10, height: 10 }} />
           </button>
         )}
       </div>

@@ -202,10 +202,10 @@ describe('ArtifactSheet — the trait slot (THR-1521)', () => {
   it('tags render through the attachment sheet\'s chip vocabulary, not as raw spans', () => {
     const { graph, id } = graphWithStoriedBlade();
     render(<ArtifactSheet name="Sila's blade" artifactId={id} graph={graph} onClose={() => {}} />);
-    // The seated tag carries the vocabulary's data key and its axis glyph.
+    // The seated tag carries the vocabulary's data key; its word is the axis (THR-1906: no glyph).
     const cursed = document.querySelector('[data-content-tag="#cursed"]');
     expect(cursed).not.toBeNull();
-    expect(cursed!.textContent).toMatch(/○/);
+    expect(cursed!.textContent).not.toMatch(/○/);
     expect(cursed!.textContent).toMatch(/cursed/);
     // An unseated spelling still renders (Law 14), without pretending to be seated.
     const odd = document.querySelector('[data-content-tag="#not_a_real_tag"]');

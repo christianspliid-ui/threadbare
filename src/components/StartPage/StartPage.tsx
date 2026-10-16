@@ -1,5 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Icon } from '../shared/Icon';
+
+/** The music mark's opacity while the theme is muted. */
+const MUTED_MARK_OPACITY = 0.45;
 import { useThemeMusic } from './useThemeMusic';
 import { SettingsModal } from './SettingsModal';
 import { CreditsModal } from './CreditsModal';
@@ -122,7 +125,8 @@ export function StartPage({ onNewWorld, onAdvancedNewWorld }: StartPageProps) {
           onClick={toggleMute}
           aria-label={muted ? 'Unmute theme music' : 'Mute theme music'}
         >
-          {muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
+          {/* THR-1906 — the carved `music` mark; muted reads as a dimmed mark, and the label says which. */}
+          <Icon name="music" decorative style={{ width: 17, height: 17, opacity: muted ? MUTED_MARK_OPACITY : 1 }} />
         </button>
         <span className="start-page__version">{VERSION_STAMP_TEXT}</span>
       </div>

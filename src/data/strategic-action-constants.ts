@@ -1319,7 +1319,6 @@ export const UNDERTAKING_DEFAULT_FACTION_SEED: StrategicFactionSeed = {
   factionType: 'guild',
   nameTemplate: '{actor}\'s Company',
   description: 'An order founded by one mortal\'s work, taking its name and its purpose from its founder.',
-  iconGlyph: '⚒',
   themeColor: '#8a6a1e',
   locationTypes: ['town', 'city', 'capital'],
   joinEncounterTemplateId: 'ag.join',

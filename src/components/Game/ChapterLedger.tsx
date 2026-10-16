@@ -21,6 +21,7 @@
 import { useMemo, useState } from 'react';
 import { Modal } from '../shared/Modal';
 import { Tooltip } from '../shared/Tooltip';
+import { Icon } from '../shared/Icon';
 import { ChapterView } from './ChapterView';
 import type { ChapterRecord } from '../../types/chapterRecord';
 import type { GameState } from '../../types/gameState';
@@ -274,7 +275,7 @@ export function ChapterLedger({
           }}
         >
           <span style={{ fontSize: 'var(--text-sm)' }}>
-            {row.threaded && <span style={{ color: 'var(--accent-gold, #d4af37)' }}>✦ </span>}
+            {row.threaded && <Icon name="threads" size="floor" label="Threaded" style={{ color: 'var(--accent-gold, #d4af37)', marginRight: 4 }} />}
             {row.templateName}
           </span>
           {row.stakesLine && (

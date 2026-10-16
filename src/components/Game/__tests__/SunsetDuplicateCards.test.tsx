@@ -64,13 +64,13 @@ describe('THR-1492 — the attachment sheet renders through the one section mode
     expect(labels).toContain('Source');
   });
 
-  it('keeps the tag chips whole through the move — glyph, word, and DOM key', () => {
+  it('keeps the tag chips whole through the move — word and DOM key, no axis glyph (THR-1906)', () => {
     render(<AttachmentDetailView attachment={item} onBack={vi.fn()} />);
 
     const chips = document.querySelectorAll('[data-content-tag]');
     expect(chips.length).toBe(2);
-    // The axis glyph survived the move onto `ChipDescriptor` (THR-1486's reading).
-    expect(chips[0].textContent).toContain('◇');
+    // THR-1906 — the axis glyph is gone: the chip's word is the axis.
+    expect(chips[0].textContent).not.toContain('◇');
     // The word the player reads is the bare one, never the raw key (Laws 13, 14).
     expect(screen.getByText('weapon')).toBeTruthy();
     expect(screen.queryByText('#weapon')).toBeNull();

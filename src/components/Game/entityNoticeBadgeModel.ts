@@ -21,6 +21,8 @@
  * Pure and deterministic: same notices in, same badge map out.
  */
 
+import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 import type {
   EntityNotice, EntityNoticeAnchorKind, NotificationCategoryKey,
 } from '../../types/notification';
@@ -30,8 +32,8 @@ import type {
 /** Badge count above which the label collapses to "N+" rather than an exact count. */
 export const NOTICE_BADGE_COUNT_DISPLAY_MAX = 9;
 
-/** Glyph for a per-agent beat waiting to be read. */
-export const NOTICE_BADGE_GLYPH = '·';
+/** Icon for a per-agent beat waiting to be read (THR-1906). */
+export const NOTICE_BADGE_ICON: IconName = ICON_FOR_THREAD_ROW_MARK['badge-notice'];
 
 /**
  * Category → accent token. Lifecycle beats carry the weight of a life changing;
@@ -116,7 +118,7 @@ export interface EntityNoticeBadgeModel {
   /** Category tint. */
   accentColor: string;
   /** Glyph rendered inside the badge. */
-  glyph: string;
+  icon: IconName;
   /** Count rendered in the badge corner, or undefined for a single notice. */
   countLabel?: string;
   /** Tooltip heading. */
@@ -249,7 +251,7 @@ export function selectEntityNoticeBadges(
       count,
       notices: bucket,
       accentColor: NOTICE_CATEGORY_ACCENT[primary.category] ?? NOTICE_DEFAULT_ACCENT,
-      glyph: NOTICE_BADGE_GLYPH,
+      icon: NOTICE_BADGE_ICON,
       countLabel,
       label,
       meta: count > 1 ? `${primary.message} (and ${count - 1} more)` : primary.message,

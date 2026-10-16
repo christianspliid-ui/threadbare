@@ -690,7 +690,6 @@ export interface StrategicFactionSeed {
   readonly nameTemplate: string;
   readonly description: string;
   readonly motto?: string;
-  readonly iconGlyph: string;
   readonly themeColor: string;
   /** Settlement subtypes that can carry this order's halls. */
   readonly locationTypes: readonly string[];

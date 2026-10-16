@@ -41,8 +41,8 @@ describe('ToastStack — actorId click-through', () => {
   it('renders arrow indicator when actorId + onSelectAgent present', () => {
     const linkedToast: ToastItem = { ...baseToast, actorId: 'actor.warrior' };
     render(<ToastStack toasts={[linkedToast]} onDismiss={vi.fn()} onSelectAgent={vi.fn()} />);
-    // The → indicator should be in the DOM
-    expect(screen.getByText('→')).toBeTruthy();
+    // THR-1906 — the carved `forward` mark replaces the → glyph.
+    expect(document.querySelector('[data-icon="forward"]')).toBeTruthy();
   });
 });
 
