@@ -454,10 +454,11 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `visibility` (1) | `visibility.ts` | — |
 | `wealth` (1) | `wealth.ts` | `THR-1931` |
 | `wheel` (1) | `wheel.ts` | — |
+| `work` (1) | `workProgress.ts` | `THR-1962` |
 | `world` (8) | `worldGenData.ts`, `worldPast.ts`, `worldPastAmbitions.ts`, `worldPastWords.ts`, `worldRefResolver.ts`, `worldScenarioCensus.ts`, `worldSeed.ts`, `worldSoul.ts` | `THR-1160`, `THR-1164`, `THR-1165`, `THR-1212`, `THR-1631`, `THR-1632`, `THR-1656`, `THR-1657` |
 | `worldgen` (15) | `worldgen/WorldGenPipeline.ts`, `worldgen/constants.ts`, `worldgen/passes/pass00-grid.ts`, `worldgen/passes/pass01-provinces.ts`, `worldgen/passes/pass02-elevation.ts`, `worldgen/passes/pass03-coastline.ts`, `worldgen/passes/pass04-climate.ts`, `worldgen/passes/pass05-hydrology.ts`, `worldgen/passes/pass06-tempReassess.ts`, `worldgen/passes/pass07-biome.ts`, `worldgen/passes/pass07b-cultureTerrainNudge.ts`, `worldgen/passes/pass08-smoothing.ts`, `worldgen/passes/pass09-validation.ts`, `worldgen/passes/pass10-fantasyOverlay.ts`, `worldgen/types.ts` | `Phase 3` |
 | `yield` (1) | `yieldOps.ts` | `THR-1428`, `THR-1439` |
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 220 engine domains · 700 modules._
+_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 221 engine domains · 701 modules._
