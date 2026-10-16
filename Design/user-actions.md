@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-16 05:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-16 07:00 local (05:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-16: the unused effect-glyph table with six broken symbols is deleted** ([THR-1874](https://linear.app/threadbare/issue/THR-1874/delete-the-unread-effect-type-glyph-table-six-malformed-escapes-never)). Merged via [#2441](https://github.com/christianspliid-ui/threadbare/pull/2441).
+- **2026-10-16: a hamlet founded inside a people’s own lands now takes their heartland, not their fringe** ([THR-1849](https://linear.app/threadbare/issue/THR-1849/a-hamlet-founded-inside-a-peoples-own-lands-reads-as-their-fringe)). Merged via [#2440](https://github.com/christianspliid-ui/threadbare/pull/2440) and live.
 - **2026-10-16: long place names now wrap inside the hex tooltip** ([THR-1848](https://linear.app/threadbare/issue/THR-1848)). Merged via [#2439](https://github.com/christianspliid-ui/threadbare/pull/2439) and live.
 - **2026-10-16: one death no longer keeps a town at full unrest forever** ([THR-1925](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for)). Merged via [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438) and live.
 - **2026-10-16: card labels and the library and world trails now read in sentence case** ([THR-1905](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept)). Merged via [#2436](https://github.com/christianspliid-ui/threadbare/pull/2436) and live.
@@ -36,8 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-15: realm borders now wear their holder’s ink, and uncharted land shows as parchment** ([THR-1902](https://linear.app/threadbare/issue/THR-1902/realm-borders-in-their-holders-ink-and-uncharted-land-as-parchment)). Merged via [#2432](https://github.com/christianspliid-ui/threadbare/pull/2432) and live.
 - **2026-10-15: the icon, chip and tab primitives are live** ([THR-1885](https://linear.app/threadbare/issue/THR-1885/icon-chip-and-tabs-primitives-the-icon-registry-format-one-chip-in)). Merged via [#2431](https://github.com/christianspliid-ui/threadbare/pull/2431).
 - **2026-10-15: four small faults from warm round 2 are fixed** ([THR-1858](https://linear.app/threadbare/issue/THR-1858/four-small-faults-from-warm-round-2-a-chaos-price-drains-a-hidden-pool)): the hidden Chaos drain, odds that moved without showing it, the dropdown that ate a click, and the "Mute" chip that read as a trait. Merged via [#2430](https://github.com/christianspliid-ui/threadbare/pull/2430) and live.
-- **2026-10-15: the template seams in player prose are fixed** ([THR-1857](https://linear.app/threadbare/issue/THR-1857/new-template-seams-in-player-prose-they-wants-kael-thornweaver-work)): no more "They wants", and inns and waypoints carry proper names. Merged via [#2428](https://github.com/christianspliid-ui/threadbare/pull/2428).
-- **2026-10-15: Escape on an aftermath now acknowledges it, and its exit and reactions stay on screen** ([THR-1856](https://linear.app/threadbare/issue/THR-1856/escape-on-an-aftermath-blanks-the-screen-and-the-aftermath-comes-back)). Merged via [#2425](https://github.com/christianspliid-ui/threadbare/pull/2425) and live.
 
 ---
 

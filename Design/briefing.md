@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 05:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 07:00 local (05:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,6 +15,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Master-work checkpoint](https://linear.app/threadbare/issue/THR-1842/master-work-checkpoint-after-batch-4-continue-master-content-measure-a) — **the run of master-level encounters stops at three per reach.** Masters already take on harder work than experts in every test world, so no more batches are written. *Veto:* **"keep writing master encounters"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-16b.md)*
 - [The hunger and unrest plan](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) — **a town's anger now follows what it lives through.** Hunger, an army at the walls, sickness, want and grief push it up a little each day; a fed, content town calms down. A town that has had enough first loses people to a calmer town nearby, then its streets turn lawless and pay its lord half the tax, then it turns to a better lord, and at last it rises. ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-16-thr-1934-hunger-and-unrest.md), [why each choice](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-16-thr-1934-hunger-and-unrest-brainstorm.md)) *Veto:* **"ship all four bands at once"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-16a.md)*
 - Same plan — **a town picks its new lord the way its people would:** who can protect it, who keeps a hall in its streets, whose army burned its fields, and whether the lord's own towns are fed and his purse is not empty. It turns only to a clearly better lord, and not twice within 20 days. *Veto:* **"towns should never change hands without a war"**.
 - Same plan — **losing a town makes the old lord an enemy of the new one, and he wants it back.** The war-aims plan's armies then march on it first. *Veto:* **"losing a town should not start a war"**.
@@ -35,7 +36,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready, one in progress.** Since the last brief two fixes merged and are live: [one death no longer keeps a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for) ([#2438](https://github.com/christianspliid-ui/threadbare/pull/2438)) and [long place names wrap inside the hex tooltip](https://linear.app/threadbare/issue/THR-1848) ([#2439](https://github.com/christianspliid-ui/threadbare/pull/2439)). The builder is now on [founded hamlets reading as a people's "fringe"](https://linear.app/threadbare/issue/THR-1849/a-hamlet-founded-inside-a-peoples-own-lands-reads-as-their-fringe).
+**Backed up: 20 ready, none in progress.** Since the last brief two more fixes merged: [a hamlet founded inside a people's own lands now takes their heartland, not their fringe](https://linear.app/threadbare/issue/THR-1849/a-hamlet-founded-inside-a-peoples-own-lands-reads-as-their-fringe) ([#2440](https://github.com/christianspliid-ui/threadbare/pull/2440), live) and [the unused effect-glyph table is deleted](https://linear.app/threadbare/issue/THR-1874/delete-the-unread-effect-type-glyph-table-six-malformed-escapes-never) ([#2441](https://github.com/christianspliid-ui/threadbare/pull/2441), merged, deploying).
 
 - High, waiting: the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
 - Five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
@@ -44,6 +45,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- All green. Main's checks pass, the live site serves the latest commit, and no pull request is waiting. Every scheduled lane is on schedule; the builder is mid-run.
-- Speed check normal: 135 ms per tick, 11% above the weekly median of 122.
-- The tidy-up job ran at 05:40: 538 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- All green. Main's checks pass, the live site serves the latest deployed commit, and no pull request is stuck. Every scheduled lane is on schedule; the builder alternates between shipping and short idle checks, which is normal.
+- Speed check normal: 126 ms per tick, 3% above the weekly median of 122.
+- The tidy-up job ran at 06:40: 540 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
