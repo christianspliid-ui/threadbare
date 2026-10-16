@@ -48,6 +48,8 @@ export interface SwornToEdgeProperties {
   taxPaidToday: number;
   /** Tick of the last loyalty pass (holding_lost reads conquests after it). */
   lastPassTick: number;
+  /** A coerced oath: what forced it, for the sheet's words. Absent on other kinds. */
+  forcedBy?: 'siege' | 'conquest';
 }
 
 /** One offer's four inputs and its score (the trace and the debug tab read these). */

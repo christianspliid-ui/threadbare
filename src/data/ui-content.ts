@@ -1142,6 +1142,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Yields',
     desc: 'What this place produces pays this faction each day. Taking the place takes the income with it.',
   },
+  // THR-1932 — the crown. Words only; never a loyalty figure or a tax amount.
+  'ui.crown.title': {
+    label: 'Crown',
+    desc: 'A realm that two or more factions owe fealty to. It takes a share of what they earn, and must keep them safe and paid or lose them.',
+  },
+  'ui.crown.standing': {
+    label: 'Standing with its liege',
+    desc: 'How loyal this faction is to its liege, on the same words as any standing: Revered, Respected, Accepted, Unknown. One step below Unknown, at Distrusted, the oath breaks.',
+  },
   'ui.home_seat': {
     label: 'Seat',
     desc: 'The settlement you have taken as your home in the world. It feeds your essence every day you hold it. Click the name to find it on the map.',

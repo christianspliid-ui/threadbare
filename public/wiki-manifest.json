@@ -242,6 +242,7 @@
         "src/engine/factionTopology.ts",
         "src/engine/chosenFactionPowers.ts",
         "src/engine/phaseFactionActions.ts",
+        "src/engine/crown.ts",
         "src/engine/phaseFactionSuccession.ts",
         "src/engine/phaseSchismResolution.ts",
         "src/engine/phaseSecretsFavors.ts",

@@ -13,6 +13,7 @@ import { getResourceClass } from '../../../data/resource-classes';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import { readPurseDay, readMeansBand } from '../../../engine/factionPurse';
 import { totalIncome } from '../../../engine/factionPurse/income';
+import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 
 interface PurseRow {
   id: string;
@@ -88,6 +89,86 @@ function PursesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
   );
 }
 
+/** THR-1932 — every live oath and every realm's crown row. Numbers are fine here (debug). */
+function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  const { oaths, crowns } = useMemo(() => {
+    if (!graph) return { oaths: [], crowns: [] };
+    const name = (id: string) => graph.getNode(id)?.name ?? id;
+    const oaths = allOathEdges(graph).map(e => {
+      const p = readOath(e);
+      return {
+        id: e.id,
+        vassal: name(e.source),
+        liege: name(e.target),
+        kind: p.kind + (p.forcedBy ? ` (${p.forcedBy})` : ''),
+        swornDay: Math.floor((p.swornTick ?? 0) / 12),
+        loyalty: p.loyalty ?? 0,
+        deltas: (p.lastLoyaltyDay?.deltas ?? []).map(d => `${d.reason} ${d.amount > 0 ? '+' : ''}${d.amount.toFixed(3)}`).join(', ') || '—',
+        tax: p.taxPaidToday ?? 0,
+      };
+    });
+    const crowns = graph.getNodesByType('actor')
+      .filter(n => isRealmFaction(n))
+      .map(n => ({
+        id: n.id,
+        name: n.name ?? n.id,
+        oaths: vassalsOf(graph, n.id).length,
+        crown: isCrown(graph, n.id),
+        ruler: (() => { const r = crownRulerOf(graph, n.id); return r ? name(r) : '—'; })(),
+      }))
+      .sort((a, b) => b.oaths - a.oaths || a.id.localeCompare(b.id));
+    return { oaths, crowns };
+  }, [graph, currentTick]);
+  if (crowns.length === 0) return null;
+  const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
+  return (
+    <div data-testid="economy-oaths" style={{ marginBottom: '12px' }}>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>Crowns — {crowns.filter(c => c.crown).length} of {crowns.length} realms</div>
+      <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '6px' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)' }}>
+            <th style={{ ...cell, textAlign: 'left' }}>realm</th><th style={cell}>oaths held</th><th style={cell}>crown</th><th style={{ ...cell, textAlign: 'left' }}>ruler</th>
+          </tr>
+        </thead>
+        <tbody>
+          {crowns.map(c => (
+            <tr key={c.id} style={{ color: c.crown ? 'var(--accent-gold, #d4af37)' : 'var(--text-secondary)' }}>
+              <td style={{ ...cell, textAlign: 'left' }} title={c.id}>{c.name}</td>
+              <td style={cell}>{c.oaths}</td>
+              <td style={cell}>{c.crown ? 'yes' : '—'}</td>
+              <td style={{ ...cell, textAlign: 'left' }}>{c.ruler}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>Oaths — {oaths.length}</div>
+      {oaths.length > 0 && (
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+          <thead>
+            <tr style={{ color: 'var(--text-tertiary)' }}>
+              <th style={{ ...cell, textAlign: 'left' }}>vassal</th><th style={{ ...cell, textAlign: 'left' }}>liege</th><th style={{ ...cell, textAlign: 'left' }}>kind</th>
+              <th style={cell}>sworn day</th><th style={cell}>loyalty</th><th style={{ ...cell, textAlign: 'left' }}>today</th><th style={cell}>tax today</th>
+            </tr>
+          </thead>
+          <tbody>
+            {oaths.map(o => (
+              <tr key={o.id} style={{ color: o.loyalty < 0.4 ? '#e06c5a' : 'var(--text-secondary)' }}>
+                <td style={{ ...cell, textAlign: 'left' }}>{o.vassal}</td>
+                <td style={{ ...cell, textAlign: 'left' }}>{o.liege}</td>
+                <td style={{ ...cell, textAlign: 'left' }}>{o.kind}</td>
+                <td style={cell}>{o.swornDay}</td>
+                <td style={cell}>{o.loyalty.toFixed(2)}</td>
+                <td style={{ ...cell, textAlign: 'left' }}>{o.deltas}</td>
+                <td style={cell}>{o.tax.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
 interface EconomyDebugTabProps {
   graph?: WorldGraph;
   currentTick: number;
@@ -148,6 +229,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
     return (
       <div style={{ padding: '8px', fontSize: '12px', overflowY: 'auto', height: '100%' }}>
         <PursesTable graph={graph} currentTick={currentTick} />
+        <OathsTable graph={graph} currentTick={currentTick} />
         <div style={EMPTY_STATE_STYLE}>No locations with resources yet.</div>
       </div>
     );
@@ -156,6 +238,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
   return (
     <div style={{ padding: '8px', fontSize: '12px', overflowY: 'auto', height: '100%' }}>
       <PursesTable graph={graph} currentTick={currentTick} />
+      <OathsTable graph={graph} currentTick={currentTick} />
       <div style={{ marginBottom: '10px', color: 'var(--text-tertiary)' }}>
         Stock tiers across {rows.length} locations —{' '}
         <span style={{ color: TIER_COLOR.scarce }}>{dist.scarce} scarce</span>,{' '}

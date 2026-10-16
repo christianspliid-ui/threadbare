@@ -233,6 +233,9 @@ export const CONTRACTS: readonly Contract[] = [
       // anything the escalation path could have shown on its own.
       'src/engine/monsterFactionSeed.ts',
       'src/engine/lairEscalation.ts',
+      // THR-1932: the projection now also carries `crownOf`, derived from `sworn_to`;
+      // the crown is that edge's only writer.
+      'src/engine/crown.ts',
     ],
     readSites: [
       'src/engine/realmProjection.ts',
@@ -6618,8 +6621,9 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['runFactionPurse', 'readMeansBand', 'readPurseDay', 'applyTreasuryDelta'],
       module: 'src/engine/factionPurse.ts',
     },
-    writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts', 'src/engine/phaseFactionActions.ts'],
-    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/components/Game/FactionSheet.tsx', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts'],
+    // THR-1932: the crown phase adds fealtyOut / fealtyIn to purseLastDay after the pay day.
+    writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts', 'src/engine/phaseFactionActions.ts', 'src/engine/crown.ts'],
+    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/components/Game/FactionSheet.tsx', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/engine/crown/eligibility.ts'],
     verifiedLive: {
       date: '2026-10-16',
       evidence:
@@ -6644,6 +6648,94 @@ export const CONTRACTS: readonly Contract[] = [
       date: '2026-10-16',
       evidence:
         'THR-1931. factionPurse.test.ts: checkUnderfunded is false for an army paid this pay day and true for one last paid two days ago; a realm that loses both towns while keeping a regiment reaches Destitute inside 25 days and leaves the regiment unpaid the next pay day; a two-town realm keeps a host paid for 50 days; the opening purse pays every worldgen army through tick 0 so none is underfunded on day one; canAffordArmy refuses one coin short of raise + first day.',
+    },
+  },
+  // THR-1932 — the crown. One edge (`sworn_to`, vassal → liege realm) carries every
+  // oath; `src/engine/crown.ts` is its only writer. Four rows: the oath and its tax, the
+  // defence read war aims takes, the outline the map draws, and the conquest stamp the
+  // coercion and the loyalty pass read.
+  {
+    id: 'crown-oaths-pay-fealty-tax',
+    producerSystem: FACTIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A realm wins another faction\'s fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then moves FEALTY_TAX_SHARE of the vassal\'s day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived).',
+    ulTerms: ['Realm', 'Faction', 'Means'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['sworn_to', 'executeSeekFealty', 'runCrownPhase', 'fealtyOut', 'fealtyIn'],
+      module: 'src/engine/crown.ts',
+    },
+    writeSites: ['src/engine/crown.ts', 'src/engine/phaseFactionActions.ts', 'src/engine/orchestrator.ts'],
+    readSites: [
+      'src/engine/crown/crownView.ts',
+      'src/engine/crown/fealtySentences.ts',
+      'src/components/Game/FactionFealty.tsx',
+      'src/components/Game/FactionPursePanel.tsx',
+      'src/components/Game/debug/EconomyDebugTab.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-16',
+      evidence:
+        'THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a three-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege\'s vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seed 42 medium over 1080 ticks: a crown forms, oath income 15% and 34% of the crowns\' full income at day 60, one-layer held on every tick, no negative wealth.',
+    },
+  },
+  {
+    id: 'crown-protected-holdings-to-war-aims',
+    producerSystem: FACTIONS,
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      'What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims\' defence-first rule (THR-1933) reads this one helper; until that lands, the Oaths debug table and the faction sheet read the oaths it is built from. No surface says a Crown defends its vassals before the defence rule ships (Law 45).',
+    ulTerms: ['Realm'],
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['protectedHoldingsOf', 'vassalsOf', 'liegeOf'],
+      module: 'src/engine/crown/crownView.ts',
+    },
+    writeSites: ['src/engine/crown.ts'],
+    readSites: ['src/engine/crown/crownView.ts', 'src/components/Game/debug/EconomyDebugTab.tsx', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-16',
+      evidence: 'THR-1932. crown.test.ts: with a guild and a realm sworn to faction_0, protectedHoldingsOf(faction_0) is its own town plus the sworn realm\'s town.',
+    },
+  },
+  {
+    id: 'crown-outline-to-political-map',
+    producerSystem: FACTIONS,
+    consumerSystem: WORLDGEN,
+    intent:
+      'The realm projection carries crownOf (sworn realm → its Crown), derived from sworn_to on every rebuild; the fingerprint includes the sworn_to pairs so an oath made or broken without a structural bump is traced. BorderMesh draws one outer line, in the Crown\'s ink, around the union of a Crown\'s hexes and its sworn realms\' (a guild-only Crown draws none), and the Held-by line adds "which owes fealty to <liege>, a Crown".',
+    ulTerms: ['Realm'],
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['buildCrownOf', 'crownHexes', 'outlinedCrowns'],
+      module: 'src/engine/crown/crownView.ts',
+    },
+    writeSites: ['src/engine/realmProjection.ts'],
+    readSites: ['src/components/HexMapV2/scene/BorderMesh.ts', 'src/components/shared/HeldByLine.tsx'],
+    verifiedLive: {
+      date: '2026-10-16',
+      evidence: 'THR-1932. crown.test.ts: buildRealmProjection on a graph with a realm sworn to faction_0 returns crownOf {faction_1 → faction_0}, crownHexes is the union of both realms\' hexes, and the controls fingerprint changes when the oath is written.',
+    },
+  },
+  {
+    id: 'conquest-records-previous-holder',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: FACTIONS,
+    intent:
+      'When a realm takes a town by conquest, the moved controls edge carries takenFrom (the previous holder\'s id) beside via: conquest and establishedTick. The crown reads it twice: a town taken within OATH_COERCE_WINDOW_DAYS forces the loser\'s oath, and a vassal that loses a town while sworn loses LOYALTY_FAIL_DEFENCE loyalty (holding_lost).',
+    ulTerms: ['Realm', 'Location'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['takenFrom'],
+      module: 'src/engine/battleAftermath.ts',
+    },
+    writeSites: ['src/engine/battleAftermath.ts'],
+    readSites: ['src/engine/crown.ts'],
+    verifiedLive: {
+      date: '2026-10-16',
+      evidence: 'THR-1932. crown.test.ts: a controls edge with via conquest, takenFrom faction_1 and establishedTick 100 puts faction_1 in faction_0\'s coerce pool through tick 160 and out of it at tick 161.',
     },
   },
   {

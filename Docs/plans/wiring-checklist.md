@@ -3123,3 +3123,15 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 | `engine/factionPurse.ts` (`seedOpeningPurse`) | worldgen (`gameInit.ts`, after the past pass) | — | faction `wealth`, `meansBand`; army `paidThroughTick: 0` | — | `getFactionPurse` before tick 12 |
 
 **Wired and asserted:** `factionPurse.test.ts` (21 tests) — one tax holder per town (nothing pays twice), the five sources, upkeep in id order with no partial pay or debt, the Means ladder, losing the last town reaches Destitute inside 25 days, a two-town realm keeps a host paid 50 days, the opening purse pays every worldgen army, `canAffordArmy`, the underfunded predicate, the schism strain, chronicle only inside the player's attention, and the panel's words (no numerals).
+
+## Crown and fealty (THR-1932)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/crown.ts` (`runCrownPhase`, `phaseCrown`) | inline `crown` (6.6295), right after `faction_purse`, daily | `FactionSheet` → `FactionFealty` (Fealty section, Crown line); `FactionPursePanel` fealty sentence | graph: `sworn_to` edges (loyalty, removal), `relates_to.oathBrokenTick/Reason`, `hostile_to` (rebellion), faction `wealth`, `purseLastDay.fealtyOut/fealtyIn/fealtyTo`; `chronicleEntries` | `oath_broken`, `rebellion` | Economy tab → Crowns, Oaths; `__DEBUG.getOaths`, `getCrown` |
+| `engine/crown.ts` (`executeSeekFealty`) | `faction_actions` → `seek_fealty` (template, `can_court` prerequisite, switch case in `phaseFactionActions.ts`) | Recent Actions on the sheet | `sworn_to` create, `wealth` (gift), `relates_to` (refusal cooling); `chronicleEntries` via the action phase's patch | `oath_sworn`, `oath_refused` | Oaths table; `__DEBUG.swearFealty` (verification lever) |
+| `engine/crown/{eligibility,offer,crownView,fealtySentences,types}.ts` (pure) | — | the sheet's sentences; `HeldByLine` clause | — | — | CLI `eval` |
+| `engine/realmProjection.ts` (`crownOf`, fingerprint includes `sworn_to`) | projection rebuild | `HexMapV2` → `BorderMesh` crown outline (child of the realm border mesh) | — | `realm_projection_rebuilt` | `__DEBUG.getRealmProjection` |
+| `engine/battleAftermath.ts` (`takenFrom` on the conquest edge) | conquest | — | `controls.takenFrom` | existing `realm_territory_change` | Oaths table "forced by" |
+
+**Wired and asserted:** `crown.test.ts` (16 tests) — who may swear and court, one layer, the bought oath and its gift coin, refusal cooling floored above the rivalry line, coercion by a three-day siege and by a town taken within five days, the fealty tax after the vassal's day with no debt, the break (grudge, cooldown, chronicle line naming the reason), rebellion, one-layer drift repair, the derived Crown and `protectedHoldingsOf`, the projection's `crownOf` and fingerprint, and the sheet's words (no numerals, never *sworn*). The 90-day predicates are measured by `npm run measure:crown`.

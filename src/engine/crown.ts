@@ -242,6 +242,7 @@ function writeOath(
   kind: OathKind,
   giftPaid: number,
   hooks: CrownHooks,
+  forcedBy?: 'siege' | 'conquest',
 ): void {
   const props: SwornToEdgeProperties = {
     kind,
@@ -254,6 +255,7 @@ function writeOath(
     taxPaidTotal: 0,
     taxPaidToday: 0,
     lastPassTick: state.tick,
+    ...(forcedBy ? { forcedBy } : {}),
   };
   state.graph.addEdge({
     id: `e_sworn_${vassalId}_${liegeId}_${state.tick}`,
@@ -279,7 +281,8 @@ export function executeSeekFealty(
   const before = vassalsOf(graph, R).length;
 
   const sworn = (vassalId: string, kind: OathKind, parts: OfferParts, giftPaid: number, coercedBy?: CoerceCandidate) => {
-    writeOath(state, vassalId, R, kind, giftPaid, hooks);
+    const forcedBy = coercedBy ? (coercedBy.siegeBattleId ? 'siege' as const : 'conquest' as const) : undefined;
+    writeOath(state, vassalId, R, kind, giftPaid, hooks, forcedBy);
     emitTrace({
       category: 'oath_sworn',
       tick: state.tick,
@@ -697,6 +700,6 @@ export function swearOathForDebug(
   if (!maySwear(graph, graph.getNode(vassalId))) return false;
   if (!isRealmFaction(graph.getNode(liegeId))) return false;
   if (graph.getOutgoingEdges(liegeId, 'sworn_to').length > 0) return false;
-  writeOath(state, vassalId, liegeId, kind, 0, hooks);
+  writeOath(state, vassalId, liegeId, kind, 0, hooks, kind === 'coerced' ? 'siege' : undefined);
   return true;
 }

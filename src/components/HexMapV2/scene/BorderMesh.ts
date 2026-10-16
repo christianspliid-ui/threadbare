@@ -45,6 +45,7 @@ import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { getHexColor } from '../palette/colorUtils';
 import { BORDER_INK, holderHeraldicInk, resolveBorderInk } from './borderInk';
+import { crownHexes, outlinedCrowns } from '../../../engine/crown/crownView';
 
 // ─── Border rendering constants (NFP #1: Tunability) ─────────────────────────
 
@@ -65,6 +66,16 @@ const BORDER_OPACITY = BORDER_INK.OPACITY;
 
 /** Z position for border vertices — from centralized LAYER_Z */
 const BORDER_Z = LAYER_Z.BORDERS;
+
+/**
+ * THR-1932 — the crown's outer line: drawn around the union of a Crown's hexes and its
+ * sworn realms' hexes, in the Crown's ink, wider than a realm border so it reads as the
+ * larger claim. First guesses, judged on the map screenshot (plan § Grey zones).
+ */
+export const CROWN_OUTLINE_WIDTH = BORDER_INK.WIDTH * 1.6;
+export const CROWN_OUTLINE_OPACITY = 0.8;
+/** The crown line sits just above the realm border so a shared edge shows the crown. */
+const CROWN_Z = LAYER_Z.BORDERS + 0.005;
 
 /**
  * Correct mapping from hexNeighbors() direction index to the shared hex edge.
@@ -223,7 +234,7 @@ export function createBorderMesh(
   realmProjection: RealmProjection,
   tiles: HexTile[],
   options: BorderMeshOptions = {},
-): { realmMesh: THREE.Mesh } {
+): { realmMesh: THREE.Mesh; crownMesh: THREE.Mesh | null } {
   const { hexRealmId } = realmProjection;
   const { holderIndexByRealm, seed = 42 } = options;
   const unheldInk = getActivePalette().borderInkUnheld;
@@ -307,5 +318,71 @@ export function createBorderMesh(
   const realmMesh = new THREE.Mesh(realmGeo, mat);
   realmMesh.renderOrder = RENDER_ORDER.BORDERS;
 
-  return { realmMesh };
+  // THR-1932 — the crown outline rides the realm border as a child, so it shows, hides
+  // and is disposed exactly as the border is. Absent when no realm is sworn.
+  const crownMesh = createCrownOutlineMesh(realmProjection, tiles, options);
+  if (crownMesh) realmMesh.add(crownMesh);
+
+  return { realmMesh, crownMesh };
+}
+
+/**
+ * THR-1932 — the crown's outline: one full-width line around the union of each Crown's
+ * own hexes and its sworn realms' (`crownHexes`), in the Crown's border ink. Realm borders
+ * inside it stay as they are. A Crown whose vassals are all guilds draws nothing — its
+ * land is its own border. Returns null when the projection carries no sworn realm.
+ */
+export function createCrownOutlineMesh(
+  realmProjection: RealmProjection,
+  tiles: HexTile[],
+  options: BorderMeshOptions = {},
+): THREE.Mesh | null {
+  const crowns = outlinedCrowns(realmProjection);
+  if (crowns.length === 0) return null;
+  const { holderIndexByRealm, seed = 42 } = options;
+  const unheldInk = getActivePalette().borderInkUnheld;
+  const tileByKey = new Map<string, HexTile>();
+  for (const tile of tiles) tileByKey.set(hexKeyFromCoord(tile.coord), tile);
+
+  const positions: number[] = [];
+  const colors: number[] = [];
+  const linear = new THREE.Color();
+  const size = HEX_CONSTANTS.HEX_SIZE;
+  const halfWidth = CROWN_OUTLINE_WIDTH / 2;
+
+  for (const crownId of crowns) {
+    const inside = new Set(crownHexes(realmProjection, crownId).map(hexKeyFromCoord));
+    if (inside.size === 0) continue;
+    const heraldic = holderHeraldicInk(holderIndexByRealm?.get(crownId) ?? -1);
+    for (const key of [...inside].sort()) {
+      const tile = tileByKey.get(key);
+      if (!tile) continue;
+      const { col, row } = tile.coord;
+      const hexCenter: Point2D = hexToWorld({ col, row }, size);
+      const ink = resolveBorderInk(heraldic, getHexColor(tile.terrain, seed, col, row), unheldInk);
+      linear.setRGB(ink[0], ink[1], ink[2], THREE.SRGBColorSpace);
+      const neighbors = hexNeighbors({ col, row });
+      for (let dirIdx = 0; dirIdx < 6; dirIdx++) {
+        const nb = neighbors[dirIdx];
+        if (inside.has(hexKeyFn(nb.col, nb.row))) continue;
+        const { start, end } = getEdgePoints(hexCenter, dirIdx, size);
+        buildThickEdge(start.x, start.y, end.x, end.y, halfWidth, CROWN_Z, positions);
+        for (let v = 0; v < VERTICES_PER_STRIP; v++) colors.push(linear.r, linear.g, linear.b);
+      }
+    }
+  }
+  if (positions.length === 0) return null;
+
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+    vertexColors: true,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: CROWN_OUTLINE_OPACITY,
+    depthWrite: false,
+  });
+  const mesh = new THREE.Mesh(buildGeometry(positions, colors), mat);
+  mesh.name = 'crown-outline';
+  mesh.renderOrder = RENDER_ORDER.BORDERS;
+  return mesh;
 }

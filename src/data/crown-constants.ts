@@ -88,7 +88,7 @@ export const NEVER_SWEAR_DEF_IDS: readonly string[] = ['thieves_guild', 'underki
 export const NEVER_SWEAR_GUILD_TYPES: readonly string[] = ['thieves'];
 
 // ── The courting action ──
-export const SEEK_FEALTY_WEIGHT = 3;
+export const SEEK_FEALTY_WEIGHT = 10;
 export const SEEK_FEALTY_COOLDOWN_TICKS = 12;
 
 // ── Grudges ──
