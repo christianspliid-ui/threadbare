@@ -29,9 +29,9 @@ function makePage(overrides: Partial<DetailPage> & { displayName: string }): Det
     kind: 'actor',
     nodeId: `node-${overrides.displayName.toLowerCase().replace(/\s/g, '-')}`,
     trail: [overrides.displayName],
-    kindLabel: 'ACTOR',
+    kindLabel: 'Actor',
     displayName: overrides.displayName,
-    subtitle: 'IRON · CIVIC GUARD',
+    subtitle: 'Iron · Civic Guard',
     sphere: 'force',
     isShowcase: false,
     sections: [],
@@ -131,8 +131,8 @@ describe('DetailModal — depth 1', () => {
 
   it('breadcrumb shows ENCOUNTER as parent crumb', () => {
     renderAtDepth(1);
-    // Trail is auto-built as ['ENCOUNTER', 'Page 1']. 'ENCOUNTER' is a non-last crumb.
-    expect(screen.getByText('ENCOUNTER')).toBeInTheDocument();
+    // Trail is auto-built as ['Encounter', 'Page 1']. 'Encounter' is a non-last crumb.
+    expect(screen.getByText('Encounter')).toBeInTheDocument();
   });
 
   it('renders ESC / ← hint in footer', () => {
@@ -208,8 +208,8 @@ describe('DetailModal — depth 2', () => {
   it('topmost panel shows breadcrumb with Page 1 as parent crumb (text is clickable)', () => {
     renderAtDepth(2);
     const panel = document.querySelector('[data-detail-depth="1"]');
-    expect(panel!.textContent).toContain('PAGE 1');
-    expect(panel!.textContent).toContain('PAGE 2');
+    expect(panel!.textContent).toContain('Page 1');
+    expect(panel!.textContent).toContain('Page 2');
   });
 });
 
@@ -228,7 +228,7 @@ describe(`DetailModal — depth ${DETAIL_BREADCRUMB_COLLAPSE_AT}`, () => {
 
   it('topmost panel trail has 5 entries → breadcrumb collapses', () => {
     renderAtDepth(4);
-    // Trail for depth 3 entry: ['ENCOUNTER','Page 1','Page 2','Page 3','Page 4'] = 5 items.
+    // Trail for depth 3 entry: ['Encounter','Page 1','Page 2','Page 3','Page 4'] = 5 items.
     // 5 > DETAIL_BREADCRUMB_COLLAPSE_AT(4) → collapse occurs, showing '…'.
     const topPanel = document.querySelector('[data-detail-depth="3"]');
     expect(topPanel!.textContent).toContain('…');
@@ -264,7 +264,7 @@ describe('DetailModal — depth 5 (breadcrumb collapses to `…`)', () => {
 
   it('topmost panel shows the most recent pages but hides Page 1 in breadcrumb', () => {
     renderAtDepth(5);
-    // Trail for depth-5 entry: ['ENCOUNTER','Page 1','Page 2','Page 3','Page 4','Page 5'] = 6 items.
+    // Trail for depth-5 entry: ['Encounter','Page 1','Page 2','Page 3','Page 4','Page 5'] = 6 items.
     // Collapse: keep DETAIL_BREADCRUMB_COLLAPSE_AT-1 = 3 visible entries + '…'.
     // Breadcrumb = [… , Page 3, Page 4, Page 5].
     // 'Page 1' and 'Page 2' should be hidden behind '…' in the topmost panel's breadcrumb.
@@ -274,7 +274,7 @@ describe('DetailModal — depth 5 (breadcrumb collapses to `…`)', () => {
     expect(breadcrumbEl!.textContent).not.toContain('Page 1');
     expect(breadcrumbEl!.textContent).not.toContain('Page 2');
     expect(breadcrumbEl!.textContent).toContain('…');
-    expect(breadcrumbEl!.textContent).toContain('PAGE 5');
+    expect(breadcrumbEl!.textContent).toContain('Page 5');
   });
 
   it('ESC at depth 5 pops to 4 panels', () => {
@@ -485,9 +485,9 @@ describe('DetailModal — breadcrumb crumbs sit inside the Law 50 Tab cycle', ()
     const top = panelAt(1);
     const focusable = Array.from(top.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
     const crumbs = focusable.filter(el => el.getAttribute('role') === 'button');
-    // Trail at depth 1 is ['ENCOUNTER', 'Page 1', 'Page 2']: two navigable crumbs, the
+    // Trail at depth 1 is ['Encounter', 'Page 1', 'Page 2']: two navigable crumbs, the
     // last one inert.
-    expect(crumbs.map(el => el.textContent)).toEqual(['ENCOUNTER', 'PAGE 1']);
+    expect(crumbs.map(el => el.textContent)).toEqual(['Encounter', 'Page 1']);
     // And the crumbs come first in document order, ahead of the header buttons, so
     // Tab from the panel's first stop lands on the trail.
     expect(focusable[0]).toBe(crumbs[0]);
@@ -500,7 +500,7 @@ describe('DetailModal — breadcrumb crumbs sit inside the Law 50 Tab cycle', ()
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
     expect(first).toHaveAttribute('role', 'button');
-    expect(first.textContent).toBe('ENCOUNTER');
+    expect(first.textContent).toBe('Encounter');
     expect(last.tagName).toBe('BUTTON');
 
     first.focus();
@@ -515,8 +515,8 @@ describe('DetailModal — breadcrumb crumbs sit inside the Law 50 Tab cycle', ()
     renderAtDepth(3);
     const top = panelAt(2);
     const crumbs = Array.from(top.querySelectorAll<HTMLElement>('[role="button"]'));
-    // Trail at depth 2: ['ENCOUNTER', 'Page 1', 'Page 2', 'Page 3']; 'PAGE 1' is stackIndex 0.
-    const pageOne = crumbs.find(el => el.textContent === 'PAGE 1');
+    // Trail at depth 2: ['Encounter', 'Page 1', 'Page 2', 'Page 3']; 'Page 1' is stackIndex 0.
+    const pageOne = crumbs.find(el => el.textContent === 'Page 1');
     expect(pageOne).toBeDefined();
     fireEvent.keyDown(pageOne!, { key: 'Enter' });
     expect(panelCount()).toBe(1);
@@ -527,7 +527,7 @@ describe('DetailModal — breadcrumb crumbs sit inside the Law 50 Tab cycle', ()
     renderAtDepth(2);
     const top = panelAt(1);
     const focusable = Array.from(top.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-    expect(focusable.map(el => el.textContent)).not.toContain('PAGE 2');
+    expect(focusable.map(el => el.textContent)).not.toContain('Page 2');
   });
 });
 
@@ -541,7 +541,7 @@ describe('DetailModal — section rendering', () => {
         {
           kind: 'prose',
           typeId: 'disposition_toward_her',
-          label: 'DISPOSITION TOWARD HER',
+          label: 'Disposition toward her',
           gold: true,
           tier: 'routine',
           source: 'graphResolver',
@@ -550,7 +550,7 @@ describe('DetailModal — section rendering', () => {
         {
           kind: 'chips',
           typeId: 'threads_between_them',
-          label: 'THREADS BETWEEN THEM',
+          label: 'Threads between them',
           gold: false,
           tier: 'routine',
           source: 'graphResolver',
@@ -559,18 +559,18 @@ describe('DetailModal — section rendering', () => {
         {
           kind: 'event-card',
           typeId: 'recent_encounters',
-          label: 'WHEN THIS THREAD LAST PULLED',
+          label: 'When this thread last pulled',
           gold: false,
           tier: 'routine',
           source: 'graphResolver',
-          whenLabel: '12 TURNS AGO · THE IRON GATE',
+          whenLabel: '12 turns ago · The Iron Gate',
           prose: 'She passed him without a word.',
           eventRef: { nodeId: 'event-1', pageKind: 'event' },
         },
         {
           kind: 'panel',
           typeId: 'reputations_they_hold',
-          label: 'WHAT THEY TRACK',
+          label: 'What they track',
           gold: false,
           tier: 'routine',
           source: 'graphResolver',
@@ -594,7 +594,7 @@ describe('DetailModal — section rendering', () => {
 
   it('renders prose section label', () => {
     renderWithSections();
-    expect(screen.getByText('DISPOSITION TOWARD HER')).toBeInTheDocument();
+    expect(screen.getByText('Disposition toward her')).toBeInTheDocument();
   });
 
   it('renders prose section body', () => {
@@ -604,7 +604,7 @@ describe('DetailModal — section rendering', () => {
 
   it('renders chips section label', () => {
     renderWithSections();
-    expect(screen.getByText('THREADS BETWEEN THEM')).toBeInTheDocument();
+    expect(screen.getByText('Threads between them')).toBeInTheDocument();
   });
 
   it('renders chip label', () => {
@@ -614,7 +614,7 @@ describe('DetailModal — section rendering', () => {
 
   it('renders event-card whenLabel', () => {
     renderWithSections();
-    expect(screen.getByText('12 TURNS AGO · THE IRON GATE')).toBeInTheDocument();
+    expect(screen.getByText('12 turns ago · The Iron Gate')).toBeInTheDocument();
   });
 
   it('renders panel row', () => {

@@ -34,7 +34,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
-                ENCOUNTER
+                Encounter
               </span>
             </span>
             <span
@@ -48,7 +48,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
               <span
                 style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
-                CAPTAIN VEIREN
+                Captain Veiren
               </span>
             </span>
           </div>
@@ -106,7 +106,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
       <div
         style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-spirit-bright, var(--accent-gold)); margin-bottom: 4px;"
       >
-        ACTOR
+        Actor
       </div>
       <div
         style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
@@ -141,7 +141,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
             data-section-label=""
             style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
           >
-            DISPOSITION TOWARD HER
+            Disposition toward her
           </div>
           <p
             style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
@@ -157,7 +157,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          WHAT SHE IS TO HIM
+          What she is to him
         </div>
         <div
           style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
@@ -172,7 +172,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          THREADS BETWEEN THEM
+          Threads between them
         </div>
         <div
           style="display: flex; flex-wrap: wrap; gap: 6px;"
@@ -200,12 +200,12 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          RECENT ENCOUNTERS
+          Recent encounters
         </div>
         <div
           style="font-size: var(--text-xs); color: var(--text-tertiary); font-family: var(--font-body); font-weight: 700; margin-bottom: 6px;"
         >
-          1 TURN AGO · THE IRON MARKET
+          1 turn ago · The Iron Market
         </div>
         <p
           style="color: var(--text-secondary); font-style: italic; line-height: 1.6; margin: 0px; font-size: 0.85rem;"
@@ -220,7 +220,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          FACTION ALLEGIANCES
+          Faction allegiances
         </div>
         <div
           style="display: flex; flex-wrap: wrap; gap: 6px;"
@@ -246,7 +246,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          NOTABLE CAPABILITIES
+          Notable capabilities
         </div>
         <div
           style="display: flex; flex-wrap: wrap; gap: 6px;"
@@ -311,7 +311,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
-                ENCOUNTER
+                Encounter
               </span>
             </span>
             <span
@@ -325,7 +325,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
               <span
                 style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
-                A MEETING IN THE MARKET
+                A meeting in the market
               </span>
             </span>
           </div>
@@ -383,7 +383,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
       <div
         style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-force-bright, var(--accent-gold)); margin-bottom: 4px;"
       >
-        EVENT
+        Event
       </div>
       <div
         style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
@@ -406,7 +406,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
         >
-          WHAT HAPPENED
+          What happened
         </div>
         <div
           style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
@@ -421,7 +421,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          WHO WAS THERE
+          Who was there
         </div>
         <div
           style="display: flex; flex-wrap: wrap; gap: 6px;"
@@ -490,7 +490,7 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
-                ENCOUNTER
+                Encounter
               </span>
             </span>
             <span
@@ -504,7 +504,7 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
               <span
                 style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
-                THE IRON GUARD
+                The Iron Guard
               </span>
             </span>
           </div>
@@ -562,7 +562,7 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
       <div
         style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-force-bright, var(--accent-gold)); margin-bottom: 4px;"
       >
-        FACTION
+        Faction
       </div>
       <div
         style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
@@ -585,7 +585,7 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
         >
-          HOW THEY HOLD HER
+          How they hold her
         </div>
         <div
           style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
@@ -600,7 +600,7 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          REPUTATIONS THEY HOLD
+          Reputations they hold
         </div>
         <div
           style="display: flex; flex-direction: column; gap: 4px;"
@@ -669,7 +669,7 @@ exports[`DetailPage — item > snapshot: item 1`] = `
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
-                ENCOUNTER
+                Encounter
               </span>
             </span>
             <span
@@ -683,7 +683,7 @@ exports[`DetailPage — item > snapshot: item 1`] = `
               <span
                 style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
-                VEIRENS TOKEN
+                Veirens Token
               </span>
             </span>
           </div>
@@ -741,7 +741,7 @@ exports[`DetailPage — item > snapshot: item 1`] = `
       <div
         style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-force-bright, var(--accent-gold)); margin-bottom: 4px;"
       >
-        ITEM
+        Item
       </div>
       <div
         style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
@@ -776,7 +776,7 @@ exports[`DetailPage — item > snapshot: item 1`] = `
             data-section-label=""
             style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
           >
-            WHAT IT MEANS HERE
+            What it means here
           </div>
           <p
             style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
@@ -792,7 +792,7 @@ exports[`DetailPage — item > snapshot: item 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          HOW IT CAME TO HER
+          How it came to her
         </div>
         <div
           style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
@@ -848,7 +848,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
                 style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
-                ENCOUNTER
+                Encounter
               </span>
             </span>
             <span
@@ -862,7 +862,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
               <span
                 style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
-                THE IRON MARKET
+                The Iron Market
               </span>
             </span>
           </div>
@@ -920,7 +920,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
       <div
         style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sphere-matter-bright, var(--accent-gold)); margin-bottom: 4px;"
       >
-        PLACE
+        Place
       </div>
       <div
         style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin-bottom: 2px; letter-spacing: 0.03em;"
@@ -955,7 +955,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
             data-section-label=""
             style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
           >
-            THE IRON MARKET
+            The Iron Market
           </div>
         </div>
       </div>
@@ -966,7 +966,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
         >
-          WHAT THIS PLACE WANTS
+          What this place wants
         </div>
         <div
           style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"
@@ -981,7 +981,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
           data-section-label=""
           style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
-          MEMORY
+          Memory
         </div>
         <div
           style="color: var(--text-primary); line-height: 1.7; margin: 0px; font-size: 0.9rem;"

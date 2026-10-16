@@ -97,7 +97,7 @@ export function DetailBreadcrumb({ trail, onNavigate }: DetailBreadcrumbProps) {
                   }
                 : {})}
             >
-              {crumb.label.toUpperCase()}
+              {crumb.label}
             </span>
           </span>
         );

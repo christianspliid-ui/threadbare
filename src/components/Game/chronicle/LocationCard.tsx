@@ -1,6 +1,13 @@
 import { memo } from 'react';
 import type { ReactNode } from 'react';
 import { getLocationConceptArtUrl } from '../../../data/location-concept-art';
+import { humanizeKeySegment } from '../../../engine/aftermathWords';
+
+/** A stored subtype key as the tag reads it: `guild-hall` → "Guild hall" (Law 14). */
+function subtypeWord(raw: string): string {
+  const words = humanizeKeySegment(raw).toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
 
 interface LocationCardProps {
   name: string;
@@ -102,7 +109,7 @@ export const LocationCard = memo(function LocationCard({
               marginLeft: 'auto',
             }}
           >
-            {subtype}
+            {subtypeWord(subtype)}
           </span>
         </div>
       </div>

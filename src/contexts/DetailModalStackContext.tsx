@@ -40,7 +40,7 @@ export function useDetailModalStackState(): DetailModalStackState {
   const push = useCallback((page: DetailPage) => {
     setStack(prev => {
       // Auto-extend the trail from the current top so callers don't have to.
-      const parentTrail = prev.length > 0 ? prev[prev.length - 1].trail : ['ENCOUNTER'];
+      const parentTrail = prev.length > 0 ? prev[prev.length - 1].trail : ['Encounter'];
       const trail = [...parentTrail, page.displayName];
       return [...prev, { ...page, trail }];
     });
@@ -57,10 +57,10 @@ export function useDetailModalStackState(): DetailModalStackState {
   const replace = useCallback((page: DetailPage) => {
     setStack(prev => {
       if (prev.length === 0) {
-        return [{ ...page, trail: ['ENCOUNTER', page.displayName] }];
+        return [{ ...page, trail: ['Encounter', page.displayName] }];
       }
       const next = prev.slice();
-      const parentTrail = prev.length > 1 ? prev[prev.length - 2].trail : ['ENCOUNTER'];
+      const parentTrail = prev.length > 1 ? prev[prev.length - 2].trail : ['Encounter'];
       next[next.length - 1] = { ...page, trail: [...parentTrail, page.displayName] };
       return next;
     });

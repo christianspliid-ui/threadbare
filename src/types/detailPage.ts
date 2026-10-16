@@ -197,7 +197,7 @@ export interface TriggerRow {
 // ─── Section base + variants ──────────────────────────────────────────────────
 
 export interface SectionBase {
-  /** ALLCAPS Cinzel label, e.g. "DISPOSITION TOWARD HER". */
+  /** Sentence-case label (THR-1879 label rule), e.g. "Disposition toward her". */
   label: string;
   /** Gold-coloured label = primary section. Default false (tertiary). */
   gold: boolean;
@@ -269,7 +269,7 @@ export interface DetailPage {
   nodeId: string;
   /** Breadcrumb trail, last entry = current page. */
   trail: string[];
-  /** ALLCAPS kind label, e.g. "ACTOR" or "ITEM · IN HER POSSESSION". */
+  /** Sentence-case kind label, e.g. "Actor" or "Item · in her possession". */
   kindLabel: string;
   /** Cinzel display name, e.g. "Captain Veiren". */
   displayName: string;

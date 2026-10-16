@@ -80,7 +80,7 @@ export function unknownContentStub(ref: ContentRef, breadcrumbRoot: string[]): D
     kind: 'content',
     nodeId: ref.id,
     trail: [...breadcrumbRoot, 'UNKNOWN'],
-    kindLabel: 'CONTENT',
+    kindLabel: 'Content',
     displayName: ref.name ?? 'Unwritten',
     subtitle: 'no entry by that name',
     sphere: DETAIL_FAILSOFT_STUB_SPHERE,
@@ -151,7 +151,7 @@ export function generateContentPage(input: GenerateContentPageInput): DetailPage
       ? {
           kind: 'chips',
           typeId: 'marks',
-          label: 'MARKS',
+          label: 'Marks',
           gold: false,
           tier: 'routine',
           source: 'contentEntryResolver',
@@ -170,7 +170,7 @@ export function generateContentPage(input: GenerateContentPageInput): DetailPage
     kind: 'content',
     nodeId: ref.id,
     trail: [...breadcrumbRoot, entry.name],
-    kindLabel: entry.kindWord.toUpperCase(),
+    kindLabel: entry.kindWord.charAt(0).toUpperCase() + entry.kindWord.slice(1),
     displayName: entry.name,
     subtitle: entry.kindWord,
     // Content is not sphere-aligned as an object — a template *about* Stone is still a

@@ -8,6 +8,7 @@
 
 import { memo } from 'react';
 import { Modal } from '../shared/Modal';
+import { REACH_DISPLAY_NAMES } from '../../engine/aftermathWords';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 // ─── Props ──────────────────────────────────────────────────────────
@@ -33,7 +34,7 @@ function ReachBadge({ reach }: { reach: string }) {
       fontSize: 'var(--text-xs)',
       color: 'var(--text-secondary)',
     }}>
-      {reach}
+      {REACH_DISPLAY_NAMES[reach] ?? reach}
     </span>
   );
 }

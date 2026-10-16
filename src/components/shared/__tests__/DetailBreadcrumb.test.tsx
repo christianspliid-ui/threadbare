@@ -15,16 +15,16 @@ import { DETAIL_BREADCRUMB_COLLAPSE_AT } from '../../../types/detailPage';
  * as done while making the trail noisier to Tab through than it is to use.
  */
 
-const SHORT_TRAIL = ['ENCOUNTER', 'Captain Veiren', 'The Iron Gate'];
+const SHORT_TRAIL = ['Encounter', 'Captain Veiren', 'The Iron Gate'];
 
 function crumb(label: string): HTMLElement {
-  return screen.getByText(label.toUpperCase());
+  return screen.getByText(label);
 }
 
 describe('DetailBreadcrumb — navigable crumbs are controls (Law 23)', () => {
   it('a clickable crumb carries role="button" and a tab stop', () => {
     render(<DetailBreadcrumb trail={SHORT_TRAIL} onNavigate={() => {}} />);
-    const first = crumb('ENCOUNTER');
+    const first = crumb('Encounter');
     expect(first).toHaveAttribute('role', 'button');
     expect(first).toHaveAttribute('tabindex', '0');
   });
@@ -32,7 +32,7 @@ describe('DetailBreadcrumb — navigable crumbs are controls (Law 23)', () => {
   it('a clickable crumb matches the focus trap’s selector, so the panel’s Tab cycle reaches it', () => {
     const { container } = render(<DetailBreadcrumb trail={SHORT_TRAIL} onNavigate={() => {}} />);
     const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-    expect(focusable).toContain(crumb('ENCOUNTER'));
+    expect(focusable).toContain(crumb('Encounter'));
     expect(focusable).toContain(crumb('Captain Veiren'));
     // Exactly the two navigable crumbs — nothing else in the trail is a tab stop.
     expect(focusable).toHaveLength(2);
@@ -40,7 +40,7 @@ describe('DetailBreadcrumb — navigable crumbs are controls (Law 23)', () => {
 
   it('a clickable crumb takes focus', () => {
     render(<DetailBreadcrumb trail={SHORT_TRAIL} onNavigate={() => {}} />);
-    const first = crumb('ENCOUNTER');
+    const first = crumb('Encounter');
     first.focus();
     expect(document.activeElement).toBe(first);
   });
@@ -57,7 +57,7 @@ describe('DetailBreadcrumb — navigable crumbs are controls (Law 23)', () => {
     const onNavigate = vi.fn();
     render(<DetailBreadcrumb trail={SHORT_TRAIL} onNavigate={onNavigate} />);
     const event = new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true });
-    crumb('ENCOUNTER').dispatchEvent(event);
+    crumb('Encounter').dispatchEvent(event);
     expect(onNavigate).toHaveBeenCalledWith(-1);
     expect(event.defaultPrevented).toBe(true);
   });
@@ -65,8 +65,8 @@ describe('DetailBreadcrumb — navigable crumbs are controls (Law 23)', () => {
   it('ignores other keys', () => {
     const onNavigate = vi.fn();
     render(<DetailBreadcrumb trail={SHORT_TRAIL} onNavigate={onNavigate} />);
-    fireEvent.keyDown(crumb('ENCOUNTER'), { key: 'ArrowRight' });
-    fireEvent.keyDown(crumb('ENCOUNTER'), { key: 'Escape' });
+    fireEvent.keyDown(crumb('Encounter'), { key: 'ArrowRight' });
+    fireEvent.keyDown(crumb('Encounter'), { key: 'Escape' });
     expect(onNavigate).not.toHaveBeenCalled();
   });
 
@@ -79,7 +79,7 @@ describe('DetailBreadcrumb — navigable crumbs are controls (Law 23)', () => {
 
   it('does not suppress the focus ring — it wears the sanctioned focus-ring class', () => {
     render(<DetailBreadcrumb trail={SHORT_TRAIL} onNavigate={() => {}} />);
-    const first = crumb('ENCOUNTER');
+    const first = crumb('Encounter');
     expect(first).toHaveClass('focus-ring');
     expect(first.style.outline).toBe('');
   });

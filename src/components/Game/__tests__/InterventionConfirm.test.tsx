@@ -115,9 +115,9 @@ describe('InterventionConfirm', () => {
     render(<InterventionConfirm {...baseProps} sphere="mind" deliveryMode="regional" />);
     const line = screen.getByTestId('sphere-delivery-line');
     expect(line).toBeTruthy();
-    // Text content before CSS text-transform: lowercase values are in the DOM
-    expect(line.textContent).toContain('mind');
-    expect(line.textContent).toContain('regional');
+    // The keys read as words (Law 14): sphereWord and the delivery-mode word
+    expect(line.textContent).toContain('Mind');
+    expect(line.textContent).toContain('Regional');
   });
 
   it('applies sphere-bright ring via boxShadow on the panel', () => {

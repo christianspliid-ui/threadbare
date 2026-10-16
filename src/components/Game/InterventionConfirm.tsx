@@ -3,10 +3,18 @@ import type { SphereName } from '../../types/index';
 import { getSphereColor } from '../../data/sphereIcons';
 import { SphereIcon } from '../icons';
 import { Button } from '../shared/Button';
-import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { formatEssence, formatEssencePool, sphereWord } from '../shared/formatEssence';
 import { OddsPips } from '../shared/OddsPips';
 import { useEscapeLayer } from '../shared/useEscapeLayer';
 import { Z_BAND } from '../shared/zBands';
+
+/** The delivery mode as the player reads it (Law 14: no raw keys). */
+const DELIVERY_MODE_WORD: Record<DeliveryMode, string> = {
+  astral: 'Astral',
+  regional: 'Regional',
+  remote: 'Remote',
+  local: 'Local',
+};
 
 export interface InterventionConfirmProps {
   interventionType: InterventionType;
@@ -112,7 +120,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
               fontWeight: 700,
             }}
           >
-            {sphere} · {deliveryMode}
+            {sphereWord(sphere)} · {DELIVERY_MODE_WORD[deliveryMode] ?? deliveryMode}
           </p>
 
           {/* Title — italic Alegreya Sans 700 (below the 22px Cinzel floor) */}
