@@ -126,3 +126,10 @@ export type MomentDivineVerb = (typeof MOMENT_DIVINE_ACTIONS)[number]['verb'];
 
 /** The one line the card says about the sim while it is up (Law 52 — every auto-pause names its cause). */
 export const MOMENT_CARD_PAUSE_NOTE = 'Time holds while you read this.';
+
+/**
+ * THR-1963 — the work moments link to the work: one link, opening the mortal's
+ * sheet on its Journey tab. Only the begun and finished cards carry it.
+ */
+export const MOMENT_SEE_WORK_LABEL = 'See the work';
+export const MOMENT_SEE_WORK_CLASSES: ReadonlySet<UndertakingMomentClass> = new Set<UndertakingMomentClass>(['started', 'completion']);

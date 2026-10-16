@@ -40,6 +40,12 @@ export interface AgentProfileModalProps {
   onClose: () => void;
   /** When true, auto-switch to the Chronicle tab on open (e.g. from a revelation alert) */
   scrollToNewStrata?: boolean;
+  /**
+   * THR-1963 — the tab the sheet opens on. Defaults to Overview; the thread
+   * panel's work/ambition lines and the work moments pass `'journey'`.
+   * `scrollToNewStrata` still wins.
+   */
+  initialTab?: TabId;
   /** Per-agent multi-facet knowledge — when present, enables facet-gated sections */
   knowledge?: AgentKnowledge;
   /** Live game state — enables the Chapters tab (THR-603). */
@@ -74,9 +80,9 @@ export interface AgentProfileModalProps {
   mortalShape?: { godTitleLine: string; sphereColor?: string; portraitUrl?: string };
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape, dominion }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, initialTab, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape, dominion }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
-    scrollToNewStrata ? 'chronicle' : 'overview'
+    scrollToNewStrata ? 'chronicle' : (initialTab ?? 'overview')
   );
   const [selectedAttachment, setSelectedAttachment] = useState<AttachmentDetailData | null>(null);
   const [portraitExpanded, setPortraitExpanded] = useState(false);
@@ -92,6 +98,11 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
       setActiveTab('chronicle');
     }
   }, [scrollToNewStrata]);
+
+  // A link asking for a tab while the sheet is already open (THR-1963) moves it there.
+  useEffect(() => {
+    if (initialTab && !scrollToNewStrata) setActiveTab(initialTab);
+  }, [initialTab, scrollToNewStrata]);
 
   /** Convert an AttachmentFullEntry to AttachmentDetailData for the detail view */
   const toDetailData = (entry: AttachmentFullEntry): AttachmentDetailData => ({

@@ -27,6 +27,7 @@ import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import type { ToastItem } from '../../../types/notification';
 import type { HexCoord } from '../../../types';
+import type { TabId as ProfileTabId } from '../tabs/TabBar';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld, ensureRealmProjection } from '../../../engine/simulationRuntime';
 import { createHoldReader } from '../../../engine/holdStanding';
@@ -134,6 +135,8 @@ export function useAgentInteraction({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
   const [profileModalAgentId, setProfileModalAgentId] = useState<string | null>(null);
+  /** THR-1963 — the tab the sheet opens on; undefined is Overview. */
+  const [profileInitialTab, setProfileInitialTab] = useState<ProfileTabId | undefined>(undefined);
   const [pendingIntervention, setPendingIntervention] = useState<{
     slotId: string;
     interventionType: InterventionType;
@@ -644,8 +647,9 @@ export function useAgentInteraction({
     }
   }, [selectedAgentId, retinueAgents, handleAgentSelect, setRunning]);
 
-  const handleViewProfile = useCallback(() => {
+  const handleViewProfile = useCallback((initialTab?: ProfileTabId) => {
     if (selectedAgentId) {
+      setProfileInitialTab(typeof initialTab === 'string' ? initialTab : undefined);
       // IX-002: mutual exclusion — close strand view when opening profile modal
       // IX-008: close drawer when opening full-screen profile modal
       setStrandViewAgent(null);
@@ -662,6 +666,7 @@ export function useAgentInteraction({
 
   const handleCloseProfile = useCallback(() => {
     setProfileModalAgentId(null);
+    setProfileInitialTab(undefined);
   }, []);
 
   /**
@@ -680,7 +685,8 @@ export function useAgentInteraction({
    * behind a full-screen interrupt wants the sheet on top, not a drawer
    * changing state underneath it.
    */
-  const openAgentSheetForId = useCallback((agentId: string) => {
+  const openAgentSheetForId = useCallback((agentId: string, initialTab?: ProfileTabId) => {
+    setProfileInitialTab(initialTab);
     setSelectedAgentId(agentId);
     setStrandViewAgent(null);
     setDrawerOpen(false);
@@ -769,6 +775,7 @@ export function useAgentInteraction({
     pendingChoice,
     setPendingChoice,
     profileModalAgentId,
+    profileInitialTab,
     playingCardId,
     selectedAgenda,
     agendaPickerOpen,

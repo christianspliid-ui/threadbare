@@ -1,5 +1,10 @@
 import React, { useMemo, useState, useSyncExternalStore } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
+import { summarizeActiveUndertakings } from '../../engine/agentDetail';
+import type { AgentKnowledge } from '../../types/agentKnowledge';
+import type { TabId } from './tabs/TabBar';
+import { visibleJourneyIntents } from './tabs/JourneyTab';
+import { Tooltip } from '../shared/Tooltip';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import type { WorldGraph } from '../../engine/graph';
 import type { BalanceEvent } from '../../types/balanceEval';
@@ -64,7 +69,8 @@ interface ThreadDetailViewProps {
   agentInfoCard?: AgentInfoCardData | null;
   agentEncounterDecision?: BalanceEvent | null;
   onClose: () => void;
-  onViewProfile: (nodeId: string, category: ThreadCategory) => void;
+  /** Opens the full profile; `initialTab` picks its tab (THR-1963: the work/ambition lines open Journey). */
+  onViewProfile: (nodeId: string, category: ThreadCategory, initialTab?: TabId) => void;
   onZoomToLocation?: (locationId: string) => void;
   graph?: WorldGraph;
   /** Encounter digest buffer — used to show recent activity for agent nodes. */
@@ -87,6 +93,8 @@ interface ThreadDetailViewProps {
    * on every other route into this surface.
    */
   revealedNotices?: RevealedNoticeGroup | null;
+  /** Per-agent knowledge — gates the "What they want most" line exactly as the Journey tab gates Ambitions (THR-1963). */
+  knowledge?: AgentKnowledge;
 }
 
 export const ThreadDetailView = React.memo(function ThreadDetailView({
@@ -105,6 +113,7 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
   intelligenceRecords,
   getForeshadowing,
   revealedNotices,
+  knowledge,
 }: ThreadDetailViewProps) {
   const tierColor = TIER_COLORS[node.tier] ?? '#6b7280';
   const tierBgColor = `color-mix(in srgb, ${tierColor} 20%, transparent)`;
@@ -223,6 +232,8 @@ export const ThreadDetailView = React.memo(function ThreadDetailView({
             graph={graph}
             intelligenceRecords={intelligenceRecords}
             getForeshadowing={getForeshadowing}
+            knowledge={knowledge}
+            onOpenJourney={() => onViewProfile(node.id, node.category, 'journey')}
           />
         )}
         {node.category === 'location' && (
@@ -287,6 +298,64 @@ function DetailField({ label, value }: { label: string; value: React.ReactNode }
     >
       <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{label}: </span>
       <span style={{ color: 'var(--text-primary)' }}>{value}</span>
+    </div>
+  );
+}
+
+/**
+ * The two lines at the top of a mortal's thread panel (THR-1963).
+ *
+ * "Their work" reads the one progress resolver through `summarizeActiveUndertakings`
+ * (THR-1962), so it says the same word as the thread row and the Journey tab. "What
+ * they want most" is the first ambition the Journey tab lists, behind the same gate
+ * (`visibleJourneyIntents`). Each line is absent when there is nothing to say, and
+ * each opens the full profile on its Journey tab.
+ */
+function WorkAndWantLines({ card, knowledge, strategicState, onOpenJourney }: {
+  card: AgentInfoCardData;
+  knowledge?: AgentKnowledge;
+  strategicState?: StrategicRuntimeState;
+  onOpenJourney?: () => void;
+}) {
+  const work = summarizeActiveUndertakings(strategicState, card.id)?.[0];
+  const want = visibleJourneyIntents(card, knowledge)[0];
+  if (!work && !want) return null;
+  const line = (testId: string, tooltipId: string, label: string, value: React.ReactNode) => (
+    <div style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}>
+      <Tooltip id={tooltipId}>
+        <span className="underline decoration-dotted cursor-help" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{label}</span>
+      </Tooltip>
+      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>: </span>
+      {onOpenJourney ? (
+        <button
+          type="button"
+          data-testid={testId}
+          onClick={onOpenJourney}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            font: 'inherit',
+            color: 'var(--text-primary)',
+            textDecoration: 'underline',
+            textDecorationColor: 'var(--accent-gold-dim)',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          {value}
+        </button>
+      ) : (
+        <span data-testid={testId} style={{ color: 'var(--text-primary)' }}>{value}</span>
+      )}
+    </div>
+  );
+  return (
+    <div data-testid="thread-work-and-want" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+      {work && line('thread-their-work', 'ui.thread_work', 'Their work', (
+        <>{work.displayName}<span style={{ color: 'var(--text-muted)' }}> — {work.progressWord}</span></>
+      ))}
+      {want && line('thread-want-most', 'ui.thread_want_most', 'What they want most', want.displayName)}
     </div>
   );
 }
@@ -672,6 +741,8 @@ function AgentDetailBody({
   graph,
   intelligenceRecords,
   getForeshadowing,
+  knowledge,
+  onOpenJourney,
 }: {
   node: import('../../engine/retinue').ThreadedAgent;
   agentInfoCard?: AgentInfoCardData | null;
@@ -684,6 +755,8 @@ function AgentDetailBody({
   graph?: WorldGraph;
   intelligenceRecords?: readonly IntelligenceRecord[];
   getForeshadowing?: (agentId: string, encounterId: string) => ForeshadowingResult;
+  knowledge?: AgentKnowledge;
+  onOpenJourney?: () => void;
 }) {
   const agentDesignerView = useDesignerView();
   const activityLabel = node.activityLabel
@@ -736,6 +809,14 @@ function AgentDetailBody({
   if (agentInfoCard) {
     return (
       <>
+        {/* THR-1963 — the mortal's own mid-game, beside the map: their work and what they want most. */}
+        <WorkAndWantLines
+          card={agentInfoCard}
+          knowledge={knowledge}
+          strategicState={strategicState}
+          onOpenJourney={onOpenJourney}
+        />
+
         {/* Domain capabilities grid (2x4) */}
         {agentInfoCard.domains && agentInfoCard.domains.length > 0 && (
           <div>
