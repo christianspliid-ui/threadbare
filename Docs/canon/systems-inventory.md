@@ -446,7 +446,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `undertaking` (9) | `undertakingCapabilityGrowth.ts`, `undertakingCatalystAnchor.ts`, `undertakingCheckpoints.ts`, `undertakingDeed.ts`, `undertakingMoments.ts`, `undertakingMotive.ts`, `undertakingProse.ts`, `undertakingResolver.ts`, `undertakingReviewLevers.ts` | `THR-1281`, `THR-1292`, `THR-1297`, `THR-1299`, `THR-1300`, `THR-1392`, `THR-1397`, `THR-1434`, `THR-1440`, `THR-1511` |
 | `unified` (4) | `unifiedActionLifecycle.ts`, `unifiedActionPhases.ts`, `unifiedActionResolution.ts`, `unifiedCandidates.ts` | `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 6`, `Phase 7` |
 | `view` (1) | `viewLevel.ts` | — |
-| `views` (17) | `views/hexContents.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1822`, `THR-1846`, `THR-1878`, `THR-1899`, `THR-1902`, `THR-502` |
+| `views` (18) | `views/hexContents.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1792`, `THR-1822`, `THR-1846`, `THR-1878`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-502` |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
 | `wealth` (1) | `wealth.ts` | `THR-1931` |
@@ -457,4 +457,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 109 tick phases · 219 engine domains · 693 modules._
+_Counts: 28 registered subsystems (2 dormant) · 109 tick phases · 219 engine domains · 694 modules._
