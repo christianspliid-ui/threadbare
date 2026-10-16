@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 03:55 local (01:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 04:57 local (02:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -35,14 +35,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 24 ready, one in progress.** The builder finished [the label sweep](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept) as [#2436](https://github.com/christianspliid-ui/threadbare/pull/2436), which is waiting on its checks and will merge itself on green. The hunger and unrest plan is now written and ready to build too.
+**Backed up: 23 ready, one in progress.** [The label sweep](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept) merged and is live. The builder has now finished [the fix for one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for) as [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438), which is waiting on its checks and will merge itself on green.
 
 - High, waiting: the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them), [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) build plans.
 - Five process tickets that slim down the delivery machinery, led by [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
-- Your six economy bugs are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [one death keeping a town in unrest forever](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for).
+- Five economy bugs are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [armies besieging towns they have no quarrel with](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard).
 - Nothing is older than a week, and no job is parked.
 
 ## Health
 
-- **The game runs slower than its weekly average in the speed check:** tick cost 177 ms/tick steady, 45% above the 7-day median (122, 137 rows since 125801e0); top phase agent_decision, 616 agents. Name the merges between 125801e0 and ea8f2172: `git log --oneline --merges 125801e0..ea8f2172`. This is the third slow reading in a row (308, 154, 177). The builder was idle during this one, so machine load explains less of it now. That is the builder's to chase, not yours.
-- Everything else is green. Main's checks pass, and the live site is up to date (the last commits were plan docs only). One pull request, [#2436](https://github.com/christianspliid-ui/threadbare/pull/2436), is waiting on checks. Every scheduled lane is on schedule. The tidy-up job ran at 03:40: 536 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gaps (Friday 9 Oct night into Saturday, and the night of 12 to 13 Oct) are overnight and weekend quiet. You sent no new Discord messages.
+- All green. Main's checks pass, and the live site serves the latest commit. One pull request, [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438), is waiting on checks. Every scheduled lane is on schedule, and the builder is alternating builds with short idle runs while its pull request waits, as it should.
+- The speed check is back to normal: 124 ms per tick, 2% above the weekly median. The three slow readings before it look like machine load.
+- The tidy-up job ran at 04:40: 538 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
