@@ -27,7 +27,9 @@ describe('ActiveEffectChips (THR-1606)', () => {
     );
     expect(screen.getByText('Under your hand')).toBeTruthy();
     const chips = screen.getAllByTestId('active-effect-chip');
-    expect(chips.map((c) => c.textContent)).toEqual(['◈Dreaming', '◈Compelled']);
+    expect(chips.map((c) => c.textContent)).toEqual(['Dreaming', 'Compelled']);
+    // THR-1906 — the god's own acts draw the carved icon, not a glyph.
+    for (const chip of chips) expect(chip.querySelector('[data-icon="divine-actions"]')).not.toBeNull();
     for (const chip of chips) expect(chip.textContent).not.toMatch(/\d/);
   });
 });

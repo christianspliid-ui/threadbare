@@ -221,10 +221,10 @@ describe('MandateTracker', () => {
     );
     fireEvent.click(screen.getByText('Node Dominance'));
     expect(screen.getByText('Achieve 50 nodes')).toBeInTheDocument();
-    expect(screen.getByText('Achieve 50 nodes').parentElement).toHaveTextContent('✓');
+    expect(screen.getByText('Achieve 50 nodes').parentElement!.querySelector('[data-icon="done"]')).not.toBeNull();
   });
 
-  it('shows unmet conditions with ○ indicator', () => {
+  it('shows unmet conditions with an empty marker, no done icon (THR-1906)', () => {
     const stateWithUnmetCondition: MandateState = {
       ...baseMandateState,
       currentStage: 'setup',
@@ -248,7 +248,7 @@ describe('MandateTracker', () => {
     );
     fireEvent.click(screen.getByText('Node Dominance'));
     expect(screen.getByText('Achieve 50 nodes')).toBeInTheDocument();
-    expect(screen.getByText('Achieve 50 nodes').parentElement).toHaveTextContent('○');
+    expect(screen.getByText('Achieve 50 nodes').parentElement!.querySelector('[data-icon="done"]')).toBeNull();
   });
 
   it('displays stage timeline with checkmarks for completed stages', () => {
@@ -269,7 +269,7 @@ describe('MandateTracker', () => {
     expect(screen.getByText(/CULMINATION|culmination/i)).toBeInTheDocument();
     // Setup should have a checkmark (it's completed)
     const popover = screen.getByText('Establish control over the world-graph').closest('div');
-    expect(popover?.textContent).toMatch('✓');
+    expect(popover?.querySelector('[data-icon="done"]')).not.toBeNull();
   });
 
   it('closes popover when clicking backdrop', async () => {

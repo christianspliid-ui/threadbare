@@ -174,7 +174,7 @@ export function DoomClockDetail({
                   {/* THR-1906 — the word only; the ∞ ornament is gone. */}
                   <span style={{
                     fontFamily: 'var(--font-display)',
-                    fontSize: 'var(--text-base)',
+                    fontSize: 'var(--text-lg)',
                     fontWeight: 700,
                     color: '#dc2626',
                     lineHeight: 1,
