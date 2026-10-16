@@ -3272,12 +3272,51 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/cycleEnd.ts'],
     readSites: ['src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts'],
     // The tally the selection reads (`GameState.cardPlayTally`) is written at
-    // nudge commit and reset at `transitionToNewCycle` — both sides land
-    // together, so this is not an optional field with no writer.
+    // nudge commit and starts empty in every new world (THR-1813: a run wakes in
+    // a new world, so nothing carries the old tally) — both sides land together,
+    // so this is not an optional field with no writer.
     //
     // The card echo rides `EchoDefinition` rather than a parallel carry
     // structure, so it degrades, fades, and threads the chronicle on the same
-    // paths as Legacy, Monument, and Relic.
+    // paths as Legacy, Monument, and Relic. Since THR-1813 it crosses into the
+    // next world through the account record (`account-carries-echoes-to-the-next-world`).
+  },
+  {
+    id: 'account-carries-echoes-to-the-next-world',
+    producerSystem: NARRATIVE,
+    consumerSystem: WORLDGEN,
+    intent:
+      'When an age ends the world remembers it: the places the god held, the mortals it raised and the relics its chosen carried are kept, and the next world wakes with them in its memory.',
+    ulTerms: ['Run', 'Echo', 'Account Record'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['concludeRun', 'liveEchoes'],
+      module: 'src/engine/accountRecord.ts',
+    },
+    writeSites: ['src/components/Game/hooks/useSimulation.ts'],
+    readSites: ['src/engine/gameInit.ts'],
+    // THR-1813 slice 1. The record lives outside GameState; `concludeRun` folds
+    // the harvest into it when the harvest screen opens, and
+    // `initializeGameStateFromIdentity` loads its live echoes into the new world.
+    // Slice 2 (THR-1843) places the map echoes; until then they are carried, not placed.
+  },
+  {
+    id: 'world-tilt-shapes-cosmology',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: WORLDGEN,
+    intent:
+      'Each new world leans a little toward the spheres earlier gods drew on, and drifts back toward balance over time.',
+    ulTerms: ['World Tilt', 'Cosmology Profile', 'Account Record'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['tiltCosmology', 'worldTiltFactors'],
+      module: 'src/engine/accountRecord.ts',
+    },
+    writeSites: ['src/engine/accountRecord.ts'],
+    readSites: ['src/engine/gameInit.ts'],
+    // THR-1813 Decided 8: the fundament the account keeps is blended at run end
+    // (`concludeRun`, two `blendFundaments`) and bends the next world's cosmology
+    // profile at creation, because `fundament.sphereWeights` is overwritten every tick.
   },
 
   // ── Agent-decided branches (THR-894) ──────────────────────────────────────

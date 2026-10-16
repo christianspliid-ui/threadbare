@@ -29,7 +29,6 @@ import { createDefaultFundament, createResonanceState } from './worldSoul';
 import type { AccountRecord } from '../types/account';
 import type { FundamentState } from '../types/worldSoul';
 import { accountShapesWorld, liveEchoes, tiltCosmology } from './accountRecord';
-import { emitTrace } from './traceBuffer';
 import { createStartingEssencePool } from './influence';
 import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { TICKS_PER_SEASON } from '../types/temporal';

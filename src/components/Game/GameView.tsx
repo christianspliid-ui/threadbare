@@ -4639,6 +4639,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         {debugPanelOpen ? (
             <DebugPanel
               currentTick={gameState.tick}
+              accountRecord={concludedRun?.account ?? baseAccount}
               followAgentId={selectedAgentId ?? undefined}
               onClose={handleToggleDebug}
               preferredViewMode={debugPanelPreferredViewMode}
