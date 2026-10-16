@@ -71,6 +71,8 @@ interface UseSimulationParams {
    * Default true.
    */
   persistAccount?: boolean;
+  /** THR-1813 — an earlier run in this tab failed to save; this run is reported unkept too. */
+  accountSaveFailed?: boolean;
   /** THR-1813 E6 — *Wake in a new world*: hand the concluded record up to `App`; `saved` false = the run-end save failed. */
   onWakeNewWorld?: (account: AccountRecord, saved: boolean) => void;
 }
@@ -101,6 +103,7 @@ export function useSimulation({
   account,
   shapeWorldFromAccount,
   persistAccount = true,
+  accountSaveFailed = false,
   onWakeNewWorld,
 }: UseSimulationParams) {
   // ── Resolve map dimensions from preset ──
@@ -280,9 +283,11 @@ export function useSimulation({
     const live = gameStateRef.current;
     const next = concludeRun(baseAccountRef.current, live, harvestResult);
     // An override session concludes in memory only; nothing failed, so no failure line.
-    const ok = persistAccount ? saveAccount(next, live.tick).ok : true;
+    // A tab whose writes stopped after a failed save keeps reporting the run unkept
+    // (review-gate cycle 3): its record is never written, so the screen must say so.
+    const ok = persistAccount ? saveAccount(next, live.tick).ok : !accountSaveFailed;
     setConcludedRun({ account: next, saved: ok });
-  }, [harvestResult, concludedRun, persistAccount]);
+  }, [harvestResult, concludedRun, persistAccount, accountSaveFailed]);
 
   const handleWakeNewWorld = useCallback(() => {
     if (!concludedRun) return;

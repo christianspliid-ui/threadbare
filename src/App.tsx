@@ -118,6 +118,9 @@ function App() {
   // the earlier record that is still on disk (review-gate cycle 2).
   const [accountPersists, setAccountPersists] = useState(() =>
     viewParam !== 'game' && !isAccountOverride(loadedAccount.source));
+  // Writes stopped by a failed save are not an override: every later run in this tab is
+  // reported unkept too, so the harvest screen never claims a record it did not write.
+  const [accountSaveFailed, setAccountSaveFailed] = useState(false);
   // A remembered run wakes the next world on the seed it left, after a reload too;
   // the dev quick-start routes keep 42 so their evidence stays comparable.
   const [seed, setSeed] = useState(() =>
@@ -164,7 +167,10 @@ function App() {
     const size = new URLSearchParams(window.location.search).get('size');
     const query = size ? `?size=${encodeURIComponent(size)}` : '';
     window.history.replaceState(null, '', window.location.pathname + query + window.location.hash);
-    if (!saved) setAccountPersists(false);
+    if (!saved) {
+      setAccountPersists(false);
+      setAccountSaveFailed(true);
+    }
     // A `?account=fresh` / `?account=sample` session stays a session: it never writes storage.
     setLoadedAccount(prev => ({ account, source: isAccountOverride(prev.source) ? prev.source : 'stored' }));
     setSeed(account.nextWorldSeed);
@@ -222,6 +228,7 @@ function App() {
         onExitToTitle={handleExitToTitle}
         account={loadedAccount.account}
         persistAccount={accountPersists}
+        accountSaveFailed={accountSaveFailed}
         onWakeNewWorld={handleWakeNewWorld}
       />
     );
@@ -285,6 +292,7 @@ function App() {
         // THR-1813: the dev routes stay deterministic — only `?account=sample` shapes them.
         shapeWorldFromAccount={!isDevQuickStart || loadedAccount.source === 'sample_param'}
         persistAccount={accountPersists}
+        accountSaveFailed={accountSaveFailed}
         onWakeNewWorld={handleWakeNewWorld}
       />
     );

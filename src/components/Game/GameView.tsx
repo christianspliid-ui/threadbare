@@ -294,6 +294,8 @@ interface GameViewProps {
   shapeWorldFromAccount?: boolean;
   /** THR-1813 — write the concluded record to storage (false for `?account=` override sessions). */
   persistAccount?: boolean;
+  /** THR-1813 — an earlier run in this tab failed to save, so this run is not kept either. */
+  accountSaveFailed?: boolean;
   /** THR-1813 — *Wake in a new world*: the concluded record goes up to `App`. */
   onWakeNewWorld?: (account: import('../../types/account').AccountRecord, saved: boolean) => void;
 }
@@ -347,7 +349,7 @@ function matchesTieredEncounterAction(
 const EMPTY_UNIFIED_ACTIONS: readonly import('../../types/unifiedAction').UnifiedAction[] = [];
 const EMPTY_ENCOUNTER_NOTIFICATIONS: readonly EncounterNotification[] = [];
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype, account, shapeWorldFromAccount, persistAccount, onWakeNewWorld }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype, account, shapeWorldFromAccount, persistAccount, accountSaveFailed, onWakeNewWorld }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -378,7 +380,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     concludedRun, baseAccount, endAgeNow, previewRunEnd,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime, clockEverRan, arrivalBeatOffered, noteClockRunSource,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype, account, shapeWorldFromAccount, persistAccount, onWakeNewWorld });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype, account, shapeWorldFromAccount, persistAccount, accountSaveFailed, onWakeNewWorld });
 
   // ── Debug bridge: the account record (THR-1813) ──
   useEffect(() => {

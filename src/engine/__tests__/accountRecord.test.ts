@@ -212,6 +212,9 @@ describe('THR-1813 — a world built from the record', () => {
     const next = newWorld(record);
     expect(next.echoDefinitions.map(d => d.id).sort()).toEqual(record.echoDefinitions.map(d => d.id).sort());
     expect(next.worldSoul.fundament.cycleCount).toBe(record.fundament.cycleCount);
+    // The next world is run 2, so its harvest reads "Cycle 2 complete" (review-gate cycle 3).
+    expect(next.cycle).toBe(record.cycleCount + 1);
+    expect(newWorld().cycle).toBe(1);
     const shaped = getTraces().find(t => t.category === 'account.world_shaped') as { echoesLoaded: number } | undefined;
     expect(shaped?.echoesLoaded).toBe(record.echoDefinitions.length);
 

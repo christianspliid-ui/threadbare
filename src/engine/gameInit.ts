@@ -587,6 +587,10 @@ export function initializeGameStateFromIdentity(
     const live = liveEchoes(carried);
     result.state.echoDefinitions = live.map(e => ({ ...e.def }));
     result.state.echoStates = live.map(e => ({ ...e.state }));
+    // The world that wakes is the account's next run, so the cycle counts on across worlds:
+    // the harvest reads "Cycle N complete" and the run's echoes and chronicle volume carry
+    // its number (review-gate cycle 3; `transitionToNewCycle` no longer advances it).
+    result.state.cycle = carried.cycleCount + 1;
     result.state.worldSoul = {
       ...result.state.worldSoul,
       fundament: { ...result.state.worldSoul.fundament, cycleCount: carried.fundament.cycleCount },

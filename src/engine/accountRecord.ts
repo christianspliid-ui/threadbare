@@ -195,8 +195,9 @@ export function concludeRun(account: AccountRecord, state: GameState, harvest: H
     ...harvest.cosmicEchoCandidates.map(c => c.echoDefinition),
     ...(harvest.cardEcho ? [harvest.cardEcho] : []),
   ];
-  // Every world starts at cycle 1 and worldgen reuses node ids, so a harvest's
-  // echo ids (`echo_1_<nodeId>`) repeat across runs. Stamping the run number makes
+  // Worldgen reuses node ids, and a world built without the account (a dev route, or a
+  // wake after a failed save) starts at cycle 1 again, so a harvest's echo ids
+  // (`echo_<cycle>_<nodeId>`) can repeat across runs. Stamping the run number keeps
   // them unique in the record, so a new echo is never mistaken for a carried one.
   const runTag = `run${account.cycleCount + 1}_`;
   const seen = new Set(carriedDefs.map(d => d.id));
