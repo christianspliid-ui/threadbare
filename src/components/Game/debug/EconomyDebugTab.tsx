@@ -26,6 +26,9 @@ interface PurseRow {
   upkeepPaid: number;
   unpaid: number;
   brokeSince: number | null;
+  /** THR-1932 — fealty paid in from vassals / out to a liege on the last pay day. */
+  fealtyIn: number;
+  fealtyOut: number;
 }
 
 /** THR-1931 — every faction the purse has reached, richest first. Numbers are fine here (debug). */
@@ -49,6 +52,8 @@ function PursesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
         upkeepPaid: day?.upkeepPaid ?? 0,
         unpaid: day?.armiesUnpaid.length ?? 0,
         brokeSince: day?.brokeSinceTick ?? null,
+        fealtyIn: day?.fealtyIn ?? 0,
+        fealtyOut: day?.fealtyOut ?? 0,
       });
     }
     return out.sort((a, b) => b.wealth - a.wealth || a.id.localeCompare(b.id));
@@ -63,7 +68,7 @@ function PursesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
           <tr style={{ color: 'var(--text-tertiary)' }}>
             <th style={{ ...cell, textAlign: 'left' }}>faction</th><th style={cell}>wealth</th><th style={{ ...cell, textAlign: 'left' }}>means</th>
             <th style={cell}>tax</th><th style={cell}>yield</th><th style={cell}>rent</th><th style={cell}>tolls</th><th style={cell}>guild</th><th style={cell}>cut in/out</th>
-            <th style={cell}>upkeep paid/owed</th><th style={cell}>unpaid</th><th style={cell}>broke since</th>
+            <th style={cell}>upkeep paid/owed</th><th style={cell}>unpaid</th><th style={cell}>broke since</th><th style={cell}>fealty in/out</th>
           </tr>
         </thead>
         <tbody>
@@ -81,6 +86,7 @@ function PursesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
               <td style={cell}>{r.upkeepPaid.toFixed(1)}/{r.upkeepOwed.toFixed(1)}</td>
               <td style={cell}>{r.unpaid}</td>
               <td style={cell}>{r.brokeSince ?? '—'}</td>
+              <td style={cell}>{r.fealtyIn.toFixed(2)}/{r.fealtyOut.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>

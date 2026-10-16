@@ -6623,7 +6623,7 @@ export const CONTRACTS: readonly Contract[] = [
     },
     // THR-1932: the crown phase adds fealtyOut / fealtyIn to purseLastDay after the pay day.
     writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts', 'src/engine/phaseFactionActions.ts', 'src/engine/crown.ts'],
-    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/components/Game/FactionSheet.tsx', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/engine/crown/eligibility.ts'],
+    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/components/Game/FactionSheet.tsx', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/components/Game/debug/EconomyDebugTab.tsx'],
     verifiedLive: {
       date: '2026-10-16',
       evidence:

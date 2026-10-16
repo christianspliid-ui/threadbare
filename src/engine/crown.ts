@@ -432,6 +432,9 @@ export function loyaltyDeltas(
 
   for (const e of graph.getEdgesByType('controls')) {
     if (e.properties.takenFrom !== vassalId) continue;
+    // The liege's own army taking the town (a siege that ran on after a coerced oath) is
+    // not a failure to defend it; holding_lost is a third party's conquest.
+    if (e.source === liegeId) continue;
     const at = e.properties.establishedTick;
     if (typeof at === 'number' && at > sinceTick && at <= world.tick) {
       deltas.push({ reason: 'holding_lost', amount: -LOYALTY_FAIL_DEFENCE });

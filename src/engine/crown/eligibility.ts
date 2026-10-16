@@ -241,7 +241,9 @@ export function buildCrownWorld(graph: WorldGraph, tick: number, projection: Rea
     }
     const reached = [...out].filter(id => isSwearableKind(graph.getNode(id))).sort();
     reach.set(R, reached);
-    candidates.set(R, reached.filter(id => maySwear(graph, graph.getNode(id))));
+    // A pair on the re-swear cooldown is not a candidate: can_court must be true only
+    // when seek_fealty has someone it may court, or the action wins the draw and does nothing.
+    candidates.set(R, reached.filter(id => maySwear(graph, graph.getNode(id)) && !onReswearCooldown(graph, id, R, tick)));
   }
 
   return {

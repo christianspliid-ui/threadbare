@@ -252,6 +252,30 @@ describe('the crown phase — loyalty, breaks and the tax', () => {
     expect(coercePool(w2, R).map(c => c.id)).not.toContain(GUILD);
   });
 
+  it('a pair on the re-swear cooldown is not a candidate, so can_court never passes for nothing', () => {
+    const g = world();
+    g.addEdge({ id: 'e_rel_g', source: GUILD, target: R, type: 'relates_to', properties: { sentiment: -0.3, oathBrokenTick: 24 } });
+    g.addEdge({ id: 'e_hostile', source: R2, target: R, type: 'hostile_to', properties: {} });
+    g.addNode({ id: 'faction_x', name: 'X', type: 'actor', properties: { actorType: 'faction', factionClass: 'realm' } });
+    g.addEdge({ id: 'e_r2_sworn', source: R2, target: 'faction_x', type: 'sworn_to', properties: { kind: 'persuaded', taxShare: 0.3, loyalty: 0.7, swornTick: 0 } }); // R2 cannot swear
+    const during = buildCrownWorld(g, 36, projection());
+    expect(during.candidates.get(R)).not.toContain(GUILD);
+    expect(canCourt(during, R)).toBe(false);
+    const after = buildCrownWorld(g, 24 + 20 * PURSE_CYCLE_TICKS, projection());
+    expect(after.candidates.get(R)).toContain(GUILD);
+  });
+
+  it('a town the liege itself takes from its vassal is not a failure to defend', () => {
+    const g = world();
+    swearOathForDebug(stateAt(g, 24), R2, R, 'coerced');
+    g.addEdge({ id: 'e_taken_by_liege', source: R, target: TOWN_C, type: 'controls', properties: { via: 'conquest', takenFrom: R2, establishedTick: 30 } });
+    const w = buildCrownWorld(g, 36, projection());
+    expect(loyaltyDeltas(w, R2, R, 24).some(d => d.reason === 'holding_lost')).toBe(false);
+    g.addNode({ id: 'faction_z', name: 'Z', type: 'actor', properties: { actorType: 'faction', factionClass: 'realm' } });
+    g.addEdge({ id: 'e_taken_by_third', source: 'faction_z', target: TOWN_B, type: 'controls', properties: { via: 'conquest', takenFrom: R2, establishedTick: 30 } });
+    expect(loyaltyDeltas(buildCrownWorld(g, 36, projection()), R2, R, 24).some(d => d.reason === 'holding_lost')).toBe(true);
+  });
+
   it('a big realm vassal breaking away rebels: hostile both ways', () => {
     const g = world();
     setDay(g, R2, 8, 'Comfortable');
