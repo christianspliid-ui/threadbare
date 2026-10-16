@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-15
+last_validated_against: 2026-10-16
 ---
 
 # Pull Work
@@ -840,6 +840,7 @@ git push -u origin HEAD
 - **No close keyword in the WIP commit, and no PR yet.** Refer to the issue as a bare `THR-XXX`. The closing commit, which carries the keyword on its own line, comes later as a **new commit on top**. Do not amend the WIP commit: it is already pushed, and amending it means a force-push.
 - **Why it has to happen here.** A session killed by a usage limit gets no chance to post a checkpoint comment, so THR-632's protocol never fires. THR-1521's run (2026-09-22) died 26 minutes in with the **whole slice written and nothing committed**: 39 files in a local worktree, zero commits on its branch, no push. Eight later runs died within seconds on the same limit, and the stranded diff was found by hand ~19.5 h later, long past the reaper's 180-min idle guard. A pushed WIP branch survives both the dead session and the reaper, and Step 1.8's stranded-work probe finds it by name.
 - **Push again when the Done-when tests and closeout docs are written, before the full gate run** (the same commit shape, a second `wip(thr-XXX)` commit on top). One WIP push is not enough when a large test file is written after it: THR-1538's run (2026-09-24, impediment #1063) pushed its implementation, then died with a 606-line test file and all its closeout docs still uncommitted. Step 1.8 found them, but only after ~4 h. Each new chunk of work gets pushed before the next long gate run.
+- **On a batch ticket, push after each unit compiles, not once at the end** (an encounter batch, a set of content files, a multi-slice ticket). The rule above fires "once the implementation is written", and a factory batch writes for half an hour before that moment. THR-1840's run (2026-10-14 23:31Z, impediment #1198) authored seven compiled encounters, 70 files and about 23,000 lines, then ended at 00:02Z with only its brief pushed; the next run's stranded-work probe found the slice 14 minutes later. A `wip(thr-XXX)` commit per finished unit costs seconds.
 - **Docs-track tickets may skip it.** Their gates take seconds, so the window it protects barely exists. Every code-track ticket pushes.
 - **Fail-soft:** if the push fails (network, auth), log one line and carry on to the gates. The local commit alone still survives a killed session, and Step 1.8's worktree probe finds it.
 

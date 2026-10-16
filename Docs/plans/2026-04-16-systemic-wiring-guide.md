@@ -55,8 +55,10 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 
 | Placeholder | Resolves To | Example |
 |---|---|---|
-| `{name}` | Agent name | "Kael Thornweaver" |
+| `{name}` | Agent name. A verb after a `{name}` subject always takes the suffix — `{name} work{s}` reads "works" whatever the pronouns (THR-1857) | "Kael Thornweaver" |
 | `{they}/{them}/{their}/{s}` | Gendered pronouns | "they/them/their/s" |
+| `{es}` | Verb suffix for a sibilant stem, same rule as `{s}` (THR-1945) | "{they} watch{es}" → "she watches" / "they watch" |
+| `{is}` / `{are}` | Copula agreeing with `{they}` — one token spelled two ways (THR-1810) | "{they} {are} gone" → "he is gone" / "they are gone" |
 | `{They}/{Them}/{Their}` | Capitalized pronouns | "They watch..." |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
