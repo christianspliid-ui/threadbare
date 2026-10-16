@@ -89,6 +89,20 @@ describe('name-subject verb agreement (THR-1857)', () => {
     expect('{cast:factor} sign{s} in ink'.match(NOUN_SUBJECT_AGREEMENT)).not.toBeNull();
   });
 
+  it('content lint: {es} only follows a stem that takes "es" (THR-1945)', () => {
+    // `{es}` appends "es" or nothing, so "check{es}" reads "checkes" and "decid{es}"
+    // reads "decid". Write `check{s}` / `decide{s}`; "carry" needs "carries" spelled out.
+    const BAD_ES_STEM = /\b[a-z]*(?:[^a-z]|[^sxzho]|[^cs]h)\{es\}/g;
+    const offenders: string[] = [];
+    for (const { file, text } of dataFiles()) {
+      for (const m of text.matchAll(BAD_ES_STEM)) offenders.push(`${file}: ${m[0]}`);
+    }
+    expect(offenders).toEqual([]);
+    expect('check{es}'.match(BAD_ES_STEM)).not.toBeNull();
+    expect('bath{es}'.match(BAD_ES_STEM)).not.toBeNull();
+    expect('watch{es} wish{es} go{es} press{es} fix{es}'.match(BAD_ES_STEM)).toBeNull();
+  });
+
   it('{es} binds after a name and resolves by pronoun everywhere else (THR-1945)', () => {
     expect(bindNameSubjectVerbs('{name} watch{es} the gate')).toBe('{name} watches the gate');
     expect(bindNameSubjectVerbs('{They} watch{es}')).toBe('{They} watch{es}');

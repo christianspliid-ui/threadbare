@@ -401,7 +401,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         failureMetadata: { reputationDelta: -0.01 },
         narrativeTemplate:
           'Hammer, quench, examine. The cycle repeats until the metal tells {name} it is done — ' +
-          'not until {they} decid{es} it is done. Those are different ending conditions. ' +
+          'not until {they} decide{s} it is done. Those are different ending conditions. ' +
           'Tools made to a deadline and not to the metal\'s will carry their deadline into every ' +
           'job they are used on. ' +
           '{?has_artifact}Working with quality stock and quality tools, the combination closes ' +

@@ -663,7 +663,7 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
           'adjusted again for the specific scarcity of the genuine pieces, adjusted a third time ' +
           'for the reputational cost of the forgeries being on the manifest at all. ' +
           '{?has_faction}The consortium\'s standard is to undervalue on record and overvalue in ' +
-          'memory — {name} write{s} the conservative numbers and carry{es} the real ones.{/has_faction}',
+          'memory — {name} write{s} the conservative numbers and carries the real ones.{/has_faction}',
         successAfterimage:
           'The factor accepts the appraisal without argument, which is a kind of compliment. ' +
           'The forgeries will be handled separately and quietly.',

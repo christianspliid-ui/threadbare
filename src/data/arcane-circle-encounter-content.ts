@@ -2170,7 +2170,7 @@ export const AC_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
         'examination is a sequence of workings calibrated to the candidate\'s ' +
         'current tier, plus the specific precision requirements of the one above it. ' +
         '{name} enters the examination chamber knowing that the examiners are watching ' +
-        'not just the workings but the decisions that precede them: whether {they} check{es} ' +
+        'not just the workings but the decisions that precede them: whether {they} check{s} ' +
         '{their} instruments before proceeding, whether {they} adjust{s} when the first ' +
         'working comes in slightly off-specification, whether {they} know{s} when to stop ' +
         'and recalibrate versus when to continue. ' +
