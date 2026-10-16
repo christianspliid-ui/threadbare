@@ -1417,6 +1417,36 @@ export interface DebugBridge {
   /** THR-1931 — every faction's last pay day, keyed by faction id (empty before tick 12). */
   getPurseLedger: () => Promise<Record<string, unknown>>;
   /**
+   * THR-1932 — every live oath of fealty (`sworn_to`, vassal → liege) with its terms:
+   * `kind` (persuaded | bought | coerced), `taxShare`, `loyalty` (0–1, the reputation
+   * ladder; below 0.2 the oath breaks), `swornTick`, `giftPaid`, `lastLoyaltyDay`
+   * (today's deltas by reason), `recentLosses`, `taxPaidToday`, `taxPaidTotal`.
+   */
+  getOaths: () => Promise<Array<{
+    vassalId: string;
+    liegeId: string;
+    kind: 'persuaded' | 'bought' | 'coerced';
+    taxShare: number;
+    loyalty: number;
+    swornTick: number;
+    giftPaid: number;
+    lastLoyaltyDay: { tick: number; deltas: { reason: string; amount: number }[] } | null;
+    recentLosses: { tick: number; reason: string; amount: number }[];
+    taxPaidToday?: number;
+    taxPaidTotal?: number;
+  }>>;
+  /**
+   * THR-1932 — a faction's place in the crown. `isCrown` is derived (two or more oaths
+   * sworn to it); `ruler` is whoever leads the realm. `null` when the id is not a faction.
+   */
+  getCrown: (factionId: string) => Promise<{ isCrown: boolean; vassals: string[]; liege: string | null; ruler: string | null } | null>;
+  /**
+   * THR-1932 — verification lever: write an oath through the crown's own writer (exact
+   * node ids) and bump structure. `false` when the one-layer rule, the never-swear
+   * lists, or a non-realm liege forbid it.
+   */
+  swearFealty: (vassalId: string, liegeId: string, kind?: 'persuaded' | 'bought' | 'coerced') => Promise<boolean>;
+  /**
    * THR-1155 — hand a town to a Realm the way a won siege does, and report what moved:
    * `{ locationId, fromFactionId, toFactionId, structuralCacheVersion }`, or `null` when
    * either ref does not resolve (one `console.warn`, never a throw).

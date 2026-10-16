@@ -489,6 +489,8 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
   // Faction succession
   will_succeed: RELATIONAL('The faction sheet'),
   leads: RELATIONAL('The faction sheet', 'Authoritative for the seated leader when present.'),
+  // Fealty (THR-1932)
+  sworn_to: RELATIONAL("Both factions' sheets (Fealty section, Crown line) and the map's crown outline", 'A Crown is derived from these edges, never stored.'),
   // Rival schemes
   sponsors_scheme: RELATIONAL('The target location, and the sponsor\'s sheet'),
 };

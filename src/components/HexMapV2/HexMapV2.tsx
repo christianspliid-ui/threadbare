@@ -1549,6 +1549,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (borderRealmMesh) {
             borderRealmMesh.geometry.dispose();
             (borderRealmMesh.material as THREE.Material).dispose();
+            // THR-1932 — the crown outline is the border's child.
+            for (const child of borderRealmMesh.children) {
+              if (child instanceof THREE.Mesh) {
+                child.geometry.dispose();
+                (child.material as THREE.Material).dispose();
+              }
+            }
           }
           // Dispose capital markers
           if (capitalMarkers) {

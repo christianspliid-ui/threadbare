@@ -91,6 +91,8 @@ Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staple
 
 Every **faction keeps a purse**: the towns, places, borders, tolls and guild work it holds pay it daily, and its armies cost upkeep. Raising an army costs coin; an army its purse cannot pay deserts. The faction sheet's **Purse** shows its Means in words.
 
+A **realm courts fealty**: it forces a faction it besieged or took a town from, else persuades or buys one with protection, standing and a gift. A vassal pays its liege three tenths of its day income; its loyalty, on the reputation words, breaks at Distrusted, and a big realm breaking away rebels. A realm with two oaths is a **Crown** (THR-1932).
+
 ## The World in Company
 
 Mortals **band into companies** (never "parties" in player-facing prose) that travel and fall apart together. A company holds a single scalar, **cohesion**, read only as prose: **bound · holding · frayed · breaking**. Companies form from colocated mortals, take encounters a lone agent cannot, and resolve each step through whichever companion best suits that step's Reach.

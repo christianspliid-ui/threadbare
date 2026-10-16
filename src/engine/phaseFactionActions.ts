@@ -58,6 +58,13 @@ import { resolveFactionMemberWork } from './factionMemberWork';
 import type { FactionStirDissentTrace } from '../types/factionAction';
 import { getFactionMembershipEdges } from './graphQueries';
 import { FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS } from '../data/faction-constants';
+import type { ChronicleEntry } from '../types/narrative';
+import type { SimulationRuntime } from './simulationRuntime';
+import { ensureRealmProjection, touchStructure } from './simulationRuntime';
+import { buildRealmProjection } from './realmProjection';
+import { canCourt, crownActive, executeSeekFealty } from './crown';
+import { buildCrownWorld, type CrownWorld } from './crown/eligibility';
+import { SEEK_FEALTY_WEIGHT, SEEK_FEALTY_COOLDOWN_TICKS } from '../data/crown-constants';
 
 // ─── PRNG (mulberry32 — same as all engine modules) ──────────────────────────
 
@@ -132,7 +139,49 @@ export const FACTION_ACTION_TEMPLATES: ReadonlyMap<FactionActionType, FactionAct
     minMembers: 1,
     ambitionAffinity: ['revenge'],
   }],
+  // THR-1932 — last in the table, so the noise draws of the six above are unchanged for
+  // every faction that cannot court (and for every faction when the crown is off).
+  ['seek_fealty', {
+    type: 'seek_fealty',
+    name: 'Seek Fealty',
+    treasuryCost: 0,
+    cooldownTicks: SEEK_FEALTY_COOLDOWN_TICKS,
+    // Realms lose members (THR-1918); a realm with none still courts.
+    minMembers: 0,
+    ambitionAffinity: ['territorial_expansion', 'defensive_consolidation'],
+    prerequisite: { type: 'can_court' },
+    weight: SEEK_FEALTY_WEIGHT,
+  }],
 ]);
+
+/**
+ * The crown's view of the world for one faction-action sweep (THR-1932), built lazily on
+ * the first realm that asks and dropped after any `seek_fealty` runs, so later realms in
+ * the same sweep see its writes.
+ */
+interface CrownSweep {
+  runtime?: SimulationRuntime;
+  world: CrownWorld | null;
+  built: boolean;
+  chronicle: ChronicleEntry[];
+}
+
+function crownWorldFor(state: GameState, sweep: CrownSweep | undefined): CrownWorld | null {
+  if (!sweep || !crownActive()) return null;
+  if (!sweep.built) {
+    sweep.built = true;
+    try {
+      const projection = sweep.runtime
+        ? ensureRealmProjection(sweep.runtime, state.graph, state.tiles, state.tick)
+        : buildRealmProjection(state.graph, state.tiles ?? []);
+      sweep.world = buildCrownWorld(state.graph, state.tick, projection);
+    } catch (err) {
+      console.warn('[seek_fealty] crown world unavailable this sweep', err);
+      sweep.world = null;
+    }
+  }
+  return sweep.world;
+}
 
 // ─── Leader Personality Bias ──────────────────────────────────────────────────
 
@@ -226,9 +275,16 @@ function checkPrerequisite(
   state: GameState,
   factionId: string,
   prereq: FactionActionTemplate['prerequisite'],
+  sweep?: CrownSweep,
 ): boolean {
   if (!prereq) return true;
   switch (prereq.type) {
+    case 'can_court': {
+      if (!crownActive()) return false;
+      const node = state.graph.getNode(factionId);
+      if (node?.properties.factionClass !== 'realm') return false;
+      return canCourt(crownWorldFor(state, sweep), factionId);
+    }
     case 'no_active_conclave': {
       const node = state.graph.getNode(factionId);
       return !node?.properties.activeConclave;
@@ -783,6 +839,7 @@ function scoreEligibleActions(
   ambitionType: FactionAmbitionType | null,
   leaderBias: Partial<Record<FactionActionType, number>>,
   rng: () => number,
+  sweep?: CrownSweep,
 ): ActionCandidate[] {
   const treasury = readWealth(faction.properties);
   const memberCount = getMemberCount(state, faction.id);
@@ -797,7 +854,7 @@ function scoreEligibleActions(
     const ticks = ticksSinceActionType(history, template.type, state.tick);
     if (ticks < template.cooldownTicks) continue;
     // Prerequisite check
-    if (!checkPrerequisite(state, faction.id, template.prerequisite)) continue;
+    if (!checkPrerequisite(state, faction.id, template.prerequisite, sweep)) continue;
 
     // Base weight: ambition affinity
     const ambitionBonus = ambitionType && template.ambitionAffinity.includes(ambitionType) ? 1.5 : 1.0;
@@ -806,7 +863,7 @@ function scoreEligibleActions(
     // Tiny noise for deterministic tie-breaking
     const noise = 0.9 + rng() * 0.2;
 
-    candidates.push({ template, weight: ambitionBonus * bias * noise });
+    candidates.push({ template, weight: (template.weight ?? 1) * ambitionBonus * bias * noise });
   }
 
   return candidates;
@@ -825,7 +882,7 @@ function selectWeighted(candidates: ActionCandidate[], rng: () => number): Facti
 
 // ─── Main Phase ───────────────────────────────────────────────────────────────
 
-export function phaseFactionActions(state: GameState): Partial<GameState> {
+export function phaseFactionActions(state: GameState, runtime?: SimulationRuntime): Partial<GameState> {
   // THR-400 — dissent decay + threshold check + derived-flag refresh run every
   // tick, regardless of FACTION_ACTION_INTERVAL. This is intentional: the
   // player's verbs need responsive UI feedback (the drawer should not show a
@@ -851,9 +908,10 @@ export function phaseFactionActions(state: GameState): Partial<GameState> {
   const factionNodes = state.graph.getNodesByType('actor')
     .filter(n => n.properties.actorType === 'faction');
 
+  const sweep: CrownSweep = { runtime, world: null, built: false, chronicle: [] };
   for (const faction of factionNodes) {
     try {
-      processFaction(state, faction);
+      processFaction(state, faction, sweep);
     } catch {
       // Fail-soft: skip this faction, don't crash the tick loop
     }
@@ -864,9 +922,10 @@ export function phaseFactionActions(state: GameState): Partial<GameState> {
   // action rolls above, and its own interval gate inside the sweep.
   spawnFactionBands(state, mulberry32(state.seed + state.tick * 97));
 
-  return memberWorkEvents.length > 0
-    ? { tickEvents: [...state.tickEvents, ...memberWorkEvents] }
-    : {};
+  const patch: Partial<GameState> = {};
+  if (memberWorkEvents.length > 0) patch.tickEvents = [...state.tickEvents, ...memberWorkEvents];
+  if (sweep.chronicle.length > 0) patch.chronicleEntries = [...state.chronicleEntries, ...sweep.chronicle];
+  return patch;
 }
 
 /**
@@ -1021,7 +1080,7 @@ function advanceAllConclaves(state: GameState): void {
   }
 }
 
-function processFaction(state: GameState, faction: GraphNode): void {
+function processFaction(state: GameState, faction: GraphNode, sweep?: CrownSweep): void {
   // Advance any active conclave first
   if (faction.properties.activeConclave) {
     advanceConclave(state, faction);
@@ -1045,7 +1104,7 @@ function processFaction(state: GameState, faction: GraphNode): void {
   const rng = mulberry32(state.seed + state.tick * 53 + hashString(faction.id));
 
   // Score and select an action
-  const candidates = scoreEligibleActions(state, faction, history, ambitionType, leaderBias, rng);
+  const candidates = scoreEligibleActions(state, faction, history, ambitionType, leaderBias, rng, sweep);
 
   if (candidates.length === 0) {
     emitTrace({
@@ -1081,6 +1140,21 @@ function processFaction(state: GameState, faction: GraphNode): void {
       record = executeHoldConclave(state, faction, rng); break;
     case 'issue_bounty':
       record = executeIssueBounty(state, faction, rng); break;
+    case 'seek_fealty': {
+      const world = crownWorldFor(state, sweep);
+      if (!world || !sweep) break;
+      const runtime = sweep.runtime;
+      const result = executeSeekFealty(state, faction, world, {
+        onStructure: runtime ? () => touchStructure(runtime) : undefined,
+      });
+      // Any wealth or edge write makes the snapshot stale for the next realm.
+      sweep.built = false;
+      sweep.world = null;
+      if (!result) break;
+      record = result.record;
+      sweep.chronicle.push(...result.chronicle);
+      break;
+    }
   }
 
   if (!record) return;

@@ -28,6 +28,7 @@ import { reportWar } from './armyNotifications';
 import { markMortalDead } from './agentLifecycle';
 import type { RuleOverrideContext } from './effects/ruleOverrideConsumers';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
+import { CROWN_ENABLED } from '../data/crown-constants';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -356,9 +357,14 @@ export function applyConquestOrVacuum(
     outcome = 'taken';
     for (const edge of factionEdges) {
       try {
+        // THR-1932 — the previous holder rides the moved edge, so the crown can read
+        // "a town just taken from it" (coercion, and a vassal's `holding_lost`).
+        const takenFrom = edge.source;
         graph.retargetEdgeSource(edge.id, victorFactionId!);
         graph.updateEdge(edge.id, {
-          properties: { establishedTick: state.tick, via: 'conquest' },
+          properties: CROWN_ENABLED
+            ? { establishedTick: state.tick, via: 'conquest', takenFrom }
+            : { establishedTick: state.tick, via: 'conquest' },
         });
       } catch { /* fail-soft: edge removed mid-aftermath */ }
     }

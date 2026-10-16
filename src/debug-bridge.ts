@@ -2485,6 +2485,42 @@ if (import.meta.env.DEV) {
       }
       return out;
     },
+    /** THR-1932 — every live oath, vassal → liege, with the edge's properties. */
+    getOaths: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { allOathEdges, readOath } = await import('./engine/crown/crownView');
+      return allOathEdges(state.graph).map((e) => ({ vassalId: e.source, liegeId: e.target, ...readOath(e) }));
+    },
+    /** THR-1932 — one faction's place in the crown: is it a Crown, its vassals, its liege, its ruler. */
+    getCrown: async (factionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const node = state.graph.getNode(factionId);
+      if (!node || node.properties.actorType !== 'faction') return null;
+      const { isCrown, vassalsOf, liegeOf, crownRulerOf } = await import('./engine/crown/crownView');
+      return {
+        isCrown: isCrown(state.graph, factionId),
+        vassals: vassalsOf(state.graph, factionId),
+        liege: liegeOf(state.graph, factionId),
+        ruler: crownRulerOf(state.graph, factionId),
+      };
+    },
+    /**
+     * THR-1932 — verification lever: write an oath (vassal → liege realm) through the
+     * crown's own writer and bump structure, so the outline and the sheet can be checked
+     * without waiting for courtship. Returns false when the one-layer rule forbids it.
+     */
+    swearFealty: async (vassalId: string, liegeId: string, kind: 'persuaded' | 'bought' | 'coerced' = 'persuaded') => {
+      const state = _gameStateProvider?.();
+      const runtime = _runtimeProvider?.();
+      if (!state) return false;
+      const { swearOathForDebug } = await import('./engine/crown');
+      const { touchStructure } = await import('./engine/simulationRuntime');
+      return swearOathForDebug(state, vassalId, liegeId, kind, {
+        onStructure: runtime ? () => touchStructure(runtime) : undefined,
+      });
+    },
     getRealmProjection: async () => {
       const state = _gameStateProvider?.();
       const runtime = _runtimeProvider?.();

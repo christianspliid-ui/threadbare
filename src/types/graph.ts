@@ -153,6 +153,9 @@ export type EdgeType =
   // *without* membership (`member_of.reputation` no-ops for non-members). Sparse by
   // construction: minted on first write, pruned by phase 6.6 once it decays to neutral.
   | 'reputation_with' // actor → actor|location: A's standing with B (score 0–1, lastChangedTick)
+  // Fealty (THR-1932) — vassal faction → liege realm. One per vassal, one layer only.
+  // Written ONLY by src/engine/crown.ts (SwornToEdgeProperties in src/engine/crown/types.ts).
+  | 'sworn_to'
   // Rival schemes (THR-66)
   | 'sponsors_scheme';     // rival/notable actor → materialized target node (location it is scheming against; THR-66 rivals, THR-630 notable agendas — edge properties carry family + sponsorKind)
 

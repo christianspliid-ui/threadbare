@@ -7,7 +7,7 @@
 
 **What this is for.** Law 56's second clause requires a chip's referent to be an existing graph object, resolvable in the live world the player is in, and requires the chip's prose to name *that particular object*. This catalog is the list of objects that sentence can be about. THR-1153's anchor-resolution gate checks the declaration forms in the fourth column.
 
-**Totals.** 63 anchorable members across 80 classified.
+**Totals.** 64 anchorable members across 81 classified.
 
 ## How to read the status column
 
@@ -303,6 +303,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 | `issues` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the bounty itself |
 | `sacred_route` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The consecrating actor sheet, and the destination location |
 | `reputation_with` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The counterparty profile — the Location Profile standing row, or the agent Standings section |
+| `sworn_to` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | Both factions' sheets (Fealty section, Crown line) and the map's crown outline |
 | `sponsors_scheme` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The target location, and the sponsor's sheet |
 
 - **`contains`** — Structural edge — containment is map plumbing; anchor the location itself
@@ -332,6 +333,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 - **`issues`** — Anchor the faction and the bounty event node; the edge carries only `expiryTick`.
 - **`sacred_route`** — KNOWN GAP: nothing consumes this edge yet (THR-1184), so a chip naming it would report a write that changes nothing — do not anchor one until a consumer exists.
 - **`reputation_with`** — Anchor the *counterparty*, not the edge: the chip says "reputation with X", so X is what the player clicks through to.
+- **`sworn_to`** — A Crown is derived from these edges, never stored.
 
 ## Stats
 

@@ -18,6 +18,7 @@ import React from 'react';
 import type { WorldGraph } from '../../engine/graph';
 import { readPurseDay, readMeansBand } from '../../engine/factionPurse';
 import { factionPurseView, type PursePart } from '../../engine/factionPurse/purseSentences';
+import { fealtyPurseSentence } from '../../engine/crown/fealtySentences';
 import { Tooltip } from '../shared/Tooltip';
 import { EntityLink } from '../shared/EntityLink';
 
@@ -56,6 +57,8 @@ export function FactionPursePanel({ factionId, graph }: FactionPursePanelProps) 
   const view = factionPurseView(graph, factionId, { band: readMeansBand, day: readPurseDay });
   if (!view) return null;
   const { band, broke } = view;
+  // THR-1932 — one sentence when this faction paid fealty today (words only, no amount).
+  const fealty = fealtyPurseSentence(graph, readPurseDay(graph.getNode(factionId)));
 
   return (
     <div data-testid="faction-purse" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 'var(--text-sm)' }}>
@@ -73,6 +76,11 @@ export function FactionPursePanel({ factionId, graph }: FactionPursePanelProps) 
       {view.income.length > 0 && (
         <span data-testid="faction-purse-income" style={{ color: 'var(--text-secondary)' }}>
           <Parts parts={view.income} />
+        </span>
+      )}
+      {fealty && (
+        <span data-testid="faction-purse-fealty" style={{ color: 'var(--text-secondary)' }}>
+          <Parts parts={fealty} />
         </span>
       )}
       <span data-testid="faction-purse-spending" style={{ color: broke ? 'var(--negative)' : 'var(--text-tertiary)' }}>

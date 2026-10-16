@@ -417,7 +417,7 @@ Predicates are measured on seed 42 medium over 600 ticks unless stated (the deci
 - **Do not let `applyWealthDelta` touch a faction** after this lands; route every faction write through `applyTreasuryDelta` (grep `wealth:` writers under `phaseFactionActions.ts`).
 - **Mercenary companies run dry** after their opening purse (~20 days) and their hosts desert — expected under this plan. Who hires a free company is a follow-up ([mercenary hire](https://linear.app/threadbare/issue/THR-1939)); do not add an exemption.
 - `FACTION_TREASURY_TRIBUTE_RATE` (`types/factionAction.ts:109`, no readers) stays unread: a quest's tribute is mortal wealth's ([THR-1936](https://linear.app/threadbare/issue/THR-1936)).
-- The crown ([THR-1932](https://linear.app/threadbare/issue/THR-1932)) will change *who* the tax holder is; keep the tax-holder rule in one helper (`factionPurse/income.ts → taxHolderOf`) so the crown replaces one function.
+- ~~The crown ([THR-1932](https://linear.app/threadbare/issue/THR-1932)) will change *who* the tax holder is.~~ Superseded by the crown plan § Systems design 4 (built 2026-10-16): the tax holder of a town does **not** change — fealty sits on top of the landholder's cut, as a share of the vassal's own day income moved by the `crown` phase. `taxHolderOf` stays as written.
 
 ## Intent-judge verdicts
 

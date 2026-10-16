@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 174 |
+| 🟢 LIVE | 178 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 75 |
-| **Total** | **257** |
+| **Total** | **261** |
 
 ## Contracts by producing subsystem
 
@@ -269,6 +269,9 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `congregation-sphere-reaches-faction-page` | Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number. | node-prop: `veneratedSphere`, `formatCongregationSphereLine` | Factions & Succession | 🟢 LIVE | — |
+| `crown-oaths-pay-fealty-tax` | A realm wins another faction's fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then moves FEALTY_TAX_SHARE of the vassal's day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived). | edge: `sworn_to`, `executeSeekFealty`, `runCrownPhase`, `fealtyOut`, `fealtyIn` | Mortal Economy & Prosperity | 🟢 LIVE | — |
+| `crown-outline-to-political-map` | The realm projection carries crownOf (sworn realm → its Crown), derived from sworn_to on every rebuild; the fingerprint includes the sworn_to pairs so an oath made or broken without a structural bump is traced. BorderMesh draws one outer line, in the Crown's ink, around the union of a Crown's hexes and its sworn realms' (a guild-only Crown draws none), and the Held-by line adds "which owes fealty to <liege>, a Crown". | module-export: `buildCrownOf`, `crownHexes`, `outlinedCrowns` | World Generation, Terrain & Places | 🟢 LIVE | — |
+| `crown-protected-holdings-to-war-aims` | What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933) reads this one helper; until that lands, the Oaths debug table and the faction sheet read the oaths it is built from. No surface says a Crown defends its vassals before the defence rule ships (Law 45). | module-export: `protectedHoldingsOf`, `vassalsOf`, `liegeOf` | War, Armies & Battles | 🟢 LIVE | — |
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `guild-social-templates-reach-shared-members` | Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there. | function: `getSharedFactionSocialTemplates`, `socialTemplateIds` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -376,6 +379,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `battles-leave-a-record-on-the-ground` | A battle leaves its history on the ground it was fought over, so the place can say where the war was fought: the word Blood-soaked for ten days, and the battle itself in the place's memory for good. | function: `recordBattleFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `binding-registry-reaper-hook` | A siege that razes an undertaking’s bound stage, or a battle that kills its bound commander, breaks the binding loudly instead of silently — the recon (THR-1289) measured battle destruction as the one confirmed live must-persist violation, since the destruction pool never reads persistence in either flavour and the commander kill bypasses the lifecycle and emits nothing at all. Detection sits on the sole node-removal funnel all ~25 deleting call sites pass through, so the same seam covers every other reaper and any reaper not yet written; housekeeping (sublocation dissolution) instead defers on a bound stage, because a chore waits and a story does not. | function: `onNodeRemoved`, `installBindingRemovalHook`, `makeDissolutionHold`, `binding_severed` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
+| `conquest-records-previous-holder` | When a realm takes a town by conquest, the moved controls edge carries takenFrom (the previous holder's id) beside via: conquest and establishedTick. The crown reads it twice: a town taken within OATH_COERCE_WINDOW_DAYS forces the loser's oath, and a vassal that loses a town while sworn loses LOYALTY_FAIL_DEFENCE loyalty (holding_lost). | edge-prop: `takenFrom` | Factions & Succession | 🟢 LIVE | — |
 | `undertaking-remote-anchor` | A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing. | function: `findRemoteAnchors`, `evaluateRemoteAnchorGate`, `commanded_by`, `no_remote_anchor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
 | `war-news-reaches-chronicle` | The war reports itself (THR-1564). Each war writer — an army raised, broken apart or fraying, a battle joined, a siege laid, a battle or siege ended, a town changing hands — calls `reportWar` where the event happens, which judges visibility before the aftermath, builds one line with no numbers and pushes one `TickEvent` into `state.tickEvents`. `phaseNarrative` promotes the lines at the chronicle threshold into `chronicleEntries`, which the Chronicle panel renders. Nothing on this path reads a trace. | function: `reportWar`, `captureBattleForNews`, `battleOutcomeSentence`, `WAR_NEWS_CHRONICLE_SIGNIFICANCE`, `phaseNarrative` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
@@ -467,10 +471,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Agent*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 102 total — 2 write, 3 read, 97 unclassified
+- **Production hits:** 104 total — 2 write, 3 read, 99 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
 - **Read sites:** `src/components/Game/tabs/BondsTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts` +92 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts` +94 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
 ### `ambition-acquisition` — 🟢 LIVE
@@ -1067,6 +1071,17 @@ exit
 - **Other hits:** `src/data/world-scenario.ts`, `src/engine/pilgrimWays.ts`, `src/engine/worldScenarioCensus.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-29: THR-1659 (S2). Browser, 1920×1080, `?view=game&seeded&size=medium&nofog`: `getWorldScenario().congregations` lists three congregations (spirit / darkness / entropy); `openRef('faction', 'faction_def_temple_of_spheres_0', 'sheet')` renders `[data-testid=faction-venerates-line]` = "Venerates Spirit." under the kind chip. A labelled town guild's chip reads `guild` (capitalised by CSS), with no venerates line. Unit tests: `src/components/Game/__tests__/FaithAndFringe.thr1659.test.tsx`.
 
+### `conquest-records-previous-holder` — 🟢 LIVE
+
+- **Intent:** When a realm takes a town by conquest, the moved controls edge carries takenFrom (the previous holder's id) beside via: conquest and establishedTick. The crown reads it twice: a town taken within OATH_COERCE_WINDOW_DAYS forces the loser's oath, and a vassal that loses a town while sworn loses LOYALTY_FAIL_DEFENCE loyalty (holding_lost).
+- **Producer → Consumer:** War, Armies & Battles → Factions & Succession
+- **UL terms:** *Realm*, *Location*
+- **Module:** `src/engine/battleAftermath.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/battleAftermath.ts`
+- **Read sites:** `src/engine/crown.ts`
+- **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts: a controls edge with via conquest, takenFrom faction_1 and establishedTick 100 puts faction_1 in faction_0's coerce pool through tick 160 and out of it at tick 161.
+
 ### `consecrated-pilgrim-way-pools-pilgrimage` — 🟢 LIVE
 
 - **Intent:** A faith-spreading mortal who finishes consecrating a pilgrim way makes that town a pilgrim's destination: the way runs from the congregation of the town's own culture, and the pilgrimage encounter can happen there from the same tick.
@@ -1148,6 +1163,42 @@ exit
 - **Read sites:** `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`
 - **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts`, `src/engine/dominionProjection.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `crown-oaths-pay-fealty-tax` — 🟢 LIVE
+
+- **Intent:** A realm wins another faction's fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then moves FEALTY_TAX_SHARE of the vassal's day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived).
+- **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
+- **UL terms:** *Realm*, *Faction*, *Means*
+- **Module:** `src/engine/crown.ts`
+- **Production hits:** 15 total — 3 write, 4 read, 8 unclassified
+- **Write sites:** `src/engine/crown.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseFactionActions.ts`
+- **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionFealty.tsx`, `src/engine/crown/crownView.ts`, `src/engine/crown/fealtySentences.ts`
+- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/engine/crown/eligibility.ts`, `src/engine/crown/offer.ts`, `src/engine/crown/types.ts`, `src/engine/factionPurse.ts` +3 more
+- **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a two-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege's vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seeds 42, 99 and 7 medium over 1080 ticks: a crown forms on every seed, oath income 15–34% of the crowns' full income at day 60, one-layer held on every tick, no negative wealth.
+
+### `crown-outline-to-political-map` — 🟢 LIVE
+
+- **Intent:** The realm projection carries crownOf (sworn realm → its Crown), derived from sworn_to on every rebuild; the fingerprint includes the sworn_to pairs so an oath made or broken without a structural bump is traced. BorderMesh draws one outer line, in the Crown's ink, around the union of a Crown's hexes and its sworn realms' (a guild-only Crown draws none), and the Held-by line adds "which owes fealty to <liege>, a Crown".
+- **Producer → Consumer:** Factions & Succession → World Generation, Terrain & Places
+- **UL terms:** *Realm*
+- **Module:** `src/engine/crown/crownView.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/realmProjection.ts`
+- **Read sites:** `src/components/HexMapV2/scene/BorderMesh.ts`
+- **Other hits:** `src/engine/crown/crownView.ts`
+- **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts: buildRealmProjection on a graph with a realm sworn to faction_0 returns crownOf {faction_1 → faction_0}, crownHexes is the union of both realms' hexes, and the controls fingerprint changes when the oath is written.
+
+### `crown-protected-holdings-to-war-aims` — 🟢 LIVE
+
+- **Intent:** What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933) reads this one helper; until that lands, the Oaths debug table and the faction sheet read the oaths it is built from. No surface says a Crown defends its vassals before the defence rule ships (Law 45).
+- **Producer → Consumer:** Factions & Succession → War, Armies & Battles
+- **UL terms:** *Realm*
+- **Module:** `src/engine/crown/crownView.ts`
+- **Production hits:** 5 total — 1 write, 3 read, 1 unclassified
+- **Write sites:** `src/engine/crown.ts`
+- **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/debug-bridge.ts`, `src/engine/crown/crownView.ts`
+- **Other hits:** `src/components/shared/HeldByLine.tsx`
+- **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts: with a guild and a realm sworn to faction_0, protectedHoldingsOf(faction_0) is its own town plus the sworn realm's town.
 
 ### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
 
@@ -1538,10 +1589,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Means*, *Prosperity*
 - **Module:** `src/engine/factionPurse.ts`
-- **Production hits:** 9 total — 3 write, 4 read, 2 unclassified
-- **Write sites:** `src/engine/armySpawning.ts`, `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
-- **Read sites:** `src/components/Game/FactionPursePanel.tsx`, `src/components/Game/FactionSheet.tsx`, `src/debug-bridge.ts`, `src/engine/factionTopology.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/wealth.ts`
+- **Production hits:** 11 total — 4 write, 5 read, 2 unclassified
+- **Write sites:** `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
+- **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionPursePanel.tsx`, `src/components/Game/FactionSheet.tsx`, `src/debug-bridge.ts`, `src/engine/factionTopology.ts`
+- **Other hits:** `src/engine/crown/eligibility.ts`, `src/engine/wealth.ts`
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts drives the real runFactionPurse against a graph: a realm holding two towns earns town tax at the pivot, rent per border hex and a held place's yield, and a miners' guild in its town hands it LANDHOLDER_TAX_RATE of its work; with a rival also controlling the town, only the border realm collects (the rival's townTax is 0 — nothing pays twice). A seed-42 medium headless run shows faction_0 at 121 coin by day 10 and every guild above its opening purse.
 
 ### `faction-purse-schism-strain` — 🟢 LIVE
@@ -1550,10 +1601,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Means*
 - **Module:** `src/engine/factionTopology.ts`
-- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
+- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
 - **Write sites:** `src/engine/factionPurse.ts`
 - **Read sites:** `src/engine/factionTopology.ts`, `src/engine/phaseSchismResolution.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionPursePanel.tsx`, `src/components/Game/FactionSheet.tsx`, `src/data/faction-purse-constants.ts`, `src/data/game-config.ts` +1 more
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionPursePanel.tsx`, `src/components/Game/FactionSheet.tsx`, `src/data/faction-purse-constants.ts`, `src/data/game-config.ts` +3 more
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts › the schism strain: computePurseStrain is 0 one day short of the grace, 1 at it, and 0 for a solvent faction.
 
 ### `faction-sphere-aggregate-reaches-battle-aftermath` — 🟢 LIVE
@@ -1669,10 +1720,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Grudge*, *Struck down*, *Scarred*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 32 total — 2 write, 3 read, 27 unclassified
+- **Production hits:** 34 total — 2 write, 3 read, 29 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/data/grievance-prose.ts`, `src/engine/agentDetail.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +22 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +24 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-raises-effect-events` — 🔵 UNVERIFIED-OK
@@ -1824,10 +1875,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 71 total — 2 write, 3 read, 66 unclassified
+- **Production hits:** 74 total — 2 write, 3 read, 69 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +61 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +64 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -1917,10 +1968,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 84 total — 1 write, 2 read, 81 unclassified
+- **Production hits:** 86 total — 1 write, 2 read, 83 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +76 more
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +78 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -2505,20 +2556,20 @@ exit
 - **Producer → Consumer:** Factions & Succession → World Generation, Terrain & Places
 - **UL terms:** *Realm*, *Faction*, *Location*
 - **Module:** `src/engine/realmProjection.ts`
-- **Production hits:** 17 total — 3 write, 5 read, 9 unclassified
+- **Production hits:** 18 total — 3 write, 5 read, 10 unclassified
 - **Write sites:** `src/engine/battleAftermath.ts`, `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/components/Game/hooks/useSimulation.ts`, `src/debug-bridge.ts`, `src/engine/realmProjection.ts`, `src/engine/simulationRuntime.ts`, `src/engine/views/map/realmInk.ts`
-- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/engine/encounterAftermath.ts`, `src/engine/factionPurse.ts`, `src/engine/holdStanding.ts`, `src/engine/orchestrator.ts` +4 more
+- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/engine/encounterAftermath.ts`, `src/engine/factionPurse.ts`, `src/engine/holdStanding.ts`, `src/engine/orchestrator.ts` +5 more
 - **Verdict:** Verified 2026-09-11: THR-1155 slice 2 step 2. Measured live on a generated seed-42 medium world: three Realms claim 375 of 768 tiles (180 / 60 / 135 hexes from 17 / 10 / 6 held towns) and 393 tiles are unclaimed — water and wilderness, which the old domain stamp had no way to express. Retargeting one `controls` edge (loc_10, faction_1 -> faction_0) and bumping moved 17 hexes of border in the next read (60 -> 43 and 180 -> 197) with `builtAt` advancing 0 -> 1: the first time the political map has ever moved. The belt is falsified, not assumed — a sibling test moves the same edge WITHOUT `touchStructure` and asserts the rebuild traces `reason: 'fingerprint'`, and a third asserts a mortal's `controlType: 'strategic'` edge does not move the fingerprint at all, so a stance never rebuilds the border (THR-1448 owns that question). One defect surfaced on the way and is fixed here rather than filed: `stampRealmSeat` cleared a stale seat through `graph.updateEdge`, which MERGES properties (`graph.ts:208`), so `delete properties.role` was undone on the way in and a re-seated Realm carried `role: 'seat'` on two edges — the projection then reported whichever edge order visited last. Cleared in place now, as `phaseSchismResolution` does, with a test that re-seats onto a city and asserts exactly one seat edge. The province border tier and `borders_province` are deleted, not hidden: *draw only what is held*. Tests: `src/engine/__tests__/realmProjection.test.ts` (12), `BorderMesh.test.ts` (12), `RegionLabelOverlay.realm.test.tsx` (4), `regionLabels.test.ts` (18), `GeoBorderMesh.test.ts` (6). Full suite 1215 files / 19888 green; heavy lane 30 files / 202 green; 30-tick seed-42 smoke reached tick 30, 488 agents, 67 events. **Step 3 (conquest) gives this contract its first runtime writer.** `applyConquestOrVacuum` (`battleAftermath.ts`) retargets the faction `controls` edge at a sacked town to the victor's Realm, `touchStructure`s, and re-stamps BOTH courts — the seat rides on the edge, so the naive retarget handed the loser's capital to the victor (measured at step 2: faction_0's seat became loc_10 and faction_1's went null). Entered at the real `phaseBattleTick(state, runtime)`, the projection rebuilds with `reason: 'version'`; the same arm with the runtime withheld rebuilds with `reason: 'fingerprint'`, which is how the threading is proven load-bearing rather than decorative. The four dead `controlled_by` reads are swept onto `controls` and the type stays unregistered — its only writer was a test fixture, and the typecheck ratchet fell 5 when they went, because every one of them was itself a type error. Tests: `src/engine/__tests__/battleAftermath.conquest.test.ts` (13). **Step 6 (the reporting surface) closes the contract on both sides.** A participation tripwire (`factionControls.participation.test.ts`) enumerates every production module under `src/engine` that names the `controls` literal and mutates an edge — 14 of them — and holds a classified disposition for each; an unclassified module fails the test. It caught a writer nobody had counted: `lairEscalation`'s legendary tier upgrade calls `seedMonsterFaction`, which writes a faction -> lair `controls` edge, and the pass bumped only for clearings and reinfestations — so a monster faction taking a lair left the border one rebuild late and the belt firing. Fixed here; the arm primes the projection, drives the real phase, and asserts ['version','version'], falsifying to ['version','fingerprint'] when the bump is removed. On the read side, `getLocationHolder` is the point reader and `HeldByLine` the one rendering of it, on the location profile and the hex chronicle; the faction sheet names a Realm by its headword (the chip read the raw `political` key) and names the town its court sits in. A generated-world arm walks every Location the projection reports held and asserts its sheet names the same Realm — 33 checked, 0 disagreements, which is the headless form of *the sheet and the border cannot drift*. The census instrument reports the political map's shape: realms 3 / domains 3, 40 domain locations, 33 held by their own Realm, 7 ceded to an authored faction at its hall, 0 unheld. Tests: `factionControls.participation.test.ts` (5), `scripts/__tests__/realm-census.test.ts` (8), `HeldByLine.test.tsx` (9), `FactionSheet.realm.test.tsx` (6), plus 4 chronicle and 3 location-profile arms. **Slice 3 part 1 adds the contract's third reader, and the first outside the map.** The `$realm` scene sentinel (`encounterAftermath.ts`) binds a faction-kind aftermath effect field to the Realm claiming the acting agent's hex, read from this same projection through a lazy thunk on `AftermathSceneRefs` — lazy because `ensureRealmProjection` fingerprints every faction `controls` edge per call and almost no effect carries a `$realm`. Reading the projection rather than `getLocationHolder` is the load-bearing choice: a Location's holder may be a guild, an order or a monster faction and the projection contains Realms only, so the map CANNOT return a non-Realm where the point reader would need a remembered `factionClass` filter to be safe. Agreement is asserted rather than assumed, and over a generated world rather than a fixture: a seed-42 medium arm stands a probe at every town the projection reports a Realm holding and checks the sentinel binds that Realm — 33 of 33, 0 disagreements, joining the step-6 sheet arm on the same population so all three readers are pinned to one source. Falsified at 4-of-14 red with `resolveSceneRealm` neutered; the guild, kind-gate and unclaimed-ground arms stay green because they assert UNBOUND, which is what the perturbation produces. Tests: `src/engine/__tests__/encounterAftermath-realm-area-sentinels.test.ts` (14).
 
 ### `receipt-event-band-toast` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 423 total — 1 write, 1 read, 421 unclassified
+- **Production hits:** 426 total — 1 write, 1 read, 424 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +416 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +419 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2847,10 +2898,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 401 total — 1 write, 1 read, 399 unclassified
+- **Production hits:** 404 total — 1 write, 1 read, 402 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +394 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +397 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3182,10 +3233,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 72 total — 3 write, 4 read, 65 unclassified
+- **Production hits:** 75 total — 3 write, 4 read, 68 unclassified
 - **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +60 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/encounterNotificationRuntime.ts`, `src/data/ambition-templates.ts` +63 more
 - **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
@@ -3333,10 +3384,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 283 total — 2 write, 6 read, 275 unclassified
+- **Production hits:** 285 total — 2 write, 6 read, 277 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +270 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +272 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
@@ -3344,10 +3395,10 @@ exit
 - **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 78 total — 1 write, 3 read, 74 unclassified
+- **Production hits:** 82 total — 1 write, 3 read, 78 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +69 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +73 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE
@@ -3356,9 +3407,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 116 total — 2 write, 3 read, 111 unclassified
+- **Production hits:** 119 total — 2 write, 3 read, 114 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +106 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +109 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 

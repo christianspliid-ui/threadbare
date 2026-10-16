@@ -30,6 +30,7 @@ import {
 } from '../../data/realm-content';
 import type { LocationHolder } from '../../engine/realmHolder';
 import type { WorldGraph } from '../../engine/graph';
+import { isCrown, liegeOf } from '../../engine/crown/crownView';
 
 interface HeldByLineProps {
   /** The answer from `getLocationHolder` — `null` renders the unclaimed line. */
@@ -47,6 +48,10 @@ export function HeldByLine({
   onOpenFaction,
   'data-testid': testId = 'held-by-line',
 }: HeldByLineProps) {
+  // THR-1932 — "…, which owes fealty to <liege>, a Crown." Read off `sworn_to`; absent
+  // when the holder owes no one (Law 56).
+  const liegeId = holder && graph ? liegeOf(graph, holder.id) : null;
+  const liegeNode = liegeId && graph ? graph.getNode(liegeId) : undefined;
   return (
     <div data-testid={testId}>
       <ListRow
@@ -90,6 +95,21 @@ export function HeldByLine({
           </span>
         )}
       </ListRow>
+      {liegeId && liegeNode && graph && (
+        <div
+          data-testid="held-by-fealty"
+          style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: '2px' }}
+        >
+          which owes fealty to{' '}
+          <EntityLink
+            id={liegeId}
+            name={liegeNode.name ?? 'its liege'}
+            entityRef={{ kind: 'faction', id: liegeId }}
+            onOpenEntity={onOpenFaction}
+          />
+          {isCrown(graph, liegeId) ? ', a Crown.' : '.'}
+        </div>
+      )}
     </div>
   );
 }

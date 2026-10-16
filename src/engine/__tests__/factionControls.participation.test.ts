@@ -62,6 +62,10 @@ const INVENTORY: Record<string, { disposition: Disposition; why: string }> = {
     disposition: 'reads-only',
     why: 'THR-1631 worldgen past: reads which settlements each Realm holds (seats, neighbour pairs, wonder holders); its addEdge writes participated_in / occurred_at / located_at / member_of / constructed_by / belongs_to, never controls',
   },
+  'crown.ts': {
+    disposition: 'reads-only',
+    why: "THR-1932: reads controls edges (a realm's held towns, a siege's holder, a conquest's takenFrom); its addEdge writes sworn_to / relates_to / hostile_to, never controls, and its sworn_to writes bump through the onStructure hook",
+  },
   'armySpawning.ts': {
     disposition: 'reads-only',
     why: 'reads a faction\'s held towns to place a host; its addEdge writes commanded_by / member_of',

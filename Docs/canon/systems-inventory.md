@@ -105,6 +105,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | `2b.1` | Stakes context | `THR-1727` |
 | `3b` | Notable Agendas | `THR-630` |
 | `6.15` | Dominion | `THR-1748` |
+| `6.6295` | The crown | `THR-1932` |
 | `6.625b` | Companion expiry | `THR-1096` |
 | `6.6355` | Founded places take their people | `THR-1839`, `THR-1849` |
 | `6.637` | Unrest | — |
@@ -177,6 +178,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.62` | Trade Route Decay | — | orchestrator |
 | `6.628` | Holding income | `THR-1428` | orchestrator |
 | `6.629` | Faction purse | `THR-1931` | orchestrator |
+| `6.6295` | The crown | `THR-1932` | orchestrator |
 | `6.625` | Condition Decay | — | orchestrator |
 | `6.625b` | Companion expiry | `THR-1096` | orchestrator |
 | `6.626` | Mastery Trait Decay | — | orchestrator |
@@ -280,6 +282,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `control` (2) | `controlContestationResolver.ts`, `controlEffectSpawn.ts` | `Phase 1`, `Phase 2`, `TB-045`, `THR-518`, `THR-662` |
 | `core` (2) | `core/coreConstants.ts`, `core/coreMechanics.ts` | `THR-542`, `THR-544` |
 | `cosmology` (1) | `cosmology.ts` | — |
+| `crown` (6) | `crown.ts`, `crown/crownView.ts`, `crown/eligibility.ts`, `crown/fealtySentences.ts`, `crown/offer.ts`, `crown/types.ts` | `THR-1917`, `THR-1932`, `THR-1934` |
 | `cultural` (4) | `culturalGravity.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | `THR-1798` |
 | `culture` (5) | `cultureFlag.ts`, `cultureFoundationPair.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15`, `THR-1623` |
 | `curator` (1) | `curator.ts` | — |
@@ -457,4 +460,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 109 tick phases · 219 engine domains · 694 modules._
+_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 220 engine domains · 700 modules._

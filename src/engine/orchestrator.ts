@@ -145,6 +145,7 @@ import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
 import { phaseHoldingIncome } from './holdingIncome';
 import { phaseFactionPurse } from './factionPurse';
+import { phaseCrown } from './crown';
 import { buildRealmProjection } from './realmProjection';
 import { phaseSublocations } from './phaseSublocations';
 import { phaseSettlementPromotion } from './phaseSettlementPromotion';
@@ -3768,6 +3769,24 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     phaseEventCounts['faction_purse'] = r.eventDelta;
   } catch {
     // fail-soft: a faction's purse never stops the world turning (NFP #4)
+  }
+
+  // Phase 6.6295: The crown (THR-1932). Every oath's day — loyalty, breaks and
+  // rebellions, then the fealty tax — right after the purse has paid each vassal's own
+  // soldiers, on the same daily gate. A created or removed oath bumps structure (the map
+  // outline reads `sworn_to`); a loyalty edit does not.
+  try {
+    const getProjection = runtime
+      ? () => ensureRealmProjection(runtime, s.graph, s.tiles, s.tick)
+      : () => buildRealmProjection(s.graph, s.tiles);
+    const r = runInlinePhase('crown', s, () => phaseCrown(s, {
+      getProjection,
+      onStructure: runtime ? () => touchStructure(runtime) : undefined,
+    }));
+    s = r.next;
+    phaseEventCounts['crown'] = r.eventDelta;
+  } catch {
+    // fail-soft: an oath never stops the world turning (NFP #4)
   }
 
   // Phase 6.625: Condition Decay (tick-based removal of transient condition traits)

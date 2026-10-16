@@ -19,6 +19,7 @@ import { getWealthTier } from '../../engine/wealth';
 import { readPurseDay, readMeansBand } from '../../engine/factionPurse';
 import { holdingClause } from '../../engine/factionPurse/purseSentences';
 import { FactionPursePanel } from './FactionPursePanel';
+import { CrownLine, FealtySection } from './FactionFealty';
 import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../data/realm-content';
 import { formatCongregationSphereLine } from '../../data/world-scenario';
 import { durationLabel } from '../../engine/aftermathWords';
@@ -337,6 +338,8 @@ export const FactionSheet = React.memo(function FactionSheet({
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'var(--space-3)' }}>
                 <Section title="Leadership">
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    {/* THR-1932 — the Crown line, only on a Crown (Law 56). */}
+                    {graph && <CrownLine factionId={factionId} graph={graph} />}
                     {summary.leader ? (
                       <MemberRow member={summary.leader} color={themeColor} emphasis="leader" />
                     ) : (
@@ -505,6 +508,16 @@ export const FactionSheet = React.memo(function FactionSheet({
                       <MutedLine>No faction relations recorded.</MutedLine>
                     )}
                   </Section>
+
+                  {/* THR-1932 — Fealty: its liege and standing, or its vassals. Absent on
+                      a faction with neither (Law 56). */}
+                  {graph && (
+                    <FealtySection
+                      factionId={factionId}
+                      graph={graph}
+                      renderSection={(title, body) => <Section title={title}>{body}</Section>}
+                    />
+                  )}
 
                   {actionHistory.length > 0 && (
                     <Section title="Recent Actions">
