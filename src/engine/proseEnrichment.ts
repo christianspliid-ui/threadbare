@@ -854,6 +854,10 @@ export function enrichProse(
   // Reflexive of `them`; the they/them default makes "themselves" the right form.
   result = result.replace(/{themselves}/g, ctx.pronouns.themselves ?? 'themselves');
   result = result.replace(/{s}/g, ctx.pronouns.s);
+  // THR-1945 — `{es}` ("watch{es}", "go{es}") is `{s}` for a sibilant stem. The corpus
+  // authors it and the foreshadowing path resolves it, but this enricher never did, so
+  // it reached the player raw. Same derivation as the copula below.
+  result = result.replace(/{es}/g, ctx.pronouns.s === '' ? '' : 'es');
   // THR-1810 — the copula after the subject pronoun. `{is}` and `{are}` are one token
   // spelled two ways (ambitionProse authors `{is}`, the rite prose `{are}`); both read
   // "is" for he/she and "are" for they. Derived from `s` so every caller's pronoun
