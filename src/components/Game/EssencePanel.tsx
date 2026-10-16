@@ -101,10 +101,10 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
       <div className="flex items-center justify-between">
         <Tooltip id="ui.essence_panel">
           <h2
-            className="font-bold uppercase tracking-widest"
-            style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+            className="font-bold"
+            style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontWeight: 700 }}
           >
-            Divine Essence
+            Divine essence
           </h2>
         </Tooltip>
         <span className="figures-tabular" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>

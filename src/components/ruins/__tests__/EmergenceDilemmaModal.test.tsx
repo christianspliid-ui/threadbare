@@ -106,7 +106,7 @@ describe('EmergenceDilemmaModal — player-facing language (THR-1080)', () => {
 
   it('renders the fate through the display vocabulary in the header', () => {
     render(<EmergenceDilemmaModal gameState={makeState('transformed')} onResolve={vi.fn()} />);
-    expect(screen.getByText(/Emergence Dilemma · Remade/)).toBeTruthy();
+    expect(screen.getByText(/Emergence dilemma · Remade/)).toBeTruthy();
   });
 
   it('says how long is left in words, not ticks', () => {

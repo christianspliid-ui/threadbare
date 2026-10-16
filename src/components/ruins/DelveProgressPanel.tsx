@@ -47,10 +47,8 @@ const HEADER: React.CSSProperties = {
 };
 
 const HEADER_TITLE: React.CSSProperties = {
-  font: 'var(--type-section-label, 700 10px/1.2 var(--font-display, serif))',
-  letterSpacing: '0.08em',
+  font: 'var(--type-section-label, 700 16px/1.2 var(--font-body, sans-serif))',
   color: 'var(--accent-gold, #c9a227)',
-  textTransform: 'uppercase',
 };
 
 const CARD: React.CSSProperties = {
@@ -61,7 +59,7 @@ const CARD: React.CSSProperties = {
 const BEAT_PIPS = (filled: number, total: number): React.CSSProperties => ({ display: 'inline-block' });
 
 const POET: React.CSSProperties = {
-  fontFamily: 'var(--font-display, serif)',
+  fontFamily: 'var(--font-prose, serif)',
   fontStyle: 'italic',
   fontSize: 'var(--text-xs, 11px)',
   color: 'var(--text-primary, #e8dcc8)',
@@ -131,7 +129,7 @@ export function DelveProgressPanel({ gameState, graph, ascendantId, onStateUpdat
   return (
     <div style={PANEL} aria-label="Active delves panel">
       <div style={HEADER}>
-        <span style={HEADER_TITLE}>Active Delves</span>
+        <span style={HEADER_TITLE}>Active delves</span>
         <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{visibleDelves.length} in progress</span>
       </div>
 

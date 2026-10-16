@@ -103,10 +103,8 @@ const BLOCK: React.CSSProperties = {
 };
 
 const HEADER: React.CSSProperties = {
-  font: '700 10px/1.2 var(--font-display, serif)',
+  font: '700 16px/1.2 var(--font-body, sans-serif)',
   color: 'var(--accent-gold, #c9a227)',
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
   marginBottom: '6px',
 };
 
@@ -146,9 +144,7 @@ const MARK_CHIP: React.CSSProperties = {
 };
 
 const MARK_TAG: React.CSSProperties = {
-  font: '700 9px/1.2 var(--font-display, serif)',
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
+  font: '700 16px/1.2 var(--font-body, sans-serif)',
 };
 
 const MARK_SENTENCE: React.CSSProperties = {

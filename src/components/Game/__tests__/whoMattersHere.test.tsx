@@ -55,7 +55,7 @@ describe('NotableLine — the settlement page (THR-1655)', () => {
 
   it('renders the chip, the name, and one sentence built from the clauses', () => {
     render(<NotableLine notable={notable} />);
-    expect(screen.getByTestId('notable-chip').textContent).toBe('notable');
+    expect(screen.getByTestId('notable-chip').textContent).toBe('Notable');
     expect(screen.getByTestId('settlement-notable-sentence').textContent).toBe(
       "Holds the Tanner's Yard. At odds with Kael Thornweaver. Knows something about Ysolde Vane.",
     );

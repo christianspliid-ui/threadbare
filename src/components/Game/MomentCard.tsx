@@ -55,10 +55,9 @@ function ChipRow({ chip, onSelectAgent }: { chip: MomentCardChip; onSelectAgent?
     <span
       data-testid={`moment-chip-category-${chip.id}`}
       style={{
-        fontFamily: 'var(--font-display)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         fontSize: 'var(--text-xs)',
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
         color,
       }}
     >
@@ -186,10 +185,9 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
             <div
               data-testid="moment-card-title"
               style={{
-                fontFamily: 'var(--font-display)',
+                fontFamily: 'var(--font-body)',
+                fontWeight: 700,
                 fontSize: 'var(--text-xs)',
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
                 color: 'var(--text-tertiary)',
               }}
             >
@@ -227,10 +225,9 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
                 <span
                   data-testid="moment-card-band-word"
                   style={{
-                    fontFamily: 'var(--font-display)',
+                    fontFamily: 'var(--font-body)',
+                    fontWeight: 700,
                     fontSize: 'var(--text-sm)',
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
                     color: accent,
                   }}
                 >
@@ -247,7 +244,7 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
         <p
           data-testid="moment-card-opening"
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-base)',
             color: 'var(--text-primary)',
             margin: 0,

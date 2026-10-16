@@ -246,7 +246,7 @@ function AgendaLine({ row }: { row: NotableAgendaRow }) {
         </div>
       )}
       <div className="mt-0.5 flex items-center gap-2">
-        <span className="uppercase tracking-wider" style={{ fontSize: '0.6rem', color }}>
+        <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color }}>
           {row.familyLabel}
         </span>
         <div className="flex gap-1" aria-hidden="true">
@@ -269,29 +269,26 @@ function AgendaLine({ row }: { row: NotableAgendaRow }) {
         </div>
         {row.tugGated && !done && !failed && (
           <span
-            className="uppercase tracking-wider"
-            style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)' }}
+            style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}
           >
             Tug-gated
           </span>
         )}
         {row.contested && !done && !failed && (
           <span
-            className="uppercase tracking-wider"
-            style={{ fontSize: '0.6rem', color: 'var(--color-warning, #d9a441)' }}
+            style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--color-warning, #d9a441)' }}
           >
             Contested
           </span>
         )}
         {done && (
-          <span className="uppercase tracking-wider" style={{ fontSize: '0.6rem', color }}>
+          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color }}>
             Done
           </span>
         )}
         {failed && (
           <span
-            className="uppercase tracking-wider"
-            style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)', textDecoration: 'line-through' }}
+            style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', textDecoration: 'line-through' }}
           >
             Failed
           </span>

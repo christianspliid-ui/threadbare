@@ -99,10 +99,10 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
           <h2
             className="truncate"
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               fontSize: 'var(--text-base)',
               color: entry.tierColor,
-              letterSpacing: '0.03em',
             }}
           >
             {entry.name}
@@ -197,10 +197,8 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
                 <span
                   data-testid="codex-effect-badge"
                   style={{
-                    fontSize: '0.55rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.02em',
-                    textTransform: 'uppercase',
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 700,
                     padding: '0.05rem 0.35rem',
                     borderRadius: '3px',
                     color: '#fff',
@@ -304,9 +302,8 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
           style={{
             fontSize: 'var(--text-xs)',
             color: entry.tierColor,
-            fontFamily: 'var(--font-display)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
           }}
         >
           {entry.tierName}

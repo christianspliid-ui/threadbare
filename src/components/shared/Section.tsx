@@ -23,11 +23,11 @@ function SectionLabel({ label, gold, tier }: { label: string; gold: boolean; tie
   const decorate = tier === 'notable' || tier === 'chronicle';
   return (
     <div
+      data-section-label=""
       style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: '0.65rem',
-        letterSpacing: '0.12em',
-        textTransform: 'uppercase',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
+        fontSize: 'var(--text-xs)',
         color: gold ? 'var(--accent-gold)' : 'var(--text-tertiary)',
         marginBottom: '6px',
         borderBottom:
@@ -110,9 +110,9 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
             ? 'var(--sphere-life-bright, var(--accent-gold))'
             : 'var(--text-secondary)',
         fontSize: '0.75rem',
-        fontFamily: 'var(--font-display)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         cursor: clickable ? 'pointer' : 'default',
-        letterSpacing: '0.04em',
         userSelect: 'none',
       }}
     >
@@ -180,11 +180,10 @@ function EventCardSectionRenderer({ section }: { section: EventCardSection }) {
       <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
       <div
         style={{
-          fontSize: '0.65rem',
-          letterSpacing: '0.1em',
+          fontSize: 'var(--text-xs)',
           color: 'var(--text-tertiary)',
-          fontFamily: 'var(--font-display)',
-          textTransform: 'uppercase',
+          fontFamily: 'var(--font-body)',
+          fontWeight: 700,
           marginBottom: '6px',
         }}
       >

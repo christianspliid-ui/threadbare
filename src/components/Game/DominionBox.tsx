@@ -51,11 +51,11 @@ export const DominionBox = memo(function DominionBox({ vm, variant = 'box', flus
         style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-gold)' }}
       >
         <p
-          className="uppercase"
           style={{
             fontSize: 'var(--text-xs)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             color: 'var(--text-tertiary)',
-            letterSpacing: '0.5px',
             marginBottom: '0.35rem',
           }}
         >

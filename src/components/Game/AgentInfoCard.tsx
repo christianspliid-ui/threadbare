@@ -102,11 +102,11 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2
-              className="font-semibold tracking-wide truncate"
+              className="font-bold truncate"
               style={{
                 fontSize: 'var(--text-sm)',
                 color: 'var(--text-primary)',
-                fontFamily: 'var(--font-display)',
+                fontFamily: 'var(--font-body)',
               }}
             >
               {card.name}
@@ -422,7 +422,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                     borderLeft: `2px solid ${fp.color}`,
                   }}
                 >
-                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontWeight: 700 }}>
                     {fp.glyph} {strategicSummary.activeProject.displayName}
                   </div>
                   <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -498,10 +498,10 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
           className="flex-1 px-4 py-3 font-semibold rounded-lg transition-all"
           style={{
             fontSize: 'var(--text-sm)',
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             backgroundColor: 'var(--accent-gold)',
             color: 'var(--bg-abyss, #0a0a0e)',
-            letterSpacing: '0.5px',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
           onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
@@ -543,14 +543,14 @@ function BackstoryTeaser({
   return (
     <div>
       <h3
-        className="font-semibold tracking-wider uppercase mb-1.5 flex items-center gap-1.5"
+        className="font-bold mb-1.5 flex items-center gap-1.5"
         style={{
           fontSize: 'var(--text-xs)',
-          color: 'var(--text-secondary)',
-          fontFamily: 'var(--font-display)',
+          color: 'var(--text-tertiary)',
+          fontFamily: 'var(--font-body)',
         }}
       >
-        Their Story
+        Their story
         {hasNew && (
           <span
             className="transition-opacity duration-1000"

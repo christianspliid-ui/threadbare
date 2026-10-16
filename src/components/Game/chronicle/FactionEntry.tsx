@@ -69,10 +69,10 @@ export const FactionEntry = memo(function FactionEntry({
       <div style={{ minWidth: 0, flex: 1 }}>
         <span
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
             color: 'var(--text-primary)',
             fontSize: 'var(--text-xs)',
-            fontWeight: 500,
+            fontWeight: 700,
           }}
         >
           {name}

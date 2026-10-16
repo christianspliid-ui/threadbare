@@ -75,10 +75,10 @@ export const SoulCard = memo(function SoulCard({
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
             color: 'var(--text-primary)',
             fontSize: 'var(--text-xs)',
-            fontWeight: 600,
+            fontWeight: 700,
             textDecoration: 'underline',
             textDecorationColor: 'var(--border-subtle)',
             textUnderlineOffset: '3px',
@@ -92,8 +92,7 @@ export const SoulCard = memo(function SoulCard({
               fontFamily: 'var(--font-body)',
               color: 'var(--text-muted)',
               fontSize: 'var(--text-xs)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
+              fontWeight: 700,
               marginLeft: 'auto',
             }}
           >

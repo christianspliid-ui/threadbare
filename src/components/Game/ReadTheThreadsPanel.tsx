@@ -128,9 +128,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <div
       style={{
         fontSize: 'var(--text-xs)',
-        color: 'var(--text-muted)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.1em',
+        color: 'var(--text-tertiary)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         marginBottom: 'var(--space-1)',
         marginTop: 'var(--space-3)',
       }}
@@ -390,7 +390,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
       {/* Watched locations — vaguer */}
       {locationEntries.length > 0 && (
         <div style={{ marginBottom: 'var(--space-2)' }}>
-          <SectionLabel>Watched Locations</SectionLabel>
+          <SectionLabel>Watched locations</SectionLabel>
           {locationEntries.map((e, i) => (
             <div
               key={`loc-${i}`}
@@ -410,7 +410,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
       {/* Missed opportunities — curated out */}
       {curatedOut.length > 0 && (
         <div style={{ marginBottom: 'var(--space-2)' }}>
-          <SectionLabel>Missed Opportunities</SectionLabel>
+          <SectionLabel>Missed opportunities</SectionLabel>
           {curatedOut.map((e, i) => (
             <div
               key={`curated-${i}`}
@@ -436,7 +436,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
       {/* Dormant court — vaguest */}
       {dormant.length > 0 && (
         <div style={{ marginBottom: 'var(--space-2)' }}>
-          <SectionLabel>Dormant Court</SectionLabel>
+          <SectionLabel>Dormant court</SectionLabel>
           {dormant.map((e, i) => (
             <div
               key={`dormant-${i}`}

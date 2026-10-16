@@ -136,10 +136,10 @@ export const CodexTagFilter = memo(function CodexTagFilter({
           <span
             style={{
               fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
+              color: 'var(--text-tertiary)',
               minWidth: '52px',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
             }}
           >
             {group.label}

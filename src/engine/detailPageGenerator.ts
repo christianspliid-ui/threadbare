@@ -73,7 +73,7 @@ export interface GenerateDetailPageInput {
   protagonistId?: string;
   /** Active encounter context (drives "tilts this scene" / callbacks). */
   encounterContext?: SectionResolverContext['encounterContext'];
-  /** Initial breadcrumb root, default ['ENCOUNTER']. */
+  /** Initial breadcrumb root, default ['Encounter']. */
   breadcrumbRoot?: string[];
   /**
    * Session runtime that owns the per-session detail-page cache (THR-577). When
@@ -98,7 +98,7 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
     seed,
     protagonistId,
     encounterContext,
-    breadcrumbRoot = ['ENCOUNTER'],
+    breadcrumbRoot = ['Encounter'],
     runtime,
   } = input;
 
@@ -210,7 +210,7 @@ function resolveSection(
     const stub: ProseSection = {
       kind: 'prose',
       typeId: entry.typeId,
-      label: entry.typeId.replace(/_/g, ' ').toUpperCase(),
+      label: sectionLabelFromTypeId(entry.typeId),
       gold: false,
       tier: 'routine',
       source: 'mandatoryStub',
@@ -233,7 +233,7 @@ function sectionFromAuthored(
   nodeName: string,
 ): Section | null {
   const baseTier = authored.tier ?? DETAIL_AUTHORED_DEFAULT_TIER;
-  const baseLabel = authored.label ?? entry.typeId.replace(/_/g, ' ').toUpperCase();
+  const baseLabel = authored.label ?? sectionLabelFromTypeId(entry.typeId);
   const gold = authored.gold ?? false;
 
   const base: SectionBase = {
@@ -267,7 +267,7 @@ function unknownStub(
   return {
     kind: pageKind,
     nodeId,
-    trail: [...breadcrumbRoot, 'UNKNOWN'],
+    trail: [...breadcrumbRoot, 'Unknown'],
     kindLabel: KIND_LABELS[pageKind],
     displayName: 'Unknown',
     subtitle: 'this entity is no longer in the world',
@@ -277,7 +277,7 @@ function unknownStub(
       {
         kind: 'prose',
         typeId: 'unknown_stub',
-        label: 'WHAT WE KNOW',
+        label: 'What we know',
         gold: false,
         tier: 'routine',
         source: 'unknownStubResolver',
@@ -347,6 +347,12 @@ function wordedKey(raw: unknown): string | undefined {
 function wordedArchetype(raw: unknown): string | undefined {
   if (typeof raw !== 'string') return undefined;
   return getArchetype(raw)?.name ?? wordedKey(raw);
+}
+
+/** A section type id as its fallback label, sentence case: `recent_events` → "Recent events". */
+function sectionLabelFromTypeId(typeId: string): string {
+  const words = typeId.replace(/_/g, ' ');
+  return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
 export function subtitleForNode(

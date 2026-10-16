@@ -72,18 +72,19 @@ export const CodexCard = memo(function CodexCard({
         <span
           className="flex-1 truncate"
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             fontSize: 'var(--text-sm)',
             color: 'var(--text-primary)',
-            letterSpacing: '0.02em',
           }}
         >
           {entry.name}
         </span>
         <span
-          className="flex-shrink-0 px-1.5 py-0.5 rounded-sm uppercase tracking-wider"
+          className="flex-shrink-0 px-1.5 py-0.5 rounded-sm"
           style={{
             fontSize: 'var(--text-xs)',
+            fontWeight: 700,
             color: entry.tierColor,
             backgroundColor: `${entry.tierColor}15`,
             border: `1px solid ${entry.tierColor}30`,
@@ -110,8 +111,7 @@ export const CodexCard = memo(function CodexCard({
             }}
           />
           <span
-            className="uppercase tracking-wider"
-            style={{ fontSize: 'var(--text-xs)', color: badgeColor, letterSpacing: '0.1em' }}
+            style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: badgeColor }}
           >
             {CODEX_RUN_STATE_BADGE[runState]}
           </span>

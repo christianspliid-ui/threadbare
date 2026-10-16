@@ -53,10 +53,10 @@ export const AgentEntry = memo(function AgentEntry({
       <span
         data-agent-name
         style={{
-          fontFamily: 'var(--font-display)',
+          fontFamily: 'var(--font-body)',
           color: 'var(--text-primary)',
           fontSize: 'var(--text-xs)',
-          fontWeight: 600,
+          fontWeight: 700,
           textDecoration: 'underline',
           textDecorationColor: 'var(--border-subtle)',
           textUnderlineOffset: '2px',
@@ -71,8 +71,7 @@ export const AgentEntry = memo(function AgentEntry({
             fontFamily: 'var(--font-body)',
             color: 'var(--text-muted)',
             fontSize: 'var(--text-xs)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
+            fontWeight: 700,
           }}
         >
           {archetypeName}

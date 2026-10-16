@@ -40,11 +40,11 @@ export function AscendantSelection({ seed, onSelect }: AscendantSelectionProps) 
 
       {/* Title */}
       <div className="text-center relative" style={{ marginBottom: 'var(--space-8)' }}>
-        <p className="uppercase" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', letterSpacing: '0.4em', marginBottom: 'var(--space-3)' }}>
+        <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', fontWeight: 700, marginBottom: 'var(--space-3)' }}>
           The cosmos stirs. A new divinity awakens.
         </p>
         <h1
-          className="font-bold tracking-wide"
+          className="font-bold"
           style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', color: 'var(--text-primary)' }}
         >
           Choose Your Ascendant
@@ -77,7 +77,7 @@ export function AscendantSelection({ seed, onSelect }: AscendantSelectionProps) 
         }}
       >
         <div>
-          <label className="block uppercase" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: 'var(--space-2)' }}>
+          <label className="block" style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', fontWeight: 700, color: 'var(--text-tertiary)', marginBottom: 'var(--space-2)' }}>
             Name your avatar (or leave blank for a random name)
           </label>
           <input
@@ -87,7 +87,8 @@ export function AscendantSelection({ seed, onSelect }: AscendantSelectionProps) 
             placeholder={AVATAR_NAMES[0]}
             className="w-full rounded-lg px-4 py-3 transition-colors focus:outline-none"
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               fontSize: 'var(--text-base)',
               backgroundColor: 'var(--bg-surface)',
               border: '1px solid var(--border-subtle)',
@@ -100,9 +101,9 @@ export function AscendantSelection({ seed, onSelect }: AscendantSelectionProps) 
           disabled={selectedIdx === null}
           className="w-full py-3.5 rounded-lg font-semibold transition-all duration-300 disabled:opacity-30"
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             fontSize: 'var(--text-sm)',
-            letterSpacing: '0.05em',
             background: selectedIdx !== null
               ? 'linear-gradient(135deg, var(--accent-gold) 0%, #8b6914 100%)'
               : 'var(--bg-raised)',

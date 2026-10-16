@@ -169,13 +169,13 @@ const SECTIONS = [
 // cluster still satisfies Law 29's "every shared primitive renders at
 // ?view=styleguide with sample data" while its disposition is open.
 
-const SAMPLE_DETAIL_TRAIL = ['ENCOUNTER', 'CAPTAIN VEIREN'];
+const SAMPLE_DETAIL_TRAIL = ['Encounter', 'Captain Veiren'];
 
 /** One crumb past DETAIL_BREADCRUMB_COLLAPSE_AT, so the ellipsis branch renders. */
 const SAMPLE_DETAIL_TRAIL_LONG = [
-  'ENCOUNTER',
+  'Encounter',
   'THE IRON MARKET',
-  'CAPTAIN VEIREN',
+  'Captain Veiren',
   'THE ASHEN COMPACT',
   'HER WRIT OF PASSAGE',
 ].slice(0, DETAIL_BREADCRUMB_COLLAPSE_AT + 2);
@@ -183,7 +183,7 @@ const SAMPLE_DETAIL_TRAIL_LONG = [
 const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   {
     kind: 'prose',
-    label: 'DISPOSITION TOWARD HER',
+    label: 'Disposition toward her',
     gold: true,
     tier: 'notable',
     typeId: 'disposition_toward_her',
@@ -193,7 +193,7 @@ const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   },
   {
     kind: 'chips',
-    label: 'WHAT HOLDS HER',
+    label: 'What holds her',
     gold: false,
     tier: 'routine',
     typeId: 'holds',
@@ -206,7 +206,7 @@ const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   },
   {
     kind: 'event-card',
-    label: 'WHEN YOU LAST TOUCHED HER THREAD',
+    label: 'When you last touched her thread',
     gold: false,
     tier: 'chronicle',
     typeId: 'last_touch',
@@ -217,7 +217,7 @@ const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   },
   {
     kind: 'panel',
-    label: 'STANDING AMONG THE COMPACTS',
+    label: 'Standing among the compacts',
     gold: false,
     tier: 'routine',
     typeId: 'standing',
@@ -230,7 +230,7 @@ const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   },
   {
     kind: 'portrait',
-    label: 'AS SHE IS SEEN',
+    label: 'As she is seen',
     gold: false,
     tier: 'notable',
     typeId: 'portrait',

@@ -157,8 +157,8 @@ function whenLabelFor(eventNode: GraphNode, currentTick: number, placeName?: str
   const eventTick = (eventNode.properties?.tick as number) ?? currentTick;
   const delta = Math.max(0, currentTick - eventTick);
   const deltaLabel =
-    delta === 0 ? 'NOW' : delta === 1 ? '1 TURN AGO' : `${delta} TURNS AGO`;
-  return placeName ? `${deltaLabel} · ${placeName.toUpperCase()}` : deltaLabel;
+    delta === 0 ? 'Now' : delta === 1 ? '1 turn ago' : `${delta} turns ago`;
+  return placeName ? `${deltaLabel} · ${placeName}` : deltaLabel;
 }
 
 // ─── Actor resolvers ──────────────────────────────────────────────────────────
@@ -191,7 +191,7 @@ const portraitWithDispositionResolver: SectionResolver = (ctx) => {
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'portrait_with_disposition',
-    label: 'DISPOSITION TOWARD HER',
+    label: 'Disposition toward her',
     gold: true,
     tier: 'routine',
     source: 'portraitWithDispositionResolver',
@@ -229,7 +229,7 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_she_is_to_him',
-    label: 'WHAT SHE IS TO HIM',
+    label: 'What she is to him',
     gold: false,
     tier: 'routine',
     source: 'whatSheIsToHimResolver',
@@ -278,7 +278,7 @@ const threadsBetweenThemResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'threads_between_them',
-    label: 'THREADS BETWEEN THEM',
+    label: 'Threads between them',
     gold: false,
     tier: 'routine',
     source: 'threadsBetweenThemResolver',
@@ -301,7 +301,7 @@ const recentEncountersResolver: SectionResolver = (ctx) => {
   const section: EventCardSection = {
     kind: 'event-card',
     typeId: 'recent_encounters',
-    label: 'RECENT ENCOUNTERS',
+    label: 'Recent encounters',
     gold: false,
     tier: 'routine',
     source: 'recentEncountersResolver',
@@ -337,7 +337,7 @@ const factionAllegiancesResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'faction_allegiances',
-    label: 'FACTION ALLEGIANCES',
+    label: 'Faction allegiances',
     gold: false,
     tier: 'routine',
     source: 'factionAllegiancesResolver',
@@ -368,7 +368,7 @@ const notableCapabilitiesResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'notable_capabilities',
-    label: 'NOTABLE CAPABILITIES',
+    label: 'Notable capabilities',
     gold: false,
     tier: 'routine',
     source: 'notableCapabilitiesResolver',
@@ -398,7 +398,7 @@ const iconWithMeaningResolver: SectionResolver = (ctx) => {
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'icon_with_meaning',
-    label: 'WHAT IT MEANS HERE',
+    label: 'What it means here',
     gold: true,
     tier: 'routine',
     source: 'iconWithMeaningResolver',
@@ -418,7 +418,7 @@ const whoGaveItResolver: SectionResolver = (ctx) => {
     const section: ProseSection = {
       kind: 'prose',
       typeId: 'who_gave_it',
-      label: 'HOW IT CAME TO HER',
+      label: 'How it came to her',
       gold: false,
       tier: 'routine',
       source: 'whoGaveItResolver.fallback',
@@ -434,7 +434,7 @@ const whoGaveItResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'who_gave_it',
-    label: 'HOW IT CAME TO HER',
+    label: 'How it came to her',
     gold: false,
     tier: 'routine',
     source: 'whoGaveItResolver',
@@ -459,7 +459,7 @@ const howItTiltsThisSceneResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'how_it_tilts_this_scene',
-    label: 'HOW IT TILTS THIS SCENE',
+    label: 'How it tilts this scene',
     gold: false,
     tier: decisive ? 'notable' : 'routine',
     source: 'howItTiltsThisSceneResolver',
@@ -488,7 +488,7 @@ const previousUsesResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'previous_uses',
-    label: 'PREVIOUS USES',
+    label: 'Previous uses',
     gold: false,
     tier: 'routine',
     source: 'previousUsesResolver',
@@ -517,7 +517,7 @@ const howTheyHoldHerResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'how_they_hold_her',
-    label: 'HOW THEY HOLD HER',
+    label: 'How they hold her',
     gold: true,
     tier: 'routine',
     source: 'howTheyHoldHerResolver',
@@ -551,7 +551,7 @@ const alliedWithResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'allied_with',
-    label: 'ALLIED WITH',
+    label: 'Allied with',
     gold: false,
     tier: 'routine',
     source: 'alliedWithResolver',
@@ -584,7 +584,7 @@ const opposedResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'opposed',
-    label: 'OPPOSED',
+    label: 'Opposed',
     gold: false,
     tier: 'routine',
     source: 'opposedResolver',
@@ -618,7 +618,7 @@ const reputationsTheyHoldResolver: SectionResolver = (ctx) => {
   const section: PanelSection = {
     kind: 'panel',
     typeId: 'reputations_they_hold',
-    label: 'REPUTATIONS THEY HOLD',
+    label: 'Reputations they hold',
     gold: false,
     tier: 'routine',
     source: 'reputationsTheyHoldResolver',
@@ -642,7 +642,7 @@ const recentActionsResolver: SectionResolver = (ctx) => {
   const section: EventCardSection = {
     kind: 'event-card',
     typeId: 'recent_actions',
-    label: 'RECENT ACTIONS',
+    label: 'Recent actions',
     gold: false,
     tier: 'routine',
     source: 'recentActionsResolver',
@@ -663,7 +663,7 @@ const placePaintingResolver: SectionResolver = (ctx) => {
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'place_painting',
-    label: place.name.toUpperCase(),
+    label: place.name,
     gold: false,
     tier: 'routine',
     source: 'placePaintingResolver',
@@ -686,7 +686,7 @@ const whatThisPlaceWantsResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_this_place_wants',
-    label: 'WHAT THIS PLACE WANTS',
+    label: 'What this place wants',
     gold: true,
     tier: 'routine',
     source: 'whatThisPlaceWantsResolver',
@@ -705,7 +705,7 @@ const conditionsHereResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'conditions_here',
-    label: 'CONDITIONS HERE',
+    label: 'Conditions here',
     gold: false,
     tier: 'routine',
     source: 'conditionsHereResolver',
@@ -740,7 +740,7 @@ const placeMemoryResolver: SectionResolver = (ctx) => {
     const section: ProseSection = {
       kind: 'prose',
       typeId: 'memory',
-      label: 'MEMORY',
+      label: 'Memory',
       gold: false,
       tier: 'notable',
       source: 'placeMemoryResolver.battle',
@@ -756,7 +756,7 @@ const placeMemoryResolver: SectionResolver = (ctx) => {
     const section: ProseSection = {
       kind: 'prose',
       typeId: 'memory',
-      label: 'MEMORY',
+      label: 'Memory',
       gold: false,
       tier: 'routine',
       source: 'placeMemoryResolver.fallback',
@@ -769,7 +769,7 @@ const placeMemoryResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'memory',
-    label: 'MEMORY',
+    label: 'Memory',
     gold: false,
     tier: 'routine',
     source: 'placeMemoryResolver',
@@ -791,7 +791,7 @@ const whatHappenedResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_happened',
-    label: 'WHAT HAPPENED',
+    label: 'What happened',
     gold: true,
     tier: stored ?? 'routine',
     source: 'whatHappenedResolver',
@@ -819,7 +819,7 @@ const whoWasThereResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'who_was_there',
-    label: 'WHO WAS THERE',
+    label: 'Who was there',
     gold: false,
     tier: 'routine',
     source: 'whoWasThereResolver',
@@ -836,7 +836,7 @@ const whatItBecameResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_it_became',
-    label: 'WHAT IT BECAME',
+    label: 'What it became',
     gold: false,
     tier: 'routine',
     source: 'whatItBecameResolver',
@@ -853,7 +853,7 @@ const howItInvokesNowResolver: SectionResolver = (ctx) => {
   const section: PanelSection = {
     kind: 'panel',
     typeId: 'how_it_invokes_now',
-    label: 'HOW IT INVOKES NOW',
+    label: 'How it invokes now',
     gold: true,
     tier: 'notable',
     source: 'howItInvokesNowResolver',
@@ -931,7 +931,7 @@ const groupMusterResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'who_they_are',
-    label: 'WHO THEY ARE',
+    label: 'Who they are',
     gold: true,
     tier: 'routine',
     source: 'groupMusterResolver',
@@ -972,7 +972,7 @@ const groupCommandResolver: SectionResolver = (ctx) => {
   const section: ChipsSection = {
     kind: 'chips',
     typeId: 'who_leads_them',
-    label: 'WHO LEADS THEM',
+    label: 'Who leads them',
     gold: false,
     tier: 'routine',
     source: 'groupCommandResolver',
@@ -1001,7 +1001,7 @@ const groupIntentResolver: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_they_are_doing',
-    label: 'WHAT THEY ARE DOING',
+    label: 'What they are doing',
     gold: false,
     tier: 'routine',
     source: 'groupIntentResolver',
@@ -1034,7 +1034,7 @@ export const actorPortraitFallback: SectionResolver = (ctx) => {
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'portrait_with_disposition',
-    label: 'DISPOSITION TOWARD HER',
+    label: 'Disposition toward her',
     gold: true,
     tier: 'routine',
     source: 'actorPortraitFallback',
@@ -1054,7 +1054,7 @@ export const itemIconFallback: SectionResolver = (ctx) => {
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'icon_with_meaning',
-    label: 'WHAT IT MEANS HERE',
+    label: 'What it means here',
     gold: true,
     tier: 'routine',
     source: 'itemIconFallback',
@@ -1070,7 +1070,7 @@ export const factionRepFallback: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'how_they_hold_her',
-    label: 'HOW THEY HOLD HER',
+    label: 'How they hold her',
     gold: true,
     tier: 'routine',
     source: 'factionRepFallback',
@@ -1088,7 +1088,7 @@ export const placeWantsFallback: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_this_place_wants',
-    label: 'WHAT THIS PLACE WANTS',
+    label: 'What this place wants',
     gold: true,
     tier: 'routine',
     source: 'placeWantsFallback',
@@ -1111,7 +1111,7 @@ export const groupMusterFallback: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'who_they_are',
-    label: 'WHO THEY ARE',
+    label: 'Who they are',
     gold: true,
     tier: 'routine',
     source: 'groupMusterFallback',
@@ -1146,7 +1146,7 @@ export const eventSkeletalFallback: SectionResolver = (ctx) => {
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'what_happened',
-    label: 'WHAT HAPPENED',
+    label: 'What happened',
     gold: true,
     tier: 'routine',
     source: 'eventSkeletalFallback',

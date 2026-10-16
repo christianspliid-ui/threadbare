@@ -262,7 +262,7 @@ function App() {
         }}
       >
         <h1
-          className="text-center tracking-wide"
+          className="text-center"
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'var(--text-xl)',
@@ -283,14 +283,13 @@ function App() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
           <label
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
+              color: 'var(--text-tertiary)',
             }}
           >
-            Realm Size
+            Realm size
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
             {(Object.keys(MAP_SIZE_PRESETS) as MapSizePreset[]).map((key) => {
@@ -312,14 +311,14 @@ function App() {
                     border: isActive ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
                     background: isActive ? 'rgba(212, 160, 64, 0.12)' : 'transparent',
                     color: isActive ? 'var(--accent-gold)' : 'var(--text-secondary)',
-                    fontFamily: 'var(--font-display)',
+                    fontFamily: 'var(--font-body)',
                     fontSize: 'var(--text-xs)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.2s',
                   }}
                 >
-                  <div style={{ fontWeight: 600 }}>{preset.label}</div>
+                  <div style={{ fontWeight: 700 }}>{preset.label}</div>
                   <div style={{ fontSize: 'var(--text-xs)', opacity: 0.7, marginTop: '2px' }}>
                     {preset.cols}&times;{preset.rows} &mdash; {preset.description}
                   </div>
@@ -336,12 +335,12 @@ function App() {
           onClick={handleProceedToSelection}
           className="w-full py-3 rounded-lg font-semibold transition-all duration-300"
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             fontSize: 'var(--text-sm)',
             background: 'linear-gradient(135deg, var(--accent-gold) 0%, #8b6914 100%)',
             color: 'var(--bg-abyss)',
             boxShadow: '0 4px 15px rgba(212, 160, 64, 0.25)',
-            letterSpacing: '0.05em',
           }}
         >
           Shape Your Divinity

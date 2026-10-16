@@ -8,6 +8,7 @@
 
 import { memo } from 'react';
 import { Modal } from '../shared/Modal';
+import { REACH_DISPLAY_NAMES } from '../../engine/aftermathWords';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 
 // ─── Props ──────────────────────────────────────────────────────────
@@ -28,13 +29,12 @@ function ReachBadge({ reach }: { reach: string }) {
       border: '1px solid var(--border-subtle)',
       borderRadius: '4px',
       padding: '2px 8px',
-      fontFamily: 'var(--font-display)',
+      fontFamily: 'var(--font-body)',
+      fontWeight: 700,
       fontSize: 'var(--text-xs)',
-      letterSpacing: '0.08em',
-      textTransform: 'uppercase',
       color: 'var(--text-secondary)',
     }}>
-      {reach}
+      {REACH_DISPLAY_NAMES[reach] ?? reach}
     </span>
   );
 }
@@ -66,13 +66,12 @@ export const StoryBeatModal = memo(function StoryBeatModal({
           padding: 'var(--space-2) 0',
         }}>
           <span style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             fontSize: 'var(--text-xs)',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
             color: 'var(--dlg-accent-text, var(--accent-gold))',
           }}>
-            Story Beat
+            Story beat
           </span>
           <h2 style={{
             fontFamily: 'var(--font-display)',
@@ -136,9 +135,8 @@ export const StoryBeatModal = memo(function StoryBeatModal({
               border: 'none',
               borderRadius: '4px',
               padding: 'var(--space-2) var(--space-6)',
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
               fontSize: 'var(--text-sm)',
-              letterSpacing: '0.06em',
               cursor: 'pointer',
               fontWeight: 700,
             }}

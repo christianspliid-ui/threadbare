@@ -53,10 +53,9 @@ function PhaseBadge({ phase }: { phase: string }) {
         border: '1px solid var(--accent-gold)',
         borderRadius: '4px',
         padding: '2px 10px',
-        fontFamily: 'var(--font-display)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         fontSize: 'var(--text-xs)',
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
         color: 'var(--accent-gold)',
       }}>
         {phase}
@@ -111,7 +110,8 @@ function ChoiceButton({
     >
       <div style={{
         color: 'var(--text-primary)',
-        fontFamily: 'var(--font-display)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         fontSize: 'var(--text-xs)',
         marginBottom: choice.godVoice ? '4px' : 0,
       }}>
@@ -184,11 +184,10 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
         <div style={{ textAlign: 'center' }}>
           <div style={{
             fontFamily: 'var(--font-display)',
-            fontSize: '1.3rem',
+            fontSize: 'var(--text-lg)',
             color: vignette.isOrdeal ? 'var(--accent-gold)' : 'var(--text-primary)',
-            letterSpacing: '0.05em',
           }}>
-            {vignette.isOrdeal ? 'THE ORDEAL' : `${vignette.agentName}'s Journey`}
+            {vignette.isOrdeal ? 'The Ordeal' : `${vignette.agentName}'s Journey`}
           </div>
         </div>
       </Modal.Header>

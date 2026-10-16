@@ -6,6 +6,7 @@ import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../
 import { durationLabel, elapsedLabel, sphereDeltaReading } from '../../engine/aftermathWords';
 import { DeltaCluster } from '../shared/DeltaCluster';
 import { Tooltip } from '../shared/Tooltip';
+import { sphereWord } from '../shared/formatEssence';
 
 interface MandateDetailProps {
   open: boolean;
@@ -24,8 +25,8 @@ interface MandateDetailProps {
 const STAGE_ORDER: MandateStage[] = ['setup', 'escalation', 'culmination'];
 
 const MANDATE_TYPE_LABELS: Record<string, string> = {
-  graph_state: 'Graph-State',
-  sphere_dominance: 'Sphere-Dominance',
+  graph_state: 'Graph-state',
+  sphere_dominance: 'Sphere-dominance',
   narrative: 'Narrative',
   simulation_achievable: 'Simulation',
 };
@@ -94,8 +95,6 @@ function SummaryCard({ label, value, color, tooltipId }: { label: string; value:
     }}>
       <div style={{
         fontSize: 'var(--text-xs)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em',
         color: 'var(--text-muted)',
       }}>
         {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
@@ -138,10 +137,10 @@ function MetricTrack({
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
         <span style={{
-          fontFamily: 'var(--font-display)',
+          fontFamily: 'var(--font-body)',
+          fontWeight: 700,
           fontSize: 'var(--text-xs)',
           color,
-          textTransform: 'uppercase',
         }}>
           {label}
         </span>
@@ -225,8 +224,6 @@ function CheckpointRow({
           color: tone,
           backgroundColor: `${tone === 'var(--text-muted)' ? '#9ca3af' : tone}15`,
           border: `1px solid ${tone === 'var(--text-muted)' ? '#4b5563' : tone}30`,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
           flexShrink: 0,
         }}>
           {label}
@@ -269,7 +266,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
     // THR-1424: this read the rounded `pct` that fed the dropped Progress row. It reads the
     // raw progress directly now — the status word is a state, not a magnitude, so it survives
     // the ruling; only the numeral it happened to share a variable with is gone.
-    statusLabel = 'In Progress';
+    statusLabel = 'In progress';
   }
 
   return (
@@ -294,8 +291,6 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
             color,
             border: `1px solid ${color}30`,
             borderRadius: '3px',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
           }}>
             {typeLabel}
           </span>
@@ -329,8 +324,6 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
               backgroundColor: `${statusColor}15`,
               color: statusColor,
               border: `1px solid ${statusColor}30`,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
               flexShrink: 0,
             }}>
               {statusLabel}
@@ -341,26 +334,26 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
         {isSphereGrowth && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
             <SummaryCard
-              label={definition.primarySphere ?? 'Primary'}
+              label={definition.primarySphere ? sphereWord(definition.primarySphere) : 'Primary'}
               value={<DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />}
               color={color}
             />
             <SummaryCard
-              label={definition.secondarySphere ?? 'Secondary'}
+              label={definition.secondarySphere ? sphereWord(definition.secondarySphere) : 'Secondary'}
               value={<DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />}
             />
             <SummaryCard
-              label="Omens Held"
+              label="Omens held"
               value={`${state.checkpointResults?.filter((result) => result.passed).length ?? 0}/${definition.checkpoints?.length ?? 0}`}
             />
             <SummaryCard
-              label="Counter-Omens"
+              label="Counter-omens"
               tooltipId="ui.counter_omens"
               value={`${state.counterOmensEarned ?? 0}`}
               color={(state.counterOmensEarned ?? 0) > 0 ? SENTIMENT_GREEN : undefined}
             />
             <SummaryCard
-              label="Doom Debt"
+              label="Doom debt"
               tooltipId="ui.doom_debt"
               value={`${state.doomSeverityPenalties ?? 0}`}
               color={(state.doomSeverityPenalties ?? 0) > 0 ? SENTIMENT_NEGATIVE : undefined}
@@ -371,11 +364,10 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
         <div style={{ display: 'flex', gap: '24px' }}>
           <div style={{ flex: '0 0 210px' }}>
             <div style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              color: 'var(--text-tertiary)',
               marginBottom: '12px',
             }}>
               Details
@@ -387,24 +379,24 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                 numeral duplicating the `ProgressBar` this modal already renders above. Dropped,
                 not banded — the bar is the reading. */}
             {definition.primarySphere && (
-              <DetailRow label="Primary Sphere" value={definition.primarySphere} color={color} />
+              <DetailRow label="Primary sphere" value={sphereWord(definition.primarySphere)} color={color} />
             )}
             {definition.secondarySphere && (
-              <DetailRow label="Secondary Sphere" value={definition.secondarySphere} />
+              <DetailRow label="Secondary sphere" value={sphereWord(definition.secondarySphere)} />
             )}
             {definition.courtType && (
-              <DetailRow label="Court Shape" value={formatCourtLabel(definition.courtType)} />
+              <DetailRow label="Court shape" value={formatCourtLabel(definition.courtType)} />
             )}
             {nextCheckpoint && (
               /* THR-1424: the parenthesised threshold was a unitless proportion — dropped, so
                  the row carries the omen's name alone. */
-              <DetailRow label="Next Omen" value={nextCheckpoint.label} />
+              <DetailRow label="Next omen" value={nextCheckpoint.label} />
             )}
             {definition.tickLimit && (
               /* THR-1425: a mandate's limit is a duration, so it reads through `durationLabel`.
                  The row label already says "Time Limit", so the value carries only the term —
                  spelling `ticks` into it put the engine unit on the surface twice (Law 14). */
-              <DetailRow label="Time Limit" value={durationLabel(definition.tickLimit)} color="#ea580c" />
+              <DetailRow label="Time limit" value={durationLabel(definition.tickLimit)} color="#ea580c" />
             )}
             {/* THR-1426 (Shape 1): the `Assigned: Tick N` row is dropped rather than converted.
                 It printed the engine's clock index (Laws 13/14), and unlike the checkpoint and
@@ -422,11 +414,9 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
               }}>
                 <div style={{
                   fontSize: 'var(--text-xs)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
                   color: 'var(--text-muted)',
                 }}>
-                  Court Task
+                  Court task
                 </div>
                 <div style={{ marginTop: '6px', fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontWeight: 600 }}>
                   {definition.secondaryObjective.label}
@@ -451,19 +441,18 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
             {isSphereGrowth && (
               <>
                 <div style={{
-                  fontFamily: 'var(--font-display)',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
                   fontSize: 'var(--text-xs)',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
+                  color: 'var(--text-tertiary)',
                   marginBottom: '12px',
                 }}>
-                  Sphere Rise
+                  Sphere rise
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                   <MetricTrack
-                    label={definition.primarySphere ?? 'Primary'}
+                    label={definition.primarySphere ? sphereWord(definition.primarySphere) : 'Primary'}
                     current={state.primaryCurrent}
                     baseline={definition.primaryBaseline}
                     delta={state.primaryDelta}
@@ -471,7 +460,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                     color={color}
                   />
                   <MetricTrack
-                    label={definition.secondarySphere ?? 'Secondary'}
+                    label={definition.secondarySphere ? sphereWord(definition.secondarySphere) : 'Secondary'}
                     current={state.secondaryCurrent}
                     baseline={definition.secondaryBaseline}
                     delta={state.secondaryDelta}
@@ -481,14 +470,13 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                 </div>
 
                 <div style={{
-                  fontFamily: 'var(--font-display)',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
                   fontSize: 'var(--text-xs)',
-                  color: 'var(--text-muted)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.1em',
+                  color: 'var(--text-tertiary)',
                   marginBottom: '12px',
                 }}>
-                  Omen Track
+                  Omen track
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
@@ -506,14 +494,13 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
             )}
 
             <div style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              color: 'var(--text-tertiary)',
               marginBottom: '12px',
             }}>
-              Path to Fulfillment
+              Path to fulfillment
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -556,11 +543,10 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
 
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span style={{
-                          fontFamily: 'var(--font-display)',
+                          fontFamily: 'var(--font-body)',
                           fontSize: 'var(--text-xs)',
-                          fontWeight: 600,
+                          fontWeight: 700,
                           color: isCurrent ? color : isPast ? 'var(--text-secondary)' : 'var(--text-muted)',
-                          textTransform: 'uppercase',
                         }}>
                           {STAGE_DISPLAY[stageKey]}
                         </span>
@@ -663,7 +649,7 @@ function DetailRow({ label, value, color }: { label: string; value: string; colo
       borderBottom: '1px solid #1a1a1e',
       fontSize: 'var(--text-xs)',
     }}>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+      <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontWeight: 700 }}>
         {label}
       </span>
       <span style={{

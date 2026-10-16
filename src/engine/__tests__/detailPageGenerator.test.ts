@@ -157,7 +157,7 @@ describe('generateDetailPage — Actor', () => {
     });
 
     expect(page.kind).toBe('actor');
-    expect(page.kindLabel).toBe('ACTOR');
+    expect(page.kindLabel).toBe('Actor');
     expect(page.displayName).toBe('Captain Veiren');
     expect(page.sections.length).toBeGreaterThanOrEqual(2);
 
@@ -227,7 +227,7 @@ describe('generateDetailPage — Item', () => {
       seed: 42,
       protagonistId: 'protag',
     });
-    expect(page.kindLabel).toBe('ITEM');
+    expect(page.kindLabel).toBe('Item');
     expect(page.sections[0].typeId).toBe('icon_with_meaning');
     const acquisition = page.sections.find((s) => s.typeId === 'who_gave_it');
     expect(acquisition?.kind).toBe('prose');

@@ -165,7 +165,7 @@ describe('content page — shape and fail-soft', () => {
     expect(page.sections).toHaveLength(1);
     expect(page.sections[0].typeId).toBe('unknown_stub');
     expect(page.hasFullSheet).toBe(false);
-    expect(page).toEqual(unknownContentStub({ kind: 'item_template', id: 'no_such_item' }, ['THE LIBRARY']));
+    expect(page).toEqual(unknownContentStub({ kind: 'item_template', id: 'no_such_item' }, ['The library']));
   });
 
   it('offers the codex CTA only when the row AND the entry both allow it', () => {

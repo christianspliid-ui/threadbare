@@ -68,13 +68,12 @@ export const RecentActivityLog = React.memo(function RecentActivityLog({
         style={{
           fontSize: 'var(--text-xs)',
           color: 'var(--text-tertiary)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.08em',
           marginBottom: 'var(--space-1)',
-          fontWeight: 600,
+          fontFamily: 'var(--font-body)',
+          fontWeight: 700,
         }}
       >
-        Recent Activity
+        Recent activity
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
@@ -143,10 +142,9 @@ export const RecentActivityLog = React.memo(function RecentActivityLog({
                     color: 'var(--accent-gold)',
                     fontWeight: 700,
                     flexShrink: 0,
-                    letterSpacing: '0.05em',
                   }}
                 >
-                  NEW
+                  New
                 </span>
               )}
 

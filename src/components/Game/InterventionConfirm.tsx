@@ -3,10 +3,18 @@ import type { SphereName } from '../../types/index';
 import { getSphereColor } from '../../data/sphereIcons';
 import { SphereIcon } from '../icons';
 import { Button } from '../shared/Button';
-import { formatEssence, formatEssencePool } from '../shared/formatEssence';
+import { formatEssence, formatEssencePool, sphereWord } from '../shared/formatEssence';
 import { OddsPips } from '../shared/OddsPips';
 import { useEscapeLayer } from '../shared/useEscapeLayer';
 import { Z_BAND } from '../shared/zBands';
+
+/** The delivery mode as the player reads it (Law 14: no raw keys). */
+const DELIVERY_MODE_WORD: Record<DeliveryMode, string> = {
+  astral: 'Astral',
+  regional: 'Regional',
+  remote: 'Remote',
+  local: 'Local',
+};
 
 export interface InterventionConfirmProps {
   interventionType: InterventionType;
@@ -101,30 +109,28 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
 
         {/* Content area */}
         <div className="px-6 pt-4 pb-5">
-          {/* Sphere · delivery line — v7 ALLCAPS Cinzel above the title */}
+          {/* Sphere · delivery line — small label above the title */}
           <p
             data-testid="sphere-delivery-line"
             className="mb-2"
             style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '10px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
               color: sphereColor,
-              fontWeight: 600,
+              fontWeight: 700,
             }}
           >
-            {sphere} · {deliveryMode}
+            {sphereWord(sphere)} · {DELIVERY_MODE_WORD[deliveryMode] ?? deliveryMode}
           </p>
 
-          {/* Title — italic display Cinzel per v7 */}
+          {/* Title — italic Alegreya Sans 700 (below the 22px Cinzel floor) */}
           <h3
             className="mb-3"
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
               fontSize: '18px',
               fontStyle: 'italic',
-              fontWeight: 400,
+              fontWeight: 700,
               color: 'var(--text-primary)',
               lineHeight: 1.2,
             }}
@@ -159,10 +165,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
               {props.agendaName && (
                 <span
                   style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '10px',
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
+                    fontFamily: 'var(--font-body)',
+                    fontWeight: 700,
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-tertiary)',
                     display: 'block',
                     marginBottom: '2px',
@@ -190,10 +195,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             <div>
               <span
                 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '10px',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   display: 'block',
                 }}
@@ -207,10 +211,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             <div>
               <span
                 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '10px',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-tertiary)',
                   display: 'block',
                 }}
@@ -232,10 +235,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
               <div>
                 <span
                   style={{
-                    fontFamily: 'var(--font-display)',
-                    fontSize: '10px',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    fontFamily: 'var(--font-body)',
+                    fontWeight: 700,
+                    fontSize: 'var(--text-xs)',
                     color: 'var(--text-tertiary)',
                     display: 'block',
                   }}

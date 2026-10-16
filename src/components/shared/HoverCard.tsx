@@ -86,10 +86,9 @@ export function HoverCard({ page, anchorEl }: { page: DetailPage; anchorEl: HTML
       <div style={{ padding: '10px 14px 8px', borderBottom: '1px solid var(--border-gold)' }}>
         <div
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '0.6rem',
-            letterSpacing: '0.14em',
-            textTransform: 'uppercase',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
+            fontSize: 'var(--text-xs)',
             color: sphereVar,
             marginBottom: '3px',
           }}
@@ -98,20 +97,19 @@ export function HoverCard({ page, anchorEl }: { page: DetailPage; anchorEl: HTML
         </div>
         <div
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
             fontSize: '1.05rem',
             color: 'var(--text-primary)',
-            letterSpacing: '0.03em',
           }}
         >
           {page.displayName}
         </div>
         <div
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '0.65rem',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
+            fontSize: 'var(--text-xs)',
             color: 'var(--text-tertiary)',
           }}
         >

@@ -281,7 +281,7 @@ export function PremonitionModal({
     [tooltipContext, premonition.agentId],
   );
 
-  const headerText = isWhisper ? 'A Stirring in the Thread' : "The God's Will";
+  const headerText = isWhisper ? 'A stirring in the thread' : "The God's will";
   const dismissText = isWhisper ? 'Let the dream fade' : 'Release your hold \u2014 let them choose';
 
   return (
@@ -325,8 +325,12 @@ export function PremonitionModal({
             }}
           />
           <div
-            className="text-[11px] uppercase tracking-[3px]"
-            style={{ color: accent(isWhisper, '--premonition-accent-text-alpha') }}
+            style={{
+              color: accent(isWhisper, '--premonition-accent-text-alpha'),
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
+              fontSize: 'var(--text-xs)',
+            }}
           >
             {headerText}
           </div>

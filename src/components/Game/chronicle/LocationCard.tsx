@@ -1,6 +1,13 @@
 import { memo } from 'react';
 import type { ReactNode } from 'react';
 import { getLocationConceptArtUrl } from '../../../data/location-concept-art';
+import { humanizeKeySegment } from '../../../engine/aftermathWords';
+
+/** A stored subtype key as the tag reads it: `guild-hall` → "Guild hall" (Law 14). */
+function subtypeWord(raw: string): string {
+  const words = humanizeKeySegment(raw).toLowerCase();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
 
 interface LocationCardProps {
   name: string;
@@ -84,10 +91,10 @@ export const LocationCard = memo(function LocationCard({
           <span
             data-loc-name
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
               color: 'var(--text-primary)',
               fontSize: 'var(--text-xs)',
-              fontWeight: 600,
+              fontWeight: 700,
               transition: 'color 0.15s ease',
             }}
           >
@@ -95,15 +102,14 @@ export const LocationCard = memo(function LocationCard({
           </span>
           <span
             style={{
-              fontFamily: 'var(--font-display)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 700,
               color: 'var(--accent-gold-dim)',
               fontSize: 'var(--text-xs)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
               marginLeft: 'auto',
             }}
           >
-            {subtype}
+            {subtypeWord(subtype)}
           </span>
         </div>
       </div>

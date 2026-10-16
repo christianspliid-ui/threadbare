@@ -58,10 +58,8 @@ const BODY: React.CSSProperties = {
 };
 
 const HEADER: React.CSSProperties = {
-  font: 'var(--type-section-label, 700 11px/1.2 var(--font-display, serif))',
-  letterSpacing: '0.1em',
+  font: '700 var(--text-xs)/1.2 var(--font-body)',
   color: 'var(--dlg-accent-text, var(--accent-gold))',
-  textTransform: 'uppercase',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
@@ -69,10 +67,8 @@ const HEADER: React.CSSProperties = {
 
 const TIMER: React.CSSProperties = {
   fontFamily: 'var(--font-body, sans-serif)',
-  fontSize: '11px',
-  letterSpacing: 'normal',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-muted)',
-  textTransform: 'none',
 };
 
 const GRID: React.CSSProperties = {
@@ -96,22 +92,20 @@ const CARD_BASE: React.CSSProperties = {
 };
 
 const CARD_TITLE: React.CSSProperties = {
-  font: '600 13px/1.2 var(--font-display, serif)',
+  font: '700 var(--text-sm)/1.2 var(--font-body)',
   color: 'var(--dlg-accent-text, var(--accent-gold))',
-  letterSpacing: '0.04em',
-  textTransform: 'uppercase',
 };
 
 const CARD_PROSE: React.CSSProperties = {
-  fontFamily: 'var(--font-display, serif)',
+  fontFamily: 'var(--font-body)',
   fontStyle: 'italic',
-  fontSize: '12px',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-primary)',
   lineHeight: 1.4,
 };
 
 const CARD_COST: React.CSSProperties = {
-  fontSize: '11px',
+  fontSize: 'var(--text-xs)',
   color: 'var(--text-muted)',
   marginTop: 'auto',
 };
@@ -136,7 +130,7 @@ interface ChoiceSpec {
 const CHOICE_SPECS: ChoiceSpec[] = [
   {
     choice: 'let',
-    label: 'Let It Be',
+    label: 'Let it be',
     poet: 'Walk away. Let the ruin decide what it becomes.',
     costSentence: () => 'Costs you nothing.',
   },
@@ -205,7 +199,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
       <Modal.Body>
         <div style={BODY}>
           <div style={HEADER}>
-            <span>Emergence Dilemma · {getRuinFateWord(pending.consequenceRoll)}</span>
+            <span>Emergence dilemma · {getRuinFateWord(pending.consequenceRoll)}</span>
             {/* Law 13 — the wait reads in words. `getDurationWord` is THR-1070's
                 scale, adopted rather than restated: the two tickets were made
                 mutex so the game would not grow a second phrasing for a wait.
@@ -215,7 +209,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
               {ticksRemaining === 0 ? 'Auto-firing now' : `Auto-fires ${getDurationWord(ticksRemaining)}`}
             </span>
           </div>
-          <div style={{ fontFamily: 'var(--font-display, serif)', fontStyle: 'italic', fontSize: '13px', color: 'var(--text-primary)', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 'var(--text-xs)', color: 'var(--text-primary)', lineHeight: 1.5 }}>
             The delve has reached its last breath. What do you do with what remains?
           </div>
           <div style={GRID}>

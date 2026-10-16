@@ -52,13 +52,12 @@ describe('THR-1492 — the attachment sheet renders through the one section mode
   it('draws its sections with the shared SectionLabel treatment, not the retired card', () => {
     const { container } = render(<AttachmentDetailView attachment={item} onBack={vi.fn()} />);
 
-    // `SectionLabel` is a div at 0.65rem / 0.12em tracking; `EntityCard` drew an <h3>.
+    // `SectionLabel` is a div marked `data-section-label`; `EntityCard` drew an <h3>.
     // Asserting the retired element is *gone* is the half that fails if the component
     // were reverted — a label-present assertion alone would pass against either model.
     expect(container.querySelector('h3')).toBeNull();
 
-    const labels = Array.from(container.querySelectorAll('div'))
-      .filter(el => el.style.letterSpacing === '0.12em')
+    const labels = Array.from(container.querySelectorAll('div[data-section-label]'))
       .map(el => el.textContent);
     expect(labels).toContain('Effect');
     expect(labels).toContain('Tags');
@@ -166,8 +165,7 @@ describe('THR-1492 — the faction sheet draws the shared section label', () => 
       .filter(el => (el as HTMLElement).style.letterSpacing === '0.05em');
     expect(forked).toHaveLength(0);
 
-    const labels = Array.from(root.querySelectorAll('div'))
-      .filter(el => (el as HTMLElement).style.letterSpacing === '0.12em')
+    const labels = Array.from(root.querySelectorAll('div[data-section-label]'))
       .map(el => el.textContent);
     // The sheet still says everything it said — same words, one treatment.
     expect(labels).toContain('What They Control');

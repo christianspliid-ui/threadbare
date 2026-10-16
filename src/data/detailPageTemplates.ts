@@ -287,10 +287,10 @@ export const DETAIL_PAGE_REGISTRY: DetailPageRegistry = {
 
 /** Page kind → display label for the modal header. */
 export const KIND_LABELS: Record<GraphPageKind, string> = {
-  actor: 'ACTOR',
-  item: 'ITEM',
-  faction: 'FACTION',
-  place: 'PLACE',
-  event: 'EVENT',
-  group: 'COMPANY',
+  actor: 'Actor',
+  item: 'Item',
+  faction: 'Faction',
+  place: 'Place',
+  event: 'Event',
+  group: 'Company',
 };

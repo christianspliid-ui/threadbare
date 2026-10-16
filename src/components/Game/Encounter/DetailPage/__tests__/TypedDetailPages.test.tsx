@@ -201,7 +201,7 @@ for (const kind of KINDS) {
       // Display name and kind label can each appear in multiple chrome surfaces
       // (e.g. portrait label + header). Just assert presence ≥ 1.
       expect(getAllByText(kind.expected).length).toBeGreaterThanOrEqual(1);
-      expect(getAllByText(kind.kind.toUpperCase()).length).toBeGreaterThanOrEqual(1);
+      expect(getAllByText(kind.kind.charAt(0).toUpperCase() + kind.kind.slice(1)).length).toBeGreaterThanOrEqual(1);
     });
 
     it(`snapshot: ${kind.kind}`, () => {

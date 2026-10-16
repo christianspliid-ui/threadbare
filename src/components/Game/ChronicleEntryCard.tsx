@@ -33,9 +33,8 @@ export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleE
         style={{
           fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
+          fontWeight: 700,
           color: 'var(--accent-gold)',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
           marginBottom: '6px',
           opacity: 0.7,
         }}
@@ -63,7 +62,7 @@ export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleE
       {showPoet && poetText && (
         <p
           style={{
-            fontFamily: 'var(--font-display)',
+            fontFamily: 'var(--font-body)',
             fontSize: 'var(--text-sm)',
             color: 'var(--text-secondary)',
             fontStyle: 'italic',

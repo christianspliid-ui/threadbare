@@ -112,9 +112,9 @@ describe('RivalPanel', () => {
 
   it('shows behavior type indicators', () => {
     render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
-    expect(screen.getByText('aggressive')).toBeInTheDocument();
-    expect(screen.getByText('subtle')).toBeInTheDocument();
-    expect(screen.getByText('expansionist')).toBeInTheDocument();
+    expect(screen.getByText('Aggressive')).toBeInTheDocument();
+    expect(screen.getByText('Subtle')).toBeInTheDocument();
+    expect(screen.getByText('Expansionist')).toBeInTheDocument();
   });
 
   it('renders sphere icons for each rival (RivalIcon shows primary and secondary spheres)', () => {
@@ -168,7 +168,7 @@ describe('RivalPanel', () => {
     ];
     render(<RivalPanel definitions={defsWithoutState} states={[]} />);
     expect(screen.getByText('The Unknown')).toBeInTheDocument();
-    expect(screen.getByText('territorial')).toBeInTheDocument();
+    expect(screen.getByText('Territorial')).toBeInTheDocument();
   });
 
   it('shows header when rivals are present', () => {

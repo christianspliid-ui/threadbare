@@ -46,7 +46,7 @@ describe('IntentSection (modal variant)', () => {
 
   it('renders priority badge', () => {
     render(<IntentSection intents={[primaryIntent]} variant="modal" />);
-    expect(screen.getByText('primary')).toBeTruthy();
+    expect(screen.getByText('Primary')).toBeTruthy();
   });
 
   it('renders milestone pips with correct aria-label', () => {

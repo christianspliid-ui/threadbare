@@ -16,7 +16,7 @@ describe('LocationCard', () => {
       />,
     );
     expect(screen.getByText('The Forge')).toBeTruthy();
-    expect(screen.getByText('settlement')).toBeTruthy();
+    expect(screen.getByText('Settlement')).toBeTruthy();
   });
 
   it('renders agent count', () => {
@@ -84,7 +84,7 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('settlement');
+    expect(container.textContent).toContain('Settlement');
   });
 
   it('renders subtype label for landmark', () => {
@@ -97,7 +97,7 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('landmark');
+    expect(container.textContent).toContain('Landmark');
   });
 
   it('renders subtype label for ruin', () => {
@@ -110,7 +110,7 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('ruin');
+    expect(container.textContent).toContain('Ruin');
   });
 
   it('renders subtype label for unknown subtype', () => {
@@ -123,7 +123,7 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('unknown');
+    expect(container.textContent).toContain('Unknown');
   });
 
   it('fires onClick on Enter key', () => {
@@ -277,13 +277,13 @@ describe('EventBlock', () => {
     expect(screen.getByText('Something stirs in the dark.')).toBeTruthy();
   });
 
-  it('renders label as uppercase', () => {
+  it('renders the label in sentence case as written, with no text-transform', () => {
     const { container } = render(
       <EventBlock label="Crisis" text="The world trembles." />,
     );
     const label = screen.getByText('Crisis');
     expect(label).toBeTruthy();
-    expect(label.style.textTransform).toBe('uppercase');
+    expect(label.style.textTransform).toBe('');
   });
 
   it('renders with correct structure', () => {

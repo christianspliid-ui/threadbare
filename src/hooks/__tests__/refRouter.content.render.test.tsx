@@ -124,8 +124,8 @@ describe('a content reference opens a content card', () => {
     expect(text).toContain(view.name);
     // The kind word appears as the subtitle and, uppercased, as the kind label.
     expect(text).toContain(getContentObjectKind(kind)!.gameWord);
-    expect(text).toContain('MARKS');
-    expect(text).toContain('WHAT IT IS');
+    expect(text).toContain('Marks');
+    expect(text).toContain('What it is');
   });
 
   it('shows the entry its own description, not a fallback, when one is written', () => {

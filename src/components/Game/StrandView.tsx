@@ -107,7 +107,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
           <div className="space-y-4">
             {data.locationName && (
               <div>
-                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                <h4 className="font-bold mb-2" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                   Location
                 </h4>
                 <p style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{data.locationName}</p>
@@ -116,8 +116,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
             {data.topDomains.length > 0 && (
               <div>
-                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-                  Domain Mastery
+                <h4 className="font-bold mb-2" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                  Domain mastery
                 </h4>
                 <div className="space-y-2">
                   {data.topDomains.map((domain) => (
@@ -146,8 +146,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
             {data.companions.length > 0 && (
               <div>
-                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-                  Companions Present
+                <h4 className="font-bold mb-2" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                  Companions present
                 </h4>
                 <div className="space-y-1">
                   {data.companions.map((companion) => (
@@ -166,8 +166,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.desires;
         return (
           <div>
-            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-              Core Desires
+            <h4 className="font-bold mb-3" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+              Core desires
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
           </div>
@@ -180,8 +180,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
           <div className="space-y-4">
             {data.factions.length > 0 && (
               <div>
-                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-                  Faction Allegiances
+                <h4 className="font-bold mb-2" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                  Faction allegiances
                 </h4>
                 <div className="space-y-1">
                   {data.factions.map((faction) => (
@@ -200,8 +200,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
             {data.relationships.length > 0 && (
               <div>
-                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-                  Key Relationships
+                <h4 className="font-bold mb-2" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                  Key relationships
                 </h4>
                 <div className="space-y-2">
                   {data.relationships.map((rel) => {
@@ -234,8 +234,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
             {data.insights.length > 0 && (
               <div>
-                <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-                  Bond Insights
+                <h4 className="font-bold mb-3" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+                  Bond insights
                 </h4>
                 <InsightList insights={data.insights} color={activeColor} />
               </div>
@@ -248,7 +248,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.ambitions;
         return (
           <div>
-            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+            <h4 className="font-bold mb-3" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
               Ambitions
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
@@ -260,8 +260,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.beliefs;
         return (
           <div>
-            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-              Core Beliefs
+            <h4 className="font-bold mb-3" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+              Core beliefs
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
           </div>
@@ -272,8 +272,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.fears;
         return (
           <div>
-            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
-              Shadows & Fears
+            <h4 className="font-bold mb-3" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
+              Shadows & fears
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
           </div>

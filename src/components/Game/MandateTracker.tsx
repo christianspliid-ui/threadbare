@@ -7,6 +7,7 @@ import { Overlay } from '../shared/Overlay';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 import { sphereDeltaReading } from '../../engine/aftermathWords';
 import { DeltaCluster } from '../shared/DeltaCluster';
+import { sphereWord } from '../shared/formatEssence';
 
 interface MandateTrackerProps {
   definition: MandateDefinition;
@@ -14,6 +15,12 @@ interface MandateTrackerProps {
 }
 
 const STAGE_ORDER = ['setup', 'escalation', 'culmination'] as const;
+/** The stage name as the player reads it (Law 14: no raw keys). */
+const STAGE_DISPLAY: Record<string, string> = {
+  setup: 'Setup',
+  escalation: 'Escalation',
+  culmination: 'Culmination',
+};
 const PIP_COLOR = MANDATE_TYPE_COLORS.graph_state;
 
 function getStagePipStatus(
@@ -88,10 +95,10 @@ function SummaryPill({ label, value, color, tooltipId }: { label: string; value:
       border: '1px solid var(--border-subtle)',
     }}>
       <div style={{
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
         fontSize: 'var(--text-xs)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em',
-        color: 'var(--text-muted)',
+        color: 'var(--text-tertiary)',
       }}>
         {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
       </div>
@@ -165,8 +172,8 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
         <div className="flex items-center gap-1.5 min-w-0">
           <Tooltip id="ui.mandate_tracker">
             <span
-              className="font-bold uppercase truncate"
-              style={{ fontSize: 'var(--text-xs)', color, fontFamily: 'var(--font-display)' }}
+              className="font-bold truncate"
+              style={{ fontSize: 'var(--text-xs)', color, fontFamily: 'var(--font-body)' }}
             >
               {definition.name}
             </span>
@@ -232,7 +239,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
         >
           <div className="flex items-center gap-2 mb-3">
             <span
-              className="font-bold uppercase px-2 py-1 rounded"
+              className="font-bold px-2 py-1 rounded"
               style={{
                 fontSize: 'var(--text-xs)',
                 backgroundColor: `${color}20`,
@@ -240,10 +247,10 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                 border: `1px solid ${color}40`,
               }}
             >
-              {definition.type === 'graph_state' && 'GRAPH-STATE'}
-              {definition.type === 'sphere_dominance' && 'SPHERE-DOMINANCE'}
-              {definition.type === 'narrative' && 'NARRATIVE'}
-              {definition.type === 'simulation_achievable' && 'SIMULATION'}
+              {definition.type === 'graph_state' && 'Graph-state'}
+              {definition.type === 'sphere_dominance' && 'Sphere-dominance'}
+              {definition.type === 'narrative' && 'Narrative'}
+              {definition.type === 'simulation_achievable' && 'Simulation'}
             </span>
           </div>
 
@@ -256,24 +263,24 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               <ProgressBar progress={state.progress} color={color} glow={state.completed} />
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
                 <SummaryPill
-                  label={definition.primarySphere ?? 'Primary'}
+                  label={definition.primarySphere ? sphereWord(definition.primarySphere) : 'Primary'}
                   value={<DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />}
                   color={color}
                 />
                 <SummaryPill
-                  label={definition.secondarySphere ?? 'Secondary'}
+                  label={definition.secondarySphere ? sphereWord(definition.secondarySphere) : 'Secondary'}
                   value={<DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />}
                 />
-                <SummaryPill label="Omens Held" value={omenCount > 0 ? `${heldOmens}/${omenCount}` : '0'} />
+                <SummaryPill label="Omens held" value={omenCount > 0 ? `${heldOmens}/${omenCount}` : '0'} />
                 <SummaryPill
-                  label="Doom Debt"
+                  label="Doom debt"
                   tooltipId="ui.doom_debt"
                   value={`${state.doomSeverityPenalties ?? 0}`}
                   color={(state.doomSeverityPenalties ?? 0) > 0 ? SENTIMENT_NEGATIVE : undefined}
                 />
                 {(state.counterOmensEarned ?? 0) > 0 && (
                   <SummaryPill
-                    label="Counter-Omens"
+                    label="Counter-omens"
                     tooltipId="ui.counter_omens"
                     value={`${state.counterOmensEarned ?? 0}`}
                     color={SENTIMENT_GREEN}
@@ -318,7 +325,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                     }}
                   >
                     <span className="font-bold">{idx + 1}.</span>
-                    <span className="font-bold uppercase">{stageDef.stage}</span>
+                    <span className="font-bold">{STAGE_DISPLAY[stageDef.stage] ?? stageDef.stage}</span>
                     {isCompleted && <span>✓</span>}
                   </div>
                   {isCurrent && (

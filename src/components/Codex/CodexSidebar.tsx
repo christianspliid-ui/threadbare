@@ -33,9 +33,8 @@ export const CodexSidebar = memo(function CodexSidebar({
         <h1
           style={{
             fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-base)',
+            fontSize: 'var(--text-lg)',
             color: 'var(--accent-gold)',
-            letterSpacing: '0.1em',
           }}
         >
           Codex
@@ -54,11 +53,11 @@ export const CodexSidebar = memo(function CodexSidebar({
                 onClick={() => onSelectCategory(cat.id)}
                 className="w-full text-left px-4 py-2 transition-colors"
                 style={{
-                  fontFamily: 'var(--font-display)',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
                   fontSize: 'var(--text-sm)',
                   color: isActive ? 'var(--accent-gold)' : 'var(--text-secondary)',
                   backgroundColor: isActive ? 'var(--accent-gold-glow)' : 'transparent',
-                  letterSpacing: '0.05em',
                 }}
               >
                 <span style={{ marginRight: '0.5rem' }}>{cat.glyph}</span>

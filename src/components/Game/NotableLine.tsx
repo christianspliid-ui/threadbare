@@ -69,10 +69,10 @@ export function NotableLine({ notable, onAgentClick }: NotableLineProps) {
         <Tooltip id="agent.notable">
           <span
             data-testid="notable-chip"
-            className="text-xs px-1.5 py-0.5 rounded uppercase tracking-wider"
+            className="text-xs px-1.5 py-0.5 rounded font-bold"
             style={{ backgroundColor: 'var(--border-gold)', color: 'var(--accent-gold)', cursor: 'help' }}
           >
-            notable
+            Notable
           </span>
         </Tooltip>
         <span className="text-sm">

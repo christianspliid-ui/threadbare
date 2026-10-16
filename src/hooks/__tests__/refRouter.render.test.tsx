@@ -209,7 +209,7 @@ describe('the card body (THR-966 closed as mount)', () => {
     expect(getByTestId('detail-panel-1').textContent).toContain('The Iron Guard');
     // The trail names where you came from, not only where you are. (The breadcrumb
     // renders ALLCAPS — asserting the display form, not the node name.)
-    expect(getByTestId('detail-panel-1').textContent).toContain('CAPTAIN VEIREN');
+    expect(getByTestId('detail-panel-1').textContent).toContain('Captain Veiren');
   });
 
   it('Escape closes the topmost card, not the whole stack (Law 23)', () => {

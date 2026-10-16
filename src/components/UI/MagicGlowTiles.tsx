@@ -129,7 +129,7 @@ function GlowTile({ name, core, mid, accent, deep, form }: SphereColors) {
         </div>
       </div>
       <span
-        className="mt-4 font-bold tracking-wider uppercase text-xs"
+        className="mt-4 font-bold text-xs"
         style={{ color: core }}
       >
         {name}
@@ -146,7 +146,7 @@ export function MagicGlowTiles() {
   return (
     <div className="min-h-screen bg-black p-10">
       <h1
-        className="text-center text-2xl font-bold tracking-widest uppercase mb-2"
+        className="text-center text-2xl font-bold mb-2"
         style={{ fontFamily: 'var(--font-display)', color: '#d4af37' }}
       >
         Threadbearer
@@ -156,8 +156,8 @@ export function MagicGlowTiles() {
       </p>
 
       {/* Foundation Spheres */}
-      <h2 className="text-gray-400 text-xs uppercase tracking-widest mb-4 text-center">
-        Foundation Spheres
+      <h2 className="text-gray-400 text-xs font-bold mb-4 text-center" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0 }}>
+        Foundation spheres
       </h2>
       <div className="flex flex-wrap gap-8 justify-center items-center mb-12">
         {FOUNDATION_SPHERES.map((s) => (
@@ -166,8 +166,8 @@ export function MagicGlowTiles() {
       </div>
 
       {/* Creation Spheres */}
-      <h2 className="text-gray-400 text-xs uppercase tracking-widest mb-4 text-center">
-        Creation Spheres
+      <h2 className="text-gray-400 text-xs font-bold mb-4 text-center" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0 }}>
+        Creation spheres
       </h2>
       <div className="flex flex-wrap gap-8 justify-center items-center">
         {CREATION_SPHERES.map((s) => (
