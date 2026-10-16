@@ -6,6 +6,7 @@ import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../
 import { durationLabel, elapsedLabel, sphereDeltaReading } from '../../engine/aftermathWords';
 import { DeltaCluster } from '../shared/DeltaCluster';
 import { Tooltip } from '../shared/Tooltip';
+import { sphereWord } from '../shared/formatEssence';
 
 interface MandateDetailProps {
   open: boolean;
@@ -333,12 +334,12 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
         {isSphereGrowth && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '18px' }}>
             <SummaryCard
-              label={definition.primarySphere ?? 'Primary'}
+              label={definition.primarySphere ? sphereWord(definition.primarySphere) : 'Primary'}
               value={<DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />}
               color={color}
             />
             <SummaryCard
-              label={definition.secondarySphere ?? 'Secondary'}
+              label={definition.secondarySphere ? sphereWord(definition.secondarySphere) : 'Secondary'}
               value={<DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />}
             />
             <SummaryCard
@@ -378,10 +379,10 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                 numeral duplicating the `ProgressBar` this modal already renders above. Dropped,
                 not banded — the bar is the reading. */}
             {definition.primarySphere && (
-              <DetailRow label="Primary sphere" value={definition.primarySphere} color={color} />
+              <DetailRow label="Primary sphere" value={sphereWord(definition.primarySphere)} color={color} />
             )}
             {definition.secondarySphere && (
-              <DetailRow label="Secondary sphere" value={definition.secondarySphere} />
+              <DetailRow label="Secondary sphere" value={sphereWord(definition.secondarySphere)} />
             )}
             {definition.courtType && (
               <DetailRow label="Court shape" value={formatCourtLabel(definition.courtType)} />
@@ -451,7 +452,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                   <MetricTrack
-                    label={definition.primarySphere ?? 'Primary'}
+                    label={definition.primarySphere ? sphereWord(definition.primarySphere) : 'Primary'}
                     current={state.primaryCurrent}
                     baseline={definition.primaryBaseline}
                     delta={state.primaryDelta}
@@ -459,7 +460,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                     color={color}
                   />
                   <MetricTrack
-                    label={definition.secondarySphere ?? 'Secondary'}
+                    label={definition.secondarySphere ? sphereWord(definition.secondarySphere) : 'Secondary'}
                     current={state.secondaryCurrent}
                     baseline={definition.secondaryBaseline}
                     delta={state.secondaryDelta}
@@ -648,7 +649,7 @@ function DetailRow({ label, value, color }: { label: string; value: string; colo
       borderBottom: '1px solid #1a1a1e',
       fontSize: 'var(--text-xs)',
     }}>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+      <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontWeight: 700 }}>
         {label}
       </span>
       <span style={{

@@ -417,7 +417,7 @@ function StatRow({ label, value, color, tooltipId }: { label: string; value: str
       borderBottom: '1px solid #1a1a1e',
       fontSize: 'var(--text-xs)',
     }}>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+      <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)', fontWeight: 700 }}>
         {tooltipId ? <Tooltip id={tooltipId}>{label}</Tooltip> : label}
       </span>
       <span style={{

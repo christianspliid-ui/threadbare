@@ -89,14 +89,14 @@ const REACH_ORDER: ReachDomain[] = [
 ];
 
 const REACH_LABELS: Record<ReachDomain, string> = {
-  iron:   'Warfare & conflict',
-  stone:  'Building & craft',
-  eye:    'Exploration & lore',
-  gold:   'Commerce & trade',
-  veil:   'Magic & mystery',
-  heart:  'Bonds & diplomacy',
-  star:   'Faith & devotion',
-  shadow: 'Intrigue & shadow',
+  iron:   'Warfare & Conflict',
+  stone:  'Building & Craft',
+  eye:    'Exploration & Lore',
+  gold:   'Commerce & Trade',
+  veil:   'Magic & Mystery',
+  heart:  'Bonds & Diplomacy',
+  star:   'Faith & Devotion',
+  shadow: 'Intrigue & Shadow',
 };
 
 // ─── Fidelity helpers ─────────────────────────────────────────────────────────

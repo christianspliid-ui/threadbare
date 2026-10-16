@@ -96,7 +96,7 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
         {harvest.cosmicEchoCandidates.length > 0 && (
           <div className="mb-6">
             <Tooltip id="ui.harvest_echo">
-              <h3 className="text-xs font-bold text-amber-100/80 mb-3 cursor-help">
+              <h3 className="text-xs font-bold text-amber-100/80 mb-3 cursor-help" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0 }}>
                 Echoes preserved — {countWord(harvest.cosmicEchoCandidates.length)} cosmic
               </h3>
             </Tooltip>

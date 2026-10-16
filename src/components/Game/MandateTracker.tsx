@@ -7,6 +7,7 @@ import { Overlay } from '../shared/Overlay';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 import { sphereDeltaReading } from '../../engine/aftermathWords';
 import { DeltaCluster } from '../shared/DeltaCluster';
+import { sphereWord } from '../shared/formatEssence';
 
 interface MandateTrackerProps {
   definition: MandateDefinition;
@@ -262,12 +263,12 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               <ProgressBar progress={state.progress} color={color} glow={state.completed} />
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
                 <SummaryPill
-                  label={definition.primarySphere ?? 'Primary'}
+                  label={definition.primarySphere ? sphereWord(definition.primarySphere) : 'Primary'}
                   value={<DeltaReading delta={state.primaryDelta} noun={definition.primarySphere ?? 'Primary'} />}
                   color={color}
                 />
                 <SummaryPill
-                  label={definition.secondarySphere ?? 'Secondary'}
+                  label={definition.secondarySphere ? sphereWord(definition.secondarySphere) : 'Secondary'}
                   value={<DeltaReading delta={state.secondaryDelta} noun={definition.secondarySphere ?? 'Secondary'} />}
                 />
                 <SummaryPill label="Omens held" value={omenCount > 0 ? `${heldOmens}/${omenCount}` : '0'} />

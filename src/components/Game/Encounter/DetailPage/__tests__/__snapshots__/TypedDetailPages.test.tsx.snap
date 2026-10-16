@@ -31,7 +31,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
               <span
                 class="focus-ring"
                 role="button"
-                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
                 ENCOUNTER
@@ -46,7 +46,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
                 ›
               </span>
               <span
-                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
                 CAPTAIN VEIREN
               </span>
@@ -138,7 +138,8 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
           style="flex: 1 1 0%;"
         >
           <div
-            style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+            data-section-label=""
+            style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
           >
             DISPOSITION TOWARD HER
           </div>
@@ -153,7 +154,8 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           WHAT SHE IS TO HIM
         </div>
@@ -167,7 +169,8 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           THREADS BETWEEN THEM
         </div>
@@ -176,7 +179,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
         >
           <span
             role="button"
-            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--sphere-life-bright, var(--accent-gold)); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--sphere-life-bright, var(--accent-gold)); font-size: 0.75rem; font-family: var(--font-body); font-weight: 700; cursor: pointer; user-select: none;"
             tabindex="0"
           >
             Avatar of Witness
@@ -194,12 +197,13 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
         tabindex="0"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           RECENT ENCOUNTERS
         </div>
         <div
-          style="font-size: 0.65rem; letter-spacing: 0.1em; color: var(--text-tertiary); font-family: var(--font-display); text-transform: uppercase; margin-bottom: 6px;"
+          style="font-size: var(--text-xs); color: var(--text-tertiary); font-family: var(--font-body); font-weight: 700; margin-bottom: 6px;"
         >
           1 TURN AGO · THE IRON MARKET
         </div>
@@ -213,7 +217,8 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           FACTION ALLEGIANCES
         </div>
@@ -222,7 +227,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
         >
           <span
             role="button"
-            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-body); font-weight: 700; cursor: pointer; user-select: none;"
             tabindex="0"
           >
             The Iron Guard
@@ -238,7 +243,8 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           NOTABLE CAPABILITIES
         </div>
@@ -246,7 +252,7 @@ exports[`DetailPage — actor > snapshot: actor 1`] = `
           style="display: flex; flex-wrap: wrap; gap: 6px;"
         >
           <span
-            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: default; letter-spacing: 0.04em; user-select: none;"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-body); font-weight: 700; cursor: default; user-select: none;"
           >
             command
             <em
@@ -302,7 +308,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
               <span
                 class="focus-ring"
                 role="button"
-                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
                 ENCOUNTER
@@ -317,7 +323,7 @@ exports[`DetailPage — event > snapshot: event 1`] = `
                 ›
               </span>
               <span
-                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
                 A MEETING IN THE MARKET
               </span>
@@ -397,7 +403,8 @@ exports[`DetailPage — event > snapshot: event 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
         >
           WHAT HAPPENED
         </div>
@@ -411,7 +418,8 @@ exports[`DetailPage — event > snapshot: event 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           WHO WAS THERE
         </div>
@@ -420,14 +428,14 @@ exports[`DetailPage — event > snapshot: event 1`] = `
         >
           <span
             role="button"
-            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-force-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-body); font-weight: 700; cursor: pointer; user-select: none;"
             tabindex="0"
           >
             Avatar of Witness
           </span>
           <span
             role="button"
-            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-spirit-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-display); cursor: pointer; letter-spacing: 0.04em; user-select: none;"
+            style="padding: 3px 8px; border-radius: 4px; border: 1px solid var(--sphere-spirit-bright, var(--border-gold)); color: var(--text-secondary); font-size: 0.75rem; font-family: var(--font-body); font-weight: 700; cursor: pointer; user-select: none;"
             tabindex="0"
           >
             Captain Veiren
@@ -479,7 +487,7 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
               <span
                 class="focus-ring"
                 role="button"
-                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
                 ENCOUNTER
@@ -494,7 +502,7 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
                 ›
               </span>
               <span
-                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
                 THE IRON GUARD
               </span>
@@ -574,7 +582,8 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
         >
           HOW THEY HOLD HER
         </div>
@@ -588,7 +597,8 @@ exports[`DetailPage — faction > snapshot: faction 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           REPUTATIONS THEY HOLD
         </div>
@@ -656,7 +666,7 @@ exports[`DetailPage — item > snapshot: item 1`] = `
               <span
                 class="focus-ring"
                 role="button"
-                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
                 ENCOUNTER
@@ -671,7 +681,7 @@ exports[`DetailPage — item > snapshot: item 1`] = `
                 ›
               </span>
               <span
-                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
                 VEIRENS TOKEN
               </span>
@@ -763,7 +773,8 @@ exports[`DetailPage — item > snapshot: item 1`] = `
           style="flex: 1 1 0%;"
         >
           <div
-            style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+            data-section-label=""
+            style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
           >
             WHAT IT MEANS HERE
           </div>
@@ -778,7 +789,8 @@ exports[`DetailPage — item > snapshot: item 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           HOW IT CAME TO HER
         </div>
@@ -833,7 +845,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
               <span
                 class="focus-ring"
                 role="button"
-                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: pointer; color: var(--text-secondary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
                 tabindex="0"
               >
                 ENCOUNTER
@@ -848,7 +860,7 @@ exports[`DetailPage — place > snapshot: place 1`] = `
                 ›
               </span>
               <span
-                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: 0.7rem; letter-spacing: 0.04em; font-family: var(--font-display); text-transform: uppercase;"
+                style="cursor: default; color: var(--text-tertiary); text-decoration: none; font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700;"
               >
                 THE IRON MARKET
               </span>
@@ -940,7 +952,8 @@ exports[`DetailPage — place > snapshot: place 1`] = `
           style="flex: 1 1 0%;"
         >
           <div
-            style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+            data-section-label=""
+            style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
           >
             THE IRON MARKET
           </div>
@@ -950,7 +963,8 @@ exports[`DetailPage — place > snapshot: place 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--accent-gold); margin-bottom: 6px; border-bottom: 1px solid var(--accent-gold-dim, var(--border-gold)); padding-bottom: 2px;"
         >
           WHAT THIS PLACE WANTS
         </div>
@@ -964,7 +978,8 @@ exports[`DetailPage — place > snapshot: place 1`] = `
         style="margin-bottom: 20px;"
       >
         <div
-          style="font-family: var(--font-display); font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
+          data-section-label=""
+          style="font-family: var(--font-body); font-weight: 700; font-size: var(--text-xs); color: var(--text-tertiary); margin-bottom: 6px; border-bottom: medium; padding-bottom: 0px;"
         >
           MEMORY
         </div>

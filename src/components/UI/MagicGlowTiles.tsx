@@ -156,7 +156,7 @@ export function MagicGlowTiles() {
       </p>
 
       {/* Foundation Spheres */}
-      <h2 className="text-gray-400 text-xs font-bold mb-4 text-center">
+      <h2 className="text-gray-400 text-xs font-bold mb-4 text-center" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0 }}>
         Foundation spheres
       </h2>
       <div className="flex flex-wrap gap-8 justify-center items-center mb-12">
@@ -166,7 +166,7 @@ export function MagicGlowTiles() {
       </div>
 
       {/* Creation Spheres */}
-      <h2 className="text-gray-400 text-xs font-bold mb-4 text-center">
+      <h2 className="text-gray-400 text-xs font-bold mb-4 text-center" style={{ fontFamily: 'var(--font-body)', letterSpacing: 0 }}>
         Creation spheres
       </h2>
       <div className="flex flex-wrap gap-8 justify-center items-center">
