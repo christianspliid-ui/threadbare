@@ -38,7 +38,7 @@ import {
 import { useScry } from './hooks/useScry';
 import { useAgentInteraction, unthreadedAgentTierName } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
-import { hexToPixel } from '../../lib/hexMath';
+import { resolvePlaceHex } from './map/mapFocusTargets';
 import { readView } from '../../engine/views/readView';
 import { mapAgentsSelector } from '../../engine/views/map/agents';
 import { mapThreadLinesSelector } from '../../engine/views/map/threadLines';
@@ -116,7 +116,6 @@ import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
 import { getLatestEncounterDecisionForAgent, getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetry';
-import { AvatarHUD } from './AvatarHUD';
 import { readWorldPastForPlayer } from '../../engine/worldPast';
 import { buildBeforeYouWoke, worldHasPast } from '../../engine/worldPastWords';
 import { ToastStack } from './ToastStack';
@@ -1037,17 +1036,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const row = node?.properties.centerRow as number | undefined;
     if (col === undefined || row === undefined) return;
     handleHexClick({ col, row });
-    if (hexMapRef.current) {
-      const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-      hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
-    }
+    hexMapRef.current?.focusOn({ col, row });
   }, [gameState.graph, handleHexClick, hexMapRef]);
 
   const handleFocusHex = useCallback((col: number, row: number) => {
-    if (hexMapRef.current) {
-      const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-      hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
-    }
+    hexMapRef.current?.focusOn({ col, row });
   }, [hexMapRef]);
 
   // ── Notification system hook ──
@@ -1944,32 +1937,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleAvatarScryClick();
   }, [closeAllAgentOverlays, handleBackFromAgentDetail, handleHexDetailClose, handleAvatarScryClick]);
 
-  // NFP #1: Named constant for retinue eye-icon zoom level.
-  // Maximum zoom — agent eye icon zooms in tight to the agent's hex.
-  const RETINUE_EYE_ZOOM_SCALE = 20;
-
-  // Eye icon next to agent name: zoom camera to agent's hex at max zoom
-  // THR-1792 — climbs `parentLocationId` (as debug `gotoAgent` does) so a sublocation
-  // id finds its settlement's hex instead of failing silently.
+  // Eye icons and the seat button: centre the camera on a place at FOCUS_ZOOM (THR-1900 D7;
+  // was a k-20 close-up). THR-1792 — `resolvePlaceHex` climbs `parentLocationId` (as debug
+  // `gotoAgent` does) so a sublocation id finds its settlement's hex instead of failing silently.
   const handleCenterOnHex = useCallback((locationId: string) => {
-    let locNode = gameState.graph.getNode(locationId);
-    let col: number | undefined;
-    let row: number | undefined;
-    for (let depth = 0; depth < 3 && locNode; depth++) {
-      const props = (locNode.properties ?? {}) as Record<string, unknown>;
-      if (typeof props.hexCol === 'number' && typeof props.hexRow === 'number') {
-        col = props.hexCol;
-        row = props.hexRow;
-        break;
-      }
-      const parentId = props.parentLocationId as string | undefined;
-      locNode = parentId ? gameState.graph.getNode(parentId) : undefined;
-    }
-    if (col !== undefined && row !== undefined && hexMapRef.current) {
-      const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-      // Y-flip: hexToPixel returns SVG y-down, Three.js camera uses y-up
-      hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
-    }
+    const hex = resolvePlaceHex(gameState.graph, locationId);
+    if (hex) hexMapRef.current?.focusOn(hex);
   }, [gameState.graph, hexMapRef]);
 
   // Eye icon next to location name: navigate to the location detail view
@@ -4320,7 +4293,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // `?testavatar` URL levers live in `useGameDebugLevers`. Called last so every value
   // it reads is already defined; each lever keeps the deps it had inline.
   useGameDebugLevers({
-    gameState, setGameState, runtime, tiles, hexMapRef, retinueEyeZoomScale: RETINUE_EYE_ZOOM_SCALE,
+    gameState, setGameState, runtime, tiles, hexMapRef,
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
@@ -4495,7 +4468,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 toggleMapLens={toggleMapLens}
                 dominionBandColors={dominionBandColors}
                 locationActivitySummaries={locationActivitySummaries}
-                RETINUE_EYE_ZOOM_SCALE={RETINUE_EYE_ZOOM_SCALE}
                 agendaPickerOpen={agendaPickerOpen}
                 pendingAgendas={pendingAgendas}
                 wheelSlots={wheelSlots}
@@ -5011,7 +4983,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleChapterLetWorldTurn={handleChapterLetWorldTurn}
         handleChapterBackToMap={handleChapterBackToMap}
         hexMapRef={hexMapRef}
-        RETINUE_EYE_ZOOM_SCALE={RETINUE_EYE_ZOOM_SCALE}
         pendingMoment={pendingMoment}
         momentCardModel={momentCardModel}
         handleAcknowledgeMoment={handleAcknowledgeMoment}

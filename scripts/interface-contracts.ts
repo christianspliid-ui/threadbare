@@ -1682,6 +1682,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/components/Game/GameView.tsx', 'src/components/HexMapV2/HexMapV2.tsx'],
   },
   {
+    id: 'explored-hexes-frame-opening-view',
+    producerSystem: 'Intelligence, Knowledge & Familiarity',
+    consumerSystem: WORLDGEN,
+    intent:
+      'The run opens on the First with all the land the god knows in view (THR-1900, plan THR-1878 D8). The fog `visibilityMap` is read for every hex not `unexplored`; `fitKnownLand` fits their bounds, and `computeOpeningView` clamps that zoom to [6, 10] and centres on the First (else the seat, else the known land) — ZOOM-05\'s k-15 close-up retired. The "Show known land" button and key `F` read the same fit. Fog off falls back to the whole-grid fit.',
+    ulTerms: ['The First'],
+    mechanism: { kind: 'function', symbols: ['fitKnownLand', 'computeOpeningView'] },
+    writeSites: ['src/components/HexMapV2/camera/cameraFraming.ts'],
+    readSites: ['src/components/HexMapV2/camera/mapCamera.ts'],
+  },
+  {
     id: 'dominion-band-on-card-and-cast-bar',
     producerSystem: QUINTESSENCE,
     consumerSystem: 'Essence & Divine Economy',

@@ -28,11 +28,11 @@ import { MAP_OVERLAY_Z } from './mapOverlayZ';
 /**
  * Zoom level boundaries for label tier visibility.
  *
- * Mapping to approximate visual scales:
- *   Full-world:   zoomLevel < 1.5  (~10px/hex)
- *   Continental:  1.5 <= zoom < 5  (~30px/hex)
- *   Regional:     5 <= zoom < 15   (~100px/hex)
- *   Hero-local:   zoom >= 15       (~300px/hex)
+ * Mapping to approximate visual scales (a hex is HEX_SIZE × 2 × k px across, HEX_SIZE 10):
+ *   Full-world:   zoomLevel < 1.5  (under ~30px/hex)
+ *   Continental:  1.5 <= zoom < 5  (~30–100px/hex)
+ *   Regional:     5 <= zoom < 15   (~100–300px/hex)
+ *   Hero-local:   zoom >= 15       (~300px/hex and up)
  */
 export const ZOOM_THRESHOLDS = {
   FULL_WORLD_MAX: 1.5,

@@ -115,7 +115,32 @@ export interface StageTrace extends TraceBase {
   summary: string;
 }
 
-export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace | StageTrace;
+/** Why the map camera made a programmatic move (THR-1900). */
+export type MapCameraJumpReason =
+  | 'opening'
+  | 'centre_first'
+  | 'centre_seat'
+  | 'known_land'
+  | 'zoom_step'
+  | 'minimap'
+  | 'focus';
+
+/**
+ * Emitted on every programmatic map camera move — a control button, a map key, the opening
+ * view, or a "show me" jump (THR-1900, plan THR-1878 § Tracing). Wheel zoom and drag pan are
+ * not traced (noise). Arrow-key pans are not either: they are a drag by keyboard.
+ */
+export interface UiMapCameraJumpTrace extends TraceBase {
+  category: 'ui_map_camera_jump';
+  reason: MapCameraJumpReason;
+  /** The zoom it lands at (debug only; never shown to the player). */
+  k: number;
+  /** "col,row", or null for a zoom step. */
+  target: string | null;
+  summary: string;
+}
+
+export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace | StageTrace | UiMapCameraJumpTrace;
 
 /** The categories this module registers, for the vocabulary gate. */
-export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback', 'ui_stage'] as const;
+export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback', 'ui_stage', 'ui_map_camera_jump'] as const;

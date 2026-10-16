@@ -8,19 +8,26 @@
  * toast stack, so every absolutely positioned child (lens switch, summary bar, agenda
  * picker, intervention confirm, effect choice set) keeps its place at 1920×1080.
  *
- * Nothing here changes what the game does.
+ * THR-1900 (plan THR-1878 D6–D9): the map's camera commands live here — the control
+ * cluster in `MapCornerChrome` (bottom-right) and the map keys (`useMapHotkeys`), both
+ * running `MAP_COMMANDS` through one `runMapCommand`; the First and the seat are passed to
+ * HexMapV2 for the opening view.
  */
-import type { RefObject } from 'react';
+import { useCallback, useMemo, type RefObject } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { HexCoord } from '../../../types';
 import type { VisibilityMap } from '../../../types/visibility';
 import type { LocationActivitySummary } from '../../../types/locationActivity';
 import type { HarvestResult } from '../../../engine/cycleEnd';
 import type { ThreadCategory } from '../../../engine/retinue';
-import { hexToPixel } from '../../../lib/hexMath';
 import HexMapV2 from '../../HexMapV2/HexMapV2';
 import type { HexMapV2Handle, HexMapV2Props } from '../../HexMapV2/HexMapV2';
-import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
+import { CAMERA_CONSTANTS } from '../../HexMapV2/camera/D3ZoomCamera';
+import { MapControls } from '../../HexMapV2/chrome/MapControls';
+import { MapCornerChrome } from '../../HexMapV2/chrome/MapCornerChrome';
+import { MAP_PAN_DIRECTIONS, type MapCommandId } from '../../../data/map-commands';
+import { resolveFirstHex, resolveSeatHex } from './mapFocusTargets';
+import { useMapHotkeys } from './useMapHotkeys';
 import { MapLensSwitch } from '../../HexMapV2/chrome/MapLensSwitch';
 import type { MapLensSwitchProps } from '../../HexMapV2/chrome/MapLensSwitch';
 import { LiveLocationBar } from '../LiveLocationBar';
@@ -80,7 +87,6 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   dominionBandColors: MapLensSwitchProps['bandColors'];
   // Living World summary bar
   locationActivitySummaries: Map<string, LocationActivitySummary>;
-  RETINUE_EYE_ZOOM_SCALE: number;
 }
 
 export function GameMap({
@@ -135,7 +141,6 @@ export function GameMap({
   toggleMapLens,
   dominionBandColors,
   locationActivitySummaries,
-  RETINUE_EYE_ZOOM_SCALE,
   agendaPickerOpen,
   pendingAgendas,
   wheelSlots,
@@ -148,6 +153,45 @@ export function GameMap({
   pendingChoice,
   setPendingChoice,
 }: GameMapProps) {
+  // THR-1900 — what "Centre on my First" and the opening view centre on.
+  const firstHex = useMemo(
+    () => resolveFirstHex(gameState.graph, gameState.ascendantId, agentRenderDataWithActivity),
+    [gameState.graph, gameState.ascendantId, agentRenderDataWithActivity],
+  );
+  const seatHex = useMemo(
+    () => resolveSeatHex(gameState.graph, gameState.ascendantId),
+    // The graph is mutated in place, so the tick is what re-reads the seat once a beat sets it.
+    [gameState.graph, gameState.ascendantId, gameState.tick],
+  );
+
+  // THR-1900 — one runner for every map command, so a button and its key cannot disagree.
+  const runMapCommand = useCallback((id: MapCommandId) => {
+    const map = hexMapRef.current;
+    if (!map) return;
+    const pan = MAP_PAN_DIRECTIONS[id];
+    if (pan) {
+      map.panBy(pan[0] * CAMERA_CONSTANTS.PAN_STEP_FRACTION, pan[1] * CAMERA_CONSTANTS.PAN_STEP_FRACTION);
+      return;
+    }
+    switch (id) {
+      case 'zoom_in':
+        map.zoomBy(CAMERA_CONSTANTS.ZOOM_STEP_FACTOR);
+        break;
+      case 'zoom_out':
+        map.zoomBy(1 / CAMERA_CONSTANTS.ZOOM_STEP_FACTOR);
+        break;
+      case 'centre_first':
+        if (firstHex) map.focusOn(firstHex, 'centre_first');
+        else if (seatHex) map.focusOn(seatHex, 'centre_seat');
+        break;
+      case 'show_known_land':
+        map.showKnownLand();
+        break;
+    }
+  }, [hexMapRef, firstHex, seatHex]);
+
+  useMapHotkeys(runMapCommand);
+
   return (
     <>
       <HexMapV2
@@ -195,7 +239,19 @@ export function GameMap({
         shouldCenterOnAgent={cameraGateCallback}
         dominionLens={dominionLensForMap}
         dominionTooltip={dominionTooltip}
+        firstHex={firstHex}
+        seatHex={seatHex}
+        tick={gameState.tick}
       />
+
+      {/* THR-1900 — the bottom-right corner: the control cluster (the minimap joins it, THR-1901) */}
+      <MapCornerChrome>
+        <MapControls
+          hexMapRef={hexMapRef}
+          hasFocusTarget={firstHex !== null || seatHex !== null}
+          onCommand={runMapCommand}
+        />
+      </MapCornerChrome>
 
       {/* THR-1750 — the map lens switch (lens one: Dominion), key 1 */}
       {gameState.ascendantId && (
@@ -206,17 +262,11 @@ export function GameMap({
         />
       )}
 
-      {/* AvatarHUD superseded by AscendantBar (THR-184) */}
-
       {/* Living World summary bar — top-3 active locations (THR-127) */}
       <LiveLocationBar
         summaries={locationActivitySummaries}
         tick={gameState.tick}
-        onCenterOnHex={(col, row) => {
-          if (!hexMapRef.current) return;
-          const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-          hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
-        }}
+        onCenterOnHex={(col, row) => hexMapRef.current?.focusOn({ col, row })}
       />
 
       {/* Agenda picker, intervention confirm, effect choice set (THR-1881 step b) */}

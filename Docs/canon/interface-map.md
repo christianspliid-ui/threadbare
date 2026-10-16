@@ -394,6 +394,14 @@ cost and cast odds read the band. `BorderMesh` exports its two edge helpers; `cr
 is unchanged (preserved). Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1900 (2026-10-16), the map's opening view** —
+`explored-hexes-frame-opening-view`: the fog `visibilityMap` frames the camera. `fitKnownLand`
+fits every hex that is not `unexplored`; `computeOpeningView` clamps that zoom to [6, 10] and
+centres on the First, else the god's seat, else the known land (ZOOM-05's close-up on the
+retinue retired). "Show known land" (button and key `F`) reads the same fit. A UI read only:
+no state is written. Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

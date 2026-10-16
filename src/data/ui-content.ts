@@ -163,6 +163,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Ground slipped',
     desc: 'Your hold here slipped. Tend it to win it back.',
   },
+  // THR-1900 — the map's control cluster (plan THR-1878 D6, D9; `MAP_COMMANDS`).
+  'ui.map.zoom_in': { label: 'Zoom in', desc: 'Look closer. Key Page Up.' },
+  'ui.map.zoom_out': { label: 'Zoom out', desc: 'See more of the land. Key Page Down.' },
+  'ui.map.centre_first': { label: 'Centre on my First', desc: 'Bring your First to the middle of the map. Key Home.' },
+  'ui.map.show_known_land': { label: 'Show known land', desc: 'Fit all the land you know into view. Key F.' },
   // THR-1847 — the words behind the map's siege ring and crossed swords (Laws 1, 17).
   'ui.siege': {
     label: 'Under siege',

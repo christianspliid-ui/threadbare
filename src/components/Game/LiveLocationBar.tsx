@@ -6,7 +6,7 @@
  * Clicking a location entry centers the camera on that hex.
  * Dismissible via the × button.
  *
- * Placement: absolute bottom-left of the map area, below AvatarHUD.
+ * Placement: absolute bottom-left of the map area.
  * Only visible when viewLevel === 'world'.
  */
 
