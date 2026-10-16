@@ -25,6 +25,12 @@ import type { GraphNode } from '../types/graph';
 import { buildCardEcho, selectEchoCard } from './nudgeCardRepertoire';
 import { createDoomClockState } from './doomClock';
 import { DEFAULT_DOOM_TICKS } from '../data/game-config';
+import { getSpherePoints, rankSpherePoints } from './spherePoints';
+import { dominionOf } from './dominion';
+import { DOMINION_BAND_RANK } from '../data/dominion-content';
+import { getLocationNodes } from './sublocationShape';
+import { isAspect } from './aspects';
+import { emitTrace } from './traceBuffer';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -92,6 +98,12 @@ export interface HarvestResult {
    * Absent when the god never played a library card — a real state, not an error.
    */
   cardEcho?: EchoDefinition;
+  /**
+   * THR-1813 — the god's own echoes, picked by rule into the `divineEchoSlots`
+   * (Monument → Legacy → Relic, a kind with no candidate yielding its slot).
+   * Optional so older fixtures keep their shape; absent reads as none.
+   */
+  divineEchoes?: EchoDefinition[];
 }
 
 export interface HarvestEchoCandidate {
@@ -119,39 +131,59 @@ export function computeHarvest(state: GameState): HarvestResult {
   const artifacts = state.graph.getNodesByType('artifact');
   const allNodes = [...actors, ...locations, ...artifacts];
 
-  const candidates: HarvestEchoCandidate[] = allNodes.map(node => {
+  // THR-1813 Decided 5: echoes carry the god's bought primary and secondary, not
+  // the cosmology's top two. A god with no readable points falls back to those.
+  const cosmologyTopTwo = [...SPHERE_NAMES].sort((a, b) =>
+    (state.cosmology[b] ?? 0) - (state.cosmology[a] ?? 0)
+  ).slice(0, 2);
+  const godPair = rankSpherePoints(getSpherePoints(state.graph.getNode(state.ascendantId)?.properties)).slice(0, 2);
+  const echoSpheres: SphereName[] = godPair.length === 2
+    ? godPair
+    : godPair.length === 1 ? [godPair[0], cosmologyTopTwo.find(s => s !== godPair[0]) ?? godPair[0]] : cosmologyTopTwo;
+
+  const significance = new Map<string, number>();
+  const scored = allNodes.map(node => {
     const edgeCount = state.graph.getAllEdgesForNode(node.id).length;
     // Events = number of chronicle entries mentioning this node (simplified)
     const eventCount = state.chronicleEntries.filter(
       e => e.promptContext.actors.includes(node.id)
     ).length;
     const score = computeSignificanceScore(edgeCount, eventCount, node.type);
+    significance.set(node.id, score);
+    return { node, score };
+  });
 
-    const echoDef = buildEchoDefinition(
-      `echo_${state.cycle}_${node.id}`,
+  // THR-1813 E4 — the god's own echoes, picked by rule before the cosmic ones so
+  // the same node is never carried twice.
+  const divineCounts: Record<HarvestType, number> = {
+    triumphant: 3,
+    bittersweet: 2,
+    somber: 1,
+  };
+  const divineEchoes = pickDivineEchoes(state, divineCounts[harvestType], significance, echoSpheres);
+  const divineNodeIds = new Set(divineEchoes.map(d => d.originNodeId));
+
+  const candidates: HarvestEchoCandidate[] = scored
+    .filter(({ node }) => !divineNodeIds.has(node.id))
+    .map(({ node, score }) => ({
       node,
-      'cosmic',
-      state.cycle,
       score,
-      // Pick sphere affinities from cosmology top spheres
-      [...SPHERE_NAMES].sort((a, b) =>
-        (state.cosmology[b] ?? 0) - (state.cosmology[a] ?? 0)
-      ).slice(0, 2),
-    );
-
-    return { node, score, echoDefinition: echoDef };
-  }).sort((a, b) => b.score - a.score);
+      echoDefinition: buildEchoDefinition(
+        `echo_${state.cycle}_${node.id}`,
+        node,
+        'cosmic',
+        state.cycle,
+        score,
+        echoSpheres,
+      ),
+    }))
+    .sort((a, b) => b.score - a.score);
 
   // Cosmic echo counts by harvest type
   const cosmicCounts: Record<HarvestType, number> = {
     triumphant: 5,
     bittersweet: 4,
     somber: 3,
-  };
-  const divineCounts: Record<HarvestType, number> = {
-    triumphant: 3,
-    bittersweet: 2,
-    somber: 1,
   };
 
   // Generate summary
@@ -192,7 +224,102 @@ export function computeHarvest(state: GameState): HarvestResult {
     divineEchoSlots: divineCounts[harvestType],
     chronicleSummary,
     cardEcho,
+    divineEchoes,
   };
+}
+
+// ─── Divine echo picks (THR-1813 E4) ──────────────────────────────
+
+type DivineKind = 'monument' | 'legacy' | 'relic';
+const DIVINE_ROTATION: readonly DivineKind[] = ['monument', 'legacy', 'relic'];
+
+interface DivineCandidate { node: GraphNode; reason: string }
+
+const bySignificanceThenId = (sig: Map<string, number>) => (a: GraphNode, b: GraphNode) =>
+  (sig.get(b.id) ?? 0) - (sig.get(a.id) ?? 0) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+
+/**
+ * Decided 4 — the god's echoes, by rule, never rolled. A Monument is a place the
+ * god reads Sovereign, else Held; a Legacy is a threaded mortal at the highest
+ * thread tier (an Aspect first); a Relic is an artifact one of the god's threaded
+ * mortals bears. Ties break on significance, then id. Slots fill in rotation
+ * Monument → Legacy → Relic; a kind with no candidate yields to the next.
+ */
+export function pickDivineEchoes(
+  state: GameState,
+  slots: number,
+  significance: Map<string, number>,
+  spheres: SphereName[],
+): EchoDefinition[] {
+  const graph = state.graph;
+  const sig = bySignificanceThenId(significance);
+  const pools: Record<DivineKind, DivineCandidate[]> = { monument: [], legacy: [], relic: [] };
+
+  try {
+    // Monuments: the god's surest places.
+    const places = getLocationNodes(graph)
+      .map(node => ({ node, band: dominionOf(graph, state.ascendantId, node.id).band }))
+      .filter(p => p.band === 'sovereign' || p.band === 'held');
+    places.sort((a, b) => DOMINION_BAND_RANK[b.band] - DOMINION_BAND_RANK[a.band] || sig(a.node, b.node));
+    pools.monument = places.map(p => ({ node: p.node, reason: `the god reads ${p.band}` }));
+
+    // Legacies: the mortals the god raised highest.
+    const threads = graph.getOutgoingEdges(state.ascendantId, 'thread');
+    const mortals = threads
+      .map(e => ({ node: graph.getNode(e.target), tier: Number((e.properties as { tier?: number } | undefined)?.tier) || 0 }))
+      .filter((m): m is { node: GraphNode; tier: number } => !!m.node && m.node.type === 'actor');
+    const aspect = new Map(mortals.map(m => [m.node.id, isAspect(graph, m.node.id)]));
+    mortals.sort((a, b) =>
+      Number(aspect.get(b.node.id)) - Number(aspect.get(a.node.id)) || b.tier - a.tier || sig(a.node, b.node));
+    pools.legacy = mortals.map(m => ({
+      node: m.node,
+      reason: aspect.get(m.node.id) ? 'an Aspect of the god' : `threaded at tier ${m.tier}`,
+    }));
+
+    // Relics: what the god's chosen carried — held (`possesses`) or bonded (`bonded_to`,
+    // how a legendary artifact is borne), the same two edges every bearer read uses.
+    const relics = new Map<string, GraphNode>();
+    for (const m of mortals) {
+      for (const e of [
+        ...graph.getOutgoingEdges(m.node.id, 'possesses'),
+        ...graph.getOutgoingEdges(m.node.id, 'bonded_to'),
+      ]) {
+        const a = graph.getNode(e.target);
+        if (a?.type === 'artifact' || a?.type === 'artifact_legendary') relics.set(a.id, a);
+      }
+    }
+    pools.relic = [...relics.values()].sort(sig).map(node => ({ node, reason: 'borne by a threaded mortal' }));
+  } catch {
+    // Fail-soft: an unreadable world leaves the god nothing rather than crashing the harvest.
+  }
+
+  const used = new Set<string>();
+  const picked: EchoDefinition[] = [];
+  for (let slot = 0; slot < slots; slot++) {
+    let chosen: { kind: DivineKind; c: DivineCandidate } | null = null;
+    for (let k = 0; k < DIVINE_ROTATION.length && !chosen; k++) {
+      const kind = DIVINE_ROTATION[(slot + k) % DIVINE_ROTATION.length];
+      const c = pools[kind].find(x => !used.has(x.node.id));
+      if (c) chosen = { kind, c };
+    }
+    if (!chosen) {
+      emitTrace({ tick: state.tick, category: 'harvest.divine_echo_picked', slot, kind: 'none', reason: 'no candidate of any kind', summary: `divine echo slot ${slot}: none` });
+      continue;
+    }
+    used.add(chosen.c.node.id);
+    const score = significance.get(chosen.c.node.id) ?? 0;
+    picked.push(buildEchoDefinition(`echo_${state.cycle}_divine_${chosen.c.node.id}`, chosen.c.node, 'divine', state.cycle, score, spheres));
+    emitTrace({
+      tick: state.tick,
+      category: 'harvest.divine_echo_picked',
+      slot,
+      kind: chosen.kind,
+      nodeId: chosen.c.node.id,
+      reason: chosen.c.reason,
+      summary: `divine echo slot ${slot}: ${chosen.kind} ${chosen.c.node.name} (${chosen.c.reason})`,
+    });
+  }
+  return picked;
 }
 
 // ─── Transition to New Cycle ──────────────────────────────────────

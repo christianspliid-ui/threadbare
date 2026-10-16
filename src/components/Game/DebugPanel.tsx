@@ -76,6 +76,8 @@ export interface DebugPanelProps {
   controlEffects?: readonly ControlEffect[];
   /** THR-418 — essence reserves for runway display in the Sustained tab. */
   essenceReserves?: Partial<Record<SphereName, number>>;
+  /** THR-1813 — the account record this world folds into, for the Account tab. */
+  accountRecord?: import('../../types/account').AccountRecord | null;
 }
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -87,7 +89,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   strategicState, holdStandings, omenState, doomIdentityMatrix, hiddenMarks, pendingEncounterSeeds,
   regionalDetectionPressure, archetypeDrift,
   activeDelves, getRecentEvents, flipTableStates, activeCompositions, doomClockStage,
-  controlEffects, essenceReserves,
+  controlEffects, essenceReserves, accountRecord,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -235,6 +237,7 @@ export const DebugPanel = React.memo(function DebugPanel({
           doomClockStage={doomClockStage}
           controlEffects={controlEffects}
           essenceReserves={essenceReserves}
+          accountRecord={accountRecord}
         />
       </div>
 

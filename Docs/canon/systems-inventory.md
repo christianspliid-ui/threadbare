@@ -235,6 +235,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 | Domain | Files | Tags |
 |---|---|---|
+| `account` (2) | `accountRecord.ts`, `accountStore.ts` | `THR-1773`, `THR-1813` |
 | `action` (3) | `actionCandidates.ts`, `actionLifecycle.ts`, `actionUnlock.ts` | `THR-501` |
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
@@ -456,4 +457,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 109 tick phases · 218 engine domains · 691 modules._
+_Counts: 28 registered subsystems (2 dormant) · 109 tick phases · 219 engine domains · 693 modules._

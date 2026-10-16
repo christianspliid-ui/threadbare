@@ -7,15 +7,17 @@ import type { RiverPath } from '../../../engine/worldGenData';
 import { initializeGameState, initializeGameStateFromIdentity, devSeedTheFirst, devSeedAscendantTestPackage, devPlaceAvatarAtSettlement, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
 import type { MapSizePreset } from '../../../engine/gameInit';
 import type { AscendantIdentity } from '../../../types/remembrance';
-import { runTick, resetEventCounter } from '../../../engine/orchestrator';
+import { runTick, resetEventCounter, resetDecisionCache } from '../../../engine/orchestrator';
 import { createSimulationRuntime, resetRuntimeCaches, ensureAreaProjection, ensureRealmProjection } from '../../../engine/simulationRuntime';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import {
   startTwilight,
   runTwilightTick,
   computeHarvest,
-  transitionToNewCycle,
 } from '../../../engine/cycleEnd';
+import type { AccountRecord } from '../../../types/account';
+import { concludeRun, emptyAccount } from '../../../engine/accountRecord';
+import { saveAccount } from '../../../engine/accountStore';
 import type { HarvestResult } from '../../../engine/cycleEnd';
 import { computeMaxEssence } from '../../../engine/influence';
 import type { ScryState } from '../../../types/scry';
@@ -56,7 +58,33 @@ interface UseSimulationParams {
   placeAvatarForMeeting?: boolean;
   /** THR-1774: pin the doom (the showcase routes, `?doom=`). Absent → the world draws it. */
   doomArchetype?: DoomClockArchetype;
+  /**
+   * THR-1813 — the account record this run folds into at harvest (the stored one,
+   * or the `?account=` fixture). Absent → an empty record on this seed.
+   */
+  account?: AccountRecord;
+  /** THR-1813 — build this world from `account` (its echoes and tilt). False on the dev routes. */
+  shapeWorldFromAccount?: boolean;
+  /**
+   * THR-1813 — write the concluded record to storage. False for a `?account=fresh`
+   * / `?account=sample` session, which must never overwrite the stored record.
+   * Default true.
+   */
+  persistAccount?: boolean;
+  /** THR-1813 — an earlier run in this tab failed to save; this run is reported unkept too. */
+  accountSaveFailed?: boolean;
+  /** THR-1813 E6 — *Wake in a new world*: hand the concluded record up to `App`; `saved` false = the run-end save failed. */
+  onWakeNewWorld?: (account: AccountRecord, saved: boolean) => void;
 }
+
+/** The record a finished run was folded into, and whether it was kept (THR-1813 E6). */
+export interface ConcludedRun {
+  account: AccountRecord;
+  saved: boolean;
+}
+
+/** Upper bound on the debug end-of-age loop: the twilight completes well inside it. */
+const TWILIGHT_TICKS_GUARD = 1000;
 
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
 
@@ -72,6 +100,11 @@ export function useSimulation({
   seedTestPackage,
   placeAvatarForMeeting,
   doomArchetype,
+  account,
+  shapeWorldFromAccount,
+  persistAccount = true,
+  accountSaveFailed = false,
+  onWakeNewWorld,
 }: UseSimulationParams) {
   // ── Resolve map dimensions from preset ──
   const { cols: COLS, rows: ROWS } = MAP_SIZE_PRESETS[mapSize];
@@ -80,7 +113,7 @@ export function useSimulation({
   const initial = useMemo(
     () => {
       const result = ascendantIdentity
-        ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize, doomArchetype)
+        ? initializeGameStateFromIdentity(ascendantIdentity, seed, cosmology, mapSize, doomArchetype, shapeWorldFromAccount ? account : undefined)
         : initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS, doomArchetype);
       // Dev pre-seeding: the two actions are independently switchable (THR-874).
       // `?view=game&firstunmet` seeds the test package but leaves The First unbonded
@@ -103,7 +136,8 @@ export function useSimulation({
       }
       return { ...result, state: { ...result.state, ...staged }, arrivalBeatOffered: false };
     },
-    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the account is read once, at world creation; a later save must not rebuild the world.
+    [archetype, avatarName, cosmology, seed, COLS, ROWS, ascendantIdentity, mapSize, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype, shapeWorldFromAccount]
   );
 
   const [gameState, setGameState] = useState<GameState>(initial.state);
@@ -236,25 +270,64 @@ export function useSimulation({
     };
   }, [running, speed, doTick, gameState.phase]);
 
-  // ── Handle new cycle ──
-  const handleBeginNextCycle = useCallback(() => {
-    if (!harvestResult) return;
-    const cosmicEchoes = harvestResult.cosmicEchoCandidates.map(c => c.echoDefinition);
-    // THR-887 — the echo card rides the divine-echo slot it already belongs in
-    // (`source: 'divine'`), rather than a fourth parameter. Absent when the god
-    // played no library card this run.
-    const divineEchoes = harvestResult.cardEcho ? [harvestResult.cardEcho] : [];
-    const nextState = transitionToNewCycle(
-      gameStateRef.current,
-      cosmicEchoes,
-      divineEchoes,
-      harvestResult.chronicleSummary,
-    );
-    setGameState({ ...nextState, phase: 'playing' });
-    setHarvestResult(null);
+  // ── The run end (THR-1813 E6) ──
+  // The run is folded into the account and saved the moment the harvest is known,
+  // so a failed save is on the harvest screen before the player wakes. The same-world
+  // continuation (`transitionToNewCycle`) has no caller any more — Christian's ruling
+  // on THR-1773: each run wakes in a new world.
+  const baseAccountRef = useRef<AccountRecord>(account ?? emptyAccount(seed));
+  baseAccountRef.current = account ?? baseAccountRef.current;
+  const [concludedRun, setConcludedRun] = useState<ConcludedRun | null>(null);
+  useEffect(() => {
+    if (!harvestResult || concludedRun) return;
+    const live = gameStateRef.current;
+    const next = concludeRun(baseAccountRef.current, live, harvestResult);
+    // An override session concludes in memory only; nothing failed, so no failure line.
+    // A tab whose writes stopped after a failed save keeps reporting the run unkept
+    // (review-gate cycle 3): its record is never written, so the screen must say so.
+    const ok = persistAccount ? saveAccount(next, live.tick).ok : !accountSaveFailed;
+    setConcludedRun({ account: next, saved: ok });
+  }, [harvestResult, concludedRun, persistAccount, accountSaveFailed]);
+
+  const handleWakeNewWorld = useCallback(() => {
+    if (!concludedRun) return;
+    setRunning(false);
     resetEventCounter();
-    // TB-087: Reset runtime caches for new cycle (versions persist)
+    // A new world is a new game: the persistent id counters restart, so the next
+    // world mints the same ids in this tab as after a reload (NFP 3, Decided 10).
+    resetDecisionCache();
+    // TB-087: the runtime's caches belong to the world that is ending.
     resetRuntimeCaches(runtimeRef.current);
+    // A record that could not be kept is not carried either: the harvest screen told the
+    // player the next world wakes as if for the first time, so it does — a new map on
+    // the derived seed, with nothing remembered (review-gate round 2). `App` stops this tab's
+    // writes on a failed save, so the earlier record on disk is never overwritten by it.
+    onWakeNewWorld?.(concludedRun.saved
+      ? concludedRun.account
+      : emptyAccount(concludedRun.account.nextWorldSeed), concludedRun.saved);
+  }, [concludedRun, onWakeNewWorld]);
+
+  /** THR-1813 debug lever: end the age now — run the twilight through and open the harvest. */
+  const endAgeNow = useCallback((): boolean => {
+    const live = gameStateRef.current;
+    if (harvestResult || live.phase === 'harvest') return false;
+    setRunning(false);
+    let next = startTwilight(live);
+    for (let i = 0; i <= TWILIGHT_TICKS_GUARD; i++) {
+      const r = runTwilightTick(next);
+      next = r.state;
+      if (r.complete) break;
+    }
+    gameStateRef.current = next;
+    setGameState(next);
+    setHarvestResult(computeHarvest(next));
+    return true;
+  }, [harvestResult]);
+
+  /** THR-1813 debug read: the record `concludeRun` would write now, without saving. */
+  const previewRunEnd = useCallback((): AccountRecord => {
+    const live = gameStateRef.current;
+    return concludeRun(baseAccountRef.current, live, harvestResult ?? computeHarvest(live));
   }, [harvestResult]);
 
   // Toggle running
@@ -312,7 +385,13 @@ export function useSimulation({
     runTicksSync,
     /** THR-1744: the live state as `runTicksSync` left it, before React re-renders. Read-only. */
     getLiveState,
-    handleBeginNextCycle,
+    /** THR-1813: the record this run was folded into at harvest (null before the harvest). */
+    concludedRun,
+    /** THR-1813: the record this run folds into — the one the world was loaded with. */
+    baseAccount: baseAccountRef.current,
+    handleWakeNewWorld,
+    endAgeNow,
+    previewRunEnd,
     handleToggleRunning,
     setRunning,
     /** THR-1716: true once the clock has run in this session. */

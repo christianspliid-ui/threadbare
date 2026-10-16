@@ -20,6 +20,9 @@ import { StartPage } from './components/StartPage/StartPage';
 import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 import { parseWarmStartTicks } from './components/Game/hooks/useWarmStart';
 import { parseDoomArchetypeParam, DEV_SHOWCASE_DOOM_ARCHETYPE } from './engine/doomArchetypeSelection';
+import type { AccountRecord, LoadedAccount } from './types/account';
+import { loadAccount } from './engine/accountStore';
+import { ACCOUNT_WORDS } from './data/account-content';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 const Codex = lazy(() => import('./components/Codex/Codex'));
@@ -59,6 +62,11 @@ function parseDevSeedFlags(): { seeded: boolean; firstUnmet: boolean; wantsIdent
   const seeded = params.has('seeded');
   const firstUnmet = params.has('firstunmet');
   return { seeded, firstUnmet, wantsIdentity: seeded || firstUnmet };
+}
+
+/** THR-1813 — `?account=fresh` / `?account=sample`: a session-only record that is never saved. */
+function isAccountOverride(source: LoadedAccount['source']): boolean {
+  return source === 'fresh_param' || source === 'sample_param';
 }
 
 /** Pick a random archetype and avatar name for dev quick-start. */
@@ -101,7 +109,22 @@ function App() {
     viewParam === 'game' ? quickStartPhase(42) : { phase: 'start' }
   );
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
-  const [seed, setSeed] = useState(42);
+  // THR-1813 — the account record: read once per page, replaced when a run wakes a new world.
+  const [loadedAccount, setLoadedAccount] = useState<LoadedAccount>(() => loadAccount(window.location.search, 42));
+  // Whether this page's runs may write the stored record. Every dev route (`?view=game…`,
+  // with or without `seeded`) and every `?account=` override concludes in memory only, and
+  // stays so across *Wake in a new world* — the URL is gone by then, the session is not.
+  // A failed run-end save also stops writes, so a later run in this tab cannot overwrite
+  // the earlier record that is still on disk (review-gate cycle 2).
+  const [accountPersists, setAccountPersists] = useState(() =>
+    viewParam !== 'game' && !isAccountOverride(loadedAccount.source));
+  // Writes stopped by a failed save are not an override: every later run in this tab is
+  // reported unkept too, so the harvest screen never claims a record it did not write.
+  const [accountSaveFailed, setAccountSaveFailed] = useState(false);
+  // A remembered run wakes the next world on the seed it left, after a reload too;
+  // the dev quick-start routes keep 42 so their evidence stays comparable.
+  const [seed, setSeed] = useState(() =>
+    viewParam !== 'game' && loadedAccount.account.cycleCount > 0 ? loadedAccount.account.nextWorldSeed : 42);
   const [mapSize, setMapSize] = useState<MapSizePreset>(parseMapSizeParam);
   const previewSize = MAP_SIZE_PRESETS[mapSize];
   const [tiles, setTiles] = useState<HexTile[]>(() =>
@@ -137,6 +160,37 @@ function App() {
     setGamePhase({ phase: 'start' });
   }, []);
 
+  // THR-1813 E6 — *Wake in a new world*: the run is concluded and saved; the next
+  // world wakes on the derived seed, through Remembrance. The dev seeding flags go
+  // with the old world (only `size` stays), or the quick-start path would re-seed it.
+  const handleWakeNewWorld = useCallback((account: AccountRecord, saved = true) => {
+    const size = new URLSearchParams(window.location.search).get('size');
+    const query = size ? `?size=${encodeURIComponent(size)}` : '';
+    window.history.replaceState(null, '', window.location.pathname + query + window.location.hash);
+    if (!saved) {
+      setAccountPersists(false);
+      setAccountSaveFailed(true);
+    }
+    // A `?account=fresh` / `?account=sample` session stays a session: it never writes storage.
+    setLoadedAccount(prev => ({ account, source: isAccountOverride(prev.source) ? prev.source : 'stored' }));
+    setSeed(account.nextWorldSeed);
+    setGamePhase({ phase: 'remembrance' });
+  }, []);
+
+  // The Advanced new world path (worldgen → selection → `playing`) builds its world
+  // without the account, so its run must not fold into the record: carried echoes would
+  // age for a run they never appeared in (review-gate cycle 3). It concludes in memory
+  // only, and its wake carries the record unchanged — on the record's own next seed when
+  // there is one, so a remembered player wakes where the record left them.
+  const handleWakeFromUnshapedWorld = useCallback((concluded: AccountRecord) => {
+    const size = new URLSearchParams(window.location.search).get('size');
+    const query = size ? `?size=${encodeURIComponent(size)}` : '';
+    window.history.replaceState(null, '', window.location.pathname + query + window.location.hash);
+    const kept = loadedAccount.account;
+    setSeed(kept.cycleCount > 0 ? kept.nextWorldSeed : concluded.nextWorldSeed);
+    setGamePhase({ phase: 'remembrance' });
+  }, [loadedAccount]);
+
   const hoveredTile = useMemo(() => {
     if (!hoveredHex) return null;
     return tiles.find(t => t.coord.col === hoveredHex.col && t.coord.row === hoveredHex.row) ?? null;
@@ -162,6 +216,7 @@ function App() {
     return (
       <RemembranceFlow
         seed={seed}
+        {...(loadedAccount.source === 'unreadable' ? { accountNotice: ACCOUNT_WORDS.remembranceUnreadable } : {})}
         onComplete={(identity) => {
           setGamePhase({ phase: 'playing-remembrance', identity });
         }}
@@ -185,6 +240,10 @@ function App() {
         mapSize={mapSize}
         doomArchetype={parseDoomArchetypeParam(window.location.search)}
         onExitToTitle={handleExitToTitle}
+        account={loadedAccount.account}
+        persistAccount={false}
+        carriesRun={false}
+        onWakeNewWorld={handleWakeFromUnshapedWorld}
       />
     );
   }
@@ -215,6 +274,7 @@ function App() {
     const devFlags = parseDevSeedFlags();
     const isDevQuickStart = viewParam === 'game' && devFlags.wantsIdentity;
     const devSeedFirst = isDevQuickStart && !devFlags.firstUnmet;
+    const shapedByAccount = !isDevQuickStart || loadedAccount.source === 'sample_param';
     // THR-1744: `?warm=<ticks>` — honoured only with `?view=game&seeded` (the parser
     // checks and warns); works on the deployed build, which is where warm playtesters play.
     const warmTicks = devFlags.firstUnmet ? 0 : parseWarmStartTicks(window.location.search);
@@ -243,6 +303,15 @@ function App() {
         warmTicks={warmTicks}
         doomArchetype={doomArchetype}
         onExitToTitle={handleExitToTitle}
+        account={loadedAccount.account}
+        // THR-1813: the dev routes stay deterministic — only `?account=sample` shapes them.
+        shapeWorldFromAccount={shapedByAccount}
+        persistAccount={accountPersists}
+        accountSaveFailed={accountSaveFailed}
+        // A world not built from the record does not fold into it: its wake carries the
+        // record unchanged, as on the Advanced path (review-gate cycle 4).
+        carriesRun={shapedByAccount}
+        onWakeNewWorld={shapedByAccount ? handleWakeNewWorld : handleWakeFromUnshapedWorld}
       />
     );
   }

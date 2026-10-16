@@ -12,9 +12,11 @@ import {
 interface StirringBeatProps {
   images: StirringImage[];
   onSelect: (image: StirringImage) => void;
+  /** THR-1813 — a small line under the prompt (the account could not be read). */
+  notice?: string;
 }
 
-export function StirringBeat({ images, onSelect }: StirringBeatProps) {
+export function StirringBeat({ images, onSelect, notice }: StirringBeatProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   // THR-1716 U4: one click chooses; the chosen picture holds with "Choose again"
   // (and Escape) for STIRRING_CHOSEN_HOLD_MS, then the flow moves on.
@@ -45,6 +47,12 @@ export function StirringBeat({ images, onSelect }: StirringBeatProps) {
            pointerEvents: 'none',
          }}>
         Something stirs in the void. What echoes?
+        {notice && (
+          <span role="status" data-testid="stirring-account-notice"
+                style={{ display: 'block', marginTop: '0.75rem', fontSize: 'var(--text-sm)', fontStyle: 'normal', letterSpacing: 0, color: 'var(--text-secondary)' }}>
+            {notice}
+          </span>
+        )}
       </p>
 
       {/* ── REST STATE: 2x2 quadrant grid filling viewport ── */}

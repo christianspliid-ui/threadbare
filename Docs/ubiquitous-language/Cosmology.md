@@ -199,3 +199,55 @@ A card gifted when a rung opens, because it opens a card family, drives the Domi
 **Status:** canonical (THR-1838 / THR-1811)
 
 The data on a god card that places it on the ladder: `tier` (1–4), `offer` (market / gift), `giftBy` (spine / milestone / rung / signature), `generic`, `pricedIn`, `offerWeight`, `flags`. Required on every ascendant-castable template (`npm run check:god-card-progression`). The distribution is tuned by editing the card, never code.
+
+---
+
+### Run
+
+**Aliases:** age (player-facing), cycle (engine field: `GameState.cycle`, `AccountRecord.cycleCount`)
+**Also see:** `[[Echo]]`, `[[Account Record]]`, `[[World Tilt]]`
+**Status:** canonical (seated 2026-10-16, THR-1845 via THR-1813; design-lane delegation, Christian's veto retained)
+
+One god's life in one world, from Remembrance to the harvest. Each run wakes in a **new world** (Christian, 2026-10-11, THR-1773): a new map, never a continuation of the last. The screen says *age*; the code keeps *cycle*. The god starts every run as strong as the first; what carries is the world's memory (`[[Echo]]`, `[[World Tilt]]`) and the choices open to the player.
+
+**Collision — Harvest.** *Harvest* is also the economic verb (the active harvest of a staple, `Agents.md`). The run-end screen keeps the name in code (`HarvestScreen`, `computeHarvest`); in prose, the run-end is *the end of an age*.
+
+**Collision — Remembrance.** *Remembrance* is the opening flow that makes the god (and a title word in `remembrance.ts`). Its new first step from run 2 on is *The world remembers* — a step of Remembrance, not a separate flow.
+
+---
+
+### Echo
+
+**Aliases:** `EchoDefinition` (`src/types/echo.ts`)
+**Also see:** `[[Run]]`, `[[Memory Word]]`, `[[Account Record]]`
+**Status:** canonical (seated 2026-10-16, THR-1845 via THR-1813)
+
+Something a run leaves for the next world: a **Monument** (a place), a **Legacy** (a mortal's line), a **Relic** (an artifact), or a **card echo** (a nudge card in the next repertoire, THR-887). **Divine** echoes are the god's own, picked at harvest by rule (the places it held most surely, the mortals it raised highest, the relics its chosen carried); **cosmic** echoes are the world's most significant nodes. Both carry the god's bought primary and secondary spheres. One formatter names an echo everywhere: `echoDisplayName` (*The Long Barrow*, *the line of Maren Ashfold*, *the Hollow Bell*).
+
+---
+
+### Memory Word
+
+**Also see:** `[[Echo]]`
+**Status:** canonical (seated 2026-10-16, THR-1845 via THR-1813)
+
+How faded an echo is, never a number: *still warm* / *fading* / *almost gone* (degradation below 0.3 / 0.6 / 0.9; at 0.9 the echo is gone). Each run an echo ages one step (`ECHO_DEGRADATION_RATE`). Code: `memoryWord` in `src/data/account-content.ts`.
+
+---
+
+### Account Record
+
+**Aliases:** the account, `AccountRecord` (`src/types/account.ts`)
+**Also see:** `[[Run]]`, `[[Echo]]`, `[[World Tilt]]`
+**Status:** canonical (seated 2026-10-16, THR-1845 via THR-1813)
+
+The small versioned record that carries between runs: runs completed, the next world's seed, awake hungers, stirring hungers, open second courts, unsealed cards, live echoes, the World-Soul's fundament and resonance. **Not a world save.** It lives outside `GameState`; only `src/engine/accountStore.ts` reads or writes it to storage (browser storage, key `threadbare.account.v1`), so a cleared browser forgets it. Nothing in it touches the god's sphere points, essence, power, reaches or tiers.
+
+---
+
+### World Tilt
+
+**Also see:** `[[Account Record]]`, `[[Cosmology Profile]]`, `[[Run]]`
+**Status:** canonical (seated 2026-10-16, THR-1845 via THR-1813)
+
+How far a new world leans toward the spheres earlier gods drew on. Each run end blends the account's fundament toward the god's bought spheres (`FUNDAMENT_BLEND_PER_RUN`) and back toward even (`FUNDAMENT_REVERT`); the next world's `[[Cosmology Profile]]` is multiplied sphere by sphere by the result (`WORLD_TILT_GAIN`). Read through the cosmology profile because the fundament's own weights are overwritten every tick. Player-facing it is a sentence, never a number: *"This world leans a little toward Life and Spirit."*

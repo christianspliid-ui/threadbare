@@ -60,11 +60,12 @@ import { OrphanedCardsDebugTab } from './OrphanedCardsDebugTab';
 import { FragmentsDebugTab } from './FragmentsDebugTab';
 import { NudgeDesignerTab } from './NudgeDesignerTab';
 import { TalliesDebugTab } from './TalliesDebugTab';
+import { AccountDebugTab } from './AccountDebugTab';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import type { KnowsClueOfEdgeProperties } from '../../../types/knowledge';
 import type { FlipTableRuntimeState } from '../../../types/contentShells';
 
-export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments' | 'nudges' | 'tallies';
+export type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'encounter-seeds' | 'hidden-marks' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies' | 'companies' | 'cli' | 'strategic' | 'omens' | 'cultures' | 'secrets-favors' | 'clues' | 'ruins' | 'recent-events' | 'shells' | 'compositions' | 'phases' | 'drift' | 'hand' | 'detection' | 'forecast' | 'foreshadowing' | 'action-unlocks' | 'beats' | 'sustained-controls' | 'kpi' | 'prose-quality' | 'economy' | 'essence-sources' | 'orphaned-cards' | 'fragments' | 'nudges' | 'tallies' | 'account';
 
 export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'feed', label: 'Feed' }, { id: 'agent-follow', label: 'Agent' },
@@ -96,10 +97,13 @@ export const TABS: { id: ViewMode; label: string }[] = [
   { id: 'fragments', label: 'Fragments' },
   { id: 'nudges', label: 'Nudges' },
   { id: 'tallies', label: 'Tallies' },
+  { id: 'account', label: 'Account' },
 ];
 
 export interface DebugTabContentProps {
   viewMode: ViewMode;
+  /** THR-1813 — the account record this world folds into. */
+  accountRecord?: import('../../../types/account').AccountRecord | null;
   currentTick: number;
   graph?: WorldGraph;
   allTraces: TraceEntry[];
@@ -164,7 +168,7 @@ export interface DebugTabContentProps {
 }
 
 export function DebugTabContent({
-  viewMode, currentTick, graph, allTraces, displayTraces,
+  viewMode, currentTick, graph, allTraces, displayTraces, accountRecord,
   expandedTraceId, onToggleTrace, effectiveAgentId,
   showBonds, showDecisionVectors, onToggleBonds, onToggleDecisionVectors,
   cacheEntries, encounterProgress, onZoomToLocation,
@@ -186,6 +190,9 @@ export function DebugTabContent({
   }
   if (viewMode === 'encounters') {
     return <EncounterCacheView cacheEntries={cacheEntries ?? []} encounterProgress={encounterProgress ?? []} currentTick={currentTick} followAgentId={effectiveAgentId} onZoomToLocation={onZoomToLocation} graph={graph} seed={seed != null ? String(seed) : undefined} />;
+  }
+  if (viewMode === 'account') {
+    return <AccountDebugTab account={accountRecord} />;
   }
   if (viewMode === 'tallies') {
     return <TalliesDebugTab graph={graph} traces={allTraces} focusedAgentId={effectiveAgentId} retinueAgents={retinueAgents} />;

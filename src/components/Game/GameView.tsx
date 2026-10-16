@@ -288,6 +288,18 @@ interface GameViewProps {
   warmTicks?: number;
   /** THR-1774: pin the doom (the showcase routes, `?doom=`). Absent → the world draws it. */
   doomArchetype?: import('../../types/doomClock').DoomClockArchetype;
+  /** THR-1813 — the account record this run folds into at harvest. */
+  account?: import('../../types/account').AccountRecord;
+  /** THR-1813 — build this world from `account` (false on the dev routes). */
+  shapeWorldFromAccount?: boolean;
+  /** THR-1813 — write the concluded record to storage (false for `?account=` override sessions). */
+  persistAccount?: boolean;
+  /** THR-1813 — an earlier run in this tab failed to save, so this run is not kept either. */
+  accountSaveFailed?: boolean;
+  /** THR-1813 — *Wake in a new world*: the concluded record goes up to `App`. */
+  onWakeNewWorld?: (account: import('../../types/account').AccountRecord, saved: boolean) => void;
+  /** THR-1813 — false when this run is not carried into the next world (the Advanced path). Default true. */
+  carriesRun?: boolean;
 }
 
 /** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */
@@ -339,7 +351,7 @@ function matchesTieredEncounterAction(
 const EMPTY_UNIFIED_ACTIONS: readonly import('../../types/unifiedAction').UnifiedAction[] = [];
 const EMPTY_ENCOUNTER_NOTIFICATIONS: readonly EncounterNotification[] = [];
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype, account, shapeWorldFromAccount, persistAccount, accountSaveFailed, onWakeNewWorld, carriesRun = true }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -366,10 +378,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Use simulation hook ──
   const {
     gameState, setGameState, tiles, riverPaths, lakeIds, areaProjection, realmProjection,
-    running, speed, harvestResult, doTick, runTicksSync, getLiveState, handleBeginNextCycle,
+    running, speed, harvestResult, doTick, runTicksSync, getLiveState, handleWakeNewWorld,
+    concludedRun, baseAccount, endAgeNow, previewRunEnd,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime, clockEverRan, arrivalBeatOffered, noteClockRunSource,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype, account, shapeWorldFromAccount, persistAccount, accountSaveFailed, onWakeNewWorld });
+
+  // ── Debug bridge: the account record (THR-1813) ──
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerAccountBridge({
+      get: () => concludedRun?.account ?? baseAccount,
+      previewRunEnd,
+      endAge: endAgeNow,
+    });
+  }, [concludedRun, baseAccount, previewRunEnd, endAgeNow]);
 
   // THR-1711 (6): the interrupt auto-pause is declared far below (it reads the
   // interrupt registry), but the play toggle and the arrival pause are wired
@@ -4622,6 +4645,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         {debugPanelOpen ? (
             <DebugPanel
               currentTick={gameState.tick}
+              accountRecord={concludedRun?.account ?? baseAccount}
               followAgentId={selectedAgentId ?? undefined}
               onClose={handleToggleDebug}
               preferredViewMode={debugPanelPreferredViewMode}
@@ -4805,7 +4829,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         onHomedSurfaceFallback={handleHomedSurfaceFallback}
         archetype={archetype}
         harvestResult={harvestResult}
-        handleBeginNextCycle={handleBeginNextCycle}
+        handleWakeNewWorld={handleWakeNewWorld}
+        accountSaved={concludedRun ? concludedRun.saved : null}
+        accountCarried={carriesRun}
         meetingState={meetingState}
         ascendantIdentity={ascendantIdentity}
         handleMeetingSpendEssence={handleMeetingSpendEssence}

@@ -27,9 +27,11 @@ import { deriveAlignmentFromPoints, presetFromAlignment, type SpherePoints } fro
 interface RemembranceFlowProps {
   seed: number;
   onComplete: (identity: AscendantIdentity) => void;
+  /** THR-1813 — a line for the first step (the account could not be read on this device). */
+  accountNotice?: string;
 }
 
-export function RemembranceFlow({ seed, onComplete }: RemembranceFlowProps) {
+export function RemembranceFlow({ seed, onComplete, accountNotice }: RemembranceFlowProps) {
   const [beat, setBeat] = useState<RemembranceBeat>('stirring');
 
   // Accumulated state
@@ -116,7 +118,7 @@ export function RemembranceFlow({ seed, onComplete }: RemembranceFlowProps) {
   // Render current beat
   switch (beat) {
     case 'stirring':
-      return <StirringBeat images={STIRRING_IMAGES} onSelect={handleStirringSelect} />;
+      return <StirringBeat images={STIRRING_IMAGES} onSelect={handleStirringSelect} notice={accountNotice} />;
     case 'origin':
       return <OriginBeat fragments={originFragments} onSelect={handleOriginSelect} />;
     case 'drive':

@@ -407,6 +407,19 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Cosmic Echo',
     desc: 'A persistent blessing or scar carried into the next cycle, earned by how this world ended.',
   },
+  // THR-1813 — the world remembers
+  'ui.harvest_leaves': {
+    label: 'What your age leaves behind',
+    desc: 'The world chose what remembers you: the places you held most surely, the mortals you raised highest, the relics your chosen carried. They will be waiting in the next world.',
+  },
+  'ui.harvest_wake': {
+    label: 'Wake in a new world',
+    desc: 'This world ends. A new one wakes, shaped by what this one leaves behind.',
+  },
+  'ui.harvest_wake_unremembered': {
+    label: 'Wake in a new world',
+    desc: 'This world ends. A new one wakes, and it will not remember this one.',
+  },
   'ui.harvest_cycle': {
     label: 'Cycle',
     desc: 'One complete arc of world-simulation — from first tick to harvest. Each cycle builds on echoes from the last.',
