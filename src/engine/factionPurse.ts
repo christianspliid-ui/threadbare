@@ -88,6 +88,8 @@ export const PURSE_LAST_DAY_PROP = 'purseLastDay';
 export const MEANS_BAND_PROP = 'meansBand';
 export const PURSE_DESERTIONS_PROP = 'purseDesertions';
 const PURSE_CHRONICLED_PROP = 'purseChronicledTick';
+/** Set when the purse goes broke; cleared by the recovery line's crossing. */
+const PURSE_BROKE_LATCH_PROP = 'purseWasBroke';
 
 export interface FactionPurseResult {
   days: Map<string, PurseDay>;
@@ -258,7 +260,8 @@ export function runFactionPurse(state: GameState, getProjection?: RealmProjectio
         } as PurseBandChangeTrace);
       }
 
-      const entry = purseChronicle(state, faction, prevBand, band, armies.length > 0, anyUnpaid);
+      const prevAnyUnpaid = (prevDay?.armiesUnpaid.length ?? 0) > 0;
+      const entry = purseChronicle(state, faction, prevBand, band, armies.length > 0, anyUnpaid, prevAnyUnpaid);
       if (entry) chronicleEntries.push(entry);
     } catch (err) {
       // Fail-soft: this faction's day is skipped; the rest settle (NFP #4).
@@ -281,7 +284,17 @@ export function phaseFactionPurse(state: GameState, getProjection?: RealmProject
 
 /**
  * At most one line per faction per pay day, and none inside the cooldown:
- * a desertion first, then a crossing into Destitute (only when real), then a recovery.
+ * a desertion first, then going broke, then a recovery.
+ *
+ * The crossings are read off pay, not off band neighbours, because the band moves one
+ * word at a time: a purse that runs down is already Destitute (under a day in hand) the
+ * day before an army goes unpaid, and a recovering one passes through Getting by.
+ * - **broke** — with armies: the first pay day an army goes unpaid after a day when all
+ *   were paid. Without: the band crosses into Destitute. Once per spell of being broke.
+ * - **recovered** — a latch set on going broke, cleared the first pay day every army is
+ *   paid and the band stands at Comfortable or better.
+ * Outside the player's attention the latch still moves, so a faction that drifts into
+ * view mid-recovery is told the truth; inside the cooldown a recovery waits for it to end.
  */
 function purseChronicle(
   state: GameState,
@@ -290,24 +303,38 @@ function purseChronicle(
   band: MeansBand,
   fieldsArmy: boolean,
   anyUnpaid: boolean,
+  prevAnyUnpaid: boolean,
 ): ChronicleEntry | null {
   const pending = (faction.properties[PURSE_DESERTIONS_PROP] as PendingDesertion[] | undefined) ?? [];
   if (pending.length > 0) delete faction.properties[PURSE_DESERTIONS_PROP];
-  if (!isFactionInAttention(state, faction.id)) return null;
 
+  // Only the first going-broke since the last recovery: a purse that limps along paying
+  // one day and not the next is one story, not a line every other day.
+  const alreadyBroke = faction.properties[PURSE_BROKE_LATCH_PROP] === true;
+  const brokeToday = !alreadyBroke && (fieldsArmy
+    ? anyUnpaid && !prevAnyUnpaid
+    : band === 'Destitute' && prevBand !== null && prevBand !== 'Destitute');
+  if (brokeToday) faction.properties[PURSE_BROKE_LATCH_PROP] = true;
+  const recovered = !brokeToday && faction.properties[PURSE_BROKE_LATCH_PROP] === true
+    && !anyUnpaid && meansRank(band) >= meansRank('Comfortable');
+
+  if (!isFactionInAttention(state, faction.id)) {
+    if (recovered) delete faction.properties[PURSE_BROKE_LATCH_PROP];
+    return null;
+  }
+  // Inside the cooldown the latch is kept, so a recovery still standing when it ends is told.
   const last = faction.properties[PURSE_CHRONICLED_PROP];
   if (typeof last === 'number' && state.tick - last < PURSE_CHRONICLE_COOLDOWN_DAYS * PURSE_CYCLE_TICKS) return null;
+  if (recovered) delete faction.properties[PURSE_BROKE_LATCH_PROP];
 
   let trigger: EconomicChronicleTrigger | null = null;
   let target: string | undefined;
   if (pending.length > 0) {
     trigger = 'army_unpaid_desertion';
     target = pending[pending.length - 1].armyName;
-  } else if (band === 'Destitute' && prevBand !== null && prevBand !== 'Destitute') {
-    // Real crossings only: with an army, only on a day an army went unpaid.
-    if (fieldsArmy && anyUnpaid) trigger = 'purse_broke';
-    else if (!fieldsArmy) trigger = 'purse_broke_bare';
-  } else if (prevBand === 'Destitute' && meansRank(band) >= meansRank('Comfortable')) {
+  } else if (brokeToday) {
+    trigger = fieldsArmy ? 'purse_broke' : 'purse_broke_bare';
+  } else if (recovered) {
     trigger = 'purse_recovered';
   }
   if (!trigger) return null;

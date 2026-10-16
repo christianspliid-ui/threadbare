@@ -318,6 +318,40 @@ describe('desertion, schism and attention', () => {
   });
 });
 
+describe('the purse chronicle crossings (review-gate round 1)', () => {
+  it('a purse that runs down says "could not pay" on the first unpaid day, and "again" once it is back to Comfortable', () => {
+    const g = world();
+    g.addNode({ id: 'asc', type: 'actor', name: 'The God', properties: { actorType: 'ascendant' } });
+    g.addNode({ id: 'mortal', type: 'actor', name: 'Ilse', properties: { actorType: 'individual' } });
+    g.addEdge({ id: 'e_mo_m', source: 'mortal', target: REALM, type: 'member_of', properties: {} });
+    g.addEdge({ id: 'e_thread', source: 'asc', target: 'mortal', type: 'thread', properties: {} });
+    addArmy(g, ARMY, REALM, 'warband', 0);
+    g.getNode(REALM)!.properties.wealth = 6;
+    g.getNode(REALM)!.properties.meansBand = 'Getting by';
+    // Two poor towns: income below a warband's 1.5 a day, so the purse runs down day by day.
+    for (const id of [TOWN, TOWN_B]) g.getNode(id)!.properties.prosperity = 20;
+    g.getNode(TOWN)!.properties.resources = {};
+    g.getNode(MINE)!.properties.resources = {};
+
+    const lines: { day: number; title: string }[] = [];
+    let day = 1;
+    for (; day <= 30 && !lines.some(l => l.title === 'The Pay Stops'); day++) {
+      for (const e of runFactionPurse(stateAt(g, day * PURSE_CYCLE_TICKS), projection()).chronicleEntries) lines.push({ day, title: e.title });
+    }
+    expect(lines.map(l => l.title)).toContain('The Pay Stops');
+
+    // The land pays again: rich towns, well past the cooldown.
+    for (const id of [TOWN, TOWN_B]) g.getNode(id)!.properties.prosperity = 100;
+    for (; day <= 80 && !lines.some(l => l.title === 'Coin Returns'); day++) {
+      for (const e of runFactionPurse(stateAt(g, day * PURSE_CYCLE_TICKS), projection()).chronicleEntries) lines.push({ day, title: e.title });
+    }
+    expect(lines.map(l => l.title)).toContain('Coin Returns');
+    // One spell of being broke is one line, however often the purse limps between paying and not.
+    expect(lines.filter(l => l.title === 'The Pay Stops')).toHaveLength(1);
+    expect(readMeansBand(g.getNode(REALM))).not.toBe('Destitute');
+  });
+});
+
 describe('the Purse panel words', () => {
   it('names the two largest sources, the share, and never a number', () => {
     const g = world();
