@@ -69,7 +69,11 @@ export type LocationType =
   | 'haunted_ground'
   | 'corruption_zone'
   // Ruins layer (THR-153) — transformed elder_ruin
-  | 'place_of_power';
+  | 'place_of_power'
+  // THR-1903: live place types the map once skipped silently; each draws its PLACE_ICON shape
+  | 'elder_ruin'
+  | 'farmland'
+  | 'trade_route';
 
 /** Visual size class for a location — determines sprite scale on the hex. */
 export type LocationSizeClass = 'full' | 'medium' | 'small' | 'tiny';
@@ -163,6 +167,10 @@ export const LOCATION_IMPORTANCE_MAP: Record<LocationType, LocationImportance> =
   corruption_zone: 'small',
   // Ruins layer (THR-153)
   place_of_power:  'town',
+  // THR-1903
+  elder_ruin:      'small',
+  farmland:        'small',
+  trade_route:     'small',
 };
 
 // ── Registry ──────────────────────────────────────────────────────────────────
@@ -236,6 +244,11 @@ export const LOCATION_ICON_REGISTRY: Record<LocationType, LocationIconDef> = {
   corruption_zone: { sizeClass: 'small' },
   // ── Ruins layer (THR-153) ──
   place_of_power:  { sizeClass: 'medium' },
+  // ── THR-1903: once skipped silently. elder_ruin draws the fallback mark until its shape is
+  // picked (PLACE_ICON, THR-1908); farmland and trade_route draw their carved picks ──
+  elder_ruin:      { sizeClass: 'small' },
+  farmland:        { sizeClass: 'tiny' },
+  trade_route:     { sizeClass: 'tiny' },
 };
 
 /** The size class an unknown place type's fallback mark draws at (plan D13). */

@@ -69,6 +69,9 @@ beforeEach(() => {
 
 const PLACE_TYPES = Object.keys(LOCATION_ICON_REGISTRY);
 
+/** Place types whose shape is still an open pick and is written `'fallback'` in PLACE_ICON (THR-1908). */
+const OPEN_PICKS = new Set(['elder_ruin']);
+
 /** Christian's eleven named shapes (THR-1834 call 2b; THR-1903 description). */
 const NAMED_SHAPES: Record<string, string> = {
   capital: 'tower-flag',
@@ -98,6 +101,11 @@ describe('place icons — every LocationType (Law 58)', () => {
     for (const type of PLACE_TYPES) {
       expect(type in PLACE_ICON, `${type} has no PLACE_ICON row (src/data/icons/conceptIcons.ts)`).toBe(true);
       const shape = placeIconShape(type);
+      // An open pick written as 'fallback' in PLACE_ICON draws the ring on purpose (THR-1908)
+      if (OPEN_PICKS.has(type)) {
+        expect(shape, `${type}`).toBe(fallback);
+        continue;
+      }
       expect(shape, `${type} draws the fallback mark`).not.toBe(fallback);
       expect(shape.paths.length, `${type} shape has no paths`).toBeGreaterThan(0);
     }
