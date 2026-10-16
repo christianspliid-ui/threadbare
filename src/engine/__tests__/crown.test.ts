@@ -14,7 +14,7 @@ import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
 import type { RealmProjection } from '../realmProjection';
 import { buildRealmProjection, fingerprintFactionControls } from '../realmProjection';
-import { executeSeekFealty, runCrownPhase, coercePool, canCourt, loyaltyDeltas, swearOathForDebug } from '../crown';
+import { executeSeekFealty, runCrownPhase, coercePool, canCourt, loyaltyDeltas, swearOathForDebug, settleLoyalty } from '../crown';
 import { buildCrownWorld, maySwear, mayCourt, isSwearableKind } from '../crown/eligibility';
 import { offerScore, affordableGift } from '../crown/offer';
 import { isCrown, vassalsOf, liegeOf, protectedHoldingsOf, crownHexes, readOath, buildCrownOf } from '../crown/crownView';
@@ -30,6 +30,8 @@ import {
   OATH_COERCE_MIN_SIEGE_TICKS,
   OATH_REFUSAL_SENTIMENT_FLOOR,
   LOYALTY_FALL_DESTITUTE,
+  LOYALTY_FAIL_DEFENCE,
+  OATH_BREAK_THRESHOLD,
 } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS, FACTION_TREASURY_CAP } from '../../data/faction-purse-constants';
 import { SIEGE_MAX_DURATION } from '../../types/battle';
@@ -191,6 +193,14 @@ describe('winning an oath', () => {
     g.getNode(GUILD)!.properties.wealth = FACTION_TREASURY_CAP - 10; // room for a third of the gift
     w = buildCrownWorld(g, 24, projection());
     expect(affordableGift(w, GUILD, R)).toBeCloseTo(10 / OATH_GIFT_DAYS);
+  });
+
+  it('a coerced oath that loses exactly one town holds at the break line (no float drift)', () => {
+    const after = settleLoyalty(LOYALTY_START.coerced, -LOYALTY_FAIL_DEFENCE);
+    expect(after).toBe(OATH_BREAK_THRESHOLD);
+    expect(after < OATH_BREAK_THRESHOLD).toBe(false);
+    expect(settleLoyalty(0.95, 0.2)).toBe(1);
+    expect(settleLoyalty(0.05, -0.2)).toBe(0);
   });
 
   it('the siege-forcing window spans at least two faction-action ticks before a siege must end', () => {

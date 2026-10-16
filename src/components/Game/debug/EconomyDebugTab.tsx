@@ -13,6 +13,7 @@ import { getResourceClass } from '../../../data/resource-classes';
 import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import { readPurseDay, readMeansBand } from '../../../engine/factionPurse';
 import { totalIncome } from '../../../engine/factionPurse/income';
+import { PURSE_CYCLE_TICKS } from '../../../data/faction-purse-constants';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 
 interface PurseRow {
@@ -107,7 +108,7 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
         vassal: name(e.source),
         liege: name(e.target),
         kind: p.kind + (p.forcedBy ? ` (${p.forcedBy})` : ''),
-        swornDay: Math.floor((p.swornTick ?? 0) / 12),
+        swornDay: Math.floor((p.swornTick ?? 0) / PURSE_CYCLE_TICKS),
         loyalty: p.loyalty ?? 0,
         deltas: (p.lastLoyaltyDay?.deltas ?? []).map(d => `${d.reason} ${d.amount > 0 ? '+' : ''}${d.amount.toFixed(3)}`).join(', ') || '—',
         tax: p.taxPaidToday ?? 0,

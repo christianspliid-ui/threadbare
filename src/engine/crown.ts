@@ -52,6 +52,7 @@ import {
   FEALTY_TAX_SHARE,
   OATH_ACCEPT_THRESHOLD,
   OATH_COERCE_MIN_SIEGE_TICKS,
+  LOYALTY_ROUND_DECIMALS,
   OATH_COERCE_WINDOW_DAYS,
   OATH_RIVAL_MARGIN,
   LOYALTY_START,
@@ -121,6 +122,16 @@ function transferCoin(graph: WorldGraph, fromId: string, toId: string, amount: n
   const credited = setWealth(graph, toId, available);
   if (credited <= 0) return 0;
   return -setWealth(graph, fromId, -credited);
+}
+
+/**
+ * Today's loyalty: clamped to [0,1] and rounded to LOYALTY_ROUND_DECIMALS, so the break test
+ * reads the tuning numbers and not float drift (0.35 − 0.15 is 0.19999… in IEEE doubles, which
+ * would break a coerced oath that loses exactly one town).
+ */
+export function settleLoyalty(previous: number, delta: number): number {
+  const f = 10 ** LOYALTY_ROUND_DECIMALS;
+  return Math.round(Math.max(0, Math.min(1, previous + delta)) * f) / f;
 }
 
 function pickLine(lines: readonly string[], seed: number): string {
@@ -626,7 +637,7 @@ export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPh
       const props = readOath(edge);
       const deltas = loyaltyDeltas(world, edge.source, edge.target, props.lastPassTick ?? props.swornTick ?? 0);
       const sum = deltas.reduce((s, d) => s + d.amount, 0);
-      const loyalty = Math.max(0, Math.min(1, (props.loyalty ?? 0) + sum));
+      const loyalty = settleLoyalty(props.loyalty ?? 0, sum);
       const recentLosses = [
         ...(props.recentLosses ?? []).filter(l => tick - l.tick < window),
         ...deltas.filter(d => d.amount < 0).map(d => ({ tick, reason: d.reason, amount: -d.amount })),

@@ -29,6 +29,7 @@
  * | LOYALTY_START                   | starting loyalty by kind                                       |
  * | LOYALTY_RISE_* / LOYALTY_FALL_* | the daily loyalty table                                        |
  * | LOYALTY_FAIL_DEFENCE            | fall per holding lost while sworn                              |
+ * | LOYALTY_ROUND_DECIMALS          | daily loyalty rounding (the break test reads tuning, not drift) |
  * | OATH_BREAK_THRESHOLD            | below this the oath breaks (= the Distrusted band)             |
  * | REBELLION_INCOME_RATIO          | a breaking realm earning this share of its liege's income rebels |
  * | NEVER_SWEAR_*                   | factions that never swear                                      |
@@ -83,6 +84,8 @@ export const LOYALTY_RISE_WEALTHY = 0.01;
 export const LOYALTY_FALL_STRAINED = 0.005;
 export const LOYALTY_FALL_DESTITUTE = 0.01;
 export const LOYALTY_FAIL_DEFENCE = 0.15;
+/** Loyalty is rounded to this many decimals each day so the break test is not decided by float drift. */
+export const LOYALTY_ROUND_DECIMALS = 6;
 export const LOYALTY_FALL_OUTGROWN = 0.02;
 export const LOYALTY_FALL_RIVAL_OFFER = 0.02;
 export const OATH_BREAK_THRESHOLD = 0.2;
