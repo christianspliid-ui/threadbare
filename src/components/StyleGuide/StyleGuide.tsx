@@ -1750,7 +1750,7 @@ export default function StyleGuide() {
             <SectionHeading ornamental>RivalIcon</SectionHeading>
             <div style={{ marginTop: '1.25rem' }}>
               <GameErrorBoundary>
-                <Label>2–3 spheres → overlapping circles representing rival affinities</Label>
+                <Label>2–3 spheres → one small SphereIcon per affinity (THR-1906)</Label>
                 <Row gap={24}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                     <RivalIcon spheres={['chaos', 'force']} size="2rem" />
