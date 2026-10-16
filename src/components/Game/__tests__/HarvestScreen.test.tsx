@@ -82,47 +82,47 @@ describe('HarvestScreen', () => {
   };
 
   it('renders harvest type heading for bittersweet', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading).toHaveTextContent(/bittersweet age/i);
   });
 
   it('renders harvest type heading for triumphant', () => {
-    render(<HarvestScreen harvest={mockTriumphantHarvest} cycle={2} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockTriumphantHarvest} cycle={2} onWakeNewWorld={vi.fn()} />);
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading).toHaveTextContent(/triumphant age/i);
   });
 
   it('renders harvest type heading for somber', () => {
-    render(<HarvestScreen harvest={mockSomberHarvest} cycle={3} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockSomberHarvest} cycle={3} onWakeNewWorld={vi.fn()} />);
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading).toHaveTextContent(/somber age/i);
   });
 
   it('renders cycle number', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={5} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={5} onWakeNewWorld={vi.fn()} />);
     expect(screen.getByText(/cycle 5 complete/i)).toBeInTheDocument();
   });
 
   it('renders chronicle summary', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
     expect(screen.getByText('A bittersweet age. The Fallen King left a lasting mark.')).toBeInTheDocument();
   });
 
   it('renders echo candidate names', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
     expect(screen.getByText('The Fallen King')).toBeInTheDocument();
     expect(screen.getByText('The Sunken Tower')).toBeInTheDocument();
   });
 
   it('renders echo summaries', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
     expect(screen.getByText('A once-mighty ruler whose legacy shaped the age.')).toBeInTheDocument();
     expect(screen.getByText('An ancient structure bearing witness to countless eons.')).toBeInTheDocument();
   });
 
   it('renders sphere affinities for each echo', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
     expect(screen.getByText('Spirit')).toBeInTheDocument();
     expect(screen.getByText('Mind')).toBeInTheDocument();
     expect(screen.getByText('Force')).toBeInTheDocument();
@@ -130,7 +130,7 @@ describe('HarvestScreen', () => {
   });
 
   it('renders banded significance words for echoes, never a percentage (Law 13, THR-1357)', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
     // scores 0.85 / 0.72 band to 'defining' (≥0.75) and 'resonant' (≥0.5)
     expect(screen.getByText(/a defining echo of the age/i)).toBeInTheDocument();
     expect(screen.getByText(/a resonant echo of the age/i)).toBeInTheDocument();
@@ -138,23 +138,29 @@ describe('HarvestScreen', () => {
     expect(screen.queryByText(/significance:/i)).not.toBeInTheDocument();
   });
 
-  it('renders divine echo slot count', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
-    expect(screen.getByText(/two divine echo slots available/i)).toBeInTheDocument();
-  });
-
-  it('renders singular slot text when divineEchoSlots is 1', () => {
-    render(<HarvestScreen harvest={mockSomberHarvest} cycle={3} onBeginNextCycle={vi.fn()} />);
-    expect(screen.getByText(/one divine echo slot available/i)).toBeInTheDocument();
-  });
-
-  it('does not render divine slots section when divineEchoSlots is 0', () => {
-    const harvestWithNoDivineSlots: HarvestResult = {
+  it('names what the god leaves behind (THR-1813)', () => {
+    const harvest: HarvestResult = {
       ...mockBitterSweetHarvest,
-      divineEchoSlots: 0,
+      divineEchoes: [
+        { ...mockEchoDefinition2, id: 'echo_1_divine_loc_1', source: 'divine', name: 'The Long Barrow' },
+        { ...mockEchoDefinition1, id: 'echo_1_divine_actor_9', source: 'divine', name: 'Maren Ashfold' },
+      ],
     };
-    render(<HarvestScreen harvest={harvestWithNoDivineSlots} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={harvest} cycle={1} onWakeNewWorld={vi.fn()} />);
+    expect(screen.getByText('Your age leaves behind: The Long Barrow and the line of Maren Ashfold.')).toBeInTheDocument();
+  });
+
+  it('says the age leaves little when no divine echo was picked (THR-1813)', () => {
+    render(<HarvestScreen harvest={mockSomberHarvest} cycle={3} onWakeNewWorld={vi.fn()} />);
+    expect(screen.getByText('Your age leaves little the next world will remember.')).toBeInTheDocument();
     expect(screen.queryByText(/divine echo slot/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the save-failure line only when the record was not kept (THR-1813)', () => {
+    const { rerender } = render(<HarvestScreen harvest={mockSomberHarvest} cycle={3} onWakeNewWorld={vi.fn()} accountSaved={true} />);
+    expect(screen.queryByTestId('harvest-save-failed')).not.toBeInTheDocument();
+    rerender(<HarvestScreen harvest={mockSomberHarvest} cycle={3} onWakeNewWorld={vi.fn()} accountSaved={false} />);
+    expect(screen.getByTestId('harvest-save-failed').textContent).toMatch(/could not be kept on this device/);
   });
 
   it('does not render echo candidates section when array is empty', () => {
@@ -162,23 +168,23 @@ describe('HarvestScreen', () => {
       ...mockBitterSweetHarvest,
       cosmicEchoCandidates: [],
     };
-    render(<HarvestScreen harvest={harvestWithNoEchoes} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={harvestWithNoEchoes} cycle={1} onWakeNewWorld={vi.fn()} />);
     expect(screen.queryByText(/echoes preserved/i)).not.toBeInTheDocument();
     expect(screen.queryByText('The Fallen King')).not.toBeInTheDocument();
   });
 
-  it('calls onBeginNextCycle when button is clicked', () => {
-    const onBeginNextCycle = vi.fn();
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={onBeginNextCycle} />);
+  it('calls onWakeNewWorld when the button is clicked', () => {
+    const onWakeNewWorld = vi.fn();
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={onWakeNewWorld} />);
 
-    const button = screen.getByRole('button', { name: /begin next cycle/i });
+    const button = screen.getByRole('button', { name: /wake in a new world/i });
     fireEvent.click(button);
 
-    expect(onBeginNextCycle).toHaveBeenCalledTimes(1);
+    expect(onWakeNewWorld).toHaveBeenCalledTimes(1);
   });
 
   it('renders cosmic echo count in heading as a word (Law 13)', () => {
-    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onBeginNextCycle={vi.fn()} />);
+    render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
     expect(screen.getByText(/echoes preserved — two cosmic/i)).toBeInTheDocument();
   });
 });

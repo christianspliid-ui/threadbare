@@ -20,6 +20,9 @@ import { StartPage } from './components/StartPage/StartPage';
 import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 import { parseWarmStartTicks } from './components/Game/hooks/useWarmStart';
 import { parseDoomArchetypeParam, DEV_SHOWCASE_DOOM_ARCHETYPE } from './engine/doomArchetypeSelection';
+import type { AccountRecord, LoadedAccount } from './types/account';
+import { loadAccount } from './engine/accountStore';
+import { ACCOUNT_WORDS } from './data/account-content';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 const Codex = lazy(() => import('./components/Codex/Codex'));
@@ -107,6 +110,8 @@ function App() {
   const [tiles, setTiles] = useState<HexTile[]>(() =>
     generateWorld(createBalancedCosmology(), previewSize.cols, previewSize.rows, 42).tiles
   );
+  // THR-1813 — the account record: read once per page, replaced when a run wakes a new world.
+  const [loadedAccount, setLoadedAccount] = useState<LoadedAccount>(() => loadAccount(window.location.search, 42));
   const [hoveredHex, setHoveredHex] = useState<HexCoord | null>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
 
@@ -137,6 +142,18 @@ function App() {
     setGamePhase({ phase: 'start' });
   }, []);
 
+  // THR-1813 E6 — *Wake in a new world*: the run is concluded and saved; the next
+  // world wakes on the derived seed, through Remembrance. The dev seeding flags go
+  // with the old world (only `size` stays), or the quick-start path would re-seed it.
+  const handleWakeNewWorld = useCallback((account: AccountRecord) => {
+    const size = new URLSearchParams(window.location.search).get('size');
+    const query = size ? `?size=${encodeURIComponent(size)}` : '';
+    window.history.replaceState(null, '', window.location.pathname + query + window.location.hash);
+    setLoadedAccount({ account, source: 'stored' });
+    setSeed(account.nextWorldSeed);
+    setGamePhase({ phase: 'remembrance' });
+  }, []);
+
   const hoveredTile = useMemo(() => {
     if (!hoveredHex) return null;
     return tiles.find(t => t.coord.col === hoveredHex.col && t.coord.row === hoveredHex.row) ?? null;
@@ -162,6 +179,7 @@ function App() {
     return (
       <RemembranceFlow
         seed={seed}
+        {...(loadedAccount.source === 'unreadable' ? { accountNotice: ACCOUNT_WORDS.remembranceUnreadable } : {})}
         onComplete={(identity) => {
           setGamePhase({ phase: 'playing-remembrance', identity });
         }}
@@ -185,6 +203,8 @@ function App() {
         mapSize={mapSize}
         doomArchetype={parseDoomArchetypeParam(window.location.search)}
         onExitToTitle={handleExitToTitle}
+        account={loadedAccount.account}
+        onWakeNewWorld={handleWakeNewWorld}
       />
     );
   }
@@ -243,6 +263,10 @@ function App() {
         warmTicks={warmTicks}
         doomArchetype={doomArchetype}
         onExitToTitle={handleExitToTitle}
+        account={loadedAccount.account}
+        // THR-1813: the dev routes stay deterministic — only `?account=sample` shapes them.
+        shapeWorldFromAccount={!isDevQuickStart || loadedAccount.source === 'sample_param'}
+        onWakeNewWorld={handleWakeNewWorld}
       />
     );
   }

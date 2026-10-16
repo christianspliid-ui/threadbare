@@ -26,6 +26,10 @@ import { generateDoomClock, createDoomClockState } from './doomClock';
 import type { DoomClockArchetype } from '../types/doomClock';
 import { createGreatChronicle } from './chronicle';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
+import type { AccountRecord } from '../types/account';
+import type { FundamentState } from '../types/worldSoul';
+import { accountShapesWorld, liveEchoes, tiltCosmology } from './accountRecord';
+import { emitTrace } from './traceBuffer';
 import { createStartingEssencePool } from './influence';
 import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { TICKS_PER_SEASON } from '../types/temporal';
@@ -140,6 +144,11 @@ export function initializeGameState(
    * reproduces the world as it was before the block existed.
    */
   scenario?: Partial<WorldScenario>,
+  /**
+   * THR-1813 E5 — the World-Soul an earlier run left. Absent → the neutral
+   * fundament, so every existing caller builds today's world byte for byte.
+   */
+  carriedFundament?: FundamentState,
 ): {
   state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
   const worldScenario = resolveWorldScenario(scenario);
@@ -147,7 +156,9 @@ export function initializeGameState(
   resetNodeSchemaWarnings();
   // 1. Generate culture identities BEFORE worldgen (needed for province seeding)
   const cultureRng = mulberry32(seed + CULTURE_SEED_OFFSET);
-  const fundament = createDefaultFundament();
+  const fundament = carriedFundament
+    ? { sphereWeights: { ...carriedFundament.sphereWeights }, cycleCount: carriedFundament.cycleCount }
+    : createDefaultFundament();
   const pregenCultures = generateCultureIdentities(cosmology, cultureRng, fundament, cols * rows);
   const livingCultures = pregenCultures.map(toCultureForWorldgen);
   const cultureNameMap = new Map(pregenCultures.map(c => [c.id, c.name]));
@@ -524,12 +535,22 @@ export function initializeGameStateFromIdentity(
   cosmologyOverride?: CosmologyProfile,
   mapSizeOverride?: MapSizePreset,
   doomArchetypeOverride?: DoomClockArchetype,
+  /**
+   * THR-1813 E5 — what earlier runs left. Shapes the world only once a run has
+   * been concluded into it (`cycleCount > 0`); absent or empty → today's world.
+   */
+  account?: AccountRecord,
 ): ReturnType<typeof initializeGameState> {
-  const cosmology = cosmologyOverride ?? deriveCosmologyFromIdentity({
+  const derivedCosmology = cosmologyOverride ?? deriveCosmologyFromIdentity({
     sphereAlignment: identity.sphereAlignment,
     mortalTags: identity.mortalTags,
     hungerId: identity.hungerId,
   });
+  // Decided 8: the tilt rides the cosmology profile, the one thing that shapes a
+  // world's spheres (the fundament's weights are overwritten every tick).
+  const carried = accountShapesWorld(account) ? account : undefined;
+  const tilted = carried ? tiltCosmology(derivedCosmology, carried.fundament) : null;
+  const cosmology = tilted ? tilted.profile : derivedCosmology;
 
   const mapSize = mapSizeOverride ?? deriveMapSize(identity.hungerId);
   const { cols, rows } = MAP_SIZE_PRESETS[mapSize];
@@ -556,7 +577,31 @@ export function initializeGameStateFromIdentity(
     cols,
     rows,
     doomArchetypeOverride,
+    undefined,
+    carried?.fundament,
   );
+
+  // THR-1813 E5 — the carried echoes and memories enter the new world, so the card
+  // echo reaches the repertoire through the shipped `echoCardsFromDefinitions`.
+  // Slice 2 (THR-1843) places the map echoes; slice 1 only carries them.
+  if (carried) {
+    const live = liveEchoes(carried);
+    result.state.echoDefinitions = live.map(e => ({ ...e.def }));
+    result.state.echoStates = live.map(e => ({ ...e.state }));
+    result.state.worldSoul = {
+      ...result.state.worldSoul,
+      fundament: { ...result.state.worldSoul.fundament, cycleCount: carried.fundament.cycleCount },
+      resonance: { memories: carried.resonance.memories.map(m => ({ ...m })), maxMemories: carried.resonance.maxMemories },
+    };
+    emitTrace({
+      tick: 0,
+      category: 'account.world_shaped',
+      seed,
+      tilt: tilted?.tilt ?? {},
+      echoesLoaded: live.length,
+      summary: `world shaped by the account: seed ${seed}, ${live.length} echoes carried`,
+    });
+  }
 
   // Stamp the full identity onto game state so remembrance-only fields
   // (timeSinceAscension, courtType, mortalTags, ascendantLens) are

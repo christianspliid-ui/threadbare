@@ -5,14 +5,18 @@ import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { Overlay } from '../shared/Overlay';
 import { surfaceHomeProps } from '../shared/surfaceHomes';
+import { ACCOUNT_WORDS, echoDisplayName } from '../../data/account-content';
 
-/** The ceremony answers no implicit close: only "Begin Next Cycle" leaves it. */
+/** The ceremony answers no implicit close: only "Wake in a new world" leaves it. */
 const STAY_OPEN = () => {};
 
 interface HarvestScreenProps {
   harvest: HarvestResult;
   cycle: number;
-  onBeginNextCycle: () => void;
+  /** THR-1813 — this world ends and a new one wakes (Christian, THR-1773). */
+  onWakeNewWorld: () => void;
+  /** THR-1813 — whether the run's record was kept; `false` shows the save-failure line. */
+  accountSaved?: boolean | null;
 }
 
 /**
@@ -55,8 +59,10 @@ function EchoCard({ candidate }: { candidate: HarvestEchoCandidate }) {
   );
 }
 
-export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScreenProps) {
+export function HarvestScreen({ harvest, cycle, onWakeNewWorld, accountSaved = null }: HarvestScreenProps) {
   const style = HARVEST_STYLES[harvest.harvestType];
+  // THR-1813 — the god's own echoes, named the one way every surface names them (PC-6).
+  const leaves = (harvest.divineEchoes ?? []).map(echoDisplayName);
 
   // The end-of-cycle harvest is a full-screen ceremony, not a dialog (Christian,
   // chat 2026-10-14; THR-1884): it mounts on the ceremony home, and Escape and
@@ -110,18 +116,18 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
           </div>
         )}
 
-        {harvest.divineEchoSlots > 0 && (
-          <p className="text-xs text-amber-200/70 text-center mb-6">
-            {countWord(harvest.divineEchoSlots).replace(/^./, c => c.toUpperCase())} divine echo slot{harvest.divineEchoSlots > 1 ? 's' : ''} available
-            <span className="text-amber-200/50 ml-1">(selection coming in a future update)</span>
+        <Tooltip id="ui.harvest_leaves">
+          <p className="text-sm text-amber-100/85 text-center mb-6 cursor-help" data-testid="harvest-leaves">
+            {leaves.length > 0 ? ACCOUNT_WORDS.harvestLeavesBehind(leaves) : ACCOUNT_WORDS.harvestLeavesLittle}
           </p>
-        )}
+        </Tooltip>
 
         <div className="text-center">
+          <Tooltip id="ui.harvest_wake">
           <Button
             variant="primary"
             size="lg"
-            onClick={onBeginNextCycle}
+            onClick={onWakeNewWorld}
             style={{
               backgroundColor: style.color,
               color: '#1c1917',
@@ -130,8 +136,14 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
               boxShadow: `0 0 20px ${style.color}40`,
             }}
           >
-            Begin next cycle
+            {ACCOUNT_WORDS.harvestWakeButton}
           </Button>
+          </Tooltip>
+          {accountSaved === false && (
+            <p className="text-xs text-amber-200/70 mt-3" role="status" data-testid="harvest-save-failed">
+              {ACCOUNT_WORDS.harvestSaveFailed}
+            </p>
+          )}
         </div>
       </div>
     </Overlay>

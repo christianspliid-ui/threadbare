@@ -2424,6 +2424,25 @@ export interface DebugBridge {
   getMapChrome: () => Promise<DebugMapChromeResult | null>;
   /** @internal HexMapV2 registers the map-chrome bridge here (THR-1902). */
   _registerMapChromeBridge: (bridge: { get: () => DebugMapChromeResult }) => void;
+  /**
+   * THR-1813 — the account record this world folds into: the loaded record before
+   * the harvest, the concluded (and saved) one after it. Null before a game.
+   */
+  getAccountRecord: () => Promise<import('./types/account').AccountRecord | null>;
+  /** THR-1813 — the record `concludeRun` would write now, without saving. Null before a game. */
+  previewRunEnd: () => Promise<import('./types/account').AccountRecord | null>;
+  /**
+   * THR-1813 — end the age now: the twilight runs through and the harvest opens
+   * (the record is concluded and saved as the harvest screen mounts). False when
+   * the harvest is already open or no game is running.
+   */
+  endAge: () => Promise<boolean>;
+  /** @internal GameView registers the account bridge here (THR-1813). */
+  _registerAccountBridge: (bridge: {
+    get: () => import('./types/account').AccountRecord | null;
+    previewRunEnd: () => import('./types/account').AccountRecord | null;
+    endAge: () => boolean;
+  }) => void;
   /** @internal GameView registers the Dominion lens bridge here (THR-1750). */
   _registerDominionLensBridge: (bridge: {
     set: (on: boolean) => boolean;

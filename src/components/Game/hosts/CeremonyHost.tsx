@@ -37,7 +37,10 @@ export interface CeremonyHostProps {
   archetype: AscendantArchetype;
   // Harvest
   harvestResult: HarvestResult | null;
-  handleBeginNextCycle: () => void;
+  /** THR-1813 — *Wake in a new world*. */
+  handleWakeNewWorld: () => void;
+  /** THR-1813 — whether the run's record was kept (null until the harvest has saved). */
+  accountSaved: boolean | null;
   // Meet the First
   meetingState: MeetingEncounterState | null;
   ascendantIdentity: AscendantIdentity | undefined;
@@ -58,7 +61,8 @@ export function CeremonyHost({
   gameState,
   archetype,
   harvestResult,
-  handleBeginNextCycle,
+  handleWakeNewWorld,
+  accountSaved,
   meetingState,
   ascendantIdentity,
   handleMeetingSpendEssence,
@@ -83,7 +87,8 @@ export function CeremonyHost({
           <HarvestScreen
             harvest={harvestResult}
             cycle={gameState.cycle}
-            onBeginNextCycle={handleBeginNextCycle}
+            onWakeNewWorld={handleWakeNewWorld}
+            accountSaved={accountSaved}
           />
         )}
       </AnimateMount>

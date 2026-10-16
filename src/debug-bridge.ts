@@ -173,6 +173,12 @@ if (import.meta.env.DEV) {
     get: () => import('./debug-bridge.d').DebugDominionLensResult;
     hex: (col: number, row: number) => import('./debug-bridge.d').DebugDominionHexResult | null;
   } | null = null;
+  // THR-1813 — the account record, registered by GameView.
+  let _accountBridge: {
+    get: () => import('./types/account').AccountRecord | null;
+    previewRunEnd: () => import('./types/account').AccountRecord | null;
+    endAge: () => boolean;
+  } | null = null;
   // THR-1902 — the map chrome (fog today), registered by HexMapV2.
   let _mapChrome: { get: () => import('./debug-bridge.d').DebugMapChromeResult } | null = null;
   // THR-1822 — the view-model seam, registered by GameView.
@@ -1125,6 +1131,10 @@ if (import.meta.env.DEV) {
     setDominionLens: async (on: boolean) => _dominionLens?.set(on) ?? false,
     /** THR-1750 — the lens state and the projection's counts (computed even while the lens is off). */
     getDominionLens: async () => _dominionLens?.get() ?? null,
+    getAccountRecord: async () => _accountBridge?.get() ?? null,
+    previewRunEnd: async () => _accountBridge?.previewRunEnd() ?? null,
+    endAge: async () => _accountBridge?.endAge() ?? false,
+    _registerAccountBridge: (bridge) => { _accountBridge = bridge as typeof _accountBridge; },
     /** THR-1750 — one hex's projected band, the place that lent it, and whether it sits on the frontier. */
     getDominionHex: async (col: number, row: number) => _dominionLens?.hex(col, row) ?? null,
     /** @internal GameView registers the lens here */
