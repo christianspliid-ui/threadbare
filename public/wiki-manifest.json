@@ -288,6 +288,9 @@
       "section": "Manual",
       "sources": [
         "src/engine/phaseSublocations.ts",
+        "src/engine/factionPurse.ts",
+        "src/engine/factionPurse/*.ts",
+        "src/data/faction-purse-constants.ts",
         "src/engine/phaseSettlementPromotion.ts",
         "src/engine/phaseSettlementReassessment.ts",
         "src/engine/phaseProsperity.ts",

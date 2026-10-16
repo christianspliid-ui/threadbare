@@ -7,6 +7,7 @@
  * making it callable from headless scripts (e.g., playtest runners).
  */
 
+import { seedOpeningPurse } from './factionPurse';
 import { resolveWorldScenario, type WorldScenario } from '../data/world-scenario';
 import type { CosmologyProfile, HexTile } from '../types';
 import type { AscendantArchetype } from '../types/influence';
@@ -277,6 +278,15 @@ export function initializeGameState(
     if (past) console.log(formatWorldPastSummary(past));
   } catch (err) {
     console.warn('[worldgen] past pass failed; the world starts with no past', err);
+  }
+
+  // ── The opening purse (THR-1931) ────────────────────────────────────
+  // After every army is fielded (worldSeed, seedLivingWorld), so each faction opens with
+  // coin for its armies' first days and no worldgen army deserts on day one.
+  try {
+    seedOpeningPurse(graph);
+  } catch (err) {
+    console.warn('[worldgen] opening purse failed; factions start with no coin', err);
   }
 
   // Ensure starting location exists — pick a habitable tile near center

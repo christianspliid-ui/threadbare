@@ -46,6 +46,12 @@ export interface ArmyState {
   raisedTick: number;
   /** Gold cost per tick to maintain */
   maintenanceCost: number;
+  /**
+   * THR-1931 — the last pay day the faction purse paid this army. Optional: an army
+   * raised before the purse reads as paid through `raisedTick`. `checkUnderfunded`
+   * reads it; an army unpaid past one pay day loses cohesion and, at 0, deserts.
+   */
+  paidThroughTick?: number;
   /** Attrition thresholds already fired (prevents re-firing) */
   thresholdsFired: string[];
   /**

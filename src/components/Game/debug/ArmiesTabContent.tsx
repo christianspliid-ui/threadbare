@@ -143,6 +143,13 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
                   <span style={DETAIL_LABEL_STYLE}>Maintenance:</span>
                   <span style={DETAIL_VALUE_STYLE}>{as.maintenanceCost}/tick</span>
                 </div>
+                {/* THR-1931 — the last pay day the faction purse paid this army. */}
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Paid through:</span>
+                  <span style={DETAIL_VALUE_STYLE}>
+                    {typeof as.paidThroughTick === 'number' ? `tick ${as.paidThroughTick as number}` : `raise (tick ${as.raisedTick as number})`}
+                  </span>
+                </div>
               </div>
             );
           })}

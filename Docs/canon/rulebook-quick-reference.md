@@ -89,6 +89,8 @@ Trade routes carry a **cargo manifest** naming what actually moves, derived from
 
 Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staples toward glut; **Blight the Fields** (Shadow / Entropy) draws them toward famine; **Reveal the Vein** (Eye / Matter) surfaces a new deposit; **Guide the Caravan** (Eye / Order) boosts and protects every road that feeds a settlement; **Sour the Mine** (Shadow / Entropy) pinches the non-staple wealth shut. All arrive as milestone unlocks, all land a beat later — you tilt the odds, you do not farm.
 
+Every **faction keeps a purse**: the towns, places, borders, tolls and guild work it holds pay it daily, and its armies cost upkeep. Raising an army costs coin; an army its purse cannot pay deserts. The faction sheet's **Purse** shows its Means in words.
+
 ## The World in Company
 
 Mortals **band into companies** (never "parties" in player-facing prose) that travel and fall apart together. A company holds a single scalar, **cohesion**, read only as prose: **bound · holding · frayed · breaking**. Companies form from colocated mortals, take encounters a lone agent cannot, and resolve each step through whichever companion best suits that step's Reach.

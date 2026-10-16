@@ -443,6 +443,8 @@ describe('notableAgendas (THR-630 seam A)', () => {
     // Clear the gates on the reach share (THR-1580): gold tier ≥ 3, notable iron tier ≥ 4.
     graph.getNode('f_mine')!.properties.domainCapabilities = { gold: 20 };
     graph.getNode('leader_mine')!.properties.domainCapabilities = { iron: 20 };
+    // THR-1931: raising costs coin — the purse must cover the raise and a first day.
+    graph.getNode('f_mine')!.properties.wealth = 100;
     const { CAMPAIGN_FAMILY } = await import('../../data/notable-agendas/campaign');
     const plan = buildNotableAgenda(
       'leader_mine', 'Leader', 'The Home Court', CAMPAIGN_FAMILY, 0, 'their_town', 'Farwatch', () => 0,

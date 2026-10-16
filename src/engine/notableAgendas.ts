@@ -26,11 +26,12 @@ import { mulberry32 } from '../lib/prng';
 import { hexDistance } from '../lib/hexMath';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFactionLeaderId } from './factionNetwork';
-import { spawnArmy, selectCommander, armyReachTier } from './armySpawning';
+import { spawnArmy, selectCommander, armyReachTier, canAffordArmy } from './armySpawning';
 import {
   ARMY_SPAWN_IRON_TIER_MIN,
   ARMY_SPAWN_GOLD_TIER_MIN,
   MAX_ARMIES_PER_FACTION,
+  determineSizeCategory,
 } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import type {
@@ -623,6 +624,8 @@ function raiseCampaignArmy(
   // The same army gates as armySpawning, on the reach share (THR-1580).
   const goldTier = armyReachTier(graph, factionId, 'gold');
   if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return;
+  // THR-1931 — the purse must cover the raise and its first day.
+  if (!canAffordArmy(graph, factionId, determineSizeCategory(goldTier))) return;
 
   // The notable commands in person when iron-capable and not already
   // commanding; otherwise their best marshal leads in their name.
@@ -653,7 +656,7 @@ function raiseCampaignArmy(
     },
   });
 
-  const armyId = spawnArmy(state, factionId, commanderId, ambitionId);
+  const armyId = spawnArmy(state, factionId, commanderId, ambitionId, { charge: true });
   if (!armyId) return;
 
   // Point the army at the campaign's target (spawnArmy defaults to the

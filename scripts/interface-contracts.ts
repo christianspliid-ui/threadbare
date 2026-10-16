@@ -6551,25 +6551,69 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/encounter.ts'],
     readSites: ['src/engine/agentDetail.ts'],
   },
-  // ── THR-1862 — an army is paid from the towns its faction holds ──────────────────
+  // ── THR-1931 — the faction purse ─────────────────────────────────────────────────
+  // Replaces `settlement-prosperity-funds-armies` (THR-1862): an army is now paid from the
+  // faction purse, not judged by its holdings' summed prosperity. That predicate survives
+  // in `checkUnderfunded` behind `FACTION_PURSE_ENABLED = false` (rollback) and still
+  // governs monster factions, which the purse does not pay.
   {
-    id: 'settlement-prosperity-funds-armies',
+    id: 'faction-purse-pays-faction-holders',
+    producerSystem: ECONOMY,
+    consumerSystem: FACTIONS,
+    intent:
+      'Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm\'s border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town\'s tax holder takes LANDHOLDER_TAX_RATE). It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction\'s wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened.',
+    ulTerms: ['Means', 'Prosperity'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['runFactionPurse', 'readMeansBand', 'readPurseDay', 'applyTreasuryDelta'],
+      module: 'src/engine/factionPurse.ts',
+    },
+    writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts', 'src/engine/phaseFactionActions.ts'],
+    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/components/Game/FactionSheet.tsx', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-16',
+      evidence:
+        'THR-1931. factionPurse.test.ts drives the real runFactionPurse against a graph: a realm holding two towns earns town tax at the pivot, rent per border hex and a held place\'s yield, and a miners\' guild in its town hands it LANDHOLDER_TAX_RATE of its work; with a rival also controlling the town, only the border realm collects (the rival\'s townTax is 0 — nothing pays twice). A seed-42 medium headless run shows faction_0 at 121 coin by day 10 and every guild above its opening purse.',
+    },
+  },
+  {
+    id: 'faction-purse-pays-armies',
     producerSystem: ECONOMY,
     consumerSystem: 'War, Armies & Battles',
     intent:
-      'A faction keeps its armies paid out of the towns it holds. Army attrition asks whether the faction is underfunded by reading its prosperity DERIVED from its held settlements (deriveFactionProsperity — summed settlement prosperity /100) against ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD; a faction holding no settlement (a monster horde, whose one controls edge is to its lair) is never underfunded. Before THR-1862 the reader took a faction-node prosperity field nothing writes, so it read the 0.5 default and no army was ever underfunded — a poor realm lost nothing for it.',
-    ulTerms: ['Prosperity'],
+      'A faction pays each army\'s upkeep from its purse every day, in army id order, whole armies only and never into debt; an army paid today carries armyState.paidThroughTick = today. Army attrition reads that: an army the purse has not paid for more than one pay day is underfunded, loses UNDERFUNDED_ATTRITION_PENALTY cohesion per tick and, at 0, deserts through the existing disband path. Raising an army from an ambition or agenda costs ARMY_CREATION_GOLD_COST, and the raise gate requires the cost plus a first day in hand.',
+    ulTerms: ['Means'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['paidThroughTick', 'checkUnderfunded', 'canAffordArmy', 'settleUpkeep'],
+      module: 'src/engine/factionPurse/upkeep.ts',
+    },
+    writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts'],
+    readSites: ['src/engine/armyAttrition.ts', 'src/engine/armySpawning.ts', 'src/engine/notableAgendas.ts'],
+    verifiedLive: {
+      date: '2026-10-16',
+      evidence:
+        'THR-1931. factionPurse.test.ts: checkUnderfunded is false for an army paid this pay day and true for one last paid two days ago; a realm that loses both towns while keeping a regiment reaches Destitute inside 25 days and leaves the regiment unpaid the next pay day; a two-town realm keeps a host paid for 50 days; the opening purse pays every worldgen army through tick 0 so none is underfunded on day one; canAffordArmy refuses one coin short of raise + first day.',
+    },
+  },
+  {
+    id: 'faction-purse-schism-strain',
+    producerSystem: ECONOMY,
+    consumerSystem: FACTIONS,
+    intent:
+      'A faction that has been Destitute for PURSE_SCHISM_GRACE_DAYS feels it at a schism: decideSchismOutcome adds SCHISM_WEIGHT_PURSE × purseStrain to split pressure. Bounded — alone it never splits a faction (the outcome is still the seeded draw against splitPressure); it tips one already strained.',
+    ulTerms: ['Means'],
     mechanism: {
       kind: 'function',
-      symbols: ['deriveFactionProsperity', 'countFactionSettlementHoldings', 'checkUnderfunded', 'ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD'],
-      module: 'src/engine/factionNetwork.ts',
+      symbols: ['computePurseStrain', 'SCHISM_WEIGHT_PURSE', 'readMeansBand', 'readPurseDay'],
+      module: 'src/engine/factionTopology.ts',
     },
-    writeSites: ['src/engine/factionNetwork.ts'],
-    readSites: ['src/engine/armyAttrition.ts'],
+    writeSites: ['src/engine/factionPurse.ts'],
+    readSites: ['src/engine/factionTopology.ts', 'src/engine/phaseSchismResolution.ts'],
     verifiedLive: {
-      date: '2026-10-14',
+      date: '2026-10-16',
       evidence:
-        'THR-1862. economyReads.thr1862.test.ts drives the real checkUnderfunded against a graph: a landed faction whose two held towns sum to prosperity 15 (derived 0.15) is underfunded, one holding a town at 60 is funded, and neither a holdingless horde nor one holding only its lair (the monsterFactionSeed shape) is underfunded. armyAttrition.test.ts › "adds underfunded penalty when faction prosperity too low" now builds the faction with a controlled holding (derived 0.1) and asserts the UNDERFUNDED_ATTRITION_PENALTY lands in the cohesion loss — the same assertion fails if the reader returns to the faction-node field.',
+        'THR-1931. factionPurse.test.ts › the schism strain: computePurseStrain is 0 one day short of the grace, 1 at it, and 0 for a solvent faction.',
     },
   },
 ];

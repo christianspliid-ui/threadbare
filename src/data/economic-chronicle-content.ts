@@ -9,6 +9,11 @@
  * Fail-soft: resolvers substitute generic descriptors when names are missing.
  */
 
+import {
+  FACTION_PURSE_CHRONICLE_TEMPLATES,
+  FACTION_PURSE_CHRONICLE_SIGNIFICANCE,
+} from './faction-purse-chronicle-content';
+
 // ─── Trigger Types ──────────────────────────────────────────────────────────
 
 export type EconomicChronicleTrigger =
@@ -28,7 +33,12 @@ export type EconomicChronicleTrigger =
   | 'resource_scarcity'
   | 'resource_glut'
   // What a mortal holds yields (THR-1428)
-  | 'holding_income';
+  | 'holding_income'
+  // The faction purse (THR-1931) — content in faction-purse-chronicle-content.ts
+  | 'purse_broke'
+  | 'purse_broke_bare'
+  | 'army_unpaid_desertion'
+  | 'purse_recovered';
 
 // ─── Significance defaults per trigger ──────────────────────────────────────
 
@@ -49,6 +59,7 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
   resource_glut: 0.5,
   // Quiet by design: a day's tolls is the world ticking over, not a turning point.
   holding_income: 0.3,
+  ...FACTION_PURSE_CHRONICLE_SIGNIFICANCE,
 };
 
 // ─── Chronicle Templates ────────────────────────────────────────────────────
@@ -193,6 +204,10 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'The freehold at {target} yields to {actor} again — quiet money, the kind that accumulates without anyone remarking on it.',
     '{actor} collects from {target}. Holding a thing and being paid by it turn out to be the same act.',
   ],
+  purse_broke: [...FACTION_PURSE_CHRONICLE_TEMPLATES.purse_broke],
+  purse_broke_bare: [...FACTION_PURSE_CHRONICLE_TEMPLATES.purse_broke_bare],
+  army_unpaid_desertion: [...FACTION_PURSE_CHRONICLE_TEMPLATES.army_unpaid_desertion],
+  purse_recovered: [...FACTION_PURSE_CHRONICLE_TEMPLATES.purse_recovered],
 };
 
 // ─── Wealth Tier Flavor ─────────────────────────────────────────────────────

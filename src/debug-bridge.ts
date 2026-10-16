@@ -2428,6 +2428,34 @@ if (import.meta.env.DEV) {
      * Realm's reach, and a world where it is 0 would mean the fill radius swallowed the
      * map. Call it before and after a `controls` change to see the border move.
      */
+    /**
+     * THR-1931 — one faction's last pay day plus its purse and Means band, or null
+     * when the id does not name a faction the purse has reached.
+     */
+    getFactionPurse: async (factionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { readPurseDay, readMeansBand } = await import('./engine/factionPurse');
+      const node = state.graph.getNode(factionId);
+      const meansBand = readMeansBand(node);
+      if (!node || !meansBand) return null;
+      const day = readPurseDay(node);
+      const wealth = typeof node.properties.wealth === 'number' ? node.properties.wealth : 0;
+      return { ...(day ?? {}), wealth, meansBand };
+    },
+    /** THR-1931 — every faction's last pay day, keyed by faction id. */
+    getPurseLedger: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return {};
+      const { readPurseDay } = await import('./engine/factionPurse');
+      const out: Record<string, unknown> = {};
+      for (const n of state.graph.getNodesByType('actor')) {
+        if (n.properties.actorType !== 'faction') continue;
+        const day = readPurseDay(n);
+        if (day) out[n.id] = day;
+      }
+      return out;
+    },
     getRealmProjection: async () => {
       const state = _gameStateProvider?.();
       const runtime = _runtimeProvider?.();

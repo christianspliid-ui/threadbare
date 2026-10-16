@@ -162,7 +162,7 @@ function maybeSpawnArmy(
   if (!isEligibleForArmySpawn(state, factionId)) return;
   const commander = selectCommander(state, factionId);
   if (commander) {
-    spawnArmy(state, factionId, commander, ambitionId);
+    spawnArmy(state, factionId, commander, ambitionId, { charge: true });
   }
 }
 

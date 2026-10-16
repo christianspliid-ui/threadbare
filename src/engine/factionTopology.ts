@@ -21,6 +21,8 @@
  * so the produced graph is observationally identical to a splinter aftermath
  * outcome.
  */
+import { readMeansBand, readPurseDay } from './factionPurse';
+import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS, PURSE_SCHISM_GRACE_DAYS } from '../data/faction-purse-constants';
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SimulationRuntime } from './simulationRuntime';
 import { touchWorld, touchStructure } from './simulationRuntime';
@@ -50,6 +52,8 @@ export interface SchismDecisionInputs {
   cohesionDrop: number;
   spread: number;
   dissent: number;
+  /** THR-1931 — 1 while the faction has been Destitute for PURSE_SCHISM_GRACE_DAYS, else 0. */
+  purseStrain?: number;
 }
 
 export interface SchismDecision {
@@ -336,6 +340,20 @@ export function performFactionReform(
 }
 
 /**
+ * THR-1931 — 1 while the faction's Means band is Destitute and has been for at least
+ * `PURSE_SCHISM_GRACE_DAYS`, else 0. Reads the purse's own written state (`meansBand`,
+ * `purseLastDay.brokeSinceTick`); 0 with the purse switched off.
+ */
+export function computePurseStrain(state: GameState, factionId: string): number {
+  if (!FACTION_PURSE_ENABLED) return 0;
+  const faction = state.graph.getNode(factionId);
+  if (readMeansBand(faction) !== 'Destitute') return 0;
+  const since = readPurseDay(faction)?.brokeSinceTick;
+  if (typeof since !== 'number') return 0;
+  return state.tick - since >= PURSE_SCHISM_GRACE_DAYS * PURSE_CYCLE_TICKS ? 1 : 0;
+}
+
+/**
  * Decide reform-or-split for a pending schism. Pure: takes state at the
  * resolution tick + the baseline cohesion that was snapshotted at plant
  * time + a deterministic [0, 1) sample, returns the outcome and inputs.
@@ -348,7 +366,7 @@ export function decideSchismOutcome(
   factionId: string,
   baselineCohesion: number,
   prngSample: number,
-  weights: { cohesion: number; spread: number; dissent: number },
+  weights: { cohesion: number; spread: number; dissent: number; purse?: number },
 ): SchismDecision {
   const currentCohesion = computeFactionCohesion(state, factionId);
   const cohesionDrop = clamp01(baselineCohesion - currentCohesion);
@@ -360,15 +378,20 @@ export function decideSchismOutcome(
   const dissentRaw = (faction?.properties?.dissentScore as number | undefined) ?? 0;
   const dissent = clamp01(dissentRaw);
 
+  // THR-1931 — an empty purse tips a faction already strained. Bounded: alone it never
+  // splits one (the outcome is still the PRNG draw against `splitPressure`).
+  const purseStrain = computePurseStrain(state, factionId);
+
   const splitPressure = clamp01(
     weights.cohesion * cohesionDrop +
     weights.spread * spread +
-    weights.dissent * dissent
+    weights.dissent * dissent +
+    (weights.purse ?? 0) * purseStrain
   );
 
   return {
     outcome: prngSample < splitPressure ? 'split' : 'reform',
     splitPressure,
-    inputs: { cohesionDrop, spread, dissent },
+    inputs: { cohesionDrop, spread, dissent, purseStrain },
   };
 }

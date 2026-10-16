@@ -222,12 +222,13 @@ describe('phaseArmyAttrition', () => {
     expect(state.cohesion).toBeCloseTo(expected, 5);
   });
 
-  it('adds underfunded penalty when faction prosperity too low', () => {
+  it('adds underfunded penalty when the faction purse has not paid the army (THR-1931)', () => {
     addLocation(graph, 'loc1', 'plains', true);
-    addArmy(graph, 'army1', 'loc1', { cohesion: 30, cohesionMax: 30 });
-    addFaction(graph, 'f1', 'army1', 0.1); // low prosperity = underfunded
+    // Last paid on tick 0; at tick 30 that is more than one pay day ago.
+    addArmy(graph, 'army1', 'loc1', { cohesion: 30, cohesionMax: 30, paidThroughTick: 0 });
+    addFaction(graph, 'f1', 'army1', 0.5);
 
-    phaseArmyAttrition(makeState(1, graph));
+    phaseArmyAttrition(makeState(30, graph));
 
     const state = getArmyState(graph, 'army1');
     const expected = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR + UNDERFUNDED_ATTRITION_PENALTY);

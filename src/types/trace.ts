@@ -88,6 +88,8 @@ export type TraceCategory =
   | 'action_execution' | 'modifier_resolution'
   | 'prosperity_tick' | 'wealth_delta' | 'econ_shock_seeded'
   | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
+  // THR-1931 — the faction purse
+  | 'economy.purse.day' | 'economy.purse.band_change' | 'economy.purse.army_raised'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
@@ -676,6 +678,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_execution', 'modifier_resolution',
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
+  'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
   'journey.choice_applied',
@@ -1790,6 +1793,42 @@ export interface WealthDeltaTrace extends TraceBase {
          | 'construction' | 'monopoly';
   sourceActionId?: string;
   sourceActorId?: string;
+}
+
+/** THR-1931 — one faction's pay day: income by source, upkeep paid, armies left unpaid. */
+export interface PurseDayTrace extends TraceBase {
+  category: 'economy.purse.day';
+  factionId: string;
+  wealthBefore: number;
+  wealthAfter: number;
+  income: {
+    townTax: number; placeYield: number; landRent: number; tolls: number;
+    guildWork: number; guildTaxIn: number; guildTaxOut: number;
+  };
+  upkeepOwed: number;
+  upkeepPaid: number;
+  armiesUnpaid: string[];
+  /** Settlement ids this faction collected town tax from. */
+  taxHolderOf: string[];
+}
+
+/** THR-1931 — a faction's Means band moved. */
+export interface PurseBandChangeTrace extends TraceBase {
+  category: 'economy.purse.band_change';
+  factionId: string;
+  from: string;
+  to: string;
+  /** Days of upkeep in hand; null when the faction fields no army (absolute bands). */
+  days: number | null;
+}
+
+/** THR-1931 — `spawnArmy` charged a faction the raise cost. */
+export interface PurseArmyRaisedTrace extends TraceBase {
+  category: 'economy.purse.army_raised';
+  factionId: string;
+  armyId: string;
+  cost: number;
+  wealthAfter: number;
 }
 
 /** Trace: trade route volume changed */
@@ -4608,6 +4647,9 @@ export type TraceEntry =
   | EconShockSeededTrace
   | UndertakingReaderTrace
   | WealthDeltaTrace
+  | PurseDayTrace
+  | PurseBandChangeTrace
+  | PurseArmyRaisedTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
   | TradeRouteUpkeepTrace

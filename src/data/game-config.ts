@@ -395,6 +395,12 @@ export const SCHISM_WEIGHT_SPREAD = 0.4;
 /** Contribution of pre-resolution dissent signal to splitPressure. */
 export const SCHISM_WEIGHT_DISSENT = 0.2;
 
+/**
+ * THR-1931 — contribution of an empty purse (Destitute for PURSE_SCHISM_GRACE_DAYS) to
+ * splitPressure. Bounded: alone it never splits a faction; it tips one already strained.
+ */
+export const SCHISM_WEIGHT_PURSE = 0.15;
+
 /** Reputation lost on the faction node when a schism resolves to reform. */
 export const SCHISM_REFORM_REPUTATION_PENALTY = 0.15;
 

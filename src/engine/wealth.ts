@@ -7,7 +7,12 @@
  *
  * Design doc: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
  * System 4 Constants
+ *
+ * Faction treasuries are the exception to the 0–100 range (THR-1931): they write
+ * through `applyTreasuryDelta` (0–`FACTION_TREASURY_CAP`), never `applyWealthDelta`.
  */
+
+import { FACTION_TREASURY_CAP } from '../data/faction-purse-constants';
 
 // ─── Constants (System 4) ─────────────────────────────────────────────────
 
@@ -96,6 +101,18 @@ export function getWealthTier(wealth: number): WealthTier {
  */
 export function applyWealthDelta(currentWealth: number, delta: number): number {
   return Math.max(0, Math.min(100, currentWealth + delta));
+}
+
+/**
+ * Apply a delta to a **faction** treasury (THR-1931). Clamps to 0–`FACTION_TREASURY_CAP`:
+ * a faction's purse is not a mortal's 0–100 Means, so `applyWealthDelta` must never
+ * touch a faction — a quest would cut a 400-coin realm back to 100. Floors at 0; there
+ * is no debt.
+ */
+export function applyTreasuryDelta(currentWealth: number, delta: number): number {
+  const next = currentWealth + delta;
+  if (!Number.isFinite(next)) return Math.max(0, Math.min(FACTION_TREASURY_CAP, Number.isFinite(currentWealth) ? currentWealth : 0));
+  return Math.max(0, Math.min(FACTION_TREASURY_CAP, next));
 }
 
 /**

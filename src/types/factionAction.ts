@@ -246,7 +246,7 @@ export interface SchismResolvedTrace {
   factionName: string;
   outcome: 'split' | 'reform' | 'noop';
   splitPressure: number;
-  inputs: { cohesionDrop: number; spread: number; dissent: number };
+  inputs: { cohesionDrop: number; spread: number; dissent: number; purseStrain?: number };
   /** Set on outcome='split'. */
   splinterFactionId?: string;
   /** Set on outcome='split'. */

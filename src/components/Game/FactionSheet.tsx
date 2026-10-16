@@ -16,6 +16,9 @@ import { getFactionNetworkSummary } from '../../engine/factionNetwork';
 import type { FactionActionRecord } from '../../types/factionAction';
 import { getReputationWord } from '../../data/domain-words';
 import { getWealthTier } from '../../engine/wealth';
+import { readPurseDay, readMeansBand } from '../../engine/factionPurse';
+import { holdingClause } from '../../engine/factionPurse/purseSentences';
+import { FactionPursePanel } from './FactionPursePanel';
 import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../data/realm-content';
 import { formatCongregationSphereLine } from '../../data/world-scenario';
 import { durationLabel } from '../../engine/aftermathWords';
@@ -406,14 +409,19 @@ export const FactionSheet = React.memo(function FactionSheet({
                     <LocationList
                       entries={summary.controlledLocations}
                       emptyText="No controlled settlements yet."
+                      clauseFor={graph ? (id => holdingClause(graph, id, readPurseDay(factionNode))) : undefined}
                     />
                   </Section>
 
-                  {/* Means (THR-1428) — the tier word, never the number (UI Law IV).
-                      An order's coffers sit beside what it controls because the two
-                      move together: what a faction holds is where its money comes
-                      from. Read off the node, never a cached copy (Law 56). */}
-                  {typeof factionNode?.properties?.wealth === 'number' && (
+                  {/* Purse (THR-1931; THR-1870 § 4) — replaces the bare Means row. The
+                      faction purse phase writes the band and the day; the panel only
+                      reads them (Law 56). A faction the purse has not reached yet (an
+                      old save before its first pay day) keeps the THR-1428 tier word. */}
+                  {graph && readMeansBand(factionNode) ? (
+                    <Section title="Purse">
+                      <FactionPursePanel factionId={factionId} graph={graph} />
+                    </Section>
+                  ) : typeof factionNode?.properties?.wealth === 'number' && (
                     <Section title="Means">
                       <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
                         {getWealthTier(factionNode.properties.wealth as number)}
@@ -862,9 +870,12 @@ function MemberRow({
 function LocationList({
   entries,
   emptyText,
+  clauseFor,
 }: {
   entries: FactionNetworkLocation[];
   emptyText: string;
+  /** THR-1931 — what a holding pays this faction, in words ("pays tax", "yields salt"). */
+  clauseFor?: (locationId: string) => string | null;
 }) {
   if (entries.length === 0) return <MutedLine>{emptyText}</MutedLine>;
 
@@ -872,7 +883,10 @@ function LocationList({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
       {entries.slice(0, 6).map(entry => (
         <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--space-2)', fontSize: 'var(--text-xs)' }}>
-          <span style={{ color: 'var(--text-secondary)' }}>{entry.name}</span>
+          <span style={{ color: 'var(--text-secondary)' }}>
+            {entry.name}
+            <HoldingClause clause={clauseFor?.(entry.id) ?? null} />
+          </span>
           <span style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>
             {entry.subtype ?? 'site'}
           </span>
@@ -951,6 +965,20 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <SectionLabel label={title} gold={false} />
       {children}
     </div>
+  );
+}
+
+/** " — pays tax" / " — yields salt", with the registry tooltip for the clause word (Laws 1/17). */
+function HoldingClause({ clause }: { clause: string | null }) {
+  if (!clause) return null;
+  const tooltipId = clause === 'pays tax' ? 'ui.econ.pays_tax' : 'ui.econ.yields';
+  return (
+    <span data-testid="holding-clause" style={{ color: 'var(--text-tertiary)' }}>
+      {' — '}
+      <Tooltip id={tooltipId}>
+        <span className="cursor-help" role="term" style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}>{clause}</span>
+      </Tooltip>
+    </span>
   );
 }
 
