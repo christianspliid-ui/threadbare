@@ -75,6 +75,15 @@ export interface PurseDay {
   taxHolderOf: string[];
   /** Towns and places that paid this faction today (tax, yield, or a guild's cut). */
   paidBy: string[];
+  /**
+   * THR-1932 — fealty paid to this faction's liege today, written by the `crown` phase
+   * after the pay day. Absent before the crown runs (reads as 0).
+   */
+  fealtyOut?: number;
+  /** THR-1932 — fealty taken in from this faction's vassals today. Absent reads as 0. */
+  fealtyIn?: number;
+  /** THR-1932 — the liege this faction paid fealty to today, for the sheet's sentence. */
+  fealtyTo?: string | null;
 }
 
 /** A desertion `checkUnderfunded`'s disband left for the next pay day's chronicle. */

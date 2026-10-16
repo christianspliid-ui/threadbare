@@ -33,6 +33,7 @@ import { hexKeyFromCoord } from '../lib/hexKey';
 import { hexDistance } from '../lib/hexMath';
 import { resolveToParentLocation } from './sublocationShape';
 import { REALM_FACTION_CLASS, REALM_FILL_RADIUS } from '../data/realm-content';
+import { buildCrownOf } from './crown/crownView';
 
 /** One Realm, as the map draws it. */
 export interface RealmProjectionEntry {
@@ -64,11 +65,17 @@ export interface RealmProjection {
    * with no Area and must be 0.
    */
   unclaimedHexes: number;
+  /**
+   * THR-1932 — sworn realm → the Crown it owes fealty to, for every realm sworn to
+   * another realm. Derived from `sworn_to`; drives the crown outline and the hex
+   * tooltip's clause. Absent on projections built before the crown (reads as none).
+   */
+  crownOf?: Map<string, string>;
 }
 
 /** An empty projection — the shape a fail-soft path hands back. */
 export function emptyRealmProjection(): RealmProjection {
-  return { realms: [], hexRealmId: new Map(), unclaimedHexes: 0 };
+  return { realms: [], hexRealmId: new Map(), unclaimedHexes: 0, crownOf: new Map() };
 }
 
 interface HeldSeed {
@@ -190,7 +197,14 @@ export function buildRealmProjection(graph: WorldGraph, tiles: HexTile[]): Realm
     realm.hexes.push(tile.coord);
   }
 
-  return { realms, hexRealmId, unclaimedHexes };
+  // Only realms that are on the map take part in an outline.
+  const onMap = new Set(realms.map(r => r.id));
+  const crownOf = new Map<string, string>();
+  for (const [realm, crown] of buildCrownOf(graph)) {
+    if (onMap.has(realm) && onMap.has(crown)) crownOf.set(realm, crown);
+  }
+
+  return { realms, hexRealmId, unclaimedHexes, crownOf };
 }
 
 /**
@@ -213,6 +227,9 @@ export function fingerprintFactionControls(graph: WorldGraph): string {
     if (!source || source.properties.actorType !== 'faction') continue;
     pairs.push(`${edge.source}>${edge.target}`);
   }
+  // THR-1932 — the crown outline reads `sworn_to`, so an oath made or broken without a
+  // structural bump shows up here the same way a moved `controls` edge does.
+  for (const edge of graph.getEdgesByType('sworn_to')) pairs.push(`${edge.source}~${edge.target}`);
   pairs.sort();
   return pairs.join(',');
 }

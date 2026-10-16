@@ -13,6 +13,10 @@ import {
   FACTION_PURSE_CHRONICLE_TEMPLATES,
   FACTION_PURSE_CHRONICLE_SIGNIFICANCE,
 } from './faction-purse-chronicle-content';
+import {
+  CROWN_CHRONICLE_TEMPLATES,
+  CROWN_CHRONICLE_SIGNIFICANCE,
+} from './crown-chronicle-content';
 
 // ─── Trigger Types ──────────────────────────────────────────────────────────
 
@@ -38,7 +42,13 @@ export type EconomicChronicleTrigger =
   | 'purse_broke'
   | 'purse_broke_bare'
   | 'army_unpaid_desertion'
-  | 'purse_recovered';
+  | 'purse_recovered'
+  // The crown (THR-1932) — content in crown-chronicle-content.ts
+  | 'crown_formed'
+  | 'crown_lost'
+  | 'oath_sworn'
+  | 'oath_broken'
+  | 'rebellion';
 
 // ─── Significance defaults per trigger ──────────────────────────────────────
 
@@ -60,6 +70,7 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
   // Quiet by design: a day's tolls is the world ticking over, not a turning point.
   holding_income: 0.3,
   ...FACTION_PURSE_CHRONICLE_SIGNIFICANCE,
+  ...CROWN_CHRONICLE_SIGNIFICANCE,
 };
 
 // ─── Chronicle Templates ────────────────────────────────────────────────────
@@ -208,6 +219,11 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
   purse_broke_bare: [...FACTION_PURSE_CHRONICLE_TEMPLATES.purse_broke_bare],
   army_unpaid_desertion: [...FACTION_PURSE_CHRONICLE_TEMPLATES.army_unpaid_desertion],
   purse_recovered: [...FACTION_PURSE_CHRONICLE_TEMPLATES.purse_recovered],
+  crown_formed: [...CROWN_CHRONICLE_TEMPLATES.crown_formed],
+  crown_lost: [...CROWN_CHRONICLE_TEMPLATES.crown_lost],
+  oath_sworn: [...CROWN_CHRONICLE_TEMPLATES.oath_sworn],
+  oath_broken: [...CROWN_CHRONICLE_TEMPLATES.oath_broken],
+  rebellion: [...CROWN_CHRONICLE_TEMPLATES.rebellion],
 };
 
 // ─── Wealth Tier Flavor ─────────────────────────────────────────────────────

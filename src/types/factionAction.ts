@@ -21,7 +21,9 @@ export type FactionActionType =
   | 'propose_alliance'
   | 'excommunicate'
   | 'hold_conclave'
-  | 'issue_bounty';
+  | 'issue_bounty'
+  // THR-1932 — a realm courts fealty (persuade, buy, or coerce). Executor in engine/crown.ts.
+  | 'seek_fealty';
 
 // ─── Action Template ─────────────────────────────────────────────────────────
 
@@ -36,6 +38,8 @@ export interface FactionActionTemplate {
   /** Ambitions that increase selection weight for this action */
   ambitionAffinity: FactionAmbitionType[];
   prerequisite?: FactionActionPrerequisite;
+  /** Base selection weight (default 1). THR-1932: `seek_fealty` uses SEEK_FEALTY_WEIGHT. */
+  weight?: number;
 }
 
 export type FactionActionPrerequisite =
@@ -44,7 +48,9 @@ export type FactionActionPrerequisite =
   | { type: 'member_count_above'; count: number }
   | { type: 'treasury_above'; amount: number }
   | { type: 'leader_exists' }
-  | { type: 'no_active_conclave' };
+  | { type: 'no_active_conclave' }
+  // THR-1932 — a realm that may court (holds a town, owes no fealty) with a candidate
+  | { type: 'can_court' };
 
 // ─── Action Record (stored on faction node) ───────────────────────────────────
 

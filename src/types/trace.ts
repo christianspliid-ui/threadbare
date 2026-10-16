@@ -91,6 +91,8 @@ export type TraceCategory =
   | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
   // THR-1931 — the faction purse
   | 'economy.purse.day' | 'economy.purse.band_change' | 'economy.purse.army_raised'
+  // THR-1932 — the crown (fealty)
+  | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
@@ -689,6 +691,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
+  'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
   'journey.choice_applied',
@@ -1809,6 +1812,53 @@ export interface WealthDeltaTrace extends TraceBase {
          | 'construction' | 'monopoly';
   sourceActionId?: string;
   sourceActorId?: string;
+}
+
+/** THR-1932 — the offer score's parts, shared by the sworn and refused traces. */
+export interface OathOfferParts {
+  protection: number; gift: number; standing: number; pride: number; score: number; threat: number;
+}
+
+/** THR-1932 — a faction swore fealty to a realm. */
+export interface OathSwornTrace extends TraceBase {
+  category: 'oath_sworn';
+  vassalId: string;
+  liegeId: string;
+  kind: 'persuaded' | 'bought' | 'coerced';
+  parts: OathOfferParts;
+  giftPaid: number;
+  coercedBy?: { siegeBattleId?: string; townTakenId?: string };
+}
+
+/** THR-1932 — a courted faction refused (the best-scoring candidate only). */
+export interface OathRefusedTrace extends TraceBase {
+  category: 'oath_refused';
+  candidateId: string;
+  liegeId: string;
+  parts: OathOfferParts;
+  affordableGift: number;
+}
+
+/** THR-1932 — an oath broke: loyalty fell to Distrusted, or one end is gone. */
+export interface OathBrokenTrace extends TraceBase {
+  category: 'oath_broken';
+  vassalId: string;
+  liegeId: string;
+  kind: 'persuaded' | 'bought' | 'coerced';
+  swornTick: number;
+  loyalty: number;
+  reason: string;
+  lossesInWindow: Record<string, number>;
+  taxPaidTotal: number;
+}
+
+/** THR-1932 — a breaking realm vassal earning enough rose against its liege. */
+export interface RebellionTrace extends TraceBase {
+  category: 'rebellion';
+  rebelId: string;
+  crownId: string;
+  rebelIncome: number;
+  crownIncome: number;
 }
 
 /** THR-1931 — one faction's pay day: income by source, upkeep paid, armies left unpaid. */
@@ -4665,6 +4715,10 @@ export type TraceEntry =
   | UndertakingReaderTrace
   | WealthDeltaTrace
   | PurseDayTrace
+  | OathSwornTrace
+  | OathRefusedTrace
+  | OathBrokenTrace
+  | RebellionTrace
   | PurseBandChangeTrace
   | PurseArmyRaisedTrace
   | TradeRouteVolumeChangeTrace

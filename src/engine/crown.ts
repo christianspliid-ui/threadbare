@@ -1,0 +1,702 @@
+/**
+ * The crown — oaths of fealty and tax (THR-1932).
+ *
+ * Plan: `Docs/plans/2026-10-15-thr-1932-crown.md`. Decision: THR-1917 (Christian present:
+ * force is allowed, one layer only).
+ *
+ * One directed edge, `sworn_to` (vassal → liege realm), carries every oath. This module
+ * is its only writer:
+ *
+ * - `executeSeekFealty` — the `seek_fealty` faction action. A realm coerces a faction it
+ *   besieged or just took a town from; else it persuades (protection and standing) or
+ *   buys (a gift from its purse) the richest candidate that accepts; else the best
+ *   candidate refuses and cools a little.
+ * - `runCrownPhase` — the daily `crown` phase, right after `faction_purse`. Per oath, in
+ *   edge-id order: loyalty moves (six reasons), an oath below Distrusted breaks (a grudge
+ *   on `relates_to`, a cooldown, maybe a rebellion), then the fealty tax moves a share of
+ *   the vassal's day income to the liege — after its own soldiers are paid, never into debt.
+ *
+ * The Crown itself is derived (`crown/crownView.ts`): a realm with CROWN_MIN_OATHS oaths.
+ *
+ * NFP: Tunability — `data/crown-constants.ts`. Inspectability — four traces
+ * (`oath_sworn`, `oath_refused`, `oath_broken`, `rebellion`) with the full offer parts;
+ * `lastLoyaltyDay` and `recentLosses` on the edge; `__DEBUG.getOaths` / `getCrown`.
+ * Determinism — no PRNG (the action draw is the faction-action stream's); factions,
+ * oaths and candidates in id order, ties by income then id. Fail-soft — one oath's throw
+ * skips that oath today; the phase's caller wraps it again.
+ */
+
+import type { GameState } from '../types/gameState';
+import type { GraphEdge, GraphNode } from '../types/graph';
+import type { ChronicleEntry } from '../types/narrative';
+import type { FactionActionRecord } from '../types/factionAction';
+import type { OathSwornTrace, OathRefusedTrace, OathBrokenTrace, RebellionTrace } from '../types/trace';
+import type { WorldGraph } from './graph';
+import type { RealmProjection } from './realmProjection';
+import type { EconomicChronicleTrigger } from '../data/economic-chronicle-content';
+import type { BattleState } from '../types/battle';
+import type { LoyaltyDelta, LoyaltyReason, OathKind, OfferParts, SwornToEdgeProperties } from './crown/types';
+import { LOYALTY_REASON_ORDER } from './crown/types';
+import { emitTrace } from './traceBuffer';
+import { readWealth, applyTreasuryDelta } from './wealth';
+import { resolveEconomicChronicle, chronicleSeed } from './economicChronicle';
+import { isFactionInAttention, readPurseDay, PURSE_LAST_DAY_PROP } from './factionPurse';
+import { buildCrownWorld, maySwear, mayCourt, onReswearCooldown, type CrownWorld } from './crown/eligibility';
+import { offerScore, affordableGift, giftCost } from './crown/offer';
+import { isRealmFaction, readOath, vassalsOf } from './crown/crownView';
+import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS } from '../data/faction-purse-constants';
+import { OATH_SWORN_LINES, OATH_BROKEN_LINES } from '../data/crown-chronicle-content';
+import {
+  CROWN_ENABLED,
+  CROWN_MIN_OATHS,
+  FEALTY_TAX_SHARE,
+  OATH_ACCEPT_THRESHOLD,
+  OATH_COERCE_MIN_SIEGE_TICKS,
+  OATH_COERCE_WINDOW_DAYS,
+  OATH_RIVAL_MARGIN,
+  LOYALTY_START,
+  LOYALTY_RISE_WEALTHY,
+  LOYALTY_FALL_STRAINED,
+  LOYALTY_FALL_DESTITUTE,
+  LOYALTY_FAIL_DEFENCE,
+  LOYALTY_FALL_OUTGROWN,
+  LOYALTY_FALL_RIVAL_OFFER,
+  OATH_BREAK_THRESHOLD,
+  REBELLION_INCOME_RATIO,
+  OATH_BREAK_SENTIMENT_DELTA,
+  OATH_REFUSAL_SENTIMENT_DELTA,
+  OATH_REFUSAL_SENTIMENT_FLOOR,
+  OATH_BREAK_REASON_WINDOW_DAYS,
+} from '../data/crown-constants';
+
+// ─── Switch ───────────────────────────────────────────────────────────────
+
+let warnedPurseOff = false;
+
+/** The crown runs only with the purse: no purse, no tax and no gift (plan § Fail-soft). */
+export function crownActive(): boolean {
+  if (!CROWN_ENABLED) return false;
+  if (!FACTION_PURSE_ENABLED) {
+    if (!warnedPurseOff) {
+      warnedPurseOff = true;
+      console.warn('[crown] the faction purse is off; the crown is disabled');
+    }
+    return false;
+  }
+  return true;
+}
+
+/** Hooks the caller supplies: the session's projection and its structural bump. */
+export interface CrownHooks {
+  getProjection?: () => RealmProjection | null;
+  /** Called on every `sworn_to` create or remove (the map outline reads the edges). */
+  onStructure?: () => void;
+}
+
+// ─── Small helpers ────────────────────────────────────────────────────────
+
+function nameOf(graph: WorldGraph, id: string): string {
+  return graph.getNode(id)?.name ?? id;
+}
+
+function setWealth(graph: WorldGraph, id: string, delta: number): number {
+  const node = graph.getNode(id);
+  if (!node) return 0;
+  const before = readWealth(node.properties);
+  const after = applyTreasuryDelta(before, delta);
+  node.properties.wealth = after;
+  return after - before;
+}
+
+function pickLine(lines: readonly string[], seed: number): string {
+  const i = Math.abs(seed | 0) % lines.length;
+  return lines[i];
+}
+
+function fill(line: string, actor: string, target: string): string {
+  return line.replace(/\{actor\}/g, actor).replace(/\{target\}/g, target);
+}
+
+function chronicleEntry(
+  state: GameState,
+  trigger: EconomicChronicleTrigger,
+  actorId: string,
+  targetId: string,
+  flavor?: string,
+): ChronicleEntry | null {
+  const graph = state.graph;
+  const entry = resolveEconomicChronicle(
+    trigger,
+    { actor: nameOf(graph, actorId), actorId, target: nameOf(graph, targetId), targetId, flavor },
+    state.tick,
+    chronicleSeed(state.seed, `${actorId}|${targetId}|${trigger}`) + 1932,
+  );
+  if (!entry) return null;
+  return {
+    id: entry.chronicleChapter.id,
+    tier: 'chronicle',
+    title: entry.chronicleChapter.title,
+    prose: entry.chronicleChapter.prose,
+    promptContext: {
+      actors: entry.chronicleChapter.actorIds,
+      location: nameOf(graph, actorId),
+      sphere: 'matter',
+      mood: 'political',
+    },
+    tick: state.tick,
+  };
+}
+
+function inAttention(state: GameState, a: string, b: string): boolean {
+  try {
+    return isFactionInAttention(state, a) || isFactionInAttention(state, b);
+  } catch {
+    return false;
+  }
+}
+
+/** The pair's `relates_to` edge from `a` toward `b`, minted when missing. */
+function relationEdge(graph: WorldGraph, a: string, b: string, tick: number): GraphEdge | null {
+  const found = graph.getOutgoingEdges(a, 'relates_to').find(e => e.target === b);
+  if (found) return found;
+  const base = `e_relates_${a}_${b}`;
+  for (const id of [base, `${base}_oath_${tick}`]) {
+    try {
+      graph.addEdge({ id, source: a, target: b, type: 'relates_to', properties: { sentiment: 0 } });
+      return graph.getOutgoingEdges(a, 'relates_to').find(e => e.id === id) ?? null;
+    } catch { /* id taken — try the next */ }
+  }
+  return null;
+}
+
+function sentimentOf(edge: GraphEdge): number {
+  const s = edge.properties.sentiment;
+  return typeof s === 'number' && Number.isFinite(s) ? s : 0;
+}
+
+// ─── Winning an oath — seek_fealty ────────────────────────────────────────
+
+/** The `can_court` prerequisite: a realm that may court and has at least one candidate. */
+export function canCourt(world: CrownWorld | null, factionId: string): boolean {
+  if (!crownActive() || !world) return false;
+  if (!mayCourt(world.graph, world.graph.getNode(factionId))) return false;
+  return (world.candidates.get(factionId)?.length ?? 0) > 0 || coercePool(world, factionId).length > 0;
+}
+
+interface CoerceCandidate {
+  id: string;
+  siegeBattleId?: string;
+  townTakenId?: string;
+}
+
+/**
+ * Every faction R may force today: one whose town R's army has besieged for
+ * OATH_COERCE_MIN_SIEGE_TICKS, or one R took a town from within OATH_COERCE_WINDOW_DAYS.
+ * Like the prototype, this does not require the faction to be one of R's candidates —
+ * the siege or the conquest is its own reach.
+ */
+export function coercePool(world: CrownWorld, realmId: string): CoerceCandidate[] {
+  const graph = world.graph;
+  const tick = world.tick;
+  const found = new Map<string, CoerceCandidate>();
+
+  for (const n of graph.getNodesByType('actor')) {
+    const bs = n.properties.battleState as BattleState | undefined;
+    if (!bs || bs.battleType !== 'siege' || !bs.settlementId) continue;
+    if (tick - bs.startedTick < OATH_COERCE_MIN_SIEGE_TICKS) continue;
+    const attackerFaction = graph.getOutgoingEdges(bs.attackerArmyId, 'member_of')[0]?.target;
+    if (attackerFaction !== realmId) continue;
+    for (const e of graph.getIncomingEdges(bs.settlementId, 'controls')) {
+      if (e.source === realmId || graph.getNode(e.source)?.properties.actorType !== 'faction') continue;
+      if (!found.has(e.source)) found.set(e.source, { id: e.source, siegeBattleId: n.id });
+    }
+  }
+
+  const window = OATH_COERCE_WINDOW_DAYS * PURSE_CYCLE_TICKS;
+  for (const e of graph.getOutgoingEdges(realmId, 'controls')) {
+    if (e.properties.via !== 'conquest') continue;
+    const from = e.properties.takenFrom;
+    const at = e.properties.establishedTick;
+    if (typeof from !== 'string' || typeof at !== 'number' || tick - at > window) continue;
+    if (!found.has(from)) found.set(from, { id: from, townTakenId: e.target });
+  }
+
+  return [...found.values()]
+    .filter(c => c.id !== realmId
+      && maySwear(graph, graph.getNode(c.id))
+      && !onReswearCooldown(graph, c.id, realmId, tick))
+    .sort((a, b) => (world.income.get(b.id) ?? 0) - (world.income.get(a.id) ?? 0) || (a.id < b.id ? -1 : 1));
+}
+
+export interface SeekFealtyResult {
+  record: FactionActionRecord;
+  chronicle: ChronicleEntry[];
+  /** True when an oath was written (the caller's world snapshot is now stale). */
+  changed: boolean;
+}
+
+function writeOath(
+  state: GameState,
+  vassalId: string,
+  liegeId: string,
+  kind: OathKind,
+  giftPaid: number,
+  hooks: CrownHooks,
+): void {
+  const props: SwornToEdgeProperties = {
+    kind,
+    taxShare: FEALTY_TAX_SHARE,
+    loyalty: LOYALTY_START[kind],
+    swornTick: state.tick,
+    giftPaid,
+    lastLoyaltyDay: null,
+    recentLosses: [],
+    taxPaidTotal: 0,
+    taxPaidToday: 0,
+    lastPassTick: state.tick,
+  };
+  state.graph.addEdge({
+    id: `e_sworn_${vassalId}_${liegeId}_${state.tick}`,
+    source: vassalId,
+    target: liegeId,
+    type: 'sworn_to',
+    properties: props as unknown as Record<string, unknown>,
+  });
+  hooks.onStructure?.();
+}
+
+/** Execute `seek_fealty` for realm R. Never throws past its own try (the caller's sweep catches). */
+export function executeSeekFealty(
+  state: GameState,
+  realm: GraphNode,
+  world: CrownWorld,
+  hooks: CrownHooks = {},
+): SeekFealtyResult | null {
+  if (!crownActive()) return null;
+  const graph = state.graph;
+  const R = realm.id;
+  const chronicle: ChronicleEntry[] = [];
+  const before = vassalsOf(graph, R).length;
+
+  const sworn = (vassalId: string, kind: OathKind, parts: OfferParts, giftPaid: number, coercedBy?: CoerceCandidate) => {
+    writeOath(state, vassalId, R, kind, giftPaid, hooks);
+    emitTrace({
+      category: 'oath_sworn',
+      tick: state.tick,
+      vassalId,
+      liegeId: R,
+      kind,
+      parts,
+      giftPaid,
+      coercedBy: coercedBy ? { siegeBattleId: coercedBy.siegeBattleId, townTakenId: coercedBy.townTakenId } : undefined,
+      summary: `${nameOf(graph, vassalId)} swears fealty to ${realm.name ?? R} (${kind}`
+        + `${giftPaid > 0 ? `, gift ${giftPaid.toFixed(1)}` : ''}) — score ${parts.score.toFixed(2)}`,
+    } as OathSwornTrace);
+    if (inAttention(state, vassalId, R)) {
+      const line = fill(pickLine(OATH_SWORN_LINES[kind], chronicleSeed(state.seed, vassalId) + state.tick), nameOf(graph, vassalId), realm.name ?? R);
+      const e = chronicleEntry(state, 'oath_sworn', vassalId, R, line);
+      if (e) chronicle.push(e);
+    }
+    if (before < CROWN_MIN_OATHS && before + 1 >= CROWN_MIN_OATHS) {
+      const e = chronicleEntry(state, 'crown_formed', R, vassalId);
+      if (e) chronicle.push(e);
+    }
+    return {
+      record: {
+        actionType: 'seek_fealty' as const,
+        executedTick: state.tick,
+        targetId: vassalId,
+        targetName: graph.getNode(vassalId)?.name,
+        outcome: 'success' as const,
+        details: { kind, giftPaid, score: parts.score },
+      },
+      chronicle,
+      changed: true,
+    };
+  };
+
+  // 1. Coercion first — force needs no score (Christian: force allowed).
+  const pool = coercePool(world, R);
+  if (pool.length > 0) {
+    const c = pool[0];
+    return sworn(c.id, 'coerced', offerScore(world, c.id, R, 0), 0, c);
+  }
+
+  // 2. Persuasion or purchase.
+  type Accept = { id: string; kind: OathKind; parts: OfferParts; gift: number };
+  const accepted: Accept[] = [];
+  let bestRefused: { id: string; parts: OfferParts; gift: number } | null = null;
+  for (const c of world.candidates.get(R) ?? []) {
+    if (onReswearCooldown(graph, c, R, state.tick)) continue;
+    const plain = offerScore(world, c, R, 0);
+    if (plain.score >= OATH_ACCEPT_THRESHOLD) {
+      accepted.push({ id: c, kind: 'persuaded', parts: plain, gift: 0 });
+      continue;
+    }
+    const g = affordableGift(world, c, R);
+    const bought = g > 0 ? offerScore(world, c, R, g) : plain;
+    if (g > 0 && bought.score >= OATH_ACCEPT_THRESHOLD) {
+      accepted.push({ id: c, kind: 'bought', parts: bought, gift: g });
+      continue;
+    }
+    const best = bought.score > plain.score ? bought : plain;
+    if (!bestRefused || best.score > bestRefused.parts.score
+        || (best.score === bestRefused.parts.score && c < bestRefused.id)) {
+      bestRefused = { id: c, parts: best, gift: g };
+    }
+  }
+
+  if (accepted.length > 0) {
+    accepted.sort((a, b) =>
+      (world.income.get(b.id) ?? 0) - (world.income.get(a.id) ?? 0)
+      || (a.kind === b.kind ? 0 : a.kind === 'persuaded' ? -1 : 1)
+      || (a.id < b.id ? -1 : 1));
+    const pick = accepted[0];
+    let giftPaid = 0;
+    if (pick.kind === 'bought') {
+      const cost = giftCost(world, pick.id, pick.gift);
+      const paid = -setWealth(graph, R, -cost);
+      setWealth(graph, pick.id, paid);
+      giftPaid = paid;
+    }
+    return sworn(pick.id, pick.kind, pick.parts, giftPaid);
+  }
+
+  // 3. No acceptance — the best candidate refuses, and cools a little.
+  if (!bestRefused) return null;
+  const rel = relationEdge(graph, bestRefused.id, R, state.tick);
+  if (rel) {
+    const s = sentimentOf(rel);
+    const next = s <= OATH_REFUSAL_SENTIMENT_FLOOR ? s : Math.max(OATH_REFUSAL_SENTIMENT_FLOOR, s + OATH_REFUSAL_SENTIMENT_DELTA);
+    if (next !== s) graph.updateEdge(rel.id, { properties: { sentiment: next } });
+  }
+  emitTrace({
+    category: 'oath_refused',
+    tick: state.tick,
+    candidateId: bestRefused.id,
+    liegeId: R,
+    parts: bestRefused.parts,
+    affordableGift: bestRefused.gift,
+    summary: `${nameOf(graph, bestRefused.id)} refuses fealty to ${realm.name ?? R} — score ${bestRefused.parts.score.toFixed(2)}`,
+  } as OathRefusedTrace);
+  return {
+    record: {
+      actionType: 'seek_fealty',
+      executedTick: state.tick,
+      targetId: bestRefused.id,
+      targetName: graph.getNode(bestRefused.id)?.name,
+      outcome: 'failed',
+      details: { score: bestRefused.parts.score },
+    },
+    chronicle,
+    changed: false,
+  };
+}
+
+// ─── The daily crown phase ────────────────────────────────────────────────
+
+export interface CrownPhaseResult {
+  chronicleEntries: ChronicleEntry[];
+  broken: number;
+  taxMoved: number;
+}
+
+function breakReason(props: SwornToEdgeProperties): { reason: LoyaltyReason; losses: Partial<Record<LoyaltyReason, number>> } {
+  const losses: Partial<Record<LoyaltyReason, number>> = {};
+  for (const l of props.recentLosses ?? []) losses[l.reason] = (losses[l.reason] ?? 0) + l.amount;
+  let reason: LoyaltyReason = 'liege_strained';
+  let most = 0;
+  for (const r of LOYALTY_REASON_ORDER) {
+    const v = losses[r] ?? 0;
+    if (v > most) { most = v; reason = r; }
+  }
+  return { reason, losses };
+}
+
+/** Today's loyalty deltas for one oath (the plan's six-row table). */
+export function loyaltyDeltas(
+  world: CrownWorld,
+  vassalId: string,
+  liegeId: string,
+  sinceTick: number,
+): LoyaltyDelta[] {
+  const graph = world.graph;
+  const deltas: LoyaltyDelta[] = [];
+  const band = world.means.get(liegeId);
+  if (band === 'Wealthy' || band === 'Magnate') deltas.push({ reason: 'liege_wealthy', amount: LOYALTY_RISE_WEALTHY });
+  else if (band === 'Getting by') deltas.push({ reason: 'liege_strained', amount: -LOYALTY_FALL_STRAINED });
+  else if (band === 'Destitute') deltas.push({ reason: 'liege_destitute', amount: -LOYALTY_FALL_DESTITUTE });
+
+  for (const e of graph.getEdgesByType('controls')) {
+    if (e.properties.takenFrom !== vassalId) continue;
+    const at = e.properties.establishedTick;
+    if (typeof at === 'number' && at > sinceTick && at <= world.tick) {
+      deltas.push({ reason: 'holding_lost', amount: -LOYALTY_FAIL_DEFENCE });
+    }
+  }
+
+  if ((world.income.get(vassalId) ?? 0) > (world.fullIncome.get(liegeId) ?? 0)) {
+    deltas.push({ reason: 'outgrown', amount: -LOYALTY_FALL_OUTGROWN });
+  }
+
+  const live = offerScore(world, vassalId, liegeId, 0).score;
+  for (const R2 of world.courtRealms) {
+    if (R2 === liegeId || R2 === vassalId) continue;
+    if (!(world.reach.get(R2) ?? []).includes(vassalId)) continue;
+    if (offerScore(world, vassalId, R2, 0).score > live + OATH_RIVAL_MARGIN) {
+      deltas.push({ reason: 'rival_offer', amount: -LOYALTY_FALL_RIVAL_OFFER });
+      break;
+    }
+  }
+  return deltas;
+}
+
+function breakOath(
+  state: GameState,
+  edge: GraphEdge,
+  reason: LoyaltyReason | 'vassal_gone' | 'liege_gone',
+  losses: Partial<Record<LoyaltyReason, number>>,
+  world: CrownWorld | null,
+  hooks: CrownHooks,
+  out: ChronicleEntry[],
+): void {
+  const graph = state.graph;
+  const props = readOath(edge);
+  const vassalId = edge.source;
+  const liegeId = edge.target;
+  const hadCrown = graph.getNode(liegeId) ? vassalsOf(graph, liegeId).length >= CROWN_MIN_OATHS : false;
+  try { graph.removeEdge(edge.id); } catch { /* already gone */ }
+  hooks.onStructure?.();
+
+  emitTrace({
+    category: 'oath_broken',
+    tick: state.tick,
+    vassalId,
+    liegeId,
+    kind: props.kind,
+    swornTick: props.swornTick,
+    loyalty: props.loyalty,
+    reason,
+    lossesInWindow: losses as Record<string, number>,
+    taxPaidTotal: props.taxPaidTotal ?? 0,
+    summary: `${nameOf(graph, vassalId)} breaks its oath to ${nameOf(graph, liegeId)} (${reason}, loyalty ${(props.loyalty ?? 0).toFixed(2)})`,
+  } as OathBrokenTrace);
+
+  // A missing end leaves no grudge and no line.
+  if (reason === 'vassal_gone' || reason === 'liege_gone') {
+    if (!graph.getNode(vassalId) || !graph.getNode(liegeId)) return;
+  }
+
+  for (const [a, b] of [[vassalId, liegeId], [liegeId, vassalId]] as const) {
+    const rel = relationEdge(graph, a, b, state.tick);
+    if (!rel) continue;
+    graph.updateEdge(rel.id, {
+      properties: {
+        sentiment: Math.max(-1, sentimentOf(rel) + OATH_BREAK_SENTIMENT_DELTA),
+        oathBrokenTick: state.tick,
+        oathBrokenReason: reason,
+      },
+    });
+  }
+
+  if (reason !== 'vassal_gone' && reason !== 'liege_gone' && inAttention(state, vassalId, liegeId)) {
+    const line = fill(
+      pickLine(OATH_BROKEN_LINES[reason], chronicleSeed(state.seed, vassalId) + state.tick),
+      nameOf(graph, vassalId),
+      nameOf(graph, liegeId),
+    );
+    const e = chronicleEntry(state, 'oath_broken', vassalId, liegeId, line);
+    if (e) out.push(e);
+  }
+
+  // Rebellion: a big realm breaking away raises its banners.
+  if (world && isRealmFaction(graph.getNode(vassalId))) {
+    const rebelIncome = world.income.get(vassalId) ?? 0;
+    const crownIncome = world.fullIncome.get(liegeId) ?? 0;
+    if (rebelIncome > 0 && rebelIncome >= REBELLION_INCOME_RATIO * crownIncome) {
+      for (const [a, b] of [[vassalId, liegeId], [liegeId, vassalId]] as const) {
+        try {
+          graph.addEdge({
+            id: `e_hostile_rebellion_${a}_${b}_${state.tick}`,
+            source: a,
+            target: b,
+            type: 'hostile_to',
+            properties: { reason: 'rebellion', sinceTick: state.tick },
+          });
+        } catch { /* duplicate on a double break */ }
+      }
+      emitTrace({
+        category: 'rebellion',
+        tick: state.tick,
+        rebelId: vassalId,
+        crownId: liegeId,
+        rebelIncome,
+        crownIncome,
+        summary: `${nameOf(graph, vassalId)} rebels against ${nameOf(graph, liegeId)}`,
+      } as RebellionTrace);
+      const e = chronicleEntry(state, 'rebellion', vassalId, liegeId);
+      if (e) out.push(e);
+    }
+  }
+
+  if (hadCrown && vassalsOf(graph, liegeId).length < CROWN_MIN_OATHS) {
+    const e = chronicleEntry(state, 'crown_lost', liegeId, vassalId);
+    if (e) out.push(e);
+  }
+}
+
+/**
+ * Remove oaths the one-layer rule or a missing end forbids: an edge whose end is gone,
+ * a vassal's second oath (keep the oldest), and every oath to a liege that has itself
+ * sworn. Returns the surviving edges in id order.
+ */
+function sanitizeOaths(state: GameState, hooks: CrownHooks, out: ChronicleEntry[]): GraphEdge[] {
+  const graph = state.graph;
+  const edges = graph.getEdgesByType('sworn_to').slice().sort((a, b) => (a.id < b.id ? -1 : 1));
+  for (const e of edges) {
+    if (!graph.getNode(e.source)) breakOath(state, e, 'vassal_gone', {}, null, hooks, out);
+    else if (!graph.getNode(e.target)) breakOath(state, e, 'liege_gone', {}, null, hooks, out);
+  }
+  const bySource = new Map<string, GraphEdge[]>();
+  for (const e of graph.getEdgesByType('sworn_to')) {
+    const list = bySource.get(e.source) ?? [];
+    list.push(e);
+    bySource.set(e.source, list);
+  }
+  let warned = false;
+  for (const [, list] of [...bySource].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
+    if (list.length < 2) continue;
+    if (!warned) { console.warn('[crown] a vassal held two oaths; keeping the oldest'); warned = true; }
+    const sorted = list.sort((a, b) => (readOath(a).swornTick ?? 0) - (readOath(b).swornTick ?? 0) || (a.id < b.id ? -1 : 1));
+    for (const extra of sorted.slice(1)) breakOath(state, extra, 'liege_gone', {}, null, hooks, out);
+  }
+  for (const e of graph.getEdgesByType('sworn_to').slice().sort((a, b) => (a.id < b.id ? -1 : 1))) {
+    if (graph.getOutgoingEdges(e.target, 'sworn_to').length > 0) {
+      console.warn(`[crown] ${e.target} is a liege and a vassal; its oaths are broken`);
+      breakOath(state, e, 'liege_gone', {}, null, hooks, out);
+    }
+  }
+  return graph.getEdgesByType('sworn_to').slice().sort((a, b) => (a.id < b.id ? -1 : 1));
+}
+
+/**
+ * Run the crown's day. No-op off the pay-day boundary or with the crown off. Loyalty
+ * first (an oath that breaks today pays no tax today), then the tax.
+ */
+export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPhaseResult {
+  const result: CrownPhaseResult = { chronicleEntries: [], broken: 0, taxMoved: 0 };
+  const tick = state.tick;
+  if (!crownActive() || tick <= 0 || tick % PURSE_CYCLE_TICKS !== 0) return result;
+  const graph = state.graph;
+  if (graph.getEdgesByType('sworn_to').length === 0) return result;
+
+  const edges = sanitizeOaths(state, hooks, result.chronicleEntries);
+  let projection: RealmProjection | null = null;
+  try {
+    projection = hooks.getProjection?.() ?? null;
+  } catch (err) {
+    console.warn('[crown] realm projection unavailable today', err);
+  }
+  const world = buildCrownWorld(graph, tick, projection);
+  const window = OATH_BREAK_REASON_WINDOW_DAYS * PURSE_CYCLE_TICKS;
+
+  // ── Loyalty, then breaks ──
+  const surviving: GraphEdge[] = [];
+  for (const edge of edges) {
+    try {
+      const props = readOath(edge);
+      const deltas = loyaltyDeltas(world, edge.source, edge.target, props.lastPassTick ?? props.swornTick ?? 0);
+      const sum = deltas.reduce((s, d) => s + d.amount, 0);
+      const loyalty = Math.max(0, Math.min(1, (props.loyalty ?? 0) + sum));
+      const recentLosses = [
+        ...(props.recentLosses ?? []).filter(l => tick - l.tick < window),
+        ...deltas.filter(d => d.amount < 0).map(d => ({ tick, reason: d.reason, amount: -d.amount })),
+      ];
+      graph.updateEdge(edge.id, {
+        properties: { loyalty, lastLoyaltyDay: { tick, deltas }, recentLosses, lastPassTick: tick },
+      });
+      const updated = graph.getOutgoingEdges(edge.source, 'sworn_to').find(e => e.id === edge.id) ?? edge;
+      if (loyalty < OATH_BREAK_THRESHOLD) {
+        const { reason, losses } = breakReason(readOath(updated));
+        breakOath(state, updated, reason, losses, world, hooks, result.chronicleEntries);
+        result.broken++;
+      } else {
+        surviving.push(updated);
+      }
+    } catch (err) {
+      // Fail-soft: this oath is skipped today (NFP #4).
+      console.warn(`[crown] oath ${edge.id} skipped today`, err);
+    }
+  }
+
+  // ── The fealty tax ──
+  const fealtyIn = new Map<string, number>();
+  const fealtyOut = new Map<string, { amount: number; to: string }>();
+  for (const edge of surviving) {
+    try {
+      const props = readOath(edge);
+      const income = world.income.get(edge.source) ?? 0;
+      const due = (props.taxShare ?? FEALTY_TAX_SHARE) * Math.max(0, income);
+      const vassal = graph.getNode(edge.source);
+      if (!vassal) continue;
+      const paid = Math.min(due, readWealth(vassal.properties));
+      const moved = paid > 0 ? -setWealth(graph, edge.source, -paid) : 0;
+      if (moved > 0) setWealth(graph, edge.target, moved);
+      fealtyIn.set(edge.target, (fealtyIn.get(edge.target) ?? 0) + moved);
+      fealtyOut.set(edge.source, { amount: moved, to: edge.target });
+      graph.updateEdge(edge.id, {
+        properties: { taxPaidToday: moved, taxPaidTotal: (props.taxPaidTotal ?? 0) + moved },
+      });
+      result.taxMoved += moved;
+    } catch (err) {
+      console.warn(`[crown] fealty tax on ${edge.id} skipped today`, err);
+    }
+  }
+
+  // ── Write the fealty onto both purse days ──
+  for (const [id, out] of fealtyOut) {
+    const node = graph.getNode(id);
+    const day = readPurseDay(node);
+    if (node && day) node.properties[PURSE_LAST_DAY_PROP] = { ...day, fealtyOut: out.amount, fealtyTo: out.to };
+  }
+  for (const [id, amount] of fealtyIn) {
+    const node = graph.getNode(id);
+    const day = readPurseDay(node);
+    if (node && day) node.properties[PURSE_LAST_DAY_PROP] = { ...day, fealtyIn: amount };
+  }
+
+  return result;
+}
+
+/** The phase patch: chronicle lines only — every other write lands on the graph. */
+export function phaseCrown(state: GameState, hooks: CrownHooks = {}): Partial<GameState> {
+  const result = runCrownPhase(state, hooks);
+  return result.chronicleEntries.length > 0
+    ? { chronicleEntries: [...state.chronicleEntries, ...result.chronicleEntries] }
+    : {};
+}
+
+// ─── Debug lever ──────────────────────────────────────────────────────────
+
+/**
+ * Write an oath directly, for the debug bridge's verification setup (the map outline and
+ * the sheet need a sworn realm, and waiting for courtship is not a verification plan).
+ * Goes through the same `writeOath` as the action, so the edge shape is the real one.
+ * Refuses (returns false) when the one-layer rule or the kind lists forbid the oath.
+ */
+export function swearOathForDebug(
+  state: GameState,
+  vassalId: string,
+  liegeId: string,
+  kind: OathKind,
+  hooks: CrownHooks = {},
+): boolean {
+  if (!crownActive()) return false;
+  const graph = state.graph;
+  if (vassalId === liegeId) return false;
+  if (!maySwear(graph, graph.getNode(vassalId))) return false;
+  if (!isRealmFaction(graph.getNode(liegeId))) return false;
+  if (graph.getOutgoingEdges(liegeId, 'sworn_to').length > 0) return false;
+  writeOath(state, vassalId, liegeId, kind, 0, hooks);
+  return true;
+}

@@ -137,6 +137,22 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Inter-actor relationship bond. Edge properties: sentiment, trust, strength, basis.',
   },
+  sworn_to: {
+    type: 'sworn_to',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'many-to-one',
+    requiredProperties: ['kind', 'taxShare', 'loyalty', 'swornTick'],
+    description: 'Fealty (THR-1932): a vassal faction owes fealty and a share of its day income '
+      + 'to a liege realm. Source = the vassal (actorType faction); target = the liege '
+      + '(actorType faction, factionClass realm). A vassal holds at most one; one layer only '
+      + '(a liege never swears, a vassal never courts). A realm with CROWN_MIN_OATHS incoming '
+      + 'is a Crown (derived, never stored). Written ONLY by src/engine/crown.ts: created by '
+      + 'executeSeekFealty, loyalty edited and removed by the daily `crown` phase. Properties: '
+      + 'kind (persuaded|bought|coerced), taxShare, loyalty (0–1, the reputation ladder), '
+      + 'swornTick, giftPaid, lastLoyaltyDay, recentLosses, taxPaidTotal.',
+  },
   hostile_to: {
     type: 'hostile_to',
     sourceNodeType: 'actor',

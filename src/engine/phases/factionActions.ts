@@ -15,5 +15,5 @@ export const factionActionsPhase: EnginePhase = {
   id: 'faction_actions',
   slot: 'post-economy',
   afterPhase: ['faction_ambitions'],
-  run: (state) => phaseFactionActions(state),
+  run: (state, ctx) => phaseFactionActions(state, ctx.runtime),
 };

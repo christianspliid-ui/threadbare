@@ -11,6 +11,7 @@
  * - Fail-soft: missing names → generic descriptors, missing templates → skip
  */
 
+import { CROWN_CHRONICLE_TITLES } from '../data/crown-chronicle-content';
 import type { TickEvent } from '../types/gameState';
 import type { ChronicleChapter } from '../types/chronicle';
 import type { SphereName } from '../types/index';
@@ -288,6 +289,7 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     purse_broke_bare: 'An Empty Strongbox',
     army_unpaid_desertion: 'An Army Melts Away',
     purse_recovered: 'Coin Returns',
+    ...CROWN_CHRONICLE_TITLES,
   };
   return titles[trigger];
 }
