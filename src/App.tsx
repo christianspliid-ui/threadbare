@@ -276,7 +276,9 @@ function App() {
         account={loadedAccount.account}
         // THR-1813: the dev routes stay deterministic — only `?account=sample` shapes them.
         shapeWorldFromAccount={!isDevQuickStart || loadedAccount.source === 'sample_param'}
-        persistAccount={!isAccountOverride(loadedAccount.source)}
+        // A dev-route harvest (e.g. `__DEBUG.endAge()` on the seed-42 world) concludes in memory only,
+        // so verification never folds a test world into the player's stored record.
+        persistAccount={!isDevQuickStart && !isAccountOverride(loadedAccount.source)}
         onWakeNewWorld={handleWakeNewWorld}
       />
     );

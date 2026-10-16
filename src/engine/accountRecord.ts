@@ -233,12 +233,17 @@ export function concludeRun(account: AccountRecord, state: GameState, harvest: H
     secondCourtHungerIds: hungerId && !account.secondCourtHungerIds.includes(hungerId)
       ? [...account.secondCourtHungerIds, hungerId]
       : [...account.secondCourtHungerIds],
+    // TODO(THR-1844): the hunger sets are recorded here but read only by the debug Account tab;
+    // slice 3 wires the readers (`filterHungers` ← awake, the court step ← second courts, the
+    // *World remembers* beat ← stirring, which calls `wakeHunger`).
     stirringHungerIds: stirringHungers(account.awakeHungerIds, pair),
     // Decided 13's draw lands with slice 3 (THR-1844); until then nothing unseals.
     unsealedCardIds: [...account.unsealedCardIds],
     echoDefinitions: [...carriedDefs, ...freshUnique],
     echoStates: [...degraded, ...freshUnique.map(d => createEchoState(d.id))],
     fundament,
+    // TODO(THR-1381): nothing writes resonance memories in play yet (`captureMemory` has no
+    // production caller), so this carry is empty until Twilight authorship writes them.
     resonance: {
       memories: state.worldSoul.resonance.memories.map(m => ({ ...m })),
       maxMemories: state.worldSoul.resonance.maxMemories,
