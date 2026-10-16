@@ -293,7 +293,12 @@ export function useSimulation({
     resetDecisionCache();
     // TB-087: the runtime's caches belong to the world that is ending.
     resetRuntimeCaches(runtimeRef.current);
-    onWakeNewWorld?.(concludedRun.account);
+    // A record that could not be kept is not carried either: the harvest screen told the
+    // player the next world wakes as if for the first time, so it does — a new map on
+    // the derived seed, with nothing remembered (review-gate round 2).
+    onWakeNewWorld?.(concludedRun.saved
+      ? concludedRun.account
+      : emptyAccount(concludedRun.account.nextWorldSeed));
   }, [concludedRun, onWakeNewWorld]);
 
   /** THR-1813 debug lever: end the age now — run the twilight through and open the harvest. */
