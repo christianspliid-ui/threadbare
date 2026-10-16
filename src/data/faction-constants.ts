@@ -114,9 +114,6 @@ export const PROMOTION_ENCOUNTER_COOLDOWN = 30;
 /** Gold reward on promotion */
 export const PROMOTION_REWARD_GOLD = 50;
 
-/** AlertBar icon for faction events */
-export const FACTION_ALERT_GLYPH = '⚜';
-
 /** Amber/gold, Threadbare palette */
 export const FACTION_ALERT_COLOR = '#D4A574';
 

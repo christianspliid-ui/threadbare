@@ -18,13 +18,33 @@
 
 import { useEffect, useState } from 'react';
 import type { WorldGraph } from '../../engine/graph';
-import { ENTITY_GRADIENTS } from '../../data/entity-visual-fallbacks';
+import { ENTITY_GRADIENTS, isPersonKind, type EntityVisualKind } from '../../data/entity-visual-fallbacks';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_FOR_WORLD_REF_KIND } from '../../data/icons/conceptIcons';
+import { Icon } from './Icon';
 import {
   resolveEntityVisual,
   type EntityVisualRef,
   type ResolveEntityVisualOpts,
   type EntityVisualDescriptor,
 } from './entityVisualResolver';
+
+// ── Fallback tile icon (THR-1906, plan THR-1879 § 10 icons 1) ──────
+
+/**
+ * The carved kind icon a fallback tile draws on its gradient. Person kinds keep their initial;
+ * `unknown` keeps the caller's supplied glyph (an action card's verb, an open class until
+ * THR-1908). Every other kind draws its object-kind icon from `ICON_FOR_WORLD_REF_KIND`.
+ */
+export const ENTITY_VISUAL_KIND_ICON: Readonly<Partial<Record<EntityVisualKind, IconName>>> = {
+  location: ICON_FOR_WORLD_REF_KIND.location,
+  sublocation: ICON_FOR_WORLD_REF_KIND.sublocation,
+  encounter: ICON_FOR_WORLD_REF_KIND.encounter,
+  faction: ICON_FOR_WORLD_REF_KIND.faction,
+  artifact: ICON_FOR_WORLD_REF_KIND.artifact,
+  army: ICON_FOR_WORLD_REF_KIND.army,
+  monster: 'monster',
+};
 
 // ── Layout constants (NFP #1) ───────────────────────────────────────
 
@@ -128,6 +148,7 @@ export function EntityVisual({
     ...style,
   };
 
+  const kindIcon = isPersonKind(desc.kind) ? undefined : ENTITY_VISUAL_KIND_ICON[desc.kind];
   const content = showArt ? (
     <img
       src={desc.src}
@@ -138,6 +159,17 @@ export function EntityVisual({
         setImgError(true);
         // One-time warn per broken asset path; not a trace-channel event.
         console.warn(`[EntityVisual] art failed to load, using fallback tile: ${desc.src}`);
+      }}
+    />
+  ) : kindIcon ? (
+    <Icon
+      name={kindIcon}
+      decorative
+      style={{
+        width: GLYPH_FONT_PX[size],
+        height: GLYPH_FONT_PX[size],
+        color: gradient.glyphColor,
+        filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
       }}
     />
   ) : (

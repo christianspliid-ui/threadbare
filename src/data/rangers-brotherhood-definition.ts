@@ -17,7 +17,6 @@ export const RANGERS_BROTHERHOOD_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Rangers Brotherhood',
   description: 'Wilderness scouts and monster hunters who patrol the frontier between civilized lands and the untamed wild.',
   motto: 'We walk so others need not.',
-  iconGlyph: '🏹',
   themeColor: '#2E8B57',
   factionType: 'guild',
   reachWeights: {

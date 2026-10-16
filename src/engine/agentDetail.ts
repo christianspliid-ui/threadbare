@@ -322,7 +322,6 @@ export interface AgentDetail {
   factionRank?: string;
   factionReputation?: number;
   factionDefId?: string;
-  factionIconGlyph?: string;
   factionThemeColor?: string;
   archetype: NarrativeArchetype | null;
   profile: AxiologicalProfile;
@@ -456,7 +455,10 @@ export interface AgentInfoCardData {
    * node id belongs opens the wrong chapter's sheet — or none at all.
    */
   factionNodeId?: string;
-  /** Faction icon glyph for UI display */
+  /**
+   * @deprecated Never set since THR-1906: a faction is drawn by `CoatOfArms` from `factionDefId`
+   * (Law 9). Kept only because `BondsTab` reads it and retires with the Inspector (THR-1876).
+   */
   factionIconGlyph?: string;
   /** Faction theme color for UI styling */
   factionThemeColor?: string;
@@ -769,7 +771,6 @@ export function getAgentDetail(
   let factionRank: string | undefined;
   let factionReputation: number | undefined;
   let factionDefId: string | undefined;
-  let factionIconGlyph: string | undefined;
   let factionThemeColor: string | undefined;
   const factionResult = getAgentFaction(graph, agentId);
   if (factionResult) {
@@ -783,7 +784,6 @@ export function getAgentDetail(
       if (definition) {
         factionReputation = memberProps?.reputation ?? 0;
         factionRank = computeRankFromReputation(factionReputation, definition).name;
-        factionIconGlyph = definition.iconGlyph;
         factionThemeColor = definition.themeColor;
       }
     }
@@ -970,7 +970,6 @@ export function getAgentDetail(
     factionRank,
     factionReputation,
     factionDefId,
-    factionIconGlyph,
     factionThemeColor,
     archetype,
     profile,
@@ -1699,7 +1698,6 @@ export function getAgentInfoCard(
               const rep = memberProps.reputation ?? 0;
               const rank = computeRankFromReputation(rep, def);
               card.factionRank = rank.name;
-              card.factionIconGlyph = def.iconGlyph;
               card.factionThemeColor = def.themeColor;
               // known+ gets reputation number
               if (knowledgeLevel !== 'recognised') {

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { MandateDefinition, MandateState } from '../../types/mandate';
 import { ProgressBar } from '../shared/ProgressBar';
 import { Tooltip } from '../shared/Tooltip';
+import { Icon } from '../shared/Icon';
 import { Overlay } from '../shared/Overlay';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 import { sphereDeltaReading } from '../../engine/aftermathWords';
@@ -326,13 +327,16 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                   >
                     <span className="font-bold">{idx + 1}.</span>
                     <span className="font-bold">{STAGE_DISPLAY[stageDef.stage] ?? stageDef.stage}</span>
-                    {isCompleted && <span>✓</span>}
+                    {isCompleted && <Icon name="done" size="floor" label="Done" />}
                   </div>
                   {isCurrent && (
                     <div className="ml-6 space-y-1">
                       {stageDef.conditions.map((cond, condIdx) => (
                         <div key={condIdx} style={{ color: cond.met ? SENTIMENT_GREEN : '#9ca3af' }}>
-                          <span>{cond.met ? '✓' : '○'}</span>
+                          {/* THR-1906 — met draws the carved check; unmet holds its place, empty. */}
+                          <span style={{ display: 'inline-flex', width: '1em', verticalAlign: 'middle' }}>
+                            {cond.met ? <Icon name="done" size="floor" label="Met" /> : null}
+                          </span>
                           <span className="ml-1">{cond.description}</span>
                         </div>
                       ))}

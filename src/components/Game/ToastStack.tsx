@@ -8,22 +8,11 @@ import { TOPBAR_LOCKED_SUFFIX } from '../../data/ui-content';
 // Band → left-border accent colour. Shared with the thread-row encounter badge
 // (THR-664). Fail-soft: unknown band → undefined, falls through to sphere/gold.
 import { BAND_ACCENT } from './outcomeBandAccent';
+import { Icon } from '../shared/Icon';
+import { ICON_FOR_WORLD_REF_KIND } from '../../data/icons/conceptIcons';
 
-/** Glyph indicating what clicking a notification navigates to */
-const NAV_GLYPHS: Record<NavigationTarget['kind'], string> = {
-  agent:     '→',
-  encounter: '⚔',
-  hex:       '⬡',
-  location:  '🏘',
-  area:      '⛰',
-  faction:   '⚑',
-  journey:   '↝',
-  receipt:   '✦',
-  // THR-1490 — three arms for three sheets that already shipped without an address.
-  artifact:  '◈',
-  attachment:'❖',
-  army:      '⚔',
-};
+// What clicking a notification navigates to draws the object-kind icon from
+// `ICON_FOR_WORLD_REF_KIND` (THR-1906, Law 9) — one shape per kind, shared with Find and Connections.
 
 /** Tooltip text for each navigation kind */
 const NAV_TOOLTIPS: Record<NavigationTarget['kind'], string> = {
@@ -202,7 +191,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
                   title={NAV_TOOLTIPS[navTarget.kind]}
                   aria-hidden="true"
                 >
-                  {NAV_GLYPHS[navTarget.kind]}
+                  <Icon name={ICON_FOR_WORLD_REF_KIND[navTarget.kind]} size="floor" decorative />
                 </span>
               ) : isNavigable && (
                 <span
@@ -210,7 +199,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
                   style={{ fontSize: 'var(--text-xs)', color: accentColor, opacity: NAV_GLYPH_OPACITY }}
                   aria-hidden="true"
                 >
-                  →
+                  <Icon name="forward" size="floor" decorative />
                 </span>
               )}
               {/* Keyboard-accessible dismiss button — visible on focus */}
@@ -232,7 +221,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate, recei
                 aria-label="Dismiss notification"
                 tabIndex={0}
               >
-                ×
+                <Icon name="close" size="floor" decorative />
               </button>
             </div>
           </AnimateMount>

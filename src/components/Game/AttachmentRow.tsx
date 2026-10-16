@@ -4,7 +4,8 @@ import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attac
 import { ProgressBar } from '../shared/ProgressBar';
 import { RarityBadge } from '../shared/RarityBadge';
 import { RARITY_LEGENDARY_PULSE_ANIMATION, MAX_RARITY_TIER } from '../../data/rarity-constants';
-import { getAttachmentGlyph } from './attachmentGlyphs';
+import { Icon } from '../shared/Icon';
+import { ICON_CLASSES, iconForKey } from '../../data/icons/conceptIcons';
 
 export interface AttachmentRowProps {
   name: string;
@@ -38,7 +39,8 @@ export const AttachmentRow = React.memo(function AttachmentRow({
 }: AttachmentRowProps) {
   const tierColor = ATTACHMENT_TIER_COLORS[tier];
   const tierName = ATTACHMENT_TIER_NAMES[tier];
-  const glyph = getAttachmentGlyph(subcategory);
+  // THR-1906 — the carved subcategory icon; an unknown subcategory draws the fallback mark.
+  const icon = iconForKey(ICON_CLASSES['attachment-subcategory'], subcategory);
   const isLegendary = tier === MAX_RARITY_TIER;
 
   const hasProgressBar =
@@ -98,9 +100,9 @@ export const AttachmentRow = React.memo(function AttachmentRow({
           Vow · Active now
         </div>
       )}
-      {/* Top row: glyph + name + tier */}
+      {/* Top row: icon + name + tier */}
       <div className="flex items-center gap-2">
-        <span style={{ fontSize: 'var(--text-xs)', lineHeight: 1 }}>{glyph}</span>
+        <Icon name={icon} size="chip" decorative />
         <span
           className="flex-1 text-xs font-semibold truncate"
           style={{ color: 'var(--text-primary)' }}

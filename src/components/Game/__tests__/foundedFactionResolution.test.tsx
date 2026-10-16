@@ -67,7 +67,6 @@ const SEED: StrategicFactionSeed = {
   nameTemplate: ORDER_NAME,
   description: DESCRIPTION,
   motto: MOTTO,
-  iconGlyph: '⚜',
   themeColor: '#B8A56A',
   locationTypes: ['town', 'city', 'capital'],
   joinEncounterTemplateId: 'ag.join',

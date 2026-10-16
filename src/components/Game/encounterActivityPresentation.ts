@@ -83,24 +83,6 @@ export function getEncounterActivityIconKey(
   return 'hourglass';
 }
 
-export function getEncounterActivityGlyph(iconKey: ActivityIndicatorKey): string {
-  switch (iconKey) {
-    case 'boot':
-      return '⇢';
-    case 'swords':
-      return '⚔';
-    case 'coin':
-      return '¤';
-    case 'hammer':
-      return '⚒';
-    case 'bandage':
-      return '✚';
-    case 'hourglass':
-    default:
-      return '⌛';
-  }
-}
-
 export function groupEncounterPoolCandidates(
   candidates: BalanceEncounterPoolCandidate[],
 ): GroupedEncounterPoolCandidate[] {

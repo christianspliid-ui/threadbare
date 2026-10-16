@@ -5,7 +5,7 @@
  * 1. AgentInfoCardData faction rank/reputation population
  * 2. Faction TickEvent emission from join/promotion outcomes
  * 3. Faction rank change events from reputation decay
- * 4. AlertBar glyph entries for faction/social/trust icons
+ * 4. AlertBar icon entries for faction/social/trust kinds
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -361,23 +361,17 @@ describe('Faction reputation decay rank events', () => {
   });
 });
 
-// ─── AlertBar glyphs ──────────────────────────────────────────────────────
+// ─── AlertBar icons (THR-1906) ────────────────────────────────────────────
 
-describe('AlertBar faction glyphs', () => {
-  it('returns faction glyph', () => {
-    expect(alertBarTestHelpers.getGlyph('faction')).toBe('⚜');
+describe('AlertBar faction icons', () => {
+  it('draws carved icons for the faction, social and trust kinds', () => {
+    expect(alertBarTestHelpers.getIcon('faction')).toBe('faction');
+    expect(alertBarTestHelpers.getIcon('social')).toBe('social');
+    expect(alertBarTestHelpers.getIcon('trust')).toBe('trust');
   });
 
-  it('returns social glyph', () => {
-    expect(alertBarTestHelpers.getGlyph('social')).toBe('🤝');
-  });
-
-  it('returns trust glyph', () => {
-    expect(alertBarTestHelpers.getGlyph('trust')).toBe('🔗');
-  });
-
-  it('still returns existing glyphs', () => {
-    expect(alertBarTestHelpers.getGlyph('death')).toBe('✝');
-    expect(alertBarTestHelpers.getGlyph('discovery')).toBe('◎');
+  it('still draws the other kinds', () => {
+    expect(alertBarTestHelpers.getIcon('death')).toBe('death');
+    expect(alertBarTestHelpers.getIcon('discovery')).toBe('discovery');
   });
 });

@@ -10,7 +10,7 @@ import {
   selectThreadTugBadges,
   tugAttendCost,
   isTugBadgeWorthy,
-  TUG_BADGE_GLYPH,
+  TUG_BADGE_ICON,
   TUG_THREAT_ACCENT,
   TUG_DEFAULT_ACCENT,
   TUG_BADGE_COUNT_DISPLAY_MAX,
@@ -59,7 +59,7 @@ describe('selectThreadTugBadges', () => {
 
     expect(badge).toBeDefined();
     expect(badge!.count).toBe(1);
-    expect(badge!.glyph).toBe(TUG_BADGE_GLYPH);
+    expect(badge!.icon).toBe(TUG_BADGE_ICON);
     expect(badge!.countLabel).toBeUndefined();
   });
 

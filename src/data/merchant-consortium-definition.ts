@@ -17,7 +17,6 @@ export const MERCHANT_CONSORTIUM_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Merchant Consortium',
   description: 'A powerful alliance of traders, bankers, and caravan masters who control commerce across the civilized world.',
   motto: 'Prosperity shared is prosperity doubled.',
-  iconGlyph: '⚖',
   themeColor: '#DAA520',
   factionType: 'guild',
   reachWeights: {

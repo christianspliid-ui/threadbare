@@ -14,7 +14,7 @@ import {
   selectMomentBadges,
   isMomentBadgeable,
   MOMENT_BADGE_COUNT_DISPLAY_MAX,
-  MOMENT_BADGE_GLYPH,
+  MOMENT_BADGE_ICON,
   MOMENT_CLASS_ACCENT,
 } from '../momentBadgeModel';
 
@@ -54,7 +54,7 @@ describe('selectMomentBadges', () => {
     expect(kael.countLabel).toBe('3');
     expect(kael.label).toBe('Trouble');
     expect(kael.accentColor).toBe(MOMENT_CLASS_ACCENT.complication);
-    expect(kael.glyph).toBe(MOMENT_BADGE_GLYPH);
+    expect(kael.icon).toBe(MOMENT_BADGE_ICON);
     expect(kael.meta).toContain('and 2 more');
     expect(badges.get('bram')!.countLabel).toBeUndefined();
   });

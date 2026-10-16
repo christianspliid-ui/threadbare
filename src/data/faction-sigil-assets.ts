@@ -61,7 +61,7 @@ function buildSigilDataUri(factionDefId: string): string | null {
   if (!definition) return null;
 
   try {
-    const config = buildCoatOfArmsConfig(definition, definition.iconGlyph);
+    const config = buildCoatOfArmsConfig(definition);
     // Stable clip-path seed: the SVG becomes its own document inside the data
     // URI, so the id cannot collide, and seeding it keeps the URI byte-stable.
     const svg = generateCoatOfArmsSvg(config, FACTION_SIGIL_RENDER_SIZE, factionDefId);

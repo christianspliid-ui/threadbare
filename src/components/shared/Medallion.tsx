@@ -7,11 +7,14 @@
  *
  * It introduces NO second art-resolution path. The child is whatever the
  * existing resolver already produced — a `SphereIcon`, a THR-637 `EntityVisual`,
- * a codex glyph, an <img> — and Medallion only frames and clips it. The gold `✦`
- * default is the tail of the existing fallback chain, not a parallel one.
+ * a codex mark, an <img> — and Medallion only frames and clips it. With no child it draws
+ * `fallbackIcon` — the subject's kind icon when the caller knows it, else the `fallback` mark
+ * (THR-1906, Law 4): never an empty disc, never a glyph.
  */
 
 import React from 'react';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { Icon } from './Icon';
 
 export type MedallionSize = 'sm' | 'md' | 'lg';
 
@@ -30,8 +33,8 @@ const SIZE_PX: Record<MedallionSize, number> = {
 export const MEDALLION_RING_WIDTH = 2;
 export const MEDALLION_RING_GAP = 3;
 
-/** Last-resort glyph when a caller has nothing to put in the disc. */
-export const MEDALLION_FALLBACK_GLYPH = '✦'; // ✦
+/** Last-resort icon when a caller has nothing to put in the disc and names no kind. */
+export const MEDALLION_FALLBACK_ICON: IconName = 'fallback';
 
 export interface MedallionProps {
   size?: MedallionSize;
@@ -45,8 +48,10 @@ export interface MedallionProps {
   title?: string;
   className?: string;
   style?: React.CSSProperties;
-  /** The already-resolved visual. Absent → the fallback glyph, never an empty disc. */
+  /** The already-resolved visual. Absent → `fallbackIcon`, never an empty disc. */
   children?: React.ReactNode;
+  /** The subject's kind icon, drawn when there is no child. Default: the `fallback` mark. */
+  fallbackIcon?: IconName;
 }
 
 export const Medallion = React.memo(function Medallion({
@@ -56,6 +61,7 @@ export const Medallion = React.memo(function Medallion({
   className,
   style,
   children,
+  fallbackIcon = MEDALLION_FALLBACK_ICON,
 }: MedallionProps) {
   const diameter = SIZE_PX[size] ?? MEDALLION_SIZE_MD;
   const ring = accentColor ?? (size === 'lg' ? 'var(--accent-gold)' : 'var(--accent-gold-dim)');
@@ -98,7 +104,7 @@ export const Medallion = React.memo(function Medallion({
           lineHeight: 1,
         }}
       >
-        {children ?? MEDALLION_FALLBACK_GLYPH}
+        {children ?? <Icon name={fallbackIcon} size="list" decorative />}
       </span>
     </span>
   );

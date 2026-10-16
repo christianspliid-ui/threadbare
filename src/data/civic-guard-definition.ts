@@ -17,7 +17,6 @@ export const CIVIC_GUARD_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Civic Guard',
   description: 'Town watch and law enforcement who patrol streets, enforce laws, and defend settlements against threats within and without.',
   motto: 'Order endures where vigilance stands.',
-  iconGlyph: '🛡',
   themeColor: '#4682B4',
   factionType: 'political',
   reachWeights: {

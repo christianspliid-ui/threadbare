@@ -22,6 +22,7 @@ import { memo, useMemo } from 'react';
 
 import { Tooltip } from '../shared/Tooltip';
 import { SphereIcon } from '../shared/SphereIcon';
+import { ReachIcon } from '../icons';
 import {
   axisOfContentTag,
   contentTagTooltipId,
@@ -30,6 +31,7 @@ import {
   type ContentTagAxis,
 } from '../../data/content-tags';
 import type { SphereName } from '../../types';
+import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
 import type { CodexEntry } from './codexRegistry';
 
 /**
@@ -45,24 +47,16 @@ const AXIS_ROW: ReadonlyArray<{ axis: ContentTagAxis; label: string }> = [
   { axis: 'polarity', label: 'Bearing' },
 ];
 
-/** The reach glyph vocabulary, matching the one the codex cards already paint. */
-const REACH_GLYPHS: Readonly<Record<string, string>> = {
-  iron: '⚔',
-  gold: '⚖',
-  shadow: '✴',
-  veil: '✨',
-  heart: '♥',
-  eye: '◉',
-  stone: '■',
-  star: '★',
-};
+/** Reach chip mark size in px — level with the sphere mark. */
+const TAG_CHIP_MARK_PX = 11;
 
-/** One glyph per authored axis — a chip is recognisable before it is read. */
-const AXIS_GLYPH: Readonly<Record<string, string>> = {
-  form: '◇', // ◇
-  family: '○', // ○
-  polarity: '●', // ●
-};
+/**
+ * Spheres and reaches draw their one vocabulary, `SphereIcon` and `ReachIcon` (THR-1906, Law 9);
+ * the other axes draw no glyph — the group's word is the axis (plan THR-1879 § 9).
+ */
+function isReach(word: string): word is ReachDomain {
+  return (REACH_DOMAINS as readonly string[]).includes(word);
+}
 
 export interface CodexTagFilterProps {
   /** The entries the filter row is offered over — before tag filtering, after every other filter. */
@@ -169,14 +163,10 @@ export const CodexTagFilter = memo(function CodexTagFilter({
                 }}
               >
                 {group.axis === 'sphere' ? (
-                  <SphereIcon sphere={tagWord(option.tag) as SphereName} size={11} />
-                ) : (
-                  <span aria-hidden="true">
-                    {group.axis === 'reach'
-                      ? REACH_GLYPHS[tagWord(option.tag)] ?? '◈'
-                      : AXIS_GLYPH[group.axis] ?? '◈'}
-                  </span>
-                )}
+                  <SphereIcon sphere={tagWord(option.tag) as SphereName} size={TAG_CHIP_MARK_PX} />
+                ) : group.axis === 'reach' && isReach(tagWord(option.tag)) ? (
+                  <ReachIcon reach={tagWord(option.tag) as ReachDomain} size={TAG_CHIP_MARK_PX} />
+                ) : null}
                 <span>{option.label}</span>
                 <span style={{ color: 'var(--text-muted)' }}>{option.count}</span>
               </button>

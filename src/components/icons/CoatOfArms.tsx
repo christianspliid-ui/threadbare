@@ -15,6 +15,7 @@ import { renderShieldBase, renderShieldOutline, SHIELD_VIEWBOX } from './heraldr
 import { renderDivision } from './heraldry/divisions';
 import { renderCharge } from './heraldry/charges';
 import { renderBorder } from './heraldry/borders';
+import { iconShape } from '../shared/iconShape';
 
 // ─── Config Type ──────────────────────────────────────────────────────────────
 
@@ -40,7 +41,6 @@ export interface CoatOfArmsConfig {
   dominantSphere: CreationSphereName | null;
   foundationSphere: FoundationSphereName | null;
   prominenceLevel: ProminenceLevel;
-  fallbackGlyph?: string;
   fallbackColor?: string;
 }
 
@@ -73,7 +73,6 @@ const SECONDARY_REACH_THRESHOLD = 0.2;
 export function buildCoatOfArmsConfigFromWeights(
   weights: Record<string, number>,
   factionType: FactionDefinition['factionType'],
-  fallbackGlyph?: string,
   fallbackColor?: string,
   prominenceLevel: ProminenceLevel = 'base',
 ): CoatOfArmsConfig {
@@ -93,7 +92,6 @@ export function buildCoatOfArmsConfigFromWeights(
       dominantSphere: null,
       foundationSphere: null,
       prominenceLevel,
-      fallbackGlyph,
       fallbackColor,
     };
   }
@@ -134,7 +132,6 @@ export function buildCoatOfArmsConfigFromWeights(
     dominantSphere,
     foundationSphere,
     prominenceLevel,
-    fallbackGlyph,
     fallbackColor,
   };
 }
@@ -142,13 +139,11 @@ export function buildCoatOfArmsConfigFromWeights(
 /** Build a config from a full `FactionDefinition`. */
 export function buildCoatOfArmsConfig(
   def: FactionDefinition,
-  fallbackGlyph?: string,
   prominenceLevel: ProminenceLevel = 'base',
 ): CoatOfArmsConfig {
   return buildCoatOfArmsConfigFromWeights(
     def.reachWeights as Record<string, number>,
     def.factionType,
-    fallbackGlyph ?? def.iconGlyph,
     def.themeColor,
     prominenceLevel,
   );
@@ -187,6 +182,24 @@ let _clipIdCounter = 0;
  *   string as an `<img src>`, so a per-call id would change the URL on every
  *   render and force the browser to re-decode the image (NFP #3).
  */
+/** The fallback mark's colour, edge and centre on the 120-wide shield grid. */
+const FALLBACK_MARK_COLOR = '#e0ddd4';
+const FALLBACK_MARK_EDGE = 56;
+const FALLBACK_MARK_CENTRE = { x: 60, y: 80 } as const;
+
+/** The carved `faction` shape, scaled from its own viewBox into the shield's centre. */
+function renderFallbackMark(): string {
+  const shape = iconShape('faction');
+  const [, , vbW = 512, vbH = 512] = shape.viewBox.split(/[\s,]+/).map(Number);
+  const scale = FALLBACK_MARK_EDGE / Math.max(vbW, vbH);
+  const x = FALLBACK_MARK_CENTRE.x - (vbW * scale) / 2;
+  const y = FALLBACK_MARK_CENTRE.y - (vbH * scale) / 2;
+  const paths = shape.paths
+    .map((p) => `<path d="${p.d}"${p.opacity !== undefined ? ` opacity="${p.opacity}"` : ''}/>`)
+    .join('');
+  return `<g data-fallback-mark="faction" fill="${FALLBACK_MARK_COLOR}" transform="translate(${x} ${y}) scale(${scale})">${paths}</g>`;
+}
+
 export function generateCoatOfArmsSvg(
   config: CoatOfArmsConfig,
   size: number,
@@ -196,15 +209,13 @@ export function generateCoatOfArmsSvg(
   const svgHeight = Math.round((size * vbH) / vbW);
   const clipId = `coa-clip-${config.factionType}-${clipIdSeed ?? _clipIdCounter++}`;
 
-  // Fallback: no dominant reach
+  // Fallback: no dominant reach — the carved `faction` mark on the field (THR-1906, Law 9;
+  // the per-faction emoji `iconGlyph` is gone).
   if (!config.dominantReach) {
     const bgColor = config.fallbackColor ?? '#2a2a3a';
-    const glyphColor = '#e0ddd4';
-    const glyph = config.fallbackGlyph ?? '?';
     const inner =
       renderShieldBase(bgColor, '#444', 1.5, clipId) +
-      `<text x="60" y="85" text-anchor="middle" dominant-baseline="middle" ` +
-      `fill="${glyphColor}" font-size="48" font-family="serif">${glyph}</text>` +
+      renderFallbackMark() +
       renderShieldOutline('#444', 1.5);
     return (
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" ` +
@@ -290,7 +301,7 @@ export const CoatOfArms = memo(function CoatOfArms({
   className,
 }: CoatOfArmsProps) {
   const svgString = useMemo(() => {
-    const config = buildCoatOfArmsConfig(definition, definition.iconGlyph, prominenceLevel);
+    const config = buildCoatOfArmsConfig(definition, prominenceLevel);
     return generateCoatOfArmsSvg(config, size);
   }, [definition, size, prominenceLevel]);
 

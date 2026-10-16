@@ -17,7 +17,6 @@ export const ARCANE_CIRCLE_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Arcane Circle',
   description: 'A scholarly mage guild dedicated to the study, practice, and regulation of magic in all its forms.',
   motto: 'Knowledge is the only true power.',
-  iconGlyph: '✦',
   themeColor: '#6A5ACD',
   factionType: 'guild',
   reachWeights: {

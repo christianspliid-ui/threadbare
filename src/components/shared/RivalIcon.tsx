@@ -1,17 +1,23 @@
 /**
- * RivalIcon — Composites 2-3 sphere colors to create a unique rival god indicator
+ * RivalIcon — a rival god's sphere affinities as a row of small sphere marks.
  *
- * Each rival god has associated sphere affinities. This component renders
- * those as overlapping colored glyphs/circles representing the rival's magical nature.
+ * Law 9 (THR-1906, plan THR-1879 § 10 icons 1): spheres have one vocabulary, `SphereIcon`.
+ * The rival mark used to draw its own coloured dots; it now draws up to three small
+ * `SphereIcon`s, so a rival's spheres read with the same shapes as everywhere else.
+ * No affinities → the `fallback` mark, never an empty span (Law 4).
  */
 
 import React from 'react';
-import { getSphereColor } from '../../data/sphereIcons';
+import { SphereIcon } from './SphereIcon';
+import { Icon } from './Icon';
+
+/** Most sphere marks a rival shows. */
+export const RIVAL_ICON_MAX_SPHERES = 3;
 
 export interface RivalIconProps {
   /** List of 2-3 sphere names defining the rival's affinities */
   spheres: string[];
-  /** CSS size (default: '1.5rem') */
+  /** CSS size of each sphere mark (default: '1.5rem') */
   size?: string;
   /** Optional CSS class name */
   className?: string;
@@ -21,15 +27,6 @@ export interface RivalIconProps {
   title?: string;
 }
 
-/**
- * RivalIcon — renders overlapping colored circles for rival sphere affinities
- *
- * If 2 spheres: side-by-side circles
- * If 3+ spheres: triangular arrangement
- *
- * Example:
- * <RivalIcon spheres={['force', 'chaos']} />
- */
 export const RivalIcon = React.memo(function RivalIcon({
   spheres,
   size = '1.5rem',
@@ -37,72 +34,28 @@ export const RivalIcon = React.memo(function RivalIcon({
   style,
   title,
 }: RivalIconProps) {
-  const sphereList = spheres.slice(0, 3); // Max 3 spheres
+  const sphereList = spheres.slice(0, RIVAL_ICON_MAX_SPHERES);
 
-  if (sphereList.length === 0) {
-    return <span className={className} title={title}>●</span>;
-  }
-
-  if (sphereList.length === 1) {
-    // Single sphere: just a colored circle
-    const color = getSphereColor(sphereList[0]);
-    return (
-      <span
-        className={className}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: size,
-          height: size,
-          color,
-          ...style,
-        }}
-        title={title}
-      >
-        ●
-      </span>
-    );
-  }
-
-  // 2-3 spheres: overlapping circles in a flex container
   return (
     <span
       className={className}
+      title={title}
+      data-testid="rival-icon"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        width: size,
+        gap: 2,
         height: size,
         ...style,
       }}
-      title={title}
     >
-      {sphereList.map((sphere, idx) => {
-        const color = getSphereColor(sphere);
-        const offset = idx * 6; // Slight offset for stacking effect
-
-        return (
-          <span
-            key={`${sphere}-${idx}`}
-            style={{
-              position: 'absolute',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: size,
-              color,
-              opacity: 0.8 + idx * 0.1, // Slight opacity variation for depth
-              transform: `translate(${offset}px, ${offset}px)`,
-              lineHeight: 1,
-            }}
-          >
-            ●
-          </span>
-        );
-      })}
+      {sphereList.length === 0 ? (
+        <Icon name="fallback" size="chip" label={title ?? 'No sphere affinities'} />
+      ) : (
+        sphereList.map((sphere, idx) => (
+          <SphereIcon key={`${sphere}-${idx}`} sphere={sphere} size={size} />
+        ))
+      )}
     </span>
   );
 });

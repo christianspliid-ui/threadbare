@@ -6,7 +6,6 @@ import {
   MEDALLION_SIZE_SM,
   MEDALLION_SIZE_MD,
   MEDALLION_SIZE_LG,
-  MEDALLION_FALLBACK_GLYPH,
 } from '../Medallion';
 
 describe('Medallion (THR-799)', () => {
@@ -26,16 +25,23 @@ describe('Medallion (THR-799)', () => {
     expect(el.style.height).toBe(`${px}px`);
   });
 
-  it('falls back to a glyph rather than an empty disc when given no child', () => {
+  it('falls back to the carved fallback mark rather than an empty disc when given no child (THR-1906)', () => {
     render(<Medallion />);
-    expect(screen.getByTestId('medallion').textContent).toBe(MEDALLION_FALLBACK_GLYPH);
+    const el = screen.getByTestId('medallion');
+    expect(el.querySelector('[data-icon="fallback"]')).toBeTruthy();
+    expect(el.textContent).toBe('');
+  });
+
+  it('draws the subject kind icon when the caller names one', () => {
+    render(<Medallion fallbackIcon="faction" />);
+    expect(screen.getByTestId('medallion').querySelector('[data-icon="faction"]')).toBeTruthy();
   });
 
   it('renders the supplied child instead of the fallback', () => {
     render(<Medallion><span>◆</span></Medallion>);
     const el = screen.getByTestId('medallion');
     expect(el.textContent).toBe('◆');
-    expect(el.textContent).not.toBe(MEDALLION_FALLBACK_GLYPH);
+    expect(el.querySelector('[data-icon]')).toBeNull();
   });
 
   it('gives lg the bright gold ring and smaller sizes the dim one (gold budget)', () => {

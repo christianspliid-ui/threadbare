@@ -6,6 +6,7 @@ import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../
 import { durationLabel, elapsedLabel, sphereDeltaReading } from '../../engine/aftermathWords';
 import { DeltaCluster } from '../shared/DeltaCluster';
 import { Tooltip } from '../shared/Tooltip';
+import { Icon } from '../shared/Icon';
 import { sphereWord } from '../shared/formatEssence';
 
 interface MandateDetailProps {
@@ -273,7 +274,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
     <Modal open={open} onClose={onClose} maxWidth={780}>
       <Modal.Header onClose={onClose}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '18px', color, filter: `drop-shadow(0 0 6px ${color}80)` }}>⚑</span>
+          <Icon name="mandate" size="list" decorative style={{ color, filter: `drop-shadow(0 0 6px ${color}80)` }} />
           <span style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'var(--text-lg)',
@@ -538,7 +539,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                         color: isPast ? color : isCurrent ? '#0a0a0e' : '#4a4a4e',
                         fontWeight: 700,
                       }}>
-                        {isPast ? '✓' : stageIdx + 1}
+                        {isPast ? <Icon name="done" size="floor" label="Passed" /> : stageIdx + 1}
                       </div>
 
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -604,7 +605,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                                 border: met ? `1px solid ${SENTIMENT_GREEN}40` : '1px solid #2a2a2e',
                                 color: met ? SENTIMENT_GREEN : '#4a4a4e',
                               }}>
-                                {met ? '✓' : ' '}
+                                {met ? <Icon name="done" size="floor" label="Met" /> : null}
                               </span>
                               <span style={{ lineHeight: 1.4 }}>{cond.description}</span>
                             </div>

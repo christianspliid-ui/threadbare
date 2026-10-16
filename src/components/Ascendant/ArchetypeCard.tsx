@@ -1,6 +1,7 @@
 import type { SphereName } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
-import { getSphereSymbol, getSphereColor } from '../../data/sphereIcons';
+import { getSphereColor } from '../../data/sphereIcons';
+import { SphereIcon } from '../shared/SphereIcon';
 
 const SPHERE_LABELS: Record<SphereName, string> = {
   force: 'Force', matter: 'Matter', energy: 'Energy', life: 'Life',
@@ -57,14 +58,14 @@ export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardPro
       {/* Sphere alignment */}
       <div className="flex items-center gap-3 mb-3">
         <span className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-sm)' }}>
-          <span style={{ fontSize: 'var(--text-base)', color: primaryColor }}>{getSphereSymbol(primary)}</span>
+          <SphereIcon sphere={primary} size="1rem" />
           <span style={{ color: primaryColor }} className="font-semibold">
             {SPHERE_LABELS[primary]}
           </span>
         </span>
         <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>+</span>
         <span className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-sm)' }}>
-          <span style={{ fontSize: 'var(--text-base)', color: secondaryColor }}>{getSphereSymbol(secondary)}</span>
+          <SphereIcon sphere={secondary} size="1rem" />
           <span style={{ color: secondaryColor }} className="font-medium">
             {SPHERE_LABELS[secondary]}
           </span>

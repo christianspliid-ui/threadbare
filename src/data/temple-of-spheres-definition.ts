@@ -17,7 +17,6 @@ export const TEMPLE_OF_SPHERES_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Temple of the Spheres',
   description: 'A multi-sphere religious order whose priests minister to the faithful, tend shrines, and interpret divine will.',
   motto: 'In devotion, all spheres are one.',
-  iconGlyph: '⛪',
   themeColor: '#E8D5B7',
   factionType: 'religious',
   reachWeights: {

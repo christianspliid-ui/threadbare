@@ -10,7 +10,7 @@
 // state into the scene.
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, Square, Volume2 } from 'lucide-react';
+import { Icon } from '../../shared/Icon';
 import {
   useEncounterNarration,
   type EncounterTtsContext,
@@ -166,11 +166,14 @@ export function ProseTtsButton({
         }}
       >
         {busy ? (
-          <Loader2 size={TTS_ICON_SIZE} style={{ animation: 'spin 1s linear infinite' }} />
+          // THR-1906 — carved chrome: busy waits, speaking closes to stop, idle reads aloud.
+          <Icon name="waiting" decorative style={{ width: TTS_ICON_SIZE, height: TTS_ICON_SIZE }} />
         ) : isSpeaking ? (
-          <Square size={TTS_STOP_ICON_SIZE} />
+          <Icon name="close" decorative style={{ width: TTS_STOP_ICON_SIZE, height: TTS_STOP_ICON_SIZE }} />
         ) : (
-          <Volume2 size={TTS_ICON_SIZE} data-testid="prose-tts-speaker" />
+          <span data-testid="prose-tts-speaker" style={{ display: 'inline-flex' }}>
+            <Icon name="narrate" decorative style={{ width: TTS_ICON_SIZE, height: TTS_ICON_SIZE }} />
+          </span>
         )}
       </span>
       {isLoading && (

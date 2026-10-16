@@ -13,6 +13,7 @@
  */
 import type { ActiveEffect } from '../../engine/agentDetail';
 import { Tooltip } from '../shared/Tooltip';
+import { Icon } from '../shared/Icon';
 import { getSphereColor } from '../../data/sphereIcons';
 import { durationLabel } from '../../engine/aftermathWords';
 
@@ -71,7 +72,8 @@ export function ActiveEffectChips({ effects, heading }: ActiveEffectChipsProps) 
                   color: sphereColor,
                 }}
               >
-                {isCourtPosition ? '♛' : '◈'}
+                {/* THR-1906: a court seat is standing; any other is one of the god's own acts. */}
+                <Icon name={isCourtPosition ? 'standing' : 'divine-actions'} size="floor" decorative />
                 <span>{effect.label}</span>
                 {!isCourtPosition && strengthPct != null && (
                   <span

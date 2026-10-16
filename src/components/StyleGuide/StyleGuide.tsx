@@ -48,7 +48,7 @@ import {
   PIP_PENALTY_TIER,
   PIP_STEP_PERCENT,
 } from '../../data/nudge-pip-vocabulary';
-import { NUDGE_CARD_TYPE_ICONS } from '../../data/nudge-card-display';
+import { NUDGE_CARD_TYPE_ICON_NAMES } from '../../data/nudge-card-display';
 import { NUDGE_CARD_TYPES } from '../../data/nudge-card-library';
 import { RivalIcon } from '../shared/RivalIcon';
 import { SectionHeading } from '../shared/SectionHeading';
@@ -1733,13 +1733,13 @@ export default function StyleGuide() {
                     <CardKeywordChip
                       key={type.id}
                       keyword={type.keyword}
-                      icon={NUDGE_CARD_TYPE_ICONS[type.id]}
+                      iconName={NUDGE_CARD_TYPE_ICON_NAMES[type.id]}
                     />
                   ))}
                 </div>
                 <Label>muted — an unaffordable card</Label>
                 <Row>
-                  <CardKeywordChip keyword="Boost" icon={NUDGE_CARD_TYPE_ICONS.boost} muted />
+                  <CardKeywordChip keyword="Boost" iconName={NUDGE_CARD_TYPE_ICON_NAMES.boost} muted />
                 </Row>
               </GameErrorBoundary>
             </div>

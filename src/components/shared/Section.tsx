@@ -116,7 +116,6 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
         userSelect: 'none',
       }}
     >
-      {chip.glyph && <span aria-hidden="true" style={{ marginRight: '4px' }}>{chip.glyph}</span>}
       {chip.label}
       {chip.flavour && <em style={{ marginLeft: '4px', opacity: 0.7 }}>{chip.flavour}</em>}
     </span>
@@ -298,7 +297,7 @@ function TriggersSectionRenderer({ section }: { section: TriggersSection }) {
                 gap: '6px',
               }}
             >
-              <span>{'⚡'} {trigger.condition}</span>
+              <span>{trigger.condition}</span>
               <OddsPips value={trigger.probability} data-testid="trigger-odds-pips" />
             </div>
             {trigger.narrativeTemplate && (

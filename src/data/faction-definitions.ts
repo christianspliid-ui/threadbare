@@ -42,7 +42,6 @@ export {
   PROMOTION_PARTIAL_SUCCESS_MARGIN,
   PROMOTION_ENCOUNTER_COOLDOWN,
   PROMOTION_REWARD_GOLD,
-  FACTION_ALERT_GLYPH,
   FACTION_ALERT_COLOR,
 } from './faction-constants';
 import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-constants';
@@ -54,7 +53,6 @@ export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Adventurers Guild',
   description: 'A fellowship of explorers, monster hunters, and treasure seekers who take on dangerous contracts for coin and glory.',
   motto: 'Fortune favors the bold.',
-  iconGlyph: '⚔',
   themeColor: '#D4A574',
   factionType: 'guild',
   reachWeights: {

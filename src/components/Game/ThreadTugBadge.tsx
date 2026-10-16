@@ -15,6 +15,7 @@
 
 import { useState } from 'react';
 import { IconButton } from '../shared/IconButton';
+import { Icon } from '../shared/Icon';
 import { Tooltip } from '../shared/Tooltip';
 import type { ThreadTugBadgeModel } from './threadTugBadgeModel';
 
@@ -47,7 +48,7 @@ export function ThreadTugBadge({ badge, onAttend }: ThreadTugBadgeProps) {
         // threat tint; hover is handled here instead, per the dynamic-base-colour
         // pattern in the design system.
         active
-        icon={badge.glyph}
+        icon={<Icon name={badge.icon} size="chip" decorative />}
         badge={badge.countLabel}
         aria-label={badge.ariaLabel}
         aria-disabled={!badge.affordable}

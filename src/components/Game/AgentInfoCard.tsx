@@ -4,7 +4,9 @@ import type { WorldGraph } from '../../engine/graph';
 import type { SimulationRuntime } from '../../engine/simulationRuntime';
 import type { ReachDomain } from '../../types/traits';
 import type { StrategicRuntimeState } from '../../types/strategicAction';
-import { ReachIcon } from '../icons';
+import { ReachIcon, CoatOfArms } from '../icons';
+import { Icon } from '../shared/Icon';
+import { getFactionDefinition } from '../../data/faction-definition-lookup';
 import { Tooltip } from '../shared/Tooltip';
 import { AGENT_CARD_NEW_TIER_MARK } from '../../data/ui-content';
 import { ActiveEffectChips } from './ActiveEffectChips';
@@ -141,7 +143,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
           className="transition-colors text-lg px-2 ml-2 flex-shrink-0"
           style={{ color: 'var(--accent-gold)' }}
         >
-          ✕
+          <Icon name="close" size="chip" decorative />
         </button>
       </div>
 
@@ -240,7 +242,12 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                     color: card.factionThemeColor || 'var(--text-secondary)',
                   }}
                 >
-                  {card.factionIconGlyph ? `${card.factionIconGlyph} ` : ''}{card.factionName}
+                  {/* THR-1906 — a faction is drawn by its arms (Law 9), never an emoji glyph. */}
+                  {(() => {
+                    const def = card.factionDefId ? getFactionDefinition(card.factionDefId) : undefined;
+                    return def ? <CoatOfArms definition={def} size={14} className="mr-1 align-middle" /> : null;
+                  })()}
+                  {card.factionName}
                 </span>
               </div>
             )}
@@ -462,7 +469,12 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginBottom: '2px' }}>History:</div>
                 <div className="space-y-0.5">
                   {strategicHistory.map((entry, idx) => {
-                    const prefix = entry.outcome === 'completed' ? '✓' : entry.outcome === 'failed' ? '✕' : '—';
+                    // THR-1906 — the carved outcome marks; an open outcome keeps its dash.
+                    const prefix = entry.outcome === 'completed'
+                      ? <Icon name="done" size="floor" label="Completed" />
+                      : entry.outcome === 'failed'
+                        ? <Icon name="failed" size="floor" label="Failed" />
+                        : '—';
                     const color =
                       entry.outcome === 'completed' ? 'var(--text-secondary)'
                       : entry.outcome === 'failed'    ? '#b85450'
@@ -556,7 +568,7 @@ function BackstoryTeaser({
             className="transition-opacity duration-1000"
             style={{ color: sphereColor, opacity: faded ? 0 : 1 }}
           >
-            ✦
+            <Icon name="new" size="floor" label="New" />
           </span>
         )}
       </h3>

@@ -1,15 +1,14 @@
 /**
  * SphereIcon — Renders a sphere icon, delegating to the SVG-based icons/SphereIcon by default.
  *
- * The default rendering path uses the new SVG icon system for crisp, themed sphere symbols.
- * The `useImage` prop falls back to generated PNG images.
+ * The one sphere vocabulary (Law 9). The PNG path (`useImage`) is gone (THR-1906); the PNGs in
+ * `public/icons/spheres` stay only as assets of the static `public/the-game.html` page.
  *
  * Used in Divine Essence, Rival Gods, Agent Wheel, and other sphere-related UI.
  */
 
 import React from 'react';
 import { SphereIcon as SvgSphereIcon } from '../icons/SphereIcon';
-import { getSphereImagePath } from '../../data/sphereIcons';
 import { remToPx } from './layoutContract';
 import { SPHERE_NAMES } from '../../types/index';
 import type { SphereName } from '../../types/index';
@@ -36,8 +35,6 @@ export interface SphereIconProps {
   monochrome?: boolean;
   /** Optional title for accessibility */
   title?: string;
-  /** When true, render the generated PNG image instead of the SVG icon */
-  useImage?: boolean;
   /** Which color token tier to use (default: 'bright') */
   variant?: 'base' | 'bright';
 }
@@ -69,32 +66,9 @@ export const SphereIcon = React.memo(function SphereIcon({
   className,
   style,
   title,
-  useImage = false,
   variant = 'bright',
 }: SphereIconProps) {
   const resolvedName = sphereProp ?? sphereName ?? '';
-
-  // Image rendering path — keep existing behaviour for useImage=true
-  if (useImage) {
-    const imagePath = getSphereImagePath(resolvedName);
-    if (imagePath) {
-      const imgSize = toPxNumber(size);
-      return (
-        <img
-          src={imagePath}
-          alt={title || resolvedName}
-          className={className}
-          width={imgSize}
-          height={imgSize}
-          style={{
-            display: 'inline-block',
-            objectFit: 'contain',
-            ...style,
-          }}
-        />
-      );
-    }
-  }
 
   const pxSize = toPxNumber(size);
 

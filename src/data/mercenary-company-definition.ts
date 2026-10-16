@@ -36,7 +36,6 @@ export const MERCENARY_COMPANY_DEFINITION: FactionDefinition = {
   nameTemplate: 'The Free Company',
   description: 'Professional soldiers for hire — loyalty lasts as long as the contract, but their blades are sharp and their discipline unmatched.',
   motto: 'Steel speaks louder than oaths.',
-  iconGlyph: '🗡',
   themeColor: '#8B4513',
   factionType: 'military',
   reachWeights: {

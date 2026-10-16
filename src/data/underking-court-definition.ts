@@ -18,7 +18,6 @@ export const UNDERKING_COURT_DEFINITION: FactionDefinition = {
   nameTemplate: "The Underking's Court",
   description: 'An organized crime syndicate ruling through intimidation, extortion, and corruption — a shadow government beneath the surface.',
   motto: 'Every throne casts a shadow. Ours is the deeper.',
-  iconGlyph: '👑',
   themeColor: '#2F2F4F',
   factionType: 'criminal',
   reachWeights: {

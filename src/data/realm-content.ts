@@ -415,7 +415,6 @@ export function buildRealmDefinition(input: RealmDefinitionInput): FactionDefini
     nameTemplate: name,
     description: `The court and crown of ${name}, holding the towns of its people and answering for the ground between them.`,
     motto: 'What we hold, we answer for.',
-    iconGlyph: '👑',
     themeColor: '#B8860B',
     factionType: 'political',
     reachWeights: reachPreferences ?? {

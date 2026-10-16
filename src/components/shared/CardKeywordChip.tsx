@@ -12,6 +12,8 @@
  */
 
 import { memo } from 'react';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { Icon } from './Icon';
 
 // Law 30 (THR-1010): chips render inside the nudge stage, so a local gold
 // here paints as a second gold on the veil's composed surface.
@@ -21,7 +23,9 @@ const CHIP_TEXT = 'var(--veil-text-bright)';
 
 export interface CardKeywordChipProps {
   keyword: string;
-  /** Single glyph drawn ahead of the word. Omitted ⇒ word only. */
+  /** The carved icon drawn ahead of the word (THR-1906). Wins over `icon`. */
+  iconName?: IconName;
+  /** Legacy text glyph for a class with no carved shape yet (card verbs, THR-1908). Omitted ⇒ word only. */
   icon?: string;
   /** Dim without changing the reading (unaffordable cards). */
   muted?: boolean;
@@ -30,6 +34,7 @@ export interface CardKeywordChipProps {
 
 export const CardKeywordChip = memo(function CardKeywordChip({
   keyword,
+  iconName,
   icon,
   muted = false,
   'data-testid': dataTestId,
@@ -54,7 +59,7 @@ export const CardKeywordChip = memo(function CardKeywordChip({
         opacity: muted ? 0.55 : 1,
       }}
     >
-      {icon && <span aria-hidden="true">{icon}</span>}
+      {iconName ? <Icon name={iconName} size="floor" decorative /> : icon && <span aria-hidden="true">{icon}</span>}
       {keyword}
     </span>
   );

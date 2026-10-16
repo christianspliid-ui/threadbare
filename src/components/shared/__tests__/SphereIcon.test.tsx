@@ -115,62 +115,6 @@ describe('SphereIcon', () => {
     expect(container.querySelector('svg')).toBeTruthy();
   });
 
-  describe('image rendering', () => {
-    it('renders an img element when useImage is true', () => {
-      const { container } = render(
-        <SphereIcon sphereName="force" useImage={true} size="32px" />
-      );
-      const img = container.querySelector('img');
-      expect(img).toBeTruthy();
-      expect(img?.getAttribute('src')).toContain('/icons/spheres/force.png');
-    });
-
-    it('renders SVG (not img) when useImage is false', () => {
-      const { container } = render(
-        <SphereIcon sphereName="force" useImage={false} />
-      );
-      const img = container.querySelector('img');
-      expect(img).toBeNull();
-      const svg = container.querySelector('svg');
-      expect(svg).toBeTruthy();
-    });
-
-    it('defaults to SVG rendering (backward compatible — no img tag)', () => {
-      const { container } = render(<SphereIcon sphereName="force" />);
-      const img = container.querySelector('img');
-      expect(img).toBeNull();
-    });
-
-    it('renders img with correct dimensions from numeric size', () => {
-      const { container } = render(
-        <SphereIcon sphereName="mind" useImage={true} size={48} />
-      );
-      const img = container.querySelector('img');
-      expect(img).toBeTruthy();
-      expect(img?.getAttribute('width')).toBe('48');
-      expect(img?.getAttribute('height')).toBe('48');
-    });
-
-    it('renders img with alt text', () => {
-      const { container } = render(
-        <SphereIcon sphereName="life" useImage={true} title="Life Sphere" />
-      );
-      const img = container.querySelector('img');
-      expect(img?.getAttribute('alt')).toBe('Life Sphere');
-    });
-
-    it('falls back to gray-circle span for unknown sphere even with useImage', () => {
-      const { container } = render(
-        <SphereIcon sphereName="unknown-sphere" useImage={true} />
-      );
-      // Unknown sphere has no imagePath, should fall back to gray circle
-      const img = container.querySelector('img');
-      expect(img).toBeNull();
-      const span = container.querySelector('span');
-      expect(span).toBeTruthy();
-    });
-  });
-
   it('merges custom styles on wrapper span', () => {
     const { container } = render(
       <SphereIcon

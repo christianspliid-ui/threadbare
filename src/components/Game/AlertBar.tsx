@@ -1,6 +1,9 @@
 import { useState, useCallback } from 'react';
 import type { AlertIcon, AlertItem, NavigationTarget } from '../../types/notification';
 import { getSphereColor } from '../../data/sphereIcons';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_CLASSES, iconForKey } from '../../data/icons/conceptIcons';
+import { Icon } from '../shared/Icon';
 
 interface AlertBarProps {
   alerts: AlertItem[];
@@ -11,26 +14,12 @@ interface AlertBarProps {
   onNavigate?: (target: NavigationTarget) => void;
 }
 
-const ALERT_GLYPHS: Record<AlertIcon, string> = {
-  death:      '✝',
-  birth:      '✦',
-  doom:       '◈',
-  mandate:    '⬡',
-  discovery:  '◎',
-  rival:      '⚔',
-  dilemma:    '⚖',
-  harvest:    '⟡',
-  revelation: '📖',
-  social:     '🤝',
-  faction:    '⚜',
-  trust:      '🔗',
-};
-
-function getGlyph(icon: AlertIcon): string {
-  return ALERT_GLYPHS[icon] ?? '●';
+/** The carved icon for an alert kind (THR-1906): `ICON_FOR_ALERT`, the fallback mark for an unknown kind. */
+function getIcon(icon: AlertIcon): IconName {
+  return iconForKey(ICON_CLASSES.alert, icon);
 }
 
-export const alertBarTestHelpers = { getGlyph };
+export const alertBarTestHelpers = { getIcon };
 
 export function AlertBar({ alerts, onDismiss, onSelectAgent, onNavigate }: AlertBarProps) {
   // Track which alerts are fading out (right-click dismissed)
@@ -88,7 +77,7 @@ export function AlertBar({ alerts, onDismiss, onSelectAgent, onNavigate }: Alert
             aria-label={`${alert.icon} alert: ${alert.message}${isNavigable ? ' (click to navigate)' : ''}`}
             aria-description="Right-click to dismiss"
           >
-            {getGlyph(alert.icon)}
+            <Icon name={getIcon(alert.icon)} size="chip" decorative />
           </button>
         );
       })}

@@ -39,7 +39,6 @@ const SEED: StrategicFactionSeed = {
   factionType: 'guild',
   nameTemplate: "The Kept Word",
   description: 'A chartered order.',
-  iconGlyph: '⚜',
   themeColor: '#B8A56A',
   locationTypes: ['town', 'city', 'capital'],
   joinEncounterTemplateId: 'ag.join',

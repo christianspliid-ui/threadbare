@@ -3,7 +3,9 @@
  *
  * Each sphere has:
  * - color: the bright hex from STYLE.md (70-100% brightness, vivid magic color)
- * - symbol: Unicode geometric character that suggests the form language
+ * - symbol: Unicode geometric character that suggests the form language. Its one remaining
+ *   reader is the map's avatar sigil, which THR-1878 redraws from `SphereIcon`'s path data;
+ *   every other surface draws `SphereIcon` (THR-1906, Law 9).
  * - formLanguage: brief description of visual style
  *
  * These replace emoji icons with proper Threadbare sphere-colored glyphs.
@@ -18,8 +20,6 @@ export interface SphereIconDef {
   symbol: string;
   /** Form language description for reference */
   formLanguage: string;
-  /** Path to generated icon image (relative to public/) */
-  imagePath: string;
 }
 
 /**
@@ -31,7 +31,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#ff6b6b',
     symbol: '✦', // Four-pointed star suggests directional impact
     formLanguage: 'sharp directional streaks, impact radiants',
-    imagePath: '/icons/spheres/force.png',
   },
 
   // Matter: Crystalline lattices, hexagonal facets — mineral-like structures
@@ -39,7 +38,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#d4a87a', // VS-103: brightened from #a8886a (53%) to ~70% perceived brightness
     symbol: '⬡', // Hexagon represents crystalline lattices
     formLanguage: 'crystalline lattices, hexagonal facets',
-    imagePath: '/icons/spheres/matter.png',
   },
 
   // Energy: Radiating spikes, star-burst coronas — tiny suns pulsing outward
@@ -47,7 +45,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#ffe44d',
     symbol: '⊙', // Circle with center dot suggests radiant burst
     formLanguage: 'radiating spikes, star-burst coronas',
-    imagePath: '/icons/spheres/energy.png',
   },
 
   // Life: Organic branching — veins, roots, mycelium, Fibonacci spirals
@@ -55,7 +52,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#33ff77',
     symbol: '∿', // Squiggle/wave suggests organic branching
     formLanguage: 'organic branching — veins, roots, mycelium',
-    imagePath: '/icons/spheres/life.png',
   },
 
   // Mind: Neural dendrites, concentric rings — eye-like nodes, mandala patterns
@@ -63,7 +59,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#44aaff',
     symbol: '◉', // Circle with center dot suggests neural/eye nodes
     formLanguage: 'neural dendrites, concentric rings',
-    imagePath: '/icons/spheres/mind.png',
   },
 
   // Spirit: Ascending wisps, ethereal ribbons — smoke-like trails rising
@@ -71,7 +66,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#cc66ff',
     symbol: '⟡', // Angular shape suggests ascending/ethereal quality
     formLanguage: 'ascending wisps, ethereal ribbons',
-    imagePath: '/icons/spheres/spirit.png',
   },
 
   // Time: Concentric ripples, overlapping echoes — temporal distortion, clock-arcs
@@ -79,7 +73,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#ffb355',
     symbol: '◈', // Double diamond suggests overlapping echoes/ripples
     formLanguage: 'concentric ripples, overlapping echoes',
-    imagePath: '/icons/spheres/time.png',
   },
 
   // Entropy: Fracturing patterns, scattering particles — breaking apart, erosion
@@ -87,7 +80,6 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
     color: '#8fd4c0', // VS-103: brightened from #7aaa9a (59%) to ~70% perceived brightness
     symbol: '◆', // Solid diamond suggests fractured/broken structure
     formLanguage: 'fracturing patterns, scattering particles',
-    imagePath: '/icons/spheres/entropy.png',
   },
 };
 
@@ -100,7 +92,6 @@ export const FOUNDATION_SPHERE_ICONS: Record<'chaos' | 'order' | 'light' | 'dark
     color: '#d4d4d8',
     symbol: '❋', // Six-pointed star suggests fractal branching
     formLanguage: 'fractals and turbulent swirls',
-    imagePath: '/icons/spheres/chaos.png',
   },
 
   // Order: Geometric grids and tessellations — clean straight lines, sacred geometry
@@ -108,7 +99,6 @@ export const FOUNDATION_SPHERE_ICONS: Record<'chaos' | 'order' | 'light' | 'dark
     color: '#fbbf24',
     symbol: '◈', // Grid-like diamond pattern
     formLanguage: 'geometric grids and tessellations',
-    imagePath: '/icons/spheres/order.png',
   },
 
   // Light: Expanding aureoles and radiant beams — warm radiance spreading outward
@@ -116,7 +106,6 @@ export const FOUNDATION_SPHERE_ICONS: Record<'chaos' | 'order' | 'light' | 'dark
     color: '#fef3c7',
     symbol: '☼', // Sun symbol represents radiant beams
     formLanguage: 'expanding aureoles and radiant beams',
-    imagePath: '/icons/spheres/light.png',
   },
 
   // Darkness: Absorbing voids with rim-glow — deep indigo holes that pull light in
@@ -124,24 +113,7 @@ export const FOUNDATION_SPHERE_ICONS: Record<'chaos' | 'order' | 'light' | 'dark
     color: '#8b7fbf',
     symbol: '⦿', // Hollow circle with rim suggests void
     formLanguage: 'absorbing voids with rim-glow',
-    imagePath: '/icons/spheres/darkness.png',
   },
-};
-
-/**
- * Wheel slot icons — action glyphs used in ActionCard (non-emoji Unicode symbols)
- * Descriptive of the action type using simple geometric Unicode chars
- */
-export const WHEEL_SLOT_GLYPHS: Record<string, string> = {
-  scry: '●', // Circle = observation/seeing
-  dream: '◇', // Diamond = alternative reality/vision
-  persuade: '◆', // Filled diamond = influence/push
-  deceive: '≋', // Wavy = disguise/illusion
-  intimidate: '⚔', // Crossed swords = threat/combat
-  inspire: '⬆', // Up arrow = elevation/uplift
-  coincidence: '⊙', // Circled dot = chance/fate
-  omen: '⬟', // Hexagon = mystical/sign
-  afflict_bless: '★', // Star = magic/enchantment
 };
 
 /**
@@ -168,26 +140,6 @@ export function getSphereSymbol(sphereName: string): string {
   if (foundation) return foundation.symbol;
 
   return '●'; // Fallback to circle
-}
-
-/**
- * Get the image path for a sphere icon
- */
-export function getSphereImagePath(sphereName: string): string | undefined {
-  const creation = SPHERE_ICONS[sphereName as SphereName];
-  if (creation) return creation.imagePath;
-
-  const foundation = FOUNDATION_SPHERE_ICONS[sphereName as keyof typeof FOUNDATION_SPHERE_ICONS];
-  if (foundation) return foundation.imagePath;
-
-  return undefined;
-}
-
-/**
- * Get the wheel slot glyph
- */
-export function getWheelSlotGlyph(slotId: string): string {
-  return WHEEL_SLOT_GLYPHS[slotId] || '◯';
 }
 
 /**
