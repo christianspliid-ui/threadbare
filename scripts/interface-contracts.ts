@@ -6605,7 +6605,7 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Means'],
     mechanism: {
       kind: 'function',
-      symbols: ['computePurseStrain', 'SCHISM_WEIGHT_PURSE'],
+      symbols: ['computePurseStrain', 'SCHISM_WEIGHT_PURSE', 'readMeansBand', 'readPurseDay'],
       module: 'src/engine/factionTopology.ts',
     },
     writeSites: ['src/engine/factionPurse.ts'],

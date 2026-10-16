@@ -34,7 +34,7 @@ names like `TB-073`) a premise might use.
 | Subsystem | Status | Aliases (search keys) | Domains | Tick phases |
 |---|---|---|---|---|
 | **War, Armies & Battles** | 🟢 ACTIVE | war, warfare, army, armies, battle, siege, warband, conflict, invasion, cohesion, campaign | `army`, `battle` | `2.352`, `2.355`, `2.356`, `2.357` |
-| **Factions & Succession** | 🟢 ACTIVE | faction, guild, order, succession, rank, schism | `faction`, `chosenfactionpowers`, `schism` | `6.55`, `6.56` |
+| **Factions & Succession** | 🟢 ACTIVE | faction, guild, order, succession, rank, schism | `faction`, `chosenfactionpowers`, `schism` | `6.55`, `6.56`, `6.629` |
 | **Rival Gods & Schemes** | 🟢 ACTIVE | rival, rivals, scheme, pantheon, antagonist | `rival` | `2a.605`, `3` |
 | **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
 | **Mandate** | 🟢 ACTIVE | mandate, divine mandate, objective | `mandate` | `mandate` |
@@ -71,7 +71,7 @@ names like `TB-073`) a premise might use.
 - **Encounters & Dilemmas** — The core narrative engine — scoring, eligibility, resolution, aftermath reactions, chapter archive.
 - **Culture** — Culture generation, gravity, tension, mores, phonetic naming.
 - **Personality & Emergent Traits** — Layered: worldgen baseline → core → emergent traits (THR-527/542/561).
-- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route's toll, a freehold's keep, a controlled Location's tithe), faction purse (income, upkeep, desertion — THR-1931: every faction's daily income from what it holds, its armies' upkeep, and unpaid armies deserting). M3: Dynamic Economy.
+- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route's toll, a freehold's keep, a controlled Location's tithe). M3: Dynamic Economy.
 - **Ambitions & Undertakings** — Agent-level drives and the multi-tick undertakings that serve them; mentorship rides the undertaking checkpoint pass (THR-1292 §3 retired the separate initiative pipeline).
 - **Attachments, Items & Possessions** — Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.
@@ -176,6 +176,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.715` | Divine Proximity Importance | `THR-25` | orchestrator |
 | `6.62` | Trade Route Decay | — | orchestrator |
 | `6.628` | Holding income | `THR-1428` | orchestrator |
+| `6.629` | Faction purse | `THR-1931` | orchestrator |
 | `6.625` | Condition Decay | — | orchestrator |
 | `6.625b` | Companion expiry | `THR-1096` | orchestrator |
 | `6.626` | Mastery Trait Decay | — | orchestrator |
@@ -310,7 +311,8 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (6) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
-| `faction` (15) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
+| `faction` (16) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
+| `factionpurse` (4) | `factionPurse/income.ts`, `factionPurse/means.ts`, `factionPurse/purseSentences.ts`, `factionPurse/upkeep.ts` | `THR-1867`, `THR-1931`, `THR-1932` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `fights` (16) | `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightRecord.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1528`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1574`, `THR-1581`, `THR-1628` |
@@ -330,7 +332,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `hidden` (2) | `hiddenMarkProse.ts`, `hiddenMarks.ts` | `THR-132` |
 | `historical` (1) | `historicalCulture.ts` | — |
 | `hold` (1) | `holdStanding.ts` | `THR-1211`, `THR-1448` |
-| `holding` (1) | `holdingIncome.ts` | `THR-1428`, `THR-822` |
+| `holding` (1) | `holdingIncome.ts` | `THR-1428`, `THR-1931`, `THR-822` |
 | `holdings` (1) | `holdings.ts` | `THR-1297` |
 | `idle` (1) | `idleBehavior.ts` | — |
 | `incident` (2) | `incidentBundle.ts`, `incidentRecorder.ts` | `THR-1134` |
@@ -445,7 +447,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `views` (17) | `views/hexContents.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1822`, `THR-1846`, `THR-1878`, `THR-1899`, `THR-1902`, `THR-502` |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
-| `wealth` (1) | `wealth.ts` | — |
+| `wealth` (1) | `wealth.ts` | `THR-1931` |
 | `wheel` (1) | `wheel.ts` | — |
 | `world` (8) | `worldGenData.ts`, `worldPast.ts`, `worldPastAmbitions.ts`, `worldPastWords.ts`, `worldRefResolver.ts`, `worldScenarioCensus.ts`, `worldSeed.ts`, `worldSoul.ts` | `THR-1160`, `THR-1164`, `THR-1165`, `THR-1212`, `THR-1631`, `THR-1632`, `THR-1656`, `THR-1657` |
 | `worldgen` (15) | `worldgen/WorldGenPipeline.ts`, `worldgen/constants.ts`, `worldgen/passes/pass00-grid.ts`, `worldgen/passes/pass01-provinces.ts`, `worldgen/passes/pass02-elevation.ts`, `worldgen/passes/pass03-coastline.ts`, `worldgen/passes/pass04-climate.ts`, `worldgen/passes/pass05-hydrology.ts`, `worldgen/passes/pass06-tempReassess.ts`, `worldgen/passes/pass07-biome.ts`, `worldgen/passes/pass07b-cultureTerrainNudge.ts`, `worldgen/passes/pass08-smoothing.ts`, `worldgen/passes/pass09-validation.ts`, `worldgen/passes/pass10-fantasyOverlay.ts`, `worldgen/types.ts` | `Phase 3` |
@@ -453,4 +455,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 108 tick phases · 216 engine domains · 685 modules._
+_Counts: 28 registered subsystems (2 dormant) · 109 tick phases · 217 engine domains · 690 modules._
