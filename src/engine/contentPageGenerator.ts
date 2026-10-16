@@ -79,14 +79,14 @@ export function unknownContentStub(ref: ContentRef, breadcrumbRoot: string[]): D
   return {
     kind: 'content',
     nodeId: ref.id,
-    trail: [...breadcrumbRoot, 'UNKNOWN'],
+    trail: [...breadcrumbRoot, 'Unknown'],
     kindLabel: 'Content',
     displayName: ref.name ?? 'Unwritten',
     subtitle: 'no entry by that name',
     sphere: DETAIL_FAILSOFT_STUB_SPHERE,
     isShowcase: false,
     sections: [
-      prose('unknown_stub', 'WHAT WE KNOW', false, UNKNOWN_CONTENT_PROSE, 'unknownContentStub'),
+      prose('unknown_stub', 'What we know', false, UNKNOWN_CONTENT_PROSE, 'unknownContentStub'),
     ],
     hasFullSheet: false,
   };
@@ -94,7 +94,7 @@ export function unknownContentStub(ref: ContentRef, breadcrumbRoot: string[]): D
 
 export interface GenerateContentPageInput {
   readonly ref: ContentRef;
-  /** Initial breadcrumb root, default `['THE LIBRARY']`. */
+  /** Initial breadcrumb root, default `['The library']`. */
   readonly breadcrumbRoot?: string[];
   /**
    * Whether the codex actually holds this entry.
@@ -115,7 +115,7 @@ export interface GenerateContentPageInput {
  * which is a real page saying a real thing (NFP #4).
  */
 export function generateContentPage(input: GenerateContentPageInput): DetailPage {
-  const { ref, breadcrumbRoot = ['THE LIBRARY'], codexHasEntry = false } = input;
+  const { ref, breadcrumbRoot = ['The library'], codexHasEntry = false } = input;
 
   let entry: ContentEntryView | null;
   try {
@@ -133,7 +133,7 @@ export function generateContentPage(input: GenerateContentPageInput): DetailPage
   sections.push(
     prose(
       'what_it_is',
-      'WHAT IT IS',
+      'What it is',
       true,
       entry.description || pick(CONTENT_FALLBACK_TEMPLATES.description_unwritten, ref.id),
       entry.description ? 'contentEntryResolver' : 'contentDescriptionFallback',
@@ -143,7 +143,7 @@ export function generateContentPage(input: GenerateContentPageInput): DetailPage
   // Omitted rather than filled when absent: flavour is the one section a card can do
   // without, and a heading over a fallback apology is worse than no heading.
   if (entry.flavour) {
-    sections.push(prose('its_voice', 'ITS VOICE', false, entry.flavour, 'contentEntryResolver'));
+    sections.push(prose('its_voice', 'Its voice', false, entry.flavour, 'contentEntryResolver'));
   }
 
   sections.push(
@@ -159,7 +159,7 @@ export function generateContentPage(input: GenerateContentPageInput): DetailPage
         }
       : prose(
           'marks',
-          'MARKS',
+          'Marks',
           false,
           pick(CONTENT_FALLBACK_TEMPLATES.tags_none, ref.id),
           'contentTagsFallback',

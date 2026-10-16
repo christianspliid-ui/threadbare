@@ -163,7 +163,7 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
     const cfg = configRef.current;
     return generateContentPage({
       ref,
-      breadcrumbRoot: ['THE LIBRARY'],
+      breadcrumbRoot: ['The library'],
       codexHasEntry: cfg.codexHasEntry?.(ref.id) ?? false,
     });
   }, []);
@@ -179,7 +179,7 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
         seed: cfg.seed,
         protagonistId: cfg.protagonistId,
         runtime: cfg.runtime,
-        breadcrumbRoot: ['THE WORLD'],
+        breadcrumbRoot: ['The world'],
       });
     } catch {
       // A malformed node must never unmount the app (NFP #4). The generator already

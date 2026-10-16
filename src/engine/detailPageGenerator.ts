@@ -267,7 +267,7 @@ function unknownStub(
   return {
     kind: pageKind,
     nodeId,
-    trail: [...breadcrumbRoot, 'UNKNOWN'],
+    trail: [...breadcrumbRoot, 'Unknown'],
     kindLabel: KIND_LABELS[pageKind],
     displayName: 'Unknown',
     subtitle: 'this entity is no longer in the world',
