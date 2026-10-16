@@ -352,6 +352,41 @@ describe('the purse chronicle crossings (review-gate round 1)', () => {
   });
 });
 
+describe('the purse chronicle and its cooldown (review-gate round 2)', () => {
+  function attended(): WorldGraph {
+    const g = world();
+    g.addNode({ id: 'asc', type: 'actor', name: 'The God', properties: { actorType: 'ascendant' } });
+    g.addNode({ id: 'mortal', type: 'actor', name: 'Ilse', properties: { actorType: 'individual' } });
+    g.addEdge({ id: 'e_mo_m', source: 'mortal', target: REALM, type: 'member_of', properties: {} });
+    g.addEdge({ id: 'e_thread', source: 'asc', target: 'mortal', type: 'thread', properties: {} });
+    return g;
+  }
+
+  it('a desertion a few days after the broke line is still told', () => {
+    const g = attended();
+    addArmy(g, ARMY, REALM, 'host', 0);
+    for (const id of ['e_ctl_town', 'e_ctl_town_b']) g.removeEdge(id);
+    const landless = () => ({ realms: [], hexRealmId: new Map<string, string>(), unclaimedHexes: 4 });
+    const first = runFactionPurse(stateAt(g, PURSE_CYCLE_TICKS), landless);
+    expect(first.chronicleEntries.map(e => e.title)).toEqual(['The Pay Stops']);
+    g.removeNode(ARMY);
+    recordPurseDesertion(g, REALM, 'The Ashfold Host', 2 * PURSE_CYCLE_TICKS + 5);
+    const later = runFactionPurse(stateAt(g, 3 * PURSE_CYCLE_TICKS), landless);
+    expect(later.chronicleEntries.map(e => e.title)).toEqual(['An Army Melts Away']);
+  });
+
+  it('a broke crossing silenced by the cooldown does not latch, so no recovery is told without its fall', () => {
+    const g = attended();
+    addArmy(g, ARMY, REALM, 'host', 0);
+    for (const id of ['e_ctl_town', 'e_ctl_town_b']) g.removeEdge(id);
+    const landless = () => ({ realms: [], hexRealmId: new Map<string, string>(), unclaimedHexes: 4 });
+    g.getNode(REALM)!.properties.purseChronicledTick = PURSE_CYCLE_TICKS - 1; // a line was just told
+    const r = runFactionPurse(stateAt(g, PURSE_CYCLE_TICKS), landless);
+    expect(r.chronicleEntries).toEqual([]);
+    expect(g.getNode(REALM)!.properties.purseWasBroke).toBeUndefined();
+  });
+});
+
 describe('the Purse panel words', () => {
   it('names the two largest sources, the share, and never a number', () => {
     const g = world();

@@ -283,18 +283,22 @@ export function phaseFactionPurse(state: GameState, getProjection?: RealmProject
 // ─── Chronicle ────────────────────────────────────────────────────────────
 
 /**
- * At most one line per faction per pay day, and none inside the cooldown:
- * a desertion first, then going broke, then a recovery.
+ * At most one line per faction per pay day: a desertion first, then going broke, then a
+ * recovery. A desertion is always told (it is its own event); the broke and recovery
+ * lines share a cooldown.
  *
  * The crossings are read off pay, not off band neighbours, because the band moves one
  * word at a time: a purse that runs down is already Destitute (under a day in hand) the
  * day before an army goes unpaid, and a recovering one passes through Getting by.
  * - **broke** — with armies: the first pay day an army goes unpaid after a day when all
- *   were paid. Without: the band crosses into Destitute. Once per spell of being broke.
- * - **recovered** — a latch set on going broke, cleared the first pay day every army is
- *   paid and the band stands at Comfortable or better.
- * Outside the player's attention the latch still moves, so a faction that drifts into
- * view mid-recovery is told the truth; inside the cooldown a recovery waits for it to end.
+ *   were paid. Without: the band crosses into Destitute. Once per spell of being broke
+ *   (a latch), so a purse limping between paying and not is one story.
+ * - **recovered** — the latch, cleared the first pay day every army is paid and the band
+ *   stands at Comfortable or better.
+ * A broke crossing the cooldown silences is **not** latched, so no recovery is told
+ * without the fall before it. Outside the player's attention the latch still moves, so a
+ * faction that drifts into view mid-recovery is told the truth; inside the cooldown a
+ * recovery keeps its latch and is told when the cooldown ends.
  */
 function purseChronicle(
   state: GameState,
@@ -308,35 +312,30 @@ function purseChronicle(
   const pending = (faction.properties[PURSE_DESERTIONS_PROP] as PendingDesertion[] | undefined) ?? [];
   if (pending.length > 0) delete faction.properties[PURSE_DESERTIONS_PROP];
 
-  // Only the first going-broke since the last recovery: a purse that limps along paying
-  // one day and not the next is one story, not a line every other day.
-  const alreadyBroke = faction.properties[PURSE_BROKE_LATCH_PROP] === true;
-  const brokeToday = !alreadyBroke && (fieldsArmy
+  const inAttention = isFactionInAttention(state, faction.id);
+  const last = faction.properties[PURSE_CHRONICLED_PROP];
+  const cooling = typeof last === 'number' && state.tick - last < PURSE_CHRONICLE_COOLDOWN_DAYS * PURSE_CYCLE_TICKS;
+
+  const latched = faction.properties[PURSE_BROKE_LATCH_PROP] === true;
+  const brokeCrossing = !latched && (fieldsArmy
     ? anyUnpaid && !prevAnyUnpaid
     : band === 'Destitute' && prevBand !== null && prevBand !== 'Destitute');
-  if (brokeToday) faction.properties[PURSE_BROKE_LATCH_PROP] = true;
-  const recovered = !brokeToday && faction.properties[PURSE_BROKE_LATCH_PROP] === true
-    && !anyUnpaid && meansRank(band) >= meansRank('Comfortable');
-
-  if (!isFactionInAttention(state, faction.id)) {
-    if (recovered) delete faction.properties[PURSE_BROKE_LATCH_PROP];
-    return null;
-  }
-  // Inside the cooldown the latch is kept, so a recovery still standing when it ends is told.
-  const last = faction.properties[PURSE_CHRONICLED_PROP];
-  if (typeof last === 'number' && state.tick - last < PURSE_CHRONICLE_COOLDOWN_DAYS * PURSE_CYCLE_TICKS) return null;
-  if (recovered) delete faction.properties[PURSE_BROKE_LATCH_PROP];
+  if (brokeCrossing && !(inAttention && cooling)) faction.properties[PURSE_BROKE_LATCH_PROP] = true;
+  const recovered = latched && !anyUnpaid && meansRank(band) >= meansRank('Comfortable');
 
   let trigger: EconomicChronicleTrigger | null = null;
   let target: string | undefined;
-  if (pending.length > 0) {
-    trigger = 'army_unpaid_desertion';
-    target = pending[pending.length - 1].armyName;
-  } else if (brokeToday) {
-    trigger = fieldsArmy ? 'purse_broke' : 'purse_broke_bare';
-  } else if (recovered) {
-    trigger = 'purse_recovered';
+  if (inAttention) {
+    if (pending.length > 0) {
+      trigger = 'army_unpaid_desertion';
+      target = pending[pending.length - 1].armyName;
+    } else if (!cooling && brokeCrossing) {
+      trigger = fieldsArmy ? 'purse_broke' : 'purse_broke_bare';
+    } else if (!cooling && recovered) {
+      trigger = 'purse_recovered';
+    }
   }
+  if (recovered && (!inAttention || trigger === 'purse_recovered')) delete faction.properties[PURSE_BROKE_LATCH_PROP];
   if (!trigger) return null;
 
   const entry = resolveEconomicChronicle(
