@@ -276,12 +276,16 @@ export function pickDivineEchoes(
       reason: aspect.get(m.node.id) ? 'an Aspect of the god' : `threaded at tier ${m.tier}`,
     }));
 
-    // Relics: what the god's chosen carried.
+    // Relics: what the god's chosen carried — held (`possesses`) or bonded (`bonded_to`,
+    // how a legendary artifact is borne), the same two edges every bearer read uses.
     const relics = new Map<string, GraphNode>();
     for (const m of mortals) {
-      for (const e of graph.getOutgoingEdges(m.node.id, 'possesses')) {
+      for (const e of [
+        ...graph.getOutgoingEdges(m.node.id, 'possesses'),
+        ...graph.getOutgoingEdges(m.node.id, 'bonded_to'),
+      ]) {
         const a = graph.getNode(e.target);
-        if (a?.type === 'artifact') relics.set(a.id, a);
+        if (a?.type === 'artifact' || a?.type === 'artifact_legendary') relics.set(a.id, a);
       }
     }
     pools.relic = [...relics.values()].sort(sig).map(node => ({ node, reason: 'borne by a threaded mortal' }));

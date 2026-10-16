@@ -58,6 +58,8 @@ function nodeTypeToEchoType(nodeType: NodeType | string): EchoType {
     case 'actor': return 'legacy';
     case 'location': return 'monument';
     case 'artifact': return 'relic';
+    // THR-1813: a legendary artifact is borne through `bonded_to`; it is a relic too.
+    case 'artifact_legendary': return 'relic';
     default: return 'legacy';
   }
 }

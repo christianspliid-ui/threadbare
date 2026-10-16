@@ -6,7 +6,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { GameState } from '../../types/gameState';
 import type { AccountRecord } from '../../types/account';
 import { initializeGameStateFromIdentity, devSeedTheFirst, DEV_ASCENDANT_IDENTITY } from '../gameInit';
-import { computeHarvest, startTwilight } from '../cycleEnd';
+import { computeHarvest, pickDivineEchoes, startTwilight } from '../cycleEnd';
 import type { HarvestResult } from '../cycleEnd';
 import {
   concludeRun,
@@ -76,6 +76,17 @@ describe('THR-1813 — concludeRun on a seed-42 harvest', () => {
     // A divine pick is never carried twice as a cosmic echo too.
     const divineNodes = new Set((harvest.divineEchoes ?? []).map(e => e.originNodeId));
     for (const c of harvest.cosmicEchoCandidates) expect(divineNodes.has(c.node.id)).toBe(false);
+  });
+
+  it('a legendary artifact bonded to a threaded mortal can be the Relic (review-gate cycle 3)', () => {
+    const world = newWorld();
+    devSeedTheFirst(world);
+    const bearer = world.graph.getOutgoingEdges(world.ascendantId, 'thread')[0]?.target;
+    expect(bearer).toBeDefined();
+    world.graph.addNode({ id: 'test_legend_blade', type: 'artifact_legendary', name: 'Legend Blade', properties: {} });
+    world.graph.addEdge({ id: 'e.bearer.legend', source: bearer!, target: 'test_legend_blade', type: 'bonded_to', properties: {} });
+    const picks = pickDivineEchoes(world, 3, new Map([['test_legend_blade', 1]]), [DEV_ASCENDANT_IDENTITY.sphereAlignment.primary, DEV_ASCENDANT_IDENTITY.sphereAlignment.secondary]);
+    expect(picks.some(e => e.echoType === 'relic' && e.originNodeId === 'test_legend_blade')).toBe(true);
   });
 
   it('carries the god\'s bought pair on every echo it picks (Decided 5)', () => {

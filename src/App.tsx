@@ -177,6 +177,20 @@ function App() {
     setGamePhase({ phase: 'remembrance' });
   }, []);
 
+  // The Advanced new world path (worldgen → selection → `playing`) builds its world
+  // without the account, so its run must not fold into the record: carried echoes would
+  // age for a run they never appeared in (review-gate cycle 3). It concludes in memory
+  // only, and its wake carries the record unchanged — on the record's own next seed when
+  // there is one, so a remembered player wakes where the record left them.
+  const handleWakeFromUnshapedWorld = useCallback((concluded: AccountRecord) => {
+    const size = new URLSearchParams(window.location.search).get('size');
+    const query = size ? `?size=${encodeURIComponent(size)}` : '';
+    window.history.replaceState(null, '', window.location.pathname + query + window.location.hash);
+    const kept = loadedAccount.account;
+    setSeed(kept.cycleCount > 0 ? kept.nextWorldSeed : concluded.nextWorldSeed);
+    setGamePhase({ phase: 'remembrance' });
+  }, [loadedAccount]);
+
   const hoveredTile = useMemo(() => {
     if (!hoveredHex) return null;
     return tiles.find(t => t.coord.col === hoveredHex.col && t.coord.row === hoveredHex.row) ?? null;
@@ -227,9 +241,8 @@ function App() {
         doomArchetype={parseDoomArchetypeParam(window.location.search)}
         onExitToTitle={handleExitToTitle}
         account={loadedAccount.account}
-        persistAccount={accountPersists}
-        accountSaveFailed={accountSaveFailed}
-        onWakeNewWorld={handleWakeNewWorld}
+        persistAccount={false}
+        onWakeNewWorld={handleWakeFromUnshapedWorld}
       />
     );
   }
