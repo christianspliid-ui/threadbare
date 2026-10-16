@@ -911,8 +911,9 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
     const deathSiteUnrestBonus = identityPressure?.deathSiteUnrestBonus ?? 0;
     const deathSiteSpiritPressure = identityPressure?.deathSiteSpiritPressure ?? 0;
     let deathSiteUnrestApplied = 0;
+    let deathSiteTarget = 0;
     if (deathSiteUnrestBonus > 0) {
-      const deathSiteTarget = computeDeathSiteUnrestTarget(loc.properties, deathSiteUnrestBonus, tick);
+      deathSiteTarget = computeDeathSiteUnrestTarget(loc.properties, deathSiteUnrestBonus, tick);
       if (deathSiteTarget > 0 || loc.properties[DEATH_SITE_UNREST_TARGET_PROPERTY] !== undefined) {
         loc.properties[DEATH_SITE_UNREST_TARGET_PROPERTY] = deathSiteTarget;
       }
@@ -963,7 +964,8 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
       clampedDelta,
       // Breakdown
       ...breakdown,
-      // Identity death-site haunting
+      // Identity death-site haunting (THR-1925: the target the place is held toward, and today's lift)
+      deathSiteUnrestTarget: deathSiteTarget,
       deathSiteUnrestApplied,
       // Result
       previousProsperity: prevProsperity,

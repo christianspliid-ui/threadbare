@@ -107,3 +107,21 @@ describe('phaseProsperity death-site unrest under Reckoning (THR-1925)', () => {
     expect(unrestOf(graph)).toBe(0);
   });
 });
+
+describe('markMortalDead stamps the outer-tier Location (THR-1925)', () => {
+  it('a death in a tavern counts for its town', async () => {
+    const { markMortalDead } = await import('../agentLifecycle');
+    const graph = new WorldGraph();
+    addTown(graph, {});
+    graph.addNode({ id: 'loc.tavern', type: 'location', name: 'The Gilded Cup', properties: { parentLocationId: 'loc.town', locationSubtype: 'tavern' } });
+    graph.addNode({ id: 'agent.1', type: 'actor', name: 'Mara', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e.at', source: 'agent.1', target: 'loc.tavern', type: 'located_at', properties: {} });
+
+    const result = markMortalDead(graph, 'agent.1', 40, { cause: 'lifecycle', mode: 'retain' });
+    expect(result.outcome).not.toBe('not_a_mortal');
+    const town = graph.getNode('loc.town')!.properties;
+    expect(town.deathCount).toBe(1);
+    expect(town.lastDeathTick).toBe(40);
+    expect(graph.getNode('loc.tavern')!.properties.deathCount).toBeUndefined();
+  });
+});

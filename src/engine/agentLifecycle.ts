@@ -34,6 +34,7 @@ import { drainMintQueue } from './binding/mintInhabitant';
 import { generateRoleCapabilities } from './npcGraduation';
 import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
 import { LAST_DEATH_TICK_PROPERTY } from '../data/death-site-unrest-constants';
+import { resolveToParentLocation } from './sublocationShape';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -208,7 +209,9 @@ export interface MarkMortalDeadResult {
 
 /**
  * The location's tally and last-death stamp. `phaseProsperity` reads both for its
- * death-site haunting, which fades with time since the stamp (THR-1925).
+ * death-site haunting, which fades with time since the stamp (THR-1925). Callers pass
+ * the outer-tier Location (a death in a tavern counts for its town), the tier the
+ * settlement phases and the fight/battle stamps use.
  */
 function bumpDeathCount(locNode: { properties: Record<string, unknown> }, tick: number): void {
   const prev = typeof locNode.properties.deathCount === 'number' ? locNode.properties.deathCount : 0;
@@ -268,12 +271,12 @@ export function markMortalDead(
       echoed.properties.deathCause = options.cause;
       if (options.byActorId) echoed.properties.slainBy = options.byActorId;
     }
-    if (deathLocNode) bumpDeathCount(deathLocNode, tick);
+    if (deathLocNode) bumpDeathCount(resolveToParentLocation(graph, deathLocNode) ?? deathLocNode, tick);
     if (runtime) touchWorld(runtime);
     return { outcome: 'echo', hexCoords, echoedAscendantIds: echo.ascendantIds };
   }
 
-  if (deathLocNode) bumpDeathCount(deathLocNode, tick);
+  if (deathLocNode) bumpDeathCount(resolveToParentLocation(graph, deathLocNode) ?? deathLocNode, tick);
 
   if (options.mode === 'retain') {
     // The band-death shape (`groups/bandOpposition.ts`), plus the provenance the
