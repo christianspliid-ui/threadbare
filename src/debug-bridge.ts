@@ -2038,6 +2038,25 @@ if (import.meta.env.DEV) {
     },
 
     /**
+     * THR-1904: the icon registry at a glance — entries, carved vs our own drawings, the keys
+     * that drew the fallback mark since load, and the credited authors. Needs no game loaded.
+     */
+    getIconReport: async () => {
+      const [{ ICON_REGISTRY, ICON_CREDITS }, { getFallbacksDrawn }] = await Promise.all([
+        import('./data/icons/iconRegistry'),
+        import('./data/icons/conceptIcons'),
+      ]);
+      const entries = Object.values(ICON_REGISTRY) as { source: { family: string } }[];
+      const carved = entries.filter((e) => e.source.family === 'game-icons').length;
+      return {
+        registry: entries.length,
+        carved,
+        own: entries.length - carved,
+        fallbacksDrawn: getFallbacksDrawn().map((f) => ({ ...f })),
+        credits: [...ICON_CREDITS],
+      };
+    },
+    /**
      * THR-479: list the ascendant's Aspects (apex milestone beyond the five
      * tiers). Returns living Aspects and mythic echoes (dead Aspects whose bond
      * endures). Empty array if the game isn't loaded or there are none.

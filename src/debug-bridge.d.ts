@@ -1080,6 +1080,20 @@ export interface DebugBridge {
   }>;
 
   /**
+   * THR-1904: the icon registry at a glance. `carved` counts game-icons.net entries, `own`
+   * counts our drawings (`fallback` plus the temporary open-place entries); `fallbacksDrawn`
+   * lists class keys that drew the fallback mark since load (expected empty); `credits` is
+   * `ICON_CREDITS`, as the start page's Credits renders it.
+   */
+  getIconReport: () => Promise<{
+    registry: number;
+    carved: number;
+    own: number;
+    fallbacksDrawn: { classId: string; key: string }[];
+    credits: string[];
+  }>;
+
+  /**
    * THR-479: list the ascendant's Aspects (apex milestone beyond the five tiers),
    * including living Aspects and mythic echoes. Empty array if none / not loaded.
    */

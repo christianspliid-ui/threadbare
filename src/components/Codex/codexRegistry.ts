@@ -102,6 +102,7 @@ export interface CodexEntry {
 // comment always described is gone; `Game/actionArt.ts` is the single source, and
 // codex-specific art layers in via ITEM_ART_BASE below).
 import { ITEM_ART as ITEM_ART_BASE } from '../../data/item-art-registry';
+import type { IconName } from '../../data/icons/iconRegistry';
 import { getAttachmentArtUrl } from '../../data/artifact-category-art';
 import {
   ACTION_CATEGORIES,
@@ -118,6 +119,8 @@ export interface CodexCategory {
   id: string;
   label: string;
   glyph: string;
+  /** The carved icon (THR-1904). Additive: the tabs still draw `glyph` until THR-1907 moves them. */
+  icon: IconName;
   subcategories: { id: string; label: string; count: number }[];
 }
 
@@ -803,6 +806,17 @@ const ACTION_CATEGORY_GLYPHS = {
   actions: '⚔',
 } satisfies Record<ActionCategory, string>;
 
+/** The carved icon per action category (THR-1904, plan THR-1879 Appendix B). */
+const ACTION_CATEGORY_ICONS = {
+  divine: 'divine-actions',
+  hex: 'hex',
+  location: 'place',
+  artifact: 'artifact',
+  company: 'company',
+  threads: 'threads',
+  actions: 'person',
+} satisfies Record<ActionCategory, IconName>;
+
 const ACTION_ENTRY_MAPPERS = {
   divine: mapDivineAction,
   actions: mapMortalAction,
@@ -867,28 +881,28 @@ export function getAllCodexEntries(): CodexEntry[] {
 export function getCodexCategories(): CodexCategory[] {
   const entries = getAllCodexEntries();
 
-  const catDefs: { id: string; label: string; glyph: string }[] = [
+  const catDefs: { id: string; label: string; glyph: string; icon: IconName }[] = [
     // The seven action categories, declared once in action-categories.ts (THR-1886).
-    ...ACTION_CATEGORY_IDS.map(id => ({ id, label: ACTION_CATEGORIES[id].label, glyph: ACTION_CATEGORY_GLYPHS[id] })),
+    ...ACTION_CATEGORY_IDS.map(id => ({ id, label: ACTION_CATEGORIES[id].label, glyph: ACTION_CATEGORY_GLYPHS[id], icon: ACTION_CATEGORY_ICONS[id] })),
     // Hammer and pick \u2014 the work mortals do on the world's things (THR-1434).
-    { id: 'undertakings', label: 'Undertakings', glyph: '\u2692' },
-    { id: 'possessions', label: 'Possessions', glyph: '\u25C6' },
-    { id: 'conditions', label: 'Conditions', glyph: '\u2715' },
-    { id: 'agreements', label: 'Agreements', glyph: '\u260D' },
+    { id: 'undertakings', label: 'Undertakings', glyph: '\u2692', icon: 'undertaking' },
+    { id: 'possessions', label: 'Possessions', glyph: '\u25C6', icon: 'possession' },
+    { id: 'conditions', label: 'Conditions', glyph: '\u2715', icon: 'condition' },
+    { id: 'agreements', label: 'Agreements', glyph: '\u260D', icon: 'pact' },
     // The three categories THR-1495 chartered. Legendary artifacts took no tab of
     // their own \u2014 three entries are a rail group under Possessions, not a section.
     // A companion is a person, so they get a category rather than a shelf in
     // Possessions; an ambition is the want an Undertaking serves, and was the only
     // half of a mortal's motives the catalog did not carry; the cards are the deck
     // the player plays from.
-    { id: COMPANION_CATEGORY_ID, label: 'Companions', glyph: '\u265F' },
-    { id: AMBITION_CATEGORY_ID, label: 'Ambitions', glyph: '\u2767' },
-    { id: CARD_CATEGORY_ID, label: 'The Repertoire', glyph: '\u2756' },
+    { id: COMPANION_CATEGORY_ID, label: 'Companions', glyph: '\u265F', icon: 'companion' },
+    { id: AMBITION_CATEGORY_ID, label: 'Ambitions', glyph: '\u2767', icon: 'ambition' },
+    { id: CARD_CATEGORY_ID, label: 'The Repertoire', glyph: '\u2756', icon: 'cards' },
     // Resource classes have been mapped to entries since the P3 economy work
     // (92383535) but never had a tab, so the whole category was catalogued and
     // unreachable - the same "no catalog arm" defect as company.* (THR-999),
     // one layer further on. Scales: these entries are about trade value.
-    { id: 'resources', label: 'Resources', glyph: '\u2696' },
+    { id: 'resources', label: 'Resources', glyph: '\u2696', icon: 'resources' },
   ];
 
   return catDefs.map(cat => {
