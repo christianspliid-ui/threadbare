@@ -10,7 +10,12 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as THREE from 'three';
-import { LOCATION_ICON_REGISTRY, LOCATION_SIZE_SCALE, resolvePlaceIconDef } from '../locationIconRegistry';
+import {
+  LOCATION_ICON_REGISTRY,
+  LOCATION_SIZE_SCALE,
+  resolvePlaceIconDef,
+  UNDRAWN_PLACE_TYPES,
+} from '../locationIconRegistry';
 import {
   buildLocationIconTexture,
   buildMapIconTexture,
@@ -67,10 +72,15 @@ beforeEach(() => {
   resetPlaceIconFallbacksForTest();
 });
 
+/** The types the map draws. */
 const PLACE_TYPES = Object.keys(LOCATION_ICON_REGISTRY);
 
-/** Place types whose shape is still an open pick and is written `'fallback'` in PLACE_ICON (THR-1908). */
-const OPEN_PICKS = new Set(['elder_ruin']);
+/**
+ * Every place subtype the game can mint. `PLACE_ICON` is total over `LocationSubtype`, so its
+ * keys are the authoritative sweep — not the registry's own keys, which could only check the
+ * registry against itself.
+ */
+const ALL_SUBTYPES = Object.keys(PLACE_ICON);
 
 /** Christian's eleven named shapes (THR-1834 call 2b; THR-1903 description). */
 const NAMED_SHAPES: Record<string, string> = {
@@ -88,11 +98,29 @@ const NAMED_SHAPES: Record<string, string> = {
 };
 
 describe('place icons — every LocationType (Law 58)', () => {
-  it('every place type has a size class', () => {
-    for (const type of PLACE_TYPES) {
-      const { def, known } = resolvePlaceIconDef(type);
-      expect(known, `${type} has no LOCATION_ICON_REGISTRY entry`).toBe(true);
-      expect(LOCATION_SIZE_SCALE[def.sizeClass], `${type} size class "${def.sizeClass}"`).toBeGreaterThan(0);
+  it('every place subtype is drawn (with a size class) or listed in UNDRAWN_PLACE_TYPES, never both', () => {
+    for (const type of ALL_SUBTYPES) {
+      const drawn = type in LOCATION_ICON_REGISTRY;
+      const undrawn = type in UNDRAWN_PLACE_TYPES;
+      expect(drawn !== undrawn, `${type}: add it to LOCATION_ICON_REGISTRY or UNDRAWN_PLACE_TYPES (exactly one)`).toBe(true);
+      const res = resolvePlaceIconDef(type);
+      if (drawn) {
+        expect(res.status, `${type}`).toBe('drawn');
+        expect(LOCATION_SIZE_SCALE[res.def!.sizeClass], `${type} size class`).toBeGreaterThan(0);
+      } else {
+        expect(res, `${type}`).toEqual({ status: 'undrawn', def: null });
+        expect(UNDRAWN_PLACE_TYPES[type as keyof typeof UNDRAWN_PLACE_TYPES].length, `${type} reason`).toBeGreaterThan(0);
+      }
+    }
+    // Neither list carries a type that is no subtype
+    for (const type of [...PLACE_TYPES, ...Object.keys(UNDRAWN_PLACE_TYPES)]) {
+      expect(ALL_SUBTYPES, `${type} is not a LocationSubtype`).toContain(type);
+    }
+  });
+
+  it('hidden and transit subtypes stay off the map (elder ruins until found; waypoints)', () => {
+    for (const type of ['elder_ruin', 'wilderness', 'wilderness_waypoint']) {
+      expect(resolvePlaceIconDef(type).status, type).toBe('undrawn');
     }
   });
 
@@ -101,11 +129,6 @@ describe('place icons — every LocationType (Law 58)', () => {
     for (const type of PLACE_TYPES) {
       expect(type in PLACE_ICON, `${type} has no PLACE_ICON row (src/data/icons/conceptIcons.ts)`).toBe(true);
       const shape = placeIconShape(type);
-      // An open pick written as 'fallback' in PLACE_ICON draws the ring on purpose (THR-1908)
-      if (OPEN_PICKS.has(type)) {
-        expect(shape, `${type}`).toBe(fallback);
-        continue;
-      }
       expect(shape, `${type} draws the fallback mark`).not.toBe(fallback);
       expect(shape.paths.length, `${type} shape has no paths`).toBeGreaterThan(0);
     }
@@ -132,7 +155,7 @@ describe('place icons — every LocationType (Law 58)', () => {
     placeIconShape('not_a_place');
     expect(warn).toHaveBeenCalledTimes(1);
     expect(getPlaceIconStatus().fallbacks).toEqual(['not_a_place']);
-    expect(resolvePlaceIconDef('not_a_place')).toEqual({ def: { sizeClass: 'small' }, known: false });
+    expect(resolvePlaceIconDef('not_a_place')).toEqual({ status: 'unknown', def: { sizeClass: 'small' } });
     warn.mockRestore();
   });
 });

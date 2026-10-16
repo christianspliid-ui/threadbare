@@ -116,6 +116,16 @@ describe('createLocationIconMesh', () => {
     expect(getPlaceIconStatus().fallbacks).toContain('unknown_type_xyz');
   });
 
+  it('draws nothing for a subtype the map leaves off on purpose (UNDRAWN_PLACE_TYPES — THR-1903)', () => {
+    const locations: LocationNode[] = [
+      { locationType: 'wilderness_waypoint', hexCol: 2, hexRow: 2, name: 'Waypoint' },
+      { locationType: 'elder_ruin', hexCol: 3, hexRow: 3, name: 'Temple Ruin' },
+    ];
+    const group = createLocationIconMesh(locations);
+    expect(group.children).toHaveLength(0);
+    expect(getPlaceIconStatus().fallbacks).toEqual([]);
+  });
+
   it('adds extra ring sprite for capital locations', () => {
     const locations: LocationNode[] = [
       { locationType: 'capital', hexCol: 10, hexRow: 10, name: 'The Capital', isCapital: true },

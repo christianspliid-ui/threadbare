@@ -8,9 +8,12 @@
  * `placeIcons.coverage.test.ts` names a missing one).
  *
  * NFP #1 (tunability): All size scale values are named constants.
- * NFP #4 (fail-soft): An unknown type draws the `fallback` shape at `small` and warns once
- *   (`resolvePlaceIconDef`), instead of being skipped.
+ * NFP #4 (fail-soft): A string that is no place subtype draws the `fallback` shape at `small`
+ *   and warns once (`resolvePlaceIconDef`); subtypes the map leaves off on purpose are listed,
+ *   with reasons, in `UNDRAWN_PLACE_TYPES`.
  */
+
+import type { LocationSubtype } from '../../../types/index';
 
 // ── Type definitions ──────────────────────────────────────────────────────────
 
@@ -69,11 +72,7 @@ export type LocationType =
   | 'haunted_ground'
   | 'corruption_zone'
   // Ruins layer (THR-153) — transformed elder_ruin
-  | 'place_of_power'
-  // THR-1903: live place types the map once skipped silently; each draws its PLACE_ICON shape
-  | 'elder_ruin'
-  | 'farmland'
-  | 'trade_route';
+  | 'place_of_power';
 
 /** Visual size class for a location — determines sprite scale on the hex. */
 export type LocationSizeClass = 'full' | 'medium' | 'small' | 'tiny';
@@ -167,10 +166,6 @@ export const LOCATION_IMPORTANCE_MAP: Record<LocationType, LocationImportance> =
   corruption_zone: 'small',
   // Ruins layer (THR-153)
   place_of_power:  'town',
-  // THR-1903
-  elder_ruin:      'small',
-  farmland:        'small',
-  trade_route:     'small',
 };
 
 // ── Registry ──────────────────────────────────────────────────────────────────
@@ -244,11 +239,22 @@ export const LOCATION_ICON_REGISTRY: Record<LocationType, LocationIconDef> = {
   corruption_zone: { sizeClass: 'small' },
   // ── Ruins layer (THR-153) ──
   place_of_power:  { sizeClass: 'medium' },
-  // ── THR-1903: once skipped silently. elder_ruin draws the fallback mark until its shape is
-  // picked (PLACE_ICON, THR-1908); farmland and trade_route draw their carved picks ──
-  elder_ruin:      { sizeClass: 'small' },
-  farmland:        { sizeClass: 'tiny' },
-  trade_route:     { sizeClass: 'tiny' },
+};
+
+/**
+ * The place subtypes the map deliberately draws no icon for, each with its reason (THR-1903).
+ * Typed over every `LocationSubtype` the registry does not draw, so a new subtype must land in
+ * one list or the other (a type error otherwise) — the fallback ring is kept for strings that
+ * are no subtype at all. Moving a type into `LOCATION_ICON_REGISTRY` is a design call.
+ */
+export const UNDRAWN_PLACE_TYPES: Readonly<Record<Exclude<LocationSubtype, LocationType>, string>> = {
+  elder_ruin: 'Hidden delve site: seeded undiscovered, found through clues, never revealed by the map',
+  wilderness: 'The default open land of a hex — no overlay icon',
+  wilderness_waypoint: 'A transit hex movement pathing mints; one per walked hex would bury the map',
+  farmland: 'Settlement hinterland, read through its settlement, not drawn on its own',
+  trade_route: "A route's identity node; the route is drawn by the trade layer, not as a place",
+  oasis: 'Not drawn on the map before THR-1903; drawing it is a separate call',
+  bridge: 'Not drawn on the map before THR-1903; drawing it is a separate call',
 };
 
 /** The size class an unknown place type's fallback mark draws at (plan D13). */
@@ -257,13 +263,22 @@ export const UNKNOWN_PLACE_SIZE_CLASS: LocationSizeClass = 'small';
 /** The entry an unknown place type draws with (plan D13, Law 58). */
 const UNKNOWN_PLACE_DEF: LocationIconDef = { sizeClass: UNKNOWN_PLACE_SIZE_CLASS };
 
+/** How the map treats a place type: draw its shape, draw nothing on purpose, or draw the fallback. */
+export type PlaceIconResolution =
+  | { readonly status: 'drawn'; readonly def: LocationIconDef }
+  | { readonly status: 'undrawn'; readonly def: null }
+  | { readonly status: 'unknown'; readonly def: LocationIconDef };
+
 /**
- * A place type's map icon entry, or — for a type with no entry — the fallback entry at
- * `small` with `known: false`, so the caller draws the fallback mark instead of skipping.
+ * A place type's map icon entry. A registered type draws its shape; an `UNDRAWN_PLACE_TYPES`
+ * subtype draws nothing; any other string draws the fallback mark at `small` (Law 58).
  */
-export function resolvePlaceIconDef(type: string): { def: LocationIconDef; known: boolean } {
+export function resolvePlaceIconDef(type: string): PlaceIconResolution {
   if (Object.prototype.hasOwnProperty.call(LOCATION_ICON_REGISTRY, type)) {
-    return { def: LOCATION_ICON_REGISTRY[type as LocationType], known: true };
+    return { status: 'drawn', def: LOCATION_ICON_REGISTRY[type as LocationType] };
   }
-  return { def: UNKNOWN_PLACE_DEF, known: false };
+  if (Object.prototype.hasOwnProperty.call(UNDRAWN_PLACE_TYPES, type)) {
+    return { status: 'undrawn', def: null };
+  }
+  return { status: 'unknown', def: UNKNOWN_PLACE_DEF };
 }

@@ -272,9 +272,12 @@ export function createLocationIconMesh(
     const ringEligible: LocationNode[] = [];
 
     for (const loc of hexLocs) {
-      // NFP #4 / Law 58: an unknown type draws the fallback mark at small, warning once
-      const { def: iconDef, known } = resolvePlaceIconDef(loc.locationType);
-      if (!known) notePlaceIconFallback(loc.locationType);
+      // NFP #4 / Law 58: an unknown type draws the fallback mark at small, warning once;
+      // a subtype the map leaves off on purpose (UNDRAWN_PLACE_TYPES) draws nothing
+      const placeIcon = resolvePlaceIconDef(loc.locationType);
+      if (placeIcon.status === 'undrawn') continue;
+      if (placeIcon.status === 'unknown') notePlaceIconFallback(loc.locationType);
+      const iconDef = placeIcon.def;
 
       // Lair sizeClass override: use tier-based size, not registry default
       const effectiveSizeClass: LocationSizeClass =
@@ -348,10 +351,12 @@ function addLocationSprite(
   // Skip undiscovered anomalies — they render via shimmer layer, not as icons
   if (loc.isAnomalyLocation && !loc.discoveredByExploration) return;
 
-  const { def: iconDef, known } = resolvePlaceIconDef(loc.locationType);
+  const placeIcon = resolvePlaceIconDef(loc.locationType);
+  if (placeIcon.status === 'undrawn') return;
+  const iconDef = placeIcon.def;
 
   // Lair-specific texture key: "lair:{sphere}" for tinted active lairs
-  let textureKey = known ? loc.locationType : PLACE_FALLBACK_TEXTURE_KEY;
+  let textureKey = placeIcon.status === 'drawn' ? loc.locationType : PLACE_FALLBACK_TEXTURE_KEY;
   if (loc.locationType === 'lair') {
     const sphere = loc.dominantSphere ?? 'unknown';
     textureKey = `lair:${LAIR_SPHERE_FILL_COLORS[sphere] !== undefined ? sphere : 'unknown'}`;
@@ -398,6 +403,7 @@ function addCapitalRing(
   capitalInkAt?: (col: number, row: number) => string | null,
 ): void {
   const { def: iconDef } = resolvePlaceIconDef(loc.locationType);
+  if (!iconDef) return;
   const ringInk = capitalInkAt?.(loc.hexCol, loc.hexRow) ?? getActivePalette().capitalRingColor;
 
   const spriteSize = HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass];
@@ -429,6 +435,7 @@ function addSeatMarker(
   scaleFactor: number,
 ): void {
   const { def: iconDef } = resolvePlaceIconDef(loc.locationType);
+  if (!iconDef) return;
 
   const spriteSize =
     HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] * scaleFactor * SEAT_MARKER_SCALE;

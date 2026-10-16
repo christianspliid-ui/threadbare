@@ -69,10 +69,6 @@ const EXPECTED_LOCATION_TYPES: LocationType[] = [
   'corruption_zone',
   // Ruins layer (THR-153)
   'place_of_power',
-  // THR-1903: drawn on the map now, no longer skipped
-  'elder_ruin',
-  'farmland',
-  'trade_route',
 ];
 
 describe('LOCATION_ICON_REGISTRY', () => {
