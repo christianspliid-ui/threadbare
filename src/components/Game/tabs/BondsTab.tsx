@@ -1,6 +1,8 @@
 import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import { SectionHeading } from '../../shared/SectionHeading';
+import { CoatOfArms } from '../../icons';
+import { getFactionDefinition } from '../../../data/faction-definition-lookup';
 import { Tooltip } from '../../shared/Tooltip';
 import { EntityLink } from '../../shared/EntityLink';
 import { bondBasisWord, canonicalBondBasis } from '../../../data/bond-basis';
@@ -213,7 +215,12 @@ export function BondsTab({ card, knowledge, onOpenEntity }: BondsTabProps) {
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                {card.factionIconGlyph ? `${card.factionIconGlyph} ` : ''}{card.factionName}
+                {/* THR-1906 — a faction is drawn by its arms (Law 9), never an emoji glyph. */}
+                {(() => {
+                  const def = card.factionDefId ? getFactionDefinition(card.factionDefId) : null;
+                  return def ? <CoatOfArms definition={def} size={14} className="mr-1 align-middle" /> : null;
+                })()}
+                {card.factionName}
               </span>
               <span className="text-sm" style={{ color: card.factionThemeColor ?? 'var(--accent-gold)' }}>{card.factionRank}</span>
             </div>

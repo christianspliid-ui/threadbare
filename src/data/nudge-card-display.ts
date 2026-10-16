@@ -70,8 +70,8 @@ export const NUDGE_CARD_TYPE_ICONS: Readonly<Record<NudgeCardTypeId, string>> = 
 
 /**
  * The carved icon per card type (THR-1904, plan THR-1879 Appendix B). The keyword chip draws it
- * (THR-1906); `NUDGE_CARD_TYPE_ICONS` stays only as the picture band's fallback glyph until S4b
- * (THR-1907) retires the glyph column.
+ * (THR-1906); the picture band's fallback tile draws it too; `NUDGE_CARD_TYPE_ICONS` remains only as
+ * the descriptor's required glyph until S4b (THR-1907) retires the glyph column.
  * Several types draw an idea another class shares (`kindled_ambition` → `ambition`, `whisper` →
  * `reveal`): one meaning, one shape.
  */

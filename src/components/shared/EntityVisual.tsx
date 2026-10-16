@@ -18,7 +18,7 @@
 
 import { useEffect, useState } from 'react';
 import type { WorldGraph } from '../../engine/graph';
-import { ENTITY_GRADIENTS, isPersonKind, type EntityVisualKind } from '../../data/entity-visual-fallbacks';
+import { ENTITY_GRADIENTS, fallbackGlyphFor, isPersonKind, type EntityVisualKind } from '../../data/entity-visual-fallbacks';
 import type { IconName } from '../../data/icons/iconRegistry';
 import { ICON_FOR_WORLD_REF_KIND } from '../../data/icons/conceptIcons';
 import { Icon } from './Icon';
@@ -32,9 +32,10 @@ import {
 // ── Fallback tile icon (THR-1906, plan THR-1879 § 10 icons 1) ──────
 
 /**
- * The carved kind icon a fallback tile draws on its gradient. Person kinds keep their initial;
- * `unknown` keeps the caller's supplied glyph (an action card's verb, an open class until
- * THR-1908). Every other kind draws its object-kind icon from `ICON_FOR_WORLD_REF_KIND`.
+ * The carved kind icon a fallback tile draws on its gradient, when the descriptor carries the
+ * resolver's own category glyph. Person kinds keep their initial; a glyph the caller supplied (an
+ * action card's verb, an open class until THR-1908) is kept; a descriptor's `iconName` wins over
+ * both. Every other kind draws its object-kind icon from `ICON_FOR_WORLD_REF_KIND`.
  */
 export const ENTITY_VISUAL_KIND_ICON: Readonly<Partial<Record<EntityVisualKind, IconName>>> = {
   location: ICON_FOR_WORLD_REF_KIND.location,
@@ -148,7 +149,10 @@ export function EntityVisual({
     ...style,
   };
 
-  const kindIcon = isPersonKind(desc.kind) ? undefined : ENTITY_VISUAL_KIND_ICON[desc.kind];
+  const kindIcon = desc.iconName
+    ?? (isPersonKind(desc.kind) || desc.glyph !== fallbackGlyphFor(desc.kind, desc.alt)
+      ? undefined
+      : ENTITY_VISUAL_KIND_ICON[desc.kind]);
   const content = showArt ? (
     <img
       src={desc.src}

@@ -169,15 +169,5 @@ describe('OverviewTab — faction name is a concept (THR-1149)', () => {
       expect(heraldry).toHaveAttribute('title', FACTION_NAME);
     });
 
-    it('replaces the ad-hoc glyph prefix rather than sitting beside it (Law 3)', () => {
-      const glyph = '⚔';
-      render(<OverviewTab card={card({ factionIconGlyph: glyph })} onOpenFaction={vi.fn()} />);
-
-      // The name itself must no longer carry a hand-prefixed glyph string; one
-      // resolver owns this representation class now.
-      const control = factionControl();
-      expect(control.textContent).toBe(FACTION_NAME);
-      expect(control.textContent).not.toContain(glyph);
-    });
   });
 });

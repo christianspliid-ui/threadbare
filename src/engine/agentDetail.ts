@@ -455,11 +455,6 @@ export interface AgentInfoCardData {
    * node id belongs opens the wrong chapter's sheet — or none at all.
    */
   factionNodeId?: string;
-  /**
-   * @deprecated Never set since THR-1906: a faction is drawn by `CoatOfArms` from `factionDefId`
-   * (Law 9). Kept only because `BondsTab` reads it and retires with the Inspector (THR-1876).
-   */
-  factionIconGlyph?: string;
   /** Faction theme color for UI styling */
   factionThemeColor?: string;
   /**

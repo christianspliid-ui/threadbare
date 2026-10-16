@@ -234,6 +234,7 @@ export function NudgeCard({
           // because EntityVisual uses it as the <img> onError swap target.
           ...(artPath ? { src: artPath } : {}),
           glyph: card.keywordIcon ?? (card.sphere ? '◈' : '◇'),
+          ...(card.keywordIconName ? { iconName: card.keywordIconName } : {}),
           gradientIndex: gradientIndexForId(card.id),
           alt: card.name,
           kind: 'encounter',
