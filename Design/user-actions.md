@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-16 16:57 local (14:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-16 17:55 local (15:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-16: one work now reads one progress word everywhere (barely begun, under way, halfway, well along, nearly done, or faltering)** ([THR-1962](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the)). Merged via [#2449](https://github.com/christianspliid-ui/threadbare/pull/2449) and live.
 - **2026-10-16: the crown is built: a realm that holds a town can win oaths of fealty and collect a share of its vassals' coin** ([THR-1932](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them)). Merged via [#2448](https://github.com/christianspliid-ui/threadbare/pull/2448) and live.
 - **2026-10-16: every place on the map now draws its carved icon in the map ink; hidden and in-transit places stay off the map** ([THR-1903](https://linear.app/threadbare/issue/THR-1903/carved-places-on-the-map-every-place-type-draws-its-carved-shape-in)). Merged via [#2447](https://github.com/christianspliid-ui/threadbare/pull/2447) and live.
 - **2026-10-16: the map camera has zoom buttons and map keys, can centre on your First, and opens on known land** ([THR-1900](https://linear.app/threadbare/issue/THR-1900/map-camera-and-controls-zoom-buttons-centre-on-my-first-show-known)). Merged via [#2445](https://github.com/christianspliid-ui/threadbare/pull/2445).
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-16: the unused effect-glyph table with six broken symbols is deleted** ([THR-1874](https://linear.app/threadbare/issue/THR-1874/delete-the-unread-effect-type-glyph-table-six-malformed-escapes-never)). Merged via [#2441](https://github.com/christianspliid-ui/threadbare/pull/2441).
 - **2026-10-16: a hamlet founded inside a people’s own lands now takes their heartland, not their fringe** ([THR-1849](https://linear.app/threadbare/issue/THR-1849/a-hamlet-founded-inside-a-peoples-own-lands-reads-as-their-fringe)). Merged via [#2440](https://github.com/christianspliid-ui/threadbare/pull/2440) and live.
 - **2026-10-16: long place names now wrap inside the hex tooltip** ([THR-1848](https://linear.app/threadbare/issue/THR-1848)). Merged via [#2439](https://github.com/christianspliid-ui/threadbare/pull/2439) and live.
-- **2026-10-16: one death no longer keeps a town at full unrest forever** ([THR-1925](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for)). Merged via [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438) and live.
 
 ---
 

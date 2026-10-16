@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 16:57 local (14:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 17:55 local (15:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -16,7 +16,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 ## Decided for you
 
 - [The mortal's mid-game behind a button](https://linear.app/threadbare/issue/THR-1859/the-mortals-own-mid-game-is-behind-a-button-nobody-presses-the-work) — **your mortal's work and what they want most now show in the panel beside the map**, as two lines that open the full profile on the Journey tab; "A Work Begun" and "A Work Finished" get a "See the work" link. No tester in the last playtest ever pressed "View Full Profile". ([its build ticket](https://linear.app/threadbare/issue/THR-1963/the-work-and-the-leading-ambition-beside-the-map-two-lines-in-the)) *Veto:* **"open the profile on the Journey tab instead"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-16d.md)*
-- Same ticket — **one work gets one progress word everywhere** (barely begun, under way, halfway, well along, nearly done; "faltering" when stalled). Today the same work could read "going badly" on the row and "well advanced" in the panel. ([its build ticket](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the)) *Veto:* **"keep the four-word scale"**.
+- Same ticket — **one work gets one progress word everywhere** (barely begun, under way, halfway, well along, nearly done; "faltering" when stalled). This one is now built and live ([PR #2449](https://github.com/christianspliid-ui/threadbare/pull/2449)). ([its build ticket](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the)) *Veto:* **"keep the four-word scale"**.
 - Same ticket — **the camera snapping to full zoom needs nothing more**: the map camera build fixed it today.
 - [The encounter firing plan](https://linear.app/threadbare/issue/THR-1218/encounter-firing-pruning-pass-select-down-from-everything-fires-once) — **your "prune later" is answered by measurement, and nothing gets a count cap.** I watched The First live 50 days in three worlds ([what I measured](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-16-thr-1218-natural-firing-baseline.md)). The pruning has mostly already happened: two-thirds of her encounters are chores that never ask, and she rests two days after every story. What you would notice instead is the same story coming back (one tale five times in 50 days) and stretches of up to twelve days with no story at all. ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-16-thr-1218-encounter-firing-rhythm.md), [why each choice](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-16-thr-1218-encounter-firing-rhythm-brainstorm.md)) *Veto:* **"the world should stop less often"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-16c.md)*
 - Same plan — **a mortal you follow tells one story at most twice per run** while another story is within reach; after twelve days with no story, a retelling is allowed again. *Veto:* **"retold stories are fine"**.
@@ -40,14 +40,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** [The crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them) merged at 16:46 via [PR #2448](https://github.com/christianspliid-ui/threadbare/pull/2448) and is live. The builder has now taken [one progress word](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the) (started 16:51).
+**Backed up: 21 ready, one in progress.** [One progress word for a work](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the) merged at 17:27 via [PR #2449](https://github.com/christianspliid-ui/threadbare/pull/2449) and is live. The builder is now on [icon sweep 1](https://linear.app/threadbare/issue/THR-1906/icon-sweep-1-shared-primitives-chrome-and-the-law-9-duplicates-onto) (run started 17:31, still active).
 
 - High, waiting: the [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) builds, plus [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Six bugs are queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [the map naming undiscovered elder ruins](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every).
+- New since last hour: [crown courtship sits just under its 70% target](https://linear.app/threadbare/issue/THR-1961/crown-courtship-rate-sits-at-68-73percent-of-days-under-the-plans) (low, a follow-up from the crown build).
 - Nothing has waited in the queue longer than a week without being touched.
 
 ## Health
 
-- The live site serves the latest commit on main (2cf6b5a7, the crown). Main's checks and the scheduled background jobs pass, no PRs are waiting to merge, and every scheduled lane is on schedule. The builder is mid-run; it has not stalled.
-- Tick cost is normal: 113 ms/tick, 7% under the 7-day median.
-- The tidy-up job ran at 16:40: 541 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- The live site serves the latest commit on main (dea197bf, the progress word). Main's checks and the scheduled background jobs pass, no PRs are waiting to merge, and every scheduled lane is on schedule. The builder is mid-run; it has not stalled.
+- Tick cost is normal: 124 ms/tick, 2% over the 7-day median.
+- The tidy-up job ran within the hour: 542 old worktrees, 5 items needing a decision (builder housekeeping). The silence-check gaps (Friday 9 Oct night into Saturday, and overnight 12 to 13 Oct) are overnight and weekend quiet. You sent no new Discord messages.
