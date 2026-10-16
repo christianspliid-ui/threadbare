@@ -18,6 +18,7 @@ This folder is the single source of truth for all UI decisions. It is structured
 | **Placing a new UI element (zone, z-index)** | `layout-zones.md` |
 | Choosing colors, borders, shadows | `tokens.md` |
 | Choosing font sizes or font families | `typography.md` |
+| Adding, swapping or drawing an icon; the icon licence and credits | `icons.md` |
 | Adding animations or transitions | `motion.md` |
 | Checking what a component should look like | `?view=styleguide` (live samples) + `primitives.md` |
 | Implementing hover/focus/active/disabled states | `interactions.md` |

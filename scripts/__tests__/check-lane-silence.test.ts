@@ -203,7 +203,9 @@ describe("readPauseMarker", () => {
     const m = readPauseMarker(writeMarker(""));
     expect(m.present).toBe(true);
     expect(m.reason).toBe("no reason given");
-    expect(isPauseActive(m, Date.now())).toBe(true);
+    // Judge at a clock that cannot precede the marker's own mtime: under full-suite load on
+    // NTFS the mtime can land a few ms after the Date.now() that follows the write (impediment #1051).
+    expect(isPauseActive(m, Math.max(Date.now(), m.sinceMs ?? 0))).toBe(true);
   });
 
   it("reads an explicit JSON window", () => {

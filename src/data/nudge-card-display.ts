@@ -21,6 +21,7 @@ import {
   nudgeCardMember,
   type NudgeCardTypeId,
 } from './nudge-card-library';
+import type { IconName } from './icons/iconRegistry';
 
 /** One essence pip. Cost is drawn, never counted out in digits. */
 export const ESSENCE_PIP_GLYPH = '✦';
@@ -65,6 +66,36 @@ export const NUDGE_CARD_TYPE_ICONS: Readonly<Record<NudgeCardTypeId, string>> = 
   favor: '⚭',
   fellowship: '⚯',
   compulsion: '➶',
+};
+
+/**
+ * The carved icon per card type (THR-1904, plan THR-1879 Appendix B). Additive: the keyword chip
+ * still reads `NUDGE_CARD_TYPE_ICONS` until the sweep (THR-1907) moves it here and the glyphs go.
+ * Several types draw an idea another class shares (`kindled_ambition` → `ambition`, `whisper` →
+ * `reveal`): one meaning, one shape.
+ */
+export const NUDGE_CARD_TYPE_ICON_NAMES: Readonly<Record<NudgeCardTypeId, IconName>> = {
+  boost: 'boost',
+  heavy_hand: 'heavy-hand',
+  insurance: 'insurance',
+  mercy: 'mercy',
+  gambit: 'gambit',
+  side_bet: 'side-bet',
+  long_game: 'long-game',
+  whisper: 'reveal',
+  trait_card: 'trait',
+  signature: 'signature',
+  bargain: 'bargain',
+  undertow: 'undertow',
+  stumble: 'stumble',
+  kindled_ambition: 'ambition',
+  omen: 'omen',
+  cache: 'cache',
+  balm: 'balm',
+  veil: 'veil',
+  favor: 'favour',
+  fellowship: 'company',
+  compulsion: 'compel',
 };
 
 export interface NudgeCardKeyword {

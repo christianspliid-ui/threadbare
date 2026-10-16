@@ -3,8 +3,8 @@
  *
  * Every check runs twice: on fixture registries (so each rule is seen to fail on the shape it
  * exists to catch) and on the real registry. Today the real registry holds one entry, so the
- * fixtures are what prove the rules bite; once THR-1879 vendors ~200 shapes, the real run is
- * what guards them.
+ * fixtures are what prove the rules bite; since THR-1904 vendored the 229 carved shapes, the
+ * real run is what guards them.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -12,6 +12,7 @@ import {
   GAME_ICON_VIEWBOX,
   ICON_CREDITS,
   ICON_REGISTRY,
+  TEMPORARY_OWN_PLACE_ICONS,
   iconCreditsOf,
   type IconEntry,
 } from '../iconRegistry';
@@ -99,9 +100,35 @@ describe('the shipped registry', () => {
     expect(ICON_CREDITS).toEqual(iconCreditsOf(ICON_REGISTRY));
   });
 
-  it('vendors no game-icons shape yet — THR-1879 does, with its credits line', () => {
-    const vendored = Object.values(ICON_REGISTRY as Registry).filter((e) => e.source.family === 'game-icons');
-    expect(vendored).toEqual([]);
-    expect(ICON_CREDITS).toEqual([]);
+  it('holds the 229 carved ideas of Appendix A, and our own drawings are only the fallback and the open places (THR-1904)', () => {
+    const entries = Object.entries(ICON_REGISTRY as Registry);
+    const carvedNames = entries.filter(([, e]) => e.source.family === 'game-icons').map(([n]) => n);
+    const ownNames = entries.filter(([, e]) => e.source.family === 'own').map(([n]) => n).sort();
+    expect(carvedNames).toHaveLength(CARVED_IDEA_COUNT);
+    expect(ownNames).toEqual(['fallback', ...TEMPORARY_OWN_PLACE_ICONS].sort());
+  });
+
+  it('every carved entry is a single path on the 512 grid', () => {
+    for (const [name, entry] of Object.entries(ICON_REGISTRY as Registry)) {
+      if (entry.source.family !== 'game-icons') continue;
+      expect(entry.shape.viewBox, name).toBe(GAME_ICON_VIEWBOX);
+      expect(entry.shape.paths, name).toHaveLength(1);
+    }
+  });
+
+  it('ICON_CREDITS names the twelve authors of the carved set, sorted', () => {
+    expect(ICON_CREDITS).toEqual([
+      'Caro Asercion', 'Cathelineau', 'DarkZaitzev', 'Delapouite', 'Faithtoken', 'Guard13007',
+      'HeavenlyDog', 'Lorc', 'Lucas', 'Quoting', 'Sbed', 'Skoll',
+    ]);
+  });
+
+  it('the fallback mark is an empty roundel on the 512 grid, meaning "Not yet drawn" (plan § 7)', () => {
+    expect(ICON_REGISTRY.fallback.meaning).toBe('Not yet drawn');
+    expect(ICON_REGISTRY.fallback.shape.viewBox).toBe(GAME_ICON_VIEWBOX);
+    expect(ICON_REGISTRY.fallback.shape.paths).toHaveLength(1);
   });
 });
+
+/** Appendix A of the THR-1879 plan: 229 ideas, one shape each. */
+const CARVED_IDEA_COUNT = 229;

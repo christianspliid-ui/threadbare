@@ -735,7 +735,7 @@ function IconSection() {
               </span>
             ))}
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-              {entry.meaning} · {entry.source.family === 'own' ? 'our own drawing' : 'game-icons.net'}
+              {entry.meaning} · {entry.source.family === 'own' ? 'our own drawing' : `${entry.source.slug} by ${entry.source.author}, game-icons.net`}
             </span>
           </div>
         );
@@ -752,7 +752,7 @@ function IconSection() {
         </span>
       </Row>
       <Label>
-        credits: {ICON_CREDITS.length === 0 ? 'no game-icons.net shape vendored yet (THR-1879 adds them with the credits line)' : ICON_CREDITS.join(', ')}
+        credits: {ICON_CREDITS.join(', ')} ({names.length} entries)
       </Label>
     </div>
   );
