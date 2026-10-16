@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-16 13:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-16 13:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-16: every place on the map now draws its carved icon in the map ink; hidden and in-transit places stay off the map** ([THR-1903](https://linear.app/threadbare/issue/THR-1903/carved-places-on-the-map-every-place-type-draws-its-carved-shape-in)). Merged via [#2447](https://github.com/christianspliid-ui/threadbare/pull/2447) and live.
 - **2026-10-16: the map camera has zoom buttons and map keys, can centre on your First, and opens on known land** ([THR-1900](https://linear.app/threadbare/issue/THR-1900/map-camera-and-controls-zoom-buttons-centre-on-my-first-show-known)). Merged via [#2445](https://github.com/christianspliid-ui/threadbare/pull/2445).
 - **2026-10-16: the world remembers, first slice: an account record carries across runs, divine echoes land at harvest, and each run wakes in a new world** ([THR-1813](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with)). Merged via [#2444](https://github.com/christianspliid-ui/threadbare/pull/2444) and live.
 - **2026-10-16: the carved icon registry is live: 229 icon shapes, their concept table and the icon credits** ([THR-1904](https://linear.app/threadbare/issue/THR-1904/carved-icon-registry-vendor-the-229-shapes-fill-the-concept-table-ship)). Merged via [#2443](https://github.com/christianspliid-ui/threadbare/pull/2443).
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-16: long place names now wrap inside the hex tooltip** ([THR-1848](https://linear.app/threadbare/issue/THR-1848)). Merged via [#2439](https://github.com/christianspliid-ui/threadbare/pull/2439) and live.
 - **2026-10-16: one death no longer keeps a town at full unrest forever** ([THR-1925](https://linear.app/threadbare/issue/THR-1925/death-site-unrest-never-stops-one-death-pins-a-town-at-99-unrest-for)). Merged via [#2438](https://github.com/christianspliid-ui/threadbare/pull/2438) and live.
 - **2026-10-16: card labels and the library and world trails now read in sentence case** ([THR-1905](https://linear.app/threadbare/issue/THR-1905/label-sweep-sentence-case-bold-labels-and-no-small-cinzel-on-the-kept)). Merged via [#2436](https://github.com/christianspliid-ui/threadbare/pull/2436) and live.
-- **2026-10-16: factions now have a purse: the land fills it, war empties it, and a broke faction’s armies desert** ([THR-1931](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a)). Merged via [#2435](https://github.com/christianspliid-ui/threadbare/pull/2435) and live.
 
 ---
 
