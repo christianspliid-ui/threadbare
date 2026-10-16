@@ -24,9 +24,9 @@ import {
   getBehaviorFamilyPresentation,
   getAgentStrategicSummary,
   getAgentStrategicHistory,
-  getProgressLabel,
   getHealthLabel,
 } from '../../../engine/strategicPresentation';
+import { describeWorkProgress } from '../../../engine/workProgress';
 import { EncounterCacheView } from './EncounterCacheView';
 import { WebGLDebugTab } from './WebGLDebugTab';
 import { RevelationLogTab } from './RevelationLogTab';
@@ -461,7 +461,7 @@ function StrategicDebugTab({
                 <div style={indented}>
                   <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Active project</span>
                   <span>{agentSummary.activeProject.displayName}</span>
-                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{agentSummary.activeProject.progressLabel}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{agentSummary.activeProject.word}</span>
                 </div>
               )}
               {agentSummary.primaryControl && (
@@ -500,7 +500,6 @@ function StrategicDebugTab({
           <div style={sH}>Active Projects ({activeProjects.length})</div>
           {activeProjects.map(proj => {
             const pres = getCallingPresentation(graph?.getNode(proj.actorId), proj.behaviorFamily);
-            const fraction = proj.progressRequired > 0 ? proj.progress / proj.progressRequired : 1;
             return (
               <div key={proj.projectId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>
                 <span style={{ color: pres.color, fontSize: 'var(--text-xs)' }}>{pres.glyph}</span>
@@ -508,7 +507,7 @@ function StrategicDebugTab({
                   {proj.actorId.slice(-8)} — {proj.templateId}
                 </span>
                 <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', flexShrink: 0 }}>
-                  {getProgressLabel(fraction)}
+                  {describeWorkProgress(proj).word}
                 </span>
               </div>
             );

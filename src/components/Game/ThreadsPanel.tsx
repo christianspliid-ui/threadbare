@@ -761,7 +761,18 @@ function CompactThreadRow({
                 }}
               >
                 <span aria-hidden="true">{familyPresentation.glyph}</span>
-                <span className="truncate">{strategicBadgeText}</span>
+                {strategicSummary?.activeProject ? (
+                  <>
+                    {/* THR-1962: the phrase truncates; the progress word never does —
+                        it is the part the player needs (Law 57). */}
+                    <span className="truncate" style={{ minWidth: 0 }}>{strategicSummary.activeProject.phrase}</span>
+                    <span data-testid="thread-doing-word" style={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+                      — {strategicSummary.activeProject.word}
+                    </span>
+                  </>
+                ) : (
+                  <span className="truncate">{strategicBadgeText}</span>
+                )}
               </div>
             </Tooltip>
           )}

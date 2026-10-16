@@ -35,7 +35,7 @@ import type { EntityVisualKind } from '../../data/entity-visual-fallbacks';
 import {
   UNDERTAKING_PROGRESS_PER_ADVANCE,
 } from '../../data/strategic-action-constants';
-import { getUndertakingProgressWord } from '../../data/domain-words';
+import { describeWorkProgress } from '../../engine/workProgress';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../data/outcome-band-content';
 import {
   MOMENT_DIVINE_ACTIONS,
@@ -250,9 +250,10 @@ export function buildMomentCardModel(state: GameState, record: UndertakingMoment
     })()
     : null;
   // A finished work is not "nearly done" — the Work chip says finished, and the
-  // progress band vocabulary tops out below completion by design.
+  // progress band vocabulary tops out below completion by design. A live work reads
+  // the one resolver's word (THR-1962) — the trouble word when it has halted.
   const progressWord = project && project.progressRequired > 0 && project.status === 'active'
-    ? getUndertakingProgressWord((project.progress / project.progressRequired) * 100)
+    ? describeWorkProgress(project).word
     : null;
 
   const forward = findForwardLink(graph, record);

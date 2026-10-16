@@ -831,7 +831,7 @@ function AgentDetailBody({
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
                   <span style={{ color: pres.color }}>{pres.glyph}</span>
                   {' '}{strategicSummary.activeProject.displayName}
-                  <span style={{ color: 'var(--text-muted)' }}> — {strategicSummary.activeProject.progressLabel}</span>
+                  <span style={{ color: 'var(--text-muted)' }}> — {strategicSummary.activeProject.word}</span>
                 </div>
               );
             })()}

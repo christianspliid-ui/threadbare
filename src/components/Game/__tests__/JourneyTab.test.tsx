@@ -67,8 +67,9 @@ describe('JourneyTab (the arc panel)', () => {
 
     expect(screen.queryByText(/future update/i)).toBeNull();
     const work = screen.getByTestId('arc-undertaking-proj_1');
-    // 12 of 18 is two thirds — the 60–80% band.
-    expect(work.textContent).toContain('Well along');
+    // Halted once, so the trouble word replaces the progress word (THR-1962) —
+    // the same word the thread row shows.
+    expect(work.textContent).toContain('faltering');
     expect(work.textContent).toContain('Halted once');
     expect(screen.getByTestId('arc-undertaking-band').textContent).toBeTruthy();
     expect(screen.getByTestId('intent-flavor-ambition_dominate_trade').textContent).toContain('trade roads');
@@ -101,7 +102,7 @@ describe('JourneyTab (the arc panel)', () => {
   });
 
   it('haltsSentence steps through the ratchet in words', () => {
-    const base = { projectId: 'p', templateId: 't', displayName: 'x', percentComplete: 0, halts: 0, escalated: false };
+    const base = { projectId: 'p', templateId: 't', displayName: 'x', percentComplete: 0, progressWord: 'barely begun', halts: 0, escalated: false };
     expect(haltsSentence(base)).toBe('Going as planned.');
     expect(haltsSentence({ ...base, halts: 1 })).toContain('once');
     expect(haltsSentence({ ...base, halts: UNDERTAKING_HALT_RATCHET_N - 1 })).toContain('must choose');
