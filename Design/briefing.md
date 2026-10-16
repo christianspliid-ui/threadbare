@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-16 13:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-16 14:58 local (12:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,15 +37,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready, one in progress.** The [carved places on the map](https://linear.app/threadbare/issue/THR-1903/carved-places-on-the-map-every-place-type-draws-its-carved-shape-in) merged at 13:31 as [pull request #2447](https://github.com/christianspliid-ui/threadbare/pull/2447): every place on the map now uses its carved icon in the map's ink. The builder has moved on to the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them) and is working on it now.
+**Backed up: 21 ready, one in progress.** The builder has been on the [crown](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them) since 13:31 and is still working on it (last activity 14:55). Nothing new merged in the last hour.
 
-- New in the queue: [the map names undiscovered elder ruins](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every), a bug found this morning.
 - High, waiting: the [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) builds, plus [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
-- Five economy bugs are still queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [armies besieging towns they have no quarrel with](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard).
+- Six bugs are queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [the map naming undiscovered elder ruins](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every).
 - Nothing has waited in the queue longer than a week.
 
 ## Health
 
-- The live site serves the latest commit on main (428d2597), main's checks pass (including heavy tests), no pull request is waiting to merge, and every scheduled lane is on schedule. The builder is mid-run; it has not stalled.
-- tick cost 186 ms/tick steady, 53% above the 7-day median (122, 138 rows since 30b072e2); top phase agent_decision, 616 agents. Name the merges between 30b072e2 and 428d2597: git log --oneline --merges 30b072e2..428d2597 — for the builder. Last hour read 137 at ee1d2a57, and the only merge since is a map-drawing change, so this may be the builder running alongside the measurement; next hour's row will tell.
-- The tidy-up job ran at 13:40: 544 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
+- The live site serves the latest commit on main (428d2597), main's checks pass, no pull request is waiting to merge, and every scheduled lane is on schedule. The builder is mid-run; it has not stalled.
+- tick cost 162 ms/tick steady, 33% above the 7-day median (122, 138 rows since b72c3c1d); top phase agent_decision, 616 agents. Name the merges between b72c3c1d and 428d2597: git log --oneline --merges b72c3c1d..428d2597 — for the builder. No merge since last hour's 186 reading, and both ran while the builder was working, so a busy machine is the likely cause; a reading taken while the builder is idle will settle it.
+- The tidy-up job ran at 14:40: 542 old worktrees, 5 items needing a decision (builder housekeeping). The older silence-check gap (Friday 9 Oct night into Saturday) is overnight and weekend quiet. You sent no new Discord messages.
