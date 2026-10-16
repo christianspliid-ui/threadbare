@@ -64,6 +64,11 @@ function parseDevSeedFlags(): { seeded: boolean; firstUnmet: boolean; wantsIdent
   return { seeded, firstUnmet, wantsIdentity: seeded || firstUnmet };
 }
 
+/** THR-1813 — `?account=fresh` / `?account=sample`: a session-only record that is never saved. */
+function isAccountOverride(source: LoadedAccount['source']): boolean {
+  return source === 'fresh_param' || source === 'sample_param';
+}
+
 /** Pick a random archetype and avatar name for dev quick-start. */
 function quickStartPhase(seed: number): GamePhase {
   if (parseDevSeedFlags().wantsIdentity) {
@@ -104,14 +109,17 @@ function App() {
     viewParam === 'game' ? quickStartPhase(42) : { phase: 'start' }
   );
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
-  const [seed, setSeed] = useState(42);
+  // THR-1813 — the account record: read once per page, replaced when a run wakes a new world.
+  const [loadedAccount, setLoadedAccount] = useState<LoadedAccount>(() => loadAccount(window.location.search, 42));
+  // A remembered run wakes the next world on the seed it left, after a reload too;
+  // the dev quick-start routes keep 42 so their evidence stays comparable.
+  const [seed, setSeed] = useState(() =>
+    viewParam !== 'game' && loadedAccount.account.cycleCount > 0 ? loadedAccount.account.nextWorldSeed : 42);
   const [mapSize, setMapSize] = useState<MapSizePreset>(parseMapSizeParam);
   const previewSize = MAP_SIZE_PRESETS[mapSize];
   const [tiles, setTiles] = useState<HexTile[]>(() =>
     generateWorld(createBalancedCosmology(), previewSize.cols, previewSize.rows, 42).tiles
   );
-  // THR-1813 — the account record: read once per page, replaced when a run wakes a new world.
-  const [loadedAccount, setLoadedAccount] = useState<LoadedAccount>(() => loadAccount(window.location.search, 42));
   const [hoveredHex, setHoveredHex] = useState<HexCoord | null>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
 
@@ -149,7 +157,8 @@ function App() {
     const size = new URLSearchParams(window.location.search).get('size');
     const query = size ? `?size=${encodeURIComponent(size)}` : '';
     window.history.replaceState(null, '', window.location.pathname + query + window.location.hash);
-    setLoadedAccount({ account, source: 'stored' });
+    // A `?account=fresh` / `?account=sample` session stays a session: it never writes storage.
+    setLoadedAccount(prev => ({ account, source: isAccountOverride(prev.source) ? prev.source : 'stored' }));
     setSeed(account.nextWorldSeed);
     setGamePhase({ phase: 'remembrance' });
   }, []);
@@ -204,6 +213,7 @@ function App() {
         doomArchetype={parseDoomArchetypeParam(window.location.search)}
         onExitToTitle={handleExitToTitle}
         account={loadedAccount.account}
+        persistAccount={!isAccountOverride(loadedAccount.source)}
         onWakeNewWorld={handleWakeNewWorld}
       />
     );
@@ -266,6 +276,7 @@ function App() {
         account={loadedAccount.account}
         // THR-1813: the dev routes stay deterministic — only `?account=sample` shapes them.
         shapeWorldFromAccount={!isDevQuickStart || loadedAccount.source === 'sample_param'}
+        persistAccount={!isAccountOverride(loadedAccount.source)}
         onWakeNewWorld={handleWakeNewWorld}
       />
     );

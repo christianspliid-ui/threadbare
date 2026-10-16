@@ -65,6 +65,12 @@ interface UseSimulationParams {
   account?: AccountRecord;
   /** THR-1813 — build this world from `account` (its echoes and tilt). False on the dev routes. */
   shapeWorldFromAccount?: boolean;
+  /**
+   * THR-1813 — write the concluded record to storage. False for a `?account=fresh`
+   * / `?account=sample` session, which must never overwrite the stored record.
+   * Default true.
+   */
+  persistAccount?: boolean;
   /** THR-1813 E6 — *Wake in a new world*: hand the concluded record up to `App`. */
   onWakeNewWorld?: (account: AccountRecord) => void;
 }
@@ -94,6 +100,7 @@ export function useSimulation({
   doomArchetype,
   account,
   shapeWorldFromAccount,
+  persistAccount = true,
   onWakeNewWorld,
 }: UseSimulationParams) {
   // ── Resolve map dimensions from preset ──
@@ -272,9 +279,10 @@ export function useSimulation({
     if (!harvestResult || concludedRun) return;
     const live = gameStateRef.current;
     const next = concludeRun(baseAccountRef.current, live, harvestResult);
-    const { ok } = saveAccount(next, live.tick);
+    // An override session concludes in memory only; nothing failed, so no failure line.
+    const ok = persistAccount ? saveAccount(next, live.tick).ok : true;
     setConcludedRun({ account: next, saved: ok });
-  }, [harvestResult, concludedRun]);
+  }, [harvestResult, concludedRun, persistAccount]);
 
   const handleWakeNewWorld = useCallback(() => {
     if (!concludedRun) return;

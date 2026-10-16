@@ -89,7 +89,7 @@ describe('THR-1813 — concludeRun on a seed-42 harvest', () => {
     const after = concludeRun(before, state, harvest);
     expect(after.cycleCount).toBe(1);
     const ids = new Set(after.echoDefinitions.map(d => d.id));
-    for (const d of harvest.divineEchoes ?? []) expect(ids.has(d.id)).toBe(true);
+    for (const d of harvest.divineEchoes ?? []) expect(ids.has(`run1_${d.id}`)).toBe(true);
     expect(after.echoDefinitions.some(d => d.echoType === 'card' && d.cardEcho?.cardId === ECHO_CARD)).toBe(true);
     expect(after.echoStates).toHaveLength(after.echoDefinitions.length);
     // Two blendFundaments: toward the god, then back toward even (Decided 8).
@@ -105,6 +105,20 @@ describe('THR-1813 — concludeRun on a seed-42 harvest', () => {
     // Pure: the input record is untouched.
     expect(before.cycleCount).toBe(0);
     expect(before.echoDefinitions).toHaveLength(0);
+  });
+
+  it('keeps a later run echo of a reused node id beside the carried one (review round 1)', () => {
+    // Every world starts at cycle 1 and worldgen reuses node ids, so two runs'
+    // harvests mint the same raw echo ids; the record must keep both.
+    const first = concludeRun(emptyAccount(42), state, harvest);
+    const second = concludeRun(first, state, harvest);
+    const divine = harvest.divineEchoes ?? [];
+    expect(divine.length).toBeGreaterThan(0);
+    for (const d of divine) {
+      expect(second.echoDefinitions.some(x => x.id === `run1_${d.id}`)).toBe(true);
+      expect(second.echoDefinitions.some(x => x.id === `run2_${d.id}`)).toBe(true);
+    }
+    expect(new Set(second.echoDefinitions.map(x => x.id)).size).toBe(second.echoDefinitions.length);
   });
 
   it('ages carried echoes and drops the faded', () => {

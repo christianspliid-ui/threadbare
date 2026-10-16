@@ -195,8 +195,14 @@ export function concludeRun(account: AccountRecord, state: GameState, harvest: H
     ...harvest.cosmicEchoCandidates.map(c => c.echoDefinition),
     ...(harvest.cardEcho ? [harvest.cardEcho] : []),
   ];
+  // Every world starts at cycle 1 and worldgen reuses node ids, so a harvest's
+  // echo ids (`echo_1_<nodeId>`) repeat across runs. Stamping the run number makes
+  // them unique in the record, so a new echo is never mistaken for a carried one.
+  const runTag = `run${account.cycleCount + 1}_`;
   const seen = new Set(carriedDefs.map(d => d.id));
-  const freshUnique = fresh.filter(d => (seen.has(d.id) ? false : (seen.add(d.id), true)));
+  const freshUnique = fresh
+    .map(d => ({ ...d, id: runTag + d.id }))
+    .filter(d => (seen.has(d.id) ? false : (seen.add(d.id), true)));
 
   const points = godPoints(state);
   const ranked = rankSpherePoints(points);
