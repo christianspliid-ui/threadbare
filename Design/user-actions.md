@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-16 01:58 local (23:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-16 03:01 local (01:01 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-16: factions now have a purse: the land fills it, war empties it, and a broke faction’s armies desert** ([THR-1931](https://linear.app/threadbare/issue/THR-1931/plan-doc-the-faction-purse-the-land-fills-it-war-empties-it-and-a)). Merged via [#2435](https://github.com/christianspliid-ui/threadbare/pull/2435) and live.
 - **2026-10-16: map markers keep one steady size per zoom, and place names step aside for portraits** ([THR-1899](https://linear.app/threadbare/issue/THR-1899/map-markers-and-labels-one-steady-marker-size-per-zoom-band-portraits)). Merged via [#2434](https://github.com/christianspliid-ui/threadbare/pull/2434) and live.
 - **2026-10-15: realm borders now wear their holder’s ink, and uncharted land shows as parchment** ([THR-1902](https://linear.app/threadbare/issue/THR-1902/realm-borders-in-their-holders-ink-and-uncharted-land-as-parchment)). Merged via [#2432](https://github.com/christianspliid-ui/threadbare/pull/2432) and live.
 - **2026-10-15: the icon, chip and tab primitives are live** ([THR-1885](https://linear.app/threadbare/issue/THR-1885/icon-chip-and-tabs-primitives-the-icon-registry-format-one-chip-in)). Merged via [#2431](https://github.com/christianspliid-ui/threadbare/pull/2431).
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-15: the first encounter coverage run is done** ([THR-1850](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev)). Merged via [#2424](https://github.com/christianspliid-ui/threadbare/pull/2424) and live; its first follow-up, [nine mis-tagged encounters](https://linear.app/threadbare/issue/THR-1941/nine-encounters-wear-a-family-tag-their-prose-does-not-earn-anomaly), is queued.
 - **2026-10-15: every dialog now shares one backdrop and one Escape order** ([THR-1884](https://linear.app/threadbare/issue/THR-1884/overlay-and-panel-primitives-one-backdrop-z-band-and-escape-stack)). Merged via [#2423](https://github.com/christianspliid-ui/threadbare/pull/2423) and live.
 - **2026-10-15: your TypeSafe key is set and the lanes can see it** (confirmed by [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-15e.md)). [The first encounter coverage run](https://linear.app/threadbare/issue/THR-1850/first-encounter-coverage-run-judge-all-encounter-entries-with-jev) is queued.
-- **2026-10-15: the new story typeface and type rules are live** ([THR-1879](https://linear.app/threadbare/issue/THR-1879)). Merged via [#2421](https://github.com/christianspliid-ui/threadbare/pull/2421).
 
 ---
 
