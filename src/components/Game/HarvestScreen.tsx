@@ -17,6 +17,12 @@ interface HarvestScreenProps {
   onWakeNewWorld: () => void;
   /** THR-1813 — whether the run's record was kept; `false` shows the save-failure line. */
   accountSaved?: boolean | null;
+  /**
+   * THR-1813 — false when this run is not carried into the next world (the Advanced
+   * path builds its world without the account): the screen then names no echoes it
+   * would promise, and says the next world will not remember this one.
+   */
+  accountCarried?: boolean;
 }
 
 /**
@@ -59,7 +65,7 @@ function EchoCard({ candidate }: { candidate: HarvestEchoCandidate }) {
   );
 }
 
-export function HarvestScreen({ harvest, cycle, onWakeNewWorld, accountSaved = null }: HarvestScreenProps) {
+export function HarvestScreen({ harvest, cycle, onWakeNewWorld, accountSaved = null, accountCarried = true }: HarvestScreenProps) {
   const style = HARVEST_STYLES[harvest.harvestType];
   // THR-1813 — the god's own echoes, named the one way every surface names them (PC-6).
   const leaves = (harvest.divineEchoes ?? []).map(echoDisplayName);
@@ -116,11 +122,17 @@ export function HarvestScreen({ harvest, cycle, onWakeNewWorld, accountSaved = n
           </div>
         )}
 
-        <Tooltip id="ui.harvest_leaves">
-          <p className="text-sm text-amber-100/85 text-center mb-6 cursor-help" data-testid="harvest-leaves">
-            {leaves.length > 0 ? ACCOUNT_WORDS.harvestLeavesBehind(leaves) : ACCOUNT_WORDS.harvestLeavesLittle}
+        {accountCarried ? (
+          <Tooltip id="ui.harvest_leaves">
+            <p className="text-sm text-amber-100/85 text-center mb-6 cursor-help" data-testid="harvest-leaves">
+              {leaves.length > 0 ? ACCOUNT_WORDS.harvestLeavesBehind(leaves) : ACCOUNT_WORDS.harvestLeavesLittle}
+            </p>
+          </Tooltip>
+        ) : (
+          <p className="text-sm text-amber-100/85 text-center mb-6" role="status" data-testid="harvest-not-carried">
+            {ACCOUNT_WORDS.harvestNotCarried}
           </p>
-        </Tooltip>
+        )}
 
         <div className="text-center">
           <Tooltip id="ui.harvest_wake">

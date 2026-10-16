@@ -298,6 +298,8 @@ interface GameViewProps {
   accountSaveFailed?: boolean;
   /** THR-1813 — *Wake in a new world*: the concluded record goes up to `App`. */
   onWakeNewWorld?: (account: import('../../types/account').AccountRecord, saved: boolean) => void;
+  /** THR-1813 — false when this run is not carried into the next world (the Advanced path). Default true. */
+  carriesRun?: boolean;
 }
 
 /** The spine's Beat 0 ("Reach Down"); the meeting follows it directly (THR-1605 S1). */
@@ -349,7 +351,7 @@ function matchesTieredEncounterAction(
 const EMPTY_UNIFIED_ACTIONS: readonly import('../../types/unifiedAction').UnifiedAction[] = [];
 const EMPTY_ENCOUNTER_NOTIFICATIONS: readonly EncounterNotification[] = [];
 
-export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype, account, shapeWorldFromAccount, persistAccount, accountSaveFailed, onWakeNewWorld }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, onExitToTitle, warmTicks = 0, doomArchetype, account, shapeWorldFromAccount, persistAccount, accountSaveFailed, onWakeNewWorld, carriesRun = true }: GameViewProps) {
   // ── Resume theme music if it was started on the start screen ──
   useEffect(() => {
     resumeTheme();
@@ -4829,6 +4831,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         harvestResult={harvestResult}
         handleWakeNewWorld={handleWakeNewWorld}
         accountSaved={concludedRun ? concludedRun.saved : null}
+        accountCarried={carriesRun}
         meetingState={meetingState}
         ascendantIdentity={ascendantIdentity}
         handleMeetingSpendEssence={handleMeetingSpendEssence}

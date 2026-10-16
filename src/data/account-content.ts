@@ -87,6 +87,8 @@ export const ACCOUNT_WORDS = {
   /** Leads the list of divine echoes; names follow from `echoDisplayName`. */
   harvestLeavesBehind: (names: readonly string[]) => `Your age leaves behind: ${joinNames(names)}.`,
   harvestLeavesLittle: 'Your age leaves little the next world will remember.',
+  /** The Advanced path: its world was not shaped by the record, so its run is not carried. */
+  harvestNotCarried: 'This world was set up by hand, so the next world will not remember it.',
   harvestSaveFailed:
     "This world's memory could not be kept on this device. The next world will wake as if for the first time.",
   remembranceUnreadable:

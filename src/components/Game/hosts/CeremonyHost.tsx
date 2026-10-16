@@ -41,6 +41,8 @@ export interface CeremonyHostProps {
   handleWakeNewWorld: () => void;
   /** THR-1813 — whether the run's record was kept (null until the harvest has saved). */
   accountSaved: boolean | null;
+  /** THR-1813 — false when this world's run is not carried into the next (the Advanced path). */
+  accountCarried?: boolean;
   // Meet the First
   meetingState: MeetingEncounterState | null;
   ascendantIdentity: AscendantIdentity | undefined;
@@ -63,6 +65,7 @@ export function CeremonyHost({
   harvestResult,
   handleWakeNewWorld,
   accountSaved,
+  accountCarried = true,
   meetingState,
   ascendantIdentity,
   handleMeetingSpendEssence,
@@ -89,6 +92,7 @@ export function CeremonyHost({
             cycle={gameState.cycle}
             onWakeNewWorld={handleWakeNewWorld}
             accountSaved={accountSaved}
+            accountCarried={accountCarried}
           />
         )}
       </AnimateMount>

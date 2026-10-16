@@ -242,6 +242,7 @@ function App() {
         onExitToTitle={handleExitToTitle}
         account={loadedAccount.account}
         persistAccount={false}
+        carriesRun={false}
         onWakeNewWorld={handleWakeFromUnshapedWorld}
       />
     );
