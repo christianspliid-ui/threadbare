@@ -452,6 +452,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `views` (18) | `views/hexContents.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1792`, `THR-1822`, `THR-1846`, `THR-1878`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-502` |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
+| `waraims` (1) | `warAims/enemy.ts` | `THR-1922`, `THR-1933` |
 | `wealth` (1) | `wealth.ts` | `THR-1931` |
 | `wheel` (1) | `wheel.ts` | — |
 | `work` (1) | `workProgress.ts` | `THR-1962` |
@@ -461,4 +462,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 221 engine domains · 701 modules._
+_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 222 engine domains · 702 modules._

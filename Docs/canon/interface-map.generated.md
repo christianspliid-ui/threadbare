@@ -1615,9 +1615,9 @@ exit
 - **Producer → Consumer:** Factions & Succession → War, Armies & Battles
 - **UL terms:** *Faction*
 - **Module:** `src/engine/warAims/enemy.ts`
-- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Production hits:** 4 total — 1 write, 3 read, 0 unclassified
 - **Write sites:** `src/engine/warAims/enemy.ts`
-- **Read sites:** `src/engine/armySpawning.ts`, `src/engine/battleResolution.ts`
+- **Read sites:** `src/engine/armySpawning.ts`, `src/engine/battleResolution.ts`, `src/engine/notableAgendas.ts`
 - **Verdict:** Verified 2026-10-17: THR-1922. src/engine/warAims/__tests__/enemy.test.ts (13): the predicate on each edge arm; selectArmyObjective skips a no-quarrel holder and the own-hall town and marches on the rival; no enemy town holds at muster; siege start refuses the own-hall town and a no-quarrel holder, besieges an enemy and an objective town. Seed 42 medium, 600 ticks: 30 siege-ticks, 0 on an own-hall town, 0 on a non-enemy holder (baseline 397, of which 200 own-hall).
 
 ### `faction-sphere-aggregate-reaches-battle-aftermath` — 🟢 LIVE
