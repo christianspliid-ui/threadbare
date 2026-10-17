@@ -417,6 +417,7 @@ function momentModel(): MomentCardModel {
     divineActions: [],
     actionable: true,
     forward: null,
+    seeWork: false,
   };
 }
 

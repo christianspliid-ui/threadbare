@@ -71,16 +71,16 @@ describe('THR-1963 — the thread panel names the work and the leading ambition'
     const workLine = screen.getByTestId('thread-their-work');
     expect(workLine.textContent).toContain(work.displayName);
     expect(workLine.textContent).toContain(describeWorkProgress(project).word);
-    expect(screen.getByTestId('thread-want-most').textContent).toBe('Dominate Trade');
+    expect(screen.getByTestId('thread-want-most').querySelector('button')!.textContent).toBe('Dominate Trade');
     expect(screen.getByText('Their work')).toBeTruthy();
     expect(screen.getByText('What they want most')).toBeTruthy();
   });
 
   it('each line opens the profile on the Journey tab', () => {
     const onViewProfile = renderPanel(card());
-    fireEvent.click(screen.getByTestId('thread-their-work'));
+    fireEvent.click(screen.getByTestId('thread-their-work').querySelector('button')!);
     expect(onViewProfile).toHaveBeenLastCalledWith('kael', 'agent', 'journey');
-    fireEvent.click(screen.getByTestId('thread-want-most'));
+    fireEvent.click(screen.getByTestId('thread-want-most').querySelector('button')!);
     expect(onViewProfile).toHaveBeenLastCalledWith('kael', 'agent', 'journey');
     expect(onViewProfile).toHaveBeenCalledTimes(2);
   });
@@ -121,8 +121,11 @@ describe('THR-1963 — AgentProfileModal initialTab', () => {
     expect(screen.getByText('Ambitions')).toBeTruthy();
   });
 
-  it('scrollToNewStrata still wins', () => {
-    render(<AgentProfileModal card={card()} onClose={vi.fn()} initialTab="journey" scrollToNewStrata />);
+  it('an explicit tab beats the new-strata redirect, which still beats the default', () => {
+    const { unmount } = render(<AgentProfileModal card={card()} onClose={vi.fn()} initialTab="journey" scrollToNewStrata />);
+    expect(screen.getByText('The work')).toBeTruthy();
+    unmount();
+    render(<AgentProfileModal card={card()} onClose={vi.fn()} scrollToNewStrata />);
     expect(screen.queryByText('The work')).toBeNull();
   });
 });

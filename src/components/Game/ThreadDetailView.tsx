@@ -5,6 +5,7 @@ import type { AgentKnowledge } from '../../types/agentKnowledge';
 import type { TabId } from './tabs/TabBar';
 import { visibleJourneyIntents } from './tabs/JourneyTab';
 import { Tooltip } from '../shared/Tooltip';
+import { EntityLink } from '../shared/EntityLink';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import type { WorldGraph } from '../../engine/graph';
 import type { BalanceEvent } from '../../types/balanceEval';
@@ -320,40 +321,22 @@ function WorkAndWantLines({ card, knowledge, strategicState, onOpenJourney }: {
   const work = summarizeActiveUndertakings(strategicState, card.id)?.[0];
   const want = visibleJourneyIntents(card, knowledge)[0];
   if (!work && !want) return null;
-  const line = (testId: string, tooltipId: string, label: string, value: React.ReactNode) => (
-    <div style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)', lineHeight: 1.5 }}>
+  // EntityLink is the link primitive (Laws 26/27); with no route it reads as plain text.
+  const open = onOpenJourney ? () => onOpenJourney() : undefined;
+  const line = (testId: string, tooltipId: string, label: string, name: string, after?: React.ReactNode) => (
+    <div data-testid={testId} style={{ fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)', lineHeight: 1.5, color: 'var(--text-primary)' }}>
       <Tooltip id={tooltipId}>
         <span className="underline decoration-dotted cursor-help" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{label}</span>
       </Tooltip>
       <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>: </span>
-      {onOpenJourney ? (
-        <button
-          type="button"
-          data-testid={testId}
-          onClick={onOpenJourney}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: 0,
-            font: 'inherit',
-            color: 'var(--text-primary)',
-            textDecoration: 'underline',
-            textDecorationColor: 'var(--accent-gold-dim)',
-            cursor: 'pointer',
-            textAlign: 'left',
-          }}
-        >
-          {value}
-        </button>
-      ) : (
-        <span data-testid={testId} style={{ color: 'var(--text-primary)' }}>{value}</span>
-      )}
+      <EntityLink id={card.id} name={name} onOpenEntity={open} />
+      {after}
     </div>
   );
   return (
     <div data-testid="thread-work-and-want" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-      {work && line('thread-their-work', 'ui.thread_work', 'Their work', (
-        <>{work.displayName}<span style={{ color: 'var(--text-muted)' }}> — {work.progressWord}</span></>
+      {work && line('thread-their-work', 'ui.thread_work', 'Their work', work.displayName, (
+        <span style={{ color: 'var(--text-muted)' }}> — {work.progressWord}</span>
       ))}
       {want && line('thread-want-most', 'ui.thread_want_most', 'What they want most', want.displayName)}
     </div>

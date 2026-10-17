@@ -272,25 +272,15 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
         {/* The work moments link to the work (THR-1963, Law 21). */}
         {model.seeWork && onSeeWork && (
           <Tooltip id="ui.moment_see_work">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               data-testid="moment-card-see-work"
               onClick={() => onSeeWork(model.actorId)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                marginBottom: 'var(--space-4)',
-                font: 'inherit',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--accent-gold)',
-                textDecoration: 'underline',
-                textDecorationColor: 'var(--accent-gold-dim)',
-                cursor: 'pointer',
-              }}
+              style={{ marginBottom: 'var(--space-4)', color: 'var(--accent-gold)' }}
             >
               {MOMENT_SEE_WORK_LABEL} →
-            </button>
+            </Button>
           </Tooltip>
         )}
 

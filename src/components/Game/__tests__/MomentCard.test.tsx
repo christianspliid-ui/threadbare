@@ -53,6 +53,7 @@ function makeModel(overrides: Partial<MomentCardModel> = {}, recordOverrides: Pa
     ],
     actionable: true,
     forward: null,
+    seeWork: false,
     ...overrides,
   };
 }
