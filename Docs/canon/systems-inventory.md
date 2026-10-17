@@ -49,7 +49,7 @@ names like `TB-073`) a premise might use.
 | **Stealth, Detection & Hidden Marks** | 🟢 ACTIVE | stealth, detection, hidden, mark, disbelief, faith, signature | `stealth`, `detection`, `hidden` | `1.7`, `2a.605`, `2.356`, `2.36`, `2.5`, `4`, `6.7` |
 | **Attention, Chronicle & Narrative** | 🟢 ACTIVE | attention, chronicle, digest, narrative, story, feed | `attention`, `chronicle`, `narrative` | `2a.65`, `6.66`, `5` |
 | **Diagnostics & Incident Capture** | 🟠 DORMANT | diagnostics, incident, snapshot, health, crash, flight recorder | `diagnostics`, `incident` | — |
-| **Omens & Atmospheric Pressure** | 🟢 ACTIVE | omen, pressure, atmosphere, portent, foreshadowing | `omen`, `foreshadowing`, `emittedomen` | `1.7`, `2a.605`, `6.639`, `6.6391` |
+| **Omens & Atmospheric Pressure** | 🟢 ACTIVE | omen, pressure, atmosphere, portent, foreshadowing | `omen`, `foreshadowing`, `emittedomen` | `1.7`, `2a.605`, `6.637`, `6.639`, `6.6391` |
 | **Strategic Projects & Control** | 🟢 ACTIVE | strategic, project, control, contestation, territory | `strategic`, `contestation`, `control` | `2a.55`, `6.1` |
 | **Ascendant Beats & Progression** | 🟢 ACTIVE | beat, spine, director, ascendant progression, milestone | `ascendantbeat`, `ascendant` | `1.5`, `1.7`, `1.75` |
 | **Companies & Group Travel** | 🟠 DORMANT | company, companies, group, party, band, fellowship, cohesion | `groups` | `2.34` |
@@ -108,7 +108,6 @@ complete. (These phases still appear in the full wiring table below; they just l
 | `6.6295` | The crown | `THR-1932` |
 | `6.625b` | Companion expiry | `THR-1096` |
 | `6.6355` | Founded places take their people | `THR-1839`, `THR-1849` |
-| `6.637` | Unrest | — |
 | `6.6385` | Location Traits | `THR-790` |
 | `end` | Drift Decay — passive per-tick decay toward zero | `THR-323` |
 
@@ -188,7 +187,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.635` | Settlement Tier Promotion/Demotion | — | orchestrator |
 | `6.6355` | Founded places take their people | `THR-1839`, `THR-1849` | orchestrator |
 | `6.636` | Settlement Genome Reassessment | — | orchestrator |
-| `6.637` | Unrest | — | orchestrator |
+| `6.637` | Unrest — pressure toward a daily target; Restless leave, Lawless riot | `THR-1934` | orchestrator |
 | `6.638` | Magical Saturation | — | orchestrator |
 | `6.6385` | Location Traits | `THR-790` | orchestrator |
 | `6.639` | Sphere Pressure Resolution | — | orchestrator |
@@ -375,7 +374,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `pacing` (1) | `pacingGovernor.ts` | — |
 | `pathfinding` (1) | `pathfinding.ts` | `THR-1389` |
 | `personality` (2) | `personality/originBaseline.ts`, `personality/originConstants.ts` | `THR-539`, `THR-561` |
-| `phase` (41) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDominion.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseInfluenceMaintenance.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseLocationTraits.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `Phase 1`, `Phase 12`, `Phase 2`, `Phase 4`, `Phase 6`, `Phase 7`, `TB-045`, `TB-075`, `THR-1206`, `THR-1292`, `THR-132`, `THR-1320`, `THR-137`, `THR-1528`, `THR-1530`, `THR-1539`, `THR-1558`, `THR-1564`, `THR-1580`, `THR-1636`, `THR-1645`, `THR-1652`, `THR-1748`, `THR-1762`, `THR-1763`, `THR-19`, `THR-238`, `THR-30`, `THR-430`, `THR-432`, `THR-469`, `THR-481`, `THR-53`, `THR-611`, `THR-613`, `THR-618`, `THR-790` |
+| `phase` (41) | `phaseAgentDecision.ts`, `phaseAscendantProgression.ts`, `phaseAttention.ts`, `phaseColocationDetection.ts`, `phaseComposition.ts`, `phaseControlEffects.ts`, `phaseDivinePremonition.ts`, `phaseDominion.ts`, `phaseDoom.ts`, `phaseEconomicChronicle.ts`, `phaseEconomicTraits.ts`, `phaseEffectShells.ts`, `phaseEssenceSources.ts`, `phaseFactionActions.ts`, `phaseFactionSuccession.ts`, `phaseHexState.ts`, `phaseHiddenMarkDecay.ts`, `phaseInfluenceMaintenance.ts`, `phaseIntelligenceDecay.ts`, `phaseInteractionDepth.ts`, `phaseLocationTraits.ts`, `phaseMagicalSaturation.ts`, `phaseMandate.ts`, `phaseMovement.ts`, `phaseOmenAgenda.ts`, `phaseProsperity.ts`, `phaseQuintessence.ts`, `phaseRegistry.ts`, `phaseReputationDecay.ts`, `phaseReputationTraits.ts`, `phaseSchismResolution.ts`, `phaseSecretsFavors.ts`, `phaseSettlementPromotion.ts`, `phaseSettlementReassessment.ts`, `phaseSlotCaps.ts`, `phaseSphereAggregation.ts`, `phaseSpherePressure.ts`, `phaseStrategicProjects.ts`, `phaseSublocations.ts`, `phaseTradeRouteDecay.ts`, `phaseUnrest.ts` | `Phase 1`, `Phase 12`, `Phase 2`, `Phase 4`, `Phase 6`, `Phase 7`, `TB-045`, `TB-075`, `THR-1206`, `THR-1292`, `THR-132`, `THR-1320`, `THR-137`, `THR-1528`, `THR-1530`, `THR-1539`, `THR-1558`, `THR-1580`, `THR-1636`, `THR-1645`, `THR-1652`, `THR-1748`, `THR-1762`, `THR-1763`, `THR-19`, `THR-1934`, `THR-1957`, `THR-238`, `THR-30`, `THR-430`, `THR-432`, `THR-469`, `THR-481`, `THR-53`, `THR-611`, `THR-613`, `THR-618`, `THR-790` |
 | `phases` (27) | `phases/ambitionProgress.ts`, `phases/armySupply.ts`, `phases/clueDecay.ts`, `phases/clueRumors.ts`, `phases/corePersonality.ts`, `phases/delveAdmission.ts`, `phases/delveEmergence.ts`, `phases/delveProgression.ts`, `phases/doom.ts`, `phases/economicPower.ts`, `phases/emittedOmenDecay.ts`, `phases/factionActions.ts`, `phases/factionAmbitions.ts`, `phases/factionSuccession.ts`, `phases/index.ts`, `phases/mandate.ts`, `phases/personalityOriginSeed.ts`, `phases/personalityTraitEmerge.ts`, `phases/phaseAutonomousAftermath.ts`, `phases/plantedCompulsionDecay.ts`, `phases/popStreams.ts`, `phases/reputationDecay.ts`, `phases/resourceStockTiers.ts`, `phases/routeEvents.ts`, `phases/ruinQuestHooks.ts`, `phases/schismResolution.ts`, `phases/secretsFavors.ts` | `THR-1506`, `THR-238`, `THR-430`, `THR-432`, `THR-527`, `THR-530`, `THR-539`, `THR-542`, `THR-544`, `THR-559`, `THR-561`, `THR-615`, `THR-617`, `THR-626`, `THR-669`, `THR-686`, `THR-815`, `THR-886` |
 | `pilgrim` (1) | `pilgrimWays.ts` | `THR-1632`, `THR-1660` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
@@ -448,6 +447,8 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `trust` (1) | `trustMechanics.ts` | — |
 | `undertaking` (9) | `undertakingCapabilityGrowth.ts`, `undertakingCatalystAnchor.ts`, `undertakingCheckpoints.ts`, `undertakingDeed.ts`, `undertakingMoments.ts`, `undertakingMotive.ts`, `undertakingProse.ts`, `undertakingResolver.ts`, `undertakingReviewLevers.ts` | `THR-1281`, `THR-1292`, `THR-1297`, `THR-1299`, `THR-1300`, `THR-1392`, `THR-1397`, `THR-1434`, `THR-1440`, `THR-1511` |
 | `unified` (4) | `unifiedActionLifecycle.ts`, `unifiedActionPhases.ts`, `unifiedActionResolution.ts`, `unifiedCandidates.ts` | `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 6`, `Phase 7` |
+| `unrest` (1) | `unrestPressure.ts` | `THR-1934` |
+| `unrestpressure` (5) | `unrestPressure/bands.ts`, `unrestPressure/describe.ts`, `unrestPressure/hunger.ts`, `unrestPressure/inputs.ts`, `unrestPressure/leave.ts` | `THR-1934` |
 | `view` (1) | `viewLevel.ts` | — |
 | `views` (18) | `views/hexContents.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1792`, `THR-1822`, `THR-1846`, `THR-1878`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-502` |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
@@ -463,4 +464,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 223 engine domains · 708 modules._
+_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 225 engine domains · 714 modules._

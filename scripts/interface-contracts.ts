@@ -6812,6 +6812,83 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1931. factionPurse.test.ts › the schism strain: computePurseStrain is 0 one day short of the grace, 1 at it, and 0 for a solvent faction.',
     },
   },
+  // ── THR-1934 S1 — unrest as pressure ──────────────────────────────────
+  {
+    id: 'unrest-pressure-inputs',
+    producerSystem: ECONOMY,
+    consumerSystem: AMBITIONS,
+    intent:
+      'Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement\'s unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town\'s leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page\'s Fortunes sentence names the band and its largest input. The god\'s stake (THR-1935) reads the same props later.',
+    ulTerms: ['Settlement', 'Unrest', 'Ambition'],
+    mechanism: { kind: 'node-prop', symbols: ['unrestInputs', 'hungerDays', 'unrestTarget'] },
+    writeSites: ['src/engine/unrestPressure.ts'],
+    readSites: ['src/engine/unrestPressure.ts', 'src/data/fortunes-prose.ts', 'src/engine/unrestPressure/describe.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence:
+        'THR-1934. src/engine/__tests__/unrestPressure.test.ts (17): each term\'s rule and cap; one scarce staple reaches Restless within 10 days and falls below it within 10 once adequate; the leaver takes up Flee when hunger drives the town; the Fortunes sentences. npm run measure:unrest (600 ticks, medium): 99 / 96 / 43 leaves on seeds 42 / 99 / 7, Flee minted 21 / 22 / 4.',
+    },
+  },
+  {
+    id: 'siege-state-raises-unrest',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: ECONOMY,
+    intent:
+      'A siege raises its town\'s unrest (THR-1934 S1). The unrest phase scans siege actors once a day (battleState.battleType siege, by settlementId), stamps lastSiegeSeenTick on each besieged town and adds SIEGE_PRESSURE 30 to its target while besieged and for SIEGE_LINGER_DAYS 5 after. No war code is edited.',
+    ulTerms: ['Settlement', 'Unrest'],
+    mechanism: { kind: 'node-prop', symbols: ['battleState', 'lastSiegeSeenTick'] },
+    writeSites: ['src/engine/siegeResolution.ts'],
+    readSites: ['src/engine/unrestPressure.ts', 'src/engine/unrestPressure/inputs.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1934. unrestPressure.test.ts: a siege actor naming the town sets the siege input to SIEGE_PRESSURE and stamps lastSiegeSeenTick; with the siege gone the term lingers the next day.',
+    },
+  },
+  {
+    id: 'lawless-halves-town-tax',
+    producerSystem: 'Effects & Conditions',
+    consumerSystem: ECONOMY,
+    intent:
+      'A Lawless town pays its holder half its tax (THR-1934 S1). townTaxOf(settlement, graph) multiplies by LAWLESS_TOWN_TAX_FACTOR 0.5 when the settlement has an outgoing has_trait edge to trait.condition.location.lawless; computePurseIncome and war aims\' townValueFor pass the graph, so a lawless town is worth less to hold and to take. Without a graph the result is unchanged.',
+    ulTerms: ['Settlement', 'Faction'],
+    mechanism: { kind: 'function', symbols: ['LOCATION_TRAIT_IDS', 'townTaxOf'], module: 'src/engine/factionPurse/income.ts' },
+    writeSites: ['src/engine/phaseLocationTraits.ts'],
+    readSites: ['src/engine/factionPurse/income.ts', 'src/engine/warAims/townValue.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1934. unrestPressure.test.ts: a fixture town\'s townTaxOf with the lawless edge is LAWLESS_TOWN_TAX_FACTOR × the same town untraited; without a graph the old value stands.',
+    },
+  },
+  {
+    id: 'restless-moves-people',
+    producerSystem: ECONOMY,
+    consumerSystem: 'Movement & Colocation',
+    intent:
+      'A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town\'s most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent.',
+    ulTerms: ['Settlement', 'Unrest'],
+    mechanism: { kind: 'node-prop', symbols: ['relocationIntent', 'population'] },
+    writeSites: ['src/engine/unrestPressure.ts'],
+    readSites: ['src/engine/relocationIntent.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1934. unrestPressure.test.ts: the latest arrival leans to the nearest fed, calm town (not the nearer hungry one, not the nearer Restless one, not the one past 6 hexes); with population counted the two towns move −1 / +1. measure:unrest: 0 leave-rule violations on seeds 42 / 99 / 7.',
+    },
+  },
+  {
+    id: 'scarcity-arc-seeds-granary-riot',
+    producerSystem: ECONOMY,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A hungry town\'s anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc\'s unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10.',
+    ulTerms: ['Settlement', 'Encounter'],
+    mechanism: { kind: 'function', symbols: ['GRANARY_RIOT_TEMPLATE_ID', 'encounter.town.granary_riot'], module: 'src/data/unrest-pressure-constants.ts' },
+    writeSites: ['src/engine/phases/economicPower.ts', 'src/engine/unrestPressure.ts'],
+    readSites: ['src/data/encounters/granary-riot.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1934. economicPower.test.ts: the arc\'s unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
