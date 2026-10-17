@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-17 15:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-17 16:58 local (14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-17: towns whose crisis has burned out free their slot, so new scarcity crises can start elsewhere** ([THR-1919](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint)). Merged via [#2459](https://github.com/christianspliid-ui/threadbare/pull/2459) and live.
 - **2026-10-17: armies fight only enemies, defend first, and march for what a town is worth (war aims, first slice)** ([THR-1933](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest)). Merged via [#2457](https://github.com/christianspliid-ui/threadbare/pull/2457) and live.
 - **2026-10-17: armies no longer besiege towns they have no quarrel with** ([THR-1922](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard)). Merged via [#2456](https://github.com/christianspliid-ui/threadbare/pull/2456) and live.
 - **2026-10-17: seizing a trade lane now tolls the lane that was seized** ([THR-1883](https://linear.app/threadbare/issue/THR-1883/seizing-a-trade-lane-tolls-the-wrong-lane-the-toll-lands-on-the)). Merged via [#2455](https://github.com/christianspliid-ui/threadbare/pull/2455) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-16: the crown is built: a realm that holds a town can win oaths of fealty and collect a share of its vassals' coin** ([THR-1932](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them)). Merged via [#2448](https://github.com/christianspliid-ui/threadbare/pull/2448) and live.
 - **2026-10-16: every place on the map now draws its carved icon in the map ink; hidden and in-transit places stay off the map** ([THR-1903](https://linear.app/threadbare/issue/THR-1903/carved-places-on-the-map-every-place-type-draws-its-carved-shape-in)). Merged via [#2447](https://github.com/christianspliid-ui/threadbare/pull/2447) and live.
 - **2026-10-16: the map camera has zoom buttons and map keys, can centre on your First, and opens on known land** ([THR-1900](https://linear.app/threadbare/issue/THR-1900/map-camera-and-controls-zoom-buttons-centre-on-my-first-show-known)). Merged via [#2445](https://github.com/christianspliid-ui/threadbare/pull/2445).
-- **2026-10-16: the world remembers, first slice: an account record carries across runs, divine echoes land at harvest, and each run wakes in a new world** ([THR-1813](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with)). Merged via [#2444](https://github.com/christianspliid-ui/threadbare/pull/2444) and live.
 
 ---
 

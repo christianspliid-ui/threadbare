@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 15:58 local (13:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 16:58 local (14:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -41,17 +41,18 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready, one in progress.** [Economic war aims, first slice](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) is merged ([PR #2457](https://github.com/christianspliid-ui/threadbare/pull/2457)) and live: armies fight only enemies, defend first, and march for what a town is worth. The builder is now fixing [the scarcity-arc jam](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint) (branch pushed, run active).
+**Backed up: 22 ready, one in progress.** [The scarcity-arc jam](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint) is fixed, merged ([PR #2459](https://github.com/christianspliid-ui/threadbare/pull/2459)) and live: a town whose crisis has burned out now frees its slot. The builder is now on [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) (branch pushed, run active).
 
-- Newly ready: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural), held for your veto until tomorrow 13:50 UTC.
+- Newly ready: [choices widen across runs](https://linear.app/threadbare/issue/THR-1844/choices-widen-across-runs-four-hungers-on-run-1-one-woken-each-age) (four hungers on run 1, one more woken each age).
+- Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
 - Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy).
-- High, waiting: [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless), [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes), [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- High, waiting: [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes), [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Nothing has waited in the queue longer than a week without being touched.
 
 ## Health
 
-- The live site carries the war-aims merge (6afcfeee); later commits are notes only. Main's checks and the scheduled background jobs pass; no PR is waiting to merge.
-- **Engine speed jump confirmed (builder's job, not yours):** tick cost 193 ms/tick steady, 59% above the 7-day median (121, 137 rows since c67f1283); top phase agent_decision, 618 agents. Name the merges between c67f1283 and e1a4e85e: git log --oneline --merges c67f1283..e1a4e85e. Second high reading in a row (200 last hour); the jump landed between b3582873 (138) and 3a2662f6, i.e. with the [army fix](https://github.com/christianspliid-ui/threadbare/pull/2456).
+- The live site serves the latest commit on main (85852c0f, the scarcity fix). Main's checks and the scheduled background jobs pass; no PR is waiting to merge.
+- Engine speed is back to normal: 117 ms/tick steady, 3% under the 7-day median (121). The jump reported over the last two hours is gone.
 - Overnight quiet: every lane stopped at 18:39 Friday and resumed at 11:33 Saturday. Overnight and weekend quiet, so not an extra ask; the lead ask covers it.
-- The builder is running normally: war aims shipped this hour and the scarcity fix is being built now.
-- The tidy-up job ran at 15:40: 546 old worktrees, 5 items needing a decision (builder housekeeping). You sent no new Discord messages.
+- The builder is running normally: the scarcity fix shipped this hour and hunger and unrest is being built now.
+- The tidy-up job ran at 16:40: 545 old worktrees, 5 items needing a decision (builder housekeeping). You sent no new Discord messages.
