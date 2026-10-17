@@ -171,3 +171,52 @@ describe('ArmySheet — army representation (THR-1023)', () => {
     expect(container.textContent).not.toMatch(/undefined|null/);
   });
 });
+
+describe('ArmySheet — the war-aim line (THR-1933)', () => {
+  function graphWith(armyState: Record<string, unknown>, home = true): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'f_ash', type: 'actor', name: 'Ashfold', properties: { actorType: 'faction' } } as never);
+    graph.addNode({ id: 'f_varr', type: 'actor', name: 'House Varr', properties: { actorType: 'faction' } } as never);
+    graph.addNode({ id: 'loc_home', type: 'location', name: 'Millbrook', properties: { locationSubtype: 'town' } } as never);
+    graph.addNode({ id: 'loc_silver', type: 'location', name: 'Silverborough', properties: { locationSubtype: 'town' } } as never);
+    if (home) graph.addEdge({ id: 'c', source: 'f_ash', target: 'loc_home', type: 'controls', properties: {} } as never);
+    graph.addNode({ id: 'army_a', type: 'actor', name: 'Ashfold — Host', properties: { actorType: 'group', armyState } } as never);
+    graph.addEdge({ id: 'm', source: 'army_a', target: 'f_ash', type: 'member_of', properties: { role: 'army', rank: 'army', joinedTick: 0 } } as never);
+    graph.addEdge({ id: 'l', source: 'army_a', target: 'loc_home', type: 'located_at', properties: {} } as never);
+    graph.addNode({ id: 'army_v', type: 'actor', name: 'House Varr — Host', properties: { actorType: 'group', armyState: { size: 'host' } } } as never);
+    graph.addEdge({ id: 'mv', source: 'army_v', target: 'f_varr', type: 'member_of', properties: { role: 'army', rank: 'army', joinedTick: 0 } } as never);
+    return graph;
+  }
+  const prose = () => screen.getByTestId('army-sheet-prose').textContent;
+  const sheet = (graph: WorldGraph) => render(<ArmySheet name="Ashfold — Host" armyId="army_a" graph={graph} onClose={() => {}} />);
+
+  it('says why it marches: the richest enemy town within reach, with the town named', () => {
+    sheet(graphWith({ size: 'host', objective: { type: 'conquer', targetNodeId: 'loc_silver', estimatedAttrition: 0, reason: 'richest' } }));
+    expect(prose()).toBe('Marching to take Silverborough, the richest enemy town within reach.');
+  });
+
+  it('names the staple and the attacker\'s own towns', () => {
+    sheet(graphWith({ size: 'host', objective: { type: 'conquer', targetNodeId: 'loc_silver', estimatedAttrition: 0, reason: 'feeds_staple', reasonResourceId: 'grain' } }));
+    expect(prose()).toBe('Marching to take Silverborough for its grain: the stores are low in Ashfold\'s towns.');
+  });
+
+  it('names the enemy host it holds against, and falls back when that host is gone', () => {
+    sheet(graphWith({ size: 'host', objective: { type: 'defend', targetNodeId: 'loc_home', estimatedAttrition: 0, reason: 'defence', againstArmyId: 'army_v' } }));
+    expect(prose()).toBe('Holding Millbrook against the House Varr host.');
+  });
+
+  it('falls back to "an enemy host" when the enemy army is gone', () => {
+    sheet(graphWith({ size: 'host', objective: { type: 'defend', targetNodeId: 'loc_home', estimatedAttrition: 0, reason: 'defence', againstArmyId: 'army_gone' } }));
+    expect(prose()).toBe('Holding Millbrook against an enemy host.');
+  });
+
+  it('says why it holds, at home and away', () => {
+    sheet(graphWith({ size: 'host', objective: null, holdReason: 'no_enemy_in_reach' }));
+    expect(prose()).toBe('Mustered at home: no enemy within reach.');
+  });
+
+  it('holds where it stands when away from its own ground', () => {
+    sheet(graphWith({ size: 'host', objective: null, holdReason: 'no_enemy_in_reach' }, false));
+    expect(prose()).toBe('Holding where it stands: no enemy within reach.');
+  });
+});

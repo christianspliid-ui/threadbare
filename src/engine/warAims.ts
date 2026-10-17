@@ -34,7 +34,7 @@ import { WAR_AIMS_ENABLED, WAR_AIM_REAIM_INTERVAL_TICKS } from '../data/war-aims
 import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
 import { pickWarAim, stillEnemyTarget, inReach, topCandidates, type WarAimPick } from './warAims/score';
-import { findThreatToDefend } from './warAims/defence';
+import { findThreatToDefend, type DefenceTarget } from './warAims/defence';
 import { campaignTargetOf, isEnemyFaction } from './warAims/enemy';
 
 export type RealmProjectionSource = () => RealmProjection;
@@ -185,7 +185,7 @@ export function aimNewArmy(state: GameState, armyId: string, getProjection?: Rea
   return pick.objective;
 }
 
-function traceDefend(state: GameState, armyId: string, factionId: string, d: ReturnType<typeof findThreatToDefend> & object): void {
+function traceDefend(state: GameState, armyId: string, factionId: string, d: DefenceTarget): void {
   emitTrace({
     tick: state.tick,
     category: 'war.aim.defend',
@@ -274,12 +274,8 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
       }
       writeAmbitionTarget(graph, army.id, pick.objective);
     } catch (err) {
-      emitTrace({
-        tick: state.tick,
-        category: 'faction_ambition',
-        summary: `War-aim re-aim error for ${army.id}: ${err instanceof Error ? err.message : 'unknown'}`,
-        event: 'army_movement_error',
-      });
+      // fail-soft (NFP #4): this army keeps yesterday's objective; the rest re-aim.
+      console.warn(`[war_aims] re-aim failed for ${army.id}; objective kept`, err);
     }
   }
 }
