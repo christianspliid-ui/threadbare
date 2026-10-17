@@ -42,11 +42,11 @@ export type ConnectionSubject =
 
 /** One step: walk an edge type one way, or run a named helper. */
 export type RecipeStep =
-  | { edge: EdgeType; dir: 'out' | 'in'; fact?: FactRule; only?: NodeFilter }
+  | { edge: EdgeType; dir: 'out' | 'in' | 'both'; fact?: FactRule; only?: NodeFilter }
   | { helper: HelperId };
 
 type FactRule = 'rank' | 'sentiment' | 'role' | 'occupancy' | 'kind' | keyof typeof INSPECTOR_WORDS;
-type NodeFilter = 'person' | 'faction' | 'place' | 'artifact' | 'event' | 'army' | 'culture';
+type NodeFilter = 'person' | 'faction' | 'place' | 'artifact' | 'event' | 'army' | 'culture' | 'companion';
 type HelperId = 'personWhere' | 'placeWhere' | 'landWhere' | 'landAround' | 'factionHallsHere' | 'firstAndThreads';
 
 /**
@@ -59,7 +59,7 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
     who: [
       { edge: 'mentors', dir: 'out', fact: 'factMentor', only: 'person' },
       { edge: 'mentors', dir: 'in', fact: 'factMentor', only: 'person' },
-      { edge: 'accompanies', dir: 'in', fact: 'factCompanion', only: 'person' },
+      { edge: 'accompanies', dir: 'out', fact: 'factCompanion', only: 'companion' },
     ],
     belongsTo: [
       { edge: 'member_of', dir: 'out', fact: 'rank', only: 'faction' },
@@ -67,8 +67,8 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
       { edge: 'belongs_to', dir: 'out', fact: 'factCulture', only: 'culture' },
     ],
     friendsAndFoes: [
-      { edge: 'relates_to', dir: 'out', fact: 'sentiment', only: 'person' },
-      { edge: 'hostile_to', dir: 'out', fact: 'factFoe' },
+      { edge: 'relates_to', dir: 'both', fact: 'sentiment', only: 'person' },
+      { edge: 'hostile_to', dir: 'both', fact: 'factFoe' },
     ],
     holdsKnows: [
       { edge: 'possesses', dir: 'out', fact: 'factCarried', only: 'artifact' },
@@ -97,8 +97,8 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
     who: [{ edge: 'member_of', dir: 'in', fact: 'rank', only: 'person' }],
     belongsTo: [{ edge: 'belongs_to', dir: 'out', fact: 'factCulture', only: 'culture' }],
     friendsAndFoes: [
-      { edge: 'relates_to', dir: 'out', fact: 'sentiment', only: 'faction' },
-      { edge: 'hostile_to', dir: 'out', fact: 'factFoe', only: 'faction' },
+      { edge: 'relates_to', dir: 'both', fact: 'sentiment', only: 'faction' },
+      { edge: 'hostile_to', dir: 'both', fact: 'factFoe', only: 'faction' },
     ],
     holdsKnows: [
       { edge: 'controls', dir: 'out', fact: 'factControls', only: 'place' },
@@ -123,7 +123,7 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
   },
   god: {
     where: [{ edge: 'avatar_of', dir: 'in', fact: 'factAvatar', only: 'person' }],
-    who: [{ helper: 'firstAndThreads' }, { edge: 'accompanies', dir: 'in', fact: 'factCompanion', only: 'person' }],
+    who: [{ helper: 'firstAndThreads' }, { edge: 'accompanies', dir: 'out', fact: 'factCompanion', only: 'companion' }],
     holdsKnows: [{ edge: 'bonded_to', dir: 'out', fact: 'factBonded', only: 'artifact' }],
   },
   land: {
@@ -150,11 +150,22 @@ function matches(n: GraphNode, only: NodeFilter | undefined): boolean {
     case 'place': return n.type === 'location' && n.properties.hidden !== true && n.properties.discovered !== false;
     case 'artifact': return n.type === 'artifact' || n.type === 'artifact_legendary';
     case 'event': return n.type === 'event';
+    case 'companion': return n.type === 'companion';
   }
 }
 
-/** A culture names its Realm (it has no page of its own); otherwise the node's own ref. */
+/**
+ * A culture names its Realm (it has no page of its own); otherwise the node's own ref.
+ * `fromGraphNode` names neither events nor companions, so: a graph event is a record and
+ * travels as an `encounter` ref holding its node id (the record page resolves a non-live
+ * encounter id to its event node), and a companion node is a `companion` ref.
+ */
 function refFor(graph: WorldGraph, n: GraphNode): { ref: WorldRef; name: string } | null {
+  if (n.type === 'event') {
+    const name = (n.properties.templateName as string | undefined) ?? n.name;
+    return { ref: { kind: 'encounter', id: n.id, name }, name };
+  }
+  if (n.type === 'companion') return { ref: { kind: 'companion', id: n.id, name: n.name }, name: n.name };
   if (n.type === 'actor' && n.properties.actorType === 'culture') {
     const realm = graph.getNodesByType('actor').find(r => r.properties.actorType === 'faction' && r.properties.factionDefId === `realm.${n.id}`);
     const ref = realm ? fromGraphNode(realm) : undefined;
@@ -376,9 +387,13 @@ export function buildConnections(graph: WorldGraph, state: GameState | null, sub
         continue;
       }
       if (!subjectId) continue;
-      const edges = step.dir === 'out' ? graph.getOutgoingEdges(subjectId, step.edge) : graph.getIncomingEdges(subjectId, step.edge);
+      const edges = step.dir === 'out'
+        ? graph.getOutgoingEdges(subjectId, step.edge)
+        : step.dir === 'in'
+          ? graph.getIncomingEdges(subjectId, step.edge)
+          : [...graph.getOutgoingEdges(subjectId, step.edge), ...graph.getIncomingEdges(subjectId, step.edge)];
       for (const edge of edges) {
-        const n = graph.getNode(step.dir === 'out' ? edge.target : edge.source);
+        const n = graph.getNode(edge.source === subjectId ? edge.target : edge.source);
         if (!n || !matches(n, step.only)) continue;
         const row = rowOf(graph, n, factFor(graph, step.fact, n, edge));
         if (!row) continue;

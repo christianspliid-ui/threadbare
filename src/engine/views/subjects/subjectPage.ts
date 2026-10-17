@@ -46,6 +46,7 @@ import type {
   SubjectPageVM,
 } from './subjectTypes';
 import type { RefRow } from '../types';
+import { CONNECTIONS_DOCKED_FOLD_AFTER } from '../viewConstants';
 
 /** What the Inspector can hold: any ref, or a graph event node (which has no WorldRef). */
 export type InspectorSubject = AnyRef | { kind: 'event-node'; id: string; name?: string };
@@ -345,6 +346,48 @@ function attachmentPage(state: GameState, ref: WorldRef): ContentCardVM | Generi
   };
 }
 
+/**
+ * A companion (a `companion` node, walking with its bearer through `accompanies`). S1 shows
+ * who they are and whom they walk with; the person rows that suit a companion come with S2a.
+ */
+function companionPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSubjectPageVM {
+  const graph = state.graph;
+  const bearerEdge = graph.getIncomingEdges(node.id, 'accompanies')[0];
+  const bearer = bearerEdge ? graph.getNode(bearerEdge.source) : undefined;
+  const text = node.properties.joinSentence as string | undefined;
+  const body: Section[] = text
+    ? [{ kind: 'prose', typeId: 'who_they_are', label: 'Who they are', gold: true, tier: 'routine', source: 'companionNode', prose: text }]
+    : [];
+  const profession = node.properties.profession as string | undefined;
+  return {
+    pageKind: 'person',
+    subjectKey: subjectKeyOf(ref),
+    layoutKind: 'actor',
+    header: header({
+      ref,
+      name: node.name,
+      kindLabel: profession ? sentenceCase(profession.replace(/[-_]+/g, ' ')) : INSPECTOR_WORDS.factCompanion,
+      visual: { kind: 'companion', id: node.id, portraitGate: 'shown' },
+      whereLine: bearer ? whereOf(state, bearer) : [],
+      follow: true,
+    }),
+    actOn: null,
+    body,
+    connections: bearer
+      ? {
+          title: 'Connections',
+          groups: [{
+            id: 'who',
+            label: 'Who',
+            rows: [{ ref: { kind: 'agent', id: bearer.id, name: bearer.name }, name: bearer.name, fact: INSPECTOR_WORDS.factCompanion, mapLocated: false, hexKey: null, staleFact: null }],
+            total: 1,
+            foldAfter: CONNECTIONS_DOCKED_FOLD_AFTER,
+          }],
+        }
+      : { title: 'Connections', groups: [] },
+  };
+}
+
 function recordPage(state: GameState, ref: WorldRef): GenericSubjectPageVM {
   const record = { kind: ref.kind as 'encounter' | 'journey' | 'receipt', id: ref.id, name: ref.name };
   const chapter = record.kind === 'encounter' ? (state.chapterArchive ?? []).find(c => c.actionId === ref.id) : undefined;
@@ -401,6 +444,7 @@ export function buildSubjectPage(state: GameState, subject: InspectorSubject, ru
     case 'artifact': {
       const node = graph.getNode(ref.id);
       if (!node) return missingPage(ref);
+      if (node.type === 'companion') return companionPage(state, ref, node);
       // A Place is a Location node carrying `parentLocationId` — one page class for both tiers.
       if ((ref.kind === 'location' || ref.kind === 'sublocation') && node.type !== 'location') return missingPage(ref);
       if (ref.kind === 'sublocation' && !isPlaceNode(node)) return graphPage(state, { ...ref, kind: 'location' }, node);
@@ -408,7 +452,13 @@ export function buildSubjectPage(state: GameState, subject: InspectorSubject, ru
     }
     case 'attachment':
       return attachmentPage(state, ref);
-    case 'encounter':
+    case 'encounter': {
+      // A resolved encounter's id may name its graph event node (Connections' story rows):
+      // with no chapter under that id, the event node is the record.
+      const chapter = (state.chapterArchive ?? []).some(c => c.actionId === ref.id);
+      if (!chapter && graph.getNode(ref.id)?.type === 'event') return eventNodePage(state, ref.id);
+      return recordPage(state, ref);
+    }
     case 'journey':
     case 'receipt':
       return recordPage(state, ref);

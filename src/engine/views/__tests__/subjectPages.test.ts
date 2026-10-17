@@ -190,6 +190,34 @@ describe('Connections (THR-1822 § D8)', () => {
     expect(linksOf(cong)).toContain('agent:shutash');
   });
 
+  it('Story lists events (as records), and an event row opens its record page', () => {
+    const state = world();
+    const vm = buildConnections(state.graph, state, { cls: 'person', id: 'shutash' });
+    const story = vm.groups.find(g => g.id === 'story');
+    expect(story?.rows.map(r => `${r.ref.kind}:${r.ref.id}`)).toEqual(['encounter:evt1']);
+    expect(buildSubjectPage(state, story!.rows[0].ref).pageKind).toBe('record');
+  });
+
+  it('a companion walking with a mortal shows under Who, and opens its own page', () => {
+    const state = world();
+    state.graph.addNode({ id: 'comp1', type: 'companion', name: 'Ilse the Guide', properties: { profession: 'guide', joinSentence: 'Ilse the Guide falls in beside Shutash.' } });
+    state.graph.addEdge({ id: 'acc1', source: 'shutash', target: 'comp1', type: 'accompanies', properties: {} });
+    const who = buildConnections(state.graph, state, { cls: 'person', id: 'shutash' }).groups.find(g => g.id === 'who');
+    expect(who?.rows.map(r => `${r.ref.kind}:${r.ref.id}`)).toContain('companion:comp1');
+    const page = buildSubjectPage(state, { kind: 'companion', id: 'comp1' });
+    expect(page.pageKind).toBe('person');
+    expect(page.header.kindLabel).toBe('Guide');
+  });
+
+  it('friends and foes read both directions: a one-way rivalry shows on both pages', () => {
+    const state = world();
+    state.graph.addNode({ id: 'rivals', type: 'actor', name: 'The Ash Court', properties: { actorType: 'faction' } });
+    state.graph.addEdge({ id: 'r1', source: 'rivals', target: 'cong', type: 'relates_to', properties: { sentiment: -0.6 } });
+    const ids = (id: string) => buildConnections(state.graph, state, { cls: 'faction', id }).groups.find(g => g.id === 'friendsAndFoes')?.rows.map(r => r.ref.id) ?? [];
+    expect(ids('cong')).toContain('rivals');
+    expect(ids('rivals')).toContain('cong');
+  });
+
   it('a hidden Place is never a row', () => {
     const state = world();
     const vm = buildConnections(state.graph, state, { cls: 'location', id: 'quarter' });
