@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 18:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 19:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -38,7 +38,7 @@ Say "veto <title>" to reverse any of these. (Yesterday's aftermath-wording decis
 
 ## Queue
 
-**Backed up: 23 ready, one in progress.** The builder is on [icon sweep 2: the data tables and the Codex onto carved icons](https://linear.app/threadbare/issue/THR-1907/icon-sweep-2-the-data-tables-and-the-codex-onto-carved-icons); its run is active. Since the last brief, [hunger and unrest, first slice](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) and [the pipeline freeze until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) merged.
+**Backed up: 21 ready, one in progress.** The builder is on [the god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground); its run started at 19:51 and is active. Since the last brief, [icon sweep 2: the data tables and the Codex onto carved icons](https://linear.app/threadbare/issue/THR-1907/icon-sweep-2-the-data-tables-and-the-codex-onto-carved-icons) merged ([#2462](https://github.com/christianspliid-ui/threadbare/pull/2462)).
 
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
 - Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy) and [regional monopolies pay rent and can embargo](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys).
@@ -47,8 +47,7 @@ Say "veto <title>" to reverse any of these. (Yesterday's aftermath-wording decis
 
 ## Health
 
-- The live site is current: everything merged since the last game build touched only docs. Main's checks and the scheduled background jobs pass, and no PR is waiting to merge.
-- Engine speed: not measured this hour. The home checkout's installed tools are missing their command shims (`esbuild` absent), so the measurement could not start. Builder housekeeping; no trend row published.
+- All green otherwise: the live site serves the latest main (with the icon sweep), main's checks and the scheduled background jobs pass, no PR is waiting to merge, and all 12 scheduled lanes are on schedule. Engine speed is measured again and normal (140 ms a tick, within range of the week).
 - Overnight quiet: every lane stopped at 18:39 Friday and resumed at 11:33 Saturday. That gap falls overnight and on a weekend, so it is not a separate ask. The lead ask covers it.
-- The builder is running and shipping (three merges this afternoon), and all 12 scheduled lanes are on schedule.
-- The tidy-up job last ran at 18:40: 544 old worktrees, 5 items waiting for a decision (builder housekeeping). You sent no new Discord messages.
+- The home checkout's installed tools are still missing their command shims; this run borrowed a healthy install from a worktree. Builder housekeeping.
+- The tidy-up job last ran at 19:40: 544 old worktrees, 5 items waiting for a decision (builder housekeeping). You sent no new Discord messages.

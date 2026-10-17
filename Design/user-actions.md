@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-17 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-17 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-17: the data tables, the Codex, callings, ambitions, omens and card chips now draw the carved icons (icon sweep 2)** ([THR-1907](https://linear.app/threadbare/issue/THR-1907/icon-sweep-2-the-data-tables-and-the-codex-onto-carved-icons)). Merged via [#2462](https://github.com/christianspliid-ui/threadbare/pull/2462) and live.
 - **2026-10-17: new delivery-pipeline work is frozen until 13 Nov; only removals and fixes for broken runs go ahead** ([THR-1946](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes)). Merged via [#2461](https://github.com/christianspliid-ui/threadbare/pull/2461).
 - **2026-10-17: a town's unrest now rises with hunger, armies, sickness and grief, and calms when it is fed (hunger and unrest, first slice)** ([THR-1934](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless)). Merged via [#2460](https://github.com/christianspliid-ui/threadbare/pull/2460) and live.
 - **2026-10-17: towns whose crisis has burned out free their slot, so new scarcity crises can start elsewhere** ([THR-1919](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint)). Merged via [#2459](https://github.com/christianspliid-ui/threadbare/pull/2459) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-17: your mortal's work and what they want most now show in the panel beside the map** ([THR-1963](https://linear.app/threadbare/issue/THR-1963/the-work-and-the-leading-ambition-beside-the-map-two-lines-in-the)). Merged via [#2452](https://github.com/christianspliid-ui/threadbare/pull/2452) and live.
 - **2026-10-16: shared buttons, the window chrome and the duplicate symbols now draw the carved icons** ([THR-1906](https://linear.app/threadbare/issue/THR-1906/icon-sweep-1-shared-primitives-chrome-and-the-law-9-duplicates-onto)). Merged via [#2451](https://github.com/christianspliid-ui/threadbare/pull/2451) and live.
 - **2026-10-16: one work now reads one progress word everywhere (barely begun, under way, halfway, well along, nearly done, or faltering)** ([THR-1962](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the)). Merged via [#2449](https://github.com/christianspliid-ui/threadbare/pull/2449) and live.
-- **2026-10-16: the crown is built: a realm that holds a town can win oaths of fealty and collect a share of its vassals' coin** ([THR-1932](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them)). Merged via [#2448](https://github.com/christianspliid-ui/threadbare/pull/2448) and live.
 
 ---
 
