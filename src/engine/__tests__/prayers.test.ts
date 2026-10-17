@@ -38,6 +38,8 @@ import {
   FAITHFUL_COMMUNITY_MAX,
   FAITHFUL_INITIAL_SANCTITY,
   STARVE_FAITHFUL_SANCTITY_DRAIN,
+  PRAYER_MAX_OPEN,
+  PRAYER_GOD_GAP_DAYS,
 } from '../../data/prayer-constants';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { selectCovenantRows } from '../../components/Game/ascendant-bar/selectors';
@@ -164,6 +166,40 @@ describe('a hungry town on your ground prays', () => {
     expect(listPrayers(g)).toHaveLength(2);
   });
 
+  it('one at a time: of two towns passing the gate the same day only the hungrier prays; the other waits a season', () => {
+    addTown(g, 'ashby', OWN_GROUND, { hunger: 20 });
+    addTown(g, 'millbrook', OWN_GROUND, { hunger: 30 });
+    phasePrayers(makeState(g, DAY));
+    expect(listPrayers(g).map(p => p.townId)).toEqual(['millbrook']);
+    expect(g.getNode('ashby')?.properties?.[LAST_PRAYER_TICK_PROP]).toBeUndefined();
+
+    // The first prayer's window closes, but the god's season gap still holds the next one back.
+    const gap = Math.round(PRAYER_GOD_GAP_DAYS * DAY);
+    const lastBeforeGap = Math.floor((DAY + gap - 1) / DAY) * DAY;
+    for (let t = 2 * DAY; t <= lastBeforeGap; t += DAY) phasePrayers(makeState(g, t));
+    expect(listPrayers(g)).toHaveLength(1);
+
+    // A season after that opening, the other town — still hungry — prays.
+    const nextDay = Math.ceil((DAY + gap) / DAY) * DAY;
+    phasePrayers(makeState(g, nextDay));
+    expect(listPrayers(g).map(p => p.townId).sort()).toEqual(['ashby', 'millbrook']);
+  });
+
+  it('equal hunger goes to the lower id, with no draw', () => {
+    addTown(g, 'zell', OWN_GROUND, { hunger: 30 });
+    addTown(g, 'ashby', OWN_GROUND, { hunger: 30 });
+    phasePrayers(makeState(g, DAY));
+    expect(listPrayers(g).map(p => p.townId)).toEqual(['ashby']);
+  });
+
+  it(`never more than ${PRAYER_MAX_OPEN} open at once`, () => {
+    for (const id of ['a1', 'a2', 'a3', 'a4']) addTown(g, id, OWN_GROUND);
+    for (let t = DAY; t <= 30 * DAY; t += DAY) {
+      phasePrayers(makeState(g, t));
+      expect(listPrayers(g).filter(p => p.status === 'open').length).toBeLessThanOrEqual(PRAYER_MAX_OPEN);
+    }
+  });
+
   it('a Foreign town in the same state opens none', () => {
     addTown(g, 'ferris', FOREIGN_GROUND);
     phasePrayers(makeState(g, DAY));
@@ -267,7 +303,8 @@ describe('faith forms', () => {
   it(`a town past the cap (${FAITHFUL_COMMUNITY_MAX}) forms no source and gives thanks only`, () => {
     const ids = ['a1', 'a2', 'a3', 'a4', 'a5'];
     for (const id of ids) addTown(g, id, OWN_GROUND);
-    phasePrayers(makeState(g, DAY));
+    // The god hears one prayer a season, so stage five with the forced lever.
+    for (const id of ids) openPrayer(makeState(g, DAY), id, [], true);
     for (const id of ids) cast(g, DAY + 1, id);
     for (const id of ids) setRestless(g, id, false);
     const r = phasePrayers(makeState(g, DAY * 2));

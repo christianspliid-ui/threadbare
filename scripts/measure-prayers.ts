@@ -2,7 +2,10 @@
  * THR-1935 S1 — prayers and the faithful, measured on real seeded worlds.
  *
  * Runs each seed for 1,080 ticks (90 days) and reports, per seed:
- *   - prayers opened (≥ 1 and ≤ PRAYER_FLOOD_LINE per seed), and how each closed;
+ *   - prayers opened (≤ PRAYER_FLOOD_LINE per seed, and ≥ 1 on any seed where some day had
+ *     a town passing the four-part gate), and how each closed;
+ *   - gate-passing towns: distinct towns that passed the four-part gate on some day (the
+ *     ones the god heard, plus the ones left waiting by the one-at-a-time rule);
  *   - faithful towns held (at the end and at most), and how every prayer closed;
  *   - the Restless-town census by the god's band (the kill criterion's evidence when
  *     no prayer opens: Touched and hunger-largest rarely meet).
@@ -24,7 +27,7 @@ import { generateArchetypes } from '../src/engine/ascendant';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { getLocationNodes } from '../src/engine/sublocationShape';
 import { dominionOf } from '../src/engine/dominion';
-import { listPrayers, listFaithful } from '../src/engine/prayers';
+import { listPrayers, listFaithful, passesPrayerGate } from '../src/engine/prayers';
 import { PRAYER_FLOOD_LINE } from '../src/data/prayer-constants';
 
 function argValue(flag: string): string | undefined {
@@ -50,6 +53,7 @@ function runSeed(seed: number) {
   const restlessByBand: Record<string, Set<string>> = {};
   let hungerLedRestlessOnGround = 0;
   let maxFaithful = 0;
+  const gatePassing = new Set<string>();
 
   for (let i = 0; i < TICKS; i++) {
     state = runTick(state, [], runtime);
@@ -72,6 +76,7 @@ function runSeed(seed: number) {
     if (state.tick % 12 === 0) {
       for (const n of getLocationNodes(g)) {
         if (!SUBTYPES.has(n.properties.locationSubtype as string)) continue;
+        if (passesPrayerGate(g, state.ascendantId, n, state.tick)) gatePassing.add(n.id);
         if (!g.getOutgoingEdges(n.id, 'has_trait').some(e => e.target === RESTLESS)) continue;
         const band = dominionOf(g, state.ascendantId, n.id).band;
         (restlessByBand[band] ??= new Set()).add(n.id);
@@ -86,9 +91,11 @@ function runSeed(seed: number) {
   }
 
   const prayers = listPrayers(state.graph);
+  for (const p of prayers) gatePassing.add(p.townId);
   return {
     seed,
     prayersOpened: prayers.length,
+    gatePassingTowns: gatePassing.size,
     byStatus: prayers.reduce<Record<string, number>>((acc, p) => { acc[p.status] = (acc[p.status] ?? 0) + 1; return acc; }, {}),
     faithfulAtEnd: listFaithful(state.graph, state.ascendantId).length,
     maxFaithful,
@@ -101,8 +108,14 @@ function runSeed(seed: number) {
 const results = SEEDS.map(runSeed);
 console.log(JSON.stringify(results, null, 2));
 if (DUMP_AT === null) {
-  const ok = results.every(r => 'prayersOpened' in r && r.prayersOpened >= 1 && r.withinFloodLine);
+  const runs = results.filter((r): r is Extract<typeof r, { prayersOpened: number }> => 'prayersOpened' in r);
+  // Census predicate (calibration ruling 2026-10-17): ≤ flood line on every seed; ≥ 1 on
+  // every seed with a gate-passing town; ≥ 1 overall.
+  const ok = runs.every(r => r.withinFloodLine && (r.gatePassingTowns === 0 || r.prayersOpened >= 1))
+    && runs.some(r => r.prayersOpened >= 1);
   console.log(ok
-    ? `\nmeasure:prayers OK — every seed opened between 1 and ${PRAYER_FLOOD_LINE} prayers in ${TICKS} ticks`
-    : `\nmeasure:prayers OUT — a seed opened none, or more than ${PRAYER_FLOOD_LINE} (see the Restless census by band)`);
+    ? `
+measure:prayers OK — every seed ≤ ${PRAYER_FLOOD_LINE} prayers, ≥ 1 wherever a town passed the gate, ≥ 1 overall (${TICKS} ticks)`
+    : `
+measure:prayers OUT — a seed flooded, opened none despite a gate-passing town, or no seed opened one`);
 }

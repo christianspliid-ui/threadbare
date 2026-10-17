@@ -45,6 +45,8 @@ import {
   PRAYER_MIN_BAND,
   PRAYER_ANSWER_WINDOW_DAYS,
   PRAYER_COOLDOWN_DAYS,
+  PRAYER_MAX_OPEN,
+  PRAYER_GOD_GAP_DAYS,
   ANSWERED_PRAYER_DOMINION_PRESSURE,
   UNBIDDEN_AID_DOMINION_PRESSURE,
   PRAYER_RECOVERY_WINDOW_DAYS,
@@ -75,6 +77,8 @@ export const PRAYER_EVENT_KIND = 'prayer';
 export const LAST_PRAYER_TICK_PROP = 'lastPrayerTick';
 export const PRAYER_SLIGHTED_UNTIL_PROP = 'prayerSlightedUntilTick';
 export const ACTIVE_PRAYER_PROP = 'activePrayerId';
+/** On the god node: the tick it last heard a prayer open (the season gap reads it). */
+export const LAST_GOD_PRAYER_TICK_PROP = 'lastPrayerOpenedTick';
 /** The `controls` edge the faith wrote, so a lapse removes that edge and no other. */
 export const FAITH_CONTROLS_EDGE_PROP = 'faithControlsEdgeId';
 
@@ -312,6 +316,7 @@ export function openPrayer(
   });
   graph.addEdge({ id: `occurred_at_${eventId}`, source: eventId, target: townId, type: 'occurred_at', properties: { tick } });
   graph.updateNode(townId, { properties: { [LAST_PRAYER_TICK_PROP]: tick, [ACTIVE_PRAYER_PROP]: eventId } });
+  if (graph.getNode(ascendantId)) graph.updateNode(ascendantId, { properties: { [LAST_GOD_PRAYER_TICK_PROP]: tick } });
 
   const inputs = readUnrestInputs(town);
   emitTrace({
@@ -369,7 +374,7 @@ export function formFaithful(graph: WorldGraph, godId: string, townId: string, t
   return { formed: true };
 }
 
-/** One town's daily pass: close an open or answered prayer, else maybe open one. */
+/** One town's daily settling pass: close an open or answered prayer. Opening is the phase's second pass. */
 function dailyTown(state: GameState, town: GraphNode, events: TickEvent[]): void {
   const { graph, ascendantId, tick } = state;
   const god = godName(graph, ascendantId);
@@ -424,16 +429,51 @@ function dailyTown(state: GameState, town: GraphNode, events: TickEvent[]): void
     return;
   }
 
-  // No active prayer: the four-part gate.
-  if (!isHungryForPrayer(graph, town)) return;
-  if (!cooldownClear(town, tick)) return;
+}
+
+/**
+ * The four-part gate: hungry and Restless, cooldown clear, not already faithful, on the
+ * god's ground. A town with an active prayer never passes.
+ */
+export function passesPrayerGate(graph: WorldGraph, godId: string, town: GraphNode, tick: number): boolean {
+  if (activePrayerOf(graph, town.id)) return false;
+  if (!isHungryForPrayer(graph, town)) return false;
+  if (!cooldownClear(town, tick)) return false;
   if (readEssenceSource(town.properties)?.kind === 'faithfulCommunity'
-    && graph.getOutgoingEdges(ascendantId, 'controls').some(e => e.target === town.id)) {
+    && graph.getOutgoingEdges(godId, 'controls').some(e => e.target === town.id)) {
     // A town that already keeps faith asks nothing more; its faith rides its bread.
-    return;
+    return false;
   }
-  if (!onGodsGround(graph, ascendantId, town.id)) return;
-  openPrayer(state, town.id, events);
+  return onGodsGround(graph, godId, town.id);
+}
+
+/** Prayers the god has open now. */
+export function openPrayerCount(graph: WorldGraph): number {
+  return listPrayers(graph).filter(p => p.status === 'open').length;
+}
+
+/** Whether the god can hear a new prayer today: under `PRAYER_MAX_OPEN` and a season since the last. */
+export function godCanHear(graph: WorldGraph, godId: string, tick: number): boolean {
+  if (openPrayerCount(graph) >= PRAYER_MAX_OPEN) return false;
+  const last = num(graph.getNode(godId)?.properties?.[LAST_GOD_PRAYER_TICK_PROP]);
+  return last === undefined || tick - last >= PRAYER_GOD_GAP_DAYS * TICKS_PER_DAY;
+}
+
+/**
+ * The hungriest of the day's gate-passing towns: largest `unrestInputs.hunger`, ties to
+ * the lower id. No draw (calibration ruling 2026-10-17).
+ */
+export function pickHungriest(towns: readonly GraphNode[]): GraphNode | null {
+  let best: GraphNode | null = null;
+  let bestHunger = -Infinity;
+  for (const town of towns) {
+    const hunger = readUnrestInputs(town)?.hunger ?? 0;
+    if (hunger > bestHunger || (hunger === bestHunger && best && town.id < best.id)) {
+      best = town;
+      bestHunger = hunger;
+    }
+  }
+  return best;
 }
 
 /** A faithful town whose faith ran out turns away: the bag and the god's `controls` edge go. */
@@ -484,12 +524,25 @@ export function phasePrayers(state: GameState): Partial<GameState> {
     const towns = getLocationNodes(graph)
       .filter(isPressureSettlement)
       .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    // Pass one: settle every town's open or answered prayer.
     for (const town of towns) {
       try {
         dailyTown(state, town, events);
       } catch {
         // Fail-soft: one town's failure skips that town.
       }
+    }
+    // Pass two: the god hears at most one new prayer, the hungriest gate-passing town's.
+    try {
+      if (godCanHear(graph, ascendantId, tick)) {
+        const passing = towns.filter(t => {
+          try { return passesPrayerGate(graph, ascendantId, t, tick); } catch { return false; }
+        });
+        const chosen = pickHungriest(passing);
+        if (chosen) openPrayer(state, chosen.id, events);
+      }
+    } catch {
+      // Fail-soft: no prayer opens today.
     }
   }
   if (events.length === 0) return {};

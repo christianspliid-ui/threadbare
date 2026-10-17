@@ -27,6 +27,18 @@ export const PRAYER_ANSWER_WINDOW_DAYS = 6;
 /** Days between a town's prayers, counted from the prayer's opening; one game year. */
 export const PRAYER_COOLDOWN_DAYS = 30;
 
+/**
+ * Prayers the god can have open at once (calibration ruling 2026-10-17): the god hears
+ * one prayer at a time, the hungriest town first.
+ */
+export const PRAYER_MAX_OPEN = 1;
+
+/**
+ * Days between any two prayers the god hears, counted opening to opening: one season, so
+ * at most 12 in a 90-day run — the flood line (calibration ruling 2026-10-17).
+ */
+export const PRAYER_GOD_GAP_DAYS = 7.5;
+
 /** One-shot Dominion push on answering, split across the god's bought spheres by points. */
 export const ANSWERED_PRAYER_DOMINION_PRESSURE = 2;
 
