@@ -91,6 +91,8 @@ export type TraceCategory =
   | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
   // THR-1931 — the faction purse
   | 'economy.purse.day' | 'economy.purse.band_change' | 'economy.purse.army_raised'
+  // THR-1936 — a mortal's Means
+  | 'economy.means.birth' | 'economy.means.shift'
   // THR-1933 — war aims
   | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
   // THR-1932 — the crown (fealty)
@@ -695,6 +697,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
+  'economy.means.birth', 'economy.means.shift',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'settlement_tier_change', 'target_action_filter',

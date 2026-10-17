@@ -679,10 +679,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     // a bad one costs, and the stakes say so before the roll.
     stakes: {
       goal: 'work the grain market and refuse the bad salt',
-      risk: 'lose their coin on bad salt, or end up in the gate cell over it',
+      risk: 'lose their coin on bad salt, or land in the gate cell',
       won: 'worked the market and turned down the bad salt',
-      lost: 'took the salt, lost it to the excise men, and came away poorer',
-      lostBadly: 'lost their coin and spent the night in the gate cell over the salt',
+      lost: 'took the bad salt and came away poorer',
+      lostBadly: 'lost their coin and spent a night in the gate cell',
     },
     outcomeEffects: {
       critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],

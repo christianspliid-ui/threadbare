@@ -71,7 +71,7 @@ names like `TB-073`) a premise might use.
 - **Encounters & Dilemmas** — The core narrative engine — scoring, eligibility, resolution, aftermath reactions, chapter archive.
 - **Culture** — Culture generation, gravity, tension, mores, phonetic naming.
 - **Personality & Emergent Traits** — Layered: worldgen baseline → core → emergent traits (THR-527/542/561).
-- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route's toll, a freehold's keep, a controlled Location's tithe). M3: Dynamic Economy.
+- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route's toll, a freehold's keep, a controlled Location's tithe), a mortal's Means from birth, and encounter outcome tables that pay or cost it (`economy_shift`, THR-1936). M3: Dynamic Economy.
 - **Ambitions & Undertakings** — Agent-level drives and the multi-tick undertakings that serve them; mentorship rides the undertaking checkpoint pass (THR-1292 §3 retired the separate initiative pipeline).
 - **Attachments, Items & Possessions** — Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.

@@ -169,6 +169,13 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
     consumers: [spawns('src/engine/encounterSeeding.ts', 'evaluateEncounterSeeds')],
     note: 'The canonical dormant-hook substrate: `delayTicks` + `priority` are the firing metadata.',
   },
+  economy_shift: {
+    writes: "`wealth` and `lastWealthReason` on the target mortal, through `bankWealth` (THR-1936)",
+    consumers: [
+      acts('src/engine/phaseEconomicTraits.ts', 'readWealth'),
+      acts('src/engine/actionCandidates.ts', 'wealth'),
+    ],
+  },
   quintessence_shift: {
     writes: "`quintessence` on the target actor",
     consumers: [acts('src/engine/brokenState.ts', 'isBrokenMortal')],

@@ -977,6 +977,11 @@ export function devSeedTheFirst(state: GameState): string {
     });
   }
 
+  // THR-1936 — the dev First is minted after world creation's birth pass, so it is
+  // born with Means here (idempotent; every other decider already has some).
+  const devAvatarIds = new Set(avatarId ? [avatarId] : []);
+  ensureDeciderMeans(graph, tick, devAvatarIds);
+
   return agentId;
 }
 

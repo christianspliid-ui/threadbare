@@ -3135,3 +3135,15 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 | `engine/battleAftermath.ts` (`takenFrom` on the conquest edge) | conquest | — | `controls.takenFrom` | existing `realm_territory_change` | Oaths table "forced by" |
 
 **Wired and asserted:** `crown.test.ts` (23 tests) and `BorderMesh.crown.test.ts` (2 tests) — who may swear and court, one layer, the bought oath and its gift coin, refusal cooling floored above the rivalry line, coercion by a two-day siege and by a town taken within five days, the fealty tax after the vassal's day with no debt, the break (grudge, cooldown, chronicle line naming the reason), rebellion, one-layer drift repair, the derived Crown and `protectedHoldingsOf`, the projection's `crownOf` and fingerprint, and the sheet's words (no numerals, never *sworn*). The 90-day predicates are measured by `npm run measure:crown`.
+
+## Mortal Means (THR-1936)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/mortalMeans.ts` (`ensureDeciderMeans`) | worldgen (`gameInit.ts`, after the opening purse, avatars skipped) | `OverviewTab` Means row (now on every decider) | graph: actor `wealth`, `lastWealthReason: 'birth'` | `economy.means.birth` | `__DEBUG.getMortalMeans` |
+| `engine/unifiedActionResolution.ts` (`applyOutcomeEffectsTable`) | encounter resolution, after `fireResolvedActionTriggers`, both the rolled route and the fight no-roll end | aftermath veil consequence list | `UnifiedAction.outcomeEffectsApplied` | via the effect | trace viewer |
+| `engine/encounterAftermath.ts` (`economy_shift` case → `applyMeansShift`) | the aftermath executor | — | actor `wealth`, `lastWealthReason` | `economy.means.shift` | trace viewer; `getMortalMeans` |
+| `engine/mortalMeans.ts` (`buildMeansChange`, `meansChangeSentence`) | — | `buildAftermathConsequences` (`economy` → prize / toll; tooltip `ui.econ.means.change`) | aftermath change kind `economy` | — | browser evidence |
+| `data/encounter-content.ts` (converter passthrough; `merchants_gambit` seed row) | — | stakes line + result line | — | — | `outcomeEffects.test.ts` |
+
+**Wired and asserted:** `mortalMeans.test.ts` (15 tests) — birth Means (role + home shift, avatars and ambient skipped, idempotent), the poor-loss scale and the 0 floor, default reasons, the band-crossed / inside-band sentence with no numerals, variant table over template table, the outcome table paying exactly once at each band through `executeStepResult` whatever reaction follows, and the seed row surviving the converter. `outcomeEffects.test.ts` (6 tests) is the content gate: real bands, named steps, actor/target only, no new `update_node` wealth writer (11 legacy offenders frozen), no double charge, and a failure-band cost names its loss in the stakes.
