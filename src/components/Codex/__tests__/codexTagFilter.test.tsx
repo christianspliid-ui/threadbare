@@ -22,7 +22,7 @@ function entry(id: string, tags: string[]): CodexEntry {
   return {
     id,
     name: id,
-    glyph: '◆',
+    mark: { icon: 'possession' },
     tier: 1,
     tierName: 'Common',
     tierColor: '#888',

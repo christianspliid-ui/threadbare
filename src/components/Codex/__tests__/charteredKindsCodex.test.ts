@@ -24,7 +24,6 @@ import {
   formatBesideYouContributions,
   BESIDE_YOU_CONTRIBUTION_BANDS,
   AMBITION_CATEGORY_WORDS,
-  AMBITION_CATEGORY_GLYPHS,
   CARD_GROUP_WORDS,
   CARD_SUBCATEGORY_IDS,
   AMBITION_CATEGORY_ID,
@@ -32,6 +31,7 @@ import {
   COMPANION_CATEGORY_ID,
   LEGENDARY_SUBCATEGORY_ID,
 } from '../charteredKindsCodex';
+import { ICON_FOR_AMBITION } from '../../../data/icons/conceptIcons';
 import { getCodexCategories } from '../codexRegistry';
 import { ARTIFACT_TEMPLATES } from '../../../data/artifact-templates';
 import { COMPANION_TEMPLATES } from '../../../data/companion-templates';
@@ -68,7 +68,7 @@ describe('chartered kinds — every catalog entry becomes a card', () => {
     for (const e of entries) {
       expect(e.name, `"${e.id}" has no name`).toBeTruthy();
       expect(e.name, `"${e.id}" renders its id as its name`).not.toBe(e.id);
-      expect(e.glyph, `"${e.id}" has no glyph`).toBeTruthy();
+      expect('icon' in e.mark ? e.mark.icon : e.mark.reach, `"${e.id}" has no mark`).toBeTruthy();
     }
   });
 
@@ -186,12 +186,12 @@ describe('chartered kinds — the two ladders invented here', () => {
 
   it('keeps the display vocabularies total over the unions they resolve', () => {
     // Totality by construction — `Record<AmbitionCategory, …>` is a compile error when the
-    // union grows — but the *glyph* map and the *word* map must also agree with each other,
-    // which the type system does not say.
-    // Falsify: delete the `vengeance` row from AMBITION_CATEGORY_GLYPHS.
-    expect(Object.keys(AMBITION_CATEGORY_GLYPHS).sort()).toEqual(Object.keys(AMBITION_CATEGORY_WORDS).sort());
-    expect(new Set(Object.values(AMBITION_CATEGORY_GLYPHS)).size).toBe(
-      Object.keys(AMBITION_CATEGORY_GLYPHS).length,
+    // union grows — but the *icon* map and the *word* map must also agree with each other,
+    // which the type system does not say. The icon map is `ICON_FOR_AMBITION` (THR-1907).
+    // Falsify: delete the `vengeance` row from ICON_FOR_AMBITION.
+    expect(Object.keys(ICON_FOR_AMBITION).sort()).toEqual(Object.keys(AMBITION_CATEGORY_WORDS).sort());
+    expect(new Set(Object.values(ICON_FOR_AMBITION)).size).toBe(
+      Object.keys(ICON_FOR_AMBITION).length,
     );
     expect(Object.keys(CARD_GROUP_WORDS).sort()).toEqual(Object.values(CARD_SUBCATEGORY_IDS).sort());
   });

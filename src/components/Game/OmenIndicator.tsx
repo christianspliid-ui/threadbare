@@ -11,25 +11,20 @@ import type { OmenState, ActiveOmen } from '../../types/omen';
 import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
 import { OmenDetail } from './OmenDetail';
+import { OmenMark } from './OmenMark';
 import { Tooltip } from '../shared/Tooltip';
 import { TOPBAR_LOCKED_SUFFIX, getUITooltip } from '../../data/ui-content';
-
-const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
-  doom_echo: '⊘',
-  sphere_surge: '◈',
-  cultural: '⬡',
-  seasonal: '◇',
-};
 
 function OmenLine({
   omen,
   isPrimary,
+  currentTick,
 }: {
   omen: ActiveOmen;
   isPrimary: boolean;
+  currentTick: number;
 }) {
   const template = getOmenTemplateById(omen.templateId);
-  const glyph = OMEN_CATEGORY_GLYPHS[omen.category] ?? '◇';
   const color = omen.sphere ? getSphereColor(omen.sphere) : '#a0956b';
 
   // Pulse on omen change
@@ -49,15 +44,16 @@ function OmenLine({
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       <span
+        data-testid="omen-mark"
         style={{
+          display: 'inline-flex',
           color,
-          fontSize: isPrimary ? '11px' : '10px',
           opacity: pulsing ? 0.5 : 1,
           transition: 'opacity 0.3s',
           flexShrink: 0,
         }}
       >
-        {glyph}
+        <OmenMark omen={omen} currentTick={currentTick} />
       </span>
       <span
         style={{
@@ -145,9 +141,9 @@ export function OmenIndicator({ omenState, currentTick, locked = false }: OmenIn
         }}
       >
         <span className="topbar-section-label">Omen</span>
-        <OmenLine omen={omenState.primary} isPrimary />
+        <OmenLine omen={omenState.primary} isPrimary currentTick={currentTick} />
         {omenState.secondary && (
-          <OmenLine omen={omenState.secondary} isPrimary={false} />
+          <OmenLine omen={omenState.secondary} isPrimary={false} currentTick={currentTick} />
         )}
       </div>
       </Tooltip>

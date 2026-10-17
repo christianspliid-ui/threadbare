@@ -11,7 +11,8 @@ import { Tooltip } from '../shared/Tooltip';
 import { AGENT_CARD_NEW_TIER_MARK } from '../../data/ui-content';
 import { ActiveEffectChips } from './ActiveEffectChips';
 import { generateEntityProse } from '../../engine/proseGenerator';
-import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
+import { CATEGORY_COLORS } from '../../data/ambition-categories';
+import { ICON_FOR_AMBITION } from '../../data/icons/conceptIcons';
 import { getSphereColor } from '../../data/sphereIcons';
 import { BACKSTORY_CONSTANTS } from '../../types/prose';
 import { elapsedLabel } from '../../engine/aftermathWords';
@@ -262,11 +263,14 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
             {card.primaryIntentSummary && (
               <div
                 style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
                   fontSize: 'var(--text-xs)',
                   color: CATEGORY_COLORS[card.primaryIntentSummary.category],
                 }}
               >
-                {CATEGORY_GLYPHS[card.primaryIntentSummary.category]}{' '}
+                <Icon name={ICON_FOR_AMBITION[card.primaryIntentSummary.category]} size="floor" decorative />
                 {card.primaryIntentSummary.displayName}
               </div>
             )}
@@ -430,7 +434,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                   }}
                 >
                   <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontWeight: 700 }}>
-                    {fp.glyph} {strategicSummary.activeProject.displayName}
+                    <Icon name={fp.icon} size="floor" decorative style={{ color: fp.color, verticalAlign: 'middle' }} />{' '}{strategicSummary.activeProject.displayName}
                   </div>
                   <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '2px' }}>
                     {strategicSummary.activeProject.word}
@@ -451,7 +455,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                     : '#b85450';
                   return (
                     <div style={{ fontSize: 'var(--text-xs)' }}>
-                      <span style={{ color: fp.color }}>{fp.glyph}</span>{' '}
+                      <span style={{ color: fp.color, display: 'inline-flex', verticalAlign: 'middle' }}><Icon name={fp.icon} size="floor" decorative /></span>{' '}
                       <span style={{ color: 'var(--text-primary)' }}>{strategicSummary.primaryControl.targetName}</span>{' '}
                       <span style={{ color: healthColor }}>— {strategicSummary.primaryControl.healthLabel}</span>
                       {strategicSummary.controlCount > 1 && (

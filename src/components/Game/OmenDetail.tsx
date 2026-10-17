@@ -9,13 +9,7 @@ import type { OmenState, ActiveOmen } from '../../types/omen';
 import { getOmenTemplateById } from '../../data/omenTemplates';
 import { getSphereColor } from '../../data/sphereIcons';
 import { durationLabel, elapsedLabel } from '../../engine/aftermathWords';
-
-const OMEN_CATEGORY_GLYPHS: Record<string, string> = {
-  doom_echo: '⊘',
-  sphere_surge: '◈',
-  cultural: '⬡',
-  seasonal: '◇',
-};
+import { OmenMark } from './OmenMark';
 
 const OMEN_CATEGORY_LABELS: Record<string, string> = {
   doom_echo: 'Doom Echo',
@@ -35,7 +29,6 @@ function OmenCard({ omen, currentTick, isPrimary }: { omen: ActiveOmen; currentT
   const template = getOmenTemplateById(omen.templateId);
   if (!template) return null;
 
-  const glyph = OMEN_CATEGORY_GLYPHS[omen.category] ?? '◇';
   const color = omen.sphere ? getSphereColor(omen.sphere) : 'var(--accent-gold)';
   const intensity = intensityLabel(omen, currentTick);
   const ticksLeft = omen.startTick + omen.duration - currentTick;
@@ -62,7 +55,9 @@ function OmenCard({ omen, currentTick, isPrimary }: { omen: ActiveOmen; currentT
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-        <span style={{ color, fontSize: '16px' }}>{glyph}</span>
+        <span data-testid="omen-mark" style={{ display: 'inline-flex', color }}>
+          <OmenMark omen={omen} currentTick={currentTick} size="chip" />
+        </span>
         <div>
           <div style={{ fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-primary)' }}>
             {omen.name}

@@ -560,7 +560,14 @@ export const UI_DEBT_ROWS: readonly UiDebtRow[] = [
     sanctioned: 'an IconName in the table',
     roots: ['src/data'],
     extensions: /\.tsx?$/,
-    homes: [],
+    // Law 15's sanctioned magnitude marks (OddsPips, CostPips, DeltaCluster, ForecastDie, the
+    // essence price pip) keep their glyphs in these three tables on purpose (THR-1907, plan
+    // THR-1879 § 9) — a deliberate re-baseline, not a widening.
+    homes: [
+      /^src\/data\/nudge-pip-vocabulary\.ts$/,
+      /^src\/data\/ascendant-bar-content\.ts$/,
+      /^src\/data\/nudge-stage-content\.ts$/,
+    ],
     count: (source) => countGlyphIcons(source.text),
   },
   {

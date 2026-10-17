@@ -105,41 +105,40 @@ export const BEHAVIOR_FAMILY_TO_CALLING: Readonly<Record<BehaviorFamily, string>
 };
 
 /**
- * Glyph, colour and icon per title — the presentation half the family table used to
- * carry. Titles not listed take the fallback; a row can ship with no glyph and
- * still render (Law 4: a designed fallback, not a broken one).
+ * Colour and icon per title — the presentation half the family table used to carry.
+ * Titles not listed take the fallback (Law 4: a designed fallback, not a broken one).
+ * The glyph column retired in THR-1907; every reader draws `icon`.
  */
 export interface CallingPresentationRow {
-  readonly glyph: string;
   readonly color: string;
-  /** The registry idea the calling draws (THR-1904; readers move onto it in THR-1907). */
+  /** The registry idea the calling draws (THR-1904). */
   readonly icon: IconName;
 }
 
 export const CALLING_PRESENTATION: Readonly<Record<string, CallingPresentationRow>> = {
-  trader: { glyph: '¤', color: '#c8a84e', icon: 'trader' },
-  smuggler: { glyph: '¤', color: '#8a7a4e', icon: 'smuggler' },
-  magnate: { glyph: '¤', color: '#e0c060', icon: 'magnate' },
-  mason: { glyph: '⚒', color: '#8a9a7c', icon: 'mason' },
-  founder: { glyph: '⚒', color: '#a0b090', icon: 'founder' },
-  seeker: { glyph: '📜', color: '#5b7fa5', icon: 'discovery' },
-  archivist: { glyph: '📜', color: '#4a6a8a', icon: 'archivist' },
-  zealot: { glyph: '✦', color: '#b85450', icon: 'zealot' },
-  prophet: { glyph: '✦', color: '#d08070', icon: 'prophet' },
-  spider: { glyph: '⚜', color: '#8b6baa', icon: 'spider' },
-  chancellor: { glyph: '⚜', color: '#a08acc', icon: 'chancellor' },
-  knife: { glyph: '🗡', color: '#6a6a72', icon: 'knife' },
-  fence: { glyph: '🗡', color: '#8a8a92', icon: 'fence' },
-  reaver: { glyph: '⚔', color: '#9a6850', icon: 'reaver' },
-  captain: { glyph: '⚔', color: '#b08070', icon: 'captain' },
-  warden: { glyph: '⚔', color: '#7a8a70', icon: 'warden' },
-  mender: { glyph: '✚', color: '#6a9a6e', icon: 'healing' },
-  steward: { glyph: '✚', color: '#8aaa8e', icon: 'steward' },
-  crafter: { glyph: '◈', color: '#5a8aaa', icon: 'crafter' },
-  maker: { glyph: '◈', color: '#7aaacc', icon: 'maker' },
-  wayfarer: { glyph: '⇢', color: '#aa8a5a', icon: 'wayfarer' },
-  pathfinder: { glyph: '⇢', color: '#c0a070', icon: 'pathfinder' },
-  avenger: { glyph: '✕', color: '#b04040', icon: 'vengeance' },
+  trader: { color: '#c8a84e', icon: 'trader' },
+  smuggler: { color: '#8a7a4e', icon: 'smuggler' },
+  magnate: { color: '#e0c060', icon: 'magnate' },
+  mason: { color: '#8a9a7c', icon: 'mason' },
+  founder: { color: '#a0b090', icon: 'founder' },
+  seeker: { color: '#5b7fa5', icon: 'discovery' },
+  archivist: { color: '#4a6a8a', icon: 'archivist' },
+  zealot: { color: '#b85450', icon: 'zealot' },
+  prophet: { color: '#d08070', icon: 'prophet' },
+  spider: { color: '#8b6baa', icon: 'spider' },
+  chancellor: { color: '#a08acc', icon: 'chancellor' },
+  knife: { color: '#6a6a72', icon: 'knife' },
+  fence: { color: '#8a8a92', icon: 'fence' },
+  reaver: { color: '#9a6850', icon: 'reaver' },
+  captain: { color: '#b08070', icon: 'captain' },
+  warden: { color: '#7a8a70', icon: 'warden' },
+  mender: { color: '#6a9a6e', icon: 'healing' },
+  steward: { color: '#8aaa8e', icon: 'steward' },
+  crafter: { color: '#5a8aaa', icon: 'crafter' },
+  maker: { color: '#7aaacc', icon: 'maker' },
+  wayfarer: { color: '#aa8a5a', icon: 'wayfarer' },
+  pathfinder: { color: '#c0a070', icon: 'pathfinder' },
+  avenger: { color: '#b04040', icon: 'vengeance' },
 };
 
-export const CALLING_FALLBACK_PRESENTATION: CallingPresentationRow = { glyph: '◆', color: '#8a8a8a', icon: 'fallback' };
+export const CALLING_FALLBACK_PRESENTATION: CallingPresentationRow = { color: '#8a8a8a', icon: 'fallback' };

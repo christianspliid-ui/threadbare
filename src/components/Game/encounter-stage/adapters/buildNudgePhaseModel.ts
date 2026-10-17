@@ -320,7 +320,6 @@ export function buildNudgeCardModel(
     id: nudge.id,
     libraryCardId: nudge.libraryCardId,
     keyword: keyword?.keyword,
-    keywordIcon: keyword?.icon,
     keywordIconName: keyword?.iconName,
     keywordTypeId: keyword?.typeId,
     name: enrich(nudge.name),

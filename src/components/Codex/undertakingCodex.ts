@@ -6,7 +6,7 @@
  * the designer wiki page reads, so the two cannot disagree.
  *
  * What a card says, in game words only (Law 14 — never a code id):
- *   - the plain phrase (*Raise a company*), the kind's glyph and word,
+ *   - the plain phrase (*Raise a company*), the kind's icon and word,
  *   - what it does in the world: the lexicon's own GM line with generic slots, which
  *     is the game's own voice for the cell. The disposition's note is a designer
  *     sentence that names code symbols, so it is **not** rendered to the player;
@@ -16,7 +16,7 @@
  *   - whether it needs a reason (the motive gate).
  *
  * Decided-but-unbuilt and *later* cells do not appear. A live cell with no phrase,
- * no glyph, no lexicon line or no note fails the build by name (`validate…`), the
+ * no icon, no lexicon line or no note fails the build by name (`validate…`), the
  * same discipline the grid has for an unplaced cell; the live catalog degrades that
  * to a warning so a content slip never blanks the page (NFP #4).
  */
@@ -30,29 +30,7 @@ import { MOTIVE_GATED_VERBS } from '../../data/strategic-action-constants';
 import { LIVE_CELL_NOTES, LIVE_CLASS_CELL_NOTES } from '../../../scripts/undertaking-grid-dispositions';
 import { callingsForCell } from '../../data/division-rule-tables';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from '../../types/rarity';
-
-/** The kind's glyph on its cards — one per object type; the totality test pins the keys. */
-export const UNDERTAKING_KIND_GLYPHS: Readonly<Record<UndertakingObjectTypeId, string>> = {
-  area: '⛰',        // ⛰ mountain — the land
-  location: '⌂',    // ⌂ house — a settlement
-  place: '▣',       // ▣ a room within
-  route: '⇢',       // ⇢ a road
-  pilgrim_way: '✶', // ✶ a star over the road — a way to a holy place (THR-1660)
-  faction: '⚑',     // ⚑ a banner
-  company: '⁂',     // ⁂ three marks travelling together
-  army: '⚔',        // ⚔ crossed swords
-  network: '⌗',     // ⌗ a web
-  companion: '♟',   // ♟ one who walks beside
-  item: '◆',        // ◆ a possession
-  power: '✧',       // ✧ a working
-  condition: '✕',   // ✕ an affliction
-  agreement: '☍',   // ☍ a bond of words
-  standing: '⚖',    // ⚖ how one is held
-  mortal: '♙',      // ♙ a person — the plot's object (THR-1430)
-  // A beast — the lair's own (THR-1560). The map's lair icon is an SVG, so the codex
-  // takes the nearest text glyph: a creature, not a person.
-  monster: '♞',
-};
+import { ICON_FOR_UNDERTAKING_OBJECT } from '../../data/icons/conceptIcons';
 
 /** The cell that undoes a verb on the same kind, when the grid has one. */
 export const COUNTER_PLAY_OF: Readonly<Record<UndertakingVerbVariant, UndertakingVerbVariant | null>> = {
@@ -122,7 +100,7 @@ export function validateUndertakingCodex(templates: readonly StrategicActionTemp
     const typeId = t.objectTypeId;
     if (!variant || !typeId) { problems.push({ cellId: t.id, problem: 'not a cell (no variant or object type)' }); continue; }
     if (!t.displayName || t.displayName.includes('cell.')) problems.push({ cellId: t.id, problem: 'no plain phrase' });
-    if (!UNDERTAKING_KIND_GLYPHS[typeId]) problems.push({ cellId: t.id, problem: `no glyph for kind '${typeId}'` });
+    if (!ICON_FOR_UNDERTAKING_OBJECT[typeId]) problems.push({ cellId: t.id, problem: `no icon for kind '${typeId}'` });
     if (!cellLineSet(variant, typeId).narration) problems.push({ cellId: t.id, problem: 'no lexicon line' });
     if (!liveNoteFor(typeId, variant)) problems.push({ cellId: t.id, problem: 'no disposition note' });
   }
@@ -158,7 +136,7 @@ export function buildUndertakingCodexEntries(): CodexEntry[] {
     entries.push({
       id: t.id,
       name: t.displayName,
-      glyph: UNDERTAKING_KIND_GLYPHS[typeId],
+      mark: { icon: ICON_FOR_UNDERTAKING_OBJECT[typeId] },
       // A gated verb is the heavier deed — it needs a reason — and reads a tier up.
       tier: gated ? 2 : 1,
       tierName: RARITY_TIER_NAMES[gated ? 2 : 1],

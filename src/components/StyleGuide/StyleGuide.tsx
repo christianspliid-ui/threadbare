@@ -1983,14 +1983,14 @@ function mkVisual(partial: Partial<EntityVisualDescriptor> & Pick<EntityVisualDe
 }
 
 function EntityVisualDemo() {
-  const heroArt = mkVisual({ tier: 'art', src: '/concept-art/mountains.png', glyph: '⌂', gradientIndex: 4, alt: 'Ashen Peaks', kind: 'location' });
-  const heroFallback = mkVisual({ tier: 'fallback', glyph: '⌂', gradientIndex: 2, alt: 'Unmapped Reach', kind: 'location' });
+  const heroArt = mkVisual({ tier: 'art', src: '/concept-art/mountains.png', glyph: '', gradientIndex: 4, alt: 'Ashen Peaks', kind: 'location' });
+  const heroFallback = mkVisual({ tier: 'fallback', glyph: '', gradientIndex: 2, alt: 'Unmapped Reach', kind: 'location' });
   const portraitArt = mkVisual({ tier: 'art', src: '/portraits/trickster.png', glyph: 'K', gradientIndex: 1, alt: 'Kael', kind: 'agent' });
   const portraitFallback = mkVisual({ tier: 'fallback', glyph: 'S', gradientIndex: 3, alt: 'Serafina', kind: 'agent' });
   const chipArt = mkVisual({ tier: 'art', src: '/portraits/oathkeeper.png', glyph: 'V', gradientIndex: 5, alt: 'Veiren', kind: 'agent' });
-  const chipFaction = mkVisual({ tier: 'fallback', glyph: '⚜', gradientIndex: 0, alt: 'The Covenant', kind: 'faction' });
-  const monsterArt = mkVisual({ tier: 'art', src: '/portraits/monster.png', glyph: '☠', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
-  const monsterFallback = mkVisual({ tier: 'fallback', glyph: '☠', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
+  const chipFaction = mkVisual({ tier: 'fallback', glyph: '', gradientIndex: 0, alt: 'The Covenant', kind: 'faction' });
+  const monsterArt = mkVisual({ tier: 'art', src: '/portraits/monster.png', glyph: '', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
+  const monsterFallback = mkVisual({ tier: 'fallback', glyph: '', gradientIndex: 5, alt: 'Grothmaw the Hollow', kind: 'monster' });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -2059,7 +2059,7 @@ function EntityVisualDemo() {
                 descriptor={mkVisual({
                   tier: 'art',
                   src: getMonsterPortraitUrl(family) ?? undefined,
-                  glyph: '☠',
+                  glyph: '',
                   gradientIndex: gradientIndexForId(family),
                   alt: MONSTER_FAMILIES[family].cardLine,
                   kind: 'monster',
@@ -2078,7 +2078,7 @@ function EntityVisualDemo() {
             <EntityVisual
               key={i}
               size="chip"
-              descriptor={mkVisual({ tier: 'fallback', glyph: '◇', gradientIndex: i, alt: `gradient ${i}`, kind: 'unknown' })}
+              descriptor={mkVisual({ tier: 'fallback', glyph: '', gradientIndex: i, alt: `gradient ${i}`, kind: 'unknown' })}
             />
           ))}
         </Row>

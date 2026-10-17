@@ -31,7 +31,6 @@ import {
   pipReadingLabel,
 } from '../../../../data/nudge-pip-vocabulary';
 import {
-  NUDGE_CARD_TYPE_ICONS,
   nudgeCardKeyword,
 } from '../../../../data/nudge-card-display';
 import { NUDGE_CARD_TYPES, NUDGE_CARD_LIBRARY } from '../../../../data/nudge-card-library';
@@ -363,7 +362,6 @@ describe('buildNudgePhaseModel — card-row display model', () => {
     // Derived from the library, not from a parallel field on `StepNudge`.
     const boost = NUDGE_CARD_TYPES.find((t) => t.id === 'boost')!;
     expect(card.keyword).toBe(boost.keyword);
-    expect(card.keywordIcon).toBe(NUDGE_CARD_TYPE_ICONS.boost);
     // THR-1906 — the chip's carved icon rides the same model.
     expect(card.keywordIconName).toBe('boost');
   });
@@ -398,7 +396,6 @@ describe('buildNudgePhaseModel — card-row display model', () => {
       const keyword = nudgeCardKeyword(member.id);
       expect(keyword, `no keyword for ${member.id}`).toBeDefined();
       expect(keyword!.keyword.length).toBeGreaterThan(0);
-      expect(keyword!.icon.length).toBeGreaterThan(0);
       // THR-1906 — every library card's chip draws a carved icon from the registry.
       expect(isIconName(keyword!.iconName), `${member.id} → ${keyword!.iconName}`).toBe(true);
     }

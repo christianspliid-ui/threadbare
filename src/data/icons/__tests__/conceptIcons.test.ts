@@ -29,7 +29,8 @@ import { SUBCATEGORY_GLYPHS } from '../../../components/Game/attachmentGlyphs';
 import { LOCATION_ICON_REGISTRY } from '../../../components/HexMapV2/locations/locationIconRegistry';
 import { CARD_SUBCATEGORY_IDS, LEGENDARY_SUBCATEGORY_ID } from '../../../components/Codex/charteredKindsCodex';
 import { CALLING_FALLBACK_PRESENTATION, CALLING_PRESENTATION } from '../../calling-content';
-import { NUDGE_CARD_TYPE_ICON_NAMES, NUDGE_CARD_TYPE_ICONS } from '../../nudge-card-display';
+import { NUDGE_CARD_TYPE_ICON_NAMES } from '../../nudge-card-display';
+import { NUDGE_CARD_TYPES } from '../../nudge-card-library';
 import { getCodexCategories } from '../../../components/Codex/codexRegistry';
 
 /** Keys of `map` with no entry among `liveKeys`, as "<map>: <key>" lines. */
@@ -78,8 +79,8 @@ describe('string-keyed sources have an entry for every live key', () => {
     expect(Object.keys(ICON_FOR_CHARTERED_GROUP).sort()).toEqual([...Object.values(CARD_SUBCATEGORY_IDS), LEGENDARY_SUBCATEGORY_ID].sort());
   });
 
-  it('every card type with a glyph has a carved icon', () => {
-    expect(Object.keys(NUDGE_CARD_TYPE_ICON_NAMES).sort()).toEqual(Object.keys(NUDGE_CARD_TYPE_ICONS).sort());
+  it('every card type in the library has a carved icon', () => {
+    expect(Object.keys(NUDGE_CARD_TYPE_ICON_NAMES).sort()).toEqual(NUDGE_CARD_TYPES.map(t => t.id).sort());
   });
 
   it('a fixture key with no entry is named, map and key', () => {

@@ -38,40 +38,10 @@ export const MAX_COST_PIPS = 6;
 export const COST_OVERFLOW_GLYPH = '⋯';
 
 /**
- * Keyword icon per card type. One glyph, chosen to read at chip size and to
- * carry the type's *feel* rather than to illustrate it literally.
- *
- * Keyed on the live {@link NudgeCardTypeId} union, so a type added to the
- * library without an icon here is a type error rather than a blank chip.
- */
-export const NUDGE_CARD_TYPE_ICONS: Readonly<Record<NudgeCardTypeId, string>> = {
-  boost: '◈',
-  heavy_hand: '✊',
-  insurance: '⛨',
-  mercy: '☙',
-  gambit: '⚄',
-  side_bet: '⚂',
-  long_game: '⧗',
-  whisper: '❧',
-  trait_card: '❖',
-  signature: '✶',
-  bargain: '⚖',
-  undertow: '≈',
-  stumble: '⤫',
-  kindled_ambition: '✧',
-  omen: '☄',
-  cache: '◫',
-  balm: '❦',
-  veil: '☁',
-  favor: '⚭',
-  fellowship: '⚯',
-  compulsion: '➶',
-};
-
-/**
  * The carved icon per card type (THR-1904, plan THR-1879 Appendix B). The keyword chip draws it
- * (THR-1906); the picture band's fallback tile draws it too; `NUDGE_CARD_TYPE_ICONS` remains only as
- * the descriptor's required glyph until S4b (THR-1907) retires the glyph column.
+ * (THR-1906) and so does the picture band's fallback tile; the text-glyph column it replaced is
+ * gone (THR-1907). Keyed on the live {@link NudgeCardTypeId} union, so a type added to the library
+ * without an icon here is a type error rather than a blank chip.
  * Several types draw an idea another class shares (`kindled_ambition` → `ambition`, `whisper` →
  * `reveal`): one meaning, one shape.
  */
@@ -103,8 +73,7 @@ export interface NudgeCardKeyword {
   readonly typeId: NudgeCardTypeId;
   /** Player-facing keyword, as printed on the card. */
   readonly keyword: string;
-  readonly icon: string;
-  /** The carved icon for the card type (THR-1906); the chip draws it ahead of `icon`. */
+  /** The carved icon for the card type (THR-1906). */
   readonly iconName: IconName;
 }
 
@@ -125,7 +94,6 @@ export function nudgeCardKeyword(libraryCardId: string | undefined): NudgeCardKe
   return {
     typeId: member.typeId,
     keyword: type.keyword,
-    icon: NUDGE_CARD_TYPE_ICONS[member.typeId],
     iconName: NUDGE_CARD_TYPE_ICON_NAMES[member.typeId],
   };
 }

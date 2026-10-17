@@ -35,7 +35,7 @@ describe('codex — the tag filter row as composed', () => {
 
   it('is absent from a category the vocabulary does not yet describe', () => {
     render(<Codex />);
-    fireEvent.click(screen.getAllByText('Divine Actions')[0]);
+    fireEvent.click(screen.getAllByText('Divine actions')[0]);
     expect(document.querySelector('[data-testid="codex-tag-filter"]')).toBeNull();
   });
 

@@ -194,7 +194,7 @@ describe('presentation and the legacy map', () => {
     const stored = readStoredCalling(graph.getNode('kael'))!;
     expect(getCallingPresentation(graph.getNode('kael'), 'merchant-expansion').titleKey).toBe(stored.titleKey);
     expect(getCallingPresentation(undefined, null).title).toBe(CALLING_FALLBACK_TITLE);
-    expect(getCallingPresentation(undefined, null).glyph).toBeTruthy();
+    expect(getCallingPresentation(undefined, null).icon).toBe('fallback');
   });
 
   it('at least sixteen titles, one word each, no numerals', () => {

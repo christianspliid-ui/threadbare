@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import type { CodexEntry } from './codexRegistry';
+import { CodexMarkIcon } from './CodexMarkIcon';
 import { CODEX_RUN_STATE_BADGE, SIGNATURE_STATE_COPY, type CodexRunState } from './codexRunState';
 
 interface CodexCardProps {
@@ -65,8 +66,8 @@ export const CodexCard = memo(function CodexCard({
             }}
           />
         ) : (
-          <span style={{ fontSize: 'var(--text-base)', lineHeight: 1 }}>
-            {entry.glyph}
+          <span style={{ display: 'inline-flex', color: 'var(--accent-gold)', lineHeight: 1 }}>
+            <CodexMarkIcon mark={entry.mark} />
           </span>
         )}
         <span

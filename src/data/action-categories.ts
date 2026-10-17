@@ -12,9 +12,9 @@
  * Now both readers import this file and keep no prefix arms of their own:
  *   - `ACTION_CATEGORIES` declares every category once — its Codex tab label and its facet
  *     name in the designer action catalog. The record is closed over `ActionCategory`, so a
- *     category without a label is a type error. Its glyph lives beside the Codex's other
- *     glyphs (`ACTION_CATEGORY_GLYPHS` in codexRegistry.ts, also closed over the union) until
- *     THR-1885 moves every category glyph onto the icon registry.
+ *     category without a label is a type error. Labels are sentence case (the Codex sets them
+ *     as bold labels). Its icon lives beside the Codex's other marks (`ACTION_CATEGORY_ICONS`
+ *     in codexRegistry.ts, also closed over the union; the text glyphs retired in THR-1907).
  *   - `ACTION_CATEGORY_RULES` maps id-prefixes (and a few bare ids) to a category. Rule order
  *     is the Codex's entry order, so keep new rows grouped with their category.
  *   - `uncategorisedActionMessages()` names the prefix and this file for any player-castable
@@ -58,13 +58,13 @@ export interface ActionCategoryDef {
  * union without a row here (or a row without a label) fails the typecheck.
  */
 export const ACTION_CATEGORIES = {
-  divine: { label: 'Divine Actions', catalogFacet: 'divine' },
-  hex: { label: 'Hex Actions', catalogFacet: 'hex' },
-  location: { label: 'Place Actions', catalogFacet: 'location' },
-  artifact: { label: 'Artifact Actions', catalogFacet: 'artifact' },
-  company: { label: 'Company Actions', catalogFacet: 'company' },
-  threads: { label: 'Thread & Insight', catalogFacet: 'threads' },
-  actions: { label: 'Mortal Actions', catalogFacet: 'action' },
+  divine: { label: 'Divine actions', catalogFacet: 'divine' },
+  hex: { label: 'Hex actions', catalogFacet: 'hex' },
+  location: { label: 'Place actions', catalogFacet: 'location' },
+  artifact: { label: 'Artifact actions', catalogFacet: 'artifact' },
+  company: { label: 'Company actions', catalogFacet: 'company' },
+  threads: { label: 'Thread & insight', catalogFacet: 'threads' },
+  actions: { label: 'Mortal actions', catalogFacet: 'action' },
 } as const satisfies Record<ActionCategory, ActionCategoryDef>;
 
 /** Category ids in Codex tab order. */

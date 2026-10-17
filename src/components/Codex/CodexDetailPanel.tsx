@@ -29,6 +29,7 @@
 
 import { Fragment, memo, useSyncExternalStore } from 'react';
 import type { CodexEntry } from './codexRegistry';
+import { CodexMarkIcon } from './CodexMarkIcon';
 import { detailConcepts, splitDetailValue } from './codexConcepts';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
@@ -95,7 +96,9 @@ export const CodexDetailPanel = memo(function CodexDetailPanel({
         className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
         style={{ borderBottom: `2px solid ${entry.tierColor}40` }}
       >
-        <span style={{ fontSize: 'var(--text-xl)' }}>{entry.glyph}</span>
+        <span style={{ display: 'inline-flex', color: 'var(--accent-gold)' }}>
+          <CodexMarkIcon mark={entry.mark} size="alone" />
+        </span>
         <div className="flex-1 min-w-0">
           <h2
             className="truncate"

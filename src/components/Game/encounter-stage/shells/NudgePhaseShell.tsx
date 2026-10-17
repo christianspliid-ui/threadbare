@@ -230,10 +230,10 @@ export function NudgeCard({
         },
         picture: {
           tier: artPath ? 'art' : 'fallback',
-          // `src` present ⇒ art tier; the glyph stays populated either way
-          // because EntityVisual uses it as the <img> onError swap target.
+          // `src` present ⇒ art tier. With no text glyph (THR-1907) the fallback
+          // tile draws the card type's icon, or the encounter kind's for a one-off.
           ...(artPath ? { src: artPath } : {}),
-          glyph: card.keywordIcon ?? (card.sphere ? '◈' : '◇'),
+          glyph: '',
           ...(card.keywordIconName ? { iconName: card.keywordIconName } : {}),
           gradientIndex: gradientIndexForId(card.id),
           alt: card.name,
@@ -245,7 +245,6 @@ export function NudgeCard({
           ? {
               keyword: {
                 label: card.keyword,
-                icon: card.keywordIcon,
                 iconName: card.keywordIconName,
                 ...(card.keywordTypeId ? { tooltipId: `ui.card.keyword.${card.keywordTypeId}` } : {}),
               },
