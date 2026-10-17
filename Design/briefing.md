@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 19:58 local (17:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 20:57 local (18:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -38,16 +38,17 @@ Say "veto <title>" to reverse any of these. (Yesterday's aftermath-wording decis
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** The builder is on [the god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground); its run started at 19:51 and is active. Since the last brief, [icon sweep 2: the data tables and the Codex onto carved icons](https://linear.app/threadbare/issue/THR-1907/icon-sweep-2-the-data-tables-and-the-codex-onto-carved-icons) merged ([#2462](https://github.com/christianspliid-ui/threadbare/pull/2462)).
+**Backed up: 20 ready, one in progress.** The builder is on [mortal wealth](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money); its run started at 20:43 and is active.
 
+- [The god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) (prayers and the faithful) is built but **held**: the plan's own measurement failed. One test world gets 19 prayers in a season, above the flood line of 12, and another gets none. The builder proposed a fix: a god hears at most one prayer at a time, a season apart. The work waits in draft [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463), and the design lane rules on the fix. Not your call.
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
 - Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy) and [regional monopolies pay rent and can embargo](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys).
-- High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) — a removal, so the freeze allows it.
+- High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject). It removes steps, so the freeze allows it.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green otherwise: the live site serves the latest main (with the icon sweep), main's checks and the scheduled background jobs pass, no PR is waiting to merge, and all 12 scheduled lanes are on schedule. Engine speed is measured again and normal (140 ms a tick, within range of the week).
-- Overnight quiet: every lane stopped at 18:39 Friday and resumed at 11:33 Saturday. That gap falls overnight and on a weekend, so it is not a separate ask. The lead ask covers it.
-- The home checkout's installed tools are still missing their command shims; this run borrowed a healthy install from a worktree. Builder housekeeping.
-- The tidy-up job last ran at 19:40: 544 old worktrees, 5 items waiting for a decision (builder housekeeping). You sent no new Discord messages.
+- Everything else is healthy. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is armed to merge (the one draft is the held faith work above). All 12 scheduled lanes are on time. Engine speed is normal: 144 ms a tick, 19% above the week's median of 120 and under the 25% warning line.
+- Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
+- The home checkout's installed tools still lack their command shims, so this run borrowed a healthy install from a worktree. That is builder housekeeping.
+- The tidy-up job last ran at 20:40: 545 old worktrees and 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
