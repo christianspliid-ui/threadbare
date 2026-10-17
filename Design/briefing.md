@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 17:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 18:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,25 +33,22 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same plan — **a trade run pays a mortal at most once a day.** *Veto:* **"pay every trade run"**.
 - Same plan — **a lane a mortal claims counts as a lane they hold.** *Veto:* **"only lanes they opened or toll"**.
 - Same plan — **the undertaking builds come last**, after [mortal wealth](https://linear.app/threadbare/issue/THR-1936). *Veto:* **"build the founded-town ruler now"**.
-- [Outcome words that mislead](https://linear.app/threadbare/issue/THR-1860/outcome-words-that-mislead-completed-at-great-cost-with-no-cost-shown) — **every encounter aftermath opens with what decided it.** ([build ticket](https://linear.app/threadbare/issue/THR-1964/the-aftermath-opens-with-what-decided-it-one-cause-line-first-won-at-a)) *Veto:* **"open the aftermath with the story prose instead"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-16e.md)*
-- Same ticket — **"completed at great cost" becomes "won, at a price", and that ending always names its price.** *Veto:* **"only say 'at a price' when there is a scar"**.
-- Same ticket — **the Notables panel says finished agendas fade, and the Doom tooltip says The First's road follows the clock.** ([build ticket](https://linear.app/threadbare/issue/THR-1965/notables-and-doom-say-why-a-fade-line-under-finished-agendas-the)) *Veto:* **"leave the doom lines as they were"**.
 
-Say "veto <title>" to reverse any of these.
+Say "veto <title>" to reverse any of these. (Yesterday's aftermath-wording decisions have passed their 24-hour veto window and dropped off.)
 
 ## Queue
 
-**Backed up: 23 ready, one in progress.** The builder is on [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless). Its branch is pushed and the run is active.
+**Backed up: 23 ready, one in progress.** The builder is on [icon sweep 2: the data tables and the Codex onto carved icons](https://linear.app/threadbare/issue/THR-1907/icon-sweep-2-the-data-tables-and-the-codex-onto-carved-icons); its run is active. Since the last brief, [hunger and unrest, first slice](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) and [the pipeline freeze until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) merged.
 
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
 - Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy) and [regional monopolies pay rent and can embargo](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys).
-- High, waiting: [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) — a removal, so the freeze allows it.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site serves the latest commit on main (85852c0f). Main's checks and the scheduled background jobs pass, and no PR is waiting to merge.
-- Engine speed: tick cost 184 ms/tick steady, 53% above the 7-day median (121, 136 rows since 57da1b5b); top phase agent_decision, 618 agents. Name the merges between 57da1b5b and 85852c0f: git log --oneline --merges 57da1b5b..85852c0f. *The same commit measured 117 ms an hour ago, and the builder was running beside this measurement. This is probably load on the machine, not a slowdown in the code. Next hour's reading will show which.*
+- The live site is current: everything merged since the last game build touched only docs. Main's checks and the scheduled background jobs pass, and no PR is waiting to merge.
+- Engine speed: not measured this hour. The home checkout's installed tools are missing their command shims (`esbuild` absent), so the measurement could not start. Builder housekeeping; no trend row published.
 - Overnight quiet: every lane stopped at 18:39 Friday and resumed at 11:33 Saturday. That gap falls overnight and on a weekend, so it is not a separate ask. The lead ask covers it.
-- The builder is running and all 12 scheduled lanes are on schedule.
-- The tidy-up job last ran at 17:50: 544 old worktrees, 5 items waiting for a decision (builder housekeeping). You sent no new Discord messages.
+- The builder is running and shipping (three merges this afternoon), and all 12 scheduled lanes are on schedule.
+- The tidy-up job last ran at 18:40: 544 old worktrees, 5 items waiting for a decision (builder housekeeping). You sent no new Discord messages.

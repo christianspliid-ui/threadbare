@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-17 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-17 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-17: new delivery-pipeline work is frozen until 13 Nov; only removals and fixes for broken runs go ahead** ([THR-1946](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes)). Merged via [#2461](https://github.com/christianspliid-ui/threadbare/pull/2461).
+- **2026-10-17: a town's unrest now rises with hunger, armies, sickness and grief, and calms when it is fed (hunger and unrest, first slice)** ([THR-1934](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless)). Merged via [#2460](https://github.com/christianspliid-ui/threadbare/pull/2460) and live.
 - **2026-10-17: towns whose crisis has burned out free their slot, so new scarcity crises can start elsewhere** ([THR-1919](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint)). Merged via [#2459](https://github.com/christianspliid-ui/threadbare/pull/2459) and live.
 - **2026-10-17: armies fight only enemies, defend first, and march for what a town is worth (war aims, first slice)** ([THR-1933](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest)). Merged via [#2457](https://github.com/christianspliid-ui/threadbare/pull/2457) and live.
 - **2026-10-17: armies no longer besiege towns they have no quarrel with** ([THR-1922](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard)). Merged via [#2456](https://github.com/christianspliid-ui/threadbare/pull/2456) and live.
@@ -36,8 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-16: shared buttons, the window chrome and the duplicate symbols now draw the carved icons** ([THR-1906](https://linear.app/threadbare/issue/THR-1906/icon-sweep-1-shared-primitives-chrome-and-the-law-9-duplicates-onto)). Merged via [#2451](https://github.com/christianspliid-ui/threadbare/pull/2451) and live.
 - **2026-10-16: one work now reads one progress word everywhere (barely begun, under way, halfway, well along, nearly done, or faltering)** ([THR-1962](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the)). Merged via [#2449](https://github.com/christianspliid-ui/threadbare/pull/2449) and live.
 - **2026-10-16: the crown is built: a realm that holds a town can win oaths of fealty and collect a share of its vassals' coin** ([THR-1932](https://linear.app/threadbare/issue/THR-1932/plan-doc-the-crown-oaths-of-fealty-and-tax-how-a-faction-wins-them)). Merged via [#2448](https://github.com/christianspliid-ui/threadbare/pull/2448) and live.
-- **2026-10-16: every place on the map now draws its carved icon in the map ink; hidden and in-transit places stay off the map** ([THR-1903](https://linear.app/threadbare/issue/THR-1903/carved-places-on-the-map-every-place-type-draws-its-carved-shape-in)). Merged via [#2447](https://github.com/christianspliid-ui/threadbare/pull/2447) and live.
-- **2026-10-16: the map camera has zoom buttons and map keys, can centre on your First, and opens on known land** ([THR-1900](https://linear.app/threadbare/issue/THR-1900/map-camera-and-controls-zoom-buttons-centre-on-my-first-show-known)). Merged via [#2445](https://github.com/christianspliid-ui/threadbare/pull/2445).
 
 ---
 
