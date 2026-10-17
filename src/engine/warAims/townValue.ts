@@ -49,7 +49,7 @@ export function townValueFor(ctx: WarAimContext, townId: string): number {
     const prosperity = typeof town.node.properties.prosperity === 'number' ? town.node.properties.prosperity : 0;
     return prosperity / WAR_AIM_FALLBACK_VALUE_DIVISOR;
   }
-  let value = townTaxOf(town.node) + placeYieldOf(town.node);
+  let value = townTaxOf(town.node, ctx.graph) + placeYieldOf(town.node);
   for (const place of ctx.townPlaces.get(townId) ?? []) value += placeYieldOf(place);
   for (const { field, share } of fieldsOf(ctx, townId)) value += placeYieldOf(field.node) / share;
   return value;

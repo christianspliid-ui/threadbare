@@ -4,11 +4,12 @@
  * The first producer of location traits from the world's **own scalars**. Before
  * this phase every `trait.condition.location.*` edge was planted by an encounter
  * aftermath; nothing read a town's long prosperity or a shrine-hill's saturation and
- * said so on the page. Now five rules run over the place tier every tick:
+ * said so on the page. Now six rules run over the place tier every tick:
  *
  * | Trait | Enter | Release | Co-condition |
  * |---|---|---|---|
  * | *Welcoming* | prosperity ≥ `LOCATION_TRAIT_WELCOMING_ENTER` | `< …_RELEASE` | — |
+ * | *Restless* | unrest ≥ `LOCATION_TRAIT_RESTLESS_ENTER` | `< …_RELEASE` | — (THR-1934) |
  * | *Lawless* | unrest ≥ `LOCATION_TRAIT_LAWLESS_ENTER` | `< …_RELEASE` | — |
  * | *Veil-thin* | saturation ≥ `LOCATION_TRAIT_VEIL_THIN_ENTER` | `< …_RELEASE` | not while *Haunted* |
  * | *Haunted* | saturation ≥ `LOCATION_TRAIT_HAUNTED_ENTER` | `< …_RELEASE` | `deathCount ≥ LOCATION_TRAIT_HAUNTED_DEATHS` |
@@ -72,6 +73,8 @@ import {
   LOCATION_TRAIT_WELCOMING_RELEASE,
   LOCATION_TRAIT_LAWLESS_ENTER,
   LOCATION_TRAIT_LAWLESS_RELEASE,
+  LOCATION_TRAIT_RESTLESS_ENTER,
+  LOCATION_TRAIT_RESTLESS_RELEASE,
   LOCATION_TRAIT_VEIL_THIN_ENTER,
   LOCATION_TRAIT_VEIL_THIN_RELEASE,
   LOCATION_TRAIT_HAUNTED_ENTER,
@@ -192,6 +195,14 @@ export const LOCATION_TRAIT_RULES: readonly LocationTraitRule[] = [
     input: 'prosperity',
     enter: LOCATION_TRAIT_WELCOMING_ENTER,
     release: LOCATION_TRAIT_WELCOMING_RELEASE,
+  },
+  // THR-1934 — below Lawless on the same number; a town turns Restless first.
+  {
+    id: 'restless',
+    traitId: LOCATION_TRAIT_IDS.restless,
+    input: 'unrest',
+    enter: LOCATION_TRAIT_RESTLESS_ENTER,
+    release: LOCATION_TRAIT_RESTLESS_RELEASE,
   },
   {
     id: 'lawless',

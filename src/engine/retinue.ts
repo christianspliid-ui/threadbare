@@ -13,6 +13,7 @@ import { TIER_NAMES } from '../types/influence';
 import { getAgentPortraitUrlFromProperties } from '../data/portrait-assets';
 import { getAgentFaction, getFactionMembershipEdges } from './graphQueries';
 import { isPlaceNode } from './sublocationShape';
+import { getProsperityTier } from './phaseProsperity';
 import { resolveAttentionMode } from './attentionCadence';
 import type { ControlEffect } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
@@ -340,17 +341,6 @@ function resolveFactionDominantSphere(graph: WorldGraph, factionNodeId: string):
 }
 
 /**
- * Derive prosperity label from a prosperity score (0-100).
- */
-function deriveProsperityLabel(score: unknown): string {
-  const num = typeof score === 'number' ? score : 0;
-  if (num >= 70) return 'Prosperous';
-  if (num >= 40) return 'Stable';
-  if (num >= 10) return 'Struggling';
-  return 'Destitute';
-}
-
-/**
  * Derive a 5-tier human-readable label from populationHealth (0-100). THR-401.
  * Returns null when the property is absent (no UI surface needed).
  */
@@ -549,7 +539,8 @@ export function getThreadedNodes(
       // Location
       const hexCol = (nodeProps.hexCol as number) ?? 0;
       const hexRow = (nodeProps.hexRow as number) ?? 0;
-      const prosperityLabel = deriveProsperityLabel(nodeProps.prosperity);
+      // THR-1934 — getProsperityTier's five words, the one ladder every surface speaks.
+      const prosperityLabel = getProsperityTier(typeof nodeProps.prosperity === 'number' ? nodeProps.prosperity : 0);
 
       // Find controlling faction via incoming 'controls' edges from faction actors
       let controllingFaction: string | null = null;

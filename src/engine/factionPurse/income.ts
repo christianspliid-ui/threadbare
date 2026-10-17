@@ -22,10 +22,12 @@ import { readResources } from '../resourceEconomy';
 import { getResourceClass } from '../../data/resource-classes';
 import { WEALTH_ROUTE_CONTROL_INCOME } from '../wealth';
 import { isPlaceNode } from '../sublocationShape';
+import { LOCATION_TRAIT_IDS } from '../../data/location-trait-constants';
 import { RUINED_SETTLEMENT_PROSPERITY_FLOOR } from '../../data/strategic-action-constants';
 import {
   TOWN_TAX_BASE,
   TOWN_TAX_PROSPERITY_PIVOT,
+  LAWLESS_TOWN_TAX_FACTOR,
   SETTLEMENT_TIER_SUBTYPES,
   YIELD_RATE,
   STOCK_TIER_MULT,
@@ -199,12 +201,19 @@ export function taxHolderOf(
 
 // ─── Per-source formulas ──────────────────────────────────────────────────
 
-/** Town tax a settlement pays its holder today. A ruin pays nothing; no prosperity reads as the pivot. */
-export function townTaxOf(settlement: GraphNode): number {
+/**
+ * Town tax a settlement pays its holder today. A ruin pays nothing; no prosperity reads as the pivot.
+ * THR-1934 — given the graph, a Lawless town (a `has_trait` edge to the lawless trait) pays
+ * `LAWLESS_TOWN_TAX_FACTOR` of it. Without a graph the result is unchanged.
+ */
+export function townTaxOf(settlement: GraphNode, graph?: WorldGraph): number {
   if (!isSettlement(settlement)) return 0;
   const prosperity = num(settlement.properties.prosperity) ?? TOWN_TAX_PROSPERITY_PIVOT;
   if (prosperity <= RUINED_SETTLEMENT_PROSPERITY_FLOOR) return 0;
-  return TOWN_TAX_BASE * prosperity / TOWN_TAX_PROSPERITY_PIVOT;
+  const tax = TOWN_TAX_BASE * prosperity / TOWN_TAX_PROSPERITY_PIVOT;
+  const lawless = graph?.getOutgoingEdges(settlement.id, 'has_trait')
+    .some(e => e.target === LOCATION_TRAIT_IDS.lawless) ?? false;
+  return lawless ? tax * LAWLESS_TOWN_TAX_FACTOR : tax;
 }
 
 /** What a held place's resource bag yields today. Read only. */
@@ -326,7 +335,7 @@ export function computePurseIncome(
     if (!holder) continue;
     const day = out.get(holder);
     if (!day) continue;
-    const tax = townTaxOf(place);
+    const tax = townTaxOf(place, graph);
     if (tax > 0) {
       day.income.townTax += tax;
       day.taxHolderOf.push(placeId);

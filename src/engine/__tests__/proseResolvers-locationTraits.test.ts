@@ -83,6 +83,7 @@ describe('locationTraitResolver', () => {
   it('every location trait has a prose row that says its word', () => {
     const words: Record<string, string> = {
       welcoming: 'welcoming',
+      restless: 'restless',
       lawless: 'lawless',
       veilThin: 'veil',
       haunted: 'haunted',

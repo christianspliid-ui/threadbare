@@ -52,6 +52,7 @@ import {
   SCARCITY_ARC_FLASHPOINT_HOLD_DAYS,
 } from '../../data/economic-power-config';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
+import { UNREST_PRESSURE_ENABLED, GRANARY_RIOT_TEMPLATE_ID } from '../../data/unrest-pressure-constants';
 import type { PendingEncounterSeed } from '../../types/unifiedAction';
 
 /**
@@ -355,12 +356,20 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
     if (nextPhase === 'hoarding' && seedBase) {
       newSeeds.push({ ...seedBase, encounterFamily: 'mct.quest', seedLabel: `Hoarding takes hold at ${loc.name} — someone is sitting on the ${arc.resourceId}` });
     } else if (nextPhase === 'unrest') {
-      const prev = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
-      loc.properties.unrest = Math.min(100, prev + SCARCITY_ARC_UNREST_DELTA);
-      if (seedBase) newSeeds.push({ ...seedBase, encounterFamily: 'cg.quest', seedLabel: `Hunger turns to anger at ${loc.name}` });
+      // THR-1934 — under the pressure model hunger carries the anger (the unrest
+      // phase's hunger input), so the arc adds no jump; its scene is the granary riot.
+      if (!UNREST_PRESSURE_ENABLED) {
+        const prev = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
+        loc.properties.unrest = Math.min(100, prev + SCARCITY_ARC_UNREST_DELTA);
+        if (seedBase) newSeeds.push({ ...seedBase, encounterFamily: 'cg.quest', seedLabel: `Hunger turns to anger at ${loc.name}` });
+      } else if (seedBase) {
+        newSeeds.push({ ...seedBase, templateId: GRANARY_RIOT_TEMPLATE_ID, seedLabel: `Hunger turns to anger at ${loc.name}` });
+      }
     } else if (nextPhase === 'flashpoint') {
-      const prev = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
-      loc.properties.unrest = Math.min(100, prev + SCARCITY_ARC_FLASHPOINT_UNREST_DELTA);
+      if (!UNREST_PRESSURE_ENABLED) {
+        const prev = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
+        loc.properties.unrest = Math.min(100, prev + SCARCITY_ARC_FLASHPOINT_UNREST_DELTA);
+      }
       if (seedBase) newSeeds.push({ ...seedBase, templateId: 'encounter_route_embargo', seedLabel: `${loc.name} reaches the breaking point over ${arc.resourceId}` });
       chronicleEntries.push({
         id: `scarcity_arc_flashpoint_${loc.id}_${tick}`,

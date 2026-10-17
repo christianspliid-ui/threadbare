@@ -63,7 +63,7 @@ function makeLocation(overrides?: Partial<Extract<ThreadedNode, { category: 'loc
     courtPosition: null,
     hexCol: 5,
     hexRow: 3,
-    prosperityLabel: 'Stable',
+    prosperityLabel: 'Modest',
     controllingFaction: 'Iron Brotherhood',
     ...overrides,
   };

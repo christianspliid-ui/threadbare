@@ -548,7 +548,7 @@ describe('getThreadedNodes', () => {
     expect(result).toHaveLength(1);
     expect(result[0].category).toBe('location');
     if (result[0].category === 'location') {
-      expect(result[0].prosperityLabel).toBe('Stable');
+      expect(result[0].prosperityLabel).toBe('Prosperous'); // THR-1934: getProsperityTier's ladder
     }
   });
 

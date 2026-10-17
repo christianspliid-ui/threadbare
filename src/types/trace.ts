@@ -99,6 +99,8 @@ export type TraceCategory =
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
+  // THR-1934 — unrest as pressure
+  | 'unrest.target' | 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped' | 'unrest.riot_seed'
   | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
@@ -699,6 +701,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'founded_place_culture',
   'journey.choice_applied',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
+  'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
   'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
@@ -2158,6 +2161,38 @@ export interface UnrestTickTrace extends TraceBase {
   decayApplied: number;
   prosperityDamper: number;
   thresholdsCrossed: string[];
+  /** THR-1934 — the target the number drifts toward (pressure model only). */
+  target?: number;
+}
+
+/** THR-1934 — a settlement's daily unrest target, written when its target or band moved. */
+export interface UnrestTargetTrace extends TraceBase {
+  category: 'unrest.target';
+  locationId: string;
+  target: number;
+  inputs: { hunger: number; poverty: number; siege: number; sickness: number; deathSite: number; contentment: number };
+  hungerDays: number;
+  hungerSource: 'settlement_economy' | 'stock_tier';
+  band: 'calm' | 'restless' | 'lawless' | 'on_the_edge' | 'rising';
+}
+
+/** THR-1934 — a Restless town loses a person and a mortal leans away (or no one can). */
+export interface UnrestLeaveTrace extends TraceBase {
+  category: 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped';
+  fromId: string;
+  toId: string | null;
+  /** False until the settlement economy counts people. */
+  personMoved: boolean;
+  leaningAgentId: string | null;
+  fleeMinted: boolean;
+}
+
+/** THR-1934 — a town turned Lawless while hungry, and a granary riot was seeded. */
+export interface UnrestRiotSeedTrace extends TraceBase {
+  category: 'unrest.riot_seed';
+  locationId: string;
+  targetAgentId: string | null;
+  seeded: boolean;
 }
 
 /** Trace: magical saturation ticked for a location */
@@ -5021,6 +5056,10 @@ export type TraceEntry =
   | MonopolyTransitionTrace
   | EconomicPowerScanTrace
   | ScarcityArcPhaseTrace
+  // Unrest as pressure (THR-1934)
+  | UnrestTargetTrace
+  | UnrestLeaveTrace
+  | UnrestRiotSeedTrace
   // Company traces (THR-74)
   | GroupPhaseTrace
   | GroupFormedTrace
