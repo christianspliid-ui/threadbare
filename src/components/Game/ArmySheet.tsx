@@ -40,7 +40,27 @@ import {
   armyObjectiveSentence,
   ARMY_NO_OBJECTIVE_COPY,
 } from '../../data/army-words';
+import { armyAimView, type WarAimSlot } from '../../engine/warAims/sheetView';
+import { EntityLink } from '../shared/EntityLink';
 import type { WorldGraph } from '../../engine/graph';
+
+/**
+ * THR-1933 — the war-aim line (why it marches, or why it holds), with the town and the
+ * enemy host as links (UI Law 21). The graph reads live in `armyAimView` (NFP #2).
+ */
+function warAimLine(graph: WorldGraph, armyId: string): React.ReactNode[] | null {
+  const view = armyAimView(graph, armyId);
+  if (!view) return null;
+  const slots: Record<string, WarAimSlot | null> = view.slots;
+  return view.template.split(/({town}|{enemy})/).map((part, i) => {
+    const key = part === '{town}' ? 'town' : part === '{enemy}' ? 'enemy' : null;
+    if (!key) return <React.Fragment key={i}>{part}</React.Fragment>;
+    const slot = slots[key];
+    return slot
+      ? <EntityLink key={i} id={slot.id} name={slot.name} entityRef={{ kind: slot.kind, id: slot.id }} />
+      : <React.Fragment key={i}>{key}</React.Fragment>;
+  });
+}
 
 interface ArmySheetProps {
   name: string;
@@ -72,10 +92,12 @@ export const ArmySheet = React.memo(function ArmySheet({
   const targetId = typeof objective?.targetNodeId === 'string' ? objective.targetNodeId : null;
   const targetName = targetId && graph ? (graph.getNode(targetId)?.name ?? null) : null;
   const objectiveSentence = armyObjectiveSentence(objective?.type, targetName);
+  // THR-1933 — the war-aim line (reason or hold) wins when the army carries one.
+  const aimLine = armyId && graph && armyState ? warAimLine(graph, armyId) : null;
 
   // An army with state but no readable march still gets a designed line.
-  const prose = objectiveSentence ?? (armyState ? ARMY_NO_OBJECTIVE_COPY : NO_DETAIL_COPY);
-  const proseIsAuthored = objectiveSentence !== null;
+  const prose = aimLine ?? objectiveSentence ?? (armyState ? ARMY_NO_OBJECTIVE_COPY : NO_DETAIL_COPY);
+  const proseIsAuthored = aimLine !== null || objectiveSentence !== null;
 
   const identityParts = [sizeName, cohesionWord, supplyWord].filter(
     (part): part is string => part !== null,

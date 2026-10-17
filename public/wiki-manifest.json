@@ -333,6 +333,7 @@
         "src/engine/armyMovement.ts",
         "src/engine/armyAttrition.ts",
         "src/engine/armySpawning.ts",
+        "src/engine/warAims.ts",
         "src/engine/armyNotifications.ts",
         "src/engine/armySupply.ts",
         "src/engine/phases/armySupply.ts",

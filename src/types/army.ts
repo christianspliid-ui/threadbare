@@ -72,12 +72,40 @@ export interface ArmyState {
   supplyHostId?: string | null;
   /** THR-626 — conduit hops to that host; null when cut off. */
   supplyHops?: number | null;
+  /** THR-1933 — set while the army holds for want of a target; null otherwise. */
+  holdReason?: ArmyHoldReason | null;
+  /** THR-1933 — the top scored towns from the last pick (debug Armies tab, `__DEBUG.getWarAims`). */
+  warAimCandidates?: WarAimCandidate[];
 }
 
 export interface ArmyObjective {
   type: 'raid' | 'conquer' | 'defend' | 'intercept' | 'reinforce_siege';
   targetNodeId: string;
   estimatedAttrition: number;
+  /** THR-1933 — why this target: the largest contributor to its war-aim score, or defence. */
+  reason?: WarAimReason;
+  /** THR-1933 — the staple behind a `feeds_staple` reason (the sheet names the good). */
+  reasonResourceId?: string;
+  /** THR-1933 — the enemy army a `defend` objective holds against. */
+  againstArmyId?: string;
+  /** THR-1933 — who set it. `agenda` (a notable's campaign) is never re-aimed. Missing reads as `war_aim`. */
+  source?: 'war_aim' | 'agenda';
+}
+
+/** THR-1933 — why an army marches where it does (S2 adds the two monopoly reasons' writers). */
+export type WarAimReason = 'richest' | 'feeds_staple' | 'breaks_monopoly' | 'completes_monopoly' | 'defence';
+
+/** THR-1933 — why an army with no objective holds. */
+export type ArmyHoldReason = 'no_enemy_in_reach';
+
+/** THR-1933 — one scored town from the army's last war-aim pick (debug only, never rendered). */
+export interface WarAimCandidate {
+  townId: string;
+  value: number;
+  bonuses: number;
+  hexes: number;
+  score: number;
+  inReach: boolean;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────

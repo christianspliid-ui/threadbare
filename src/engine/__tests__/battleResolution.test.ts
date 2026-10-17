@@ -265,6 +265,8 @@ describe('phaseBattleDetection', () => {
   it('creates battle when two hostile armies at same hex', () => {
     addArmy(graph, 'army1', 'f1', 'hex1');
     addArmy(graph, 'army2', 'f2', 'hex1');
+    // THR-1933 — only enemies fight; f1 and f2 are at war.
+    graph.addEdge({ id: 'e_war_f1_f2', source: 'f1', target: 'f2', type: 'relates_to', properties: { basis: 'war' } });
 
     phaseBattleDetection(makeState(1, graph));
 

@@ -91,6 +91,8 @@ export type TraceCategory =
   | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
   // THR-1931 — the faction purse
   | 'economy.purse.day' | 'economy.purse.band_change' | 'economy.purse.army_raised'
+  // THR-1933 — war aims
+  | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
   // THR-1932 — the crown (fealty)
   | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
   | 'settlement_tier_change' | 'target_action_filter'
@@ -691,6 +693,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
+  'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
@@ -1895,6 +1898,58 @@ export interface PurseArmyRaisedTrace extends TraceBase {
   armyId: string;
   cost: number;
   wealthAfter: number;
+}
+
+/** THR-1933 — an army took a conquer target by value (raise or re-aim). */
+export interface WarAimPickedTrace extends TraceBase {
+  category: 'war.aim.picked';
+  armyId: string;
+  factionId: string;
+  townId: string;
+  reason: 'richest' | 'feeds_staple' | 'breaks_monopoly' | 'completes_monopoly';
+  value: number;
+  bonuses: number;
+  hexes: number;
+  score: number;
+  /** In-reach enemy towns scored. */
+  candidates: number;
+  /** The fewest-hex in-reach candidate (the "not just the nearest" predicate). */
+  nearestEnemyTownId: string | null;
+}
+
+/** THR-1933 — an army turned to defend a threatened own or sworn holding. */
+export interface WarAimDefendTrace extends TraceBase {
+  category: 'war.aim.defend';
+  armyId: string;
+  factionId: string;
+  holdingId: string;
+  againstArmyId: string;
+  sworn: boolean;
+  hexes: number;
+}
+
+/** THR-1933 — no enemy town in reach; the army holds. */
+export interface WarAimHoldTrace extends TraceBase {
+  category: 'war.aim.hold';
+  armyId: string;
+  factionId: string;
+  enemiesKnown: number;
+  outOfReach: number;
+}
+
+/** THR-1933 — the daily re-aim changed an army's objective. */
+export interface WarAimReaimTrace extends TraceBase {
+  category: 'war.aim.reaim';
+  armyId: string;
+  from: { type: string; targetNodeId: string } | null;
+  to: { type: string; targetNodeId: string } | null;
+  why: 'threat' | 'target_no_longer_enemy' | 'target_out_of_reach' | 'target_taken' | 'no_objective';
+}
+
+/** THR-1933 — the purse is off, so towns are priced by prosperity. */
+export interface WarAimValueFallbackTrace extends TraceBase {
+  category: 'war.aim.value_fallback';
+  reason: 'purse_not_built' | 'purse_disabled';
 }
 
 /** Trace: trade route volume changed */
@@ -4721,6 +4776,11 @@ export type TraceEntry =
   | RebellionTrace
   | PurseBandChangeTrace
   | PurseArmyRaisedTrace
+  | WarAimPickedTrace
+  | WarAimDefendTrace
+  | WarAimHoldTrace
+  | WarAimReaimTrace
+  | WarAimValueFallbackTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
   | TradeRouteUpkeepTrace

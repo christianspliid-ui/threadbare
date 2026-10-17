@@ -27,7 +27,8 @@ import {
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
-import { mayBesiege, campaignTargetOf } from './warAims/enemy';
+import { mayBesiege, campaignTargetOf, isEnemyFaction } from './warAims/enemy';
+import { WAR_AIMS_ENABLED } from '../data/war-aims-constants';
 import { applyAftermath } from './battleAftermath';
 import { recordBattleFought } from './battleRecord';
 import { reportWar, captureArmySide, captureBattleForNews } from './armyNotifications';
@@ -160,7 +161,9 @@ export function createBattleNode(
   // ── Situational modifiers (THR-628) ──
   // Prepared defense: an army standing on a `defend` objective fights from a
   // prepared position — no new stored state, the objective IS the signal.
-  const defenderPrepared = defenderState.objective?.type === 'defend';
+  // THR-1933: only at the place it was sent to hold — not met on the road there.
+  const defenderPrepared = defenderState.objective?.type === 'defend'
+    && (!WAR_AIMS_ENABLED || defenderState.objective.targetNodeId === hexId);
   let defenderModifier = defenderPrepared ? PREPARED_DEFENSE_MULTIPLIER : 1;
   let attackerModifier = 1;
 
@@ -571,7 +574,13 @@ export function phaseBattleDetection(state: GameState): void {
             // Attacker = army that moved more recently (higher raisedTick or arrived later)
             const stateA = graph.getNode(armyA)?.properties.armyState as ArmyState | undefined;
             const stateB = graph.getNode(armyB)?.properties.armyState as ArmyState | undefined;
-            const attackerId = (stateA?.raisedTick ?? 0) >= (stateB?.raisedTick ?? 0) ? armyA : armyB;
+            // THR-1933 — an army holding *this* place on a `defend` objective is the
+            // defender whatever its age, so the prepared-defence bonus reaches it.
+            const holdsA = stateA?.objective?.type === 'defend' && stateA.objective.targetNodeId === hexId;
+            const holdsB = stateB?.objective?.type === 'defend' && stateB.objective.targetNodeId === hexId;
+            const attackerId = WAR_AIMS_ENABLED && holdsA !== holdsB
+              ? (holdsA ? armyB : armyA)
+              : (stateA?.raisedTick ?? 0) >= (stateB?.raisedTick ?? 0) ? armyA : armyB;
             const defenderId = attackerId === armyA ? armyB : armyA;
 
             createBattleNode(state, attackerId, defenderId, hexId);
@@ -646,9 +655,10 @@ function areHostile(state: GameState, armyA: string, armyB: string): boolean {
   const factionA = graph.getOutgoingEdges(armyA, 'member_of')[0]?.target;
   const factionB = graph.getOutgoingEdges(armyB, 'member_of')[0]?.target;
 
-  // Different factions = hostile (simplified — no alliance system yet)
   if (!factionA || !factionB) return false;
-  return factionA !== factionB;
+  // THR-1933 — only enemies fight: two armies that are not at war share a hex in peace.
+  // Off, any two different factions fight (the pre-war-aims rule).
+  return WAR_AIMS_ENABLED ? isEnemyFaction(graph, factionA, factionB) : factionA !== factionB;
 }
 
 // ─── Battle Tick Phase ──────────────────────────────────────────────────

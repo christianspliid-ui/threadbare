@@ -11,7 +11,8 @@
  *   `isRival`, `basis: 'war'`, or sentiment below `RIVALRY_SENTIMENT_THRESHOLD`.
  *   Deliberately separate from `areFactionsHostile` (rivalry only), which other readers
  *   keep. The war-aims plan (THR-1933, `Docs/plans/2026-10-15-thr-1933-war-aims.md`
- *   § Engine 1) grows this predicate with monster factions and the alliance override.
+ *   § Engine 1) grew it with monster factions and the alliance override (`enemyArm`);
+ *   targeting, battle start and siege start all read it.
  * - `factionKeepsHallAt(faction, location)` — the faction's home Location, a
  *   `located_at` edge from the faction (the guild-hall shape `factionSeeding` writes), or
  *   a faction-hall sublocation under the Location carrying the faction's id.
@@ -21,6 +22,7 @@
 
 import type { WorldGraph } from '../graph';
 import { RIVALRY_SENTIMENT_THRESHOLD } from '../../types/factionAction';
+import { WAR_AIMS_ENABLED } from '../../data/war-aims-constants';
 
 /** True when `a` and `b` are distinct factions with a quarrel an army may act on. */
 export function isEnemyFaction(
@@ -29,17 +31,37 @@ export function isEnemyFaction(
   b: string | undefined,
 ): boolean {
   if (!a || !b || a === b) return false;
+  return enemyArm(graph, a, b) !== null;
+}
+
+/** Which arm of the enemy rule fires for `a` and `b`, or null (debug: `__DEBUG.isEnemyFaction`). */
+export type EnemyArm = 'hostile_to' | 'rival' | 'war' | 'sentiment' | 'monster';
+
+/**
+ * The arm of the enemy rule that makes `a` and `b` enemies, checked in a fixed order,
+ * or null. With `WAR_AIMS_ENABLED` (THR-1933 § Engine 1) a monster faction is everyone's
+ * enemy, and an alliance either way silences the sentiment arm (allies who quarrel are
+ * not at war) — never `hostile_to`, rivalry or a declared war.
+ */
+export function enemyArm(graph: WorldGraph, a: string, b: string): EnemyArm | null {
+  if (a === b) return null;
   const hostile = (src: string, tgt: string): boolean =>
     graph.getOutgoingEdges(src, 'hostile_to').some(e => e.target === tgt);
-  if (hostile(a, b) || hostile(b, a)) return true;
-  const quarrel = (src: string, tgt: string): boolean =>
-    graph.getOutgoingEdges(src, 'relates_to').some(e => {
-      if (e.target !== tgt) return false;
-      const p = e.properties;
-      if (p.isRival === true || p.basis === 'war') return true;
-      return typeof p.sentiment === 'number' && p.sentiment < RIVALRY_SENTIMENT_THRESHOLD;
-    });
-  return quarrel(a, b) || quarrel(b, a);
+  if (hostile(a, b) || hostile(b, a)) return 'hostile_to';
+  const rel = [
+    ...graph.getOutgoingEdges(a, 'relates_to').filter(e => e.target === b),
+    ...graph.getOutgoingEdges(b, 'relates_to').filter(e => e.target === a),
+  ];
+  if (rel.some(e => e.properties.isRival === true)) return 'rival';
+  if (rel.some(e => e.properties.basis === 'war')) return 'war';
+  if (WAR_AIMS_ENABLED) {
+    const isMonster = (id: string): boolean => graph.getNode(id)?.properties.factionType === 'monster';
+    if (isMonster(a) || isMonster(b)) return 'monster';
+  }
+  const allied = WAR_AIMS_ENABLED && rel.some(e => e.properties.isAlliance === true);
+  if (!allied && rel.some(e => typeof e.properties.sentiment === 'number'
+    && e.properties.sentiment < RIVALRY_SENTIMENT_THRESHOLD)) return 'sentiment';
+  return null;
 }
 
 /** True when `factionId` keeps a hall or its home at `locationId`. */
