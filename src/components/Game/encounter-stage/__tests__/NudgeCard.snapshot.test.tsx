@@ -106,6 +106,7 @@ const BASE: NudgeHandCard = {
   id: 'nudge.steady_hand',
   libraryCardId: 'card.boost',
   keyword: 'Boost',
+  keywordIconName: 'boost',
   name: 'Steady The Hand',
   effectLine: 'His grip stops shaking.',
   essenceCost: 2,
@@ -159,7 +160,7 @@ describe('NudgeCard DOM (pre-extraction pin — THR-1002)', () => {
     // across a row of mixed cards.
     expect(
       renderCard(
-        card({ libraryCardId: undefined, keyword: undefined, sphere: undefined }),
+        card({ libraryCardId: undefined, keyword: undefined, keywordIconName: undefined, sphere: undefined }),
       ),
     ).toMatchSnapshot();
   });

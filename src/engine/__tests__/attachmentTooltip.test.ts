@@ -76,13 +76,14 @@ describe('resolveAttachmentTooltip', () => {
     expect(result.desc).toBe('Sustenance');
   });
 
-  it('uses subcategory glyph in label', () => {
+  it('titles with the name and tier alone — the row beside it draws the carved icon (THR-1907)', () => {
     const result = resolveAttachmentTooltip({
       name: 'Holy Shield',
       subcategory: 'blessing',
       tier: 2,
       mechanicalSummary: '+Star',
     });
-    expect(result.label).toContain('\u2726'); // ✦ four-pointed star
+    expect(result.label.startsWith('Holy Shield [')).toBe(true);
+    expect(result.label).not.toContain('\u2726'); // the retired text glyph
   });
 });

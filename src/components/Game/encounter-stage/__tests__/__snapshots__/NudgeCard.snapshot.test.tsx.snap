@@ -142,11 +142,20 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
         data-testid="nudge-card-keyword-nudge.steady_hand"
         style="display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.28); background: rgb(var(--veil-gold-rgb) / 0.07); color: var(--veil-text-bright); font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700; white-space: nowrap; opacity: 0.55;"
       >
-        <span
+        <svg
           aria-hidden="true"
+          data-icon="boost"
+          fill="currentColor"
+          focusable="false"
+          height="0.875rem"
+          style="display: inline-block; flex-shrink: 0; vertical-align: middle;"
+          viewBox="0 0 512 512"
+          width="0.875rem"
         >
-          ◆
-        </span>
+          <path
+            d="M256 16c-24 0-72 24-72 48s48 24 72 96c24-72 72-72 72-96s-48-48-72-48zM64 184c-24 0-48 48-48 72s24 72 48 72 24-48 96-72c-72-24-72-72-96-72zm384 0c-24 0-24 48-96 72 72 24 72 72 96 72s48-48 48-72-24-72-48-72zm-189.9 0A72 72 0 0 0 184 256a72 72 0 0 0 144 0 72 72 0 0 0-69.9-72zM256 352c-24 72-72 72-72 96s48 48 72 48 72-24 72-48-48-24-72-96z"
+          />
+        </svg>
         Boost
       </span>
       <span
@@ -321,11 +330,20 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
         data-testid="nudge-card-keyword-nudge.steady_hand"
         style="display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.28); background: rgb(var(--veil-gold-rgb) / 0.07); color: var(--veil-text-bright); font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700; white-space: nowrap; opacity: 1;"
       >
-        <span
+        <svg
           aria-hidden="true"
+          data-icon="boost"
+          fill="currentColor"
+          focusable="false"
+          height="0.875rem"
+          style="display: inline-block; flex-shrink: 0; vertical-align: middle;"
+          viewBox="0 0 512 512"
+          width="0.875rem"
         >
-          ◆
-        </span>
+          <path
+            d="M256 16c-24 0-72 24-72 48s48 24 72 96c24-72 72-72 72-96s-48-48-72-48zM64 184c-24 0-48 48-48 72s24 72 48 72 24-48 96-72c-72-24-72-72-96-72zm384 0c-24 0-24 48-96 72 72 24 72 72 96 72s48-48 48-72-24-72-48-72zm-189.9 0A72 72 0 0 0 184 256a72 72 0 0 0 144 0 72 72 0 0 0-69.9-72zM256 352c-24 72-72 72-72 96s48 48 72 48 72-24 72-48-48-24-72-96z"
+          />
+        </svg>
         Boost
       </span>
       <span
@@ -494,11 +512,20 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
         data-testid="nudge-card-keyword-nudge.steady_hand"
         style="display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.28); background: rgb(var(--veil-gold-rgb) / 0.07); color: var(--veil-text-bright); font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700; white-space: nowrap; opacity: 1;"
       >
-        <span
+        <svg
           aria-hidden="true"
+          data-icon="boost"
+          fill="currentColor"
+          focusable="false"
+          height="0.875rem"
+          style="display: inline-block; flex-shrink: 0; vertical-align: middle;"
+          viewBox="0 0 512 512"
+          width="0.875rem"
         >
-          ◆
-        </span>
+          <path
+            d="M256 16c-24 0-72 24-72 48s48 24 72 96c24-72 72-72 72-96s-48-48-72-48zM64 184c-24 0-48 48-48 72s24 72 48 72 24-48 96-72c-72-24-72-72-96-72zm384 0c-24 0-24 48-96 72 72 24 72 72 96 72s48-48 48-72-24-72-48-72zm-189.9 0A72 72 0 0 0 184 256a72 72 0 0 0 144 0 72 72 0 0 0-69.9-72zM256 352c-24 72-72 72-72 96s48 48 72 48 72-24 72-48-48-24-72-96z"
+          />
+        </svg>
         Boost
       </span>
       <span
@@ -707,11 +734,20 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         data-testid="nudge-card-keyword-nudge.steady_hand"
         style="display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.28); background: rgb(var(--veil-gold-rgb) / 0.07); color: var(--veil-text-bright); font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700; white-space: nowrap; opacity: 1;"
       >
-        <span
+        <svg
           aria-hidden="true"
+          data-icon="boost"
+          fill="currentColor"
+          focusable="false"
+          height="0.875rem"
+          style="display: inline-block; flex-shrink: 0; vertical-align: middle;"
+          viewBox="0 0 512 512"
+          width="0.875rem"
         >
-          ◆
-        </span>
+          <path
+            d="M256 16c-24 0-72 24-72 48s48 24 72 96c24-72 72-72 72-96s-48-48-72-48zM64 184c-24 0-48 48-48 72s24 72 48 72 24-48 96-72c-72-24-72-72-96-72zm384 0c-24 0-24 48-96 72 72 24 72 72 96 72s48-48 48-72-24-72-48-72zm-189.9 0A72 72 0 0 0 184 256a72 72 0 0 0 144 0 72 72 0 0 0-69.9-72zM256 352c-24 72-72 72-72 96s48 48 72 48 72-24 72-48-48-24-72-96z"
+          />
+        </svg>
         Boost
       </span>
       <span
@@ -902,11 +938,20 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         data-testid="nudge-card-keyword-nudge.steady_hand"
         style="display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.28); background: rgb(var(--veil-gold-rgb) / 0.07); color: var(--veil-text-bright); font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700; white-space: nowrap; opacity: 1;"
       >
-        <span
+        <svg
           aria-hidden="true"
+          data-icon="boost"
+          fill="currentColor"
+          focusable="false"
+          height="0.875rem"
+          style="display: inline-block; flex-shrink: 0; vertical-align: middle;"
+          viewBox="0 0 512 512"
+          width="0.875rem"
         >
-          ◆
-        </span>
+          <path
+            d="M256 16c-24 0-72 24-72 48s48 24 72 96c24-72 72-72 72-96s-48-48-72-48zM64 184c-24 0-48 48-48 72s24 72 48 72 24-48 96-72c-72-24-72-72-96-72zm384 0c-24 0-24 48-96 72 72 24 72 72 96 72s48-48 48-72-24-72-48-72zm-189.9 0A72 72 0 0 0 184 256a72 72 0 0 0 144 0 72 72 0 0 0-69.9-72zM256 352c-24 72-72 72-72 96s48 48 72 48 72-24 72-48-48-24-72-96z"
+          />
+        </svg>
         Boost
       </span>
       <span
@@ -1082,11 +1127,20 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
         data-testid="nudge-card-keyword-nudge.steady_hand"
         style="display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.28); background: rgb(var(--veil-gold-rgb) / 0.07); color: var(--veil-text-bright); font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700; white-space: nowrap; opacity: 1;"
       >
-        <span
+        <svg
           aria-hidden="true"
+          data-icon="boost"
+          fill="currentColor"
+          focusable="false"
+          height="0.875rem"
+          style="display: inline-block; flex-shrink: 0; vertical-align: middle;"
+          viewBox="0 0 512 512"
+          width="0.875rem"
         >
-          ◆
-        </span>
+          <path
+            d="M256 16c-24 0-72 24-72 48s48 24 72 96c24-72 72-72 72-96s-48-48-72-48zM64 184c-24 0-48 48-48 72s24 72 48 72 24-48 96-72c-72-24-72-72-96-72zm384 0c-24 0-24 48-96 72 72 24 72 72 96 72s48-48 48-72-24-72-48-72zm-189.9 0A72 72 0 0 0 184 256a72 72 0 0 0 144 0 72 72 0 0 0-69.9-72zM256 352c-24 72-72 72-72 96s48 48 72 48 72-24 72-48-48-24-72-96z"
+          />
+        </svg>
         Boost
       </span>
       <span
@@ -1263,11 +1317,20 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
         data-testid="nudge-card-keyword-nudge.steady_hand"
         style="display: inline-flex; align-items: center; gap: 4px; padding: 1px 7px; border-radius: 999px; border: 1px solid rgb(var(--veil-gold-rgb) / 0.28); background: rgb(var(--veil-gold-rgb) / 0.07); color: var(--veil-text-bright); font-size: var(--text-xs); font-family: var(--font-body); font-weight: 700; white-space: nowrap; opacity: 1;"
       >
-        <span
+        <svg
           aria-hidden="true"
+          data-icon="boost"
+          fill="currentColor"
+          focusable="false"
+          height="0.875rem"
+          style="display: inline-block; flex-shrink: 0; vertical-align: middle;"
+          viewBox="0 0 512 512"
+          width="0.875rem"
         >
-          ◆
-        </span>
+          <path
+            d="M256 16c-24 0-72 24-72 48s48 24 72 96c24-72 72-72 72-96s-48-48-72-48zM64 184c-24 0-48 48-48 72s24 72 48 72 24-48 96-72c-72-24-72-72-96-72zm384 0c-24 0-24 48-96 72 72 24 72 72 96 72s48-48 48-72-24-72-48-72zm-189.9 0A72 72 0 0 0 184 256a72 72 0 0 0 144 0 72 72 0 0 0-69.9-72zM256 352c-24 72-72 72-72 96s48 48 72 48 72-24 72-48-48-24-72-96z"
+          />
+        </svg>
         Boost
       </span>
       <span
