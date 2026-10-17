@@ -230,11 +230,6 @@ export function countLucideImports(source: CleanSource): number {
 
 const CLASS_TOKEN_SPLIT = /\s+/;
 
-/** True when a class list (or a fragment of one) holds every token. */
-function hasClasses(tokens: readonly string[], ...wanted: string[]): boolean {
-  return wanted.every((w) => tokens.includes(w));
-}
-
 /** A `z-40`-or-higher class (`z-40`, `z-50`, `z-[60]`), any variant prefix. */
 function hasHighZ(tokens: readonly string[]): boolean {
   return tokens.some((t) => {
