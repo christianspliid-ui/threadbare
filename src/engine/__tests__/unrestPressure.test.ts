@@ -219,6 +219,15 @@ describe('Restless — people leave (plan § Engine 6)', () => {
     expect(getTraces().filter(t => t.category === 'unrest.leave.skipped' && fromA(t as { fromId?: string }))).toHaveLength(1);
   });
 
+  it('never overwrites a live intent an encounter ending wrote; the next arrival leans instead', () => {
+    const graph = restlessWorld();
+    const aftermath = { destinationHex: { col: 9, row: 0 }, destinationNodeId: 'e', expiresAtTick: 1000, setAtTick: 0, source: 'aftermath' };
+    graph.getNode('m.new')!.properties[RELOCATION_INTENT_PROP] = aftermath;
+    for (let day = 0; day < RESTLESS_LEAVE_DAYS; day++) runUnrestPressure(state(graph, day * TICKS_PER_DAY));
+    expect(graph.getNode('m.new')!.properties[RELOCATION_INTENT_PROP]).toEqual(aftermath);
+    expect((graph.getNode('m.old')!.properties[RELOCATION_INTENT_PROP] as { destinationNodeId?: string })?.destinationNodeId).toBe('b');
+  });
+
   it('with the settlement economy counting people, the two populations change by −1 / +1', () => {
     const graph = restlessWorld();
     graph.getNode('a')!.properties.population = 10;

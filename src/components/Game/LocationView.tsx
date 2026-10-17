@@ -1031,12 +1031,15 @@ const LivelihoodLine = memo(function LivelihoodLine({
 // its unrest, in one sentence (THR-1934). Words only (Law 13); the prosperity word
 // carries the registry tooltip (Law 17). Reads the trait edges and the unrest inputs
 // the unrest phase writes, so it agrees with the Restless / Lawless chips (Law 56).
+// `tick` is a memo key only: the graph mutates in place, so without it the row would
+// keep yesterday's sentence while the page stays open.
 const FortunesLine = memo(function FortunesLine({
   location,
   graph,
 }: {
   location: GraphNode;
   graph?: WorldGraph;
+  tick?: number;
 }) {
   const sentence = graph ? fortunesSentence(graph, location.id) : null;
   if (!sentence) return null;
@@ -1476,7 +1479,7 @@ export const LocationView = memo(function LocationView({
       )}
 
       {/* Fortunes row — prosperity and unrest in one sentence (THR-1934) */}
-      <FortunesLine location={location} graph={graph} />
+      <FortunesLine location={location} graph={graph} tick={tick} />
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}
       <LivelihoodLine location={location} graph={graph} sublocationIds={sublocationIds} />
       <DominionBox vm={dominion ?? null} />

@@ -220,7 +220,7 @@ function leave(state: GameState, town: GraphNode, inputs: UnrestInputs): void {
   }
 
   // 2. A mortal leans — a relocation intent the movement pull scores.
-  const leaningAgentId = pickLeaningMortal(graph, town);
+  const leaningAgentId = pickLeaningMortal(graph, town, tick);
   let fleeMinted = false;
   const destHex = leaningAgentId ? resolveLocationToHex(graph, dest.id) : null;
   if (leaningAgentId && destHex) {

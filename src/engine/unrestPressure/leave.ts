@@ -21,6 +21,7 @@ import { hexDistance } from '../../lib/hexMath';
 import { getLocationNodes, resolveToParentLocation } from '../sublocationShape';
 import { taxHolderOf } from '../factionPurse/income';
 import { RESIDENCE_POSITION_PROP, RESIDENCE_ARRIVED_PROP } from '../agentResidence';
+import { readRelocationIntent } from '../relocationIntent';
 import { MIGRATION_RADIUS_HEXES } from '../../data/unrest-pressure-constants';
 import { isPressureSettlement, HUNGER_DAYS_PROP } from './inputs';
 import { isRestlessPlace } from './bands';
@@ -70,8 +71,10 @@ export function pickLeaveDestination(state: Pick<GameState, 'graph'>, town: Grap
 /**
  * The town's most recent arrival among its living mortals — residence at the town or
  * one of its Places (`resolveToParentLocation`) — ties by id. Null when none lives there.
+ * A mortal already walking toward somewhere an encounter's ending sent them (a live
+ * intent from another writer) is passed over, so the unrest lean never overwrites it.
  */
-export function pickLeaningMortal(graph: WorldGraph, town: GraphNode): string | null {
+export function pickLeaningMortal(graph: WorldGraph, town: GraphNode, tick = 0): string | null {
   let best: { id: string; arrived: number } | null = null;
   for (const actor of graph.getNodesByType('actor')) {
     const props = actor.properties ?? {};
@@ -80,6 +83,8 @@ export function pickLeaningMortal(graph: WorldGraph, town: GraphNode): string | 
     if (typeof residenceId !== 'string') continue;
     const home = resolveToParentLocation(graph, graph.getNode(residenceId));
     if (!home || home.id !== town.id) continue;
+    const live = readRelocationIntent(actor, tick);
+    if (live && live.source !== 'unrest') continue;
     const arrived = typeof props[RESIDENCE_ARRIVED_PROP] === 'number' ? props[RESIDENCE_ARRIVED_PROP] as number : -Infinity;
     if (!best || arrived > best.arrived || (arrived === best.arrived && actor.id < best.id)) {
       best = { id: actor.id, arrived };
