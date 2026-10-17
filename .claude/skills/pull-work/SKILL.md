@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-16
+last_validated_against: 2026-10-17
 ---
 
 # Pull Work
@@ -273,6 +273,8 @@ Sort each partition by priority as above, then take the top of partition 1 if it
 ```
 
 If you cannot produce that quote, the ticket belongs in partition 2. An empty partition 1 is the healthy steady state, not a sign you searched wrong.
+
+**Pipeline freeze, 2026-10-16 through 2026-11-13 (THR-1946).** A process ticket that **adds** machinery — a new gate, probe, ratchet, hook, baseline, CI job or standing lane rule — is parked, not built: comment that the freeze holds it, unassign, leave it where it is, and take the next candidate. Removals and loosening, fixes for machinery that broke or blocked a cited run, and the six 2026-10-15 "slim the pipeline" tickets (THR-1946..THR-1951) are still built. Authority: `Docs/canon/session-protocol.md` § Process-work throttle.
 
 If a specific issue id was provided, skip to Step 3.
 
