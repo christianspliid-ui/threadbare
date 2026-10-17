@@ -274,7 +274,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `companions` (1) | `companions.ts` | `THR-1096` |
 | `complication` (2) | `complicationEffects.ts`, `complicationSelection.ts` | `THR-20` |
 | `condition` (2) | `conditionDecay.ts`, `conditionOverflow.ts` | `THR-1143`, `THR-761` |
-| `content` (5) | `contentCatalogView.ts`, `contentEntryResolver.ts`, `contentPageGenerator.ts`, `contentQuery.ts`, `contentQueryBearer.ts` | `THR-1481`, `THR-1482`, `THR-1485`, `THR-1486`, `THR-1487`, `THR-1491`, `THR-1520`, `THR-786` |
+| `content` (6) | `contentCatalogView.ts`, `contentEntryResolver.ts`, `contentPageGenerator.ts`, `contentPageResolvers.ts`, `contentQuery.ts`, `contentQueryBearer.ts` | `THR-1481`, `THR-1482`, `THR-1485`, `THR-1486`, `THR-1487`, `THR-1491`, `THR-1520`, `THR-1876`, `THR-786` |
 | `content-eval` (6) | `content-eval/collectAuthoredProse.ts`, `content-eval/detectors.ts`, `content-eval/proseQualityScore.ts`, `content-eval/registerCompliance.ts`, `content-eval/surfaceFragmentReport.ts`, `content-eval/unreachableActions.ts` | `THR-472`, `THR-490`, `THR-501`, `THR-523`, `THR-573`, `THR-609`, `THR-659` |
 | `contentcensus` (5) | `contentCensus/adapters.ts`, `contentCensus/constants.ts`, `contentCensus/index.ts`, `contentCensus/matrix.ts`, `contentCensus/types.ts` | — |
 | `contestation` (1) | `contestation.ts` | `Phase 3`, `THR-731` |
@@ -316,6 +316,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (7) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSourceWrite.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-1935`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
+| `exploration` (1) | `explorationHooks.ts` | `THR-1621` |
 | `faction` (16) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
 | `factionpurse` (4) | `factionPurse/income.ts`, `factionPurse/means.ts`, `factionPurse/purseSentences.ts`, `factionPurse/upkeep.ts` | `THR-1867`, `THR-1931`, `THR-1932` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
@@ -453,7 +454,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `unrest` (1) | `unrestPressure.ts` | `THR-1934` |
 | `unrestpressure` (5) | `unrestPressure/bands.ts`, `unrestPressure/describe.ts`, `unrestPressure/hunger.ts`, `unrestPressure/inputs.ts`, `unrestPressure/leave.ts` | `THR-1934` |
 | `view` (1) | `viewLevel.ts` | — |
-| `views` (18) | `views/hexContents.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1792`, `THR-1822`, `THR-1846`, `THR-1878`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-502` |
+| `views` (27) | `views/connections.ts`, `views/hexContents.ts`, `views/landIndex.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/subjects/actOn.ts`, `views/subjects/godSheet.ts`, `views/subjects/landName.ts`, `views/subjects/landProse.ts`, `views/subjects/pageResolvers.ts`, `views/subjects/subjectPage.ts`, `views/subjects/subjectTypes.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1792`, `THR-1820`, `THR-1822`, `THR-1827`, `THR-184`, `THR-1846`, `THR-1876`, `THR-1878`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-1911`, `THR-502` |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
 | `war` (1) | `warAims.ts` | `THR-1868`, `THR-1933` |
@@ -467,4 +468,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 227 engine domains · 717 modules._
+_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 228 engine domains · 728 modules._
