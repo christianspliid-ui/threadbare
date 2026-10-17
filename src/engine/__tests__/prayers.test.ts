@@ -313,6 +313,15 @@ describe('faith forms', () => {
     expect(r.tickEvents?.some(e => e.message === 'A5 gives thanks to The Shepherd.' || /^.*A5.*gives thanks to The Shepherd\.$/.test(e.message))).toBe(true);
   });
 
+  it('the god\'s home seat recovers and gives thanks only — no faithful source on the seat', () => {
+    addTown(g, 'millbrook', OWN_GROUND);
+    g.updateNode(GOD, { properties: { homeSeatLocationId: 'millbrook' } });
+    g.addEdge({ id: 'seat_controls', source: GOD, target: 'millbrook', type: 'controls', properties: {} });
+    answerAndRecover('millbrook', DAY);
+    expect(readEssenceSource(g.getNode('millbrook')?.properties)).toBeUndefined();
+    expect(listPrayers(g)[0].status).toBe('recovered');
+  });
+
   it('answered but not recovered in 30 days closes unrecovered, with no source', () => {
     addTown(g, 'millbrook', OWN_GROUND);
     phasePrayers(makeState(g, DAY));

@@ -349,11 +349,13 @@ export function faithfulCount(graph: WorldGraph, godId: string): number {
   return heldSources(graph, godId).filter(({ src }) => src.kind === 'faithfulCommunity').length;
 }
 
-type FormOutcome = { formed: true } | { formed: false; skipped: 'cap' | 'hosts_source' | 'helper_failed' };
+type FormOutcome = { formed: true } | { formed: false; skipped: 'cap' | 'hosts_source' | 'home_seat' | 'helper_failed' };
 
 /** Write the faithful source on a recovered town through the consecrate helper. */
 export function formFaithful(graph: WorldGraph, godId: string, townId: string, tick: number): FormOutcome {
   const town = graph.getNode(townId);
+  // The seat is already the god's own and pays as the seat (`heldSources` skips it): it gives thanks only.
+  if (graph.getNode(godId)?.properties?.homeSeatLocationId === townId) return { formed: false, skipped: 'home_seat' };
   if (readEssenceSource(town?.properties)) return { formed: false, skipped: 'hosts_source' };
   if (faithfulCount(graph, godId) >= FAITHFUL_COMMUNITY_MAX) return { formed: false, skipped: 'cap' };
   const sphere = godPrimaryByPoints(graph, godId);

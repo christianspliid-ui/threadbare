@@ -2261,7 +2261,7 @@ export interface PrayerClosedTrace extends TraceBase {
   eventId: string;
   status: 'unanswered' | 'recovered' | 'unrecovered';
   faithFormed: boolean;
-  skipped: 'cap' | 'hosts_source' | 'helper_failed' | null;
+  skipped: 'cap' | 'hosts_source' | 'home_seat' | 'helper_failed' | null;
 }
 
 /** THR-1935 — a faithful town's faith lapsed (hunger) or was drained by a rival's crack. */
