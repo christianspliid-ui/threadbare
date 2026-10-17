@@ -3,12 +3,20 @@
  *
  * One list, two sources merged newest-first: active encounters (live
  * `gameState.unifiedActions`) and resolved chapters (`gameState.chapterArchive`).
- * Clicking a row drills into the full {@link ChapterView}. This is the
+ * Clicking a row shows its full {@link ChapterView}. This is the
  * load-management answer to player-authored density: many chapters, all readable.
  *
  * Reused two ways:
- *  - Full-screen from GameView (`embedded={false}`, wrapped in a Modal).
- *  - Embedded in the agent profile's Chapters tab (`embedded`, `filterAgentId` set).
+ *  - As a dialog from GameView (`embedded={false}`): an L dialog in `SheetColumns`,
+ *    the index left and the selected chapter right (THR-1820). The newest row whose
+ *    record builds is selected on open — reading only, nothing is opened or resumed.
+ *    The selection is the row's key, never a snapshot: the chapter re-derives from
+ *    the current row whenever the rows recompute, so a live row's "active · step N"
+ *    and its chapter agree, and a resolved encounter keeps its key. A click always
+ *    answers: the highlight moves, and a row whose record does not build shows
+ *    `CHAPTER_LEDGER_NO_RECORD` instead of keeping the previous chapter.
+ *  - Embedded in the agent profile's Chapters tab (`embedded`, `filterAgentId` set):
+ *    one column, the list or one chapter with Back.
  *
  * THR-1715 — daily life: routine chapters (chores, authored `threatRating: 'trivial'`)
  * never appear in the default view or the launcher badge. A **Daily life** chip lists
@@ -20,6 +28,9 @@
 
 import { useMemo, useState } from 'react';
 import { Modal } from '../shared/Modal';
+import { SheetColumns } from '../shared/SheetColumns';
+import { Button } from '../shared/Button';
+import { CHAPTER_LEDGER_NO_RECORD } from '../../data/ui-content';
 import { Tooltip } from '../shared/Tooltip';
 import { Icon } from '../shared/Icon';
 import { ChapterView } from './ChapterView';
@@ -138,7 +149,9 @@ export function ChapterLedger({
   embedded = false,
   onOpenEntity,
 }: ChapterLedgerProps) {
-  const [selected, setSelected] = useState<ChapterRecord | null>(null);
+  /** The row the player clicked, by key (THR-1820). Null until a click. */
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const twoColumn = !embedded;
   const [showAll, setShowAll] = useState(false);
   const [dailyLife, setDailyLife] = useState(false);
   const [page, setPage] = useState(0);
@@ -202,23 +215,55 @@ export function ChapterLedger({
     (clampedPage + 1) * CHAPTER_LEDGER_PAGE_SIZE,
   );
 
-  function openRow(row: LedgerRow) {
-    if (row.source === 'archived') {
-      const rec = archive.find(r => r.actionId === row.key);
-      if (rec) setSelected(rec);
-      return;
-    }
-    const action = activeEncounters.find(a => a.actionId === row.key);
-    if (action) {
-      const rec = buildChapterRecord(action as UnifiedAction, gameState, runtime);
-      if (rec) setSelected(rec);
+  /** The record behind a row, built from the current data; null when it does not build. */
+  function recordForRow(row: LedgerRow | undefined): ChapterRecord | null {
+    if (!row) return null;
+    try {
+      if (row.source === 'archived') return archive.find(r => r.actionId === row.key) ?? null;
+      const action = activeEncounters.find(a => a.actionId === row.key);
+      return action ? buildChapterRecord(action as UnifiedAction, gameState, runtime) : null;
+    } catch {
+      return null; // fail-soft: a broken record reads as "no record yet"
     }
   }
 
-  const body = selected ? (
-    <ChapterView chapter={selected} onOpenEntity={onOpenEntity} onBack={() => setSelected(null)} />
-  ) : (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2, 8px)' }}>
+  /** The first row (newest first) whose record builds — the open-time selection. */
+  function firstBuildableKey(list: readonly LedgerRow[]): string | null {
+    for (const row of list) if (recordForRow(row)) return row.key;
+    return null;
+  }
+
+  // Pinned at open: the newest buildable row, so the selection does not jump as new
+  // encounters start while the ledger is open.
+  const [openKey] = useState<string | null>(() => (twoColumn ? firstBuildableKey(rows) : null));
+
+  const shownKey = useMemo<string | null>(() => {
+    const present = (key: string | null): key is string => key !== null && rows.some(r => r.key === key);
+    if (present(selectedKey)) return selectedKey;
+    if (!twoColumn) return null;
+    if (present(openKey)) return openKey;
+    return firstBuildableKey(rows);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, selectedKey, openKey, twoColumn]);
+
+  // Re-derived from the current row on every recompute — never a stored snapshot.
+  const shownRecord = useMemo<ChapterRecord | null>(
+    () => (shownKey ? recordForRow(rows.find(r => r.key === shownKey)) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rows, shownKey],
+  );
+
+  const noRecord = (
+    <div
+      data-testid="chapter-ledger-no-record"
+      style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', padding: 'var(--space-2, 8px) 0' }}
+    >
+      {CHAPTER_LEDGER_NO_RECORD}
+    </div>
+  );
+
+  const index = (
+    <div data-testid="chapter-ledger-index" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2, 8px)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2, 8px)' }}>
         {!filterAgentId && (
           <>
@@ -253,11 +298,16 @@ export function ChapterLedger({
         </div>
       )}
 
-      {pageRows.map(row => (
+      {pageRows.map(row => {
+        const isSelected = twoColumn && row.key === shownKey;
+        return (
         <button
           key={row.key}
           type="button"
-          onClick={() => openRow(row)}
+          data-testid="chapter-ledger-row"
+          data-selected={isSelected ? 'true' : undefined}
+          aria-current={isSelected ? 'true' : undefined}
+          onClick={() => setSelectedKey(row.key)}
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -265,9 +315,10 @@ export function ChapterLedger({
             gap: '2px',
             width: '100%',
             textAlign: 'left',
-            background: 'var(--bg-panel, rgba(255,255,255,0.02))',
-            border: '1px solid var(--border-subtle, #40382c)',
+            background: isSelected ? 'var(--bg-hover)' : 'var(--bg-panel, rgba(255,255,255,0.02))',
+            border: `1px solid ${isSelected ? 'var(--accent-gold-dim)' : 'var(--border-subtle, #40382c)'}`,
             borderRadius: '8px',
+            transition: 'background var(--anim-fast), border-color var(--anim-fast)',
             padding: 'var(--space-2, 8px)',
             cursor: 'pointer',
             color: 'var(--text-primary)',
@@ -290,7 +341,8 @@ export function ChapterLedger({
             {row.actorName} · {row.statusLabel}
           </span>
         </button>
-      ))}
+        );
+      })}
 
       {pageCount > 1 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-2, 8px)', paddingTop: 'var(--space-1, 4px)' }}>
@@ -319,13 +371,36 @@ export function ChapterLedger({
   );
 
   if (embedded) {
-    return <div>{body}</div>;
+    if (selectedKey !== null && shownKey !== null) {
+      const back = () => setSelectedKey(null);
+      return (
+        <div>
+          {shownRecord
+            ? <ChapterView chapter={shownRecord} onOpenEntity={onOpenEntity} onBack={back} />
+            : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2, 8px)' }}>
+                <Button variant="ghost" size="sm" onClick={back} style={{ alignSelf: 'flex-start' }}>Back</Button>
+                {noRecord}
+              </div>
+            )}
+        </div>
+      );
+    }
+    return <div>{index}</div>;
   }
 
   return (
-    <Modal open onClose={onClose ?? (() => {})} maxWidth={720} aria-label="Chapter Ledger">
+    <Modal open onClose={onClose ?? (() => {})} size="l" aria-label="Chapter Ledger">
       <Modal.Header onClose={onClose}>Chapter Ledger</Modal.Header>
-      <Modal.Body>{body}</Modal.Body>
+      {shownKey !== null ? (
+        <SheetColumns aside={index} asideLabel="Chapters" mainLabel="Chapter">
+          <div data-testid="chapter-ledger-chapter">
+            {shownRecord ? <ChapterView chapter={shownRecord} onOpenEntity={onOpenEntity} /> : noRecord}
+          </div>
+        </SheetColumns>
+      ) : (
+        <Modal.Body>{index}</Modal.Body>
+      )}
     </Modal>
   );
 }

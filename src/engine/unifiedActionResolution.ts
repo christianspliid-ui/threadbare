@@ -28,6 +28,8 @@ import type {
 } from '../types/unifiedAction';
 import type { ActionStep, ActionStepOutcomeMetadata, StepCastRecord } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
+import { buildMeansChange, selectOutcomeEffects, type MeansShiftResult } from './mortalMeans';
+import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
 import {
   foldActorReputation,
   reputationFoldId,
@@ -2998,6 +3000,8 @@ export function executeStepResult(
     }
   }
 
+  // THR-1936 — the outcome table, once per resolved action, before the summary.
+  finalAction = applyOutcomeEffectsTable(state, finalAction, template, tick, runtime, aftermathChanges);
   finalAction = appendAftermathChanges(
     finalAction, aftermathChanges, [...supersededGrowthIds, ...supersededReputationIds],
   );
@@ -3120,6 +3124,7 @@ function executeFightNoRollEnd(
 
   const aftermathChanges: EncounterAftermathChange[] = [];
   fireResolvedActionTriggers(state, action, template, outcome, tick, rng, runtime, aftermathChanges);
+  finalAction = applyOutcomeEffectsTable(state, finalAction, template, tick, runtime, aftermathChanges);
   finalAction = appendAftermathChanges(finalAction, aftermathChanges, []);
 
   const actorName = state.graph.getNode(action.actorId)?.name ?? 'An agent';
@@ -3207,6 +3212,74 @@ function recordResolvedActionTelemetry(
       });
     }
   }
+}
+
+/**
+ * THR-1936 — apply the band's outcome table once, for every mortal, and add an
+ * `economy` aftermath change for every Means shift that moved wealth.
+ *
+ * Runs after the item triggers and before the summary is built, so the summary's change
+ * list carries what the table wrote. The table keys on the action's final band, never on
+ * the reaction the mortal picks; `outcomeEffectsApplied` makes a second application a
+ * no-op. The resolved aftermath variant's table replaces the template's (plan
+ * § Resolution 3). Same synthetic-reaction route as {@link applyStepOutcomeEffects}.
+ *
+ * Fail-soft (NFP #4): no table, no runtime, Means switched off, or a throw from any
+ * effect leaves `state` and the action as they were and the resolution proceeds.
+ */
+function applyOutcomeEffectsTable(
+  state: GameState,
+  finalAction: UnifiedAction,
+  template: UnifiedActionTemplate,
+  tick: number,
+  runtime: SimulationRuntime | undefined,
+  aftermathChanges: EncounterAftermathChange[],
+): UnifiedAction {
+  if (!MORTAL_MEANS_ENABLED) return finalAction;
+  if (!finalAction.resolved || !finalAction.outcome || finalAction.outcomeEffectsApplied) return finalAction;
+  const variant = template.aftermathConfig
+    ? resolveTemplateAftermathVariant(template, finalAction.choiceHistory, finalAction.outcome)
+    : undefined;
+  const effects = selectOutcomeEffects(template, variant, finalAction.outcome);
+  if (effects.length === 0) return finalAction;
+  const applied: UnifiedAction = { ...finalAction, outcomeEffectsApplied: true };
+  if (!runtime) {
+    console.warn(`[unifiedActionResolution] outcome table skipped: no runtime (${template.id} ${finalAction.outcome})`);
+    return applied;
+  }
+  const reaction: EncounterAftermathReaction = {
+    id: `${template.id}:outcome:${finalAction.outcome}`,
+    label: 'Outcome',
+    effects,
+    actionOutcome: finalAction.outcome,
+  };
+  const shifts: { agentId: string; shift: MeansShiftResult }[] = [];
+  try {
+    const { state: next, mutationSummary } = applyEncounterAftermathReaction(
+      state, applied, reaction, tick, runtime, {
+        recordCrossings: recordDetectionCrossings,
+        encounterType: template.encounterType,
+        outcomeBand: finalAction.outcome,
+        onMeansShift: (agentId, shift) => shifts.push({ agentId, shift }),
+      },
+    );
+    Object.assign(state, next);
+    if (mutationSummary.touchedStructure) touchStructure(runtime);
+    else if (mutationSummary.touchedWorld) touchWorld(runtime);
+  } catch (err) {
+    console.warn(`[unifiedActionResolution] outcome table failed (${template.id}):`, err);
+    return applied;
+  }
+  shifts.forEach(({ agentId, shift }, index) => {
+    aftermathChanges.push(buildMeansChange(
+      `${finalAction.actionId}:outcome:${finalAction.outcome}:means:${agentId}:${index}`,
+      agentId,
+      state.graph.getNode(agentId)?.name,
+      shift,
+      finalAction.actorId,
+    ));
+  });
+  return applied;
 }
 
 /**

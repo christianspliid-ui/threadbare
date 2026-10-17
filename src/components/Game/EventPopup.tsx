@@ -68,7 +68,7 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPop
   // ── Ceremonial tier: a sphere-carrying event with nothing to decide ──
   if (popup && ceremonial) {
     return (
-      <RevealCard open={isOpen} onClose={onDismiss} aria-label={popup.title}>
+      <RevealCard open={isOpen} onClose={onDismiss} size="s" aria-label={popup.title}>
         {badge && (
           <div style={{ alignSelf: 'flex-end', marginBottom: 'calc(-1 * var(--space-ceremonial))' }}>
             <QueueBadge badge={badge} />
@@ -87,7 +87,7 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPop
 
   // ── Compact tier: plain notifications and anything with choices ──
   return (
-    <Modal open={isOpen} onClose={onDismiss} maxWidth={420} animation="anim-fade">
+    <Modal open={isOpen} onClose={onDismiss} size="s" animation="anim-fade">
       {popup && (
         <>
           {/* Header accent strip */}

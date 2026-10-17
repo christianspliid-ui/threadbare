@@ -90,6 +90,12 @@ export const JOURNEY_CHOICE_UNAFFORDABLE = 'not enough essence';
 export const REMEMBRANCE_CHOOSE_AGAIN = 'Choose again';
 
 /**
+ * THR-1820 — the Chapter Ledger's fail-soft line, shown in the chapter column when a
+ * clicked row's record does not build (a click always answers, never the previous chapter).
+ */
+export const CHAPTER_LEDGER_NO_RECORD = 'This chapter has no record to show yet.';
+
+/**
  * THR-1809 — the offer pill's wording while a ready opening gift waits for a quiet
  * moment (`ui.gift.waits.eyebrow` / `.cta` / `.tooltip`). The pill's middle line is
  * the gift's own eyebrow from `SPINE_BEAT_PRESENTATION`.
@@ -1141,6 +1147,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.investiture': {
     label: 'Investiture',
     desc: 'Your divine court: the mortals you have raised to act in your name. Open it to see who serves you, and in what seat.',
+  },
+  // THR-1936 — an `economy` aftermath change: a mortal's Means moved. Words only.
+  'ui.econ.means.change': {
+    label: 'Means',
+    desc: 'How this moved their Means: what they have gathered and kept, in one of five words, from Destitute to Magnate.',
   },
   // THR-1931 — the faction purse (THR-1870 § 4). Words only; never an amount.
   'ui.econ.means.faction': {

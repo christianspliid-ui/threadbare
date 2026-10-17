@@ -1389,6 +1389,67 @@ if (import.meta.env.DEV) {
       return { surfaces: DIALOG_CONTEXT_SURFACES, open };
     },
     /**
+     * Dialog size tiers (THR-1820, Law 57): the registry plus, for every open dialog
+     * panel (`[data-dialog-size]`), its tier, measured size, cap at this viewport,
+     * whether it is at the height cap, and `scrollingBelowCap` — every scroll box
+     * inside it that scrolls while the panel is still below its cap. An empty
+     * `scrollingBelowCap` on every open dialog is Law 57's machine check. DOM only.
+     */
+    getDialogSizes: async () => {
+      const ds = await import('./components/shared/dialogSize');
+      if (typeof document === 'undefined' || typeof window === 'undefined') {
+        return { surfaces: ds.DIALOG_SIZE_SURFACES, open: [] };
+      }
+      const rootPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const toPx = (value: string, fallback: string): number => {
+        const v = (value || fallback).trim();
+        const n = parseFloat(v);
+        if (!Number.isFinite(n)) return 0;
+        return v.endsWith('rem') ? n * rootPx : n;
+      };
+      const rootStyle = getComputedStyle(document.documentElement);
+      const gutterPx = toPx(rootStyle.getPropertyValue('--dialog-gutter'), ds.DIALOG_GUTTER_FALLBACK);
+      const capHeightPx = Math.round(window.innerHeight * 0.85 * 100) / 100;
+      const describe = (el: Element): string => {
+        const testId = el.getAttribute('data-testid');
+        if (testId) return `[data-testid="${testId}"]`;
+        const cls = (el.getAttribute('class') ?? '').trim().split(/\s+/).filter(Boolean).slice(0, 2).join('.');
+        return `${el.tagName.toLowerCase()}${cls ? `.${cls}` : ''}`;
+      };
+      const open = Array.from(document.querySelectorAll('[data-dialog-size]')).map((panel) => {
+        const size = (panel.getAttribute('data-dialog-size') ?? 'free') as 's' | 'm' | 'l' | 'xl' | 'free';
+        const rect = panel.getBoundingClientRect();
+        const tierWidthPx = size === 'free'
+          ? parseFloat(getComputedStyle(panel).maxWidth) || rect.width
+          : toPx(rootStyle.getPropertyValue(ds.DIALOG_SIZE_WIDTH_VAR[size]), ds.DIALOG_SIZE_FALLBACK[size]);
+        const capWidthPx = Math.min(tierWidthPx, window.innerWidth - 2 * gutterPx);
+        const atCap = rect.height >= capHeightPx - ds.DIALOG_CAP_TOLERANCE_PX;
+        const scrollingBelowCap: Array<{ element: string; axis: 'y' | 'x' }> = [];
+        if (!atCap) {
+          for (const el of [panel, ...Array.from(panel.querySelectorAll('*'))]) {
+            const cs = getComputedStyle(el);
+            if (/(auto|scroll)/.test(cs.overflowY) && el.scrollHeight > el.clientHeight + 1) {
+              scrollingBelowCap.push({ element: describe(el), axis: 'y' });
+            }
+            if (/(auto|scroll)/.test(cs.overflowX) && el.scrollWidth > el.clientWidth + 1) {
+              scrollingBelowCap.push({ element: describe(el), axis: 'x' });
+            }
+          }
+        }
+        return {
+          label: panel.getAttribute('aria-label') ?? panel.closest('[aria-label]')?.getAttribute('aria-label') ?? null,
+          size,
+          widthPx: Math.round(rect.width * 100) / 100,
+          heightPx: Math.round(rect.height * 100) / 100,
+          capWidthPx: Math.round(capWidthPx * 100) / 100,
+          capHeightPx,
+          atCap,
+          scrollingBelowCap,
+        };
+      });
+      return { surfaces: ds.DIALOG_SIZE_SURFACES, open };
+    },
+    /**
      * The 1440p layout contract (THR-1819): the live tier and root size, every layout
      * and type token as `:root` resolves it, the measured top bar and rails, and the
      * map share at this viewport from the token table. The state assertion for a
@@ -1404,7 +1465,7 @@ if (import.meta.env.DEV) {
       const names = [
         ...Object.keys(lc.FRAME_TOKENS_PX.base),
         '--panel-padding', '--tooltip-max-w', '--hovercard-w', '--toast-w',
-        '--stage-compact-w', '--measure-prose', '--modal-max-h',
+        '--stage-compact-w', '--measure-prose', '--modal-max-h', '--dialog-s-w', '--dialog-m-w',
         ...Object.keys(lc.TYPE_SCALE_REM).map((step) => `--text-${step}`),
       ];
       const tokens: Record<string, string> = {};
@@ -2471,6 +2532,16 @@ if (import.meta.env.DEV) {
       const day = readPurseDay(node);
       const wealth = typeof node.properties.wealth === 'number' ? node.properties.wealth : 0;
       return { ...(day ?? {}), wealth, meansBand };
+    },
+    /**
+     * THR-1936 — one mortal's Means: wealth, band word, last reason. `want` is null
+     * until S2 ships the want. Null when the id is not an actor.
+     */
+    getMortalMeans: async (agentId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { readMortalMeans } = await import('./engine/mortalMeans');
+      return readMortalMeans(state.graph, agentId);
     },
     /** THR-1931 — every faction's last pay day, keyed by faction id. */
     getPurseLedger: async () => {

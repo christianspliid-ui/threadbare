@@ -91,6 +91,8 @@ export type TraceCategory =
   | 'trade_route_volume_change' | 'trade_route_dissolved' | 'trade_route_upkeep'
   // THR-1931 — the faction purse
   | 'economy.purse.day' | 'economy.purse.band_change' | 'economy.purse.army_raised'
+  // THR-1936 — a mortal's Means
+  | 'economy.means.birth' | 'economy.means.shift'
   // THR-1933 — war aims
   | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
   // THR-1932 — the crown (fealty)
@@ -698,6 +700,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
+  'economy.means.birth', 'economy.means.shift',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'settlement_tier_change', 'target_action_filter',
@@ -1906,6 +1909,31 @@ export interface PurseArmyRaisedTrace extends TraceBase {
   armyId: string;
   cost: number;
   wealthAfter: number;
+}
+
+/** THR-1936 — a decider was born with Means at world creation (role wealth + home shift). */
+export interface MeansBirthTrace extends TraceBase {
+  category: 'economy.means.birth';
+  agentId: string;
+  role: string | null;
+  homeTier: string | null;
+  wealth: number;
+}
+
+/** THR-1936 — an `economy_shift` on a mortal's Means moved their wealth. */
+export interface MeansShiftTrace extends TraceBase {
+  category: 'economy.means.shift';
+  agentId: string;
+  sourceTemplateId: string | null;
+  /** The band the outcome table keyed on; null when the shift came from a reaction. */
+  band: string | null;
+  /** After the poor-loss scale. */
+  amount: number;
+  wealthBefore: number;
+  wealthAfter: number;
+  bandBefore: string;
+  bandAfter: string;
+  reason: string;
 }
 
 /** THR-1933 — an army took a conquer target by value (raise or re-aim). */
@@ -4870,6 +4898,8 @@ export type TraceEntry =
   | RebellionTrace
   | PurseBandChangeTrace
   | PurseArmyRaisedTrace
+  | MeansBirthTrace
+  | MeansShiftTrace
   | WarAimPickedTrace
   | WarAimDefendTrace
   | WarAimHoldTrace

@@ -185,7 +185,9 @@ export type EncounterAftermathChangeKind =
   | 'faction_reputation'
   | 'reputation_tally'
   | 'shell_state'
-  | 'future_hook';
+  | 'future_hook'
+  /** THR-1936 — a mortal's Means moved (an `economy_shift` on `means`). */
+  | 'economy';
 
 export type EncounterAftermathChangePolarity = 'gain' | 'loss' | 'mixed' | 'info';
 
@@ -536,6 +538,29 @@ export type EncounterAftermathReactionEffect =
      * Surfaces as a SCAR when negative and a BOON when positive. Never renders a
      * number — `delta` is designer data and stays on the trace (Law 13).
      */
+    /**
+     * THR-1936 — move a mortal's Means (their `wealth`, 0–100) through the one funnel,
+     * `bankWealth`. Authored in a template's outcome table (`outcomeEffects`) so the
+     * money is written once, at the roll, by band. A loss on a mortal already below
+     * Getting by is scaled by `MEANS_POOR_LOSS_SCALE`. Never writes `wealth` through
+     * `update_node`, which neither clamps nor stamps a reason.
+     *
+     * S3 widens `quantity` to the world (prosperity, unrest, stock, lane volume, purse).
+     */
+    readonly kind: 'economy_shift';
+    readonly quantity: 'means';
+    /** Signed, on the 0–100 Means scale; use the named steps (`MEANS_STEP` …). */
+    readonly amount: number;
+    /**
+     * Whose Means. Literal node id, `'$actor'`, `'$target'` or `'$cast:<key>'` —
+     * bound by `bindAftermathSceneTargets`. Defaults to the encounter's actor.
+     */
+    readonly targetAgentId?: string;
+    /** The source-phrase key the sheet's Means tooltip reads; defaults by sign and encounter type. */
+    readonly reason?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
     readonly kind: 'quintessence_shift';
     /** Negative = erosion, positive = recovery. Designer-facing only. */
     readonly delta: number;
@@ -2279,8 +2304,13 @@ export interface BranchAwareAftermathConfig {
   readonly fallback: AftermathVariant;
 }
 
+/** THR-1936 — band → ordinary aftermath effects (see `UnifiedActionTemplate.outcomeEffects`). */
+export type OutcomeEffectsTable = Readonly<Partial<Record<UnifiedActionOutcome, readonly EncounterAftermathReactionEffect[]>>>;
+
 export interface AftermathVariant {
   readonly overview: string;
+  /** THR-1936 — this path's outcome table; replaces the template's for the resolution. */
+  readonly outcomeEffects?: OutcomeEffectsTable;
   readonly changes: readonly EncounterAftermathChange[];
   readonly reactionPrompt?: string;
   readonly reactions?: readonly EncounterAftermathReaction[];
@@ -2901,6 +2931,18 @@ export interface UnifiedActionTemplate {
   readonly clearanceGates?: readonly ClearanceGateConfig[];
   /** Branch-aware aftermath config. If present, overrides default aftermath assembly. */
   readonly aftermathConfig?: BranchAwareAftermathConfig;
+  /**
+   * THR-1936 — the outcome table: what the final band writes, applied once per
+   * resolved action, for every mortal, before the aftermath summary is built. Keyed on
+   * the band, not on the reaction the mortal picks: the dice decide what the venture
+   * paid; the reaction decides what they do about it. A resolved aftermath variant's
+   * own table replaces this one for that resolution.
+   *
+   * Key it on the rolled bands only (critical success … critical failure). A group
+   * contest stamps `contested_won` / `contested_lost` after the table has been read, so
+   * those keys never fire; `outcomeEffects.test.ts` refuses them.
+   */
+  readonly outcomeEffects?: OutcomeEffectsTable;
 
   /**
    * Concept art image URL for the encounter opening scene.
@@ -3185,6 +3227,8 @@ export interface UnifiedAction {
   readonly fightState?: import('./fight').FightState;
   /** Accumulated world-facing deltas across resolved steps, used to build the final aftermath summary. */
   readonly aftermathChanges?: readonly EncounterAftermathChange[];
+  /** THR-1936 — the outcome table was applied; it never runs twice for one action. */
+  readonly outcomeEffectsApplied?: boolean;
   /** World-facing summary of what changed because this encounter resolved. */
   readonly aftermathSummary?: EncounterAftermathSummary;
   /**

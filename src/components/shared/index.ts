@@ -56,11 +56,15 @@ export { Overlay } from './Overlay';
 export { Panel, panelStyle } from './Panel';
 export { OddsPips, CostPips } from './OddsPips';
 export { DeltaCluster } from './DeltaCluster';
+export { RevealCard } from './RevealCard';
+export { SheetColumns, SheetLayoutContext, useSheetLayout, type SheetLayout } from './SheetColumns';
 export {
-  RevealCard,
-  REVEAL_CARD_MAX_WIDTH,
-  REVEAL_CONSEQUENCE_CHIP_MAX,
-} from './RevealCard';
+  DIALOG_SIZES,
+  DIALOG_SIZE_DEFAULT,
+  DIALOG_SIZE_SURFACES,
+  dialogSizeStyle,
+  type DialogSize,
+} from './dialogSize';
 export { ProgressBand } from './ProgressBand';
 export { ProgressBar } from './ProgressBar';
 export { RarityBadge } from './RarityBadge';

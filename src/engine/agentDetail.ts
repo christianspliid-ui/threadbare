@@ -1012,6 +1012,12 @@ function describeWealthSource(reason: string | undefined): string | undefined {
     case 'trade_failure': return 'a trade that did not';
     case 'disruption': return 'a road gone bad';
     case 'agreement_broken': return 'a bargain broken against them';
+    // THR-1936 — Means at birth and from the money encounters' outcome tables.
+    case 'birth': return 'what their walk of life left them';
+    case 'theft': return 'something taken that was not theirs';
+    case 'paid_work': return 'work that paid';
+    case 'venture_gain': return 'a venture that paid';
+    case 'venture_loss': return 'a venture that cost them';
     default: return undefined;
   }
 }

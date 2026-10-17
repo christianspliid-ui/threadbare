@@ -18,9 +18,6 @@ import {
   type HomedSurfaceKind,
 } from '../../../data/homed-surfaces';
 
-/** The S dialog width the fallback takes (THR-1820's S tier, until its tokens land). */
-const HOMED_SURFACE_FALLBACK_MAX_WIDTH_PX = 440;
-
 /** Kinds already reported, so a render loop warns once per kind per session. */
 const warnedFallbackKinds = new Set<string>();
 
@@ -45,7 +42,7 @@ export function HomedSurfaceFallback({ kind, onContinue, onFallback }: HomedSurf
     <Modal
       open={true}
       onClose={() => onContinue(kind)}
-      maxWidth={HOMED_SURFACE_FALLBACK_MAX_WIDTH_PX}
+      size="s"
       aria-label={title}
     >
       <Modal.Header>{title}</Modal.Header>

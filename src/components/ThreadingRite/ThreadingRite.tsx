@@ -65,9 +65,6 @@ const SCENE_BG = '#0a0a0f';
 const GOLD = '#d4af37';
 const FONT_PROSE = 'var(--font-prose)';
 
-/** Width of the bond-only card: wide enough for the two-card hand and its stakes. */
-const BOND_ONLY_CARD_MAX_WIDTH = 760;
-
 /** The bond-only rite's one test is its bond: step index 0 for the spend record. */
 const BOND_ONLY_STEP_INDEX = 0;
 
@@ -397,7 +394,7 @@ function BondOnlyRite({
     <RevealCard
       open
       onClose={outcome ? () => onComplete(outcome) : onBondWithoutHand}
-      maxWidth={BOND_ONLY_CARD_MAX_WIDTH}
+      size="m"
       aria-label={RITE_HEADER}
     >
       <RevealCard.Title>{RITE_HEADER.toUpperCase()}</RevealCard.Title>

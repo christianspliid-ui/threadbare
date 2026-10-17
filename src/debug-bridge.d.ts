@@ -1455,6 +1455,17 @@ export interface DebugBridge {
    * (monster lairs; a save before the opening purse). Before the first pay day (tick 12)
    * it carries only `wealth` and `meansBand` from the opening purse.
    */
+  /**
+   * THR-1936 — one mortal's Means: `wealth` (0–100), its `band` word, and the last
+   * reason that moved it (`birth`, `trade_success`, …). `want` is null until S2.
+   * `null` when the id is not an actor.
+   */
+  getMortalMeans: (agentId: string) => Promise<{
+    wealth: number;
+    band: 'Destitute' | 'Getting by' | 'Comfortable' | 'Wealthy' | 'Magnate';
+    lastReason: string | null;
+    want: null;
+  } | null>;
   getFactionPurse: (factionId: string) => Promise<{
     tick?: number;
     income?: { townTax: number; placeYield: number; landRent: number; tolls: number; guildWork: number; guildTaxIn: number; guildTaxOut: number };
@@ -2214,6 +2225,25 @@ export interface DebugBridge {
       ownsPalette: boolean;
     }>;
     open: string[];
+  }>;
+  /**
+   * Dialog size tiers (THR-1820, Law 57): the registry, and for every open dialog panel
+   * its tier, measured size, cap at this viewport, whether it sits at the 85vh cap, and
+   * `scrollingBelowCap` — scroll boxes inside it that scroll while it is below its cap.
+   * Empty `scrollingBelowCap` on every open dialog = Law 57 holds. DOM only.
+   */
+  getDialogSizes(): Promise<{
+    surfaces: ReadonlyArray<{ surface: string; file: string; sizes: ReadonlyArray<'s' | 'm' | 'l' | 'xl'>; pending?: string }>;
+    open: Array<{
+      label: string | null;
+      size: 's' | 'm' | 'l' | 'xl' | 'free';
+      widthPx: number;
+      heightPx: number;
+      capWidthPx: number;
+      capHeightPx: number;
+      atCap: boolean;
+      scrollingBelowCap: Array<{ element: string; axis: 'y' | 'x' }>;
+    }>;
   }>;
   /**
    * The 1440p layout contract (THR-1819): live tier, root font size, every layout and

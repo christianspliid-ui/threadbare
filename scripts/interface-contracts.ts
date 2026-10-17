@@ -5103,6 +5103,52 @@ export const CONTRACTS: readonly Contract[] = [
         "THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.",
     },
   },
+  // THR-1936 S1 — a mortal's Means gets its active half: the money encounters write it
+  // by band, and every decider is born with some.
+  {
+    id: 'encounter-outcomes-write-mortal-means',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ECONOMY,
+    intent:
+      "A money encounter pays or costs the mortal who took it by how the dice fell: the template's outcome table writes their Means once, at the roll, through the one funnel, and the sheet and the aftermath say what it did in words.",
+    ulTerms: ['Means'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'lastWealthReason'],
+      module: 'src/engine/mortalMeans.ts',
+    },
+    writeSites: [
+      'src/engine/mortalMeans.ts',
+      'src/engine/encounterAftermath.ts',
+      'src/engine/unifiedActionResolution.ts',
+    ],
+    readSites: [
+      'src/engine/agentDetail.ts',
+      'src/components/Game/tabs/OverviewTab.tsx',
+    ],
+  },
+  {
+    id: 'deciders-born-with-means',
+    producerSystem: WORLDGEN,
+    consumerSystem: ECONOMY,
+    intent:
+      'Every mortal who makes choices starts the world with the Means of their walk of life, shifted by how well their home town lives, so the sheet shows Means for every decider and the money encounters have something to move.',
+    ulTerms: ['Means'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'lastWealthReason'],
+      module: 'src/engine/mortalMeans.ts',
+    },
+    writeSites: [
+      'src/engine/mortalMeans.ts',
+      'src/engine/gameInit.ts',
+    ],
+    readSites: [
+      'src/engine/agentDetail.ts',
+      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/engine/holdingIncome.ts',
+    ],
+  },
   {
     id: 'yield-is-a-verb',
     producerSystem: AMBITIONS,

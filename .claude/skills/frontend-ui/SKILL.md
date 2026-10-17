@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "styleguide", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-10-15
+last_validated_against: 2026-10-17
 validated_doctrine: ui-laws@1
 ---
 
@@ -112,7 +112,7 @@ Full decision tree: `Docs/design-system/component-selection.md`. Here are the mo
 
 ### Show a modal
 
-**Default:** Use `Modal` (shared primitive) with custom body content. Max-height `var(--modal-max-h)` = 85vh (Law 33), default max-width 600px. Escape to close.
+**Default:** Use `Modal` (shared primitive) with custom body content. Max-height `var(--modal-max-h)` = 85vh (Law 33). Width is a size tier — `size="s|m|l|xl"` (default S; THR-1820, `Docs/design-system/tokens.md` § Dialog sizes), never a free `maxWidth`; a subject beside its record goes in `SheetColumns` at L. Law 57: grow to the tier before scrolling or cutting a list. Escape to close.
 
 **Only create custom modals** for fundamentally different interaction patterns (encounter branching, full-screen vignettes).
 

@@ -30,6 +30,7 @@ const VALID_RARITY_TIERS = new Set<number>([1, 2, 3, 4]);
 const LEGACY_ENCOUNTER_REACHES = new Set<string>(['flesh', 'spirit', 'dominance']);
 
 const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['kind']>([
+  'economy_shift',
   'reputation_score',
   'reputation_tally',
   'recent_event',

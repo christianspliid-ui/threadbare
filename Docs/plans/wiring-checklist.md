@@ -3074,6 +3074,17 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 - **Debug:** `__DEBUG.getDialogContexts()` returns `{ surfaces, open }`.
 - **StyleGuide:** `section-dialog-contexts`.
 
+## Dialog sizes (THR-1820)
+
+Presentation only: no orchestrator phase, no GameState field and no trace.
+- **Tokens:** `--dialog-{s,m,l,xl}-w`, `--dialog-gutter`, `--sheet-aside-w`, `--sheet-gap` in `src/index.css` (THR-1819's tier blocks), mirrored in `layoutContract.ts` and locked by `layoutContract.test.ts`.
+- **Registry:** `src/components/shared/dialogSize.ts` — `DialogSize`, `dialogSizeStyle()`, `DIALOG_SIZE_SURFACES` (surface → file → tiers). `dialogSize.test.ts` checks each listed file passes a registered `size` and no `maxWidth`, and pins the fallbacks to `:root`.
+- **Modal:** `size` prop → `data-dialog-size` + `SheetLayoutContext` (`'two'` at L / XL). `maxWidth` deprecated (`data-dialog-size="free"`). `RevealCard` forwards `size`.
+- **SheetColumns:** `src/components/shared/SheetColumns.tsx`; first adopter the Chapter Ledger (L). Then the Divine Court (THR-1880) and the Inspector (THR-1876).
+- **A new dialog:** pick a tier, add its row to `DIALOG_SIZE_SURFACES`, never pass `maxWidth` (the ratchet row `modal-maxwidth` only goes down).
+- **Debug:** `__DEBUG.getDialogSizes()` returns `{ surfaces, open[] }`; Law 57 holds when every `open[].scrollingBelowCap` is empty.
+- **StyleGuide:** `section-dialog-sizes`.
+
 ## The seeded spell generator (THR-1572)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
@@ -3135,6 +3146,18 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 | `engine/battleAftermath.ts` (`takenFrom` on the conquest edge) | conquest | — | `controls.takenFrom` | existing `realm_territory_change` | Oaths table "forced by" |
 
 **Wired and asserted:** `crown.test.ts` (23 tests) and `BorderMesh.crown.test.ts` (2 tests) — who may swear and court, one layer, the bought oath and its gift coin, refusal cooling floored above the rivalry line, coercion by a two-day siege and by a town taken within five days, the fealty tax after the vassal's day with no debt, the break (grudge, cooldown, chronicle line naming the reason), rebellion, one-layer drift repair, the derived Crown and `protectedHoldingsOf`, the projection's `crownOf` and fingerprint, and the sheet's words (no numerals, never *sworn*). The 90-day predicates are measured by `npm run measure:crown`.
+
+## Mortal Means (THR-1936)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/mortalMeans.ts` (`ensureDeciderMeans`) | worldgen (`gameInit.ts`, after the opening purse, avatars skipped) | `OverviewTab` Means row (now on every decider) | graph: actor `wealth`, `lastWealthReason: 'birth'` | `economy.means.birth` | `__DEBUG.getMortalMeans` |
+| `engine/unifiedActionResolution.ts` (`applyOutcomeEffectsTable`) | encounter resolution, after `fireResolvedActionTriggers`, both the rolled route and the fight no-roll end | aftermath veil consequence list | `UnifiedAction.outcomeEffectsApplied` | via the effect | trace viewer |
+| `engine/encounterAftermath.ts` (`economy_shift` case → `applyMeansShift`) | the aftermath executor | — | actor `wealth`, `lastWealthReason` | `economy.means.shift` | trace viewer; `getMortalMeans` |
+| `engine/mortalMeans.ts` (`buildMeansChange`, `meansChangeSentence`) | — | `buildAftermathConsequences` (`economy` → prize / toll; tooltip `ui.econ.means.change`) | aftermath change kind `economy` | — | browser evidence |
+| `data/encounter-content.ts` (converter passthrough; `merchants_gambit` seed row) | — | stakes line + result line | — | — | `outcomeEffects.test.ts` |
+
+**Wired and asserted:** `mortalMeans.test.ts` (15 tests) — birth Means (role + home shift, avatars and ambient skipped, idempotent), the poor-loss scale and the 0 floor, default reasons, the band-crossed / inside-band sentence with no numerals, variant table over template table, the outcome table paying exactly once at each band through `executeStepResult` whatever reaction follows, and the seed row surviving the converter. `outcomeEffects.test.ts` (6 tests) is the content gate: real bands, named steps, actor/target only, no new `update_node` wealth writer (11 legacy offenders frozen), no double charge, and a failure-band cost names its loss in the stakes.
 
 ## God's stake — prayers and the faithful (THR-1935 S1)
 

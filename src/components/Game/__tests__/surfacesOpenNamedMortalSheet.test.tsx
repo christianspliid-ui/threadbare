@@ -358,9 +358,9 @@ describe('A Chapter Ledger link opens the named mortal’s sheet (THR-1500)', ()
     <ChapterLedger gameState={state} onClose={vi.fn()} onOpenEntity={onOpenEntity} />
   );
 
-  /** Open the chapter, then click the name in its header. */
+  /** Select the chapter (THR-1820: the L ledger shows it beside the index), then click the name in its header. */
   function clickTheName() {
-    act(() => { fireEvent.click(screen.getByText('The Unsafe Bridge')); });
+    act(() => { fireEvent.click(screen.getByTestId('chapter-ledger-row')); });
     act(() => { fireEvent.click(screen.getByLabelText(`${SUBJECT_NAME} — open profile`)); });
   }
 

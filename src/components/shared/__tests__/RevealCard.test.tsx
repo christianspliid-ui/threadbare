@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { RevealCard, REVEAL_CONSEQUENCE_CHIP_MAX } from '../RevealCard';
+import { RevealCard } from '../RevealCard';
 
 function sampleConsequences(n: number) {
   return Array.from({ length: n }, (_, i) => ({ id: `c${i}`, title: `Effect ${i}` }));
@@ -53,8 +53,8 @@ describe('RevealCard (THR-799)', () => {
     expect(screen.queryByTestId('reveal-consequences')).toBeNull();
   });
 
-  it('shows the true total in the label even when chips overflow', () => {
-    const total = REVEAL_CONSEQUENCE_CHIP_MAX + 3;
+  it('shows the true total in the label', () => {
+    const total = 7;
     render(
       <RevealCard.Frame>
         <RevealCard.Consequences label="What follows" items={sampleConsequences(total)} />
@@ -63,27 +63,16 @@ describe('RevealCard (THR-799)', () => {
     expect(screen.getByTestId('reveal-consequences').textContent).toContain(`(${total})`);
   });
 
-  it('caps chips at REVEAL_CONSEQUENCE_CHIP_MAX and collapses the rest into +N', () => {
-    const overflow = 3;
-    const total = REVEAL_CONSEQUENCE_CHIP_MAX + overflow;
+  it('renders every chip — no +N cut while the card can grow (Law 57, THR-1820)', () => {
+    const total = 7;
     render(
       <RevealCard.Frame>
         <RevealCard.Consequences label="What follows" items={sampleConsequences(total)} />
       </RevealCard.Frame>,
     );
-    // capped chips + one overflow chip
-    expect(screen.getAllByTestId('medallion')).toHaveLength(REVEAL_CONSEQUENCE_CHIP_MAX + 1);
-    expect(screen.getByTestId('reveal-consequences').textContent).toContain(`+${overflow}`);
-  });
-
-  it('renders no overflow chip when the item count fits', () => {
-    render(
-      <RevealCard.Frame>
-        <RevealCard.Consequences label="What follows" items={sampleConsequences(REVEAL_CONSEQUENCE_CHIP_MAX)} />
-      </RevealCard.Frame>,
-    );
-    expect(screen.getAllByTestId('medallion')).toHaveLength(REVEAL_CONSEQUENCE_CHIP_MAX);
+    expect(screen.getAllByTestId('medallion')).toHaveLength(total);
     expect(screen.getByTestId('reveal-consequences').textContent).not.toContain('+');
+    expect(screen.queryByTitle(/more$/)).toBeNull();
   });
 
   it('fires onClick from the dismiss button', () => {

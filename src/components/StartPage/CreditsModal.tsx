@@ -28,7 +28,7 @@ export function joinNames(names: readonly string[]): string {
 
 export function CreditsModal({ open, onClose }: CreditsModalProps) {
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} size="s" aria-label="Credits">
       <Modal.Header onClose={onClose}>Credits</Modal.Header>
       <Modal.Body>
         <div style={{ textAlign: 'center', padding: 'var(--space-4) 0' }}>
