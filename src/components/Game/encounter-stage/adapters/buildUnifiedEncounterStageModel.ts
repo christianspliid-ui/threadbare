@@ -37,7 +37,6 @@ import {
   getAgentPortraitUrlFromProperties,
   getPortraitUrl,
 } from '../../../../data/portrait-assets';
-import { getAttachmentGlyph } from '../../attachmentGlyphs';
 import type {
   EncounterChoiceMemory,
   EncounterSupportActorSpec,

@@ -9,6 +9,7 @@ import {
   ENTITY_GRADIENT_COUNT,
   gradientIndexForId,
   fallbackGlyphFor,
+  ENTITY_VISUAL_KIND_ICON,
 } from '../../../data/entity-visual-fallbacks';
 import { SUBLOCATION_CATEGORY_ART } from '../../../data/sublocation-category-art';
 import { MONSTER_FAMILY_PORTRAITS, getMonsterPortraitUrl, getPortraitUrl } from '../../../data/portrait-assets';
@@ -210,7 +211,9 @@ describe('resolveEntityVisual — fallback chain + fail-soft', () => {
     const d = resolveEntityVisual({ id: 'ghost', name: 'Ghost' }, g);
     expect(d.tier).toBe('fallback');
     expect(d.kind).toBe('unknown');
-    expect(d.glyph).toBeTruthy();
+    // No text: the tile draws `ENTITY_VISUAL_KIND_ICON.unknown`, the fallback mark (THR-1907).
+    expect(d.glyph).toBe('');
+    expect(ENTITY_VISUAL_KIND_ICON.unknown).toBe('fallback');
   });
 
   it('tolerates a null graph with no knownSrc', () => {

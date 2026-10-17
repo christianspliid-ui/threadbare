@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import type { CodexCategory } from './codexRegistry';
+import { Icon } from '../shared/Icon';
 
 interface CodexSidebarProps {
   categories: CodexCategory[];
@@ -60,7 +61,7 @@ export const CodexSidebar = memo(function CodexSidebar({
                   backgroundColor: isActive ? 'var(--accent-gold-glow)' : 'transparent',
                 }}
               >
-                <span style={{ marginRight: '0.5rem' }}>{cat.glyph}</span>
+                <Icon name={cat.icon} size="chip" decorative style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
                 {cat.label}
                 <span
                   style={{

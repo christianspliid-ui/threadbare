@@ -38,6 +38,7 @@ import { ArmiesTabContent } from './ArmiesTabContent';
 import { CompaniesTabContent } from './CompaniesTabContent';
 import { FactionDebugContent } from './FactionDebugContent';
 import { SphereStateTabContent } from './SphereStateTabContent';
+import { Icon } from '../../shared/Icon';
 import { CommandTab } from './CommandTab';
 import { HiddenMarksTab } from './HiddenMarksTab';
 import { EncounterSeedsTab } from './EncounterSeedsTab';
@@ -430,7 +431,7 @@ function StrategicDebugTab({
             const pres = getBehaviorFamilyPresentation(family as BehaviorFamily);
             return (
               <div key={family} style={row}>
-                <span style={{ color: pres.color, width: '16px', textAlign: 'center' }}>{pres.glyph}</span>
+                <span style={{ color: pres.color, width: '16px', display: 'inline-flex', justifyContent: 'center' }}><Icon name={pres.icon} size="floor" decorative /></span>
                 <span style={{ flex: 1 }}>{pres.label}</span>
                 {counts.projects > 0 && <span style={pill(pres.color)}>{counts.projects}p</span>}
                 {counts.controls > 0 && <span style={pill(pres.color)}>{counts.controls}c</span>}
@@ -452,7 +453,7 @@ function StrategicDebugTab({
                 const pres = agentSummary.calling;
                 return (
                   <div style={row}>
-                    <span style={{ color: pres.color }}>{pres.glyph}</span>
+                    <span style={{ color: pres.color, display: 'inline-flex', verticalAlign: 'middle' }}><Icon name={pres.icon} size="floor" decorative /></span>
                     <span style={{ color: pres.color, fontWeight: 500 }}>{pres.title}</span>
                   </div>
                 );
@@ -502,7 +503,7 @@ function StrategicDebugTab({
             const pres = getCallingPresentation(graph?.getNode(proj.actorId), proj.behaviorFamily);
             return (
               <div key={proj.projectId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>
-                <span style={{ color: pres.color, fontSize: 'var(--text-xs)' }}>{pres.glyph}</span>
+                <span style={{ color: pres.color, display: 'inline-flex', verticalAlign: 'middle' }}><Icon name={pres.icon} size="floor" decorative /></span>
                 <span style={{ flex: 1, fontSize: 'var(--text-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {proj.actorId.slice(-8)} — {proj.templateId}
                 </span>
@@ -531,7 +532,7 @@ function StrategicDebugTab({
               : undefined;
             return (
               <div key={ctrl.controlId} style={{ ...row, borderLeft: `2px solid ${pres.color}`, paddingLeft: '6px', marginBottom: '1px' }}>
-                <span style={{ color: pres.color, fontSize: 'var(--text-xs)' }}>{pres.glyph}</span>
+                <span style={{ color: pres.color, display: 'inline-flex', verticalAlign: 'middle' }}><Icon name={pres.icon} size="floor" decorative /></span>
                 <span style={{ flex: 1, fontSize: 'var(--text-xs)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {ctrl.actorId.slice(-8)} → {targetNode?.name ?? ctrl.targetNodeId.slice(-8)}
                   {realmName && <span style={{ color: 'var(--text-muted)' }}> · for {realmName}</span>}

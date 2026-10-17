@@ -447,9 +447,10 @@ function CompactThreadRow({
           : 'hourglass' as const)
     : null;
 
-  // Strategic badge — the calling replaces the family glyph (THR-1299 slice 5).
+  // Strategic badge — the calling replaces the family glyph (THR-1299 slice 5) and draws its
+  // carved icon (THR-1907).
   const familyPresentation = strategicSummary
-    ? { glyph: strategicSummary.calling.glyph, color: strategicSummary.calling.color, label: strategicSummary.calling.title }
+    ? { icon: strategicSummary.calling.icon, color: strategicSummary.calling.color, label: strategicSummary.calling.title }
     : null;
   // The row's doing-line (THR-1434): what the mortal is in the middle of, in words —
   // the work as a phrase plus the progress or the trouble word (composed once in
@@ -582,16 +583,17 @@ function CompactThreadRow({
               {node.name}
             </span>
 
-            {/* Strategic behavior glyph */}
+            {/* The calling's icon */}
             {familyPresentation && (
               <Tooltip
                 label={familyPresentation.label}
                 desc={strategicBadgeDesc}
               >
                 <span
-                  style={{ fontSize: 'var(--text-xs)', color: familyPresentation.color, flexShrink: 0, lineHeight: 1 }}
+                  data-testid="thread-calling-icon"
+                  style={{ display: 'inline-flex', color: familyPresentation.color, flexShrink: 0, lineHeight: 1 }}
                 >
-                  {familyPresentation.glyph}
+                  <Icon name={familyPresentation.icon} size="floor" decorative />
                 </span>
               </Tooltip>
             )}
@@ -762,7 +764,7 @@ function CompactThreadRow({
                   backgroundColor: `color-mix(in srgb, ${familyPresentation.color} ${Math.round(STRATEGIC_BADGE_BG_OPACITY * 100)}%, transparent)`,
                 }}
               >
-                <span aria-hidden="true">{familyPresentation.glyph}</span>
+                <Icon name={familyPresentation.icon} size="floor" decorative style={{ flexShrink: 0 }} />
                 {strategicSummary?.activeProject ? (
                   <>
                     {/* THR-1962: the phrase truncates; the progress word never does —

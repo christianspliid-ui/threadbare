@@ -53,7 +53,7 @@ function entry(partial: Partial<CodexEntry>): CodexEntry {
   return {
     id: 'x',
     name: 'X',
-    glyph: '★',
+    mark: { reach: 'star' },
     tier: 1,
     tierName: 'Common',
     tierColor: '#888',

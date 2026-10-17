@@ -9,7 +9,6 @@ import type { AttachmentTier } from '../types/attachments';
 import { ATTACHMENT_TIER_NAMES } from '../types/attachments';
 import type { ActionTriggerEffect, ActionTriggerEvent } from '../types/effects';
 import { ACTION_TRIGGER_DEFAULT_PROBABILITY } from '../data/effect-constants';
-import { getAttachmentGlyph } from '../components/Game/attachmentGlyphs';
 
 export interface AttachmentTooltipData {
   name: string;
@@ -54,10 +53,11 @@ function formatTriggerEvent(event: ActionTriggerEvent): string {
 export function resolveAttachmentTooltip(
   attachment: AttachmentTooltipData,
 ): { label: string; desc: string } {
-  const glyph = getAttachmentGlyph(attachment.subcategory);
   const tierName = ATTACHMENT_TIER_NAMES[attachment.tier];
 
-  const label = `${glyph} ${attachment.name}`;
+  // The name alone (THR-1907): the row the tooltip hangs on already draws the carved
+  // subcategory icon, and a text glyph in the title was the last copy of that table here.
+  const label = attachment.name;
 
   const lines: string[] = [attachment.mechanicalSummary];
 

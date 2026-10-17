@@ -27,7 +27,7 @@ function summary(agentId: string, overrides: Partial<AgentStrategicSummary>): Ag
   return {
     agentId,
     behaviorFamily: 'merchant-expansion',
-    calling: { title: 'Trader', titleKey: 'trader', glyph: '⚖', color: '#c9a55c' } as AgentStrategicSummary['calling'],
+    calling: { title: 'Trader', titleKey: 'trader', icon: 'trader', color: '#c9a55c' } as AgentStrategicSummary['calling'],
     activeProject: null,
     controlCount: 0,
     primaryControl: null,

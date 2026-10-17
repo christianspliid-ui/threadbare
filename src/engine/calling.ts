@@ -37,6 +37,7 @@ import type { AxiologicalProfile } from '../types/agent';
 import type { AmbitionCategory } from '../types/ambition';
 import type { BehaviorFamily, UndertakingKindId } from '../types/strategicAction';
 import type { CallingChangeTrace } from '../types/trace';
+import type { IconName } from '../data/icons/iconRegistry';
 import {
   CALLING_ROWS,
   BEHAVIOR_FAMILY_TO_CALLING,
@@ -69,7 +70,8 @@ export interface Calling {
 export interface CallingPresentation {
   readonly titleKey: string;
   readonly title: string;
-  readonly glyph: string;
+  /** The carved icon the calling draws (THR-1907; replaced the text glyph). */
+  readonly icon: IconName;
   readonly color: string;
 }
 
@@ -313,7 +315,7 @@ export function recomputeCalling(
 
 function presentationFor(titleKey: string, title: string): CallingPresentation {
   const p = CALLING_PRESENTATION[titleKey] ?? CALLING_FALLBACK_PRESENTATION;
-  return { titleKey, title, glyph: p.glyph, color: p.color };
+  return { titleKey, title, icon: p.icon, color: p.color };
 }
 
 /** Title for a persisted family — the legacy fallback for old history records. */

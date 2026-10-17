@@ -13,9 +13,9 @@ import {
   buildUndertakingCodexEntries,
   validateUndertakingCodex,
   undertakingCodexCensus,
-  UNDERTAKING_KIND_GLYPHS,
   genericCellLine,
 } from '../undertakingCodex';
+import { ICON_FOR_UNDERTAKING_OBJECT } from '../../../data/icons/conceptIcons';
 import { UNDERTAKING_CELL_TEMPLATES } from '../../../data/undertaking-cells';
 import { UNDERTAKING_CELL_PHRASES } from '../../../data/undertaking-verb-prose';
 import { UNDERTAKING_OBJECT_TYPES } from '../../../data/undertaking-objects';
@@ -42,7 +42,7 @@ describe('the Undertakings codex section', () => {
       for (const text of [e.name, e.subtitle, e.summary, ...e.tags, ...e.details.map(d => `${d.label} ${d.value}`)]) {
         expect(text, e.id).not.toMatch(/cell\.|_[a-z]|\{|\}|`|\d/);
       }
-      expect(e.glyph.length).toBeGreaterThan(0);
+      expect('icon' in e.mark && e.mark.icon !== 'fallback', e.id).toBe(true);
       expect(e.summary.length).toBeGreaterThan(0);
     }
   });
@@ -70,8 +70,8 @@ describe('the Undertakings codex section', () => {
     }
   });
 
-  it('every kind the registry declares has a glyph', () => {
-    expect(Object.keys(UNDERTAKING_KIND_GLYPHS).sort()).toEqual(UNDERTAKING_OBJECT_TYPES.map(t => t.id).sort());
+  it('every kind the registry declares has an icon', () => {
+    expect(Object.keys(ICON_FOR_UNDERTAKING_OBJECT).sort()).toEqual(UNDERTAKING_OBJECT_TYPES.map(t => t.id).sort());
   });
 
   it('the generic line fills every slot — nothing braced reaches a card', () => {

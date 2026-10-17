@@ -650,8 +650,6 @@ export interface EncounterStageNudgeCardModel {
    * {@link libraryCardId}. Absent ⇒ no chip.
    */
   keyword?: string;
-  /** Single glyph: the picture band's `<img>` swap glyph when no `keywordIconName`. Present whenever `keyword` is. */
-  keywordIcon?: string;
   /** The carved icon the keyword chip draws (THR-1906). Present whenever `keyword` is. */
   keywordIconName?: IconName;
   /**

@@ -13,6 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { UNIFIED_ACTION_TEMPLATES } from '../unified-action-templates';
 import { isPlayerReachableTemplate } from '../../engine/content-eval/unreachableActions';
 import { getAllCodexEntries, getCodexCategories } from '../../components/Codex/codexRegistry';
+import { isIconName } from '../../components/shared/iconShape';
 import { buildCatalogData } from '../../../scripts/generate-action-catalog';
 import {
   ACTION_CATEGORIES,
@@ -79,7 +80,7 @@ describe('THR-1886 — no action changed category when the lists became one tabl
       const tab = tabs.find(c => c.id === id);
       expect(tab, `Codex tab for ${id}`).toBeDefined();
       expect(tab!.label).toBe(ACTION_CATEGORIES[id].label);
-      expect(tab!.glyph.length).toBeGreaterThan(0);
+      expect(isIconName(tab!.icon), `${id} → ${tab!.icon}`).toBe(true);
     }
   });
 });

@@ -10,7 +10,9 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { ActiveIntent } from '../../engine/agentDetail';
-import { CATEGORY_GLYPHS, CATEGORY_COLORS, CATEGORY_LABELS } from '../../data/ambition-categories';
+import { CATEGORY_COLORS, CATEGORY_LABELS } from '../../data/ambition-categories';
+import { ICON_FOR_AMBITION } from '../../data/icons/conceptIcons';
+import { Icon } from '../shared/Icon';
 import { SectionHeading } from '../shared/SectionHeading';
 import { EntityLink } from '../shared/EntityLink';
 
@@ -140,8 +142,8 @@ export function IntentSection({ intents, variant = 'modal', onOpenEntity }: Inte
                       className="text-sm font-semibold"
                       style={{ color: 'var(--text-primary)' }}
                     >
-                      <span style={{ color: categoryColor, marginRight: '6px' }}>
-                        {CATEGORY_GLYPHS[intent.category]}
+                      <span style={{ color: categoryColor, marginRight: '6px', display: 'inline-flex', verticalAlign: 'middle' }}>
+                        <Icon name={ICON_FOR_AMBITION[intent.category]} size="floor" decorative />
                       </span>
                       {intent.displayName}
                     </span>
@@ -234,11 +236,11 @@ export function IntentSection({ intents, variant = 'modal', onOpenEntity }: Inte
                   backgroundColor: `${categoryColor}0f`,
                 }}
               >
-                {/* Row 1: glyph + name + priority */}
+                {/* Row 1: icon + name + priority */}
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs text-amber-100 font-medium truncate flex-1 mr-2">
-                    <span style={{ color: categoryColor, marginRight: '4px' }}>
-                      {CATEGORY_GLYPHS[intent.category]}
+                    <span style={{ color: categoryColor, marginRight: '4px', display: 'inline-flex', verticalAlign: 'middle' }}>
+                      <Icon name={ICON_FOR_AMBITION[intent.category]} size="floor" decorative />
                     </span>
                     {intent.displayName}
                   </span>

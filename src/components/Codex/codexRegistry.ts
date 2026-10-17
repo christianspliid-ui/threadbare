@@ -2,7 +2,7 @@
  * Codex Registry — maps game data into a uniform CodexEntry shape for browsing.
  *
  * Unlike the CMS registry (raw data tables for devs), this produces curated,
- * player-friendly entries with prose, glyphs, and tier colors.
+ * player-friendly entries with prose, carved marks, and tier colors.
  */
 
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
@@ -16,7 +16,6 @@ import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from '../../types/rarity';
 import { SPHERE_NAMES } from '../../types/index';
 import type { RarityTier } from '../../types/rarity';
 import type { GraphNode } from '../../types/graph';
-import { getAttachmentGlyph } from '../Game/attachmentGlyphs';
 import { ACTION_ART } from '../Game/actionArt';
 import { isStarterActionId } from '../../engine/actionUnlock';
 import { effectSourceFor, type EffectSource } from '../../data/actionEffectSource';
@@ -44,10 +43,16 @@ import { magnitudeWord, durationLabel, type MagnitudeBand } from '../../engine/a
 
 // ─── Types ───────────────────────────────────────────────────────
 
+/**
+ * What a Codex entry draws beside its name (THR-1907, plan THR-1879 § 10 icons 5): a carved registry
+ * idea, or a reach's own `ReachIcon` — reaches keep their one vocabulary (§ 9, Law 9).
+ */
+export type CodexMark = { readonly icon: IconName } | { readonly reach: ReachDomain };
+
 export interface CodexEntry {
   id: string;
   name: string;
-  glyph: string;
+  mark: CodexMark;
   tier: RarityTier;
   tierName: string;
   tierColor: string;
@@ -103,6 +108,8 @@ export interface CodexEntry {
 // codex-specific art layers in via ITEM_ART_BASE below).
 import { ITEM_ART as ITEM_ART_BASE } from '../../data/item-art-registry';
 import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_FOR_ATTACHMENT_SUBCATEGORY, ICON_FOR_RESOURCE_CLASS } from '../../data/icons/conceptIcons';
+import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
 import { getAttachmentArtUrl } from '../../data/artifact-category-art';
 import {
   ACTION_CATEGORIES,
@@ -118,18 +125,31 @@ const ITEM_ART: Record<string, string> = {
 export interface CodexCategory {
   id: string;
   label: string;
-  glyph: string;
-  /** The carved icon (THR-1904). Additive: the tabs still draw `glyph` until THR-1907 moves them. */
+  /** The carved icon the category's tab draws (THR-1904; the text glyph retired in THR-1907). */
   icon: IconName;
   subcategories: { id: string; label: string; count: number }[];
 }
 
-// ─── Reach Glyphs ────────────────────────────────────────────────
+// ─── Reach marks and words ───────────────────────────────────────
+
+/** A reach-keyed entry's mark: the reach's `ReachIcon`, else `fallback` for a key that is not a reach. */
+function reachMark(reach: string, fallback: IconName): CodexMark {
+  return (REACH_DOMAINS as readonly string[]).includes(reach) ? { reach: reach as ReachDomain } : { icon: fallback };
+}
 
 /**
- * THR-1368: the `flesh` rows are gone from this map and from `REACH_DISPLAY` below,
- * in the same change that deleted the `reach.flesh` node from `world-model.json`.
- * Both bags are keyed by a template's raw `reach` string and by world-model `reach.*`
+ * An attachment's mark by subcategory (`ICON_FOR_ATTACHMENT_SUBCATEGORY`), else its category's icon —
+ * a designed fallback by class rather than a blank (Law 4).
+ */
+function attachmentMark(subcategory: string, categoryIcon: IconName): CodexMark {
+  const own = (ICON_FOR_ATTACHMENT_SUBCATEGORY as Readonly<Record<string, IconName>>)[subcategory];
+  return { icon: own ?? categoryIcon };
+}
+
+/**
+ * THR-1368: the `flesh` row is gone from this map (and was gone from the reach glyph map THR-1907
+ * retired), in the same change that deleted the `reach.flesh` node from `world-model.json`.
+ * Both bags were keyed by a template's raw `reach` string and by world-model `reach.*`
  * node suffix — not by `ReachDomain` — which is exactly why the row and the node had
  * to retire together: either one alone leaves the mismatch pointing the other way.
  *
@@ -139,20 +159,8 @@ export interface CodexCategory {
  * The `Record<string, string>` annotation is what keeps that legal, so it is still
  * correct here rather than a widening hole. A reach with no display entry paints raw
  * in the nav rail (see `SUBCATEGORY_DISPLAY` below) — the designed fail-open path.
+ * `time` and `life` are not reaches, so `reachMark` gives them the category's icon.
  */
-const REACH_GLYPHS: Record<string, string> = {
-  iron: '\u2694',    // ⚔
-  gold: '\u2696',    // ⚖
-  shadow: '\u2734',  // ✴
-  veil: '\u2728',    // ✨
-  heart: '\u2665',   // ♥
-  eye: '\u25C9',     // ◉
-  stone: '\u25A0',   // ■
-  star: '\u2605',    // ★
-  time: '\u231A',    // ⌚
-  life: '\u2618',    // ☘
-};
-
 const REACH_DISPLAY: Record<string, string> = {
   iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
   heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star',
@@ -414,7 +422,7 @@ function mapPossession(node: GraphNode): CodexEntry {
   return {
     id: node.id,
     name: node.name,
-    glyph: getAttachmentGlyph(sub),
+    mark: attachmentMark(sub, 'possession'),
     tier,
     tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
@@ -459,12 +467,11 @@ function mapCondition(node: GraphNode): CodexEntry {
   }
 
   const displaySlot = SLOT_TAG_DISPLAY_NAMES[condSlot] ?? condSlot;
-  const glyph = getAttachmentGlyph(condSlot);
 
   return {
     id: node.id,
     name: node.name,
-    glyph,
+    mark: attachmentMark(condSlot === 'bestowed' ? 'bestowed_power' : condSlot, 'condition'),
     tier,
     tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
@@ -508,7 +515,7 @@ function mapDivineAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
   return {
     id: template.id,
     name: template.spellName ?? template.name,
-    glyph: REACH_GLYPHS[reach] ?? '\u2605',
+    mark: reachMark(reach, ACTION_CATEGORY_ICONS.divine),
     tier,
     tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
@@ -542,7 +549,7 @@ function mapMortalAction(template: typeof UNIFIED_ACTION_TEMPLATES[number]): Cod
   return {
     id: template.id,
     name: template.spellName ?? template.name,
-    glyph: REACH_GLYPHS[reach] ?? '\u25C8',
+    mark: reachMark(reach, ACTION_CATEGORY_ICONS.actions),
     tier,
     tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
@@ -579,7 +586,7 @@ function mapTargetAction(
   return {
     id: template.id,
     name: template.spellName ?? template.name,
-    glyph: REACH_GLYPHS[reach] ?? '\u25C8',
+    mark: reachMark(reach, ACTION_CATEGORY_ICONS[category as ActionCategory] ?? 'fallback'),
     tier,
     tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
@@ -613,7 +620,7 @@ function mapAgreement(template: typeof AGREEMENT_REWARD_TEMPLATES[number]): Code
   return {
     id: template.id,
     name: template.name,
-    glyph: getAttachmentGlyph(template.agreementType),
+    mark: attachmentMark(template.agreementType, 'pact'),
     tier,
     tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
@@ -746,12 +753,6 @@ let _cachedEntries: CodexEntry[] | null = null;
 
 
 /** Resource classes (THR-617) — the economy's raw vocabulary as codex entries. */
-const RESOURCE_CATEGORY_GLYPHS: Record<string, string> = {
-  staple: '☘',    // shamrock — food and field
-  strategic: '⚒', // hammer and pick — war and works
-  luxury: '◈',    // diamond — trade wealth
-  arcane: '✴',    // star burst — the strange trades
-};
 
 function mapResourceClass(resourceId: string): CodexEntry {
   const cls = RESOURCE_CLASSES[resourceId];
@@ -761,7 +762,7 @@ function mapResourceClass(resourceId: string): CodexEntry {
   return {
     id: `resource.${resourceId}`,
     name: displayName,
-    glyph: RESOURCE_CATEGORY_GLYPHS[cls.category] ?? '◆',
+    mark: { icon: ICON_FOR_RESOURCE_CLASS[cls.category] ?? 'resources' },
     tier,
     tierName: RARITY_TIER_NAMES[tier] ?? 'Unknown',
     tierColor: RARITY_TIER_COLORS[tier] ?? '#888',
@@ -792,21 +793,10 @@ function mapResourceClass(resourceId: string): CodexEntry {
 }
 
 /**
- * The Codex tab glyph and the mapper for each action category (THR-1886). Closed over `ActionCategory`, so a
- * category added to `action-categories.ts` without a mapper here fails the typecheck.
+ * The carved icon per action category (THR-1904, plan THR-1879 Appendix B) — the Codex tab's mark, and
+ * the mark of an action whose reach key is not a reach. Closed over `ActionCategory` (THR-1886), so a
+ * category added to `action-categories.ts` without an icon here fails the typecheck.
  */
-const ACTION_CATEGORY_GLYPHS = {
-  divine: '★',
-  hex: '⬡',
-  location: '⌂',
-  artifact: '✦',
-  // Asterism - three marks travelling together (THR-999).
-  company: '⁂',
-  threads: '⁘',
-  actions: '⚔',
-} satisfies Record<ActionCategory, string>;
-
-/** The carved icon per action category (THR-1904, plan THR-1879 Appendix B). */
 const ACTION_CATEGORY_ICONS = {
   divine: 'divine-actions',
   hex: 'hex',
@@ -881,28 +871,29 @@ export function getAllCodexEntries(): CodexEntry[] {
 export function getCodexCategories(): CodexCategory[] {
   const entries = getAllCodexEntries();
 
-  const catDefs: { id: string; label: string; glyph: string; icon: IconName }[] = [
+  // Labels in sentence case: the sidebar sets them as bold labels (THR-1905's label rule).
+  const catDefs: { id: string; label: string; icon: IconName }[] = [
     // The seven action categories, declared once in action-categories.ts (THR-1886).
-    ...ACTION_CATEGORY_IDS.map(id => ({ id, label: ACTION_CATEGORIES[id].label, glyph: ACTION_CATEGORY_GLYPHS[id], icon: ACTION_CATEGORY_ICONS[id] })),
-    // Hammer and pick \u2014 the work mortals do on the world's things (THR-1434).
-    { id: 'undertakings', label: 'Undertakings', glyph: '\u2692', icon: 'undertaking' },
-    { id: 'possessions', label: 'Possessions', glyph: '\u25C6', icon: 'possession' },
-    { id: 'conditions', label: 'Conditions', glyph: '\u2715', icon: 'condition' },
-    { id: 'agreements', label: 'Agreements', glyph: '\u260D', icon: 'pact' },
+    ...ACTION_CATEGORY_IDS.map(id => ({ id, label: ACTION_CATEGORIES[id].label, icon: ACTION_CATEGORY_ICONS[id] })),
+    // The work mortals do on the world's things (THR-1434).
+    { id: 'undertakings', label: 'Undertakings', icon: 'undertaking' },
+    { id: 'possessions', label: 'Possessions', icon: 'possession' },
+    { id: 'conditions', label: 'Conditions', icon: 'condition' },
+    { id: 'agreements', label: 'Agreements', icon: 'pact' },
     // The three categories THR-1495 chartered. Legendary artifacts took no tab of
     // their own \u2014 three entries are a rail group under Possessions, not a section.
     // A companion is a person, so they get a category rather than a shelf in
     // Possessions; an ambition is the want an Undertaking serves, and was the only
     // half of a mortal's motives the catalog did not carry; the cards are the deck
     // the player plays from.
-    { id: COMPANION_CATEGORY_ID, label: 'Companions', glyph: '\u265F', icon: 'companion' },
-    { id: AMBITION_CATEGORY_ID, label: 'Ambitions', glyph: '\u2767', icon: 'ambition' },
-    { id: CARD_CATEGORY_ID, label: 'The Repertoire', glyph: '\u2756', icon: 'cards' },
+    { id: COMPANION_CATEGORY_ID, label: 'Companions', icon: 'companion' },
+    { id: AMBITION_CATEGORY_ID, label: 'Ambitions', icon: 'ambition' },
+    { id: CARD_CATEGORY_ID, label: 'The Repertoire', icon: 'cards' },
     // Resource classes have been mapped to entries since the P3 economy work
     // (92383535) but never had a tab, so the whole category was catalogued and
     // unreachable - the same "no catalog arm" defect as company.* (THR-999),
-    // one layer further on. Scales: these entries are about trade value.
-    { id: 'resources', label: 'Resources', glyph: '\u2696', icon: 'resources' },
+    // one layer further on.
+    { id: 'resources', label: 'Resources', icon: 'resources' },
   ];
 
   return catDefs.map(cat => {

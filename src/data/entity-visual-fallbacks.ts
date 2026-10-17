@@ -17,6 +17,9 @@
  *   resolver's per-kind switch — this glyph table remains the last-resort tier.
  */
 
+import type { IconName } from './icons/iconRegistry';
+import { ICON_FOR_WORLD_REF_KIND } from './icons/conceptIcons';
+
 /** Entity kinds the visual pattern understands. Drives glyph + source resolution. */
 export type EntityVisualKind =
   | 'agent'
@@ -104,40 +107,38 @@ export const ENTITY_GRADIENTS: EntityGradient[] = [
 /** Number of fallback gradients the id-hash selects from. */
 export const ENTITY_GRADIENT_COUNT = ENTITY_GRADIENTS.length;
 
-// ── Category glyphs ─────────────────────────────────────────────────
+// ── Kind icons ──────────────────────────────────────────────────────
 
 /**
- * Category glyph for the fallback tile, keyed by entity kind. Person kinds are
- * absent here — they use a name initial via `fallbackGlyphFor`. Authored in
- * Threadbare style; readable at chip size (`--text-xs`).
+ * The carved icon a place or thing kind's fallback tile draws on its gradient (THR-1907, plan
+ * THR-1879 § 10 icons 5; the glyph table it replaces is gone). Person kinds are absent — they
+ * draw a name initial via `fallbackGlyphFor`. `unknown` draws the fallback mark.
  */
-const CATEGORY_GLYPHS: Partial<Record<EntityVisualKind, string>> = {
-  location: '⌂',    // ⌂ house — a place
-  sublocation: '◈', // ◈ diamond with inner dot — a place within a place
-  encounter: '✦',   // ✦ four-pointed star — a moment
-  faction: '⚜',     // ⚜ fleur-de-lis — a banner / sigil
-  artifact: '◆',    // ◆ filled diamond — a made thing
-  army: '⚔',        // ⚔ crossed swords — a force in the field (THR-1023)
-  monster: '☠',     // ☠ skull — a lair's beast (THR-1550)
-  unknown: '◇',     // ◇ white diamond
+export const ENTITY_VISUAL_KIND_ICON: Readonly<Partial<Record<EntityVisualKind, IconName>>> = {
+  location: ICON_FOR_WORLD_REF_KIND.location,
+  sublocation: ICON_FOR_WORLD_REF_KIND.sublocation,
+  encounter: ICON_FOR_WORLD_REF_KIND.encounter,
+  faction: ICON_FOR_WORLD_REF_KIND.faction,
+  artifact: ICON_FOR_WORLD_REF_KIND.artifact,
+  army: ICON_FOR_WORLD_REF_KIND.army,
+  monster: 'monster',
+  unknown: 'fallback',
 };
 
 /** Glyph shown when a person kind has no name to derive an initial from. */
 export const SILHOUETTE_GLYPH = '◍'; // ◍ circle with vertical fill — a veiled figure
 
-/** Last-resort glyph for any kind with no category entry. */
-const DEFAULT_GLYPH = '◇'; // ◇
-
 /**
- * The fallback glyph for an entity. Person kinds render the name's first
- * character (uppercased); place/thing kinds render their category glyph.
+ * The fallback text for an entity. Person kinds render the name's first character (uppercased);
+ * place and thing kinds render no text — their tile draws `ENTITY_VISUAL_KIND_ICON`. A caller
+ * that supplies its own glyph (an action card's verb) is told apart by that glyph not being `''`.
  */
 export function fallbackGlyphFor(kind: EntityVisualKind, name: string | undefined): string {
   if (isPersonKind(kind)) {
     const initial = (name ?? '').trim().charAt(0);
     return initial ? initial.toUpperCase() : SILHOUETTE_GLYPH;
   }
-  return CATEGORY_GLYPHS[kind] ?? DEFAULT_GLYPH;
+  return '';
 }
 
 // ── Stable id hash → gradient index ─────────────────────────────────

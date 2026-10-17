@@ -42,6 +42,7 @@ import { AgentIntelligencePanel } from './AgentIntelligencePanel';
 import type { IntelligenceRecord } from '../../types/unifiedAction';
 import type { ForeshadowingResult } from '../../engine/foreshadowing/types';
 import type { RevealedNoticeGroup } from './entityNoticeBadgeModel';
+import { Icon } from '../shared/Icon';
 
 // Domain display names (8 reaches after flesh removal)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -893,7 +894,7 @@ function AgentDetailBody({
               const pres = strategicSummary.calling;
               return (
                 <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)' }}>
-                  <span style={{ color: pres.color }}>{pres.glyph}</span>
+                  <span style={{ color: pres.color, display: 'inline-flex', verticalAlign: 'middle' }}><Icon name={pres.icon} size="floor" decorative /></span>
                   {' '}{strategicSummary.activeProject.displayName}
                   <span style={{ color: 'var(--text-muted)' }}> — {strategicSummary.activeProject.word}</span>
                 </div>

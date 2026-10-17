@@ -47,6 +47,8 @@ import { AMBITION_DEFAULT_PRONOUNS, resolveAmbitionPronouns } from '../../engine
 import { conceptRow, contributionConcepts, sphereConcept, type CodexDetail } from './codexConcepts';
 import { RARITY_TIER_NAMES, RARITY_TIER_COLORS, clampRarityTier } from '../../types/rarity';
 import type { RarityTier } from '../../types/rarity';
+import type { IconName } from '../../data/icons/iconRegistry';
+import { ICON_FOR_AMBITION, ICON_FOR_CHARTERED_GROUP, ICON_FOR_WORLD_REF_KIND } from '../../data/icons/conceptIcons';
 import { ARTIFACT_TEMPLATES } from '../../data/artifact-templates';
 import { COMPANION_TEMPLATES } from '../../data/companion-templates';
 import {
@@ -180,16 +182,6 @@ export const AMBITION_CATEGORY_WORDS: Readonly<Record<AmbitionCategory, string>>
   vengeance: 'Vengeance',
 };
 
-export const AMBITION_CATEGORY_GLYPHS: Readonly<Record<AmbitionCategory, string>> = {
-  dominion: '♔',   // ♔ a crown — to rule
-  mastery: '✹',    // ✹ a worked star — the perfected hand
-  legacy: '⚜',     // ⚜ a line that outlasts the one who made it
-  survival: '⚕',   // ⚕ the staff — to still be here
-  discovery: '☼',  // ☼ a sun — what is brought to light
-  devotion: '❋',   // ❋ an offering
-  vengeance: '†',  // † the debt, paid
-};
-
 /** A card's rail group in game words. */
 export const CARD_GROUP_WORDS: Readonly<Record<string, string>> = {
   [CARD_SUBCATEGORY_IDS.core]: 'Every God Holds',
@@ -197,19 +189,6 @@ export const CARD_GROUP_WORDS: Readonly<Record<string, string>> = {
   [CARD_SUBCATEGORY_IDS.hunger]: 'Hunger Uniques',
   [CARD_SUBCATEGORY_IDS.earned]: 'Earned In Play',
 };
-
-const CARD_GROUP_GLYPHS: Readonly<Record<string, string>> = {
-  [CARD_SUBCATEGORY_IDS.core]: '❖',      // ❖
-  [CARD_SUBCATEGORY_IDS.signature]: '✦', // ✦
-  [CARD_SUBCATEGORY_IDS.hunger]: '☽',    // ☽
-  [CARD_SUBCATEGORY_IDS.earned]: '✧',    // ✧
-};
-
-/** A legendary artifact's mark — a star ringed, for the three that are one of a kind. */
-const LEGENDARY_GLYPH = '✪'; // ✪
-
-/** A companion's mark — one who walks beside, the same pawn the undertaking grid uses. */
-const COMPANION_GLYPH = '♟'; // ♟
 
 /**
  * `LossCondition` in game words.
@@ -274,7 +253,7 @@ export function buildLegendaryCodexEntries(): CodexEntry[] {
     return {
       id: template.id,
       name: template.name,
-      glyph: LEGENDARY_GLYPH,
+      mark: { icon: ICON_FOR_CHARTERED_GROUP.legendary },
       tier,
       tierName: RARITY_TIER_NAMES[tier],
       tierColor: RARITY_TIER_COLORS[tier],
@@ -320,7 +299,7 @@ export function buildCompanionCodexEntries(): CodexEntry[] {
     return {
       id: template.id,
       name: template.profession,
-      glyph: COMPANION_GLYPH,
+      mark: { icon: ICON_FOR_WORLD_REF_KIND.companion },
       tier,
       tierName: RARITY_TIER_NAMES[tier],
       tierColor: RARITY_TIER_COLORS[tier],
@@ -395,7 +374,7 @@ export function buildAmbitionCodexEntries(): CodexEntry[] {
     return {
       id: template.id,
       name: template.displayName,
-      glyph: AMBITION_CATEGORY_GLYPHS[template.category],
+      mark: { icon: ICON_FOR_AMBITION[template.category] },
       tier,
       tierName: RARITY_TIER_NAMES[tier],
       tierColor: RARITY_TIER_COLORS[tier],
@@ -487,7 +466,7 @@ export function buildCardCodexEntries(): CodexEntry[] {
     return {
       id: member.id,
       name: cardDisplayTitle(member),
-      glyph: CARD_GROUP_GLYPHS[group] ?? '❖',
+      mark: { icon: (ICON_FOR_CHARTERED_GROUP as Readonly<Record<string, IconName>>)[group] ?? ICON_FOR_CHARTERED_GROUP.card_core },
       tier,
       tierName: RARITY_TIER_NAMES[tier],
       tierColor: RARITY_TIER_COLORS[tier],

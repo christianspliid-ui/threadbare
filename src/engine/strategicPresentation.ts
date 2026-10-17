@@ -29,28 +29,47 @@ import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
 import { hexKey } from '../lib/hexKey';
 import { getCallingPresentation, type CallingPresentation } from './calling';
+import { BEHAVIOR_FAMILY_TO_CALLING, CALLING_FALLBACK_PRESENTATION, CALLING_PRESENTATION } from '../data/calling-content';
+import type { IconName } from '../data/icons/iconRegistry';
 
 // ─── Behavior Family Presentation ─────────────────────────────────────────────
 
-/** Visual identity for each behavior family: glyph, CSS color, human-readable label. */
-export const BEHAVIOR_FAMILY_PRESENTATION: Record<
-  BehaviorFamily,
-  { glyph: string; color: string; label: string }
-> = {
-  'merchant-expansion': { glyph: '¤',  color: '#c8a84e', label: 'Merchant expansion' },
-  'builder-civic':      { glyph: '⚒', color: '#8a9a7c', label: 'Civic builder'       },
-  'scholar-seeker':     { glyph: '📜', color: '#5b7fa5', label: 'Scholar'             },
-  'zealot-mission':     { glyph: '✦',  color: '#b85450', label: 'Zealot'              },
-  'court-political':    { glyph: '⚜', color: '#8b6baa', label: 'Court politics'       },
-  'underworld-network': { glyph: '🗡', color: '#6a6a72', label: 'Underworld'           },
-  'warlord-expansion':  { glyph: '⚔', color: '#9a6850', label: 'Warlord'              },
-  'caretaker-steward':  { glyph: '✚',  color: '#6a9a6e', label: 'Caretaker'           },
-  'artist-crafter':     { glyph: '◈',  color: '#5a8aaa', label: 'Artist'              },
-  'wanderer-explorer':  { glyph: '⇢',  color: '#aa8a5a', label: 'Wanderer'            },
+/** A behavior family's presentation: its icon, CSS color and human-readable label. */
+export interface BehaviorFamilyPresentation {
+  /** The family's seed calling's icon (`BEHAVIOR_FAMILY_TO_CALLING`, THR-1907) — not a second list (Law 58). */
+  readonly icon: IconName;
+  readonly color: string;
+  readonly label: string;
+}
+
+/** Colour and label for each behavior family. The icon comes from the seed calling. */
+const BEHAVIOR_FAMILY_ROWS: Record<BehaviorFamily, { color: string; label: string }> = {
+  'merchant-expansion': { color: '#c8a84e', label: 'Merchant expansion' },
+  'builder-civic':      { color: '#8a9a7c', label: 'Civic builder'      },
+  'scholar-seeker':     { color: '#5b7fa5', label: 'Scholar'            },
+  'zealot-mission':     { color: '#b85450', label: 'Zealot'             },
+  'court-political':    { color: '#8b6baa', label: 'Court politics'     },
+  'underworld-network': { color: '#6a6a72', label: 'Underworld'         },
+  'warlord-expansion':  { color: '#9a6850', label: 'Warlord'            },
+  'caretaker-steward':  { color: '#6a9a6e', label: 'Caretaker'          },
+  'artist-crafter':     { color: '#5a8aaa', label: 'Artist'             },
+  'wanderer-explorer':  { color: '#aa8a5a', label: 'Wanderer'           },
 };
 
+/** Visual identity for each behavior family: icon, CSS color, human-readable label. */
+export const BEHAVIOR_FAMILY_PRESENTATION: Readonly<Record<BehaviorFamily, BehaviorFamilyPresentation>> =
+  Object.fromEntries(
+    (Object.keys(BEHAVIOR_FAMILY_ROWS) as BehaviorFamily[]).map(family => [
+      family,
+      {
+        icon: (CALLING_PRESENTATION[BEHAVIOR_FAMILY_TO_CALLING[family]] ?? CALLING_FALLBACK_PRESENTATION).icon,
+        ...BEHAVIOR_FAMILY_ROWS[family],
+      },
+    ]),
+  ) as Record<BehaviorFamily, BehaviorFamilyPresentation>;
+
 /** Fallback presentation for unknown or missing behavior families. */
-export const BEHAVIOR_FAMILY_FALLBACK = { glyph: '◆', color: '#8a8a8a', label: 'Unknown' };
+export const BEHAVIOR_FAMILY_FALLBACK: BehaviorFamilyPresentation = { icon: CALLING_FALLBACK_PRESENTATION.icon, color: '#8a8a8a', label: 'Unknown' };
 
 // ─── Tunable Constants ─────────────────────────────────────────────────────────
 
@@ -101,7 +120,7 @@ export function getHealthLabel(degradation: number): string {
 /** Get behavior family presentation (with fallback for unknown families). */
 export function getBehaviorFamilyPresentation(
   family: BehaviorFamily | null | undefined,
-): { glyph: string; color: string; label: string } {
+): BehaviorFamilyPresentation {
   if (!family) return BEHAVIOR_FAMILY_FALLBACK;
   return BEHAVIOR_FAMILY_PRESENTATION[family] ?? BEHAVIOR_FAMILY_FALLBACK;
 }
@@ -111,10 +130,10 @@ export function getBehaviorFamilyPresentation(
 /** Per-agent strategic summary — used by ThreadsPanel rows and AgentInfoCard. */
 export interface AgentStrategicSummary {
   agentId: string;
-  /** Primary behavior family for glyph/color identification (from active project or latest history). */
+  /** Primary behavior family for icon/colour identification (from active project or latest history). */
   behaviorFamily: BehaviorFamily | null;
   /**
-   * The calling — what the surfaces draw instead of the family glyph (THR-1299
+   * The calling — what the surfaces draw instead of the family's own mark (THR-1299
    * slice 5). The stored calling when one has been derived, else the persisted
    * family's seed title, else the fallback; never absent, so no render site
    * needs a branch.

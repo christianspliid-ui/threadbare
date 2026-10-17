@@ -105,7 +105,7 @@ describe('THR-999 — the two prefixes that were missing', () => {
   it('gives Company Actions a category tab carrying all four', () => {
     const company = getCodexCategories().find(c => c.id === 'company');
     expect(company, 'Company Actions category').toBeDefined();
-    expect(company!.label).toBe('Company Actions');
+    expect(company!.label).toBe('Company actions');
 
     const total = company!.subcategories.reduce((sum, s) => sum + s.count, 0);
     expect(total).toBe(COMPANY_IDS.length);

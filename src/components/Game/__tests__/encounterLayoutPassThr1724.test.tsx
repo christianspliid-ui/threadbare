@@ -27,7 +27,6 @@ const CARD: NudgeHandCard = {
   id: 'nudge.steady_hand',
   libraryCardId: 'card.boost',
   keyword: 'Boost',
-  keywordIcon: '◆',
   name: 'Steady The Hand',
   effectLine: 'His grip stops shaking.',
   essenceCost: 2,

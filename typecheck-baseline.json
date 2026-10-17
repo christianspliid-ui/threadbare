@@ -1,5 +1,5 @@
 {
-  "total": 2781,
+  "total": 2780,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "src/__tests__/debug-bridge.test.ts": 3,
@@ -64,7 +64,7 @@
     "src/components/Game/encounter-stage/adapters/__tests__/buildUnifiedEncounterStageModel.test.ts": 3,
     "src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts": 18,
     "src/components/Game/encounter-stage/adapters/buildSimpleEncounterStageModel.ts": 2,
-    "src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts": 2,
+    "src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts": 1,
     "src/components/Game/encounter-stage/narrativeLinker.ts": 1,
     "src/components/Game/Encounter/DetailPage/__tests__/TypedDetailPages.test.tsx": 1,
     "src/components/Game/encounterHandoff.ts": 1,
