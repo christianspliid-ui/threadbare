@@ -3466,7 +3466,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.352: Army Movement (TB-073 — armies advance toward objectives)
-  timeInlinePhase('army_movement', s, () => phaseArmyMovement(s));
+  // THR-1933: the re-aim inside reads the session's cached realm projection for tax holders.
+  timeInlinePhase('army_movement', s, () => phaseArmyMovement(s, runtime
+    ? () => ensureRealmProjection(runtime, s.graph, s.tiles, s.tick)
+    : () => buildRealmProjection(s.graph, s.tiles)));
 
   // Phase 2.355: Army Attrition (TB-073 — cohesion degradation during march)
   timeInlinePhase('army_attrition', s, () => phaseArmyAttrition(s));

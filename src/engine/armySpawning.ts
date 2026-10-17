@@ -42,6 +42,8 @@ import { upkeepOf } from './factionPurse/upkeep';
 import { isPurseFaction } from './factionPurse/income';
 import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
 import { isEnemyFaction, hallBarsAttack } from './warAims/enemy';
+import { aimNewArmy } from './warAims';
+import { WAR_AIMS_ENABLED } from '../data/war-aims-constants';
 
 // ─── Army tiers ─────────────────────────────────────────────────────────
 
@@ -333,10 +335,14 @@ export function spawnArmy(
       },
     });
 
-    // Give the army a march objective (nearest hostile settlement) so it advances
-    // and reaches a battle/siege instead of idling at its muster point (THR-614).
-    const objective = selectArmyObjective(state, armyId, factionId);
-    if (objective) {
+    // Give the army a march objective so it advances and reaches a battle/siege instead
+    // of idling at its muster point (THR-614). THR-1933: defence first, else the richest
+    // enemy town in reach (`aimNewArmy` writes the objective or the hold itself); off,
+    // the THR-1922 nearest enemy settlement.
+    const objective = WAR_AIMS_ENABLED
+      ? aimNewArmy(state, armyId)
+      : selectArmyObjective(state, armyId, factionId);
+    if (objective && !WAR_AIMS_ENABLED) {
       const armyNode = graph.getNode(armyId);
       const armyState = armyNode?.properties.armyState as ArmyState | undefined;
       if (armyNode && armyState) {

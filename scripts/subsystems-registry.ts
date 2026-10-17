@@ -46,7 +46,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     activityKeywords: ['battle', 'siege', 'army'],
     domains: ['army', 'battle'],
     phaseMatch: /\b(army|battle|siege|war)\b/i,
-    note: 'Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614. **Do not design a green-field war system** — extend or tune this one.',
+    note: 'Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614; war aims (THR-1933 S1): enemies only (`warAims/enemy.ts`), defence first, value targeting by the purse town price within supply reach, a daily re-aim (`warAims.ts`). **Do not design a green-field war system** — extend or tune this one.',
   },
   {
     name: 'Factions & Succession',

@@ -112,3 +112,72 @@ export function armyObjectiveSentence(
   // Without a resolvable target the verb phrase would dangle ("Marching to take .")
   return targetName ? `${verb} ${targetName}.` : null;
 }
+
+// ─── War aims: why an army marches (THR-1933) ──────────────────────────────
+//
+// Plan `Docs/plans/2026-10-15-thr-1933-war-aims.md` § Player-facing text. The sheet line
+// says *why*: the reason clause reads the objective's written `reason`, never a guess
+// (Game Design Law 45). No number appears (UI Law 13). `{town}` and `{enemy}` are slots
+// the sheet fills with links (UI Law 21); every other word is fixed here.
+
+/** Hold lines, keyed by where the army stands. */
+export const ARMY_HOLD_COPY = {
+  home: 'Mustered at home: no enemy within reach.',
+  away: 'Holding where it stands: no enemy within reach.',
+} as const;
+
+/** The defend line's enemy slot when the enemy army is gone or has no faction name. */
+export const ARMY_DEFEND_UNNAMED_ENEMY = 'an enemy host';
+
+/**
+ * The short "stores are low" clause for a scarce staple, where the place page's own
+ * scarce line would repeat the good's name. Other staples take the first clause of their
+ * `RESOURCE_TIER_PROSE` (or `CATEGORY_TIER_PROSE`) scarce line (UI Law 37: one word).
+ */
+export const STAPLE_SCARCE_CLAUSE_OVERRIDES: Readonly<Record<string, string>> = {
+  grain: 'the stores are low',
+};
+
+export interface ArmyAimInput {
+  objectiveType: unknown;
+  reason?: unknown;
+  /** The staple's display name (`feeds_staple` only). */
+  resourceName?: string | null;
+  /** The scarce clause for that staple, already lower-cased and unpunctuated. */
+  scarceClause?: string | null;
+  /** The marching army's own faction name (`feeds_staple` only). */
+  attackerFactionName?: string | null;
+  /** True when the defend line has a nameable enemy (`{enemy}` is filled by the sheet). */
+  hasNamedEnemy?: boolean;
+}
+
+/**
+ * The sheet line for an objective with a war-aim reason, with `{town}` (and for defence
+ * `{enemy}`) left as slots; or `null` when the objective carries no reason, so the
+ * caller falls back to `armyObjectiveSentence`.
+ */
+export function armyAimTemplate(input: ArmyAimInput): string | null {
+  const { objectiveType, reason } = input;
+  if (objectiveType === 'defend' && reason === 'defence') {
+    return input.hasNamedEnemy
+      ? `${ARMY_OBJECTIVE_VERBS.defend} {town} against the {enemy} host.`
+      : `${ARMY_OBJECTIVE_VERBS.defend} {town} against ${ARMY_DEFEND_UNNAMED_ENEMY}.`;
+  }
+  if (objectiveType !== 'conquer') return null;
+  if (reason === 'richest') return `${ARMY_OBJECTIVE_VERBS.conquer} {town}, the richest enemy town within reach.`;
+  if (reason === 'feeds_staple') {
+    if (!input.resourceName || !input.scarceClause || !input.attackerFactionName) {
+      return `${ARMY_OBJECTIVE_VERBS.conquer} {town}, the richest enemy town within reach.`;
+    }
+    return `${ARMY_OBJECTIVE_VERBS.conquer} {town} for its ${input.resourceName}: ${input.scarceClause} in ${input.attackerFactionName}'s towns.`;
+  }
+  return null;
+}
+
+/** The first clause of a scarce-tier prose line, lower-cased, without its stop ("The nets come up light"). */
+export function scarceClauseOf(resourceId: string, scarceProse: string): string {
+  const override = STAPLE_SCARCE_CLAUSE_OVERRIDES[resourceId];
+  if (override) return override;
+  const first = scarceProse.split(/[.,;:]/)[0]?.trim() ?? '';
+  return first ? first.charAt(0).toLowerCase() + first.slice(1) : 'the stores are low';
+}

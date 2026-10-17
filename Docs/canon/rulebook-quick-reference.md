@@ -89,6 +89,8 @@ Trade routes carry a **cargo manifest** naming what actually moves, derived from
 
 Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staples toward glut; **Blight the Fields** (Shadow / Entropy) draws them toward famine; **Reveal the Vein** (Eye / Matter) surfaces a new deposit; **Guide the Caravan** (Eye / Order) boosts and protects every road that feeds a settlement; **Sour the Mine** (Shadow / Entropy) pinches the non-staple wealth shut. All arrive as milestone unlocks, all land a beat later — you tilt the odds, you do not farm.
 
+**Armies fight only enemies** (hostile, rival, at war, resented past the rivalry line, or a monster lair). An army defends its own or a sworn vassal's threatened town within eight hexes first; otherwise it marches on the richest enemy town a supply line can reach, and holds when there is none. It re-aims once a day, and its sheet says why.
+
 Every **faction keeps a purse**: the towns, places, borders, tolls and guild work it holds pay it daily, and its armies cost upkeep. Raising an army costs coin; an army its purse cannot pay deserts. The faction sheet's **Purse** shows its Means in words.
 
 A **realm courts fealty**: it forces a faction it besieged or took a town from, else persuades or buys one with protection, standing and a gift. A vassal pays its liege three tenths of its day income; its loyalty, on the reputation words, breaks at Distrusted, and a big realm breaking away rebels. A realm with two oaths is a **Crown** (THR-1932).

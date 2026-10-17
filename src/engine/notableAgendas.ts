@@ -681,7 +681,9 @@ function raiseCampaignArmy(
         ...armyNode.properties,
         armyState: {
           ...armyState,
-          objective: { type: 'conquer', targetNodeId: targetId, estimatedAttrition: 0 },
+          // THR-1933 — `source: 'agenda'` keeps the daily war-aim re-aim off a declared campaign.
+          objective: { type: 'conquer', targetNodeId: targetId, estimatedAttrition: 0, source: 'agenda' },
+          holdReason: null,
         },
       },
     });

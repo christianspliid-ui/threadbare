@@ -15,6 +15,7 @@ import type { MovementState } from '../types/movement';
 import { findShortestPath } from './pathfinding';
 import { tickMovement } from './movementExecution';
 import { emitTrace } from './traceBuffer';
+import { reaimArmies, type RealmProjectionSource } from './warAims';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -86,7 +87,14 @@ export function getArmyMovementCost(terrainType: string, isOnRoad: boolean): num
  * 2. If army has objective but no movement queue, pathfind and initiate movement
  * 3. Fail-soft: if no path found, army stays in place (cohesion still degrades)
  */
-export function phaseArmyMovement(state: GameState): void {
+export function phaseArmyMovement(state: GameState, getProjection?: RealmProjectionSource): void {
+  // THR-1933 — the daily war-aim re-aim runs first, so a changed target paths this tick.
+  try {
+    reaimArmies(state, getProjection);
+  } catch {
+    // fail-soft: movement continues on yesterday's objectives (NFP #4)
+  }
+
   const armyNodes = state.graph.getNodesByType('actor')
     .filter(n => n.properties.armyState != null);
 
