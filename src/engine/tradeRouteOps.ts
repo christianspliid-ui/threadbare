@@ -269,14 +269,38 @@ export function executeTaxTradeRoute(
   const target = selectBusiestRoute(untaxed.length > 0 ? untaxed : routes);
   if (!target) return { op, success: false, error: 'tax_trade_route: no route at anchor' };
 
-  graph.updateEdge(target.id, {
+  stampToll(graph, target, resolveRef(op.source ?? '$actor', ctx));
+  return { op, success: true, createdId: target.id };
+}
+
+/**
+ * Toll one named lane (THR-1883). `executeTaxTradeRoute` picks a lane from where
+ * the caster stands, which is right for the catalog verb and wrong for a seize:
+ * a seizer standing at town A took a B–C road and the toll landed on A's busiest
+ * lane. The seize path knows its lane, so it stamps that edge and no other.
+ * Fail-soft: a missing or non-`trades_with` edge is a failed result, nothing written.
+ */
+export function tollTradeRouteEdge(
+  graph: WorldGraph,
+  op: GraphOp,
+  edgeId: string,
+  controllerId: string,
+): GraphOpResult {
+  const edge = graph.getEdge(edgeId);
+  if (!edge || edge.type !== 'trades_with') return { op, success: false, error: 'tax_trade_route: no such route edge' };
+  stampToll(graph, edge, controllerId);
+  return { op, success: true, createdId: edge.id };
+}
+
+/** Stamp `controlledBy` and `taxRate`, the two fields the toll readers look for on a `trades_with` edge. */
+function stampToll(graph: WorldGraph, edge: GraphEdge, controllerId: string): void {
+  graph.updateEdge(edge.id, {
     properties: {
-      ...target.properties,
-      controlledBy: resolveRef(op.source ?? '$actor', ctx),
+      ...edge.properties,
+      controlledBy: controllerId,
       taxRate: TRADE_ROUTE_DEFAULT_TAX_RATE,
     },
   });
-  return { op, success: true, createdId: target.id };
 }
 
 // ─── The route's identity node (THR-1308; one writer since THR-1436) ─────

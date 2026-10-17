@@ -79,7 +79,7 @@ import type {
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
-import { resolveDurableActorLocation, executeConductTrade, executeTaxTradeRoute, mintRouteIdentity } from '../engine/tradeRouteOps';
+import { resolveDurableActorLocation, executeConductTrade, tollTradeRouteEdge, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
 import { getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
 import { setCommander } from '../engine/groups/groupCommand';
@@ -1428,10 +1428,11 @@ const ROUTE: UndertakingObjectType = {
       if (!nodeId) return fail('transfer_holding', 'no_node');
       const moved = transferHolding(ctx.graph, nodeId, ctx.actorId, holdingCtx(ctx));
       if (!moved.success) return moved;
-      const anchor = str(ctx.graph.getNode(nodeId)?.properties, 'routeSourceId');
-      if (anchor) {
+      // The seized lane itself, never the busiest lane where the seizer stands (THR-1883).
+      const edgeId = str(ctx.graph.getNode(nodeId)?.properties, 'routeEdgeId');
+      if (edgeId) {
         const op = { op: 'tax_trade_route' } as unknown as GraphOp;
-        executeTaxTradeRoute(ctx.graph, op, { actorId: ctx.actorId, targetId: nodeId, locationId: anchor, tick: ctx.tick });
+        tollTradeRouteEdge(ctx.graph, op, edgeId, ctx.actorId);
       }
       return moved;
     },
