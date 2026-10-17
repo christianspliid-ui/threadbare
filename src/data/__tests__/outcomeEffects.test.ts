@@ -4,7 +4,9 @@
  * Every template that carries `outcomeEffects` (and every aftermath variant that does)
  * is checked here, so the S2 and S3 rows land on rules that already hold:
  *
- * - bands are real `UnifiedActionOutcome` values;
+ * - bands are bands the roll produces when the table is read. `contested_won` /
+ *   `contested_lost` are refused: a group contest stamps them after resolution, so a row
+ *   keyed on one would never fire (review gate, THR-1936);
  * - a `means` amount is one of the named steps (`MEANS_STEP_SMALL` / `MEANS_STEP` /
  *   `MEANS_STEP_BIG`), signed;
  * - a shift targets the actor or the scene target. A `$cast:` target is refused until
@@ -32,10 +34,9 @@ import {
 } from '../../types/unifiedAction';
 
 const BANDS = new Set([
-  'success', 'failure', 'contested_won', 'contested_lost',
-  'critical_success', 'critical_failure', 'success_at_cost',
+  'success', 'failure', 'critical_success', 'critical_failure', 'success_at_cost',
 ]);
-const FAILURE_BANDS = ['failure', 'critical_failure', 'contested_lost'] as const;
+const FAILURE_BANDS = ['failure', 'critical_failure'] as const;
 /** Words a stakes clause may use to name a money loss. */
 const LOSS_WORDS = /\b(coin|coins|poorer|purse|money|silver|gold|fee|debt|ruin|ruined|cost|paid|pay)\b/i;
 
@@ -110,7 +111,7 @@ describe('THR-1936 — outcome tables', () => {
     expect(templates.some(t => tablesOf(t).length > 0)).toBe(true);
   });
 
-  it('keys every table on a real band', () => {
+  it('keys every table on a band the roll produces', () => {
     const bad: string[] = [];
     for (const t of templates) {
       for (const { where, table } of tablesOf(t)) {

@@ -2933,6 +2933,10 @@ export interface UnifiedActionTemplate {
    * the band, not on the reaction the mortal picks: the dice decide what the venture
    * paid; the reaction decides what they do about it. A resolved aftermath variant's
    * own table replaces this one for that resolution.
+   *
+   * Key it on the rolled bands only (critical success … critical failure). A group
+   * contest stamps `contested_won` / `contested_lost` after the table has been read, so
+   * those keys never fire; `outcomeEffects.test.ts` refuses them.
    */
   readonly outcomeEffects?: OutcomeEffectsTable;
 
