@@ -73,25 +73,39 @@ export function ensureDeciderMeans(
   let born = 0;
   for (const node of graph.getNodesByType('actor')) {
     if (skipIds.has(node.id)) continue;
-    if (!isAutonomousDecisionActor(node)) continue;
-    if (node.properties.wealth !== undefined) continue;
-    const role = typeof node.properties.npcRole === 'string' ? node.properties.npcRole : undefined;
-    const homeTier = homeProsperityTier(graph, node.id);
-    const wealth = birthMeansFor(role, homeTier);
-    node.properties.wealth = wealth;
-    node.properties.lastWealthReason = 'birth';
-    born++;
-    emitTrace({
-      tick,
-      category: 'economy.means.birth',
-      agentId: node.id,
-      role: role ?? null,
-      homeTier,
-      wealth,
-      summary: `${node.name} is born with Means ${wealth} (${role ?? 'no role'}, home ${homeTier ?? 'none'})`,
-    });
+    if (giveBirthMeans(graph, node.id, tick)) born++;
   }
   return born;
+}
+
+/**
+ * Give one decider without `wealth` the Means of their walk of life. For a mortal minted
+ * after world creation — The First bonded at the meeting, the dev-seeded First — whose
+ * mint runs after the world-creation pass. Idempotent; a no-op for a non-decider.
+ *
+ * @returns true when Means was written.
+ */
+export function giveBirthMeans(graph: WorldGraph, agentId: string, tick: number): boolean {
+  if (!MORTAL_MEANS_ENABLED) return false;
+  const node = graph.getNode(agentId);
+  if (!node || node.type !== 'actor') return false;
+  if (!isAutonomousDecisionActor(node)) return false;
+  if (node.properties.wealth !== undefined) return false;
+  const role = typeof node.properties.npcRole === 'string' ? node.properties.npcRole : undefined;
+  const homeTier = homeProsperityTier(graph, node.id);
+  const wealth = birthMeansFor(role, homeTier);
+  node.properties.wealth = wealth;
+  node.properties.lastWealthReason = 'birth';
+  emitTrace({
+    tick,
+    category: 'economy.means.birth',
+    agentId: node.id,
+    role: role ?? null,
+    homeTier,
+    wealth,
+    summary: `${node.name} is born with Means ${wealth} (${role ?? 'no role'}, home ${homeTier ?? 'none'})`,
+  });
+  return true;
 }
 
 // ─── 2. The outcome table ────────────────────────────────────────────────────

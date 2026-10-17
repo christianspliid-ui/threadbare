@@ -70,7 +70,7 @@ import { grantFirstMark } from './firstMark';
 import { godBoughtScoreSum } from './dominion';
 import { recordSeededScores } from './phaseDominion';
 import { getSpherePoints } from './spherePoints';
-import { ensureDeciderMeans } from './mortalMeans';
+import { ensureDeciderMeans, giveBirthMeans } from './mortalMeans';
 import { getAvatarsOf } from './graphQueries';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
@@ -978,9 +978,8 @@ export function devSeedTheFirst(state: GameState): string {
   }
 
   // THR-1936 — the dev First is minted after world creation's birth pass, so it is
-  // born with Means here (idempotent; every other decider already has some).
-  const devAvatarIds = new Set(avatarId ? [avatarId] : []);
-  ensureDeciderMeans(graph, tick, devAvatarIds);
+  // born with Means here.
+  giveBirthMeans(graph, agentId, tick);
 
   return agentId;
 }

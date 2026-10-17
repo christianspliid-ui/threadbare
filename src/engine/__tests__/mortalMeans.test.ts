@@ -18,6 +18,7 @@ import {
   birthMeansFor,
   defaultMeansReason,
   ensureDeciderMeans,
+  giveBirthMeans,
   meansChangeSentence,
   selectOutcomeEffects,
   templatePaysActorOnSuccess,
@@ -138,6 +139,17 @@ describe('THR-1936 — born with Means', () => {
     expect(graph.getNode('avatar')!.properties.wealth).toBeUndefined();
     expect(born).toBe(2);
     expect(traces).toHaveLength(2);
+  });
+
+  it('gives a mortal minted after world creation (The First) Means on its own', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'first', type: 'actor', name: 'F', properties: { actorType: 'individual', spotlightTier: 'spotlight' } });
+    graph.addNode({ id: 'ambient', type: 'actor', name: 'A', properties: { actorType: 'individual', spotlightTier: 'ambient' } });
+    expect(giveBirthMeans(graph, 'first', 40)).toBe(true);
+    expect(graph.getNode('first')!.properties.wealth).toBe(DEFAULT_WEALTH);
+    expect(giveBirthMeans(graph, 'first', 41)).toBe(false);
+    expect(giveBirthMeans(graph, 'ambient', 41)).toBe(false);
+    expect(giveBirthMeans(graph, 'missing', 41)).toBe(false);
   });
 
   it('is idempotent', () => {
