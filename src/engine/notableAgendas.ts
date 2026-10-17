@@ -27,6 +27,7 @@ import { hexDistance } from '../lib/hexMath';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFactionLeaderId } from './factionNetwork';
 import { spawnArmy, selectCommander, armyReachTier, canAffordArmy } from './armySpawning';
+import { hallBarsAttack } from './warAims/enemy';
 import {
   ARMY_SPAWN_IRON_TIER_MIN,
   ARMY_SPAWN_GOLD_TIER_MIN,
@@ -216,7 +217,8 @@ export function scoreNotableProminence(
 
 /**
  * Claim target: the nearest location controlled by a faction other than the
- * notable's own, not already under an active agenda/scheme. Rng-free —
+ * notable's own, not already under an active agenda/scheme, and not one the notable's
+ * faction keeps a hall or home in (THR-1922). Rng-free —
  * nearest by hex distance, id tiebreak — so launches are deterministic.
  */
 export function selectClaimTarget(
@@ -239,6 +241,9 @@ export function selectClaimTarget(
       const locNode = graph.getNode(locId);
       if (!locNode || locNode.type !== 'location') continue;
       if (locNode.properties.locationSubtype === 'ruins') continue;
+      // THR-1922 — never the faction's own hall or home town (unless taken from it): its
+      // armies may not besiege there, so a campaign on it would raise a host that sits.
+      if (hallBarsAttack(graph, factionId, locId)) continue;
       const hex = resolveLocationToHex(graph, locId);
       if (!hex) continue;
       const dist = hexDistance(myHex, hex);
@@ -611,6 +616,11 @@ function raiseCampaignArmy(
     graph.getOutgoingEdges(notableId, 'leads')[0]?.target ??
     getFactionMembershipEdges(graph, notableId)[0]?.target;
   if (!factionId) return;
+  // THR-1922 — no paid host against a town this faction holds or keeps a hall in: siege
+  // start would refuse it (`mayBesiege`) and the army would sit on upkeep. Re-checked at
+  // muster because the raising faction and the town's state can differ from launch.
+  if (graph.getIncomingEdges(targetId, 'controls').some(e => e.source === factionId)) return;
+  if (hallBarsAttack(graph, factionId, targetId)) return;
 
   // Campaign-specific eligibility: the shipped isEligibleForArmySpawn requires
   // the faction's CURRENT ambition to be military, but the campaign itself is

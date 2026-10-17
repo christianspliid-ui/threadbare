@@ -27,6 +27,7 @@ import {
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
+import { mayBesiege, campaignTargetOf } from './warAims/enemy';
 import { applyAftermath } from './battleAftermath';
 import { recordBattleFought } from './battleRecord';
 import { reportWar, captureArmySide, captureBattleForNews } from './armyNotifications';
@@ -618,6 +619,10 @@ export function phaseBattleDetection(state: GameState): void {
 
           const armyFaction = graph.getOutgoingEdges(armyId, 'member_of')[0]?.target;
           if (!armyFaction || armyFaction === settlementFaction) continue;
+          // THR-1922 — no siege of a town the army's faction keeps a hall in (unless it was
+          // taken from them), nor of a holder it has no quarrel with, unless a notable's
+          // campaign declared that town.
+          if (!mayBesiege(graph, armyFaction, settlementFaction, settlementId, campaignTargetOf(graph, armyId))) continue;
 
           // Skip if there's already a siege at this settlement
           const existingSieges = graph.getNodesByType('actor').filter(n => {

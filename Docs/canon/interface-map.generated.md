@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 178 |
+| 🟢 LIVE | 179 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 75 |
-| **Total** | **261** |
+| **Total** | **262** |
 
 ## Contracts by producing subsystem
 
@@ -273,6 +273,7 @@ remediation ticket or the build fails.
 | `crown-outline-to-political-map` | The realm projection carries crownOf (sworn realm → its Crown), derived from sworn_to on every rebuild; the fingerprint includes the sworn_to pairs so an oath made or broken without a structural bump is traced. BorderMesh draws one outer line, in the Crown's ink, around the union of a Crown's hexes and its sworn realms' (a guild-only Crown draws none), and the Held-by line adds "which owes fealty to <liege>, a Crown". | module-export: `buildCrownOf`, `crownHexes`, `outlinedCrowns` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `crown-protected-holdings-to-war-aims` | What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933) reads this one helper; until that lands, the Oaths debug table and the faction sheet read the oaths it is built from. No surface says a Crown defends its vassals before the defence rule ships (Law 45). | module-export: `protectedHoldingsOf`, `vassalsOf`, `liegeOf` | War, Armies & Battles | 🟢 LIVE | — |
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `faction-relations-to-army-war-aims` | An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. Field-battle start still treats any two foreign armies as hostile until war aims S1 (THR-1933). | module-export: `isEnemyFaction`, `factionKeepsHallAt`, `mayBesiege` | War, Armies & Battles | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `guild-social-templates-reach-shared-members` | Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there. | function: `getSharedFactionSocialTemplates`, `socialTemplateIds` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `realm-holdings-to-political-map` | The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth. | module-export: `buildRealmProjection`, `ensureRealmProjection`, `fingerprintFactionControls`, `stampRealmSeat` | World Generation, Terrain & Places | 🟢 LIVE | — |
@@ -471,10 +472,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Agent*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 104 total — 2 write, 3 read, 99 unclassified
+- **Production hits:** 105 total — 2 write, 3 read, 100 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
 - **Read sites:** `src/components/Game/tabs/BondsTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts` +94 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts` +95 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
 ### `ambition-acquisition` — 🟢 LIVE
@@ -1077,9 +1078,10 @@ exit
 - **Producer → Consumer:** War, Armies & Battles → Factions & Succession
 - **UL terms:** *Realm*, *Location*
 - **Module:** `src/engine/battleAftermath.ts`
-- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/battleAftermath.ts`
 - **Read sites:** `src/engine/crown.ts`
+- **Other hits:** `src/engine/warAims/enemy.ts`
 - **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts: a controls edge with via conquest, takenFrom faction_1 and establishedTick 100 puts faction_1 in faction_0's coerce pool through tick 160 and out of it at tick 161.
 
 ### `consecrated-pilgrim-way-pools-pilgrimage` — 🟢 LIVE
@@ -1607,6 +1609,17 @@ exit
 - **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionPursePanel.tsx`, `src/components/Game/FactionSheet.tsx`, `src/data/faction-purse-constants.ts`, `src/data/game-config.ts` +3 more
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts › the schism strain: computePurseStrain is 0 one day short of the grace, 1 at it, and 0 for a solvent faction.
 
+### `faction-relations-to-army-war-aims` — 🟢 LIVE
+
+- **Intent:** An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. Field-battle start still treats any two foreign armies as hostile until war aims S1 (THR-1933).
+- **Producer → Consumer:** Factions & Succession → War, Armies & Battles
+- **UL terms:** *Faction*
+- **Module:** `src/engine/warAims/enemy.ts`
+- **Production hits:** 4 total — 1 write, 3 read, 0 unclassified
+- **Write sites:** `src/engine/warAims/enemy.ts`
+- **Read sites:** `src/engine/armySpawning.ts`, `src/engine/battleResolution.ts`, `src/engine/notableAgendas.ts`
+- **Verdict:** Verified 2026-10-17: THR-1922. src/engine/warAims/__tests__/enemy.test.ts (13): the predicate on each edge arm; selectArmyObjective skips a no-quarrel holder and the own-hall town and marches on the rival; no enemy town holds at muster; siege start refuses the own-hall town and a no-quarrel holder, besieges an enemy and an objective town. Seed 42 medium, 600 ticks: 30 siege-ticks, 0 on an own-hall town, 0 on a non-enemy holder (baseline 397, of which 200 own-hall).
+
 ### `faction-sphere-aggregate-reaches-battle-aftermath` — 🟢 LIVE
 
 - **Intent:** A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing.
@@ -1720,10 +1733,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Grudge*, *Struck down*, *Scarred*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 34 total — 2 write, 3 read, 29 unclassified
+- **Production hits:** 35 total — 2 write, 3 read, 30 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/data/grievance-prose.ts`, `src/engine/agentDetail.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +24 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +25 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-raises-effect-events` — 🔵 UNVERIFIED-OK
@@ -1968,10 +1981,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 86 total — 1 write, 2 read, 83 unclassified
+- **Production hits:** 87 total — 1 write, 2 read, 84 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +78 more
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +79 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -2727,10 +2740,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 130 total — 1 write, 1 read, 128 unclassified
+- **Production hits:** 131 total — 1 write, 1 read, 129 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +123 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +124 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2898,10 +2911,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 404 total — 1 write, 1 read, 402 unclassified
+- **Production hits:** 405 total — 1 write, 1 read, 403 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +397 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +398 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3384,10 +3397,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 285 total — 2 write, 6 read, 277 unclassified
+- **Production hits:** 286 total — 2 write, 6 read, 278 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +272 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +273 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
@@ -3395,10 +3408,10 @@ exit
 - **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 82 total — 1 write, 3 read, 78 unclassified
+- **Production hits:** 83 total — 1 write, 3 read, 79 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +73 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +74 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE

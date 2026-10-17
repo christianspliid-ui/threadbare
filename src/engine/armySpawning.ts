@@ -41,6 +41,7 @@ import { readWealth, applyTreasuryDelta } from './wealth';
 import { upkeepOf } from './factionPurse/upkeep';
 import { isPurseFaction } from './factionPurse/income';
 import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
+import { isEnemyFaction, hallBarsAttack } from './warAims/enemy';
 
 // ─── Army tiers ─────────────────────────────────────────────────────────
 
@@ -161,7 +162,9 @@ export function selectCommander(
 
 /**
  * Choose a march objective for a freshly-raised army: the nearest reachable
- * settlement controlled by a hostile (different) faction. Without an objective
+ * settlement held by an enemy of its faction (`isEnemyFaction`), never one the faction
+ * keeps a hall or home in unless it was taken from it (THR-1922 — before it, any other
+ * holder counted as hostile). Without an objective
  * an army sits at its muster point forever (phaseArmyMovement skips null-objective
  * armies) — this is the link that turns a spawned army into a marching, fighting
  * one (TB-073 / THR-614 activation).
@@ -197,6 +200,10 @@ export function selectArmyObjective(
     // canonical settlement-control model — see worldSeed.ts).
     const controller = graph.getIncomingEdges(loc.id, 'controls')[0]?.source;
     if (!controller || controller === factionId) continue;
+    // THR-1922 — only an enemy's town, and never one this faction keeps a hall in
+    // (unless the enemy took it from this faction).
+    if (!isEnemyFaction(graph, factionId, controller)) continue;
+    if (hallBarsAttack(graph, factionId, loc.id)) continue;
 
     if (loc.id === startId) {
       // Already garrisoned atop a hostile settlement — besiege in place (0 hops).
