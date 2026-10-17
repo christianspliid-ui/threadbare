@@ -96,6 +96,7 @@ Three slices, one plan. **This ticket builds S1.** S2 and S3 are filed as their 
   2. its largest positive `unrestInputs` term is `hunger` (ties go to hunger);
   3. `dominionOf(graph, playerGodId, settlementId)` is at least `PRAYER_MIN_BAND` (`'touched'`);
   4. `tick − lastPrayerTick ≥ PRAYER_COOLDOWN_DAYS × TICKS_PER_DAY`.
+- **The god hears one prayer at a time** (calibration ruling, design lane 2026-10-17, after the S1 census flooded seed 99 with 19 prayers; [the ruling](https://linear.app/threadbare/issue/THR-1935)). The day's pass runs in two parts. First every town's open or answered prayer is settled (closed, answered, recovered, unrecovered). Then a new prayer opens only when the god has fewer than `PRAYER_MAX_OPEN` (1) prayers `open` **and** at least `PRAYER_GOD_GAP_DAYS × TICKS_PER_DAY` (7.5 days, one season) have passed since the god's last opening (`lastPrayerOpenedTick` on the god node, its own clock). Of the towns that pass the four-part gate that day, **the hungriest prays**: the largest `unrestInputs.hunger`, with ties going to the lower id. No seeded draw is used. The others do not open and do not start their cooldown, so a town still hungry when the gap clears is heard then. This caps a 90-day run at 12 prayers, the flood line, at one a season.
 - **Write.** A new `event` node (`type: 'event'`, `properties.eventKind: 'prayer'`, `openedTick`, `closesTick = tick + PRAYER_ANSWER_WINDOW_DAYS × TICKS_PER_DAY`, `status: 'open'`, `sphere` the god's primary). An `occurred_at` edge goes from the prayer to the town. The town gets `lastPrayerTick = tick` (its own clock, not a relationship). The god is not written on the prayer: only the player's god hears prayers in v1, and the answer is the god's edge (§ 2).
 - **Surfaces.** A chronicle line (§ Content), the place page's prayer line, a Needs-you row and a Trouble-lens mark (§ UI). There is never an interrupt (the decision).
 
@@ -166,7 +167,7 @@ Three slices, one plan. **This ticket builds S1.** S2 and S3 are filed as their 
 | `ControlSpec` (S3) | `incomeFrom?: 'claimed_good'` | optional field | `hex.claim_resource` |
 | `EncounterAftermathChange` (S2) | `kind: 'economy'`, `crossed: boolean`, `quantity` | owned by mortal wealth | snapshot diff |
 
-**Prayer events are kept for the run.** There are a handful per season by the decision's scale (§ Measurement), so no garbage collection is needed. They are the inspectable record of every prayer.
+**Prayer events are kept for the run.** The god hears at most one a season (§ Engine 1), so no garbage collection is needed. They are the inspectable record of every prayer.
 
 ### Tick phases
 
@@ -381,6 +382,8 @@ All in `src/data/prayer-constants.ts` unless noted.
 | `PRAYER_MIN_BAND` | `'touched'` | The god's band a town must read to pray (the decision) |
 | `PRAYER_ANSWER_WINDOW_DAYS` | `6` | Days a prayer stays open (the decision) |
 | `PRAYER_COOLDOWN_DAYS` | `30` | Days between a town's prayers; one game year (the decision; choice 7) |
+| `PRAYER_MAX_OPEN` | `1` | Prayers the god can have open at once (calibration ruling 2026-10-17) |
+| `PRAYER_GOD_GAP_DAYS` | `7.5` | Days between any two prayers the god hears; one season, so at most 12 in 90 days (calibration ruling 2026-10-17) |
 | `ANSWERED_PRAYER_DOMINION_PRESSURE` | `2` | One-shot push on answering, split by bought points (the decision) |
 | `UNBIDDEN_AID_DOMINION_PRESSURE` | `1` | One-shot push for aid off your ground (the decision) |
 | `PRAYER_RECOVERY_WINDOW_DAYS` | `30` | Days after an answer in which recovery forms a faithful town (the decision) |
@@ -563,8 +566,8 @@ All are registered in `src/types/trace.ts`.
 
 ## Kill criteria
 
-- **S1:** if a 1,080-tick run on seeds 42, 99 and 7 (medium) with hunger and unrest on opens **no** prayer, the gate is too narrow (Touched and hunger-largest rarely meet). Post the census of Restless towns by band on the issue and stop.
-- **S1:** if any seed opens more than `PRAYER_FLOOD_LINE` (12) prayers in 90 days, prayers flood the player. Raise `PRAYER_MIN_BAND` to `'held'` before anything else, and report.
+- **S1:** if a 1,080-tick run on seeds 42, 99 and 7 (medium) with hunger and unrest on opens **no** prayer on a seed where some day had a town passing the four-part gate (Restless, hunger largest, Touched+ on the god's ground, cooldown clear), the gate is too narrow. Post the census of Restless towns by band on the issue and stop. A seed with no such town ever opens none correctly: the census god never casts or claims, so its ground does not grow (calibration ruling 2026-10-17; seed 7's first census had Restless towns only in Foreign and Hostile bands).
+- **S1:** if any seed opens more than `PRAYER_FLOOD_LINE` (12) prayers in 90 days, prayers flood the player. `PRAYER_GOD_GAP_DAYS` makes 12 a hard ceiling, so a count above it is a defect in the god-wide gate, not a tuning question. *(Superseded remedy: the first census showed that raising `PRAYER_MIN_BAND` to `'held'` would not cut seed 99, whose praying towns were already Held or Sovereign, and would take seed 42 to zero.)*
 - **S1:** if the real model run (`npm run model:power -- --model faith --check`) puts any god outside [10.5, 13.5] at day 90 with four faithful towns, lower `FAITHFUL_COMMUNITY_MAX` to 3.
 - **S2:** if more than half of all player casts in a 300-tick review open the receipt dialog, the crossed-band rule is too eager; report the quantity that crosses most.
 
@@ -581,7 +584,8 @@ Predicates on medium maps over the stated ticks.
 - [ ] **Faith rides the bread:** a faithful town with all staples scarce loses sanctity each tick, and with adequate staples holds it. At 0 the source and its `controls` edge are gone and the lapse line fires (test).
 - [ ] **The rival answers:** an unanswered prayer's town is the next landing of `landRivalProbe` when it is in turf, inside the throttle (test with a fixed seed: the landing count is unchanged and the target is the town).
 - [ ] **Starve the faithful:** the economic crack on a faithful town drops its sanctity by 0.25 (test).
-- [ ] **Census:** a 1,080-tick run on seeds 42, 99 and 7 opens at least one prayer and at most 12 per seed; the PR body quotes the counts and the faithful towns formed.
+- [ ] **Census:** a 1,080-tick run on seeds 42, 99 and 7 opens at most 12 prayers per seed and at least one on every seed where some day had a town passing the four-part gate; at least one seed opens a prayer. The PR body quotes the counts, the gate-passing towns per seed, and the faithful towns formed.
+- [ ] **One at a time:** on a fixture with two towns passing the gate the same day, only the hungrier opens a prayer, and the other's `lastPrayerTick` is unchanged. Neither opens again until `PRAYER_GOD_GAP_DAYS` have passed since that opening, and then the other town, if still hungry, opens (unit test).
 - [ ] **Model:** `npm run model:power -- --model faith --check` passes with four faithful towns.
 - [ ] **Rollback:** with `PRAYER_ENABLED = false`, a 300-tick run on seed 42 matches main in every essence source and every sphere-pressure event.
 - [ ] In the browser, `?view=game&seeded&size=medium`, with `await window.__DEBUG.forcePrayer(<a Touched town>)`, shows the prayer line on the town's place page. Casting Bless the Harvest there shows "The Shepherd hears …" in the receipt, and `await window.__DEBUG.getPrayers()` shows that prayer `'answered'`. Four-part browser evidence: 1920×1080 screenshot of the place page, console clean, the debug assertion, and a UI-Laws line for Laws 1, 13/14, 17, 21, 33, 37, 56.
