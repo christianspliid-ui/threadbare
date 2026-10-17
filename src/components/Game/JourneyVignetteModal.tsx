@@ -177,7 +177,7 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
     <Modal
       open={open}
       onClose={handleClose}
-      size="md"
+      size="s"
       context="story"
     >
       <Modal.Header>

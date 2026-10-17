@@ -96,7 +96,7 @@ Overlay layers (centered, above everything):
 | Property | Value | Source |
 |----------|-------|--------|
 | Z-index | `60` default (`MODAL_Z_DEFAULT` = `Z_BAND.modal`), `65` raised (`MODAL_Z_ABOVE_INTERRUPT` = `Z_BAND.modalAboveInterrupt`) — via the `zIndex` prop | `Modal.tsx`, `zBands.ts` |
-| Max width | `600px` default (configurable via `maxWidth` prop) | `Modal.tsx:23,80` |
+| Width | Size tier via `size` — S 600 / M 960 / L 1280 / XL 1760 px at 1920×1080, S 675 / M 1080 / L 1600 / XL 2240 px at 2560×1440, clamped to the viewport less two `--dialog-gutter`s (THR-1820). Default S. `maxWidth` is deprecated (ratchet row `modal-maxwidth`) | `Modal.tsx`, `dialogSize.ts`, `index.css` |
 | Max height | `var(--modal-max-h)` = 85vh — the one dialog cap (Law 33) | `Modal.tsx`, `index.css` |
 | Animation | `anim-fade-up` default | `Modal.tsx:23` |
 | Behavior | An `Overlay` (backdrop, band, Escape stack, focus) with a floating `page` `Panel` (THR-1884). Escape closes it when it is the topmost surface. Backdrop click to close. | `Overlay.tsx` |

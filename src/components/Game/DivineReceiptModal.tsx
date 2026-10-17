@@ -72,7 +72,7 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
   const reactions = receipt.reactions ?? [];
 
   return (
-    <Modal open={open} onClose={onAcknowledge} maxWidth={560} context="gain" aria-label={`Divine receipt: ${receipt.templateName}`}>
+    <Modal open={open} onClose={onAcknowledge} size="s" context="gain" aria-label={`Divine receipt: ${receipt.templateName}`}>
       {/* Art header — band-accented, with graceful fallback when art is missing. */}
       <div
         data-testid="divine-receipt-header"

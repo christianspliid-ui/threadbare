@@ -77,7 +77,7 @@ export function DoomClockDetail({
   const recentResolved = [...(state.resolvedEvents ?? [])].slice(-4).reverse();
 
   return (
-    <Modal open={open} onClose={onClose} maxWidth={760}>
+    <Modal open={open} onClose={onClose} size="m" aria-label="Doom clock">
       <Modal.Header onClose={onClose}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '22px', color, filter: `drop-shadow(0 0 6px ${color}80)` }}>{glyph}</span>

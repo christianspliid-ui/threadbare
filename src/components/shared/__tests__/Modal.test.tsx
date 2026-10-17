@@ -2,7 +2,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Modal, MODAL_Z_DEFAULT, MODAL_Z_ABOVE_INTERRUPT } from '../Modal';
+import { Modal, MODAL_Z_DEFAULT, MODAL_Z_ABOVE_INTERRUPT, modalPanelStyle, resolveModalSize } from '../Modal';
+import { useSheetLayout } from '../SheetColumns';
 
 describe('Modal', () => {
   it('renders children when open', () => {
@@ -271,5 +272,69 @@ describe('Modal — Law 50 focus contract', () => {
       expect(MODAL_Z_ABOVE_INTERRUPT).toBeLessThan(70);
       expect(MODAL_Z_ABOVE_INTERRUPT).toBeGreaterThan(MODAL_Z_DEFAULT);
     });
+  });
+});
+
+describe('Modal size tiers (THR-1820)', () => {
+  function panel(): HTMLElement {
+    return document.querySelector('[data-dialog-size]') as HTMLElement;
+  }
+
+  function LayoutProbe() {
+    return <span data-testid="layout-probe">{useSheetLayout()}</span>;
+  }
+
+  it('defaults to the S tier', () => {
+    render(<Modal open onClose={() => {}}><Modal.Body>x</Modal.Body></Modal>);
+    expect(panel().getAttribute('data-dialog-size')).toBe('s');
+  });
+
+  it.each(['s', 'm', 'l', 'xl'] as const)('size=%s sets data-dialog-size and reads its width variable', (size) => {
+    render(<Modal open onClose={() => {}} size={size}><Modal.Body>x</Modal.Body></Modal>);
+    expect(panel().getAttribute('data-dialog-size')).toBe(size);
+    expect(String(modalPanelStyle(size).width)).toContain(`--dialog-${size}-w`);
+  });
+
+  it('draws the deprecated maxWidth exactly as before, marked free', () => {
+    render(<Modal open onClose={() => {}} maxWidth={720}><Modal.Body>x</Modal.Body></Modal>);
+    expect(panel().getAttribute('data-dialog-size')).toBe('free');
+    const style = modalPanelStyle(720);
+    expect(style.maxWidth).toBe('720px');
+    expect(style.width).toBe('90%');
+    expect(style.maxHeight).toBe('var(--modal-max-h)');
+  });
+
+  it('lets size win when both are passed, with one warning', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    render(<Modal open onClose={() => {}} size="m" maxWidth={420} aria-label="both-passed-probe"><Modal.Body>x</Modal.Body></Modal>);
+    expect(panel().getAttribute('data-dialog-size')).toBe('m');
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  it('treats an unknown size as S (fail-soft)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    render(<Modal open onClose={() => {}} size={'huge' as never}><Modal.Body>x</Modal.Body></Modal>);
+    expect(panel().getAttribute('data-dialog-size')).toBe('s');
+    warn.mockRestore();
+  });
+
+  it.each([['s', 'one'], ['m', 'one'], ['l', 'two'], ['xl', 'two']] as const)(
+    'size=%s provides the %s-column sheet layout',
+    (size, layout) => {
+      render(<Modal open onClose={() => {}} size={size}><LayoutProbe /></Modal>);
+      expect(screen.getByTestId('layout-probe').textContent).toBe(layout);
+    },
+  );
+
+  it('the free path provides the one-column layout', () => {
+    render(<Modal open onClose={() => {}} maxWidth={960}><LayoutProbe /></Modal>);
+    expect(screen.getByTestId('layout-probe').textContent).toBe('one');
+  });
+
+  it('resolveModalSize matches the panel table', () => {
+    expect(resolveModalSize(undefined, undefined)).toBe('s');
+    expect(resolveModalSize(undefined, 500)).toBe('free');
+    expect(resolveModalSize('l', 500)).toBe('l');
   });
 });

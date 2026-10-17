@@ -89,6 +89,8 @@ describe('layoutContract — CSS ↔ TS parity', () => {
     expect(decl(base, '--hovercard-w')).toBe(`${TEXT_TOKENS_REM.hovercardW}rem`);
     expect(decl(base, '--toast-w')).toBe(`${TEXT_TOKENS_REM.toastW}rem`);
     expect(decl(base, '--stage-compact-w')).toBe(`${TEXT_TOKENS_REM.stageCompactW}rem`);
+    expect(decl(base, '--dialog-s-w')).toBe(`${TEXT_TOKENS_REM.dialogSW}rem`);
+    expect(decl(base, '--dialog-m-w')).toBe(`${TEXT_TOKENS_REM.dialogMW}rem`);
     expect(decl(rootBlock('fhd'), '--panel-padding')).toBe(`${TEXT_TOKENS_REM.panelPaddingFhd}rem`);
     expect(decl(base, '--measure-prose')).toBe(`${MEASURE_PROSE_EM}em`);
     expect(decl(base, '--modal-max-h')).toBe(`${MODAL_MAX_HEIGHT_VH}vh`);

@@ -54,6 +54,12 @@ export interface FrameTokens {
   '--stage-gutter': number;
   '--stage-window-w': number;
   '--stage-left-col-w': number;
+  /** Dialog size tiers L and XL, the clamp gutter, SheetColumns (THR-1820). */
+  '--dialog-l-w': number;
+  '--dialog-xl-w': number;
+  '--dialog-gutter': number;
+  '--sheet-aside-w': number;
+  '--sheet-gap': number;
 }
 
 export const FRAME_TOKENS_PX: Record<LayoutTier, FrameTokens> = {
@@ -71,6 +77,11 @@ export const FRAME_TOKENS_PX: Record<LayoutTier, FrameTokens> = {
     '--stage-gutter': 24,
     '--stage-window-w': 280,
     '--stage-left-col-w': 340,
+    '--dialog-l-w': 1280,
+    '--dialog-xl-w': 1760,
+    '--dialog-gutter': 24,
+    '--sheet-aside-w': 400,
+    '--sheet-gap': 24,
   },
   fhd: {
     '--topbar-height': 48,
@@ -86,6 +97,11 @@ export const FRAME_TOKENS_PX: Record<LayoutTier, FrameTokens> = {
     '--stage-gutter': 24,
     '--stage-window-w': 280,
     '--stage-left-col-w': 340,
+    '--dialog-l-w': 1280,
+    '--dialog-xl-w': 1760,
+    '--dialog-gutter': 24,
+    '--sheet-aside-w': 400,
+    '--sheet-gap': 24,
   },
   qhd: {
     '--topbar-height': 56,
@@ -101,6 +117,11 @@ export const FRAME_TOKENS_PX: Record<LayoutTier, FrameTokens> = {
     '--stage-gutter': 24,
     '--stage-window-w': 520,
     '--stage-left-col-w': 560,
+    '--dialog-l-w': 1600,
+    '--dialog-xl-w': 2240,
+    '--dialog-gutter': 32,
+    '--sheet-aside-w': 480,
+    '--sheet-gap': 28,
   },
   uwqhd: {
     '--topbar-height': 56,
@@ -117,6 +138,11 @@ export const FRAME_TOKENS_PX: Record<LayoutTier, FrameTokens> = {
     // 3440 − 400 − 1400 − 48 = 1592: the Stage panel holds its 2560 size and the window takes the extra width.
     '--stage-window-w': 1400,
     '--stage-left-col-w': 560,
+    '--dialog-l-w': 1600,
+    '--dialog-xl-w': 2880,
+    '--dialog-gutter': 32,
+    '--sheet-aside-w': 480,
+    '--sheet-gap': 28,
   },
 };
 
@@ -126,6 +152,10 @@ export const TEXT_TOKENS_REM = {
   hovercardW: 26.25,
   toastW: 20,
   stageCompactW: 53.75,
+  /** Dialog size tier S (`--dialog-s-w`, THR-1820) — 600 px at 1080p, 675 at 1440p. */
+  dialogSW: 37.5,
+  /** Dialog size tier M (`--dialog-m-w`, THR-1820) — 960 px at 1080p, 1080 at 1440p. */
+  dialogMW: 60,
   /** `--panel-padding` at ≥1920 (1rem below). */
   panelPaddingFhd: 1.25,
 } as const;

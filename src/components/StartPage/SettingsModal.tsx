@@ -45,7 +45,7 @@ export function SettingsModal({ open, onClose, volume, onVolumeChange, muted, on
   }
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} size="s" aria-label="Settings">
       <Modal.Header onClose={onClose}>Settings</Modal.Header>
       <Modal.Body>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>

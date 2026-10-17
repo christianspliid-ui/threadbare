@@ -24,16 +24,11 @@
 import React from 'react';
 import { Modal } from './Modal';
 import type { DialogContext } from './dialogContext';
+import type { DialogSize } from './dialogSize';
 import { Button } from './Button';
 import { Medallion } from './Medallion';
 import { FlavorQuote } from './FlavorQuote';
 import { Tooltip } from './Tooltip';
-
-/** Ceremonial card width (px) — single-column readability. */
-export const REVEAL_CARD_MAX_WIDTH = 520;
-
-/** Consequence chips shown before collapsing the remainder into a `+N` chip. */
-export const REVEAL_CONSEQUENCE_CHIP_MAX = 4;
 
 // ─── Zones ───────────────────────────────────────────────────────────────────
 
@@ -145,13 +140,11 @@ export interface ConsequenceItem {
 /**
  * Follow-on effects as a row of small medallion chips. Labels are words — a
  * count of chips, never a numeric stat (no-numeric-stats rule, NFP #5).
- * Overflow past `REVEAL_CONSEQUENCE_CHIP_MAX` collapses into a `+N` chip.
+ * Every chip renders, wrapping onto further rows — no `+N` cut while the card
+ * can grow (Law 57, THR-1820), so the heading's count and the chips agree.
  */
 function Consequences({ label, items }: { label: string; items: readonly ConsequenceItem[] }) {
   if (!items || items.length === 0) return null;
-
-  const shown = items.slice(0, REVEAL_CONSEQUENCE_CHIP_MAX);
-  const overflow = items.length - shown.length;
 
   return (
     <div data-testid="reveal-consequences" style={{ width: '100%' }}>
@@ -167,7 +160,7 @@ function Consequences({ label, items }: { label: string; items: readonly Consequ
         {label} ({items.length})
       </h3>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
-        {shown.map((item) => (
+        {items.map((item) => (
           <Tooltip key={item.id} label={item.title} desc={item.desc}>
             <span
               onClick={item.onClick}
@@ -179,11 +172,6 @@ function Consequences({ label, items }: { label: string; items: readonly Consequ
             </span>
           </Tooltip>
         ))}
-        {overflow > 0 && (
-          <Medallion size="sm" title={`${overflow} more`}>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>+{overflow}</span>
-          </Medallion>
-        )}
       </div>
     </div>
   );
@@ -251,7 +239,8 @@ function Frame({ children, className, style }: RevealCardFrameProps) {
 export interface RevealCardProps {
   open: boolean;
   onClose: () => void;
-  maxWidth?: number;
+  /** Size tier, forwarded to `Modal` (THR-1820). Default `'s'`. */
+  size?: DialogSize;
   'aria-label'?: string;
   /**
    * Dialogue context, forwarded to `Modal` (THR-1586). Default neutral — the sole
@@ -265,7 +254,7 @@ export interface RevealCardProps {
 function RevealCardRoot({
   open,
   onClose,
-  maxWidth = REVEAL_CARD_MAX_WIDTH,
+  size = 's',
   'aria-label': ariaLabel,
   context,
   children,
@@ -281,7 +270,7 @@ function RevealCardRoot({
     <Modal
       open={open}
       onClose={onClose}
-      maxWidth={maxWidth}
+      size={size}
       aria-label={ariaLabel}
       context={context}
       panelClassName="frame-ceremonial"

@@ -99,7 +99,7 @@ export function OmenDetail({ omenState, currentTick, onClose }: OmenDetailProps)
   const recentHistory = [...omenState.history].reverse().slice(0, 5);
 
   return (
-    <Modal open onClose={onClose} maxWidth={480} aria-label="World omen details">
+    <Modal open onClose={onClose} size="s" aria-label="World omen details">
       <div style={{ padding: '20px' }}>
         <div style={{ marginBottom: '16px' }}>
           <h2 style={{ fontSize: 'var(--text-lg)', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '4px', fontFamily: 'var(--font-display)' }}>

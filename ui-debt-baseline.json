@@ -397,6 +397,18 @@
         "src/components/Game/LocationView.tsx": 1
       }
     },
+    "modal-maxwidth": {
+      "total": 7,
+      "perFile": {
+        "src/components/Game/AgentProfileModal.tsx": 1,
+        "src/components/Game/AscendantSheet.tsx": 1,
+        "src/components/Game/GameView.tsx": 1,
+        "src/components/Game/MeetingEncounterModal.tsx": 1,
+        "src/components/Game/MomentCard.tsx": 1,
+        "src/components/Game/PremonitionModal.tsx": 1,
+        "src/components/ruins/EmergenceDilemmaModal.tsx": 1
+      }
+    },
     "monospace": {
       "total": 6,
       "perFile": {
