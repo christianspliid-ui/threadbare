@@ -214,6 +214,8 @@ export interface PlacePrayerView {
   /** Open prayer only: what answers it and the deadline, in words. */
   hint: string | null;
   wavering: boolean;
+  /** The god's name as the line spells it, so the surface can link it (Law 21). */
+  godName: string | null;
 }
 
 /**
@@ -229,7 +231,7 @@ export function placePrayerView(graph: WorldGraph, godId: string, townId: string
       const line = prayerLine('prays', { town: town.name, god: godName(graph, godId) }, active.eventId, active.openedTick);
       if (!line) return null;
       const days = daysLeftWords(active.closesTick, tick);
-      return { kind: 'prayer', line, hint: days ? `${PRAYER_ANSWER_HINT} ${days}` : PRAYER_ANSWER_HINT, wavering: false };
+      return { kind: 'prayer', line, hint: days ? `${PRAYER_ANSWER_HINT} ${days}` : PRAYER_ANSWER_HINT, wavering: false, godName: godName(graph, godId) ?? null };
     }
     const src = readEssenceSource(town.properties);
     const controlled = graph.getOutgoingEdges(godId, 'controls').some(e => e.target === townId);
@@ -237,7 +239,7 @@ export function placePrayerView(graph: WorldGraph, godId: string, townId: string
       const sanctity = Number.isFinite(src.sanctity) ? src.sanctity : 0;
       const line = faithLine(town.name, sanctity);
       if (!line) return null;
-      return { kind: 'faith', line, hint: null, wavering: sanctity < FAITHFUL_WAVERING_SANCTITY };
+      return { kind: 'faith', line, hint: null, wavering: sanctity < FAITHFUL_WAVERING_SANCTITY, godName: null };
     }
     return null;
   } catch {

@@ -1093,8 +1093,7 @@ const PrayerLine = memo(function PrayerLine({
   if (!graph || !ascendantId) return null;
   const view = placePrayerView(graph, ascendantId, location.id, tick ?? 0);
   if (!view) return null;
-  const god = graph.getNode(ascendantId);
-  const godName = god?.name;
+  const godName = view.godName;
   const at = godName ? view.line.indexOf(godName) : -1;
   const sentence = at >= 0 && godName
     ? (
