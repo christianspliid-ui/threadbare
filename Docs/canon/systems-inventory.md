@@ -62,7 +62,7 @@ names like `TB-073`) a premise might use.
 | **Spheres & Quintessence** | 🟢 ACTIVE | sphere, quintessence, foundation, creation, saturation, world-soul | `sphere`, `quintessence`, `saturation`, `cosmology`, `domain`, `capability`, `reach` | `2`, `6.638`, `6.639`, `6.6396`, `6.6395` |
 | **World Generation, Terrain & Places** | 🟢 ACTIVE | worldgen, world generation, terrain, biome, elevation, climate, hydrology, hex map, tile, coastline, river, lake, settlement genome, sublocation, place, region, area | `world`, `worldgen`, `terrain`, `coastline`, `river`, `lake`, `depression`, `region`, `hex`, `sublocation`, `settlementgenome`, `road` | `6.635`, `6.636` |
 
-- **War, Armies & Battles** — Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614. **Do not design a green-field war system** — extend or tune this one.
+- **War, Armies & Battles** — Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614; war aims (THR-1933 S1): enemies only (`warAims/enemy.ts`), defence first, value targeting by the purse town price within supply reach, a daily re-aim (`warAims.ts`). **Do not design a green-field war system** — extend or tune this one.
 - **Factions & Succession** — Faction actions, ambitions, reputation, rank changes, succession, schism resolution.
 - **Rival Gods & Schemes** — Generated rivals from the World-Soul (NOT a fixed pantheon). 4-phase schemes = THR-66; economic family = THR-620.
 - **Doom Clock & Journey** — The run's master clock; journey beats fire at thresholds.
@@ -452,7 +452,8 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `views` (18) | `views/hexContents.ts`, `views/lenses/lensView.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1750`, `THR-1792`, `THR-1822`, `THR-1846`, `THR-1878`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-502` |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
-| `waraims` (1) | `warAims/enemy.ts` | `THR-1922`, `THR-1933` |
+| `war` (1) | `warAims.ts` | `THR-1868`, `THR-1933` |
+| `waraims` (6) | `warAims/context.ts`, `warAims/defence.ts`, `warAims/enemy.ts`, `warAims/score.ts`, `warAims/sheetView.ts`, `warAims/townValue.ts` | `THR-1922`, `THR-1933` |
 | `wealth` (1) | `wealth.ts` | `THR-1931` |
 | `wheel` (1) | `wheel.ts` | — |
 | `work` (1) | `workProgress.ts` | `THR-1962` |
@@ -462,4 +463,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 222 engine domains · 702 modules._
+_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 223 engine domains · 708 modules._
