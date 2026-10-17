@@ -71,7 +71,7 @@ names like `TB-073`) a premise might use.
 - **Encounters & Dilemmas** — The core narrative engine — scoring, eligibility, resolution, aftermath reactions, chapter archive.
 - **Culture** — Culture generation, gravity, tension, mores, phonetic naming.
 - **Personality & Emergent Traits** — Layered: worldgen baseline → core → emergent traits (THR-527/542/561).
-- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route's toll, a freehold's keep, a controlled Location's tithe), a mortal's Means from birth, and encounter outcome tables that pay or cost it (`economy_shift`, THR-1936). M3: Dynamic Economy.
+- **Mortal Economy & Prosperity** — Resource web, stock tiers, prosperity pulse, settlement tiers, trade routes, holding income (a seized route's toll, a freehold's keep, a controlled Location's tithe). M3: Dynamic Economy.
 - **Ambitions & Undertakings** — Agent-level drives and the multi-tick undertakings that serve them; mentorship rides the undertaking checkpoint pass (THR-1292 §3 retired the separate initiative pipeline).
 - **Attachments, Items & Possessions** — Items, conditions, blessings, agreements, retainers on `possesses` edges. Effects flow via `effects[]` → `collectTestShapers` (2026-03-31 generic effect system). Contract liveness audited 2026-07-23 (THR-717) — five leaked contracts, see `Docs/canon/interface-map.md`.
 - **Ruins, Clues & Delves** — Ruin density seeding, clue discovery/decay, delve admission→progression→emergence, lair escalation.
@@ -360,6 +360,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `modifiers` (1) | `modifiers.ts` | — |
 | `monster` (1) | `monsterFactionSeed.ts` | — |
 | `monsters` (9) | `monsters/huntReport.ts`, `monsters/hunts.ts`, `monsters/innatePower.ts`, `monsters/isMonster.ts`, `monsters/lairArrivalTrigger.ts`, `monsters/listMonsters.ts`, `monsters/liveMonster.ts`, `monsters/monsterCard.ts`, `monsters/monsterFelling.ts` | `M1`, `M3`, `M4`, `THR-1267`, `THR-1319`, `THR-1544`, `THR-1545`, `THR-1546`, `THR-1547`, `THR-1560`, `THR-1671`, `THR-1682`, `THR-1698` |
+| `mortal` (1) | `mortalMeans.ts` | `THR-1936` |
 | `movement` (3) | `movementCandidates.ts`, `movementCost.ts`, `movementExecution.ts` | `THR-1143` |
 | `naming` (2) | `naming/lairNames.ts`, `naming/workNames.ts` | `THR-1291`, `THR-1297`, `THR-1312` |
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
@@ -464,4 +465,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 225 engine domains · 714 modules._
+_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 226 engine domains · 715 modules._
