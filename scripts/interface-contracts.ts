@@ -6713,7 +6713,7 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/warAims/enemy.ts',
     },
     writeSites: ['src/engine/warAims/enemy.ts'],
-    readSites: ['src/engine/armySpawning.ts', 'src/engine/battleResolution.ts'],
+    readSites: ['src/engine/armySpawning.ts', 'src/engine/battleResolution.ts', 'src/engine/notableAgendas.ts'],
     verifiedLive: {
       date: '2026-10-17',
       evidence:

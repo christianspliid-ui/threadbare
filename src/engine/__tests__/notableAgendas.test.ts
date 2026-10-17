@@ -180,6 +180,15 @@ describe('notableAgendas (THR-630 seam A)', () => {
     expect(skipTargeted).toBeUndefined();
   });
 
+  it('selectClaimTarget skips a foreign-held town its own faction keeps a hall in (THR-1922)', () => {
+    const graph = claimWorld();
+    addHolding(graph, 'their_other', 'f_theirs', 4, 0);
+    graph.getNode('f_mine')!.properties.homeLocationId = 'their_town';
+
+    const target = selectClaimTarget(makeState(1, graph), 'leader_mine', 'f_mine', new Set());
+    expect(target?.targetId).toBe('their_other');
+  });
+
   // ─── Launch builder ──────────────────────────────────────────────────────
 
   it('buildNotableAgenda builds four phases, arms phase 1, and substitutes prose', () => {

@@ -1078,9 +1078,10 @@ exit
 - **Producer → Consumer:** War, Armies & Battles → Factions & Succession
 - **UL terms:** *Realm*, *Location*
 - **Module:** `src/engine/battleAftermath.ts`
-- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/battleAftermath.ts`
 - **Read sites:** `src/engine/crown.ts`
+- **Other hits:** `src/engine/warAims/enemy.ts`
 - **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts: a controls edge with via conquest, takenFrom faction_1 and establishedTick 100 puts faction_1 in faction_0's coerce pool through tick 160 and out of it at tick 161.
 
 ### `consecrated-pilgrim-way-pools-pilgrimage` — 🟢 LIVE

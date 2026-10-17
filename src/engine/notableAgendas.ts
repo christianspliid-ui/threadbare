@@ -27,6 +27,7 @@ import { hexDistance } from '../lib/hexMath';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFactionLeaderId } from './factionNetwork';
 import { spawnArmy, selectCommander, armyReachTier, canAffordArmy } from './armySpawning';
+import { hallBarsAttack } from './warAims/enemy';
 import {
   ARMY_SPAWN_IRON_TIER_MIN,
   ARMY_SPAWN_GOLD_TIER_MIN,
@@ -216,7 +217,8 @@ export function scoreNotableProminence(
 
 /**
  * Claim target: the nearest location controlled by a faction other than the
- * notable's own, not already under an active agenda/scheme. Rng-free —
+ * notable's own, not already under an active agenda/scheme, and not one the notable's
+ * faction keeps a hall or home in (THR-1922). Rng-free —
  * nearest by hex distance, id tiebreak — so launches are deterministic.
  */
 export function selectClaimTarget(
@@ -239,6 +241,9 @@ export function selectClaimTarget(
       const locNode = graph.getNode(locId);
       if (!locNode || locNode.type !== 'location') continue;
       if (locNode.properties.locationSubtype === 'ruins') continue;
+      // THR-1922 — never the faction's own hall or home town (unless taken from it): its
+      // armies may not besiege there, so a campaign on it would raise a host that sits.
+      if (hallBarsAttack(graph, factionId, locId)) continue;
       const hex = resolveLocationToHex(graph, locId);
       if (!hex) continue;
       const dist = hexDistance(myHex, hex);
