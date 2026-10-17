@@ -42,7 +42,7 @@ are specified by this table plus their styleguide entry.
 | `Tabs` | `kind?` (`tabs`/`toggle`), `value`/`defaultValue`, `onChange`, `label`, `allowNone?` (toggle); children `Tabs.Tab` (`value`, `label`, `icon?`, `keyCap?`, `count?`) and `Tabs.Panel` | **One tab bar, and the same bar as a toggle row** (THR-1885). tabs = WAI-ARIA tablist with roving tabindex, arrows/Home/End; toggle = toolbar, `aria-pressed`, at most one. Underline in `--text-primary`, never gold; min height 2.5rem (Law 46). Unknown value → first tab, one warning. | #section-tabs |
 | `ListRow` | `accentColor?`, `selected?`, `onClick?`, `trailing?` | Compound: `.Title`, `.Subtitle`, `.Leading`. The universal selectable row. | #section-listrow |
 | `Medallion` | `size?`, `accentColor?`, `title?`, `children?` | Ringed clipping disc, sm 40 / md 64 / lg 96. **Frames** an already-resolved visual — never a second art path. | #section-medallion |
-| `Modal` | `open`, `onClose`, `maxWidth?`, `animation?`, `zIndex?`, `closeOnEscape?`, `context?` | **An `Overlay` whose surface is a floating `page` panel** (THR-1884). Compound: `.Header`, `.Body`, `.Footer`. max-height `var(--modal-max-h)` = 85vh (Law 33), default max-width 600px. Escape closes topmost; focus moves in and returns (Law 50). | #section-modal |
+| `Modal` | `open`, `onClose`, `size?`, `maxWidth?` (deprecated), `animation?`, `zIndex?`, `closeOnEscape?`, `context?` | **An `Overlay` whose surface is a floating `page` panel** (THR-1884). Compound: `.Header`, `.Body`, `.Footer`. Width = its size tier `s · m · l · xl` (THR-1820, default S; `tokens.md` § Dialog sizes), max-height `var(--modal-max-h)` = 85vh (Law 33). Escape closes topmost; focus moves in and returns (Law 50). | #section-modal |
 | `Overlay` | `open`, `onClose`, `label`, `band?`, `backdrop?`, `placement?`, `inset?`, `modal?`, `closeOnEscape?`, `closeOnBackdrop?`, `animation?` | **The one backdrop, z-band and Escape implementation** (THR-1884). Portal; band by name from `zBands.ts` (Law 35); backdrops dim / heavy / void / none; Escape through `useEscapeLayer` with its `label` (Law 23); focus through `useDialogFocus` (Law 50). Sizes nothing. | #section-overlay |
 | `Panel` | `level?` (`page`/`panel`/`inset`), `floating?`, `material?` (`solid`/`glass`), `as?`, `padding?`, `context?` | **The one surface shell, by hierarchy level** (THR-1884). Radius and shadow from the level tokens; page ⊃ panel ⊃ inset, a wrong nesting warns once in dev. Never caps height or scrolls. | #section-panel-card |
 | `OddsPips` / `CostPips` | `value` / `cost`, `size?`, `muted?`, `emphasised?`, `framed?` | The only sanctioned magnitude glyph language (Law 15). Odds = effect on odds; cost = framed badge, deliberately distinct (Law 10). `aria-label` states the reading in words. | #section-odds-pips |
@@ -51,7 +51,7 @@ are specified by this table plus their styleguide entry.
 | `ProgressBar` | `progress`, `color`, `glow?` | Continuous 0–1 only. Discrete steps use `StepDots`. | #section-progressbar |
 | `RarityBadge` | `tier`, `opacity?` | Inline rarity tag. | #section-rarity |
 | `RarityBorderBox` | `tier`, `children` | Left-border rarity accent. Wraps anything. | #section-rarity |
-| `RevealCard` | `open`, `onClose`, `maxWidth?` | Ceremonial reveal, composed on `Modal`. Inside an existing modal use `RevealCard.Frame` — `<RevealCard>` portals its own backdrop. | #section-revealcard |
+| `RevealCard` | `open`, `onClose`, `size?` (default S) | Ceremonial reveal, composed on `Modal`. Inside an existing modal use `RevealCard.Frame` — `<RevealCard>` portals its own backdrop. | #section-revealcard |
 | `RivalIcon` | `spheres`, `size?`, `title?` | Overlapping sphere circles for rival affinity. | #section-rivalicon |
 | `HoverCard` | `page`, `anchorEl` | Law 20 Tier 1½ (THR-1490): header + `HOVER_CARD_MAX_SECTIONS` sections, anchored beside an `EntityLink` after `HOVER_CARD_DELAY_MS`. Never stacks, never interactive. | #section-detail-page |
 | `Section` | `section` (`ProseSection \| ChipsSection \| EventCardSection \| PanelSection \| PortraitSection \| TriggersSection`) | **The one section model** — `EntityCard`, the rival one, retired into it (THR-1492). Dispatches on `kind`. Gold label = primary; `notable`/`chronicle` tiers add a gold underline. Chips take an optional `glyph` and `dataKey`; `triggers` renders firing chance as pips (Law 15). Exports `SectionLabel` for sheets that label their own JSX. Mounted (THR-1490). | #section-detail-page |
@@ -346,7 +346,9 @@ Renders:
 interface ModalProps {
   open: boolean;
   onClose: () => void;
-  maxWidth?: number;                  // default 600, in px
+  size?: 's' | 'm' | 'l' | 'xl';      // THR-1820 size tier, default 's' (tokens.md § Dialog sizes)
+  /** @deprecated THR-1820 — free width, counted by the UI-debt ratchet row `modal-maxwidth`; drawn only when `size` is absent. */
+  maxWidth?: number;
   animation?: 'anim-fade' | 'anim-fade-up';  // default 'anim-fade-up'
   children: React.ReactNode;
 }
@@ -362,7 +364,9 @@ Modal.Footer  // { children: ReactNode }  — button row
   whose surface is drawn with `panelStyle('page', { floating: true })`. Props unchanged.
 - Portals to `document.body`; backdrop `--scrim-dim` at `Z_BAND.modal` (60), or
   `modalAboveInterrupt` (65) through the `zIndex` prop
-- Panel: `max-width` prop, `max-height: var(--modal-max-h)` (85vh — Law 33, one rule), `overflow-y: auto` on Body
+- Panel: width from the `size` tier — `min(var(--dialog-<t>-w), 100vw − 2 × --dialog-gutter)` — and `max-height: var(--modal-max-h)` (85vh — Law 33, one rule); XL also fixes its height at the cap. `data-dialog-size` on the panel (`free` on the deprecated `maxWidth` path). `overflow-y: auto` on Body, which scrolls only once the panel is at its cap (Law 57)
+- Provides `SheetLayoutContext`: `'two'` at L and XL, `'one'` at S and M — `SheetColumns` reads it
+- Both `size` and `maxWidth` passed → `size` wins, one dev warning; an unknown `size` draws as S
 - Escape closes the topmost surface only, through the escape registry (THR-1816)
 - Backdrop click closes (with `e.stopPropagation()` on panel)
 - `aria-modal="true"`, `role="dialog"`
@@ -371,7 +375,7 @@ Modal.Footer  // { children: ReactNode }  — button row
 ### Render
 
 ```tsx
-<Modal open={showConfirm} onClose={handleCancel} maxWidth={500}>
+<Modal open={showConfirm} onClose={handleCancel} size="s">
   <Modal.Header>Confirm Intervention</Modal.Header>
   <Modal.Body>
     <p>Spend 4.2 Force essence to inspire Fen?</p>
@@ -391,7 +395,7 @@ Modal.Footer  // { children: ReactNode }  — button row
 
 ### Rules
 - Only one modal open at a time — opening a new one should close the previous
-- `maxWidth` never exceeds 900px — wider modals lose focus
+- Every dialog picks a size tier by what its content is (S one message, M one structured column, L a subject beside its record in `SheetColumns`, XL a work surface) — never a free width. Step up a tier before you fold a list (Law 57). The machine check is `await window.__DEBUG.getDialogSizes()`: `scrollingBelowCap` empty on every open dialog
 - Modal.Header always includes a close button (auto-rendered by Modal.Header)
 - Buttons in footer: cancel on left, primary action on right
 
@@ -523,7 +527,7 @@ The ceremonial presentation tier — between a toast and a full modal — for th
 ### API
 
 ```tsx
-<RevealCard open onClose maxWidth={REVEAL_CARD_MAX_WIDTH} aria-label>   // standalone modal
+<RevealCard open onClose size="s" aria-label>   // standalone modal (size forwards to Modal, default S)
 <RevealCard.Frame>                                                      // zone stack, NO modal wrapper
 
 RevealCard.Title         // { children }            — category line, letterspaced display caps
@@ -540,7 +544,7 @@ RevealCard.Dismiss       // { label?, onClick }     — full-width Button varian
 - **Zone omission, not empty zones.** Every zone returns `null` on absent data. The reference card's quality comes from every *visible* zone being full; an empty `(0)` row reads worse than no row.
 - **Gold budget — one bright gold per surface.** The hero medallion ring is it. `Title` is `--text-primary`; `.frame-ceremonial` and the rules are dim-gold *structure*.
 - **`Dismiss` is `secondary`, deliberately.** A reveal has no competing action, so the quiet button reads calm. If a surface needs the player to *choose*, it is not a reveal — use `Modal`.
-- Consequence chips cap at `REVEAL_CONSEQUENCE_CHIP_MAX` (4) and collapse the remainder into a `+N` chip. The label still shows the true total.
+- Every consequence chip renders, wrapping onto further rows — no `+N` cut while the card can grow (Law 57, THR-1820). The label shows the same total the row shows.
 - Chip labels are words, never numeric stats.
 
 ---

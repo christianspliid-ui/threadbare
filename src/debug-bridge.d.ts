@@ -2201,7 +2201,7 @@ export interface DebugBridge {
    * Empty `scrollingBelowCap` on every open dialog = Law 57 holds. DOM only.
    */
   getDialogSizes(): Promise<{
-    surfaces: ReadonlyArray<{ surface: string; file: string; sizes: ReadonlyArray<'s' | 'm' | 'l' | 'xl'> }>;
+    surfaces: ReadonlyArray<{ surface: string; file: string; sizes: ReadonlyArray<'s' | 'm' | 'l' | 'xl'>; pending?: string }>;
     open: Array<{
       label: string | null;
       size: 's' | 'm' | 'l' | 'xl' | 'free';

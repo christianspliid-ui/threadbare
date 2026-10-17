@@ -67,13 +67,15 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 
 | Need | Component | Notes |
 |------|-----------|-------|
-| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. Built on `Overlay` + a floating `page` `Panel` (THR-1884). max-height `var(--modal-max-h)` = 85vh (Law 33). Escape closes it when it is the topmost surface. Optional `context` (`story` · `elder` · `gain`) picks the dialogue palette — a *moment* passes one, a reference surface passes none (THR-1586, `tokens.md` § Dialogue contexts). |
+| Generic dialog (confirm, settings, detail) | `Modal` (shared primitive) | Compound: Modal.Header, Modal.Body, Modal.Footer. Built on `Overlay` + a floating `page` `Panel` (THR-1884). Pass a size tier — `size="s|m|l|xl"` (THR-1820, `tokens.md` § Dialog sizes), never a free `maxWidth`; max-height `var(--modal-max-h)` = 85vh (Law 33). Escape closes it when it is the topmost surface. Optional `context` (`story` · `elder` · `gain`) picks the dialogue palette — a *moment* passes one, a reference surface passes none (THR-1586, `tokens.md` § Dialogue contexts). |
 | Anything full-screen or over the map that is not a sized dialog — a ceremony, the Stage, a click-catcher | `Overlay` (shared primitive) | THR-1884. The one backdrop, z-band and Escape implementation: `band` by name (`zBands.ts`, Law 35), `backdrop` dim / heavy / void / none, `label` names it to screen readers and to `__DEBUG.getEscapeLayers()`. A homed surface spreads `surfaceHomeProps(kind)` (the ceremony home: Meet the First, the Threading Rite, the cycle harvest). Never hand-build `fixed inset-0` or hang a `document` Escape listener — the ratchet counts both. |
 | Encounter dialogue with branching | `MeetingEncounterModal` | Auto-triggered on encounter. Full encounter UI. |
 | Journey flavor text | `JourneyVignetteModal` | Full-screen during movement. |
 | Obscured challenge preview | `EncounterVeil` | Unknown opponent. |
 | Premonition/divine revelation | `PremonitionModal` | Consequence preview with sphere tinting. |
 | Full-screen profile (6 tabs) | `AgentProfileModal` | Deep entity inspection. |
+
+| A subject beside its record (an index and its reader, identity and facts) at L / XL | `SheetColumns` (THR-1820) | Two columns when the container provides `'two'` (`Modal` at L / XL); stacks otherwise. Takes the place of `Modal.Body`. Each column scrolls only at the panel's cap (Law 57). |
 
 **Rule:** For new modal features, use `Modal` (shared) and compose content inside it. For a surface that is not a sized dialog, use `Overlay`; something that is not an Overlay but must answer Escape (a tooltip, a menu, a map mode) registers through `useEscapeLayer` with a named band. Only create a custom modal component if the interaction pattern is fundamentally different from standard dialog behavior.
 

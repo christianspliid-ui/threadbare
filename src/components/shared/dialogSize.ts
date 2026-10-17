@@ -76,29 +76,46 @@ export const BEAT_MODAL_M_MIN_CARDS = 3;
 
 /** One dialog-home surface, the file that mounts it, and the tiers it may take. */
 export interface DialogSizeSurface {
+  /**
+   * The surface id. For a surface on the home list it is that entry's `surfaceId`
+   * (`HOMED_SURFACES`, THR-1877): `homedSurfaces.test.ts` checks every dialog-home
+   * entry has a row here and no Stage or ceremony entry does.
+   */
   surface: string;
   /** Path under `src/components/`. */
   file: string;
   sizes: readonly DialogSize[];
+  /**
+   * The ticket that moves this surface onto its tier, while it is still a hand-built
+   * panel (slice 2, THR-1880). Absent once the surface passes `size`.
+   */
+  pending?: string;
 }
 
 /**
- * Every surface that keeps a dialog home and has taken its tier (slice 1 of
- * THR-1820). `dialogSize.test.ts` reads each file and checks it passes a `size`
- * from its registered tiers and no `maxWidth`. Slice 2 (THR-1880) adds the
- * hand-built dialogs; THR-1827 / THR-1829 retire the rest.
+ * Every surface that keeps a dialog home, with the tiers it may take (THR-1820 § 7
+ * table A). `dialogSize.test.ts` reads each non-pending file and checks it passes a
+ * `size` from its registered tiers and no `maxWidth`. Slice 2 (THR-1880) clears the
+ * `pending` rows; THR-1827 / THR-1829 retire the free-width surfaces not listed here.
  */
 export const DIALOG_SIZE_SURFACES: ReadonlyArray<DialogSizeSurface> = [
-  { surface: 'event-popup', file: 'Game/EventPopup.tsx', sizes: ['s'] },
-  { surface: 'divine-receipt', file: 'Game/DivineReceiptModal.tsx', sizes: ['s'] },
-  { surface: 'omen', file: 'Game/OmenDetail.tsx', sizes: ['s'] },
-  { surface: 'doom-clock', file: 'Game/DoomClockDetail.tsx', sizes: ['m'] },
-  { surface: 'mandate', file: 'Game/MandateDetail.tsx', sizes: ['m'] },
-  { surface: 'gifts-and-offerings', file: 'Game/AscendantBeatModal.tsx', sizes: ['s', 'm'] },
-  { surface: 'threading-rite-bond-only', file: 'ThreadingRite/ThreadingRite.tsx', sizes: ['m'] },
-  { surface: 'chapter-ledger', file: 'Game/ChapterLedger.tsx', sizes: ['l'] },
-  { surface: 'read-the-threads', file: 'Game/ReadTheThreadsPanel.tsx', sizes: ['m'] },
-  { surface: 'settings-start', file: 'StartPage/SettingsModal.tsx', sizes: ['s'] },
-  { surface: 'credits', file: 'StartPage/CreditsModal.tsx', sizes: ['s'] },
-  { surface: 'homed-surface-fallback', file: 'Game/hosts/HomedSurfaceFallback.tsx', sizes: ['s'] },
+  { surface: 'EventPopup', file: 'Game/EventPopup.tsx', sizes: ['s'] },
+  { surface: 'DivineReceiptModal', file: 'Game/DivineReceiptModal.tsx', sizes: ['s'] },
+  { surface: 'OmenDetail', file: 'Game/OmenDetail.tsx', sizes: ['s'] },
+  { surface: 'DoomClockDetail', file: 'Game/DoomClockDetail.tsx', sizes: ['m'] },
+  { surface: 'MandateDetail', file: 'Game/MandateDetail.tsx', sizes: ['m'] },
+  { surface: 'AscendantBeatModal', file: 'Game/AscendantBeatModal.tsx', sizes: ['s', 'm'] },
+  // The bond-only reveal stays a dialog; the rite's full and short shapes are a ceremony.
+  { surface: 'ThreadingRiteBondOnly', file: 'ThreadingRite/ThreadingRite.tsx', sizes: ['m'] },
+  { surface: 'ChapterLedger', file: 'Game/ChapterLedger.tsx', sizes: ['l'] },
+  { surface: 'ReadTheThreadsPanel', file: 'Game/ReadTheThreadsPanel.tsx', sizes: ['m'] },
+  { surface: 'SettingsModal', file: 'StartPage/SettingsModal.tsx', sizes: ['s'] },
+  { surface: 'CreditsModal', file: 'StartPage/CreditsModal.tsx', sizes: ['s'] },
+  { surface: 'HomedSurfaceFallback', file: 'Game/hosts/HomedSurfaceFallback.tsx', sizes: ['s'] },
+  // Slice 2 — hand-built today; THR-1880 moves each onto its tier.
+  { surface: 'WarmStartOverlay', file: 'Game/WarmStartOverlay.tsx', sizes: ['s'], pending: 'THR-1880' },
+  { surface: 'ChoiceSetModal', file: 'Game/ChoiceSetModal.tsx', sizes: ['s'], pending: 'THR-1880' },
+  { surface: 'ScryOverlay', file: 'Game/ScryOverlay.tsx', sizes: ['l'], pending: 'THR-1880' },
+  { surface: 'SettingsPanel', file: 'Game/SettingsPanel.tsx', sizes: ['m'], pending: 'THR-1880' },
+  { surface: 'Codex', file: 'Game/GameView.tsx', sizes: ['xl'], pending: 'THR-1880' },
 ];

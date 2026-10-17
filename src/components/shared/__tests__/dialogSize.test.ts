@@ -81,12 +81,19 @@ function dialogTags(source: string): string[] {
 }
 
 describe('dialogSize — DIALOG_SIZE_SURFACES agrees with the source', () => {
+  it('every pending row names its ticket and points at a file that exists', () => {
+    for (const entry of DIALOG_SIZE_SURFACES.filter((e) => e.pending)) {
+      expect(entry.pending).toMatch(/^THR-\d+$/);
+      expect(() => readFileSync(resolve(componentsDir, entry.file), 'utf8')).not.toThrow();
+    }
+  });
+
   it('lists each surface once', () => {
     const names = DIALOG_SIZE_SURFACES.map((s) => s.surface);
     expect(new Set(names).size).toBe(names.length);
   });
 
-  for (const entry of DIALOG_SIZE_SURFACES) {
+  for (const entry of DIALOG_SIZE_SURFACES.filter((e) => !e.pending)) {
     it(`${entry.surface} (${entry.file}) passes a registered size and no maxWidth`, () => {
       const source = readFileSync(resolve(componentsDir, entry.file), 'utf8');
       const tags = dialogTags(source);

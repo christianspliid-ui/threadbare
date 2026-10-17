@@ -141,6 +141,23 @@ The 1440p layout contract. **Frame** tokens are px and restated per tier in `ind
 | `--measure-prose` | 34em = 680px | 765px | Story-column measure |
 | `--modal-max-h` | 85vh | 85vh | Every dialog (Law 33) |
 
+### Dialog sizes (THR-1820)
+
+Every dialog picks one of four tiers — never a free width (Law 57). S and M are text containers (rem, declared once, step with the root); L and XL are frame-scale (px, restated per tier). A panel's width is `min(var(--dialog-<t>-w), calc(100vw - 2 * var(--dialog-gutter)))`; its max height is `--modal-max-h` (85vh), and XL is fixed at that height. Mirrored in `dialogSize.ts` (fallbacks) and `layoutContract.ts` (parity test).
+
+| Token | 1920×1080 | 2560×1440 | 3440×1440 | Holds |
+|-------|-----------|-----------|-----------|-------|
+| `--dialog-s-w` | 37.5rem = 600px | 675px | 675px | **S** — one message or one decision: notices, receipts, reveals, short forms |
+| `--dialog-m-w` | 60rem = 960px | 1080px | 1080px | **M** — one column of structured content: a ladder, a clock, a row of up to four cards |
+| `--dialog-l-w` | 1280px | 1600px | 1600px | **L** — a subject beside its record, in `SheetColumns` |
+| `--dialog-xl-w` | 1760px | 2240px | 2880px | **XL** — a work surface with its own panes |
+| `--dialog-gutter` | 24px | 32px | 32px | Least space between a panel and the viewport edge |
+| `--sheet-aside-w` / `--sheet-gap` | 400 / 24px | 480 / 28px | 480 / 28px | `SheetColumns` left column and gap |
+
+- **API:** `<Modal size="s|m|l|xl">` (default S); `<RevealCard size>` forwards it; an owner-drawn panel on an `Overlay` uses `dialogSizeStyle(tier)`. `maxWidth` is deprecated and counted by the UI-debt ratchet row `modal-maxwidth` (floor 0 once THR-1827 / THR-1829 retire the last free-width surfaces).
+- **Choosing:** by what the content is. Step up a tier before you fold a list; fold only at the largest tier the surface's job allows.
+- **Machine check:** `await window.__DEBUG.getDialogSizes()` — `scrollingBelowCap` empty on every open dialog. Registry: `DIALOG_SIZE_SURFACES` in `src/components/shared/dialogSize.ts`.
+
 ---
 
 ## Ceremonial Utilities (THR-799)

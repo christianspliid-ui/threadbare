@@ -3074,6 +3074,17 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 - **Debug:** `__DEBUG.getDialogContexts()` returns `{ surfaces, open }`.
 - **StyleGuide:** `section-dialog-contexts`.
 
+## Dialog sizes (THR-1820)
+
+Presentation only: no orchestrator phase, no GameState field and no trace.
+- **Tokens:** `--dialog-{s,m,l,xl}-w`, `--dialog-gutter`, `--sheet-aside-w`, `--sheet-gap` in `src/index.css` (THR-1819's tier blocks), mirrored in `layoutContract.ts` and locked by `layoutContract.test.ts`.
+- **Registry:** `src/components/shared/dialogSize.ts` — `DialogSize`, `dialogSizeStyle()`, `DIALOG_SIZE_SURFACES` (surface → file → tiers). `dialogSize.test.ts` checks each listed file passes a registered `size` and no `maxWidth`, and pins the fallbacks to `:root`.
+- **Modal:** `size` prop → `data-dialog-size` + `SheetLayoutContext` (`'two'` at L / XL). `maxWidth` deprecated (`data-dialog-size="free"`). `RevealCard` forwards `size`.
+- **SheetColumns:** `src/components/shared/SheetColumns.tsx`; first adopter the Chapter Ledger (L). Then the Divine Court (THR-1880) and the Inspector (THR-1876).
+- **A new dialog:** pick a tier, add its row to `DIALOG_SIZE_SURFACES`, never pass `maxWidth` (the ratchet row `modal-maxwidth` only goes down).
+- **Debug:** `__DEBUG.getDialogSizes()` returns `{ surfaces, open[] }`; Law 57 holds when every `open[].scrollingBelowCap` is empty.
+- **StyleGuide:** `section-dialog-sizes`.
+
 ## The seeded spell generator (THR-1572)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
