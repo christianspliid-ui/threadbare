@@ -27,6 +27,7 @@ import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import type { ToastItem } from '../../../types/notification';
 import type { HexCoord } from '../../../types';
+import type { TabId as ProfileTabId } from '../tabs/TabBar';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld, ensureRealmProjection } from '../../../engine/simulationRuntime';
 import { createHoldReader } from '../../../engine/holdStanding';
@@ -134,6 +135,8 @@ export function useAgentInteraction({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
   const [profileModalAgentId, setProfileModalAgentId] = useState<string | null>(null);
+  /** THR-1963 — the tab the sheet opens on; undefined is Overview. */
+  const [profileInitialTab, setProfileInitialTab] = useState<ProfileTabId | undefined>(undefined);
   const [pendingIntervention, setPendingIntervention] = useState<{
     slotId: string;
     interventionType: InterventionType;
@@ -644,8 +647,10 @@ export function useAgentInteraction({
     }
   }, [selectedAgentId, retinueAgents, handleAgentSelect, setRunning]);
 
-  const handleViewProfile = useCallback(() => {
+  const handleViewProfile = useCallback((initialTab?: ProfileTabId) => {
     if (selectedAgentId) {
+      const tab = typeof initialTab === 'string' ? initialTab : undefined;
+      setProfileInitialTab(tab);
       // IX-002: mutual exclusion — close strand view when opening profile modal
       // IX-008: close drawer when opening full-screen profile modal
       setStrandViewAgent(null);
@@ -654,15 +659,30 @@ export function useAgentInteraction({
 
       // Record the backstory tier read on the thread edge so New badges clear. The engine
       // writes and bumps worldVersion (THR-1822 § D15); re-render so the card recomputes.
-      if (markBackstoryRead(gameState.graph, runtime, gameState.ascendantId, selectedAgentId)) {
+      // Only when the sheet lands on the Chronicle: an explicit other tab (THR-1963's
+      // Journey links) beats the new-strata redirect, so marking read there would
+      // consume a layer the player never saw.
+      if ((!tab || tab === 'chronicle') && markBackstoryRead(gameState.graph, runtime, gameState.ascendantId, selectedAgentId)) {
         setGameState(s => ({ ...s }));
       }
     }
   }, [selectedAgentId, gameState, setGameState]);
 
+  // The tab is left as it was: every open sets it, and clearing it here would let the
+  // sheet's new-strata redirect flip it to Chronicle during its exit fade.
   const handleCloseProfile = useCallback(() => {
     setProfileModalAgentId(null);
   }, []);
+
+  /**
+   * THR-1963 — the sheet reports a visit to its Chronicle tab. A Journey open skips
+   * the open-time read mark, so the layer is marked read here once the player sees it.
+   */
+  const handleProfileChronicleViewed = useCallback(() => {
+    if (profileModalAgentId && markBackstoryRead(gameState.graph, runtime ?? null, gameState.ascendantId, profileModalAgentId)) {
+      setGameState(s => ({ ...s }));
+    }
+  }, [profileModalAgentId, gameState, setGameState]);
 
   /**
    * THR-1477 — open a named agent's character sheet directly, from a surface
@@ -680,7 +700,8 @@ export function useAgentInteraction({
    * behind a full-screen interrupt wants the sheet on top, not a drawer
    * changing state underneath it.
    */
-  const openAgentSheetForId = useCallback((agentId: string) => {
+  const openAgentSheetForId = useCallback((agentId: string, initialTab?: ProfileTabId) => {
+    setProfileInitialTab(initialTab);
     setSelectedAgentId(agentId);
     setStrandViewAgent(null);
     setDrawerOpen(false);
@@ -769,6 +790,8 @@ export function useAgentInteraction({
     pendingChoice,
     setPendingChoice,
     profileModalAgentId,
+    profileInitialTab,
+    handleProfileChronicleViewed,
     playingCardId,
     selectedAgenda,
     agendaPickerOpen,

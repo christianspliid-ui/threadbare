@@ -46,7 +46,8 @@ export interface StageHostProps {
   gameState: GameState;
   setGameState: Dispatch<SetStateAction<GameState>>;
   interruptResolution: InterruptResolution;
-  openAgentSheetForId: (agentId: string) => void;
+  /** Opens a mortal's sheet; `initialTab` picks the tab (THR-1963: the work moments open Journey). */
+  openAgentSheetForId: (agentId: string, initialTab?: import('../tabs/TabBar').TabId) => void;
   // Emergence dilemma: gated on `gameState.pendingEmergenceDecision` alone.
   // Encounter veil
   tieredEncounterState: {
@@ -255,6 +256,8 @@ export function StageHost({
           // the case where the selection is someone else. Same root cause as the
           // premonition's name control (THR-1461), same primitive.
           onSelectAgent={openAgentSheetForId}
+          // THR-1963 — "See the work" opens the same sheet on its Journey tab.
+          onSeeWork={(agentId) => openAgentSheetForId(agentId, 'journey')}
           onDivineAct={handleMomentDivineAct}
         />
       );

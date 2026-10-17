@@ -153,7 +153,12 @@ function DeedLine({ deed, onOpenEntity, onOpenLocation }: {
   );
 }
 
-export function JourneyTab({ card, knowledge, onOpenEntity, onOpenLocation, gameState, followState, onToggleFollow }: JourneyTabProps) {
+/**
+ * The ambitions the Journey tab lists, in its order, behind its knowledge gate.
+ * Shared with the thread panel's "What they want most" line (THR-1963) so that
+ * line is hidden exactly when the Ambitions section is.
+ */
+export function visibleJourneyIntents(card: AgentInfoCardData, knowledge?: AgentKnowledge) {
   // Whether to show ambitions — either via interaction depth OR the one mind-reading
   // rule (THR-1433): familiarity, a followed mortal's mark, or a followed network.
   const showAmbitions =
@@ -165,12 +170,15 @@ export function JourneyTab({ card, knowledge, onOpenEntity, onOpenLocation, game
     (knowledge != null && knowledge.interactionDepth >= AMBITION_SECONDARY_INTERACTIONS)
     || hasKnowledge(card.knowledgeLevel, 'intimate');
 
-  const visibleIntents = (() => {
-    if (!card.intents || card.intents.length === 0) return [];
-    if (!showAmbitions) return [];
-    if (showSecondaryAmbitions) return card.intents;
-    return card.intents.filter(i => i.priority === 'primary');
-  })();
+  if (!card.intents || card.intents.length === 0) return [];
+  if (!showAmbitions) return [];
+  if (showSecondaryAmbitions) return card.intents;
+  return card.intents.filter(i => i.priority === 'primary');
+}
+
+export function JourneyTab({ card, knowledge, onOpenEntity, onOpenLocation, gameState, followState, onToggleFollow }: JourneyTabProps) {
+  const visibleIntents = visibleJourneyIntents(card, knowledge);
+  const showAmbitions = visibleIntents.length > 0;
 
   const undertakings = gameState ? (summarizeActiveUndertakings(gameState.strategicState, card.id) ?? []) : [];
   const arc = gameState ? getAgentArc(gameState, gameState.graph, card.id) : [];

@@ -19,7 +19,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { EntityVisual } from '../shared/EntityVisual';
 import { StepDots } from '../shared/StepDots';
 import { bandAccentColor } from './outcomeBandAccent';
-import { MOMENT_CARD_PAUSE_NOTE } from '../../data/moment-card-content';
+import { MOMENT_CARD_PAUSE_NOTE, MOMENT_SEE_WORK_LABEL } from '../../data/moment-card-content';
 import type { WorldGraph } from '../../engine/graph';
 import type { MomentCardChip, MomentCardModel, MomentChipTone } from './momentCardModel';
 
@@ -31,6 +31,8 @@ export interface MomentCardProps {
   onAcknowledge: () => void;
   /** Route an agent chip or the portrait to the agent surface (Law 21). */
   onSelectAgent?: (agentId: string) => void;
+  /** THR-1963 — "See the work": open the mortal's sheet on the Journey tab. */
+  onSeeWork?: (agentId: string) => void;
   /**
    * Fire one of the two divine verbs at the mortal. Returns the outcome so the
    * card can say inline what happened (Law 48: blocked acts fail fast inline).
@@ -136,7 +138,7 @@ function ChipRow({ chip, onSelectAgent }: { chip: MomentCardChip; onSelectAgent?
   );
 }
 
-export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, onDivineAct }: MomentCardProps) {
+export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, onSeeWork, onDivineAct }: MomentCardProps) {
   const accent = bandAccentColor(model.outcomeBand ?? undefined, 'var(--accent-gold)');
   // Law 48 — an essence spend is armed, then fired. `staged` holds the verb the
   // player has armed; a second press on the same verb commits it.
@@ -266,6 +268,21 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
         >
           {model.consequence}
         </p>
+
+        {/* The work moments link to the work (THR-1963, Law 21). */}
+        {model.seeWork && onSeeWork && (
+          <Tooltip id="ui.moment_see_work">
+            <Button
+              variant="ghost"
+              size="sm"
+              data-testid="moment-card-see-work"
+              onClick={() => onSeeWork(model.actorId)}
+              style={{ marginBottom: 'var(--space-4)', color: 'var(--accent-gold)' }}
+            >
+              {MOMENT_SEE_WORK_LABEL} →
+            </Button>
+          </Tooltip>
+        )}
 
         {/* What moved — state-backed chips only (Law 56). */}
         {model.chips.length > 0 && (

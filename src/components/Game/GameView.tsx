@@ -619,6 +619,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     pendingChoice,
     setPendingChoice,
     profileModalAgentId,
+    profileInitialTab,
+    handleProfileChronicleViewed,
     playingCardId,
     selectedAgenda,
     agendaPickerOpen,
@@ -3629,9 +3631,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * selecting the row. Going through the router would re-select and reopen the drawer —
    * the exact two-id hazard THR-1477 fixed, arrived at from the other side.
    */
-  const handleOpenProfileModal = useCallback((nodeId: string, category: import('../../engine/retinue').ThreadCategory) => {
+  const handleOpenProfileModal = useCallback((nodeId: string, category: import('../../engine/retinue').ThreadCategory, initialTab?: import('./tabs/TabBar').TabId) => {
     if (category === 'agent') {
-      handleViewProfile();
+      handleViewProfile(initialTab);
       return;
     }
     refRouter.open(
@@ -4681,6 +4683,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                         agentEncounterDecision={selectedThreadNode.category === 'agent' ? selectedAgentEncounterDecision : null}
                         onClose={handleThreadDetailClose}
                         onViewProfile={handleOpenProfileModal}
+                        knowledge={selectedThreadNode.category === 'agent' ? gameState.agentKnowledge.get(selectedThreadNode.nodeId) : undefined}
                         onZoomToLocation={handleZoomToLocation}
                         graph={gameState.graph}
                         digestBuffer={selectedThreadNode.category === 'agent' ? (gameState.digestBuffer ?? []) : undefined}
@@ -4824,6 +4827,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             profile={agentFullProfile}
             onClose={handleCloseProfile}
             scrollToNewStrata={agentInfoCard.backstory?.strata.some(s => s.isNew) ?? false}
+            // THR-1963 — the thread panel's work/ambition lines and the work moments open Journey.
+            initialTab={profileInitialTab}
+            onChronicleViewed={handleProfileChronicleViewed}
             knowledge={profileModalAgentId ? gameState.agentKnowledge.get(profileModalAgentId) : undefined}
             gameState={gameState}
             runtime={runtime}

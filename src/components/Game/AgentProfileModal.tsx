@@ -40,6 +40,20 @@ export interface AgentProfileModalProps {
   onClose: () => void;
   /** When true, auto-switch to the Chronicle tab on open (e.g. from a revelation alert) */
   scrollToNewStrata?: boolean;
+  /**
+   * THR-1963 — the tab the sheet opens on. Defaults to Overview; the thread
+   * panel's work/ambition lines and the work moments pass `'journey'`.
+   *
+   * An explicit tab beats `scrollToNewStrata`: GameView derives that flag from
+   * any unread backstory layer, so letting it win would send a click on "See the
+   * work" to the Chronicle whenever new backstory exists. It still beats the default.
+   */
+  initialTab?: TabId;
+  /**
+   * THR-1963 — called whenever the Chronicle tab is showing, so a backstory layer
+   * skipped at open (a Journey open) is marked read once the player actually sees it.
+   */
+  onChronicleViewed?: () => void;
   /** Per-agent multi-facet knowledge — when present, enables facet-gated sections */
   knowledge?: AgentKnowledge;
   /** Live game state — enables the Chapters tab (THR-603). */
@@ -74,9 +88,9 @@ export interface AgentProfileModalProps {
   mortalShape?: { godTitleLine: string; sphereColor?: string; portraitUrl?: string };
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape, dominion }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, initialTab, onChronicleViewed, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape, dominion }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
-    scrollToNewStrata ? 'chronicle' : 'overview'
+    initialTab ?? (scrollToNewStrata ? 'chronicle' : 'overview')
   );
   const [selectedAttachment, setSelectedAttachment] = useState<AttachmentDetailData | null>(null);
   const [portraitExpanded, setPortraitExpanded] = useState(false);
@@ -88,10 +102,20 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
 
   // Switch to chronicle when scrollToNewStrata changes
   useEffect(() => {
-    if (scrollToNewStrata) {
+    if (scrollToNewStrata && !initialTab) {
       setActiveTab('chronicle');
     }
-  }, [scrollToNewStrata]);
+  }, [scrollToNewStrata, initialTab]);
+
+  // A link asking for a tab while the sheet is already open (THR-1963) moves it there.
+  useEffect(() => {
+    if (initialTab) setActiveTab(initialTab);
+  }, [initialTab]);
+
+  // Seeing the Chronicle is what reads its new layer (THR-1963).
+  useEffect(() => {
+    if (activeTab === 'chronicle') onChronicleViewed?.();
+  }, [activeTab, onChronicleViewed]);
 
   /** Convert an AttachmentFullEntry to AttachmentDetailData for the detail view */
   const toDetailData = (entry: AttachmentFullEntry): AttachmentDetailData => ({

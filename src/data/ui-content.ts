@@ -844,6 +844,19 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Their work turned',
     desc: 'Moments of this mortal\'s long work you have not yet read. Opening one clears nothing until you acknowledge it.',
   },
+  // THR-1963 — the thread panel's two lines and the work moments' link.
+  'ui.thread_work': {
+    label: 'Their work',
+    desc: 'The long work this mortal is running now, and how far it has come. Opens their sheet on the Journey tab.',
+  },
+  'ui.thread_want_most': {
+    label: 'What they want most',
+    desc: 'The ambition that drives this mortal first, as far as you know them. Opens their sheet on the Journey tab.',
+  },
+  'ui.moment_see_work': {
+    label: 'See the work',
+    desc: 'Opens this mortal\'s sheet on the Journey tab, where their work and what drives them are told in full.',
+  },
   'ui.arc_strip': {
     label: 'The arc so far',
     desc: 'What this mortal has finished, failed and been through, oldest first — read from what the world remembers, not from the day\'s digest.',

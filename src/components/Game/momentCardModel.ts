@@ -39,6 +39,7 @@ import { describeWorkProgress } from '../../engine/workProgress';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../data/outcome-band-content';
 import {
   MOMENT_DIVINE_ACTIONS,
+  MOMENT_SEE_WORK_CLASSES,
   renderMomentLine,
   selectMomentCardTemplate,
   type MomentDivineVerb,
@@ -105,6 +106,8 @@ export interface MomentCardModel {
   /** The action slot renders only while the work is still live and the mortal still stands. */
   readonly actionable: boolean;
   readonly forward: MomentForwardLink | null;
+  /** THR-1963 — the begun and finished cards link to the work (the mortal's Journey tab) while the mortal stands. */
+  readonly seeWork: boolean;
 }
 
 function findProject(state: GameState, projectId: string): StrategicProjectRuntime | undefined {
@@ -264,6 +267,7 @@ export function buildMomentCardModel(state: GameState, record: UndertakingMoment
     actorId: record.actorId,
     actorName,
     actorExists: !!actorNode,
+    seeWork: !!actorNode && MOMENT_SEE_WORK_CLASSES.has(record.momentClass),
     undertakingName: record.undertakingName,
     opening: renderMomentLine(template.opening, vars),
     consequence: renderMomentLine(template.consequence, vars),
