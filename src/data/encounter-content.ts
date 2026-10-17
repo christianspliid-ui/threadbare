@@ -13,6 +13,7 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
 import { compileOpeningColoration } from '../engine/fragmentResolution';
 import { DEAL_DEFAULT_COUNT } from './nudge-constants';
+import { MEANS_STEP } from './mortal-means-constants';
 import {
   ENCOUNTER_TONE_ADJECTIVES,
   encounterToneTierForThreat,
@@ -220,6 +221,8 @@ type EncounterEntry = {
    */
   supportBundle?: import('../types/encounter').EncounterSupportBundle;
   aftermathConfig?: import('../types/unifiedAction').UnifiedActionTemplate['aftermathConfig'];
+  /** THR-1936 — the outcome table (band → effects); passed through by the converter. */
+  outcomeEffects?: import('../types/unifiedAction').OutcomeEffectsTable;
   consequenceDraw?: readonly string[];
   consequenceSwap?: import('../types/unifiedAction').UnifiedActionTemplate['consequenceSwap'];
   steps: ReadonlyArray<{
@@ -404,6 +407,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     // so an authored aftermath would otherwise have been inert content.
     supportBundle: e.supportBundle,
     aftermathConfig: e.aftermathConfig,
+    // THR-1936: the outcome table. Step ops stay empty; money is written by band here.
+    ...(e.outcomeEffects ? { outcomeEffects: e.outcomeEffects } : {}),
     consequenceDraw: e.consequenceDraw,
     consequenceSwap: e.consequenceSwap,
     // THR-1727: the allowlist drops what it does not name — stakes must be named.
@@ -670,12 +675,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.merchants_gambit',
+    // THR-1936 S1: the seed row of the outcome table — a good day at the market pays,
+    // a bad one costs, and the stakes say so before the roll.
     stakes: {
       goal: 'work the grain market and refuse the bad salt',
-      risk: 'end up in the gate cell over the salt',
+      risk: 'lose their coin on bad salt, or end up in the gate cell over it',
       won: 'worked the market and turned down the bad salt',
-      lost: 'took the salt and lost it to the excise men',
-      lostBadly: 'spent the night in the gate cell over the salt',
+      lost: 'took the salt, lost it to the excise men, and came away poorer',
+      lostBadly: 'lost their coin and spent the night in the gate cell over the salt',
+    },
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'Merchant\'s Gambit',
     locationTypes: ['town', 'city', 'capital', 'oasis'],

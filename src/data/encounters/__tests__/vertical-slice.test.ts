@@ -81,6 +81,7 @@ const AFTERMATH_CHANGE_KIND_TABLE: Record<EncounterAftermathChangeKind, true> = 
   reputation_tally: true,
   shell_state: true,
   future_hook: true,
+  economy: true,
 };
 const AFTERMATH_CHANGE_KINDS = new Set<string>(Object.keys(AFTERMATH_CHANGE_KIND_TABLE));
 

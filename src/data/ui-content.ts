@@ -1142,6 +1142,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Investiture',
     desc: 'Your divine court: the mortals you have raised to act in your name. Open it to see who serves you, and in what seat.',
   },
+  // THR-1936 — an `economy` aftermath change: a mortal's Means moved. Words only.
+  'ui.econ.means.change': {
+    label: 'Means',
+    desc: 'How this moved their Means: what they have gathered and kept, in one of five words, from Destitute to Magnate.',
+  },
   // THR-1931 — the faction purse (THR-1870 § 4). Words only; never an amount.
   'ui.econ.means.faction': {
     label: 'Means',

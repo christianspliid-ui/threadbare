@@ -1903,6 +1903,31 @@ export interface PurseArmyRaisedTrace extends TraceBase {
   wealthAfter: number;
 }
 
+/** THR-1936 — a decider was born with Means at world creation (role wealth + home shift). */
+export interface MeansBirthTrace extends TraceBase {
+  category: 'economy.means.birth';
+  agentId: string;
+  role: string | null;
+  homeTier: string | null;
+  wealth: number;
+}
+
+/** THR-1936 — an `economy_shift` on a mortal's Means moved their wealth. */
+export interface MeansShiftTrace extends TraceBase {
+  category: 'economy.means.shift';
+  agentId: string;
+  sourceTemplateId: string | null;
+  /** The band the outcome table keyed on; null when the shift came from a reaction. */
+  band: string | null;
+  /** After the poor-loss scale. */
+  amount: number;
+  wealthBefore: number;
+  wealthAfter: number;
+  bandBefore: string;
+  bandAfter: string;
+  reason: string;
+}
+
 /** THR-1933 — an army took a conquer target by value (raise or re-aim). */
 export interface WarAimPickedTrace extends TraceBase {
   category: 'war.aim.picked';
@@ -4811,6 +4836,8 @@ export type TraceEntry =
   | RebellionTrace
   | PurseBandChangeTrace
   | PurseArmyRaisedTrace
+  | MeansBirthTrace
+  | MeansShiftTrace
   | WarAimPickedTrace
   | WarAimDefendTrace
   | WarAimHoldTrace

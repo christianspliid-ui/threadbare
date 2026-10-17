@@ -1423,6 +1423,17 @@ export interface DebugBridge {
    * (monster lairs; a save before the opening purse). Before the first pay day (tick 12)
    * it carries only `wealth` and `meansBand` from the opening purse.
    */
+  /**
+   * THR-1936 — one mortal's Means: `wealth` (0–100), its `band` word, and the last
+   * reason that moved it (`birth`, `trade_success`, …). `want` is null until S2.
+   * `null` when the id is not an actor.
+   */
+  getMortalMeans: (agentId: string) => Promise<{
+    wealth: number;
+    band: 'Destitute' | 'Getting by' | 'Comfortable' | 'Wealthy' | 'Magnate';
+    lastReason: string | null;
+    want: null;
+  } | null>;
   getFactionPurse: (factionId: string) => Promise<{
     tick?: number;
     income?: { townTax: number; placeYield: number; landRent: number; tolls: number; guildWork: number; guildTaxIn: number; guildTaxOut: number };

@@ -449,6 +449,9 @@ export function classifyChangeKind(
       return isCost(polarity) ? 'wound' : 'mark';
     case 'future_hook':
       return 'seed';
+    case 'economy':
+      // THR-1936 — a mortal's Means: coin gained is a prize, coin lost a price paid.
+      return isCost(polarity) ? 'toll' : 'prize';
     case 'growth':
     case 'shell_state':
       return isCost(polarity) ? 'toll' : 'mark';
