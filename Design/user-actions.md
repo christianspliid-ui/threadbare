@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-17 12:57 local (10:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-17 13:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-17: seizing a trade lane now tolls the lane that was seized** ([THR-1883](https://linear.app/threadbare/issue/THR-1883/seizing-a-trade-lane-tolls-the-wrong-lane-the-toll-lands-on-the)). Merged via [#2455](https://github.com/christianspliid-ui/threadbare/pull/2455) and live.
 - **2026-10-17: your mortal's work and what they want most now show in the panel beside the map** ([THR-1963](https://linear.app/threadbare/issue/THR-1963/the-work-and-the-leading-ambition-beside-the-map-two-lines-in-the)). Merged via [#2452](https://github.com/christianspliid-ui/threadbare/pull/2452) and live.
 - **2026-10-16: shared buttons, the window chrome and the duplicate symbols now draw the carved icons** ([THR-1906](https://linear.app/threadbare/issue/THR-1906/icon-sweep-1-shared-primitives-chrome-and-the-law-9-duplicates-onto)). Merged via [#2451](https://github.com/christianspliid-ui/threadbare/pull/2451) and live.
 - **2026-10-16: one work now reads one progress word everywhere (barely begun, under way, halfway, well along, nearly done, or faltering)** ([THR-1962](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the)). Merged via [#2449](https://github.com/christianspliid-ui/threadbare/pull/2449) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-16: the world remembers, first slice: an account record carries across runs, divine echoes land at harvest, and each run wakes in a new world** ([THR-1813](https://linear.app/threadbare/issue/THR-1813/the-world-remembers-an-account-record-each-run-a-new-world-seeded-with)). Merged via [#2444](https://github.com/christianspliid-ui/threadbare/pull/2444) and live.
 - **2026-10-16: the carved icon registry is live: 229 icon shapes, their concept table and the icon credits** ([THR-1904](https://linear.app/threadbare/issue/THR-1904/carved-icon-registry-vendor-the-229-shapes-fill-the-concept-table-ship)). Merged via [#2443](https://github.com/christianspliid-ui/threadbare/pull/2443).
 - **2026-10-16: lines like "The captain nod at Kael" now read "The captain nods at Kael"** ([THR-1945](https://linear.app/threadbare/issue/THR-1945/noun-subjects-drop-their-verbs-s-for-a-theythem-actor-the-captain-nod)). Merged via [#2442](https://github.com/christianspliid-ui/threadbare/pull/2442).
-- **2026-10-16: the unused effect-glyph table with six broken symbols is deleted** ([THR-1874](https://linear.app/threadbare/issue/THR-1874/delete-the-unread-effect-type-glyph-table-six-malformed-escapes-never)). Merged via [#2441](https://github.com/christianspliid-ui/threadbare/pull/2441).
 
 ---
 

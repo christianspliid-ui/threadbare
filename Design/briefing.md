@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 12:57 local (10:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 13:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,17 +37,17 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 23 ready, one in progress.** The builder fixed [seizing a trade lane tolling the wrong lane](https://linear.app/threadbare/issue/THR-1883/seizing-a-trade-lane-tolls-the-wrong-lane-the-toll-lands-on-the) as [PR #2455](https://github.com/christianspliid-ui/threadbare/pull/2455); it merges on its own when its checks pass. Two economy plans merged this morning: [undertakings in the economy](https://github.com/christianspliid-ui/threadbare/pull/2453) and [the god's stake](https://github.com/christianspliid-ui/threadbare/pull/2454).
+**Backed up: 22 ready, one in progress.** [Seizing a trade lane now tolls the lane seized](https://linear.app/threadbare/issue/THR-1883/seizing-a-trade-lane-tolls-the-wrong-lane-the-toll-lands-on-the) merged ([PR #2455](https://github.com/christianspliid-ui/threadbare/pull/2455)) and is live. The builder then fixed [armies besieging towns they have no quarrel with](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard) as [PR #2456](https://github.com/christianspliid-ui/threadbare/pull/2456); it merges on its own when its checks pass.
 
-- Newly ready: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy), the first build from the god's-stake plan.
+- Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy), the first build from the god's-stake plan.
 - High, waiting: the [war aims](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest) and [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) builds, [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
-- Six bugs are queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [the map naming undiscovered elder ruins](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every).
+- Four bugs are queued, from [realms losing their members](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) to [the map naming undiscovered elder ruins](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every).
 - Nothing has waited in the queue longer than a week without being touched.
 
 ## Health
 
-- All green. The live site carries [the work beside the map](https://linear.app/threadbare/issue/THR-1963/the-work-and-the-leading-ambition-beside-the-map-two-lines-in-the) (94840db5); later commits were docs only. Main's checks and the scheduled background jobs pass; one PR is armed and waiting on checks.
-- Engine speed is normal: 137 ms/tick, 13% over the 7-day median (121).
+- All green. The live site carries the latest main (b3582873), including the trade-lane toll fix. Main's checks and the scheduled background jobs pass; one PR is armed and waiting on checks.
+- Engine speed is normal: 138 ms/tick, 14% over the 7-day median (121).
 - Overnight quiet: every lane stopped at 18:39 Friday and resumed at 11:33 today. That is overnight and weekend quiet, so not an extra ask; the lead ask above covers it.
-- The builder ran normally this morning: two jobs shipped, short runs only while a PR held its slot.
-- The tidy-up job ran at 12:40: 544 old worktrees, 5 items needing a decision (builder housekeeping). You sent no new Discord messages.
+- The builder is running normally: two jobs shipped this morning, a third is waiting on checks.
+- The tidy-up job ran at 13:40: 544 old worktrees, 5 items needing a decision (builder housekeeping). You sent no new Discord messages.
