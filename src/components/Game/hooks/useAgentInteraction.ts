@@ -679,7 +679,7 @@ export function useAgentInteraction({
    * the open-time read mark, so the layer is marked read here once the player sees it.
    */
   const handleProfileChronicleViewed = useCallback(() => {
-    if (profileModalAgentId && markBackstoryRead(gameState.graph, runtime, gameState.ascendantId, profileModalAgentId)) {
+    if (profileModalAgentId && markBackstoryRead(gameState.graph, runtime ?? null, gameState.ascendantId, profileModalAgentId)) {
       setGameState(s => ({ ...s }));
     }
   }, [profileModalAgentId, gameState, setGameState]);
