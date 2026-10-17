@@ -270,7 +270,7 @@ function PanelValue({ row, color }: { row: PanelRow; color: string }) {
       <span
         aria-hidden="true"
         data-meter=""
-        style={{ width: '4rem', height: '4px', borderRadius: '2px', background: 'var(--bg-deep)', overflow: 'hidden' }}
+        style={{ width: '4rem', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}
       >
         <span style={{ display: 'block', width: `${fill * 100}%`, height: '100%', background: 'var(--text-secondary)' }} />
       </span>
@@ -306,11 +306,12 @@ function LinksSectionRenderer({ section }: { section: LinksSection }) {
 export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      {rows.map((row) => (
+      {rows.map((row, index) => (
         <li
-          key={`${row.ref.kind}:${row.ref.id}`}
+          // Two rows may name one thing (a Location yielding two resources), so the index joins the key.
+          key={`${row.ref.kind}:${row.ref.id}:${index}`}
           data-link-row={`${row.ref.kind}:${row.ref.id}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: '0.8rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)' }}
         >
           <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
           {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
@@ -329,18 +330,18 @@ function CardsSectionRenderer({ section }: { section: CardsSection }) {
         {section.tiles.map((tile, index) => (
           <div
             key={`${tile.title}-${index}`}
-            style={{ border: '1px solid var(--border-gold)', borderRadius: '6px', padding: '8px 10px', background: 'var(--bg-raised)', minWidth: 0 }}
+            style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: '8px 10px', background: 'var(--bg-raised)', minWidth: 0 }}
           >
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 700 }}>{tile.kindWord}</div>
-            <div style={{ color: 'var(--text-primary)', fontSize: '0.85rem', fontWeight: 700, overflowWrap: 'anywhere' }}>
+            <div style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)', fontWeight: 700, overflowWrap: 'anywhere' }}>
               {tile.ref ? <Chip role="identity" size="sm" target={tile.ref} label={tile.title} /> : tile.title}
             </div>
             {tile.lines.map((line, li) => (
-              <div key={li} style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', lineHeight: 1.5 }}>{line}</div>
+              <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>{line}</div>
             ))}
             {tile.durationWord && <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{tile.durationWord}</div>}
             {tile.meter != null && Number.isFinite(tile.meter) && (
-              <div aria-hidden="true" data-meter="" style={{ marginTop: '4px', height: '4px', borderRadius: '2px', background: 'var(--bg-deep)', overflow: 'hidden' }}>
+              <div aria-hidden="true" data-meter="" style={{ marginTop: '4px', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}>
                 <div style={{ width: `${Math.max(0, Math.min(1, tile.meter)) * 100}%`, height: '100%', background: 'var(--text-secondary)' }} />
               </div>
             )}

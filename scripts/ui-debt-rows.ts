@@ -84,6 +84,7 @@ export const UI_DEBT_EXCLUDED: readonly RegExp[] = [
   /^src\/components\/TaxonomyViewer\//, // the taxonomy browser — a docs tool
   /^src\/components\/Game\/debug\//, // the debug panel's parts
   /^src\/components\/HexMapV2\/lab\//, // the hex-map lab view
+  /^src\/components\/Game\/inspector\/lab\//, // the Inspector lab view (THR-1876 § D12)
   /[^/]*[dD]ebug[^/]*$/, // DebugPanel.tsx, useDebugOpenModal.ts, meetingDebugState.ts
 ];
 

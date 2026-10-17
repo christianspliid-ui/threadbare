@@ -834,7 +834,9 @@ const whatHappenedResolver: SectionResolver = (ctx) => {
   if (!evt || evt.type !== 'event') return null;
 
   const stored = evt.properties?.proseTier as 'routine' | 'notable' | 'chronicle' | undefined;
-  const summary = (evt.properties?.summary as string | undefined) ?? evt.name;
+  // THR-1876: an encounter step's node is named "<template> (step N)" — a raw index (Law 14) —
+  // so with no summary the card names the template it stores, and only then the node.
+  const summary = (evt.properties?.summary as string | undefined) ?? (evt.properties?.templateName as string | undefined) ?? evt.name;
   if (!summary) return null;
 
   const section: ProseSection = {

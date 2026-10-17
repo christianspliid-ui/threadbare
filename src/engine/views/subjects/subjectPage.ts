@@ -219,7 +219,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
     };
   }
   if (node.type === 'artifact' || node.type === 'artifact_legendary') {
-    const rarity = node.type === 'artifact_legendary' ? [{ label: 'Legendary', tooltipId: 'rarity.legendary' }] : [];
+    const rarity = node.type === 'artifact_legendary' ? [{ label: 'Legendary' }] : [];
     return {
       ...base,
       pageKind: 'artifact',
@@ -369,7 +369,8 @@ function eventNodePage(state: GameState, id: string): GenericSubjectPageVM {
     pageKind: 'record',
     subjectKey: `event-node:${id}`,
     layoutKind: 'event',
-    header: header({ name: node.name, kindLabel: INSPECTOR_WORDS.recordKind, visual: { kind: 'record', id, portraitGate: 'shown' }, opensWide: true }),
+    // An encounter step's node name carries "(step N)"; the record is named by the template it stores.
+    header: header({ name: (node.properties.templateName as string | undefined) ?? node.name, kindLabel: INSPECTOR_WORDS.recordKind, visual: { kind: 'record', id, portraitGate: 'shown' }, opensWide: true }),
     actOn: null,
     body: generateRecordPage({ state, eventNodeId: id }).sections,
     connections: buildConnections(state.graph, state, { cls: 'record', id }),
@@ -422,9 +423,10 @@ export interface SubjectPageArgs {
 export const subjectPageSelector: ViewSelector<SubjectPageArgs, SubjectPageVM> = {
   id: 'subjectPage',
   invalidation: 'world',
-  key: (args) => subjectKeyOf(args.subject),
+  key: (args) => (args?.subject ? subjectKeyOf(args.subject) : 'missing:'),
   fallback: (args) => missingPage(args?.subject ?? null),
   build(ctx, args) {
-    return buildSubjectPage(ctx.state, args.subject, ctx.runtime);
+    // Fail-soft: no subject is the missing page, never a throw.
+    return args?.subject ? buildSubjectPage(ctx.state, args.subject, ctx.runtime) : missingPage(null);
   },
 };

@@ -453,6 +453,26 @@ export interface DebugViewListing {
   invalidation: 'world' | 'structure';
 }
 
+/** One drawn page in the Inspector lab (THR-1876). */
+export interface DebugInspectorLabCell {
+  row: string;
+  kind: string;
+  size: 'docked' | 'wide' | 'full';
+  subjectKey: string;
+  sectionsShown: string[];
+  foldedGroups: string[];
+  hiddenForWidth: string[];
+  overflowX: boolean;
+  /** Raw ids or numerals found in the cell's text (counts in group headers and folds excepted). */
+  leaks: string[];
+}
+
+/** Result of `getInspectorLab()` (THR-1876). */
+export interface DebugInspectorLabResult {
+  tier: '1080' | '1440';
+  cells: DebugInspectorLabCell[];
+}
+
 /** Result of `getViewCacheStats()`. THR-1822 */
 export interface DebugViewCacheStats {
   entries: number;
@@ -2612,6 +2632,17 @@ export interface DebugBridge {
     list: () => DebugViewListing[];
     stats: () => DebugViewCacheStats;
   }) => void;
+  /**
+   * THR-1876 — the Inspector lab's reading (`?view=inspector-lab` only; null elsewhere): the
+   * tier it draws, and per cell the page kind, size, subject key, the sections shown, the
+   * Connections groups folded to fit, what the size hides that a wider one shows, and
+   * whether anything overflows sideways or leaks a raw id or numeral.
+   *
+   *   await window.__DEBUG.getInspectorLab()
+   */
+  getInspectorLab: () => Promise<DebugInspectorLabResult | null>;
+  /** @internal The Inspector lab registers its reading here (THR-1876). */
+  _registerInspectorLabBridge: (bridge: (() => DebugInspectorLabResult) | null) => void;
   /** THR-1748 — how many top-level places stand in each Dominion band. Null before a game is running. */
   getDominionCensus: () => Promise<Record<'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign', number> | null>;
   /** THR-1748 — the god's power factor, its baseline and the attunement marks crossed per bought sphere. Null before a game is running. */

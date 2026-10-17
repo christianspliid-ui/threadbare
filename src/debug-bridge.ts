@@ -182,6 +182,8 @@ if (import.meta.env.DEV) {
   // THR-1902 — the map chrome (fog today), registered by HexMapV2.
   let _mapChrome: { get: () => import('./debug-bridge.d').DebugMapChromeResult } | null = null;
   // THR-1822 — the view-model seam, registered by GameView.
+  // THR-1876 — the Inspector lab registers its reading here (`?view=inspector-lab` only).
+  let _inspectorLabBridge: (() => import('./debug-bridge.d').DebugInspectorLabResult) | null = null;
   let _viewBridge: {
     get: (id: string, args?: unknown) => unknown;
     list: () => import('./debug-bridge.d').DebugViewListing[];
@@ -1151,6 +1153,8 @@ if (import.meta.env.DEV) {
     getViewCacheStats: async () => _viewBridge?.stats() ?? null,
     /** @internal GameView registers the view-model seam here */
     _registerViewBridge: (bridge) => { _viewBridge = bridge; },
+    getInspectorLab: async () => _inspectorLabBridge?.() ?? null,
+    _registerInspectorLabBridge: (bridge) => { _inspectorLabBridge = bridge; },
     /** How many top-level places stand in each band. */
     getDominionCensus: async () => {
       const [{ dominionOf }, { getLocationNodes }] = await Promise.all([
