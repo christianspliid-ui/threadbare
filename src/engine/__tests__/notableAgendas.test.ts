@@ -473,6 +473,26 @@ describe('notableAgendas (THR-630 seam A)', () => {
     expect(objective.targetNodeId).toBe('their_town');
   });
 
+  it('campaign muster raises no army against a town its faction keeps a hall in (THR-1922)', async () => {
+    const graph = claimWorld();
+    graph.getNode('f_mine')!.properties.domainCapabilities = { gold: 20 };
+    graph.getNode('leader_mine')!.properties.domainCapabilities = { iron: 20 };
+    graph.getNode('f_mine')!.properties.wealth = 100;
+    // A hall appeared at the target between launch and muster.
+    graph.getNode('f_mine')!.properties.homeLocationId = 'their_town';
+    const { CAMPAIGN_FAMILY } = await import('../../data/notable-agendas/campaign');
+    const plan = buildNotableAgenda(
+      'leader_mine', 'Leader', 'The Home Court', CAMPAIGN_FAMILY, 0, 'their_town', 'Farwatch', () => 0,
+    );
+    plan.composition.activatedPhaseIds = ['banners-called', 'muster'];
+    phaseNotableAgendas(makeState(3, graph, {
+      activeCompositions: [plan.composition],
+      worldFlags: { ...plan.worldFlagUpdates },
+    }));
+    expect(graph.getNodesByType('actor').filter((n) => n.properties.armyState)).toHaveLength(0);
+    expect(graph.getNode('f_mine')!.properties.wealth).toBe(100);
+  });
+
   it('campaign muster stays narration-only when the gold gate fails (fail-soft)', async () => {
     const graph = claimWorld(); // no gold capability anywhere → gate fails
     const { CAMPAIGN_FAMILY } = await import('../../data/notable-agendas/campaign');

@@ -616,6 +616,11 @@ function raiseCampaignArmy(
     graph.getOutgoingEdges(notableId, 'leads')[0]?.target ??
     getFactionMembershipEdges(graph, notableId)[0]?.target;
   if (!factionId) return;
+  // THR-1922 — no paid host against a town this faction holds or keeps a hall in: siege
+  // start would refuse it (`mayBesiege`) and the army would sit on upkeep. Re-checked at
+  // muster because the raising faction and the town's state can differ from launch.
+  if (graph.getIncomingEdges(targetId, 'controls').some(e => e.source === factionId)) return;
+  if (hallBarsAttack(graph, factionId, targetId)) return;
 
   // Campaign-specific eligibility: the shipped isEligibleForArmySpawn requires
   // the faction's CURRENT ambition to be military, but the campaign itself is
