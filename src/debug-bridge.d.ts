@@ -863,6 +863,38 @@ export interface DebugBridge {
   }>>;
 
   /**
+   * THR-1935: every prayer opened this run, in id order — the town, the status
+   * (`open` / `answered` / `unanswered` / `recovered` / `unrecovered`), the window and
+   * the tick it was answered. Always `await` it.
+   */
+  getPrayers: () => Promise<Array<{
+    eventId: string;
+    townId: string;
+    status: 'open' | 'answered' | 'unanswered' | 'recovered' | 'unrecovered';
+    openedTick: number;
+    closesTick: number;
+    answeredTick: number | null;
+  }>>;
+
+  /**
+   * THR-1935: the god's faithful towns — faith (sanctity 0–1), whether it reads as
+   * wavering, and the sphere it feeds. Always `await` it.
+   */
+  getFaithful: () => Promise<Array<{
+    townId: string;
+    sanctity: number;
+    wavering: boolean;
+    sphere: import('./types/index').SphereName | null;
+  }>>;
+
+  /**
+   * THR-1935: review lever — opens a prayer at a town (id or partial name) for the
+   * player's god, skipping the hunger gate; the cooldown still starts. Resolves false
+   * when the town already has an active prayer or nothing matches. Always `await` it.
+   */
+  forcePrayer: (townIdOrName: string) => Promise<boolean>;
+
+  /**
    * THR-1934 — a settlement's unrest pressure, by id, id prefix or partial name.
    * `unrest` is the number, `target` what it drifts toward (4 a day), `inputs` the six
    * terms the target sums (hunger, poverty, siege, sickness, deathSite, contentment),

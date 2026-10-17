@@ -82,6 +82,14 @@ const INVENTORY: Record<string, { disposition: Disposition; why: string }> = {
     disposition: 'reads-only',
     why: 'names cultures; the literal appears in a read of who holds a settlement',
   },
+  'essenceSourceWrite.ts': {
+    disposition: 'not-faction-sourced',
+    why: 'THR-1935: the consecrate_source body, extracted — writes controls from the given actor (the god via the op or the prayer phase), never a faction',
+  },
+  'prayers.ts': {
+    disposition: 'not-faction-sourced',
+    why: "THR-1935: a faithful town's controls edge runs from the player's god (written through essenceSourceWrite); its lapse removes that same god-sourced edge",
+  },
   'graphOpExecutor.ts': {
     disposition: 'not-faction-sourced',
     why: 'consecrate_source / claim_source write controls from ctx.actorId — an ascendant or mortal; the generic remove_edge op needs an explicit edgeId and no authored content supplies a faction controls edge',

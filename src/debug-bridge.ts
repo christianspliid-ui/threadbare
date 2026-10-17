@@ -4066,6 +4066,45 @@ if (import.meta.env.DEV) {
       return describeUnrest(graph, locationIdOrName);
     },
 
+    // THR-1935: prayers — every prayer opened this run, with its status and window.
+    getPrayers: async () => {
+      const graph = _graphProvider?.();
+      if (!graph) return [];
+      const { listPrayers } = await import('./engine/prayers');
+      return listPrayers(graph);
+    },
+
+    // THR-1935: the god's faithful towns — faith (sanctity), wavering, the sphere it feeds.
+    getFaithful: async () => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph || !state) return [];
+      const { listFaithful } = await import('./engine/prayers');
+      return listFaithful(graph, state.ascendantId);
+    },
+
+    // THR-1935: review lever — open a prayer at a town for the player's god, skipping the
+    // hunger gate (like ?spawn=). Accepts an id or a partial name. False when the town
+    // already has an active prayer or nothing matches.
+    forcePrayer: async (townIdOrName: string) => {
+      const graph = _graphProvider?.();
+      const state = _gameStateProvider?.();
+      if (!graph || !state) return false;
+      const [{ openPrayer }, { getLocationNodes }, { touchWorld }] = await Promise.all([
+        import('./engine/prayers'),
+        import('./engine/sublocationShape'),
+        import('./engine/simulationRuntime'),
+      ]);
+      const q = townIdOrName.toLowerCase();
+      const town = graph.getNode(townIdOrName)
+        ?? getLocationNodes(graph).find(n => n.id.toLowerCase() === q || n.name.toLowerCase().includes(q));
+      if (!town) return false;
+      const id = openPrayer({ graph, ascendantId: state.ascendantId, tick: state.tick }, town.id, [], true);
+      const runtime = _runtimeProvider?.();
+      if (id && runtime) touchWorld(runtime);
+      return !!id;
+    },
+
     // THR-1528: the records battles leave on the ground they were fought over.
     getBattleRecords: async (locationIdOrName?: string) => {
       const graph = _graphProvider?.();

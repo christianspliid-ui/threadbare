@@ -62,7 +62,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     activityKeywords: ['rival'],
     domains: ['rival'],
     phaseMatch: /\brival\b/i,
-    note: 'Generated rivals from the World-Soul (NOT a fixed pantheon). 4-phase schemes = THR-66; economic family = THR-620.',
+    note: 'Generated rivals from the World-Soul (NOT a fixed pantheon). 4-phase schemes = THR-66; economic family = THR-620. A town whose prayer went unanswered is the first a rival strikes; starve-the-faithful drains its faith (THR-1935).',
   },
   {
     name: 'Doom Clock & Journey',
@@ -82,11 +82,11 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
   },
   {
     name: 'Essence & Divine Economy',
-    aliases: ['essence', 'divine economy', 'income', 'wellspring', 'essence source'],
+    aliases: ['essence', 'divine economy', 'income', 'wellspring', 'essence source', 'prayer', 'faithful'],
     activityKeywords: ['essence', 'divine'],
-    domains: ['essence', 'essencesource', 'control', 'player'],
-    phaseMatch: /\b(essence|control effects|divine)\b/i,
-    note: 'Essence pool + sources (THR-611). Typed sources yield own-sphere income.',
+    domains: ['essence', 'essencesource', 'control', 'player', 'prayers'],
+    phaseMatch: /\b(essence|control effects|divine|prayers)\b/i,
+    note: 'Essence pool + sources (THR-611). Typed sources yield own-sphere income. Faithful towns from answered prayers ride their staples (THR-1935, prayers.ts).',
   },
   {
     name: 'Encounters & Dilemmas',

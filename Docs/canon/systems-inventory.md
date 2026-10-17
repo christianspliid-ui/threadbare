@@ -38,7 +38,7 @@ names like `TB-073`) a premise might use.
 | **Rival Gods & Schemes** | 🟢 ACTIVE | rival, rivals, scheme, pantheon, antagonist | `rival` | `2a.605`, `3` |
 | **Doom Clock & Journey** | 🟢 ACTIVE | doom, journey, apocalypse, end-times, clock | `doom`, `journey` | `1.5`, `1.8`, `8`, `doom` |
 | **Mandate** | 🟢 ACTIVE | mandate, divine mandate, objective | `mandate` | `mandate` |
-| **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source | `essence`, `essencesource`, `control`, `player` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715` |
+| **Essence & Divine Economy** | 🟢 ACTIVE | essence, divine economy, income, wellspring, essence source, prayer, faithful | `essence`, `essencesource`, `control`, `player`, `prayers` | `2a.9`, `5.9`, `6`, `6.1`, `6.6`, `6.715`, `6.6386` |
 | **Encounters & Dilemmas** | 🟢 ACTIVE | encounter, dilemma, aftermath, chapter, reaction, content object, content tag, content query, tag vocabulary, appointment, rendezvous, due tick | `encounter`, `encounters`, `dilemma`, `fights` | `2`, `2a.5`, `2a.7`, `2a.6`, `2a.62`, `2a.8`, `2b`, `2b.2`, `2.361`, `2.5`, `2.55` |
 | **Culture** | 🟢 ACTIVE | culture, cultural, mores, tradition, phonetics | `culture`, `cultural` | — |
 | **Personality & Emergent Traits** | 🟢 ACTIVE | personality, trait, traits, becoming, axiological, temperament | `personality`, `core`, `trait`, `traits`, `artifact` | `6.626` |
@@ -64,10 +64,10 @@ names like `TB-073`) a premise might use.
 
 - **War, Armies & Battles** — Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614; war aims (THR-1933 S1): enemies only (`warAims/enemy.ts`), defence first, value targeting by the purse town price within supply reach, a daily re-aim (`warAims.ts`). **Do not design a green-field war system** — extend or tune this one.
 - **Factions & Succession** — Faction actions, ambitions, reputation, rank changes, succession, schism resolution.
-- **Rival Gods & Schemes** — Generated rivals from the World-Soul (NOT a fixed pantheon). 4-phase schemes = THR-66; economic family = THR-620.
+- **Rival Gods & Schemes** — Generated rivals from the World-Soul (NOT a fixed pantheon). 4-phase schemes = THR-66; economic family = THR-620. A town whose prayer went unanswered is the first a rival strikes; starve-the-faithful drains its faith (THR-1935).
 - **Doom Clock & Journey** — The run's master clock; journey beats fire at thresholds.
 - **Mandate** — The god's standing objective and its checkpoints.
-- **Essence & Divine Economy** — Essence pool + sources (THR-611). Typed sources yield own-sphere income.
+- **Essence & Divine Economy** — Essence pool + sources (THR-611). Typed sources yield own-sphere income. Faithful towns from answered prayers ride their staples (THR-1935, prayers.ts).
 - **Encounters & Dilemmas** — The core narrative engine — scoring, eligibility, resolution, aftermath reactions, chapter archive.
 - **Culture** — Culture generation, gravity, tension, mores, phonetic naming.
 - **Personality & Emergent Traits** — Layered: worldgen baseline → core → emergent traits (THR-527/542/561).
@@ -190,6 +190,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `6.637` | Unrest — pressure toward a daily target; Restless leave, Lawless riot | `THR-1934` | orchestrator |
 | `6.638` | Magical Saturation | — | orchestrator |
 | `6.6385` | Location Traits | `THR-790` | orchestrator |
+| `6.6386` | Prayers | `THR-1935` | orchestrator |
 | `6.639` | Sphere Pressure Resolution | — | orchestrator |
 | `6.6391` | Dominion, after pressure | `THR-1748` | orchestrator |
 | `6.6396` | Quintessence Tick | — | orchestrator |
@@ -313,7 +314,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `encounters` (17) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stakesLine.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1394`, `THR-1432`, `THR-1727`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963`, `THR-972` |
 | `engagement` (1) | `engagementWindow.ts` | `THR-1582` |
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
-| `essence` (6) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-611`, `THR-615`, `THR-618` |
+| `essence` (7) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSourceWrite.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-1935`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
 | `faction` (16) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
 | `factionpurse` (4) | `factionPurse/income.ts`, `factionPurse/means.ts`, `factionPurse/purseSentences.ts`, `factionPurse/upkeep.ts` | `THR-1867`, `THR-1931`, `THR-1932` |
@@ -381,6 +382,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `planted` (1) | `plantedCompulsion.ts` | `THR-886` |
 | `player` (5) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts`, `playerStepHold.ts` | `Phase 1`, `THR-1581`, `THR-1647`, `THR-1730`, `THR-727`, `THR-739`, `THR-998` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
+| `prayers` (1) | `prayers.ts` | `THR-1935` |
 | `premonition` (3) | `premonitionActions.ts`, `premonitionCompulsion.ts`, `premonitionSteer.ts` | `THR-1781`, `THR-1783` |
 | `profile` (1) | `profileGenerator.ts` | `THR-872` |
 | `prose` (5) | `proseComposer.ts`, `proseEnrichment.ts`, `proseGenerator.ts`, `proseResolvers.ts`, `proseSelection.ts` | `Phase 5`, `TB-035`, `THR-1522`, `THR-1545`, `THR-1656`, `THR-1810`, `THR-456` |
@@ -464,4 +466,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 110 tick phases · 225 engine domains · 714 modules._
+_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 226 engine domains · 716 modules._
