@@ -52,15 +52,19 @@ export interface WarAimPick {
 }
 
 /**
- * Locations an army can march to: one single-source path run from where it stands
- * (the place tier), plus that place itself. Null when the army stands nowhere pathable.
+ * Locations an army can march to: one single-source path run from exactly where it
+ * stands — the same start `phaseArmyMovement` paths from, so an army in a sublocation
+ * (a warhost raised in a hall) reaches nothing and holds rather than taking a target it
+ * can never march to — plus its place-tier Location. Null when it stands nowhere pathable.
  */
 export function marchableFrom(ctx: WarAimContext, armyId: string): ReadonlySet<string> | null {
-  const start = placeTierLocationOf(ctx.graph, armyId);
+  const start = ctx.graph.getOutgoingEdges(armyId, 'located_at')[0]?.target;
   if (!start || ctx.graph.getNode(start)?.type !== 'location') return null;
   try {
     const out = new Set<string>(findAllShortestPaths(ctx.graph, armyId, start).keys());
     out.add(start);
+    const place = placeTierLocationOf(ctx.graph, armyId);
+    if (place) out.add(place);
     return out;
   } catch {
     return null; // fail-soft: no reach rather than a thrown tick

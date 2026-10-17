@@ -142,6 +142,32 @@ describe('a defending army is the defender (review round 1)', () => {
   });
 });
 
+describe('review round 2', () => {
+  it('a defender met on the road to the place it holds is not the defender there', () => {
+    const graph = new WorldGraph();
+    addFaction(graph, 'a');
+    addFaction(graph, 'b');
+    relate(graph, 'a', 'b', { basis: 'war' });
+    addTown(graph, 'road', 0, null);
+    addArmy(graph, 'army_old', 'b', 'road');
+    addArmy(graph, 'army_new', 'a', 'road');
+    armyState(graph, 'army_new').raisedTick = 500;
+    armyState(graph, 'army_new').objective = { type: 'defend', targetNodeId: 'elsewhere', estimatedAttrition: 0, reason: 'defence' };
+    phaseBattleDetection(makeState(graph, 1));
+    const bs = graph.getNodesByType('actor').find(n => n.properties.battleState != null)?.properties.battleState as { defenderArmyId?: string };
+    expect(bs.defenderArmyId).toBe('army_old');
+  });
+
+  it('an army standing in a sublocation reaches nothing and holds', () => {
+    const graph = warWorld();
+    graph.addNode({ id: 't0_hall', type: 'location', name: 'Hall', properties: { parentLocationId: 't0', locationSubtype: 'guild-hall' } });
+    addArmy(graph, 'army_a', 'a', 't0_hall');
+    aimNewArmy(makeState(graph), 'army_a', noProjection);
+    expect(armyState(graph, 'army_a').objective).toBeNull();
+    expect(armyState(graph, 'army_a').holdReason).toBe('no_enemy_in_reach');
+  });
+});
+
 describe('the siege holder must be besiegeable (review round 1)', () => {
   it('a town whose first controller is no enemy is no target, though its tax holder is', () => {
     const graph = warWorld();

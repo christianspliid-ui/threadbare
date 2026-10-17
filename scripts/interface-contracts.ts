@@ -6725,7 +6725,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ECONOMY,
     consumerSystem: 'War, Armies & Battles',
     intent:
-      'An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse\'s own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / 6) over enemy towns a supply line (resolveSupplyLine) reaches. With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced.',
+      'An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse\'s own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / 6) over enemy towns the army has a march path to within WAR_AIM_MAX_REACH_HEXES (a supply line from the town is also required only while WAR_AIM_REQUIRE_SUPPLY_REACH is on — off since the plan's kill criterion fired). With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced.',
     ulTerms: ['Faction', 'Settlement'],
     mechanism: {
       kind: 'module-export',
@@ -6736,7 +6736,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/warAims/townValue.ts', 'src/engine/warAims/score.ts', 'src/engine/warAims/context.ts'],
     verifiedLive: {
       date: '2026-10-17',
-      evidence: 'THR-1933. src/engine/warAims/__tests__/warAims.test.ts (16): townValueFor ranks a prosperous town above a poor one; pickWarAim marches on the richer farther enemy town over the nearer poor one, never a non-enemy holder, leaves out a town no supply line reaches, and carries feeds_staple when the town bears a staple scarce in the attacker\'s towns.',
+      evidence: 'THR-1933. src/engine/warAims/__tests__/warAims.test.ts (16): townValueFor ranks a prosperous town above a poor one; pickWarAim marches on the richer farther enemy town over the nearer poor one, never a non-enemy holder, leaves out a town no march path reaches, and carries feeds_staple when the town bears a staple scarce in the attacker\'s towns. npm run measure:war-aims, seeds 42/99/7, 600 ticks: 12 picks, 0 on a non-enemy; 19 sieges, 0 on a non-enemy or own-hall town.',
     },
   },
   {
@@ -6751,7 +6751,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/factionAmbitions.ts'],
     verifiedLive: {
       date: '2026-10-17',
-      evidence: 'THR-1933. warAims.test.ts: aimNewArmy writes the conquer target onto a territorial_expansion ambition the army pursues; grievanceFactionOf picks the worst-sentiment enemy or an explicit grievanceAgainstFactionId.',
+      evidence: 'THR-1933. warAims.test.ts: aimNewArmy writes the conquer target onto a territorial_expansion ambition the army pursues; grievanceFactionOf picks the enemy with the worst relates_to sentiment.',
     },
   },
   {

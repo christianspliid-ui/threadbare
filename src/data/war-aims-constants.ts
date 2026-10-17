@@ -28,6 +28,7 @@ export const WAR_AIMS_ENABLED = true;
 export const WAR_AIM_DEFENCE_RADIUS_HEXES = 8;
 
 /** Distance discount: a town this many hexes away scores half its value. */
+// TODO(THR-1970): measured 1 of 6 contested picks not the nearest (plan wants ≥ half) — tune after S2.
 export const WAR_AIM_HALF_VALUE_HEXES = 6;
 
 /** Hard reach backstop on top of the supply walk, in hexes from the army. */
