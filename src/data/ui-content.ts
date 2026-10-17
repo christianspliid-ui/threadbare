@@ -1158,7 +1158,8 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // THR-1932 — the crown. Words only; never a loyalty figure or a tax amount.
   'ui.crown.title': {
     label: 'Crown',
-    desc: 'A realm that two or more factions owe fealty to. It takes a share of what they earn, and must keep them safe and paid or lose them.',
+    // THR-1933 — the Law 45 guard lifts: defence first is on main, so the promise is backed.
+    desc: 'A realm that two or more factions owe fealty to. It takes a share of what they earn, and must keep them safe and paid or lose them: its armies ride to their defence.',
   },
   'ui.crown.standing': {
     label: 'Standing with its liege',

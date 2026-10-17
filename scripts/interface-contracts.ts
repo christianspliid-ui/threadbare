@@ -6686,7 +6686,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: FACTIONS,
     consumerSystem: 'War, Armies & Battles',
     intent:
-      'What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims\' defence-first rule (THR-1933) reads this one helper; until that lands, the Oaths debug table and the faction sheet read the oaths it is built from. No surface says a Crown defends its vassals before the defence rule ships (Law 45).',
+      'What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims\' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper: an enemy army marching on any of these within 8 hexes of a liege\'s army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45).',
     ulTerms: ['Realm'],
     mechanism: {
       kind: 'module-export',
@@ -6694,7 +6694,7 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/crown/crownView.ts',
     },
     writeSites: ['src/engine/crown.ts'],
-    readSites: ['src/engine/crown/crownView.ts', 'src/components/Game/debug/EconomyDebugTab.tsx', 'src/debug-bridge.ts'],
+    readSites: ['src/engine/crown/crownView.ts', 'src/components/Game/debug/EconomyDebugTab.tsx', 'src/debug-bridge.ts', 'src/engine/warAims/defence.ts'],
     verifiedLive: {
       date: '2026-10-16',
       evidence: 'THR-1932. crown.test.ts: with a guild and a realm sworn to faction_0, protectedHoldingsOf(faction_0) is its own town plus the sworn realm\'s town.',
@@ -6705,19 +6705,53 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: FACTIONS,
     consumerSystem: 'War, Armies & Battles',
     intent:
-      'An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. Field-battle start still treats any two foreign armies as hostile until war aims S1 (THR-1933).',
+      'An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. THR-1933 (war aims S1) moves the field-battle start (areHostile) onto isEnemyFaction too, and enemyArm adds a monster arm and an alliance override of the sentiment arm, both behind WAR_AIMS_ENABLED.',
     ulTerms: ['Faction'],
     mechanism: {
       kind: 'module-export',
-      symbols: ['isEnemyFaction', 'factionKeepsHallAt', 'mayBesiege'],
+      symbols: ['isEnemyFaction', 'enemyArm', 'factionKeepsHallAt', 'mayBesiege'],
       module: 'src/engine/warAims/enemy.ts',
     },
     writeSites: ['src/engine/warAims/enemy.ts'],
-    readSites: ['src/engine/armySpawning.ts', 'src/engine/battleResolution.ts', 'src/engine/notableAgendas.ts'],
+    readSites: ['src/engine/armySpawning.ts', 'src/engine/battleResolution.ts', 'src/engine/notableAgendas.ts', 'src/engine/warAims/score.ts', 'src/engine/warAims/defence.ts'],
     verifiedLive: {
       date: '2026-10-17',
       evidence:
         'THR-1922. src/engine/warAims/__tests__/enemy.test.ts (13): the predicate on each edge arm; selectArmyObjective skips a no-quarrel holder and the own-hall town and marches on the rival; no enemy town holds at muster; siege start refuses the own-hall town and a no-quarrel holder, besieges an enemy and an objective town. Seed 42 medium, 600 ticks: 30 siege-ticks, 0 on an own-hall town, 0 on a non-enemy holder (baseline 397, of which 200 own-hall).',
+    },
+  },
+  {
+    id: 'faction-purse-prices-war-aims',
+    producerSystem: ECONOMY,
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      'An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse\'s own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / 6) over enemy towns a supply line (resolveSupplyLine) reaches. With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced.',
+    ulTerms: ['Faction', 'Settlement'],
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['townValueFor', 'feedsLackingStaple', 'pickWarAim'],
+      module: 'src/engine/warAims/townValue.ts',
+    },
+    writeSites: ['src/engine/factionPurse.ts'],
+    readSites: ['src/engine/warAims/townValue.ts', 'src/engine/warAims/score.ts', 'src/engine/warAims/context.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1933. src/engine/warAims/__tests__/warAims.test.ts (16): townValueFor ranks a prosperous town above a poor one; pickWarAim marches on the richer farther enemy town over the nearer poor one, never a non-enemy holder, leaves out a town no supply line reaches, and carries feeds_staple when the town bears a staple scarce in the attacker\'s towns.',
+    },
+  },
+  {
+    id: 'war-aim-targets-faction-ambitions',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: FACTIONS,
+    intent:
+      'A territorial_expansion or revenge ambition takes its army\'s conquer target as its targetNodeId (THR-1933 S1), written at the raise (aimNewArmy) and on every daily re-aim that changes it (reaimArmies). The existing abandon check in phaseFactionAmbitions reads it. A revenge army scores the towns of the faction it holds its grievance against ×WAR_AIM_REVENGE_FOCUS. Campaign ambitions (compositionId) keep their declared target.',
+    ulTerms: ['Faction'],
+    mechanism: { kind: 'node-prop', symbols: ['targetNodeId'] },
+    writeSites: ['src/engine/warAims.ts'],
+    readSites: ['src/engine/factionAmbitions.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1933. warAims.test.ts: aimNewArmy writes the conquer target onto a territorial_expansion ambition the army pursues; grievanceFactionOf picks the worst-sentiment enemy or an explicit grievanceAgainstFactionId.',
     },
   },
   {
