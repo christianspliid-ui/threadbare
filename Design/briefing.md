@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 00:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 01:59 local (23:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,7 +40,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** [Prayers and the faithful](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) merged ([#2463](https://github.com/christianspliid-ui/threadbare/pull/2463)) and is live: hungry towns on your ground now pray, one prayer a season. The builder picked up [the Inspector plan](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and) at 00:31 and is working on it now. Not your call.
+**Backed up: 21 ready, one in progress.** [Prayers and the faithful](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) merged ([#2463](https://github.com/christianspliid-ui/threadbare/pull/2463)) and is live: hungry towns on your ground now pray, one prayer a season. The builder finished the first slice of [the Inspector](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and) (one docked panel for every place and person) and it is waiting on its checks in [#2468](https://github.com/christianspliid-ui/threadbare/pull/2468); it merges on its own when they pass. Not your call.
 
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
 - High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject). It removes steps, so the freeze allows it.
@@ -48,7 +48,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **Engine speed has drifted past the alarm, so it is now the builder's job, not yours:** tick cost 159 ms/tick steady, 31% above the 7-day median (121, 136 rows since b9f9d67b); top phase agent_decision, 615 agents. Name the merges between b9f9d67b and 5dcfa32d: `git log --oneline --merges b9f9d67b..5dcfa32d`. It read 22% over at 23:57 and 11% the hour before, so today's merges (prayers, mortal wealth, unrest, war aims) are the likely cause.
-- Everything else is healthy. The live site serves the latest main (prayers). Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time.
+- All green. The live site serves the latest main (prayers). Main's checks and the scheduled background jobs pass. One PR ([#2468](https://github.com/christianspliid-ui/threadbare/pull/2468)) is waiting on its checks and will merge on green. All 12 scheduled lanes are on time.
+- Engine speed is back to normal: 116 ms/tick, 4% under the 7-day median. Last hour's 31% reading was one slow measurement, not a lasting slowdown.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run (00:40) reports a healthy shared install and 547 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run (01:40) reports 548 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
