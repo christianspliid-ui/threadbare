@@ -179,10 +179,23 @@ describe('siege start — THR-1922 enemy guard', () => {
     expect(sieges(graph)).toEqual(['other']);
   });
 
-  it('besieges the town its own objective names (an agenda campaign)', () => {
+  it('besieges the town a notable campaign declared, and not a plain objective town', () => {
     addArmy(graph, 'army', 'guard', 'other', 'other');
+    phaseBattleDetection(makeState(graph));
+    expect(sieges(graph)).toEqual([]);
+
+    graph.addNode({ id: 'amb', type: 'ambition', name: 'campaign', properties: { compositionId: 'c1', targetNodeId: 'other' } });
+    graph.addEdge({ id: 'e_pursues', source: 'army', target: 'amb', type: 'pursues', properties: {} });
     phaseBattleDetection(makeState(graph));
     expect(sieges(graph)).toEqual(['other']);
     expect(mayBesiege(graph, 'guard', 'realm', 'other')).toBe(false);
+  });
+
+  it('may besiege its own hall town to win it back from the enemy who took it', () => {
+    relate(graph, 'guard', 'realm', { isRival: true });
+    graph.updateEdge('e_ctl_realm_home', { properties: { via: 'conquest', takenFrom: 'guard' } });
+    addArmy(graph, 'army', 'guard', 'home');
+    phaseBattleDetection(makeState(graph));
+    expect(sieges(graph)).toEqual(['home']);
   });
 });

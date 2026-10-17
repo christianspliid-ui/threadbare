@@ -61,18 +61,47 @@ export function factionKeepsHallAt(
 }
 
 /**
+ * True when `factionId` lost `locationId` by conquest to its current holder — the
+ * `controls` edge carries `takenFrom` (stamped by the battle aftermath while the crown
+ * is on). A faction may march on its own hall town to win it back.
+ */
+export function wasTakenFrom(graph: WorldGraph, factionId: string, locationId: string): boolean {
+  return graph.getIncomingEdges(locationId, 'controls').some(e => e.properties.takenFrom === factionId);
+}
+
+/** The own-hall veto: a hall or home town is off limits unless it was taken from this faction. */
+export function hallBarsAttack(graph: WorldGraph, factionId: string, locationId: string): boolean {
+  return factionKeepsHallAt(graph, factionId, locationId) && !wasTakenFrom(graph, factionId, locationId);
+}
+
+/**
+ * The town a notable-agenda campaign army was raised to take, or undefined. Such an army
+ * pursues a campaign ambition (`compositionId` set) whose `targetNodeId` is the declared
+ * object; an ordinary army's objective is not a declaration and earns no exception.
+ */
+export function campaignTargetOf(graph: WorldGraph, armyId: string): string | undefined {
+  for (const e of graph.getOutgoingEdges(armyId, 'pursues')) {
+    const amb = graph.getNode(e.target);
+    if (amb?.properties.compositionId && typeof amb.properties.targetNodeId === 'string') {
+      return amb.properties.targetNodeId;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Whether an army of `armyFactionId` may besiege a settlement held by `holderId`.
- * Never its own hall or home town; otherwise only an enemy's town, or the town its
- * own objective names (an agenda campaign chose that target on purpose).
+ * Never its own hall or home town unless that town was taken from it; otherwise only an
+ * enemy's town, or the town a notable-agenda campaign declared (`campaignTargetId`).
  */
 export function mayBesiege(
   graph: WorldGraph,
   armyFactionId: string | undefined,
   holderId: string | undefined,
   settlementId: string,
-  objectiveTargetId?: string,
+  campaignTargetId?: string,
 ): boolean {
   if (!armyFactionId || !holderId || armyFactionId === holderId) return false;
-  if (factionKeepsHallAt(graph, armyFactionId, settlementId)) return false;
-  return isEnemyFaction(graph, armyFactionId, holderId) || objectiveTargetId === settlementId;
+  if (hallBarsAttack(graph, armyFactionId, settlementId)) return false;
+  return isEnemyFaction(graph, armyFactionId, holderId) || campaignTargetId === settlementId;
 }
