@@ -572,7 +572,13 @@ export function phaseBattleDetection(state: GameState): void {
             // Attacker = army that moved more recently (higher raisedTick or arrived later)
             const stateA = graph.getNode(armyA)?.properties.armyState as ArmyState | undefined;
             const stateB = graph.getNode(armyB)?.properties.armyState as ArmyState | undefined;
-            const attackerId = (stateA?.raisedTick ?? 0) >= (stateB?.raisedTick ?? 0) ? armyA : armyB;
+            // THR-1933 — an army holding this place on a `defend` objective is the
+            // defender whatever its age, so the prepared-defence bonus reaches it.
+            const holdsA = stateA?.objective?.type === 'defend';
+            const holdsB = stateB?.objective?.type === 'defend';
+            const attackerId = WAR_AIMS_ENABLED && holdsA !== holdsB
+              ? (holdsA ? armyB : armyA)
+              : (stateA?.raisedTick ?? 0) >= (stateB?.raisedTick ?? 0) ? armyA : armyB;
             const defenderId = attackerId === armyA ? armyB : armyA;
 
             createBattleNode(state, attackerId, defenderId, hexId);

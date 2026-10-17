@@ -3,8 +3,9 @@
  *
  * Candidates: every settlement whose tax holder is an enemy (`isEnemyFaction`), that the
  * army's faction may attack (`hallBarsAttack` — no own hall town unless it was taken
- * from it), that is not a ruin, and that is **in reach**: a supply line resolves from
- * it for the attacker (`resolveSupplyLine`) and it lies within `WAR_AIM_MAX_REACH_HEXES`.
+ * from it), that is not a ruin, and that is **in reach**: the army has a march path to
+ * it and it lies within `WAR_AIM_MAX_REACH_HEXES` (plus a supply line from it when
+ * `WAR_AIM_REQUIRE_SUPPLY_REACH` is on — off since the kill criterion fired).
  *
  *   score = value × (1 + bonuses) ÷ (1 + hexes / WAR_AIM_HALF_VALUE_HEXES)
  *
@@ -18,6 +19,7 @@ import type { ArmyObjective, WarAimCandidate, WarAimReason } from '../../types/a
 import type { HexCoord } from '../../types';
 import { hexDistance } from '../../lib/hexMath';
 import { resolveSupplyLine } from '../armySupply';
+import { findAllShortestPaths } from '../pathfinding';
 import { RUINED_SETTLEMENT_PROSPERITY_FLOOR } from '../../data/strategic-action-constants';
 import {
   WAR_AIM_HALF_VALUE_HEXES,
@@ -25,10 +27,11 @@ import {
   WAR_AIM_BONUS_FEEDS_STAPLE,
   WAR_AIM_REVENGE_FOCUS,
   WAR_AIM_TOP_CANDIDATES,
+  WAR_AIM_REQUIRE_SUPPLY_REACH,
 } from '../../data/war-aims-constants';
-import { isEnemyFaction, hallBarsAttack } from './enemy';
+import { isEnemyFaction, hallBarsAttack, mayBesiege } from './enemy';
 import { townValueFor, feedsLackingStaple, scarceStaplesOf, monopolyBonusFor } from './townValue';
-import type { WarAimContext } from './context';
+import { placeTierLocationOf, type WarAimContext } from './context';
 
 export interface ScoredTown extends WarAimCandidate {
   reason: Exclude<WarAimReason, 'defence'>;
@@ -48,6 +51,22 @@ export interface WarAimPick {
   nearestEnemyTownId: string | null;
 }
 
+/**
+ * Locations an army can march to: one single-source path run from where it stands
+ * (the place tier), plus that place itself. Null when the army stands nowhere pathable.
+ */
+export function marchableFrom(ctx: WarAimContext, armyId: string): ReadonlySet<string> | null {
+  const start = placeTierLocationOf(ctx.graph, armyId);
+  if (!start || ctx.graph.getNode(start)?.type !== 'location') return null;
+  try {
+    const out = new Set<string>(findAllShortestPaths(ctx.graph, armyId, start).keys());
+    out.add(start);
+    return out;
+  } catch {
+    return null; // fail-soft: no reach rather than a thrown tick
+  }
+}
+
 export interface PickOptions {
   /** Revenge: towns held by this faction score ×`WAR_AIM_REVENGE_FOCUS`. */
   grievanceFactionId?: string | null;
@@ -63,14 +82,31 @@ export function stillEnemyTarget(ctx: WarAimContext, factionId: string, townId: 
   if (!town || !town.holderId) return false;
   if (!isEnemyFaction(ctx.graph, factionId, town.holderId)) return false;
   if (hallBarsAttack(ctx.graph, factionId, townId)) return false;
+  // The siege start names the holder by the first `controls` edge, which can differ from
+  // the tax holder; a town the army could reach but never besiege is no target.
+  const siegeHolder = ctx.graph.getIncomingEdges(townId, 'controls')[0]?.source;
+  if (!mayBesiege(ctx.graph, factionId, siegeHolder, townId)) return false;
   return !isRuin(town.node.properties.prosperity);
 }
 
-/** Whether `townId` is in reach of an army at `armyHex` for `factionId`. */
-export function inReach(state: GameState, ctx: WarAimContext, factionId: string, armyHex: HexCoord, townId: string): boolean {
+/**
+ * Whether `townId` is in reach of an army at `armyHex` for `factionId`: within the hex
+ * backstop and, given `marchable` (`marchableFrom`), on a march path. Null `marchable`
+ * skips the path test (a caller with no army, e.g. a planner).
+ */
+export function inReach(
+  state: GameState,
+  ctx: WarAimContext,
+  factionId: string,
+  armyHex: HexCoord,
+  townId: string,
+  marchable: ReadonlySet<string> | null = null,
+): boolean {
   const town = ctx.towns.get(townId);
   if (!town) return false;
   if (hexDistance(armyHex, town.hex) > WAR_AIM_MAX_REACH_HEXES) return false;
+  if (marchable && !marchable.has(townId)) return false;
+  if (!WAR_AIM_REQUIRE_SUPPLY_REACH) return true;
   try {
     return resolveSupplyLine(state, townId, factionId).hostId !== null;
   } catch {
@@ -84,6 +120,7 @@ export function pickWarAim(
   factionId: string,
   armyHex: HexCoord,
   opts: PickOptions = {},
+  marchable: ReadonlySet<string> | null = null,
 ): WarAimPick {
   const scarce = scarceStaplesOf(ctx, factionId);
   const enemies = new Set<string>();
@@ -93,7 +130,7 @@ export function pickWarAim(
   for (const town of ctx.towns.values()) {
     if (!town.holderId || !stillEnemyTarget(ctx, factionId, town.node.id)) continue;
     enemies.add(town.holderId);
-    if (!inReach(state, ctx, factionId, armyHex, town.node.id)) { outOfReach++; continue; }
+    if (!inReach(state, ctx, factionId, armyHex, town.node.id, marchable)) { outOfReach++; continue; }
 
     const hexes = hexDistance(armyHex, town.hex);
     const value = townValueFor(ctx, town.node.id);

@@ -33,7 +33,7 @@ import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
 import { WAR_AIMS_ENABLED, WAR_AIM_REAIM_INTERVAL_TICKS } from '../data/war-aims-constants';
 import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
-import { pickWarAim, stillEnemyTarget, inReach, topCandidates, type WarAimPick } from './warAims/score';
+import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick } from './warAims/score';
 import { findThreatToDefend, type DefenceTarget } from './warAims/defence';
 import { campaignTargetOf, isEnemyFaction } from './warAims/enemy';
 
@@ -58,13 +58,11 @@ function ambitionOf(graph: WorldGraph, armyId: string) {
 }
 
 /**
- * The faction a revenge ambition holds its grievance against: an explicit
- * `grievanceAgainstFactionId` if a writer set one, else the enemy this faction has the
- * worst `relates_to` sentiment toward (ties by id). Null when there is none.
+ * The faction a revenge ambition holds its grievance against. A revenge ambition records
+ * no target faction today, so it is the enemy this faction has the worst `relates_to`
+ * sentiment toward (ties by id). Null when there is none.
  */
-export function grievanceFactionOf(graph: WorldGraph, factionId: string, ambitionProps?: Record<string, unknown>): string | null {
-  const explicit = ambitionProps?.grievanceAgainstFactionId;
-  if (typeof explicit === 'string' && graph.getNode(explicit)) return explicit;
+export function grievanceFactionOf(graph: WorldGraph, factionId: string): string | null {
   let worst: { id: string; s: number } | null = null;
   for (const e of graph.getOutgoingEdges(factionId, 'relates_to')) {
     const s = e.properties.sentiment;
@@ -147,9 +145,9 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
 function pickFor(state: GameState, ctx: WarAimContext, armyId: string, factionId: string, armyHex: HexCoord): WarAimPick {
   const amb = ambitionOf(state.graph, armyId);
   const grievanceFactionId = amb?.properties.ambitionType === 'revenge'
-    ? grievanceFactionOf(state.graph, factionId, amb.properties)
+    ? grievanceFactionOf(state.graph, factionId)
     : null;
-  return pickWarAim(state, ctx, factionId, armyHex, { grievanceFactionId });
+  return pickWarAim(state, ctx, factionId, armyHex, { grievanceFactionId }, marchableFrom(ctx, armyId));
 }
 
 function contextFor(state: GameState, getProjection?: RealmProjectionSource): WarAimContext {
@@ -262,7 +260,7 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
         const here = placeTierLocationOf(graph, army.id);
         if (!ctx.towns.has(current.targetNodeId)) why = 'target_taken';
         else if (!stillEnemyTarget(ctx, factionId, current.targetNodeId)) why = 'target_no_longer_enemy';
-        else if (!inReach(state, ctx, factionId, armyHex, current.targetNodeId)) why = 'target_out_of_reach';
+        else if (!inReach(state, ctx, factionId, armyHex, current.targetNodeId, marchableFrom(ctx, army.id))) why = 'target_out_of_reach';
         else if (here !== current.targetNodeId) continue; // still valid, still marching: keep it
         else why = 'target_taken';
       }

@@ -124,6 +124,38 @@ function warWorld(): WorldGraph {
   return graph;
 }
 
+describe('a defending army is the defender (review round 1)', () => {
+  it('the army holding on a defend objective defends even when raised later', () => {
+    const graph = new WorldGraph();
+    addFaction(graph, 'a');
+    addFaction(graph, 'b');
+    relate(graph, 'a', 'b', { basis: 'war' });
+    addTown(graph, 'field', 0, null);
+    addArmy(graph, 'army_old', 'b', 'field', 'field');
+    addArmy(graph, 'army_new', 'a', 'field');
+    armyState(graph, 'army_new').raisedTick = 500;
+    armyState(graph, 'army_new').objective = { type: 'defend', targetNodeId: 'field', estimatedAttrition: 0, reason: 'defence' };
+    phaseBattleDetection(makeState(graph, 1));
+    const battle = graph.getNodesByType('actor').find(n => n.properties.battleState != null);
+    const bs = battle?.properties.battleState as { attackerArmyId?: string; defenderArmyId?: string; attackerId?: string; defenderId?: string } | undefined;
+    expect(bs?.defenderArmyId ?? bs?.defenderId).toBe('army_new');
+  });
+});
+
+describe('the siege holder must be besiegeable (review round 1)', () => {
+  it('a town whose first controller is no enemy is no target, though its tax holder is', () => {
+    const graph = warWorld();
+    graph.addEdge({ id: 'e_ctl_c_t6', source: 'c', target: 't6', type: 'controls', properties: { influence: 0 } });
+    // first controller of t6 is b (enemy); swap: make c first by rebuilding t6's edges
+    graph.removeEdge('e_ctl_b_t6');
+    graph.addEdge({ id: 'e_ctl_b_t6b', source: 'b', target: 't6', type: 'controls', properties: { influence: 1 } });
+    const ctx = buildWarAimContext(graph, NO_REALMS);
+    expect(ctx.towns.get('t6')?.holderId).toBe('b');
+    const pick = pickWarAim(makeState(graph), ctx, 'a', { col: 0, row: 0 });
+    expect(pick.scored.map(s => s.townId)).not.toContain('t6');
+  });
+});
+
 describe('the richest enemy town in reach (§ Engine 3)', () => {
   it('prices a town with the purse\'s helpers: more prosperity, more value', () => {
     const graph = warWorld();
@@ -142,13 +174,13 @@ describe('the richest enemy town in reach (§ Engine 3)', () => {
     expect(pick.nearestEnemyTownId).toBe('t3');
   });
 
-  it('leaves out a town no supply line reaches, and holds when nothing is left', () => {
+  it('leaves out a town no march path reaches, and holds when nothing is left', () => {
     const graph = new WorldGraph();
     addFaction(graph, 'a');
     addFaction(graph, 'b');
     relate(graph, 'a', 'b', { isRival: true });
     addTown(graph, 't0', 0, 'a');
-    addTown(graph, 't3', 3, 'b'); // no road: out of reach
+    addTown(graph, 't3', 3, 'b'); // no road or adjacency: no march path
     addArmy(graph, 'army_a', 'a', 't0');
     const state = makeState(graph);
     aimNewArmy(state, 'army_a', noProjection);
@@ -248,7 +280,6 @@ describe('ambitions take their target (§ Engine 5)', () => {
     relate(graph, 'a', 'c', { sentiment: -0.9 });
     graph.updateEdge('e_rel_a_b', { properties: { sentiment: -0.4, isRival: true } });
     expect(grievanceFactionOf(graph, 'a')).toBe('c');
-    expect(grievanceFactionOf(graph, 'a', { grievanceAgainstFactionId: 'b' })).toBe('b');
   });
 });
 

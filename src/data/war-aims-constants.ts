@@ -50,3 +50,11 @@ export const WAR_AIM_TOP_CANDIDATES = 3;
 
 /** Purse-absent fallback town value: prosperity ÷ this (the sketch's tax proxy). */
 export const WAR_AIM_FALLBACK_VALUE_DIVISOR = 100;
+
+/**
+ * Whether "in reach" also needs a supply line from the target town (`resolveSupplyLine`).
+ * **Off — the plan's kill criterion fired** (THR-1933 § Kill criteria): on seed 42 medium at
+ * tick 160 the one fielded army had 7 enemy towns within 16 hexes and 0 in supply reach,
+ * so no army ever marched. Reach is a march path plus `WAR_AIM_MAX_REACH_HEXES`.
+ */
+export const WAR_AIM_REQUIRE_SUPPLY_REACH = false;

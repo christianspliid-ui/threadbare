@@ -6,7 +6,8 @@
  *     non-enemy's town or a town the besieger keeps a hall in (both must be 0);
  *   - not just the nearest: of picks scoring ≥ 2 candidates, the share that chose a town
  *     other than the nearest (≥ 50%);
- *   - in reach: picks whose town resolves no supply line for the attacker (must be 0);
+ *   - in reach: picks whose town resolves no supply line, counted only while
+ *     WAR_AIM_REQUIRE_SUPPLY_REACH is on (off since the kill criterion fired);
  *   - holds speak: armies with no objective (outside a battle) and no hold reason (must be 0);
  *   - ambitions aim: fielded territorial/revenge armies whose ambition target differs
  *     from their conquer target (must be 0);
@@ -24,12 +25,13 @@ import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
 import { isEnemyFaction, factionKeepsHallAt, wasTakenFrom, campaignTargetOf } from '../src/engine/warAims/enemy';
 import { buildWarAimContext, hexOfActor } from '../src/engine/warAims/context';
-import { pickWarAim } from '../src/engine/warAims/score';
+import { pickWarAim, marchableFrom } from '../src/engine/warAims/score';
 import { resolveSupplyLine } from '../src/engine/armySupply';
 import { buildRealmProjection } from '../src/engine/realmProjection';
 import type { ArmyState } from '../src/types/army';
 import type { TraceEntry } from '../src/types/trace';
 import { TICKS_PER_DAY } from '../src/data/attention-constants';
+import { WAR_AIM_REQUIRE_SUPPLY_REACH } from '../src/data/war-aims-constants';
 
 function argValue(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -51,6 +53,7 @@ interface SeedReport {
   holds: number;
   defends: number;
   reaims: Record<string, number>;
+  battlesSeen: number;
   siegesSeen: number;
   siegesNonEnemy: number;
   siegesOwnHall: number;
@@ -70,7 +73,7 @@ function runSeed(seed: number): SeedReport {
 
   const r: SeedReport = {
     seed, armiesSeen: 0, picks: 0, picksNonEnemy: 0, picksOutOfReach: 0, multiCandidatePicks: 0,
-    notNearest: 0, holds: 0, defends: 0, reaims: {}, siegesSeen: 0, siegesNonEnemy: 0, siegesOwnHall: 0,
+    notNearest: 0, holds: 0, defends: 0, reaims: {}, battlesSeen: 0, siegesSeen: 0, siegesNonEnemy: 0, siegesOwnHall: 0,
     silentHolds: 0, ambitionMismatch: 0, reaimPassMs: [],
   };
   const armies = new Set<string>();
@@ -89,7 +92,7 @@ function runSeed(seed: number): SeedReport {
           const any = g.getIncomingEdges(String(t.townId), 'controls').some(e => isEnemyFaction(g, String(t.factionId), e.source));
           if (!any) r.picksNonEnemy++;
         }
-        if (resolveSupplyLine(state, String(t.townId), String(t.factionId)).hostId === null) r.picksOutOfReach++;
+        if (WAR_AIM_REQUIRE_SUPPLY_REACH && resolveSupplyLine(state, String(t.townId), String(t.factionId)).hostId === null) r.picksOutOfReach++;
         if (Number(t.candidates) >= 2) {
           r.multiCandidatePicks++;
           if (t.townId !== t.nearestEnemyTownId) r.notNearest++;
@@ -102,7 +105,8 @@ function runSeed(seed: number): SeedReport {
 
     for (const n of g.getNodesByType('actor')) {
       const bs = n.properties.battleState as { battleType?: string; settlementId?: string } | undefined;
-      if (bs?.battleType !== 'siege' || !bs.settlementId || sieges.has(n.id)) continue;
+      if (!bs || sieges.has(n.id)) continue;
+      if (bs.battleType !== 'siege' || !bs.settlementId) { sieges.add(n.id); r.battlesSeen++; continue; }
       sieges.add(n.id);
       r.siegesSeen++;
       const holder = g.getIncomingEdges(bs.settlementId, 'controls')[0]?.source;
@@ -138,7 +142,7 @@ function runSeed(seed: number): SeedReport {
       for (const a of armyNodes) {
         const f = g.getOutgoingEdges(a.id, 'member_of')[0]?.target;
         const hex = hexOfActor(g, a.id);
-        if (f && hex) pickWarAim(state, ctx, f, hex);
+        if (f && hex) pickWarAim(state, ctx, f, hex, {}, marchableFrom(ctx, a.id));
       }
       r.reaimPassMs.push(performance.now() - t0);
     }
@@ -147,14 +151,14 @@ function runSeed(seed: number): SeedReport {
   return r;
 }
 
-const rows = SEEDS.map(runSeed);
-for (const r of rows) {
+for (const seed of SEEDS) {
+  const r = runSeed(seed);
   const ms = [...r.reaimPassMs].sort((a, b) => a - b);
   const median = ms.length ? ms[Math.floor(ms.length / 2)] : 0;
   const max = ms.length ? ms[ms.length - 1] : 0;
   console.log(`seed ${r.seed}: armies ${r.armiesSeen} · picks ${r.picks} (non-enemy ${r.picksNonEnemy}, out of reach ${r.picksOutOfReach})`
     + ` · not nearest ${r.notNearest}/${r.multiCandidatePicks} · holds ${r.holds} · defends ${r.defends}`
-    + ` · sieges ${r.siegesSeen} (non-enemy ${r.siegesNonEnemy}, own hall ${r.siegesOwnHall})`
+    + ` · field battles ${r.battlesSeen} · sieges ${r.siegesSeen} (non-enemy ${r.siegesNonEnemy}, own hall ${r.siegesOwnHall})`
     + ` · silent holds ${r.silentHolds} · ambition mismatch ${r.ambitionMismatch}`
     + ` · re-aims ${JSON.stringify(r.reaims)} · pass ms median ${median.toFixed(2)} max ${max.toFixed(2)}`);
 }
