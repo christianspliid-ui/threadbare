@@ -1,7 +1,7 @@
 ---
 name: retrospective
 description: Review the impediment log (Docs/impediments.md) and conduct a structured retrospective. Reads this week's drift-scan Linear issues as the first input, then analyzes patterns, proposes concrete improvements to tools, skills, CLAUDE.md, and processes. Trigger with "/retrospective" or "run a retro" or "review impediments" or "continuous improvement review".
-last_validated_against: 2026-09-18
+last_validated_against: 2026-10-17
 ---
 
 # Retrospective
@@ -68,6 +68,8 @@ Combine the drift-scan signals (Step 0) with the impediment analytics (Step 1) f
 ### Step 3: Identify Actionable Improvements
 
 For each top friction source (and all unresolved blockers), propose a concrete fix. Categorize each proposal:
+
+**Pipeline freeze, 2026-10-16 through 2026-11-13 (THR-1946).** No proposal, quick win or filed ticket may add a gate, probe, ratchet, hook, baseline, CI job or standing lane rule. Allowed: removing or loosening machinery, and fixing machinery that broke or blocked a cited run. The 2026-11-13 retro decides whether to lift, extend or make the freeze permanent. Authority: `Docs/canon/session-protocol.md` § Process-work throttle.
 
 | Fix Type | What It Means | Example |
 |----------|--------------|---------|

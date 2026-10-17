@@ -1,7 +1,7 @@
 ---
 name: orchestrator
 description: The lane that decides what happens next — reads the Blocked by half of coordination blocks and promotes unblocked work to Ready for Dev (T1), stages design requests for the design lane when the program shelf runs thin (T2 — stages, never authors; `tb-design-lane` authors, THR-1611), and owns architecture-health surfacing as a standing daily duty (T3). Runs hourly as tb-orchestrator. Never claims an issue, never sets In Dev, never writes Design/briefing.md.
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-17
 ---
 
 # Orchestrator
@@ -243,6 +243,8 @@ So: an item belonging to a program Christian has blessed, or a bug, is agreed. A
 ## T3 — Architecture-health duty (daily)
 
 Runs once per day, on the first run after `ORCH_HEALTH_SWEEP_HOUR`. This tier exists because Christian **explicitly disclaims the skills to judge it** (D7), which means there is no fallback reviewer — unsurfaced architectural decay is not caught later by anyone.
+
+**Pipeline freeze, 2026-10-16 through 2026-11-13 (THR-1946).** T3 surfaces findings; it does not stage or promote work that adds a gate, probe, ratchet, hook, baseline, CI job or standing lane rule. A finding that would need new machinery is reported, not staged. Authority: `Docs/canon/session-protocol.md` § Process-work throttle.
 
 ### Reuse the detectors that exist
 
