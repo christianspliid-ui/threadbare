@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 16:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 17:58 local (15:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -41,18 +41,17 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready, one in progress.** [The scarcity-arc jam](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint) is fixed, merged ([PR #2459](https://github.com/christianspliid-ui/threadbare/pull/2459)) and live: a town whose crisis has burned out now frees its slot. The builder is now on [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless) (branch pushed, run active).
+**Backed up: 23 ready, one in progress.** The builder is on [hunger and unrest](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless). Its branch is pushed and the run is active.
 
-- Newly ready: [choices widen across runs](https://linear.app/threadbare/issue/THR-1844/choices-widen-across-runs-four-hungers-on-run-1-one-woken-each-age) (four hungers on run 1, one more woken each age).
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
-- Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy).
-- High, waiting: [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes), [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
-- Nothing has waited in the queue longer than a week without being touched.
+- Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy) and [regional monopolies pay rent and can embargo](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys).
+- High, waiting: [a freeze on new pipeline work until 13 Nov](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site serves the latest commit on main (85852c0f, the scarcity fix). Main's checks and the scheduled background jobs pass; no PR is waiting to merge.
-- Engine speed is back to normal: 117 ms/tick steady, 3% under the 7-day median (121). The jump reported over the last two hours is gone.
-- Overnight quiet: every lane stopped at 18:39 Friday and resumed at 11:33 Saturday. Overnight and weekend quiet, so not an extra ask; the lead ask covers it.
-- The builder is running normally: the scarcity fix shipped this hour and hunger and unrest is being built now.
-- The tidy-up job ran at 16:40: 545 old worktrees, 5 items needing a decision (builder housekeeping). You sent no new Discord messages.
+- The live site serves the latest commit on main (85852c0f). Main's checks and the scheduled background jobs pass, and no PR is waiting to merge.
+- Engine speed: tick cost 184 ms/tick steady, 53% above the 7-day median (121, 136 rows since 57da1b5b); top phase agent_decision, 618 agents. Name the merges between 57da1b5b and 85852c0f: git log --oneline --merges 57da1b5b..85852c0f. *The same commit measured 117 ms an hour ago, and the builder was running beside this measurement. This is probably load on the machine, not a slowdown in the code. Next hour's reading will show which.*
+- Overnight quiet: every lane stopped at 18:39 Friday and resumed at 11:33 Saturday. That gap falls overnight and on a weekend, so it is not a separate ask. The lead ask covers it.
+- The builder is running and all 12 scheduled lanes are on schedule.
+- The tidy-up job last ran at 17:50: 544 old worktrees, 5 items waiting for a decision (builder housekeeping). You sent no new Discord messages.
