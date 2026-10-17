@@ -1,0 +1,151 @@
+/**
+ * The Inspector's words — one data home (THR-1876 § D7, § D8, § Player-facing text).
+ *
+ * Every string the Inspector, the land page, Connections and *In this land* print that is
+ * not a row's own resolved prose lives here, so a reword is one edit and a test can read
+ * the whole vocabulary. Tooltip bodies live in `ui-content.ts` (`ui.land.*`).
+ */
+import type { InspectorTabId } from '../types/detailPage';
+
+/** Tab labels, sentence case (THR-1833). Total over `InspectorTabId` by type. */
+export const INSPECTOR_TAB_LABELS: Readonly<Record<InspectorTabId, string>> = {
+  overview: 'Overview',
+  prowess: 'Prowess',
+  attachments: 'Attachments',
+  bonds: 'Bonds',
+  journey: 'Journey',
+  chronicle: 'Chronicle',
+  chapters: 'Chapters',
+  here_now: 'Here now',
+  story: 'Story',
+  reaches: 'Reaches',
+};
+
+/** The Connections block's six groups, in their fixed order (THR-1827 call 8; THR-1822 § D8). */
+export const CONNECTION_GROUP_ORDER = ['where', 'who', 'belongsTo', 'friendsAndFoes', 'holdsKnows', 'story'] as const;
+export type ConnectionGroupId = (typeof CONNECTION_GROUP_ORDER)[number];
+
+export const CONNECTION_GROUP_LABELS: Readonly<Record<ConnectionGroupId, string>> = {
+  where: 'Where',
+  who: 'Who',
+  belongsTo: 'Belongs to',
+  friendsAndFoes: 'Friends and foes',
+  holdsKnows: 'Holds and knows',
+  story: 'Story',
+};
+
+/** The block's title: "Connections", except on the land page (call 16). */
+export const CONNECTIONS_BLOCK_TITLE: Readonly<Record<'default' | 'land', string>> = {
+  default: 'Connections',
+  land: 'Around it',
+};
+
+/** *In this land* (call 17): row labels and the two always-rows' empty lines. */
+export const LAND_INDEX_ALWAYS_ROWS = ['people', 'holder'] as const;
+export const LAND_INDEX_WHEN_PRESENT_ROWS = ['lair', 'ruins', 'halls', 'resources', 'covenants'] as const;
+export type LandIndexRowId = (typeof LAND_INDEX_ALWAYS_ROWS)[number] | (typeof LAND_INDEX_WHEN_PRESENT_ROWS)[number];
+
+export const LAND_INDEX_LABELS: Readonly<Record<LandIndexRowId, string>> = {
+  people: 'People',
+  holder: 'Holder',
+  lair: 'Lair',
+  ruins: 'Ruins',
+  halls: 'Halls',
+  resources: 'Resources',
+  covenants: 'Covenants',
+};
+
+export const LAND_INDEX_EMPTY_LINES: Readonly<Record<(typeof LAND_INDEX_ALWAYS_ROWS)[number], string>> = {
+  people: 'No one lives here.',
+  holder: 'No one holds this land.',
+};
+
+export const IN_THIS_LAND_TITLE = 'In this land';
+
+/**
+ * Positional danger as a word (UI Law 13). One ladder: moved here from `HexSidebar.tsx`
+ * (THR-1876 § D7.3), which now imports it, so the land page and the hex sidebar cannot
+ * word the same danger two ways.
+ */
+export const POSITIONAL_DANGER_WORDS: ReadonlyArray<readonly [threshold: number, word: string]> = [
+  [0.25, 'Settled country'],
+  [0.5, 'Uneasy country'],
+  [0.7, 'Dangerous country'],
+  [1.01, 'Deadly country'],
+];
+
+export function positionalDangerWord(level: number): string {
+  for (const [threshold, word] of POSITIONAL_DANGER_WORDS) {
+    if (level < threshold) return word;
+  }
+  return POSITIONAL_DANGER_WORDS[POSITIONAL_DANGER_WORDS.length - 1][1];
+}
+
+/** Everything else the Inspector says. */
+export const INSPECTOR_WORDS = {
+  /** "More when widened: Chronicle · Chapters" */
+  moreWhenWidened: 'More when widened',
+  /** The fold control: "Show all 15". */
+  showAll: 'Show all {n}',
+  /** "Act on Shutash" / "Act on this land". */
+  actOn: 'Act on {name}',
+  actOnLand: 'Act on this land',
+  /** The Act row with nothing castable. */
+  actOnEmpty: 'None of your cards works on {name}.',
+  /** Kind words for headers that have no node subtitle. */
+  landKind: 'Land',
+  godKind: 'God',
+  recordKind: 'Record',
+  contentKind: 'Content',
+  /** The missing page (§ D7.10) — `unknownStub`'s words. */
+  missingName: 'Unknown',
+  missingLine: 'this entity is no longer in the world',
+  /** Where-line joiners: "At Temple Quarter, in The Bone Coast". */
+  whereAt: 'At',
+  whereIn: 'in',
+  /** Land holder chip with no holder. */
+  heldByNoOne: 'Held by no one',
+  /** The god's mandate row. */
+  mandateTrend: { rising: 'Rising', steady: 'Holding', ebbing: 'Slipping' } as const,
+  mandateNow: 'Now',
+  /** The Dominion row (dominionSheetVM). */
+  dominionHold: 'Your hold',
+  dominionMeaning: 'What it means',
+  dominionTended: 'Tended',
+  /** A record with no stored account. */
+  recordUnnamed: 'This happening',
+  recordNoAccount: '{name} left no account the god can read.',
+  /** Read in the Codex (content cards, only when the Codex holds the entry). */
+  readInCodex: 'Read in the Codex',
+  /** Land page naming rule (call 18): "The plateau at Oreblack Deep". */
+  landNameAt: 'The {terrain} at {place}',
+  landNameOpen: 'Open {terrain}',
+  /** Connections row facts. */
+  factHeir: 'heir',
+  factLeader: 'leader',
+  factSeat: 'seat',
+  factHall: 'hall',
+  factHere: 'here',
+  factCommander: 'commander',
+  factHolder: 'holds it',
+  factMaker: 'made it',
+  factAvatar: 'your avatar',
+  factFirst: 'your First',
+  factThreaded: 'threaded to you',
+  factRealm: 'realm',
+  factCulture: 'culture',
+  factMember: 'member',
+  factAlly: 'ally',
+  factFoe: 'foe',
+  factFriend: 'friend',
+  factRival: 'rival',
+  factKin: 'kin',
+  factMentor: 'mentor',
+  factCompanion: 'companion',
+  factBonded: 'bonded',
+  factCarried: 'carried',
+  factControls: 'governed',
+  factPeople: '{n} people',
+  factOnePerson: 'one person',
+  factEmpty: 'empty',
+} as const;

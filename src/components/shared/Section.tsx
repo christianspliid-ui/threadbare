@@ -1,15 +1,19 @@
 import { useCallback, type MouseEvent } from 'react';
 import type {
+  CardsSection,
   ChipDescriptor,
   ChipsSection,
   EventCardSection,
+  LinksSection,
   NodeRef,
+  PanelRow,
   PanelSection,
   PortraitSection,
   ProseSection,
   Section as DetailSection,
   TriggersSection,
 } from '../../types/detailPage';
+import { Chip } from './Chip';
 import { OddsPips } from './OddsPips';
 import {
   useDetailPageOpener,
@@ -62,19 +66,29 @@ function ProseSectionRenderer({ section }: { section: ProseSection }) {
     [open, section.termRefs],
   );
 
+  // THR-1876: a blank line separates paragraphs, so a moved multi-paragraph block (the
+  // land page's prose) keeps its paragraphs. A one-paragraph section renders as before.
+  const paragraphs = section.prose.split(/\n\n+/);
+  const variant = section.variant ?? 'body';
+  const style = {
+    color: variant === 'quote' ? 'var(--text-secondary)' : 'var(--text-primary)',
+    lineHeight: 1.7,
+    margin: 0,
+    fontSize: variant === 'lede' ? 'var(--text-base)' : '0.9rem',
+    fontStyle: variant === 'quote' ? ('italic' as const) : undefined,
+  };
   return (
-    <div style={{ marginBottom: '20px' }}>
+    <div style={{ marginBottom: '20px' }} data-section-shape="prose">
       <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
-      <div
-        onClick={handleClick}
-        style={{
-          color: 'var(--text-primary)',
-          lineHeight: 1.7,
-          margin: 0,
-          fontSize: '0.9rem',
-        }}
-        dangerouslySetInnerHTML={{ __html: section.prose }}
-      />
+      {paragraphs.length === 1 ? (
+        <div onClick={handleClick} style={style} dangerouslySetInnerHTML={{ __html: section.prose }} />
+      ) : (
+        <div onClick={handleClick} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {paragraphs.map((para, index) => (
+            <p key={index} style={style} dangerouslySetInnerHTML={{ __html: para }} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -220,13 +234,117 @@ function PanelSectionRenderer({ section }: { section: PanelSection }) {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '12px',
               padding: '4px 0',
               borderBottom: '1px solid var(--border-gold)',
               fontSize: '0.8rem',
             }}
           >
             <span style={{ color: 'var(--text-tertiary)' }}>{row.left}</span>
-            <span style={{ color: sentimentColor(row.sentiment) }}>{row.right}</span>
+            <PanelValue row={row} color={sentimentColor(row.sentiment)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * A facts row's value (THR-1876 § D6). A row naming a world thing is an identity chip
+ * (Law 1, 21); a row with a proportion draws a bar beside its word — the word is always
+ * there, never a numeral (Law 13); a row with a tooltip explains itself (Law 17).
+ */
+function PanelValue({ row, color }: { row: PanelRow; color: string }) {
+  const word = row.ref ? (
+    <Chip role="identity" size="sm" target={row.ref} label={row.right} tooltipId={row.tooltipId ?? row.ref.tooltipId} />
+  ) : (
+    <span style={{ color }}>{row.right}</span>
+  );
+  const withTip = row.tooltipId && !row.ref ? <Tooltip id={row.tooltipId}>{word}</Tooltip> : word;
+  if (row.meter == null || !Number.isFinite(row.meter)) return withTip;
+  const fill = Math.max(0, Math.min(1, row.meter));
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+      {withTip}
+      <span
+        aria-hidden="true"
+        data-meter=""
+        style={{ width: '4rem', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}
+      >
+        <span style={{ display: 'block', width: `${fill * 100}%`, height: '100%', background: 'var(--text-secondary)' }} />
+      </span>
+    </span>
+  );
+}
+
+/**
+ * Links — named world things, each an identity chip and one plain fact (THR-1876 § D6).
+ * The shape Connections and *In this land* render through. A grouped section shows each
+ * group under its own label and count.
+ */
+function LinksSectionRenderer({ section }: { section: LinksSection }) {
+  const groups = section.groups ?? [{ label: '', rows: section.rows, total: section.rows.length }];
+  return (
+    <div style={{ marginBottom: '20px' }} data-section-shape="links">
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      {groups.map((group, gi) => (
+        <div key={`${group.label}-${gi}`} style={{ marginBottom: '8px' }}>
+          {group.label && (
+            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '4px' }}>
+              {group.total > 1 ? `${group.label} · ${group.total}` : group.label}
+            </div>
+          )}
+          <LinkRows rows={group.rows} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** The rows of one links group: chip, then its fact. Shared with the Inspector's Connections block. */
+export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
+  return (
+    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      {rows.map((row, index) => (
+        <li
+          // Two rows may name one thing (a Location yielding two resources), so the index joins the key.
+          key={`${row.ref.kind}:${row.ref.id}:${index}`}
+          data-link-row={`${row.ref.kind}:${row.ref.id}`}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)' }}
+        >
+          <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
+          {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Cards — small tiles for conditions, works and powers (THR-1876 § D6). */
+function CardsSectionRenderer({ section }: { section: CardsSection }) {
+  return (
+    <div style={{ marginBottom: '20px' }} data-section-shape="cards">
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(10rem, 1fr))', gap: '8px' }}>
+        {section.tiles.map((tile, index) => (
+          <div
+            key={`${tile.title}-${index}`}
+            style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: '8px 10px', background: 'var(--bg-raised)', minWidth: 0 }}
+          >
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 700 }}>{tile.kindWord}</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)', fontWeight: 700, overflowWrap: 'anywhere' }}>
+              {tile.ref ? <Chip role="identity" size="sm" target={tile.ref} label={tile.title} /> : tile.title}
+            </div>
+            {tile.lines.map((line, li) => (
+              <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>{line}</div>
+            ))}
+            {tile.durationWord && <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{tile.durationWord}</div>}
+            {tile.meter != null && Number.isFinite(tile.meter) && (
+              <div aria-hidden="true" data-meter="" style={{ marginTop: '4px', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}>
+                <div style={{ width: `${Math.max(0, Math.min(1, tile.meter)) * 100}%`, height: '100%', background: 'var(--text-secondary)' }} />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -327,6 +445,10 @@ export function Section({ section }: { section: DetailSection }) {
       return <PortraitSectionRenderer section={section} />;
     case 'triggers':
       return <TriggersSectionRenderer section={section} />;
+    case 'links':
+      return <LinksSectionRenderer section={section} />;
+    case 'cards':
+      return <CardsSectionRenderer section={section} />;
   }
 }
 

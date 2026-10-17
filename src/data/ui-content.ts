@@ -479,6 +479,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Clear Sight',
     desc: 'Full visibility — agents, encounters, and events in this hex are fully observed.',
   },
+  // THR-1876 — the land page's facts chips (plan § Player-facing text, quoted there).
+  'ui.land.danger': {
+    label: 'Danger',
+    desc: 'How dangerous this land is to cross and to live on, from settled country to deadly country.',
+  },
+  'ui.land.holder': {
+    label: 'Holder',
+    desc: "Who holds this land. Held land answers to its holder's court; unheld land answers to no one.",
+  },
 
   // ─── Encounter ───────────────────────────────────────────────────
   'ui.encounter_step': {

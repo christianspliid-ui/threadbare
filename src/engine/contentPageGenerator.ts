@@ -10,7 +10,9 @@
  * payload, the same `Section` union, the same `DetailModal` renders it — and only the
  * resolution differs. `GraphPageKind` is the type that holds the line.
  *
- * **Three sections and a header, always in this order:**
+ * **Three sections and a header, always in this order** — since THR-1876 these are the
+ * `content` rows of the one page-layout table (`DETAIL_PAGE_REGISTRY.content`, resolvers in
+ * `contentPageResolvers.ts`), composed by the shared `composeSections`:
  *
  * 1. `what_it_is` — the description, or the fallback pool when the entry authored none.
  * 2. `its_voice` — the flavour, omitted entirely when there is none (Law 25 applied to
@@ -25,54 +27,15 @@
  * Plan: `Docs/plans/2026-09-12-thr-1482-one-card-one-router.md`
  */
 
-import {
-  CONTENT_FALLBACK_TEMPLATES,
-  UNKNOWN_CONTENT_PROSE,
-} from '../data/detail-page-fallback-templates';
+import { UNKNOWN_CONTENT_PROSE } from '../data/detail-page-fallback-templates';
 import { SURFACE_BY_CONTENT_KIND } from '../data/surface-registry';
-import { contentTagTooltipId, isContentTag } from '../data/content-tags';
-import type { ChipDescriptor, DetailPage, Section } from '../types/detailPage';
+import type { DetailPage } from '../types/detailPage';
 import { DETAIL_FAILSOFT_STUB_SPHERE } from '../types/detailPage';
 import type { ContentRef } from '../types/contentRef';
+import type { WorldGraph } from './graph';
 import { resolveContentEntry, type ContentEntryView } from './contentEntryResolver';
-
-/**
- * Stable index into a fallback pool.
- *
- * A template's id is the only thing about it that never changes, so it is what the choice
- * hangs on. djb2 — short, well-spread over short ASCII strings, and the same one
- * `detailPageResolvers` uses for its own pools, so two fallbacks on one card do not
- * correlate by construction.
- */
-function poolIndex(id: string, length: number): number {
-  let hash = 5381;
-  for (let i = 0; i < id.length; i += 1) hash = ((hash << 5) + hash + id.charCodeAt(i)) | 0;
-  return Math.abs(hash) % Math.max(1, length);
-}
-
-function pick(pool: readonly string[], id: string): string {
-  return pool[poolIndex(id, pool.length)];
-}
-
-function prose(typeId: string, label: string, gold: boolean, body: string, source: string): Section {
-  return { kind: 'prose', typeId, label, gold, tier: 'routine', source, prose: body };
-}
-
-/**
- * A tag chip.
- *
- * The tooltip is attached only for a *seated* tag. An unseated spelling still renders —
- * a saved world or an un-migrated catalog may carry one, and dropping it would hide the
- * drift rather than show it — but it carries no tooltip, because `tooltipResolver` has
- * nothing to say about a word that is not in the vocabulary, and a hover that opens an
- * empty box is worse than no hover (Law 25).
- */
-function tagChip(tag: string): ChipDescriptor {
-  return {
-    label: tag,
-    ...(isContentTag(tag) ? { tooltipId: contentTagTooltipId(tag) } : {}),
-  };
-}
+import { composeSections } from './detailPageGenerator';
+import { contentProse } from './contentPageResolvers';
 
 /** The page a reference to nothing gets. Says *never written*, never *gone*. */
 export function unknownContentStub(ref: ContentRef, breadcrumbRoot: string[]): DetailPage {
@@ -86,7 +49,7 @@ export function unknownContentStub(ref: ContentRef, breadcrumbRoot: string[]): D
     sphere: DETAIL_FAILSOFT_STUB_SPHERE,
     isShowcase: false,
     sections: [
-      prose('unknown_stub', 'What we know', false, UNKNOWN_CONTENT_PROSE, 'unknownContentStub'),
+      contentProse('unknown_stub', 'What we know', false, UNKNOWN_CONTENT_PROSE, 'unknownContentStub'),
     ],
     hasFullSheet: false,
   };
@@ -128,43 +91,15 @@ export function generateContentPage(input: GenerateContentPageInput): DetailPage
   if (!entry) return unknownContentStub(ref, breadcrumbRoot);
 
   const row = SURFACE_BY_CONTENT_KIND[ref.kind];
-  const sections: Section[] = [];
-
-  sections.push(
-    prose(
-      'what_it_is',
-      'What it is',
-      true,
-      entry.description || pick(CONTENT_FALLBACK_TEMPLATES.description_unwritten, ref.id),
-      entry.description ? 'contentEntryResolver' : 'contentDescriptionFallback',
-    ),
-  );
-
-  // Omitted rather than filled when absent: flavour is the one section a card can do
-  // without, and a heading over a fallback apology is worse than no heading.
-  if (entry.flavour) {
-    sections.push(prose('its_voice', 'Its voice', false, entry.flavour, 'contentEntryResolver'));
-  }
-
-  sections.push(
-    entry.tags.length > 0
-      ? {
-          kind: 'chips',
-          typeId: 'marks',
-          label: 'Marks',
-          gold: false,
-          tier: 'routine',
-          source: 'contentEntryResolver',
-          chips: entry.tags.map(tagChip),
-        }
-      : prose(
-          'marks',
-          'Marks',
-          false,
-          pick(CONTENT_FALLBACK_TEMPLATES.tags_none, ref.id),
-          'contentTagsFallback',
-        ),
-  );
+  // The content card reads no graph: its rows resolve from `contentRef` alone.
+  const sections = composeSections('content', {
+    nodeId: ref.id,
+    pageKind: 'content',
+    graph: null as unknown as WorldGraph,
+    seed: 0,
+    tick: 0,
+    contentRef: ref,
+  });
 
   return {
     kind: 'content',

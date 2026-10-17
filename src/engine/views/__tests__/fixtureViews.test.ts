@@ -71,7 +71,11 @@ describe('hexContents (fixture)', () => {
 
   it('an empty hex is an empty row set, not a throw', () => {
     const { state } = fixture();
-    expect(readView(null, state, hexContentsSelector, { hexKey: '9,9' })).toEqual({ hexKey: '9,9', col: 9, row: 9, people: [], locations: [], places: [] });
+    expect(readView(null, state, hexContentsSelector, { hexKey: '9,9' })).toEqual({
+      hexKey: '9,9', col: 9, row: 9, people: [], locations: [], places: [],
+      // THR-1876: the land page's rows join the index.
+      armies: [], artifacts: [], lairs: [], ruins: [], halls: [], resources: [], covenants: [],
+    });
   });
 });
 

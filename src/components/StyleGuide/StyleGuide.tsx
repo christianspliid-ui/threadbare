@@ -241,6 +241,54 @@ const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
     portraitRef: { subject: 'Captain Veiren', sphere: 'order' },
     bodyProse: 'Grey at the temple, and unhurried about it.',
   },
+  // THR-1876 — the panel additions: a row naming a world thing, a row that explains itself,
+  // and a proportion drawn as a bar beside its word (never a numeral).
+  {
+    kind: 'panel',
+    label: 'Facts, with links and bars',
+    gold: false,
+    tier: 'routine',
+    typeId: 'facts_additions',
+    source: 'styleguide.sample',
+    rows: [
+      { left: 'Sworn to', right: 'The Ashen Compact', ref: { kind: 'faction', id: 'styleguide-sample-faction' } },
+      { left: 'Your hold', right: 'Held', tooltipId: 'ui.dominion.held' },
+      { left: 'Standing', right: 'Warm', meter: 0.7 },
+    ],
+  },
+  // THR-1876 — the links shape: what Connections and *In this land* render through.
+  {
+    kind: 'links',
+    label: 'Links',
+    gold: false,
+    tier: 'routine',
+    typeId: 'links_sample',
+    source: 'styleguide.sample',
+    rows: [],
+    groups: [
+      {
+        label: 'Who',
+        total: 2,
+        rows: [
+          { ref: { kind: 'agent', id: 'styleguide-sample-a' }, name: 'Shutash', fact: 'Priest · Congregation of the Spheres' },
+          { ref: { kind: 'agent', id: 'styleguide-sample-b' }, name: 'Wulfram', fact: 'heir' },
+        ],
+      },
+    ],
+  },
+  // THR-1876 — the cards shape: conditions, works and powers as small tiles.
+  {
+    kind: 'cards',
+    label: 'Cards',
+    gold: false,
+    tier: 'routine',
+    typeId: 'cards_sample',
+    source: 'styleguide.sample',
+    tiles: [
+      { title: 'Fevered', kindWord: 'Condition', lines: ['Burns through the night.'], durationWord: 'for four days', meter: 0.4 },
+      { title: 'The Bridge Toll', kindWord: 'Work', lines: ['Raising stone across the ford.'] },
+    ],
+  },
 ];
 
 const SAMPLE_DETAIL_PAGE: DetailPage = {
@@ -1975,6 +2023,15 @@ export default function StyleGuide() {
                     DetailBreadcrumb — trail over DETAIL_BREADCRUMB_COLLAPSE_AT, leading crumbs collapse to an ellipsis
                   </Label>
                   <DetailBreadcrumb trail={SAMPLE_DETAIL_TRAIL_LONG} onNavigate={() => {}} />
+                </div>
+
+                <div>
+                  <Label>
+                    Whole pages live in the Inspector lab,{' '}
+                    <a href="?view=inspector-lab" style={{ color: 'var(--accent-gold)' }}>?view=inspector-lab</a>
+                    {' '}(THR-1876): every page kind at docked, wide and Full, from the seeded world, read from the
+                    page-layout table. The style guide keeps one sample of each section shape.
+                  </Label>
                 </div>
 
                 <div>

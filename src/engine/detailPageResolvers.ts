@@ -19,6 +19,7 @@ import type {
   ChipDescriptor,
   ChipsSection,
   GraphPageKind,
+  PageLayoutKind,
   EventCardSection,
   PanelSection,
   PortraitSection,
@@ -43,6 +44,11 @@ import {
   ITEM_FALLBACK_TEMPLATES,
   PLACE_FALLBACK_TEMPLATES,
 } from '../data/detail-page-fallback-templates';
+import type { GameState } from '../types/gameState';
+import type { ContentRef } from '../types/contentRef';
+import { elapsedLabel, humanizeKeySegment } from './aftermathWords';
+import { getFactionDefinition } from '../data/faction-definition-lookup';
+import { computeRankFromReputation } from '../types/faction';
 import {
   ARMY_NO_OBJECTIVE_COPY,
   armyObjectiveSentence,
@@ -57,8 +63,12 @@ import {
 export interface SectionResolverContext {
   /** The node being detailed. */
   nodeId: string;
-  /** Page type (so multi-purpose resolvers can branch). */
-  pageKind: GraphPageKind;
+  /**
+   * Page type (so multi-purpose resolvers can branch). THR-1876 widened it from
+   * `GraphPageKind` to the page-layout table's key; graph resolvers still only ever see
+   * a graph kind.
+   */
+  pageKind: PageLayoutKind;
   /** World graph (read-only). */
   graph: WorldGraph;
   /** Seeded PRNG seed for deterministic prose pick. */
@@ -73,6 +83,18 @@ export interface SectionResolverContext {
   };
   /** Protagonist's nodeId — drives all "to her" / "toward him" framings. */
   protagonistId?: string;
+  /**
+   * THR-1876 (additive): the game state, for rows that read stores rather than the graph
+   * (the land, god and record rows). A resolver that needs it and lacks it returns null,
+   * so the hover card and graph-only tests stay fail-soft.
+   */
+  state?: GameState;
+  /** THR-1876: the hex a `land` page describes. */
+  hex?: { col: number; row: number };
+  /** THR-1876: the store record a `record` page describes (a graph event uses `nodeId`). */
+  record?: { kind: 'encounter' | 'journey' | 'receipt'; id: string; name?: string };
+  /** THR-1876: the content a `content` page describes. */
+  contentRef?: ContentRef;
 }
 
 /** A section resolver returns 0 or 1 section. Returning null = "skip this section". */
@@ -152,13 +174,39 @@ function nodeRefKindFor(node: GraphNode | null | undefined): GraphPageKind | nul
   }
 }
 
-/** Compose a "47 turns ago" style label from a tick stamp. */
-function whenLabelFor(eventNode: GraphNode, currentTick: number, placeName?: string): string {
+/**
+ * When something happened, in words: "Now", "Less than a day ago", "Four days ago" — the
+ * shared `elapsedLabel` ladder (THR-1876 § D7: "N turns ago" printed a raw tick count,
+ * Laws 13/14). With a place: "Four days ago · The Iron Market".
+ */
+export function whenLabelFor(eventNode: GraphNode, currentTick: number, placeName?: string): string {
   const eventTick = (eventNode.properties?.tick as number) ?? currentTick;
   const delta = Math.max(0, currentTick - eventTick);
-  const deltaLabel =
-    delta === 0 ? 'Now' : delta === 1 ? '1 turn ago' : `${delta} turns ago`;
+  const words = delta === 0 ? 'Now' : `${elapsedLabel(delta)} ago`;
+  const deltaLabel = words.charAt(0).toUpperCase() + words.slice(1);
   return placeName ? `${deltaLabel} · ${placeName}` : deltaLabel;
+}
+
+/** A stored relation basis (`old_debt`) as words ("old debt"), never the key (Law 14). */
+function wordedBasis(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  const worded = humanizeKeySegment(raw).replace(/\s+/g, ' ').trim().toLowerCase();
+  return worded.length > 0 ? worded : undefined;
+}
+
+/**
+ * The rank word for a membership (THR-1822 § D7): the reputation-based tier
+ * `getAgentInfoCard` shows (`computeRankFromReputation`), never `member_of.rank` — a
+ * 0–1 promotion number that printed as "0.16". Null when the faction has no definition.
+ */
+export function membershipRankWord(edge: { properties?: Record<string, unknown> }): string | null {
+  const props = edge.properties ?? {};
+  const defId = props.factionDefId as string | undefined;
+  if (!defId) return null;
+  const def = getFactionDefinition(defId);
+  if (!def) return null;
+  const rep = typeof props.reputation === 'number' ? (props.reputation as number) : 0;
+  return computeRankFromReputation(rep, def)?.name ?? null;
 }
 
 // ─── Actor resolvers ──────────────────────────────────────────────────────────
@@ -215,7 +263,7 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   );
   if (!related) return null;
 
-  const basis = (related.properties?.basis as string | undefined) ?? 'a thread between you';
+  const basis = wordedBasis(related.properties?.basis as string | undefined) ?? 'a thread between you';
   const sentiment = (related.properties?.sentiment as number | undefined) ?? 0;
   const phrase =
     sentiment > 0.2
@@ -260,7 +308,7 @@ const threadsBetweenThemResolver: SectionResolver = (ctx) => {
     const otherId = edge.source === actor.id ? edge.target : edge.source;
     const other = ctx.graph.getNode(otherId);
     if (!other) continue;
-    const basis = (edge.properties?.basis as string | undefined) ?? 'thread';
+    const basis = wordedBasis(edge.properties?.basis as string | undefined) ?? 'thread';
     const key = `${otherId}\u0000${basis}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -324,7 +372,7 @@ const factionAllegiancesResolver: SectionResolver = (ctx) => {
   for (const edge of edges.slice(0, 6)) {
     const faction = ctx.graph.getNode(edge.target);
     if (!faction) continue;
-    const rank = (edge.properties?.rank as string | undefined) ?? undefined;
+    const rank = membershipRankWord(edge) ?? undefined;
     chips.push({
       label: faction.name,
       flavour: rank,
@@ -765,7 +813,8 @@ const placeMemoryResolver: SectionResolver = (ctx) => {
     return section;
   }
   const evt = events[0];
-  const summary = (evt.properties?.summary as string | undefined) ?? `Something happened here at tick ${evt.properties?.tick ?? '?'}.`;
+  const at = typeof evt.properties?.tick === 'number' ? (evt.properties.tick as number) : ctx.tick;
+  const summary = (evt.properties?.summary as string | undefined) ?? `Something happened here, ${ctx.tick - at > 0 ? `${elapsedLabel(ctx.tick - at)} ago` : 'just now'}.`;
   const section: ProseSection = {
     kind: 'prose',
     typeId: 'memory',
@@ -785,7 +834,9 @@ const whatHappenedResolver: SectionResolver = (ctx) => {
   if (!evt || evt.type !== 'event') return null;
 
   const stored = evt.properties?.proseTier as 'routine' | 'notable' | 'chronicle' | undefined;
-  const summary = (evt.properties?.summary as string | undefined) ?? evt.name;
+  // THR-1876: an encounter step's node is named "<template> (step N)" — a raw index (Law 14) —
+  // so with no summary the card names the template it stores, and only then the node.
+  const summary = (evt.properties?.summary as string | undefined) ?? (evt.properties?.templateName as string | undefined) ?? evt.name;
   if (!summary) return null;
 
   const section: ProseSection = {
