@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 186 |
+| 🟢 LIVE | 192 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 77 |
-| **Total** | **271** |
+| **Total** | **277** |
 
 ## Contracts by producing subsystem
 
@@ -259,11 +259,13 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `active-influences-render-on-sheet` | What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen. | node-prop: `divineInfluences`, `activeEffects`, `ActiveEffectChips` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `answered-prayer-pushes-dominion` | Answering a prayer widens the god's ground (THR-1935 S1). A successful player cast of a card flagged answers_prayer (Bless the Harvest, Open the Markets) on a praying town writes participated_in god → prayer and queues ANSWERED_PRAYER_DOMINION_PRESSURE 2 on pendingSpherePressures, split by bought points (source prayer_answered); on a hungry town off the god's ground it queues UNBIDDEN_AID_DOMINION_PRESSURE 1 (source unbidden_aid) and sets the cooldown. | state-field: `pendingSpherePressures`, `prayer_answered`, `unbidden_aid` | Spheres & Quintessence | 🟢 LIVE | — |
 | `cast-influence-shifts-target-values` | A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing. | node-prop: `divineInfluences`, `valueDrifts`, `valueDriftRule`, `resolveCastValueDrift` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `essence-earned-attunes-god-spheres` | Drawing essence through a bought sphere grows the god in it (THR-1748, THR-1765). Each `DOMINION_ATTUNEMENT_MARKS` mark crossed by the run-long essence-earned counter pushes progress into the god's own score through the pressure path (source `attunement`), resolved by `phaseSpherePressure`; the god's power on the Dominion read follows, capped at 2.0. THR-1811's rungs read `getAttunementMarksCrossed`. | function: `ATTUNEMENT_SPHERE_PROGRESS`, `dominionPowerRaw` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `essence-movement-explains-the-bar` | An essence row says why it moved (THR-1713). Every phase's pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row's hover ("Ebbing. Drawn by your threads' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause. | state-field: `essenceMovement` | Spheres & Quintessence | 🟢 LIVE | — |
 | `gods-will-premonition-steers-next-decision` | What the god pays for in God's Will changes what the mortal does next, and the player is told how it went (THR-1781). A whisper's `whisper_*` influence is read by `applyWhisperPull` into `whisperPull` on the live board; a compulsion is held on the mortal (`compulsionTargetTemplateId` / `compulsionTargetLocationId`) until its next full decision, where `resolveCompulsion` takes it or lapses it with a reason, and a `divine_premonition` toast event reports the ending. Before, whispers were written and never read, and a compulsion lapsed three ticks after the click while The First was mid-chapter. | node-prop: `compulsionTargetTemplateId`, `whisperPull`, `compelledTarget` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `offering-respects-reach-gate` | The offering never offers a card the drawer would hide. The reach gate is one predicate, `isWithinGodReaches`, called by `getTargetActionSlots` and by `offerableCards` (THR-1811). The drawer's sphere gate still counts without hiding, so the offering does not apply it unless `OFFERING_IN_SPHERE_ONLY` is on. | function: `isWithinGodReaches` | Ascendant Beats & Progression | 🟢 LIVE | — |
+| `slighted-town-heads-rival-raids` | An ignored prayer draws a rival (THR-1935 S1). A prayer whose window closes unanswered stamps prayerSlightedUntilTick (PRAYER_SLIGHT_DAYS 10) on its town; landRivalProbe and selectSchemeTarget pick a slighted town in the god's turf first, ties to the lower id, with no seeded draw, still inside raidAllowanceLeft / recordRaidLanding. The slight clears on its first landing. | function: `pickSlightedTown`, `landOnSlightedTown` | Rival Gods & Schemes | 🟢 LIVE | — |
 | `source-upkeep-debits-primary-pool` | Holding ground costs something (THR-1747). `phaseEssenceSources` charges `SOURCE_CONTROL_SUSTAIN` per controlled source from the primary sphere via `chargeSourceUpkeep` and writes `upkeepCurrent` onto each source bag; an unpaid source stalls (no upward drift next tick) and is never lapsed. The essence bar's income readout (`computeEssenceIncome`) subtracts the same amount so readout and ledger agree, and the Covenants block (`selectCovenantRows`) lists each source with its upkeep in words ("Unpaid. It will not grow until you can keep it."). Before this the constant was declared with no consumer. | node-prop: `upkeepCurrent`, `SOURCE_CONTROL_SUSTAIN` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 
 ### Factions & Succession
@@ -306,6 +308,9 @@ remediation ticket or the build fails.
 | `faction-purse-pays-faction-holders` | Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm's border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town's tax holder takes LANDHOLDER_TAX_RATE). It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction's wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened. | node-prop: `runFactionPurse`, `readMeansBand`, `readPurseDay`, `applyTreasuryDelta` | Factions & Succession | 🟢 LIVE | — |
 | `faction-purse-prices-war-aims` | An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse's own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / 6) over enemy towns the army has a march path to within WAR_AIM_MAX_REACH_HEXES (a supply line from the town is also required only while WAR_AIM_REQUIRE_SUPPLY_REACH is on — off since the plan kill criterion fired). With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced. | module-export: `townValueFor`, `feedsLackingStaple`, `pickWarAim` | War, Armies & Battles | 🟢 LIVE | — |
 | `faction-purse-schism-strain` | A faction that has been Destitute for PURSE_SCHISM_GRACE_DAYS feels it at a schism: decideSchismOutcome adds SCHISM_WEIGHT_PURSE × purseStrain to split pressure. Bounded — alone it never splits a faction (the outcome is still the seeded draw against splitPressure); it tips one already strained. | function: `computePurseStrain`, `SCHISM_WEIGHT_PURSE`, `readMeansBand`, `readPurseDay` | Factions & Succession | 🟢 LIVE | — |
+| `faithful-sanctity-reads-staples` | A faithful town's faith rides its bread (THR-1935 S1). computeSanctitySustenance scores a faithfulCommunity source against the host's staple goods (category staple) whatever its sphere: fed holds it at the nurture ceiling, scarce drains it; the prayer phase removes the bag and the faith's own controls edge at FAITHFUL_LAPSE_SANCTITY 0, and Sanctify cannot raise it. | function: `scoreSphereAffinity`, `computeSanctitySustenance` | Essence & Divine Economy | 🟢 LIVE | — |
+| `hungry-town-prays-on-gods-ground` | A hungry town on the god's own ground prays (THR-1935 S1). The daily prayer phase (after location_trait) opens a prayer event (eventKind prayer, occurred_at → the town) when a settlement bears the restless trait, hunger is its largest unrestInputs term, it reads Touched or better on the player god's Dominion and its 30-day cooldown is clear. The place page and the chronicle say it; the town keeps lastPrayerTick and activePrayerId. | function: `placePrayerView`, `listPrayers` | Essence & Divine Economy | 🟢 LIVE | — |
+| `recovered-town-keeps-faith` | A town that recovers keeps faith (THR-1935 S1). An answered prayer whose town loses the restless chip within PRAYER_RECOVERY_WINDOW_DAYS 30 becomes a faithfulCommunity essence source (the god's primary by bought points, sanctity 0.5) with the god's controls edge, written through the extracted consecrate helper; at most FAITHFUL_COMMUNITY_MAX 4 per god, one bag per host. computeSourceIncome pays it, chargeSourceUpkeep charges it, the Covenants list shows its faith line. | node-prop: `essenceSource`, `faithfulCommunity` | Essence & Divine Economy | 🟢 LIVE | — |
 | `restless-moves-people` | A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent. | node-prop: `relocationIntent`, `population` | Movement & Colocation | 🟢 LIVE | — |
 | `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `unrest-pressure-inputs` | Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement's unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town's leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page's Fortunes sentence names the band and its largest input. The god's stake (THR-1935) reads the same props later. | node-prop: `unrestInputs`, `hungerDays`, `unrestTarget` | Ambitions & Undertakings | 🟢 LIVE | — |
@@ -325,6 +330,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `rival-presses-god-turf` | The opposing dominion pushes back (THR-1748, THR-1763). Rivals take their primary sphere from the opposites of the god's buy (`opposingSpheresOfBuy`); the probe lands on one of the god's Touched-or-better places (untended drawn 3 : 1), throttled to one landing a day per `DOMINION_RAID_PLACES_PER_DAILY_BURST` such places, and schemes prefer the same turf. Before this the probe aimed at the rival's own id, which is not a node, so it never landed. A tended place absorbs one burst in `phaseSpherePressure` (`absorbTendedRaid`). | function: `raidAllowanceLeft`, `recordRaidLanding`, `absorbTendedRaid` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
+| `starve-faithful-drains-faith` | The rival starves your faithful (THR-1935 S1). The economic scheme's starve-faithful crack drops a faithful town's sanctity by STARVE_FAITHFUL_SANCTITY_DRAIN 0.25 (trace prayer.faith_starved) and adds its chronicle line; the lapse rule then applies. A target with no faithful town changes nothing new. | function: `starveFaithful` | Essence & Divine Economy | 🟢 LIVE | — |
 
 ### Ruins, Clues & Delves
 
@@ -546,6 +552,17 @@ remediation ticket or the build fails.
 - **Read sites:** `src/engine/ambitionTick.ts`
 - **Other hits:** `src/data/ambition-templates.ts`, `src/engine/agentResidence.ts`, `src/engine/graphConditions.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/spotlightPull.ts` +1 more
 - **Verdict:** Verified 2026-07-23: 15-tick cadence; milestone events observed firing. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
+
+### `answered-prayer-pushes-dominion` — 🟢 LIVE
+
+- **Intent:** Answering a prayer widens the god's ground (THR-1935 S1). A successful player cast of a card flagged answers_prayer (Bless the Harvest, Open the Markets) on a praying town writes participated_in god → prayer and queues ANSWERED_PRAYER_DOMINION_PRESSURE 2 on pendingSpherePressures, split by bought points (source prayer_answered); on a hungry town off the god's ground it queues UNBIDDEN_AID_DOMINION_PRESSURE 1 (source unbidden_aid) and sets the cooldown.
+- **Producer → Consumer:** Essence & Divine Economy → Spheres & Quintessence
+- **UL terms:** *Dominion*, *Sphere*, *Settlement*
+- **Production hits:** 17 total — 2 write, 1 read, 14 unclassified
+- **Write sites:** `src/engine/prayers.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/engine/phaseSpherePressure.ts`
+- **Other hits:** `src/engine/battleAftermath.ts`, `src/engine/essenceEarned.ts`, `src/engine/lairEscalation.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +9 more
+- **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: Bless the Harvest on a praying town writes participated_in and pushes summing to 2 split mind 0.6 / spirit 0.4; a failed cast and an unflagged card do nothing; a hungry Foreign town pushes 1 once inside the cooldown.
 
 ### `appointment-discount-reaches-board` — 🟢 LIVE
 
@@ -948,10 +965,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/castTargetChanges.ts`
-- **Production hits:** 21 total — 2 write, 1 read, 18 unclassified
+- **Production hits:** 22 total — 2 write, 1 read, 19 unclassified
 - **Write sites:** `src/engine/castTargetChanges.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/tabs/BondsTab.tsx`, `src/data/undertaking-objects.ts`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts` +13 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/tabs/BondsTab.tsx`, `src/data/undertaking-objects.ts`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts` +14 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
@@ -1169,10 +1186,10 @@ exit
 - **Intent:** Holding a place grows it (THR-1748, THR-1762). `phaseDominion` turns an active Claim Dominion, the seat and every threaded mortal (tier ≥ 1, one tier higher with a bestowed gift) into small pushes of the god's bought vector at the place they hold or stand in, and relaxes every untended place toward its seeded scores (neglect). Other sustained holds keep pushing their upkeep sphere, at `CONTROL_PRESSURE_PER_TICK` (now 0.03).
 - **Producer → Consumer:** Strategic Projects & Control → Spheres & Quintessence
 - **UL terms:** *Dominion*
-- **Production hits:** 13 total — 2 write, 2 read, 9 unclassified
+- **Production hits:** 14 total — 2 write, 2 read, 10 unclassified
 - **Write sites:** `src/engine/dominion.ts`, `src/engine/phaseDominion.ts`
 - **Read sites:** `src/engine/orchestrator.ts`, `src/engine/phaseSpherePressure.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts`, `src/engine/dominionProjection.ts` +4 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts`, `src/engine/dominionProjection.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `crown-oaths-pay-fealty-tax` — 🟢 LIVE
@@ -1689,6 +1706,18 @@ exit
 - **Other hits:** `src/data/content-objects.ts`, `src/data/contentCatalogs.ts`, `src/data/strategic-packs/factory/index.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `faithful-sanctity-reads-staples` — 🟢 LIVE
+
+- **Intent:** A faithful town's faith rides its bread (THR-1935 S1). computeSanctitySustenance scores a faithfulCommunity source against the host's staple goods (category staple) whatever its sphere: fed holds it at the nurture ceiling, scarce drains it; the prayer phase removes the bag and the faith's own controls edge at FAITHFUL_LAPSE_SANCTITY 0, and Sanctify cannot raise it.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Essence & Divine Economy
+- **UL terms:** *Essence*, *Stock Tier*, *Settlement*
+- **Module:** `src/engine/essenceEconomyBridge.ts`
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/essenceSources.ts`
+- **Read sites:** `src/engine/essenceEconomyBridge.ts`
+- **Other hits:** `src/components/Game/debug/EssenceSourcesDebugTab.tsx`, `src/debug-bridge.ts`
+- **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: adequate staples give zero drift, scarce staples a negative one; run to zero, the source and its controls edge are gone and the lapse line fires.
+
 ### `fight-band-conditions` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A fight leaves its mark as the ordinary conditions — inspired, shaken, terrified, wounded — so every ward, cure and reader that knows a condition knows a fight's wound.
@@ -2027,10 +2056,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 87 total — 1 write, 2 read, 84 unclassified
+- **Production hits:** 88 total — 1 write, 2 read, 85 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +79 more
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +80 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -2111,10 +2140,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 173 total — 3 write, 7 read, 163 unclassified
+- **Production hits:** 175 total — 3 write, 7 read, 165 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +158 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/AscendantSheet.tsx`, `src/components/Game/attachmentGlyphs.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts` +160 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -2128,6 +2157,18 @@ exit
 - **Read sites:** `src/components/MeetTheFirst/MeetTheFirstFlow.tsx`
 - **Other hits:** `src/engine/threadingRiteQueue.ts`
 - **Verdict:** Verified 2026-08-28: src/engine/__tests__/hungerResonanceGate.test.ts runs the shipped 167-dilemma library through the live `selectDilemmas` for all 12 hungers, guarding population-non-empty first so the sweep cannot pass vacuously, and asserts at least one hunger deals differently from the no-lens deal at the same seed — AND fewer than all 12 do, which is what distinguishes resonance from PRNG stream drift (the draw count is lens-independent by construction). Its coverage assertion is **blocking** as of the slice-4 content pass: every hunger must resonate with at least HUNGER_RESONANCE_MIN_COVERAGE=6 dilemmas. Measured after the pass — all 167 dilemmas carry a register, coverage gather=59, witness=58, reclaim=26, reshape=40, preserve=65, kindle=20, sever=8, bind=26, wander=32, consume=18, haunt=37, illuminate=50; 4 of 12 hungers (gather, reclaim, bind, illuminate) deal differently from the no-lens baseline at seed 42. Falsified both ways rather than asserted: drifting one hunger's dilemmaResonanceTags out of the dilemma vocabulary turns the gate red naming that hunger (haunt=0), and reverting the library to its pre-pass state turns it red at 11/12 below the floor. Reader pinned at the surface too: src/components/MeetTheFirst/__tests__/hungerShapesTheDeal.test.tsx renders the real TestingBeat on the real deal and asserts two identities differing only in `hungerId` put different authored prose in the DOM.
+
+### `hungry-town-prays-on-gods-ground` — 🟢 LIVE
+
+- **Intent:** A hungry town on the god's own ground prays (THR-1935 S1). The daily prayer phase (after location_trait) opens a prayer event (eventKind prayer, occurred_at → the town) when a settlement bears the restless trait, hunger is its largest unrestInputs term, it reads Touched or better on the player god's Dominion and its 30-day cooldown is clear. The place page and the chronicle say it; the town keeps lastPrayerTick and activePrayerId.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Essence & Divine Economy
+- **UL terms:** *Settlement*, *Unrest*, *Hunger*, *Dominion*
+- **Module:** `src/engine/prayers.ts`
+- **Production hits:** 4 total — 1 write, 2 read, 1 unclassified
+- **Write sites:** `src/engine/prayers.ts`
+- **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/LocationView.tsx`
+- **Other hits:** `src/debug-bridge.ts`
+- **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: a Restless, hunger-led, Touched town opens one prayer with occurred_at → the town and none again inside the cooldown; a Foreign town, a poverty-led town and a calm town open none.
 
 ### `hunt-completion-defers-grievance` — 🔵 UNVERIFIED-OK
 
@@ -2637,11 +2678,22 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 435 total — 1 write, 1 read, 433 unclassified
+- **Production hits:** 437 total — 1 write, 1 read, 435 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +428 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +430 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `recovered-town-keeps-faith` — 🟢 LIVE
+
+- **Intent:** A town that recovers keeps faith (THR-1935 S1). An answered prayer whose town loses the restless chip within PRAYER_RECOVERY_WINDOW_DAYS 30 becomes a faithfulCommunity essence source (the god's primary by bought points, sanctity 0.5) with the god's controls edge, written through the extracted consecrate helper; at most FAITHFUL_COMMUNITY_MAX 4 per god, one bag per host. computeSourceIncome pays it, chargeSourceUpkeep charges it, the Covenants list shows its faith line.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Essence & Divine Economy
+- **UL terms:** *Essence*, *Settlement*, *Sphere*
+- **Production hits:** 17 total — 2 write, 2 read, 13 unclassified
+- **Write sites:** `src/engine/essenceSourceWrite.ts`, `src/engine/prayers.ts`
+- **Read sites:** `src/components/Game/ascendant-bar/selectors.ts`, `src/engine/essenceSources.ts`
+- **Other hits:** `src/components/Game/debug/EssenceSourcesDebugTab.tsx`, `src/data/essence-sources.ts`, `src/data/prayer-constants.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts` +8 more
+- **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: an answered town that loses Restless hosts a faithfulCommunity source of mind at 0.5 with the controls edge, and selectCovenantRows titles it "Millbrook keeps faith with you."; a fifth town forms none.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
 
@@ -2992,10 +3044,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 409 total — 1 write, 1 read, 407 unclassified
+- **Production hits:** 412 total — 1 write, 1 read, 410 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +402 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +405 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3032,6 +3084,17 @@ exit
 - **Read sites:** `src/engine/unrestPressure/inputs.ts`, `src/engine/unrestPressure.ts`
 - **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/HexMapV2/scene/BattleIndicatorLayer.ts`, `src/debug-bridge.ts`, `src/engine/armyNotifications.ts`, `src/engine/battleAftermath.ts` +8 more
 - **Verdict:** Verified 2026-10-17: THR-1934. unrestPressure.test.ts: a siege actor naming the town sets the siege input to SIEGE_PRESSURE and stamps lastSiegeSeenTick; with the siege gone the term lingers the next day.
+
+### `slighted-town-heads-rival-raids` — 🟢 LIVE
+
+- **Intent:** An ignored prayer draws a rival (THR-1935 S1). A prayer whose window closes unanswered stamps prayerSlightedUntilTick (PRAYER_SLIGHT_DAYS 10) on its town; landRivalProbe and selectSchemeTarget pick a slighted town in the god's turf first, ties to the lower id, with no seeded draw, still inside raidAllowanceLeft / recordRaidLanding. The slight clears on its first landing.
+- **Producer → Consumer:** Essence & Divine Economy → Rival Gods & Schemes
+- **UL terms:** *Settlement*, *Dominion*, *Opposing Dominion*
+- **Module:** `src/engine/prayers.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/prayers.ts`
+- **Read sites:** `src/engine/orchestrator.ts`
+- **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: with ten turf towns and one slighted, landRivalProbe lands on the slighted town with an rng that throws if drawn, clears the slight, and spends the day's one landing.
 
 ### `source-upkeep-debits-primary-pool` — 🔵 UNVERIFIED-OK
 
@@ -3096,10 +3159,10 @@ exit
 - **Intent:** The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree.
 - **Producer → Consumer:** World Generation, Terrain & Places → Essence & Divine Economy
 - **UL terms:** *Essence*, *Sphere*
-- **Production hits:** 23 total — 1 write, 2 read, 20 unclassified
+- **Production hits:** 24 total — 1 write, 2 read, 21 unclassified
 - **Write sites:** `src/engine/ascendant.ts`
 - **Read sites:** `src/engine/essenceIncome.ts`, `src/engine/influence.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +15 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +16 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `spotlight-mortal-joins-guild` — 🟢 LIVE
@@ -3113,6 +3176,17 @@ exit
 - **Read sites:** `src/engine/factionQuestGeneration.ts`, `src/engine/guildJoinFunnel.ts`
 - **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/engine/agentDetail.ts`, `src/engine/anointSuccessor.ts`, `src/engine/armyNotifications.ts` +46 more
 - **Verdict:** Verified 2026-09-28: THR-1640. `readers/guild-join.ts 42,99 200` with `PROBE=0` (the probe writes engine state, so the probed world is not the unprobed one): on `origin/main` 7 joins fired on seed 99, 3 landed in a success band, 0 memberships; with the live hook, joins resolved `success`/`success_at_cost`/`critical_success` write `member_of` every time (seed 42: 13 of 13 landed joins, seed 99: 17 of 17), and spotlight mortals belong to 7 · 5 non-Realm guilds at t200 (was 1 · 1). `readers/reach.ts 42,99 200`: first-gate `no_deciding_member` 83 · 84 → 35 · 37; drawable fired 161 → 159 (floor 121). Spotlight count at t200 19 · 20, unchanged. Unit: `guildJoinsSpotlight.test.ts` (13).
+
+### `starve-faithful-drains-faith` — 🟢 LIVE
+
+- **Intent:** The rival starves your faithful (THR-1935 S1). The economic scheme's starve-faithful crack drops a faithful town's sanctity by STARVE_FAITHFUL_SANCTITY_DRAIN 0.25 (trace prayer.faith_starved) and adds its chronicle line; the lapse rule then applies. A target with no faithful town changes nothing new.
+- **Producer → Consumer:** Rival Gods & Schemes → Essence & Divine Economy
+- **UL terms:** *Essence*, *Settlement*
+- **Module:** `src/engine/prayers.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/prayers.ts`
+- **Read sites:** `src/engine/orchestrator.ts`
+- **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: starveFaithful on a faithful town drops its sanctity by 0.25 and names the rival; on a town without faith it returns null.
 
 ### `story-breath-anchor-paces-pause-mode-chapters` — 🔵 UNVERIFIED-OK
 
@@ -3383,10 +3457,10 @@ exit
 - **Intent:** Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement's unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town's leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page's Fortunes sentence names the band and its largest input. The god's stake (THR-1935) reads the same props later.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Settlement*, *Unrest*, *Ambition*
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/unrestPressure.ts`
 - **Read sites:** `src/engine/unrestPressure/describe.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/unrestPressure/inputs.ts`, `src/engine/unrestPressure/leave.ts`, `src/types/trace.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/prayers.ts`, `src/engine/unrestPressure/inputs.ts`, `src/engine/unrestPressure/leave.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-10-17: THR-1934. src/engine/__tests__/unrestPressure.test.ts (17): each term's rule and cap; one scarce staple reaches Restless within 10 days and falls below it within 10 once adequate; the leaver takes up Flee when hunger drives the town; the Fortunes sentences. npm run measure:unrest (600 ticks, medium): 99 / 96 / 43 leaves on seeds 42 / 99 / 7, Flee minted 21 / 22 / 4.
 
 ### `war-aim-targets-faction-ambitions` — 🟢 LIVE
@@ -3511,10 +3585,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 286 total — 2 write, 6 read, 278 unclassified
+- **Production hits:** 288 total — 2 write, 6 read, 280 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +273 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AscendantSheet.tsx` +275 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
