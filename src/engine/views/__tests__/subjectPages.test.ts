@@ -218,6 +218,22 @@ describe('Connections (THR-1822 § D8)', () => {
     expect(ids('rivals')).toContain('cong');
   });
 
+  it('the First (courtPosition the_first) wears "Your First" and is named so on the god\'s page', () => {
+    const state = world();
+    state.graph.addEdge({ id: 'th1', source: ASC, target: 'shutash', type: 'thread', properties: { courtPosition: 'the_first' } });
+    expect(buildSubjectPage(state, { kind: 'agent', id: 'shutash' }).header.standing.map(c => c.label)).toContain('Your First');
+    const who = buildConnections(state.graph, state, { cls: 'god', id: ASC }).groups.find(g => g.id === 'who');
+    expect(who?.rows.find(r => r.ref.id === 'shutash')?.fact).toBe('your First');
+  });
+
+  it('a record names who took part and where it happened', () => {
+    const state = world();
+    state.graph.addEdge({ id: 'o1', source: 'evt1', target: 'quarter', type: 'occurred_at', properties: { tick: 5 } });
+    const vm = buildSubjectPage(state, { kind: 'event-node', id: 'evt1' });
+    const ids = vm.connections.groups.flatMap(g => g.rows.map(r => `${g.id}:${r.ref.id}`));
+    expect(ids).toEqual(expect.arrayContaining(['where:quarter', 'who:shutash']));
+  });
+
   it('a hidden Place is never a row', () => {
     const state = world();
     const vm = buildConnections(state.graph, state, { cls: 'location', id: 'quarter' });

@@ -183,7 +183,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
     const level = getKnowledgeLevel(fam && typeof fam.get === 'function' ? getFamiliarity(fam, node.id) : 0);
     const thread = graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.target === node.id);
     const standing: StateChipVM[] = [];
-    if (thread?.properties.courtPosition === 'first') standing.push({ label: INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your') });
+    if (thread?.properties.courtPosition === 'the_first') standing.push({ label: INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your') });
     standing.push({ label: sentenceCase(level), tooltipId: `knowledge.${level}` });
     standing.push(...dominionChip(state, node.id));
     const role = (node.properties.npcRole ?? node.properties.role) as string | undefined;

@@ -24,7 +24,7 @@ export interface LabPick {
 
 function theFirst(state: GameState): GraphNode | undefined {
   const graph = state.graph;
-  const edge = graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.properties.courtPosition === 'first')
+  const edge = graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.properties.courtPosition === 'the_first')
     ?? graph.getOutgoingEdges(state.ascendantId, 'thread')[0];
   return edge ? graph.getNode(edge.target) : undefined;
 }

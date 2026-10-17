@@ -129,7 +129,15 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
   land: {
     where: [{ helper: 'landWhere' }, { helper: 'landAround' }],
   },
-  record: {},
+  // A happening: who took part (`participated_in`, actor → event) and where (`occurred_at`,
+  // event → place). These replace the hover-only `who_was_there` row in the Inspector.
+  record: {
+    where: [{ edge: 'occurred_at', dir: 'out', only: 'place' }],
+    who: [
+      { edge: 'participated_in', dir: 'in', fact: 'role', only: 'person' },
+      { edge: 'participated_in', dir: 'in', fact: 'kind', only: 'faction' },
+    ],
+  },
 };
 
 // ─── Node helpers ────────────────────────────────────────────────────────────
@@ -340,7 +348,7 @@ function runHelper(id: HelperId, graph: WorldGraph, state: GameState | null, sub
       for (const e of graph.getOutgoingEdges(subject.id, 'thread')) {
         const n = graph.getNode(e.target);
         if (!n || !isPerson(n)) continue;
-        const first = e.properties.courtPosition === 'first';
+        const first = e.properties.courtPosition === 'the_first';
         const r = rowOf(graph, n, first ? INSPECTOR_WORDS.factFirst : INSPECTOR_WORDS.factThreaded);
         if (r) rows.push(r);
       }
