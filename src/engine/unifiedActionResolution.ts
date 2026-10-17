@@ -199,6 +199,7 @@ import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/con
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { appendDigestEntry } from './digestBuffer';
 import { snapshotCastTarget, snapshotTargetChanges, targetSideChanges, castDigestEntry } from './castTargetChanges';
+import { resolvePrayerCast } from './prayers';
 import { isNotableEntry } from './attentionTier';
 import type { DigestEntry } from '../types/attention';
 import {
@@ -4025,7 +4026,7 @@ export function phaseUnifiedActionProgress(
     }
 
     // Execute and advance
-    const { updatedAction, events: stepEvents } = executeStepResult(
+    const { updatedAction: stepAction, events: stepEvents } = executeStepResult(
       completing_action, template, outcome, opsToExecute, state, rng, state.tick,
       // THR-1537 — a fight step's resolved reach and difficulty ride along (§3c);
       // THR-1538 — and a fight that ended before its roll takes the no-roll route (§1).
@@ -4039,6 +4040,8 @@ export function phaseUnifiedActionProgress(
       },
       runtime,
     );
+    // THR-1935: re-bound once below when a cast answers a prayer (its receipt line).
+    let updatedAction = stepAction;
 
     // If this action targets a hex, route through hexActionBridge to get mutations
     if (
@@ -4243,6 +4246,21 @@ export function phaseUnifiedActionProgress(
           sourceId: completing_action.actionId,
         });
       }
+    }
+
+    // THR-1935: a successful player cast of an answering card answers the town's open
+    // prayer (push 2, split by bought points) or aids a hungry town off the god's
+    // ground (push 1); the receipt gains one line. Fail-soft inside the resolver.
+    if (updatedAction.resolved && isActionSuccess(updatedAction.outcome)) {
+      const prayer = resolvePrayerCast(state, {
+        templateId: completing_action.templateId,
+        actionId: completing_action.actionId,
+        targetId: completing_action.targetId,
+        success: true,
+        isPlayerCast: completing_action.source === 'player' && completing_action.actorId === state.ascendantId,
+      }, template);
+      if (prayer.pressures.length > 0) spherePressures.push(...prayer.pressures);
+      if (prayer.change) updatedAction = appendAftermathChanges(updatedAction, [prayer.change]);
     }
 
     // Sphere pressure: push pressure on action's target entity on resolution.

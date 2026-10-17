@@ -2459,7 +2459,11 @@ export interface CardProgression {
   readonly pricedIn?: SphereName;
   /** Scales how often the card is offered. Default 1. */
   readonly offerWeight?: number;
-  /** Review flags for content passes (e.g. 'merge', 'whispers'). Read by no game system. */
+  /**
+   * Review flags for content passes (e.g. 'merge', 'whispers'). One flag is read by a
+   * game system: `'answers_prayer'` (THR-1935) marks a card whose successful cast
+   * answers a hungry town's prayer (`engine/prayers.ts`, `answersPrayer.test.ts`).
+   */
   readonly flags?: readonly string[];
 }
 

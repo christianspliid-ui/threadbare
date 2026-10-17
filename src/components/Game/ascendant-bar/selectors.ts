@@ -31,6 +31,7 @@ import {
 } from '../../../data/ascendant-bar-content';
 import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
 import { heldSources } from '../../../engine/essenceSources';
+import { faithLine } from '../../../engine/prayers';
 import { resolveToParentLocation } from '../../../engine/sublocationShape';
 import type { SignaturePathState } from '../../../data/ascendant-bar-content';
 import { REACH_SIGNATURE_CONTENT_TEMPLATES } from '../../../data/reach-signature-content';
@@ -489,9 +490,13 @@ export function selectCovenantRows(gameState: GameState): CovenantRowView[] {
   for (const { host, src } of heldSources(gameState.graph, ownerId)) {
     sourceRows.push({
       effectId: `source-${host.id}`,
-      title: src.tier === 'flowering'
-        ? COVENANT_SOURCE_COPY.titleFlowering
-        : COVENANT_SOURCE_COPY.titleDormant,
+      // THR-1935: a faithful town's row is its faith line, not the source-tier word, so
+      // "dormant" never names a town's faith (one resolver with the place page).
+      title: src.kind === 'faithfulCommunity'
+        ? (faithLine(host.name, src.sanctity) ?? COVENANT_SOURCE_COPY.titleDormant)
+        : src.tier === 'flowering'
+          ? COVENANT_SOURCE_COPY.titleFlowering
+          : COVENANT_SOURCE_COPY.titleDormant,
       target: host.name ?? COVENANT_SOURCE_COPY.titleDormant,
       upkeepLine: src.desecrated
         ? COVENANT_SOURCE_COPY.upkeepDesecrated

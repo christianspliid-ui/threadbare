@@ -125,6 +125,12 @@ export function resolveEconomicHost(
 export function scoreSphereAffinity(
   resources: Record<string, ResourceInstance>,
   sphere: SphereName,
+  /**
+   * THR-1935: `'staples'` scores the host's staple goods (grain, grazing, fish, water)
+   * whatever their sphere — a faithful town's faith rides its bread. Default: goods
+   * whose class's primary sphere matches.
+   */
+  match: 'sphere' | 'staples' = 'sphere',
 ): { affinityScore: number; matchedResourceIds: string[] } {
   let weightedSum = 0;
   let weightTotal = 0;
@@ -133,7 +139,7 @@ export function scoreSphereAffinity(
   for (const [resourceId, instance] of Object.entries(resources)) {
     if (!instance || typeof instance.quantity !== 'number') continue;
     const cls = getResourceClass(resourceId);
-    if (cls.primarySphere !== sphere) continue;
+    if (match === 'staples' ? cls.category !== 'staple' : cls.primarySphere !== sphere) continue;
 
     const tier: StockTier = instance.stockTier ?? 'adequate';
     weightedSum += (ECON_STOCK_TIER_SCORE[tier] ?? 0) * cls.baseValue;
@@ -167,7 +173,10 @@ export function computeSanctitySustenance(
   const host = resolveEconomicHost(graph, hostId);
   if (!host) return inert('no-host');
 
-  const { affinityScore, matchedResourceIds } = scoreSphereAffinity(host.resources, sphere);
+  // THR-1935: a faithful town's faith scores its staples, whatever its sphere.
+  const { affinityScore, matchedResourceIds } = scoreSphereAffinity(
+    host.resources, sphere, src.kind === 'faithfulCommunity' ? 'staples' : 'sphere',
+  );
   if (matchedResourceIds.length === 0) return inert('no-matching-goods', host.locationId);
 
   const polarity = sustenancePolarity(affinityScore);

@@ -1909,7 +1909,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.bless_harvest',
-    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: false },
+    // THR-1935: a successful cast answers a hungry town's prayer.
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: false, flags: ['answers_prayer'] },
     name: 'Bless the Harvest',
     spellName: 'Quiet Loam',
     rarityTier: 1,
@@ -2099,7 +2100,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.open_markets',
-    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: false },
+    // THR-1935: a successful cast answers a hungry town's prayer.
+    progression: { tier: 1, offer: 'gift', giftBy: 'milestone', generic: false, flags: ['answers_prayer'] },
     name: 'Open the Markets',
     spellName: 'Awning Unfurled',
     rarityTier: 1,

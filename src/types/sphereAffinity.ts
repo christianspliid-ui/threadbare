@@ -38,7 +38,10 @@ export type PressureSource =
   | 'claim'
   | 'seat'
   | 'carry'
-  | 'attunement';
+  | 'attunement'
+  // THR-1935: one-shot pushes from answering a prayer and from aid off the god's ground.
+  | 'prayer_answered'
+  | 'unbidden_aid';
 
 /**
  * A single sphere pressure event accumulated per tick.

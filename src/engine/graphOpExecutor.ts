@@ -13,6 +13,7 @@ import { hydrateToTier } from './npcGraduation';
 import type { SphereName } from '../types';
 import type { EssenceSource, SourceKind } from '../types/essenceSource';
 import { readEssenceSource, findLatentSourcesInRange } from './essenceSources';
+import { writeEssenceSource } from './essenceSourceWrite';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getFortificationModifier } from './siegeResolution';
 import { markMortalDead, type MortalDeathCause } from './agentLifecycle';
@@ -1009,36 +1010,18 @@ function executeConsecrateSource(
     ? (op.sourceKind as SourceKind)
     : 'shrine';
 
-  const sanctity = existing?.sanctity ?? 0;
-  const contested = !!existing?.contestedBy;
-  const desecrated = !!existing?.desecrated;
-  const source: EssenceSource = {
+  // THR-1935: the write itself is the shared helper, so the prayer phase can write a
+  // faithful town's source without a cast. Same bag, same `controls` edge.
+  const res = writeEssenceSource(graph, {
+    hostId: targetId,
+    actorId: ctx.actorId,
+    sphere,
     kind,
-    sphereAffinity: sphere,
-    sanctity,
-    tier: deriveSourceTier(sanctity, { contested, desecrated }),
-    discoveredBy: ctx.actorId,
-    contestedBy: existing?.contestedBy,
-    desecrated: existing?.desecrated,
-    originTick: existing?.originTick ?? ctx.tick,
-  };
-  graph.updateNode(host.id, { properties: { ...host.properties, essenceSource: source } });
-
-  // Ensure the ascendant controls the host so `computeSourceIncome` sees it.
-  // THR-1297: an `owns` edge counts too — a node already held as a holding must not be
-  // double-claimed onto `controls` as well, or the same claim exists twice under two
-  // names and every "who has this" question gets two answers.
-  const alreadyControls = graph
-    .getOutgoingEdges(ctx.actorId, 'controls')
-    .some((e) => e.target === targetId)
-    || graph.getOutgoingEdges(ctx.actorId, 'owns').some((e) => e.target === targetId);
-  let createdId: string | undefined;
-  if (!alreadyControls) {
-    createdId = `edge_controls_${++opCounter}`;
-    graph.addEdge({ id: createdId, source: ctx.actorId, target: targetId, type: 'controls', properties: {} });
-  }
-
-  return { op, success: true, createdId };
+    tick: ctx.tick,
+    nextControlsEdgeId: () => `edge_controls_${++opCounter}`,
+  });
+  if (!res.success) return { op, success: false, error: `consecrate_source: ${res.error}` };
+  return { op, success: true, createdId: res.createdId };
 }
 
 /**
@@ -1056,6 +1039,8 @@ function executeSanctifySource(
   const src = readEssenceSource(host?.properties);
   if (!host || !src) return { op, success: false, error: `sanctify_source: no essence source on ${targetId}` };
   if (!src.sphereAffinity) return { op, success: false, error: 'sanctify_source: source is untyped — consecrate it first' };
+  // THR-1935: only bread moves a town's faith — Sanctify cannot touch a faithful town.
+  if (src.kind === 'faithfulCommunity') return { op, success: false, error: "sanctify_source: a faithful town's faith moves only with its bread" };
 
   const sanctity = Math.min(1, src.sanctity + SANCTITY_BUILD_PER_ACTION);
   const tier = deriveSourceTier(sanctity, { contested: !!src.contestedBy, desecrated: !!src.desecrated });

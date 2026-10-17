@@ -1163,6 +1163,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Prosperity',
     desc: 'How well a place lives: destitute, struggling, modest, prosperous or flourishing. Good harvests, trade and peace raise it; hunger, war and sickness wear it down.',
   },
+  // THR-1935 — prayers and the faithful. Both outcomes named before the choice (Law 16).
+  'ui.prayer': {
+    label: 'Prayer',
+    desc: 'A hungry town on your ground is asking for help. Answer it and, if it recovers, it keeps faith with you: a small, steady gift of essence. Ignore it and a rival may answer instead.',
+  },
+  'ui.faithful': {
+    label: 'Faithful',
+    desc: 'The people of a town you helped. Their faith feeds you while they eat, and fails if they starve.',
+  },
   'ui.econ.pays_tax': {
     label: 'Pays tax',
     desc: 'This town pays its tax to this faction each day. Where two powers hold a town, only one collects.',

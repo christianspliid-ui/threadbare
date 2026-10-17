@@ -103,6 +103,9 @@ export type TraceCategory =
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   // THR-1934 — unrest as pressure
   | 'unrest.target' | 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped' | 'unrest.riot_seed'
+  // THR-1935 — prayers and the faithful
+  | 'prayer.opened' | 'prayer.answered' | 'prayer.unbidden' | 'prayer.closed'
+  | 'prayer.faith_lapsed' | 'prayer.faith_starved' | 'prayer.slight_landed'
   | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
@@ -705,6 +708,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'journey.choice_applied',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
+  'prayer.opened', 'prayer.answered', 'prayer.unbidden', 'prayer.closed',
+  'prayer.faith_lapsed', 'prayer.faith_starved', 'prayer.slight_landed',
   'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
@@ -2221,6 +2226,60 @@ export interface UnrestRiotSeedTrace extends TraceBase {
   locationId: string;
   targetAgentId: string | null;
   seeded: boolean;
+}
+
+/** THR-1935 — a hungry town on the god's ground opened a prayer. */
+export interface PrayerOpenedTrace extends TraceBase {
+  category: 'prayer.opened';
+  townId: string;
+  eventId: string;
+  band: string;
+  unrest: number;
+  /** unrestInputs.hunger */
+  hunger: number;
+  largestInput: 'hunger' | null;
+  closesTick: number;
+  forced: boolean;
+}
+
+/** THR-1935 — a successful answering cast answered a prayer, or aided a hungry town off the god's ground. */
+export interface PrayerAnsweredTrace extends TraceBase {
+  category: 'prayer.answered' | 'prayer.unbidden';
+  townId: string;
+  /** Null for unbidden aid. */
+  eventId: string | null;
+  templateId: string;
+  actionId: string;
+  pressure: number;
+  split: Partial<Record<SphereName, number>>;
+}
+
+/** THR-1935 — a prayer closed: unanswered, recovered (faith formed or not) or unrecovered. */
+export interface PrayerClosedTrace extends TraceBase {
+  category: 'prayer.closed';
+  townId: string;
+  eventId: string;
+  status: 'unanswered' | 'recovered' | 'unrecovered';
+  faithFormed: boolean;
+  skipped: 'cap' | 'hosts_source' | 'home_seat' | 'helper_failed' | null;
+}
+
+/** THR-1935 — a faithful town's faith lapsed (hunger) or was drained by a rival's crack. */
+export interface FaithChangeTrace extends TraceBase {
+  category: 'prayer.faith_lapsed' | 'prayer.faith_starved';
+  townId: string;
+  sanctityBefore: number;
+  sanctityAfter: number;
+  cause: 'hunger' | 'rival_scheme';
+  rivalId: string | null;
+}
+
+/** THR-1935 — a rival landed first on a town whose prayer went unanswered. */
+export interface SlightLandedTrace extends TraceBase {
+  category: 'prayer.slight_landed';
+  townId: string;
+  rivalId: string;
+  via: 'raid' | 'scheme';
 }
 
 /** Trace: magical saturation ticked for a location */
@@ -5090,6 +5149,12 @@ export type TraceEntry =
   | UnrestTargetTrace
   | UnrestLeaveTrace
   | UnrestRiotSeedTrace
+  // Prayers and the faithful (THR-1935)
+  | PrayerOpenedTrace
+  | PrayerAnsweredTrace
+  | PrayerClosedTrace
+  | FaithChangeTrace
+  | SlightLandedTrace
   // Company traces (THR-74)
   | GroupPhaseTrace
   | GroupFormedTrace

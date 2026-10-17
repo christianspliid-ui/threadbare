@@ -15,6 +15,8 @@ import { readPurseDay, readMeansBand } from '../../../engine/factionPurse';
 import { totalIncome } from '../../../engine/factionPurse/income';
 import { PURSE_CYCLE_TICKS } from '../../../data/faction-purse-constants';
 import { describeAllUnrest } from '../../../engine/unrestPressure/describe';
+import { listPrayers, PRAYER_SLIGHTED_UNTIL_PROP } from '../../../engine/prayers';
+import { TICKS_PER_DAY } from '../../../data/attention-constants';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 
 interface PurseRow {
@@ -134,6 +136,44 @@ function UnrestTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
               <td style={{ ...cell, textAlign: 'left' }}>{r.leaveTo ?? '—'}</td>
             </tr>
           ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** THR-1935 — every prayer this run: town, status, days left, slighted until. Numbers are fine here (debug). */
+function PrayersTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  const rows = useMemo(() => (graph ? listPrayers(graph) : []), [graph, currentTick]);
+  if (!graph || rows.length === 0) return null;
+  const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
+  return (
+    <div data-testid="economy-prayers" style={{ marginBottom: '12px' }}>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>
+        Prayers — {rows.length} opened, {rows.filter(r => r.status === 'open').length} open, {rows.filter(r => r.status === 'recovered').length} recovered
+      </div>
+      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)' }}>
+            <th style={{ ...cell, textAlign: 'left' }}>town</th><th style={{ ...cell, textAlign: 'left' }}>status</th>
+            <th style={cell}>opened</th><th style={cell}>days left</th><th style={cell}>answered</th><th style={cell}>slighted until</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => {
+            const town = graph.getNode(r.townId);
+            const slighted = town?.properties?.[PRAYER_SLIGHTED_UNTIL_PROP];
+            return (
+              <tr key={r.eventId} style={{ color: r.status === 'open' ? '#d4a24a' : 'var(--text-secondary)' }}>
+                <td style={{ ...cell, textAlign: 'left' }} title={r.townId}>{town?.name ?? r.townId}</td>
+                <td style={{ ...cell, textAlign: 'left' }}>{r.status}</td>
+                <td style={cell}>{r.openedTick}</td>
+                <td style={cell}>{r.status === 'open' ? ((r.closesTick - currentTick) / TICKS_PER_DAY).toFixed(1) : '—'}</td>
+                <td style={cell}>{r.answeredTick ?? '—'}</td>
+                <td style={cell}>{typeof slighted === 'number' && slighted > currentTick ? slighted : '—'}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -282,6 +322,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
         <PursesTable graph={graph} currentTick={currentTick} />
         <OathsTable graph={graph} currentTick={currentTick} />
         <UnrestTable graph={graph} currentTick={currentTick} />
+        <PrayersTable graph={graph} currentTick={currentTick} />
         <div style={EMPTY_STATE_STYLE}>No locations with resources yet.</div>
       </div>
     );
@@ -292,6 +333,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
       <PursesTable graph={graph} currentTick={currentTick} />
       <OathsTable graph={graph} currentTick={currentTick} />
       <UnrestTable graph={graph} currentTick={currentTick} />
+        <PrayersTable graph={graph} currentTick={currentTick} />
       <div style={{ marginBottom: '10px', color: 'var(--text-tertiary)' }}>
         Stock tiers across {rows.length} locations —{' '}
         <span style={{ color: TIER_COLOR.scarce }}>{dist.scarce} scarce</span>,{' '}

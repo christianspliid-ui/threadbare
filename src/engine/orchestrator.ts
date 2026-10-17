@@ -156,6 +156,7 @@ import { revealLayer, resetDiscoveryEventCounter } from './revelationResolver';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseLocationTraits } from './phaseLocationTraits';
+import { phasePrayers, pickSlightedTown, landOnSlightedTown, starveFaithful } from './prayers';
 import { phaseSpherePressure } from './phaseSpherePressure';
 import { backfillSphereAffinity } from './sphereAffinity';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
@@ -1790,6 +1791,7 @@ function selectSchemeTarget(
   state: GameState,
   alreadyTargeted: Set<string>,
   rng: () => number,
+  rivalId?: string,
 ): { id: string; name: string } | undefined {
   const locations = state.graph.getNodesByType('location').filter((loc) => {
     if (loc.properties.parentLocationId !== undefined) return false; // top-level only
@@ -1808,6 +1810,12 @@ function selectSchemeTarget(
       tended: turf.tended.filter(n => !alreadyTargeted.has(n.id) && n.properties.hexCol !== undefined),
     };
     for (const n of [...open.untended, ...open.tended]) turfIds.add(n.id);
+    // THR-1935: a town whose prayer went unanswered is the first pick, with no draw.
+    const slighted = pickSlightedTown([...open.untended, ...open.tended], state.tick);
+    if (slighted) {
+      landOnSlightedTown(state.graph, slighted.id, rivalId ?? 'rival', 'scheme', state.tick);
+      return { id: slighted.id, name: displayNameOf(slighted) };
+    }
     if (turfIds.size > 0) turfPick = pickFromTurf(open, rng);
   } catch {
     // Fail-soft: fall back to the uniform pick.
@@ -2077,8 +2085,10 @@ function pickFromTurf(turf: { untended: GraphNode[]; tended: GraphNode[] }, rng:
  * RIVAL_PRESSURE_MAGNITUDE, throttled to one landing a day per
  * DOMINION_RAID_PLACES_PER_DAILY_BURST such places, all rivals together. A tended
  * place absorbs the burst in phaseSpherePressure (`absorbed` on the trace).
+ *
+ * Exported for the THR-1935 test (a slighted town lands first, inside the throttle).
  */
-function landRivalProbe(
+export function landRivalProbe(
   state: GameState,
   rival: RivalDefinition,
   rng: () => number,
@@ -2089,7 +2099,12 @@ function landRivalProbe(
     const turf = godTurf(state);
     const turfCount = turf.untended.length + turf.tended.length;
     const allowance = turfCount > 0 ? raidAllowanceLeft(state.graph, state.ascendantId, state.tick, turfCount) : 0;
-    const pick = allowance > 0 ? pickFromTurf(turf, rng) : undefined;
+    // THR-1935: a town whose prayer went unanswered lands first, inside the throttle
+    // and with no draw, so a world with no slight draws exactly as before.
+    const slighted = allowance > 0 ? pickSlightedTown([...turf.untended, ...turf.tended], state.tick) : undefined;
+    const pick = allowance > 0
+      ? (slighted ? { node: slighted, tended: turf.tended.includes(slighted) } : pickFromTurf(turf, rng))
+      : undefined;
     if (!pick || !sphere) {
       emitTrace({
         category: 'dominion.raid', tick: state.tick, rivalId: rival.id, placeId: null, sphere,
@@ -2106,6 +2121,7 @@ function landRivalProbe(
       sourceId: rival.id,
     });
     recordRaidLanding(state.graph, state.ascendantId, state.tick);
+    if (slighted && pick.node === slighted) landOnSlightedTown(state.graph, slighted.id, rival.id, 'raid', state.tick);
     emitTrace({
       category: 'dominion.raid', tick: state.tick, rivalId: rival.id, placeId: pick.node.id, sphere,
       magnitude: RIVAL_PRESSURE_MAGNITUDE, absorbed: pick.tended, throttled: false,
@@ -2392,6 +2408,11 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
                 significance: 0.85,
                 notification: { channel: 'toast' },
               });
+              // THR-1935: starving the faithful drains the target's faith in you.
+              if (phaseId === 'starve-faithful' && targetNode && targetId) {
+                const starved = starveFaithful(state, targetId, rival);
+                if (starved) events.push({ ...starved, id: nextEventId() });
+              }
               break;
             }
           }
@@ -2550,7 +2571,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
             : undefined;
           target = pick ? { id: pick.hostId, name: pick.name } : undefined;
         } else if (family.requiresTarget) {
-          target = selectSchemeTarget(state, alreadyTargeted, rng);
+          target = selectSchemeTarget(state, alreadyTargeted, rng, rival.id);
         }
         if (!family.requiresTarget || target) {
           const plan = buildRivalScheme(
@@ -3942,6 +3963,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     const r = runInlinePhase('location_trait', s, () => phaseLocationTraits(s, runtime));
     s = r.next;
     phaseEventCounts['location_trait'] = r.eventDelta;
+  }
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6386: Prayers (THR-1935) — daily, after the day's Restless chip and before
+  // sphere pressure: a hungry town on the god's ground prays; answered towns that
+  // recover keep faith; ignored ones head the rival's list. The faith lapse runs every tick.
+  {
+    const r = runInlinePhase('prayer', s, () => phasePrayers(s));
+    s = r.next;
+    phaseEventCounts['prayer'] = r.eventDelta;
   }
   prevEventCount = s.tickEvents.length;
 

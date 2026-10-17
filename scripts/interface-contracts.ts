@@ -6935,6 +6935,97 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-1934. economicPower.test.ts: the arc\'s unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.',
     },
   },
+  // ── THR-1935 S1 — prayers and the faithful ───────────────────────────
+  {
+    id: 'hungry-town-prays-on-gods-ground',
+    producerSystem: ECONOMY,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A hungry town on the god\'s own ground prays (THR-1935 S1). The daily prayer phase (after location_trait) opens a prayer event (eventKind prayer, occurred_at → the town) when a settlement bears the restless trait, hunger is its largest unrestInputs term, it reads Touched or better on the player god\'s Dominion and its 30-day cooldown is clear. The place page and the chronicle say it; the town keeps lastPrayerTick and activePrayerId.',
+    ulTerms: ['Settlement', 'Unrest', 'Hunger', 'Dominion'],
+    mechanism: { kind: 'function', symbols: ['placePrayerView', 'listPrayers'], module: 'src/engine/prayers.ts' },
+    writeSites: ['src/engine/prayers.ts'],
+    readSites: ['src/engine/prayers.ts', 'src/components/Game/LocationView.tsx', 'src/components/Game/debug/EconomyDebugTab.tsx'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1935. prayers.test.ts: a Restless, hunger-led, Touched town opens one prayer with occurred_at → the town and none again inside the cooldown; a Foreign town, a poverty-led town and a calm town open none.',
+    },
+  },
+  {
+    id: 'answered-prayer-pushes-dominion',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'Answering a prayer widens the god\'s ground (THR-1935 S1). A successful player cast of a card flagged answers_prayer (Bless the Harvest, Open the Markets) on a praying town writes participated_in god → prayer and queues ANSWERED_PRAYER_DOMINION_PRESSURE 2 on pendingSpherePressures, split by bought points (source prayer_answered); on a hungry town off the god\'s ground it queues UNBIDDEN_AID_DOMINION_PRESSURE 1 (source unbidden_aid) and sets the cooldown.',
+    ulTerms: ['Dominion', 'Sphere', 'Settlement'],
+    mechanism: { kind: 'state-field', symbols: ['pendingSpherePressures', 'prayer_answered', 'unbidden_aid'] },
+    writeSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/prayers.ts'],
+    readSites: ['src/engine/phaseSpherePressure.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1935. prayers.test.ts: Bless the Harvest on a praying town writes participated_in and pushes summing to 2 split mind 0.6 / spirit 0.4; a failed cast and an unflagged card do nothing; a hungry Foreign town pushes 1 once inside the cooldown.',
+    },
+  },
+  {
+    id: 'recovered-town-keeps-faith',
+    producerSystem: ECONOMY,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A town that recovers keeps faith (THR-1935 S1). An answered prayer whose town loses the restless chip within PRAYER_RECOVERY_WINDOW_DAYS 30 becomes a faithfulCommunity essence source (the god\'s primary by bought points, sanctity 0.5) with the god\'s controls edge, written through the extracted consecrate helper; at most FAITHFUL_COMMUNITY_MAX 4 per god, one bag per host. computeSourceIncome pays it, chargeSourceUpkeep charges it, the Covenants list shows its faith line.',
+    ulTerms: ['Essence', 'Settlement', 'Sphere'],
+    mechanism: { kind: 'node-prop', symbols: ['essenceSource', 'faithfulCommunity'] },
+    writeSites: ['src/engine/prayers.ts', 'src/engine/essenceSourceWrite.ts'],
+    readSites: ['src/engine/essenceSources.ts', 'src/components/Game/ascendant-bar/selectors.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1935. prayers.test.ts: an answered town that loses Restless hosts a faithfulCommunity source of mind at 0.5 with the controls edge, and selectCovenantRows titles it "Millbrook keeps faith with you."; a fifth town forms none.',
+    },
+  },
+  {
+    id: 'faithful-sanctity-reads-staples',
+    producerSystem: ECONOMY,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'A faithful town\'s faith rides its bread (THR-1935 S1). computeSanctitySustenance scores a faithfulCommunity source against the host\'s staple goods (category staple) whatever its sphere: fed holds it at the nurture ceiling, scarce drains it; the prayer phase removes the bag and the faith\'s own controls edge at FAITHFUL_LAPSE_SANCTITY 0, and Sanctify cannot raise it.',
+    ulTerms: ['Essence', 'Stock Tier', 'Settlement'],
+    mechanism: { kind: 'function', symbols: ['scoreSphereAffinity', 'computeSanctitySustenance'], module: 'src/engine/essenceEconomyBridge.ts' },
+    writeSites: ['src/engine/essenceSources.ts', 'src/engine/prayers.ts'],
+    readSites: ['src/engine/essenceEconomyBridge.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1935. prayers.test.ts: adequate staples give zero drift, scarce staples a negative one; run to zero, the source and its controls edge are gone and the lapse line fires.',
+    },
+  },
+  {
+    id: 'slighted-town-heads-rival-raids',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: 'Rival Gods & Schemes',
+    intent:
+      'An ignored prayer draws a rival (THR-1935 S1). A prayer whose window closes unanswered stamps prayerSlightedUntilTick (PRAYER_SLIGHT_DAYS 10) on its town; landRivalProbe and selectSchemeTarget pick a slighted town in the god\'s turf first, ties to the lower id, with no seeded draw, still inside raidAllowanceLeft / recordRaidLanding. The slight clears on its first landing.',
+    ulTerms: ['Settlement', 'Dominion', 'Opposing Dominion'],
+    mechanism: { kind: 'function', symbols: ['pickSlightedTown', 'landOnSlightedTown'], module: 'src/engine/prayers.ts' },
+    writeSites: ['src/engine/prayers.ts'],
+    readSites: ['src/engine/orchestrator.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1935. prayers.test.ts: with ten turf towns and one slighted, landRivalProbe lands on the slighted town with an rng that throws if drawn, clears the slight, and spends the day\'s one landing.',
+    },
+  },
+  {
+    id: 'starve-faithful-drains-faith',
+    producerSystem: 'Rival Gods & Schemes',
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'The rival starves your faithful (THR-1935 S1). The economic scheme\'s starve-faithful crack drops a faithful town\'s sanctity by STARVE_FAITHFUL_SANCTITY_DRAIN 0.25 (trace prayer.faith_starved) and adds its chronicle line; the lapse rule then applies. A target with no faithful town changes nothing new.',
+    ulTerms: ['Essence', 'Settlement'],
+    mechanism: { kind: 'function', symbols: ['starveFaithful'], module: 'src/engine/prayers.ts' },
+    writeSites: ['src/engine/prayers.ts'],
+    readSites: ['src/engine/orchestrator.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence: 'THR-1935. prayers.test.ts: starveFaithful on a faithful town drops its sanctity by 0.25 and names the rival; on a town without faith it returns null.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */
