@@ -1060,7 +1060,8 @@ export interface DebugBridge {
     expiresAtTick: number;
     /** Negative once lapsed but not yet swept. */
     ticksRemaining: number | null;
-    source: 'aftermath';
+    /** THR-1934: `unrest` when a Restless town's leaver leans away. */
+    source: 'aftermath' | 'unrest';
     templateId: string | null;
     stampResidenceOnArrival: boolean;
   } | null>;
