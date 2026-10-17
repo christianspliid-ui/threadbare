@@ -620,6 +620,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setPendingChoice,
     profileModalAgentId,
     profileInitialTab,
+    handleProfileChronicleViewed,
     playingCardId,
     selectedAgenda,
     agendaPickerOpen,
@@ -4828,6 +4829,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
             scrollToNewStrata={agentInfoCard.backstory?.strata.some(s => s.isNew) ?? false}
             // THR-1963 — the thread panel's work/ambition lines and the work moments open Journey.
             initialTab={profileInitialTab}
+            onChronicleViewed={handleProfileChronicleViewed}
             knowledge={profileModalAgentId ? gameState.agentKnowledge.get(profileModalAgentId) : undefined}
             gameState={gameState}
             runtime={runtime}

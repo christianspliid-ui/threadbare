@@ -128,6 +128,14 @@ describe('THR-1963 — AgentProfileModal initialTab', () => {
     render(<AgentProfileModal card={card()} onClose={vi.fn()} scrollToNewStrata />);
     expect(screen.queryByText('The work')).toBeNull();
   });
+
+  it('a Journey open reports no Chronicle visit until the player opens the Chronicle tab', () => {
+    const onChronicleViewed = vi.fn();
+    render(<AgentProfileModal card={card()} onClose={vi.fn()} initialTab="journey" scrollToNewStrata onChronicleViewed={onChronicleViewed} />);
+    expect(onChronicleViewed).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('tab', { name: /Chronicle/ }));
+    expect(onChronicleViewed).toHaveBeenCalled();
+  });
 });
 
 describe('THR-1963 — the work moments link to the work', () => {

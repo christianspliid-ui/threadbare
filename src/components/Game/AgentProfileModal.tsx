@@ -49,6 +49,11 @@ export interface AgentProfileModalProps {
    * work" to the Chronicle whenever new backstory exists. It still beats the default.
    */
   initialTab?: TabId;
+  /**
+   * THR-1963 — called whenever the Chronicle tab is showing, so a backstory layer
+   * skipped at open (a Journey open) is marked read once the player actually sees it.
+   */
+  onChronicleViewed?: () => void;
   /** Per-agent multi-facet knowledge — when present, enables facet-gated sections */
   knowledge?: AgentKnowledge;
   /** Live game state — enables the Chapters tab (THR-603). */
@@ -83,7 +88,7 @@ export interface AgentProfileModalProps {
   mortalShape?: { godTitleLine: string; sphereColor?: string; portraitUrl?: string };
 }
 
-export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, initialTab, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape, dominion }: AgentProfileModalProps) {
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, initialTab, onChronicleViewed, knowledge, gameState, runtime, onOpenEntity, onOpenFaction, onOpenLocation, zIndex, followState, onToggleFollow, mortalShape, dominion }: AgentProfileModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>(
     initialTab ?? (scrollToNewStrata ? 'chronicle' : 'overview')
   );
@@ -106,6 +111,11 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, i
   useEffect(() => {
     if (initialTab) setActiveTab(initialTab);
   }, [initialTab]);
+
+  // Seeing the Chronicle is what reads its new layer (THR-1963).
+  useEffect(() => {
+    if (activeTab === 'chronicle') onChronicleViewed?.();
+  }, [activeTab, onChronicleViewed]);
 
   /** Convert an AttachmentFullEntry to AttachmentDetailData for the detail view */
   const toDetailData = (entry: AttachmentFullEntry): AttachmentDetailData => ({

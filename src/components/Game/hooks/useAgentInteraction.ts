@@ -668,10 +668,21 @@ export function useAgentInteraction({
     }
   }, [selectedAgentId, gameState, setGameState]);
 
+  // The tab is left as it was: every open sets it, and clearing it here would let the
+  // sheet's new-strata redirect flip it to Chronicle during its exit fade.
   const handleCloseProfile = useCallback(() => {
     setProfileModalAgentId(null);
-    setProfileInitialTab(undefined);
   }, []);
+
+  /**
+   * THR-1963 — the sheet reports a visit to its Chronicle tab. A Journey open skips
+   * the open-time read mark, so the layer is marked read here once the player sees it.
+   */
+  const handleProfileChronicleViewed = useCallback(() => {
+    if (profileModalAgentId && markBackstoryRead(gameState.graph, runtime, gameState.ascendantId, profileModalAgentId)) {
+      setGameState(s => ({ ...s }));
+    }
+  }, [profileModalAgentId, gameState, setGameState]);
 
   /**
    * THR-1477 — open a named agent's character sheet directly, from a surface
@@ -780,6 +791,7 @@ export function useAgentInteraction({
     setPendingChoice,
     profileModalAgentId,
     profileInitialTab,
+    handleProfileChronicleViewed,
     playingCardId,
     selectedAgenda,
     agendaPickerOpen,
