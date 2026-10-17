@@ -649,7 +649,8 @@ export function useAgentInteraction({
 
   const handleViewProfile = useCallback((initialTab?: ProfileTabId) => {
     if (selectedAgentId) {
-      setProfileInitialTab(typeof initialTab === 'string' ? initialTab : undefined);
+      const tab = typeof initialTab === 'string' ? initialTab : undefined;
+      setProfileInitialTab(tab);
       // IX-002: mutual exclusion — close strand view when opening profile modal
       // IX-008: close drawer when opening full-screen profile modal
       setStrandViewAgent(null);
@@ -658,7 +659,10 @@ export function useAgentInteraction({
 
       // Record the backstory tier read on the thread edge so New badges clear. The engine
       // writes and bumps worldVersion (THR-1822 § D15); re-render so the card recomputes.
-      if (markBackstoryRead(gameState.graph, runtime, gameState.ascendantId, selectedAgentId)) {
+      // Only when the sheet lands on the Chronicle: an explicit other tab (THR-1963's
+      // Journey links) beats the new-strata redirect, so marking read there would
+      // consume a layer the player never saw.
+      if ((!tab || tab === 'chronicle') && markBackstoryRead(gameState.graph, runtime, gameState.ascendantId, selectedAgentId)) {
         setGameState(s => ({ ...s }));
       }
     }
