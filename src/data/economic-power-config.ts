@@ -31,6 +31,16 @@ export const ECON_FACTION_POWER_WEIGHT = 0.5;
 /** Max simultaneously running scarcity arcs, world-wide (attention budget). */
 export const SCARCITY_ARC_MAX_ACTIVE = 3;
 
+/**
+ * Days a town may hold flashpoint before its arc is **spent** (THR-1919).
+ * A spent arc stays on the town (it is still starving, and still dissolves
+ * with a scar on recovery) but no longer counts against
+ * `SCARCITY_ARC_MAX_ACTIVE`, so the attention slot frees for a fresh famine
+ * elsewhere. Without it, stocks that never recover pinned the first three
+ * scarce towns at flashpoint from day 4 forever.
+ */
+export const SCARCITY_ARC_FLASHPOINT_HOLD_DAYS = 10;
+
 /** Unrest added to the location when the arc reaches its unrest phase. */
 export const SCARCITY_ARC_UNREST_DELTA = 12;
 

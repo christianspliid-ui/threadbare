@@ -49,8 +49,24 @@ import {
   SCARCITY_ARC_FLASHPOINT_UNREST_DELTA,
   SCARCITY_ARC_SEED_DELAY_TICKS,
   SCARCITY_ARC_SEED_PRIORITY,
+  SCARCITY_ARC_FLASHPOINT_HOLD_DAYS,
 } from '../../data/economic-power-config';
+import { TICKS_PER_DAY } from '../../data/attention-constants';
 import type { PendingEncounterSeed } from '../../types/unifiedAction';
+
+/**
+ * Lean scarcity-arc state on a settlement node (`scarcityArc` property bag).
+ * `phaseSinceTick` and `spentTick` are THR-1919 additions; older saves lack them.
+ */
+interface ScarcityArcState {
+  resourceId: string;
+  phase: 'shortage' | 'hoarding' | 'unrest' | 'flashpoint';
+  sinceTick: number;
+  /** Tick the arc entered its current phase. */
+  phaseSinceTick?: number;
+  /** Tick the flashpoint was spent; a spent arc no longer counts against the cap. */
+  spentTick?: number;
+}
 
 function emitEconTrace(
   trace:
@@ -234,7 +250,9 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
   // Lean arc state lives on the location node (`scarcityArc` property bag);
   // every phase is an intervention point — an encounter seed for a local
   // mortal, never a cutscene. Recovery mid-arc dissolves it; recovery after
-  // unrest leaves a cool-failure chronicle scar (half-averted famine).
+  // unrest leaves a cool-failure chronicle scar (half-averted famine). A
+  // flashpoint held `SCARCITY_ARC_FLASHPOINT_HOLD_DAYS` is spent: it stays,
+  // but frees its slot under `SCARCITY_ARC_MAX_ACTIVE` (THR-1919).
   const ARC_ORDER = ['shortage', 'hoarding', 'unrest', 'flashpoint'] as const;
   const newSeeds: PendingEncounterSeed[] = [];
   const pendingSeedIds = new Set((state.pendingEncounterSeeds ?? []).map((s2) => s2.seedId));
@@ -244,34 +262,22 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
     .getNodesByType('location')
     .filter((n) => ['hamlet', 'town', 'city', 'capital'].includes(n.properties.locationSubtype as string))
     .sort((a, b) => a.id.localeCompare(b.id));
-  for (const loc of settlements) {
-    const arc = loc.properties.scarcityArc as
-      | { resourceId: string; phase: typeof ARC_ORDER[number]; sinceTick: number }
-      | undefined;
-    // Is any STAPLE resource scarce here right now? (bag keys are the ids)
-    const resources = readResources(loc.properties);
-    const scarceStapleId = Object.entries(resources).find(
+  // Is any STAPLE resource scarce here right now? (bag keys are the ids)
+  const scarceStapleOf = (loc: (typeof settlements)[number]): string | undefined =>
+    Object.entries(readResources(loc.properties)).find(
       ([rid, r]) => r.stockTier === 'scarce' && getResourceClass(rid).category === 'staple',
     )?.[0];
+  const flashpointHoldTicks = SCARCITY_ARC_FLASHPOINT_HOLD_DAYS * TICKS_PER_DAY;
+  // Two passes (THR-1919): advance every running arc first so the cap counts
+  // the whole world's live arcs, then open new arcs into the free slots.
+  // (One pass let an early-sorted town open before later arcs were counted.)
+  const unarced: Array<{ loc: (typeof settlements)[number]; scarceStapleId: string }> = [];
+  for (const loc of settlements) {
+    const arc = loc.properties.scarcityArc as ScarcityArcState | undefined;
+    const scarceStapleId = scarceStapleOf(loc);
 
     if (!arc) {
-      if (!scarceStapleId) continue;
-      if (arcsActive >= SCARCITY_ARC_MAX_ACTIVE) continue;
-      loc.properties.scarcityArc = {
-        resourceId: scarceStapleId,
-        phase: 'shortage',
-        sinceTick: tick,
-      };
-      arcsActive++;
-      arcTransitions++;
-      emitEconTrace({
-        category: 'scarcity_arc_phase' as const,
-        tick,
-        summary: `Scarcity arc opens at ${loc.name}: ${scarceStapleId} shortage`,
-        locationId: loc.id,
-        resourceId: scarceStapleId,
-        phase: 'shortage' as const,
-      });
+      if (scarceStapleId) unarced.push({ loc, scarceStapleId });
       continue;
     }
 
@@ -304,11 +310,32 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
       continue;
     }
 
-    arcsActive++;
+    if (arc.spentTick !== undefined) continue; // spent: holds while scarce, frees its slot
     const idx = ARC_ORDER.indexOf(arc.phase);
-    if (idx >= ARC_ORDER.length - 1) continue; // flashpoint holds while scarce
+    if (idx >= ARC_ORDER.length - 1) {
+      // Flashpoint holds while scarce — until it has held long enough to be
+      // spent (THR-1919). Arcs written before `phaseSinceTick` existed reached
+      // flashpoint three scans after opening.
+      const flashpointSince = arc.phaseSinceTick ?? arc.sinceTick + 3 * ECON_POWER_SCAN_INTERVAL_TICKS;
+      if (tick - flashpointSince >= flashpointHoldTicks) {
+        loc.properties.scarcityArc = { ...arc, spentTick: tick };
+        arcTransitions++;
+        emitEconTrace({
+          category: 'scarcity_arc_phase' as const,
+          tick,
+          summary: `Scarcity arc at ${loc.name} is spent: flashpoint held ${SCARCITY_ARC_FLASHPOINT_HOLD_DAYS} days, slot freed`,
+          locationId: loc.id,
+          resourceId: arc.resourceId,
+          phase: 'spent' as const,
+        });
+        continue;
+      }
+      arcsActive++;
+      continue;
+    }
+    arcsActive++;
     const nextPhase = ARC_ORDER[idx + 1];
-    loc.properties.scarcityArc = { ...arc, phase: nextPhase };
+    loc.properties.scarcityArc = { ...arc, phase: nextPhase, phaseSinceTick: tick };
     arcTransitions++;
 
     // Phase effects + the intervention encounter seed.
@@ -353,6 +380,22 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
       locationId: loc.id,
       resourceId: arc.resourceId,
       phase: nextPhase,
+    });
+  }
+
+  for (const { loc, scarceStapleId } of unarced) {
+    if (arcsActive >= SCARCITY_ARC_MAX_ACTIVE) break;
+    const opened: ScarcityArcState = { resourceId: scarceStapleId, phase: 'shortage', sinceTick: tick, phaseSinceTick: tick };
+    loc.properties.scarcityArc = opened;
+    arcsActive++;
+    arcTransitions++;
+    emitEconTrace({
+      category: 'scarcity_arc_phase' as const,
+      tick,
+      summary: `Scarcity arc opens at ${loc.name}: ${scarceStapleId} shortage`,
+      locationId: loc.id,
+      resourceId: scarceStapleId,
+      phase: 'shortage' as const,
     });
   }
 

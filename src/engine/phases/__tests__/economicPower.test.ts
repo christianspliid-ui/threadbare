@@ -12,7 +12,9 @@ import {
   ECON_SPHERE_DRIFT_PER_TICK,
   ECON_FACTION_POWER_WEIGHT,
   SCARCITY_ARC_UNREST_DELTA,
+  SCARCITY_ARC_FLASHPOINT_HOLD_DAYS,
 } from '../../../data/economic-power-config';
+import { TICKS_PER_DAY } from '../../../data/attention-constants';
 import type { GameState } from '../../../types/gameState';
 import type { PhaseContext } from '../../phaseRegistry';
 
@@ -157,6 +159,67 @@ describe('phaseEconomicPower (THR-617)', () => {
     expect((graph.getNode('a')!.properties.scarcityArc as { phase: string }).phase).toBe('flashpoint');
     expect(result.pendingEncounterSeeds?.[0]?.templateId).toBe('encounter_route_embargo');
     expect(result.chronicleEntries?.some((c) => c.title.startsWith('Flashpoint'))).toBe(true);
+  });
+
+  it('a flashpoint held SCARCITY_ARC_FLASHPOINT_HOLD_DAYS is spent and frees its slot for a fourth scarce town (THR-1919)', () => {
+    const graph = new WorldGraph();
+    const scarce = { grain: { resourceId: 'grain', quantity: 2, stockTier: 'scarce' } };
+    // a, b, c sort before d, so they take the three slots first.
+    addTown(graph, 'a', 'Aford', { resources: scarce });
+    addTown(graph, 'b', 'Bmere', { resources: scarce });
+    addTown(graph, 'c', 'Cwick', { resources: scarce });
+    addTown(graph, 'd', 'Dholm', { resources: scarce });
+    const arcOf = (id: string) => graph.getNode(id)!.properties.scarcityArc as
+      { phase: string; phaseSinceTick?: number; spentTick?: number } | undefined;
+
+    // Scans 1–4: a, b, c open and climb to flashpoint; d is capped out.
+    for (let s = 1; s <= 4; s++) phaseEconomicPower(makeState(SCAN * s, graph), ctx);
+    expect(['a', 'b', 'c'].map((id) => arcOf(id)?.phase)).toEqual(['flashpoint', 'flashpoint', 'flashpoint']);
+    expect(arcOf('d')).toBeUndefined();
+    const flashpointTick = arcOf('a')!.phaseSinceTick!;
+    expect(flashpointTick).toBe(SCAN * 4);
+
+    // Still capped one scan before the hold elapses.
+    const holdTicks = SCARCITY_ARC_FLASHPOINT_HOLD_DAYS * TICKS_PER_DAY;
+    const lastHeldScan = flashpointTick + holdTicks - SCAN;
+    phaseEconomicPower(makeState(lastHeldScan, graph), ctx);
+    expect(arcOf('a')!.spentTick).toBeUndefined();
+    expect(arcOf('d')).toBeUndefined();
+
+    // The hold elapses: a, b, c are spent (still flashpoint, still on the town), and d opens.
+    clearTraces();
+    phaseEconomicPower(makeState(flashpointTick + holdTicks, graph), ctx);
+    for (const id of ['a', 'b', 'c']) {
+      expect(arcOf(id)!.phase).toBe('flashpoint');
+      expect(arcOf(id)!.spentTick).toBe(flashpointTick + holdTicks);
+    }
+    expect(arcOf('d')?.phase).toBe('shortage');
+    const phases = getTraces()
+      .filter((t) => t.category === 'scarcity_arc_phase')
+      .map((t) => (t as unknown as { locationId: string; phase: string }));
+    expect(phases.filter((p) => p.phase === 'spent').map((p) => p.locationId)).toEqual(['a', 'b', 'c']);
+
+    // A spent arc does not re-seed or re-open while the town stays scarce, and
+    // still dissolves on recovery.
+    const later = phaseEconomicPower(makeState(flashpointTick + holdTicks + SCAN, graph), ctx);
+    expect(later.pendingEncounterSeeds?.some((s2) => s2.seedId.includes('_a_')) ?? false).toBe(false);
+    graph.getNode('a')!.properties.resources = { grain: { resourceId: 'grain', quantity: 60, stockTier: 'surplus' } };
+    const recovered = phaseEconomicPower(makeState(flashpointTick + holdTicks + SCAN * 2, graph), ctx);
+    expect(arcOf('a')).toBeUndefined();
+    expect(recovered.chronicleEntries?.some((c) => c.prose.includes('Half-averted'))).toBe(true);
+  });
+
+  it('a legacy flashpoint arc without phaseSinceTick is timed from three scans after it opened', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'a', 'Aford', {
+      resources: { grain: { resourceId: 'grain', quantity: 2, stockTier: 'scarce' } },
+      scarcityArc: { resourceId: 'grain', phase: 'flashpoint', sinceTick: 0 },
+    });
+    const due = 3 * SCAN + SCARCITY_ARC_FLASHPOINT_HOLD_DAYS * TICKS_PER_DAY;
+    phaseEconomicPower(makeState(due - SCAN, graph), ctx);
+    expect((graph.getNode('a')!.properties.scarcityArc as { spentTick?: number }).spentTick).toBeUndefined();
+    phaseEconomicPower(makeState(due, graph), ctx);
+    expect((graph.getNode('a')!.properties.scarcityArc as { spentTick?: number }).spentTick).toBe(due);
   });
 
   it('recovery past unrest dissolves the arc with a cool-failure scar', () => {

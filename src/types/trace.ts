@@ -6682,7 +6682,8 @@ export interface ScarcityArcPhaseTrace extends TraceBase {
   category: 'scarcity_arc_phase';
   locationId: string;
   resourceId: string;
-  phase: 'shortage' | 'hoarding' | 'unrest' | 'flashpoint' | 'recovered';
+  /** `spent` (THR-1919): held flashpoint long enough to free its arc slot. */
+  phase: 'shortage' | 'hoarding' | 'unrest' | 'flashpoint' | 'recovered' | 'spent';
 }
 
 // ═══════════════════════════════════════════════════════════════════
