@@ -238,6 +238,8 @@ describe('THR-401 — phaseProsperity natural recovery and decay', () => {
   });
 });
 
+// THR-1934 — the per-tick bleed is the legacy model (the flag-off path); under the
+// pressure model low health is the target's `sickness` input (unrestPressure.test.ts).
 describe('THR-401 — phaseUnrest bleed from low population health', () => {
   let graph: WorldGraph;
 
@@ -254,7 +256,7 @@ describe('THR-401 — phaseUnrest bleed from low population health', () => {
       id: 'loc.suffering', type: 'location', name: 'Suffering',
       properties: { locationSubtype: 'hamlet', unrest: 10, populationHealth: 20 },
     });
-    phaseUnrest(makeState(graph));
+    phaseUnrest(makeState(graph), { pressure: false });
     const newUnrest = graph.getNode('loc.suffering')!.properties.unrest as number;
     // Old behavior: decay -1. New: decay -1 + bleed +1 = net change 0.
     expect(newUnrest).toBe(10 - UNREST_DECAY_RATE + LOC_HEALTH_UNREST_BLEED);
@@ -265,7 +267,7 @@ describe('THR-401 — phaseUnrest bleed from low population health', () => {
       id: 'loc.well', type: 'location', name: 'Well',
       properties: { locationSubtype: 'hamlet', unrest: 10, populationHealth: 80 },
     });
-    phaseUnrest(makeState(graph));
+    phaseUnrest(makeState(graph), { pressure: false });
     const newUnrest = graph.getNode('loc.well')!.properties.unrest as number;
     expect(newUnrest).toBe(10 - UNREST_DECAY_RATE);
   });
@@ -275,7 +277,7 @@ describe('THR-401 — phaseUnrest bleed from low population health', () => {
       id: 'loc.broken', type: 'location', name: 'Broken',
       properties: { locationSubtype: 'hamlet', unrest: 0, populationHealth: 20 },
     });
-    phaseUnrest(makeState(graph));
+    phaseUnrest(makeState(graph), { pressure: false });
     // Pure decay would short-circuit at unrest = 0; bleed forces processing.
     const newUnrest = graph.getNode('loc.broken')!.properties.unrest as number;
     expect(newUnrest).toBe(0); // -1 decay + 1 bleed, then clamped at 0

@@ -40,6 +40,7 @@ import { getSettlementNotable } from '../../engine/settlementNotable';
 import type { FamiliarityMap } from '../../types/familiarity';
 import { NotableLine } from './NotableLine';
 import { DominionBox } from './DominionBox';
+import { fortunesSentence } from '../../data/fortunes-prose';
 import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 interface LocationViewProps {
@@ -1026,6 +1027,49 @@ const LivelihoodLine = memo(function LivelihoodLine({
   );
 });
 
+// Fortunes row — how the town lives and, when it carries a band chip, what drives
+// its unrest, in one sentence (THR-1934). Words only (Law 13); the prosperity word
+// carries the registry tooltip (Law 17). Reads the trait edges and the unrest inputs
+// the unrest phase writes, so it agrees with the Restless / Lawless chips (Law 56).
+// `tick` is a memo key only: the graph mutates in place, so without it the row would
+// keep yesterday's sentence while the page stays open.
+const FortunesLine = memo(function FortunesLine({
+  location,
+  graph,
+}: {
+  location: GraphNode;
+  graph?: WorldGraph;
+  tick?: number;
+}) {
+  const sentence = graph ? fortunesSentence(graph, location.id) : null;
+  if (!sentence) return null;
+  return (
+    <div className="mx-6 mt-3" style={{ maxWidth: '820px' }} data-testid="fortunes-line">
+      <div
+        className="rounded-panel border px-4 py-3"
+        style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-gold)' }}
+      >
+        <p className="section-heading" style={{ marginBottom: '0.35rem' }}>
+          Fortunes
+        </p>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          {sentence.lead}
+          <Tooltip id="ui.econ.prosperity">
+            <span
+              className="cursor-help"
+              role="term"
+              style={{ textDecoration: 'underline', textDecorationStyle: 'dotted', color: 'var(--text-secondary)' }}
+            >
+              {sentence.prosperityWord}
+            </span>
+          </Tooltip>
+          {sentence.tail}
+        </p>
+      </div>
+    </div>
+  );
+});
+
 // Walls line — fortification state as prose with battle IPK keywords (THR-628).
 // Renders only when the settlement has walls worth mentioning (fortification
 // above baseline) or has been breached; the breach flips **Fortified** →
@@ -1434,6 +1478,8 @@ export const LocationView = memo(function LocationView({
         />
       )}
 
+      {/* Fortunes row — prosperity and unrest in one sentence (THR-1934) */}
+      <FortunesLine location={location} graph={graph} tick={tick} />
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}
       <LivelihoodLine location={location} graph={graph} sublocationIds={sublocationIds} />
       <DominionBox vm={dominion ?? null} />

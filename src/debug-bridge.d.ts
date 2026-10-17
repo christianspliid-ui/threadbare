@@ -863,6 +863,29 @@ export interface DebugBridge {
   }>>;
 
   /**
+   * THR-1934 — a settlement's unrest pressure, by id, id prefix or partial name.
+   * `unrest` is the number, `target` what it drifts toward (4 a day), `inputs` the six
+   * terms the target sums (hunger, poverty, siege, sickness, deathSite, contentment),
+   * `hungerDays` the days hungry in a row, `band` the plain reading of the number,
+   * `chips` the Restless / Lawless trait edges the page shows, `leaveTo` where the
+   * last leaver was sent. Null when nothing matches or the game is not loaded.
+   * Always `await` it.
+   */
+  getUnrest: (locationIdOrName: string) => Promise<{
+    locationId: string;
+    locationName: string;
+    unrest: number;
+    target: number | null;
+    inputs: { hunger: number; poverty: number; siege: number; sickness: number; deathSite: number; contentment: number } | null;
+    hungerDays: number;
+    band: 'calm' | 'restless' | 'lawless' | 'on_the_edge' | 'rising';
+    chips: { restless: boolean; lawless: boolean };
+    restlessDays: number;
+    leaveTo: string | null;
+    fortunes: string | null;
+  } | null>;
+
+  /**
    * THR-790: every location trait on every place-tier Location — or one place's,
    * matched by id, id prefix, or partial name (case-insensitive).
    *
@@ -884,7 +907,7 @@ export interface DebugBridge {
     since: number | null;
     source: string | null;
     ticksRemaining: number | null;
-    sustain: Record<'welcoming' | 'lawless' | 'veilThin' | 'haunted' | 'bloodSoaked', number>;
+    sustain: Record<'welcoming' | 'restless' | 'lawless' | 'veilThin' | 'haunted' | 'bloodSoaked', number>;
     /**
      * THR-1528: the place's bloodshed this tick — the weighted count of battle records
      * inside the Blood-soaked window — or null when the place never saw a battle.
@@ -1037,7 +1060,8 @@ export interface DebugBridge {
     expiresAtTick: number;
     /** Negative once lapsed but not yet swept. */
     ticksRemaining: number | null;
-    source: 'aftermath';
+    /** THR-1934: `unrest` when a Restless town's leaver leans away. */
+    source: 'aftermath' | 'unrest';
     templateId: string | null;
     stampResidenceOnArrival: boolean;
   } | null>;

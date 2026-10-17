@@ -1,10 +1,18 @@
 /**
  * Phase Unrest — tick unrest for all settlement locations.
  *
- * Unrest represents political instability. It is:
+ * Unrest represents political instability.
+ *
+ * **THR-1934 — pressure, not a spike.** With `UNREST_PRESSURE_ENABLED` (the default)
+ * this phase hands off to `runUnrestPressure` (`unrestPressure.ts`): once a day each
+ * settlement's target is summed from hunger, poverty, a siege, sickness and its recent
+ * dead, less its contentment, and every tick unrest drifts toward it by at most
+ * `UNREST_DRIFT_PER_DAY` a day. Restless towns lose people; a town that turns Lawless
+ * while hungry riots. The 70 / 90 bands (defection, rising) are S2's (THR-1957).
+ *
+ * With the flag off, the legacy model below runs unchanged:
  *   - Driven UP by player actions (Incite Unrest), agent betrayals, low prosperity
  *   - Driven DOWN by natural decay each tick; prosperity acts as a damper
- *   - Threshold effects: defection rolls at 70, settlement sack risk at 90
  *
  * NFP compliance:
  *   #1 Tunability: all rates and thresholds are named constants
@@ -19,6 +27,8 @@ import {
   LOC_HEALTH_UNREST_BLEED,
   LOC_HEALTH_DEFAULT_BASELINE,
 } from '../data/location-action-constants';
+import { UNREST_PRESSURE_ENABLED } from '../data/unrest-pressure-constants';
+import { runUnrestPressure } from './unrestPressure';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -35,7 +45,16 @@ export const UNREST_SACK_THRESHOLD = 90;
  * Returns empty object — this phase mutates graph node properties in-place
  * (same pattern as phaseReputationDecay in the orchestrator).
  */
-export function phaseUnrest(state: GameState): Partial<GameState> {
+export function phaseUnrest(
+  state: GameState,
+  opts: { pressure?: boolean } = {},
+): Partial<GameState> {
+  if (opts.pressure ?? UNREST_PRESSURE_ENABLED) {
+    const { seeds } = runUnrestPressure(state);
+    return seeds.length > 0
+      ? { pendingEncounterSeeds: [...(state.pendingEncounterSeeds ?? []), ...seeds] }
+      : {};
+  }
   const graph = state.graph;
   const tick = state.tick;
 

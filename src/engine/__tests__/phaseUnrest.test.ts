@@ -19,21 +19,21 @@ function makeState(locationProps: Record<string, unknown>[]): GameState {
 describe('phaseUnrest', () => {
   it('decays unrest by UNREST_DECAY_RATE', () => {
     const state = makeState([{ unrest: 50 }]);
-    phaseUnrest(state);
+    phaseUnrest(state, { pressure: false });
     const node = state.graph.getNode('loc_0');
     expect(node?.properties.unrest).toBeCloseTo(50 - UNREST_DECAY_RATE, 5);
   });
 
   it('applies extra decay when prosperity > 60', () => {
     const state = makeState([{ unrest: 50, prosperity: 80 }]);
-    phaseUnrest(state);
+    phaseUnrest(state, { pressure: false });
     const node = state.graph.getNode('loc_0');
     expect(node?.properties.unrest).toBeCloseTo(50 - UNREST_DECAY_RATE - UNREST_PROSPERITY_DAMPER, 5);
   });
 
   it('does not decay below 0', () => {
     const state = makeState([{ unrest: 0.5 }]);
-    phaseUnrest(state);
+    phaseUnrest(state, { pressure: false });
     const node = state.graph.getNode('loc_0');
     expect(node?.properties.unrest).toBeGreaterThanOrEqual(0);
   });
@@ -41,7 +41,7 @@ describe('phaseUnrest', () => {
   it('skips locations with unrest = 0', () => {
     const state = makeState([{ unrest: 0 }]);
     const before = state.graph.getNode('loc_0')?.properties.unrest;
-    phaseUnrest(state);
+    phaseUnrest(state, { pressure: false });
     const after = state.graph.getNode('loc_0')?.properties.unrest;
     // Should not have been set (still 0 or undefined)
     expect(after).toBe(before);
@@ -56,7 +56,7 @@ describe('phaseUnrest', () => {
       properties: { locationSubtype: 'wilderness', unrest: 50 },
     });
     const state = { tick: 1, graph } as unknown as GameState;
-    phaseUnrest(state);
+    phaseUnrest(state, { pressure: false });
     // Wilderness is not a settlement — should not decay
     const node = state.graph.getNode('wild_0');
     expect(node?.properties.unrest).toBe(50);

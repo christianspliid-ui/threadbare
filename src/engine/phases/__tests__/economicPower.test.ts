@@ -3,6 +3,7 @@
  * and the faction economic gold term.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { GRANARY_RIOT_TEMPLATE_ID } from '../../../data/unrest-pressure-constants';
 import { WorldGraph } from '../../graph';
 import { phaseEconomicPower } from '../economicPower';
 import { computeRawScore } from '../../domainCapability';
@@ -11,7 +12,6 @@ import {
   ECON_POWER_SCAN_INTERVAL_TICKS,
   ECON_SPHERE_DRIFT_PER_TICK,
   ECON_FACTION_POWER_WEIGHT,
-  SCARCITY_ARC_UNREST_DELTA,
   SCARCITY_ARC_FLASHPOINT_HOLD_DAYS,
 } from '../../../data/economic-power-config';
 import { TICKS_PER_DAY } from '../../../data/attention-constants';
@@ -128,7 +128,7 @@ describe('phaseEconomicPower (THR-617)', () => {
     });
   });
 
-  it('a scarce staple opens an arc, advances per scan, raises unrest, and seeds interventions', () => {
+  it('a scarce staple opens an arc, advances per scan, and seeds interventions — no unrest jump (THR-1934)', () => {
     const graph = new WorldGraph();
     addTown(graph, 'a', 'Aford', {
       resources: { grain: { resourceId: 'grain', quantity: 2, stockTier: 'scarce' } },
@@ -147,15 +147,19 @@ describe('phaseEconomicPower (THR-617)', () => {
     expect((graph.getNode('a')!.properties.scarcityArc as { phase: string }).phase).toBe('hoarding');
     expect(result.pendingEncounterSeeds?.[0]?.encounterFamily).toBe('mct.quest');
 
-    // Scan 3: hoarding -> unrest (+unrest, cg seed).
+    // Scan 3: hoarding -> unrest. THR-1934: hunger carries the anger (the unrest
+    // phase's hunger input), so the arc adds no jump; its scene is the granary riot.
+    const unrestBefore = graph.getNode('a')!.properties.unrest;
     state = makeState(SCAN * 3, graph);
     result = phaseEconomicPower(state, ctx);
-    expect((graph.getNode('a')!.properties.unrest as number)).toBe(SCARCITY_ARC_UNREST_DELTA);
-    expect(result.pendingEncounterSeeds?.[0]?.encounterFamily).toBe('cg.quest');
+    expect(graph.getNode('a')!.properties.unrest).toBe(unrestBefore);
+    expect(result.pendingEncounterSeeds?.[0]?.templateId).toBe(GRANARY_RIOT_TEMPLATE_ID);
+    expect(result.pendingEncounterSeeds?.[0]?.encounterFamily).toBeUndefined();
 
-    // Scan 4: unrest -> flashpoint (+more unrest, embargo template seed, chronicle beat).
+    // Scan 4: unrest -> flashpoint (embargo template seed, chronicle beat; no unrest jump).
     state = makeState(SCAN * 4, graph);
     result = phaseEconomicPower(state, ctx);
+    expect(graph.getNode('a')!.properties.unrest).toBe(unrestBefore);
     expect((graph.getNode('a')!.properties.scarcityArc as { phase: string }).phase).toBe('flashpoint');
     expect(result.pendingEncounterSeeds?.[0]?.templateId).toBe('encounter_route_embargo');
     expect(result.chronicleEntries?.some((c) => c.title.startsWith('Flashpoint'))).toBe(true);

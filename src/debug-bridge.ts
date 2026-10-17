@@ -4057,6 +4057,15 @@ if (import.meta.env.DEV) {
       return describeLocationTraits(graph, locationIdOrName, _gameStateProvider?.()?.tick ?? 0);
     },
 
+    // THR-1934: a settlement's unrest pressure — the number, its target, the six inputs,
+    // the hunger counter, the band and where its last leaver was sent.
+    getUnrest: async (locationIdOrName: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+      const { describeUnrest } = await import('./engine/unrestPressure/describe');
+      return describeUnrest(graph, locationIdOrName);
+    },
+
     // THR-1528: the records battles leave on the ground they were fought over.
     getBattleRecords: async (locationIdOrName?: string) => {
       const graph = _graphProvider?.();

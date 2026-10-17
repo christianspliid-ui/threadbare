@@ -190,7 +190,9 @@ describe('THR-1244 — condition → damaged/healed proxy', () => {
       // definition, whoever bears it.
       // 65 → 66 with THR-1528: `trait.condition.location.blood_soaked`
       // (`#negative`), minted from battle records — a place's too.
-      expect(checked).toBe(66);
+      // 66 → 67 with THR-1934: `trait.condition.location.restless` (`#negative`),
+      // minted from unrest below Lawless — a place's as well.
+      expect(checked).toBe(67);
     });
 
     it('classifies wounds and curses as harm, boons as not', () => {

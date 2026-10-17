@@ -45,6 +45,7 @@ import {
   DEATH_SITE_HAUNTING_CADENCE_TICKS,
   DEATH_SITE_UNREST_TARGET_PROPERTY,
 } from '../data/death-site-unrest-constants';
+import { UNREST_PRESSURE_ENABLED } from '../data/unrest-pressure-constants';
 import {
   LOC_HEALTH_DEFAULT_BASELINE,
   LOC_HEALTH_RECOVERY_RATE,
@@ -917,7 +918,9 @@ export function phaseProsperity(state: GameState): Partial<GameState> {
       if (deathSiteTarget > 0 || loc.properties[DEATH_SITE_UNREST_TARGET_PROPERTY] !== undefined) {
         loc.properties[DEATH_SITE_UNREST_TARGET_PROPERTY] = deathSiteTarget;
       }
-      if (deathSiteTarget > 0 && tick % DEATH_SITE_HAUNTING_CADENCE_TICKS === 0) {
+      // THR-1934 — under the pressure model the target is the unrest phase's
+      // `deathSite` input instead of a lift applied here.
+      if (!UNREST_PRESSURE_ENABLED && deathSiteTarget > 0 && tick % DEATH_SITE_HAUNTING_CADENCE_TICKS === 0) {
         const prevUnrest = typeof loc.properties.unrest === 'number' ? loc.properties.unrest : 0;
         if (prevUnrest < deathSiteTarget) {
           deathSiteUnrestApplied = deathSiteTarget - prevUnrest;

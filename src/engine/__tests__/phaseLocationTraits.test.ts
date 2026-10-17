@@ -222,7 +222,8 @@ describe('phaseLocationTraits — minting (THR-790)', () => {
   it('mints Lawless from sustained unrest', () => {
     addTown(graph, 'loc.riot', { unrest: LOCATION_TRAIT_LAWLESS_ENTER });
     run(graph, SUSTAIN);
-    expect(traitsOn(graph, 'loc.riot')).toEqual([LOCATION_TRAIT_IDS.lawless]);
+    // THR-1934 — Restless enters lower on the same number, so a lawless town is restless too.
+    expect(traitsOn(graph, 'loc.riot')).toEqual([LOCATION_TRAIT_IDS.lawless, LOCATION_TRAIT_IDS.restless].sort());
   });
 
   it('Haunted needs the dead: saturation alone mints Veil-thin, saturation plus deaths mints Haunted', () => {
@@ -314,7 +315,7 @@ describe('phaseLocationTraits — minting (THR-790)', () => {
     const traces = locationTraitTraces();
     expect(traces).toHaveLength(1);
     expect(traces[0].minted.map(m => m.traitId).sort()).toEqual(
-      [LOCATION_TRAIT_IDS.welcoming, LOCATION_TRAIT_IDS.lawless].sort(),
+      [LOCATION_TRAIT_IDS.welcoming, LOCATION_TRAIT_IDS.restless, LOCATION_TRAIT_IDS.lawless].sort(),
     );
     expect(traces[0].minted.find(m => m.locationId === 'loc.a')).toMatchObject({
       input: 'prosperity', value: LOCATION_TRAIT_WELCOMING_ENTER, sustainTicks: SUSTAIN,
@@ -342,7 +343,7 @@ describe('describeLocationTraits — the readout the bridge and the CLI share', 
     expect(byName).toHaveLength(2);
     const minted = byName.find(r => r.traitId === LOCATION_TRAIT_IDS.welcoming)!;
     expect(minted).toMatchObject({ locationId: 'loc.rich', traitName: 'Welcoming', source: LOCATION_TRAIT_SOURCE, ticksRemaining: null, since: SUSTAIN });
-    expect(minted.sustain).toEqual({ welcoming: 0, lawless: 0, veilThin: 0, haunted: 0, bloodSoaked: 0 });
+    expect(minted.sustain).toEqual({ welcoming: 0, restless: 0, lawless: 0, veilThin: 0, haunted: 0, bloodSoaked: 0 });
     // Never saw a battle: no bloodshed to report (THR-1528).
     expect(minted.bloodshed).toBeNull();
     const planted = byName.find(r => r.traitId === 'trait.condition.location.festival')!;
@@ -442,7 +443,7 @@ describe('phaseLocationTraits — Blood-soaked (THR-1528)', () => {
 
   it('the four scalar rules carry none of the new optional fields — they behave as before', () => {
     const scalarRules = LOCATION_TRAIT_RULES.filter(r => r.id !== 'bloodSoaked');
-    expect(scalarRules.map(r => r.id)).toEqual(['welcoming', 'lawless', 'haunted', 'veilThin']);
+    expect(scalarRules.map(r => r.id)).toEqual(['welcoming', 'restless', 'lawless', 'haunted', 'veilThin']);
     for (const r of scalarRules) {
       expect(r.read, r.id).toBeUndefined();
       expect(r.sustainTicks, r.id).toBeUndefined();

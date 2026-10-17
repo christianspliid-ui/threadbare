@@ -3917,7 +3917,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
   prevEventCount = s.tickEvents.length;
 
-  // Phase 6.637: Unrest (decay, prosperity damper, threshold events)
+  // Phase 6.637: Unrest — pressure toward a daily target; Restless leave, Lawless riot (THR-1934)
   {
     const r = runInlinePhase('unrest', s, () => phaseUnrest(s));
     s = r.next;

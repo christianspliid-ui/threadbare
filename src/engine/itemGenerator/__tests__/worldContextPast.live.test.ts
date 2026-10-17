@@ -8,7 +8,7 @@
  * found must then grow an item on that live context alone (not the review world) with
  * zero validator problems on its first draw and a clean engine read-back.
  *
- * The world is seed 42 on a **medium** map deliberately: a lifecycle death removes its
+ * The world is a **medium** map deliberately (seed 99 since THR-1934; see SEED): a lifecycle death removes its
  * node, so only band, plot, fight, battle and commission deaths leave someone to name,
  * and a small seed-42 world has none by tick 160 (measured while building this). The
  * cores that tell only of a dead person (the weapon that chose its bearer, the saint's
@@ -30,7 +30,10 @@ import { readBack } from '../readBack';
 import { bandsForOrigin } from '../reviewBatch';
 import type { ItemWorldContext } from '../types';
 
-const SEED = 42;
+// Seed 99, not 42 (THR-1934): unrest as pressure moves seed 42's one early siege from
+// ~tick 120 to ~tick 400, so its world had no battle past tick 150. Seed 99 has three
+// battles by tick 160 on main and on the pressure model alike (measured 2026-10-17).
+const SEED = 99;
 /** Past tick 150, per the Done-when. */
 const TICKS = 160;
 /** Keys per core × legal band — enough to exercise each core's lines and both signatures. */

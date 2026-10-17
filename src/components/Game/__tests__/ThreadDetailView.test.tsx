@@ -42,7 +42,7 @@ const makeLocation = (overrides?: Partial<ThreadedLocation>): ThreadedLocation =
   courtPosition: null,
   hexCol: 5,
   hexRow: 3,
-  prosperityLabel: 'Stable',
+  prosperityLabel: 'Modest',
   controllingFaction: 'Iron Legion',
   ...overrides,
 });
@@ -319,7 +319,7 @@ describe('ThreadDetailView', () => {
       />
     );
     expect(screen.getByText('Thornwall')).toBeInTheDocument();
-    expect(screen.getByText('Stable')).toBeInTheDocument();
+    expect(screen.getByText('Modest')).toBeInTheDocument();
     expect(screen.getByText('Iron Legion')).toBeInTheDocument();
   });
 

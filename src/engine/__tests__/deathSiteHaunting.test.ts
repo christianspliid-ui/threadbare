@@ -9,6 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { phaseProsperity } from '../phaseProsperity';
 import { phaseUnrest } from '../phaseUnrest';
+import { readUnrestInputs } from '../unrestPressure/inputs';
 import { computeDeathSiteUnrestTarget, readLastDeathTick } from '../deathSiteHaunting';
 import {
   DEATH_SITE_UNREST_TARGET_MAX,
@@ -84,12 +85,15 @@ describe('phaseProsperity death-site unrest under Reckoning (THR-1925)', () => {
     expect(peak).toBeGreaterThan(0);
     expect(peak).toBeLessThanOrEqual(DEATH_SITE_UNREST_TARGET_MAX);
 
-    // Past the window the haunting is gone and ordinary decay returns the town to 0.
+    // Past the window the haunting is gone: THR-1934's deathSite input reads 0 and the
+    // town settles on what it lives through without its dead.
     for (let tick = DEATH_SITE_HAUNTING_WINDOW_TICKS; tick < DEATH_SITE_HAUNTING_WINDOW_TICKS * 2; tick++) {
       phaseProsperity(makeState(graph, tick));
       phaseUnrest(makeState(graph, tick));
     }
-    expect(unrestOf(graph)).toBe(0);
+    const town = graph.getNode('loc.town')!;
+    expect(readUnrestInputs(town)?.deathSite).toBe(0);
+    expect(unrestOf(graph)).toBeCloseTo(town.properties.unrestTarget as number, 5);
     expect(graph.getNode('loc.town')!.properties[DEATH_SITE_UNREST_TARGET_PROPERTY]).toBe(0);
   });
 

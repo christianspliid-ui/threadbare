@@ -1346,6 +1346,11 @@ export const LOCATION_TRAIT_PROSE: Record<string, string[]> = {
     'Times are good in {name}, and it shows. The town is welcoming: the market runs late and the inns rarely turn anyone away.',
     '{name} has grown welcoming on its prosperity. Travellers stop here when they could press on, and many stay longer than they meant to.',
   ],
+  'trait.condition.location.restless': [
+    '{name} is restless. People talk of leaving, and every few days another family does.',
+    'The mood in {name} has turned restless. Tempers are short at the well, and the roads out are busier than the roads in.',
+    '{name} has grown restless with its lot. Nobody riots yet, but nobody is content either.',
+  ],
   'trait.condition.location.lawless': [
     '{name} is lawless now. Nobody enforces anything, and every deal is only as good as the person on the other side of it.',
     'The law has left {name}. The watch is gone, and the lawless streets belong to whoever is strongest tonight.',

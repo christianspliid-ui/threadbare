@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 181 |
+| 🟢 LIVE | 186 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 75 |
-| **Total** | **264** |
+| **Total** | **269** |
 
 ## Contracts by producing subsystem
 
@@ -169,6 +169,7 @@ remediation ticket or the build fails.
 | `effect-executor-overlay-persistence` | Terrain overlays and rule overrides an executor produces are persisted on GameState, expire on schedule, and are readable by the systems they govern. | function: `applyExecutionOverlays`, `expireOverlays`, `getPersistedRuleOverride` | Effects & Conditions | 🟢 LIVE | — |
 | `effect-vocabulary-consolidated-spellings` | Every effect capability content can author reaches a live mechanism — duplicate spellings are retired and their content migrated onto the mechanism that already executes. | function: `applySuppressions`, `getRevealRanges`, `isImmuneToAnyTag`, `normalizeTag` | Effects & Conditions | 🟢 LIVE | — |
 | `effects-write-fight-clock` | A charm can land the blow a fighter missed, a beast can knit its own wounds as it is struck, and a bleed wears a monster down between fights — every one of them on the same clock the fighter's blows fill, so a spell's blow can win the fight. | function: `advanceFightClock`, `fight_clock` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `lawless-halves-town-tax` | A Lawless town pays its holder half its tax (THR-1934 S1). townTaxOf(settlement, graph) multiplies by LAWLESS_TOWN_TAX_FACTOR 0.5 when the settlement has an outgoing has_trait edge to trait.condition.location.lawless; computePurseIncome and war aims' townValueFor pass the graph, so a lawless town is worth less to hold and to take. Without a graph the result is unchanged. | function: `LOCATION_TRAIT_IDS`, `townTaxOf` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `rule-overrides-reach-owning-sites` | Every RuleOverrideKey is read by the one system that owns the rule it bends, through a single shared reader. | function: `readMultiplierOverride`, `readBonusOverride`, `readFlagOverride`, `readReachOverride` | Effects & Conditions | 🟢 LIVE | — |
 | `spell-cast-applies-effects` | A cast resolves through one resolver: the band decides whether its effects land, the landed effects and any backlash reach the graph through the live applier, and its soul price reaches quintessence. | function: `resolveCast`, `activateSpell`, `applyExecutionResult` | Effects & Conditions | 🟢 LIVE | — |
 | `spell-notice-reveals-through-hidden-marks` | A dark art is noticed: casting a generated transgression spell (or first carrying a fate-woven one) places one forbidden_contact hidden mark on the caster, revealed later by the encounter families the tradition names. | state-field: `placeSpellNotice`, `hiddenMarks` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -304,6 +305,9 @@ remediation ticket or the build fails.
 | `faction-purse-pays-faction-holders` | Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm's border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town's tax holder takes LANDHOLDER_TAX_RATE). It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction's wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened. | node-prop: `runFactionPurse`, `readMeansBand`, `readPurseDay`, `applyTreasuryDelta` | Factions & Succession | 🟢 LIVE | — |
 | `faction-purse-prices-war-aims` | An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse's own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / 6) over enemy towns the army has a march path to within WAR_AIM_MAX_REACH_HEXES (a supply line from the town is also required only while WAR_AIM_REQUIRE_SUPPLY_REACH is on — off since the plan kill criterion fired). With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced. | module-export: `townValueFor`, `feedsLackingStaple`, `pickWarAim` | War, Armies & Battles | 🟢 LIVE | — |
 | `faction-purse-schism-strain` | A faction that has been Destitute for PURSE_SCHISM_GRACE_DAYS feels it at a schism: decideSchismOutcome adds SCHISM_WEIGHT_PURSE × purseStrain to split pressure. Bounded — alone it never splits a faction (the outcome is still the seeded draw against splitPressure); it tips one already strained. | function: `computePurseStrain`, `SCHISM_WEIGHT_PURSE`, `readMeansBand`, `readPurseDay` | Factions & Succession | 🟢 LIVE | — |
+| `restless-moves-people` | A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent. | node-prop: `relocationIntent`, `population` | Movement & Colocation | 🟢 LIVE | — |
+| `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `unrest-pressure-inputs` | Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement's unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town's leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page's Fortunes sentence names the band and its largest input. The god's stake (THR-1935) reads the same props later. | node-prop: `unrestInputs`, `hungerDays`, `unrestTarget` | Ambitions & Undertakings | 🟢 LIVE | — |
 
 ### Personality & Emergent Traits
 
@@ -382,6 +386,7 @@ remediation ticket or the build fails.
 | `battles-leave-a-record-on-the-ground` | A battle leaves its history on the ground it was fought over, so the place can say where the war was fought: the word Blood-soaked for ten days, and the battle itself in the place's memory for good. | function: `recordBattleFought`, `readBloodshed`, `latestBloodshedRecord`, `describeBattleRecords` | Personality & Emergent Traits | 🟢 LIVE | — |
 | `binding-registry-reaper-hook` | A siege that razes an undertaking’s bound stage, or a battle that kills its bound commander, breaks the binding loudly instead of silently — the recon (THR-1289) measured battle destruction as the one confirmed live must-persist violation, since the destruction pool never reads persistence in either flavour and the commander kill bypasses the lifecycle and emits nothing at all. Detection sits on the sole node-removal funnel all ~25 deleting call sites pass through, so the same seam covers every other reaper and any reaper not yet written; housekeeping (sublocation dissolution) instead defers on a bound stage, because a chore waits and a story does not. | function: `onNodeRemoved`, `installBindingRemovalHook`, `makeDissolutionHold`, `binding_severed` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
 | `conquest-records-previous-holder` | When a realm takes a town by conquest, the moved controls edge carries takenFrom (the previous holder's id) beside via: conquest and establishedTick. The crown reads it twice: a town taken within OATH_COERCE_WINDOW_DAYS forces the loser's oath, and a vassal that loses a town while sworn loses LOYALTY_FAIL_DEFENCE loyalty (holding_lost). | edge-prop: `takenFrom` | Factions & Succession | 🟢 LIVE | — |
+| `siege-state-raises-unrest` | A siege raises its town's unrest (THR-1934 S1). The unrest phase scans siege actors once a day (battleState.battleType siege, by settlementId), stamps lastSiegeSeenTick on each besieged town and adds SIEGE_PRESSURE 30 to its target while besieged and for SIEGE_LINGER_DAYS 5 after. No war code is edited. | node-prop: `battleState`, `lastSiegeSeenTick` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `undertaking-remote-anchor` | A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing. | function: `findRemoteAnchors`, `evaluateRemoteAnchorGate`, `commanded_by`, `no_remote_anchor` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | THR-1297 |
 | `war-aim-targets-faction-ambitions` | A territorial_expansion or revenge ambition takes its army's conquer target as its targetNodeId (THR-1933 S1), written at the raise (aimNewArmy) and on every daily re-aim that changes it (reaimArmies). The existing abandon check in phaseFactionAmbitions reads it. A revenge army scores the towns of the faction it holds its grievance against ×WAR_AIM_REVENGE_FOCUS. Campaign ambitions (compositionId) keep their declared target. | node-prop: `targetNodeId` | Factions & Succession | 🟢 LIVE | — |
 | `war-news-reaches-chronicle` | The war reports itself (THR-1564). Each war writer — an army raised, broken apart or fraying, a battle joined, a siege laid, a battle or siege ended, a town changing hands — calls `reportWar` where the event happens, which judges visibility before the aftermath, builds one line with no numbers and pushes one `TickEvent` into `state.tickEvents`. `phaseNarrative` promotes the lines at the chronicle threshold into `chronicleEntries`, which the Chronicle panel renders. Nothing on this path reads a trace. | function: `reportWar`, `captureBattleForNews`, `battleOutcomeSentence`, `WAR_NEWS_CHRONICLE_SIGNIFICANCE`, `phaseNarrative` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -485,10 +490,10 @@ remediation ticket or the build fails.
 - **Intent:** Agents acquire ambitions at worldgen, birth, the binder mint, the mint lane, re-evaluation and the Kindled Ambition card — every route through one graph-writing helper.
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **UL terms:** *Ambition*, *Spotlight tier*
-- **Production hits:** 14 total — 2 write, 6 read, 6 unclassified
+- **Production hits:** 15 total — 2 write, 6 read, 7 unclassified
 - **Write sites:** `src/engine/ambitionAssignment.ts`, `src/engine/spotlightPull.ts`
 - **Read sites:** `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts`, `src/engine/encounterAftermath.ts`, `src/engine/gameInit.ts` +1 more
-- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/decisionTier.ts`, `src/engine/encounters/poleLean.ts`, `src/engine/worldPastAmbitions.ts` +1 more
+- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/decisionTier.ts`, `src/engine/encounters/poleLean.ts`, `src/engine/unrestPressure.ts` +2 more
 - **Verdict:** Verified 2026-09-22: pursues edges grow 32→225 over 120 ticks, 182 active. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified). Re-verified 2026-09-22 under THR-1348: the two inline `pursues` writers in ambitionTick (mint-to-holder, re-evaluation) and the worldSeed / gameInit / agentLifecycle writers all route through `assignAmbitionToActor`; `ambitionAssignment-routing.test.ts` pins the edge and node property bags byte-identical (JSON.stringify) to the inline shapes and proves a re-evaluated notable is pulled — which only the routed helper can do. Seed 42/99 medium 150 ticks: 187 / 194 undertaking starts, census PASS on both seeds.
 
 ### `ambition-biases-encounter-choice` — 🟢 LIVE
@@ -1390,20 +1395,20 @@ exit
 - **Intent:** A god's power is rooted in the land their people work: the goods of a source's own Sphere nurture or wither its sanctity, so an economy the player neglects quietly costs them essence.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Essence & Divine Economy
 - **UL terms:** *Stock Tier*
-- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
+- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
 - **Write sites:** `src/engine/phases/resourceStockTiers.ts`
 - **Read sites:** `src/engine/essenceEconomyBridge.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/LocationView.tsx`, `src/engine/factionPurse/income.ts`, `src/engine/orchestrator.ts`, `src/engine/phases/economicPower.ts` +3 more
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/LocationView.tsx`, `src/engine/factionPurse/income.ts`, `src/engine/orchestrator.ts`, `src/engine/phases/economicPower.ts` +4 more
 - **Verdict:** Verified 2026-07-28: THR-618: driven through the served browser bundle — two controlled Spirit shrines, one on surplus pearls and one on scarce, 60 ticks of `recomputeControlledSourceTiers`. The rich valley climbed 0.30 → 0.50 and STOPPED at `ECON_SANCTITY_NURTURE_CEILING`, tier still `dormant` (the land readies a source; only a Sanctify cast flowers it); the poor valley fell 0.30 → 0.00. First tick reported `econNurtured: 1, econWithered: 1` on the aggregate phase counters. Values and the bound, not just symbols.
 
 ### `economy-verbs-answered` — 🟢 LIVE
 
 - **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
-- **Production hits:** 84 total — 1 write, 1 read, 82 unclassified
+- **Production hits:** 89 total — 1 write, 1 read, 87 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/economicContext.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +77 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +82 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
 ### `effect-executor-overlay-persistence` — 🟢 LIVE
@@ -1664,10 +1669,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 135 total — 1 write, 1 read, 133 unclassified
+- **Production hits:** 137 total — 1 write, 1 read, 135 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +128 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +130 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1903,10 +1908,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 74 total — 2 write, 3 read, 69 unclassified
+- **Production hits:** 75 total — 2 write, 3 read, 70 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +64 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/codexRegistry.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +65 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -2191,6 +2196,18 @@ exit
 - **Other hits:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/data/monster-encounter-content.ts`, `src/engine/lairClearing.ts`, `src/engine/monsters/lairArrivalTrigger.ts` +5 more
 - **Verdict:** Verified 2026-09-25: THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.
 
+### `lawless-halves-town-tax` — 🟢 LIVE
+
+- **Intent:** A Lawless town pays its holder half its tax (THR-1934 S1). townTaxOf(settlement, graph) multiplies by LAWLESS_TOWN_TAX_FACTOR 0.5 when the settlement has an outgoing has_trait edge to trait.condition.location.lawless; computePurseIncome and war aims' townValueFor pass the graph, so a lawless town is worth less to hold and to take. Without a graph the result is unchanged.
+- **Producer → Consumer:** Effects & Conditions → Mortal Economy & Prosperity
+- **UL terms:** *Settlement*, *Faction*
+- **Module:** `src/engine/factionPurse/income.ts`
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Write sites:** `src/engine/phaseLocationTraits.ts`
+- **Read sites:** `src/engine/factionPurse/income.ts`, `src/engine/warAims/townValue.ts`
+- **Other hits:** `src/data/location-trait-constants.ts`, `src/data/prose-layer-content.ts`, `src/engine/proseResolvers.ts`, `src/engine/unrestPressure/bands.ts`, `src/engine/unrestPressure.ts`
+- **Verdict:** Verified 2026-10-17: THR-1934. unrestPressure.test.ts: a fixture town's townTaxOf with the lawless edge is LAWLESS_TOWN_TAX_FACTOR × the same town untraited; without a graph the old value stands.
+
 ### `lead-pass-reads-delve-road` — 🟢 LIVE
 
 - **Intent:** The lead pass and the survey reader ask the ruins layer whether a held lead still has a rung to climb: `heldLeadRuinIds` leaves a spent lead out (no `leadPull`, no lead-pass survey), and `maybeSpawnSiteClue` does not refresh it. Both read `isLeadSpent` / `delveRoadOf`, the same rule delve admission reads as `delveRoadOf === 'now'`.
@@ -2209,10 +2226,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Condition*, *Location*
 - **Module:** `src/data/condition-trait-content.ts`
-- **Production hits:** 26 total — 2 write, 5 read, 19 unclassified
+- **Production hits:** 27 total — 2 write, 5 read, 20 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/engine/aftermathWords.ts`, `src/engine/movementCost.ts`, `src/engine/resolutionModifiers.ts`, `src/engine/targetContextBuilders.ts`
-- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/giftDelivery.ts` +14 more
+- **Other hits:** `src/components/Game/AttachmentDetailView.tsx`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/giftDelivery.ts` +15 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `location-trait-tags-have-bearers` — 🟢 LIVE
@@ -2233,10 +2250,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Location Trait*, *Trait*, *Encounter*
 - **Module:** `src/engine/phaseLocationTraits.ts`
-- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
+- **Production hits:** 13 total — 1 write, 3 read, 9 unclassified
 - **Write sites:** `src/engine/phaseLocationTraits.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterScoring.ts`, `src/engine/locationTraitBonus.ts`
-- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/data/prose-layer-content.ts`, `src/engine/battleRecord.ts`, `src/engine/deathSiteHaunting.ts` +3 more
+- **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/data/prose-layer-content.ts`, `src/engine/battleRecord.ts`, `src/engine/deathSiteHaunting.ts` +4 more
 - **Verdict:** Verified 2026-09-22: THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -2360,10 +2377,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 57 total — 5 write, 3 read, 49 unclassified
+- **Production hits:** 58 total — 5 write, 3 read, 50 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +44 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +45 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -2384,10 +2401,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Spell*, *Power*, *Bestowal*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 112 total — 2 write, 3 read, 107 unclassified
+- **Production hits:** 114 total — 2 write, 3 read, 109 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/seedAttachments.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
-- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/tabs/OverviewTab.tsx` +102 more
+- **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/tabs/OverviewTab.tsx` +104 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -2408,10 +2425,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Nudge*, *Ambition*
 - **Module:** `src/engine/encounters/nudgeDispatch.ts`
-- **Production hits:** 19 total — 1 write, 2 read, 16 unclassified
+- **Production hits:** 20 total — 1 write, 2 read, 17 unclassified
 - **Write sites:** `src/engine/phases/phaseAutonomousAftermath.ts`
 - **Read sites:** `src/engine/ambitionAssignment.ts`, `src/engine/encounterAftermath.ts`
-- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts` +11 more
+- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionTick.ts`, `src/engine/binding/mintInhabitant.ts` +12 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-hand-runtime-filters-and-sphere-discount` — 🔵 UNVERIFIED-OK
@@ -2594,10 +2611,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 427 total — 1 write, 1 read, 425 unclassified
+- **Production hits:** 433 total — 1 write, 1 read, 431 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +420 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +426 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -2606,10 +2623,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Encounter*, *Agent*
 - **Module:** `src/engine/relocationIntent.ts`
-- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/appointments.ts`, `src/engine/relocationIntent.ts`, `src/types/movement.ts`
+- **Other hits:** `src/data/encounters/the-broken-seal.ts`, `src/data/encounters/the-sign-over-the-ruin.ts`, `src/engine/appointments.ts`, `src/engine/relocationIntent.ts`, `src/engine/unrestPressure.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `repertoire-deals-into-encounter-hand` — 🟢 LIVE
@@ -2658,6 +2675,17 @@ exit
 - **Read sites:** `src/engine/kpi/gameplayKpi.ts`
 - **Other hits:** `src/engine/kpi/engagementKpi.ts`, `src/engine/simulationRuntime.ts`
 - **Verdict:** Verified 2026-09-24: THR-1578. Seeded worlds 42/99/7 x 120 ticks (`npm run gameplay-report`): 144-281 stamped engagements per seed folded into bands, 23-29 unstamped (band `unknown` - seeded, forced and legacy paths, deliberately outside the invariant). The first wiring keyed stamps on `action.id`, a field `UnifiedAction` does not have, so every stamp collided on `undefined` and half the resolutions read `unknown`; the heavy wiring test `src/engine/__tests__/engagementWindow.invariant.test.ts` (stamped > unknown on seed 42 x 30) caught it and passes on `actionId`. Arithmetic pinned by `src/engine/kpi/__tests__/engagementKpi.test.ts`.
+
+### `restless-moves-people` — 🟢 LIVE
+
+- **Intent:** A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Movement & Colocation
+- **UL terms:** *Settlement*, *Unrest*
+- **Production hits:** 76 total — 1 write, 1 read, 74 unclassified
+- **Write sites:** `src/engine/unrestPressure.ts`
+- **Read sites:** `src/engine/relocationIntent.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/Codex.tsx`, `src/components/Codex/codexRegistry.ts`, `src/components/Codex/codexRunState.ts` +69 more
+- **Verdict:** Verified 2026-10-17: THR-1934. unrestPressure.test.ts: the latest arrival leans to the nearest fed, calm town (not the nearer hungry one, not the nearer Restless one, not the one past 6 hexes); with population counted the two towns move −1 / +1. measure:unrest: 0 leave-rule violations on seeds 42 / 99 / 7.
 
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
 
@@ -2755,10 +2783,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 132 total — 1 write, 1 read, 130 unclassified
+- **Production hits:** 133 total — 1 write, 1 read, 131 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +125 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/narrativeLinker.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/GuildQuestPanel.tsx` +126 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2795,6 +2823,18 @@ exit
 - **Read sites:** `src/engine/godProgression.ts`
 - **Other hits:** `src/debug-bridge.ts`
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "sums marks over the bought spheres only" (life 60 + spirit 20 → 3; unbought mind 600 → 0); seed 42 headless opened rung 1 at tick 21, the first tick after the spine ended.
+
+### `scarcity-arc-seeds-granary-riot` — 🟢 LIVE
+
+- **Intent:** A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
+- **UL terms:** *Settlement*, *Encounter*
+- **Module:** `src/data/unrest-pressure-constants.ts`
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/phases/economicPower.ts`, `src/engine/unrestPressure.ts`
+- **Read sites:** `src/data/encounters/granary-riot.ts`
+- **Other hits:** `src/data/content-eval/plotHooks.ts`, `src/data/unrest-pressure-constants.ts`
+- **Verdict:** Verified 2026-10-17: THR-1934. economicPower.test.ts: the arc's unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.
 
 ### `secrets-consequences` — 🟢 LIVE
 
@@ -2846,10 +2886,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **UL terms:** *Location*
 - **Module:** `src/engine/worldPast.ts`
-- **Production hits:** 50 total — 1 write, 4 read, 45 unclassified
+- **Production hits:** 51 total — 1 write, 4 read, 46 unclassified
 - **Write sites:** `src/engine/worldPast.ts`
 - **Read sites:** `src/engine/graphQueries.ts`, `src/engine/hexActorIndex.ts`, `src/engine/hexZoom.ts`, `src/engine/phases/routeEvents.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +40 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`, `src/components/Game/worldPulseCount.ts`, `src/data/fight-screen-content.ts` +41 more
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
 
 ### `seeded-notable-holds-a-local-agenda` — 🟢 LIVE
@@ -2955,6 +2995,17 @@ exit
 - **Read sites:** `src/engine/phaseAgentDecision.ts`
 - **Other hits:** `src/data/agent-behavior-constants.ts`, `src/engine/encounter/branchingCurator.ts`, `src/engine/encounterCache.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-28: Docs/audits/2026-09-25-living-world-data/readers/reach.ts 42,99 200 (medium), old fill → rotation with CAP_FILL_LOCAL_SLOTS 30, same tree (main @ 1ad1b776): cap-first-gate templates 75 · 63 → 16 · 15, drawable templates fired 127 → 164, total firings 1,552 → 1,855, top-10 share 0.269 → 0.236. Rotation alone gave 12 · 4 / 117 / 676 / 0.284: it spent the free slots on other hexes, so start_local decisions fell 549 → 225 on seed 42. readers/attended.ts 42,99 150: The First's longest gap between encounters 25 · 30 (ceiling 30). Pinned by the capWithDiversity fair-fill and own-hex tests in encounterFilterPipeline.test.ts.
+
+### `siege-state-raises-unrest` — 🟢 LIVE
+
+- **Intent:** A siege raises its town's unrest (THR-1934 S1). The unrest phase scans siege actors once a day (battleState.battleType siege, by settlementId), stamps lastSiegeSeenTick on each besieged town and adds SIEGE_PRESSURE 30 to its target while besieged and for SIEGE_LINGER_DAYS 5 after. No war code is edited.
+- **Producer → Consumer:** War, Armies & Battles → Mortal Economy & Prosperity
+- **UL terms:** *Settlement*, *Unrest*
+- **Production hits:** 16 total — 1 write, 2 read, 13 unclassified
+- **Write sites:** `src/engine/siegeResolution.ts`
+- **Read sites:** `src/engine/unrestPressure/inputs.ts`, `src/engine/unrestPressure.ts`
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/HexMapV2/scene/BattleIndicatorLayer.ts`, `src/debug-bridge.ts`, `src/engine/armyNotifications.ts`, `src/engine/battleAftermath.ts` +8 more
+- **Verdict:** Verified 2026-10-17: THR-1934. unrestPressure.test.ts: a siege actor naming the town sets the siege input to SIEGE_PRESSURE and stamps lastSiegeSeenTick; with the siege gone the term lingers the next day.
 
 ### `source-upkeep-debits-primary-pool` — 🔵 UNVERIFIED-OK
 
@@ -3205,10 +3256,10 @@ exit
 - **Intent:** What happens to an agent’s undertaking reaches the player — the setback, the doubling-down, the abandonment — instead of progress silently accruing until a thing appears in the world with no story attached to it.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/undertakingCheckpoints.ts`
-- **Production hits:** 25 total — 3 write, 2 read, 20 unclassified
+- **Production hits:** 26 total — 3 write, 2 read, 21 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/undertakingMoments.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`, `src/components/Game/MomentCard.tsx`
-- **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts` +15 more
+- **Other hits:** `src/components/Game/FollowToggle.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/components/Game/momentBadgeModel.ts`, `src/data/strategic-action-constants.ts`, `src/engine/agentArc.ts` +16 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 3. `MomentCard.tsx` renders the oldest unacknowledged interrupt-tier `UndertakingMomentRecord`; GameView fills its `pendingMoment` slot only while no other interrupt is open and renders the card only while that stays true, so collation (encounter first, never two modals) holds by construction rather than by a priority table. The card is in the interrupt registry (`interruptModalOpen`, `getDebugOpenModals` → `MomentCard`) so it auto-pauses with its cause named on the face. Acknowledge routes through `acknowledgeUndertakingMoment`, the queue's single writer, and traces `acknowledged`; the pop traces `opened`. Non-vacuous by `src/components/Game/__tests__/GameView-momentCard.test.tsx`, which renders the real GameView, follows every mortal with a live undertaking through the debug lever, drives real ticks through the tick bridge until an interrupt-tier record exists, and asserts the card is in `getDebugOpenModals`, that acknowledging it flips the record through the live state provider, and that the `opened` / `acknowledged` traces fired; plus `momentCardModel.test.ts` (chips are state-backed per class, the named-loss complication, the divine-hand chip, the forward drive link off a real outcome node, the action slot gated on a live project) and `MomentCard.test.tsx` (every class renders without numerals, acknowledge, the two-beat Inspire arm, an unaffordable verb fails inline). Browser proof at 1920×1080 on `?view=game&seeded&size=medium` via `__DEBUG.followAgent` + `__DEBUG.tick`, recorded on the closing PR.
 
 ### `undertaking-completion-grows-capability` — 🟢 LIVE
@@ -3301,6 +3352,17 @@ exit
 - **Other hits:** `src/engine/encounters/dealHand.ts`, `src/engine/encounters/nudgeDispatch.ts`, `src/engine/fights/fightEnding.ts`, `src/engine/orchestrator/phaseDetectionPressure.ts`, `src/engine/phases/phaseAutonomousAftermath.ts` +1 more
 - **Verdict:** Tier 2: write sites present, declared read sites empty — the consumer is starving. — or the declared symbol does not appear at the declared site: grep 'dispatchNudgeCommitments' src/engine/encounters/driftAccumulator.ts before treating this as a leak.
 
+### `unrest-pressure-inputs` — 🟢 LIVE
+
+- **Intent:** Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement's unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town's leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page's Fortunes sentence names the band and its largest input. The god's stake (THR-1935) reads the same props later.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
+- **UL terms:** *Settlement*, *Unrest*, *Ambition*
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Write sites:** `src/engine/unrestPressure.ts`
+- **Read sites:** `src/engine/unrestPressure/describe.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/unrestPressure/inputs.ts`, `src/engine/unrestPressure/leave.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-10-17: THR-1934. src/engine/__tests__/unrestPressure.test.ts (17): each term's rule and cap; one scarce staple reaches Restless within 10 days and falls below it within 10 once adequate; the leaver takes up Flee when hunger drives the town; the Fortunes sentences. npm run measure:unrest (600 ticks, medium): 99 / 96 / 43 leaves on seeds 42 / 99 / 7, Flee minted 21 / 22 / 4.
+
 ### `war-aim-targets-faction-ambitions` — 🟢 LIVE
 
 - **Intent:** A territorial_expansion or revenge ambition takes its army's conquer target as its targetNodeId (THR-1933 S1), written at the raise (aimNewArmy) and on every daily re-aim that changes it (reaimArmies). The existing abandon check in phaseFactionAmbitions reads it. A revenge army scores the towns of the faction it holds its grievance against ×WAR_AIM_REVENGE_FOCUS. Campaign ambitions (compositionId) keep their declared target.
@@ -3377,10 +3439,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **UL terms:** *Realm*, *Location*
 - **Module:** `src/engine/worldPastAmbitions.ts`
-- **Production hits:** 16 total — 3 write, 2 read, 11 unclassified
+- **Production hits:** 17 total — 3 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/gameInit.ts`, `src/engine/worldPast.ts`, `src/engine/worldPastAmbitions.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
-- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionAssignment.ts`, `src/engine/binding/mintInhabitant.ts` +6 more
+- **Other hits:** `src/data/encounters/comet-disputation.ts`, `src/data/encounters/the-broken-seal.ts`, `src/engine/agentLifecycle.ts`, `src/engine/ambitionAssignment.ts`, `src/engine/binding/mintInhabitant.ts` +7 more
 - **Verdict:** Verified 2026-09-29: THR-1657. `readers/past.ts` on medium worlds: seed 42 mints 2 `seek_revenge` + 2 `chase_the_wonder` (2 wonders skipped `no_free_slot`), seed 99 mints 2 + 1 (3 skipped `no_free_slot`); decider headcount at t0 is 20 / 23 with the pass on and off alike. Headless seed-42 medium CLI: both revenge drives are still `active` at tick 60 with heat cooled 1.0 → 0.82 by the milestone pass, and one heir (`agent_garrison_culture_1`) runs `cell.destroy.monster` and `cell.destroy.power` undertakings sourced from `ambition_seek_revenge`. The heavy test `worldPast-generatedWorld.test.ts` proves on a generated world that each revenge heir is kin of the dead commander both ways, a member of the losing Realm, and holds a grievance naming the winning Realm's living leader, and that no ambient or dead actor holds a past ambition.
 
 ### `world-past-reaches-the-chronicle` — 🔵 UNVERIFIED-OK
@@ -3446,9 +3508,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 119 total — 2 write, 3 read, 114 unclassified
+- **Production hits:** 120 total — 2 write, 3 read, 115 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +109 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +110 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 

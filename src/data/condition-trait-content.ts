@@ -244,6 +244,13 @@ export const LOCATION_WELCOMING_MULTIPLIER = 0.85;
 export const LOCATION_LAWLESS_GOLD_PENALTY = -0.05;
 
 /**
+ * Heart penalty on steps resolved in a *Restless* place (THR-1934) — people with
+ * their minds on leaving have short tempers and little patience for being talked
+ * round. Smaller than Lawless's Gold term: Restless is the milder band.
+ */
+export const LOCATION_RESTLESS_HEART_PENALTY = -0.03;
+
+/**
  * Veil bonus on steps resolved where the veil is thin — the rite takes more easily.
  * The tended shrine's magnitude, on the same axis.
  */
@@ -606,6 +613,26 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+  // THR-1934 — the settlement economy plan's Restless (THR-1923, words verbatim; the
+  // plan's {{location.lawless}} reference is the Lawless chip's own word).
+  {
+    id: 'trait.condition.location.restless',
+    type: 'trait',
+    name: 'Restless',
+    properties: {
+      subcategory: 'condition',
+      description: 'Its people are unhappy: too crowded, too hungry, or too little to live for. Left alone, a restless town can slide into Lawless.',
+      importance: 0.6,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the Heart step term, the
+      // leave cadence (`unrestPressure/leave.ts`) and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#negative'],
+      flavorText: 'Another cart left at dawn. Nobody waved it off.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
   {
     id: 'trait.condition.location.lawless',
     type: 'trait',
@@ -819,6 +846,7 @@ export const LOCATION_CONDITION_STEP_MODIFIER: Record<
   // moves: a lawless town devalues the contract, thin ground answers the rite,
   // haunted ground closes people's mouths. `welcoming` carries none — its effect
   // is the road (above) and the pool, not the roll.
+  'trait.condition.location.restless': { heart: LOCATION_RESTLESS_HEART_PENALTY }, // THR-1934
   'trait.condition.location.lawless': { gold: LOCATION_LAWLESS_GOLD_PENALTY },
   'trait.condition.location.veil_thin': { veil: LOCATION_VEIL_THIN_VEIL_BONUS },
   'trait.condition.location.haunted': { heart: LOCATION_HAUNTED_HEART_PENALTY },

@@ -108,7 +108,7 @@ export interface RelocationIntent {
   /** Tick the intent was written — arrival traces report the journey's length. */
   readonly setAtTick: number;
   /** What wrote it. Only `aftermath` today; named so a later writer is distinguishable. */
-  readonly source: 'aftermath';
+  readonly source: 'aftermath' | 'unrest'; // THR-1934: a Restless town's leaver leans away
   /** Template whose ending sent them, for attribution in traces. */
   readonly templateId?: string;
   /** On arrival, stamp the observed-residence property (THR-822 shape). */

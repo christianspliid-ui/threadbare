@@ -51,6 +51,8 @@ export const PURSE_EXCLUDED_FACTION_TYPES: readonly string[] = ['monster'];
 // ── 1. Town tax ──
 export const TOWN_TAX_BASE = 0.8;
 export const TOWN_TAX_PROSPERITY_PIVOT = 50;
+/** THR-1934 — a Lawless town pays this share of its tax (nobody enforces the collector either). */
+export const LAWLESS_TOWN_TAX_FACTOR = 0.5;
 export const SETTLEMENT_TIER_SUBTYPES: readonly string[] = ['hamlet', 'town', 'city', 'capital'];
 
 // ── 2. Place yield (stocks are read, never drained — flow is THR-1866 / THR-1923's) ──

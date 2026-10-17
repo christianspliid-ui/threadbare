@@ -14,6 +14,7 @@ import { EMPTY_STATE_STYLE } from './debugPanelStyles';
 import { readPurseDay, readMeansBand } from '../../../engine/factionPurse';
 import { totalIncome } from '../../../engine/factionPurse/income';
 import { PURSE_CYCLE_TICKS } from '../../../data/faction-purse-constants';
+import { describeAllUnrest } from '../../../engine/unrestPressure/describe';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 
 interface PurseRow {
@@ -88,6 +89,49 @@ function PursesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
               <td style={cell}>{r.unpaid}</td>
               <td style={cell}>{r.brokeSince ?? '—'}</td>
               <td style={cell}>{r.fealtyIn.toFixed(2)}/{r.fealtyOut.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** THR-1934 — every settlement's unrest pressure: number, target, inputs, hunger, band, leave. */
+function UnrestTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  const rows = useMemo(() => (graph ? describeAllUnrest(graph) : []), [graph, currentTick]);
+  if (rows.length === 0) return null;
+  const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
+  const f = (n: number) => n.toFixed(1);
+  return (
+    <div data-testid="economy-unrest" style={{ marginBottom: '12px' }}>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>
+        Unrest — {rows.length} settlements, {rows.filter(r => r.chips.restless).length} restless, {rows.filter(r => r.chips.lawless).length} lawless
+      </div>
+      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)' }}>
+            <th style={{ ...cell, textAlign: 'left' }}>settlement</th><th style={cell}>unrest</th><th style={cell}>target</th>
+            <th style={cell}>hunger</th><th style={cell}>poverty</th><th style={cell}>siege</th><th style={cell}>sick</th><th style={cell}>dead</th><th style={cell}>content</th>
+            <th style={cell}>hungry d</th><th style={{ ...cell, textAlign: 'left' }}>band</th><th style={cell}>restless d</th><th style={{ ...cell, textAlign: 'left' }}>last leave to</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => (
+            <tr key={r.locationId} title={r.fortunes ?? ''} style={{ color: r.chips.lawless ? '#e06c5a' : r.chips.restless ? '#d4a24a' : 'var(--text-secondary)' }}>
+              <td style={{ ...cell, textAlign: 'left' }} title={r.locationId}>{r.locationName}</td>
+              <td style={cell}>{f(r.unrest)}</td>
+              <td style={cell}>{r.target === null ? '—' : f(r.target)}</td>
+              <td style={cell}>{f(r.inputs?.hunger ?? 0)}</td>
+              <td style={cell}>{f(r.inputs?.poverty ?? 0)}</td>
+              <td style={cell}>{f(r.inputs?.siege ?? 0)}</td>
+              <td style={cell}>{f(r.inputs?.sickness ?? 0)}</td>
+              <td style={cell}>{f(r.inputs?.deathSite ?? 0)}</td>
+              <td style={cell}>{f(r.inputs?.contentment ?? 0)}</td>
+              <td style={cell}>{r.hungerDays}</td>
+              <td style={{ ...cell, textAlign: 'left' }}>{r.band}</td>
+              <td style={cell}>{r.restlessDays}</td>
+              <td style={{ ...cell, textAlign: 'left' }}>{r.leaveTo ?? '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -237,6 +281,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
       <div style={{ padding: '8px', fontSize: '12px', overflowY: 'auto', height: '100%' }}>
         <PursesTable graph={graph} currentTick={currentTick} />
         <OathsTable graph={graph} currentTick={currentTick} />
+        <UnrestTable graph={graph} currentTick={currentTick} />
         <div style={EMPTY_STATE_STYLE}>No locations with resources yet.</div>
       </div>
     );
@@ -246,6 +291,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
     <div style={{ padding: '8px', fontSize: '12px', overflowY: 'auto', height: '100%' }}>
       <PursesTable graph={graph} currentTick={currentTick} />
       <OathsTable graph={graph} currentTick={currentTick} />
+      <UnrestTable graph={graph} currentTick={currentTick} />
       <div style={{ marginBottom: '10px', color: 'var(--text-tertiary)' }}>
         Stock tiers across {rows.length} locations —{' '}
         <span style={{ color: TIER_COLOR.scarce }}>{dist.scarce} scarce</span>,{' '}

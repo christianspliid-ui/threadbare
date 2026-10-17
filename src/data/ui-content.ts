@@ -1147,6 +1147,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Means',
     desc: 'How long this faction could pay its soldiers from what it holds now. A faction with no soldiers is judged by its coin alone.',
   },
+  // THR-1934 — the place page's Fortunes row. getProsperityTier's five words, in its order.
+  'ui.econ.prosperity': {
+    label: 'Prosperity',
+    desc: 'How well a place lives: destitute, struggling, modest, prosperous or flourishing. Good harvests, trade and peace raise it; hunger, war and sickness wear it down.',
+  },
   'ui.econ.pays_tax': {
     label: 'Pays tax',
     desc: 'This town pays its tax to this faction each day. Where two powers hold a town, only one collects.',

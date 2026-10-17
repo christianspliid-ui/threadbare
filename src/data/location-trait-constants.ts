@@ -38,6 +38,8 @@ import { LOCATION_CONDITION_ID_PREFIX } from './condition-trait-content';
 export const LOCATION_TRAIT_IDS = {
   welcoming: `${LOCATION_CONDITION_ID_PREFIX}welcoming`,
   lawless: `${LOCATION_CONDITION_ID_PREFIX}lawless`,
+  // THR-1934 — the settlement economy plan's word (THR-1923), whichever lands first adds it.
+  restless: `${LOCATION_CONDITION_ID_PREFIX}restless`,
   veilThin: `${LOCATION_CONDITION_ID_PREFIX}veil_thin`,
   haunted: `${LOCATION_CONDITION_ID_PREFIX}haunted`,
   // THR-1528 — minted from battle records, not from any scalar.
@@ -89,6 +91,15 @@ export const LOCATION_TRAIT_WELCOMING_RELEASE = 25;
  */
 export const LOCATION_TRAIT_LAWLESS_ENTER = 50;
 export const LOCATION_TRAIT_LAWLESS_RELEASE = 30;
+
+/**
+ * Unrest band for *Restless* (0–100), THR-1934 S1 — the settlement economy plan's
+ * `RESTLESS_ENTER` / `RESTLESS_RELEASE` (THR-1923), so whichever lands second adds
+ * nothing. It sits below Lawless on the same number: a town turns Restless before it
+ * turns Lawless. A Restless town loses a person every few days (`unrestPressure/leave.ts`).
+ */
+export const LOCATION_TRAIT_RESTLESS_ENTER = 30;
+export const LOCATION_TRAIT_RESTLESS_RELEASE = 15;
 
 /**
  * Saturation band for *Veil-thin* (0–1). `phaseMagicalSaturation.ts` names 0.3 as
@@ -187,6 +198,12 @@ export const LOCATION_TRAIT_ENCOUNTER_BONUS: Readonly<
     '#trade': 0.10,
     '#assist': 0.08,
     '#tavern_night': 0.10,
+  },
+  // A restless town is short-tempered: hard words, hard bargains, people packing to go.
+  [LOCATION_TRAIT_IDS.restless]: {
+    '#heart': 0.04,
+    '#iron': 0.03,
+    '#gold': 0.03,
   },
   // A lawless town is where the quiet work and the loud work both get done.
   [LOCATION_TRAIT_IDS.lawless]: {
