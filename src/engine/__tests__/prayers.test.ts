@@ -27,7 +27,7 @@ import {
   LAST_PRAYER_TICK_PROP,
 } from '../prayers';
 import { computeSanctitySustenance } from '../essenceEconomyBridge';
-import { recomputeControlledSourceTiers, readEssenceSource } from '../essenceSources';
+import { recomputeControlledSourceTiers, readEssenceSource, selectLocationSustenanceVoice } from '../essenceSources';
 import { LOCATION_TRAIT_IDS } from '../../data/location-trait-constants';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
 import {
@@ -311,6 +311,14 @@ describe('faith forms', () => {
     expect(listFaithful(g, GOD)).toHaveLength(FAITHFUL_COMMUNITY_MAX);
     expect(readEssenceSource(g.getNode('a5')?.properties)).toBeUndefined();
     expect(r.tickEvents?.some(e => e.message === 'A5 gives thanks to The Shepherd.' || /^.*A5.*gives thanks to The Shepherd\.$/.test(e.message))).toBe(true);
+  });
+
+  it('a faithful town speaks no sphere Livelihood sentence — its faith line covers its bread', () => {
+    addTown(g, 'millbrook', OWN_GROUND);
+    answerAndRecover('millbrook', DAY);
+    expect(readEssenceSource(g.getNode('millbrook')?.properties)?.kind).toBe('faithfulCommunity');
+    g.updateNode('millbrook', { properties: { resources: STAPLES_SCARCE } });
+    expect(selectLocationSustenanceVoice(g, 'millbrook')).toBeUndefined();
   });
 
   it('the god\'s home seat recovers and gives thanks only — no faithful source on the seat', () => {

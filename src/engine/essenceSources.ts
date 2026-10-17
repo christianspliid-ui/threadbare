@@ -403,6 +403,9 @@ function readSustenanceVoice(
 ): LocationSustenanceVoice | undefined {
   const src = readEssenceSource(graph.getNode(hostId)?.properties);
   if (!src?.discoveredBy || !src.sphereAffinity || src.desecrated) return undefined;
+  // A faithful town's faith rides its staples, not its sphere's goods: the place page's
+  // faith line speaks for it, and a sphere sentence here would blame the wrong larder.
+  if (src.kind === 'faithfulCommunity') return undefined;
 
   const sustenance = computeSanctitySustenance(graph, hostId, src);
   if (sustenance.reason) return undefined;
