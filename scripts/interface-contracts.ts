@@ -6701,6 +6701,26 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'faction-relations-to-army-war-aims',
+    producerSystem: FACTIONS,
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      'An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. Field-battle start still treats any two foreign armies as hostile until war aims S1 (THR-1933).',
+    ulTerms: ['Faction'],
+    mechanism: {
+      kind: 'module-export',
+      symbols: ['isEnemyFaction', 'factionKeepsHallAt', 'mayBesiege'],
+      module: 'src/engine/warAims/enemy.ts',
+    },
+    writeSites: ['src/engine/warAims/enemy.ts'],
+    readSites: ['src/engine/armySpawning.ts', 'src/engine/battleResolution.ts'],
+    verifiedLive: {
+      date: '2026-10-17',
+      evidence:
+        'THR-1922. src/engine/warAims/__tests__/enemy.test.ts (13): the predicate on each edge arm; selectArmyObjective skips a no-quarrel holder and the own-hall town and marches on the rival; no enemy town holds at muster; siege start refuses the own-hall town and a no-quarrel holder, besieges an enemy and an objective town. Seed 42 medium, 600 ticks: 30 siege-ticks, 0 on an own-hall town, 0 on a non-enemy holder (baseline 397, of which 200 own-hall).',
+    },
+  },
+  {
     id: 'crown-outline-to-political-map',
     producerSystem: FACTIONS,
     consumerSystem: WORLDGEN,
