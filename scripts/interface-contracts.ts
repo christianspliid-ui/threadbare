@@ -6732,7 +6732,7 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['townValueFor', 'feedsLackingStaple', 'pickWarAim'],
       module: 'src/engine/warAims/townValue.ts',
     },
-    writeSites: ['src/engine/factionPurse.ts'],
+    writeSites: ['src/engine/warAims/townValue.ts'],
     readSites: ['src/engine/warAims/townValue.ts', 'src/engine/warAims/score.ts', 'src/engine/warAims/context.ts'],
     verifiedLive: {
       date: '2026-10-17',
