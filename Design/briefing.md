@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-10-17 23:57 local (21:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 00:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Set the Claude app to open when Windows starts.** Every recent lane silence began when the computer started or woke and the app did not reopen. Last night had the same shape: no lane ran from 18:39 Friday until 11:33 this morning, with 21 jobs ready for the builder. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
+**Set the Claude app to open when Windows starts.** Every recent lane silence began when the computer started or woke and the app did not reopen. Friday night had the same shape: no lane ran from 18:39 Friday until 11:33 Saturday, with 21 jobs ready for the builder. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
 ## Also waiting (3)
 
@@ -40,7 +40,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** [Dialog size tiers](https://linear.app/threadbare/issue/THR-1820/design-dialog-size-tiers-panels-grow-to-fit-before-they-truncate-or) merged at 23:30 ([#2467](https://github.com/christianspliid-ui/threadbare/pull/2467)) and is live: panels now grow to fit before they scroll. The builder then picked up [prayers and the faithful](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) at 23:31 and is reworking draft [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463) to the one-prayer-at-a-time rule (last pushed 23:55). Not your call.
+**Backed up: 21 ready, one in progress.** [Prayers and the faithful](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) merged ([#2463](https://github.com/christianspliid-ui/threadbare/pull/2463)) and is live: hungry towns on your ground now pray, one prayer a season. The builder picked up [the Inspector plan](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and) at 00:31 and is working on it now. Not your call.
 
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
 - High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject). It removes steps, so the freeze allows it.
@@ -48,6 +48,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- Everything else is healthy. The live site serves the latest main (the dialog sizes). Main's checks and the scheduled background jobs pass. No PR is armed to merge (the one draft is the faith work above). All 12 scheduled lanes are on time. Engine speed: 147 ms a tick, 22% over the week's median of 121. That is under the 25% alarm, but closer than last hour (11%); one more measurement will tell whether today's merges slowed it.
+- **Engine speed has drifted past the alarm, so it is now the builder's job, not yours:** tick cost 159 ms/tick steady, 31% above the 7-day median (121, 136 rows since b9f9d67b); top phase agent_decision, 615 agents. Name the merges between b9f9d67b and 5dcfa32d: `git log --oneline --merges b9f9d67b..5dcfa32d`. It read 22% over at 23:57 and 11% the hour before, so today's merges (prayers, mortal wealth, unrest, war aims) are the likely cause.
+- Everything else is healthy. The live site serves the latest main (prayers). Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run reports a healthy shared install and 546 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run (00:40) reports a healthy shared install and 547 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
