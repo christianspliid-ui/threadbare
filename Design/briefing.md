@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 22:28 local (20:28 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 22:57 local (20:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,7 +40,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** The builder picked up [dialog size tiers — panels grow to fit before they truncate or scroll](https://linear.app/threadbare/issue/THR-1820/design-dialog-size-tiers-panels-grow-to-fit-before-they-truncate-or) at 22:23; that run is active.
+**Backed up: 22 ready, one in progress.** The builder picked up [dialog size tiers — panels grow to fit before they truncate or scroll](https://linear.app/threadbare/issue/THR-1820/design-dialog-size-tiers-panels-grow-to-fit-before-they-truncate-or) at 22:23; that run is still active (last activity 22:54).
 
 - [Mortal wealth, first slice](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money) merged at 22:04 ([#2465](https://github.com/christianspliid-ui/threadbare/pull/2465)): mortals are born with Means, and money encounters pay or cost it.
 - [Prayers and the faithful](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) is still held in draft [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463). The design lane has ruled on the prayer flood (one prayer at a time, above), so the builder now reworks the draft to the new rule. Not your call.
@@ -50,7 +50,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- Everything else is healthy. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is armed to merge (the one draft is the held faith work above). All 12 scheduled lanes are on time. Engine speed is normal: 116 ms a tick, 4% under the week's median of 120.
+- Everything else is healthy. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is armed to merge (the one draft is the held faith work above). All 12 scheduled lanes are on time. Engine speed is normal: 134 ms a tick, 11% over the week's median of 120 (the alarm is at 25%).
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The home checkout's installed tools still lack their command shims, so this run borrowed a healthy install from a worktree. That is builder housekeeping.
-- The tidy-up job last ran at 21:51: 544 old worktrees and 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run reports a healthy shared install and 545 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
