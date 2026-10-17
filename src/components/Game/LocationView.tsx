@@ -41,12 +41,16 @@ import type { FamiliarityMap } from '../../types/familiarity';
 import { NotableLine } from './NotableLine';
 import { DominionBox } from './DominionBox';
 import { fortunesSentence } from '../../data/fortunes-prose';
+import { placePrayerView } from '../../engine/prayers';
+import { EntityLink } from '../shared/EntityLink';
 import type { DominionSheetVM } from '../../engine/dominionViewModels';
 
 interface LocationViewProps {
   location: GraphNode;
   /** THR-1750 — the god's band on this place, prepared by GameView; null hides the box. */
   dominion?: DominionSheetVM | null;
+  /** THR-1935 — the player's god, for the prayer / faith line. Absent ⇒ the line is hidden. */
+  ascendantId?: string;
   agents: GraphNode[];
   hexTerrain: string;
   hexCol: number;
@@ -1070,6 +1074,65 @@ const FortunesLine = memo(function FortunesLine({
   );
 });
 
+// Prayer line — a hungry town's open prayer to the god, or the faith it keeps (THR-1935).
+// One sentence under the Fortunes row. The prayer line names what answers it and the
+// deadline in words (Laws 13, 16); the faith line is the Covenants row's own words from
+// the same resolver (Law 56). The god's name routes through the ref router (Law 21).
+// `tick` is a memo key only: the graph mutates in place.
+const PrayerLine = memo(function PrayerLine({
+  location,
+  graph,
+  ascendantId,
+  tick,
+}: {
+  location: GraphNode;
+  graph?: WorldGraph;
+  ascendantId?: string;
+  tick?: number;
+}) {
+  if (!graph || !ascendantId) return null;
+  const view = placePrayerView(graph, ascendantId, location.id, tick ?? 0);
+  if (!view) return null;
+  const god = graph.getNode(ascendantId);
+  const godName = god?.name;
+  const at = godName ? view.line.indexOf(godName) : -1;
+  const sentence = at >= 0 && godName
+    ? (
+      <>
+        {view.line.slice(0, at)}
+        <EntityLink id={ascendantId} name={godName} entityRef={{ kind: 'agent', id: ascendantId, name: godName }} />
+        {view.line.slice(at + godName.length)}
+      </>
+    )
+    : view.line;
+  const tooltipId = view.kind === 'prayer' ? 'ui.prayer' : 'ui.faithful';
+  const heading = view.kind === 'prayer' ? 'Prayer' : 'Faithful';
+  return (
+    <div className="mx-6 mt-3" style={{ maxWidth: '820px' }} data-testid="prayer-line" data-prayer-kind={view.kind}>
+      <div
+        className="rounded-panel border px-4 py-3"
+        style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-gold)' }}
+      >
+        <p className="section-heading" style={{ marginBottom: '0.35rem' }}>
+          <Tooltip id={tooltipId}>
+            <span
+              className="cursor-help"
+              role="term"
+              style={{ textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+            >
+              {heading}
+            </span>
+          </Tooltip>
+        </p>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+          {sentence}
+          {view.hint ? <> {view.hint}</> : null}
+        </p>
+      </div>
+    </div>
+  );
+});
+
 // Walls line — fortification state as prose with battle IPK keywords (THR-628).
 // Renders only when the settlement has walls worth mentioning (fortification
 // above baseline) or has been breached; the breach flips **Fortified** →
@@ -1134,6 +1197,7 @@ export const LocationView = memo(function LocationView({
   pastKnowledge,
   familiarityMap,
   dominion,
+  ascendantId,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -1480,6 +1544,8 @@ export const LocationView = memo(function LocationView({
 
       {/* Fortunes row — prosperity and unrest in one sentence (THR-1934) */}
       <FortunesLine location={location} graph={graph} tick={tick} />
+      {/* Prayer line — an open prayer to the god, or the faith the town keeps (THR-1935) */}
+      <PrayerLine location={location} graph={graph} ascendantId={ascendantId} tick={tick} />
       {/* Livelihood line — resource stock tiers as prose (THR-615) */}
       <LivelihoodLine location={location} graph={graph} sublocationIds={sublocationIds} />
       <DominionBox vm={dominion ?? null} />

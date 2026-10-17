@@ -4578,6 +4578,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 pastKnowledge={pastKnowledge}
                 familiarityMap={gameState.familiarityMap}
                 dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, focusedLocation.id, gameState.controlEffects, true)}
+                ascendantId={gameState.ascendantId}
               />
             )}
           </div>

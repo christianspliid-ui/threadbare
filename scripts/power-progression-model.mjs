@@ -63,7 +63,7 @@ const OTHER_SHARE_EACH = 0.40 / 10;
 const OTHER_SPHERE_COUNT = 10;
 const TIER_MAINTENANCE = { 0: 0, 1: 0.5, 2: 1.0, 3: 2.0, 4: 4.0 };   // src/data/influence-content.ts
 const TIER_PROMOTION_THRESHOLDS = { 2: 30, 3: 90, 4: 180 };           // src/data/influence-content.ts (ticks at current tier, paid)
-const BASE_SOURCE_INCOME = { placeOfPower: 0.5, shrine: 0.4, relic: 0.6 }; // src/data/essence-sources.ts
+const BASE_SOURCE_INCOME = { placeOfPower: 0.5, shrine: 0.4, relic: 0.6, faithfulCommunity: 0.3 }; // src/data/essence-sources.ts
 const SOURCE_FLOWERING_MULTIPLIER = 2.0;      // src/data/essence-sources.ts
 const SOURCE_DR_BASE = 0.8;                   // src/data/essence-sources.ts (same-sphere diminishing returns, richest first)
 const SANCTITY_BUILD_PER_ACTION = 0.15;       // src/data/essence-sources.ts
@@ -175,6 +175,7 @@ const MODELS = {
   // THR-1748 fills the slot: the economy carries per-holding turf, so it runs through
   // its own simulator (`simulateDominion`, below) rather than a switch on `simulate`.
   dominion: { name: 'Dominion — the combined run (THR-1748)', dominion: true },
+  faith: { name: 'Faith — the Dominion run with faithful towns (THR-1935)', faith: true },
 };
 
 // ─── The Dominion economy (THR-1748 § Decided 6 — the combined run) ──────────
@@ -234,7 +235,7 @@ const domBandOf = (m, P) => { const d = m > 0 ? m * P : m; const c = DOM.cut; re
 // dominionScaledCost: band multiplier, floored at half, never below 1, a free card stays free
 const domPriced = (c, mult) => (c <= 0 ? 0 : Math.max(1, Math.ceil(c * 0.5), Math.floor(c * mult + 0.5)));
 
-function simulateDominion(G, { claimsHeld = DOM.claimsHeld } = {}) {
+function simulateDominion(G, { claimsHeld = DOM.claimsHeld, faithTicks = [] } = {}) {
   const pool = { primary: INITIAL_ESSENCE_PER_SPHERE, secondary: INITIAL_ESSENCE_PER_SPHERE, other: INITIAL_ESSENCE_PER_SPHERE };
   const earned = { primary: 0, secondary: 0 };
   const sc = { primary: { s: STARTING_SPHERE_SCORE, p: 0 }, secondary: { s: 1, p: 0 } };
@@ -252,6 +253,8 @@ function simulateDominion(G, { claimsHeld = DOM.claimsHeld } = {}) {
     const P = power();
     if (t === SEAT_TICK) seat = true;
     if (t === WELLSPRING_MILESTONE_TICKS_AFTER_BOND) wellspring = true;
+    // THR-1935: a faithful town joins at each listed tick — base 0.3, never flowering, Touched.
+    for (const ft of faithTicks) if (ft === t) sources.push({ sanctity: 0.5, flowering: false, claimed: false, faith: true, m: DOM.match0.Touched, m0: DOM.match0.Touched });
 
     // turf: tended holdings gain; from day 30 untended ones decay and the top 3 are raided
     const H = all();
@@ -273,7 +276,7 @@ function simulateDominion(G, { claimsHeld = DOM.claimsHeld } = {}) {
     let total = BASE_ESSENCE_PER_TICK + (seat ? ESSENCE_PER_SEAT : 0) + threads.filter(x => x.aspect).length * ASPECT_ESSENCE_PER_TICK;
     for (const th of threads) total += DOM.tierYield[th.tier] * DOM.yieldMult[domBandOf(th.m, P)];
     const gen = { primary: total * PRIMARY_SHARE, secondary: total * SECONDARY_SHARE, other: total * OTHER_SHARE_EACH };
-    const val = s => BASE_SOURCE_INCOME.placeOfPower * (s.flowering ? SOURCE_FLOWERING_MULTIPLIER : 1) * DOM.sourceMult[domBandOf(s.m, P)];
+    const val = s => (s.faith ? BASE_SOURCE_INCOME.faithfulCommunity : BASE_SOURCE_INCOME.placeOfPower) * (s.flowering ? SOURCE_FLOWERING_MULTIPLIER : 1) * DOM.sourceMult[domBandOf(s.m, P)];
     const rs = [...sources].sort((a, b) => val(b) - val(a));
     gen.primary += rs.reduce((sum, s, r) => sum + val(s) * Math.pow(SOURCE_DR_BASE, r), 0);
     const capE = BASE_MAX_ESSENCE + threads.length * MAX_ESSENCE_PER_THREAD;
@@ -306,7 +309,7 @@ function simulateDominion(G, { claimsHeld = DOM.claimsHeld } = {}) {
     if (t === MANDATE_COMPLETION_TICK) push('primary', MANDATE_PRESSURE_COMPLETION);
 
     // Claim Dominion: granted at Held Ground; held on the best-matched untended flowering source
-    const flowering = sources.filter(s => s.flowering).length;
+    const flowering = sources.filter(s => s.flowering && !s.faith).length;
     if (!heldGround && flowering >= DOM.heldGroundFlowering) heldGround = true;
     if (heldGround && sources.filter(s => s.claimed).length < claimsHeld) {
       const target = sources.filter(s => s.flowering && !s.claimed).sort((a, b) => b.m - a.m)[0];
@@ -329,7 +332,7 @@ function simulateDominion(G, { claimsHeld = DOM.claimsHeld } = {}) {
         pay('primary', COST.bindThread, mb);
         threads.push({ tier: 1, ticksAtTier: 0, aspect: false, m: DOM.match0[G.mortal], m0: DOM.match0[G.mortal] }); nextThread++; lastAct = t;
       } else if (wellspring && t - lastSourceStep >= PLAYER.sourceStepEvery) {
-        const dormant = sources.find(s => !s.flowering);
+        const dormant = sources.find(s => !s.flowering && !s.faith);
         const nb = G.sources[Math.min(sources.length, G.sources.length - 1)], nbi = domBandOf(DOM.match0[nb], P);
         if (dormant && pool.primary >= domPriced(COST.sanctify, DOM.cost[domBandOf(dormant.m, P)])) {
           pay('primary', COST.sanctify, domBandOf(dormant.m, P)); dormant.sanctity += SANCTITY_BUILD_PER_ACTION;
@@ -356,6 +359,41 @@ function simulateDominion(G, { claimsHeld = DOM.claimsHeld } = {}) {
     }
   }
   return { snaps, upkeepMissed, minPoolP, claimUpkeepPaid, claimsLapsed, earned };
+}
+
+/**
+ * THR-1935 — what faithful towns add to the god's day-90 income. Each town is a
+ * faithfulCommunity source (base 0.3, never flowering, Touched, paying the source
+ * sustain). The gain days are model assumptions spread across the window. --check
+ * asserts four towns (FAITHFUL_COMMUNITY_MAX) keep every god inside the trip-wires.
+ */
+const FAITH_GAIN_DAYS = [20, 35, 50, 60, 70, 80];
+const FAITH_SWEEP = [0, 1, 2, 3, 4, 6];
+const FAITH_CHECKED_TOWNS = 4;
+function runFaith(doCheckFlag) {
+  console.log('\n=== Faith — the Dominion run with faithful towns (THR-1935 § Measurement) ===\n');
+  const rows = [];
+  let fail = false;
+  for (const [gk, G] of Object.entries(DOM_GODS)) {
+    const incomes = [];
+    let none = 0;
+    for (const n of FAITH_SWEEP) {
+      const r = simulateDominion(G, { faithTicks: FAITH_GAIN_DAYS.slice(0, n).map(d => d * TICKS_PER_DAY) });
+      const d90 = r.snaps[r.snaps.length - 1];
+      if (n === 0) none = d90.income;
+      const pinned = r.snaps.some(s => s.pinned);
+      const inBand = d90.income >= DOM_TRIPWIRE.low && d90.income <= DOM_TRIPWIRE.high;
+      if (n === FAITH_CHECKED_TOWNS && (!inBand || pinned)) fail = true;
+      incomes.push(`${n}: ${d90.income.toFixed(2)}${inBand && !pinned ? '' : (pinned ? ' PINNED' : ' OUT')}`);
+      if (n === FAITH_CHECKED_TOWNS) rows.push({ God: gk, 'Day-90 income by faithful towns': '', 'Share at 4': `+${(((d90.income - none) / none) * 100).toFixed(1)}%` });
+    }
+    rows[rows.length - 1]['Day-90 income by faithful towns'] = incomes.join(' · ');
+  }
+  printTable(rows);
+  console.log(`\nTrip-wire (THR-1748 § Decided 6): day-90 income in [${DOM_TRIPWIRE.low}, ${DOM_TRIPWIRE.high}] with ${FAITH_CHECKED_TOWNS} faithful towns (FAITHFUL_COMMUNITY_MAX).`);
+  console.log('Out of band at 4 → lower FAITHFUL_COMMUNITY_MAX to 3 (plan § Kill criteria).');
+  if (doCheckFlag) console.log(fail ? '\nCHECK FAIL (faith): a god leaves the trip-wires with four faithful towns' : '\nCHECK OK (faith): every god stays inside the trip-wires with four faithful towns');
+  return !fail;
 }
 
 /** The § Decided 6 trip-wires: day-90 income must land in [10.5, 13.5] a tick, primary pool never pinned. */
@@ -675,6 +713,7 @@ for (const key of Object.keys(MODELS)) {
   const M = MODELS[key];
   if (!M) { console.log(`\n=== ${key} — empty slot (filled by the Dominion prototype tickets) ===`); continue; }
   if (M.dominion) { if (!runDominion(doCheck)) failed = true; continue; }
+  if (M.faith) { if (!runFaith(doCheck)) failed = true; continue; }
   const { snapshots, events } = simulate(M);
   const rows = phaseRows(key, snapshots);
   console.log(`\n=== ${M.name} ===\n`);
