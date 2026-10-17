@@ -25,6 +25,7 @@ import { Tooltip } from '../shared/Tooltip';
 import { clampRarityTier } from '../../types/rarity';
 import { DANGER_ZONE_LABELS } from '../../types/monster';
 import type { LairMonsterCardModel } from './lair/buildLairMonsterCardModel';
+import { positionalDangerWord } from '../../data/view-content';
 import { LairMonsterCard } from './lair/LairMonsterCard';
 
 /**
@@ -72,27 +73,7 @@ function getIntensityLabel(value: number): string {
   return 'trace';
 }
 
-/**
- * Positional danger as a word (UI Law 13 — no percentages anywhere
- * player-facing). This line read `Danger: 73%` until THR-1009. Distinct from
- * `DANGER_ZONE_LABELS`, which bands a lair's authored `dangerZone` enum; this
- * bands the continuous 0–1 distance-from-safety the hex itself carries.
- *
- * NFP #1: one table, no logic to edit when the feel changes.
- */
-const POSITIONAL_DANGER_WORDS: ReadonlyArray<readonly [threshold: number, word: string]> = [
-  [0.25, 'Settled country'],
-  [0.5, 'Uneasy country'],
-  [0.7, 'Dangerous country'],
-  [1.01, 'Deadly country'],
-];
-
-function positionalDangerWord(level: number): string {
-  for (const [threshold, word] of POSITIONAL_DANGER_WORDS) {
-    if (level < threshold) return word;
-  }
-  return POSITIONAL_DANGER_WORDS[POSITIONAL_DANGER_WORDS.length - 1][1];
-}
+// Positional danger as a word: one ladder, in view-content.ts (THR-1876 moved it there for the land page).
 
 /**
  * Capitalize terrain type for display.

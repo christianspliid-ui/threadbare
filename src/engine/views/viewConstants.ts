@@ -11,3 +11,9 @@
  * the map, lens, Find and Needs-you entries; correctness never depends on a hit.
  */
 export const VIEW_CACHE_MAX_ENTRIES = 128;
+
+/**
+ * Rows a long Connections group keeps when a docked page must fold to fit (THR-1822 § D8,
+ * THR-1876 § D6). Wide and Full ignore it — every group shows whole there (Law 57).
+ */
+export const CONNECTIONS_DOCKED_FOLD_AFTER = 6;

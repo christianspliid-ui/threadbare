@@ -16,6 +16,7 @@ import { mapPlacesSelector } from './map/places';
 import { mapArmiesAndBattlesSelector } from './map/armiesAndBattles';
 import { lensViewSelector } from './lenses/lensView';
 import { mapRealmInkSelector } from './map/realmInk';
+import { subjectPageSelector } from './subjects/subjectPage';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- a heterogeneous registry; each entry keeps its own types at its import
 export type AnyViewSelector = ViewSelector<any, unknown>;
@@ -31,6 +32,7 @@ export const VIEW_SELECTORS: readonly AnyViewSelector[] = [
   hexContentsIndexSelector,
   hexContentsSelector,
   lensViewSelector,
+  subjectPageSelector,
 ];
 
 export type ViewSelectorId = (typeof VIEW_SELECTORS)[number]['id'];

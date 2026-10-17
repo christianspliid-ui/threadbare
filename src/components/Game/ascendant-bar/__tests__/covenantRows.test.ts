@@ -74,11 +74,13 @@ describe('selectCovenantRows', () => {
     expect(rows[0].target).toBe('Ironhold Keep');
   });
 
-  it('falls back to the hex when the target node is missing (fail-soft)', () => {
+  // THR-1876: the fallback is the land naming rule, never raw coordinates (Law 14). With no
+  // tile and no place on the hex the rule's last arm reads the terrain word.
+  it("falls back to the land's name when the target node is missing (fail-soft)", () => {
     const rows = selectCovenantRows(
       covState({ controlEffects: [makeEffect({ targetNodeId: 'gone', targetHexCol: 4, targetHexRow: 6 })] }),
     );
-    expect(rows[0].target).toBe('the land at (4, 6)');
+    expect(rows[0].target).toBe('Open wilds');
   });
 
   it('reads the upkeep as a cost phrase when the control drains essence', () => {

@@ -15,10 +15,12 @@
 import type {
   DetailPage,
   GraphPageKind,
+  PageLayoutKind,
   ProseSection,
   Section,
   SectionBase,
 } from '../types/detailPage';
+import type { GameState } from '../types/gameState';
 import {
   DETAIL_AUTHORED_DEFAULT_TIER,
   DETAIL_FAILSOFT_STUB_SPHERE,
@@ -126,9 +128,6 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
     return unknownStub(nodeId, pageKind, breadcrumbRoot);
   }
 
-  const schema = DETAIL_PAGE_REGISTRY[pageKind];
-  const sortedSchema = [...schema].sort((a, b) => a.order - b.order);
-
   const isShowcase = node.properties?.showcase === true;
   const showcaseTemplateId = node.properties?.showcaseTemplate as string | undefined;
   const authored = isShowcase ? getShowcaseAuthoring(nodeId, showcaseTemplateId) : undefined;
@@ -143,11 +142,7 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
     encounterContext,
   };
 
-  const sections: Section[] = [];
-  for (const entry of sortedSchema) {
-    const resolved = resolveSection(entry, resolverCtx, authored?.sections[entry.typeId], node.name);
-    if (resolved) sections.push(resolved);
-  }
+  const sections = composeSections(pageKind, resolverCtx, authored?.sections, node.name);
 
   // If no mandatory section resolved at all, replace with the stub. Per the
   // fallback table, mandatory rows always have a fallbackResolver, but defend
@@ -182,6 +177,121 @@ export function generateDetailPage(input: GenerateDetailPageInput): DetailPage {
 }
 
 // ─── Section resolution ───────────────────────────────────────────────────────
+
+/**
+ * Resolve one page kind's rows, in table order (THR-1876 § D6) — the loop every page
+ * generator shares: `generateDetailPage`, `generateContentPage`, and the land, god and
+ * record pages below. Each section carries its row's `visibleAt` and `tab`; the producer
+ * never drops a section by width (each surface filters with `sectionVisibleAt`).
+ */
+export function composeSections(
+  kind: PageLayoutKind,
+  ctx: SectionResolverContext,
+  authored?: Partial<Record<string, AuthoredSection>>,
+  nodeName = '',
+): Section[] {
+  const schema = DETAIL_PAGE_REGISTRY[kind] ?? [];
+  const sorted = [...schema].sort((a, b) => a.order - b.order);
+  const sections: Section[] = [];
+  for (const entry of sorted) {
+    let resolved: Section | null = null;
+    try {
+      resolved = resolveSection(entry, ctx, authored?.[entry.typeId], nodeName);
+    } catch {
+      // Fail-soft (NFP #4): a resolver that throws skips its section, it never blanks the page.
+      resolved = null;
+    }
+    if (resolved) sections.push(stampRow(resolved, entry));
+  }
+  return sections;
+}
+
+/** Copy a row's width and tab onto its section — only when the row declares them. */
+function stampRow(section: Section, entry: SectionSchemaEntry): Section {
+  if (!entry.visibleAt && !entry.tab) return section;
+  return {
+    ...section,
+    ...(entry.visibleAt ? { visibleAt: entry.visibleAt } : {}),
+    ...(entry.tab ? { tab: entry.tab } : {}),
+  };
+}
+
+/** A page of a kind with no single node: its kind and its sections (THR-1876 § D6). */
+export interface ComposedPage {
+  kind: PageLayoutKind;
+  sections: Section[];
+}
+
+/** The land page's body — HexChronicle's prose, moved (§ D7.3). Empty without a tile. */
+export function generateLandPage(input: { state: GameState; col: number; row: number }): ComposedPage {
+  const { state, col, row } = input;
+  return {
+    kind: 'land',
+    sections: composeSections('land', {
+      nodeId: `${col},${row}`,
+      pageKind: 'land',
+      graph: state.graph,
+      seed: state.seed,
+      tick: state.tick,
+      state,
+      hex: { col, row },
+    }),
+  };
+}
+
+/** The god's own page body — rows over the god rail's selectors (§ D7.9). */
+export function generateGodPage(input: { state: GameState }): ComposedPage {
+  const { state } = input;
+  return {
+    kind: 'god',
+    sections: composeSections('god', {
+      nodeId: state.ascendantId,
+      pageKind: 'god',
+      graph: state.graph,
+      seed: state.seed,
+      tick: state.tick,
+      state,
+    }),
+  };
+}
+
+/**
+ * A record's body (§ D7.8). A graph event node reads the `event` rows; an encounter,
+ * journey or receipt reads the `record` rows over its store.
+ */
+export function generateRecordPage(input: {
+  state: GameState;
+  eventNodeId?: string;
+  record?: { kind: 'encounter' | 'journey' | 'receipt'; id: string; name?: string };
+}): ComposedPage {
+  const { state, eventNodeId, record } = input;
+  if (eventNodeId) {
+    return {
+      kind: 'record',
+      sections: composeSections('event', {
+        nodeId: eventNodeId,
+        pageKind: 'event',
+        graph: state.graph,
+        seed: state.seed,
+        tick: state.tick,
+        protagonistId: state.ascendantId,
+        state,
+      }),
+    };
+  }
+  return {
+    kind: 'record',
+    sections: composeSections('record', {
+      nodeId: record?.id ?? '',
+      pageKind: 'record',
+      graph: state.graph,
+      seed: state.seed,
+      tick: state.tick,
+      state,
+      record,
+    }),
+  };
+}
 
 function resolveSection(
   entry: SectionSchemaEntry,

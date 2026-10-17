@@ -4,6 +4,7 @@
  */
 import type { ProseLayer } from './prose';
 import type { AnyRef } from './contentRef';
+import type { WorldRef } from './worldRef';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────────────────
 
@@ -125,7 +126,39 @@ export type GraphPageKind = Exclude<DetailPageKind, 'content'>;
  * dropped the pips and the authored line with them. The canonical model has to be able to
  * say everything the model it replaces could say, or the replacement is a regression.
  */
-export type SectionKind = 'prose' | 'chips' | 'event-card' | 'panel' | 'portrait' | 'triggers';
+export type SectionKind = 'prose' | 'chips' | 'event-card' | 'panel' | 'portrait' | 'triggers' | 'links' | 'cards';
+
+/**
+ * Where a section shows (THR-1876 § D6). The hover card is the fourth width; the
+ * Inspector's three sizes are the other three. A section with no `visibleAt`
+ * shows on every surface — today's behaviour, the hover card included.
+ */
+export type PageSurface = 'hover' | 'docked' | 'wide' | 'full';
+
+/** Every surface, in widening order. */
+export const PAGE_SURFACES: readonly PageSurface[] = ['hover', 'docked', 'wide', 'full'];
+
+/**
+ * The one page-layout table's key (THR-1876 § D6, UI Law 58): the graph page kinds,
+ * plus content cards and the three page kinds that have no single node — the land
+ * page (a hex), the god's own sheet and a record (an encounter, journey or receipt,
+ * or a graph event). `DETAIL_PAGE_REGISTRY` is a `Record` over this union, so a kind
+ * without rows is a type error.
+ */
+export type PageLayoutKind = GraphPageKind | 'content' | 'land' | 'god' | 'record';
+
+/** The Inspector's body tabs (THR-1876 § D6). A closed union: `INSPECTOR_TAB_LABELS` is total over it. */
+export type InspectorTabId =
+  | 'overview'
+  | 'prowess'
+  | 'attachments'
+  | 'bonds'
+  | 'journey'
+  | 'chronicle'
+  | 'chapters'
+  | 'here_now'
+  | 'story'
+  | 'reaches';
 
 /** Prose tier per Narrative Engine canon. */
 export type ProseTier = 'routine' | 'notable' | 'chronicle';
@@ -204,6 +237,14 @@ export interface SectionBase {
   typeId: string;
   /** Resolver that produced this section, for debug tracing. */
   source: string;
+  /**
+   * Where this section shows (THR-1876 § D6), copied from its registry row by the
+   * generator. Absent = every surface. The producer never drops a section by width;
+   * each surface filters with `sectionVisibleAt`.
+   */
+  visibleAt?: readonly PageSurface[];
+  /** Which Inspector tab it sits in, copied from its registry row. Absent = 'overview'. */
+  tab?: InspectorTabId;
 }
 
 export interface ProseSection extends SectionBase {
@@ -214,6 +255,12 @@ export interface ProseSection extends SectionBase {
   layers?: ProseLayer[];
   /** Keyword-tooltip wiring data: each placeholder name → resolved nodeRef. */
   termRefs?: Record<string, NodeRef>;
+  /**
+   * How the prose sits (THR-1876 § D6, additive). Absent = `'body'`. `'quote'` is a
+   * spoken line; `'lede'` is a page's one-line opener. Paragraphs are separated by a
+   * blank line (`\n\n`) and render as one `<p>` each.
+   */
+  variant?: 'body' | 'quote' | 'lede';
 }
 
 export interface ChipsSection extends SectionBase {
@@ -231,10 +278,68 @@ export interface EventCardSection extends SectionBase {
   eventRef: NodeRef;
 }
 
+/** One row of a `panel` (facts) section. */
+export interface PanelRow {
+  left: string;
+  right: string;
+  sentiment?: 'positive' | 'negative' | 'neutral';
+  /** THR-1876 (additive): the row's value names a world thing — it renders as a link (Law 21). */
+  ref?: WorldRef;
+  /** THR-1876 (additive): the row explains itself on hover (Law 17). */
+  tooltipId?: string;
+  /**
+   * THR-1876 (additive): a 0–1 proportion drawn as a bar beside the word — the word is
+   * always present, never a numeral (Law 13's unitless-proportion ruling, THR-1424).
+   * Only where a retiring surface draws that bar today; never on a new field.
+   */
+  meter?: number;
+}
+
 export interface PanelSection extends SectionBase {
   kind: 'panel';
   /** Free-form rows for layouts like Faction reputations table. */
-  rows: Array<{ left: string; right: string; sentiment?: 'positive' | 'negative' | 'neutral' }>;
+  rows: PanelRow[];
+}
+
+/** One named world thing in a `links` section (THR-1876 § D6). */
+export interface LinkRow {
+  ref: WorldRef;
+  name: string;
+  /** One plain fact: "Priest · Congregation of the Spheres". Empty when there is none. */
+  fact: string;
+}
+
+/**
+ * A list of named world things (THR-1876 § D6, new shape). Each row renders as an
+ * identity chip, its one fact and the eye. Not a relation list on a body — relations
+ * live in Connections (§ D6 "a relation lives in one place"); this shape is what the
+ * Connections block and *In this land* render through, and what a body uses for
+ * things the subject *contains as facts* (none in S1).
+ */
+export interface LinksSection extends SectionBase {
+  kind: 'links';
+  rows: LinkRow[];
+  /** Optional grouping; each group carries its full row list and its total. */
+  groups?: Array<{ label: string; rows: LinkRow[]; total: number }>;
+  /** Rows a docked page keeps before "Show all N", when it must fold to fit. */
+  foldAfter?: number;
+}
+
+/** One tile of a `cards` section. */
+export interface CardTile {
+  ref?: WorldRef;
+  title: string;
+  kindWord: string;
+  lines: string[];
+  /** A 0–1 proportion drawn as a bar (same rule as `PanelRow.meter`). */
+  meter?: number;
+  durationWord?: string;
+}
+
+/** A row of small cards — conditions, works, powers (THR-1876 § D6, new shape). */
+export interface CardsSection extends SectionBase {
+  kind: 'cards';
+  tiles: CardTile[];
 }
 
 export interface PortraitSection extends SectionBase {
@@ -256,7 +361,18 @@ export type Section =
   | EventCardSection
   | PanelSection
   | PortraitSection
-  | TriggersSection;
+  | TriggersSection
+  | LinksSection
+  | CardsSection;
+
+/**
+ * Whether a section shows on a surface (THR-1876 § D6). The one filter every surface
+ * uses — the hover card, the Inspector's three sizes and the lab — so "which width
+ * shows this" is the registry row's `visibleAt` and nothing else.
+ */
+export function sectionVisibleAt(section: Pick<SectionBase, 'visibleAt'>, surface: PageSurface): boolean {
+  return !section.visibleAt || section.visibleAt.includes(surface);
+}
 
 // ─── Full detail page payload ─────────────────────────────────────────────────
 
