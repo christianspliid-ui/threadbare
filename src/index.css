@@ -382,6 +382,14 @@
     --stage-gutter: 24px;            /* THR-1829 */
     --stage-window-w: 280px;         /* THR-1829 STAGE_WINDOW_PX */
     --stage-left-col-w: 340px;       /* THR-1829 STAGE_LEFT_COL_PX */
+    /* Dialog size tiers (THR-1820, Law 57). S and M are text containers (rem,
+       declared once below); L, XL, the gutter and SheetColumns are frame-scale,
+       restated per tier. Mirrored in layoutContract.ts and dialogSize.ts. */
+    --dialog-l-w: 1280px;
+    --dialog-xl-w: 1760px;
+    --dialog-gutter: 24px;           /* least space between a panel and the viewport edge */
+    --sheet-aside-w: 400px;          /* SheetColumns left column */
+    --sheet-gap: 24px;
     --panel-radius: var(--radius-panel); /* alias kept for existing readers (THR-1821) */
     /* Overlay backdrops and the glass panel over the map (THR-1821). */
     --scrim-dim: rgb(0 0 0 / 0.6);     /* Modal's backdrop */
@@ -392,6 +400,8 @@
     --hovercard-w: 26.25rem;         /* 420px at 1080p */
     --toast-w: 20rem;                /* 320px at 1080p */
     --stage-compact-w: 53.75rem;     /* 860px at 1080p — THR-1829 compact tier */
+    --dialog-s-w: 37.5rem;           /* 600px at 1080p, 675 at 1440p — THR-1820 S */
+    --dialog-m-w: 60rem;             /* 960px at 1080p, 1080 at 1440p — THR-1820 M */
     /* The one dialog height cap (Law 33). Containers (Inspector, Stage) are
        not dialogs; drop-down caps (NotablesPanel, Find) are outside it. */
     --modal-max-h: 85vh;
@@ -450,6 +460,11 @@
       --stage-window-w: 280px;
       --stage-left-col-w: 340px;
       --panel-padding: 1.25rem;
+      --dialog-l-w: 1280px;
+      --dialog-xl-w: 1760px;
+      --dialog-gutter: 24px;
+      --sheet-aside-w: 400px;
+      --sheet-gap: 24px;
     }
   }
   @media (min-width: 2560px) {
@@ -467,6 +482,11 @@
       --stage-gutter: 24px;
       --stage-window-w: 520px;
       --stage-left-col-w: 560px;
+      --dialog-l-w: 1600px;
+      --dialog-xl-w: 2240px;
+      --dialog-gutter: 32px;
+      --sheet-aside-w: 480px;
+      --sheet-gap: 28px;
     }
   }
   @media (min-width: 3440px) {
@@ -484,6 +504,11 @@
       --stage-gutter: 24px;
       --stage-window-w: 1400px;
       --stage-left-col-w: 560px;
+      --dialog-l-w: 1600px;
+      --dialog-xl-w: 2880px;
+      --dialog-gutter: 32px;
+      --sheet-aside-w: 480px;
+      --sheet-gap: 28px;
     }
   }
 

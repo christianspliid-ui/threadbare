@@ -271,7 +271,7 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
   }
 
   return (
-    <Modal open={open} onClose={onClose} maxWidth={780}>
+    <Modal open={open} onClose={onClose} size="m" aria-label="Mandate">
       <Modal.Header onClose={onClose}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Icon name="mandate" size="list" decorative style={{ color, filter: `drop-shadow(0 0 6px ${color}80)` }} />

@@ -4,6 +4,8 @@ import { Overlay, type OverlayAnimation, type OverlayProps } from './Overlay';
 import { PanelLevelScope, panelStyle } from './Panel';
 import { Z_BAND } from './zBands';
 import { dialogContextClass, type DialogContext } from './dialogContext';
+import { DIALOG_SIZE_DEFAULT, dialogSizeStyle, isDialogSize, type DialogSize } from './dialogSize';
+import { SheetLayoutContext } from './SheetColumns';
 
 /**
  * The modal band (Law 35 — z-index comes from the stacking table, never invented).
@@ -22,6 +24,13 @@ export const MODAL_Z_ABOVE_INTERRUPT = Z_BAND.modalAboveInterrupt;
 interface ModalProps {
   open: boolean;
   onClose: () => void;
+  /** Size tier (THR-1820, Law 57). Default `'s'` — 600 px at 1080p, today's default width. */
+  size?: DialogSize;
+  /**
+   * @deprecated THR-1820 — a free width, counted by the UI-debt ratchet (row `modal-maxwidth`).
+   * Honoured only when `size` is absent, drawn exactly as before. Kept so surfaces that
+   * THR-1827 / THR-1829 retire need no edit before they are deleted.
+   */
   maxWidth?: number;
   animation?: 'anim-fade' | 'anim-fade-up';
   /**
@@ -59,16 +68,34 @@ interface ModalProps {
  * (Law 27 — one copy of the panel). It is `Panel`'s `page` level, floating, plus
  * the dialog's width and the one height cap. Every `--dlg-*` read carries the
  * neutral value as its fallback, so a panel with no context class is unchanged.
+ *
+ * A tier name (THR-1820) draws the tier's width; a number is the deprecated free
+ * width, drawn exactly as before the tiers (`width: 90%` under that cap).
  */
-export function modalPanelStyle(maxWidth = 600): React.CSSProperties {
+export function modalPanelStyle(sizeOrMaxWidth: DialogSize | number = DIALOG_SIZE_DEFAULT): React.CSSProperties {
+  const width: React.CSSProperties = typeof sizeOrMaxWidth === 'number'
+    ? { maxWidth: `${sizeOrMaxWidth}px`, width: '90%', maxHeight: 'var(--modal-max-h)' } // 85vh — the one dialog cap (Law 33, THR-1819)
+    : dialogSizeStyle(sizeOrMaxWidth);
   return {
     ...panelStyle('page', { floating: true }),
-    maxWidth: `${maxWidth}px`,
-    width: '90%',
-    maxHeight: 'var(--modal-max-h)', // 85vh — the one dialog cap (Law 33, THR-1819)
+    ...width,
     display: 'flex',
     flexDirection: 'column',
   };
+}
+
+/** What a Modal's panel draws: its tier, or `'free'` on the deprecated `maxWidth` path. */
+export function resolveModalSize(size: DialogSize | undefined, maxWidth: number | undefined): DialogSize | 'free' {
+  if (size !== undefined) return isDialogSize(size) ? size : DIALOG_SIZE_DEFAULT;
+  if (maxWidth !== undefined) return 'free';
+  return DIALOG_SIZE_DEFAULT;
+}
+
+const warnedOnce = new Set<string>();
+function warnOnce(key: string, message: string): void {
+  if (warnedOnce.has(key)) return;
+  warnedOnce.add(key);
+  console.warn(message);
 }
 
 /** Modal's `animation` prop names the CSS class pair; Overlay names the motion. */
@@ -86,12 +113,19 @@ function bandFor(zIndex: number): Pick<OverlayProps, 'band' | 'zIndexOverride'> 
 
 /**
  * Modal — the dialog: an `Overlay` (portal, dim backdrop, modal band, the Escape
- * stack, focus) whose surface is a floating `page` panel (THR-1884). Its props are
- * unchanged from before the re-base; THR-1820's `size` tiers will sit here, never
- * on Overlay.
+ * stack, focus) whose surface is a floating `page` panel (THR-1884). The `size`
+ * tier (THR-1820) sits here, never on Overlay; the panel carries `data-dialog-size`
+ * and provides `SheetLayoutContext` (`'two'` at L and XL).
  */
-function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, closeOnEscape = true, 'aria-label': ariaLabel, panelClassName, context = 'neutral', children }: ModalProps) {
+function ModalRoot({ open, onClose, size, maxWidth, animation = 'anim-fade-up', zIndex = MODAL_Z_DEFAULT, closeOnEscape = true, 'aria-label': ariaLabel, panelClassName, context = 'neutral', children }: ModalProps) {
   const panelClasses = [dialogContextClass(context), panelClassName].filter(Boolean).join(' ') || undefined;
+  const resolved = resolveModalSize(size, maxWidth);
+  if (size !== undefined && !isDialogSize(size)) {
+    warnOnce(`unknown:${String(size)}`, `[Modal] unknown size "${String(size)}" — drawn as '${DIALOG_SIZE_DEFAULT}' (THR-1820)`);
+  } else if (size !== undefined && maxWidth !== undefined && import.meta.env?.DEV) {
+    warnOnce(`both:${ariaLabel ?? ''}`, `[Modal] both size and maxWidth passed${ariaLabel ? ` to "${ariaLabel}"` : ''} — size wins (THR-1820)`);
+  }
+  const sheetLayout = resolved === 'l' || resolved === 'xl' ? 'two' : 'one';
 
   return (
     <Overlay
@@ -104,11 +138,13 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
       placement="top"
       closeOnEscape={closeOnEscape}
       animation={MODAL_ANIMATION[animation]}
-      surfaceStyle={modalPanelStyle(maxWidth)}
+      surfaceStyle={modalPanelStyle(resolved === 'free' ? (maxWidth as number) : resolved)}
       surfaceClassName={panelClasses}
-      surfaceProps={{ 'data-dialog-context': context, 'data-panel-level': 'page' }}
+      surfaceProps={{ 'data-dialog-context': context, 'data-panel-level': 'page', 'data-dialog-size': resolved }}
     >
-      <PanelLevelScope level="page">{children}</PanelLevelScope>
+      <SheetLayoutContext.Provider value={sheetLayout}>
+        <PanelLevelScope level="page">{children}</PanelLevelScope>
+      </SheetLayoutContext.Provider>
     </Overlay>
   );
 }

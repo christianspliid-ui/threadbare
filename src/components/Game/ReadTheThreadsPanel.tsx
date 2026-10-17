@@ -507,7 +507,7 @@ export function ReadTheThreadsPanel({
     <Modal
       open={open}
       onClose={handleClose}
-      maxWidth={700}
+      size="m"
       aria-label="Read the Threads"
     >
       <Modal.Header onClose={handleClose}>Read the Threads</Modal.Header>

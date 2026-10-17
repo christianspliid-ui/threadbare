@@ -13,6 +13,8 @@ import { IconButton } from '../shared/IconButton';
 import { Card } from '../shared/Card';
 import { ListRow } from '../shared/ListRow';
 import { Modal, modalPanelStyle } from '../shared/Modal';
+import { SheetColumns, SheetLayoutContext } from '../shared/SheetColumns';
+import { DIALOG_SIZES, type DialogSize } from '../shared/dialogSize';
 import { Overlay, type OverlayBackdrop } from '../shared/Overlay';
 import { Panel } from '../shared/Panel';
 import { Icon, type IconSize } from '../shared/Icon';
@@ -133,6 +135,7 @@ const SECTIONS = [
   { id: 'panel-card', label: 'Panel and Card (THR-1884)' },
   { id: 'listrow', label: 'ListRow' },
   { id: 'modal', label: 'Modal' },
+  { id: 'dialog-sizes', label: 'Dialog sizes and SheetColumns (THR-1820)' },
   { id: 'overlay', label: 'Overlay (THR-1884)' },
   { id: 'dialog-contexts', label: 'Dialogue contexts (THR-1586)' },
   { id: 'medallion', label: 'Medallion (THR-799)' },
@@ -433,6 +436,62 @@ const DIALOG_CONTEXT_PREVIEWS: readonly DialogContextPreviewSpec[] = [
   },
 ];
 
+/** What each tier holds (THR-1820 § 3) — the gallery's one line per tier. */
+const DIALOG_SIZE_HOLDS: Record<DialogSize, string> = {
+  s: 'S — one message or one decision: a notice, a receipt, a reveal, a short form.',
+  m: 'M — one column of structured content: a ladder, a clock, a row of up to four cards.',
+  l: 'L — a subject and its record side by side, in SheetColumns.',
+  xl: 'XL — a work surface with its own panes; fixed at the 85vh cap.',
+};
+
+/** Dialog size tiers and SheetColumns (THR-1820, Law 57; Law 29 — the primitive's entry). */
+function DialogSizesSection() {
+  const [openSize, setOpenSize] = useState<DialogSize | null>(null);
+  const close = () => setOpenSize(null);
+  const sampleAside = (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+      <div style={{ aspectRatio: '16 / 9', background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-panel)' }} />
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', color: 'var(--text-primary)' }}>Kael Thornweaver</span>
+      <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>A smith of Bitterbury, threaded.</span>
+    </div>
+  );
+  const sampleMain = (
+    <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>
+      The record reads here: facts, tabs, lists. Each column scrolls only when the panel is at its cap (Law 57).
+    </p>
+  );
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+      <Label>Every dialog picks a tier; no free width. A panel grows to its tier before it scrolls or cuts a list (Law 57).</Label>
+      {DIALOG_SIZES.map((size) => (
+        <div key={size} style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
+          <Button variant="secondary" size="sm" onClick={() => setOpenSize(size)} data-testid={`styleguide-dialog-size-${size}`}>
+            Open {size.toUpperCase()}
+          </Button>
+          <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>{DIALOG_SIZE_HOLDS[size]}</span>
+        </div>
+      ))}
+      <Modal open={openSize !== null} onClose={close} size={openSize ?? 's'} aria-label={`Dialog size ${(openSize ?? 's').toUpperCase()}`}>
+        <Modal.Header onClose={close}>Size {(openSize ?? 's').toUpperCase()}</Modal.Header>
+        {openSize === 'l' || openSize === 'xl'
+          ? <SheetColumns aside={sampleAside}>{sampleMain}</SheetColumns>
+          : <Modal.Body><p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>{DIALOG_SIZE_HOLDS[openSize ?? 's']}</p></Modal.Body>}
+      </Modal>
+      <Label>SheetColumns — two columns under 'two' (Modal at L / XL), stacked under 'one' or with no provider.</Label>
+      <div style={{ display: 'flex', gap: 'var(--space-4)', alignItems: 'flex-start' }}>
+        <div style={{ ...modalPanelStyle('m'), width: 720, maxHeight: 'none' }}>
+          <SheetLayoutContext.Provider value="two">
+            <SheetColumns aside={sampleAside}>{sampleMain}</SheetColumns>
+          </SheetLayoutContext.Provider>
+        </div>
+        <div style={{ ...modalPanelStyle('s'), width: 320, maxHeight: 'none' }}>
+          <SheetColumns aside={sampleAside}>{sampleMain}</SheetColumns>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function DialogContextPreview({ spec }: { spec: DialogContextPreviewSpec }) {
   const style = {
     ...modalPanelStyle(260),
@@ -647,7 +706,7 @@ function OverlaySection() {
           </Row>
         </Panel>
       </Overlay>
-      <Modal open={stackModalOpen} onClose={() => setStackModalOpen(false)} aria-label="Stacking demo modal" maxWidth={420}>
+      <Modal open={stackModalOpen} onClose={() => setStackModalOpen(false)} aria-label="Stacking demo modal" size="s">
         <Modal.Header onClose={() => setStackModalOpen(false)}>A Modal over the Overlay</Modal.Header>
         <Modal.Body>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 0 }}>
@@ -1160,7 +1219,7 @@ export default function StyleGuide() {
                       A distant tremor passes through the web of fate. Something ancient has noticed your intervention.
                     </p>
                     <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
-                      Modal is an <code>Overlay</code> on the modal band (z 60) with a floating page <code>Panel</code>. Max-height: 85vh (<code>--modal-max-h</code>). Escape or backdrop click closes.
+                      Modal is an <code>Overlay</code> on the modal band (z 60) with a floating page <code>Panel</code>. Width: its size tier (<code>size="s|m|l|xl"</code>, default S). Max-height: 85vh (<code>--modal-max-h</code>). Escape or backdrop click closes.
                     </p>
                   </Modal.Body>
                   <Modal.Footer>
@@ -1168,6 +1227,16 @@ export default function StyleGuide() {
                     <Button variant="primary" size="sm" onClick={() => setModalOpen(false)}>Acknowledge</Button>
                   </Modal.Footer>
                 </Modal>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Dialog sizes (THR-1820) ───────────────────────── */}
+          <section id="section-dialog-sizes" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Dialog sizes</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <DialogSizesSection />
               </GameErrorBoundary>
             </div>
           </section>
@@ -2111,7 +2180,7 @@ const TYPE_STEP_ROLES: Record<keyof typeof TYPE_SCALE_REM, string> = {
 /** The text-container and height tokens shown beside the frame geometry. */
 const TEXT_LAYOUT_TOKENS = [
   '--panel-padding', '--tooltip-max-w', '--hovercard-w', '--toast-w',
-  '--stage-compact-w', '--measure-prose', '--modal-max-h',
+  '--stage-compact-w', '--measure-prose', '--modal-max-h', '--dialog-s-w', '--dialog-m-w',
 ] as const;
 
 /** Re-read on resize so a designer dragging the window sees the tier change. */

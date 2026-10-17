@@ -13,7 +13,7 @@
  * ─── Constants ───────────────────────────────────────────────────
  * | CHAPTER_ARCHIVE_CAP        | 2000 | Max records per run before eviction |
  * | CHAPTER_ARCHIVE_EVICT_BATCH| 100  | Records dropped per overflow pass   |
- * | CHAPTER_LEDGER_PAGE_SIZE   | 25   | Ledger rows per page (UI-consumed)  |
+ * | CHAPTER_LEDGER_PAGE_SIZE   | 40   | Ledger rows per page (UI-consumed)  |
  *
  * ─── PRNG ────────────────────────────────────────────────────────
  * None — deterministic bookkeeping. Prose enrichment reuses the same deterministic
@@ -58,7 +58,7 @@ export const CHAPTER_ARCHIVE_CAP = 2000;
 /** Records evicted per overflow pass (oldest non-threaded first, then oldest). */
 export const CHAPTER_ARCHIVE_EVICT_BATCH = 100;
 /** Ledger rows per page (consumed by the Chapter Ledger UI). */
-export const CHAPTER_LEDGER_PAGE_SIZE = 25;
+export const CHAPTER_LEDGER_PAGE_SIZE = 40; // THR-1820: one page overfills the L index column's cap at both screens
 
 const FADED_STEP_PROSE = 'The record of this step has faded.';
 const DEPARTED_MORTAL = 'a departed mortal';

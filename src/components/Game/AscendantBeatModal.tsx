@@ -24,6 +24,7 @@
 
 import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
+import { BEAT_MODAL_M_MIN_CARDS, type DialogSize } from '../shared/dialogSize';
 import { Icon } from '../shared/Icon';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
@@ -213,8 +214,14 @@ function humanizeBeatId(beatId: string): string {
  * with the frame it was compensating for.
  */
 const UNLOCK_CARD_ROW_MAX = 4;
-/** Gap between reveal cards — the hand's own gap. */
-const UNLOCK_CARD_GAP_PX = 24;
+/**
+ * Gap between reveal cards — the hand's own gap (`NudgePhaseShell`'s 12 px), so a
+ * row of four (4 × 210 + 3 × 12 = 876 px) fits inside the M tier (THR-1820).
+ */
+const UNLOCK_CARD_GAP_PX = 12;
+
+/** A card row never runs wider than `UNLOCK_CARD_ROW_MAX` cards; more wrap to the next row. */
+const UNLOCK_CARD_ROW_MAX_WIDTH_PX = UNLOCK_CARD_ROW_MAX * CARD_WIDTH_PX + (UNLOCK_CARD_ROW_MAX - 1) * UNLOCK_CARD_GAP_PX;
 
 /**
  * Build a display-only WheelSlot from an action template so the real focused
@@ -258,10 +265,12 @@ export function templateToPreviewSlot(template: UnifiedActionTemplate): WheelSlo
   };
 }
 
-/** Modal max-width sized to hold up to UNLOCK_CARD_ROW_MAX cards in one row. */
-function unlockRowMaxWidth(cardCount: number): number {
-  const cols = Math.min(Math.max(cardCount, 1), UNLOCK_CARD_ROW_MAX);
-  return Math.max(600, cols * CARD_WIDTH_PX + (cols - 1) * UNLOCK_CARD_GAP_PX + 96);
+/**
+ * The dialog tier for a beat showing `cardCount` cards (THR-1820): S below
+ * `BEAT_MODAL_M_MIN_CARDS`, M from there — M holds a row of `UNLOCK_CARD_ROW_MAX`.
+ */
+export function beatModalSize(cardCount: number): DialogSize {
+  return cardCount >= BEAT_MODAL_M_MIN_CARDS ? 'm' : 's';
 }
 
 const TEXT_FALLBACK_STYLE: React.CSSProperties = {
@@ -298,6 +307,8 @@ function UnlockCardRow({
         flexWrap: 'wrap',
         gap: `${UNLOCK_CARD_GAP_PX}px`,
         justifyContent: 'center',
+        maxWidth: UNLOCK_CARD_ROW_MAX_WIDTH_PX,
+        marginInline: 'auto',
         alignItems: 'flex-start',
       }}
     >
@@ -387,6 +398,8 @@ function OfferingRow({
         flexWrap: 'wrap',
         gap: `${UNLOCK_CARD_GAP_PX}px`,
         justifyContent: 'center',
+        maxWidth: UNLOCK_CARD_ROW_MAX_WIDTH_PX,
+        marginInline: 'auto',
         alignItems: 'flex-start',
       }}
     >
@@ -481,12 +494,10 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
   const handleClose = onClose ?? (() => { /* spine beats are not dismissable */ });
 
-  // Widen the modal so the focused ActionCard row (up to 3 across) fits without
-  // clipping; falls back to the default width when there are no grant cards to show.
+  // The tier follows the card row (THR-1820): S below three cards, M from three,
+  // so a row of up to four focused ActionCards fits without clipping.
   const offered = isOffering ? (offering ?? []) : [];
-  const maxWidth = isOffering
-    ? unlockRowMaxWidth(Math.max(offered.length, 1))
-    : grants.length > 0 ? unlockRowMaxWidth(grants.length) : 600;
+  const size = beatModalSize(isOffering ? offered.length : grants.length);
 
   return (
     // THR-799: this surface adopts the ceremonial *zone layout* via RevealCard.Frame,
@@ -497,7 +508,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
     <Modal
       open={open}
       onClose={handleClose}
-      maxWidth={maxWidth}
+      size={size}
       aria-label={`Ascendant beat: ${title}`}
       context="story"
       panelClassName="frame-ceremonial"

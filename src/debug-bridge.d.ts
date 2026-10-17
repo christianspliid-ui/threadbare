@@ -2195,6 +2195,25 @@ export interface DebugBridge {
     open: string[];
   }>;
   /**
+   * Dialog size tiers (THR-1820, Law 57): the registry, and for every open dialog panel
+   * its tier, measured size, cap at this viewport, whether it sits at the 85vh cap, and
+   * `scrollingBelowCap` — scroll boxes inside it that scroll while it is below its cap.
+   * Empty `scrollingBelowCap` on every open dialog = Law 57 holds. DOM only.
+   */
+  getDialogSizes(): Promise<{
+    surfaces: ReadonlyArray<{ surface: string; file: string; sizes: ReadonlyArray<'s' | 'm' | 'l' | 'xl'> }>;
+    open: Array<{
+      label: string | null;
+      size: 's' | 'm' | 'l' | 'xl' | 'free';
+      widthPx: number;
+      heightPx: number;
+      capWidthPx: number;
+      capHeightPx: number;
+      atCap: boolean;
+      scrollingBelowCap: Array<{ element: string; axis: 'y' | 'x' }>;
+    }>;
+  }>;
+  /**
    * The 1440p layout contract (THR-1819): live tier, root font size, every layout and
    * type token as `:root` resolves it, the rendered top bar / god rail / Ledger rail
    * (null when not mounted), and the map share at this viewport from the token table.

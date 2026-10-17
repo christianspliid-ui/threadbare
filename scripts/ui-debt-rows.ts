@@ -508,6 +508,32 @@ const GRAPH_READ_CALL = /\.(?:getNode|getNodesByType|getAllNodes|getEdge|getOutg
 const GRAPH_WRITE_CALL = /\.(?:addNode|removeNode|updateNode|addEdge|removeEdge|updateEdge|applyMutations|retargetEdgeSource)\(/g;
 const HOME = (file: string) => new RegExp(`^src/components/shared/${file.replace('.', '\\.')}$`);
 
+/** An opening `<Modal` / `<RevealCard` tag (not `<Modal.Header`). */
+const DIALOG_TAG_OPEN = /<(?:Modal|RevealCard)(?=[\s/>])/g;
+
+/**
+ * THR-1820 row `modal-maxwidth`: opening `<Modal` or `<RevealCard` tags, from `<`
+ * to the closing `>` across lines, that carry a `maxWidth=` attribute — a free
+ * dialog width instead of a size tier. A `>` inside `{ … }` (an arrow, a
+ * comparison) does not end the tag.
+ */
+export function countDialogFreeWidths(text: string): number {
+  let total = 0;
+  for (const match of text.matchAll(DIALOG_TAG_OPEN)) {
+    const start = match.index ?? 0;
+    let depth = 0;
+    let end = text.length;
+    for (let i = start + match[0].length; i < text.length; i++) {
+      const ch = text[i];
+      if (ch === '{') depth++;
+      else if (ch === '}') depth = Math.max(0, depth - 1);
+      else if (ch === '>' && depth === 0) { end = i; break; }
+    }
+    if (/\bmaxWidth=/.test(text.slice(start, end))) total++;
+  }
+  return total;
+}
+
 /** WebGL colour data: HexMapV2's `.ts` modules (its `.tsx` HTML overlays still count). */
 const HEXMAP_COLOUR_DATA = /^src\/components\/HexMapV2\/.*\.ts$/;
 
@@ -589,6 +615,16 @@ export const UI_DEBT_ROWS: readonly UiDebtRow[] = [
     extensions: UI_TREE_EXTENSIONS,
     homes: [HOME('Modal.tsx'), HOME('Overlay.tsx')],
     count: countHandOverlays,
+  },
+  {
+    id: 'modal-maxwidth',
+    owner: 'THR-1820',
+    law: 'Law 57',
+    sanctioned: 'Modal / RevealCard size="s|m|l|xl" (dialogSize.ts)',
+    roots: ['src/components'],
+    extensions: /\.tsx$/,
+    homes: [],
+    count: (source) => countDialogFreeWidths(source.text),
   },
   {
     id: 'escape-listener',
