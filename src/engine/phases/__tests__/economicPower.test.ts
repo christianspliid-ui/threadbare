@@ -169,11 +169,18 @@ describe('phaseEconomicPower (THR-617)', () => {
     addTown(graph, 'b', 'Bmere', { resources: scarce });
     addTown(graph, 'c', 'Cwick', { resources: scarce });
     addTown(graph, 'd', 'Dholm', { resources: scarce });
+    // A local at Aford, so its arc phases emit seeds and the no-re-seed check below can fail.
+    graph.addNode({ id: 'ag1', type: 'actor', name: 'Local', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e_ag1', source: 'ag1', target: 'a', type: 'located_at', properties: {} });
+    const seedsAtA = (r: { pendingEncounterSeeds?: Array<{ seedId: string }> }) =>
+      (r.pendingEncounterSeeds ?? []).filter((s2) => s2.seedId.startsWith('scarcity_arc_a_'));
     const arcOf = (id: string) => graph.getNode(id)!.properties.scarcityArc as
       { phase: string; phaseSinceTick?: number; spentTick?: number } | undefined;
 
     // Scans 1–4: a, b, c open and climb to flashpoint; d is capped out.
-    for (let s = 1; s <= 4; s++) phaseEconomicPower(makeState(SCAN * s, graph), ctx);
+    let seededAtA = 0;
+    for (let s = 1; s <= 4; s++) seededAtA += seedsAtA(phaseEconomicPower(makeState(SCAN * s, graph), ctx)).length;
+    expect(seededAtA).toBeGreaterThan(0);
     expect(['a', 'b', 'c'].map((id) => arcOf(id)?.phase)).toEqual(['flashpoint', 'flashpoint', 'flashpoint']);
     expect(arcOf('d')).toBeUndefined();
     const flashpointTick = arcOf('a')!.phaseSinceTick!;
@@ -202,7 +209,8 @@ describe('phaseEconomicPower (THR-617)', () => {
     // A spent arc does not re-seed or re-open while the town stays scarce, and
     // still dissolves on recovery.
     const later = phaseEconomicPower(makeState(flashpointTick + holdTicks + SCAN, graph), ctx);
-    expect(later.pendingEncounterSeeds?.some((s2) => s2.seedId.includes('_a_')) ?? false).toBe(false);
+    expect(seedsAtA(later)).toEqual([]);
+    expect(arcOf('a')!.phase).toBe('flashpoint');
     graph.getNode('a')!.properties.resources = { grain: { resourceId: 'grain', quantity: 60, stockTier: 'surplus' } };
     const recovered = phaseEconomicPower(makeState(flashpointTick + holdTicks + SCAN * 2, graph), ctx);
     expect(arcOf('a')).toBeUndefined();
