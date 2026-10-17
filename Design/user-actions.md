@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-17 20:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-17 22:28 local (20:28 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-17: mortals are now born with Means, and money encounters pay or cost it (mortal wealth, first slice)** ([THR-1936](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money)). Merged via [#2465](https://github.com/christianspliid-ui/threadbare/pull/2465) and live.
 - **2026-10-17: the data tables, the Codex, callings, ambitions, omens and card chips now draw the carved icons (icon sweep 2)** ([THR-1907](https://linear.app/threadbare/issue/THR-1907/icon-sweep-2-the-data-tables-and-the-codex-onto-carved-icons)). Merged via [#2462](https://github.com/christianspliid-ui/threadbare/pull/2462) and live.
 - **2026-10-17: new delivery-pipeline work is frozen until 13 Nov; only removals and fixes for broken runs go ahead** ([THR-1946](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes)). Merged via [#2461](https://github.com/christianspliid-ui/threadbare/pull/2461).
 - **2026-10-17: a town's unrest now rises with hunger, armies, sickness and grief, and calms when it is fed (hunger and unrest, first slice)** ([THR-1934](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless)). Merged via [#2460](https://github.com/christianspliid-ui/threadbare/pull/2460) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-17: seizing a trade lane now tolls the lane that was seized** ([THR-1883](https://linear.app/threadbare/issue/THR-1883/seizing-a-trade-lane-tolls-the-wrong-lane-the-toll-lands-on-the)). Merged via [#2455](https://github.com/christianspliid-ui/threadbare/pull/2455) and live.
 - **2026-10-17: your mortal's work and what they want most now show in the panel beside the map** ([THR-1963](https://linear.app/threadbare/issue/THR-1963/the-work-and-the-leading-ambition-beside-the-map-two-lines-in-the)). Merged via [#2452](https://github.com/christianspliid-ui/threadbare/pull/2452) and live.
 - **2026-10-16: shared buttons, the window chrome and the duplicate symbols now draw the carved icons** ([THR-1906](https://linear.app/threadbare/issue/THR-1906/icon-sweep-1-shared-primitives-chrome-and-the-law-9-duplicates-onto)). Merged via [#2451](https://github.com/christianspliid-ui/threadbare/pull/2451) and live.
-- **2026-10-16: one work now reads one progress word everywhere (barely begun, under way, halfway, well along, nearly done, or faltering)** ([THR-1962](https://linear.app/threadbare/issue/THR-1962/one-word-for-how-far-a-work-has-come-the-thread-row-the-panel-the)). Merged via [#2449](https://github.com/christianspliid-ui/threadbare/pull/2449) and live.
 
 ---
 

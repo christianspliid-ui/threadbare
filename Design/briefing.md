@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-17 20:57 local (18:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-17 22:28 local (20:28 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,6 +15,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [The god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) — **your god hears one prayer at a time, a season apart**; when several hungry towns could pray on the same day, the hungriest is heard first. One test world made 19 prayers in 90 days; this caps it at 12. ([plan change](https://github.com/christianspliid-ui/threadbare/pull/2464)) *Veto:* **"let every hungry town pray at once"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17d.md)*
+- Same ruling — **a world with no hungry town on your ground hears no prayers**, and that counts as correct, not broken. *Veto:* **"there should always be someone praying"**.
 - [The end of the age](https://linear.app/threadbare/issue/THR-1381) — **finishing the Mandate ends the age**, as the rulebook says; today only the doom clock does. ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-17-thr-1381-the-end-of-the-age.md)) *Veto:* **"let me keep playing after the Mandate"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17c.md)*
 - Same plan — **at the end you watch, you do not act**: one short screen, *The age ends*, plays three beats before the harvest. *Veto:* **"give me a last turn to act in the Twilight"**.
 - Same plan — **each way an age can end has its own opening** (one per doom, one for the Mandate). *Veto:* **"one ending text is enough"**.
@@ -34,21 +36,21 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same plan — **a lane a mortal claims counts as a lane they hold.** *Veto:* **"only lanes they opened or toll"**.
 - Same plan — **the undertaking builds come last**, after [mortal wealth](https://linear.app/threadbare/issue/THR-1936). *Veto:* **"build the founded-town ruler now"**.
 
-Say "veto <title>" to reverse any of these. (Yesterday's aftermath-wording decisions have passed their 24-hour veto window and dropped off.)
+Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 20 ready, one in progress.** The builder is on [mortal wealth](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money); its run started at 20:43 and is active.
+**Backed up: 21 ready, one in progress.** The builder picked up [dialog size tiers — panels grow to fit before they truncate or scroll](https://linear.app/threadbare/issue/THR-1820/design-dialog-size-tiers-panels-grow-to-fit-before-they-truncate-or) at 22:23; that run is active.
 
-- [The god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) (prayers and the faithful) is built but **held**: the plan's own measurement failed. One test world gets 19 prayers in a season, above the flood line of 12, and another gets none. The builder proposed a fix: a god hears at most one prayer at a time, a season apart. The work waits in draft [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463), and the design lane rules on the fix. Not your call.
+- [Mortal wealth, first slice](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money) merged at 22:04 ([#2465](https://github.com/christianspliid-ui/threadbare/pull/2465)): mortals are born with Means, and money encounters pay or cost it.
+- [Prayers and the faithful](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) is still held in draft [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463). The design lane has ruled on the prayer flood (one prayer at a time, above), so the builder now reworks the draft to the new rule. Not your call.
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
-- Ready next: [every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy) and [regional monopolies pay rent and can embargo](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys).
 - High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject). It removes steps, so the freeze allows it.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- Everything else is healthy. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is armed to merge (the one draft is the held faith work above). All 12 scheduled lanes are on time. Engine speed is normal: 144 ms a tick, 19% above the week's median of 120 and under the 25% warning line.
+- Everything else is healthy. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is armed to merge (the one draft is the held faith work above). All 12 scheduled lanes are on time. Engine speed is normal: 116 ms a tick, 4% under the week's median of 120.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
 - The home checkout's installed tools still lack their command shims, so this run borrowed a healthy install from a worktree. That is builder housekeeping.
-- The tidy-up job last ran at 20:40: 545 old worktrees and 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job last ran at 21:51: 544 old worktrees and 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
