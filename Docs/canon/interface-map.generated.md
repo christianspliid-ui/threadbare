@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 75 |
-| **Total** | **269** |
+| 🔵 UNVERIFIED-OK | 77 |
+| **Total** | **271** |
 
 ## Contracts by producing subsystem
 
@@ -194,6 +194,7 @@ remediation ticket or the build fails.
 | `content-objects-registry` | Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485). | function: `CONTENT_OBJECT_KINDS`, `CONTENT_CATALOGS`, `entriesOfKind`, `contentKindsForId`, `contentKindsForWorldObject`, `SHARED_ID_PREFIXES` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `content-tag-vocabulary` | Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486). | function: `CONTENT_TAGS`, `isContentTag`, `axisOfContentTag`, `contentTagsOnAxis`, `contentTagTooltipId`, `effectiveTags`, `authoredTags`, `projectedTags` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
+| `encounter-outcomes-write-mortal-means` | A money encounter pays or costs the mortal who took it by how the dice fell: the template's outcome table writes their Means once, at the roll, through the one funnel, and the sheet and the aftermath say what it did in words. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-scored-binder-optin` | An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive. | function: `useScoredBinder`, `EncounterBinderContext`, `prepareEncounterSupportBundle`, `resolveBinding` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `encounter-seed-resolves-by-query` | An encounter plants its sequel by naming a family in game words — { kind: "encounter_template", tags: ["#circle_errand"] } — and the one content-query resolver finds it when the seed comes due, so a renamed template keeps its family and a newly authored one joins by carrying the tag. This replaces two rotting operands: a literal templateId, and encounterFamily, which was an id *prefix* and rotted the same way one level up. Measured before the change: of the 51 families the corpus authors, 41 matched no template at all, and seven seeds named templateIds that do not exist — so 48 kinds of promised follow-up had been withering on arrival, indistinguishable from a system that was never wired. The query travels on the seed rather than being drawn at plant time, so one site resolves and the family may have grown in the twenty ticks before the sequel is owed (THR-1488, slice 4 of THR-1481). | function: `seedContentQuery`, `ENCOUNTER_FAMILY_TAGS`, `validateEncounterSeedRefs`, `describeContentQuery` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `encounter-stakes-line-reaches-veil-ledger-badge-row` | An encounter is named by one formula sentence — "Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack." — and its ending by the same parts: "Vara went into the river with the pack." The veil, the Chapter Ledger, the encounter badge and the agent thread row all read the same line, so a story is called one thing everywhere. | function: `stampStakesContext`, `buildStakesLine`, `buildResultLine`, `stakesLineForAction`, `rememberedStakesLine` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -396,6 +397,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
+| `deciders-born-with-means` | Every mortal who makes choices starts the world with the Means of their walk of life, shifted by how well their home town lives, so the sheet shows Means for every decider and the money encounters have something to move. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `descent-gates-old-banner-drive` | A deciding mortal descended from a dead empire (`backstoryStrata` `relation: 'descent'`) may take up Raise the Old Banner when a slot frees at re-evaluation — never at t0, never as a spotlight pull — and finishes it by standing on an elder ruin of that empire and taking ground on its old land since the drive began. No culprit, no heat; the edge's `mintedByLabel` names the blood. | node-prop: `backstoryStrata`, `requiresDescent`, `descentCultureIds`, `agent_at_ancestral_ruin`, `agent_took_ancestral_ground`, `agent_rooted_off_ancestral_land`, `historicalCultureOfRegion` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `pilgrim-way-reaches-location-and-faction-sheets` | Every pilgrim way, seeded or consecrated, reaches the player: a town's Location sheet names the congregations whose pilgrims come there, and a congregation's Faction sheet names the towns its ways lead to — each name an image and a link. | edge: `sacred_route`, `selectPilgrimWays`, `PilgrimWayLine` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -946,10 +948,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
 - **Module:** `src/engine/castTargetChanges.ts`
-- **Production hits:** 20 total — 2 write, 1 read, 17 unclassified
+- **Production hits:** 21 total — 2 write, 1 read, 18 unclassified
 - **Write sites:** `src/engine/castTargetChanges.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/tabs/BondsTab.tsx`, `src/data/undertaking-objects.ts`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts` +12 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/tabs/BondsTab.tsx`, `src/data/undertaking-objects.ts`, `src/engine/agentDetail.ts`, `src/engine/armyNotifications.ts` +13 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `cell-completion-renews-control-stance` — 🟢 LIVE
@@ -1221,6 +1223,18 @@ exit
 - **Other hits:** `src/data/culture-sphere-lines.ts`, `src/types/culture.ts`
 - **Verdict:** Verified 2026-09-27: THR-1635 slice 1. Asserted on GENERATED medium worlds, never a fixture (`src/data/__tests__/openingColoration-corpus.test.ts`): on seeds 42 and 99 step 0 of all 528 guarded templates renders through `enrichProse` at a culture-bearing town with no raw token, and 525 of them carry a culture line (all eight reaches since THR-1638 slice 2; slice 1's iron/stone/eye gave 248); the census matches the plan's re-measure (40 / 60 culture-bearing Locations) within ±10% and no two living same-foundation cultures share a stamp. The corpus guard proves every eligible template carries exactly one `{frag:place_fact}` (798 entries, 528 ids). Unit tests (`src/engine/__tests__/openingColoration.test.ts`) cover every reason code, culture-first precedence, the stamp ordinal with two same-foundation cultures, and the pre-stamp read-time fallback. Headless: a 30-tick seed-42 CLI run emits `opening_coloration_bound` traces including `culture.light.eye`.
 
+### `deciders-born-with-means` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Every mortal who makes choices starts the world with the Means of their walk of life, shifted by how well their home town lives, so the sheet shows Means for every decider and the money encounters have something to move.
+- **Producer → Consumer:** World Generation, Terrain & Places → Mortal Economy & Prosperity
+- **UL terms:** *Means*
+- **Module:** `src/engine/mortalMeans.ts`
+- **Production hits:** 79 total — 1 write, 3 read, 75 unclassified
+- **Write sites:** `src/engine/mortalMeans.ts`
+- **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +70 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
 
 - **Intent:** One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349).
@@ -1405,10 +1419,10 @@ exit
 
 - **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
-- **Production hits:** 89 total — 1 write, 1 read, 87 unclassified
+- **Production hits:** 91 total — 1 write, 1 read, 89 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/economicContext.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +82 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/LocationProfileModal.tsx` +84 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
 ### `effect-executor-overlay-persistence` — 🟢 LIVE
@@ -1455,6 +1469,18 @@ exit
 - **Read sites:** `src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts`, `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`
 - **Other hits:** `src/engine/nudgeCardRepertoire.ts`, `src/types/gameState.ts`
 - **Verdict:** Verified 2026-10-09: THR-1753. src/engine/__tests__/foundationDiscovery-seededRun.test.ts (seed 42, small map): transformRuinConsequence on a real elder ruin of the seeded map patches foundationSpheresFound = [chaos, order, light, darkness], emits four ruins.foundation_sphere_found traces, and buildRepertoire then holds gambit, stumble, favor, whisper, veil and undertow; a catastrophic ruin of spirit finds nothing, of darkness finds darkness only; a 60-tick ordinary run with the pool drained earns Foundation essence through income yet finds nothing. dealtCardProvenance.test.tsx renders the dealt face "Darkness found in the ruins."
+
+### `encounter-outcomes-write-mortal-means` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A money encounter pays or costs the mortal who took it by how the dice fell: the template's outcome table writes their Means once, at the roll, through the one funnel, and the sheet and the aftermath say what it did in words.
+- **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
+- **UL terms:** *Means*
+- **Module:** `src/engine/mortalMeans.ts`
+- **Production hits:** 79 total — 3 write, 2 read, 74 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`, `src/engine/unifiedActionResolution.ts`
+- **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +69 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
 
@@ -1908,10 +1934,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 74 total — 2 write, 3 read, 69 unclassified
+- **Production hits:** 79 total — 2 write, 3 read, 74 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +64 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +69 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -2611,10 +2637,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 433 total — 1 write, 1 read, 431 unclassified
+- **Production hits:** 435 total — 1 write, 1 read, 433 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +426 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +428 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -3106,10 +3132,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **UL terms:** *Spotlight tier*, *Ambition*
 - **Module:** `src/engine/spotlightPull.ts`
-- **Production hits:** 48 total — 3 write, 3 read, 42 unclassified
+- **Production hits:** 49 total — 3 write, 3 read, 43 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/LocationView.tsx`, `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +37 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +38 more
 - **Verdict:** Verified 2026-09-28: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`. Re-verified 2026-09-24 under THR-1523 (unwatched builders step back): `census:undertakings` 150 ticks PASS both seeds — seed 42 3 pulled (1 swapped, 2 net-additive), 138 refusals across 116 mortals (was 215 per want), seed 99 4 pulled (1 swapped, 3 net-additive), 144 across 114 (was 235); at 300 ticks the class fires (seed 42 2 unwatched swaps, seed 99 1; 1 of 14 / 1 of 17 worldgen protagonists stepped back, kill criterion 30 %). `census:reachability -- --seeds 42,99,7` keeps merchant-expansion reachable on 2 of 3. `measure:tick-cost` medium steady within noise of main (seed 42 101 vs 109 ms, seed 99 152 vs 168 ms). Unit: `spotlightPullUnwatched.test.ts` (21). Re-verified 2026-09-28 under THR-1653 (graduation shares the budget): `readers/graduation-budget.ts 42,99 200` — deciders t0→t200 20→19 · 23→20, invariant bound 24 · 28 holds, 0 graduations on both arms (the curves are identical flag on and off); `readers/reach.ts 42,99 200` drawable fired 127 of 514 (floor 121); `readers/attended.ts 42,99 150` The First’s longest gap 25 · 21 ticks (ceiling 30), firing rows identical flag on and off. Unit: `npcGraduation.test.ts` THR-1653 block (4).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -3508,9 +3534,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 119 total — 2 write, 3 read, 114 unclassified
+- **Production hits:** 124 total — 2 write, 3 read, 119 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +109 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +114 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 

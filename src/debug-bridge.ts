@@ -2472,6 +2472,16 @@ if (import.meta.env.DEV) {
       const wealth = typeof node.properties.wealth === 'number' ? node.properties.wealth : 0;
       return { ...(day ?? {}), wealth, meansBand };
     },
+    /**
+     * THR-1936 — one mortal's Means: wealth, band word, last reason. `want` is null
+     * until S2 ships the want. Null when the id is not an actor.
+     */
+    getMortalMeans: async (agentId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { readMortalMeans } = await import('./engine/mortalMeans');
+      return readMortalMeans(state.graph, agentId);
+    },
     /** THR-1931 — every faction's last pay day, keyed by faction id. */
     getPurseLedger: async () => {
       const state = _gameStateProvider?.();

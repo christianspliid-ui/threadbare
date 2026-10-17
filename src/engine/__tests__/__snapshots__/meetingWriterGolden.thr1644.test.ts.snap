@@ -39,6 +39,7 @@ exports[`THR-1644 S1 — createAgentFromMeeting output is pinned across the refa
       },
       "flavorChoices": null,
       "gender": "female",
+      "lastWealthReason": "birth",
       "locationId": "loc_village",
       "narrativeArchetype": "Martyr",
       "narrativeDescriptors": [
@@ -52,6 +53,7 @@ exports[`THR-1644 S1 — createAgentFromMeeting output is pinned across the refa
       "reputationScore": 0.5,
       "secondaryReach": "star",
       "sphere": "spirit",
+      "wealth": 20,
     },
     "type": "actor",
   },
@@ -161,6 +163,7 @@ exports[`THR-1644 S1 — createAgentFromMeeting output is pinned across the refa
       },
       "flavorChoices": null,
       "gender": "female",
+      "lastWealthReason": "birth",
       "locationId": "loc_village",
       "narrativeArchetype": "Counselor",
       "narrativeDescriptors": [
@@ -174,6 +177,7 @@ exports[`THR-1644 S1 — createAgentFromMeeting output is pinned across the refa
       "reputationScore": 0.5,
       "secondaryReach": "eye",
       "sphere": "life",
+      "wealth": 20,
     },
     "type": "actor",
   },
@@ -283,6 +287,7 @@ exports[`THR-1644 S1 — createAgentFromMeeting output is pinned across the refa
       },
       "flavorChoices": null,
       "gender": "male",
+      "lastWealthReason": "birth",
       "locationId": "loc_village",
       "narrativeArchetype": "Mason",
       "narrativeDescriptors": [
@@ -296,6 +301,7 @@ exports[`THR-1644 S1 — createAgentFromMeeting output is pinned across the refa
       "reputationScore": 0.5,
       "secondaryReach": "gold",
       "sphere": "time",
+      "wealth": 20,
     },
     "type": "actor",
   },

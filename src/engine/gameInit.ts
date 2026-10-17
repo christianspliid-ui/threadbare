@@ -70,6 +70,8 @@ import { grantFirstMark } from './firstMark';
 import { godBoughtScoreSum } from './dominion';
 import { recordSeededScores } from './phaseDominion';
 import { getSpherePoints } from './spherePoints';
+import { ensureDeciderMeans, giveBirthMeans } from './mortalMeans';
+import { getAvatarsOf } from './graphQueries';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
@@ -412,6 +414,16 @@ export function initializeGameState(
   // Initialize visibility map (fog of war)
   const losSources = collectLOSSources(graph, ascendantId, []);
   const visibilityMap = recalcVisibility(new Map(), losSources, graph, 0, cols, rows);
+
+  // ── Born with Means (THR-1936 S1) ───────────────────────────────────
+  // After every mortal is seeded and the god's avatar exists, so the avatar can be
+  // skipped. Deterministic (no PRNG); fail-soft — a throw costs the birth Means only.
+  try {
+    const avatarIds = new Set(getAvatarsOf(graph, ascendantId).map(a => a.id));
+    ensureDeciderMeans(graph, 0, avatarIds);
+  } catch (err) {
+    console.warn('[worldgen] birth Means failed; deciders start without Means', err);
+  }
 
   // Assemble final GameState
   // The calling's first derivation (THR-1299 slice 5). Every mortal gets a name
@@ -964,6 +976,10 @@ export function devSeedTheFirst(state: GameState): string {
       properties: { level: 1, acquiredTick: 0, source: 'Divine gift' },
     });
   }
+
+  // THR-1936 — the dev First is minted after world creation's birth pass, so it is
+  // born with Means here.
+  giveBirthMeans(graph, agentId, tick);
 
   return agentId;
 }

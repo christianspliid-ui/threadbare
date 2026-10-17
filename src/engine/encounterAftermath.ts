@@ -13,6 +13,7 @@ import type {
   UnifiedAction,
 } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
+import { applyMeansShift, defaultMeansReason, type MeansShiftResult } from './mortalMeans';
 import { applyReputationWithDelta } from './reputation';
 import { grantAspect } from './aspects';
 import {
@@ -1142,7 +1143,22 @@ export function applyEncounterAftermathReaction(
    * Handed in by callers outside the module cycle (`agentDetection.ts`); this module
    * cannot import it. Omitted, the price still writes pressure but plants no strike.
    */
-  options: { readonly recordCrossings?: DetectionCrossingRecorder } = {},
+  options: {
+    readonly recordCrossings?: DetectionCrossingRecorder;
+    /**
+     * THR-1936 — the template's `encounterType`, so an `economy_shift` with no authored
+     * reason stamps the right source phrase (`trade_success`, `theft`, …). Omitted, a
+     * shift defaults to `venture_gain` / `venture_loss`.
+     */
+    readonly encounterType?: string;
+    /** THR-1936 — the band an outcome table keyed on, for the `economy.means.shift` trace. */
+    readonly outcomeBand?: string;
+    /**
+     * THR-1936 — told of every Means shift that actually moved wealth, so the outcome
+     * table can add the `economy` aftermath change. A reaction picked later passes none.
+     */
+    readonly onMeansShift?: (agentId: string, shift: MeansShiftResult) => void;
+  } = {},
 ): { state: GameState; mutationSummary: AftermathMutationSummary } {
   if (!runtime) {
     throw new Error('[encounterAftermath] runtime is required — programming error, not a data error');
@@ -1850,6 +1866,49 @@ export function applyEncounterAftermathReaction(
         break;
       }
 
+      case 'economy_shift': {
+        // THR-1936 — a mortal's Means, through the one funnel (`bankWealth`). The
+        // poor-loss scale and the no-move rule live in `applyMeansShift`, so an
+        // outcome table and a reaction can never disagree about the arithmetic.
+        if (effect.quantity !== 'means') break;
+        const resolvedId = target.kind === 'agent' ? target.id : actorAgentId;
+        const meansNode = resolvedId ? state.graph.getNode(resolvedId) : undefined;
+        if (!resolvedId || !meansNode || meansNode.type !== 'actor') {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'economy_shift', attemptedTargetId: resolvedId ?? '',
+            attemptedTargetKind: 'agent',
+            reason: 'target_node_missing',
+            summary: `economy_shift[${i}] skipped: no mortal to shift (${resolvedId ?? 'none'})`,
+          });
+          break;
+        }
+        const meansReason = effect.reason ?? defaultMeansReason(effect.amount, options.encounterType);
+        const shift = applyMeansShift(
+          meansNode.properties as Record<string, unknown>,
+          effect.amount,
+          meansReason,
+        );
+        if (!shift) break;
+        mutationSummary.touchedWorld = true;
+        emitTrace({
+          tick,
+          category: 'economy.means.shift',
+          agentId: resolvedId,
+          sourceTemplateId: action?.templateId ?? null,
+          band: options.outcomeBand ?? null,
+          amount: shift.amount,
+          wealthBefore: shift.wealthBefore,
+          wealthAfter: shift.wealthAfter,
+          bandBefore: shift.bandBefore,
+          bandAfter: shift.bandAfter,
+          reason: shift.reason,
+          summary: `${meansNode.name}'s Means ${shift.wealthBefore} → ${shift.wealthAfter} (${shift.reason})`,
+        });
+        options.onMeansShift?.(resolvedId, shift);
+        break;
+      }
       case 'quintessence_shift': {
         // THR-1082 — an authored existential cost ("loss of confidence"). This
         // applier deliberately does no arithmetic of its own: it queues the same

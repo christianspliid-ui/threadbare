@@ -332,7 +332,7 @@ export interface EncounterStageFalloutModel {
 
 export interface EncounterStageAftermathChangeModel {
   id: string;
-  kind: 'growth' | 'trait' | 'item' | 'reputation' | 'faction_reputation' | 'reputation_tally' | 'shell_state' | 'future_hook';
+  kind: 'growth' | 'trait' | 'item' | 'reputation' | 'faction_reputation' | 'reputation_tally' | 'shell_state' | 'future_hook' | 'economy';
   title: string;
   detail: string;
   polarity: 'gain' | 'loss' | 'mixed' | 'info';

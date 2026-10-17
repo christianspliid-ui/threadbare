@@ -88,6 +88,7 @@ import { CANDIDATE_VIGNETTES, type CandidateVignette } from '../data/candidate-v
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
 import { mulberry32 } from '../lib/prng';
+import { giveBirthMeans } from './mortalMeans';
 import { pickCulturalName, pickGenderedName } from '../data/culture-name-pools';
 
 // ─── Per-tick Meeting Counter ─────────────────────────────────────
@@ -1086,6 +1087,10 @@ export function createAgentFromMeeting(
   });
 
   emitMeetingResolutionTraces(result, agentId, tick);
+
+  // THR-1936 — The First is minted after world creation's birth pass, so it is born
+  // with Means here, like every other decider.
+  giveBirthMeans(graph, agentId, tick);
 
   return agentId;
 }
