@@ -1436,6 +1436,19 @@ export interface DebugBridge {
     taxPaidTotal?: number;
   }>>;
   /**
+   * THR-1933 — an army's war aim. `objective.reason` says why it marches
+   * (`richest` / `feeds_staple` / `defence`); `holdReason` is set while it holds for want
+   * of a target; `candidates` are the top scored towns from its last pick (never rendered).
+   * `null` when the id is not an army.
+   */
+  getWarAims: (armyId: string) => Promise<{
+    objective: { type: string; targetNodeId: string; reason?: string; reasonResourceId?: string; againstArmyId?: string; source?: string } | null;
+    holdReason: string | null;
+    candidates: Array<{ townId: string; value: number; bonuses: number; hexes: number; score: number; inReach: boolean }>;
+  } | null>;
+  /** THR-1933 — the war-aims enemy rule for two factions, with the arm that fired (or null). */
+  isEnemyFaction: (a: string, b: string) => Promise<{ enemy: boolean; arm: 'hostile_to' | 'rival' | 'war' | 'sentiment' | 'monster' | null }>;
+  /**
    * THR-1932 — a faction's place in the crown. `isCrown` is derived (two or more oaths
    * sworn to it); `ruler` is whoever leads the realm. `null` when the id is not a faction.
    */

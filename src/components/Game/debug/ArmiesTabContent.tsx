@@ -150,6 +150,32 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
                     {typeof as.paidThroughTick === 'number' ? `tick ${as.paidThroughTick as number}` : `raise (tick ${as.raisedTick as number})`}
                   </span>
                 </div>
+                {/* THR-1933 — war aim: objective, why, hold reason, top scored candidates. */}
+                {(() => {
+                  const obj = as.objective as Record<string, unknown> | null | undefined;
+                  const cands = (as.warAimCandidates as Array<Record<string, number | string | boolean>> | undefined) ?? [];
+                  const nameOf = (id: unknown) => (typeof id === 'string' ? (graph.getNode(id)?.name ?? id) : '—');
+                  return (
+                    <>
+                      <div style={DETAIL_ROW_STYLE}>
+                        <span style={DETAIL_LABEL_STYLE}>War aim:</span>
+                        <span style={DETAIL_VALUE_STYLE}>
+                          {obj
+                            ? `${String(obj.type)} ${nameOf(obj.targetNodeId)} — ${String(obj.reason ?? 'no reason')}${obj.source ? ` (${String(obj.source)})` : ''}`
+                            : `none${as.holdReason ? ` — holds: ${String(as.holdReason)}` : ''}`}
+                        </span>
+                      </div>
+                      {cands.map((c) => (
+                        <div key={String(c.townId)} style={DETAIL_ROW_STYLE}>
+                          <span style={DETAIL_LABEL_STYLE}>· candidate:</span>
+                          <span style={DETAIL_VALUE_STYLE}>
+                            {nameOf(c.townId)} value {Number(c.value).toFixed(2)} +{Number(c.bonuses).toFixed(1)} · {String(c.hexes)} hex · score {Number(c.score).toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </>
+                  );
+                })()}
               </div>
             );
           })}

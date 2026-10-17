@@ -27,7 +27,8 @@ import {
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
-import { mayBesiege, campaignTargetOf } from './warAims/enemy';
+import { mayBesiege, campaignTargetOf, isEnemyFaction } from './warAims/enemy';
+import { WAR_AIMS_ENABLED } from '../data/war-aims-constants';
 import { applyAftermath } from './battleAftermath';
 import { recordBattleFought } from './battleRecord';
 import { reportWar, captureArmySide, captureBattleForNews } from './armyNotifications';
@@ -646,9 +647,10 @@ function areHostile(state: GameState, armyA: string, armyB: string): boolean {
   const factionA = graph.getOutgoingEdges(armyA, 'member_of')[0]?.target;
   const factionB = graph.getOutgoingEdges(armyB, 'member_of')[0]?.target;
 
-  // Different factions = hostile (simplified — no alliance system yet)
   if (!factionA || !factionB) return false;
-  return factionA !== factionB;
+  // THR-1933 — only enemies fight: two armies that are not at war share a hex in peace.
+  // Off, any two different factions fight (the pre-war-aims rule).
+  return WAR_AIMS_ENABLED ? isEnemyFaction(graph, factionA, factionB) : factionA !== factionB;
 }
 
 // ─── Battle Tick Phase ──────────────────────────────────────────────────

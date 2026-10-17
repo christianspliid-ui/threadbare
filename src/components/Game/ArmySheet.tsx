@@ -38,9 +38,81 @@ import {
   getArmySizeName,
   getArmySupplyWord,
   armyObjectiveSentence,
+  armyAimTemplate,
+  scarceClauseOf,
   ARMY_NO_OBJECTIVE_COPY,
+  ARMY_HOLD_COPY,
 } from '../../data/army-words';
+import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
+import { getResourceTierProse } from '../../data/resource-classes';
+import { EntityLink } from '../shared/EntityLink';
 import type { WorldGraph } from '../../engine/graph';
+import type { AnyRef } from '../../types/contentRef';
+
+interface Slot { id: string; name: string; entityRef: AnyRef }
+
+/** Fill a war-aim template's `{town}` / `{enemy}` slots with links (UI Law 21). */
+function renderTemplate(template: string, slots: Record<string, Slot | null>): React.ReactNode[] {
+  return template.split(/({town}|{enemy})/).map((part, i) => {
+    const key = part === '{town}' ? 'town' : part === '{enemy}' ? 'enemy' : null;
+    if (!key) return <React.Fragment key={i}>{part}</React.Fragment>;
+    const slot = slots[key];
+    return slot
+      ? <EntityLink key={i} id={slot.id} name={slot.name} entityRef={slot.entityRef} />
+      : <React.Fragment key={i}>{key}</React.Fragment>;
+  });
+}
+
+/**
+ * THR-1933 — the war-aim line: why this army marches where it does, or why it holds.
+ * Null when the objective carries no reason (an old save, a campaign army) — the plain
+ * objective sentence covers that.
+ */
+function warAimLine(
+  graph: WorldGraph,
+  armyId: string,
+  armyState: Record<string, unknown>,
+  objective: Record<string, unknown> | null,
+): React.ReactNode[] | string | null {
+  if (!objective) {
+    if (armyState.holdReason !== 'no_enemy_in_reach') return null;
+    const factionId = graph.getOutgoingEdges(armyId, 'member_of')[0]?.target;
+    const locId = graph.getOutgoingEdges(armyId, 'located_at')[0]?.target;
+    const parent = locId ? graph.getNode(locId)?.properties.parentLocationId : undefined;
+    const placeId = typeof parent === 'string' ? parent : locId;
+    const atHome = !!factionId && !!placeId
+      && graph.getIncomingEdges(placeId, 'controls').some(e => e.source === factionId);
+    return atHome ? ARMY_HOLD_COPY.home : ARMY_HOLD_COPY.away;
+  }
+  const townId = typeof objective.targetNodeId === 'string' ? objective.targetNodeId : null;
+  const town = townId ? graph.getNode(townId) : undefined;
+  if (!town) return null;
+
+  let enemy: Slot | null = null;
+  if (typeof objective.againstArmyId === 'string') {
+    const enemyFactionId = graph.getOutgoingEdges(objective.againstArmyId, 'member_of')[0]?.target;
+    const enemyFaction = enemyFactionId ? graph.getNode(enemyFactionId) : undefined;
+    if (graph.getNode(objective.againstArmyId) && enemyFaction?.name) {
+      enemy = { id: objective.againstArmyId, name: enemyFaction.name, entityRef: { kind: 'army', id: objective.againstArmyId } };
+    }
+  }
+
+  const rid = typeof objective.reasonResourceId === 'string' ? objective.reasonResourceId : null;
+  const attackerId = graph.getOutgoingEdges(armyId, 'member_of')[0]?.target;
+  const template = armyAimTemplate({
+    objectiveType: objective.type,
+    reason: objective.reason,
+    resourceName: rid ? (RESOURCE_DEFINITIONS[rid]?.name ?? rid).toLowerCase() : null,
+    scarceClause: rid ? scarceClauseOf(rid, getResourceTierProse(rid, 'scarce')) : null,
+    attackerFactionName: attackerId ? (graph.getNode(attackerId)?.name ?? null) : null,
+    hasNamedEnemy: enemy !== null,
+  });
+  if (!template) return null;
+  return renderTemplate(template, {
+    town: { id: town.id, name: town.name, entityRef: { kind: 'location', id: town.id } },
+    enemy,
+  });
+}
 
 interface ArmySheetProps {
   name: string;
@@ -72,10 +144,12 @@ export const ArmySheet = React.memo(function ArmySheet({
   const targetId = typeof objective?.targetNodeId === 'string' ? objective.targetNodeId : null;
   const targetName = targetId && graph ? (graph.getNode(targetId)?.name ?? null) : null;
   const objectiveSentence = armyObjectiveSentence(objective?.type, targetName);
+  // THR-1933 — the war-aim line (reason or hold) wins when the army carries one.
+  const aimLine = armyId && graph && armyState ? warAimLine(graph, armyId, armyState, objective) : null;
 
   // An army with state but no readable march still gets a designed line.
-  const prose = objectiveSentence ?? (armyState ? ARMY_NO_OBJECTIVE_COPY : NO_DETAIL_COPY);
-  const proseIsAuthored = objectiveSentence !== null;
+  const prose = aimLine ?? objectiveSentence ?? (armyState ? ARMY_NO_OBJECTIVE_COPY : NO_DETAIL_COPY);
+  const proseIsAuthored = aimLine !== null || objectiveSentence !== null;
 
   const identityParts = [sizeName, cohesionWord, supplyWord].filter(
     (part): part is string => part !== null,

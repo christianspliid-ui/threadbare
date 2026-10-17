@@ -2485,6 +2485,24 @@ if (import.meta.env.DEV) {
       }
       return out;
     },
+    /**
+     * THR-1933 — an army's war aim: its objective (with `reason`), its hold reason, and
+     * the top scored towns from its last pick. Null when the id is not an army.
+     */
+    getWarAims: async (armyId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { readWarAims } = await import('./engine/warAims');
+      return readWarAims(state, armyId);
+    },
+    /** THR-1933 — whether two factions are enemies by the war-aims rule, and which arm fired. */
+    isEnemyFaction: async (a: string, b: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { enemy: false, arm: null };
+      const { enemyArm } = await import('./engine/warAims/enemy');
+      const arm = a && b ? enemyArm(state.graph, a, b) : null;
+      return { enemy: arm !== null, arm };
+    },
     /** THR-1932 — every live oath, vassal → liege, with the edge's properties. */
     getOaths: async () => {
       const state = _gameStateProvider?.();
