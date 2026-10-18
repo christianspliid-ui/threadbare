@@ -59,6 +59,8 @@ import {
 import { armyAimView } from './warAims/sheetView';
 import { fillSlots, linkedProseSection } from './views/subjects/linkedProse';
 
+import type { RealmProjection } from './realmProjection';
+
 // ─── Resolver context ─────────────────────────────────────────────────────────
 
 /** Context shared across all section resolvers for a single detail page resolve. */
@@ -105,6 +107,11 @@ export interface SectionResolverContext {
    * passes it. Absent (the lab, the hover card, no click yet) the row is skipped.
    */
   revealedNotices?: { readonly anchorId: string; readonly lines: readonly { readonly message: string; readonly tick: number }[] } | null;
+  /**
+   * THR-1911 (additive): the runtime's realm projection, so the person page's allegiance
+   * row names the Realm as the profile does. Absent: the standing names the town and grip.
+   */
+  realmProjection?: RealmProjection | null;
 }
 
 /** A section resolver returns 0 or 1 section. Returning null = "skip this section". */

@@ -101,7 +101,7 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
       className={styles.identityStrip}
       onClick={onOpen}
       type="button"
-      aria-label="Open ascendant sheet"
+      aria-label="Open your page"
     >
       {/* Portrait: sphere sigil with band-responsive halo.
           The sphere is a registry concept, so the hover passes `sphere.<name>` and the

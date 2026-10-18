@@ -26,6 +26,9 @@ import { castCapabilityByReach } from '../../../engine/playerCastReadout';
 import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import type { ToastItem } from '../../../types/notification';
+import type { WorldRef } from '../../../types/worldRef';
+import type { WheelSlot } from '../../../engine/wheel';
+import { interventionSubjectOf } from '../../../engine/views/subjects/actOn';
 import type { HexCoord } from '../../../types';
 import type { TabId as ProfileTabId } from '../tabs/TabBar';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
@@ -74,6 +77,12 @@ interface UseAgentInteractionParams {
    * gating" left a stranger's sheet at `stranger`.
    */
   omniscienceMode?: boolean;
+  /**
+   * THR-1911 (Inspector plan § D13) — when wired, every select and profile open here goes
+   * to the Inspector instead of the card drawer, the detail column and the profile sheet.
+   * `fromMap` marks a map click, which a pinned Inspector does not follow (§ D3).
+   */
+  openInspector?: (subject: WorldRef, size: 'docked' | 'wide', fromMap?: boolean) => void;
 }
 
 /**
@@ -121,6 +130,7 @@ export function useAgentInteraction({
   runtime,
   setRunning,
   omniscienceMode = false,
+  openInspector,
 }: UseAgentInteractionParams) {
   // ── Hooks ──
   const { playCastSound } = useInterventionAudio();
@@ -140,6 +150,12 @@ export function useAgentInteraction({
   const [pendingIntervention, setPendingIntervention] = useState<{
     slotId: string;
     interventionType: InterventionType;
+    /**
+     * THR-1911 — the slot as dealt when the cast began from a person's page. The drawer
+     * re-read it from `wheelSlots`, which exists only while the drawer is open; the
+     * Inspector's Act row has no drawer, so the confirm reads this copy.
+     */
+    slot?: WheelSlot;
   } | null>(null);
   /** Pending player choice_set — set when a choice_set effect fires in 'player' mode */
   const [pendingChoice, setPendingChoice] = useState<PendingChoiceData | null>(null);
@@ -297,9 +313,11 @@ export function useAgentInteraction({
   // ── Handlers ──
   const handleAgentSelect = useCallback((agentId: string) => {
     setSelectedAgentId(agentId);
-    setDrawerOpen(true);
     setStrandViewAgent(null);
-  }, []);
+    // THR-1911: a person opens their page; their cards are its Act row.
+    if (openInspector) openInspector({ kind: 'agent', id: agentId }, 'docked');
+    else setDrawerOpen(true);
+  }, [openInspector]);
 
   const handleWheelSlotClick = useCallback(
     (slotId: string) => {
@@ -463,6 +481,30 @@ export function useAgentInteraction({
     [selectedAgentId, wheelSlots, onOpenScry, gameState.graph, gameState.ascendantId, gameState.seed, gameState.tick, archetype, pendingIntervention, playingCardId, playCastSound, onPushToast, onParticleBurst, setGameState]
   );
 
+  /**
+   * THR-1911 — an intervention card cast from a person's page (the Act row) opens the
+   * agenda picker exactly as the drawer's intervention branch did, with that person
+   * selected so the confirm lands on them.
+   */
+  const beginIntervention = useCallback((agentId: string, slot: WheelSlot) => {
+    const interventionType = slot.interventionType;
+    if (!interventionType) return;
+    if (pendingIntervention || playingCardId) return;
+    const subject = interventionSubjectOf(gameState, agentId);
+    if (!subject) return;
+    setSelectedAgentId(agentId);
+    const agendas = generateAgendas({
+      interventionType,
+      targetArchetypeId: subject.archetypeId,
+      targetProfile: subject.profile as any,
+      playerPrimarySphere: archetype.sphereAlignment.primary,
+      seed: gameState.seed + gameState.tick,
+    });
+    setPendingAgendas(agendas);
+    setAgendaPickerOpen(true);
+    setPendingIntervention({ slotId: slot.id, interventionType, slot });
+  }, [pendingIntervention, playingCardId, gameState.graph, gameState.seed, gameState.tick, archetype]);
+
   const handleAgendaSelect = useCallback((agenda: AgendaTemplate) => {
     setSelectedAgenda(agenda);
     setAgendaPickerOpen(false);
@@ -479,7 +521,7 @@ export function useAgentInteraction({
     (encounterMode?: LocalEncounterMode) => {
       if (!pendingIntervention || !selectedAgentId) return;
 
-      const slot = wheelSlots?.find(s => s.id === pendingIntervention.slotId);
+      const slot = wheelSlots?.find(s => s.id === pendingIntervention.slotId) ?? pendingIntervention.slot;
       if (!slot?.sphere) return;
 
       const result = executeIntervention({
@@ -629,8 +671,9 @@ export function useAgentInteraction({
   }, [selectedAgentId]);
 
   const handleOpenDrawer = useCallback(() => {
-    setDrawerOpen(true);
-  }, []);
+    if (openInspector && selectedAgentId) openInspector({ kind: 'agent', id: selectedAgentId }, 'docked');
+    else setDrawerOpen(true);
+  }, [openInspector, selectedAgentId]);
 
   const handleAvatarActionClick = useCallback(() => {
     if (retinueAgents.length === 0) {
@@ -641,11 +684,12 @@ export function useAgentInteraction({
     setRunning?.(false);
 
     if (selectedAgentId) {
-      setDrawerOpen(true);
+      if (openInspector) openInspector({ kind: 'agent', id: selectedAgentId }, 'docked');
+      else setDrawerOpen(true);
     } else {
       handleAgentSelect(retinueAgents[0].id);
     }
-  }, [selectedAgentId, retinueAgents, handleAgentSelect, setRunning]);
+  }, [selectedAgentId, retinueAgents, handleAgentSelect, setRunning, openInspector]);
 
   const handleViewProfile = useCallback((initialTab?: ProfileTabId) => {
     if (selectedAgentId) {
@@ -655,7 +699,9 @@ export function useAgentInteraction({
       // IX-008: close drawer when opening full-screen profile modal
       setStrandViewAgent(null);
       setDrawerOpen(false);
-      setProfileModalAgentId(selectedAgentId);
+      // THR-1911: the profile is the person's page, wide.
+      if (openInspector) openInspector({ kind: 'agent', id: selectedAgentId }, 'wide');
+      else setProfileModalAgentId(selectedAgentId);
 
       // Record the backstory tier read on the thread edge so New badges clear. The engine
       // writes and bumps worldVersion (THR-1822 § D15); re-render so the card recomputes.
@@ -666,7 +712,7 @@ export function useAgentInteraction({
         setGameState(s => ({ ...s }));
       }
     }
-  }, [selectedAgentId, gameState, setGameState]);
+  }, [selectedAgentId, gameState, setGameState, openInspector]);
 
   // The tab is left as it was: every open sets it, and clearing it here would let the
   // sheet's new-strata redirect flip it to Chronicle during its exit fade.
@@ -705,17 +751,30 @@ export function useAgentInteraction({
     setSelectedAgentId(agentId);
     setStrandViewAgent(null);
     setDrawerOpen(false);
-    setProfileModalAgentId(agentId);
-  }, []);
+    if (openInspector) openInspector({ kind: 'agent', id: agentId }, 'wide');
+    else setProfileModalAgentId(agentId);
+  }, [openInspector]);
 
-  const handleThreadNodeSelect = useCallback((nodeId: string, category: ThreadCategory) => {
+  const handleThreadNodeSelect = useCallback((nodeId: string, category: ThreadCategory, fromMap = false) => {
+    if (openInspector) {
+      // THR-1911: the selection still lights the thing on the map and in the Ledger; the
+      // Inspector opens its page (a pinned Inspector ignores a map click).
+      if (category === 'agent') {
+        setSelectedAgentId(nodeId);
+        setStrandViewAgent(null);
+      }
+      setSelectedThreadNode({ nodeId, category });
+      setSelectedHexCoord(null);
+      openInspector({ kind: category, id: nodeId }, 'docked', fromMap);
+      return;
+    }
     if (category === 'agent') {
       // Use existing agent selection flow for agents
       handleAgentSelect(nodeId);
     }
     setSelectedThreadNode({ nodeId, category });
     setSelectedHexCoord(null);
-  }, [handleAgentSelect]);
+  }, [handleAgentSelect, openInspector]);
 
   /**
    * THR-665: attend a thread tug from its row badge.
@@ -757,11 +816,13 @@ export function useAgentInteraction({
     setSelectedAgentId(null);
   }, []);
 
-  const handleHexSelect = useCallback((coord: HexCoord) => {
+  const handleHexSelect = useCallback((coord: HexCoord, fromMap = false) => {
     setSelectedHexCoord(coord);
     setSelectedThreadNode(null);
     setSelectedAgentId(null);
-  }, []);
+    // THR-1911 (§ D10): a click on open land — or on a city's hex — opens the land page.
+    openInspector?.({ kind: 'hex', id: `${coord.col},${coord.row}` }, 'docked', fromMap);
+  }, [openInspector]);
 
   const handleHexDetailClose = useCallback(() => {
     setSelectedHexCoord(null);
@@ -808,6 +869,7 @@ export function useAgentInteraction({
     attendThreadTug,
     handleThreadDetailClose,
     handleWheelSlotClick,
+    beginIntervention,
     handleAgendaSelect,
     handleAgendaCancel,
     handleInterventionConfirm,

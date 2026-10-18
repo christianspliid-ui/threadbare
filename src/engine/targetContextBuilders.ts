@@ -86,17 +86,20 @@ export function buildSublocationTargetContext(
   if (!node) return null;
 
   const traitEdges = graph.getOutgoingEdges(nodeId, 'has_trait');
-  const subtype =
+  const category =
     (node.properties.sublocationCategory as string) ??
     (node.properties.locationType as string) ??
     null;
 
+  // THR-1911: `subtype` is 'sublocation' so the node-type gate (`targetActions.ts`)
+  // matches a Place; its category moves to its own field for the subtype gate.
   return {
     nodeId,
     nodeType: 'location',
     displayName: node.name,
-    displayLabel: subtype ?? 'sublocation',
-    subtype,
+    displayLabel: category ?? 'sublocation',
+    subtype: 'sublocation',
+    sublocationCategory: category,
     traitIds: traitEdges.map(e => e.target),
     sphereAffinity: (node.properties.sphereAffinity as SphereName) ?? null,
     position: null,

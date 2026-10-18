@@ -123,9 +123,10 @@ describe('buildSublocationTargetContext', () => {
     expect(buildSublocationTargetContext('nonexistent', graph)).toBeNull();
   });
 
-  it('uses sublocationCategory as subtype', () => {
+  it('sets subtype to sublocation and keeps the category in its own field (THR-1911)', () => {
     const ctx = buildSublocationTargetContext('sub.shrine', graph);
-    expect(ctx!.subtype).toBe('shrine');
+    expect(ctx!.subtype).toBe('sublocation');
+    expect(ctx!.sublocationCategory).toBe('shrine');
     expect(ctx!.displayLabel).toBe('shrine');
   });
 });

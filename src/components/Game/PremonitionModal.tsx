@@ -313,7 +313,7 @@ export function PremonitionModal({
             onClick={onViewAgent ? () => onViewAgent(premonition.agentId) : undefined}
             aria-label={
               onViewAgent
-                ? `Open the character sheet for ${premonition.agentName}`
+                ? `Open ${premonition.agentName}'s page`
                 : `Portrait of ${premonition.agentName}`
             }
             data-testid="premonition-subject-portrait"

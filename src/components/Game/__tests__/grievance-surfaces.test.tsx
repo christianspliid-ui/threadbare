@@ -77,7 +77,7 @@ describe('IntentSection — vendetta provenance (THR-1298)', () => {
     render(<IntentSection intents={[VENDETTA]} variant={variant} onOpenEntity={() => {}} />);
 
     expect(screen.getByText('burning')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Oswen — open profile/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Oswen — open page/ })).toBeTruthy();
     // Law 16: the three facts read as prose, not as a label strip.
     expect(document.body.textContent).toContain("against Oswen, after the razing of Wilderness (13, 6) — Oswen's work");
   });
@@ -127,7 +127,7 @@ describe('IntentSection — vendetta provenance (THR-1298)', () => {
     const onOpenEntity = vi.fn();
     render(<IntentSection intents={[VENDETTA]} variant="modal" onOpenEntity={onOpenEntity} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Oswen — open profile/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Oswen — open page/ }));
     expect(onOpenEntity).toHaveBeenCalledWith('ind_0');
   });
 
@@ -148,7 +148,7 @@ describe('BondsTab — standing grudges (THR-1298)', () => {
 
     expect(screen.getByTestId('modal-grudges')).toBeTruthy();
     expect(screen.getByText('Blood')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Oswen — open profile/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Oswen — open page/ })).toBeTruthy();
     expect(document.body.textContent)
       .toContain('There is blood between them and Oswen — an old wrong that never quite closed.');
   });
@@ -183,7 +183,7 @@ describe('BondsTab — standing grudges (THR-1298)', () => {
     const onOpenEntity = vi.fn();
     render(<BondsTab card={card({ grudges: [GRUDGE] })} onOpenEntity={onOpenEntity} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Oswen — open profile/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Oswen — open page/ }));
     expect(onOpenEntity).toHaveBeenCalledWith('ind_0');
   });
 

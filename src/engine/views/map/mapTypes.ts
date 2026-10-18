@@ -60,6 +60,8 @@ export interface MapActivityVM {
 
 /** A Location's map icon — `LocationNode`'s shape. */
 export interface MapPlaceVM {
+  /** THR-1911 — the Location node id; a click on the place's label opens it. */
+  id?: string;
   locationType: string;
   hexCol: number;
   hexRow: number;

@@ -84,6 +84,8 @@ const SEAT_MARKER_SCALE = 1.15;
  * Comes from the world graph — populated by game data, not hardcoded.
  */
 export interface LocationNode {
+  /** THR-1911 — the Location node id (a label click opens it). Optional: fixtures omit it. */
+  id?: string;
   locationType: string;
   hexCol: number;
   hexRow: number;

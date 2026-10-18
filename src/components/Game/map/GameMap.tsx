@@ -78,6 +78,8 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   setHoveredHex: HexMapV2Props['onHexHover'];
   handleThreadNodeSelect: (nodeId: string, category: ThreadCategory) => void;
   handleOpenProfileModal: (nodeId: string, category: ThreadCategory) => void;
+  /** THR-1911 (§ D10): a place label opens the place in the Inspector. */
+  onPlaceLabelClick?: (locationId: string) => void;
   hexStrategicOverlays: HexMapV2Props['strategicOverlays'];
   locationActivityByHex: HexMapV2Props['locationActivityMap'];
   spotlightThreadColor: HexMapV2Props['spotlightThreadColor'];
@@ -134,6 +136,7 @@ export function GameMap({
   setHoveredHex,
   handleThreadNodeSelect,
   handleOpenProfileModal,
+  onPlaceLabelClick,
   hexStrategicOverlays,
   locationActivityByHex,
   spotlightThreadColor,
@@ -234,6 +237,7 @@ export function GameMap({
         onHexHover={setHoveredHex}
         onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
         onArmyClick={(armyId) => handleOpenProfileModal(armyId, 'army')}
+        onPlaceLabelClick={onPlaceLabelClick}
         strategicOverlays={hexStrategicOverlays}
         locationActivityMap={locationActivityByHex}
         spotlightedAgentId={gameState.spotlightedAgent}

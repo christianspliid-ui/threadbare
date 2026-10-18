@@ -40,6 +40,7 @@ import type { AttachmentFullEntry } from '../../agentAttachments';
 import { getFamiliarity, getKnowledgeLevel } from '../../familiarity';
 import { canReadIntention, describeIntentionRead, knowledgeAtLeast, readIntentionFromCard } from '../../intentionReading';
 import { createHoldReader } from '../../holdStanding';
+import type { RealmProjection } from '../../realmProjection';
 import { composeThreadStory } from '../../threadDigest';
 import { getAgentArc } from '../../agentArc';
 import { buildIntelligenceDisplay, INTEL_PANEL_FOG_MIN_TIER } from '../../intelligence';
@@ -127,13 +128,14 @@ export function personKnowledgeLevel(state: GameState, agentId: string): Knowled
  * same build `useAgentInteraction` makes for the profile (THR-1433: one rule for
  * reading a mortal's mind). Null without a state or a person.
  */
-export function buildPersonSheet(state: GameState, agentId: string): PersonSheet | null {
+export function buildPersonSheet(state: GameState, agentId: string, realmProjection: RealmProjection | null = null): PersonSheet | null {
   const node = state.graph.getNode(agentId);
   if (!node || node.type !== 'actor') return null;
   const level = personKnowledgeLevel(state, agentId);
   // A held town is a faction position (THR-1448). Without the runtime's political map the
-  // standing still names the town and its grip; the Realm joins when S3 passes the map.
-  const hold = createHoldReader(state.graph, state.strategicState?.controls, null).standingFor(agentId);
+  // standing still names the town and its grip; the Inspector in the game passes the map
+  // so the Realm is named (THR-1911).
+  const hold = createHoldReader(state.graph, state.strategicState?.controls, realmProjection).standingFor(agentId);
   const card = getAgentInfoCard(state.graph, agentId, state.ascendantId, level, state.seed, state.tick, hold);
   if (!card) return null;
   const read = canReadIntention(state, state.ascendantId, agentId, { knowledgeLevel: level });
@@ -171,7 +173,7 @@ function sheetOf(ctx: SectionResolverContext): PersonSheet | null {
   if (SHEETS.has(ctx)) return SHEETS.get(ctx) ?? null;
   let sheet: PersonSheet | null = null;
   try {
-    sheet = buildPersonSheet(ctx.state, ctx.nodeId);
+    sheet = buildPersonSheet(ctx.state, ctx.nodeId, ctx.realmProjection ?? null);
   } catch {
     sheet = null;
   }

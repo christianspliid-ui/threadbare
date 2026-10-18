@@ -445,7 +445,8 @@ export interface MapAnchoredDialogsProps {
   agendaPickerOpen: boolean;
   pendingAgendas: AgendaTemplate[] | null;
   wheelSlots: WheelSlot[] | null;
-  pendingIntervention: { slotId: string; interventionType: InterventionType } | null;
+  /** THR-1911: `slot` is the slot as dealt when the cast began from a person's page (no drawer, no `wheelSlots`). */
+  pendingIntervention: { slotId: string; interventionType: InterventionType; slot?: WheelSlot } | null;
   handleAgendaSelect: (agenda: AgendaTemplate) => void;
   handleAgendaCancel: () => void;
   // Intervention confirm
@@ -483,7 +484,7 @@ export function MapAnchoredDialogs({
       {/* Agenda picker overlay */}
       <AnimateMount show={agendaPickerOpen && !!pendingAgendas} animation="anim-fade">
         {pendingAgendas && (() => {
-          const slot = wheelSlots?.find(s => s.id === pendingIntervention?.slotId);
+          const slot = wheelSlots?.find(s => s.id === pendingIntervention?.slotId) ?? pendingIntervention?.slot;
           return (
             <AgendaPicker
               agendas={pendingAgendas}
@@ -496,8 +497,8 @@ export function MapAnchoredDialogs({
       </AnimateMount>
 
       {/* Intervention confirmation popover */}
-      {pendingIntervention && wheelSlots && !agendaPickerOpen && (() => {
-        const slot = wheelSlots.find(s => s.id === pendingIntervention.slotId);
+      {pendingIntervention && !agendaPickerOpen && (() => {
+        const slot = wheelSlots?.find(s => s.id === pendingIntervention.slotId) ?? pendingIntervention.slot;
         if (!slot) return null;
         return (
           <InterventionConfirm

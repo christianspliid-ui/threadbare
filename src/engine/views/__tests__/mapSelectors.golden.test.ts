@@ -140,7 +140,9 @@ describe('THR-1822 map selectors reproduce the GameView memos (generated world)'
     const vm = readView(runtime, state, mapPlacesSelector, undefined, tiles);
     const legacy = legacyLocationNodes(inputs);
     expect(legacy.length).toBeGreaterThan(0);
-    expect(vm).toEqual(legacy);
+    // THR-1911 added each place's node id (the label click); the legacy memo predates it.
+    expect(vm.map(({ id: _id, ...rest }) => rest)).toEqual(legacy);
+    expect(vm.every(p => typeof p.id === 'string' && state.graph.getNode(p.id!)?.type === 'location')).toBe(true);
   });
 
   it('map.armiesAndBattles + toArmyRenderData equals the army/battle memo', () => {

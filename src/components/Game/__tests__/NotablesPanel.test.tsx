@@ -142,8 +142,8 @@ describe('NotablesPanel (THR-630)', () => {
         <NotablesPanel gameState={makeState({ activeCompositions: [agendaComp()] })} />
       </RefRouterProvider>,
     );
-    screen.getByRole('button', { name: 'Maren Hale — open profile' }).click();
-    screen.getByRole('button', { name: 'Farwatch — open profile' }).click();
+    screen.getByRole('button', { name: 'Maren Hale — open page' }).click();
+    screen.getByRole('button', { name: 'Farwatch — open page' }).click();
     expect(opened).toEqual([
       { kind: 'agent', id: 'n1', name: 'Maren Hale' },
       { kind: 'location', id: 'loc1', name: 'Farwatch' },
@@ -171,7 +171,7 @@ describe('NotablesPanel (THR-630)', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: '1 notable' }));
     expect(screen.getByTestId('notables-group-rulers')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Maren Hale — open profile' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Maren Hale — open page' }));
     expect(opened).toHaveLength(1);
     // AnimateMount unmounts after its exit animation's timer.
     await waitFor(() => expect(screen.queryByTestId('notables-group-rulers')).toBeNull());

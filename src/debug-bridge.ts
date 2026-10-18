@@ -192,6 +192,7 @@ if (import.meta.env.DEV) {
   // THR-1822 — the view-model seam, registered by GameView.
   // THR-1876 — the Inspector lab registers its reading here (`?view=inspector-lab` only).
   let _inspectorLabBridge: (() => import('./debug-bridge.d').DebugInspectorLabResult) | null = null;
+  let _inspectorBridge: { getState: () => import('./debug-bridge.d').DebugInspectorState; open: (kind: string, id: string, mode?: 'card' | 'sheet') => boolean } | null = null;
   let _viewBridge: {
     get: (id: string, args?: unknown) => unknown;
     list: () => import('./debug-bridge.d').DebugViewListing[];
@@ -1177,6 +1178,9 @@ if (import.meta.env.DEV) {
     _registerViewBridge: (bridge) => { _viewBridge = bridge; },
     getInspectorLab: async () => _inspectorLabBridge?.() ?? null,
     _registerInspectorLabBridge: (bridge) => { _inspectorLabBridge = bridge; },
+    getInspectorState: async () => _inspectorBridge?.getState() ?? null,
+    openInInspector: async (kind, id, mode) => _inspectorBridge?.open(kind, id, mode) ?? false,
+    _registerInspectorBridge: (bridge) => { _inspectorBridge = bridge; },
     /** How many top-level places stand in each band. */
     getDominionCensus: async () => {
       const [{ dominionOf }, { getLocationNodes }] = await Promise.all([

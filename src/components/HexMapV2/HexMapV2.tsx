@@ -295,6 +295,8 @@ export interface HexMapV2Props {
   onHexHover: (coord: HexCoord | null) => void;
   onAgentClick?: (agentId: string) => void;
   onArmyClick?: (armyId: string) => void;
+  /** THR-1911 (Inspector plan § D10): a click on a place label opens that place. */
+  onPlaceLabelClick?: (locationId: string) => void;
   /** River paths from worldgen — stored in ref for use by river rendering (Plan 03-02+) */
   riverPaths?: RiverPath[];
   /** Lake hex IDs from worldgen — stored in ref for use by lake coloring (Plan 03-01+) */
@@ -600,7 +602,7 @@ export const LENS_LAYER_FACTORIES = {
 
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, hexLens = null, firstHex = null, seatHex = null, tick = 0 },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, onPlaceLabelClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, hexLens = null, firstHex = null, seatHex = null, tick = 0 },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1135,6 +1137,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           // Derive location label data from location nodes
           const labelData: LocationLabelData[] = locations.map(loc => ({
             id: `loc-${loc.hexCol}-${loc.hexRow}-${loc.name}`,
+            ...(loc.id ? { nodeId: loc.id } : {}),
             name: loc.name,
             hexCol: loc.hexCol,
             hexRow: loc.hexRow,
@@ -2155,6 +2158,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             prePlacedBBoxesRef={regionPlacedBBoxesRef}
             getMarkerObstacles={getMarkerObstacles}
             labelPassStatsRef={labelPassStatsRef}
+            onLabelClick={onPlaceLabelClick}
           />
         )}
         {/* THR-1878 — Threads lens name tags under each threaded medallion */}

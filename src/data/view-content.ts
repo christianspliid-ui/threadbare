@@ -92,6 +92,32 @@ export const INSPECTOR_WORDS = {
   actOnLand: 'Act on this land',
   /** The Act row with nothing castable. */
   actOnEmpty: 'None of your cards works on {name}.',
+  /** THR-1911 — the drawer's Meet The First card, now on a place's Act row. */
+  meetTheFirst: 'Meet The First',
+  /** THR-1911 — the armed card's second beat (Law 48): "Cast on Shutash". */
+  castOn: 'Cast on {name}',
+  /** The armed card, said to a screen reader. */
+  armedCard: '{card} is ready. Press again, or Cast, to cast it on {name}.',
+  /** THR-1911 — the toolbar (§ D5 item 1). */
+  toolbar: {
+    label: 'Inspector controls',
+    back: 'Back',
+    forward: 'Forward',
+    pin: 'Pin this page',
+    unpin: 'Unpin this page',
+    pinnedNote: 'Pinned: map clicks leave this page open.',
+    eye: 'Show on map',
+    follow: 'Follow',
+    unfollow: 'Stop following',
+    widen: 'Widen',
+    full: 'Full view',
+    narrow: 'Back to the map',
+    close: 'Close',
+    trail: 'Where you have been',
+    trailMore: 'Earlier pages',
+  },
+  /** The interrupt holder name for Full (Law 52): "held by the full view". */
+  fullHolder: 'the full view',
   /** Kind words for headers that have no node subtitle. */
   landKind: 'Land',
   godKind: 'God',

@@ -105,6 +105,14 @@ export interface RefRouterConfig {
    * drawing a dead one.
    */
   readonly codexHasEntry?: (entryId: string) => boolean;
+  /**
+   * THR-1911 (Inspector plan § D4) — opens a subject in the Inspector at a size. When
+   * present it is the destination of the `card` arm (at the registry row's `opensAt`) and
+   * of the world `sheet` arm (wide). A live encounter still asks `openSheet` first — it
+   * plays on the Stage — and falls back to its record page here. Absent (style guide,
+   * tests) keeps the detail stack.
+   */
+  readonly openInspector?: (subject: AnyRef, size: 'docked' | 'wide') => void;
 }
 
 export interface OpenRefOptions {
@@ -230,6 +238,15 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
         });
       };
 
+      // THR-1911: every world sheet is the Inspector, wide — except a live encounter, which
+      // plays on the Stage (it asks `openSheet` below and falls back to its record page).
+      if (mode === 'sheet' && cfg.openInspector && !isContentRef(ref) && ref.kind !== 'encounter') {
+        closeHover();
+        cfg.openInspector(ref, 'wide');
+        traceOpened('sheet', stack.stack.length);
+        return;
+      }
+
       if (mode === 'sheet') {
         if (row.sheet === null) {
           traceUnroutable('sheet_null');
@@ -254,9 +271,24 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
             return;
           }
           if (target) traceUnroutable('no_sheet_opener');
+          // A past encounter has no Stage to play on: its record page, wide.
+          if (cfg.openInspector) {
+            closeHover();
+            cfg.openInspector(ref, 'wide');
+            traceOpened('sheet', stack.stack.length);
+            return;
+          }
         }
         // Fall through to the card. Never a no-op click (Law 25).
         mode = 'card';
+      }
+
+      // The Inspector builds its own page (THR-1911), so a card open goes straight there.
+      if (mode === 'card' && cfg.openInspector) {
+        closeHover();
+        cfg.openInspector(ref, row.opensAt ?? 'docked');
+        traceOpened('card', stack.stack.length);
+        return;
       }
 
       // `row.card` is `'content'` exactly when the ref is a `ContentRef` — both records
@@ -316,7 +348,8 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
       return true;
     }
     const row = SURFACE_BY_WORLD_REF[ref.kind];
-    if (mode === 'sheet') return row.sheet !== null;
+    // With the Inspector wired every world kind has a wide page (THR-1911, § D4).
+    if (mode === 'sheet') return row.sheet !== null || !!configRef.current.openInspector;
     // Card and hover are always available: every row has a card, and an unresolvable id
     // still gets the stub, which says the thing is gone instead of saying nothing.
     return true;

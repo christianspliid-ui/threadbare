@@ -64,7 +64,7 @@ export interface ActOnCardVM {
   reason: string | null;
 }
 
-/** The Act row (§ D9 way 1). Casting from it arrives with S3; S1 shows what is castable. */
+/** The Act row (§ D9 way 1): what is castable on the subject; S3 (THR-1911) casts from it. */
 export interface ActOnVM {
   heading: string;
   cards: ActOnCardVM[];

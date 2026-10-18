@@ -9,4 +9,16 @@
  */
 import { FRAME_HOTKEYS } from './frame-registry';
 
-export const TOP_BAR_KEYS: readonly string[] = [' ', '+', '=', '-', '.', 'm', 'M', ...FRAME_HOTKEYS];
+/**
+ * THR-1911 (Inspector plan § D3) — `W` cycles the Inspector's size (docked → wide → full).
+ * Free because map panning moved to the arrow keys (THR-1900).
+ */
+export const INSPECTOR_HOTKEYS: readonly string[] = ['w', 'W'];
+
+/**
+ * THR-1911 — Alt+← / Alt+→ walk the Inspector's history. Modifier-qualified, so they are
+ * not in `TOP_BAR_KEYS` (which compares bare keys): the map's pan keys ignore Alt.
+ */
+export const INSPECTOR_HISTORY_KEYS = { back: 'ArrowLeft', forward: 'ArrowRight' } as const;
+
+export const TOP_BAR_KEYS: readonly string[] = [' ', '+', '=', '-', '.', 'm', 'M', ...FRAME_HOTKEYS, ...INSPECTOR_HOTKEYS];

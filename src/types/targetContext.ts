@@ -19,6 +19,12 @@ export interface TargetContext {
   readonly displayLabel: string;
   /** Node subtype (actorType, locationSubtype, attachment subcategory, terrain type) */
   readonly subtype: string | null;
+  /**
+   * THR-1911 — a Place target's own category (shrine, temple, tavern…). A sublocation
+   * context carries `subtype: 'sublocation'` so the node-type gate matches it; the
+   * template's `targetSubtypes` gate reads this field for it instead.
+   */
+  readonly sublocationCategory?: string | null;
   /** Trait IDs present on this node (via has_trait edges) */
   readonly traitIds: readonly string[];
   /** Sphere affinity of the target (if any) */

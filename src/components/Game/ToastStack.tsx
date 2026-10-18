@@ -15,18 +15,19 @@ import { ICON_FOR_WORLD_REF_KIND } from '../../data/icons/conceptIcons';
 // `ICON_FOR_WORLD_REF_KIND` (THR-1906, Law 9) — one shape per kind, shared with Find and Connections.
 
 /** Tooltip text for each navigation kind */
+// THR-1911 (Inspector plan § D14): every toast opens a page in the Inspector.
 const NAV_TOOLTIPS: Record<NavigationTarget['kind'], string> = {
-  agent:     'Click to view agent',
-  encounter: 'Click to view encounter',
-  hex:       'Click to view hex',
-  location:  'Click to view location',
-  area:      'Click to view the area',
-  faction:   'Click to view faction',
-  journey:   'Click to view journey',
-  receipt:   'Click to view the receipt',
-  artifact:  'Click to view the artifact',
-  attachment:'Click to view what was granted',
-  army:      'Click to view the army',
+  agent:     'Open their page',
+  encounter: 'Open the encounter',
+  hex:       'Open this land',
+  location:  'Open the place',
+  area:      'Open the area',
+  faction:   'Open the faction',
+  journey:   'Open the journey',
+  receipt:   'Open the receipt',
+  artifact:  'Open the artifact',
+  attachment:'Open what was granted',
+  army:      'Open the army',
 };
 
 /** Opacity for navigation glyph */
