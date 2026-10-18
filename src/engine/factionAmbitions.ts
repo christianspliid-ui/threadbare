@@ -12,7 +12,6 @@
 
 import type { GameState } from '../types/gameState';
 import type { FactionAmbitionType } from '../types/faction';
-import { requiresMilitaryForce } from '../types/faction';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { isEligibleForArmySpawn, selectCommander, spawnArmy } from './armySpawning';
 import { deriveFactionProsperity } from './factionNetwork';
@@ -155,10 +154,11 @@ export function selectAmbitionType(
 function maybeSpawnArmy(
   state: GameState,
   factionId: string,
-  ambitionType: FactionAmbitionType,
+  _ambitionType: FactionAmbitionType,
   ambitionId: string,
 ): void {
-  if (!requiresMilitaryForce(ambitionType)) return;
+  // THR-1973: a realm or free company keeps a standing army under any ambition;
+  // `isEligibleForArmySpawn` reads both that and the military-ambition gate.
   if (!isEligibleForArmySpawn(state, factionId)) return;
   const commander = selectCommander(state, factionId);
   if (commander) {

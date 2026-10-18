@@ -8,9 +8,11 @@ import {
   UNDERFUNDED_ATTRITION_PENALTY,
   COHESION_THRESHOLDS,
   MONSTER_TERRITORY_ATTRITION,
+  isGarrisoned,
 } from '../armyAttrition';
 import { getArmyTerrainCost, getArmyMovementCost, ARMY_ROAD_DISCOUNT } from '../armyMovement';
 import type { ArmyState } from '../../types/army';
+import { ARMY_GARRISON_RECOVERY } from '../../types/army';
 import type { GameState } from '../../types/gameState';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -409,5 +411,69 @@ describe('monster territory attrition', () => {
       MONSTER_TERRITORY_ATTRITION
     );
     expect(state.cohesion).toBeCloseTo(expected, 5);
+  });
+});
+
+// ─── THR-1973: a garrisoned army holds ──────────────────────────────────────
+
+describe('garrison recovery (THR-1973)', () => {
+  /** A faction holding `town`, its army standing in it, paid through `paidThroughTick`. */
+  function garrisonWorld(cohesion: number, cohesionMax: number = 100): WorldGraph {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'town', type: 'location', name: 'Town', properties: { terrain: 'hills', locationSubtype: 'town', prosperity: 60 } });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Realm', properties: { actorType: 'faction', factionClass: 'realm' } });
+    graph.addEdge({ id: 'e_controls', source: 'f1', target: 'town', type: 'controls', properties: {} });
+    addArmy(graph, 'army1', 'town', { size: 'host', cohesion, cohesionMax, paidThroughTick: 0 });
+    graph.addEdge({ id: 'e_member', source: 'army1', target: 'f1', type: 'member_of', properties: { role: 'army', rank: 'army', joinedTick: 0 } });
+    return graph;
+  }
+
+  it('a paid, supplied army at rest in its own town does not disband within 30 days', () => {
+    const graph = garrisonWorld(100);
+    for (let tick = 1; tick <= 30 * 12; tick++) {
+      // Paid every day: the purse writes paidThroughTick on each pay day.
+      if (tick % 12 === 0) {
+        const n = graph.getNode('army1')!;
+        n.properties.armyState = { ...(n.properties.armyState as ArmyState), paidThroughTick: tick };
+      }
+      phaseArmyAttrition(makeState(tick, graph));
+    }
+    const army = graph.getNode('army1');
+    expect(army).toBeDefined();
+    expect((army!.properties.armyState as ArmyState).cohesion).toBe(100);
+  });
+
+  it('a worn garrison heals toward cohesionMax and never past it', () => {
+    const graph = garrisonWorld(40);
+    phaseArmyAttrition(makeState(1, graph));
+    expect(getArmyState(graph, 'army1').cohesion).toBeCloseTo(40 + ARMY_GARRISON_RECOVERY, 5);
+    const full = garrisonWorld(100 - ARMY_GARRISON_RECOVERY / 2);
+    phaseArmyAttrition(makeState(1, full));
+    expect(getArmyState(full, 'army1').cohesion).toBe(100);
+  });
+
+  it('an unpaid garrison still wears down (the purse desertion path is kept)', () => {
+    const graph = garrisonWorld(100);
+    // Unpaid past one pay day.
+    phaseArmyAttrition(makeState(100, graph));
+    expect(getArmyState(graph, 'army1').cohesion).toBeLessThan(100);
+  });
+
+  it('a starving garrison still wears down', () => {
+    const graph = garrisonWorld(100);
+    const n = graph.getNode('army1')!;
+    n.properties.armyState = { ...(n.properties.armyState as ArmyState), supply: 0, supplyMax: 100 };
+    phaseArmyAttrition(makeState(1, graph));
+    expect(getArmyState(graph, 'army1').cohesion).toBeLessThan(100);
+  });
+
+  it('an army in a town another faction holds pays attrition', () => {
+    const graph = garrisonWorld(100);
+    graph.addNode({ id: 'f2', type: 'actor', name: 'Other', properties: { actorType: 'faction' } });
+    graph.removeEdge('e_controls');
+    graph.addEdge({ id: 'e_controls2', source: 'f2', target: 'town', type: 'controls', properties: {} });
+    expect(isGarrisoned(makeState(1, graph), 'army1', 'town', 'f1')).toBe(false);
+    phaseArmyAttrition(makeState(1, graph));
+    expect(getArmyState(graph, 'army1').cohesion).toBeLessThan(100);
   });
 });

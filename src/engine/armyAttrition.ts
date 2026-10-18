@@ -12,6 +12,7 @@
 
 import type { GameState } from '../types/gameState';
 import type { ArmyState } from '../types/army';
+import { ARMY_GARRISON_RECOVERY } from '../types/army';
 import { getArmyTerrainCost } from './armyMovement';
 import { emitTrace } from './traceBuffer';
 import { reportWar, captureArmySide } from './armyNotifications';
@@ -136,7 +137,12 @@ export function phaseArmyAttrition(state: GameState): void {
         monsterTerritory: hasMonsterTerritory ? MONSTER_TERRITORY_ATTRITION : 0,
         unsupplied: SUPPLY_ATTRITION_PENALTY[supplyTier],
       };
-      const totalAttrition = attritionSources.base
+      // THR-1973: a garrisoned army — at rest in its own faction's settlement, paid and
+      // fed — pays no attrition and heals instead. Without it a fully paid, supplied host
+      // still bled 15 cohesion a day and disbanded within a week.
+      const garrisoned = !isUnderfunded && supplyTier === 'supplied'
+        && isGarrisoned(state, armyNode.id, locationId, factionId);
+      const totalAttrition = garrisoned ? -ARMY_GARRISON_RECOVERY : attritionSources.base
         + attritionSources.terrain
         + attritionSources.offRoad
         + attritionSources.underfunded
@@ -144,7 +150,7 @@ export function phaseArmyAttrition(state: GameState): void {
         + attritionSources.unsupplied;
 
       const cohesionBefore = armyState.cohesion;
-      const cohesionAfter = Math.max(0, cohesionBefore - totalAttrition);
+      const cohesionAfter = Math.min(armyState.cohesionMax, Math.max(0, cohesionBefore - totalAttrition));
 
       // Update army state
       const updatedArmyState: ArmyState = {
@@ -184,6 +190,7 @@ export function phaseArmyAttrition(state: GameState): void {
         cohesionAfter,
         attritionAmount: totalAttrition,
         attritionSources,
+        garrisoned,
         thresholdCrossed,
       });
 
@@ -256,6 +263,24 @@ export function checkUnderfunded(
     return factionNode.properties.factionClass === 'realm';
   }
   return deriveFactionProsperity(state.graph, factionId) < ARMY_UNDERFUNDED_PROSPERITY_THRESHOLD;
+}
+
+/**
+ * THR-1973 — an army is garrisoned when it stands in a settlement its own faction
+ * holds (a `controls` edge, read at the parent settlement when it stands in a
+ * sublocation) and is not in a battle. Exported for focused tests.
+ */
+export function isGarrisoned(
+  state: GameState,
+  armyId: string,
+  locationId: string | undefined,
+  factionId: string | undefined,
+): boolean {
+  if (!locationId || !factionId) return false;
+  if (state.graph.getOutgoingEdges(armyId, 'participates_in').length > 0) return false;
+  const parentId = state.graph.getNode(locationId)?.properties.parentLocationId as string | undefined;
+  const placeId = parentId ?? locationId;
+  return state.graph.getIncomingEdges(placeId, 'controls').some(e => e.source === factionId);
 }
 
 /**
