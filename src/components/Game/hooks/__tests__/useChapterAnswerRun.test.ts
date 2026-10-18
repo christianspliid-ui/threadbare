@@ -289,6 +289,8 @@ describe('THR-1812 — the choice line', () => {
     expect(chapterAnswerChoiceLine(['Steady Hand', 'Old Debts'])).toBe('Played: Steady Hand, Old Debts.');
     expect(chapterAnswerChoiceLine(['Steady Hand', undefined, ''])).toBe('Played: Steady Hand.');
     expect(chapterAnswerChoiceLine([])).toBe('Stayed silent.');
+    // THR-1976 — a sentence-shaped authored choice label keeps one full stop.
+    expect(chapterAnswerChoiceLine(['Stay your hand. Let the truth surface.'])).toBe('Played: Stay your hand. Let the truth surface.');
     expect(chapterAnswerChoiceLine([undefined, null])).toBe('Stayed silent.');
   });
 });
