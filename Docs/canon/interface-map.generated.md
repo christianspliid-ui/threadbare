@@ -465,10 +465,10 @@ remediation ticket or the build fails.
 - **Intent:** What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen.
 - **Producer → Consumer:** Essence & Divine Economy → Attention, Chronicle & Narrative
 - **UL terms:** *AxiologicalProfile*
-- **Production hits:** 16 total — 1 write, 4 read, 11 unclassified
+- **Production hits:** 17 total — 1 write, 4 read, 12 unclassified
 - **Write sites:** `src/engine/graphOpExecutor.ts`
 - **Read sites:** `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/engine/agentSelection.ts`, `src/engine/castInfluenceDrift.ts`, `src/engine/castTargetChanges.ts` +6 more
+- **Other hits:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/engine/agentSelection.ts`, `src/engine/castInfluenceDrift.ts`, `src/engine/castTargetChanges.ts` +7 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `active-ui-state-to-incident-bundle` — 🟢 LIVE
@@ -518,10 +518,10 @@ remediation ticket or the build fails.
 
 - **Intent:** Completed ambitions accumulate into a readable history of who an agent became.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
-- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
 - **Write sites:** `src/engine/agentDetail.ts`
 - **Read sites:** `src/components/Game/tabs/ChronicleTab.tsx`
-- **Other hits:** `src/engine/agentArc.ts`, `src/engine/journeyEngine.ts`
+- **Other hits:** `src/data/person-sheet-words.ts`, `src/engine/agentArc.ts`, `src/engine/journeyEngine.ts`, `src/engine/views/subjects/personRows.ts`
 - **Verdict:** Verified 2026-07-24: THR-721: getCompletedAmbitions (agentDetail.ts) walks completed `pursues` edges and populates AgentInfoCardData.completedAmbitions; ChronicleTab §Completed Ambitions renders it (replacing the "will appear here" placeholder). The missing consumer this row named now exists; browser-verified at 1920×1080.
 
 ### `ambition-motive-receipts` — 🟢 LIVE
@@ -931,10 +931,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 92 total — 4 write, 7 read, 81 unclassified
+- **Production hits:** 94 total — 4 write, 7 read, 83 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/components/Game/ThreadsPanel.tsx` +2 more
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/GameView.tsx` +76 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/GameView.tsx` +78 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
@@ -1247,10 +1247,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 82 total — 1 write, 3 read, 78 unclassified
+- **Production hits:** 83 total — 1 write, 3 read, 79 unclassified
 - **Write sites:** `src/engine/mortalMeans.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +73 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +74 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
@@ -1495,10 +1495,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 82 total — 3 write, 2 read, 77 unclassified
+- **Production hits:** 83 total — 3 write, 2 read, 78 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +72 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +73 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
@@ -1726,10 +1726,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 137 total — 1 write, 1 read, 135 unclassified
+- **Production hits:** 138 total — 1 write, 1 read, 136 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +130 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ActiveEffectChips.tsx`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx` +131 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -1882,10 +1882,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Reputation*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 95 total — 1 write, 1 read, 93 unclassified
+- **Production hits:** 96 total — 1 write, 1 read, 94 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/reputation.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +88 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +89 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-writes-opponent-clock` — 🔵 UNVERIFIED-OK
@@ -1906,10 +1906,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Struck down*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 95 total — 1 write, 1 read, 93 unclassified
+- **Production hits:** 96 total — 1 write, 1 read, 94 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/reputation.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +88 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/data/condition-trait-content.ts`, `src/data/content-eval/compositionContract.ts` +89 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fights-leave-a-record-on-the-ground` — 🟢 LIVE
@@ -1965,10 +1965,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 82 total — 2 write, 3 read, 77 unclassified
+- **Production hits:** 83 total — 2 write, 3 read, 78 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +72 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +73 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -2000,9 +2000,10 @@ exit
 - **Intent:** The god reads what a mortal is set on — the ambition and the work it heads toward — through one rule everywhere: having watched them, or a followed mortal’s mark on them, or a followed network’s people near them. A mortal’s intelligence work counts as the god’s own knowledge, so running a ring or digging up a secret changes what the player can see on a sheet; and a secret work (the plot) is never read by watching alone.
 - **Producer → Consumer:** Intelligence, Knowledge & Familiarity → Attention, Chronicle & Narrative
 - **Module:** `src/engine/intentionReading.ts`
-- **Production hits:** 9 total — 3 write, 6 read, 0 unclassified
+- **Production hits:** 9 total — 3 write, 5 read, 1 unclassified
 - **Write sites:** `src/data/intention-reading-constants.ts`, `src/engine/intentionReading.ts`, `src/types/agentKnowledge.ts`
-- **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/tabs/ChronicleTab.tsx`, `src/components/Game/tabs/JourneyTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts` +1 more
+- **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/tabs/ChronicleTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/foreshadowing/encounterForeshadowing.ts`
+- **Other hits:** `src/engine/views/subjects/personRows.ts`
 - **Verdict:** Verified 2026-09-07: THR-1433. `canReadIntention` is the one predicate: familiarity at `INTENTION_KNOWLEDGE_TIER` (skipped for a secret cell), a followed mortal’s unrevealed `knows_secret_of` mark, a followed network’s living member within `NETWORK_READ_REACH_HEXES`. The hook stamps the live answer on the card (`intentionRead`) and builds the intention line; the Overview tab renders it with the door in the tooltip; the Journey and Chronicle ambition gates and the thread-card foreshadowing tooltip call the same rule. Non-vacuous by `src/engine/__tests__/intentionReading.test.ts` (each door falsified at its owning layer — out of reach, unfollowed leader, revealed mark, the plot at `transparent`), `src/components/Game/tabs/__tests__/OverviewTabIntention.test.tsx` (the line renders through each door and not at all when closed) and the browser proof on the closing PR (`__DEBUG.followAgent` + `__DEBUG.spawnMark` on a stranger, `__DEBUG.canReadIntention`).
 
 ### `gods-will-premonition-steers-next-decision` — 🟢 LIVE
@@ -2034,10 +2035,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Ambition*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 105 total — 2 write, 3 read, 100 unclassified
+- **Production hits:** 106 total — 2 write, 3 read, 101 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/components/Game/IntentSection.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +95 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/momentCardModel.ts` +96 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-command-changes-through-one-writer` — 🟢 LIVE
@@ -2058,10 +2059,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 89 total — 1 write, 2 read, 86 unclassified
+- **Production hits:** 91 total — 1 write, 2 read, 88 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +81 more
+- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/HexMapV2/HexMapV2.tsx` +83 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -2106,10 +2107,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Ambitions & Undertakings
 - **UL terms:** *hold*, *Undertaking*
 - **Module:** `src/engine/holdStanding.ts`
-- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
 - **Write sites:** `src/engine/holdStanding.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts`, `src/types/trace.ts`
+- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts`, `src/engine/views/subjects/personRows.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-09-22: THR-1448. `decisionBoardHeldTown.test.ts`: the same `use × Location` cell aimed at the held town, at a Realm holding and at an unrelated town scores three distinct `heldTownAffinity` values (1 / share / 0) on one board and the held town wins by exactly `HELD_TOWN_AFFINITY_WEIGHT` on the temperament weight with EVT and desire equal; a board with no standing is score-for-score the board before the term. `holdStandingReach.test.ts` repeats the pair on a generated world against the keeper’s *real* standing, and reports the term’s distribution across the keeper’s live boards over ten ticks.
 
 ### `held-town-opens-realm-standing` — 🟢 LIVE
@@ -2118,10 +2119,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 68 total — 2 write, 3 read, 63 unclassified
+- **Production hits:** 69 total — 2 write, 3 read, 64 unclassified
 - **Write sites:** `src/engine/phaseStrategicProjects.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionQuestGeneration.ts`, `src/engine/factionReputation.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +58 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/RelationshipGraph.tsx`, `src/components/Game/DebugPanel.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +59 more
 - **Verdict:** Verified 2026-09-22: THR-1448. On a fixture (`holdStanding.test.ts`): a stance on a town inside a Realm’s projection mints `member_of` with `reputation = HOLD_STANDING_REPUTATION_SEED`, `rank` stays 0 and derives to *subject*; a second pass writes and announces nothing; an existing member reads `membershipMinted: false` and keeps their reputation; a wilds stance opens nothing; a gone stance traces `position_closed` and leaves the edge. On a **generated** world (`holdStandingReach.test.ts`, heavy lane, seed 42 small): a real mortal claims a real town on a Realm’s ground through `claimControl`, one `runTick` traces `position_opened` naming the projection’s Realm with the membership minted at the seed, and collapsing the stance closes the standing with the membership present.
 
 ### `held-town-supplies-keeper-content-past-rank-access` — 🟢 LIVE
@@ -2130,10 +2131,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/factionQuestGeneration.ts`
-- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/factionQuestGeneration.ts`
 - **Read sites:** `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/crowns-reckoning.ts`, `src/data/encounters/keepers-petition.ts`, `src/data/faction-encounter-content.ts` +8 more
+- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/crowns-reckoning.ts`, `src/data/encounters/keepers-petition.ts`, `src/data/faction-encounter-content.ts` +9 more
 - **Verdict:** Verified 2026-09-22: THR-1448. The decayed-*stranger* arm, falsified not asserted (`holdStandingGates.test.ts`): a keeper at reputation 0.05 (below *subject* 0.15) is supplied both town-keeper rows and none of the three court rows; a non-keeper member at the same reputation is supplied neither (the pre-fix arm); a keeper at *subject* gets the court rows through the allowlist and each keeper row exactly once; the arm keys on the Realm the standing names, so a member of Brenn keeping a town on Aldmark’s ground gets nothing from Brenn; without a reader the path is what it was. Repeated on a generated world in `holdStandingReach.test.ts` by dropping the keeper’s edge below the ladder’s subject floor.
 
 ### `holdings-single-writer-owns-edge` — 🟢 LIVE
@@ -2435,10 +2436,10 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Attention, Chronicle & Narrative
 - **UL terms:** *Opponent Card*, *Fight Clock*, *Temper*
 - **Module:** `src/components/Game/lair/buildLairMonsterCardModel.ts`
-- **Production hits:** 36 total — 2 write, 3 read, 31 unclassified
+- **Production hits:** 37 total — 2 write, 3 read, 32 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/monsters/monsterCard.ts`
 - **Read sites:** `src/components/Game/HexSidebar.tsx`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/components/Game/lair/LairMonsterCard.tsx`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +26 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/shared/entityVisualResolver.ts`, `src/data/fight-constants.ts` +27 more
 - **Verdict:** Verified 2026-09-25: THR-1552 F4. Review route `?view=game&seeded&size=medium&nofog`, `tick(60)`: lair_0's card reads "Ryx — A walking rot that spreads where it goes. Fearsome to face, a fair match." with 4 square pips at 14px and "untouched"; stored clock 2/4 reads "half-broken"; `spawnFight('Ryx', { clockFilled: 3, outcome: 'critical_success' })` played through the veil fells Ryx, lair_0 becomes a cleared lair, and the Cleared Lair Section reads "slain by Vara". At tick 100, `spawnFight('elite_lair_10_50', …)` fells Druja at the legendary lair_10, whose `namedEliteId` is then gone: the lair block finds her by reverse lookup on `lairId` and reads "slain by Vara" (`Docs/evidence/thr-1552/`). `getLairMonsterCard` matched `listMonsters` on every field it shares. Non-vacuous by `src/components/Game/lair/__tests__/lairMonsterF4.test.tsx`: the temper clause is absent before a fight and present after one; "slain by" renders when `getAgentInfoCard(...).death.by` is set and not when it is absent.
 
 ### `mortal-dies-through-one-funnel` — 🔵 UNVERIFIED-OK
@@ -2482,10 +2483,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 132 total — 2 write, 2 read, 128 unclassified
+- **Production hits:** 133 total — 2 write, 2 read, 129 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx` +123 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx` +124 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -2646,10 +2647,10 @@ exit
 - **Intent:** The mortal's story remembers your hand (THR-1606). A resolved player cast whose capture found a target-side change files a notable digest entry under the target's id carrying `castLine` (`castDigestEntry`); `composeThreadStory` tells that line verbatim, and one such beat is enough to tell a story, so the Story So Far on the thread detail says "Your hand reached into their sleep…". Before this, player casts were never digested at all.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Aftermath*
-- **Production hits:** 14 total — 1 write, 2 read, 11 unclassified
+- **Production hits:** 15 total — 1 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/hooks/useThreadStorySoFar.ts`, `src/engine/threadDigest.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/data/ia-manifest.ts` +6 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx`, `src/components/Game/ThreadDetailView.tsx`, `src/data/ia-manifest.ts` +7 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `quintessence-threshold-gates-candidacy-and-movement` — 🟠 PARTIAL
@@ -2692,10 +2693,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 441 total — 1 write, 1 read, 439 unclassified
+- **Production hits:** 442 total — 1 write, 1 read, 440 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +434 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +435 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -2739,10 +2740,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
 - **UL terms:** *Reputation*
 - **Module:** `src/engine/reputation.ts`
-- **Production hits:** 18 total — 2 write, 6 read, 10 unclassified
+- **Production hits:** 19 total — 2 write, 6 read, 11 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/reputation.ts`
 - **Read sites:** `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/encounterFilterPipeline.ts`, `src/engine/secretGeneration.ts`, `src/engine/socialLeverage.ts` +1 more
-- **Other hits:** `src/data/encounters/the-garrisons-price.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/factionSuccessionOps.ts` +5 more
+- **Other hits:** `src/data/encounters/the-garrisons-price.ts`, `src/data/encounters/toll-of-blades.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/factionSuccessionOps.ts` +6 more
 - **Verdict:** Verified 2026-08-23: THR-1206, director ruling. Six mechanisms wore the word `reputation` and disagreed; a seventh (`trait.condition.location.standing_welcome`) did reputation's job under a bespoke noun the director vetoed on player surfaces. This is a READ unification plus one new store, deliberately NOT a store migration (strangler ruling in the plan): `getReputationWith` dispatches membership (`member_of.reputation`) → edge (`reputation_with`) → bond (`relates_to.trust`, remapped [-1,1]→[0,1]) → default, and every leg's band word comes from the single `getReputationWord` vocabulary, which is what makes the stores one concept on every surface. The new `reputation_with` edge family (actor → actor|location, required `score`+`lastChangedTick`) fills the two pairs no store covered: agent↔location, and agent↔faction WITHOUT membership — `applyFactionReputationGain` no-ops with `not_a_member`, so a non-member could never earn standing with a community at all. Sparse by construction: minted on first write, decayed toward neutral in phase 6.6 and DELETED once inside `REPUTATION_WITH_PRUNE_EPSILON`, so the sweep is O(edges that exist) and there is no N×M scan. Every consumer ships in the same change, so this is not a write nobody reads (the THR-1154 flaw): the `requiredReputationWith` eligibility gate at both filter sites, the signed opening-leverage term in `computeInitialLeverage` (signed, unlike its bonus-only siblings — standing that has soured is as real as standing earned), and two profile surfaces. Non-vacuous by `src/engine/__tests__/reputation.test.ts` (22 tests: all four dispatch legs in BOTH polarities, priority order between legs, directionality, the cap/clamp/mint/sublocation-resolve write behaviour, decay from both sides, and the prune) — falsified 2-of-22 red with the sublocation resolve reverted — plus `src/components/Game/__tests__/reputationSurfaces.test.tsx` (8 render assertions on the real components, falsified 2-of-8 red with the FactionSheet banding reverted). The first migrated content is the Grateful Kin gratitude beat, whose three bands replaced `apply_condition → standing_welcome` with `reputation_with` deltas and whose four chips now state 'reputation with {target}' — pinned by the corpus and veil suites, which were red on the old noun until updated.
 
 ### `requires-hold-gates-town-keeper-content` — 🟢 LIVE
@@ -2751,10 +2752,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *hold*, *Realm*, *Encounter*
 - **Module:** `src/engine/encounterFilterPipeline.ts`
-- **Production hits:** 16 total — 2 write, 1 read, 13 unclassified
+- **Production hits:** 17 total — 2 write, 1 read, 14 unclassified
 - **Write sites:** `src/data/encounters/crowns-reckoning.ts`, `src/data/encounters/keepers-petition.ts`
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`
-- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/company-drama.ts`, `src/data/faction-encounter-content.ts`, `src/data/realm-content.ts` +8 more
+- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/company-drama.ts`, `src/data/faction-encounter-content.ts`, `src/data/realm-content.ts` +9 more
 - **Verdict:** Verified 2026-09-22: THR-1448. `holdStandingGates.test.ts`: the keeper of the encounter’s Realm is admitted and a stranger in the same town is hidden; a keeper of a *different* Realm is hidden (the encounter’s ground decides); a keeper whose town is in the wilds is hidden; no reader, an unresolvable template id, and a location the map cannot place each fail open for the keeper while the stranger stays hidden; the court’s own rows are untouched. Repeated on a generated world in `holdStandingReach.test.ts`.
 
 ### `resolved-actions-feed-band-kpi` — 🟢 LIVE
@@ -2863,10 +2864,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Daily life*, *Chapter Ledger*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 10 total — 1 write, 4 read, 5 unclassified
+- **Production hits:** 11 total — 1 write, 4 read, 6 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/components/Game/ChapterLedger.tsx`, `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`
-- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/openingReveal.ts`, `src/engine/phaseAttention.ts`, `src/types/chapterRecord.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/openingReveal.ts`, `src/engine/phaseAttention.ts`, `src/engine/views/subjects/personRows.ts`, `src/types/chapterRecord.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE
@@ -3058,10 +3059,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 414 total — 1 write, 1 read, 412 unclassified
+- **Production hits:** 416 total — 1 write, 1 read, 414 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +407 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +409 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3622,9 +3623,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 127 total — 2 write, 3 read, 122 unclassified
+- **Production hits:** 128 total — 2 write, 3 read, 123 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +117 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +118 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 

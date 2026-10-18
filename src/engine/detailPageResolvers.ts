@@ -95,6 +95,14 @@ export interface SectionResolverContext {
   record?: { kind: 'encounter' | 'journey' | 'receipt'; id: string; name?: string };
   /** THR-1876: the content a `content` page describes. */
   contentRef?: ContentRef;
+  /**
+   * THR-1909 (additive): the notices a badge click just revealed — the snapshot the
+   * thread column's *Word of them* shows (THR-935), taken at click time because the click
+   * clears them from the store. Not the live store: what the row tells is what was cleared.
+   * GameView holds it beside `GameState`; the Inspector in the game (THR-1911, S3)
+   * passes it. Absent (the lab, the hover card, no click yet) the row is skipped.
+   */
+  revealedNotices?: { readonly anchorId: string; readonly lines: readonly { readonly message: string; readonly tick: number }[] } | null;
 }
 
 /** A section resolver returns 0 or 1 section. Returning null = "skip this section". */
@@ -394,36 +402,8 @@ const factionAllegiancesResolver: SectionResolver = (ctx) => {
   return section;
 };
 
-const notableCapabilitiesResolver: SectionResolver = (ctx) => {
-  const actor = ctx.graph.getNode(ctx.nodeId);
-  if (!actor) return null;
-  const reaches = actor.properties?.reaches as Record<string, number> | undefined;
-  if (!reaches) return null;
-
-  // Pick reaches >= 0.6 — "notable" in the colloquial sense.
-  const NOTABLE_REACH_THRESHOLD = 0.6;
-  const entries = Object.entries(reaches)
-    .filter(([, v]) => typeof v === 'number' && v >= NOTABLE_REACH_THRESHOLD)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 4);
-  if (entries.length === 0) return null;
-
-  const chips: ChipDescriptor[] = entries.map(([reach, value]) => ({
-    label: reach,
-    flavour: value >= 0.85 ? 'mastery' : value >= 0.7 ? 'strong' : 'capable',
-  }));
-
-  const section: ChipsSection = {
-    kind: 'chips',
-    typeId: 'notable_capabilities',
-    label: 'Notable capabilities',
-    gold: false,
-    tier: 'routine',
-    source: 'notableCapabilitiesResolver',
-    chips,
-  };
-  return section;
-};
+// THR-1909: `notable_capabilities` retired — it read `properties.reaches`, which no actor
+// writes; the person page's `domains` row replaces it (plan § D7.1).
 
 // ─── Item resolvers ───────────────────────────────────────────────────────────
 
@@ -921,7 +901,6 @@ export const ACTOR_RESOLVERS = {
   threads_between_them: threadsBetweenThemResolver,
   recent_encounters: recentEncountersResolver,
   faction_allegiances: factionAllegiancesResolver,
-  notable_capabilities: notableCapabilitiesResolver,
 } satisfies Record<string, SectionResolver>;
 
 export const ITEM_RESOLVERS = {

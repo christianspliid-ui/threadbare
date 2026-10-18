@@ -63,20 +63,24 @@ export function tabsAt(body: readonly DetailSection[], size: InspectorSize): Tab
 }
 
 /**
- * What this size hides that a wider one shows: whole tabs by their label, and single
- * sections of a shown tab by their label. Order follows the table.
+ * What this size hides that a wider one shows. Whole tabs are named by their label —
+ * "More when widened: Chronicle · Chapters" (plan § D5, § D6). Single sections of a shown
+ * tab are named only when no whole tab is hidden: a tab the player cannot reach is the
+ * news, and a line listing every wide-only row beside it stops being one line (THR-1909 —
+ * the person page's wide-only Overview rows). Order follows the table.
  */
 export function hiddenForWidth(body: readonly DetailSection[], size: InspectorSize): string[] {
   const shownTabs = new Set(tabsAt(body, size).map(t => t.id));
-  const out: string[] = [];
+  const tabs: string[] = [];
+  const sections: string[] = [];
   for (const section of body) {
     if (sectionVisibleAt(section, size)) continue;
     if (!WIDER[size].some(s => sectionVisibleAt(section, s))) continue;
     const tab = (section.tab ?? 'overview') as InspectorTabId;
-    const word = shownTabs.has(tab) ? section.label : INSPECTOR_TAB_LABELS[tab];
-    if (!out.includes(word)) out.push(word);
+    const [list, word] = shownTabs.has(tab) ? [sections, section.label] : [tabs, INSPECTOR_TAB_LABELS[tab]];
+    if (!list.includes(word)) list.push(word);
   }
-  return out;
+  return tabs.length > 0 ? tabs : sections;
 }
 
 function Body({ tabs, tabsLabel }: { tabs: TabGroup[]; tabsLabel: string }) {
@@ -87,7 +91,9 @@ function Body({ tabs, tabsLabel }: { tabs: TabGroup[]; tabsLabel: string }) {
   // Law 25: a page whose sections sit in one tab draws no tab bar.
   return (
     <div data-inspector-body="">
-      <Tabs kind="tabs" value={tabs.some(t => t.id === tab) ? tab : tabs[0].id} onChange={setTab} label={tabsLabel}>
+      {/* A tab row never scrolls sideways (THR-1821): the person's seven tabs wrap to a
+          second line in the wide size's body column rather than overflow it (THR-1909). */}
+      <Tabs kind="tabs" value={tabs.some(t => t.id === tab) ? tab : tabs[0].id} onChange={setTab} label={tabsLabel} style={{ flexWrap: 'wrap' }}>
         {tabs.map(t => <Tabs.Tab key={t.id} value={t.id} label={t.label} />)}
         {tabs.map(t => (
           <Tabs.Panel key={t.id} value={t.id}>

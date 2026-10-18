@@ -8,6 +8,7 @@ import { EntityLink } from '../../shared/EntityLink';
 import { bondBasisWord, canonicalBondBasis } from '../../../data/bond-basis';
 import { bondTooltipId } from '../../../data/agent-concept-tooltips';
 import { tooltipResolves } from '../../../engine/tooltipResolver';
+import { DISPOSITION_LABEL_MAP } from '../../../data/person-sheet-words';
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 
@@ -69,13 +70,7 @@ function BondWordChip({ basis }: { basis?: string }) {
 
 // ─── Disposition labels ───────────────────────────────────────────
 
-const DISPOSITION_LABEL_MAP: Record<string, string> = {
-  'tit-for-tat': 'Repays in kind',
-  'grudger': 'Forgives slowly',
-  'pavlov': 'Learns from pain',
-  'always-cooperate': 'Trusting soul',
-  'always-defect': 'Looks out for themselves',
-};
+// DISPOSITION_LABEL_MAP moved to src/data/person-sheet-words.ts (THR-1909).
 
 // ─── Revelation source badge ──────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData, PersonalityContributorDisplay } from '../../../engine/agentDetail';
-import type { CohesionState } from '../../../engine/groups/groupQueries';
+import { COHESION_SENTENCE, rivalsSentence } from '../../../data/person-sheet-words';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import {
   OVERVIEW_GOSSIP_THRESHOLD,
@@ -60,31 +60,8 @@ function godMarkTooltip(reach: string, reachWork: string): string {
   return `You marked them when you bound them as your First. They are better at ${reachWord} work${work}.`;
 }
 
-// ─── Company cohesion prose (THR-74) ──────────────────────────────
-
-/**
- * Cohesion is shown to the player only as a sentence — never `Cohesion: 0.62`
- * (the raw number lives in the DebugPanel Companies tab). The ladder word is
- * woven into a phrase about the company as a whole.
- */
-const COHESION_SENTENCE: Record<CohesionState, string> = {
-  bound: 'Their bond holds fast — they move as one.',
-  holding: 'They hold together, for now.',
-  frayed: 'The bonds between them are beginning to fray.',
-  breaking: 'They are on the verge of parting ways.',
-};
-
-/**
- * Standing rivalries as one sentence (THR-731). Never "Rivals: 2" and never the
- * `since` tick — a grudge is a thing the company carries, so it reads as prose.
- * Beyond two names the list stops naming and starts counting *in words*, because a
- * company that has fought half the world should sound notorious, not tabulated.
- */
-function rivalsSentence(rivals: readonly string[]): string {
-  if (rivals.length === 1) return `There is blood between them and ${rivals[0]}.`;
-  if (rivals.length === 2) return `There is blood between them and both ${rivals[0]} and ${rivals[1]}.`;
-  return `There is blood between them and ${rivals[0]}, ${rivals[1]}, and others besides.`;
-}
+// Company cohesion and rivals sentences moved to src/data/person-sheet-words.ts (THR-1909),
+// shared with the Inspector's person page.
 
 // ─── Knowledge level helpers ──────────────────────────────────────
 

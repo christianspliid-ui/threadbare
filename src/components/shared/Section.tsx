@@ -21,7 +21,15 @@ import {
 } from '../../contexts/DetailPageOpenerContext';
 import { Tooltip } from './Tooltip';
 
-function SectionLabel({ label, gold, tier }: { label: string; gold: boolean; tier?: string }) {
+function SectionLabel({ label, gold, tier, tooltipId }: { label: string; gold: boolean; tier?: string; tooltipId?: string }) {
+  // THR-1909: a label that names a concept explains itself on hover (Law 17).
+  if (tooltipId) {
+    return (
+      <Tooltip id={tooltipId}>
+        <SectionLabel label={label} gold={gold} tier={tier} />
+      </Tooltip>
+    );
+  }
   // Notable / chronicle tiers add a thin gold underline (per plan §5.4). Routine
   // sections render with the default tertiary label.
   const decorate = tier === 'notable' || tier === 'chronicle';
@@ -79,7 +87,7 @@ function ProseSectionRenderer({ section }: { section: ProseSection }) {
   };
   return (
     <div style={{ marginBottom: '20px' }} data-section-shape="prose">
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
       {paragraphs.length === 1 ? (
         <div onClick={handleClick} style={style} dangerouslySetInnerHTML={{ __html: section.prose }} />
       ) : (
@@ -150,7 +158,7 @@ function ChipsSectionRenderer({ section }: { section: ChipsSection }) {
   const open = useDetailPageOpener();
   return (
     <div style={{ marginBottom: '20px' }}>
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
         {section.chips.map((chip, index) => (
           <ChipPill key={`${chip.label}-${index}`} chip={chip} open={open} />
@@ -160,11 +168,36 @@ function ChipsSectionRenderer({ section }: { section: ChipsSection }) {
   );
 }
 
+/** A story list (THR-1909): each entry its when-word, then its line. Not one click target. */
+function EventListRenderer({ section, entries }: { section: EventCardSection; entries: NonNullable<EventCardSection['entries']> }) {
+  return (
+    <div style={{ marginBottom: '20px' }} data-section-shape="event-list">
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+      {entries.length === 0 ? (
+        section.prose && <p style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', margin: 0, fontSize: 'var(--text-sm)' }}>{section.prose}</p>
+      ) : (
+        <ol style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {entries.map((entry, index) => (
+            <li key={`${entry.whenLabel}-${index}`} style={{ fontSize: 'var(--text-sm)', lineHeight: 1.5, minWidth: 0, overflowWrap: 'anywhere' }}>
+              {entry.whenLabel && (
+                <span style={{ color: 'var(--text-tertiary)', fontWeight: 700, marginRight: '6px' }}>{entry.whenLabel}</span>
+              )}
+              <span style={{ color: 'var(--text-secondary)' }}>{entry.prose}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}
+
 function EventCardSectionRenderer({ section }: { section: EventCardSection }) {
   const open = useDetailPageOpener();
-  const clickable = Boolean(open);
+  if (section.entries) return <EventListRenderer section={section} entries={section.entries} />;
+  const eventRef = section.eventRef;
+  const clickable = Boolean(open && eventRef);
   const handleClick = () => {
-    if (clickable && open) open(section.eventRef);
+    if (clickable && open && eventRef) open(eventRef);
   };
   return (
     <div
@@ -190,7 +223,7 @@ function EventCardSectionRenderer({ section }: { section: EventCardSection }) {
         cursor: clickable ? 'pointer' : 'default',
       }}
     >
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
       <div
         style={{
           fontSize: 'var(--text-xs)',
@@ -226,7 +259,7 @@ function PanelSectionRenderer({ section }: { section: PanelSection }) {
 
   return (
     <div style={{ marginBottom: '20px' }}>
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {section.rows.map((row, index) => (
           <div
@@ -287,7 +320,7 @@ function LinksSectionRenderer({ section }: { section: LinksSection }) {
   const groups = section.groups ?? [{ label: '', rows: section.rows, total: section.rows.length }];
   return (
     <div style={{ marginBottom: '20px' }} data-section-shape="links">
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
       {groups.map((group, gi) => (
         <div key={`${group.label}-${gi}`} style={{ marginBottom: '8px' }}>
           {group.label && (
@@ -325,7 +358,7 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
 function CardsSectionRenderer({ section }: { section: CardsSection }) {
   return (
     <div style={{ marginBottom: '20px' }} data-section-shape="cards">
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(10rem, 1fr))', gap: '8px' }}>
         {section.tiles.map((tile, index) => (
           <div
@@ -382,7 +415,7 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
         )}
       </div>
       <div style={{ flex: 1 }}>
-        <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+        <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
         {section.bodyProse && (
           <p style={{ color: 'var(--text-primary)', lineHeight: 1.7, margin: 0, fontSize: '0.9rem' }}>
             {section.bodyProse}
@@ -403,7 +436,7 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
 function TriggersSectionRenderer({ section }: { section: TriggersSection }) {
   return (
     <div style={{ marginBottom: '20px' }}>
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} />
+      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }} data-testid="trigger-block">
         {section.triggers.map((trigger, index) => (
           <div key={`${trigger.condition}-${index}`} style={{ fontSize: '0.8rem' }}>

@@ -7,14 +7,10 @@ import { BACKSTORY_CONSTANTS } from '../../../types/prose';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { elapsedLabel } from '../../../engine/aftermathWords';
+import { LOCKED_STRATUM_TEXT } from '../../../data/person-sheet-words';
 
-// ─── Stratum locked-tier placeholder text ────────────────────────
-
-const LOCKED_TEXT: Record<2 | 3 | 4, string> = {
-  2: 'There are stories {name} shares only with those who have proven their devotion.',
-  3: 'The fears and contradictions within {name} are visible only to a true champion of the divine.',
-  4: 'Only when {name} becomes an aspect of the divine can the full truth be read in their threads.',
-};
+// Locked-stratum lines moved to src/data/person-sheet-words.ts (THR-1909).
+const LOCKED_TEXT = LOCKED_STRATUM_TEXT;
 
 // ─── Component ───────────────────────────────────────────────────
 
