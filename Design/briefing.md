@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 09:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 10:57 local (08:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -49,14 +49,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 23 ready, one in progress.** [The god rail, second slice of the screen frame](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand) merged ([#2474](https://github.com/christianspliid-ui/threadbare/pull/2474)) and is live. The builder is now on [map lenses II: Trouble and Trade](https://linear.app/threadbare/issue/THR-1898/map-lenses-ii-trouble-and-trade-and-the-plain-map-stops-drawing-trade) (run started 07:51 UTC and still active; its edits are in a local worktree, not yet pushed).
+**Backed up: 24 ready, one in progress.** [Map lenses II: Trouble and Trade](https://linear.app/threadbare/issue/THR-1898/map-lenses-ii-trouble-and-trade-and-the-plain-map-stops-drawing-trade) is built; [#2475](https://github.com/christianspliid-ui/threadbare/pull/2475) is set to merge itself once its checks pass. The builder takes the next job after that.
 
 - New and high, waiting: [every army bleeds out within a week and almost none are raised again](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again), [the Inspector in the game](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click), and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
-- Held for your veto: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural) until 18 Oct 13:50 UTC, and [encounters that broker an oath](https://linear.app/threadbare/issue/THR-1944/encounters-that-broker-an-oath-faction-unification-and-the-warlords) until 19 Oct 07:23 UTC.
+- Held for your veto: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural) until 18 Oct 13:50 UTC, [hiring a free company](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays) until 19 Oct 01:35 UTC, and [encounters that broker an oath](https://linear.app/threadbare/issue/THR-1944/encounters-that-broker-an-oath-faction-unification-and-the-warlords) until 19 Oct 07:23 UTC.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time. Engine speed is within normal range (111 ms a tick against the weekly normal of 123).
+- The live site serves the latest main. Main's checks and the scheduled background jobs pass. One PR ([#2475](https://github.com/christianspliid-ui/threadbare/pull/2475)) is waiting on its checks. All 12 scheduled lanes are on time.
+- Engine speed: tick cost 175 ms/tick steady, 43% above the 7-day median (122, 135 rows since e6882c0f); top phase agent_decision, 617 agents. Name the merges between e6882c0f and 07a83918: git log --oneline --merges e6882c0f..07a83918. The same commit measured 111 ms an hour ago, so this is most likely the machine being busy with the builder's checks; the next hour's reading will tell. Executor work, not yours.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run (09:40) reports 553 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job reports 553 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
