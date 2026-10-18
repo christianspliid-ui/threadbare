@@ -20,6 +20,7 @@ import {
 import { resolveAttentionMode } from '../../engine/attentionCadence';
 import { useWarmStart, type AttentionMode } from './hooks/useWarmStart';
 import { canAfford } from '../../engine/influence';
+import { payingSphere } from '../../engine/targetActions';
 import type { UndertakingMomentRecord } from '../../types/strategicAction';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -2738,10 +2739,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const handleMomentDivineAct = useCallback((templateId: string, targetAgentId: string) => {
     const template = getUnifiedTemplateById(templateId);
     if (!template) return { success: false, message: 'No such working.' };
-    const sphere = template.sphereAffinity ?? null;
+    // THR-1977: the same paying sphere the hand prices from — a card with no sphere
+    // of its own pays from the god's primary, never from no pool.
+    const sphere = payingSphere(template, archetype.sphereAlignment.primary);
     // THR-1750: check the price the cast will charge (tier-scaled, then the target's band).
     const essenceCost = dominionScaledEssenceCost(gameState.graph, gameState.ascendantId, template, targetAgentId).cost;
-    if (sphere && !canAfford(gameState.essencePool, sphere, essenceCost)) {
+    if (!canAfford(gameState.essencePool, sphere, essenceCost)) {
       return { success: false, message: `Not enough ${sphere} essence.` };
     }
     const cast = preparePlayerCast({
@@ -2764,7 +2767,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       },
     }));
     return { success: true, message: `${template.name} is cast. It lands on the next checkpoint.` };
-  }, [gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.tick, gameState.seed, runtime, setGameState]);
+  }, [gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.tick, gameState.seed, runtime, setGameState, archetype.sphereAlignment.primary]);
 
   // ── Follow affordance (THR-1299 slice 4) — one state, two surfaces ──
   // The JourneyTab header and the EncounterVeil context strip both render the

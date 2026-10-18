@@ -26,7 +26,7 @@ import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastD
 import { castOpensRite } from '../../../engine/threadingRite';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { actionBlockedReason } from '../../../data/action-card-display';
-import { buildCastReceipt } from '../hooks/castReceipt';
+import { buildCastReceipt, buildRitePendingReceipt } from '../hooks/castReceipt';
 
 /** The drawer's Meet The First slot id, kept so the card reads the same everywhere. */
 export const MEET_THE_FIRST_SLOT_ID = 'meet_the_first';
@@ -110,16 +110,15 @@ export function useCastOnTarget(deps: CastOnTargetDeps): (actionId: string, targ
       const targetName = targetId === gameState.ascendantId ? null : read.ctx.displayName;
       const message = buildCastReceipt(template, targetName).message;
       const opensRite = target.kind === 'agent' && castOpensRite(gameState.graph, gameState.ascendantId, templateId, targetId);
-      if (!opensRite) {
-        pushToast({
-          id: `toast_cast_${Date.now()}`,
-          message,
-          sphere,
-          count: 1,
-          createdTick: gameState.tick,
-          expiresAt: Date.now() + CAST_TOAST_MS,
-        });
-      }
+      // THR-1977: a Rite-opening cast still answers at once — the pending line.
+      pushToast({
+        id: `toast_cast_${Date.now()}`,
+        message: opensRite ? buildRitePendingReceipt(template, targetName).message : message,
+        sphere,
+        count: 1,
+        createdTick: gameState.tick,
+        expiresAt: Date.now() + CAST_TOAST_MS,
+      });
       const hex = castHexOf(gameState, target, targetId);
       if (particleBurst && hex) particleBurst(hex.col, hex.row, getSphereColor(sphere));
 

@@ -62,3 +62,21 @@ export function buildCastReceipt(template: ReceiptTemplate, targetName: string |
 
   return { title, body, message: `${title}. ${body}` };
 }
+
+/** What the pending-bind line says lands next (THR-1977). */
+export const CAST_RECEIPT_RITE_PENDING = 'The thread is forming. It takes hold in a moment.';
+
+/**
+ * The dispatch-time line for a cast that opens the Rite of the Thread (THR-1977).
+ *
+ * The Rite tells the bind itself (PC-5), so the full receipt is skipped for this
+ * cast — but the player still needs an answer the instant they play the card, or
+ * the cast reads as a misclick. This names the card and the mortal, and says the
+ * thread lands shortly; it does not tell the bind.
+ */
+export function buildRitePendingReceipt(template: ReceiptTemplate, targetName: string | null | undefined): CastReceipt {
+  const title = template.spellName ?? template.name;
+  const target = targetName === null ? 'yourself' : (targetName?.trim() || CAST_RECEIPT_UNNAMED_TARGET);
+  const body = `You reach for ${target}. ${CAST_RECEIPT_RITE_PENDING}`;
+  return { title, body, message: `${title}. ${body}` };
+}

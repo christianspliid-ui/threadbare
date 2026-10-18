@@ -283,6 +283,19 @@ interface FilterCounts {
  * Caps output at TARGET_ACTION_CONSTANTS.MAX_SLOTS.
  */
 /**
+ * The pool a player cast is priced from and charged from (THR-1977): the card's own
+ * sphere, else the god's primary. One resolver for every surface — the drawer slot,
+ * the hand, the god rail, the moment act and the debug lever — so a card the hand
+ * prices "Energy · 10" is charged 10 from Energy, never from no pool at all.
+ */
+export function payingSphere(
+  template: Pick<UnifiedActionTemplate, 'sphereAffinity'>,
+  primarySphere: SphereName,
+): SphereName {
+  return (template.sphereAffinity ?? primarySphere) as SphereName;
+}
+
+/**
  * The reach gate (THR-503) as one predicate (THR-1811): a card requiring a reach
  * outside the god's permanent two is hidden for the whole run. The drawer and the
  * world's offering (`godProgression.offerableCards`) both read this, so the offering
@@ -495,7 +508,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     const dominionBand = castTargetBand(graph, dominionAscendantId, target.nodeId);
     const parEssenceCost = tierScaledEssenceCost(template, target.properties);
     const essenceCost = dominionScaledCost(parEssenceCost, dominionBand);
-    const sphere = template.sphereAffinity ?? primarySphere;
+    const sphere = payingSphere(template, primarySphere);
     const currentEssence = (pool as Record<string, number>)[sphere] ?? 0;
     const canAffordEssence = essenceCost === 0 || currentEssence >= essenceCost;
 
@@ -585,7 +598,11 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       // THR-1750: the Foreign price, so the card can show "cheaper here" against it.
       // Only for a priced card aimed at a world object — a free card has no chip.
       ...(parEssenceCost > 0 && target.nodeId ? { dominionParCost: parEssenceCost } : {}),
-      sphere: template.sphereAffinity ?? null,
+      // THR-1977: the pool the price was judged against is the pool the cast is
+      // charged from. A card with no `sphereAffinity` used to carry `null` here, and
+      // `commitPlayerCast` charges nothing for a null sphere — Observe and Agent
+      // Thread were priced "Energy · 5 / 10" and cast for free.
+      sphere,
       interventionType: null,
       rangeStatus,
       hexDistance: hexDist,

@@ -43,6 +43,7 @@ import {
   countWords,
 } from '../../data/frame-content';
 import { getFirstId } from '../meetingEncounter';
+import { payingSphere } from '../targetActions';
 import {
   selectAscendantIdentityView,
   selectCovenantRows,
@@ -193,7 +194,7 @@ export function buildHandCard(
   template: UnifiedActionTemplate,
   primarySphere: SphereName,
 ): HandCardVM {
-  const paySphere = (template.sphereAffinity ?? primarySphere) as SphereName;
+  const paySphere = payingSphere(template, primarySphere);
   const paySphereWord = sphereWord(paySphere);
   const par = dominionScaledEssenceCost(state.graph, state.ascendantId, template, undefined);
   const sovereign = dominionScaledCost(par.base, 'sovereign');
