@@ -24,9 +24,12 @@ import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS, buildHexGeometry } from './HexFillMesh';
 import type { HexLensVM, LensMark } from '../../../engine/views/lenses/lensTypes';
-import { MAP_MARKERS, type MapMarkerDraw, type MapMarkerKind } from '../../../data/map-markers';
+import { MAP_MARKERS, LENS_BADGE_PX, type MapMarkerDef, type MapMarkerDraw, type MapMarkerKind, type ZoomBand } from '../../../data/map-markers';
 import { DOMINION_DIM_COLOR, DOMINION_DIM_FOREIGN } from '../../../data/dominion-ui-content';
 import { lensToneColor, LENS_FALLBACK_INK } from './lensInk';
+import { buildMapIconTexture } from '../locations/locationIconTextures';
+import { iconShape } from '../../shared/iconShape';
+import { createTradeRouteLayer } from './TradeRouteMesh';
 
 /** The one "not in focus" dim (THR-1830 § 1): Dominion's Foreign dim, by import. */
 export const LENS_DIM_ALPHA = DOMINION_DIM_FOREIGN;
@@ -40,6 +43,27 @@ export const LENS_ARROW_HEAD_LEN = 0.45;
 export const LENS_ARROW_HEAD_HALF_WIDTH = 0.25;
 /** The fallback badge's radius, as a share of the hex radius. */
 export const LENS_FALLBACK_BADGE_RADIUS = 0.22;
+
+/** Badges drawn per hex along its lower edge; the hover lists every kind (THR-1898). NFP #1. */
+export const LENS_BADGES_PER_HEX = 2;
+/** Where badges sit: below the hex centre, and apart from each other, as shares of the hex radius. */
+export const LENS_BADGE_DROP = 0.5;
+export const LENS_BADGE_SPACING = 0.62;
+/** A badge's world size before the first zoom update, as a share of the hex radius. */
+export const LENS_BADGE_INITIAL_SCALE = 0.7;
+/** The badge's ground: a dark disc with a ring in the mark's ink. */
+export const LENS_BADGE_DISC = '#14100c';
+export const LENS_BADGE_RING_WIDTH = 0.07;
+/** Canvas size of a badge texture. */
+export const LENS_BADGE_TEXTURE_SIZE = 128;
+/** The carved icon's inset inside the badge disc. */
+export const LENS_BADGE_ICON_INSET = 0.24;
+/** The omen ring: dash, gap and opacity. */
+export const LENS_OMEN_RING_DASH = 3;
+export const LENS_OMEN_RING_GAP = 3;
+export const LENS_OMEN_RING_OPACITY = 0.85;
+/** Bands that draw badges (Trouble's marks and Trade's mid-road badge). */
+export const LENS_BADGE_BANDS: readonly ZoomBand[] = ['regional', 'heroLocal'];
 
 /** The scene-graph name prefix of a lens group — `snapshotScene().layersActive` lists `lens:<id>`. */
 export const HEX_LENS_LAYER_PREFIX = 'lens:';
@@ -65,6 +89,9 @@ interface RenderCtx {
   group: THREE.Group;
   disposables: Array<{ dispose(): void }>;
   agentStepIds: Set<string>;
+  /** Badge slots per hex: how many badges a hex will draw, and how many it has drawn. */
+  badgeSlots: Map<string, { total: number; used: number }>;
+  def: MapMarkerDef | undefined;
 }
 
 type MarkRenderer = (mark: LensMark, ctx: RenderCtx) => boolean;
@@ -129,6 +156,137 @@ function drawAgentStep(mark: LensMark, ctx: RenderCtx): boolean {
   return true;
 }
 
+// ── Carved badges (THR-1898) ──────────────────────────────────────────
+
+/** One texture per icon and ink, built once and shared by every lens layer. */
+const badgeTextureCache = new Map<string, THREE.CanvasTexture>();
+
+function badgeTexture(icon: string, ink: string): THREE.CanvasTexture {
+  const key = `${icon}|${ink}`;
+  const hit = badgeTextureCache.get(key);
+  if (hit) return hit;
+  const tex = buildMapIconTexture(iconShape(icon), {
+    size: LENS_BADGE_TEXTURE_SIZE,
+    fill: ink,
+    outline: LENS_BADGE_DISC,
+    outlineWidthFraction: 0.02,
+  }, {
+    inset: LENS_BADGE_ICON_INSET,
+    underlay: (ctx, size) => {
+      const r = size / 2;
+      const ring = size * LENS_BADGE_RING_WIDTH;
+      ctx.beginPath();
+      ctx.arc(r, r, r - ring / 2, 0, Math.PI * 2);
+      ctx.fillStyle = LENS_BADGE_DISC;
+      ctx.fill();
+      ctx.lineWidth = ring;
+      ctx.strokeStyle = ink;
+      ctx.stroke();
+    },
+  });
+  tex.colorSpace = THREE.SRGBColorSpace;
+  badgeTextureCache.set(key, tex);
+  return tex;
+}
+
+/** The slot a badge takes on its hex, or null when the hex already shows LENS_BADGES_PER_HEX. */
+function takeBadgeSlot(ctx: RenderCtx, hexKey: string): { x: number; y: number } | null {
+  const p = worldOf(hexKey);
+  if (!p) return null;
+  const slot = ctx.badgeSlots.get(hexKey) ?? { total: 1, used: 0 };
+  if (slot.used >= LENS_BADGES_PER_HEX) return null;
+  const shown = Math.min(slot.total, LENS_BADGES_PER_HEX);
+  const size = HEX_CONSTANTS.HEX_SIZE;
+  const x = p.x + (slot.used - (shown - 1) / 2) * size * LENS_BADGE_SPACING;
+  slot.used += 1;
+  ctx.badgeSlots.set(hexKey, slot);
+  return { x, y: p.y - size * LENS_BADGE_DROP };
+}
+
+/** A carved-icon badge sprite at a position, sized by the zoom update (screen-fixed). */
+function addBadgeSprite(ctx: RenderCtx, kind: string, icon: string, ink: string, at: { x: number; y: number }): void {
+  const mat = new THREE.SpriteMaterial({ map: badgeTexture(icon, ink), transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  const s = HEX_CONSTANTS.HEX_SIZE * LENS_BADGE_INITIAL_SCALE;
+  sprite.scale.set(s, s, 1);
+  sprite.position.set(at.x, at.y, LAYER_Z.LENS_MARKS);
+  sprite.renderOrder = RENDER_ORDER.LENS_MARKS;
+  sprite.raycast = noRaycast;
+  sprite.userData.lensMark = kind;
+  sprite.userData.lensBadge = true;
+  ctx.group.add(sprite);
+  ctx.disposables.push(mat);
+}
+
+/** Trouble's badge: the kind's carved icon on a dark disc ringed in the mark's ink. */
+function drawCarvedBadge(mark: LensMark, ctx: RenderCtx): boolean {
+  const icon = ctx.def?.icon;
+  if (!icon) return drawBadge(mark, ctx);
+  const at = takeBadgeSlot(ctx, mark.hexKey);
+  if (!at) return true; // the hex already shows its badges; the hover lists this kind
+  addBadgeSprite(ctx, mark.kind, icon, lensToneColor(mark.tone), at);
+  return true;
+}
+
+/** The omen: a dotted ring round its reach, and its badge at the centre hex. */
+function drawOmenRing(mark: LensMark, ctx: RenderCtx): boolean {
+  const p = worldOf(mark.hexKey);
+  if (!p) return false;
+  const radius = Math.max(0, mark.radius ?? 1);
+  // Hex centres sit HEX_SIZE·√3 apart; the ring runs half a hex beyond the outermost centre.
+  const ringR = (radius + 0.5) * HEX_CONSTANTS.HEX_SIZE * Math.sqrt(3);
+  const pts: THREE.Vector3[] = [];
+  const segments = 64;
+  for (let i = 0; i <= segments; i++) {
+    const a = (i / segments) * Math.PI * 2;
+    pts.push(new THREE.Vector3(p.x + Math.cos(a) * ringR, p.y + Math.sin(a) * ringR, LAYER_Z.LENS_ARROWS));
+  }
+  const color = new THREE.Color().setStyle(lensToneColor(mark.tone), THREE.SRGBColorSpace);
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const mat = new THREE.LineDashedMaterial({
+    color, dashSize: LENS_OMEN_RING_DASH, gapSize: LENS_OMEN_RING_GAP, transparent: true, opacity: LENS_OMEN_RING_OPACITY, depthTest: false,
+  });
+  const ring = new THREE.Line(geo, mat);
+  ring.computeLineDistances();
+  ring.renderOrder = RENDER_ORDER.LENS_ARROWS;
+  ring.raycast = noRaycast;
+  ring.userData.lensMark = mark.kind;
+  ctx.group.add(ring);
+  ctx.disposables.push(geo, mat);
+  const icon = ctx.def?.icon;
+  const at = icon ? takeBadgeSlot(ctx, mark.hexKey) : null;
+  if (icon && at) addBadgeSprite(ctx, mark.kind, icon, lensToneColor(mark.tone), at);
+  return true;
+}
+
+/** Trade's road: the route line (TradeRouteMesh, its look unchanged) and one badge mid-road. */
+function drawRoad(mark: LensMark, ctx: RenderCtx): boolean {
+  if (!mark.toHexKey) return false;
+  const [fc, fr] = mark.hexKey.split(',').map(Number);
+  const [tc, tr] = mark.toHexKey.split(',').map(Number);
+  if (![fc, fr, tc, tr].every(Number.isFinite)) return false;
+  const routes = createTradeRouteLayer([{
+    id: `${mark.hexKey}>${mark.toHexKey}`,
+    from: { col: fc, row: fr },
+    to: { col: tc, row: tr },
+    volume: mark.weight ?? 1,
+    threatened: mark.tone === 'threat',
+    goods: [],
+    carriesStaple: false,
+  }]);
+  routes.group.traverse(o => { o.raycast = noRaycast; });
+  routes.group.userData.lensMark = mark.kind;
+  ctx.group.add(routes.group);
+  ctx.disposables.push(routes);
+  const icon = ctx.def?.icon;
+  const a = worldOf(mark.hexKey);
+  const b = worldOf(mark.toHexKey);
+  if (icon && a && b) {
+    addBadgeSprite(ctx, mark.kind, icon, lensToneColor(mark.tone), { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  }
+  return true;
+}
+
 /** The neutral badge: a disc in the lens ink at the hex's lower edge. Also the fallback. */
 function drawBadge(mark: LensMark, ctx: RenderCtx, color = lensToneColor(mark.tone)): boolean {
   const p = worldOf(mark.hexKey);
@@ -147,16 +305,15 @@ function drawBadge(mark: LensMark, ctx: RenderCtx, color = lensToneColor(mark.to
 }
 
 /**
- * One renderer per draw kind (total). `badge`, `omenRing` and `road` get their own
- * looks with Trouble and Trade (THR-1898); until then they draw the neutral badge.
- * Plain-map draw kinds never reach a lens layer and draw nothing.
+ * One renderer per draw kind (total). Plain-map draw kinds never reach a lens layer
+ * and draw nothing.
  */
 export const LENS_MARK_RENDERERS: Record<MapMarkerDraw, MarkRenderer | null> = {
   agentStep: drawAgentStep,
   arrow: drawArrow,
-  badge: (m, c) => drawBadge(m, c),
-  omenRing: (m, c) => drawBadge(m, c),
-  road: (m, c) => drawBadge(m, c),
+  badge: drawCarvedBadge,
+  omenRing: drawOmenRing,
+  road: drawRoad,
   portrait: null,
   dot: null,
   pip: null,
@@ -169,6 +326,27 @@ function warnOnce(kind: string, why: string): void {
   if (warnedKinds.has(kind)) return;
   warnedKinds.add(kind);
   console.warn(`[HexLensLayer] mark kind '${kind}' ${why}; drew the fallback badge (Law 58: add it to MAP_MARKERS)`);
+}
+
+/**
+ * Follow the zoom (THR-1898): lines and rings show in the bands their `MAP_MARKERS` row
+ * sizes; badges show at regional and hero-local and keep `LENS_BADGE_PX` on screen
+ * (world scale = px / k). Called on every zoom change.
+ */
+export function updateHexLensZoom(layer: Pick<HexLensLayer, 'group'>, band: ZoomBand, k: number): void {
+  const badgeVisible = LENS_BADGE_BANDS.includes(band);
+  const badgeWorld = k > 0 ? LENS_BADGE_PX / k : HEX_CONSTANTS.HEX_SIZE * LENS_BADGE_INITIAL_SCALE;
+  for (const child of layer.group.children) {
+    const kind = child.userData.lensMark as MapMarkerKind | undefined;
+    if (!kind || !(kind in MAP_MARKERS)) continue;
+    if (child.userData.lensBadge) {
+      child.visible = badgeVisible;
+      child.scale.set(badgeWorld, badgeWorld, 1);
+      continue;
+    }
+    const def = MAP_MARKERS[kind];
+    child.visible = def.sizePx === 'mesh' || def.sizePx[band] !== null;
+  }
 }
 
 /** Build the lens group from its prepared view model. Never throws on missing data. */
@@ -213,9 +391,20 @@ export function createHexLensLayer(vm: HexLensVM, tiles: readonly LensTile[]): H
   }
 
   // ── Marks ──
-  const ctx: RenderCtx = { group, disposables, agentStepIds };
+  const lookup = (kind: string) => (MAP_MARKERS as Record<string, MapMarkerDef | undefined>)[kind];
+  // Badge slots: how many badges each hex will draw, so a lone badge sits centred.
+  const badgeSlots = new Map<string, { total: number; used: number }>();
   for (const mark of vm.marks) {
-    const def = (MAP_MARKERS as Record<string, (typeof MAP_MARKERS)[MapMarkerKind] | undefined>)[mark.kind];
+    const draw = lookup(mark.kind)?.draw;
+    if (draw !== 'badge' && draw !== 'omenRing') continue;
+    const slot = badgeSlots.get(mark.hexKey) ?? { total: 0, used: 0 };
+    slot.total += 1;
+    badgeSlots.set(mark.hexKey, slot);
+  }
+  const ctx: RenderCtx = { group, disposables, agentStepIds, badgeSlots, def: undefined };
+  for (const mark of vm.marks) {
+    const def = lookup(mark.kind);
+    ctx.def = def;
     const renderer = def ? LENS_MARK_RENDERERS[def.draw] : null;
     let drawn = false;
     try {

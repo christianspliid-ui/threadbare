@@ -41,6 +41,14 @@ export interface LensMark {
   tone: LensMarkTone;
   /** Roads only: the route's volume, read for line width; never rendered as text. */
   weight?: number;
+  /** Omen rings only: the reach in hexes (THR-1898). */
+  radius?: number;
+}
+
+/** A note after the legend head that carries its own tooltip — Trouble's "Doom: Signs". */
+export interface LensLegendNote {
+  text: string;
+  tooltipId: string;
 }
 
 /** The view model of every lens drawn by the generic hex layer (all lenses but Dominion). */
@@ -51,7 +59,7 @@ export interface HexLensVM {
   marks: LensMark[];
   /** One line per thing on the hex, at most LENS_HOVER_MAX_LINES (an overflow line counts). */
   hover: Record<LensHexKey, LensLine[]>;
-  legend: { head: string; lines: string[] };
+  legend: { head: string; lines: string[]; headNote?: LensLegendNote };
   /** Shown in the legend when the lens has nothing to light. */
   emptyLine: string | null;
 }

@@ -10,7 +10,7 @@
  * here, one selector and its marker rows — it writes no layer code.
  *
  * Keys `1`–`5` are reserved for lenses (THR-1831); `5` stays unbound. Trouble (`3`)
- * and Trade (`4`) join in Lenses II (THR-1898).
+ * and Trade (`4`) joined in Lenses II (THR-1898).
  *
  * Named test: `src/data/__tests__/mapLenses.coverage.test.ts`.
  */
@@ -21,10 +21,10 @@ import {
   DOMINION_LEGEND_LINES,
   DOMINION_TOOLTIP_IDS,
 } from './dominion-ui-content';
-import { THREADS_LENS_WORDS } from './view-content';
+import { THREADS_LENS_WORDS, TROUBLE_LENS_WORDS, TRADE_LENS_WORDS } from './view-content';
 
 /** The closed union of lens ids — grows one member per row. */
-export type MapLensId = 'dominion' | 'threads';
+export type MapLensId = 'dominion' | 'threads' | 'trouble' | 'trade';
 
 /**
  * Which layer family draws a lens. `'dominion'` is THR-1750's own layer, reused
@@ -63,6 +63,22 @@ export const MAP_LENSES: readonly MapLensDef[] = [
     key: '2',
     tooltipId: 'ui.lens.threads',
     legend: THREADS_LENS_WORDS.legend,
+    layer: 'hex',
+  },
+  {
+    id: 'trouble',
+    label: TROUBLE_LENS_WORDS.label,
+    key: '3',
+    tooltipId: 'ui.lens.trouble',
+    legend: TROUBLE_LENS_WORDS.legend,
+    layer: 'hex',
+  },
+  {
+    id: 'trade',
+    label: TRADE_LENS_WORDS.label,
+    key: '4',
+    tooltipId: 'ui.lens.trade',
+    legend: TRADE_LENS_WORDS.legend,
     layer: 'hex',
   },
 ];

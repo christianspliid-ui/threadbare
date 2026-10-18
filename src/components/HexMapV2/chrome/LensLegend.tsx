@@ -12,10 +12,13 @@ import { memo } from 'react';
 import { Panel } from '../../shared/Panel';
 import { Tooltip } from '../../shared/Tooltip';
 import type { MapLensDef } from '../../../data/map-lenses';
-import { legendEntriesFor } from '../../../data/map-markers';
+import { legendMarksFor } from '../../../data/map-markers';
+import { Icon } from '../../shared/Icon';
+import { isIconName } from '../../shared/iconShape';
 import { DOMINION_BAND_WORDS } from '../../../data/dominion-content';
 import { DOMINION_LEGEND_ORDER, DOMINION_LEGEND_MAX_HEIGHT_PX, dominionBandTooltipId } from '../../../data/dominion-ui-content';
-import { lensToneColor } from '../scene/lensInk';
+import { legendInkColor } from '../scene/lensInk';
+import type { LensLegendNote } from '../../../engine/views/lenses/lensTypes';
 
 /** Legend card limit — Dominion's, by import, so the value lives once (THR-1830 § 3). */
 export const LENS_LEGEND_MAX_HEIGHT_PX = DOMINION_LEGEND_MAX_HEIGHT_PX;
@@ -28,6 +31,8 @@ const LENS_LEGEND_SWATCH_PX = 10;
 
 export interface HexLensLegendView {
   head: string;
+  /** A note after the head with its own tooltip — Trouble's "Doom: Signs" (THR-1898). */
+  headNote?: LensLegendNote | null;
   lines: readonly string[];
   emptyLine: string | null;
 }
@@ -41,7 +46,7 @@ export interface LensLegendProps {
 }
 
 export const LensLegend = memo(function LensLegend({ lens, bandColors, hexLegend }: LensLegendProps) {
-  const marks = legendEntriesFor(lens.id);
+  const marks = legendMarksFor(lens.id);
   return (
     <Panel
       level="panel"
@@ -80,6 +85,14 @@ export const LensLegend = memo(function LensLegend({ lens, bandColors, hexLegend
         <>
           <div data-testid="map-lens-legend-head" style={{ color: 'var(--text-primary)', fontWeight: 700 }}>
             {hexLegend?.head ?? lens.label}
+            {hexLegend?.headNote && (
+              <>
+                {' · '}
+                <Tooltip id={hexLegend.headNote.tooltipId}>
+                  <span data-testid="map-lens-legend-head-note">{hexLegend.headNote.text}</span>
+                </Tooltip>
+              </>
+            )}
           </div>
           {(hexLegend?.lines ?? lens.legend).map(line => <div key={line}>{line}</div>)}
           {hexLegend?.emptyLine && (
@@ -87,19 +100,26 @@ export const LensLegend = memo(function LensLegend({ lens, bandColors, hexLegend
           )}
           {marks.length > 0 && (
             <div data-testid="map-lens-legend-marks" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 6 }}>
-              {marks.map(entry => (
+              {marks.map(({ entry, icon, ink }) => (
                 <Tooltip key={`${entry.word}-${entry.tooltipId}`} id={entry.tooltipId}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                    <span
-                      aria-hidden="true"
-                      style={{
-                        width: LENS_LEGEND_SWATCH_PX,
-                        height: LENS_LEGEND_SWATCH_PX,
-                        borderRadius: '50%',
-                        background: lensToneColor(entry.tone),
-                        flexShrink: 0,
-                      }}
-                    />
+                  <span data-legend-mark={entry.word} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    {/* THR-1898: a mark with a carved shape shows that shape in its ink, as the map draws it. */}
+                    {icon && isIconName(icon) ? (
+                      <span style={{ display: 'inline-flex', color: legendInkColor(entry.tone, ink), flexShrink: 0 }}>
+                        <Icon name={icon} size="floor" decorative />
+                      </span>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: LENS_LEGEND_SWATCH_PX,
+                          height: LENS_LEGEND_SWATCH_PX,
+                          borderRadius: '50%',
+                          background: legendInkColor(entry.tone, ink),
+                          flexShrink: 0,
+                        }}
+                      />
+                    )}
                     <span style={{ color: 'var(--text-primary)' }}>{entry.word}</span>
                   </span>
                 </Tooltip>

@@ -12,13 +12,15 @@
  */
 import type { HexTile } from '../../../types';
 import type { MapLensId, MapLensLayerKind } from '../../../data/map-lenses';
-import { THREADS_LENS_WORDS, LENS_VIEW_WORDS } from '../../../data/view-content';
+import { THREADS_LENS_WORDS, TROUBLE_LENS_WORDS, TRADE_LENS_WORDS, LENS_VIEW_WORDS } from '../../../data/view-content';
 import { ensureDominionProjection } from '../../simulationRuntime';
 import { dominionLensVM, godPrimarySphere, type DominionLensVM } from '../../dominionViewModels';
 import type { ViewSelector } from '../readView';
 import type { ViewContext } from '../viewContext';
 import { emptyHexLensVM, type HexLensVM } from './lensTypes';
 import { buildThreadsLens } from './threadsLens';
+import { buildTroubleLens } from './troubleLens';
+import { buildTradeLens } from './tradeLens';
 
 export type LensViewId = 'dominion';
 
@@ -90,6 +92,18 @@ export const HEX_LENS_SELECTORS: Record<HexLensId, HexLensEntry> = {
     build: buildThreadsLens,
     head: THREADS_LENS_WORDS.legendHead,
     lines: THREADS_LENS_WORDS.legend,
+  },
+  trouble: {
+    layer: 'hex',
+    build: buildTroubleLens,
+    head: TROUBLE_LENS_WORDS.legendHead,
+    lines: TROUBLE_LENS_WORDS.legend,
+  },
+  trade: {
+    layer: 'hex',
+    build: buildTradeLens,
+    head: TRADE_LENS_WORDS.legendHead,
+    lines: TRADE_LENS_WORDS.legend,
   },
 };
 

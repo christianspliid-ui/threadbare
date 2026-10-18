@@ -9,8 +9,11 @@
  *
  * Declaration order is legend order: a lens legend lists the `legend` entries of
  * every row whose `legendIn` names that lens, in the order the rows appear here.
- * Lens rows (medallion, destination, unrest, strife, scheme, drain, omen, lair,
- * road) join with their lenses (THR-1878 Lenses I, THR-1898 Lenses II).
+ * Lens rows join with their lenses: medallion and destination (THR-1878 Lenses I);
+ * unrest, strife, scheme, drain, omen, lair and road (THR-1898 Lenses II).
+ *
+ * `icon` is an icon registry name (`src/data/icons/iconRegistry.ts`), read through
+ * `iconShape()` by the map's one icon texture builder.
  *
  * Named test: `src/data/__tests__/mapMarkers.coverage.test.ts`.
  */
@@ -68,7 +71,22 @@ export type MapMarkerKind =
   | 'battle'
   | 'siege'
   | 'medallion'
-  | 'destination';
+  | 'destination'
+  | 'unrest'
+  | 'strife'
+  | 'scheme'
+  | 'drain'
+  | 'omen'
+  | 'lair'
+  | 'road';
+
+/** Badge icon size at regional and hero-local (THR-1834: a lone icon is 34 px). NFP #1. */
+export const LENS_BADGE_PX = 34;
+
+/** A Trouble badge: hidden far out, `LENS_BADGE_PX` at regional and hero-local. */
+const TROUBLE_BADGE_SIZES: Record<ZoomBand, number | null> = {
+  fullWorld: null, continental: null, regional: LENS_BADGE_PX, heroLocal: LENS_BADGE_PX,
+};
 
 export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
   /** A mortal the map draws who is not threaded (a group); faction colour. */
@@ -129,15 +147,15 @@ export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
     legendIn: [],
     labelObstacle: 'never',
   },
-  /** A field battle. Joins the Trouble legend when Lenses II adds 'trouble'. */
+  /** A field battle: the carved crossed swords (THR-1898). Shown in the Trouble legend. */
   battle: {
     lens: null,
     draw: 'sprite',
     sizePx: 'mesh',
-    icon: null,
+    icon: 'battle',
     ink: 'battle',
     legend: [{ word: 'Battle', tooltipId: 'ui.battle' }],
-    legendIn: [],
+    legendIn: ['trouble'],
     labelObstacle: 'never',
   },
   /** A siege. The tooltip `ui.siege` reads "Under siege": it names the town's state. */
@@ -145,10 +163,10 @@ export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
     lens: null,
     draw: 'sprite',
     sizePx: 'mesh',
-    icon: null,
+    icon: 'siege',
     ink: 'siege',
     legend: [{ word: 'Siege', tooltipId: 'ui.siege' }],
-    legendIn: [],
+    legendIn: ['trouble'],
     labelObstacle: 'never',
   },
   /**
@@ -181,6 +199,94 @@ export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
     legendIn: ['threads'],
     labelObstacle: 'never',
   },
+  /**
+   * Trouble lens (THR-1898): a Location here is Lawless, or the hex's mood (the
+   * survey's average) is agitated or worse. Every Trouble badge is a dark disc with a
+   * red ring and the kind's carved icon, in the doom ink, along the hex's lower edge.
+   */
+  unrest: {
+    lens: 'trouble',
+    draw: 'badge',
+    sizePx: TROUBLE_BADGE_SIZES,
+    icon: 'unrest',
+    ink: 'trouble',
+    legend: [{ word: 'Unrest', tooltipId: 'ui.lens.mark.unrest' }],
+    legendIn: ['trouble'],
+    labelObstacle: 'never',
+  },
+  /** Trouble: the conflict pulse, tense or volatile. */
+  strife: {
+    lens: 'trouble',
+    draw: 'badge',
+    sizePx: TROUBLE_BADGE_SIZES,
+    icon: 'strife',
+    ink: 'trouble',
+    legend: [{ word: 'Strife', tooltipId: 'ui.lens.mark.strife' }],
+    legendIn: ['trouble'],
+    labelObstacle: 'never',
+  },
+  /** Trouble: a rival scheme has materialised at a place here. */
+  scheme: {
+    lens: 'trouble',
+    draw: 'badge',
+    sizePx: TROUBLE_BADGE_SIZES,
+    icon: 'scheme',
+    ink: 'trouble',
+    legend: [{ word: 'Scheme', tooltipId: 'ui.lens.mark.scheme' }],
+    legendIn: ['trouble'],
+    labelObstacle: 'never',
+  },
+  /** Trouble: a rival is bleeding one of the god's essence sources here. */
+  drain: {
+    lens: 'trouble',
+    draw: 'badge',
+    sizePx: TROUBLE_BADGE_SIZES,
+    icon: 'drain',
+    ink: 'trouble',
+    legend: [{ word: 'Drain', tooltipId: 'ui.lens.mark.drain' }],
+    legendIn: ['trouble'],
+    labelObstacle: 'never',
+  },
+  /** Trouble: a local omen — the dotted ring of its reach, and its badge at the centre hex. */
+  omen: {
+    lens: 'trouble',
+    draw: 'omenRing',
+    sizePx: { fullWorld: null, continental: 2, regional: LENS_BADGE_PX, heroLocal: LENS_BADGE_PX },
+    icon: 'omen',
+    ink: 'trouble',
+    legend: [{ word: 'Omen', tooltipId: 'ui.lens.mark.omen' }],
+    legendIn: ['trouble'],
+    labelObstacle: 'never',
+  },
+  /** Trouble: an undefeated lair. */
+  lair: {
+    lens: 'trouble',
+    draw: 'badge',
+    sizePx: TROUBLE_BADGE_SIZES,
+    icon: 'place-lair',
+    ink: 'trouble',
+    legend: [{ word: 'Lair', tooltipId: 'ui.lens.mark.lair' }],
+    legendIn: ['trouble'],
+    labelObstacle: 'never',
+  },
+  /**
+   * Trade lens (THR-1898): a known trade road — the route line (caravan gold, red when
+   * threatened, width from its volume) and one badge mid-road with the Trade shape.
+   * One legend entry per tone.
+   */
+  road: {
+    lens: 'trade',
+    draw: 'road',
+    sizePx: { fullWorld: 2, continental: 2, regional: LENS_BADGE_PX, heroLocal: LENS_BADGE_PX },
+    icon: 'trade',
+    ink: 'caravan',
+    legend: [
+      { word: 'Trade road', tooltipId: 'ui.lens.mark.road', tone: 'caravan' },
+      { word: 'Threatened road', tooltipId: 'ui.lens.mark.roadThreatened', tone: 'threat' },
+    ],
+    legendIn: ['trade'],
+    labelObstacle: 'never',
+  },
 };
 
 /** The kinds in declaration (legend) order. */
@@ -211,6 +317,25 @@ export function legendEntriesFor(lens: MapLensId): MarkerLegendEntry[] {
   for (const kind of MAP_MARKER_KINDS) {
     const def = MAP_MARKERS[kind];
     if (def.legendIn.includes(lens)) out.push(...def.legend);
+  }
+  return out;
+}
+
+/** A legend mark with what draws it: the entry, its row's carved icon and ink (THR-1898). */
+export interface LegendMark {
+  entry: MarkerLegendEntry;
+  kind: MapMarkerKind;
+  icon: string | null;
+  ink: MarkerInk;
+}
+
+/** `legendEntriesFor` with each entry's row: the legend draws the same shape the map does. */
+export function legendMarksFor(lens: MapLensId): LegendMark[] {
+  const out: LegendMark[] = [];
+  for (const kind of MAP_MARKER_KINDS) {
+    const def = MAP_MARKERS[kind];
+    if (!def.legendIn.includes(lens)) continue;
+    for (const entry of def.legend) out.push({ entry, kind, icon: def.icon, ink: def.ink });
   }
   return out;
 }

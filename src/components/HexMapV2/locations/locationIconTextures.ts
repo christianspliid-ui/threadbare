@@ -85,6 +85,16 @@ export const MAP_ICON_INK: MapIconTextureOptions = {
 };
 
 /**
+ * What surrounds an icon on its texture (THR-1898): a ground painted first (a lens
+ * badge's dark disc and ring, the siege's encirclement ring), and how far in the icon
+ * sits, as a share of the canvas on each side. Both optional — a place icon has neither.
+ */
+export interface MapIconFrame {
+  underlay?: (ctx: CanvasRenderingContext2D, size: number) => void;
+  inset?: number;
+}
+
+/**
  * How a shape's viewBox maps onto a square canvas: the scale on each axis and the outline
  * width in viewBox units. Pure, so the "same box for any grid" rule is testable without a canvas.
  */
@@ -107,15 +117,28 @@ export function mapIconTransform(
 export function buildMapIconTexture(
   shape: IconShape,
   opts: MapIconTextureOptions = MAP_ICON_INK,
+  frame: MapIconFrame = {},
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = opts.size;
   canvas.height = opts.size;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    // NFP #4: no 2D context (a headless test canvas) — an empty texture, never a throw.
+    const blank = new THREE.CanvasTexture(canvas);
+    blank.needsUpdate = true;
+    return blank;
+  }
 
-  const { scaleX, scaleY, outlineWidth } = mapIconTransform(shape.viewBox, opts.size, opts.outlineWidthFraction);
+  // THR-1898: a badge or a siege ring paints its own ground first, then the icon
+  // sits inside it, inset by `frame.inset` of the canvas on each side.
+  frame.underlay?.(ctx, opts.size);
+  const inset = Math.max(0, Math.min(0.45, frame.inset ?? 0)) * opts.size;
+  const box = opts.size - inset * 2;
+  const { scaleX, scaleY, outlineWidth } = mapIconTransform(shape.viewBox, box, opts.outlineWidthFraction);
 
   ctx.save();
+  if (inset > 0) ctx.translate(inset, inset);
   ctx.scale(scaleX, scaleY);
 
   ctx.strokeStyle = opts.outline;

@@ -63,30 +63,21 @@ import {
 } from './scene/ReachSignatureSignifierMesh';
 import type { ReachSignatureSignifierLayerGroup } from './scene/ReachSignatureSignifierMesh';
 import type { ReachSignatureMarker } from '../../engine/reachSignatureMarkers';
-import { createRivalInfluenceLayer } from './scene/RivalInfluenceMesh';
-import type { RivalInfluenceLayer } from './scene/RivalInfluenceMesh';
-import type { RivalInfluenceMarker } from '../../engine/rivalInfluenceMarkers';
-import { createTradeRouteLayer } from './scene/TradeRouteMesh';
-import type { TradeRouteLayer } from './scene/TradeRouteMesh';
 import { createDominionLensLayer, DOMINION_LENS_LAYER_NAME } from './scene/DominionLensLayer';
 import type { DominionLensLayer } from './scene/DominionLensLayer';
-import { createHexLensLayer, HEX_LENS_LAYER_PREFIX, type HexLensLayer, type LensTile } from './scene/HexLensLayer';
+import { createHexLensLayer, updateHexLensZoom, HEX_LENS_LAYER_PREFIX, type HexLensLayer, type LensTile } from './scene/HexLensLayer';
 import type { HexLensVM, LensLine } from '../../engine/views/lenses/lensTypes';
 import type { MapLensLayerKind } from '../../data/map-lenses';
-import { MAP_MARKERS } from '../../data/map-markers';
 import { isWaterTerrain } from '../../engine/coastline';
 import { LensNameTags } from './overlay/LensNameTags';
 import { createDominionDropLayer, DOMINION_DROP_LAYER_NAME } from './scene/DominionDropBadge';
 import type { DominionDropLayer } from './scene/DominionDropBadge';
 import type { DominionLensVM } from '../../engine/dominionViewModels';
-import type { TradeRouteLine, RouteTooltipEntry } from '../../engine/tradeRouteMarkers';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
 import { spawnParticleBurst, tickParticleBursts } from './scene/ParticleBurstMesh';
 import type { ActiveBurst } from './scene/ParticleBurstMesh';
-import { createHexPulseMesh, updateHexPulseMesh, tickHexPulse } from './scene/HexPulseMesh';
-import type { HexPulseMeshResult } from './scene/HexPulseMesh';
 import { useAgentAnimations } from './hooks/useAgentAnimations';
 import type { AgentPrevPosition } from './hooks/useAgentAnimations';
 import { useFogCulling } from './hooks/useFogCulling';
@@ -104,7 +95,6 @@ import type { MapCameraJumpReason } from '../../types/traces/ui-traces';
 import { createRoadMesh } from './scene/RoadMesh';
 import {
   getZoomTier,
-  ZOOM_VISIBILITY_MATRIX,
 } from './scene/ZoomVisibilityMatrix';
 import type { ZoomTier } from './scene/ZoomVisibilityMatrix';
 import {
@@ -333,11 +323,8 @@ export interface HexMapV2Props {
   armies?: ArmyRenderData[];
   /** Ascendant reach-signature footprints (warhost/rift/wonder) — THR-554. */
   reachSignatureMarkers?: ReachSignatureMarker[];
-  /** Rival-scheme influence markers — sphere-tinted outlines on contested hexes (THR-66). */
-  rivalInfluenceMarkers?: RivalInfluenceMarker[];
-  /** Trade-route lines + per-endpoint-hex cargo tooltips (THR-670). */
-  tradeRouteLines?: TradeRouteLine[];
-  routeTooltipsByHex?: Map<string, RouteTooltipEntry[]>;
+  // THR-1898: trade roads, the unrest pulse and rival rings left the plain map; they
+  // draw in the Trade and Trouble lenses (`hexLens`), and their words ride its hover.
   /** Battle/siege indicator data for combat overlays (Plan 12-07+) */
   battles?: BattleIndicatorData[];
   /** Thread line data — avatar-to-agent relationship lines (Attention UI) */
@@ -613,7 +600,7 @@ export const LENS_LAYER_FACTORIES = {
 
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, hexLens = null, firstHex = null, seatHex = null, tick = 0 },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, hexLens = null, firstHex = null, seatHex = null, tick = 0 },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -641,7 +628,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const anomalyShimmerLayerRef = useRef<AnomalyShimmerLayerGroup | null>(null);
     const locationRaritySignifierLayerRef = useRef<LocationRaritySignifierLayerGroup | null>(null);
     const reachSignatureSignifierLayerRef = useRef<ReachSignatureSignifierLayerGroup | null>(null);
-    const rivalInfluenceLayerRef = useRef<RivalInfluenceLayer | null>(null);
     // THR-1750 — the Dominion lens and its drop badges (built incrementally, below).
     const dominionLensLayerRef = useRef<DominionLensLayer | null>(null);
     // THR-1878 — the generic hex lens layer, and the agents it draws one step up.
@@ -666,10 +652,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     onCameraCenterHexRef.current = onCameraCenterHex;
     // Debounce timer for camera-center ambient updates
     const cameraCenterDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    // Hex pulse mesh ref — ambient glow for tense/volatile hexes (THR-125)
-    const hexPulseMeshRef = useRef<HexPulseMeshResult | null>(null);
-    const hexPulseMeshInstanceRef = useRef<THREE.InstancedMesh | null>(null);
 
     // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
@@ -1108,13 +1090,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(roadGroup);
         roadGroupRef.current = roadGroup;
 
-        // Build hex pulse glow layer — ambient glow for tense/volatile hexes (THR-125)
-        // Renders at RENDER_ORDER.HEX_PULSE (7.5), between borders and signifiers.
-        const hexPulse = createHexPulseMesh();
-        scene.add(hexPulse.mesh);
-        hexPulseMeshRef.current = hexPulse;
-        hexPulseMeshInstanceRef.current = hexPulse.mesh;
-
         // Build set of hex keys that have centered (full/medium) location icons.
         // Signifiers on these hexes are hidden to avoid overlapping with the location art.
         const centeredLocationHexes = new Set<string>();
@@ -1438,11 +1413,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               strategicMarkerLayer.tick(elapsedS);
             }
           }
-          // Breathe hex pulse glow (ambient tense/volatile hex effect)
-          const hexPulse = hexPulseMeshRef.current;
-          if (hexPulse && hexPulse.mesh.count > 0) {
-            tickHexPulse(hexPulse, clock.getElapsedTime());
-          }
           // Tick sphere-colored particle bursts (action activation feedback)
           if (activeBurstsRef.current.length > 0) {
             activeBurstsRef.current = tickParticleBursts(
@@ -1511,9 +1481,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           elevTicksRef.current = null;
           borderRealmRef.current = null;
           geoBorderRef.current = null;
-          hexPulseMeshRef.current?.dispose();
-          hexPulseMeshRef.current = null;
-          hexPulseMeshInstanceRef.current = null;
           // Dispose remaining particle bursts on unmount
           for (const burst of activeBurstsRef.current) {
             scene.remove(burst.points);
@@ -1629,10 +1596,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (reachSignatureSignifierLayerRef.current) {
             reachSignatureSignifierLayerRef.current.dispose();
             reachSignatureSignifierLayerRef.current = null;
-          }
-          if (rivalInfluenceLayerRef.current) {
-            rivalInfluenceLayerRef.current.dispose();
-            rivalInfluenceLayerRef.current = null;
           }
           if (threadLineLayerRef.current) {
             threadLineLayerRef.current.dispose();
@@ -1786,12 +1749,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       trailGroup: trailGroupRef,
     });
 
-    // ── Hex pulse glow zoom visibility — hero-local and regional only (THR-125) ──
-    useEffect(() => {
-      const mesh = hexPulseMeshInstanceRef.current;
-      if (mesh) mesh.visible = ZOOM_VISIBILITY_MATRIX.hex_pulse[zoomTier];
-    }, [zoomTier]);
-
     // ── Anomaly shimmer/halo zoom sync — same visibility tier as locations ──
     useEffect(() => {
       const anomalyLayer = anomalyShimmerLayerRef.current;
@@ -1817,29 +1774,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       layer.signifierGroup.visible = locGroup?.visible ?? false;
     }, [zoomTier]);
 
-    // Rival-influence zoom sync — same visibility tier as locations (THR-829).
-    // Without it the layer's visibility froze at whatever tier it was built in,
-    // so zooming in on a paused map never revealed a scheme marker.
-    useEffect(() => {
-      const layer = rivalInfluenceLayerRef.current;
-      const locGroup = locationGroupRef.current;
-      if (!layer) return;
-      layer.group.visible = locGroup?.visible ?? false;
-    }, [zoomTier]);
-
     // Toggle organic shore (coastline) mesh visibility
     useEffect(() => {
       if (coastlineRef.current) {
         coastlineRef.current.visible = showOrganicShore;
       }
     }, [showOrganicShore]);
-
-    // ── Update hex pulse glow layer when locationActivityMap changes (THR-125) ──
-    useEffect(() => {
-      const pulse = hexPulseMeshRef.current;
-      if (!pulse) return;
-      updateHexPulseMesh(pulse, locationActivityMap, HEX_CONSTANTS.HEX_SIZE);
-    }, [locationActivityMap]);
 
     // ── Incremental battle indicator rebuild (THR-1846) ──
     // Battles and sieges start and end mid-run without touching any prop the scene
@@ -1904,32 +1844,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       reachSignatureSignifierLayerRef.current = layer;
     }, [reachSignatureMarkers]);
 
-    // ── Incremental rival-influence overlay rebuild (THR-66) ──
-    // Keyed on markers (not the scene build) so scheme footprints appear/vanish
-    // as rivals materialize and the player counters them mid-run — the
-    // `locations` prop never changes for a scheme, so the main scene effect
-    // would not rebuild for them.
-    useEffect(() => {
-      const scene = sceneRef.current;
-      if (!scene) return;
 
-      if (rivalInfluenceLayerRef.current) {
-        scene.remove(rivalInfluenceLayerRef.current.group);
-        rivalInfluenceLayerRef.current.dispose();
-        rivalInfluenceLayerRef.current = null;
-      }
-
-      const markers = rivalInfluenceMarkers ?? [];
-      if (markers.length === 0) return;
-
-      const layer = createRivalInfluenceLayer(markers);
-      // Scheme targets are locations, so gate on the location group's visibility.
-      layer.group.visible = locationGroupRef.current?.visible ?? false;
-      scene.add(layer.group);
-      rivalInfluenceLayerRef.current = layer;
-    }, [rivalInfluenceMarkers]);
-
-    // ── Trade-route lines (THR-670): rebuild on change, roads-band underlay ──
     // ── Dominion lens (THR-1750): built on toggle, never alpha-hidden ──
     useEffect(() => {
       const scene = sceneRef.current;
@@ -1982,17 +1897,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       }
     }, [hexLens, lensTiles, sceneEpoch]);
 
-    // Lens marks follow MAP_MARKERS' bands (a heading arrow is hidden at full-world zoom).
+    // Lens marks follow MAP_MARKERS' bands (a heading arrow is hidden at full-world zoom);
+    // badges keep LENS_BADGE_PX on screen at every zoom inside their bands (THR-1898).
     useEffect(() => {
       const layer = hexLensLayerRef.current;
       if (!layer) return;
-      const band = ZOOM_BAND_OF_TIER[zoomTier];
-      for (const child of layer.group.children) {
-        const kind = child.userData.lensMark as MapMarkerKind | undefined;
-        if (!kind || !(kind in MAP_MARKERS)) continue;
-        child.visible = MAP_MARKERS[kind].sizePx === 'mesh' || markerSizePx(kind, band) !== null;
-      }
-    }, [zoomTier, hexLens]);
+      updateHexLensZoom(layer, ZOOM_BAND_OF_TIER[zoomTier], zoomK);
+    }, [zoomTier, zoomK, hexLens]);
 
     // ── Dominion band-drop badges (THR-1750 § U4): lens on or off ──
     const dominionDrops = dominionLens?.drops;
@@ -2009,21 +1920,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       dominionDropLayerRef.current = layer;
     }, [dominionDrops, sceneEpoch]);
 
-    const tradeRouteLayerRef = useRef<TradeRouteLayer | null>(null);
-    useEffect(() => {
-      const scene = sceneRef.current;
-      if (!scene) return;
-      if (tradeRouteLayerRef.current) {
-        scene.remove(tradeRouteLayerRef.current.group);
-        tradeRouteLayerRef.current.dispose();
-        tradeRouteLayerRef.current = null;
-      }
-      const lines = tradeRouteLines ?? [];
-      if (lines.length === 0) return;
-      const layer = createTradeRouteLayer(lines);
-      scene.add(layer.group);
-      tradeRouteLayerRef.current = layer;
-    }, [tradeRouteLines]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
@@ -2295,9 +2191,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           const locationActivity = locationActivityMap?.get(
             `${tooltipHex.col},${tooltipHex.row}`,
           );
-          const tradeRoutes = routeTooltipsByHex?.get(
-            `${tooltipHex.col},${tooltipHex.row}`,
-          );
           // Fall back to tile terrain name
           const hoveredTile = tiles.find(
             t => t.coord.col === tooltipHex.col && t.coord.row === tooltipHex.row,
@@ -2320,7 +2213,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               canvasWidth={canvasDimensions.w}
               canvasHeight={canvasDimensions.h}
               locationActivity={locationActivity}
-              tradeRoutes={tradeRoutes}
               avatarLine={avatarHere ? avatarHoverLine(avatarHere.name ?? '') : undefined}
               avatarColor={avatarHere?.avatarSphereColor}
               battleLines={battleHexLines(battles, tooltipHex.col, tooltipHex.row)}
