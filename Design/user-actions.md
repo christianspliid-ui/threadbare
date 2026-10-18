@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-18 13:56 local (11:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-18 14:56 local (12:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-18: the fix for armies bleeding out within a week, with almost none raised again** ([THR-1973](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again)). Merged via [#2480](https://github.com/christianspliid-ui/threadbare/pull/2480), publishing now.
 - **2026-10-18: every link, card and map click now opens the Inspector beside the map, and you can cast from its Act row (the Inspector in the game)** ([THR-1911](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click)). Merged via [#2479](https://github.com/christianspliid-ui/threadbare/pull/2479) and live.
 - **2026-10-18: pressing Play on a chapter choice now moves the story on, once (the main-map wall from cold playtest round 4)** ([THR-1976](https://linear.app/threadbare/issue/THR-1976)). Merged via [#2477](https://github.com/christianspliid-ui/threadbare/pull/2477) and live.
 - **2026-10-18: the god rail puts Attention beside essence, your cards in the rail, and folds its rows (screen frame, second slice)** ([THR-1894](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand)). Merged via [#2474](https://github.com/christianspliid-ui/threadbare/pull/2474) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-18: the Inspector's person page now draws its 34 fields from the page-layout table (the Inspector, person sheet)** ([THR-1909](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table)). Merged via [#2470](https://github.com/christianspliid-ui/threadbare/pull/2470) and live.
 - **2026-10-18: 41 money encounters now pay or cost their mortal, and poor or greedy mortals lean toward paying work (mortal wealth, second slice)** ([THR-1952](https://linear.app/threadbare/issue/THR-1952/mortal-wealth-s2-the-money-encounters-pay-their-mortal-and-poor-or)). Merged via [#2469](https://github.com/christianspliid-ui/threadbare/pull/2469) and live.
 - **2026-10-18: one docked panel, the Inspector, now shows every place and person, with their Connections (the Inspector, first slice)** ([THR-1876](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and)). Merged via [#2468](https://github.com/christianspliid-ui/threadbare/pull/2468) and live.
-- **2026-10-18: hungry towns on your ground now pray to your god, one prayer a season, and fed towns can keep faith with you (prayers and the faithful, first slice)** ([THR-1935](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground)). Merged via [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463) and live.
 
 ---
 

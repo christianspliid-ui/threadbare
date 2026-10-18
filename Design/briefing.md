@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 13:56 local (11:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 14:56 local (12:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,7 +36,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 26 ready, one in progress.** [The Inspector in the game](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click) merged and is live. The builder is now working on [every army bleeds out within a week](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again) (run started 11:31 UTC, active).
+**Backed up: 26 ready, nothing in progress.** The fix for [every army bleeds out within a week](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again) merged via [#2480](https://github.com/christianspliid-ui/threadbare/pull/2480) and is publishing now; the ticket closes itself. The next builder run (about 13:10 UTC) picks the next job.
 
 - New: [The First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read), from cold playtest round 4, held for veto until 19 Oct 10:41 UTC.
 - High and waiting: [two map spells cost nothing despite their price](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand), [Advanced World Setup starts a game with no First](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first), [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
@@ -44,7 +44,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- The live site serves the latest game build. Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time.
-- Engine speed: tick cost 183 ms/tick steady, 48% above the 7-day median (123, 136 rows since 3f3ab0d3); top phase agent_decision, 617 agents. Name the merges between 3f3ab0d3 and 6af52732: git log --oneline --merges 3f3ab0d3..6af52732. Fourth reading in a row above the line (175, 164, 171, now 183). The builder was running alongside, so a busy machine may explain part of it. Executor work, not yours.
+- The army fix (37809540) was pushed less than 20 minutes ago and has not published yet; that is normal. Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time.
+- Engine speed: tick cost 161 ms/tick steady, 31% above the 7-day median (124, 135 rows since 8f9853c2); top phase agent_decision, 617 agents. Name the merges between 8f9853c2 and 37809540: git log --oneline --merges 8f9853c2..37809540. Fifth reading in a row above the line (175, 164, 171, 183, now 161), though this one was taken with no builder running alongside. Executor work, not yours.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That was overnight and into the weekend, so it is not a separate ask; the lead ask covers it.
-- The tidy-up job reports 554 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job reports 552 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
