@@ -161,7 +161,11 @@ export function phaseArmyAttrition(state: GameState): void {
       // Check threshold crossings
       let thresholdCrossed: string | undefined;
       const qPercent = cohesionAfter / armyState.cohesionMax;
-      const thresholdsFired = [...armyState.thresholdsFired];
+      // THR-1973: a garrison heals, so a threshold the army has climbed back above is
+      // re-armed — the next decline reports its fraying again.
+      const thresholdsFired = armyState.thresholdsFired.filter(
+        name => qPercent <= COHESION_THRESHOLDS[name as keyof typeof COHESION_THRESHOLDS],
+      );
 
       for (const [name, threshold] of Object.entries(COHESION_THRESHOLDS)) {
         const previousPercent = cohesionBefore / armyState.cohesionMax;

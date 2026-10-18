@@ -477,3 +477,17 @@ describe('garrison recovery (THR-1973)', () => {
     expect(getArmyState(graph, 'army1').cohesion).toBeLessThan(100);
   });
 });
+
+describe('threshold re-arm after healing (THR-1973)', () => {
+  it('a garrison healed above a threshold fires it again on the next decline', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'town', type: 'location', name: 'Town', properties: { terrain: 'plains', locationSubtype: 'town' } });
+    graph.addNode({ id: 'f1', type: 'actor', name: 'Realm', properties: { actorType: 'faction', factionClass: 'realm' } });
+    graph.addEdge({ id: 'e_controls', source: 'f1', target: 'town', type: 'controls', properties: {} });
+    addArmy(graph, 'army1', 'town', { size: 'host', cohesion: 69, cohesionMax: 100, paidThroughTick: 0, thresholdsFired: ['strained'] });
+    graph.addEdge({ id: 'e_member', source: 'army1', target: 'f1', type: 'member_of', properties: { role: 'army', rank: 'army', joinedTick: 0 } });
+    for (let tick = 1; tick <= 4; tick++) phaseArmyAttrition(makeState(tick, graph));
+    expect(getArmyState(graph, 'army1').cohesion).toBeGreaterThan(COHESION_THRESHOLDS.strained * 100);
+    expect(getArmyState(graph, 'army1').thresholdsFired).not.toContain('strained');
+  });
+});
