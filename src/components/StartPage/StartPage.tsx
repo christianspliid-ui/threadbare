@@ -109,7 +109,10 @@ export function StartPage({ onNewWorld, onAdvancedNewWorld }: StartPageProps) {
               Credits
             </button>
           </nav>
-          {onAdvancedNewWorld && (
+          {/* THR-1978: Advanced World Setup skips the remembrance identity, so the
+              run has no First and Meet The First never opens. Like the UL entry
+              above (THR-1601) it is a dev surface — dev builds only. */}
+          {import.meta.env.DEV && onAdvancedNewWorld && (
             <button
               type="button"
               onClick={onAdvancedNewWorld}
