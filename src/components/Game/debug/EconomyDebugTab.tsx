@@ -18,6 +18,7 @@ import { describeAllUnrest } from '../../../engine/unrestPressure/describe';
 import { listPrayers, PRAYER_SLIGHTED_UNTIL_PROP } from '../../../engine/prayers';
 import { TICKS_PER_DAY } from '../../../data/attention-constants';
 import { describeDeciderMeans } from '../../../engine/mortalMeans';
+import { resolveAxiologicalProfile } from '../../../engine/encounterScoring';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 
 interface PurseRow {
@@ -102,7 +103,11 @@ function PursesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
 
 /** THR-1952 — every decider's Means, band, last reason and want, poorest first. Numbers are fine here (debug). */
 function MeansTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
-  const rows = useMemo(() => (graph ? describeDeciderMeans(graph) : []), [graph, currentTick]);
+  // The board's resolved profile (divine overlay included) so the want shown is the want applied.
+  // The World-Soul fundament is not in this tab's props, so its drift is not folded in here.
+  const rows = useMemo(() => (graph
+    ? describeDeciderMeans(graph, id => resolveAxiologicalProfile(graph, id, currentTick) as Partial<Record<string, number>>)
+    : []), [graph, currentTick]);
   if (rows.length === 0) return null;
   const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
   const pulled = rows.filter(r => (r.want ?? 0) > 0).length;

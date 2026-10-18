@@ -2545,7 +2545,10 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!state) return null;
       const { readMortalMeans } = await import('./engine/mortalMeans');
-      return readMortalMeans(state.graph, agentId);
+      const { resolveAxiologicalProfile } = await import('./engine/encounterScoring');
+      // THR-1952 — the board's resolved profile, so the want read here is the want applied.
+      const profile = resolveAxiologicalProfile(state.graph, agentId, state.tick, state.worldSoul?.fundament);
+      return readMortalMeans(state.graph, agentId, profile as Partial<Record<string, number>>);
     },
     /** THR-1931 — every faction's last pay day, keyed by faction id. */
     getPurseLedger: async () => {

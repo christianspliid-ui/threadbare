@@ -138,16 +138,25 @@ export function selectOutcomeEffects(
 
 /**
  * Does this template's table pay its actor on a success? The S2 want reads it to decide
- * what counts as paying work (Law 42: content decides).
+ * what counts as paying work (Law 42: content decides). A branching encounter counts
+ * when the template's table or any path's own table pays the actor on a success
+ * (THR-1952: the debt arbitration, the warlord's tribute and the smugglers' ford carry
+ * their Means rows on a path).
  */
-export function templatePaysActorOnSuccess(template: Pick<UnifiedActionTemplate, 'outcomeEffects'>): boolean {
-  const effects = template.outcomeEffects?.success ?? [];
-  return effects.some(e =>
+export function templatePaysActorOnSuccess(
+  template: Pick<UnifiedActionTemplate, 'outcomeEffects'> & Partial<Pick<UnifiedActionTemplate, 'aftermathConfig'>>,
+): boolean {
+  const paysActor = (effects: readonly EncounterAftermathReactionEffect[] | undefined) => (effects ?? []).some(e =>
     e.kind === 'economy_shift'
     && e.quantity === 'means'
     && e.amount > 0
     && (e.targetAgentId === undefined || e.targetAgentId === '$actor'),
   );
+  if (paysActor(template.outcomeEffects?.success)) return true;
+  const config = template.aftermathConfig;
+  if (!config) return false;
+  return [...Object.values(config.variants), config.fallback]
+    .some(v => paysActor(v?.outcomeEffects?.success));
 }
 
 // ─── 3. economy_shift on 'means' ─────────────────────────────────────────────
@@ -339,7 +348,7 @@ export function meansCellCost(
 export function templatePaysActor(
   templateId: string,
   cache: Map<string, boolean> | undefined,
-  lookup: (id: string) => Pick<UnifiedActionTemplate, 'outcomeEffects'> | undefined,
+  lookup: (id: string) => (Pick<UnifiedActionTemplate, 'outcomeEffects'> & Partial<Pick<UnifiedActionTemplate, 'aftermathConfig'>>) | undefined,
 ): boolean {
   const hit = cache?.get(templateId);
   if (hit !== undefined) return hit;
@@ -366,17 +375,23 @@ export function readMeansWant(
   return computeMeansWant(readWealth(props), typeof lean === 'number' ? lean : 0, unafforded);
 }
 
-/** The debug bridge's read of one mortal's Means, with the want they would carry onto a board. */
+/**
+ * The debug bridge's read of one mortal's Means, with the want they would carry onto a
+ * board. Pass the board's resolved profile (`resolveAxiologicalProfile`, with the divine
+ * overlay and World-Soul drift) to read the same want the board applies; without it the
+ * node's own `axiologicalProfile` is read.
+ */
 export function readMortalMeans(
   graph: WorldGraph,
   agentId: string,
+  profile?: Partial<Record<string, number>>,
 ): { wealth: number; band: WealthTier; lastReason: string | null; want: MeansWantBreakdown | null } | null {
   const node = graph.getNode(agentId);
   if (!node || node.type !== 'actor') return null;
   const props = node.properties as Record<string, unknown>;
   const wealth = readWealth(props);
   const lastReason = typeof props.lastWealthReason === 'string' ? props.lastWealthReason : null;
-  return { wealth, band: getWealthTier(wealth), lastReason, want: readMeansWant(graph, agentId) };
+  return { wealth, band: getWealthTier(wealth), lastReason, want: readMeansWant(graph, agentId, profile) };
 }
 
 /** One row of the Economy debug tab's Means table (S2). */
@@ -390,12 +405,19 @@ export interface DeciderMeansRow {
   readonly multiplier: number | null;
 }
 
-/** Every autonomous decider's Means and want, poorest first (debug surface: numbers are fine). */
-export function describeDeciderMeans(graph: WorldGraph): DeciderMeansRow[] {
+/**
+ * Every autonomous decider's Means and want, poorest first (debug surface: numbers are
+ * fine). `profileFor` supplies the board's resolved profile per mortal (see
+ * {@link readMortalMeans}).
+ */
+export function describeDeciderMeans(
+  graph: WorldGraph,
+  profileFor?: (agentId: string) => Partial<Record<string, number>> | undefined,
+): DeciderMeansRow[] {
   const rows: DeciderMeansRow[] = [];
   for (const node of graph.getNodesByType('actor')) {
     if (!isAutonomousDecisionActor(node)) continue;
-    const read = readMortalMeans(graph, node.id);
+    const read = readMortalMeans(graph, node.id, profileFor?.(node.id));
     if (!read) continue;
     rows.push({
       agentId: node.id,

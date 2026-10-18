@@ -15,6 +15,7 @@ import {
   meansCellCost,
   meansCellKey,
   readMeansWant,
+  readMortalMeans,
   templatePaysActor,
 } from '../mortalMeans';
 import { scoreUnifiedBoard } from '../decisionBoard';
@@ -90,6 +91,11 @@ describe('templatePaysActor', () => {
     expect(cache.get('encounter.pickpocket')).toBe(true);
     // A second read never consults the lookup.
     expect(templatePaysActor('encounter.pickpocket', cache, () => { throw new Error('re-read'); })).toBe(true);
+  });
+
+  it('counts a branching encounter whose path table pays the actor on a success', () => {
+    expect(templatePaysActor('encounter.town.debt_arbitration', new Map(), getUnifiedTemplateById)).toBe(true);
+    expect(templatePaysActor('reputation.iron.warlords_tribute', new Map(), getUnifiedTemplateById)).toBe(true);
   });
 
   it('does not count a table that pays a cast member and not the actor', () => {
@@ -185,6 +191,12 @@ describe('the debug reads', () => {
   it('reads the want a mortal would carry onto a board', () => {
     expect(readMeansWant(graphWith(20), 'm1')?.want).toBeCloseTo(0.5, 10);
     expect(readMeansWant(graphWith(20), 'nobody')).toBeNull();
+  });
+
+  it('reads the want from the resolved profile when given, as the board does', () => {
+    // Base lean 0; a resolved (overlaid) lean of −0.6 is Greedy.
+    expect(readMortalMeans(graphWith(45), 'm1')?.want?.want).toBe(0);
+    expect(readMortalMeans(graphWith(45), 'm1', { asceticism_extravagance: -0.6 })?.want?.want).toBeCloseTo(0.3, 10);
   });
 
   it('lists deciders poorest first for the Economy tab', () => {
