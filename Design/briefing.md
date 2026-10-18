@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 06:57 local (04:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 07:55 local (05:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -44,7 +44,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready, one in progress.** [Map lenses, first slice](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and) is built and will merge when its checks pass ([#2472](https://github.com/christianspliid-ui/threadbare/pull/2472)). The builder's next run starts about 05:10 UTC.
+**Backed up: 22 ready, one in progress.** [Map lenses, first slice](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and) merged ([#2472](https://github.com/christianspliid-ui/threadbare/pull/2472)) and is live. The builder is now on [the Ledger rail, first slice of the screen frame](https://linear.app/threadbare/issue/THR-1893/screen-frame-slice-1-the-ledger-rail-world-soul-heads-the-chronicle) (started 05:11 UTC, work pushed to its branch).
 
 - New and high, waiting: [every army bleeds out within a week and almost none are raised again](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again), and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
@@ -52,6 +52,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- All green. The live site serves the latest main. Main's checks and the scheduled background jobs pass. One PR (map lenses) waits on its checks and will merge on green. All 12 scheduled lanes are on time. Engine speed is steady (145 ms a tick, within the normal range).
+- All green. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time. Engine speed is steady (109 ms a tick, a little faster than the weekly normal of 123).
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run (06:48) reports 552 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run (07:49) reports 551 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
