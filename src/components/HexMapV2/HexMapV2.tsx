@@ -1881,6 +1881,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       if (scene && hexLens) {
         try {
           const layer = LENS_LAYER_FACTORIES.hex(hexLens, lensTiles);
+          // A rebuild (new VM or a scene epoch) sizes and bands its marks at once, so badges
+          // never wait for the next zoom change (THR-1898 review gate).
+          updateHexLensZoom(layer, ZOOM_BAND_OF_TIER[zoomStateRef.current.tier], zoomStateRef.current.k);
           scene.add(layer.group);
           hexLensLayerRef.current = layer;
           stepIds = layer.agentStepIds;
