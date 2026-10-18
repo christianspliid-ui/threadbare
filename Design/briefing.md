@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 02:56 local (00:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 03:56 local (01:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,6 +15,10 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Mercenary hire](https://linear.app/threadbare/issue/THR-1939/mercenary-hire-who-pays-a-free-company-once-factions-have-purses) — **a rich realm can hire a free company by buying its oath with silver**, the same oath as any other faction. There is no separate contract. *Veto:* **"a company is not a vassal, give hiring its own contract"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-18a.md)*
+- Same ruling — **the realm that hires a company pays its soldiers, feeds them from its own towns, and they fight its enemies.** A vassal that pays its own army keeps its own wars. *Veto:* **"vassals should always fight their lord's wars"**.
+- Same ruling — **a company leaves when the pay stops or a richer lord outbids**, using the crown's oath-breaking rules. *Veto:* **"a hired company should serve out its term"**.
+- Same ruling — **a realm holding two hired companies counts as a Crown**, like any lord with two oaths. *Veto:* **"hired companies should not make a Crown"**. The plan that builds this, [hiring a free company](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays), waits for your veto until 19 Oct 01:35 UTC.
 - [The god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) — **your god hears one prayer at a time, a season apart**; when several hungry towns could pray on the same day, the hungriest is heard first. One test world made 19 prayers in 90 days; this caps it at 12. ([plan change](https://github.com/christianspliid-ui/threadbare/pull/2464)) *Veto:* **"let every hungry town pray at once"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17d.md)*
 - Same ruling — **a world with no hungry town on your ground hears no prayers**, and that counts as correct, not broken. *Veto:* **"there should always be someone praying"**.
 - [The end of the age](https://linear.app/threadbare/issue/THR-1381) — **finishing the Mandate ends the age**, as the rulebook says; today only the doom clock does. ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-17-thr-1381-the-end-of-the-age.md)) *Veto:* **"let me keep playing after the Mandate"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17c.md)*
@@ -40,14 +44,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** The first slice of [the Inspector](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and) merged ([#2468](https://github.com/christianspliid-ui/threadbare/pull/2468)) and is live: one docked panel for every place and person. The builder is now working on [mortal wealth, second slice](https://linear.app/threadbare/issue/THR-1952/mortal-wealth-s2-the-money-encounters-pay-their-mortal-and-poor-or) (money encounters pay their mortal, and poor or greedy mortals lean toward paying work). The orchestrator moved [the Inspector's person sheet](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table) into the queue as the next slice.
+**Backed up: 21 ready, one in progress.** [Mortal wealth, second slice](https://linear.app/threadbare/issue/THR-1952/mortal-wealth-s2-the-money-encounters-pay-their-mortal-and-poor-or) merged ([#2469](https://github.com/christianspliid-ui/threadbare/pull/2469)) and is live: 41 money encounters now pay or cost their mortal, and poor or greedy mortals lean toward paying work. The builder is now working on [the Inspector's person sheet](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table).
 
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
-- High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject). It removes steps, so the freeze allows it.
+- High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) and [the Inspector's place, faction and army sheets](https://linear.app/threadbare/issue/THR-1910/inspector-s2b-move-the-place-faction-army-artifact-and-attachment).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site serves the latest main (the Inspector). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge. All 12 scheduled lanes are on time.
+- All green. The live site serves the latest main (mortal wealth, second slice). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge. All 12 scheduled lanes are on time, and the builder is mid-run.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run (02:40) reports 548 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run (03:40) reports 549 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
