@@ -95,10 +95,16 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
   faction: {
     where: [{ edge: 'located_at', dir: 'out', fact: 'factHall', only: 'place' }],
     who: [{ edge: 'member_of', dir: 'in', fact: 'rank', only: 'person' }],
-    belongsTo: [{ edge: 'belongs_to', dir: 'out', fact: 'factCulture', only: 'culture' }],
+    belongsTo: [
+      { edge: 'belongs_to', dir: 'out', fact: 'factCulture', only: 'culture' },
+      // THR-1910: the liege this faction owes fealty to (the sheet's Fealty section, THR-1932).
+      { edge: 'sworn_to', dir: 'out', fact: 'factLiege', only: 'faction' },
+    ],
     friendsAndFoes: [
       { edge: 'relates_to', dir: 'both', fact: 'sentiment', only: 'faction' },
       { edge: 'hostile_to', dir: 'both', fact: 'factFoe', only: 'faction' },
+      // THR-1910: the vassals that owe this faction fealty.
+      { edge: 'sworn_to', dir: 'in', fact: 'factVassal', only: 'faction' },
     ],
     holdsKnows: [
       { edge: 'controls', dir: 'out', fact: 'factControls', only: 'place' },

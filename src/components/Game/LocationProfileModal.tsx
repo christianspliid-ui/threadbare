@@ -40,12 +40,11 @@ import { selectPilgrimWays } from '../../engine/pilgrimWays';
 import { getLocationHolder } from '../../engine/realmHolder';
 import { clampRarityTier } from '../../types/rarity';
 import { locationSubtypeName } from '../../data/location-words';
-import { durationLabel } from '../../engine/aftermathWords';
-import { resolveConditionEffectLine } from '../../engine/attachmentTemplateIndex';
 import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../../engine/hexZoom';
 import type { WorldGraph } from '../../engine/graph';
 import { getReputationWith } from '../../engine/reputation';
+import { readActiveConditions } from '../../engine/placeConditions';
 
 interface LocationProfileModalProps {
   name: string;
@@ -76,63 +75,8 @@ interface LocationProfileModalProps {
 /** Copy shown when the graph holds no prose for this place (a designed state, Law 4). */
 const NO_DETAIL_COPY = 'Nothing further is recorded of this place yet.';
 
-/** A condition with no `ticksRemaining` on its edge — it holds until a story lifts it. */
-const INDEFINITE_TERM_COPY = 'until it lifts';
-
-/** What a place's active conditions are read off (THR-1143). */
-interface ActiveLocationCondition {
-  edgeId: string;
-  templateId: string;
-  /** The condition's own display name from its definition node. */
-  name: string;
-  /** Remaining term in words — never ticks (Law 13/14). */
-  term: string;
-  /**
-   * What the condition does here, derived from the same rows the engine reads
-   * (THR-790 — the parity `AttachmentDetailView` already had). Null when the
-   * definition has no effect substrate, in which case the row shows the name alone
-   * rather than an invented sentence.
-   */
-  effect: string | null;
-}
-
-/**
- * Read the conditions currently sitting on this place (THR-1143).
- *
- * Reader-side of the primitive: the same `has_trait` edges the aftermath writes
- * and `decayConditions` counts down, so the panel needs no state of its own and
- * cannot drift from the engine — an expired condition disappears here because the
- * edge is gone, not because a second bookkeeping path was kept in step.
- *
- * Sorted by remaining term, soonest first, so what is about to lift reads first;
- * indefinite conditions sort last. NFP #4: a dangling edge whose definition node
- * is missing is skipped rather than rendered as its raw id (Law 14).
- */
-function readActiveConditions(
-  graph: WorldGraph,
-  locationId: string,
-): ActiveLocationCondition[] {
-  const rows: (ActiveLocationCondition & { sortKey: number })[] = [];
-  for (const edge of graph.getOutgoingEdges(locationId, 'has_trait')) {
-    const def = graph.getNode(edge.target);
-    if (!def) continue;
-    if ((def.properties?.subcategory as string) !== 'condition') continue;
-    const remaining = edge.properties?.ticksRemaining;
-    const hasTerm = typeof remaining === 'number' && remaining > 0;
-    rows.push({
-      edgeId: edge.id,
-      templateId: edge.target,
-      name: def.name ?? edge.target,
-      term: hasTerm ? durationLabel(remaining) : INDEFINITE_TERM_COPY,
-      // The effect half only — the term column beside it already answers "for how
-      // long", and a minted trait (THR-790) has no term to state twice.
-      effect: resolveConditionEffectLine(edge.target)?.effect ?? null,
-      sortKey: hasTerm ? remaining : Number.POSITIVE_INFINITY,
-    });
-  }
-  rows.sort((a, b) => a.sortKey - b.sortKey || a.name.localeCompare(b.name));
-  return rows.map(({ sortKey: _sortKey, ...row }) => row);
-}
+// THR-1910: `readActiveConditions` moved to `engine/placeConditions.ts` — the place page's
+// `conditions_here` row reads the same source.
 
 /** Sentence-case an authored prose fragment ("power flows downhill from these walls"). */
 function asSentence(fragment: string): string {

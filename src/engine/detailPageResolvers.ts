@@ -56,6 +56,8 @@ import {
   getArmySizeName,
   getArmySupplyWord,
 } from '../data/army-words';
+import { armyAimView } from './warAims/sheetView';
+import { fillSlots, linkedProseSection } from './views/subjects/linkedProse';
 
 // ─── Resolver context ─────────────────────────────────────────────────────────
 
@@ -723,24 +725,8 @@ const whatThisPlaceWantsResolver: SectionResolver = (ctx) => {
   return section;
 };
 
-const conditionsHereResolver: SectionResolver = (ctx) => {
-  const place = ctx.graph.getNode(ctx.nodeId);
-  if (!place) return null;
-  const conditions = (place.properties?.conditions as string[] | undefined) ?? [];
-  if (conditions.length === 0) return null;
-
-  const chips: ChipDescriptor[] = conditions.slice(0, 8).map((c) => ({ label: c }));
-  const section: ChipsSection = {
-    kind: 'chips',
-    typeId: 'conditions_here',
-    label: 'Conditions here',
-    gold: false,
-    tier: 'routine',
-    source: 'conditionsHereResolver',
-    chips,
-  };
-  return section;
-};
+// THR-1910: `conditions_here` reads the place's `has_trait` edges now (`views/subjects/placeRows.ts`);
+// the old resolver read `properties.conditions`, which nothing writes on places.
 
 /**
  * When a remembered battle happened, as words (Law 13: no numbers on the page). The
@@ -921,7 +907,6 @@ export const FACTION_RESOLVERS = {
 export const PLACE_RESOLVERS = {
   place_painting: placePaintingResolver,
   what_this_place_wants: whatThisPlaceWantsResolver,
-  conditions_here: conditionsHereResolver,
   memory: placeMemoryResolver,
 } satisfies Record<string, SectionResolver>;
 
@@ -1011,16 +996,34 @@ const groupCommandResolver: SectionResolver = (ctx) => {
   return section;
 };
 
-/** WHAT THEY ARE DOING — the objective as a sentence, never as an objective type. */
+/**
+ * WHAT THEY ARE DOING — the objective as a sentence, never as an objective type.
+ *
+ * THR-1910 fix: the army type names its target `objective.targetNodeId`
+ * (`types/army.ts`); this read `targetId`, which no army carries, so the target was never
+ * named. `targetId` stays as a fallback for an older shape. The war-aim line (THR-1933 —
+ * why it marches, or why it holds) wins when the army carries one, as on `ArmySheet`,
+ * with the town and the enemy host as links (Law 21).
+ */
 const groupIntentResolver: SectionResolver = (ctx) => {
   const node = ctx.graph.getNode(ctx.nodeId);
   const state = groupStateOf(node);
-  const objective = state?.objective as { type?: unknown; targetId?: unknown } | null | undefined;
+  const objective = state?.objective as { type?: unknown; targetNodeId?: unknown; targetId?: unknown } | null | undefined;
+
+  const aim = node && state ? armyAimView(ctx.graph, node.id) : null;
+  if (aim) {
+    const section = linkedProseSection('what_they_are_doing', 'What they are doing', fillSlots(aim.template, {
+      town: aim.slots.town ? { text: aim.slots.town.name, ref: { kind: aim.slots.town.kind, id: aim.slots.town.id } } : null,
+      enemy: aim.slots.enemy ? { text: aim.slots.enemy.name, ref: { kind: aim.slots.enemy.kind, id: aim.slots.enemy.id } } : null,
+    }), 'armyAimView');
+    if (section) return section;
+  }
 
   let prose: string | null = null;
   if (objective) {
-    const targetId = typeof objective.targetId === 'string' ? objective.targetId : undefined;
-    const targetName = targetId ? (ctx.graph.getNode(targetId)?.name ?? null) : null;
+    const rawTarget = typeof objective.targetNodeId === 'string' ? objective.targetNodeId
+      : typeof objective.targetId === 'string' ? objective.targetId : undefined;
+    const targetName = rawTarget ? (ctx.graph.getNode(rawTarget)?.name ?? null) : null;
     prose = armyObjectiveSentence(objective.type, targetName);
   }
   // No objective, an unphraseable one, or a target that has left the world all land

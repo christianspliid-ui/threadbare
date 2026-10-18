@@ -40,6 +40,9 @@ import {
 } from '../engine/views/subjects/pageResolvers';
 import { CONTENT_RESOLVERS_BY_ROW } from '../engine/contentPageResolvers';
 import { PERSON_RESOLVERS } from '../engine/views/subjects/personRows';
+import { PLACE_ROW_RESOLVERS } from '../engine/views/subjects/placeRows';
+import { FACTION_ROW_RESOLVERS } from '../engine/views/subjects/factionRows';
+import { ATTACHMENT_ROW_RESOLVERS, ITEM_ROW_RESOLVERS } from '../engine/views/subjects/itemRows';
 
 // ─── Tunable thresholds (NFP #1) ──────────────────────────────────────────────
 
@@ -192,7 +195,16 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
   },
 ];
 
-/** D7.6 Artifact — the existing rows; S2b moves the sheet's fields in. */
+/** A row ported from a retiring sheet (THR-1910, S2b): engine-resolved, never mandatory. */
+function sheetRow(typeId: string, resolver: SectionResolver, order: number, tab: InspectorTabId | undefined, visibleAt: readonly PageSurface[]): SectionSchemaEntry {
+  return { typeId, order, mandatory: false, defaultResolver: resolver, showcaseOverridable: false, visibleAt, ...(tab ? { tab } : {}) };
+}
+
+/**
+ * D7.6 Artifact — tabs Overview · Story. S1 built the existing rows; S2b (THR-1910) moves
+ * `ArtifactSheet`'s fields in. `who_gave_it` retires to Connections (*who*: the holder) and
+ * stays on the hover card only.
+ */
 const ITEM_SCHEMA: SectionSchemaEntry[] = [
   {
     typeId: 'icon_with_meaning',
@@ -210,8 +222,12 @@ const ITEM_SCHEMA: SectionSchemaEntry[] = [
     mandatory: false,
     defaultResolver: ITEM_RESOLVERS.who_gave_it,
     showcaseOverridable: true,
-    tab: 'overview',
+    visibleAt: HOVER,
   },
+  sheetRow('made_by', ITEM_ROW_RESOLVERS.made_by, 30, 'overview', DWF),
+  sheetRow('what_it_does', ITEM_ROW_RESOLVERS.what_it_does, 40, 'overview', DWF),
+  sheetRow('traits', ITEM_ROW_RESOLVERS.traits, 45, 'overview', DWF),
+  sheetRow('tags', ITEM_ROW_RESOLVERS.tags, 50, 'overview', DWF),
   {
     typeId: 'dominion',
     order: 60,
@@ -239,7 +255,13 @@ const ITEM_SCHEMA: SectionSchemaEntry[] = [
   },
 ];
 
-/** D7.4 Faction — the existing rows; S2b moves the sheet's fields in. */
+/**
+ * D7.4 Faction — tabs Overview · Story. S2b (THR-1910) moves `FactionSheet`'s fields in;
+ * leader, members, halls, controls, relations and vassals are Connections rows (§ D6).
+ * `allied_with` and `opposed` retire to Connections *friends and foes* and stay on the
+ * hover card only. `crown`, `fealty` and `purse` carry sheet fields that postdate the
+ * plan (THR-1931, THR-1932) under the same parity rule.
+ */
 const FACTION_SCHEMA: SectionSchemaEntry[] = [
   {
     typeId: 'how_they_hold_her',
@@ -251,6 +273,8 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     visibleAt: ALL,
     tab: 'overview',
   },
+  sheetRow('description', FACTION_ROW_RESOLVERS.description, 15, 'overview', DWF),
+  sheetRow('venerates', FACTION_ROW_RESOLVERS.venerates, 20, 'overview', DWF),
   {
     typeId: 'dominion',
     order: 25,
@@ -260,7 +284,13 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     visibleAt: DWF,
     tab: 'overview',
   },
-  // Superseded by Connections *friends and foes* in the Inspector (hover only); retired in S2b.
+  sheetRow('crown', FACTION_ROW_RESOLVERS.crown, 26, 'overview', DWF),
+  sheetRow('fealty', FACTION_ROW_RESOLVERS.fealty, 28, 'overview', DWF),
+  sheetRow('agenda', FACTION_ROW_RESOLVERS.agenda, 30, 'overview', DWF),
+  sheetRow('conclave', FACTION_ROW_RESOLVERS.conclave, 35, 'overview', DWF),
+  sheetRow('means', FACTION_ROW_RESOLVERS.means, 40, 'overview', DWF),
+  sheetRow('purse', FACTION_ROW_RESOLVERS.purse, 42, 'overview', DWF),
+  sheetRow('strongest_reaches', FACTION_ROW_RESOLVERS.strongest_reaches, 45, 'overview', DWF),
   {
     typeId: 'reputations_they_hold',
     order: 50,
@@ -269,7 +299,9 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: false,
     tab: 'overview',
   },
-    {
+  sheetRow('customs', FACTION_ROW_RESOLVERS.customs, 55, 'overview', WF),
+  sheetRow('ranks', FACTION_ROW_RESOLVERS.ranks, 60, 'overview', WF),
+  {
     typeId: 'allied_with',
     order: 20,
     mandatory: false,
@@ -285,17 +317,17 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: false,
     visibleAt: HOVER,
   },
-  {
-    typeId: 'recent_actions',
-    order: 100,
-    mandatory: false,
-    defaultResolver: FACTION_RESOLVERS.recent_actions,
-    showcaseOverridable: false,
-    tab: 'story',
-  },
+  // Source replaced (S2b): the sheet's `factionActionHistory`, not one encounter.
+  sheetRow('recent_actions', FACTION_ROW_RESOLVERS.recent_actions, 100, 'story', DWF),
 ];
 
-/** D7.2 Location, Place and Area — the existing rows; S2b moves the sheet's fields in. */
+/**
+ * D7.2 Location, Place and Area — tabs Overview · Here now · Story. S2b (THR-1910) moves
+ * `LocationProfileModal`, `LocationView` and HexSidebar's Area facts in. Who is here, the
+ * holder, the Places and their occupants are Connections rows (§ D6); the sublocation
+ * drill-down retires (a Place is its own page). `fortunes` and `prayer` carry city-view
+ * fields that postdate the plan (THR-1934, THR-1935) under the same parity rule.
+ */
 const PLACE_SCHEMA: SectionSchemaEntry[] = [
   {
     typeId: 'place_painting',
@@ -305,6 +337,7 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: true,
     visibleAt: HOVER,
   },
+  sheetRow('place_prose', PLACE_ROW_RESOLVERS.place_prose, 10, 'overview', DWF),
   {
     typeId: 'what_this_place_wants',
     order: 12,
@@ -312,8 +345,13 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     defaultResolver: PLACE_RESOLVERS.what_this_place_wants,
     showcaseOverridable: true,
     fallbackResolver: placeWantsFallback,
-    tab: 'overview',
+    // Hover only (§ D7.2): in the Inspector `place_prose` is the one place prose.
+    visibleAt: HOVER,
   },
+  sheetRow('past_line', PLACE_ROW_RESOLVERS.past_line, 15, 'overview', DWF),
+  sheetRow('fortunes', PLACE_ROW_RESOLVERS.fortunes, 17, 'overview', DWF),
+  sheetRow('prayer', PLACE_ROW_RESOLVERS.prayer, 18, 'overview', DWF),
+  sheetRow('livelihood', PLACE_ROW_RESOLVERS.livelihood, 20, 'overview', DWF),
   {
     typeId: 'dominion',
     order: 25,
@@ -323,14 +361,15 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     visibleAt: DWF,
     tab: 'overview',
   },
-  {
-    typeId: 'conditions_here',
-    order: 40,
-    mandatory: false,
-    defaultResolver: PLACE_RESOLVERS.conditions_here,
-    showcaseOverridable: false,
-    tab: 'overview',
-  },
+  sheetRow('contested', PLACE_ROW_RESOLVERS.contested, 30, 'overview', DWF),
+  sheetRow('walls', PLACE_ROW_RESOLVERS.walls, 35, 'overview', DWF),
+  // Source replaced (S2b): the place's `has_trait` edges, the modal's source.
+  sheetRow('conditions_here', PLACE_ROW_RESOLVERS.conditions_here, 40, 'overview', DWF),
+  sheetRow('standing', PLACE_ROW_RESOLVERS.standing, 45, 'overview', DWF),
+  sheetRow('place_of_power', PLACE_ROW_RESOLVERS.place_of_power, 50, 'overview', DWF),
+  sheetRow('area_facts', PLACE_ROW_RESOLVERS.area_facts, 55, 'overview', DWF),
+  sheetRow('guild_postings', PLACE_ROW_RESOLVERS.guild_postings, 100, 'here_now', DWF),
+  sheetRow('encounters_here', PLACE_ROW_RESOLVERS.encounters_here, 110, 'here_now', DWF),
   {
     typeId: 'memory',
     order: 200,
@@ -383,7 +422,8 @@ const EVENT_SCHEMA: SectionSchemaEntry[] = [
  * D7.5 The group page (THR-1490) — an Army, and the Company / Network kinds when they route.
  *
  * Only the first row is mandatory: a muster with no commander and no orders is a real state
- * of the world, not a half-resolved page. `who_leads_them` retires to Connections in S2b.
+ * of the world, not a half-resolved page. `who_leads_them` retired to Connections in S2b
+ * (THR-1910); `what_they_are_doing` reads the army's `objective.targetNodeId` since then.
  */
 const GROUP_SCHEMA: SectionSchemaEntry[] = [
   {
@@ -395,12 +435,14 @@ const GROUP_SCHEMA: SectionSchemaEntry[] = [
     fallbackResolver: groupMusterFallback,
     visibleAt: ALL,
   },
+  // Retires to Connections (S2b): *who* the commander, *belongs to* the raising power.
   {
     typeId: 'who_leads_them',
     order: 20,
     mandatory: false,
     defaultResolver: GROUP_RESOLVERS.who_leads_them,
     showcaseOverridable: false,
+    visibleAt: HOVER,
   },
   {
     typeId: 'what_they_are_doing',
@@ -412,7 +454,10 @@ const GROUP_SCHEMA: SectionSchemaEntry[] = [
   },
 ];
 
-/** D7.7 Content card — `generateContentPage`'s three sections, as rows. */
+/**
+ * D7.7 Content card — `generateContentPage`'s three sections, as rows, and (S2b) the
+ * attachment sheet's rows for an attachment ref, which names a template.
+ */
 const CONTENT_SCHEMA: SectionSchemaEntry[] = [
   {
     typeId: 'what_it_is',
@@ -435,6 +480,11 @@ const CONTENT_SCHEMA: SectionSchemaEntry[] = [
     defaultResolver: CONTENT_RESOLVERS_BY_ROW.marks,
     showcaseOverridable: false,
   },
+  // The attachment rows (S2b, THR-1910): resolve only for an attachment template.
+  sheetRow('effect', ATTACHMENT_ROW_RESOLVERS.effect, 40, undefined, DWF),
+  sheetRow('duration', ATTACHMENT_ROW_RESOLVERS.duration, 50, undefined, DWF),
+  sheetRow('triggers', ATTACHMENT_ROW_RESOLVERS.triggers, 60, undefined, DWF),
+  sheetRow('source', ATTACHMENT_ROW_RESOLVERS.source, 70, undefined, WF),
 ];
 
 /** D7.3 The land page — HexChronicle's three prose blocks, moved unchanged. One fixed order, no tabs. */

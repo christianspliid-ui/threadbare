@@ -37,6 +37,9 @@ import { buildActOn, type ActOnTarget } from './actOn';
 import { landNameFor } from './landName';
 import { biomeParagraphs, landHexSeed } from './landProse';
 import { tileAt } from './pageResolvers';
+import { attachmentDetailFromNode } from '../../attachmentTemplateDetail';
+import { humanizeKeySegment } from '../../aftermathWords';
+import { ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
 import type {
   ContentCardVM,
   GenericSubjectPageVM,
@@ -323,22 +326,23 @@ function contentPage(state: GameState, ref: ContentRef): ContentCardVM | Generic
 
 /**
  * An attachment ref names a template — committed content (THR-1822 § D7), so it opens as a
- * content card. S1 shows what the template says of itself; S2b (THR-1910) moves the
- * attachment sheet's effect, duration and trigger rows in.
+ * content card. Its body is the table's `content` rows (THR-1910, S2b): what the template
+ * says of itself, then the attachment sheet's effect, duration, trigger and source rows.
+ * The header carries the tier and kind in words (the sheet printed the raw subcategory).
  */
 function attachmentPage(state: GameState, ref: WorldRef): ContentCardVM | GenericSubjectPageVM {
   const node = state.graph.getNode(ref.id);
   if (!node) return missingPage(ref);
-  const text = (node.properties.description ?? node.properties.flavorText) as string | undefined;
-  const body: Section[] = text
-    ? [{ kind: 'prose', typeId: 'what_it_is', label: 'What it is', gold: true, tier: 'routine', source: 'attachmentTemplate', prose: text }]
-    : [];
-  const kindWord = (node.properties.subcategory ?? node.properties.category) as string | undefined;
+  const detail = attachmentDetailFromNode(node);
+  const body = composeSections('content', { nodeId: node.id, pageKind: 'content', graph: state.graph, seed: state.seed, tick: state.tick, protagonistId: state.ascendantId, state });
+  const kindWord = detail
+    ? `${ATTACHMENT_TIER_NAMES[detail.tier] ?? ''} ${humanizeKeySegment(detail.subcategory)}`.trim()
+    : ((node.properties.subcategory ?? node.properties.category) as string | undefined)?.replace(/[-_]+/g, ' ');
   return {
     pageKind: 'content',
     subjectKey: subjectKeyOf(ref),
     layoutKind: 'content',
-    header: header({ ref, name: node.name, kindLabel: kindWord ? sentenceCase(kindWord.replace(/[-_]+/g, ' ')) : INSPECTOR_WORDS.contentKind, visual: { kind: 'content', id: ref.id, portraitGate: 'shown' } }),
+    header: header({ ref, name: node.name, kindLabel: kindWord ? sentenceCase(kindWord.toLowerCase()) : INSPECTOR_WORDS.contentKind, visual: { kind: 'content', id: ref.id, portraitGate: 'shown' } }),
     actOn: null,
     body,
     connections: { title: 'Connections', groups: [] },
