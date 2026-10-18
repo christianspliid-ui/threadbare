@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 77 |
-| **Total** | **277** |
+| 🔵 UNVERIFIED-OK | 78 |
+| **Total** | **278** |
 
 ## Contracts by producing subsystem
 
@@ -310,6 +310,7 @@ remediation ticket or the build fails.
 | `faction-purse-schism-strain` | A faction that has been Destitute for PURSE_SCHISM_GRACE_DAYS feels it at a schism: decideSchismOutcome adds SCHISM_WEIGHT_PURSE × purseStrain to split pressure. Bounded — alone it never splits a faction (the outcome is still the seeded draw against splitPressure); it tips one already strained. | function: `computePurseStrain`, `SCHISM_WEIGHT_PURSE`, `readMeansBand`, `readPurseDay` | Factions & Succession | 🟢 LIVE | — |
 | `faithful-sanctity-reads-staples` | A faithful town's faith rides its bread (THR-1935 S1). computeSanctitySustenance scores a faithfulCommunity source against the host's staple goods (category staple) whatever its sphere: fed holds it at the nurture ceiling, scarce drains it; the prayer phase removes the bag and the faith's own controls edge at FAITHFUL_LAPSE_SANCTITY 0, and Sanctify cannot raise it. | function: `scoreSphereAffinity`, `computeSanctitySustenance` | Essence & Divine Economy | 🟢 LIVE | — |
 | `hungry-town-prays-on-gods-ground` | A hungry town on the god's own ground prays (THR-1935 S1). The daily prayer phase (after location_trait) opens a prayer event (eventKind prayer, occurred_at → the town) when a settlement bears the restless trait, hunger is its largest unrestInputs term, it reads Touched or better on the player god's Dominion and its 30-day cooldown is clear. The place page and the chronicle say it; the town keeps lastPrayerTick and activePrayerId. | function: `placePrayerView`, `listPrayers` | Essence & Divine Economy | 🟢 LIVE | — |
+| `mortal-means-steers-board` | A poor or greedy mortal leans toward work that pays: the decision board multiplies an encounter whose outcome table pays its actor, and an earning undertaking cell, by the mortal's Means want; a Wealthy mortal who is not greedy turns away from it. | node-prop: `wealth`, `axiologicalProfile`, `meansMultiplier`, `meansWant` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `recovered-town-keeps-faith` | A town that recovers keeps faith (THR-1935 S1). An answered prayer whose town loses the restless chip within PRAYER_RECOVERY_WINDOW_DAYS 30 becomes a faithfulCommunity essence source (the god's primary by bought points, sanctity 0.5) with the god's controls edge, written through the extracted consecrate helper; at most FAITHFUL_COMMUNITY_MAX 4 per god, one bag per host. computeSourceIncome pays it, chargeSourceUpkeep charges it, the Covenants list shows its faith line. | node-prop: `essenceSource`, `faithfulCommunity` | Essence & Divine Economy | 🟢 LIVE | — |
 | `restless-moves-people` | A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent. | node-prop: `relocationIntent`, `population` | Movement & Colocation | 🟢 LIVE | — |
 | `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -1246,10 +1247,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 79 total — 1 write, 3 read, 75 unclassified
+- **Production hits:** 82 total — 1 write, 3 read, 78 unclassified
 - **Write sites:** `src/engine/mortalMeans.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +70 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +73 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
@@ -1494,10 +1495,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 79 total — 3 write, 2 read, 74 unclassified
+- **Production hits:** 82 total — 3 write, 2 read, 77 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +69 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx` +72 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
@@ -1964,10 +1965,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 79 total — 2 write, 3 read, 74 unclassified
+- **Production hits:** 82 total — 2 write, 3 read, 77 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/components/Game/FactionSheet.tsx`, `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +69 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/content/ruins/archetypes.ts` +72 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -2474,6 +2475,18 @@ exit
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentAttachments.ts`, `src/engine/spellActivation.ts`
 - **Other hits:** `src/components/Game/ArtifactSheet.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/LocationProfileModal.tsx`, `src/components/Game/tabs/AttachmentsTab.tsx`, `src/components/Game/tabs/OverviewTab.tsx` +104 more
 - **Verdict:** Verified 2026-09-07: THR-1429. Seeded worlds carry exactly SPELL_TEMPLATES.length definition nodes and none per bearer (seed 42 small, tick 2: 5 nodes, ids power.spell.*). `spawn undertaking npc_11 cell.create.power --band success` on seed 42 small leaves both a knows_spell edge and a wielded has_trait edge pointing at the SAME node (power.spell.spell_crystal_gate). The cap, the non-caster refusal, the already-known refusal and the no-definition fail-soft are each falsified in src/data/__tests__/dormantKindsPowersConditions.test.ts, as is the rule that the op reports the EDGE it created rather than the shared node — reporting the node handed christenCompletedWork a world-shared node to rename, observed renaming Crystal Gate for every mortal alive before the fix.
+
+### `mortal-means-steers-board` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A poor or greedy mortal leans toward work that pays: the decision board multiplies an encounter whose outcome table pays its actor, and an earning undertaking cell, by the mortal's Means want; a Wealthy mortal who is not greedy turns away from it.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
+- **UL terms:** *Means*
+- **Module:** `src/engine/mortalMeans.ts`
+- **Production hits:** 132 total — 2 write, 2 read, 128 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`
+- **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/AgentProfileModal.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionSheet.tsx` +123 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
 
@@ -3609,9 +3622,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 124 total — 2 write, 3 read, 119 unclassified
+- **Production hits:** 127 total — 2 write, 3 read, 122 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +114 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +117 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 
