@@ -415,6 +415,17 @@ read from the lending place's sphere scores (`dominionPressureClause`). A UI rea
 is written. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**Three contracts added by THR-1898 (2026-10-18), Lenses II** —
+`local-omen-on-trouble-lens`: `state.emittedOmens` (local scope) reaches the map for the first
+time — the Trouble lens lights an omen's reach and rings it. `unrest-on-trouble-lens`: per-Location
+`unrest` and the Lawless condition light the Trouble lens in the chip's word and the hex survey's
+mood bucket; the conflict pulse lights it as Strife, and the rival-marker producer's consumer moved
+from the deleted `RivalInfluenceMesh` into `troubleLens.ts`, which now names the rival.
+`prosperity-on-trade-lens`: the route producers' `trades_with` edges and each end's prosperity
+and scarce stock reach the Trade lens; the route words moved there from the plain hex tooltip.
+UI reads only: no state is written. Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

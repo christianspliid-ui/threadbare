@@ -1696,6 +1696,39 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/views/lenses/threadsLens.ts'],
   },
   {
+    id: 'local-omen-on-trouble-lens',
+    producerSystem: 'Omens & Atmospheric Pressure',
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'A local omen is on the map (THR-1898 Lenses II, plan D4). Encounter aftermath and the omen agenda write `state.emittedOmens`; the Trouble lens (`views/lenses/troubleLens.ts`) lights every explored hex inside a `scope.kind: \'local\'` omen\'s reach (`radius`, default `TROUBLE_OMEN_DEFAULT_RADIUS`) until `expiresTick`, draws a dotted ring round the reach with a badge at its centre, and says "An omen of {sphere} hangs over this land." — the omen\'s first player-facing read; before this only agent decision bias read it.',
+    ulTerms: [],
+    mechanism: { kind: 'state-field', symbols: ['emittedOmens'] },
+    writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/phaseOmenAgenda.ts'],
+    readSites: ['src/engine/views/lenses/troubleLens.ts'],
+  },
+  {
+    id: 'unrest-on-trouble-lens',
+    producerSystem: 'Mortal Economy & Prosperity',
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'Unrest the player can raise shows where it is (THR-1898 Lenses II, plan D4, PC-6). `phaseUnrest` writes per-Location `unrest` (raised by Incite Unrest, doom cards and scarcity arcs) and `phaseLocationTraits` mints the Lawless condition from it; the Trouble lens lights a hex when a Location on it carries Lawless ("Unrest: Ferris is lawless.") or when its mood bucket — `deriveMoodBucket`, the average the hex survey reads — is agitated or worse, so the lens never disagrees with the chip or the survey. The conflict pulse (`computeLocationPulse`, tense/volatile) lights the same lens as Strife; rival schemes and drains (`buildRivalInfluenceMarkers`, consumer moved here from the retired `RivalInfluenceMesh`) name the rival.',
+    ulTerms: [],
+    mechanism: { kind: 'node-prop', symbols: ['unrest'] },
+    writeSites: ['src/engine/phaseUnrest.ts', 'src/engine/phaseLocationTraits.ts'],
+    readSites: ['src/engine/views/lenses/troubleLens.ts'],
+  },
+  {
+    id: 'prosperity-on-trade-lens',
+    producerSystem: 'Mortal Economy & Prosperity',
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'Trade roads and what they carry are a lens, not plain-map clutter (THR-1898 Lenses II, plan D4). The route producers write `trades_with` edges (volume, manifest, threatened); the Trade lens (`views/lenses/tradeLens.ts`) lights every explored hex on the cube line between a known route\'s ends (`hexLine`), draws the road in caravan gold or threat red with a mid-road badge, and tells the road words that left the plain hex tooltip, then each end\'s prosperity tier (`getProsperityTier`, `phaseProsperity`) and scarce goods (`stockTier`) as words, never a number.',
+    ulTerms: [],
+    mechanism: { kind: 'node-prop', symbols: ['prosperity', 'stockTier'] },
+    writeSites: ['src/engine/phaseProsperity.ts', 'src/engine/phases/resourceStockTiers.ts'],
+    readSites: ['src/engine/views/lenses/tradeLens.ts'],
+  },
+  {
     id: 'explored-hexes-frame-opening-view',
     producerSystem: 'Intelligence, Knowledge & Familiarity',
     consumerSystem: WORLDGEN,
