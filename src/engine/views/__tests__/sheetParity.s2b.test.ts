@@ -266,7 +266,7 @@ function world(): GameState {
     id: 'trait.condition.wounded', type: 'trait', name: 'Wounded',
     properties: {
       subcategory: 'condition', tier: 2, tags: ['#wound'], description: 'A wound that slows the bearer.',
-      mechanicalSummary: '-0.2 Iron', lossCondition: 'rest heals it', source: 'Battle', durationTicks: 96,
+      mechanicalSummary: '-0.2 Iron', lossCondition: 'rest heals it', source: 'Battle',
       effects: [{ type: 'action_trigger', on: 'rest', payload: { kind: 'condition_remove', tags: ['#wound'] }, maxFires: 3 }],
     },
   });
@@ -378,10 +378,12 @@ describe('the S2b rows resolve in the engine (THR-1910)', () => {
     const state = world();
     state.graph.getNode('town')!.properties.conditions = ['raw_key'];
     expect(sections('place', 'town', state).some(s => s.typeId === 'conditions_here')).toBe(false);
-    state.graph.addEdge({ id: 'ht1', source: 'town', target: 'trait.condition.wounded', type: 'has_trait', properties: { ticksRemaining: 48, totalTicks: 96 } });
+    state.graph.addEdge({ id: 'ht1', source: 'town', target: 'trait.condition.wounded', type: 'has_trait', properties: { ticksRemaining: 48, durationTicks: 96 } });
     const row = sections('place', 'town', state).find(s => s.typeId === 'conditions_here');
     expect(row?.kind).toBe('cards');
     expect(JSON.stringify(row)).toContain('Wounded');
+    // The remaining-term bar reads the edge's `durationTicks`, the writers' spelling (review gate round 1).
+    expect(row && row.kind === 'cards' ? row.tiles[0].meter : null).toBe(0.5);
     expect(JSON.stringify(row)).not.toContain('raw_key');
   });
 

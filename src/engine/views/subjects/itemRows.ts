@@ -33,6 +33,7 @@ import { attachmentDetailFromNode } from '../../attachmentTemplateDetail';
 import { durationLabel, humanizeKeySegment } from '../../aftermathWords';
 import { contentTagChips } from '../contentTagChips';
 import { ACTION_TRIGGER_DEFAULT_PROBABILITY } from '../../../data/effect-constants';
+import { CONDITION_DURATIONS } from '../../../data/condition-trait-content';
 import {
   AGREEMENT_TYPE_WORDS,
   ITEM_LINES,
@@ -155,13 +156,14 @@ const effect: SectionResolver = (ctx) => {
 };
 
 /**
- * Duration: a template has no bearer edge, so no remaining term (THR-1120). It states
- * the term the template declares, when it declares one.
+ * Duration: a template has no bearer edge, so no remaining term (THR-1120). It states the
+ * term a grant of it lasts — `CONDITION_DURATIONS`, the table the condition applier reads
+ * (template nodes carry no term of their own). Absent for an untimed template.
  */
 const duration: SectionResolver = (ctx) => {
   const node = attachmentTemplateOf(ctx);
   if (!node) return null;
-  const ticks = node.properties.defaultDurationTicks ?? node.properties.durationTicks;
+  const ticks = CONDITION_DURATIONS[node.id];
   if (typeof ticks !== 'number' || ticks <= 0) return null;
   return panel('duration', SUBJECT_ROW_LABELS.duration, [{ left: SUBJECT_FACT_WORDS.lasts, right: durationLabel(ticks) }], 'templateDuration');
 };

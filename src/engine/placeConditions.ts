@@ -39,7 +39,8 @@ export function readActiveConditions(graph: WorldGraph, locationId: string): Act
     if (!def) continue;
     if ((def.properties?.subcategory as string) !== 'condition') continue;
     const remaining = edge.properties?.ticksRemaining;
-    const total = edge.properties?.totalTicks;
+    // The full term lives on the edge as `durationTicks` (every writer; `readEdgeDuration`, THR-1484).
+    const total = edge.properties?.durationTicks;
     const hasTerm = typeof remaining === 'number' && remaining > 0;
     rows.push({
       edgeId: edge.id,
