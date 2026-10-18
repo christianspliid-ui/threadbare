@@ -404,6 +404,17 @@ retinue retired). "Show known land" (button and key `F`) reads the same fit. A U
 no state is written. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1878 (2026-10-18), the Threads lens** —
+`thread-destination-on-threads-lens`: `phaseMovement`'s `movementState.destinationId` reaches the
+map for the first time. The Threads lens (`views/lenses/threadsLens.ts`, on the seam as
+`lens.hex`) lights each threaded mortal at court the_first / retinue / watched, resolves a
+moving mortal's destination to its place-tier Location and draws a dashed arrow there, with a
+hover line naming the place; nothing lands on an unexplored hex (`views/knowledge.ts`).
+`dominion-band-projected-to-hex-map` is **extended**: the hover line carries a pressure clause
+read from the lending place's sphere scores (`dominionPressureClause`). A UI read only: no state
+is written. Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
 not "fix" ambition display there.
 

@@ -68,6 +68,8 @@ EVENTS 10 → LABELS 11 → FOG 12
 
 **Adding a layer:** add to `RENDER_ORDER` → add visibility row to `ZOOM_VISIBILITY_MATRIX` → factory in `scene/` (`create*Mesh(tiles, …) → THREE.Group`) → wire into `HexMapV2.tsx` lifecycle → tests in `scene/__tests__/`. The `hexmap-layers` skill walks each step.
 
+**Map lenses (THR-1878):** one lens at a time, none by default (`GameScreenState.activeLens`). `MAP_LENSES` (`src/data/map-lenses.ts`) is the one list; each row names its layer family. Dominion is THR-1750's own `DominionLensLayer`, unchanged; every other lens is a `HexLensVM` (`src/engine/views/lenses/`) drawn by the one generic `HexLensLayer`: a dim over every land hex not lit (`LENS_DIM` 8.95, Dominion's slot and Foreign alpha), dashed arrows (`LENS_ARROWS` 9.55) and badges (`LENS_MARKS` 10.85), all below `FOG`, none pickable (hex picking is `screenToHex` math). A lens's mortals are drawn one step up by the agent layer (`AgentSpriteGroup.lensStepIds`). `GameScreenState.lensSuppressed` holds the lens layer off while a moment or an armed card holds the map. A new hex lens adds rows and a builder, never layer code (`Docs/design-system/extending.md`).
+
 **Stencil clipping at the coastline:** organic shorelines without modifying hex geometry. `CoastlineMesh` writes 1 into the stencil buffer (renderOrder -1, `colorWrite: false`); land `InstancedMesh` renders only where stencil = 1 (`stencilFunc: EqualStencilFunc`); water renders normally underneath. The organic boundary clips **land** hex edges; water hex colors are preserved per-hex.
 
 ## Zoom system (4 tiers + d3-zoom)

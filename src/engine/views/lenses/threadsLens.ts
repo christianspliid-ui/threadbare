@@ -107,7 +107,10 @@ function fill(
   nameRef: LensLineSegment['ref'],
   placeRef: LensLineSegment['ref'],
 ): LensLine {
-  const filled = template.replace('{court}', slots.court).replace('{their}', slots.their);
+  // A mortal with no name is named by its court phrase, so the court clause is dropped
+  // ("Whom you watch is here.", never "Whom you watch, whom you watch, is here.").
+  const t = slots.court ? template : template.replace(', {court},', '');
+  const filled = t.replace('{court}', slots.court).replace('{their}', slots.their);
   const segments: LensLineSegment[] = [];
   const re = /\{name\}|\{place\}/g;
   let last = 0;
@@ -154,7 +157,7 @@ export function buildThreadsLens(ctx: ViewContext): HexLensVM {
     const tone = COURT_TONE[m.court];
     const nameRef = { kind: 'agent' as const, id: m.id, name: m.name };
     const displayName = m.name || THREADS_LENS_WORDS.courtTag[m.court];
-    const court = THREADS_LENS_WORDS.court[m.court];
+    const court = m.name ? THREADS_LENS_WORDS.court[m.court] : '';
     lit.add(m.hexKey);
     marks.push({ kind: 'medallion', hexKey: m.hexKey, agentId: m.id, tag: displayName, tone, ref: nameRef });
 

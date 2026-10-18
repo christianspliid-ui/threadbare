@@ -1599,7 +1599,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       to: next,
       source,
       summary: `ui_map_lens_changed: ${prev ?? 'null'} → ${next ?? 'null'} (${source})`,
-    } as unknown as Parameters<typeof emitTrace>[0]);
+    });
   }, [gameScreen]);
   const setDominionLens = useCallback((on: boolean) => {
     setMapLens(on ? 'dominion' : null, 'debug');

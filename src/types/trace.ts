@@ -20,7 +20,7 @@ import type {
 } from './traces/mentorship-traces';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
-import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace, StageTrace, UiMapCameraJumpTrace } from './traces/ui-traces';
+import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace, StageTrace, UiMapCameraJumpTrace, UiMapLensChangedTrace } from './traces/ui-traces';
 import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace, FightTriggerGrudgeTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
 import type {
@@ -4955,6 +4955,7 @@ export type TraceEntry =
   | ViewFallbackTrace
   | StageTrace
   | UiMapCameraJumpTrace
+  | UiMapLensChangedTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

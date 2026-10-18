@@ -21,6 +21,8 @@ import { lensToneColor } from '../scene/lensInk';
 export const LENS_LEGEND_MAX_HEIGHT_PX = DOMINION_LEGEND_MAX_HEIGHT_PX;
 /** Legend card width (THR-1830 mock). */
 export const LENS_LEGEND_MAX_WIDTH_PX = 330;
+/** The 1080p root size the px limits are written against; the card scales with the root step (THR-1819). */
+const ROOT_PX_AT_1080 = 16;
 /** Swatch size beside a legend word. */
 const LENS_LEGEND_SWATCH_PX = 10;
 
@@ -49,8 +51,10 @@ export const LensLegend = memo(function LensLegend({ lens, bandColors, hexLegend
       data-lens={lens.id}
       style={{
         pointerEvents: 'auto',
-        maxHeight: LENS_LEGEND_MAX_HEIGHT_PX,
-        maxWidth: LENS_LEGEND_MAX_WIDTH_PX,
+        // In rem, so the limit grows with the 1440p type step and the longest legend
+        // still fits at its limit (Law 57: never scrolls, never truncates).
+        maxHeight: `${LENS_LEGEND_MAX_HEIGHT_PX / ROOT_PX_AT_1080}rem`,
+        maxWidth: `${LENS_LEGEND_MAX_WIDTH_PX / ROOT_PX_AT_1080}rem`,
         overflow: 'hidden',
         padding: '8px 12px',
         fontSize: 'var(--text-xs)',

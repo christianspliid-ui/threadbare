@@ -368,7 +368,7 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
             to: null,
             source: 'unknown_id',
             summary: `ui_map_lens_changed: '${id}' has no MAP_LENSES row (unknown_id)`,
-          } as unknown as Parameters<typeof emitTrace>[0]);
+          });
           return { error: `Unknown lens '${id}'. Valid: ${MAP_LENSES.map(l => l.id).join(', ')}, or null.` };
         }
         setMapLens(id, 'debug');
