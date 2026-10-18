@@ -1,6 +1,6 @@
 /**
  * THR-1120 — resolve an attachment **template** node into the detail payload
- * `AttachmentDetailView` already draws.
+ * the attachment content card draws.
  *
  * ## Why a template and not a granted instance
  *
@@ -38,7 +38,29 @@ import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import type { AttachmentTier } from '../types/attachments';
 import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
-import type { AttachmentDetailData } from '../components/Game/AttachmentDetailView';
+
+/**
+ * What an attachment's content card shows. Lived with `AttachmentDetailView` until
+ * THR-1912 retired that view; the Inspector's content card and the rail read it here.
+ */
+export interface AttachmentDetailData {
+  id: string;
+  name: string;
+  subcategory: string;
+  tier: AttachmentTier;
+  mechanicalSummary: string;
+  flavorText?: string;
+  tags: string[];
+  lossCondition?: string;
+  grantedBy?: string;
+  agreementType?: string;
+  source?: string;
+  image?: string;
+  ticksRemaining?: number | null;
+  totalTicks?: number;
+  /** On-use behavior read from `action_trigger` effects (THR-719, was `onUseTriggers`). */
+  actionTriggers?: readonly ActionTriggerEffect[];
+}
 
 /** Node types that carry a possession template. Mirrors `getAgentAttachments`. */
 const POSSESSION_NODE_TYPES: ReadonlySet<string> = new Set(['artifact', 'artifact_legendary']);

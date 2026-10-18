@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
  * THR-1911 (Inspector plan § D4, § D13) — with `openInspector` wired, the router's card
- * and sheet arms open the Inspector, and nothing reaches the detail stack. One case per
+ * and sheet arms open the Inspector (the detail stack retired with THR-1912). One case per
  * route a caller can take through the router; the callers in § D13 all reach one of these
  * (map clicks and the selection handlers call the same `openInspector` directly).
  */
@@ -22,14 +22,13 @@ function graph(): WorldGraph {
   return g;
 }
 
-function mount(openSheet: (t: NavigationTarget) => boolean = () => false, withInspector = true) {
+function mount(openSheet: (t: NavigationTarget) => boolean = () => false) {
   const openInspector = vi.fn();
   const openCodexEntry = vi.fn(() => true);
   let router!: RefRouter;
   function Harness() {
     router = useRefRouter({
-      graph: graph(), tick: 1, seed: 42, openSheet, openCodexEntry, codexHasEntry: () => true,
-      ...(withInspector ? { openInspector } : {}),
+      graph: graph(), tick: 1, seed: 42, openSheet, openCodexEntry, codexHasEntry: () => true, openInspector,
     });
     return null;
   }
@@ -40,10 +39,9 @@ function mount(openSheet: (t: NavigationTarget) => boolean = () => false, withIn
 
 describe('the router opens the Inspector (THR-1911)', () => {
   it.each(WORLD_REF_KINDS.map(k => [k] as [WorldRefKind]))('a %s card opens at its row size', (kind) => {
-    const { open, openInspector, router } = mount();
+    const { open, openInspector } = mount();
     open({ kind, id: 'x' });
     expect(openInspector).toHaveBeenCalledWith({ kind, id: 'x' }, SURFACE_BY_WORLD_REF[kind].opensAt ?? 'docked');
-    expect(router().stack.stack).toHaveLength(0); // the detail stack is never pushed
   });
 
   it('factions and past events open wide as a card (THR-1827 call 12)', () => {
@@ -83,14 +81,8 @@ describe('the router opens the Inspector (THR-1911)', () => {
     expect(openInspector).not.toHaveBeenCalled();
   });
 
-  it('every world kind can open as a sheet once the Inspector is wired (canOpen)', () => {
+  it('every world kind can open as a sheet (canOpen)', () => {
     const { router } = mount();
     for (const kind of WORLD_REF_KINDS) expect(router().canOpen({ kind, id: 'x' }, 'sheet')).toBe(true);
-  });
-
-  it('without openInspector (style guide, tests) the card still pushes the detail stack', () => {
-    const { open, router } = mount(() => false, false);
-    open({ kind: 'agent', id: 'veiren' });
-    expect(router().stack.stack).toHaveLength(1);
   });
 });

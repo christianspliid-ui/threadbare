@@ -47,7 +47,7 @@ export interface StageHostProps {
   setGameState: Dispatch<SetStateAction<GameState>>;
   interruptResolution: InterruptResolution;
   /** Opens a mortal's sheet; `initialTab` picks the tab (THR-1963: the work moments open Journey). */
-  openAgentSheetForId: (agentId: string, initialTab?: import('../tabs/TabBar').TabId) => void;
+  openAgentSheetForId: (agentId: string, initialTab?: import('../hooks/useAgentInteraction').ProfileTabId) => void;
   // Emergence dilemma: gated on `gameState.pendingEmergenceDecision` alone.
   // Encounter veil
   tieredEncounterState: {

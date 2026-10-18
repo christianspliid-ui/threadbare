@@ -178,16 +178,15 @@ describe('styleguide sync (UI Law 29)', () => {
 // and context stood up, and would go green on a sheet imported into a branch no state
 // can reach, which this does not pretend to catch either.
 
-/** The Tier-3 sheets the surface registry can route to. Each must have a production mount. */
-const ROUTED_SHEETS = [
-  'AgentProfileModal',
-  'LocationProfileModal',
-  'FactionSheet',
-  'ArmySheet',
-  'ArtifactSheet',
-  'AttachmentDetailView',
-  'AscendantSheet',
-] as const;
+/**
+ * The page renderer every routed world sheet reaches. Each must have a production mount.
+ *
+ * THR-1912: the per-kind sheets (AgentProfileModal, LocationProfileModal, FactionSheet,
+ * ArmySheet, ArtifactSheet, AttachmentDetailView, AscendantSheet) were deleted — every
+ * world `sheet` arm opens the Inspector, wide (`refRouter.inspector.test.tsx` pins the
+ * routing per kind), so the mount that matters is the Inspector's host and page.
+ */
+const ROUTED_SHEETS = ['InspectorHost', 'InspectorPage'] as const;
 
 /** Files that importing a sheet does *not* count as mounting it. */
 function isProductionModule(path: string): boolean {
@@ -235,21 +234,12 @@ describe('routed sheets have a production mount (THR-1490)', () => {
     expect(importersOf('NoSuchSheetComponent')).toEqual([]);
   });
 
-  it('every sheet the registry promises is covered by this gate', () => {
-    // Pins the hand-written list above against the registry, so a sheet added to a
-    // surface row without being added here cannot slip past unmounted.
-    // (`agent` → AgentProfileModal, `hex` → HexDetailView, `area` → the hex chronicle:
-    // the three arms whose destination is not a modal sheet are excluded by name.)
-    const NON_SHEET_ARMS = new Set(['hex', 'area', 'encounter', 'journey', 'receipt']);
-    const promised = Object.values(SURFACE_BY_WORLD_REF)
-      .map(row => row.sheet)
-      .filter((s): s is NonNullable<typeof s> => s !== null && !NON_SHEET_ARMS.has(s));
-    // Every promised arm maps to one of the sheets listed above; the mapping is by
-    // convention (arm 'faction' → FactionSheet) and is asserted loosely by name.
-    for (const arm of promised) {
-      const matched = ROUTED_SHEETS.some(s => s.toLowerCase().includes(arm.toLowerCase()));
-      expect(matched, `surface registry promises sheet arm "${arm}" and ROUTED_SHEETS names no component for it`).toBe(true);
-    }
+  it('every world sheet the registry promises has a page kind, so the Inspector can draw it', () => {
+    // The registry's sheet arms used to map by name onto the sheet components above; since
+    // THR-1912 they all reach the Inspector, which draws a page for every card kind.
+    const promised = Object.values(SURFACE_BY_WORLD_REF).filter(row => row.sheet !== null);
+    expect(promised.length).toBeGreaterThan(0);
+    for (const row of promised) expect(row.card).toBeTruthy();
   });
 });
 

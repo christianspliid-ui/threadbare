@@ -6,25 +6,15 @@
  */
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { AgentProfileModal } from '../AgentProfileModal';
 import { AscendantBeatModal } from '../AscendantBeatModal';
 import { HexTooltip } from '../../HexMapV2/interaction/HexTooltip';
-import type { AgentInfoCardData } from '../../../engine/agentDetail';
-import { avatarHoverLine, avatarGodTitleLine, AVATAR_SHEET_SUFFIX } from '../../../data/avatar-framing';
+import { avatarHoverLine, avatarGodTitleLine } from '../../../data/avatar-framing';
 import {
   SPINE_BEAT_PRESENTATION,
   SPINE_AVATAR_NAME_TOKEN,
   SPINE_AVATAR_NAME_FALLBACK,
   fillSpineAvatarName,
 } from '../../../data/ascendant-beat-content';
-
-const avatarCard: AgentInfoCardData = {
-  id: 'actor.avatar',
-  name: 'Maren',
-  locationId: 'loc.start',
-  locationName: 'Sacred Grove',
-  knowledgeLevel: 'transparent',
-};
 
 describe('avatar framing copy (THR-1609)', () => {
   it('hover line names the avatar as the player', () => {
@@ -39,39 +29,6 @@ describe('avatar framing copy (THR-1609)', () => {
     expect(avatarGodTitleLine('Vara', 'Vara', 'Witness')).toBe('You are Vara, the Witness');
     expect(avatarGodTitleLine('Vara', 'Vara')).toBe('You are Vara');
     expect(avatarGodTitleLine(undefined, undefined)).toBe('You are the god who wears it');
-  });
-});
-
-describe('avatar sheet header (THR-1609)', () => {
-  it('reads "{name} — your mortal shape" above the god\'s title when mortalShape is set', () => {
-    render(
-      <AgentProfileModal
-        card={avatarCard}
-        onClose={() => {}}
-        mortalShape={{ godTitleLine: 'You are Mira, The Living Balm' }}
-      />,
-    );
-    const heading = screen.getByRole('heading', { level: 1 });
-    expect(heading.textContent).toBe(`Maren — ${AVATAR_SHEET_SUFFIX}`);
-    expect(screen.getByTestId('mortal-shape-god-title').textContent).toBe('You are Mira, The Living Balm');
-  });
-
-  it('the player\'s own shape is never labelled a stranger', () => {
-    render(
-      <AgentProfileModal
-        card={{ ...avatarCard, knowledgeLevel: 'stranger' }}
-        onClose={() => {}}
-        mortalShape={{ godTitleLine: 'You are Vara, the Witness', portraitUrl: '/portraits/origin.png' }}
-      />,
-    );
-    expect(screen.queryByText('stranger')).toBeNull();
-  });
-
-  it('a mortal\'s sheet carries no mortal-shape framing', () => {
-    render(<AgentProfileModal card={{ ...avatarCard, id: 'actor.kael', name: 'Kael' }} onClose={() => {}} />);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Kael');
-    expect(screen.queryByTestId('mortal-shape-suffix')).toBeNull();
-    expect(screen.queryByTestId('mortal-shape-god-title')).toBeNull();
   });
 });
 

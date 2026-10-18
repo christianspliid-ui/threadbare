@@ -69,14 +69,8 @@ export const GIFT_HOLD_SURFACES: readonly string[] = [
   'SettingsPanel',
   'ReadTheThreadsPanel',
   'AgendaPicker',
-  'ActionDrawer',
-  'AgentProfileModal',
-  'LocationProfileModal',
-  'FactionSheet',
-  'ArmySheet',
-  'ArtifactSheet',
-  'AttachmentDetailView',
-  'AscendantSheet',
+  // THR-1912: the drawer, the person/place/faction/army/artifact/god sheets and the
+  // attachment view retired; a subject opens in the Inspector, which holds only at Full.
   'DoomClockDetail',
   'MandateDetail',
   'HarvestScreen',
@@ -93,12 +87,12 @@ export const GIFT_HOLD_SURFACES: readonly string[] = [
 ];
 /**
  * THR-1853 — player surfaces that do NOT hold a world-pushed interrupt (an arrival).
- * The card hand stays open through ordinary play, and a held arrival holds the clock,
- * so counting it would freeze the world with nothing on screen whenever a mortal is
- * selected. It still holds a waiting gift (`GIFT_HOLD_SURFACES`).
+ * A held arrival holds the clock, so a surface that stays open through ordinary play
+ * would freeze the world with nothing asking for the player. Such a surface still holds
+ * a waiting gift (`GIFT_HOLD_SURFACES`). The card drawer was the first one; it retired
+ * with THR-1912.
  */
 export const ARRIVAL_HOLD_EXEMPT_SURFACES: readonly string[] = [
-  'ActionDrawer',
   // THR-1911: an arrival is a pause-tier interrupt, and it steps Full down to docked
   // rather than waiting behind it (plan § D2).
   'InspectorFull',

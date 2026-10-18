@@ -10,23 +10,11 @@ import { useEscapeLayer } from '../../shared/useEscapeLayer';
 import { Z_BAND } from '../../shared/zBands';
 
 /**
- * View level state machine:
- *
- *   world  ──(hex click)──▶  hex-zoom  ──(location click)──▶  location
- *     ▲                         ▲                                │
- *     └──(back to world)────────┴──────(back to hex)─────────────┘
- *
- * **Direct jump:** The retinue panel eye icon calls handleLocationClick from
- * 'world' view, skipping 'hex-zoom'. handleLocationClick MUST derive and set
- * focusedHex from the location node — otherwise LocationView's guard
- * (viewLevel === 'location' && focusedHex) fails and nothing renders.
- *
- * State invariants:
- * - 'hex-zoom' and 'location' require focusedHex to be set
- * - 'location' additionally requires focusedLocationId to be set
- * - 'world' clears both focusedHex and focusedLocationId
+ * The map's view level. Only `'world'` remains: the `'hex-zoom'` and `'location'` views
+ * retired with the Inspector (THR-1911 re-routed their callers, THR-1912 deleted them), so
+ * a hex or a place opens its page in the Inspector and the map never leaves the world.
  */
-export type ViewLevel = 'world' | 'hex-zoom' | 'location';
+export type ViewLevel = 'world';
 
 interface UseViewNavigationParams {
   gameState: GameState;
@@ -47,14 +35,8 @@ interface UseViewNavigationReturn {
   setHoveredHex: React.Dispatch<React.SetStateAction<{ col: number; row: number } | null>>;
   selectedHex: { col: number; row: number } | null;
   viewLevel: ViewLevel;
-  focusedHex: { col: number; row: number } | null;
-  focusedLocationId: string | null;
   moveMode: boolean;
   hexMapRef: React.RefObject<HexMapV2Handle>;
-  handleHexClick: (coord: { col: number; row: number }) => void;
-  handleBackToWorld: () => void;
-  handleBackToHex: () => void;
-  handleLocationClick: (locationId: string) => void;
   handleCenterOnAvatar: () => void;
   handleAvatarMoveClick: () => void;
   handleHexClickMove: (coord: { col: number; row: number }) => void;
@@ -73,53 +55,9 @@ export function useViewNavigation({
 }: UseViewNavigationParams): UseViewNavigationReturn {
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
-  const [viewLevel, setViewLevel] = useState<ViewLevel>('world');
-  const [focusedHex, setFocusedHex] = useState<{ col: number; row: number } | null>(null);
-  const [focusedLocationId, setFocusedLocationId] = useState<string | null>(null);
+  const viewLevel: ViewLevel = 'world';
   const [moveMode, setMoveMode] = useState(false);
   const hexMapRef = useRef<HexMapV2Handle>(null);
-
-  const handleHexClick = useCallback((coord: { col: number; row: number }) => {
-    // Only allow hex zoom into fully visible hexes — not unexplored or remembered (fog of war)
-    if (!fogDisabled) {
-      const hexVis = gameState.visibilityMap.get(visKey(coord.col, coord.row));
-      if (!hexVis || hexVis.state !== 'visible') return;
-    }
-
-    setSelectedHex(coord);
-    setViewLevel('hex-zoom');
-    setFocusedHex(coord);
-  }, [gameState.visibilityMap, fogDisabled]);
-
-  const handleBackToWorld = useCallback(() => {
-    setViewLevel('world');
-    setFocusedHex(null);
-    setFocusedLocationId(null);
-    setSelectedHex(null); // IX-006: clear selection state on back navigation
-  }, []);
-
-  const handleBackToHex = useCallback(() => {
-    setViewLevel('hex-zoom');
-    setFocusedLocationId(null);
-  }, []);
-
-  const handleLocationClick = useCallback((locationId: string) => {
-    // Derive the hex coordinates from the location node so that
-    // focusedHex is always set — even when jumping directly from
-    // the world view (e.g. retinue eye icon) without going through hex-zoom first.
-    const node = gameState.graph.getNode(locationId);
-    if (node) {
-      const props = (node.properties ?? {}) as Record<string, unknown>;
-      const col = props.hexCol as number | undefined;
-      const row = props.hexRow as number | undefined;
-      if (col != null && row != null) {
-        setFocusedHex({ col, row });
-        setSelectedHex({ col, row });
-      }
-    }
-    setViewLevel('location');
-    setFocusedLocationId(locationId);
-  }, [gameState.graph]);
 
   const handleCenterOnAvatar = useCallback(() => {
     if (avatarPixelPos && hexMapRef.current) {
@@ -155,23 +93,22 @@ export function useViewNavigation({
       }
       setMoveMode(false);
     } else {
-      handleHexClick(coord);
+      // A plain click selects a visible hex; the caller opens its land page (THR-1911, § D10).
+      if (!fogDisabled) {
+        const hexVis = gameState.visibilityMap.get(visKey(coord.col, coord.row));
+        if (!hexVis || hexVis.state !== 'visible') return;
+      }
+      setSelectedHex(coord);
     }
-  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.tick, tiles, COLS, ROWS, handleHexClick, setGameState, setRunning]);
+  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.tick, gameState.visibilityMap, fogDisabled, tiles, COLS, ROWS, setGameState, setRunning]);
 
   return {
     hoveredHex,
     setHoveredHex,
     selectedHex,
     viewLevel,
-    focusedHex,
-    focusedLocationId,
     moveMode,
     hexMapRef,
-    handleHexClick,
-    handleBackToWorld,
-    handleBackToHex,
-    handleLocationClick,
     handleCenterOnAvatar,
     handleAvatarMoveClick,
     handleHexClickMove,

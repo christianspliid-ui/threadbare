@@ -22,7 +22,6 @@ import {
   type EssenceRowView,
   type QuintessenceView,
 } from '../selectors';
-import { AscendantSheet } from '../../AscendantSheet';
 import { NudgeCard, } from '../../encounter-stage/shells/NudgePhaseShell';
 import { NudgeBalance, NudgeReadingMarks } from '../../encounter-stage/shells/NudgeStageHeader';
 import type { NudgeHandCard } from '../../encounter-stage/useNudgeHand';
@@ -265,24 +264,6 @@ const IDENTITY: AscendantIdentityView = {
 };
 
 describe('Reaches and quintessence (D7, D8)', () => {
-  it('the sheet hovers every Reach tier word and the Reaches heading, and keeps the quintessence', () => {
-    render(
-      <AscendantSheet
-        open onClose={() => {}} gameState={makeState()} archetype={ARCHETYPE}
-        avatarName="Aurel Vane" sphereColor="#8899ff" originFragmentId="frag_1"
-      />,
-    );
-    // The sheet renders through a portal, so read the document, not the container.
-    const tiers = document.querySelectorAll('[data-testid^="sheet-reach-tier-"]');
-    expect(tiers.length, 'premise: reach rows rendered').toBe(2);
-    for (const el of tiers) {
-      const id = el.parentElement?.getAttribute('data-tooltip-id');
-      expect(id, el.getAttribute('data-testid')!).toBeTruthy();
-      expect(resolveTooltip(id!)).not.toBeNull();
-    }
-    expect(screen.getByTestId('sheet-reaches-heading').parentElement?.getAttribute('data-tooltip-id')).toBe('ui.reaches');
-    expect(screen.getByTestId('sheet-quintessence-word').textContent).toBe('Absolute');
-  });
 
   it('showOnStrip flips below ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW', () => {
     const top = ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW * 100;

@@ -108,18 +108,12 @@ export function isGiftHoldExempt(beatId: string): boolean {
 
 /**
  * The flags GameView already holds, each already resolved to "this surface is on
- * screen" (e.g. the drawer flag is `drawerOpen && !!selectedAgentId`).
+ * screen" (e.g. the mandate flag is `mandateDetailOpen && !!gameState.mandateDefinition`).
  */
 export interface PlayerSurfaceFlags {
   settingsPanelOpen: boolean;
   readThreadsOpen: boolean;
   agendaPickerOpen: boolean;
-  actionDrawerOpen: boolean;
-  agentProfileOpen: boolean;
-  /** `stubModalState?.category` — location / faction / army / artifact sheet. */
-  stubSheetCategory: string | null;
-  attachmentSheetOpen: boolean;
-  ascendantSheetOpen: boolean;
   doomDetailOpen: boolean;
   mandateDetailOpen: boolean;
   harvestOpen: boolean;
@@ -134,13 +128,6 @@ export interface PlayerSurfaceFlags {
   inspectorFullOpen?: boolean;
 }
 
-const STUB_SHEET_IDS: Readonly<Record<string, string>> = {
-  location: 'LocationProfileModal',
-  faction: 'FactionSheet',
-  army: 'ArmySheet',
-  artifact: 'ArtifactSheet',
-};
-
 /**
  * The player-opened surfaces on screen, as ids, in `GIFT_HOLD_SURFACES` order. Shared
  * with `getDebugOpenModals` so the debug list and the gift hold cannot drift.
@@ -150,12 +137,6 @@ export function openPlayerSurfaces(f: PlayerSurfaceFlags): string[] {
   if (f.settingsPanelOpen) open.push('SettingsPanel');
   if (f.readThreadsOpen) open.push('ReadTheThreadsPanel');
   if (f.agendaPickerOpen) open.push('AgendaPicker');
-  if (f.actionDrawerOpen) open.push('ActionDrawer');
-  if (f.agentProfileOpen) open.push('AgentProfileModal');
-  const stub = f.stubSheetCategory ? STUB_SHEET_IDS[f.stubSheetCategory] : undefined;
-  if (stub) open.push(stub);
-  if (f.attachmentSheetOpen) open.push('AttachmentDetailView');
-  if (f.ascendantSheetOpen) open.push('AscendantSheet');
   if (f.doomDetailOpen) open.push('DoomClockDetail');
   if (f.mandateDetailOpen) open.push('MandateDetail');
   if (f.harvestOpen) open.push('HarvestScreen');

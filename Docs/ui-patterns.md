@@ -16,7 +16,7 @@ Every list item in a sidebar or panel that references a map-located entity (agen
 | Component | What it zooms to |
 |-----------|-----------------|
 | RetinuePanel agent rows | Agent's current location hex |
-| AgentInfoCard (Tier 2 sidebar) | Selected agent's location hex |
+| The Inspector's show-on-map control | The open subject's hex |
 | AvatarHUD (top-left overlay) | Ascendant's current hex |
 
 ### Implementation pattern
@@ -59,21 +59,24 @@ Agent information is gated by familiarity level across three UI tiers:
 | Tier | Component | Trigger | What's shown |
 |------|-----------|---------|-------------|
 | 1 | Tooltip | Hover | Name + one-line summary (familiarity-aware via `agent.*` prefix in tooltipResolver) |
-| 2 | AgentInfoCard | Click (sidebar) | Domain grid, values, bonds — sections gated by knowledge level |
-| 3 | AgentProfileModal | "View Full Character Sheet" button | Generated quotes, backstory, portrait prompt — full profile |
+| 1½ | HoverCard | Dwell on a name | The page's header and first section |
+| 2 | The Inspector, docked | Click a name, a map subject or a notification | The person page — rows gated by knowledge level |
+| 3 | The Inspector, wide or Full | Widen, or a sheet-level open | The whole page: every tab, Chronicle and Chapters |
+
+The character sheet (`AgentProfileModal`) and the compact card (`AgentInfoCard`) that were tiers 2 and 3 retired in THR-1912 (plan THR-1876).
 
 ### Navigation between tiers
 
-- Tier 1 → Tier 2: click an agent in RetinuePanel or HexZoomView
-- Tier 2 → Tier 3: click "View Full Character Sheet" button (footer) or "Sheet →" link (header)
-- Tier 2 → back: "← Back" button returns to RetinuePanel
-- Tier 3 → dismiss: Escape key or close button
+- Tier 1 → Tier 2: click an agent anywhere — every open goes through `useRefRouter`
+- Tier 2 → Tier 3: the Inspector's widen control, or Full
+- Back: the Inspector's history and trail
+- Dismiss: Escape steps Full down to docked, then closes
 
 ### Rules
 
 - No numeric stats are shown to the player — use verbal word scales from `domain-words.ts` (`getDomainWord`, `getValueWord`, `getReputationWord`, `getBondStrengthWord`)
 - Knowledge level gates what sections are visible — don't show data the player hasn't "earned" through familiarity
-- The `getAgentInfoCard()` and `getAgentFullProfile()` aggregators handle gating — components render what they receive
+- The person page's view model (`views/subjects/personPage.ts`) handles gating — the page renders what it receives
 
 ---
 
@@ -83,13 +86,12 @@ Multiple overlays can exist but only one should be active at a time. The interac
 
 | Overlay | Component | Z-order | Dismiss |
 |---------|-----------|---------|---------|
-| Action Drawer | ActionDrawer | Bottom drawer | Escape, close button, click outside |
+| Inspector at Full | InspectorHost | Covers the map | Escape (steps down to docked) |
 | Narrative Log | NarrativeLog | Floating pill + overlay | Escape, close button |
 | Intervention Confirm | InterventionConfirm | Popover on action card | Escape, cancel button |
 | Agenda Picker | AgendaPicker | Center overlay | Escape, selection |
 | Scry Court | ScryOverlay | Full-screen overlay | Escape, close button |
 | Strand View | StrandView | Full-screen overlay | Escape, close button |
-| Agent Profile | AgentProfileModal | Full-screen modal | Escape, close button |
 | Debug Panel | DebugPanel | Right-side drawer | Backtick key toggle |
 
 ### Rules
@@ -190,7 +192,7 @@ Action cards and other multi-item rows use a horizontal scroll layout that preve
 
 ### Where it appears
 
-- ActionDrawer (horizontal card row)
+- The god rail's hand (card row)
 
 ### Implementation pattern
 
@@ -255,9 +257,8 @@ GameView delegates all state management to custom hooks. Each hook groups relate
 
 - `useAgentInteraction` (12+ useState, manages overlay mutual exclusion, pending interventions, agenda flow)
 - `useSimulation` (game state, tick loop, running/paused)
-- `useViewNavigation` (view level state machine: world → hex-zoom → location)
+- `useViewNavigation` (hover, selection, move mode; the view level is only `'world'` since THR-1912)
 - `useAvatarData` (avatar position, sphere color, location overlays)
-- `useHexZoomData` (derived hex zoom view data)
 - `useScry` (scry state + handlers)
 
 ### Rules
@@ -277,8 +278,7 @@ All SVG/canvas-based components (hex zoom, breadcrumbs) and the Three.js hex map
 
 ### Where it appears
 
-- HexZoomView (LAYOUT, COLORS, OPACITY, FONT — 40+ constants)
-- HexBreadcrumb (TERRAIN_COLORS)
+- HexMapV2 layers (`CAMERA_CONSTANTS`, the layer configs)
 - AgentWheel constants (WHEEL_CONFIG, now removed but pattern remains in ActionCard)
 
 ### Implementation pattern
@@ -323,7 +323,6 @@ Sphere colors, tier colors, and icon glyphs are resolved via module-level `Recor
 - RetinuePanel (`TIER_COLORS: Record<number, string>`)
 - ActionCard (`getWheelSlotGlyph()`)
 - EssencePanel (sphere icon lookup)
-- HexBreadcrumb (`TERRAIN_COLORS`)
 
 ### Implementation pattern
 
@@ -436,7 +435,6 @@ React instantly removes elements when their `show` condition becomes false — n
 
 - ScryOverlay (`anim-fade`)
 - HarvestScreen (`anim-fade`)
-- AgentProfileModal (`anim-fade-up`)
 - StrandView (`anim-fade`)
 - AgendaPicker (`anim-fade`)
 - MandateTracker popover (`anim-fade-down`)
@@ -513,9 +511,7 @@ Themed empty states that stay in the game fiction. Muted, italic, with a slow br
 | Component | Empty state text |
 |-----------|-----------------|
 | RetinuePanel | "The threads of fate lie still. No souls yet attend your court." |
-| LocationView (no selection) | "Select a hex to peer into the world below." |
-| LocationView agents | "This place lies quiet — for now." |
-| LocationView encounters | "The stillness here is unbroken." |
+| Place page, nothing happening | "This place lies quiet — for now." (the place page's `doingLine` fallback; the location view that showed it retired in THR-1912) |
 | NarrativeLog | "Awaiting the first whispers of fate..." |
 
 ### Implementation pattern
@@ -606,29 +602,9 @@ Wraps the game area content, NOT the entire app — shell/nav survives if the ga
 
 ---
 
-## 18. Hex Chronicle Pattern
+## 18. Hex Chronicle Pattern (retired — now the land page)
 
-The hex detail view uses a narrative chronicle design with four layers instead of traditional data-label panels.
-
-**Structure:** Collapsible sidebar (HexSidebar) + scrollable narrative (HexChronicle).
-
-**Four Narrative Layers:**
-- **The Land** — Terrain prose establishing atmosphere and geography
-- **The Soul** — Sphere influence descriptions with inline sphere pills
-- **The People** — Culture/faction vignettes, inline LocationCards and SoulCards
-- **The Ruins** — Historical culture prose, region etymology, epitaph, exploration hooks (conditional: only when historical culture exists)
-
-**Inline Components:**
-- `LocationCard` — Clickable card with subtype glyph, name, flavor text, agent count
-- `SoulCard` — Agent card with sphere-colored border, archetype tag
-- `EventBlock` — Gold-bordered event description (Stirring/Crisis)
-- `ExplorationHook` — Gold diamond glyph (⟐) with italic discovery prompt
-
-**Data Flow:** `useHexZoomData` hook → `hexRegionData` (via `getHexRegionData`) → HexChronicle/HexSidebar. Historical culture prose via `historicalCultureResolver` and `regionEtymologyResolver`.
-
-**Animation:** `.chronicle-layer` class with staggered `chronicle-fade-in` (0.05s–0.35s delay per layer).
-
-**Fog of War:** `lineOfSight === 'none'` shows "Unknown Territory" message instead of full chronicle.
+The hex chronicle view (`HexSidebar` + `HexChronicle`) retired in THR-1912. Its four narrative layers — **The Land**, **The Soul**, **The People**, **The Ruins** — moved byte for byte into the land page's rows in the Inspector (plan THR-1876 § D10, `views/subjects/landPage.ts` / `landProse.ts`), with *In this land* listing the hex's people, holder and discovered sites. Fog of war still shows "Unknown Territory" for a hex out of sight.
 
 ---
 
@@ -643,7 +619,7 @@ Tabs are rendered as `<button>` elements in a flex row. Active state indicated b
 | Component | Tabs | File |
 |-----------|------|------|
 | `DebugPanel` | Traces / CLI / Health | `DebugPanel.tsx` |
-| `AgentProfileModal` | 6 profile tabs | `AgentProfileModal.tsx` + `TabBar.tsx` |
+| `InspectorPage` | A page's tabs, filtered by size | `inspector/InspectorPage.tsx` (through the shared `Tabs`) |
 
 ### Implementation pattern
 
@@ -823,33 +799,9 @@ const [open, setOpen] = useState(false);
 
 ---
 
-## 23. Context-Sensitive Action Filtering (ActionDrawer)
+## 23. Context-Sensitive Action Filtering (the Act row)
 
-The `ActionDrawer` shows player actions filtered by target context and NarrativeLayer. New actions must register in the template pool — the drawer filters automatically.
-
-### How it works
-
-```
-Template pool (all action templates)
-  → filterActionsByContext(selectedTarget, gameState)
-    → filtered by: target type (actor/location/self), prerequisites, essence cost, reach
-  → grouped by NarrativeLayer (God | Hero | World | All)
-  → displayed as filter tabs + card hand
-```
-
-### Adding a new filter category
-
-1. Add a value to the `NarrativeLayer` union in `src/types/`
-2. Add a tab entry to the `ACTION_DRAWER_TABS` config in `ActionDrawer.tsx`
-3. Set `narrativeLayer` on your action template(s) in the template data
-
-### Rules
-
-- Don't add a new tab for a single action — tabs are for logical categories with 3+ members
-- Tabs are labeled for player-facing narrative framing, not engine internals (e.g., "God Powers", not "AscendantActions")
-- The "All" tab always shows unfiltered results — it's the default view
-- Context filtering (which actions appear) is driven by `filterActionsByContext` in the engine, not by UI state
-- Lock states (greyed-out with reason text) come from the action template's `prerequisite` evaluation — don't add UI-layer locks
+The Inspector page's Act row shows the cards that can touch the open subject, filtered by target context (`views/subjects/actOn.ts`, `TARGET_CONTEXT_BUILDERS`). New actions register in the template pool — the row filters automatically. The `ActionDrawer` and its NarrativeLayer filter tabs retired in THR-1912 (plan THR-1876 § D9).
 
 ---
 
@@ -912,4 +864,5 @@ const toggle = (category: ThreadCategory) => {
 *(2026-03-10 — Added section 17: Disabled Action Feedback (Shake-No). FE-16.)*
 *(2026-03-15 — Added section 18: Hex Chronicle Pattern. HexChronicle redesign with four narrative layers, inline components, staggered animations, and fog-of-war awareness.)*
 *(2026-04-13 — Added sections 19-24: Tab navigation, Toast/alert notifications, Inline loading states, Dropdown menus, Context-sensitive action filtering, Accordion/collapsible sections. THR-48.)*
+*(2026-10-18 — THR-1912: the Inspector replaced the character sheet, the detail column, the hex-zoom and location views and the ActionDrawer; §§ 2, 3, 18, 19, 23 rewritten.)*
 *(2026-08-29 — R3 context-cleanup (THR-1353): Panel Styling renamed to Dark Tapestry and converted from Tailwind stone classes to tokens; §1 tooltip rule aligned with Law 17's raw-`title` retirement.)*

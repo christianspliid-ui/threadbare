@@ -164,8 +164,7 @@ describe('interruptRegistry', () => {
 describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
   const NO_FLAGS: PlayerSurfaceFlags = {
     settingsPanelOpen: false, readThreadsOpen: false, agendaPickerOpen: false,
-    actionDrawerOpen: false, agentProfileOpen: false, stubSheetCategory: null,
-    attachmentSheetOpen: false, ascendantSheetOpen: false, doomDetailOpen: false,
+    doomDetailOpen: false,
     mandateDetailOpen: false, harvestOpen: false, codexOpen: false,
     chapterLedgerOpen: false, scryOpen: false, rivalsOpen: false, notablesOpen: false,
   };
@@ -270,14 +269,14 @@ describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
     expect(r.heldArrivals).toEqual([{ id: 'PremonitionModal', heldBy: ['interrupt', 'recent_input'] }]);
   });
 
-  it('the open card hand never holds an arrival — it stays open through play, and a hold stops the clock', () => {
-    const handOnly = openPlayerSurfaces({ ...NO_FLAGS, actionDrawerOpen: true });
-    expect(handOnly).toEqual(['ActionDrawer']);
-    expect(arrivalHoldingSurfaces(handOnly)).toEqual([]);
-    const r = resolveInterrupts(snap({ premonitionPending: true, playerSurfaceOpen: arrivalHoldingSurfaces(handOnly).length > 0 }));
+  it('the Full Inspector never holds an arrival — the arrival steps it down, and a hold stops the clock', () => {
+    const fullOnly = openPlayerSurfaces({ ...NO_FLAGS, inspectorFullOpen: true });
+    expect(fullOnly).toEqual(['InspectorFull']);
+    expect(arrivalHoldingSurfaces(fullOnly)).toEqual([]);
+    const r = resolveInterrupts(snap({ premonitionPending: true, playerSurfaceOpen: arrivalHoldingSurfaces(fullOnly).length > 0 }));
     expect(r.open).toEqual(['PremonitionModal']);
     // Rivals still holds; the ledger holds as an interrupt, not as a surface.
-    expect(arrivalHoldingSurfaces(['ActionDrawer', 'RivalsPanel', 'ChapterLedger'])).toEqual(['RivalsPanel']);
+    expect(arrivalHoldingSurfaces(['InspectorFull', 'RivalsPanel', 'ChapterLedger'])).toEqual(['RivalsPanel']);
   });
 
   it('every arrival is a surface the world pushes, never one the player opens', () => {

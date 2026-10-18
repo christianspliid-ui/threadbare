@@ -30,7 +30,8 @@ import type { WorldRef } from '../../../types/worldRef';
 import type { WheelSlot } from '../../../engine/wheel';
 import { interventionSubjectOf } from '../../../engine/views/subjects/actOn';
 import type { HexCoord } from '../../../types';
-import type { TabId as ProfileTabId } from '../tabs/TabBar';
+/** The person page's tabs a caller may ask to open on (THR-1963). The tab bar retired with the sheet (THR-1912); the Inspector page owns its own tabs. */
+export type ProfileTabId = 'overview' | 'prowess' | 'attachments' | 'bonds' | 'journey' | 'chronicle' | 'chapters';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld, ensureRealmProjection } from '../../../engine/simulationRuntime';
 import { createHoldReader } from '../../../engine/holdStanding';

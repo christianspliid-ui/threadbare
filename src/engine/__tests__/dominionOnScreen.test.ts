@@ -17,7 +17,6 @@ import { dominionOf } from '../dominion';
 import { DOMINION_PRICES_LIVE, DOMINION_BAND_LINES } from '../../data/dominion-content';
 import { DOMINION_CHIP_WORDS, DOMINION_CAST_CLAUSE, DOMINION_TEND_LINES } from '../../data/dominion-ui-content';
 import { dominionChipFields } from '../../components/Game/actionCardModel';
-import { castBarDominionClause } from '../../components/Game/ActionDrawer';
 import { dominionSheetVM, dominionHexLineVM } from '../dominionViewModels';
 import { buildDominionHexAssignment, buildDominionHexProjection } from '../dominionProjection';
 import type { HexTile } from '../../types';
@@ -120,12 +119,6 @@ describe('THR-1750 — prices live, the slot carries par, the chip', () => {
     expect(dominionChipFields(free)).toEqual({});
   });
 
-  it('the cast-bar clause names the band before the spend; none on Foreign ground', () => {
-    const g = makeGraph();
-    expect(castBarDominionClause([slotFor(g, 'loc.home')])?.clause).toBe(DOMINION_CAST_CLAUSE.sovereign);
-    expect(castBarDominionClause([slotFor(g, 'loc.foe')])?.clause).toBe(DOMINION_CAST_CLAUSE.hostile);
-    expect(castBarDominionClause([slotFor(g, 'loc.plain')])).toBeNull();
-  });
 });
 
 describe('THR-1750 — sheet view models', () => {
@@ -172,11 +165,3 @@ describe('THR-1750 — sheet view models', () => {
   });
 });
 
-describe('THR-1750 review round 2', () => {
-  it('no cast-bar clause when the band moved no price in the hand', () => {
-    const g = makeGraph();
-    const cheap = slotFor(g, 'loc.home', makeTemplate(1));
-    expect(cheap.essenceCost).toBe(cheap.dominionParCost);
-    expect(castBarDominionClause([cheap])).toBeNull();
-  });
-});

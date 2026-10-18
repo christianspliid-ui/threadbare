@@ -247,9 +247,9 @@ export const CONTRACTS: readonly Contract[] = [
       // question a sheet asks, and both read the same edges so they cannot disagree.
       'src/engine/realmHolder.ts',
       'src/components/shared/HeldByLine.tsx',
-      'src/components/Game/LocationProfileModal.tsx',
-      'src/components/Game/HexChronicle.tsx',
-      'src/components/Game/FactionSheet.tsx',
+      'src/engine/views/subjects/placeRows.ts',
+      'src/engine/views/subjects/landProse.ts',
+      'src/engine/views/subjects/factionRows.ts',
       'scripts/realm-census.ts',
       'src/components/HexMapV2/scene/BorderMesh.ts',
       'src/components/HexMapV2/scene/CapitalMarkers.ts',
@@ -604,8 +604,8 @@ export const CONTRACTS: readonly Contract[] = [
       // THR-1211: the `past_crime` secret branch, which used to read a
       // `relates_to.properties.reputation` that nothing writes.
       'src/engine/secretGeneration.ts',
-      'src/components/Game/LocationProfileModal.tsx',
-      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/engine/views/subjects/placeRows.ts',
+      'src/engine/views/subjects/personRows.ts',
     ],
     verifiedLive: {
       date: '2026-08-23',
@@ -659,7 +659,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/unifiedActionResolution.ts',
     ],
     readSites: [
-      'src/components/Game/ArtifactSheet.tsx',
+      'src/engine/views/subjects/itemRows.ts',
       'src/debug-bridge.ts',
       'scripts/cli.ts',
     ],
@@ -1341,7 +1341,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/strategicKindReachability.ts',
       'src/engine/phaseAgentDecision.ts',
       'src/components/Game/hexMapAgentVisibility.ts',
-      'src/components/Game/LocationView.tsx',
+      'src/engine/views/subjects/placeRows.ts',
       'scripts/kind-reachability.ts',
       'scripts/undertaking-census.ts',
     ],
@@ -1433,7 +1433,7 @@ export const CONTRACTS: readonly Contract[] = [
     intent: 'Completed ambitions accumulate into a readable history of who an agent became.',
     mechanism: { kind: 'function', symbols: ['completedAmbitions', 'getCompletedAmbitions'] },
     writeSites: ['src/engine/agentDetail.ts'],
-    readSites: ['src/components/Game/tabs/ChronicleTab.tsx'],
+    readSites: ['src/engine/views/subjects/personRows.ts'],
     verifiedLive: {
       date: '2026-07-24',
       evidence:
@@ -1757,11 +1757,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: QUINTESSENCE,
     consumerSystem: 'Intelligence, Knowledge & Familiarity',
     intent:
-      'Every sheet says the band in a word (THR-1750). `dominionSheetVM` reads `dominionOf` (and `isTended` for the place tend line); the place, faction and artifact pages show the box and the mortal sheet a row. Components never read the match number.',
+      'Every sheet says the band in a word (THR-1750). `dominionSheetVM` reads `dominionOf` (and `isTended` for the place tend line); the Inspector pages show it as the Dominion row (`pageResolvers.ts`) and the header standing (`subjectPage.ts`) — the sheets and their `DominionBox` retired in THR-1912. Components never read the match number.',
     ulTerms: ['Dominion', 'Dominion Band'],
     mechanism: { kind: 'function', symbols: ['dominionSheetVM', 'dominionTendLine'] },
     writeSites: ['src/engine/dominionViewModels.ts'],
-    readSites: ['src/components/Game/GameView.tsx', 'src/components/Game/DominionBox.tsx'],
+    readSites: ['src/engine/views/subjects/pageResolvers.ts', 'src/engine/views/subjects/subjectPage.ts'],
   },
   {
     id: 'dominion-band-scales-thread-yield-and-source-income',
@@ -1878,7 +1878,7 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/ambitionTick.ts', 'src/engine/grievance/grievanceLifecycle.ts'],
     readSites: [
       'src/engine/agentDetail.ts',
-      'src/components/Game/IntentSection.tsx',
+      'src/engine/views/subjects/personRows.ts',
       'src/debug-bridge.ts',
       'scripts/cli.ts',
     ],
@@ -1911,7 +1911,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/agentDetail.ts',
-      'src/components/Game/tabs/BondsTab.tsx',
+      // THR-1912: BondsTab's Blood line retired; no person-page row reads card.grudges yet (THR-1992).
       'src/debug-bridge.ts',
       'scripts/cli.ts',
     ],
@@ -1961,11 +1961,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: NARRATIVE,
     intent:
-      'What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen.',
+      'What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; the person page\'s "Under your hand" row (`personRows.ts`) renders them — `ActiveEffectChips`, which drew them on the thread detail and the profile sheet, retired with those surfaces in THR-1912.',
     ulTerms: ['AxiologicalProfile'],
-    mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'activeEffects', 'ActiveEffectChips'] },
+    mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'activeEffects'] },
     writeSites: ['src/engine/graphOpExecutor.ts'],
-    readSites: ['src/engine/agentDetail.ts', 'src/components/Game/ActiveEffectChips.tsx', 'src/components/Game/ThreadDetailView.tsx', 'src/components/Game/AgentProfileModal.tsx'],
+    readSites: ['src/engine/agentDetail.ts', 'src/engine/views/subjects/personRows.ts'],
   },
   {
     id: 'essence-spend-moves-the-bar',
@@ -2051,7 +2051,8 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/playerReceipts.ts'],
     readSites: [
       'src/components/Game/GameView.tsx',
-      'src/components/Game/ActionDrawer.tsx',
+      // THR-1912: the ActionDrawer's resolved-band chip retired; the record page reads receipts (THR-1992 for the chip).
+      'src/engine/views/subjects/pageResolvers.ts',
       'src/debug-bridge.ts',
       // THR-1875: an unacknowledged toast-tier receipt is a Needs-you Waiting row.
       'src/engine/views/needsYou.ts',
@@ -2562,7 +2563,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/grievance/grudgeEdge.ts',
       'src/engine/groups/bandOpposition.ts',
     ],
-    readSites: ['src/engine/agentDetail.ts', 'src/components/Game/tabs/OverviewTab.tsx'],
+    readSites: ['src/engine/agentDetail.ts', 'src/engine/views/subjects/personRows.ts'],
     verifiedLive: {
       date: '2026-07-25',
       evidence:
@@ -2888,7 +2889,7 @@ export const CONTRACTS: readonly Contract[] = [
       // the hollowness this row exists to prevent. A row that omitted it would
       // read as "this condition has no consumer" to the next auditor, which is the
       // opposite of true and would invite deleting a live payoff.
-      'src/components/Game/LocationProfileModal.tsx',
+      'src/engine/views/subjects/placeRows.ts',
     ],
     // THR-1143, the second primitive of the consequence-palette expansion. The row
     // exists because the *write* was the easy half and the readers are the contract:
@@ -3762,7 +3763,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/Codex/undertakingCodex.ts',
       'src/components/Codex/codexRegistry.ts',
       'src/components/Game/ThreadsPanel.tsx',
-      'src/components/Game/tabs/JourneyTab.tsx',
+      'src/engine/views/subjects/personRows.ts',
       'src/engine/agentArc.ts',
       'src/debug-bridge.ts',
     ],
@@ -3939,7 +3940,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/settlementNotable.ts',
-      'src/components/Game/LocationView.tsx',
+      'src/engine/views/subjects/placeRows.ts',
       'src/debug-bridge.ts',
     ],
     verifiedLive: {
@@ -3989,9 +3990,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/components/Game/hooks/useAgentInteraction.ts',
-      'src/components/Game/tabs/OverviewTab.tsx',
-      'src/components/Game/tabs/JourneyTab.tsx',
-      'src/components/Game/tabs/ChronicleTab.tsx',
+      'src/engine/views/subjects/personRows.ts',
       'src/engine/foreshadowing/encounterForeshadowing.ts',
       'src/engine/agentDetail.ts',
       'src/debug-bridge.ts',
@@ -4048,9 +4047,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/strategicPresentation.ts',
       'src/engine/agentDetail.ts',
       'src/components/Game/ThreadsPanel.tsx',
-      'src/components/Game/AgentInfoCard.tsx',
-      'src/components/Game/ThreadDetailView.tsx',
-      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/engine/views/subjects/personRows.ts',
       'src/components/Game/debug/DebugTabContent.tsx',
     ],
     verifiedLive: {
@@ -4331,7 +4328,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/tooltipResolver.ts',
       'src/engine/contentCensus/adapters.ts',
       'src/components/Codex/CodexTagFilter.tsx',
-      'src/components/Game/AttachmentDetailView.tsx',
+      'src/engine/views/subjects/itemRows.ts',
       'scripts/generate-content-tag-catalog.ts',
       'scripts/check-attachment.ts',
       'src/data/__tests__/contentTags.test.ts',
@@ -5156,8 +5153,8 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/agentDetail.ts',
-      'src/components/Game/tabs/OverviewTab.tsx',
-      'src/components/Game/FactionSheet.tsx',
+      'src/engine/views/subjects/personRows.ts',
+      'src/engine/views/subjects/factionRows.ts',
     ],
     verifiedLive: {
       date: '2026-09-07',
@@ -5186,7 +5183,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/agentDetail.ts',
-      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/engine/views/subjects/personRows.ts',
     ],
   },
   {
@@ -5207,7 +5204,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/agentDetail.ts',
-      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/engine/views/subjects/personRows.ts',
       'src/engine/holdingIncome.ts',
     ],
   },
@@ -5257,7 +5254,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/engine/holdingIncome.ts',
       'src/engine/agentDetail.ts',
-      'src/components/Game/tabs/OverviewTab.tsx',
+      'src/engine/views/subjects/personRows.ts',
     ],
     verifiedLive: {
       date: '2026-09-10',
@@ -5396,7 +5393,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/components/Game/lair/buildLairMonsterCardModel.ts',
       'src/components/Game/lair/LairMonsterCard.tsx',
-      'src/components/Game/HexSidebar.tsx',
+      // THR-1912: HexSidebar, the card's only mount, retired; no Inspector row reads it yet (THR-1992).
     ],
     verifiedLive: {
       date: '2026-09-25',
@@ -6025,7 +6022,7 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/data/world-scenario.ts',
     },
     writeSites: ['src/engine/worldSeed.ts'],
-    readSites: ['src/components/Game/FactionSheet.tsx'],
+    readSites: ['src/engine/views/subjects/factionRows.ts'],
     verifiedLive: {
       date: '2026-09-29',
       evidence:
@@ -6092,7 +6089,8 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/pilgrimWays.ts',
     },
     writeSites: ['src/engine/worldSeed.ts', 'src/data/undertaking-objects.ts'],
-    readSites: ['src/components/Game/LocationProfileModal.tsx', 'src/components/Game/FactionSheet.tsx', 'src/debug-bridge.ts'],
+    // THR-1912: the place and faction sheets that drew PilgrimWayLine retired; no Inspector row reads it yet (THR-1992).
+    readSites: ['src/debug-bridge.ts'],
     verifiedLive: {
       date: '2026-10-03',
       evidence:
@@ -6755,7 +6753,7 @@ export const CONTRACTS: readonly Contract[] = [
     },
     // THR-1932: the crown phase adds fealtyOut / fealtyIn to purseLastDay after the pay day.
     writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts', 'src/engine/phaseFactionActions.ts', 'src/engine/crown.ts'],
-    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/components/Game/FactionSheet.tsx', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/components/Game/debug/EconomyDebugTab.tsx'],
+    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/engine/views/subjects/factionRows.ts', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/components/Game/debug/EconomyDebugTab.tsx'],
     verifiedLive: {
       date: '2026-10-16',
       evidence:
@@ -7031,7 +7029,7 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Settlement', 'Unrest', 'Hunger', 'Dominion'],
     mechanism: { kind: 'function', symbols: ['placePrayerView', 'listPrayers'], module: 'src/engine/prayers.ts' },
     writeSites: ['src/engine/prayers.ts'],
-    readSites: ['src/engine/prayers.ts', 'src/components/Game/LocationView.tsx', 'src/components/Game/debug/EconomyDebugTab.tsx'],
+    readSites: ['src/engine/prayers.ts', 'src/engine/views/subjects/placeRows.ts', 'src/components/Game/debug/EconomyDebugTab.tsx'],
     verifiedLive: {
       date: '2026-10-17',
       evidence: 'THR-1935. prayers.test.ts: a Restless, hunger-led, Touched town opens one prayer with occurred_at → the town and none again inside the cooldown; a Foreign town, a poverty-led town and a calm town open none.',

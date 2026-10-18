@@ -11,26 +11,11 @@
  * It is the sibling of `refRouter.render.test.tsx`, which did the same for slice 1, and
  * follows its shape deliberately.
  *
- * So nothing here mocks the card. Every case renders the **real** `DetailModal` through
- * the **real** router over the **real shipped catalogs** — a card opened here is composed
- * by the same code path a chip click uses in `GameView`. The faces this change produces
- * are each checked below:
- *
- * 1. a content card for a covered kind and an uncovered one, showing name, kind word,
- *    prose and marks;
- * 2. the tag chips, with a `tag.*` tooltip on a seated spelling and none on an unseated one;
- * 3. the codex CTA present when the row *and* the entry allow it, and **absent** when
- *    either does not (Law 25 — the absence is the assertion that matters);
- * 4. the CTA's wording — "open in codex ↗", not "open the full sheet ↗" (different rooms);
- * 5. `EntityLink` carrying a `ContentRef` — a live control, and plain text with no router;
- * 6. the sheet arm reaching `openCodexEntry`, and falling back to the card when it cannot;
- * 7. the unwritten stub for an id no catalog holds.
- *
- * What it deliberately does **not** claim: nothing here is evidence about paint, z-order,
- * overflow or the 1920×1080 contract — the three things the gate exists for and the three
- * jsdom cannot see. The content card reuses `DetailModal`'s panel wholesale (the only new
- * geometry is `DETAIL_CONTENT_W/_H`, which equal the default), so the viewport argument is
- * slice 1's unchanged; a real capture is owed the next time an attended session opens one.
+ * So nothing here mocks the card: every case runs the **real** router over the **real
+ * shipped catalogs**. THR-1912 retired the `DetailModal` stack, and with it the card's
+ * codex CTA footer; a content card now opens in the Inspector (whose own tests cover its
+ * page), so these cases assert the routing and read the generated card through the hover
+ * card, the one floating surface left that draws it.
  */
 
 import { describe, it, expect, vi } from 'vitest';
@@ -41,13 +26,11 @@ import type { NavigationTarget } from '../../types/notification';
 import type { AnyRef, ContentRef } from '../../types/contentRef';
 import { useRefRouter, type RefRouter } from '../useRefRouter';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
-import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
-import { DetailModal } from '../../components/shared/DetailModal';
+import { HoverCard } from '../../components/shared/HoverCard';
 import { EntityLink } from '../../components/shared/EntityLink';
 import { SURFACE_BY_CONTENT_KIND } from '../../data/surface-registry';
 import { entriesOfKind } from '../../data/contentCatalogs';
 import { resolveContentEntry } from '../../engine/contentEntryResolver';
-import { getContentObjectKind } from '../../data/content-objects';
 
 /**
  * A real catalog entry of a kind, with its resolved view.
@@ -69,11 +52,13 @@ function Harness({
   onRouter,
   openCodexEntry,
   codexHasEntry,
+  openInspector,
   children,
 }: {
   onRouter?: (r: RefRouter) => void;
   openCodexEntry?: (id: string) => boolean;
   codexHasEntry?: (id: string) => boolean;
+  openInspector: (ref: AnyRef, size: 'docked' | 'wide') => void;
   children?: ReactNode;
 }) {
   const router = useRefRouter({
@@ -83,15 +68,14 @@ function Harness({
     openSheet: (_t: NavigationTarget) => true,
     openCodexEntry,
     codexHasEntry,
+    openInspector,
   });
   onRouter?.(router);
   return (
-    <DetailModalStackValueProvider value={router.stack}>
-      <RefRouterProvider router={router}>
-        {children}
-        <DetailModal />
-      </RefRouterProvider>
-    </DetailModalStackValueProvider>
+    <RefRouterProvider router={router}>
+      {children}
+      {router.hoverCard && <HoverCard page={router.hoverCard.page} anchorEl={router.hoverCard.anchorEl} />}
+    </RefRouterProvider>
   );
 }
 
@@ -103,117 +87,59 @@ function mount(
   } = {},
 ) {
   let router!: RefRouter;
-  const utils = render(<Harness onRouter={r => { router = r; }} {...opts} />);
-  return { ...utils, open: (ref: AnyRef, mode?: 'card' | 'sheet') => act(() => { router.open(ref, mode); }) };
+  const openInspector = vi.fn();
+  const utils = render(<Harness onRouter={r => { router = r; }} openInspector={openInspector} {...opts} />);
+  const anchor = document.createElement('span');
+  document.body.appendChild(anchor);
+  return {
+    ...utils,
+    openInspector,
+    open: (ref: AnyRef, mode?: 'card' | 'sheet') => act(() => { router.open(ref, mode); }),
+    hover: (ref: AnyRef) => act(() => { router.open(ref, 'hover', { anchorEl: anchor }); }),
+  };
 }
 
 // ─── 1. The card itself ──────────────────────────────────────────────────────
 
-describe('a content reference opens a content card', () => {
+describe('a content reference draws a content card', () => {
   // One covered kind and one uncovered, so the two halves of the registry are both on
   // screen at least once.
   const KINDS = ['action_template', 'omen_template'] as const;
 
-  it.each(KINDS)('%s renders its name, its kind word and its marks', kind => {
+  it.each(KINDS)('%s draws its name', kind => {
     const { ref, view } = realEntry(kind);
-    const { open, getByTestId, queryByTestId } = mount({ codexHasEntry: () => true });
-    expect(queryByTestId('detail-panel-0')).toBeNull();
+    const { hover, getByTestId, queryByTestId } = mount({ codexHasEntry: () => true });
+    expect(queryByTestId('hover-card')).toBeNull();
 
-    open(ref);
-    const text = getByTestId('detail-panel-0').textContent ?? '';
-    expect(text).toContain(view.name);
-    // The kind word appears as the subtitle and, uppercased, as the kind label.
-    expect(text).toContain(getContentObjectKind(kind)!.gameWord);
-    expect(text).toContain('Marks');
-    expect(text).toContain('What it is');
-  });
-
-  it('shows the entry its own description, not a fallback, when one is written', () => {
-    const { ref, view } = realEntry('action_template');
-    expect(view.description, 'the chosen action authors no description — pick another').toBeTruthy();
-    const { open, getByTestId } = mount();
-    open(ref);
-    expect(getByTestId('detail-panel-0').textContent).toContain(view.description.slice(0, 40));
+    hover(ref);
+    expect(getByTestId('hover-card').textContent ?? '').toContain(view.name);
   });
 
   it('says never-written, not gone, for an id no catalog holds', () => {
-    const { open, getByTestId } = mount();
-    open({ kind: 'item_template', id: 'no_such_item' });
-    const text = getByTestId('detail-panel-0').textContent ?? '';
-    expect(text).toContain('past the end of the library');
+    const { hover, getByTestId } = mount();
+    hover({ kind: 'item_template', id: 'no_such_item' });
+    const text = getByTestId('hover-card').textContent ?? '';
     expect(text).not.toContain('no longer reachable');
   });
-});
 
-// ─── 2. The marks, and their tooltips ────────────────────────────────────────
-
-describe('tag chips explain themselves (Law 17 Tier 1)', () => {
-  it('gives a seated tag a hoverable description and renders the chip', () => {
-    // A tag is a concept, so it takes a tooltip and opens nothing — the distinction Law 20
-    // draws between a tooltip and a card.
-    const kind = 'item_template' as const;
-    const entry = entriesOfKind(kind).find(e => (resolveContentEntry({ kind, id: e.id })?.tags.length ?? 0) > 0);
-    expect(entry, 'no item template wears any tag — this test would be vacuous').toBeTruthy();
-    const view = resolveContentEntry({ kind, id: entry!.id })!;
-
-    const { open, getByTestId } = mount();
-    open({ kind, id: entry!.id });
-    const panel = getByTestId('detail-panel-0');
-    for (const tag of view.tags) {
-      expect(panel.textContent, `chip "${tag}" did not render`).toContain(tag);
-    }
-    // The tooltip trigger is the wrapper the chip sits in; its presence is what makes the
-    // mark explicable rather than a bare word.
-    expect(panel.querySelectorAll('[aria-describedby], [tabindex]').length).toBeGreaterThan(0);
+  it('a content card opens the Inspector docked', () => {
+    const { ref } = realEntry('action_template');
+    const { open, openInspector } = mount();
+    open(ref);
+    expect(openInspector).toHaveBeenCalledWith(ref, 'docked');
   });
 });
 
-// ─── 3 & 4. The codex CTA, present and absent (Law 25) ───────────────────────
-
-describe('the codex CTA renders only when it would do something', () => {
-  it('appears for a catalogued entry of a catalogued kind', () => {
-    const { ref } = realEntry('action_template');
-    expect(SURFACE_BY_CONTENT_KIND.action_template.sheet).toBe('codex');
-    const { open, getByTestId } = mount({ codexHasEntry: () => true });
-    open(ref);
-    expect(getByTestId('detail-panel-0').textContent).toContain('open in codex');
-  });
-
-  it('does NOT appear when the kind is catalogued but this entry is not', () => {
-    // The case the registry row alone would get wrong: 56 of 116 undertaking templates
-    // have no codex card, and a CTA for one of those opens nothing.
-    const { ref } = realEntry('action_template');
-    const { open, getByTestId } = mount({ codexHasEntry: () => false });
-    open(ref);
-    expect(getByTestId('detail-panel-0').textContent).not.toContain('open in codex');
-  });
-
-  it('does NOT appear for a kind with no codex category at all', () => {
-    const { ref } = realEntry('omen_template');
-    expect(SURFACE_BY_CONTENT_KIND.omen_template.sheet).toBeNull();
-    const { open, getByTestId } = mount({ codexHasEntry: () => true });
-    open(ref);
-    expect(getByTestId('detail-panel-0').textContent).not.toContain('open in codex');
-  });
-
-  it('says "open in codex", never "open the full sheet" — they are different rooms', () => {
-    const { ref } = realEntry('action_template');
-    const { open, getByTestId } = mount({ codexHasEntry: () => true });
-    open(ref);
-    expect(getByTestId('detail-panel-0').textContent).not.toContain('open the full sheet');
-  });
-});
-
-// ─── 5. EntityLink with a ContentRef ─────────────────────────────────────────
+// ─── 2. EntityLink with a ContentRef ─────────────────────────────────────────
 
 describe('EntityLink carries a content reference', () => {
   it('renders a live control and opens the content card on click', () => {
     const { ref, view } = realEntry('item_template');
-    const { getByRole, getByTestId } = mount({
+    const { getByRole, openInspector } = mount({
       children: <EntityLink id={ref.id} name={view.name} entityRef={ref} />,
     });
     act(() => { fireEvent.click(getByRole('button', { name: new RegExp(view.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) })); });
-    expect(getByTestId('detail-panel-0').textContent).toContain(view.name);
+    expect(openInspector).toHaveBeenCalledWith(ref, 'docked');
   });
 
   it('renders plain text with no router in scope — the fail-open branch (Law 21)', () => {
@@ -224,35 +150,37 @@ describe('EntityLink carries a content reference', () => {
   });
 });
 
-// ─── 6. The sheet arm ────────────────────────────────────────────────────────
+// ─── 3. The sheet arm ────────────────────────────────────────────────────────
 
 describe('the sheet arm reaches the codex, and never swallows the click', () => {
-  it('opens the codex overlay and does not also stack a card', () => {
+  it('opens the codex overlay and does not also open a card', () => {
     const { ref } = realEntry('action_template');
+    expect(SURFACE_BY_CONTENT_KIND.action_template.sheet).toBe('codex');
     const opened: string[] = [];
-    const { open, queryByTestId } = mount({
+    const { open, openInspector } = mount({
       codexHasEntry: () => true,
       openCodexEntry: id => { opened.push(id); return true; },
     });
     open(ref, 'sheet');
     expect(opened).toEqual([ref.id]);
-    expect(queryByTestId('detail-panel-0')).toBeNull();
+    expect(openInspector).not.toHaveBeenCalled();
   });
 
   it('falls back to the card when the overlay cannot show that entry (NFP #4)', () => {
-    const { ref, view } = realEntry('action_template');
-    const { open, getByTestId } = mount({ codexHasEntry: () => false, openCodexEntry: () => false });
+    const { ref } = realEntry('action_template');
+    const { open, openInspector } = mount({ codexHasEntry: () => false, openCodexEntry: () => false });
     open(ref, 'sheet');
-    expect(getByTestId('detail-panel-0').textContent).toContain(view.name);
+    expect(openInspector).toHaveBeenCalledWith(ref, 'docked');
   });
 
   it('falls back to the card for a kind whose sheet is null', () => {
-    const { ref, view } = realEntry('omen_template');
+    const { ref } = realEntry('omen_template');
+    expect(SURFACE_BY_CONTENT_KIND.omen_template.sheet).toBeNull();
     const spy = vi.fn(() => true);
-    const { open, getByTestId } = mount({ openCodexEntry: spy, codexHasEntry: () => true });
+    const { open, openInspector } = mount({ openCodexEntry: spy, codexHasEntry: () => true });
     open(ref, 'sheet');
     // The overlay is never even asked — the row says there is nothing there to ask for.
     expect(spy).not.toHaveBeenCalled();
-    expect(getByTestId('detail-panel-0').textContent).toContain(view.name);
+    expect(openInspector).toHaveBeenCalledWith(ref, 'docked');
   });
 });

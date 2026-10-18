@@ -314,7 +314,7 @@ export const FIGHT_TOOLTIP_COPY: Readonly<Record<string, { label: string; desc: 
   },
   'chip.scarred': {
     label: 'Scarred',
-    desc: 'The fight left a lasting mark on the fighter, and the sheet remembers who left it.',
+    desc: 'The fight left a lasting mark on the fighter, and their page remembers who left it.',
   },
   'chip.slain_fighter': {
     label: 'Slain',

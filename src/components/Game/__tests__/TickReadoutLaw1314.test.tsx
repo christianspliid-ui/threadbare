@@ -37,22 +37,13 @@
  */
 
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { WorldGraph } from '../../../engine/graph';
+import { render, screen } from '@testing-library/react';
 import { durationLabel } from '../../../engine/aftermathWords';
-import { TOOLTIP_SHOW_DELAY } from '../../../types/tooltip';
 
 import { OmenDetail } from '../OmenDetail';
 import { DoomClockDetail } from '../DoomClockDetail';
-import { FactionSheet } from '../FactionSheet';
-import { AttachmentDetailView } from '../AttachmentDetailView';
 import { ReadTheThreadsPanel } from '../ReadTheThreadsPanel';
-import { AgentInfoCard } from '../AgentInfoCard';
-import { AttachmentsTab } from '../tabs/AttachmentsTab';
-import { ProwessTab } from '../tabs/ProwessTab';
 
-import type { AgentInfoCardData } from '../../../engine/agentDetail';
-import type { AttachmentFullEntry } from '../../../engine/agentAttachments';
 import type { OmenState } from '../../../types/omen';
 import type { DoomClockDefinition, DoomClockState } from '../../../types/doomClock';
 
@@ -159,67 +150,7 @@ describe('THR-1423 — no player-facing surface renders a raw tick count', () =>
 
   // ── FactionSheet ─────────────────────────────────────────────────────────
 
-  it('FactionSheet: a sitting conclave reads its term in words', () => {
-    const graph = new WorldGraph();
-    // Two shape traps, both of which render an empty sheet rather than erroring, so an
-    // arm that gets either wrong passes vacuously on a surface that drew nothing:
-    //   1. `type: 'actor'` + `actorType: 'faction'` — NOT `type: 'faction'`.
-    //      `getFactionNetworkSummary` returns null on any other shape, and the conclave
-    //      block lives inside the `summary`-gated half of the sheet.
-    //   2. a real `factionDefId`, since the sheet bails when neither a definition nor a
-    //      summary resolves.
-    graph.addNode({
-      id: 'faction_def_adventuring_guild',
-      type: 'actor',
-      name: 'The Wayfarers',
-      properties: {
-        actorType: 'faction',
-        factionDefId: 'adventuring_guild',
-        activeConclave: {
-          question: 'Whether to break the old accord.',
-          participants: ['agent.1'],
-          ticksRemaining: FOUR_DAYS_IN_TICKS,
-        },
-      },
-    } as never);
-
-    render(
-      <FactionSheet
-        factionId="faction_def_adventuring_guild"
-        name="The Wayfarers"
-        graph={graph}
-        onClose={() => {}}
-      />,
-    );
-
-    const line = screen.getByText(/Conclave in session/);
-    expect(line.textContent).toContain(`${FOUR_DAYS} remaining`);
-    expectWordsNotNumerals(line.textContent!);
-  });
-
   // ── AttachmentDetailView ─────────────────────────────────────────────────
-
-  it('AttachmentDetailView: the Duration section reads a remaining term, not an x/y tick pair', () => {
-    const transient = {
-      id: 'trait.condition.wounded',
-      name: 'Wounded',
-      category: 'condition',
-      subcategory: 'injury',
-      tier: 1,
-      mechanicalSummary: 'Iron is dulled while it holds.',
-      tags: [],
-      ticksRemaining: FOUR_DAYS_IN_TICKS,
-      totalTicks: 96,
-    } as unknown as Parameters<typeof AttachmentDetailView>[0]['attachment'];
-
-    const { container } = render(
-      <AttachmentDetailView attachment={transient} onBack={vi.fn()} />,
-    );
-
-    expect(screen.getByText(`${FOUR_DAYS} remaining`)).toBeTruthy();
-    // The `8 / 20 ticks` shape is gone entirely, not merely reworded alongside.
-    expect(container.textContent).not.toMatch(/\d+\s*\/\s*\d+\s*ticks/i);
-  });
 
   // ── ReadTheThreadsPanel ──────────────────────────────────────────────────
 
@@ -242,126 +173,4 @@ describe('THR-1423 — no player-facing surface renders a raw tick count', () =>
 
   // ── AgentInfoCard (tooltip desc) ─────────────────────────────────────────
 
-  it('AgentInfoCard: an active effect\'s tooltip reads its term in words', async () => {
-    const card: AgentInfoCardData = {
-      id: 'agent.1',
-      name: 'Kael',
-      locationId: 'loc.1',
-      locationName: 'Ashvale',
-      primarySphere: 'shadow',
-      knowledgeLevel: 'known',
-      activeEffects: [
-        {
-          type: 'blessing',
-          label: 'Blessed',
-          sphere: 'shadow',
-          strength: 0.6,
-          ticksRemaining: FOUR_DAYS_IN_TICKS,
-        },
-      ],
-    } as unknown as AgentInfoCardData;
-
-    render(<AgentInfoCard card={card} onViewProfile={() => {}} onBack={() => {}} />);
-
-    // The desc is portalled and gated behind TOOLTIP_SHOW_DELAY. The trigger listens on
-    // `onPointerEnter` / `onFocus` — NOT `onMouseEnter`, which jsdom does not synthesise
-    // from a pointer event, so a `fireEvent.mouseEnter` here opens nothing and the arm
-    // fails looking like a missing string rather than a missing event.
-    fireEvent.focus(screen.getByText('Blessed').closest('span')!);
-
-    const desc = await screen.findByText(new RegExp(`${FOUR_DAYS} remaining`), undefined, {
-      timeout: TOOLTIP_SHOW_DELAY + 800,
-    });
-    expect(desc.textContent).toContain(`${FOUR_DAYS} remaining`);
-    expect(desc.textContent).not.toMatch(/tick/i);
-    // TIGHTENED BY THR-1424 (2026-09-10), exactly as the previous arm here anticipated. That
-    // arm pinned `toMatch(/%/)` — the deliberate split, recording that `strengthPct` was left
-    // alone pending a Law 15 ruling. The ruling landed: a unitless proportion is dropped, its
-    // reading being whatever the surface renders non-numerically (here, the strength bar). So
-    // the tooltip is now numeral-free as a whole.
-    expect(desc.textContent).not.toMatch(/%/);
-    expect(desc.textContent).not.toMatch(/strength/i);
-  });
-
-  it('AgentInfoCard: a permanent effect drops the term clause instead of reading it as present', async () => {
-    // `ticksRemaining` is optional on `ActiveEffect`. The old string interpolated a missing
-    // one straight through as `undefined ticks remaining`; typing it into `durationLabel`
-    // is what surfaced that. The clause is now absent, not empty and not `undefined`.
-    const card = {
-      id: 'agent.1',
-      name: 'Kael',
-      locationId: 'loc.1',
-      locationName: 'Ashvale',
-      primarySphere: 'shadow',
-      knowledgeLevel: 'known',
-      activeEffects: [
-        { type: 'blessing', label: 'Blessed', sphere: 'shadow', strength: 0.6 },
-      ],
-    } as unknown as AgentInfoCardData;
-
-    render(<AgentInfoCard card={card} onViewProfile={() => {}} onBack={() => {}} />);
-    fireEvent.focus(screen.getByText('Blessed').closest('span')!);
-
-    // THR-1424 moved this arm's anchor. It used to find the popup by its `strength` clause,
-    // which was the only text a permanent effect's tooltip still carried once THR-1423 removed
-    // the term clause. That clause is now dropped too, so a permanent effect's tooltip has no
-    // description at all — and anchoring on `role="tooltip"` proves the popup OPENED, which a
-    // text query for absent text never could. Without that proof the three negative arms below
-    // would pass on a tooltip that never rendered.
-    const popup = await screen.findByRole('tooltip', undefined, {
-      timeout: TOOLTIP_SHOW_DELAY + 800,
-    });
-    expect(popup.textContent).not.toMatch(/undefined/);
-    expect(popup.textContent).not.toMatch(/remaining/);
-    expect(popup.textContent).not.toMatch(/·\s*$/);
-    // ...and the percentage that used to sit here is gone with it (Law 13 / Law 15).
-    expect(popup.textContent).not.toMatch(/%/);
-  });
-
-  // ── AttachmentsTab / ProwessTab (shared entry-row shape) ─────────────────
-
-  /**
-   * `injury` rather than `curse`: ProwessTab's `isConditionVisible` gates `curse` behind
-   * `intimate` knowledge, so a cursed fixture renders nothing and both arms below would
-   * pass vacuously on an empty tab. An injury is visible at every knowledge level.
-   */
-  const timedEntry = (): AttachmentFullEntry =>
-    ({
-      id: 'trait.condition.wounded',
-      name: 'Wounded',
-      subcategory: 'injury',
-      tier: 2,
-      mechanicalSummary: 'A borrowed voice follows.',
-      tags: [],
-      lossCondition: 'expires',
-      slotTag: 'condition',
-      active: true,
-      isPinned: false,
-      ticksRemaining: FOUR_DAYS_IN_TICKS,
-      totalTicks: 96,
-    }) as unknown as AttachmentFullEntry;
-
-  /** Both tabs read timed conditions off `card.afflictions`. */
-  const cardWith = (entries: AttachmentFullEntry[]): AgentInfoCardData =>
-    ({
-      id: 'agent.1',
-      name: 'Kael',
-      locationId: 'loc.1',
-      locationName: 'Ashvale',
-      primarySphere: 'shadow',
-      knowledgeLevel: 'known',
-      afflictions: entries,
-    }) as unknown as AgentInfoCardData;
-
-  it('AttachmentsTab: the possessions/conditions row reads its term in words', () => {
-    const { container } = render(<AttachmentsTab card={cardWith([timedEntry()])} />);
-    expect(container.textContent).not.toMatch(/\d+\s*ticks?\s*remaining/i);
-    expect(container.textContent).toContain(`${FOUR_DAYS} remaining`);
-  });
-
-  it('ProwessTab: the timed-entry row reads its term in words', () => {
-    const { container } = render(<ProwessTab card={cardWith([timedEntry()])} />);
-    expect(container.textContent).not.toMatch(/\d+\s*ticks?\s*remaining/i);
-    expect(container.textContent).toContain(`${FOUR_DAYS} remaining`);
-  });
 });

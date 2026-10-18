@@ -283,31 +283,8 @@ export const IA_SURFACES: IASurface[] = [
         "visible_when": "always"
       }
     ],
-    "notes": "The god rail (THR-1894), drawn from GOD_RAIL_SECTIONS: identity (the name opens AscendantSheet; \"Your First\" after the bond), essence with Attention under it, the hand headed \"Your cards\" (Move, Investiture and every revealed god card at its par price; whole while it fits, grouped by paying sphere at the rail's limit; resting while a moment is open; a press opens the card's Codex entry), and the folded rows Reaches, Mandate, Covenants, Signatures and Hooks. State via __DEBUG.getFrameState().godRail and getView('godRail').\n",
+    "notes": "The god rail (THR-1894), drawn from GOD_RAIL_SECTIONS: identity (the name opens the god page in the Inspector, wide; \"Your First\" after the bond), essence with Attention under it, the hand headed \"Your cards\" (Move, Investiture and every revealed god card at its par price; whole while it fits, grouped by paying sphere at the rail's limit; resting while a moment is open; a press opens the card's Codex entry), and the folded rows Reaches, Mandate, Covenants, Signatures and Hooks. State via __DEBUG.getFrameState().godRail and getView('godRail').\n",
     "openUrl": "/?view=game&seeded"
-  },
-  {
-    "surface": "game.ascendant-sheet",
-    "view": "game",
-    "mount": "modal",
-    "reads": [
-      {
-        "state_path": "ascendantIdentity",
-        "reader": "AscendantSheet",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "worldSoul",
-        "reader": "AscendantSheet",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "echoStates",
-        "reader": "AscendantSheet",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Full ascendant profile. Identity, echoes, world-soul bonds.\n"
   },
   {
     "surface": "game.identity-chip",
@@ -321,25 +298,6 @@ export const IA_SURFACES: IASurface[] = [
       }
     ],
     "notes": "Compact identity display. Synchronizes with AscendantBar.\n",
-    "openUrl": "/?view=game&seeded"
-  },
-  {
-    "surface": "game.action-drawer",
-    "view": "game",
-    "mount": "always",
-    "reads": [
-      {
-        "state_path": "essencePool",
-        "reader": "ActionDrawer",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "ascendantIdentity",
-        "reader": "ActionDrawer",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Player intervention surface. Cards filtered by context. Open/close state exposed\nvia __DEBUG.getActiveUIState().actionDrawerOpen.\n",
     "openUrl": "/?view=game&seeded"
   },
   {
@@ -432,20 +390,6 @@ export const IA_SURFACES: IASurface[] = [
     "openUrl": "/?view=game&seeded&size=medium"
   },
   {
-    "surface": "game.live-location-bar",
-    "view": "game",
-    "mount": "always",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "LiveLocationBar",
-        "visible_when": "a hex or location is selected"
-      }
-    ],
-    "notes": "Context strip showing currently-focused location or hex name.\n",
-    "openUrl": "/?view=game&seeded"
-  },
-  {
     "surface": "game.chronicle-panel",
     "view": "game",
     "mount": "always",
@@ -503,76 +447,6 @@ export const IA_SURFACES: IASurface[] = [
     "openUrl": "/?view=game&seeded"
   },
   {
-    "surface": "game.hex-detail-view",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "HexDetailView",
-        "visible_when": "hex is selected"
-      },
-      {
-        "state_path": "hexRevelation",
-        "reader": "HexDetailView",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Expanded view of a selected hex. Drives HexBreadcrumb, HexSidebar, HexChronicle.\n"
-  },
-  {
-    "surface": "game.hex-breadcrumb",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "HexBreadcrumb",
-        "visible_when": "hex or location is selected"
-      }
-    ],
-    "notes": "Navigation breadcrumb for hex → location → sublocation drill.\n"
-  },
-  {
-    "surface": "game.hex-sidebar",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "HexSidebar",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Sidebar listing contents of selected hex.\n"
-  },
-  {
-    "surface": "game.hex-chronicle",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "chronicleEntries",
-        "reader": "HexChronicle",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Per-hex chronicle entries filtered to the selected hex.\n"
-  },
-  {
-    "surface": "game.location-view",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "LocationView",
-        "visible_when": "location is selected"
-      }
-    ],
-    "notes": "In-place location drill (not the modal). Shows sublocations + inhabitants.\n"
-  },
-  {
     "surface": "game.threads-panel",
     "view": "game",
     "mount": "drillin",
@@ -583,30 +457,7 @@ export const IA_SURFACES: IASurface[] = [
         "visible_when": "always"
       }
     ],
-    "notes": "Player's woven threads (relationships, stakes). Click opens ThreadDetailView.\n"
-  },
-  {
-    "surface": "game.thread-detail-view",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "ThreadDetailView",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "digestBuffer",
-        "reader": "StorySoFarPanel",
-        "visible_when": "STORY_SO_FAR_DIGEST_ENABLED"
-      },
-      {
-        "state_path": "runtime.threadStoryCache",
-        "reader": "useThreadStorySoFar",
-        "visible_when": "STORY_SO_FAR_DIGEST_ENABLED"
-      }
-    ],
-    "notes": "Single thread detail: participants, stakes, history. THR-455: story-so-far digest via StorySoFarPanel when STORY_SO_FAR_DIGEST_ENABLED.\n"
+    "notes": "Player's woven threads (relationships, stakes). Click opens the thread's page in the Inspector.\n"
   },
   {
     "surface": "game.strand-view",
@@ -620,65 +471,6 @@ export const IA_SURFACES: IASurface[] = [
       }
     ],
     "notes": "Strand visualization — subset of thread view focused on specific entity pairs.\n"
-  },
-  {
-    "surface": "game.agent-info-card",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "AgentInfoCard",
-        "visible_when": "agent is selected"
-      },
-      {
-        "state_path": "agentKnowledge",
-        "reader": "AgentInfoCard",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Compact agent card. Lighter than AgentProfileModal; appears in sidebar.\n"
-  },
-  {
-    "surface": "game.location-profile-modal",
-    "view": "game",
-    "mount": "modal",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "LocationProfileModal",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Full location profile: prosperity, factions, agents, structures.\n"
-  },
-  {
-    "surface": "game.agent-profile-modal",
-    "view": "game",
-    "mount": "modal",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "AgentProfileModal",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "agentKnowledge",
-        "reader": "AgentProfileModal",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "chapterArchive",
-        "reader": "AgentProfileModal",
-        "visible_when": "Chapters tab"
-      },
-      {
-        "state_path": "unifiedActions",
-        "reader": "AgentProfileModal",
-        "visible_when": "Chapters tab"
-      }
-    ],
-    "notes": "Full agent dossier with backstory strata, intelligence, traits. Chapters tab (THR-603): this entity's active + archived encounter chapters (as actor or bound participant).\n"
   },
   {
     "surface": "game.chapter-ledger",
@@ -715,63 +507,6 @@ export const IA_SURFACES: IASurface[] = [
       }
     ],
     "notes": "Chapter View (THR-603): full reading surface for one chapter — per-step prose as enriched, step outcomes in the narrative lexicon, the player's own choices, complications, aftermath. Drill-in from a ledger row or Chapters tab.\n"
-  },
-  {
-    "surface": "game.agent-intelligence-panel",
-    "view": "game",
-    "mount": "modal",
-    "reads": [
-      {
-        "state_path": "intelligenceRecords",
-        "reader": "AgentIntelligencePanel",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Intelligence-on-this-agent submodal (THR-141).\n"
-  },
-  {
-    "surface": "game.faction-sheet",
-    "view": "game",
-    "mount": "modal",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "FactionSheet",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "dynamicFactionDefinitions",
-        "reader": "FactionSheet",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Full faction profile: rank structure, agenda, members, trust.\n"
-  },
-  {
-    "surface": "game.army-sheet",
-    "view": "game",
-    "mount": "modal",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "ArmySheet",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Full army profile: composition, morale, position, objective.\n"
-  },
-  {
-    "surface": "game.artifact-sheet",
-    "view": "game",
-    "mount": "modal",
-    "reads": [
-      {
-        "state_path": "graph",
-        "reader": "ArtifactSheet",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Full artifact profile: origin, properties, bearer history.\n"
   },
   {
     "surface": "game.harvest-screen",
@@ -885,22 +620,53 @@ export const IA_SURFACES: IASurface[] = [
     "notes": "Encounter-in-progress overlay (watched mode).\n"
   },
   {
-    "surface": "game.detail-card",
+    "surface": "game.inspector",
     "view": "game",
-    "mount": "modal",
+    "mount": "always",
     "reads": [
       {
         "state_path": "graph",
-        "reader": "DetailModal",
-        "visible_when": "a ref was opened at card tier"
+        "reader": "InspectorHost",
+        "visible_when": "a subject is open (any link, card, map click or notification — every open goes through useRefRouter)"
       },
       {
-        "state_path": "tick",
-        "reader": "DetailModal",
-        "visible_when": "always (the card is composed per tick and cached)"
+        "state_path": "graph",
+        "reader": "InspectorPage",
+        "visible_when": "a subject is open; docked, wide or Full"
       }
     ],
-    "notes": "Law 20 Tier 2 — what any thing in the world looks like when you open it (THR-1490, resolving THR-966 as mount). One card renderer for every WorldRefKind; which page kind a kind gets is data, in src/data/surface-registry.ts, and the only thing that pushes onto its stack is useRefRouter. Stacks to MAX_DETAIL_STACK_DEPTH with a breadcrumb; ESC closes the top, ← steps back. Footer CTA 'open its sheet ↗' renders only when the kind's row has a sheet.\n"
+    "notes": "The Inspector (THR-1876 / THR-1911; the retired sheets, detail column, hex-zoom and location views and the ActionDrawer deleted in THR-1912). One docked panel for every place, person and power: the subject's page is selectSubjectPage over the page-layout table (DETAIL_PAGE_REGISTRY), read from the view models, never from a component's own memo. Sizes docked / wide / Full; history, trail, pin, Follow; the Act row casts (plan § D9 way 1). Every caller opens through useRefRouter — card at the registry row's opensAt, sheet wide.\n"
+  },
+  {
+    "surface": "game.inspector.land-page",
+    "view": "game",
+    "mount": "always",
+    "reads": [
+      {
+        "state_path": "graph",
+        "reader": "InspectorPage",
+        "visible_when": "a hex is open (a click on open land, or on a city's hex)"
+      },
+      {
+        "state_path": "hexRevelation",
+        "reader": "InspectorPage",
+        "visible_when": "the hex holds discovered sites (In this land)"
+      }
+    ],
+    "notes": "The land page (plan § D10): the hex's own page in the Inspector, carrying the land prose HexChronicle used to tell and the In this land index (People, Holder, sites). Replaces the hex-zoom view and its HexBreadcrumb / HexSidebar / HexChronicle (THR-1912).\n"
+  },
+  {
+    "surface": "game.inspector-lab",
+    "view": "game",
+    "mount": "drillin",
+    "reads": [
+      {
+        "state_path": "graph",
+        "reader": "InspectorLab",
+        "visible_when": "?view=inspector-lab (dev view)"
+      }
+    ],
+    "notes": "The Inspector lab (plan § D12): one real example of every page kind plus the stress case at docked, wide and Full. A dev view — may scroll, never a player path.\n"
   },
   {
     "surface": "game.hover-card",
@@ -910,10 +676,10 @@ export const IA_SURFACES: IASurface[] = [
       {
         "state_path": "graph",
         "reader": "HoverCard",
-        "visible_when": "an EntityLink was dwelt on for HOVER_CARD_DELAY_MS and no card is open"
+        "visible_when": "an EntityLink was dwelt on for HOVER_CARD_DELAY_MS"
       }
     ],
-    "notes": "Law 20 Tier 1½ (THR-1490) — the glance between a tooltip and a card: header plus HOVER_CARD_MAX_SECTIONS sections, anchored beside the name, dismissed on leave. Never stacks on a modal and is never interactive (pointerEvents: none), so there is no hover-gap to fall into.\n"
+    "notes": "Law 20 Tier 1½ (THR-1490) — the glance between a tooltip and a card: header plus HOVER_CARD_MAX_SECTIONS sections, anchored beside the name, dismissed on leave. Never interactive (pointerEvents: none), so there is no hover-gap to fall into.\n"
   },
   {
     "surface": "game.debug-panel",

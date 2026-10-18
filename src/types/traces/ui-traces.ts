@@ -57,8 +57,6 @@ export interface UiRefOpenedTrace extends TraceBase {
   mode: RefOpenMode;
   cardKind: CardKind;
   viaAdapter?: RefOpenAdapter;
-  /** Stack depth *after* the push. A hover never stacks, so it reports the depth it floated over. */
-  stackDepth: number;
   summary: string;
 }
 

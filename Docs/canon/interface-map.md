@@ -426,8 +426,8 @@ and scarce stock reach the Trade lens; the route words moved there from the plai
 UI reads only: no state is written. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
-Known dead code: `AgentDetailPanel.tsx` is an orphaned pre-`AgentProfileModal` sheet — do
-not "fix" ambition display there.
+Ambition display lives on the person page (`views/subjects/personRows.ts`); the older sheets
+(`AgentDetailPanel`, then `AgentProfileModal`) were deleted in THR-1492 and THR-1912.
 
 ## Unaudited subsystems (audit-on-touch)
 
@@ -626,7 +626,7 @@ place: the next batch must author a second appointment-bearing encounter. Earlie
 Undertakings → Agent Lifecycle: a strategic-profiled ambition assigned below the spotlight
 pulls its holder into the deciding tier through `pullHolderIntoSpotlight` and swaps out the
 least-recently-witnessed spotlight mortal with no strategic ambition; consumers are the
-decision loop's tier predicate, `hexMapAgentVisibility`, `LocationView` and both census
+decision loop's tier predicate, `hexMapAgentVisibility`, the place page (`LocationView` until THR-1912) and both census
 scripts), verified by the landing census — `merchant-expansion` reachable on 2 of 3 seeds
 against a baseline of 1 — and by `spotlightPull.test.ts`. `ambition-acquisition` **extended**:
 its symbols gain `assignAmbitionToActor` and `pullHolderIntoSpotlight`, its read sites the

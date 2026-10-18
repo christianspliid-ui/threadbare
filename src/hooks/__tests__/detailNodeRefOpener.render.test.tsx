@@ -6,24 +6,23 @@
  * a ruler's card from Notables, and found its "FACTION ALLEGIANCES" line rendered as
  * plain text. `Section` draws a link only when `DetailPageOpenerProvider` supplies a
  * handler, and the provider was mounted only in a test. These cases mount the provider
- * tree the way `GameView` now does — the real `useRefRouter`, the real
- * `useDetailNodeRefOpener`, the real `DetailModal` over a real `WorldGraph` — and click
- * what a player clicks.
+ * tree the way `GameView` does — the real `useRefRouter` and the real
+ * `useDetailNodeRefOpener` over a real `WorldGraph` — and follow a link the way a page's
+ * line does. Since THR-1912 every card and sheet is the Inspector, so the cases assert
+ * what the Inspector was asked to open.
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, fireEvent, act } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 import { WorldGraph } from '../../engine/graph';
 import type { GraphEdge, GraphNode } from '../../types/graph';
 import type { NavigationTarget } from '../../types/notification';
-import type { WorldRef } from '../../types/worldRef';
+import type { AnyRef } from '../../types/contentRef';
 import type { NodeRef } from '../../types/detailPage';
 import { useRefRouter, type RefRouter } from '../useRefRouter';
 import { useDetailNodeRefOpener, worldRefForNodeId } from '../useDetailNodeRefOpener';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
-import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
 import { DetailPageOpenerProvider } from '../../contexts/DetailPageOpenerContext';
-import { DetailModal } from '../../components/shared/DetailModal';
 import { fromGraphNode } from '../../types/worldRefAdapters';
 
 function n(p: Partial<GraphNode> & Pick<GraphNode, 'id' | 'type' | 'name'>): GraphNode {
@@ -52,75 +51,44 @@ function worldGraph(): WorldGraph {
 function Harness({
   graph,
   openSheet,
-  onRouter,
+  openInspector,
   onOpener,
 }: {
   graph: WorldGraph;
   openSheet: (t: NavigationTarget) => boolean;
-  onRouter: (r: RefRouter) => void;
+  openInspector: (ref: AnyRef, size: 'docked' | 'wide') => void;
   onOpener?: (o: (ref: NodeRef) => void) => void;
 }) {
-  const router = useRefRouter({ graph, tick: 6, seed: 42, protagonistId: 'protag', openSheet });
-  onRouter(router);
+  const router = useRefRouter({ graph, tick: 6, seed: 42, protagonistId: 'protag', openSheet, openInspector });
   const opener = useDetailNodeRefOpener(router, () => graph);
   onOpener?.(opener);
   return (
-    <DetailModalStackValueProvider value={router.stack}>
-      <RefRouterProvider router={router}>
-        <DetailPageOpenerProvider value={opener}>
-          <DetailModal />
-        </DetailPageOpenerProvider>
-      </RefRouterProvider>
-    </DetailModalStackValueProvider>
+    <RefRouterProvider router={router}>
+      <DetailPageOpenerProvider value={opener}>{null}</DetailPageOpenerProvider>
+    </RefRouterProvider>
   );
 }
 
-function mount() {
-  const graph = worldGraph();
+function mount(graph: WorldGraph = worldGraph()) {
   const openSheet = vi.fn((_t: NavigationTarget) => true);
-  let router!: RefRouter;
-  const utils = render(<Harness graph={graph} openSheet={openSheet} onRouter={r => { router = r; }} />);
-  return {
-    ...utils,
-    openSheet,
-    open: (ref: WorldRef, mode?: 'card' | 'sheet') => act(() => { router.open(ref, mode); }),
-  };
+  const openInspector = vi.fn();
+  let opener!: (ref: NodeRef) => void;
+  render(<Harness graph={graph} openSheet={openSheet} openInspector={openInspector} onOpener={o => { opener = o; }} />);
+  return { openSheet, openInspector, follow: (ref: NodeRef) => act(() => { opener(ref); }) };
 }
 
 describe("a ruler's card reaches their faction (THR-1851)", () => {
-  it('the faction allegiance line is a link, and clicking it opens the faction sheet', () => {
-    const { open, getByTestId, queryByTestId, openSheet } = mount();
-    open({ kind: 'agent', id: 'aethel' });
-    const panel = getByTestId('detail-panel-0');
-    expect(panel.textContent).toContain('Hold of Witness Skyfield');
-
-    // The line the testers saw as plain text: now a button.
-    const factionLine = Array.from(panel.querySelectorAll('[role="button"], button')).find(el =>
-      el.textContent?.includes('Hold of Witness Skyfield'),
-    );
-    expect(factionLine).toBeDefined();
-    fireEvent.click(factionLine!);
-
-    // The faction *sheet* — not a second card — and the card stack is gone, so the
-    // sheet is not hidden under a card's higher z-band.
-    expect(openSheet).toHaveBeenCalledWith({ kind: 'faction', factionId: 'skyfield' });
-    expect(queryByTestId('detail-panel-0')).toBeNull();
+  it('the faction allegiance link opens the faction page wide, not a second card', () => {
+    const { follow, openInspector, openSheet } = mount();
+    follow({ nodeId: 'skyfield', pageKind: 'faction' });
+    expect(openInspector).toHaveBeenCalledWith(expect.objectContaining({ kind: 'faction', id: 'skyfield' }), 'wide');
+    expect(openSheet).not.toHaveBeenCalled();
   });
 
-  it("a ruler's card offers the full sheet, and the button opens the profile drawer", () => {
-    const { open, getByTestId, openSheet } = mount();
-    open({ kind: 'agent', id: 'aethel' });
-    const cta = getByTestId('detail-full-sheet-cta');
-    expect(cta.textContent).toContain('open the full sheet');
-    fireEvent.click(cta);
-    expect(openSheet).toHaveBeenCalledWith({ kind: 'agent', agentId: 'aethel' });
-  });
-
-  it('a faction card offers the full sheet too', () => {
-    const { open, getByTestId, openSheet } = mount();
-    open({ kind: 'faction', id: 'skyfield' });
-    fireEvent.click(getByTestId('detail-full-sheet-cta'));
-    expect(openSheet).toHaveBeenCalledWith({ kind: 'faction', factionId: 'skyfield' });
+  it("a person link opens that person's page at its row size", () => {
+    const { follow, openInspector } = mount();
+    follow({ nodeId: 'aethel', pageKind: 'actor' });
+    expect(openInspector).toHaveBeenCalledWith(expect.objectContaining({ kind: 'agent', id: 'aethel' }), 'docked');
   });
 });
 
@@ -166,14 +134,12 @@ describe('a culture opens the Realm over it (THR-1851)', () => {
 });
 
 describe('a link with no sheet-bearing ref still opens its card (Law 25, THR-1851)', () => {
-  it('an event link opens the event card rather than nothing', () => {
+  it('an event link opens the event page rather than nothing', () => {
     const graph = worldGraph();
     graph.addNode(n({ id: 'evt', type: 'event', name: 'A meeting in the market', properties: { eventType: 'encounter_outcome', tick: 5, locationId: 'market', participantIds: ['aethel'], summary: 'They met under the arch.' } }));
-    let opener!: (ref: NodeRef) => void;
-    const { getByTestId } = render(
-      <Harness graph={graph} openSheet={() => true} onRouter={() => {}} onOpener={o => { opener = o; }} />,
-    );
-    act(() => { opener({ nodeId: 'evt', pageKind: 'event' }); });
-    expect(getByTestId('detail-panel-0').textContent).toContain('A meeting in the market');
+    const { follow, openInspector } = mount(graph);
+    follow({ nodeId: 'evt', pageKind: 'event' });
+    expect(openInspector).toHaveBeenCalledTimes(1);
+    expect(openInspector.mock.calls[0]![0]).toMatchObject({ kind: 'encounter', id: 'evt' });
   });
 });
