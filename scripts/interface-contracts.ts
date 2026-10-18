@@ -1757,11 +1757,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: QUINTESSENCE,
     consumerSystem: 'Intelligence, Knowledge & Familiarity',
     intent:
-      'Every sheet says the band in a word (THR-1750). `dominionSheetVM` reads `dominionOf` (and `isTended` for the place tend line); the place, faction and artifact pages show the box and the mortal sheet a row. Components never read the match number.',
+      'Every sheet says the band in a word (THR-1750). `dominionSheetVM` reads `dominionOf` (and `isTended` for the place tend line); the Inspector pages show it as the Dominion row (`pageResolvers.ts`) and the header standing (`subjectPage.ts`) — the sheets and their `DominionBox` retired in THR-1912. Components never read the match number.',
     ulTerms: ['Dominion', 'Dominion Band'],
     mechanism: { kind: 'function', symbols: ['dominionSheetVM', 'dominionTendLine'] },
     writeSites: ['src/engine/dominionViewModels.ts'],
-    readSites: ['src/components/Game/GameView.tsx', 'src/engine/views/subjects/subjectPage.ts'],
+    readSites: ['src/engine/views/subjects/pageResolvers.ts', 'src/engine/views/subjects/subjectPage.ts'],
   },
   {
     id: 'dominion-band-scales-thread-yield-and-source-income',
@@ -1961,9 +1961,9 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: NARRATIVE,
     intent:
-      'What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; `ActiveEffectChips` renders them under "Under your hand" on the thread detail and the profile sheet. The consumer was built for `AgentInfoCard`, which is mounted nowhere live, so until now the chips never reached a screen.',
+      'What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; the person page's "Under your hand" row (`personRows.ts`) renders them — `ActiveEffectChips`, which drew them on the thread detail and the profile sheet, retired with those surfaces in THR-1912.',
     ulTerms: ['AxiologicalProfile'],
-    mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'activeEffects', 'ActiveEffectChips'] },
+    mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'activeEffects'] },
     writeSites: ['src/engine/graphOpExecutor.ts'],
     readSites: ['src/engine/agentDetail.ts', 'src/engine/views/subjects/personRows.ts'],
   },
