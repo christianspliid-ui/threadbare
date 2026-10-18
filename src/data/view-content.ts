@@ -148,4 +148,7 @@ export const INSPECTOR_WORDS = {
   factPeople: '{n} people',
   factOnePerson: 'one person',
   factEmpty: 'empty',
+  /** THR-1910: the fealty rows (THR-1932). */
+  factLiege: 'liege',
+  factVassal: 'owes fealty',
 } as const;

@@ -1,20 +1,11 @@
 import { useMemo, useState } from 'react';
 import type { GraphNode } from '../../types/graph';
+import { selectGuildPostings, ADVENTURING_GUILD_LABEL, type PostingTier } from '../../engine/ruins/guildPostings';
 import type { WorldGraph } from '../../engine/graph';
-import { hexDistance } from '../../lib/hexMath';
-import { hexDirection, locationPostsRuinQuestHooks } from '../../engine/ruins/questHooks';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
 import { RUIN_QUEST_POSTING_FACTION_DEF_ID } from '../../engine/ruins/constants';
 import { RARITY_TIER_COLORS } from '../../types/rarity';
-import { FACTION_ENCOUNTER_TEMPLATES } from '../../data/faction-encounter-content';
-import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
-import {
-  GUILD_QUEST_RADIUS,
-  QUEST_HOOK_COOLDOWN_TICKS,
-  RUIN_MAGNITUDE_MINOR_MAX,
-  RUIN_MAGNITUDE_MAJOR_MAX,
-} from '../../engine/ruins/constants';
 
 export interface GuildQuestPanelProps {
   location: GraphNode;
@@ -23,76 +14,15 @@ export interface GuildQuestPanelProps {
   onNavigateToRuin: (locationId: string) => void;
 }
 
-type TierLabel = 'Minor' | 'Major' | 'Saga';
+type TierLabel = PostingTier;
 
-interface QuestRow {
-  ruinId: string;
-  questName: string;
-  ruinName: string;
-  direction: string;
-  distance: number;
-  tier: TierLabel;
-  tierColor: string;
-}
-
-const TIER_ORDER: Record<TierLabel, number> = { Saga: 0, Major: 1, Minor: 2 };
-
-/**
- * Sublocation markers that identify a faction's hall. `factionSeeding` writes
- * `sublocationTypeId`; older fixtures carry `locationSubtype`. `factionQuestGeneration`
- * accepts both, so this surface does too — the two must agree on what a hall is.
- */
-const FACTION_HALL_SUBLOCATION_TYPE_ID = 'sublocation-type.faction-hall';
-const FACTION_HALL_LOCATION_SUBTYPE = 'guild-hall';
-
-/**
- * A guild hall is any faction hall whose owning faction resolves through
- * FACTION_DEFINITIONS — not the adventuring guild alone (THR-818). Quest data is
- * faction-agnostic, so all twelve definitions surface postings at their halls.
- *
- * NOTE(THR-1026): a board here does not mean a posting here. `phaseRuinQuestHooks`
- * stamps ruins on behalf of the adventurers' guild alone — ruled 2026-09-11, on
- * `RUIN_QUEST_POSTING_FACTION_DEF_ID` — so the other eleven factions' halls will
- * usually show the empty state, and that is intended, not a wiring defect. The
- * empty state says which of the two silences it is (see `postsRuinContracts`
- * below), asking the engine's own predicate so the two cannot drift apart.
- * Do not "fix" this hall predicate down to one faction to make them agree.
- */
-function isFactionHall(node: GraphNode | undefined): boolean {
-  const props = node?.properties as Record<string, unknown> | undefined;
-  if (!props) return false;
-
-  const isHall =
-    props.sublocationTypeId === FACTION_HALL_SUBLOCATION_TYPE_ID ||
-    props.locationSubtype === FACTION_HALL_LOCATION_SUBTYPE;
-  if (!isHall) return false;
-
-  return typeof props.factionDefId === 'string' && FACTION_DEFINITIONS.has(props.factionDefId);
-}
-
-/**
- * The posting guild's display name, read from its definition rather than typed
- * here — a faction's name has one source (Law 14: no raw keys, and no second
- * copy of a name the data already carries).
- */
-const ADVENTURING_GUILD_LABEL =
-  FACTION_DEFINITIONS.get(RUIN_QUEST_POSTING_FACTION_DEF_ID)?.nameTemplate ?? 'the adventurers’ guild';
-
-function getTierLabel(magnitude: number): TierLabel {
-  if (magnitude <= RUIN_MAGNITUDE_MINOR_MAX) return 'Minor';
-  if (magnitude <= RUIN_MAGNITUDE_MAJOR_MAX) return 'Major';
-  return 'Saga';
-}
+// THR-1910: the postings are read in the engine (`selectGuildPostings`), so the place
+// page's `guild_postings` row and this panel read one source until S4 deletes the panel.
 
 function getTierColor(tier: TierLabel): string {
   if (tier === 'Minor') return RARITY_TIER_COLORS[1];
   if (tier === 'Major') return RARITY_TIER_COLORS[3];
   return RARITY_TIER_COLORS[4];
-}
-
-function getQuestName(templateId: string | undefined): string {
-  if (!templateId) return 'Expedition contract';
-  return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === templateId)?.name ?? 'Expedition contract';
 }
 
 function safeNavigate(
@@ -120,62 +50,12 @@ export function GuildQuestPanel({
   const settlementCol = locProps.hexCol as number | undefined;
   const settlementRow = locProps.hexRow as number | undefined;
 
-  const hasGuildHall = useMemo(() => {
-    return graph.getOutgoingEdges(location.id, 'contains')
-      .map(e => graph.getNode(e.target))
-      .some(isFactionHall);
-  }, [graph, location.id]);
-
-  /**
-   * Whether the engine will ever stamp a ruin on this settlement's behalf
-   * (THR-1026). Asked through the phase's own predicate, so the empty state
-   * below cannot promise a sweep that is never coming.
-   */
-  const postsRuinContracts = useMemo(
-    () => locationPostsRuinQuestHooks(graph, location.id),
-    [graph, location.id],
+  const postings = useMemo(
+    () => selectGuildPostings(graph, location.id, tick),
+    [graph, location.id, tick],
   );
-
-  const rows = useMemo((): QuestRow[] => {
-    if (settlementCol == null || settlementRow == null || !hasGuildHall) return [];
-
-    const settlementHex = { col: settlementCol, row: settlementRow };
-    const results: QuestRow[] = [];
-
-    for (const ruin of graph.getNodesByType('location')) {
-      const props = ruin.properties as Record<string, unknown>;
-      if (typeof props.ruinMagnitude !== 'number') continue;
-
-      const ruinCol = props.hexCol as number | undefined;
-      const ruinRow = props.hexRow as number | undefined;
-      if (ruinCol == null || ruinRow == null) continue;
-
-      const ruinHex = { col: ruinCol, row: ruinRow };
-      const dist = hexDistance(settlementHex, ruinHex);
-      if (dist > GUILD_QUEST_RADIUS) continue;
-
-      const postedTick = props.questHookPostedTick as number | undefined;
-      if (postedTick == null || tick - postedTick >= QUEST_HOOK_COOLDOWN_TICKS) continue;
-
-      const tier = getTierLabel(props.ruinMagnitude);
-      results.push({
-        ruinId: ruin.id,
-        questName: getQuestName(props.questHookTemplateId as string | undefined),
-        ruinName: ruin.name ?? 'the ruin',
-        direction: hexDirection(settlementHex, ruinHex),
-        distance: dist,
-        tier,
-        tierColor: getTierColor(tier),
-      });
-    }
-
-    results.sort((a, b) => {
-      const td = TIER_ORDER[a.tier] - TIER_ORDER[b.tier];
-      return td !== 0 ? td : a.distance - b.distance;
-    });
-
-    return results;
-  }, [graph, location.id, tick, settlementCol, settlementRow, hasGuildHall]);
+  const { hasGuildHall, postsRuinContracts } = postings;
+  const rows = postings.rows.map(r => ({ ...r, tierColor: getTierColor(r.tier) }));
 
   if (settlementCol == null || settlementRow == null) return null;
   if (!hasGuildHall) return null;

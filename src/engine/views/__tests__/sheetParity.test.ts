@@ -8,7 +8,7 @@
  * lawful reasons. The test fails when a named home does not exist. S4 may not delete
  * `AgentProfileModal`, its tabs or `ThreadDetailView` until this block is green.
  *
- * S2b adds the place, faction, army, artifact and attachment blocks.
+ * S2b's place, faction, army, artifact and attachment blocks are `sheetParity.s2b.test.ts` (THR-1910).
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../graph';
