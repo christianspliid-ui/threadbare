@@ -5,7 +5,7 @@
  * 1. AgentInfoCardData faction rank/reputation population
  * 2. Faction TickEvent emission from join/promotion outcomes
  * 3. Faction rank change events from reputation decay
- * 4. AlertBar icon entries for faction/social/trust kinds
+ * 4. News icon entries for faction/social/trust kinds (Needs you, THR-1875; was AlertBar)
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -13,7 +13,7 @@ import { WorldGraph } from '../graph';
 import { getAgentInfoCard } from '../agentDetail';
 import { processFactionOutcome } from '../factionOutcome';
 import { phaseFactionReputationDecay } from '../factionReputation';
-import { alertBarTestHelpers } from '../../components/Game/AlertBar';
+import { newsIconFor } from '../views/needsYou';
 import type { EncounterProgress } from '../../types/encounter';
 import type { MemberOfEdgeProperties } from '../../types/disposition';
 import type { GameState } from '../../types/gameState';
@@ -361,17 +361,17 @@ describe('Faction reputation decay rank events', () => {
   });
 });
 
-// ─── AlertBar icons (THR-1906) ────────────────────────────────────────────
+// ─── News icons (THR-1906; AlertBar retired by THR-1875) ────────────────────────────────────────────
 
-describe('AlertBar faction icons', () => {
+describe('Needs-you news icons for the faction kinds', () => {
   it('draws carved icons for the faction, social and trust kinds', () => {
-    expect(alertBarTestHelpers.getIcon('faction')).toBe('faction');
-    expect(alertBarTestHelpers.getIcon('social')).toBe('social');
-    expect(alertBarTestHelpers.getIcon('trust')).toBe('trust');
+    expect(newsIconFor('faction')).toBe('faction');
+    expect(newsIconFor('social')).toBe('social');
+    expect(newsIconFor('trust')).toBe('trust');
   });
 
   it('still draws the other kinds', () => {
-    expect(alertBarTestHelpers.getIcon('death')).toBe('death');
-    expect(alertBarTestHelpers.getIcon('discovery')).toBe('discovery');
+    expect(newsIconFor('death')).toBe('death');
+    expect(newsIconFor('discovery')).toBe('discovery');
   });
 });

@@ -147,3 +147,44 @@ export const GOD_RAIL_LABELS = {
 export const HAND_PRICE_TOOLTIP = 'The price on {par} ground: {parLine} {sovereign}. {hostile}. A target\'s own price shows when you choose it.';
 /** Added for the two cards whose price follows the target's tier. */
 export const HAND_PRICE_TIER_SCALED = 'A rarer target costs more.';
+
+// ─── The top bar and Needs you (slice 3, THR-1875; plan § F3–F5) ──────
+
+/** The pill's word, always shown before its count (THR-1834 § 5). */
+export const NEEDS_YOU_LABEL = 'Needs you';
+/** The pill's aria and tooltip label: "1 thing needs you" / "3 things need you". */
+export const NEEDS_YOU_PILL_LABEL: CountPair = { one: '{n} thing needs you', other: '{n} things need you' };
+/** The list's group headers, followed by " · {n}". */
+export const NEEDS_YOU_GROUP_TITLES = {
+  waiting: 'Waiting for you',
+  held: 'Held behind this chapter',
+  news: 'News',
+} as const;
+/** The fold row at the end of a group it shortens. */
+export const NEEDS_YOU_FOLD_ROW: CountPair = { one: 'and {n} more', other: 'and {n} more' };
+export const NEEDS_YOU_LIST_ARIA = 'Things that need you';
+
+/**
+ * `ui.needs_you_news`'s description, built at render from `NEEDS_YOU_NEWS_KEEP_DAYS` so a
+ * retune can never make it false. `{keep}` is a duration in words ("three days").
+ */
+export const NEEDS_YOU_NEWS_TOOLTIP =
+  'What changed in the world that touches you. A row leaves when you open it, or after {keep}.';
+
+export function needsYouNewsTooltipDesc(keepWords: string): string {
+  return NEEDS_YOU_NEWS_TOOLTIP.replace('{keep}', keepWords);
+}
+
+/** The named pause on the time status line (§ F4): "paused · {line}". */
+export const NAMED_PAUSE_STATUS = 'paused · {line}';
+
+/** Top-bar words (§ F3). Every control keeps its word; only reveal gates hide an item. */
+export const TOP_BAR_WORDS = {
+  doom: 'Doom',
+  doomUnmade: 'Unmade',
+  omen: 'Omen',
+  rivals: 'Rivals',
+  notables: 'Notables',
+  readThreads: 'Read the Threads',
+  settings: 'Settings',
+} as const;

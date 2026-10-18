@@ -4,7 +4,7 @@ import { IconButton } from '../shared/IconButton';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { FIRST_RUN_PROMPT_CAPTION, CLOCK_HELD_STAYS_PAUSED_DESC } from '../../data/ui-content';
 import { clockHeldStatus } from '../../data/nudge-stage-content';
-import { SPEED_DOWN_ARIA, SPEED_UP_ARIA } from '../../data/frame-content';
+import { SPEED_DOWN_ARIA, SPEED_UP_ARIA, NAMED_PAUSE_STATUS } from '../../data/frame-content';
 import { Icon } from '../shared/Icon';
 
 interface SimulationControlsProps {
@@ -49,7 +49,23 @@ interface SimulationControlsProps {
    * under `prefers-reduced-motion` (Law 44).
    */
   firstRunPrompt?: boolean;
+  /**
+   * THR-1875 (frame plan § F4) — a pause the clock names, set by the avatar's arrival:
+   * the status line reads "paused · {line}". Below a hold and an answer line.
+   */
+  namedPause?: string;
+  /**
+   * THR-1875 (§ F3, yield step 2) — the status line narrows from
+   * `TOPBAR_TIME_STATUS_MAX_REM` to `TOPBAR_TIME_STATUS_MIN_REM` and ellipsizes; the full
+   * line is in its tooltip.
+   */
+  statusNarrow?: boolean;
 }
+
+/** THR-1875 — where the time status line ellipsizes (§ F3). */
+export const TOPBAR_TIME_STATUS_MAX_REM = 17.5;
+/** THR-1875 — the status line's width after yield step 2. */
+export const TOPBAR_TIME_STATUS_MIN_REM = 12.5;
 
 /** THR-1716 — one slow breath of the first-run ring. */
 const FIRST_RUN_PULSE = 'pulseGlow 2.4s ease-in-out infinite';
@@ -75,6 +91,7 @@ const SEASON_ICONS: Record<string, string> = {
 export function SimulationControls({
   season, year, running, speed,
   onToggle, onStep, onSpeedChange, compact, held = false, heldBy, answerStatus, firstRunPrompt = false,
+  namedPause, statusNarrow = false,
 }: SimulationControlsProps) {
   const reducedMotion = usePrefersReducedMotion();
   function speedDown() {
@@ -95,12 +112,13 @@ export function SimulationControls({
     const statusText = held
       ? clockHeldStatus(heldBy, running)
       : answerStatus ? answerStatus
+      : namedPause && !running ? NAMED_PAUSE_STATUS.replace('{line}', namedPause)
       : prompting ? FIRST_RUN_PROMPT_CAPTION
       // THR-1893: the speed stepper beside the date shows the speed, so the line no longer repeats it.
       : running ? 'running' : 'paused';
     const playButton = (
       <IconButton
-        icon={<span>{running ? '⏸' : '⏵'}</span>}
+        icon={<Icon name={running ? 'pause' : 'play'} size="chip" decorative />}
         size="sm"
         active={running}
         onClick={onToggle}
@@ -108,9 +126,9 @@ export function SimulationControls({
       />
     );
     return (
-      <div className="topbar-tier">
-        <span className="topbar-section-label">Time</span>
-        <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
+      // THR-1875 (§ F3): one row — play, the speed stepper, then a two-line column (date,
+      // status) — so the bar holds at one row of `--topbar-height`.
+      <div className="flex items-center" data-testid="time-controls" style={{ gap: 'var(--space-2)' }}>
           {/* THR-1426 (Shape 1): the tooltip named the engine's clock index (Laws 13/14). The
               control it labels is play/pause, so the tooltip says what the control does. */}
           {prompting ? (
@@ -130,18 +148,6 @@ export function SimulationControls({
               {playButton}
             </Tooltip>
           )}
-          <span
-            style={{
-              font: 'var(--type-body-small)',
-              color: 'var(--text-primary)',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {/* THR-1426 (Shape 1): was `tick {tick} · {season} · year {year}`. The season and
-                year are the orientation a player uses; the raw tick index in front of them was
-                the engine's clock (Laws 13/14) and read as noise beside a real calendar. */}
-            {season} · year {year}
-          </span>
           {/* THR-1893 (frame plan § F3): the speed stepper, moved here from World Pulse so
               the persistent time control holds speed too (Law 52). The readout is a control
               setting, like a volume level, so it stays a numeral (Law 13). */}
@@ -175,18 +181,37 @@ export function SimulationControls({
               />
             </div>
           </Tooltip>
-        </div>
+        <div className="topbar-tier min-w-0">
+          <span
+            data-testid="time-date"
+            style={{
+              font: 'var(--type-body-small)',
+              color: 'var(--text-primary)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {/* THR-1426 (Shape 1): was `tick {tick} · {season} · year {year}`. The season and
+                year are the orientation a player uses; the raw tick index in front of them was
+                the engine's clock (Laws 13/14) and read as noise beside a real calendar. */}
+            {season} · year {year}
+          </span>
         {(() => {
           const status = (
             <span
+              data-status-narrow={statusNarrow ? 'true' : undefined}
               style={{
                 font: 'var(--type-body-small)',
                 color: prompting ? 'var(--text-secondary)' : 'var(--text-tertiary)',
                 fontStyle: 'italic',
                 whiteSpace: 'nowrap',
+                display: 'block',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                maxWidth: `${statusNarrow ? TOPBAR_TIME_STATUS_MIN_REM : TOPBAR_TIME_STATUS_MAX_REM}rem`,
               }}
               {...(prompting ? { 'data-testid': 'first-run-caption' } : {})}
               {...(held ? { 'data-testid': 'clock-held-status' } : {})}
+              {...(!held && namedPause && !running ? { 'data-testid': 'named-pause-status' } : {})}
             >
               {statusText}
             </span>
@@ -194,9 +219,10 @@ export function SimulationControls({
           // The registry copy says time runs again; a clock paused before the hold
           // stays paused, so that branch carries its own line.
           return held
-            ? <Tooltip id="ui.clock_held" desc={running ? undefined : CLOCK_HELD_STAYS_PAUSED_DESC}>{status}</Tooltip>
-            : status;
+            ? <Tooltip id="ui.clock_held" label={statusText} desc={running ? undefined : CLOCK_HELD_STAYS_PAUSED_DESC}>{status}</Tooltip>
+            : <Tooltip label={statusText} focusable={false}>{status}</Tooltip>;
         })()}
+        </div>
       </div>
     );
   }

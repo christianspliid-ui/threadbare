@@ -143,7 +143,7 @@ export const IA_SURFACES: IASurface[] = [
         "visible_when": "always"
       }
     ],
-    "notes": "Pause/play, the speed stepper (moved here from World Pulse, THR-1893), season and year, and the status line.\n",
+    "notes": "Pause/play, the speed stepper (moved here from World Pulse, THR-1893), then season and year over the status line, in one row of the top bar (THR-1875). The status line names a hold, an answer, or the named pause (\"paused · Your ascendant has arrived at …\").\n",
     "openUrl": "/?view=game&seeded"
   },
   {
@@ -408,18 +408,28 @@ export const IA_SURFACES: IASurface[] = [
     "openUrl": "/?view=game&seeded"
   },
   {
-    "surface": "game.alert-bar",
+    "surface": "game.needs-you",
     "view": "game",
     "mount": "always",
     "reads": [
       {
+        "state_path": "ascendantBeats.pending",
+        "reader": "NeedsYou",
+        "visible_when": "a beat is offered and not entered (a Waiting row)"
+      },
+      {
+        "state_path": "playerActionReceipts",
+        "reader": "NeedsYou",
+        "visible_when": "a toast-tier receipt is unacknowledged (a Waiting row)"
+      },
+      {
         "state_path": "tickEvents",
-        "reader": "AlertBar",
-        "visible_when": "tickEvents marked as alert-level"
+        "reader": "NeedsYou",
+        "visible_when": "alert-channel news inside NEEDS_YOU_NEWS_KEEP_DAYS (News rows), or an avatar arrival (the named pause)"
       }
     ],
-    "notes": "Persistent alert row for high-significance events.\n",
-    "openUrl": "/?view=game&seeded"
+    "notes": "Needs you (THR-1875): the gold count pill in the top bar, shown only while something waits; N or a press opens its list of three groups — Waiting for you, Held behind this chapter, News. The list grows to 60vh before it folds rows into \"and N more\"; a same-kind burst in one tick is one News row \"· and N more like it\". Opening it never clears the count. Rows are read-only while an interrupt holds the clock. State via __DEBUG.getFrameState().needsYou and getView('needsYou').\n",
+    "openUrl": "/?view=game&seeded&size=medium"
   },
   {
     "surface": "game.live-location-bar",

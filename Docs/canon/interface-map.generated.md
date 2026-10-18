@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 82 |
-| **Total** | **282** |
+| 🔵 UNVERIFIED-OK | 83 |
+| **Total** | **283** |
 
 ## Contracts by producing subsystem
 
@@ -113,6 +113,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `account-carries-echoes-to-the-next-world` | When an age ends the world remembers it: the places the god held, the mortals it raised and the relics its chosen carried are kept, and the next world wakes with them in its memory. | function: `concludeRun`, `liveEchoes` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
+| `alert-channel-to-needs-you` | Alert-level tick events reach the player as Needs-you News rows. The router keeps every alert it routes (only a repeated `sourceEventId` drops), lapses them after `NEEDS_YOU_NEWS_KEEP_DAYS` × `TICKS_PER_DAY` ticks and counts any trimmed at `ALERT_SAFETY_CAP` on `alertsTrimmedAtCap`; `buildNeedsYou` applies the same window and turns a same-kind burst in one tick into one row "· and N more like it". The interrupt registry’s `held` list feeds the Held group, so a moment waiting behind the one on screen is named. | function: `routeNotifications`, `trimAlerts`, `buildNeedsYou`, `NEEDS_YOU_PRODUCERS`, `resolveInterrupts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `content-ref-opens-codex-overlay` | Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card's sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491). | function: `SURFACE_BY_CONTENT_KIND`, `generateContentPage`, `resolveContentEntry` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `minimised-step-hold` | The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". | state-field: `playerHold`, `isPlayerHoldLive`, `progressActionsWithPlayerHolds` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `story-breath-anchor-paces-pause-mode-chapters` | The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat. | edge-prop: `lastStoryChapterEndTick` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -507,6 +508,17 @@ remediation ticket or the build fails.
 - **Read sites:** `src/components/Game/tabs/BondsTab.tsx`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
 - **Other hits:** `src/components/Game/encounter-stage/adapters/buildAftermathConsequences.ts`, `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts` +96 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
+
+### `alert-channel-to-needs-you` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Alert-level tick events reach the player as Needs-you News rows. The router keeps every alert it routes (only a repeated `sourceEventId` drops), lapses them after `NEEDS_YOU_NEWS_KEEP_DAYS` × `TICKS_PER_DAY` ticks and counts any trimmed at `ALERT_SAFETY_CAP` on `alertsTrimmedAtCap`; `buildNeedsYou` applies the same window and turns a same-kind burst in one tick into one row "· and N more like it". The interrupt registry’s `held` list feeds the Held group, so a moment waiting behind the one on screen is named.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Attention, Chronicle & Narrative
+- **Module:** `src/engine/views/needsYou.ts`
+- **Production hits:** 6 total — 2 write, 2 read, 2 unclassified
+- **Write sites:** `src/engine/notificationRouter.ts`, `src/engine/views/interruptRegistry.ts`
+- **Read sites:** `src/components/Game/GameView.tsx`, `src/engine/views/needsYou.ts`
+- **Other hits:** `src/components/Game/hooks/useNotifications.ts`, `src/data/nudge-stage-content.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ambition-acquisition` — 🟢 LIVE
 
@@ -2073,10 +2085,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 91 total — 1 write, 2 read, 88 unclassified
+- **Production hits:** 94 total — 1 write, 2 read, 91 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`
-- **Other hits:** `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx`, `src/components/icons/CoatOfArms.tsx` +83 more
+- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +86 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -2648,10 +2660,10 @@ exit
 
 - **Intent:** A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast's fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
+- **Production hits:** 12 total — 1 write, 3 read, 8 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/components/Game/ActionDrawer.tsx`, `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/inspector/lab/labSubjects.ts`, `src/data/world-objects.ts`, `src/engine/castTargetChanges.ts`, `src/engine/incidentBundle.ts`, `src/engine/views/subjects/pageResolvers.ts` +2 more
+- **Other hits:** `src/components/Game/inspector/lab/labSubjects.ts`, `src/data/ia-manifest.ts`, `src/data/world-objects.ts`, `src/engine/castTargetChanges.ts`, `src/engine/incidentBundle.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-acts-pace-spine-gifts` — 🔵 UNVERIFIED-OK
@@ -2727,10 +2739,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 448 total — 1 write, 1 read, 446 unclassified
+- **Production hits:** 449 total — 1 write, 1 read, 447 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +441 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +442 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE

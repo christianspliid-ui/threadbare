@@ -6,6 +6,7 @@ import { useEffect, useState, useMemo } from 'react';
 import type { GameState } from '../../types/gameState';
 import { NotablesPanel, countShownNotables } from './NotablesPanel';
 import { IconButton } from '../shared/IconButton';
+import { Icon } from '../shared/Icon';
 import { Dropdown } from '../shared/Dropdown';
 
 interface NotablesButtonProps {
@@ -35,7 +36,7 @@ export function NotablesButton({ gameState, onOpenChange }: NotablesButtonProps)
       trigger={
         <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
           <IconButton
-            icon={<span>♛</span>}
+            icon={<Icon name="notables" size="chip" decorative />}
             badge={notableCount}
             badgeOf="notables"
             active={open}
@@ -46,7 +47,7 @@ export function NotablesButton({ gameState, onOpenChange }: NotablesButtonProps)
               icon; a dead label reads as a broken panel. Mouse-only — the icon
               button already carries the accessible name and keyboard focus. */}
           <span
-            className="topbar-section-label topbar-compact-hide"
+            className="topbar-section-label"
             data-testid="notables-chip-label"
             aria-hidden="true"
             style={{ cursor: 'pointer' }}

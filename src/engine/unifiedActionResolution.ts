@@ -2274,7 +2274,7 @@ export function executeStepResult(
       id: `complication_${tick}_${action.actionId}`,
       tick,
       type: 'complication',
-      message: `⊘ ${consequence.complication.name} — ${consequence.complication.prose}`,
+      message: `${consequence.complication.name} — ${consequence.complication.prose}`,
       significance: 0.3 + consequence.complication.significanceBoost,
       actorId: action.actorId,
       sphere: undefined,

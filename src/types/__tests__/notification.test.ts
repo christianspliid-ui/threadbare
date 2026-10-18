@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   TOAST_MAX_VISIBLE,
   TOAST_DURATION_MS,
-  ALERT_MAX_VISIBLE,
+  ALERT_SAFETY_CAP,
 } from '../notification';
 import type {
   NotificationChannel,
@@ -25,9 +25,9 @@ describe('Notification constants', () => {
     expect(TOAST_DURATION_MS).toBeGreaterThanOrEqual(1000);
   });
 
-  it('ALERT_MAX_VISIBLE is a positive integer', () => {
-    expect(ALERT_MAX_VISIBLE).toBeGreaterThan(0);
-    expect(Number.isInteger(ALERT_MAX_VISIBLE)).toBe(true);
+  it('ALERT_SAFETY_CAP is a positive integer', () => {
+    expect(ALERT_SAFETY_CAP).toBeGreaterThan(0);
+    expect(Number.isInteger(ALERT_SAFETY_CAP)).toBe(true);
   });
 });
 

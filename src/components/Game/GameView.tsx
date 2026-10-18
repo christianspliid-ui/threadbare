@@ -78,7 +78,10 @@ import type { ThreadedNode, ThreadedFaction, ThreadCategory, SustainedControlNod
 import { getOriginPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
-import { GameViewTopBar } from './GameView/GameViewTopBar';
+import { GameViewTopBar, type TopBarFrameFixture } from './GameView/GameViewTopBar';
+import { beatOfferWords } from './AscendantBeatModal';
+import { buildNeedsYou, needsYouFixtureSubject, needsYouStamp, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
+import type { AlertItem } from '../../types/notification';
 import { AgentInfoCard } from './AgentInfoCard';
 import { prepareEncounterHandoff } from './encounterHandoff';
 import { shouldCenterOnAgentMove } from './cameraInteractionGate';
@@ -111,7 +114,6 @@ import { getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetr
 import { readWorldPastForPlayer } from '../../engine/worldPast';
 import { buildBeforeYouWoke, worldHasPast } from '../../engine/worldPastWords';
 import { ToastStack } from './ToastStack';
-import { AlertBar } from './AlertBar';
 import { useNotificationNavigation, useSheetOpeners } from './hooks/useNotificationNavigation';
 import { useRefRouter } from '../../hooks/useRefRouter';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
@@ -768,8 +770,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [gameState.recentEvents]);
   const getRecentEvents = useCallback(() => recentEventsRef.current, []);
 
-  // ── Avatar arrival event → auto-pause + toast ──
-  // When the ascendant reaches its move target, pause the game and notify the player.
+  // ── Avatar arrival event → a named pause (THR-1875, frame plan § F4) ──
+  // When the ascendant reaches its move target, pause the game and name the pause: the
+  // time status line reads "paused · {line}" and Needs you lists it with "Show". It
+  // clears when the clock next runs. Not an interrupt: it has no surface, and the player
+  // resumes it (the retired 5 s toast let its cause vanish, THR-1825 row 20).
+  const [namedPause, setNamedPause] = useState<NeedsYouNamedPause | null>(null);
   const processedArrivalEventsRef = useRef(new Set<string>());
   useEffect(() => {
     for (const evt of gameState.tickEvents) {
@@ -779,15 +785,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       // THR-1711: while an interrupt holds the clock, pause the state it returns to.
       if (!interruptHoldRef.current?.pauseIfHeld()) setRunning(false);
-      handlePushToast({
-        id: `toast_arrival_${evt.id}`,
-        message: evt.message,
-        count: 1,
-        createdTick: evt.tick,
-        expiresAt: Date.now() + 5000,
-      });
+      setNamedPause({ line: evt.message, hex: evt.hexCoords ?? null, tick: evt.tick });
     }
-  }, [gameState.tickEvents, setRunning, handlePushToast]);
+  }, [gameState.tickEvents, setRunning]);
+  const namedPauseSetAtRef = useRef(false);
+  useEffect(() => {
+    // The pause clears on its own when the clock next runs.
+    if (running && namedPauseSetAtRef.current) setNamedPause(null);
+    namedPauseSetAtRef.current = !running && namedPause !== null;
+  }, [running, namedPause]);
 
   // Spotlight thread color (THR-340): sphere color of the spotlighted agent's primary domain.
   // Looks up the agent first in retinueAgents, then in threadedNodes (non-retinue threaded agents).
@@ -1615,6 +1621,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setMapLens(next, 'bar');
   }, [setMapLens]);
   const handleLedgerKey = useLedgerKey(gameScreen);
+  // THR-1875 — N opens Needs you; the queue is built further down, so the key reads a ref.
+  const needsYouKeyRef = useRef<() => void>(() => {});
+  const handleNeedsYouKey = useCallback(() => needsYouKeyRef.current(), []);
   useTopBarHotkeys({
     running,
     speed,
@@ -1625,6 +1634,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     onToggleLens: toggleMapLens,
     // THR-1893: L folds the Ledger rail, or toggles its flyout while the Inspector is open.
     onLedgerKey: handleLedgerKey,
+    // THR-1875: N opens or closes Needs you while its pill renders.
+    onNeedsYouKey: handleNeedsYouKey,
   });
 
   // ── Audio volume handlers ──
@@ -3936,8 +3947,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // caption shows, so the two never stack.
   const openingDirection = openingReveal.reveal.direction;
   const openingFirstNode = openingDirection.firstId ? gameState.graph.getNode(openingDirection.firstId) : undefined;
-  const openingDirectionLine = openingDirection.show && !firstRunPrompt ? (
+  const openingDirectionLine = openingDirection.show && !firstRunPrompt ? (short: boolean) => (
     <OpeningDirectionLine
+      short={short}
       mode={openingDirection.mode}
       firstName={openingFirstNode?.name}
       theirPossessive={getPronouns(openingFirstNode?.properties.gender as string | undefined).their}
@@ -4030,6 +4042,108 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return held.length > 0
       && held.every(r => r === 'player_surface' || r === 'recent_input' || r === 'awaiting_boundary');
   })();
+
+  // ── Needs you (THR-1875, frame plan § F4–F5) ──
+  // The top bar's queue of what waits on the god without stopping time. GameView owns its
+  // sources (React-held) and passes them to the pure view model; nothing here is new state
+  // except the list's open flag, the named pause and the dev fixture.
+  const [needsYouOpen, setNeedsYouOpen] = useState(false);
+  const [needsYouFixtureAlerts, setNeedsYouFixtureAlerts] = useState<AlertItem[]>([]);
+  const [needsYouFixtureHeld, setNeedsYouFixtureHeld] = useState(false);
+  const [frameFixture, setFrameFixture] = useState<TopBarFrameFixture | null>(null);
+  const needsYouSources = useMemo((): NeedsYouSources => {
+    const offerShown = !!pendingBeat && !beatEntered && !interruptsSuppressed;
+    const words = offerShown && pendingBeat ? beatOfferWords(pendingBeat) : null;
+    const receipts = (gameState.playerActionReceipts ?? [])
+      .filter(r => r.presentation === 'toast' && !r.acknowledged)
+      .map(r => ({ id: r.id, headline: r.toastMessage ?? r.overview, tick: r.resolvedTick }));
+    const popupHead = notificationState.popupQueue[0];
+    const held = interruptResolution.held.map(h => ({
+      kind: h.kind,
+      surfaceId: h.surfaceId,
+      title: h.kind === 'event-popup' ? popupHead?.title ?? null : null,
+    }));
+    if (needsYouFixtureHeld && !held.some(h => h.kind === 'event-popup')) {
+      held.push({ kind: 'event-popup', surfaceId: 'EventPopup', title: gameState.doomDefinition?.stages?.[0]?.name ?? null });
+    }
+    return {
+      currentTick: gameState.tick,
+      beatOffer: words && pendingBeat ? {
+        kind: words.kind,
+        beatId: pendingBeat.beatId,
+        eyebrow: words.eyebrow,
+        title: beatProseOverride?.title ?? null,
+        tick: gameState.tick,
+      } : null,
+      receipts,
+      namedPause,
+      held,
+      alerts: [...notificationState.alerts, ...needsYouFixtureAlerts],
+    };
+  }, [pendingBeat, beatEntered, interruptsSuppressed, gameState.playerActionReceipts, gameState.tick, gameState.doomDefinition,
+    notificationState.popupQueue, notificationState.alerts, interruptResolution.held, beatProseOverride, namedPause,
+    needsYouFixtureAlerts, needsYouFixtureHeld]);
+  const needsYouVM = useMemo(() => buildNeedsYou(needsYouSources), [needsYouSources]);
+  // Rows are read-only while a moment holds the clock — not while the player's own surface
+  // (the Chapter Ledger, the court) does: the THR-1809 raised pill exists to open a gift over
+  // those, so they must not guard its row (review gate, THR-1875).
+  const needsYouGuarded = interruptResolution.open.some(id => !PLAYER_SURFACE_INTERRUPT_IDS.includes(id))
+    || interruptResolution.heldArrivals.length > 0;
+  const handlePressNeedsYouRow = useCallback((row: NeedsYouRowVM) => {
+    switch (row.opens) {
+      case 'beatOffer':
+        // THR-1853: never enter a gift beside another blocking interrupt.
+        if (giftOtherInterrupts.length === 0) setBeatEntered(true);
+        return;
+      case 'receipt':
+        if (row.receiptId) setOpenedReceiptId(row.receiptId);
+        return;
+      case 'place':
+        if (row.hex) hexMapRef.current?.focusOn(row.hex);
+        setNamedPause(null);
+        return;
+      case 'subject':
+        if (row.navigationTarget) handleNotificationNavigate(row.navigationTarget);
+        for (const id of row.alertIds ?? []) handleDismissAlert(id);
+        setNeedsYouFixtureAlerts(prev => prev.filter(a => !(row.alertIds ?? []).includes(a.id)));
+        return;
+      default:
+        return;
+    }
+  }, [giftOtherInterrupts.length, hexMapRef, handleNotificationNavigate, handleDismissAlert]);
+  // N answers only while the pill is on the bar (its reveal gate holds and something waits).
+  needsYouKeyRef.current = () => {
+    if (needsYouVM.count > 0 && document.querySelector('[data-testid="needs-you-pill"] button')) setNeedsYouOpen(o => !o);
+  };
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    window.__DEBUG?._registerTopBarBridge?.({
+      pushNeedsYouFixture: (opts) => pushNeedsYouFixtureRef.current(opts),
+      setFrameFixture: (fixture) => { setFrameFixture(fixture); return true; },
+    });
+  }, []);
+  /** `__DEBUG.pushNeedsYouFixture` (dev): news on distinct ticks, a same-tick burst, a held popup. */
+  const pushNeedsYouFixture = useCallback((opts: { news?: number; burst?: number; heldPopup?: boolean } = {}) => {
+    const g = _gameStateRef.current;
+    const tick = g.tick;
+    const subject = needsYouFixtureSubject(g);
+    const firstId = subject?.id;
+    const name = subject?.name ?? 'A mortal';
+    const nav = firstId ? { kind: 'agent' as const, agentId: firstId } : undefined;
+    const stamp = Date.now();
+    const out: AlertItem[] = [];
+    for (let i = 0; i < Math.max(0, opts.news ?? 0); i++) {
+      out.push({ id: `fixture_news_${stamp}_${i}`, icon: 'discovery', message: `${name} hears of a new road (${i + 1}).`, sourceEventId: `fixture_news_${stamp}_${i}`, tick: tick - i, ...(nav ? { navigationTarget: nav } : {}) });
+    }
+    for (let i = 0; i < Math.max(0, opts.burst ?? 0); i++) {
+      out.push({ id: `fixture_burst_${stamp}_${i}`, icon: 'faction', message: `${name}'s standing shifts (${i + 1}).`, sourceEventId: `fixture_burst_${stamp}_${i}`, tick, ...(nav ? { navigationTarget: nav } : {}) });
+    }
+    if (out.length) setNeedsYouFixtureAlerts(prev => [...prev, ...out]);
+    if (opts.heldPopup !== undefined) setNeedsYouFixtureHeld(opts.heldPopup);
+    return { pushed: out.length };
+  }, []);
+  const pushNeedsYouFixtureRef = useRef(pushNeedsYouFixture);
+  pushNeedsYouFixtureRef.current = pushNeedsYouFixture;
 
   const getDebugGiftDelivery = useCallback(() => {
     const d = computeGiftDelivery();
@@ -4266,6 +4380,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     gameState, setGameState, runtime, tiles, hexMapRef,
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
+    needsYouSources, needsYouStamp: needsYouStamp(needsYouSources),
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
     activeLens, lensSuppressed, hexLensVM, setMapLens, setLensSuppressed: gameScreen.setLensSuppressed,
     omniscienceMode, setOmniscienceMode, setTieredEncounterState, runTicksSync, setBeatEntered,
@@ -4406,6 +4521,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         directionLine={openingDirectionLine}
         onRivalsOpenChange={setRivalsOpen}
         onNotablesOpenChange={setNotablesOpen}
+        needsYou={needsYouVM}
+        needsYouOpen={needsYouOpen}
+        setNeedsYouOpen={setNeedsYouOpen}
+        needsYouRaised={giftPillRaised}
+        needsYouGuarded={needsYouGuarded}
+        onPressNeedsYouRow={handlePressNeedsYouRow}
+        namedPause={namedPause?.line}
+        alertsTrimmedAtCap={notificationState.alertsTrimmedAtCap ?? 0}
+        frameFixture={frameFixture}
       />
 
       {/* ═══ Main content area ═══ */}
@@ -4731,9 +4855,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         pendingBeat={pendingBeat}
         beatEntered={beatEntered}
         setBeatEntered={setBeatEntered}
-        interruptsSuppressed={interruptsSuppressed}
-        giftOtherInterrupts={giftOtherInterrupts}
-        giftPillRaised={giftPillRaised}
         handleWitnessBeat={handleWitnessBeat}
         beatProseOverride={beatProseOverride}
         avatarName={avatarName}

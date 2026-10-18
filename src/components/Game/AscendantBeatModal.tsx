@@ -25,7 +25,6 @@
 import { memo, useMemo } from 'react';
 import { Modal } from '../shared/Modal';
 import { BEAT_MODAL_M_MIN_CARDS, type DialogSize } from '../shared/dialogSize';
-import { Icon } from '../shared/Icon';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
 import { RevealCard } from '../shared/RevealCard';
@@ -36,7 +35,6 @@ import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { getBeatDefinitionById } from '../../engine/ascendantBeat';
 import { SPINE_BEAT_PRESENTATION, fillSpineAvatarName, isSpineBeatId, type SpineBeatPresentation } from '../../data/ascendant-beat-content';
-import { GIFT_WAITS_COPY } from '../../data/ui-content';
 import { Tooltip } from '../shared/Tooltip';
 import { DEEPENING_BEAT_PRESENTATION } from '../../data/ascendant-deepening-beats';
 import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beats';
@@ -587,111 +585,27 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   );
 });
 
-// ─── Offer affordance (world-view thread-tug) ───────────────────────
-
-interface AscendantBeatOfferBannerProps {
-  pending: PendingBeat;
-  onEnter: () => void;
-  /**
-   * THR-1809: lift a held gift's pill to `GIFT_PILL_Z`, above the player surface holding it.
-   * GameView passes true only when nothing but the player's own surfaces or recent input
-   * holds the gift: under an interrupt or a vignette the pill stays below the backdrop, so
-   * it cannot open the gift over them.
-   */
-  raised?: boolean;
-}
+// ─── The offer, as Needs you names it (THR-1875) ─────────────────────
 
 /**
- * Stacking band of the pill while it carries a held opening gift (THR-1809): above the
- * player surfaces that hold the gift (`Modal` at 60) so it stays visible over them, below
- * a sheet raised over an interrupt (65) and tooltips (70+). Row in `layout-zones.md`.
+ * Stacking band of the Needs-you pill while it carries a held opening gift (THR-1809):
+ * above the player surfaces that hold the gift (`Modal` at 60) so it stays visible over
+ * them, below a sheet raised over an interrupt (65) and tooltips (70+). Row in
+ * `layout-zones.md`. THR-1875 moved the raise from the retired floating offer pill to
+ * the top bar's Needs-you pill (frame plan § F4).
  */
 export const GIFT_PILL_Z = 62;
-/** The pool-beat pill's band — the ActionDrawer card tray's (40). */
-const OFFER_PILL_Z = 40;
-/**
- * THR-1853 — the pill's top edge: one spacing step under the top bar's *rendered*
- * height (`--topbar-live-height`, published by GameViewTopBar, THR-1724), out of its hit
- * area. The bar wraps to two tiers (97px at 1920×1080), so its token height is not enough.
- * Fail-soft: unset, the variable falls back to the token height.
- */
-export const PILL_TOP = 'calc(var(--topbar-live-height, var(--topbar-height)) + var(--space-2))';
 
 /**
- * The "thread-tug" the player chooses to enter — a quiet top-center pill in the world
- * view when a pool/optional beat is pending (THR-340 handoff pattern, simplified).
- * A spine gift opens itself once the screen is quiet (THR-1809, `giftDelivery.ts`);
- * while it waits, this pill carries it, worded "A gift waits", and opens it on a click.
+ * THR-1875 (frame plan § F5) — what the pending beat is called in Needs you's Waiting
+ * group: its kind for the row's line, and the authored eyebrow (the same precedence as
+ * the modal, so the row and the card it opens agree). Never the beat id (PC-3).
  */
-export const AscendantBeatOfferBanner = memo(function AscendantBeatOfferBanner({
-  pending,
-  onEnter,
-  raised = false,
-}: AscendantBeatOfferBannerProps) {
-  // Same precedence as the modal, so the banner and the card it opens agree.
+export function beatOfferWords(pending: PendingBeat): { kind: 'gift' | 'offering' | 'beat'; eyebrow: string } {
   const eyebrow =
     AUTHORED_BEAT_PRESENTATION[pending.beatId]?.eyebrow ??
     (KIND_PRESENTATION[pending.kind] ?? KIND_PRESENTATION.spine).eyebrow;
-  const giftWaits = isSpineBeatId(pending.beatId);
-  const isOffering = pending.kind === 'offering';
-  const offeringTip = UI_TOOLTIPS[OFFERING_TOOLTIP_IDS.offering];
-  const content = isOffering ? (
-    // THR-1811: an offering's pill reads only "Three powers stir" — no beat id.
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-      <Icon name="needs-you" size="floor" decorative style={{ color: 'var(--accent-gold)' }} />
-      <span style={{ color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}>
-        {OFFERING_COPY.eyebrow}
-      </span>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>Enter</span>
-    </span>
-  ) : (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-      <Icon name="needs-you" size="floor" decorative style={{ color: 'var(--accent-gold)' }} />
-      <span style={{ color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}>
-        {giftWaits ? GIFT_WAITS_COPY.eyebrow : eyebrow}
-      </span>
-      <span style={{ color: 'var(--text-secondary)' }}>— {giftWaits ? eyebrow : humanizeBeatId(pending.beatId)}</span>
-      <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>{giftWaits ? GIFT_WAITS_COPY.cta : 'Enter'}</span>
-    </span>
-  );
-  return (
-    <button
-      type="button"
-      onClick={onEnter}
-      data-testid="beat-offer-banner"
-      data-gift-waits={giftWaits ? 'true' : undefined}
-      style={{
-        position: 'fixed',
-        // THR-1853: below the top bar, never over it. At `var(--space-4)` the pill sat on
-        // the DOOM control, so a click on Doom entered the gift instead (warm round 2).
-        top: PILL_TOP,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: giftWaits && raised ? GIFT_PILL_Z : OFFER_PILL_Z,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 'var(--space-2)',
-        background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-        border: '1px solid var(--border-gold)',
-        borderRadius: '999px',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-        padding: 'var(--space-2) var(--space-4)',
-        cursor: 'pointer',
-        color: 'var(--text-primary)',
-        fontFamily: 'var(--font-body)',
-        fontWeight: 700,
-        fontSize: 'var(--text-sm)',
-      }}
-    >
-      {giftWaits ? (
-        <Tooltip label={GIFT_WAITS_COPY.eyebrow} desc={GIFT_WAITS_COPY.tooltip} focusable={false} fit>
-          {content}
-        </Tooltip>
-      ) : isOffering ? (
-        <Tooltip label={offeringTip?.label ?? OFFERING_COPY.eyebrow} desc={offeringTip?.desc ?? ''} focusable={false} fit>
-          {content}
-        </Tooltip>
-      ) : content}
-    </button>
-  );
-});
+  if (pending.kind === 'offering') return { kind: 'offering', eyebrow };
+  if (isSpineBeatId(pending.beatId)) return { kind: 'gift', eyebrow };
+  return { kind: 'beat', eyebrow };
+}

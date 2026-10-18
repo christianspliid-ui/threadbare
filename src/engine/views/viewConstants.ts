@@ -17,3 +17,11 @@ export const VIEW_CACHE_MAX_ENTRIES = 128;
  * THR-1876 § D6). Wide and Full ignore it — every group shows whole there (Law 57).
  */
 export const CONNECTIONS_DOCKED_FOLD_AFTER = 6;
+
+/**
+ * THR-1875 (frame plan § F5) — a Needs-you News row lapses after this many attention
+ * days (× `TICKS_PER_DAY` ticks). The alert router trims the channel by the same rule,
+ * so the list and the channel never disagree. Raise it if players report news vanishing
+ * before they read it (plan § Kill criteria).
+ */
+export const NEEDS_YOU_NEWS_KEEP_DAYS = 3;

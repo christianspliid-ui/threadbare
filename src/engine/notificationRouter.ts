@@ -4,12 +4,41 @@ import type {
   NavigationTarget, NotificationCategoryKey, NotificationPreferences,
 } from '../types/notification';
 import {
-  TOAST_MAX_VISIBLE, TOAST_DURATION_MS, ALERT_MAX_VISIBLE,
+  TOAST_MAX_VISIBLE, TOAST_DURATION_MS, ALERT_SAFETY_CAP,
   ENTITY_NOTICE_MAX_RETAINED,
   DEFAULT_NOTIFICATION_PREFS,
 } from '../types/notification';
 import type { ThreadingGate } from './notificationThreadingGate';
 import { ENTITY_DIVERTED_CHANNELS, ROUTE_GLOBAL } from './notificationThreadingGate';
+import { NEEDS_YOU_NEWS_KEEP_DAYS } from './views/viewConstants';
+import { TICKS_PER_DAY } from '../data/attention-constants';
+
+/**
+ * THR-1875 — how long an alert stays in the channel, in ticks. Needs you's News group
+ * lapses a row by the same rule (`views/needsYou.ts`), so the two never disagree.
+ */
+export const ALERT_KEEP_TICKS = NEEDS_YOU_NEWS_KEEP_DAYS * TICKS_PER_DAY;
+
+/** Dev warning for the safety cap, once per session (Law 49: never a silent drop). */
+let warnedAlertCap = false;
+
+/**
+ * THR-1875 (frame plan § F5) — keep the alert channel by age, then by the safety cap.
+ * Alerts older than `ALERT_KEEP_TICKS` before `currentTick` lapse; past
+ * `ALERT_SAFETY_CAP` the oldest drop and are counted. Pure; exported for tests.
+ */
+export function trimAlerts(
+  alerts: readonly AlertItem[],
+  currentTick: number,
+): { alerts: AlertItem[]; trimmedAtCap: number } {
+  const fresh = alerts.filter(a => currentTick - a.tick < ALERT_KEEP_TICKS);
+  const over = Math.max(0, fresh.length - ALERT_SAFETY_CAP);
+  if (over > 0 && !warnedAlertCap && import.meta.env?.DEV) {
+    warnedAlertCap = true;
+    console.warn(`[notificationRouter] the alert channel passed ALERT_SAFETY_CAP (${ALERT_SAFETY_CAP}); ${over} oldest trimmed and counted`);
+  }
+  return { alerts: over > 0 ? fresh.slice(over) : fresh, trimmedAtCap: over };
+}
 
 // ─── Navigation Target Derivation ──────────────────────────────
 
@@ -130,7 +159,10 @@ export function routeNotifications(
 
   // Track collapsing within this batch
   const toastByMessage = new Map<string, ToastItem>();
-  const alertByIconTick = new Map<string, number>(); // key -> index in newAlerts
+  // THR-1875: an alert is dropped only as an exact repeat of the same event. Same-kind,
+  // same-tick alerts are all kept (they used to overwrite each other — a silent drop);
+  // Needs you's view model coalesces such a burst into one row.
+  const alertSourceIds = new Set(newAlerts.map(a => a.sourceEventId));
 
   for (const event of tickEvents) {
     if (!event.notification) continue;
@@ -191,30 +223,18 @@ export function routeNotifications(
         break;
       }
       case 'alert': {
-        const dedupKey = `${icon ?? 'unknown'}_${event.tick}`;
-        const existingIdx = alertByIconTick.get(dedupKey);
-        if (existingIdx !== undefined) {
-          newAlerts[existingIdx] = {
-            ...newAlerts[existingIdx],
-            message: event.message,
-            sourceEventId: event.id,
-            actorId: event.actorId,
-            navigationTarget: navTarget,
-          };
-        } else {
-          const alert: AlertItem = {
-            id: event.id,
-            icon: icon ?? 'discovery',
-            message: event.message,
-            sphere: event.sphere,
-            sourceEventId: event.id,
-            tick: event.tick,
-            actorId: event.actorId,
-            navigationTarget: navTarget,
-          };
-          alertByIconTick.set(dedupKey, newAlerts.length);
-          newAlerts.push(alert);
-        }
+        if (alertSourceIds.has(event.id)) break;
+        alertSourceIds.add(event.id);
+        newAlerts.push({
+          id: event.id,
+          icon: icon ?? 'discovery',
+          message: event.message,
+          sphere: event.sphere,
+          sourceEventId: event.id,
+          tick: event.tick,
+          actorId: event.actorId,
+          navigationTarget: navTarget,
+        });
         break;
       }
       case 'popup': {
@@ -235,9 +255,15 @@ export function routeNotifications(
     }
   }
 
+  // THR-1875: the channel lapses by age, measured from the newest tick in this batch.
+  const latestTick = tickEvents.reduce((m, e) => Math.max(m, e.tick), -Infinity);
+  const trimmed = trimAlerts(newAlerts, Number.isFinite(latestTick) ? latestTick : (newAlerts.at(-1)?.tick ?? 0));
+  const trimmedAtCap = (currentState.alertsTrimmedAtCap ?? 0) + trimmed.trimmedAtCap;
+
   return {
     toasts: newToasts.slice(-TOAST_MAX_VISIBLE),
-    alerts: newAlerts.slice(-ALERT_MAX_VISIBLE),
+    alerts: trimmed.alerts,
+    ...(trimmedAtCap > 0 ? { alertsTrimmedAtCap: trimmedAtCap } : {}),
     popupQueue: newPopupQueue,
     entityNotices: newEntityNotices.slice(-ENTITY_NOTICE_MAX_RETAINED),
   };

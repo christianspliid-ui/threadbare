@@ -195,6 +195,12 @@ export interface NotificationState {
    * site stays valid; the router always returns it populated.
    */
   entityNotices?: EntityNotice[];
+  /**
+   * THR-1875 (frame plan § F5) — alerts the router dropped because the channel passed
+   * `ALERT_SAFETY_CAP`, counted so nothing drops silently (Law 49). Additive and
+   * optional: absent = 0.
+   */
+  alertsTrimmedAtCap?: number;
 }
 
 /**
@@ -205,4 +211,9 @@ export const ENTITY_NOTICE_MAX_RETAINED = 60;
 
 export const TOAST_MAX_VISIBLE = 4;
 export const TOAST_DURATION_MS = 4000;
-export const ALERT_MAX_VISIBLE = 12;
+/**
+ * THR-1875 (frame plan § F5) — the alert channel's count cap. Alerts lapse by age
+ * (`NEEDS_YOU_NEWS_KEEP_DAYS` × `TICKS_PER_DAY`); this cap only guards a burst the age
+ * window cannot. Hitting it is counted on `NotificationState.alertsTrimmedAtCap`.
+ */
+export const ALERT_SAFETY_CAP = 100;

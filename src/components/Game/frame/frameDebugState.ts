@@ -43,6 +43,96 @@ export interface DebugFrameStateSlice1 {
   mapShare: number;
 }
 
+/** The top bar as drawn (THR-1875, frame plan § Tracing). */
+export interface DebugTopBarState {
+  /** Every `TOP_BAR_ITEMS` entry: drawn (on the bar, with width) and guarded (an encounter is open). */
+  items: { id: string; rendered: boolean; guarded: boolean }[];
+  /** Measured `[data-testid="game-topbar"]` height; must equal `--topbar-height`. */
+  heightPx: number;
+  /** `--topbar-height` as the browser resolves it. */
+  tokenHeightPx: number;
+  /** 1, or a defect. */
+  rows: number;
+  /** `scrollWidth − clientWidth` of the bar; 0, or a defect. */
+  overflowPx: number;
+  /** § F3 yield steps applied, in order. */
+  yielded: string[];
+  /** Controls whose word label is missing from the bar (Read the Threads, Settings…): [] or a defect. */
+  unlabelled: string[];
+}
+
+/** Needs you as drawn (THR-1875). */
+export interface DebugNeedsYouState {
+  count: number;
+  groups: { waiting: number; held: number; news: number };
+  open: boolean;
+  /** Rows the list fits at this viewport (§ F4 formula). */
+  capacityRows: number;
+  /** Rows folded into "and N more" rows while open. */
+  foldedRows: number;
+  /** Row lines drawn in the open list, fold rows included. */
+  rowsShown: number;
+  raised: boolean;
+}
+
+/** THR-1875 — the whole frame: slices 1 and 2 plus the top bar, Needs you and the named pause. */
+export interface DebugFrameState extends DebugFrameStateSlice1 {
+  topBar: DebugTopBarState;
+  needsYou: DebugNeedsYouState;
+  namedPause: { line: string } | null;
+}
+
+const TOP_BAR_ITEM_IDS = ['time', 'needs_you', 'direction_line', 'doom', 'omen', 'rivals', 'notables', 'read_threads', 'settings'] as const;
+
+function readTopBar(doc: Document, win: Window): DebugTopBarState {
+  const bar = doc.querySelector<HTMLElement>('[data-testid="game-topbar"]');
+  const token = parseFloat(win.getComputedStyle(doc.documentElement).getPropertyValue('--topbar-height')) || 0;
+  const rootPx = parseFloat(win.getComputedStyle(doc.documentElement).fontSize) || 16;
+  const tokenRaw = win.getComputedStyle(doc.documentElement).getPropertyValue('--topbar-height').trim();
+  const tokenHeightPx = tokenRaw.endsWith('rem') ? token * rootPx : token;
+  const items = TOP_BAR_ITEM_IDS.map(id => {
+    const el = bar?.querySelector<HTMLElement>(`[data-topbar-item="${id}"]`);
+    return {
+      id,
+      rendered: !!el && el.getBoundingClientRect().width > 0,
+      guarded: el?.dataset.topbarGuarded === 'true',
+    };
+  });
+  const heightPx = height(bar);
+  // A row is the height of the bar's tallest item; a bar taller than 1.5 × its token wrapped.
+  const rows = bar && tokenHeightPx > 0 ? Math.max(1, Math.round(heightPx / tokenHeightPx)) : 1;
+  const unlabelled: string[] = [];
+  for (const id of ['read_threads', 'settings', 'rivals', 'notables'] as const) {
+    const el = bar?.querySelector<HTMLElement>(`[data-topbar-item="${id}"]`);
+    if (el && (el.textContent ?? '').replace(/\d+/g, '').trim().length === 0) unlabelled.push(id);
+  }
+  return {
+    items,
+    heightPx,
+    tokenHeightPx: Math.round(tokenHeightPx * 100) / 100,
+    rows,
+    overflowPx: bar ? Math.max(0, bar.scrollWidth - bar.clientWidth) : 0,
+    yielded: (bar?.dataset.topbarYielded ?? '').split(',').filter(Boolean),
+    unlabelled,
+  };
+}
+
+function readNeedsYou(doc: Document): DebugNeedsYouState {
+  const pill = doc.querySelector<HTMLElement>('[data-testid="needs-you-pill"]');
+  const list = doc.querySelector<HTMLElement>('[data-testid="needs-you-list"]');
+  const src = list ?? pill;
+  const n = (k: string) => Number(src?.getAttribute(k) ?? 0);
+  return {
+    count: n('data-needs-you-count'),
+    groups: { waiting: n('data-needs-you-waiting'), held: n('data-needs-you-held'), news: n('data-needs-you-news') },
+    open: !!list,
+    capacityRows: n('data-needs-you-capacity'),
+    foldedRows: list ? n('data-needs-you-folded') : 0,
+    rowsShown: list ? list.querySelectorAll('[data-needs-you-row], [data-needs-you-fold]').length : 0,
+    raised: src?.getAttribute('data-needs-you-raised') === 'true',
+  };
+}
+
 function width(el: Element | null): number {
   return el ? Math.round(el.getBoundingClientRect().width * 100) / 100 : 0;
 }
@@ -51,7 +141,17 @@ function height(el: Element | null): number {
   return el ? Math.round(el.getBoundingClientRect().height * 100) / 100 : 0;
 }
 
-export function readFrameState(doc: Document = document, win: Window = window): DebugFrameStateSlice1 {
+export function readFrameState(doc: Document = document, win: Window = window): DebugFrameState {
+  const named = doc.querySelector<HTMLElement>('[data-testid="named-pause-status"]');
+  return {
+    ...readFrameStateSlice1(doc, win),
+    topBar: readTopBar(doc, win),
+    needsYou: readNeedsYou(doc),
+    namedPause: named ? { line: (named.textContent ?? '').replace(/^paused · /, '') } : null,
+  };
+}
+
+function readFrameStateSlice1(doc: Document, win: Window): DebugFrameStateSlice1 {
   const rail = doc.querySelector<HTMLElement>('[data-testid="right-sidebar"]');
   const panel = doc.querySelector<HTMLElement>('[data-testid="chronicle-panel"]');
   const flyoutPanel = doc.querySelector<HTMLElement>('[data-testid="ledger-flyout"] [data-testid="chronicle-panel"]');

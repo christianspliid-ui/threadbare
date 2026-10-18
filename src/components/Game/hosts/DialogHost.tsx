@@ -59,7 +59,7 @@ import { WarmStartOverlay } from '../WarmStartOverlay';
 import { ChapterLedger, countThreadedChapters } from '../ChapterLedger';
 import { ReadTheThreadsPanel } from '../ReadTheThreadsPanel';
 import { DivineReceiptModal } from '../DivineReceiptModal';
-import { AscendantBeatModal, AscendantBeatOfferBanner } from '../AscendantBeatModal';
+import { AscendantBeatModal } from '../AscendantBeatModal';
 import { DoomClockDetail } from '../DoomClockDetail';
 import { MandateDetail } from '../MandateDetail';
 import { EventPopup } from '../EventPopup';
@@ -104,9 +104,6 @@ export interface DialogHostProps {
   pendingBeat: PendingBeat | null;
   beatEntered: boolean;
   setBeatEntered: Dispatch<SetStateAction<boolean>>;
-  interruptsSuppressed: boolean;
-  giftOtherInterrupts: string[];
-  giftPillRaised: boolean;
   handleWitnessBeat: (chosenActionId?: string) => void;
   beatProseOverride: { title: string; prose: string } | undefined;
   avatarName: string;
@@ -154,9 +151,6 @@ export function DialogHost({
   pendingBeat,
   beatEntered,
   setBeatEntered,
-  interruptsSuppressed,
-  giftOtherInterrupts,
-  giftPillRaised,
   handleWitnessBeat,
   beatProseOverride,
   avatarName,
@@ -365,19 +359,7 @@ export function DialogHost({
 
       {renderDialog('divine-receipt')}
 
-      {/* Ascendant beat: thread-tug offer affordance + entered-beat modal (THR-517) */}
-      {pendingBeat && !beatEntered && !interruptsSuppressed && (
-        <AscendantBeatOfferBanner
-          pending={pendingBeat}
-          // THR-1853: never enter a gift beside another blocking interrupt (a chapter
-          // step opening in the same moment). The player's own ledger and court do not block.
-          onEnter={() => {
-            if (giftOtherInterrupts.length > 0) return;
-            setBeatEntered(true);
-          }}
-          raised={giftPillRaised}
-        />
-      )}
+      {/* THR-1875: the beat offer is a Needs-you Waiting row in the top bar; its floating pill retired. */}
       {renderDialog('ascendant-beat')}
 
       {/* Codex overlay — full three-state path catalog for this incarnation (THR-613 Slice 3b-tail) */}
