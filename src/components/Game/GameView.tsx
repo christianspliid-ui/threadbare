@@ -4084,7 +4084,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     notificationState.popupQueue, notificationState.alerts, interruptResolution.held, beatProseOverride, namedPause,
     needsYouFixtureAlerts, needsYouFixtureHeld]);
   const needsYouVM = useMemo(() => buildNeedsYou(needsYouSources), [needsYouSources]);
-  const needsYouGuarded = interruptResolution.anyOpen;
+  // Rows are read-only while a moment holds the clock — not while the player's own surface
+  // (the Chapter Ledger, the court) does: the THR-1809 raised pill exists to open a gift over
+  // those, so they must not guard its row (review gate, THR-1875).
+  const needsYouGuarded = interruptResolution.open.some(id => !PLAYER_SURFACE_INTERRUPT_IDS.includes(id))
+    || interruptResolution.heldArrivals.length > 0;
   const handlePressNeedsYouRow = useCallback((row: NeedsYouRowVM) => {
     switch (row.opens) {
       case 'beatOffer':
@@ -4107,7 +4111,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         return;
     }
   }, [giftOtherInterrupts.length, hexMapRef, handleNotificationNavigate, handleDismissAlert]);
-  needsYouKeyRef.current = () => { if (needsYouVM.count > 0) setNeedsYouOpen(o => !o); };
+  // N answers only while the pill is on the bar (its reveal gate holds and something waits).
+  needsYouKeyRef.current = () => {
+    if (needsYouVM.count > 0 && document.querySelector('[data-testid="needs-you-pill"] button')) setNeedsYouOpen(o => !o);
+  };
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     window.__DEBUG?._registerTopBarBridge?.({
