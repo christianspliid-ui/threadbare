@@ -23,6 +23,8 @@ import {
   ARMY_SPAWN_GOLD_TIER_MIN,
   ARMY_CREATION_GOLD_COST,
   MAX_ARMIES_PER_FACTION,
+  STANDING_ARMY_FACTION_CLASSES,
+  STANDING_ARMY_FACTION_DEF_IDS,
   ARMY_COHESION_BASE,
   ARMY_MAINTENANCE_COST,
   ARMY_SIZE_HEADCOUNT,
@@ -70,17 +72,40 @@ export function isEligibleForArmySpawn(
   state: GameState,
   factionId: string,
 ): boolean {
+  return armyRefusal(state, factionId) === null;
+}
+
+/**
+ * THR-1973 — whether a faction keeps a standing army whatever its ambition (a realm, a
+ * free company): `STANDING_ARMY_FACTION_CLASSES` / `STANDING_ARMY_FACTION_DEF_IDS`.
+ */
+export function keepsStandingArmy(graph: WorldGraph, factionId: string): boolean {
+  const props = graph.getNode(factionId)?.properties;
+  if (!props) return false;
+  const cls = props.factionClass;
+  const defId = props.factionDefId ?? props.factionDefinitionId;
+  return (typeof cls === 'string' && STANDING_ARMY_FACTION_CLASSES.includes(cls))
+    || (typeof defId === 'string' && STANDING_ARMY_FACTION_DEF_IDS.includes(defId));
+}
+
+/**
+ * THR-1973 — the gate that refuses a faction a raise, named, or null when it may raise.
+ * The gates run in `isEligibleForArmySpawn`'s order; the first that fails is returned.
+ */
+export type ArmyRefusal = 'no_ambition' | 'not_military' | 'at_cap' | 'no_commander' | 'gold_tier' | 'purse';
+
+export function armyRefusal(state: GameState, factionId: string): ArmyRefusal | null {
   const graph = state.graph;
 
   // Check active ambition requires military force
   const pursuesEdges = graph.getOutgoingEdges(factionId, 'pursues');
-  if (pursuesEdges.length === 0) return false;
+  if (pursuesEdges.length === 0) return 'no_ambition';
 
   const ambitionNode = graph.getNode(pursuesEdges[0].target);
-  if (!ambitionNode) return false;
+  if (!ambitionNode) return 'no_ambition';
 
   const ambitionType = ambitionNode.properties.ambitionType as FactionAmbitionType;
-  if (!requiresMilitaryForce(ambitionType)) return false;
+  if (!requiresMilitaryForce(ambitionType) && !keepsStandingArmy(graph, factionId)) return 'not_military';
 
   // Check faction doesn't already have max armies
   const memberEdges = graph.getIncomingEdges(factionId, 'member_of');
@@ -91,20 +116,20 @@ export function isEligibleForArmySpawn(
       existingArmyCount++;
     }
   }
-  if (existingArmyCount >= MAX_ARMIES_PER_FACTION) return false;
+  if (existingArmyCount >= MAX_ARMIES_PER_FACTION) return 'at_cap';
 
   // Check for eligible commander (Iron tier >= min)
   const commander = selectCommander(state, factionId);
-  if (!commander) return false;
+  if (!commander) return 'no_commander';
 
   // Check faction Gold capability
   const goldTier = armyReachTier(graph, factionId, 'gold');
-  if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return false;
+  if (goldTier < ARMY_SPAWN_GOLD_TIER_MIN) return 'gold_tier';
 
   // THR-1931 — raising costs coin: the purse must cover the raise and its first day.
-  if (!canAffordArmy(graph, factionId, determineSizeCategory(goldTier))) return false;
+  if (!canAffordArmy(graph, factionId, determineSizeCategory(goldTier))) return 'purse';
 
-  return true;
+  return null;
 }
 
 /**

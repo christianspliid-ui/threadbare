@@ -123,6 +123,23 @@ export const ARMY_CREATION_GOLD_COST = 50;
 export const MAX_ARMIES_PER_FACTION = 1;
 
 /**
+ * THR-1973 — factions that keep a standing army whatever their ambition: a realm's host
+ * and a free company's company. Others raise only under a military ambition. A faction
+ * ambition never ends on its own, so without this a realm that drew a trade ambition
+ * never raised again once its first army was gone.
+ */
+export const STANDING_ARMY_FACTION_CLASSES: readonly string[] = ['realm'];
+export const STANDING_ARMY_FACTION_DEF_IDS: readonly string[] = ['mercenary_company'];
+
+/**
+ * THR-1973 — cohesion an army regains per tick while garrisoned: at rest in a settlement
+ * its own faction holds, paid and supplied. A garrisoned army pays no attrition; it heals
+ * back to `cohesionMax` (from 0, a host in ~17 days, a warband in 5). The march, an
+ * empty purse or an empty larder still wear it down as before.
+ */
+export const ARMY_GARRISON_RECOVERY = 0.5;
+
+/**
  * Location subtypes a raised army may march against as a conquest objective.
  * A settlement controlled by a hostile faction becomes a siege target on arrival
  * (see `phaseBattleDetection`). Kept here so the target set is tunable in one place.

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { isEligibleForArmySpawn, selectCommander, spawnArmy } from '../armySpawning';
+import { isEligibleForArmySpawn, selectCommander, spawnArmy, armyRefusal, keepsStandingArmy } from '../armySpawning';
 import { ARMY_SPAWN_IRON_TIER_MIN, MAX_ARMIES_PER_FACTION, ARMY_COHESION_BASE } from '../../types/army';
 import type { GameState } from '../../types/gameState';
 
@@ -113,8 +113,38 @@ describe('isEligibleForArmySpawn', () => {
 
   it('returns false when no military ambition', () => {
     setupFactionWithMilitaryAmbition(graph, { ambitionType: 'resource_acquisition' });
+    graph.getNode('faction1')!.properties.factionDefinitionId = 'civic_guard';
+    graph.getNode('faction1')!.properties.wealth = 100;
     const state = makeState(5, graph);
     expect(isEligibleForArmySpawn(state, 'faction1')).toBe(false);
+  });
+
+  it('names the refusal: not_military for an ordinary faction on a trade ambition (THR-1973)', () => {
+    setupFactionWithMilitaryAmbition(graph, { ambitionType: 'resource_acquisition' });
+    graph.getNode('faction1')!.properties.wealth = 100;
+    // The shared fixture is a free company, which keeps a standing army; make it a guard.
+    graph.getNode('faction1')!.properties.factionDefinitionId = 'civic_guard';
+    expect(armyRefusal(makeState(5, graph), 'faction1')).toBe('not_military');
+  });
+
+  it('a realm keeps a standing army under any ambition (THR-1973)', () => {
+    setupFactionWithMilitaryAmbition(graph, { ambitionType: 'resource_acquisition' });
+    const faction = graph.getNode('faction1')!;
+    faction.properties.wealth = 100;
+    faction.properties.factionClass = 'realm';
+    expect(keepsStandingArmy(graph, 'faction1')).toBe(true);
+    expect(armyRefusal(makeState(5, graph), 'faction1')).toBeNull();
+    expect(isEligibleForArmySpawn(makeState(5, graph), 'faction1')).toBe(true);
+  });
+
+  it('a free company keeps a standing army under its static ambition (THR-1973)', () => {
+    setupFactionWithMilitaryAmbition(graph, { ambitionType: 'resource_acquisition' });
+    const faction = graph.getNode('faction1')!;
+    faction.properties.wealth = 100;
+    faction.properties.factionDefId = 'mercenary_company';
+    expect(isEligibleForArmySpawn(makeState(5, graph), 'faction1')).toBe(true);
+    faction.properties.wealth = 10;
+    expect(armyRefusal(makeState(5, graph), 'faction1')).toBe('purse');
   });
 
   it('returns false when no Iron Tier 4+ agent', () => {

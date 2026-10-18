@@ -165,6 +165,7 @@
     "measure:means": "esbuild scripts/means-comfort-pace.ts --bundle --platform=node --format=esm --outfile=.cache/means-comfort-pace.mjs --external:fs --external:path && node .cache/means-comfort-pace.mjs",
     "measure:crown": "esbuild scripts/measure-crown.ts --bundle --platform=node --format=esm --outfile=.cache/measure-crown.mjs --external:fs --external:path && node .cache/measure-crown.mjs",
     "measure:war-aims": "esbuild scripts/measure-war-aims.ts --bundle --platform=node --format=esm --outfile=.cache/measure-war-aims.mjs --external:fs --external:path && node .cache/measure-war-aims.mjs",
+    "measure:army-census": "esbuild scripts/measure-army-census.ts --bundle --platform=node --format=esm --outfile=.cache/measure-army-census.mjs --external:fs --external:path && node .cache/measure-army-census.mjs",
     "measure:army-scales": "esbuild scripts/measure-army-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-army-scales.mjs --external:fs --external:path && node .cache/measure-army-scales.mjs",
     "measure:stranger-curiosity-scales": "esbuild scripts/measure-stranger-curiosity-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-stranger-curiosity-scales.mjs --external:fs --external:path && node .cache/measure-stranger-curiosity-scales.mjs",
     "measure:ring-recruit-scales": "esbuild scripts/measure-ring-recruit-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-ring-recruit-scales.mjs --external:fs --external:path && node .cache/measure-ring-recruit-scales.mjs",
