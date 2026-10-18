@@ -32,6 +32,7 @@ function world(): GameState {
   graph.addNode({ id: 'shrine', type: 'location', name: 'The Shrine', properties: { parentLocationId: 'quarter', sublocationCategory: 'shrine' } });
   graph.addNode({ id: 'shutash', type: 'actor', name: 'Shutash', properties: { actorType: 'individual' } });
   graph.addEdge({ id: 'at1', source: 'shutash', target: 'shrine', type: 'located_at', properties: {} });
+  graph.addNode({ id: 'cong', type: 'actor', name: 'The Congregation', properties: { actorType: 'faction' } });
   graph.addNode({ id: 'cup', type: 'artifact', name: 'A Cup', properties: {} });
   graph.addNode({ id: 'crown', type: 'artifact_legendary', name: 'The Crown', properties: {} });
   return {
@@ -70,7 +71,7 @@ describe('TARGET_CONTEXT_BUILDERS (Law 58: one builder per target category)', ()
     const state = world();
     expect(actOnTargetForRef(state, { kind: 'location', id: 'shrine' })).toEqual({ kind: 'sublocation', id: 'shrine' });
     expect(actOnTargetForRef(state, { kind: 'location', id: 'quarter' })).toEqual({ kind: 'location', id: 'quarter' });
-    expect(actOnTargetForRef(state, { kind: 'faction', id: 'f' })).toEqual({ kind: 'agent', id: 'f' });
+    expect(actOnTargetForRef(state, { kind: 'faction', id: 'f' })).toEqual({ kind: 'faction', id: 'f' });
     expect(actOnTargetForRef(state, { kind: 'hex', id: '3,4' })).toEqual({ kind: 'hex', col: 3, row: 4 });
     expect(actOnTargetForRef(state, { kind: 'encounter', id: 'e' })).toBeNull();
     expect(categoryFor(state, { kind: 'artifact', id: 'crown' }).category).toBe('artifact_legendary');
@@ -132,6 +133,12 @@ describe('the Act-row golden: the same slot ids the drawers dealt', () => {
     const state = world();
     const row = buildActOn(state, { kind: 'location', id: 'quarter' }, 'Temple Quarter');
     expect(row.cards.map(c => c.actionId)).toEqual(drawerIds(state, buildLocationTargetContext('quarter', state.graph), false));
+  });
+
+  it('a faction (the FactionSheet drawer: the actor context, the non-agent hand)', () => {
+    const state = world();
+    const row = buildActOn(state, { kind: 'faction', id: 'cong' }, 'The Congregation');
+    expect(row.cards.map(c => c.actionId)).toEqual(drawerIds(state, buildActorTargetContext('cong', state.graph), false));
   });
 
   it('open land', () => {

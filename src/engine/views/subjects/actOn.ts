@@ -41,6 +41,8 @@ import { tileAt } from './pageResolvers';
 /** What the row is for: a person, a place (either tier), an artifact or a bare hex. */
 export type ActOnTarget =
   | { kind: 'agent'; id: string }
+  /** A faction is an actor node, dealt the non-agent hand (the drawer FactionSheet opened). */
+  | { kind: 'faction'; id: string }
   | { kind: 'location'; id: string }
   | { kind: 'sublocation'; id: string }
   | { kind: 'artifact'; id: string }
@@ -75,7 +77,9 @@ export const TARGET_CONTEXT_BUILDERS: Record<TargetCategory, TargetContextBuilde
 /** The category and id a target is built from. */
 export function categoryFor(state: GameState, target: ActOnTarget): { category: TargetCategory; id: string } {
   switch (target.kind) {
-    case 'agent': return { category: 'actor', id: target.id };
+    case 'agent':
+    case 'faction':
+      return { category: 'actor', id: target.id };
     case 'location': return { category: 'location', id: target.id };
     case 'sublocation': return { category: 'sublocation', id: target.id };
     case 'artifact':
@@ -91,9 +95,10 @@ export function categoryFor(state: GameState, target: ActOnTarget): { category: 
 export function actOnTargetForRef(state: GameState, ref: WorldRef): ActOnTarget | null {
   switch (ref.kind) {
     case 'agent':
-    case 'faction':
     case 'companion':
       return { kind: 'agent', id: ref.id };
+    case 'faction':
+      return { kind: 'faction', id: ref.id };
     case 'location':
     case 'sublocation': {
       const node = state.graph.getNode(ref.id);

@@ -51,7 +51,7 @@ export interface CastOnTargetDeps {
   particleBurst?: (col: number, row: number, color: string) => void;
   playCastSound?: (sphere: SphereName, big: boolean) => void;
   /** A person's intervention card opens the agenda picker (the drawer's intervention branch). */
-  beginIntervention?: (agentId: string, slotId: string, interventionType: NonNullable<WheelSlot['interventionType']>) => void;
+  beginIntervention?: (agentId: string, slot: WheelSlot) => void;
   openScry?: () => void;
   startMeeting?: (locationId: string) => void;
 }
@@ -77,7 +77,7 @@ export function useCastOnTarget(deps: CastOnTargetDeps): (actionId: string, targ
     if (!slot.available) return { cast: false, reason: actionBlockedReason(slot.lockedReason, slot.rangeStatus) ?? null };
 
     if (slot.type === 'intervention' && slot.interventionType && target.kind === 'agent') {
-      beginIntervention?.(target.id, slot.id, slot.interventionType);
+      beginIntervention?.(target.id, slot);
       return { cast: !!beginIntervention, reason: null };
     }
     if (slot.type !== 'target_action') return { cast: false, reason: null };

@@ -150,6 +150,12 @@ export function useAgentInteraction({
   const [pendingIntervention, setPendingIntervention] = useState<{
     slotId: string;
     interventionType: InterventionType;
+    /**
+     * THR-1911 — the slot as dealt when the cast began from a person's page. The drawer
+     * re-read it from `wheelSlots`, which exists only while the drawer is open; the
+     * Inspector's Act row has no drawer, so the confirm reads this copy.
+     */
+    slot?: WheelSlot;
   } | null>(null);
   /** Pending player choice_set — set when a choice_set effect fires in 'player' mode */
   const [pendingChoice, setPendingChoice] = useState<PendingChoiceData | null>(null);
@@ -480,7 +486,9 @@ export function useAgentInteraction({
    * agenda picker exactly as the drawer's intervention branch did, with that person
    * selected so the confirm lands on them.
    */
-  const beginIntervention = useCallback((agentId: string, slotId: string, interventionType: NonNullable<WheelSlot['interventionType']>) => {
+  const beginIntervention = useCallback((agentId: string, slot: WheelSlot) => {
+    const interventionType = slot.interventionType;
+    if (!interventionType) return;
     if (pendingIntervention || playingCardId) return;
     const subject = interventionSubjectOf(gameState, agentId);
     if (!subject) return;
@@ -494,7 +502,7 @@ export function useAgentInteraction({
     });
     setPendingAgendas(agendas);
     setAgendaPickerOpen(true);
-    setPendingIntervention({ slotId, interventionType });
+    setPendingIntervention({ slotId: slot.id, interventionType, slot });
   }, [pendingIntervention, playingCardId, gameState.graph, gameState.seed, gameState.tick, archetype]);
 
   const handleAgendaSelect = useCallback((agenda: AgendaTemplate) => {
@@ -513,7 +521,7 @@ export function useAgentInteraction({
     (encounterMode?: LocalEncounterMode) => {
       if (!pendingIntervention || !selectedAgentId) return;
 
-      const slot = wheelSlots?.find(s => s.id === pendingIntervention.slotId);
+      const slot = wheelSlots?.find(s => s.id === pendingIntervention.slotId) ?? pendingIntervention.slot;
       if (!slot?.sphere) return;
 
       const result = executeIntervention({

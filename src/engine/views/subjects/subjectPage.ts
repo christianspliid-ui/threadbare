@@ -180,7 +180,8 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
       layoutKind: 'faction',
       // A Realm reads as a Realm, never its stored `political` type (THR-1155; parity with the sheet, THR-1910).
       header: { ...base.header, kindLabel: node.properties.factionClass === REALM_FACTION_CLASS ? REALM_HEADWORD : sentenceCase(subtitleForNode(node, 'faction')), standing: dominionChip(state, node.id) },
-      actOn: null,
+      // THR-1911: a faction's cards, dealt as FactionSheet's drawer dealt them (the non-agent hand).
+      actOn: buildActOn(state, { kind: 'faction', id: node.id }, node.name),
       body: graphBody(state, node.id, 'faction', extras),
       connections: buildConnections(graph, state, { cls: 'faction', id: node.id }),
     };
