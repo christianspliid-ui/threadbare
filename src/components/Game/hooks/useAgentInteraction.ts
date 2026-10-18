@@ -16,7 +16,7 @@ import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
-import { buildCastReceipt } from './castReceipt';
+import { buildCastReceipt, buildRitePendingReceipt } from './castReceipt';
 import { castOpensRite } from '../../../engine/threadingRite';
 import { getUnifiedTemplateById, AGENT_INTERVENTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { teachSpellPreview } from '../../../engine/ascendantExpression';
@@ -420,11 +420,13 @@ export function useAgentInteraction({
           // receipt would tell it twice (PC-5: one fact told once).
           const opensRite = castOpensRite(gameState.graph, gameState.ascendantId, templateId, capturedAgentId);
 
-          // Push toast (optimistic, dispatch-time feedback)
-          if (onPushToast && !opensRite) {
+          // Push toast (optimistic, dispatch-time feedback). THR-1977: a Rite-opening
+          // cast still answers at once — a pending line that names the card and the
+          // mortal, while the Rite keeps the telling of the bind.
+          if (onPushToast) {
             const newToast: ToastItem = {
               id: `toast_action_${Date.now()}`,
-              message: toastMessage,
+              message: opensRite ? buildRitePendingReceipt(template, receiptTargetName).message : toastMessage,
               sphere: capturedSphere ?? undefined,
               count: 1,
               createdTick: capturedTick,

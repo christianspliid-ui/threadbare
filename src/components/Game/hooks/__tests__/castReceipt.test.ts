@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCastReceipt, CAST_RECEIPT_UNNAMED_TARGET } from '../castReceipt';
+import { buildCastReceipt, buildRitePendingReceipt, CAST_RECEIPT_RITE_PENDING, CAST_RECEIPT_UNNAMED_TARGET } from '../castReceipt';
 import { getUnifiedTemplateById } from '../../../../data/unified-action-templates';
 
 // THR-1603 — the cast receipt used to read "Mind — Action Invoked. reaches into the
@@ -55,5 +55,24 @@ describe('buildCastReceipt (THR-1603)', () => {
   it('reads "yourself" for a self-cast', () => {
     const r = buildCastReceipt({ name: 'Focus', narrativeTemplates: { initiation: 'gathers the will inward', success: '', failure: '' } }, null);
     expect(r.body).toBe('You set it upon yourself: it gathers the will inward.');
+  });
+});
+
+// THR-1977 — a cast that opens the Rite of the Thread skipped the receipt so the Rite
+// could tell the bind (PC-5), and so said nothing at all until the Rite opened.
+describe('buildRitePendingReceipt (THR-1977)', () => {
+  it('names the card and the mortal, and says the thread is forming — not that it is bound', () => {
+    const thread = getUnifiedTemplateById('bind_thread_agent');
+    expect(thread).toBeDefined();
+    const r = buildRitePendingReceipt(thread!, 'Kael Thornweaver');
+    expect(r.title).toBe(thread!.spellName ?? thread!.name);
+    expect(r.body).toBe(`You reach for Kael Thornweaver. ${CAST_RECEIPT_RITE_PENDING}`);
+    expect(r.message).toBe(`${r.title}. ${r.body}`);
+    expect(r.body).not.toMatch(/\bbound\b/i);
+  });
+
+  it('falls back to the unnamed-target word', () => {
+    const r = buildRitePendingReceipt({ name: 'Agent Thread', narrativeTemplates: { initiation: '', success: '', failure: '' } }, undefined);
+    expect(r.body).toContain(CAST_RECEIPT_UNNAMED_TARGET);
   });
 });
