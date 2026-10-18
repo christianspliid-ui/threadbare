@@ -4,6 +4,8 @@ import { IconButton } from '../shared/IconButton';
 import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { FIRST_RUN_PROMPT_CAPTION, CLOCK_HELD_STAYS_PAUSED_DESC } from '../../data/ui-content';
 import { clockHeldStatus } from '../../data/nudge-stage-content';
+import { SPEED_DOWN_ARIA, SPEED_UP_ARIA } from '../../data/frame-content';
+import { Icon } from '../shared/Icon';
 
 interface SimulationControlsProps {
   /*
@@ -94,7 +96,8 @@ export function SimulationControls({
       ? clockHeldStatus(heldBy, running)
       : answerStatus ? answerStatus
       : prompting ? FIRST_RUN_PROMPT_CAPTION
-      : running ? `running ×${speed}` : 'paused';
+      // THR-1893: the speed stepper beside the date shows the speed, so the line no longer repeats it.
+      : running ? 'running' : 'paused';
     const playButton = (
       <IconButton
         icon={<span>{running ? '⏸' : '⏵'}</span>}
@@ -139,6 +142,39 @@ export function SimulationControls({
                 the engine's clock (Laws 13/14) and read as noise beside a real calendar. */}
             {season} · year {year}
           </span>
+          {/* THR-1893 (frame plan § F3): the speed stepper, moved here from World Pulse so
+              the persistent time control holds speed too (Law 52). The readout is a control
+              setting, like a volume level, so it stays a numeral (Law 13). */}
+          <Tooltip id="ui.sim_speed">
+            <div data-testid="speed-stepper" className="flex items-center" style={{ gap: 'var(--space-1)' }}>
+              <IconButton
+                icon={<Icon name="slower" size="chip" decorative />}
+                size="sm"
+                onClick={speedDown}
+                disabled={speed === SPEED_STEPS[0]}
+                aria-label={SPEED_DOWN_ARIA}
+              />
+              <span
+                data-testid="speed-readout"
+                style={{
+                  font: 'var(--type-body-small)',
+                  fontVariantNumeric: 'lining-nums tabular-nums',
+                  color: 'var(--text-primary)',
+                  minWidth: '2rem',
+                  textAlign: 'center',
+                }}
+              >
+                {speed}×
+              </span>
+              <IconButton
+                icon={<Icon name="faster" size="chip" decorative />}
+                size="sm"
+                onClick={speedUp}
+                disabled={speed === SPEED_STEPS[SPEED_STEPS.length - 1]}
+                aria-label={SPEED_UP_ARIA}
+              />
+            </div>
+          </Tooltip>
         </div>
         {(() => {
           const status = (

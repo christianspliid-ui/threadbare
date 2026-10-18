@@ -33,7 +33,8 @@ describe('SimulationControls — held by an interrupt (THR-1711)', () => {
 
   it('unheld, the status line is unchanged', () => {
     renderControls(true, false);
-    expect(document.body.textContent).toContain('running ×1');
+    expect(document.body.textContent).toContain('running');
+    expect(screen.getByTestId('speed-readout').textContent).toBe('1×');
     expect(document.body.textContent).not.toContain('held');
   });
 });

@@ -174,7 +174,7 @@ export function DialogHost({
 }: DialogHostProps) {
   // THR-1881 step e: flags the rails and top bar also write live in GameScreenState.
   const {
-    state: { chapterLedgerOpen, readThreadsOpen, codexOpen, doomDetailOpen, mandateDetailOpen },
+    state: { chapterLedgerOpen, chapterLedgerInitialKey, readThreadsOpen, codexOpen, doomDetailOpen, mandateDetailOpen },
     setChapterLedgerOpen,
     setChapterLedgerSeenCount,
     setReadThreadsOpen,
@@ -232,6 +232,8 @@ export function DialogHost({
         <ChapterLedger
           gameState={gameState}
           runtime={runtime}
+          // THR-1893: a Ledger tab row opens the reader at its chapter.
+          initialRecordKey={chapterLedgerInitialKey}
           onClose={() => {
             setChapterLedgerSeenCount(countThreadedChapters(gameState));
             setChapterLedgerOpen(false);

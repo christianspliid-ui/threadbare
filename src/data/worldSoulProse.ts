@@ -1,7 +1,7 @@
 /**
  * World Soul Prose Registry — 32 prose entries (8 spheres × 4 intensities)
  *
- * Used by WorldSoulIndicator to describe the global dominant sphere in narrative prose.
+ * Used by the Ledger rail view model (engine/views/ledgerRail.ts, THR-1893) to describe the global dominant sphere in narrative prose.
  * Prose strings use **SphereName** markers which the renderProseWithIPK utility parses
  * into ProseKeyword (IPK) components.
  *

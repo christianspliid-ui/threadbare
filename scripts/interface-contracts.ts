@@ -6599,7 +6599,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts',
-      'src/components/Game/ChapterLedger.tsx',
+      'src/engine/threadedChapters.ts', // THR-1893: the ledger's rows moved out of ChapterLedger.tsx
       'src/components/Game/encounterStakesRows.ts',
       'src/debug-bridge.ts',
       'src/data/content-eval/encounterStakesRules.ts',
@@ -6627,7 +6627,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/engine/encounterVisibility.ts',
       'src/engine/encounterFilterPipeline.ts',
-      'src/components/Game/ChapterLedger.tsx',
+      'src/engine/threadedChapters.ts', // THR-1893: the ledger's default view and count, shared by the Ledger tab
       'src/debug-bridge.ts',
     ],
   },

@@ -75,7 +75,7 @@ Overlay layers (centered, above everything):
 | Width | `var(--rail-right-w)` (the Ledger rail, THR-1828): 280px below 1920, 340px at 1920px+, 420px at 2560px+ and 3440px+ | `index.css`, `GameView.tsx` |
 | Position | Right edge, `flex-shrink-0 overflow-y-auto` | `GameView.tsx:2827` |
 | Border | `1px solid var(--border-gold)` left edge | `GameView.tsx:2831` |
-| Contents | `ThreadsPanel`, `WorldPulse`, `HexDetailView`, `AgentDetailPanel`, entity detail views | `GameView.tsx` |
+| Contents | `ThreadsPanel`, `ChroniclePanel` (World-Soul line; Now · Years · Ledger), `LedgerStrip` when folded, `HexDetailView`, `AgentDetailPanel`, entity detail views | `GameView.tsx` |
 | Behavior | Always rendered. Content swaps based on selection state. Internal vertical scroll. | |
 
 ### Bottom Drawer (ActionDrawer)
@@ -182,7 +182,7 @@ Below 1600px: `.topbar-compact-hide` elements are hidden to save horizontal spac
 
 | Visibility | Components |
 |-----------|------------|
-| **Always visible** | Top bar (`SimulationControls`, `MandateTracker`, `DoomBar`, `EssencePanel`), Right sidebar (`ThreadsPanel`, `WorldPulse`), Hex map canvas, Action drawer (card hand) |
+| **Always visible** | Top bar (`SimulationControls`, `MandateTracker`, `DoomBar`, `EssencePanel`), Right sidebar (`ThreadsPanel`, `ChroniclePanel`; folds to `LedgerStrip`), Hex map canvas, Action drawer (card hand) |
 | **User-toggled** | `HexSidebar` (expand/collapse), `DebugPanel` (backtick/F1), `SettingsPanel` |
 | **Selection-triggered** | `HexDetailView` (click hex), `AgentDetailPanel` (click agent), entity detail views |
 | **Event-triggered** | `AlertBar`, `EventPopup`, `MeetingEncounterModal`, `JourneyVignetteModal`, `EncounterVeil`, `PremonitionModal` |
@@ -233,7 +233,7 @@ GameView (h-screen flex flex-col overflow-hidden)
   │     │     └── RegionLabels (absolute)
   │     └── Ledger rail (var(--rail-right-w), flex-shrink-0)
   │           ├── ThreadsPanel
-  │           ├── WorldPulse
+  │           ├── ChroniclePanel (World-Soul line · Now · Years · Ledger) — or LedgerStrip (56 px) when folded
   │           └── [Selection-dependent detail views]
   │
   ├── Action Drawer (bottom, z:40–51)

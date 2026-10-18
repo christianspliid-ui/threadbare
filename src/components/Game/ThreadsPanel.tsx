@@ -34,6 +34,19 @@ import type { AgentStrategicSummary } from '../../engine/strategicPresentation';
 import type { AppointmentBadgeModel } from './appointmentBadgeModel';
 import type { EncounterStakesRowLine } from './encounterStakesRows';
 import { STRATEGIC_BADGE_BG_OPACITY } from '../../engine/strategicPresentation';
+import { THREAD_PIP_LABEL } from '../../data/frame-content';
+
+/**
+ * THR-1893 — the "A chapter waits" pip's predicate: an agent row with a pending
+ * encounter. The Ledger strip's Threads count reads this too, so the strip and the
+ * rows never disagree.
+ */
+export function threadHasWaitingChapter(
+  node: { id: string; category: string },
+  activeEncounters: ReadonlyMap<string, unknown> | undefined,
+): boolean {
+  return node.category === 'agent' && !!activeEncounters?.has(node.id);
+}
 
 // ─── Section config ───────────────────────────────────────────────
 
@@ -549,11 +562,11 @@ function CompactThreadRow({
           {/* Row 1: name · strategic glyph · activity icon · zoom · sphere icon */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             {/* Priority pip — visible when this thread has a pending encounter (THR-340 §5.8) */}
-            {node.category === 'agent' && agentEncounter && (
+            {threadHasWaitingChapter(node, activeEncounters) && agentEncounter && (
               <Tooltip id="ui.thread_priority_pip">
                 <span
                   data-testid="thread-priority-pip"
-                  aria-label="Needs attention"
+                  aria-label={THREAD_PIP_LABEL}
                   style={{
                     display: 'inline-block',
                     width: 8,

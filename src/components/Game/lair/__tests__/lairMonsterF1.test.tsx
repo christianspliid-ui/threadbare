@@ -14,7 +14,6 @@ import { WorldGraph } from '../../../../engine/graph';
 import type { GraphNode } from '../../../../types/graph';
 import { buildLairMonsterCardModel } from '../buildLairMonsterCardModel';
 import { HexSidebar } from '../../HexSidebar';
-import { countLivingMortals } from '../../worldPulseCount';
 import { buildChipIconResolver } from '../../encounter-stage/adapters/chipCollaborators';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getMonsterPortraitUrl } from '../../../../data/portrait-assets';
@@ -153,20 +152,6 @@ describe('HexSidebar lair block (F1)', () => {
   it('renders no raw id when no card is supplied at all', () => {
     const { container } = render(<HexSidebar {...baseProps} />);
     expect(container.innerHTML).not.toContain('elite_');
-  });
-});
-
-describe('World Pulse count (F1)', () => {
-  it('counts living, non-monster individuals only', () => {
-    const graph = graphWith(
-      node({ id: 'a1', type: 'actor', properties: { actorType: 'individual' } }),
-      node({ id: 'a2', type: 'actor', properties: { actorType: 'individual' } }),
-      node({ id: 'a3', type: 'actor', properties: { actorType: 'individual', deceased: true } }),
-      eliteNode(),
-      node({ id: 'm2', type: 'actor', properties: { actorType: 'individual', monsterState: { family: 'beast' } } }),
-      node({ id: 'c1', type: 'actor', properties: { actorType: 'culture' } }),
-    );
-    expect(countLivingMortals(graph)).toBe(2);
   });
 });
 

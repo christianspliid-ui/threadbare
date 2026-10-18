@@ -3,6 +3,8 @@
  *
  * After the bond the god's screen shows The First, her chapter, the essence and
  * the hand; every other panel arrives with the gift whose words introduce it.
+ * (THR-1893: World Pulse retired, so its row went; the a_path_opens toast now reads
+ * "New beside the map: your Reaches, the World-Soul and Omens.")
  * Each row keys one dashboard surface (by id, never by screen position) to the
  * thing that brings it: the bond, The First's first chapter, or one opening gift.
  *
@@ -11,7 +13,7 @@
  * the bond (`unknown_beat`).
  *
  * ─── Constants ───────────────────────────────────────────────────
- * | OPENING_REVEAL_TABLE         | 18 rows   | Which surface waits for which trigger |
+ * | OPENING_REVEAL_TABLE         | 17 rows   | Which surface waits for which trigger |
  * | OPENING_REVEAL_CEILING_TICKS | 200       | Ticks after the bond when every row reveals |
  * | OPENING_REVEAL_HIGHLIGHT_MS  | 6000      | Gold ring on a newly revealed panel (0 = off) |
  * | OPENING_REVEAL_SHOW_ALL_KEY  | localStorage key for "Show every panel" |
@@ -33,7 +35,6 @@ export type OpeningRevealSurfaceId =
   | 'mandate'
   | 'notables'
   | 'reaches'
-  | 'world_pulse'
   | 'world_soul'
   | 'omen';
 
@@ -69,7 +70,6 @@ export const OPENING_REVEAL_TABLE: readonly OpeningRevealRow[] = [
   { surface: 'investiture', trigger: gift('beat.spine.the_seat'), newLabel: 'Investiture' },
   { surface: 'notables', trigger: gift('beat.spine.the_first_word'), newLabel: 'Notables' },
   { surface: 'reaches', trigger: gift('beat.spine.a_path_opens'), newLabel: 'your Reaches' },
-  { surface: 'world_pulse', trigger: gift('beat.spine.a_path_opens'), newLabel: 'World Pulse' },
   { surface: 'world_soul', trigger: gift('beat.spine.a_path_opens'), newLabel: 'the World-Soul' },
   { surface: 'omen', trigger: gift('beat.spine.a_path_opens'), newLabel: 'Omens' },
 ];

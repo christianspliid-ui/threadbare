@@ -38,17 +38,18 @@ import type { ChapterRecord } from '../../types/chapterRecord';
 import type { GameState } from '../../types/gameState';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { SimulationRuntime } from '../../engine/simulationRuntime';
+import { buildChapterRecord, CHAPTER_LEDGER_PAGE_SIZE } from '../../engine/chapterArchive';
 import {
-  buildChapterRecord,
-  isEncounterAction,
-  isRoutineChapter,
-  getChapterTemplateName,
-  CHAPTER_LEDGER_PAGE_SIZE,
-} from '../../engine/chapterArchive';
-import { outcomePhrase } from '../../engine/aftermathWords';
-import { getUnifiedTemplateById } from '../../data/unified-action-templates';
-import { stakesLineForAction } from '../../engine/encounters/stakesLine';
-import { isRoutineTemplate } from '../../engine/attentionCadence';
+  activeLedgerEncounters,
+  buildLedgerRows,
+  isDefaultLedgerRow,
+  sortLedgerRowsNewestFirst,
+  type LedgerRow,
+} from '../../engine/threadedChapters';
+
+// THR-1893 — the rows, the default view's predicate and the unread count moved to
+// `engine/threadedChapters.ts`, so the Ledger tab and this reader share them.
+export { countThreadedChapters, resolvedStatusLabel, selectThreadedChapters } from '../../engine/threadedChapters';
 
 /** C3 (THR-1715): the Daily-life filter's empty state. Plain register, no second person (Law 42). */
 export const DAILY_LIFE_EMPTY_STATE = 'Nothing ordinary has happened yet.';
@@ -64,73 +65,11 @@ interface ChapterLedgerProps {
   embedded?: boolean;
   /** Open the profile for a named participant/actor/place. */
   onOpenEntity?: (id: string) => void;
-}
-
-interface LedgerRow {
-  key: string;
-  source: 'archived' | 'active';
-  actorId: string;
-  actorName: string;
-  templateName: string;
-  /** THR-1727 — the chapter's stakes line (opening while live, result once resolved). */
-  stakesLine?: string;
-  statusLabel: string;
-  sortTick: number;
-  threaded: boolean;
-  /** THR-1715 — daily life: shown only under the Daily-life filter. */
-  routine: boolean;
-}
-
-/** THR-1727 — a live encounter's opening stakes line, or undefined when it has none. */
-function liveStakesLine(gameState: GameState, action: UnifiedAction): string | undefined {
-  try {
-    const template = getUnifiedTemplateById(action.templateId);
-    if (!template) return undefined;
-    return stakesLineForAction(action, template, gameState.graph)?.text;
-  } catch {
-    return undefined;
-  }
-}
-
-function isThreaded(gameState: GameState, actorId: string): boolean {
-  const asc = gameState.ascendantId;
-  if (!asc) return false;
-  try {
-    return gameState.graph.getIncomingEdges(actorId, 'thread').some(e => e.source === asc);
-  } catch {
-    return false;
-  }
-}
-
-/**
- * THR-1604 — the number of rows the global ledger's default view lists:
- * threaded chapters, archived and in progress. The launcher's badge reads this,
- * not `chapterArchive.length`, so it never promises chapters the ledger then
- * says it does not have (the cold playtest saw "416" beside "No chapters yet").
- *
- * THR-1715: routine (daily-life) chapters are excluded — the default view does not
- * list them, so the badge must not count them.
- */
-export function countThreadedChapters(gameState: GameState): number {
-  const archived = (gameState.chapterArchive ?? []).filter(r => r.threaded && !isRoutineChapter(r)).length;
-  const active = gameState.unifiedActions.filter(
-    a => !a.resolved && isEncounterAction(a.templateId) && !isRoutineTemplate(a.templateId)
-      && isThreaded(gameState, a.actorId),
-  ).length;
-  return archived + active;
-}
-
-/**
- * THR-1035 — the status label for a resolved chapter.
- *
- * The band is routed through the shared aftermath vocabulary rather than
- * interpolated, which is what put `success_at_cost` on a player surface (Law
- * 14). A chapter archived without an outcome says only "resolved": the absence
- * is a real state, and the old `?? 'unknown'` answered a question nobody asked.
- */
-export function resolvedStatusLabel(outcome?: string | null): string {
-  const phrase = outcomePhrase(outcome);
-  return phrase ? `resolved · ${phrase}` : 'resolved';
+  /**
+   * THR-1893 — open at this chapter (a Ledger tab row's key) instead of the newest.
+   * A key that is not in the list falls back to the newest buildable row.
+   */
+  initialRecordKey?: string | null;
 }
 
 function matchesAgent(
@@ -148,6 +87,7 @@ export function ChapterLedger({
   filterAgentId,
   embedded = false,
   onOpenEntity,
+  initialRecordKey = null,
 }: ChapterLedgerProps) {
   /** The row the player clicked, by key (THR-1820). Null until a click. */
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -158,52 +98,24 @@ export function ChapterLedger({
 
   const archive = gameState.chapterArchive ?? [];
   const activeEncounters = useMemo(
-    () => gameState.unifiedActions.filter(a => !a.resolved && isEncounterAction(a.templateId)),
+    () => activeLedgerEncounters(gameState),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [gameState.unifiedActions],
   );
 
   const rows = useMemo<LedgerRow[]>(() => {
-    const archivedRows: LedgerRow[] = archive
-      .filter(r => !filterAgentId || matchesAgent(filterAgentId, r.actorId, r.participants.map(p => p.id)))
-      .map(r => ({
-        key: r.actionId,
-        source: 'archived' as const,
-        actorId: r.actorId,
-        actorName: r.actorName,
-        templateName: r.templateName,
-        stakesLine: r.stakesLine,
-        statusLabel: resolvedStatusLabel(r.outcome),
-        sortTick: r.resolvedTick,
-        threaded: r.threaded,
-        routine: isRoutineChapter(r),
-      }));
-
-    const activeRows: LedgerRow[] = activeEncounters
-      .filter(
-        a =>
-          !filterAgentId ||
-          matchesAgent(filterAgentId, a.actorId, (a.supportBindings ?? []).map(b => b.nodeId)),
-      )
-      .map(a => ({
-        key: a.actionId,
-        source: 'active' as const,
-        actorId: a.actorId,
-        actorName: gameState.graph.getNode(a.actorId)?.name ?? 'a mortal',
-        templateName: getChapterTemplateName(a.templateId),
-        stakesLine: liveStakesLine(gameState, a as UnifiedAction),
-        statusLabel: `active · step ${a.currentStep + 1}`,
-        sortTick: gameState.tick,
-        threaded: isThreaded(gameState, a.actorId),
-        routine: isRoutineTemplate(a.templateId),
-      }));
-
-    let merged = [...activeRows, ...archivedRows];
-    // THR-1715: story by default; the Daily-life chip lists the chores instead.
-    merged = merged.filter(r => r.routine === dailyLife);
-    // Default view (global ledger): threaded chapters only, unless "show all".
-    if (!filterAgentId && !showAll) merged = merged.filter(r => r.threaded);
-    merged.sort((a, b) => b.sortTick - a.sortTick);
-    return merged;
+    let merged = buildLedgerRows(gameState);
+    if (filterAgentId) merged = merged.filter(r => matchesAgent(filterAgentId, r.actorId, r.participantIds));
+    if (!filterAgentId && !showAll && !dailyLife) {
+      // The default view: the one predicate the Ledger tab also lists (THR-1893).
+      merged = merged.filter(isDefaultLedgerRow);
+    } else {
+      // THR-1715: story by default; the Daily-life chip lists the chores instead.
+      merged = merged.filter(r => r.routine === dailyLife);
+      // Global ledger: threaded chapters only, unless "show all".
+      if (!filterAgentId && !showAll) merged = merged.filter(r => r.threaded);
+    }
+    return sortLedgerRowsNewestFirst(merged);
     // worldVersion covers graph-derived name/threaded reads; array identities cover data changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [archive, activeEncounters, filterAgentId, showAll, dailyLife, gameState.tick, runtime?.worldVersion]);
@@ -235,7 +147,11 @@ export function ChapterLedger({
 
   // Pinned at open: the newest buildable row, so the selection does not jump as new
   // encounters start while the ledger is open.
-  const [openKey] = useState<string | null>(() => (twoColumn ? firstBuildableKey(rows) : null));
+  const [openKey] = useState<string | null>(() => {
+    if (!twoColumn) return null;
+    if (initialRecordKey && rows.some(r => r.key === initialRecordKey)) return initialRecordKey;
+    return firstBuildableKey(rows);
+  });
 
   const shownKey = useMemo<string | null>(() => {
     const present = (key: string | null): key is string => key !== null && rows.some(r => r.key === key);
