@@ -61,7 +61,12 @@ export function useTopBarYield(barRef: RefObject<HTMLElement | null>, contentKey
     const el = barRef.current;
     if (!el) return;
     const measure = () => setState(prev => stepTopBarYield(prev, { scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
-    measure();
+    // New content re-fits from no yield: a step taken for text that has since gone (the
+    // direction line, a long held-by name) must not stay applied (review gate, THR-1875).
+    // Layout effects run before paint, so the re-fit never flashes an overflowing bar.
+    // From no yield: if steps were applied, `applied` changes and the effect below re-measures
+    // the bar as it lays out without them; if none were, this measure is already the real one.
+    setState(stepTopBarYield(INITIAL_TOP_BAR_YIELD, { scrollWidth: el.scrollWidth, clientWidth: el.clientWidth }));
     if (typeof ResizeObserver === 'undefined') return;
     const observer = new ResizeObserver(measure);
     observer.observe(el);

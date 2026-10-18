@@ -80,7 +80,7 @@ import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { GameViewTopBar, type TopBarFrameFixture } from './GameView/GameViewTopBar';
 import { beatOfferWords } from './AscendantBeatModal';
-import { buildNeedsYou, needsYouFixtureSubject, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
+import { buildNeedsYou, needsYouFixtureSubject, needsYouStamp, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
 import type { AlertItem } from '../../types/notification';
 import { AgentInfoCard } from './AgentInfoCard';
 import { prepareEncounterHandoff } from './encounterHandoff';
@@ -4380,6 +4380,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     gameState, setGameState, runtime, tiles, hexMapRef,
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
+    needsYouSources, needsYouStamp: needsYouStamp(needsYouSources),
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
     activeLens, lensSuppressed, hexLensVM, setMapLens, setLensSuppressed: gameScreen.setLensSuppressed,
     omniscienceMode, setOmniscienceMode, setTieredEncounterState, runTicksSync, setBeatEntered,
@@ -4527,6 +4528,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         needsYouGuarded={needsYouGuarded}
         onPressNeedsYouRow={handlePressNeedsYouRow}
         namedPause={namedPause?.line}
+        alertsTrimmedAtCap={notificationState.alertsTrimmedAtCap ?? 0}
         frameFixture={frameFixture}
       />
 

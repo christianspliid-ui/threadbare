@@ -71,11 +71,14 @@ export interface NeedsYouProps {
   raised: boolean;
   /** A row's press. The list closes after a press that opens something. */
   onPressRow: (row: NeedsYouRowVM) => void;
+  /** Alerts the router trimmed at its safety cap (Law 49): read by getFrameState. */
+  trimmedAtCap?: number;
 }
 
 /** What the list drew, for `__DEBUG.getFrameState().needsYou` (read back off the DOM). */
-function listAttrs(vm: NeedsYouVM, capacity: number, foldedRows: number, open: boolean, raised: boolean) {
+function listAttrs(vm: NeedsYouVM, capacity: number, foldedRows: number, open: boolean, raised: boolean, trimmedAtCap: number) {
   return {
+    'data-needs-you-trimmed': trimmedAtCap,
     'data-needs-you-count': vm.count,
     'data-needs-you-waiting': vm.groups.waiting.length,
     'data-needs-you-held': vm.groups.held.length,
@@ -87,8 +90,9 @@ function listAttrs(vm: NeedsYouVM, capacity: number, foldedRows: number, open: b
   };
 }
 
-export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow }: NeedsYouProps) {
+export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow, trimmedAtCap = 0 }: NeedsYouProps) {
   const anchorRef = useRef<HTMLSpanElement>(null);
+  const raisedRef = useRef<HTMLSpanElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState<ReadonlySet<NeedsYouGroup>>(new Set());
   const [openBursts, setOpenBursts] = useState<ReadonlySet<string>>(new Set());
@@ -110,17 +114,37 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow }
   }, [open]);
 
   // Where the pill sits: the list anchors under it, the raised pill draws over it.
+  // Re-measured after every render and whenever the top bar's layout moves (a longer status
+  // line, a yield step), so the raised copy never drifts from its slot (review gate).
+  const tracking = shown && (open || raised);
+  const measureRef = useRef<() => void>(() => {});
+  measureRef.current = () => {
+    const r = anchorRef.current?.getBoundingClientRect();
+    if (r) {
+      setRect(prev => (prev && prev.left === r.left && prev.top === r.top && prev.bottom === r.bottom
+        ? prev
+        : { left: r.left, top: r.top, bottom: r.bottom }));
+    }
+    setViewportH(window.innerHeight);
+  };
   useLayoutEffect(() => {
-    if (!shown || (!open && !raised)) return;
-    const measure = () => {
-      const r = anchorRef.current?.getBoundingClientRect();
-      if (r) setRect({ left: r.left, top: r.top, bottom: r.bottom });
-      setViewportH(window.innerHeight);
-    };
-    measure();
+    if (tracking) measureRef.current();
+  });
+  useEffect(() => {
+    if (!tracking) return;
+    const measure = () => measureRef.current();
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [shown, open, raised]);
+    const bar = anchorRef.current?.closest('[data-testid="game-topbar"]');
+    const observer = bar && typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (bar && observer) {
+      observer.observe(bar);
+      for (const child of Array.from(bar.children)) observer.observe(child);
+    }
+    return () => {
+      window.removeEventListener('resize', measure);
+      observer?.disconnect();
+    };
+  }, [tracking]);
 
   // Esc closes the list (Law 23); focus moves into it and back to the pill (Law 50).
   useEscapeLayer(open, close, Z_BAND.menu, NEEDS_YOU_LABEL);
@@ -143,7 +167,7 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow }
     const onDown = (e: MouseEvent) => {
       const t = e.target as Node | null;
       if (!t) return;
-      if (listRef.current?.contains(t) || anchorRef.current?.contains(t)) return;
+      if (listRef.current?.contains(t) || anchorRef.current?.contains(t) || raisedRef.current?.contains(t)) return;
       close();
     };
     document.addEventListener('mousedown', onDown);
@@ -171,7 +195,7 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow }
     />
   );
 
-  const attrs = listAttrs(vm, capacity, folded.foldedRows, open, raised);
+  const attrs = listAttrs(vm, capacity, folded.foldedRows, open, raised, trimmedAtCap);
 
   return (
     <>
@@ -185,6 +209,7 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow }
       </span>
       {shown && raised && rect && typeof document !== 'undefined' && createPortal(
         <span
+          ref={raisedRef}
           data-testid="needs-you-pill-raised"
           style={{ position: 'fixed', left: rect.left, top: rect.top, zIndex: GIFT_PILL_Z, display: 'inline-flex' }}
         >

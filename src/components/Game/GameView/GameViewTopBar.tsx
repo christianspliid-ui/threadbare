@@ -192,6 +192,8 @@ export interface GameViewTopBarProps {
   onPressNeedsYouRow?: (row: NeedsYouRowVM) => void;
   /** THR-1875 — the avatar's arrival names the pause (§ F4). */
   namedPause?: string;
+  /** THR-1875 — alerts the router trimmed at its safety cap (Law 49), shown in getFrameState. */
+  alertsTrimmedAtCap?: number;
   /** THR-1875 — `__DEBUG.setFrameFixture` overrides for the one-row check. */
   frameFixture?: TopBarFrameFixture | null;
 }
@@ -254,6 +256,7 @@ export function GameViewTopBar({
   needsYouGuarded = false,
   onPressNeedsYouRow,
   namedPause,
+  alertsTrimmedAtCap = 0,
   frameFixture,
 }: GameViewTopBarProps) {
   const revealAll = frameFixture?.revealAll === true;
@@ -327,6 +330,7 @@ export function GameViewTopBar({
         onOpenChange={setNeedsYouOpen}
         guarded={needsYouGuarded}
         raised={needsYouRaised}
+        trimmedAtCap={alertsTrimmedAtCap}
         onPressRow={row => onPressNeedsYouRow?.(row)}
       />
     ) : null),

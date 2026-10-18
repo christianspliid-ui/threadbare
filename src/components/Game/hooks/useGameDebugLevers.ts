@@ -111,6 +111,9 @@ export interface GameDebugLeverContext {
   avatarNodeId: string | null | undefined;
   threadedAgentIdsForActivity: unknown;
   activityActionsVersion: unknown;
+  /** THR-1875 — the Needs-you sources the top bar drew, so `getView('needsYou')` returns its queue. */
+  needsYouSources?: unknown;
+  needsYouStamp?: string;
   dominionLensBase: unknown;
   dominionLensOn: boolean;
   dominionProjectionNow: ReturnType<typeof ensureDominionProjection> | null;
@@ -165,7 +168,7 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
   const {
     gameState, setGameState, runtime, tiles, hexMapRef,
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
-    viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
+    viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion, needsYouSources, needsYouStamp,
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
     activeLens, lensSuppressed, hexLensVM, setMapLens, setLensSuppressed,
     omniscienceMode, setOmniscienceMode, setTieredEncounterState, runTicksSync, setBeatEntered,
@@ -299,6 +302,8 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
     threadedAgentIds: threadedAgentIdsForActivity,
     telemetryVersion: runtime.balanceTelemetryVersion,
     actionsVersion: activityActionsVersion,
+    needsYouSources,
+    needsYouStamp,
   };
   // The lens the screen drew — off, on, or on with no god — returned as is, so a
   // debug read never builds a projection the screen did not ask for.

@@ -374,17 +374,38 @@ export function foldNeedsYou(vm: NeedsYouVM, capacity: number, expanded: Readonl
 // ─── The seam (THR-1822) ──────────────────────────────────────────
 
 export interface NeedsYouArgs {
-  sources: NeedsYouSources;
+  sources?: NeedsYouSources;
   /** A primitive stamp of the sources (the host computes it), so the cache keys on them. */
-  stamp: string;
+  stamp?: string;
+  /** The screen's superset args name them apart from other selectors' `stamp` (debug bridge). */
+  needsYouSources?: NeedsYouSources;
+  needsYouStamp?: string;
+}
+
+/** A primitive key for a set of sources: changes whenever a row would. */
+export function needsYouStamp(src: NeedsYouSources): string {
+  return [
+    src.currentTick,
+    src.beatOffer ? `${src.beatOffer.kind}:${src.beatOffer.beatId}:${src.beatOffer.title ?? ''}` : '',
+    src.receipts.map(r => r.id).join(','),
+    src.namedPause ? `${src.namedPause.tick}:${src.namedPause.line}` : '',
+    src.held.map(h => `${h.kind}:${h.subject ?? ''}:${h.title ?? ''}`).join(','),
+    src.alerts.map(a => a.id).join(','),
+  ].join('|');
 }
 
 /** `__DEBUG.getView('needsYou')` and `useView`: sources are passed in (D13). */
 export const needsYouSelector: ViewSelector<NeedsYouArgs, NeedsYouVM> = {
   id: 'needsYou',
   invalidation: 'world',
-  key: (a) => a?.stamp ?? '',
-  build: (_ctx, a) => (a?.sources ? buildNeedsYou(a.sources) : emptyNeedsYou()),
+  key: (a) => {
+    const src = a?.sources ?? a?.needsYouSources;
+    return a?.stamp ?? a?.needsYouStamp ?? (src ? needsYouStamp(src) : '');
+  },
+  build: (_ctx, a) => {
+    const src = a?.sources ?? a?.needsYouSources;
+    return src ? buildNeedsYou(src) : emptyNeedsYou();
+  },
   fallback: () => emptyNeedsYou(),
 };
 

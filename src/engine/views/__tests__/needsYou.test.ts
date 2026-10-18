@@ -154,3 +154,16 @@ describe('needsYou — grow, then fold (Law 57)', () => {
     expect(foldNeedsYou(vm, 5, new Set(['news'])).groups.news.folded).toBe(0);
   });
 });
+
+describe('needsYou — the seam (THR-1822)', () => {
+  it('the selector builds from the screen args the debug bridge passes, keyed on the sources', async () => {
+    const { needsYouSelector } = await import('../needsYou');
+    const src = sources({ alerts: [alert('a1', 99), alert('a2', 98, 'death')] });
+    const viaScreen = needsYouSelector.build({} as never, { needsYouSources: src });
+    expect(viaScreen.count).toBe(2);
+    const k1 = needsYouSelector.key({ needsYouSources: src });
+    const k2 = needsYouSelector.key({ needsYouSources: sources({ alerts: [alert('a1', 99)] }) });
+    expect(k1).not.toBe(k2);
+    expect(needsYouSelector.build({} as never, {}).count).toBe(0);
+  });
+});
