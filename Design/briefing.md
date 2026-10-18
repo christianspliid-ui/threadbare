@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 08:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 09:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,6 +15,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Encounters that broker an oath](https://linear.app/threadbare/issue/THR-1944/encounters-that-broker-an-oath-faction-unification-and-the-warlords) — **a mortal who wins The Faction Unification swears one of the factions in the room to the realm they serve.** *Veto:* **"mortals should not be able to swear factions"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-18b.md)*
+- Same spec — **a mortal who wins The Warlord's Tribute by demanding the oath swears the warlord's company too, but that oath is forced**: it starts disloyal and breaks first, like a siege oath. *Veto:* **"a demanded oath should start loyal"**.
+- Same spec — **if the mortal's realm has itself sworn to a crown, the new oath goes to that crown.** *Veto:* **"a brokered oath should go to the mortal's own lord or not at all"**.
+- Same spec — **winning the scene is the persuasion; there is no second hidden test.** The crown's hard rules still apply. *Veto:* **"the faction should still weigh the offer"**.
+- Same spec — **accepting the warlord's tribute swears nothing.** *Veto:* **"accepting the tribute should bind his company too"**. The builder holds this spec until 19 Oct 07:23 UTC.
 - [Mercenary hire](https://linear.app/threadbare/issue/THR-1939/mercenary-hire-who-pays-a-free-company-once-factions-have-purses) — **a rich realm can hire a free company by buying its oath with silver**, the same oath as any other faction. There is no separate contract. *Veto:* **"a company is not a vassal, give hiring its own contract"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-18a.md)*
 - Same ruling — **the realm that hires a company pays its soldiers, feeds them from its own towns, and they fight its enemies.** A vassal that pays its own army keeps its own wars. *Veto:* **"vassals should always fight their lord's wars"**.
 - Same ruling — **a company leaves when the pay stops or a richer lord outbids**, using the crown's oath-breaking rules. *Veto:* **"a hired company should serve out its term"**.
@@ -44,14 +49,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready, one in progress.** [The Ledger rail, first slice of the screen frame](https://linear.app/threadbare/issue/THR-1893/screen-frame-slice-1-the-ledger-rail-world-soul-heads-the-chronicle) merged ([#2473](https://github.com/christianspliid-ui/threadbare/pull/2473)) and is live. The builder is now on [the god rail, second slice of the screen frame](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand) (started 06:29 UTC, run still active).
+**Backed up: 23 ready, one in progress.** [The god rail, second slice of the screen frame](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand) merged ([#2474](https://github.com/christianspliid-ui/threadbare/pull/2474)) and is live. The builder is now on [map lenses II: Trouble and Trade](https://linear.app/threadbare/issue/THR-1898/map-lenses-ii-trouble-and-trade-and-the-plain-map-stops-drawing-trade) (run started 07:51 UTC and still active; its edits are in a local worktree, not yet pushed).
 
-- New and high, waiting: [every army bleeds out within a week and almost none are raised again](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again), [map lenses II: Trouble and Trade](https://linear.app/threadbare/issue/THR-1898/map-lenses-ii-trouble-and-trade-and-the-plain-map-stops-drawing-trade), and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
-- Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
+- New and high, waiting: [every army bleeds out within a week and almost none are raised again](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again), [the Inspector in the game](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click), and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- Held for your veto: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural) until 18 Oct 13:50 UTC, and [encounters that broker an oath](https://linear.app/threadbare/issue/THR-1944/encounters-that-broker-an-oath-faction-unification-and-the-warlords) until 19 Oct 07:23 UTC.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time. Engine speed is within normal range (141 ms a tick against the weekly normal of 123).
+- All green. The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time. Engine speed is within normal range (111 ms a tick against the weekly normal of 123).
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run (08:40) reports 551 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run (09:40) reports 553 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
