@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 10:57 local (08:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 11:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -39,25 +39,22 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same plan — **the screen says "faithful", never "congregation".** *Veto:* **"call them congregations anyway"**.
 - Same plan — **helping a hungry town off your own ground counts once a year.** *Veto:* **"every act of kindness should count"**.
 - Same plan — **Open the Markets' thieves' guild becomes a temptation, not a certainty.** *Veto:* **"the boom should always breed a thieves' guild"**.
-- [Undertakings in the economy](https://linear.app/threadbare/issue/THR-1937) — **a town a mortal founds goes on open ground near where they set out.** ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-17-thr-1937-undertakings-in-the-economy.md)) *Veto:* **"let founded towns sit beside existing ones"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17a.md)* (veto window closes 18 Oct 10:01 UTC)
-- Same plan — **a founded guild takes its calling from its founder's strongest Reach.** *Veto:* **"founded guilds should have no trade"**.
-- Same plan — **a trade run pays a mortal at most once a day.** *Veto:* **"pay every trade run"**.
-- Same plan — **a lane a mortal claims counts as a lane they hold.** *Veto:* **"only lanes they opened or toll"**.
-- Same plan — **the undertaking builds come last**, after [mortal wealth](https://linear.app/threadbare/issue/THR-1936). *Veto:* **"build the founded-town ruler now"**.
+- [Undertakings in the economy](https://linear.app/threadbare/issue/THR-1937) — **a town a mortal founds goes on open ground near where they set out**, a guild takes its founder's strongest Reach, a trade run pays at most once a day, a claimed lane counts as held, and the undertaking builds come after [mortal wealth](https://linear.app/threadbare/issue/THR-1936). ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-17-thr-1937-undertakings-in-the-economy.md)) *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17a.md)*. Its veto window closes 18 Oct 10:01 UTC, minutes after this brief.
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 24 ready, one in progress.** [Map lenses II: Trouble and Trade](https://linear.app/threadbare/issue/THR-1898/map-lenses-ii-trouble-and-trade-and-the-plain-map-stops-drawing-trade) is built; [#2475](https://github.com/christianspliid-ui/threadbare/pull/2475) is set to merge itself once its checks pass. The builder takes the next job after that.
+**Backed up: 26 ready, one in progress.** The builder is working on [the Inspector in the game](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click) now. [A chapter's Play button answers](https://linear.app/threadbare/issue/THR-1976) (the main-map wall from the playtest) merged in [#2477](https://github.com/christianspliid-ui/threadbare/pull/2477) and is live.
 
-- New and high, waiting: [every army bleeds out within a week and almost none are raised again](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again), [the Inspector in the game](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click), and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- New from [cold playtest round 4](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-4.md): [two map spells cost nothing despite their price](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand), [Advanced World Setup starts a game with no First](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first), and [five small faults](https://linear.app/threadbare/issue/THR-1979/five-small-faults-from-cold-playtest-round-4-the-god-rails-cards-carry). The testers again named the first scenes with their mortal as the best part. Nothing there needs a decision from you.
+- High and waiting: [every army bleeds out within a week](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again) and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Held for your veto: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural) until 18 Oct 13:50 UTC, [hiring a free company](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays) until 19 Oct 01:35 UTC, and [encounters that broker an oath](https://linear.app/threadbare/issue/THR-1944/encounters-that-broker-an-oath-faction-unification-and-the-warlords) until 19 Oct 07:23 UTC.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site serves the latest main. Main's checks and the scheduled background jobs pass. One PR ([#2475](https://github.com/christianspliid-ui/threadbare/pull/2475)) is waiting on its checks. All 12 scheduled lanes are on time.
-- Engine speed: tick cost 175 ms/tick steady, 43% above the 7-day median (122, 135 rows since e6882c0f); top phase agent_decision, 617 agents. Name the merges between e6882c0f and 07a83918: git log --oneline --merges e6882c0f..07a83918. The same commit measured 111 ms an hour ago, so this is most likely the machine being busy with the builder's checks; the next hour's reading will tell. Executor work, not yours.
+- The live site serves the latest main. Main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time.
+- Engine speed: tick cost 164 ms/tick steady, 34% above the 7-day median (122, 136 rows since e6882c0f); top phase agent_decision, 617 agents. Name the merges between e6882c0f and 80b719a9: git log --oneline --merges e6882c0f..80b719a9. Second reading in a row above the line (175 an hour ago). The builder was running alongside both readings, so a busy machine may explain part of it. Executor work, not yours.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
 - The tidy-up job reports 553 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.

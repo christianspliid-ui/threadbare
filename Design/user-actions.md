@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-18 10:57 local (08:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-18 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-18: pressing Play on a chapter choice now moves the story on, once (the main-map wall from cold playtest round 4)** ([THR-1976](https://linear.app/threadbare/issue/THR-1976)). Merged via [#2477](https://github.com/christianspliid-ui/threadbare/pull/2477) and live.
 - **2026-10-18: the god rail puts Attention beside essence, your cards in the rail, and folds its rows (screen frame, second slice)** ([THR-1894](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand)). Merged via [#2474](https://github.com/christianspliid-ui/threadbare/pull/2474) and live.
 - **2026-10-18: the Ledger rail opens the screen frame, with the World-Soul heading the chronicle and unread chapters marked (screen frame, first slice)** ([THR-1893](https://linear.app/threadbare/issue/THR-1893/screen-frame-slice-1-the-ledger-rail-world-soul-heads-the-chronicle)). Merged via [#2473](https://github.com/christianspliid-ui/threadbare/pull/2473) and live.
 - **2026-10-18: the map gets a lens list, with a Threads lens that follows your mortals, and a Dominion pressure line (map lenses, first slice)** ([THR-1878](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and)). Merged via [#2472](https://github.com/christianspliid-ui/threadbare/pull/2472) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-18: one docked panel, the Inspector, now shows every place and person, with their Connections (the Inspector, first slice)** ([THR-1876](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and)). Merged via [#2468](https://github.com/christianspliid-ui/threadbare/pull/2468) and live.
 - **2026-10-18: hungry towns on your ground now pray to your god, one prayer a season, and fed towns can keep faith with you (prayers and the faithful, first slice)** ([THR-1935](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground)). Merged via [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463) and live.
 - **2026-10-17: dialogs now grow to fit before they scroll — four size tiers, the Ledger at the largest** ([THR-1820](https://linear.app/threadbare/issue/THR-1820/design-dialog-size-tiers-panels-grow-to-fit-before-they-truncate-or)). Merged via [#2467](https://github.com/christianspliid-ui/threadbare/pull/2467) and live.
-- **2026-10-17: mortals are now born with Means, and money encounters pay or cost it (mortal wealth, first slice)** ([THR-1936](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money)). Merged via [#2465](https://github.com/christianspliid-ui/threadbare/pull/2465) and live.
 
 ---
 
