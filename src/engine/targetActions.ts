@@ -284,9 +284,11 @@ interface FilterCounts {
  */
 /**
  * The pool a player cast is priced from and charged from (THR-1977): the card's own
- * sphere, else the god's primary. One resolver for every surface — the drawer slot,
- * the hand, the god rail, the moment act and the debug lever — so a card the hand
- * prices "Energy · 10" is charged 10 from Energy, never from no pool at all.
+ * sphere, else the god's primary. One resolver for every player surface — the drawer
+ * slot, the hand on the god rail, and the moment act — so a card the hand prices
+ * "Energy · 10" is charged 10 from Energy, never from no pool at all. (The debug
+ * bridge's cast lever is a dev lever that fires at list price and still charges only
+ * a card's own sphere.)
  */
 export function payingSphere(
   template: Pick<UnifiedActionTemplate, 'sphereAffinity'>,
