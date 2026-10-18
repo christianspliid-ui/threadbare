@@ -3431,7 +3431,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       goal: 'run three crates of untaxed salt to the mill buyer',
       risk: 'lose the salt money and end up tied up in the mill',
       won: 'ran the salt crates to the mill buyer and got paid',
-      lost: 'dropped the crates and their coin at the mill and ran for the road',
+      lost: 'dropped the crates and their coin and ran for the road',
       lostBadly: 'was robbed of every coin and left tied up in the mill',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
@@ -3957,7 +3957,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.barter_survival',
     stakes: {
       goal: 'trade ridge goods for food enough for the road',
-      risk: 'spend their coin and still run out of grain a day and a half short',
+      risk: 'spend their coin and still run out of grain on the road',
       won: 'reached the far settlement with grain to spare',
       lost: 'spent their coin and ran out of grain a day and a half short',
     },

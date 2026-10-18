@@ -68,7 +68,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.realm.tithe_demanded',
   stakes: {
     goal: 'make the collector take only the true tithe',
-    risk: 'pay the difference from their own purse, or leave the place owing more',
+    risk: 'pay the difference, or leave the place owing more',
     won: 'made the collector take only the true tithe',
     lost: 'met the tithe\'s difference out of their own purse',
     lostBadly: 'was marked for arguing, and the place owes more now',

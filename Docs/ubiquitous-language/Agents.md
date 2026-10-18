@@ -916,7 +916,7 @@ Code anchors: `src/types/graph.ts` (`'owes_favor'` / `OwesFavorEdgeProperties`, 
 **Also see:** `[[Agreement]]`, `[[Freehold]]`, `[[Work]]`, `[[Reputation]]`
 **Status:** canonical (seated by THR-1441, delegated seating 2026-09-11)
 
-The player word for what an actor can afford — the narrative face of the engine's `wealth`. Banked through `bankWealth` (`src/engine/wealth.ts`), the single funnel the active harvest, the passive tithe and the money encounters all write through. **Every mortal who makes choices is born with Means** (their walk of life, shifted by their home town's fortune), and a money encounter's outcome table pays or costs it by band through the `economy_shift` effect (THR-1936).
+The player word for what an actor can afford — the narrative face of the engine's `wealth`. Banked through `bankWealth` (`src/engine/wealth.ts`), the single funnel the active harvest, the passive tithe and the money encounters all write through. **Every mortal who makes choices is born with Means** (their walk of life, shifted by their home town's fortune), and a money encounter's outcome table pays or costs it by band through the `economy_shift` effect (THR-1936). A mortal's Means is also a **want**: the poorer (or greedier) they are, the more their decision board weighs paying work — an encounter whose outcome table pays them on a success, or an earning undertaking cell (THR-1952).
 
 **Always a tier word, never a number (Laws 4 and 13).** The quantity is real in the engine and the player has no instrument that reads it, so every surface says a band. A numeral on screen is the defect, not a precision improvement — the same engine-term/narrative-term split `[[Freehold]]`/`'holding'` and `[[Group]]`/`[[Company]]` already use.
 

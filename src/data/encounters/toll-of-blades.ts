@@ -527,9 +527,9 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
   id: 'encounter.border.toll_of_blades',
   stakes: {
     goal: 'keep their pack and outlast the war column',
-    risk: 'pay the column\'s toll and go down in the mud as it marches past',
+    risk: 'pay the column\'s toll and go down in the mud',
     won: 'kept their pack and outlasted the war column',
-    lost: 'sat down in the verge, a little poorer, as the column stepped around',
+    lost: 'sat in the verge, a little poorer, as the column passed',
     lostBadly: 'went down in the mud and woke with the column gone',
   },
   // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).

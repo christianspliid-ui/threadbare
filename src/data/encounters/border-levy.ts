@@ -73,7 +73,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.realm.border_levy',
   stakes: {
     goal: 'get past the rope at the crown\'s own figure',
-    risk: 'be dragged off the road and stripped of their coin by the levy men',
+    risk: 'be stripped of their coin by the levy men',
     won: 'got past the rope at the crown\'s own figure',
     lost: 'paid the sergeant\'s figure to get past the rope',
     lostBadly: 'was dragged off the road and stripped by the levy men',

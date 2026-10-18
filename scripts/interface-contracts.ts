@@ -5150,6 +5150,30 @@ export const CONTRACTS: readonly Contract[] = [
     ],
   },
   {
+    // THR-1952 (mortal wealth S2) — Means becomes a want. Paying work is derived from
+    // the encounters' own outcome tables (Law 42), so the content row is what makes an
+    // encounter count; the multiplier weighs what is chosen, never the odds (Law 20).
+    id: 'mortal-means-steers-board',
+    producerSystem: ECONOMY,
+    consumerSystem: AMBITIONS,
+    intent:
+      "A poor or greedy mortal leans toward work that pays: the decision board multiplies an encounter whose outcome table pays its actor, and an earning undertaking cell, by the mortal's Means want; a Wealthy mortal who is not greedy turns away from it.",
+    ulTerms: ['Means'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'axiologicalProfile', 'meansMultiplier', 'meansWant'],
+      module: 'src/engine/mortalMeans.ts',
+    },
+    writeSites: [
+      'src/engine/mortalMeans.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    readSites: [
+      'src/engine/decisionBoard.ts',
+      'src/engine/phaseAgentDecision.ts',
+    ],
+  },
+  {
     id: 'yield-is-a-verb',
     producerSystem: AMBITIONS,
     consumerSystem: ECONOMY,
