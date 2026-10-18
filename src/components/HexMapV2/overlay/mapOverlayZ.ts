@@ -18,5 +18,7 @@ export const MAP_OVERLAY_Z = {
   AGENT_PULSE: 11,
   REGION_LABELS: 12,
   LOCATION_LABELS: 13,
+  /** THR-1878 — Threads lens name tags: above place names (a place name yields), below the tooltip. */
+  LENS_NAME_TAGS: 14,
   HEX_TOOLTIP: 15,
 } as const;

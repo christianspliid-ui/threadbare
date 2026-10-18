@@ -17,6 +17,7 @@
  */
 import { createContext, useContext, useMemo, useReducer } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import type { MapLensId } from '../../../data/map-lenses';
 
 export interface GameScreenFlags {
   /** Read the Threads panel (THR-603 family). */
@@ -31,6 +32,19 @@ export interface GameScreenFlags {
   doomDetailOpen: boolean;
   /** Mandate detail. */
   mandateDetailOpen: boolean;
+  /**
+   * THR-1878 (plan § D2) — the map lens that is on, or none. Null at the start of
+   * every run, kept across view changes. Radio, not stack: `toggleLens` turns one
+   * on and any other off. The key hook, the lens bar and the debug bridge write it;
+   * GameMap reads it.
+   */
+  activeLens: MapLensId | null;
+  /**
+   * THR-1878 (D2) — two dims never stack. Set by the Stage (THR-1877) while a moment
+   * dims the map, and by the arming flow (THR-1876) if arming lights the map. While
+   * true the lens layer is not drawn; the bar keeps the lens pressed and says why.
+   */
+  lensSuppressed: boolean;
 }
 
 export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
@@ -40,6 +54,8 @@ export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
   codexOpen: false,
   doomDetailOpen: false,
   mandateDetailOpen: false,
+  activeLens: null,
+  lensSuppressed: false,
 };
 
 type FlagKey = keyof GameScreenFlags;
@@ -66,6 +82,13 @@ export interface GameScreenStore {
   setCodexOpen: Dispatch<SetStateAction<boolean>>;
   setDoomDetailOpen: Dispatch<SetStateAction<boolean>>;
   setMandateDetailOpen: Dispatch<SetStateAction<boolean>>;
+  setActiveLens: Dispatch<SetStateAction<MapLensId | null>>;
+  setLensSuppressed: Dispatch<SetStateAction<boolean>>;
+}
+
+/** The one-at-a-time rule: pressing the lens that is on turns it off; any other replaces it. */
+export function toggleLensValue(prev: MapLensId | null, id: MapLensId): MapLensId | null {
+  return prev === id ? null : id;
 }
 
 /** Owned by GameView: one reducer, setters stable for the session. */
@@ -78,6 +101,8 @@ export function useGameScreenStore(): GameScreenStore {
     setCodexOpen: (value: SetStateAction<boolean>) => dispatch({ type: 'set', key: 'codexOpen', value }),
     setDoomDetailOpen: (value: SetStateAction<boolean>) => dispatch({ type: 'set', key: 'doomDetailOpen', value }),
     setMandateDetailOpen: (value: SetStateAction<boolean>) => dispatch({ type: 'set', key: 'mandateDetailOpen', value }),
+    setActiveLens: (value: SetStateAction<MapLensId | null>) => dispatch({ type: 'set', key: 'activeLens', value }),
+    setLensSuppressed: (value: SetStateAction<boolean>) => dispatch({ type: 'set', key: 'lensSuppressed', value }),
   }), []);
   return useMemo(() => ({ state, ...setters }), [state, setters]);
 }
@@ -96,6 +121,8 @@ const INERT_STORE: GameScreenStore = {
   setCodexOpen: noop,
   setDoomDetailOpen: noop,
   setMandateDetailOpen: noop,
+  setActiveLens: noop,
+  setLensSuppressed: noop,
 };
 
 const GameScreenStateContext = createContext<GameScreenStore>(INERT_STORE);

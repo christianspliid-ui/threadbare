@@ -14,7 +14,7 @@ import { mapCompaniesSelector } from './map/companies';
 import { mapActivitySelector } from './map/activityIcons';
 import { mapPlacesSelector } from './map/places';
 import { mapArmiesAndBattlesSelector } from './map/armiesAndBattles';
-import { lensViewSelector } from './lenses/lensView';
+import { lensViewSelector, hexLensViewSelector } from './lenses/lensView';
 import { mapRealmInkSelector } from './map/realmInk';
 import { subjectPageSelector } from './subjects/subjectPage';
 
@@ -32,6 +32,7 @@ export const VIEW_SELECTORS: readonly AnyViewSelector[] = [
   hexContentsIndexSelector,
   hexContentsSelector,
   lensViewSelector,
+  hexLensViewSelector,
   subjectPageSelector,
 ];
 

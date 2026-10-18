@@ -549,6 +549,26 @@ export interface DebugDominionLensResult {
   drops: number;
 }
 
+/** Result of `setMapLens(id)`. THR-1878 */
+export type DebugSetMapLensResult = { active: string | null } | { error: string };
+
+/** Result of `getMapLens()`. THR-1878 § Debug inspection */
+export interface DebugMapLensResult {
+  /** The lens that is on (a MAP_LENSES id), or null. */
+  active: string | null;
+  /** True while a moment or an armed card holds the lens layer off (the button stays pressed). */
+  suppressed: boolean;
+  /** Hexes in focus: lit hexes for a hex lens, turf hexes for Dominion. */
+  lit: number;
+  /** Lens marks by MAP_MARKERS kind (hex lenses). */
+  marks: Record<string, number>;
+  /** Mark kinds with no MAP_MARKERS row (drawn as the fallback badge). */
+  markFallbacks: string[];
+  legendHead: string | null;
+  /** The lens's empty line when it has nothing to light, else null. */
+  emptyLine: string | null;
+}
+
 /** Result of `getDominionHex(col, row)`. THR-1750 */
 export interface DebugDominionHexResult {
   /** 'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign' */
@@ -2593,6 +2613,18 @@ export interface DebugBridge {
   getDominionLens: () => Promise<DebugDominionLensResult | null>;
   /** THR-1750 — a hex's projected band, the place that lent it, and frontier membership. Null for water or before a game. */
   getDominionHex: (col: number, row: number) => Promise<DebugDominionHexResult | null>;
+  /** THR-1878 — turn a map lens on by id ('dominion', 'threads') or off (null). An unknown id returns `{ error }` naming the valid ids and traces `ui_map_lens_changed` with source `unknown_id`. */
+  setMapLens: (id: string | null) => Promise<DebugSetMapLensResult>;
+  /** THR-1878 — the lens that is on, its suppression, lit hexes, marks by kind, fallbacks, legend head and empty line. Null before a game. */
+  getMapLens: () => Promise<DebugMapLensResult | null>;
+  /** THR-1878 — hold the lens layer off as the Stage would (`lensSuppressed`, D2). Resolves to the new value. */
+  setLensSuppressed: (on: boolean) => Promise<boolean>;
+  /** @internal GameView registers the map lens bridge here (THR-1878). */
+  _registerMapLensBridge: (bridge: {
+    set: (id: string | null) => DebugSetMapLensResult;
+    get: () => DebugMapLensResult;
+    setSuppressed: (on: boolean) => boolean;
+  }) => void;
   /** THR-1902 — the map's chrome state (`fog`: what uncharted land shows). Null before the map mounts. */
   getMapChrome: () => Promise<DebugMapChromeResult | null>;
   /** @internal HexMapV2 registers the map-chrome bridge here (THR-1902). */

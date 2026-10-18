@@ -140,7 +140,23 @@ export interface UiMapCameraJumpTrace extends TraceBase {
   summary: string;
 }
 
-export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace | StageTrace | UiMapCameraJumpTrace;
+/** What turned a map lens on, off or over (THR-1878). */
+export type MapLensChangeSource = 'key' | 'bar' | 'debug' | 'unknown_id';
+
+/**
+ * Emitted when a map lens turns on, off, or switches (THR-1878, plan § Tracing).
+ * `to: null` with source `unknown_id` is an id that reached the host with no
+ * `MAP_LENSES` row: nothing is drawn (Law 58's plain fallback).
+ */
+export interface UiMapLensChangedTrace extends TraceBase {
+  category: 'ui_map_lens_changed';
+  from: string | null;
+  to: string | null;
+  source: MapLensChangeSource;
+  summary: string;
+}
+
+export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace | StageTrace | UiMapCameraJumpTrace | UiMapLensChangedTrace;
 
 /** The categories this module registers, for the vocabulary gate. */
-export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback', 'ui_stage', 'ui_map_camera_jump'] as const;
+export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback', 'ui_stage', 'ui_map_camera_jump', 'ui_map_lens_changed'] as const;

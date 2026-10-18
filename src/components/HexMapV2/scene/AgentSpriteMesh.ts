@@ -105,7 +105,16 @@ export interface AgentSpriteGroup {
   animationTargets: Map<string, AgentAnimationTarget>;
   /** Disposes all GPU resources (materials + textures) */
   dispose: () => void;
+  /**
+   * THR-1878 — agents a lens draws one step up (the Threads lens's medallions):
+   * their marker scales by THREADS_LENS_MEDALLION_SCALE. Set by the host from the
+   * lens layer; empty with no lens on.
+   */
+  lensStepIds?: ReadonlySet<string>;
 }
+
+/** "Medallions grow one step" under the Threads lens (THR-1830 § 6). NFP #1. */
+export const THREADS_LENS_MEDALLION_SCALE = 1.25;
 
 // ── Pre-built texture cache ───────────────────────────────────────────────────
 
@@ -359,7 +368,7 @@ export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier, zo
   const band = ZOOM_BAND_OF_TIER[tier];
   const k = zoomK !== undefined && zoomK > 0 ? zoomK : BAND_REFERENCE_K[band];
 
-  for (const [, entry] of group.spriteMap) {
+  for (const [agentId, entry] of group.spriteMap) {
     const px = markerSizePx(entry.kind, band);
     if (px === null) {
       entry.sprite.visible = false;
@@ -375,7 +384,8 @@ export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier, zo
         : entry.materials.portrait;
     entry.sprite.visible = true;
 
-    const scale = px / k;
+    const step = group.lensStepIds?.has(agentId) ? THREADS_LENS_MEDALLION_SCALE : 1;
+    const scale = (px * step) / k;
     entry.sprite.scale.set(scale, scale, 1);
     entry.sprite.userData.baseScale = scale;
 

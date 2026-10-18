@@ -14,11 +14,18 @@ import { DOMINION_BAND_WORDS, DOMINION_BAND_LINES } from '../data/dominion-conte
 import {
   DOMINION_TEND_LINES,
   DOMINION_HEX_LINE,
+  DOMINION_PRESSURE_LINE,
+  DOMINION_PRESSURE_LINE_MIN,
   DOMINION_TOOLTIP_IDS,
   dominionBandTooltipId,
 } from '../data/dominion-ui-content';
 import { dominionOf, buildTendingIndex, isTended, placeOf, type TendedBy } from './dominion';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
+import { SPHERE_NAMES } from '../types';
+import { DOMINION_OPPOSITION_WEIGHT } from '../data/dominion-content';
+import { MAX_SPHERE_SCORE, type SphereAffinity } from '../types/sphereAffinity';
+import { SPHERE_OPPOSITES } from './cosmology';
+import { isValidSphereAffinity } from './sphereAffinity';
 import { frontierEdges, isTurfBand, type DominionHexProjection, type DominionDropBadge, type HexKey } from './dominionProjection';
 
 export interface DominionSheetVM {
@@ -208,13 +215,64 @@ export interface DominionHexLineVM {
   placeId: string | null;
   placeName: string | null;
   tooltipId: string;
+  /**
+   * THR-1878 (THR-1830 § 5) — why the band here may move: "Pressed by a power of
+   * Entropy; your Life holds here." Null when no opposing pole weighs enough at the
+   * lending place, or there is no lending place, no god, or no scores. Additive:
+   * callers that predate it ignore it.
+   */
+  pressure?: string | null;
 }
 
-/** The hex-tooltip line while the lens is on. Null for water or an unknown hex. */
+function sphereWord(s: SphereName): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * The pressure clause for a lending place (plan THR-1878 § D4): over the spheres the
+ * god holds that have an opposite, weigh the opposing pole by Dominion's own
+ * opposition weight; take the heaviest (ties: the god's primary sphere, then sphere
+ * order); below DOMINION_PRESSURE_LINE_MIN there is no clause.
+ */
+export function dominionPressureClause(
+  graph: WorldGraph,
+  placeId: string | null,
+  ascendantId: string | null | undefined,
+): string | null {
+  if (!placeId || !ascendantId) return null;
+  try {
+    const bag = graph.getNode(placeId)?.properties.sphereAffinity;
+    if (!isValidSphereAffinity(bag)) return null;
+    const scores = (bag as SphereAffinity).scores;
+    const points = getSpherePoints(graph.getNode(ascendantId)?.properties);
+    const primary = rankSpherePoints(points)[0] ?? null;
+    let best: { g: SphereName; w: number } | null = null;
+    const order = primary ? [primary, ...SPHERE_NAMES.filter(s => s !== primary)] : [...SPHERE_NAMES];
+    for (const g of order) {
+      if ((points[g] ?? 0) <= 0) continue;
+      const opp = SPHERE_OPPOSITES[g];
+      if (!opp) continue;
+      const w = (DOMINION_OPPOSITION_WEIGHT[g] ?? 0) * Math.max(0, scores[opp] ?? 0) / MAX_SPHERE_SCORE;
+      if (!best || w > best.w) best = { g, w };
+    }
+    if (!best || best.w < DOMINION_PRESSURE_LINE_MIN) return null;
+    const opp = SPHERE_OPPOSITES[best.g] as SphereName;
+    const template = (scores[best.g] ?? 0) >= (scores[opp] ?? 0) ? DOMINION_PRESSURE_LINE.holds : DOMINION_PRESSURE_LINE.giving;
+    return template.replace('{opposite}', sphereWord(opp)).replace('{sphere}', sphereWord(best.g));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The hex-tooltip line while the lens is on. Null for water or an unknown hex.
+ * With `ascendantId`, the line carries the pressure clause (THR-1878).
+ */
 export function dominionHexLineVM(
   graph: WorldGraph,
   projection: DominionHexProjection | null,
   key: HexKey,
+  ascendantId?: string | null,
 ): DominionHexLineVM | null {
   const band = projection?.hexBand.get(key);
   if (!projection || !band) return null;
@@ -223,9 +281,13 @@ export function dominionHexLineVM(
   const placeName = placeId ? graph.getNode(placeId)?.name || null : null;
   if (!placeId || !placeName) {
     const text = DOMINION_HEX_LINE.terrain.replace('{band}', word);
-    return { band, text, prefix: text, placeId: null, placeName: null, tooltipId: dominionBandTooltipId(band) };
+    return { band, text, prefix: text, placeId: null, placeName: null, tooltipId: dominionBandTooltipId(band), ...(ascendantId === undefined ? {} : { pressure: null }) };
   }
   const text = DOMINION_HEX_LINE.byPlace.replace('{band}', word).replace('{place}', placeName);
   const prefix = DOMINION_HEX_LINE.byPlace.split('{place}')[0].replace('{band}', word);
-  return { band, text, prefix, placeId, placeName, tooltipId: dominionBandTooltipId(band) };
+  const pressure = ascendantId === undefined ? undefined : dominionPressureClause(graph, placeId, ascendantId);
+  return {
+    band, text, prefix, placeId, placeName, tooltipId: dominionBandTooltipId(band),
+    ...(pressure === undefined ? {} : { pressure }),
+  };
 }

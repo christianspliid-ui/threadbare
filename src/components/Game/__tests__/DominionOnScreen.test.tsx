@@ -60,9 +60,9 @@ describe('CostPips ghost and dear pips (THR-1750 § U6)', () => {
 });
 
 describe('MapLensSwitch (THR-1750 § U2)', () => {
-  it('off: one Dominion button with its key, no legend; click toggles', () => {
+  it('off: the Dominion button with its key, no legend; click turns it on', () => {
     const onToggle = vi.fn();
-    render(<MapLensSwitch active={null} onToggle={onToggle} bandColors={{}} />);
+    render(<MapLensSwitch active={null} onChange={onToggle} bandColors={{}} />);
     const btn = screen.getByTestId('map-lens-dominion');
     expect(btn.getAttribute('aria-pressed')).toBe('false');
     expect(btn.textContent).toBe('Dominion1');
@@ -72,7 +72,7 @@ describe('MapLensSwitch (THR-1750 § U2)', () => {
   });
 
   it('on: pressed, with the legend lines and five band words', () => {
-    render(<MapLensSwitch active="dominion" onToggle={() => {}} bandColors={{}} />);
+    render(<MapLensSwitch active="dominion" onChange={() => {}} bandColors={{}} />);
     expect(screen.getByTestId('map-lens-dominion').getAttribute('aria-pressed')).toBe('true');
     const legend = screen.getByTestId('map-lens-legend');
     for (const line of DOMINION_LEGEND_LINES) expect(legend.textContent).toContain(line);
