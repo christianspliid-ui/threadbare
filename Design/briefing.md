@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 17:00 local (15:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 17:58 local (15:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,20 +37,22 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ruling — **the hiring realm pays, feeds and directs the company.** *Veto:* **"vassals should always fight their lord's wars"**.
 - Same ruling — **a company leaves when the pay stops or a richer lord outbids.** *Veto:* **"a hired company should serve out its term"**.
 - Same ruling — **a realm holding two hired companies counts as a Crown.** *Veto:* **"hired companies should not make a Crown"**. [The build plan](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays) waits until 19 Oct 01:35 UTC.
+- [The god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) — **your god hears one prayer at a time, a season apart.** When several hungry towns on your ground could pray on the same day, the hungriest is heard first and the others wait. One test world produced 19 prayers in 90 days; this caps it at 12, one each season. ([plan change](https://github.com/christianspliid-ui/threadbare/pull/2464)) *Veto:* **"let every hungry town pray at once"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17d.md)* (veto window ends today 19:29 UTC)
+- Same ruling — **a world with no hungry town on your ground hears no prayers**, and that counts as correct, not broken. *Veto:* **"there should always be someone praying"**.
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 25 ready, 1 in progress.** The builder took [the screen frame's top bar and "Needs you"](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the) (High) right after the orchestrator promoted it. Since the last brief, [the map spells now charge their price](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand) ([#2481](https://github.com/christianspliid-ui/threadbare/pull/2481)) and [every new game starts with a First](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first) ([#2483](https://github.com/christianspliid-ui/threadbare/pull/2483)) — both live.
+**Backed up: 25 ready, 1 in progress.** The builder has been working on [the screen frame's top bar and "Needs you"](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the) (High) since 14:31 UTC and was still active a minute before this brief. The orchestrator also promoted [Inspector S4: delete the old detail screens](https://linear.app/threadbare/issue/THR-1912/inspector-s4-delete-the-retired-detail-surfaces-once-their-fields-have) (High). Nothing new merged this hour.
 
 - Held for veto: [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows) (High) until 19 Oct 13:50 UTC; [the First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read) until 19 Oct 10:41 UTC.
-- High and waiting: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- High and waiting: [Inspector S4](https://linear.app/threadbare/issue/THR-1912/inspector-s4-delete-the-retired-detail-surfaces-once-their-fields-have); [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
 - The live site serves the latest commit on main (2db65f97); main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time, and the builder is working normally.
-- Engine speed: tick cost 465 ms/tick steady, 275% above the 7-day median (124, 135 rows since 8f9853c2); top phase agent_decision, 624 agents. Name the merges between 8f9853c2 and 2db65f97: git log --oneline --merges 8f9853c2..2db65f97. The only new merge since the 169 ms reading an hour ago is a title-screen change, and the builder was working on the same machine during the measurement, so this jump is probably machine load; the earlier run of readings (161–183) is still above the line. Executor work, not yours.
+- Engine speed: tick cost 212 ms/tick steady, 71% above the 7-day median (124, 136 rows since 8f9853c2); top phase agent_decision, 624 agents. Name the merges between 8f9853c2 and 2db65f97: git log --oneline --merges 8f9853c2..2db65f97. Same commit as last hour's 465 ms reading, so that spike was machine load (the builder was running then and now); the 161–212 ms level is still well above the line. Executor work, not yours.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That was overnight and into the weekend, so it is not a separate ask; the lead ask covers it.
-- The tidy-up job (last run 16:40) reports 554 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job (last run 17:40) reports 555 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
