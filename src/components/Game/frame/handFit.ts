@@ -13,12 +13,12 @@
  * ─── Constants ───────────────────────────────────────────────────
  * | HAND_FIT_HYSTERESIS_PX | 24 | Room needed beyond the exact fit before grouped returns to whole |
  * | HAND_REST_OPACITY | 0.45 | The hand's rows while a moment is open |
- * | HAND_ROW_EST_PX | 62 | A two-line row at the 16 px floor, before a row has been measured |
+ * | HAND_ROW_EST_PX | 52 | A two-line row at the 16 px floor (1.25 line height), before a row has been measured |
  * | HAND_ROW_GAP_PX | 6 | The gap between rows |
  */
 export const HAND_FIT_HYSTERESIS_PX = 24;
 export const HAND_REST_OPACITY = 0.45;
-export const HAND_ROW_EST_PX = 62;
+export const HAND_ROW_EST_PX = 52;
 export const HAND_ROW_GAP_PX = 6;
 
 export type HandFitMode = 'whole' | 'grouped';

@@ -276,9 +276,14 @@ export const IA_SURFACES: IASurface[] = [
         "state_path": "essencePool",
         "reader": "AscendantBar",
         "visible_when": "always"
+      },
+      {
+        "state_path": "unlockedActionIds",
+        "reader": "HandSection",
+        "visible_when": "always"
       }
     ],
-    "notes": "Player identity bar. Click opens AscendantSheet.\n",
+    "notes": "The god rail (THR-1894), drawn from GOD_RAIL_SECTIONS: identity (the name opens AscendantSheet; \"Your First\" after the bond), essence with Attention under it, the hand headed \"Your cards\" (Move, Investiture and every revealed god card at its par price; whole while it fits, grouped by paying sphere at the rail's limit; resting while a moment is open; a press opens the card's Codex entry), and the folded rows Reaches, Mandate, Covenants, Signatures and Hooks. State via __DEBUG.getFrameState().godRail and getView('godRail').\n",
     "openUrl": "/?view=game&seeded"
   },
   {
@@ -348,7 +353,7 @@ export const IA_SURFACES: IASurface[] = [
         "visible_when": "always"
       }
     ],
-    "notes": "Attention tier capacity indicator (THR-19 / attention-tier-model).\n",
+    "notes": "Attention tier capacity indicator (THR-19 / attention-tier-model). Sits in the god rail under essence since THR-1894 (it left the top bar).\n",
     "openUrl": "/?view=game&seeded"
   },
   {

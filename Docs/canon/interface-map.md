@@ -457,6 +457,12 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
+2026-10-18 by Claude Code (THR-1894 — the god rail's view model). **Read sites only, no new
+contract:** `src/engine/views/godRail.ts` now reads `essencePool` (the essence block and the hand's
+payable check, row `essence-spend-moves-the-bar`) and `unlockedActionIds` through `isActionRevealed`
+(the hand, row `offering-take-up-unlocks-card`) — reads the drawer and the ascendant bar already
+made. No cross-system write is added.
+
 2026-10-14 by Claude Code (THR-1811 — god cards carry their progression as data). **Added** four
 🟢 LIVE rows: `offering-take-up-unlocks-card` and `rung-gift-unlocks-key` (Ascendant Beats &
 Progression → Essence & Divine Economy: the offering and the rung gifts write the one

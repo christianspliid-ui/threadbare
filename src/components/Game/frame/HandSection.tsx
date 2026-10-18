@@ -97,11 +97,12 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'stretch',
-        gap: 2,
+        gap: 0,
         minHeight: 24,
+        lineHeight: 1.25,
         width: '100%',
         textAlign: 'left',
-        padding: '6px 8px 6px 10px',
+        padding: '4px 8px 4px 10px',
         background: armed ? 'var(--bg-raised)' : 'transparent',
         border: armed ? '1px solid var(--border-accent)' : '1px solid transparent',
         borderLeft: `3px solid ${tint}`,
@@ -110,6 +111,7 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
         opacity: card.payable ? 1 : 0.6,
       }}
     >
+      {/* TODO(THR-1975): the full card face on hover (HoverCard + CardFace); the description tooltip is the interim. */}
       <Tooltip label={card.name} desc={card.description} block focusable={false}>
         <span
           style={{

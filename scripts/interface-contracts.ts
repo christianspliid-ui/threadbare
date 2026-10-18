@@ -1942,7 +1942,7 @@ export const CONTRACTS: readonly Contract[] = [
       'A spend visibly moves the pool it drew from (THR-1607, Law 47). `commitPlayerCast` deducts a cast\'s price from `GameState.essencePool[sphere]`; `selectEssenceRows` reads the pool in a fixed order (identity spheres, then canonical — never by level, so a spend never reorders the list) and `EssenceBlock` draws each row against `ESSENCE_BAR_CEILING` (the starting pool) with its whole-number balance and a delta-cluster flash after a spend. Before this the bar filled against `/10` while pools start at fifty, so no spend ever moved it.',
     mechanism: { kind: 'node-prop', symbols: ['essencePool', 'selectEssenceRows'] },
     writeSites: ['src/engine/playerCastDispatch.ts'],
-    readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/components/Game/ascendant-bar/AscendantBar.tsx'],
+    readSites: ['src/components/Game/ascendant-bar/selectors.ts', 'src/components/Game/ascendant-bar/AscendantBar.tsx', 'src/engine/views/godRail.ts'],
   },
   {
     id: 'essence-movement-explains-the-bar',
@@ -4475,7 +4475,7 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Ascendant Beat', 'Offering'],
     mechanism: { kind: 'function', symbols: ['unlockedActionIds'], module: 'src/engine/ascendantBeat.ts' },
     writeSites: ['src/engine/ascendantBeat.ts'],
-    readSites: ['src/engine/actionUnlock.ts', 'src/engine/targetActions.ts', 'src/engine/__tests__/godProgression.test.ts'],
+    readSites: ['src/engine/actionUnlock.ts', 'src/engine/targetActions.ts', 'src/engine/views/godRail.ts', 'src/engine/__tests__/godProgression.test.ts'],
     verifiedLive: {
       date: '2026-10-14',
       evidence:
