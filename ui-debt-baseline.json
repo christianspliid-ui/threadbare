@@ -1,7 +1,7 @@
 {
   "rows": {
     "colour-fn": {
-      "total": 305,
+      "total": 303,
       "perFile": {
         "src/components/Ascendant/AscendantSelection.tsx": 2,
         "src/components/Cosmology/CosmologyPanel.tsx": 2,
@@ -20,7 +20,6 @@
         "src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx": 1,
         "src/components/Game/EncounterVeil.tsx": 14,
         "src/components/Game/FactionSheet.tsx": 17,
-        "src/components/Game/frame/LedgerRail.tsx": 1,
         "src/components/Game/HexChronicle.tsx": 1,
         "src/components/Game/HexPoiPanel.tsx": 1,
         "src/components/Game/InterventionConfirm.tsx": 1,
@@ -35,7 +34,7 @@
         "src/components/Game/SettingsPanel.tsx": 11,
         "src/components/Game/StorySoFarPanel.tsx": 1,
         "src/components/Game/ThreadsPanel.tsx": 5,
-        "src/components/HexMapV2/chrome/MapLensSwitch.tsx": 3,
+        "src/components/HexMapV2/chrome/MapLensSwitch.tsx": 2,
         "src/components/HexMapV2/HexV2View.tsx": 3,
         "src/components/HexMapV2/interaction/HexTooltip.tsx": 4,
         "src/components/MeetTheFirst/BondBeat.tsx": 4,
@@ -69,7 +68,7 @@
       }
     },
     "colour-hex": {
-      "total": 370,
+      "total": 367,
       "perFile": {
         "src/components/AgentInfoCard/AgentInfoCard.tsx": 6,
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
@@ -94,7 +93,6 @@
         "src/components/Game/EncounterLog.tsx": 7,
         "src/components/Game/EventLog.tsx": 1,
         "src/components/Game/FactionSheet.tsx": 18,
-        "src/components/Game/frame/LedgerRail.tsx": 2,
         "src/components/Game/GameView.tsx": 1,
         "src/components/Game/HarvestScreen.tsx": 4,
         "src/components/Game/HexBreadcrumb.tsx": 33,
@@ -144,12 +142,11 @@
         "src/components/shared/SphereIcon.tsx": 1,
         "src/components/StartPage/StartPage.tsx": 1,
         "src/components/ThreadingRite/ThreadingRite.tsx": 3,
-        "src/components/UI/MagicGlowTiles.tsx": 52,
-        "src/components/WorldSoulIndicator.tsx": 1
+        "src/components/UI/MagicGlowTiles.tsx": 52
       }
     },
     "display-face-small": {
-      "total": 78,
+      "total": 77,
       "perFile": {
         "src/components/Game/AgentIntelligencePanel.tsx": 2,
         "src/components/Game/AgentProfileModal.tsx": 2,
@@ -172,7 +169,6 @@
         "src/components/Game/StorySoFarPanel.tsx": 1,
         "src/components/Game/ThreadDetailView.tsx": 8,
         "src/components/Game/ThreadsPanel.tsx": 1,
-        "src/components/HexMapV2/chrome/MapLensSwitch.tsx": 1,
         "src/components/HexMapV2/overlay/RegionLabelOverlay.tsx": 2,
         "src/components/shared/CardFace.tsx": 2,
         "src/components/shared/DetailModal.tsx": 4,
@@ -205,7 +201,7 @@
       }
     },
     "glyph-icon": {
-      "total": 159,
+      "total": 152,
       "perFile": {
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
         "src/components/Cosmology/CosmologyPanel.tsx": 1,
@@ -226,7 +222,6 @@
         "src/components/Game/EncounterLog.tsx": 2,
         "src/components/Game/EncounterVeil.tsx": 6,
         "src/components/Game/FactionSheet.tsx": 3,
-        "src/components/Game/frame/LedgerRail.tsx": 1,
         "src/components/Game/GameView/GameViewTopBar.tsx": 2,
         "src/components/Game/GuildQuestPanel.tsx": 1,
         "src/components/Game/HexBreadcrumb.tsx": 1,
@@ -251,7 +246,6 @@
         "src/components/Game/tabs/OverviewTab.tsx": 2,
         "src/components/Game/ThreadDetailView.tsx": 3,
         "src/components/Game/ThreadsPanel.tsx": 2,
-        "src/components/Game/WorldPulse.tsx": 6,
         "src/components/HexMapV2/interaction/HexTooltip.tsx": 2,
         "src/components/ruins/PlaceOfPowerInspector.tsx": 1
       }
@@ -270,15 +264,13 @@
       }
     },
     "graph-query-in-ui": {
-      "total": 160,
+      "total": 147,
       "perFile": {
         "src/components/AgentInfoCard/AgentInfoCard.tsx": 5,
         "src/components/Game/ArmySheet.tsx": 2,
         "src/components/Game/ArtifactSheet.tsx": 3,
         "src/components/Game/ascendant-bar/HooksBlock.tsx": 5,
-        "src/components/Game/ascendant-bar/selectors.ts": 4,
         "src/components/Game/cameraInteractionGate.ts": 2,
-        "src/components/Game/ChapterLedger.tsx": 2,
         "src/components/Game/encounter-stage/adapters/buildGateDutyEncounterStageModel.ts": 5,
         "src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts": 3,
         "src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts": 2,
@@ -291,7 +283,6 @@
         "src/components/Game/FactionSheet.tsx": 5,
         "src/components/Game/GameView.tsx": 24,
         "src/components/Game/GameView/GameViewTopBar.tsx": 1,
-        "src/components/Game/GuildQuestPanel.tsx": 3,
         "src/components/Game/HexChronicle.tsx": 3,
         "src/components/Game/HexDetailView.tsx": 5,
         "src/components/Game/hooks/useAgentInteraction.ts": 8,
@@ -301,14 +292,12 @@
         "src/components/Game/hooks/useViewNavigation.ts": 1,
         "src/components/Game/hosts/StageHost.tsx": 1,
         "src/components/Game/lair/buildLairMonsterCardModel.ts": 5,
-        "src/components/Game/LocationProfileModal.tsx": 3,
+        "src/components/Game/LocationProfileModal.tsx": 1,
         "src/components/Game/momentCardModel.ts": 5,
         "src/components/Game/NotablesPanel.tsx": 4,
         "src/components/Game/PilgrimWayLine.tsx": 1,
         "src/components/Game/tabs/OverviewTab.tsx": 1,
         "src/components/Game/ThreadDetailView.tsx": 3,
-        "src/components/Game/WorldPulse.tsx": 1,
-        "src/components/Game/worldPulseCount.ts": 1,
         "src/components/HexMapV2/scene/ArmyLayer.ts": 4,
         "src/components/HexMapV2/scene/BattleIndicatorLayer.ts": 1,
         "src/components/MeetTheFirst/MeetTheFirstFlow.tsx": 1,
@@ -339,7 +328,7 @@
       }
     },
     "literal-font-size": {
-      "total": 173,
+      "total": 172,
       "perFile": {
         "src/components/AgentInfoCard/AgentInfoCard.tsx": 1,
         "src/components/Game/ascendant-bar/ActionsBlock.tsx": 13,
@@ -364,7 +353,6 @@
         "src/components/Game/OmenIndicator.tsx": 1,
         "src/components/Game/ScryOverlay.tsx": 1,
         "src/components/Game/ThreadsPanel.tsx": 4,
-        "src/components/Game/WorldPulse.tsx": 1,
         "src/components/HexMapV2/overlay/RegionLabelOverlay.tsx": 1,
         "src/components/MeetTheFirst/BondBeat.tsx": 7,
         "src/components/MeetTheFirst/FormativeTestBeat.tsx": 4,
@@ -410,14 +398,13 @@
       }
     },
     "monospace": {
-      "total": 6,
+      "total": 1,
       "perFile": {
-        "src/components/Game/WorldPulse.tsx": 5,
         "src/components/HexMapV2/interaction/HexTooltip.tsx": 1
       }
     },
     "radius-literal": {
-      "total": 297,
+      "total": 293,
       "perFile": {
         "src/components/AgentInfoCard/AgentInfoCard.tsx": 1,
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
@@ -447,7 +434,7 @@
         "src/components/Game/chronicle/EventBlock.tsx": 1,
         "src/components/Game/chronicle/FactionEntry.tsx": 1,
         "src/components/Game/chronicle/SoulCard.tsx": 1,
-        "src/components/Game/ChroniclePanel.tsx": 2,
+        "src/components/Game/ChroniclePanel.tsx": 1,
         "src/components/Game/DominionBox.tsx": 1,
         "src/components/Game/DoomClockDetail.tsx": 3,
         "src/components/Game/encounter-stage/shells/ClearanceGatePanel.tsx": 2,
@@ -497,8 +484,7 @@
         "src/components/Game/ThreadsPanel.tsx": 10,
         "src/components/Game/ToastStack.tsx": 1,
         "src/components/Game/WarmStartOverlay.tsx": 1,
-        "src/components/Game/WorldPulse.tsx": 1,
-        "src/components/HexMapV2/chrome/MapLensSwitch.tsx": 3,
+        "src/components/HexMapV2/chrome/MapLensSwitch.tsx": 1,
         "src/components/HexMapV2/interaction/HexTooltip.tsx": 1,
         "src/components/MeetTheFirst/BondBeat.tsx": 2,
         "src/components/MeetTheFirst/FormativeTestBeat.tsx": 1,
@@ -529,7 +515,7 @@
       }
     },
     "raw-button": {
-      "total": 203,
+      "total": 202,
       "perFile": {
         "src/components/AgentInfoCard/AgentInfoCard.tsx": 1,
         "src/components/Ascendant/ArchetypeCard.tsx": 1,
@@ -593,7 +579,6 @@
         "src/components/Game/ThreadDetailView.tsx": 2,
         "src/components/Game/ThreadsPanel.tsx": 4,
         "src/components/Game/ToastStack.tsx": 1,
-        "src/components/HexMapV2/chrome/MapLensSwitch.tsx": 1,
         "src/components/MeetTheFirst/BondBeat.tsx": 2,
         "src/components/MeetTheFirst/FormativeTestBeat.tsx": 1,
         "src/components/MeetTheFirst/SensingBeat.tsx": 3,

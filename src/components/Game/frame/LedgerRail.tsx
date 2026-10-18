@@ -31,7 +31,7 @@ import { Z_BAND } from '../../shared/zBands';
 import { useView } from '../../../hooks/useView';
 import { ledgerRailSelector } from '../../../engine/views/ledgerRail';
 import { LEDGER_RAIL_SECTIONS, LEDGER_TABS, type LedgerSectionId } from '../../../data/frame-registry';
-import { LEDGER_FLYOUT_ARIA, LEDGER_FOLD_LABEL, LEDGER_RAIL_ARIA, THREADS_LABEL } from '../../../data/frame-content';
+import { LEDGER_FLYOUT_ARIA, LEDGER_FOLD_LABEL, LEDGER_RAIL_ARIA } from '../../../data/frame-content';
 import { useGameScreenState } from './GameScreenState';
 import { LEDGER_SECTION_COMPONENTS, type LedgerSectionBag } from './ledgerComponents';
 import { LedgerStrip, type LedgerStripItem, type LedgerStripItemId } from './LedgerStrip';
@@ -225,12 +225,8 @@ export function LedgerRail({
 
   const renderBody = (where: 'rail' | 'flyout') => (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, padding: 'var(--panel-padding)', gap: 'var(--panel-padding)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: '0 0 auto' }}>
-        <Tooltip id="ui.threads">
-          <span style={{ fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', cursor: 'help' }}>
-            {THREADS_LABEL}
-          </span>
-        </Tooltip>
+      {/* The header row: the fold control at the right. ThreadsPanel names its own section. */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: '0 0 auto' }}>
         {where === 'rail' && (
           <Tooltip id="ui.ledger_fold">
             <button
@@ -335,7 +331,7 @@ export function LedgerRail({
           width: 'var(--rail-right-w)',
           background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
           borderLeft: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-lg, 0 8px 24px rgba(0,0,0,0.5))',
+          boxShadow: 'var(--shadow-panel)',
           overflow: 'hidden',
         }}
       >

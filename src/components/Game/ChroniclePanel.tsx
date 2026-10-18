@@ -17,6 +17,8 @@ import { SectionHeading } from '../shared/SectionHeading';
 import { Tooltip } from '../shared/Tooltip';
 import { Tabs } from '../shared/Tabs';
 import { Icon } from '../shared/Icon';
+import { Button } from '../shared/Button';
+import { ListRow } from '../shared/ListRow';
 import { renderProseWithIPK } from '../ProseKeyword';
 import { NEWLY_REVEALED_STYLE } from './GameView/openingReveal';
 import type { LedgerRailVM } from '../../engine/views/ledgerRail';
@@ -356,58 +358,23 @@ function LedgerTab({
         ledger.rows.map(row => {
           const isNew = marked.has(row.recordId) || row.isNew;
           return (
-            <button
-              key={row.recordId}
-              type="button"
-              data-testid="chronicle-ledger-row"
-              data-record-id={row.recordId}
-              data-new={isNew ? 'true' : undefined}
-              onClick={() => onOpenLedger?.(row.recordId)}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: '2px',
-                minHeight: '2.5rem',
-                padding: '6px 8px',
-                background: 'var(--bg-panel, rgba(255,255,255,0.02))',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                textAlign: 'left',
-                color: 'var(--text-primary)',
-                width: '100%',
-              }}
-            >
-              <span style={{ display: 'flex', gap: '6px', alignItems: 'baseline', width: '100%', fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)' }}>
-                <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.name}</span>
-                {isNew && <span style={{ ...LABEL_STYLE, color: 'var(--text-secondary)' }}>{LEDGER_TAB_NEW}</span>}
-              </span>
-              <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                {row.mortalName} · {row.state}
-              </span>
-            </button>
+            <div key={row.recordId} data-testid="chronicle-ledger-row" data-record-id={row.recordId} data-new={isNew ? 'true' : undefined}>
+              <ListRow
+                onClick={() => onOpenLedger?.(row.recordId)}
+                trailing={isNew ? <span style={{ ...LABEL_STYLE, color: 'var(--text-secondary)' }}>{LEDGER_TAB_NEW}</span> : undefined}
+              >
+                <span style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0 }}>
+                  <ListRow.Title>{row.name}</ListRow.Title>
+                  <ListRow.Subtitle>{row.mortalName} · {row.state}</ListRow.Subtitle>
+                </span>
+              </ListRow>
+            </div>
           );
         })
       )}
-      <button
-        type="button"
-        data-testid="chronicle-ledger-open"
-        onClick={() => onOpenLedger?.(null)}
-        style={{
-          minHeight: '2.5rem',
-          padding: '6px 8px',
-          background: 'transparent',
-          border: '1px solid var(--border-subtle)',
-          borderRadius: '6px',
-          color: 'var(--text-secondary)',
-          cursor: 'pointer',
-          fontFamily: 'var(--font-body)',
-          fontSize: 'var(--text-sm)',
-        }}
-      >
+      <Button variant="secondary" fullWidth data-testid="chronicle-ledger-open" onClick={() => onOpenLedger?.(null)}>
         {LEDGER_TAB_OPEN_BUTTON}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -546,13 +513,9 @@ export function ChroniclePanel({
         <WorldSoulLine worldSoul={vm.worldSoul} newly={!!reveal?.newlyWorldSoul} />
       )}
 
-      <Tabs
-        kind="tabs"
-        value={tab}
-        onChange={selectTab}
-        label={CHRONICLE_LABEL}
-        style={{ display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}
-      >
+      {/* Tabs renders its bar and panels as siblings, so this column holds them both. */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}>
+      <Tabs kind="tabs" value={tab} onChange={selectTab} label={CHRONICLE_LABEL}>
         {rendered.map(t => (
           <Tabs.Tab
             key={t.id}
@@ -584,6 +547,7 @@ export function ChroniclePanel({
           );
         })}
       </Tabs>
+      </div>
     </div>
   );
 }
