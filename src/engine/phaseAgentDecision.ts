@@ -126,6 +126,7 @@ import { UNIFIED_DECISION_BOARD_MODE, BOARD_SCORE_FLOOR } from '../data/strategi
 import { computeSurfaceKey } from './encounterSurface';
 import { resolveTemplateFragments } from './fragmentResolution';
 import { getLocationType } from './encounterCache';
+import { templatePaysActor } from './mortalMeans';
 import { settingClassForSubtype } from '../data/settingClasses';
 import { fightParticipantIds } from './fights/fightParticipants';
 
@@ -1397,6 +1398,10 @@ export function phaseAgentDecision(
             holdStanding: holdReader.standingFor(agentId),
             consecutiveFailures,
             ...(boardArrivalGoal ? { arrivalGoal: boardArrivalGoal } : {}),
+            // THR-1952 — paying work is derived from the outcome tables, memoized per session.
+            paysActor: (templateId: string) => templatePaysActor(
+              templateId, runtime?.meansPaysActorCache, getUnifiedTemplateById,
+            ),
           });
 
           // An empty board is a real verdict, not a missing one: it is what the
@@ -1476,7 +1481,9 @@ export function phaseAgentDecision(
               ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
               ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
               ...(e.whisperPull !== undefined ? { whisperPull: e.whisperPull } : {}),
+              ...(e.meansMultiplier !== undefined ? { meansMultiplier: e.meansMultiplier } : {}),
             })),
+            ...(board.meansWant ? { meansWant: board.meansWant } : {}),
             agreement,
             boardFamily,
             encounterCandidates: decision.topCandidates.length,

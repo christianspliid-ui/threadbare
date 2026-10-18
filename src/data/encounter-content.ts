@@ -13,7 +13,7 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
 import { compileOpeningColoration } from '../engine/fragmentResolution';
 import { DEAL_DEFAULT_COUNT } from './nudge-constants';
-import { MEANS_STEP } from './mortal-means-constants';
+import { MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from './mortal-means-constants';
 import {
   ENCOUNTER_TONE_ADJECTIVES,
   encounterToneTierForThreat,
@@ -1250,6 +1250,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'bought the goods without emptying the purse',
       lost: 'was outbid and walked out empty-handed',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+    },
     name: 'The Market Haggle',
     locationTypes: ['town', 'city', 'capital', 'oasis'],
     sublocationTypes: ['sublocation-type.market-district'],
@@ -1701,9 +1706,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.rare_material',
     stakes: {
       goal: 'prove the old seam and haul the load to the buyer',
-      risk: 'lose a third of the load to a broken axle',
+      risk: 'lose a third of the load to a broken axle, and its coin',
       won: 'brought the load in whole at the agreed price',
-      lost: 'lost a third of the load and the price besides',
+      lost: 'lost a third of the load and came away poorer',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'The Rare Material',
     locationTypes: ['mining', 'camp', 'wilderness', 'unexplored_poi'],
@@ -2316,9 +2328,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.sway_mercenary',
     stakes: {
       goal: 'buy the mercenary captain\'s forty swords',
-      risk: 'see the band walk off to a better offer',
+      risk: 'pay for the band and see it walk off to a better offer',
       won: 'bought the band and made leaving cost them more',
-      lost: 'kept the band eleven days before it walked',
+      lost: 'paid the band and kept it eleven days before it walked',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'The Sway Mercenary',
     locationTypes: ['camp', 'battleground', 'fort'],
@@ -3156,6 +3175,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'was caught by the wrist with the lane shouting',
       lostBadly: 'spent the night in the market lockup',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    },
     name: 'The Pickpocket',
     locationTypes: ['town', 'city', 'capital'],
     reachPrimary: 'shadow',
@@ -3246,6 +3271,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'got out by the coal chute with the money',
       lost: 'dropped the strongbox and went over the wall empty',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
+    },
     name: 'The Vault Heist',
     locationTypes: ['castle', 'capital', 'tower'],
     reachPrimary: 'shadow',
@@ -3321,6 +3351,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'robbed the captain\'s barrow and set the stone back',
       lost: 'dropped the gorget and fled the barrow with the cold behind',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    },
     name: 'The Grave Robbery',
     locationTypes: ['ruins', 'ruined_village', 'battleground'],
     reachPrimary: 'shadow',
@@ -3394,10 +3429,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.smuggle_goods',
     stakes: {
       goal: 'run three crates of untaxed salt to the mill buyer',
-      risk: 'end up robbed and tied up in the mill till morning',
+      risk: 'lose the salt money and end up tied up in the mill',
       won: 'ran the salt crates to the mill buyer and got paid',
-      lost: 'dropped the crates at the mill and ran for the road',
-      lostBadly: 'was robbed and left tied up in the mill',
+      lost: 'dropped the crates and their coin and ran for the road',
+      lostBadly: 'was robbed of every coin and left tied up in the mill',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
     },
     name: 'The Smuggle Goods',
     locationTypes: ['town', 'city', 'oasis'],
@@ -3583,9 +3625,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.caravan_deal',
     stakes: {
       goal: 'strike a season-long deal with the caravan',
-      risk: 'lose the cargo to a dispute on the weighing',
+      risk: 'lose the cargo and its coin to a dispute on the weighing',
       won: 'won a place at the head of the caravan\'s board',
-      lost: 'lost the cargo to a disputed weighing',
+      lost: 'lost the cargo to a disputed weighing and came away poorer',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     // THR-1526 / THR-1676: a seed target (The Pilot's Reckoning and The Last Lot at the
     // Exchange send a caravan master looking) whose opening stands alone on the board.
@@ -3665,6 +3714,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'got the guild\'s seal on a contract',
       lost: 'saw the guild master close the folio over one clause',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    },
     name: 'The Guild Negotiation',
     locationTypes: ['city', 'capital', 'town'],
     reachPrimary: 'gold',
@@ -3716,7 +3770,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The contract is read aloud twice, because the guild has learned what silence during a first reading costs it. {actor} must hold to the terms {they} named while hearing them come back in a clerk\'s flat voice.',
         onSuccess: {
-          narrative: 'Both seals go on the page inside the hour, rare enough that the clerk notes the date in the margin. The guild is bound to {actor} now, and it binds no one it expects to outgrow.',
+          narrative: 'Both seals go on the page inside the hour, rare enough that the clerk notes the date in the margin. The guild is bound to {actor} now, and it binds no one it expects to outgrow. The first payment is counted out before {actor} leaves the hall.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
           rewardPool: {
@@ -3737,9 +3791,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.smuggler_pact',
     stakes: {
       goal: 'earn a smuggler\'s token and a route on no chart',
-      risk: 'watch the smuggler walk off and the door close',
+      risk: 'pay the smuggler and watch them walk off',
       won: 'earned the token and a route on no chart',
-      lost: 'asked for the route too soon and lost the smuggler',
+      lost: 'paid too soon for the route and lost the smuggler',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'The Smuggler Pact',
     locationTypes: ['camp', 'town', 'ruins'],
@@ -3815,9 +3874,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.tribute_exchange',
     stakes: {
       goal: 'win the crown\'s protection in the tribute oath',
-      risk: 'see the protection clause struck from the oath',
+      risk: 'pay the tribute and see the protection clause struck',
       won: 'swore the tribute with the crown\'s protection on the page',
-      lost: 'kept the tribute and lost the protection clause',
+      lost: 'paid the tribute and lost the protection clause',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
     },
     name: 'The Tribute Exchange',
     locationTypes: ['capital', 'castle', 'temple'],
@@ -3890,9 +3957,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.barter_survival',
     stakes: {
       goal: 'trade ridge goods for food enough for the road',
-      risk: 'run out of grain a day and a half short',
+      risk: 'spend their coin and still run out of grain on the road',
       won: 'reached the far settlement with grain to spare',
-      lost: 'ran out of grain a day and a half short',
+      lost: 'spent their coin and ran out of grain a day and a half short',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'The Barter Survival',
     locationTypes: ['wilderness', 'hamlet', 'camp', 'ruined_village', 'oasis'],
@@ -4953,9 +5025,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.merchant_caravan',
     stakes: {
       goal: 'bring the caravan to market at a profit',
-      risk: 'see the market close on a wagon half full',
+      risk: 'lose money on a wagon half full when the market closes',
       won: 'brought the caravan to market at a profit',
-      lost: 'held too long and left a wagon half full',
+      lost: 'held too long, left a wagon half full and came away poorer',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'The Merchant Caravan Leadership',
     locationTypes: ['town', 'city', 'farmland'],
@@ -5378,6 +5457,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'struck the deal on their own terms',
       lost: 'left the stall empty-handed, the deal dead',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    },
     name: 'The Haggle',
     locationTypes: ['hamlet', 'town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.market-district'],
@@ -5644,9 +5728,16 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.foreign_trader',
     stakes: {
       goal: 'strike a fair deal with the foreign captain',
-      risk: 'overpay the captain for sound goods',
+      risk: 'pay the captain too much for sound goods',
       won: 'struck a fair deal with the foreign captain',
-      lost: 'overpaid the captain for sound goods',
+      lost: 'paid the captain too much for sound goods',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'Foreign Trader',
     locationTypes: ['town', 'city', 'capital'],
@@ -5847,6 +5938,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'collected the overdue debt in full',
       lost: 'saw the debtor skip town and the debt go uncollectable',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    },
     name: 'Debt Collection',
     locationTypes: ['town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.counting-house'],
@@ -5904,6 +6000,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       risk: 'lose the goods and land on a watcher\'s list',
       won: 'bought the goods and walked out unseen',
       lost: 'lost the goods and landed on a watcher\'s list',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     // THR-1526 / THR-1679: a seed target (The Cooper's Pawned Box sends the losing buyer's
     // broker looking) whose opening stands alone on the board.
@@ -5970,6 +6071,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       risk: 'be marked by a constable on the way out',
       won: 'sold the goods and left the quarter unseen',
       lost: 'got the coin, and the constable\'s eye with it',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
     },
     name: 'The Fence',
     locationTypes: ['hamlet', 'town', 'city', 'capital'],
@@ -6084,6 +6190,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       risk: 'lose two guards at the ford',
       won: 'brought the caravan in whole and earned the bonus',
       lost: 'lost two guards at the ford and the bonus',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
     },
     name: 'Caravan Guard',
     locationTypes: ['hamlet', 'town', 'city', 'capital', 'camp'],
@@ -6229,6 +6340,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'built the joint and was paid without haggling',
       lost: 'turned in competent work and lost the patron',
       lostBadly: 'saw the piece fail at the unveiling, fee withheld',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
     },
     name: 'Master Craftsman Challenge',
     locationTypes: ['town', 'city', 'capital'],
@@ -6972,6 +7089,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'hauled a good load out of the ruin',
       lost: 'was driven back by a collapse with two good beams',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    },
     name: 'Salvage Operation',
     locationTypes: ['ruins', 'ruined_city', 'ruined_village'],
     reachPrimary: 'stone',
@@ -7163,9 +7285,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.prospecting_expedition',
     stakes: {
       goal: 'find ore and sink a shaft into it',
-      risk: 'spend a season on three dry shafts',
+      risk: 'spend a season and their coin on three dry shafts',
       won: 'struck ore at eleven feet in the second shaft',
-      lost: 'spent a season on three dry shafts',
+      lost: 'spent a season and their coin on three dry shafts',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'Prospecting Expedition',
     locationTypes: ['wilderness', 'mining'],
@@ -7287,9 +7414,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.bandit_ambush',
     stakes: {
       goal: 'break the bandit ambush on the narrow track',
-      risk: 'lose the pack and a good deal of blood',
+      risk: 'lose the pack, the coin in it and a good deal of blood',
       won: 'broke the ambush from the bandits\' own rocks',
-      lost: 'fled down the streambed without the pack',
+      lost: 'fled down the streambed without the pack or the coin in it',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'Bandit Ambush',
     locationTypes: ['wilderness', 'camp'],
@@ -11513,6 +11645,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'struck a good trade with the travelers',
       lost: 'watched the travelers move on with no deal',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
+    },
     name: 'Barter with Travelers',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
     reachPrimary: 'gold',
@@ -14579,6 +14716,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'mended the nets and earned a meal and a bed',
       lost: 'had a third of the pay docked for a missed flaw',
     },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL }],
+    },
     name: 'Mend the Fishing Nets',
     locationTypes: ['hamlet', 'oasis', 'camp'],
     reachPrimary: 'gold',
@@ -14660,6 +14804,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       risk: 'leave the prize to the rising water',
       won: 'hauled the treasure out of the sunken vault',
       lost: 'lost their footing and left the prize below',
+    },
+    // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
     },
     name: 'The Sunken Vault',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining', 'unexplored_poi'],

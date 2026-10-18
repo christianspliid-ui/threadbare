@@ -92,6 +92,7 @@
 import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { MEANS_STEP } from '../mortal-means-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -538,6 +539,11 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
     lost: 'turned back for the three-day low track',
     lostBadly: 'lost the whole day to the ledger and got nothing',
   },
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+  },
   rarityTier: 2,
   intrinsicTier: 'background',
   name: "The Garrison's Price",
@@ -710,7 +716,7 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
           ],
         },
         success: {
-          overview: 'Nobody made a speech about it. The next traveler in the line moved up a place, and the afternoon went on.',
+          overview: 'They paid the line, and nobody made a speech about it. The next traveler moved up a place, and the afternoon went on.',
           changes: [
             {
               // Same chip, same backing write as critical_success — step 2

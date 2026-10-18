@@ -187,6 +187,15 @@ export interface SimulationRuntime {
    */
   outcomeBandPhraseHistory: Map<string, Set<string>>;
 
+  // ── Paying work (THR-1952, mortal wealth S2) ──
+  /**
+   * Per-session memo of `templatePaysActor`: does an encounter template's outcome table
+   * pay its actor on a success? Filled lazily, one entry per template id, by the
+   * decision board. Templates are static data, so an entry never goes stale within a
+   * session; a template registered later simply misses and is derived on first read.
+   */
+  meansPaysActorCache: Map<string, boolean>;
+
   // ── Detail-page render cache (THR-577; migrated from module scope) ──
   /**
    * Per-session cache of fully resolved DetailPages keyed by
@@ -390,6 +399,7 @@ export function createSimulationRuntime(): SimulationRuntime {
     foreshadowingCache: new Map(),
     threadStoryCache: new Map(),
     outcomeBandPhraseHistory: new Map(),
+    meansPaysActorCache: new Map(),
     detailPageCache: new Map(),
     detailPageCacheTick: -Infinity,
     proseCache: new Map(),

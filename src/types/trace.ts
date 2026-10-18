@@ -3715,7 +3715,23 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     appointmentDiscount?: number;
     /** THR-1781 — the pull of the god's live whispers on an encounter (already in `score`). */
     whisperPull?: number;
+    /** THR-1952 — the Means want's multiplier on paying work (already in `score`). */
+    meansMultiplier?: number;
   }>;
+  /**
+   * THR-1952 — the deciding mortal's Means want (mortal wealth S2): what it was made of
+   * and the multiplier it put on paying work. Absent when Means is off or the decider
+   * is no mortal.
+   */
+  meansWant?: {
+    wealth: number;
+    poverty: number;
+    greed: number;
+    generosity: number;
+    unafforded: boolean;
+    want: number;
+    multiplier: number;
+  };
   /** Whether legacy and the board agree on the winning *family*. */
   agreement: boolean;
   /**

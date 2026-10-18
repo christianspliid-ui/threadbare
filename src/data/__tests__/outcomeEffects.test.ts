@@ -9,9 +9,10 @@
  *   keyed on one would never fire (review gate, THR-1936);
  * - a `means` amount is one of the named steps (`MEANS_STEP_SMALL` / `MEANS_STEP` /
  *   `MEANS_STEP_BIG`), signed;
- * - a shift targets the actor or the scene target. A `$cast:` target is refused until
- *   S2 ships the first cast-targeted row with its binding check (a declared cast key
- *   may be bind-only);
+ * - a shift targets the actor, the scene target, or a `$cast:<key>` the template casts
+ *   itself through a materializing actor spec (THR-1952: a declared cast key may be
+ *   bind-only — a `pre-seeded` spec binds ambient scenery or nobody, and a purse
+ *   written onto the wrong person is worse than none);
  * - no template writes `wealth` through `update_node` (it neither clamps nor stamps a
  *   reason). Today's legacy offenders are listed and frozen: a new one fails;
  * - no template writes Means in both its table and a reaction (a double charge);
@@ -111,6 +112,20 @@ describe('THR-1936 — outcome tables', () => {
     expect(templates.some(t => tablesOf(t).length > 0)).toBe(true);
   });
 
+  it('carries the S2 Means rows of the outcome research table (THR-1952)', () => {
+    // The 27 simple rows (merchants_gambit plus S2's 26) and the 15 branching rows
+    // whose write names a mortal's Means. A row dropped by a refactor fails here.
+    const withMeans = templates.filter(t => tablesOf(t).some(({ table }) =>
+      Object.values(table).some(effects => meansShifts(effects).length > 0)));
+    expect(withMeans.length).toBeGreaterThanOrEqual(40);
+    for (const id of [
+      'encounter.pickpocket', 'encounter.caravan_deal', 'encounter.sunken_vault',
+      'encounter.town.counting_house_dispute', 'encounter.town.smugglers_ford',
+    ]) {
+      expect(withMeans.map(t => t.id), id).toContain(id);
+    }
+  });
+
   it('keys every table on a band the roll produces', () => {
     const bad: string[] = [];
     for (const t of templates) {
@@ -121,17 +136,24 @@ describe('THR-1936 — outcome tables', () => {
     expect(bad).toEqual([]);
   });
 
-  it('puts every Means amount on a named step and targets the actor or the scene target', () => {
+  it('puts every Means amount on a named step and targets the actor, the scene target or a cast member who binds', () => {
     const bad: string[] = [];
     for (const t of templates) {
+      const specs = new Map((t.supportBundle ?? []).map(spec => [spec.key, spec]));
       for (const { where, table } of tablesOf(t)) {
         for (const [band, effects] of Object.entries(table)) {
           for (const e of meansShifts(effects)) {
             if (!MEANS_NAMED_STEPS.includes(Math.abs(e.amount))) bad.push(`${where} ${band}: amount ${e.amount}`);
             const target = e.targetAgentId;
-            if (target !== undefined && target !== '$actor' && target !== '$target') {
-              bad.push(`${where} ${band}: target ${target}`);
+            if (target === undefined || target === '$actor' || target === '$target') continue;
+            if (target.startsWith('$cast:')) {
+              const spec = specs.get(target.slice('$cast:'.length));
+              if (!spec) bad.push(`${where} ${band}: ${target} is not in the supportBundle`);
+              else if (spec.kind !== 'actor') bad.push(`${where} ${band}: ${target} is a '${spec.kind}' spec`);
+              else if (spec.delivery === 'pre-seeded') bad.push(`${where} ${band}: ${target} is bind-only (pre-seeded)`);
+              continue;
             }
+            bad.push(`${where} ${band}: target ${target}`);
           }
         }
       }

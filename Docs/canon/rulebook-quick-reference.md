@@ -93,7 +93,7 @@ Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staple
 
 **Armies fight only enemies** (hostile, rival, at war, resented past the rivalry line, or a monster lair). An army defends its own or a sworn vassal's threatened town within eight hexes first; otherwise it marches on the richest enemy town a supply line can reach, and holds when there is none. It re-aims once a day, and its sheet says why.
 
-Every **mortal who makes choices is born with Means** (their walk of life, their home town's fortune), and a **money encounter pays or costs it by how the dice fall** — the stakes name the risk first, and the poor lose half as much (THR-1936).
+Every **mortal who makes choices is born with Means** (their walk of life, their home town's fortune), and a **money encounter pays or costs it by how the dice fall** — the stakes name the risk first, and the poor lose half as much (THR-1936). A **poor or greedy mortal leans toward work that pays**; a rich one who is not greedy turns away from it — the lean weighs what they choose, never their odds (THR-1952).
 
 Every **faction keeps a purse**: the towns, places, borders, tolls and guild work it holds pay it daily, and its armies cost upkeep. Raising an army costs coin; an army its purse cannot pay deserts. The faction sheet's **Purse** shows its Means in words.
 

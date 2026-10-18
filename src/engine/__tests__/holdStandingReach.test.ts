@@ -239,7 +239,10 @@ describe('THR-1448 — a held town is a faction position, on a generated world',
     const away = board.entries.find(e => e.candidateIndex === 1)!;
     expect(held.heldTownAffinity).toBe(1);
     expect(away.heldTownAffinity).toBe(0);
-    expect(held.temperamentWeight - away.temperamentWeight).toBeCloseTo(HELD_TOWN_AFFINITY_WEIGHT, 10);
+    // THR-1952 — a `use` cell is paying work, so the Means want scales the whole weight;
+    // the held-town term is measured with that multiplier divided back out.
+    expect(held.temperamentWeight / (held.meansMultiplier ?? 1) - away.temperamentWeight / (away.meansMultiplier ?? 1))
+      .toBeCloseTo(HELD_TOWN_AFFINITY_WEIGHT, 10);
 
     // Reported, not gated: how the term distributed across the keeper's live boards.
     clearTraces();

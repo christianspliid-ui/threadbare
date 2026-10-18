@@ -107,7 +107,10 @@ describe('scoreUnifiedBoard — the term reaches the entry and discriminates by 
     // Same cell, same EVT, same desire — the temperament weight is the only mover.
     expect(held.evt).toBe(elsewhere.evt);
     expect(held.desireMultiplier).toBe(elsewhere.desireMultiplier);
-    expect(held.temperamentWeight - elsewhere.temperamentWeight).toBeCloseTo(HELD_TOWN_AFFINITY_WEIGHT, 10);
+    // THR-1952 — a `use` cell is paying work, so the Means want scales the whole weight;
+    // the held-town term is measured with that multiplier divided back out.
+    expect(held.temperamentWeight / (held.meansMultiplier ?? 1) - elsewhere.temperamentWeight / (elsewhere.meansMultiplier ?? 1))
+      .toBeCloseTo(HELD_TOWN_AFFINITY_WEIGHT, 10);
     expect(held.score).toBeGreaterThan(realmTown.score);
     expect(realmTown.score).toBeGreaterThan(elsewhere.score);
     expect(board.winner?.candidateIndex).toBe(0);

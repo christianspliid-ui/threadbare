@@ -17,6 +17,8 @@ import { PURSE_CYCLE_TICKS } from '../../../data/faction-purse-constants';
 import { describeAllUnrest } from '../../../engine/unrestPressure/describe';
 import { listPrayers, PRAYER_SLIGHTED_UNTIL_PROP } from '../../../engine/prayers';
 import { TICKS_PER_DAY } from '../../../data/attention-constants';
+import { describeDeciderMeans } from '../../../engine/mortalMeans';
+import { resolveAxiologicalProfile } from '../../../engine/encounterScoring';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 
 interface PurseRow {
@@ -91,6 +93,45 @@ function PursesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
               <td style={cell}>{r.unpaid}</td>
               <td style={cell}>{r.brokeSince ?? '—'}</td>
               <td style={cell}>{r.fealtyIn.toFixed(2)}/{r.fealtyOut.toFixed(2)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** THR-1952 — every decider's Means, band, last reason and want, poorest first. Numbers are fine here (debug). */
+function MeansTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  // The board's resolved profile (divine overlay included) so the want shown is the want applied.
+  // The World-Soul fundament is not in this tab's props, so its drift is not folded in here.
+  const rows = useMemo(() => (graph
+    ? describeDeciderMeans(graph, id => resolveAxiologicalProfile(graph, id, currentTick) as Partial<Record<string, number>>)
+    : []), [graph, currentTick]);
+  if (rows.length === 0) return null;
+  const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
+  const pulled = rows.filter(r => (r.want ?? 0) > 0).length;
+  return (
+    <div data-testid="economy-means" style={{ marginBottom: '12px' }}>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>
+        Means — {rows.length} deciders, {rows.filter(r => r.band === 'Destitute').length} destitute, {pulled} pulled toward paying work
+      </div>
+      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)' }}>
+            <th style={{ ...cell, textAlign: 'left' }}>decider</th><th style={cell}>wealth</th><th style={{ ...cell, textAlign: 'left' }}>band</th>
+            <th style={{ ...cell, textAlign: 'left' }}>last reason</th><th style={cell}>want</th><th style={cell}>multiplier</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => (
+            <tr key={r.agentId} style={{ color: 'var(--text-secondary)' }}>
+              <td style={{ ...cell, textAlign: 'left' }} title={r.agentId}>{r.name}</td>
+              <td style={cell}>{r.wealth.toFixed(1)}</td>
+              <td style={{ ...cell, textAlign: 'left' }}>{r.band}</td>
+              <td style={{ ...cell, textAlign: 'left' }}>{r.lastReason ?? '—'}</td>
+              <td style={cell}>{r.want === null ? '—' : r.want.toFixed(2)}</td>
+              <td style={cell}>{r.multiplier === null ? '—' : r.multiplier.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>
@@ -320,6 +361,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
     return (
       <div style={{ padding: '8px', fontSize: '12px', overflowY: 'auto', height: '100%' }}>
         <PursesTable graph={graph} currentTick={currentTick} />
+        <MeansTable graph={graph} currentTick={currentTick} />
         <OathsTable graph={graph} currentTick={currentTick} />
         <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
@@ -331,6 +373,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
   return (
     <div style={{ padding: '8px', fontSize: '12px', overflowY: 'auto', height: '100%' }}>
       <PursesTable graph={graph} currentTick={currentTick} />
+      <MeansTable graph={graph} currentTick={currentTick} />
       <OathsTable graph={graph} currentTick={currentTick} />
       <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />

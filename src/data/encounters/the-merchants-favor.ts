@@ -21,6 +21,7 @@ import type {
   EncounterContract,
 } from '../../types/encounter-contract';
 import { MORAL_AXIS_POLES_BY_REACH, QUINTESSENCE_POLES } from '../../types/encounter-contract';
+import { MEANS_STEP } from '../mortal-means-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -140,6 +141,11 @@ const step1Branch: ActionStepBranch = {
 // ─── Aftermath ───────────────────────────────────────────────────
 
 const INTERCEDE_AFTERMATH = {
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:merchant' }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:merchant' }],
+  },
   overview:
     'The merchant came in the next morning. The guildmaster\'s clerk had the file. An hour ' +
     'later the merchant was in front of the full committee with documentation of the robbery — ' +

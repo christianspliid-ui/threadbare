@@ -3159,6 +3159,19 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 
 **Wired and asserted:** `mortalMeans.test.ts` (15 tests) — birth Means (role + home shift, avatars and ambient skipped, idempotent), the poor-loss scale and the 0 floor, default reasons, the band-crossed / inside-band sentence with no numerals, variant table over template table, the outcome table paying exactly once at each band through `executeStepResult` whatever reaction follows, and the seed row surviving the converter. `outcomeEffects.test.ts` (6 tests) is the content gate: real bands, named steps, actor/target only, no new `update_node` wealth writer (11 legacy offenders frozen), no double charge, and a failure-band cost names its loss in the stakes.
 
+### S2 — the want and the Means rows (THR-1952)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/mortalMeans.ts` (`computeMeansWant`, `readMeansWant`, `isEarningCell`, `templatePaysActor`) | `agent_decision` (via `scoreUnifiedBoard`) | — | reads actor `wealth`, `axiologicalProfile.asceticism_extravagance` | board trace `meansWant`, per entry `meansMultiplier` | `__DEBUG.getMortalMeans` (`want`), Economy tab Means table |
+| `engine/decisionBoard.ts` (the multiplier on paying work; founding-cost drop, off) | `agent_decision` | — | — | `decision_board_comparison.meansWant` / `boardTop[].meansMultiplier` | board trace |
+| `engine/phaseAgentDecision.ts` (`paysActor` bound to `runtime.meansPaysActorCache`) | `agent_decision` | — | `SimulationRuntime.meansPaysActorCache` | — | — |
+| `engine/strategicActionLifecycle.ts` (`chargeFoundingCost`, behind `MEANS_CELL_COST_ENABLED = false`) | undertaking start | — | actor `wealth` | `economy.means.shift` (`reason: 'founding'`) | trace viewer |
+| `components/Game/debug/EconomyDebugTab.tsx` (`MeansTable` ← `describeDeciderMeans`) | — | DebugPanel Economy tab | reads | — | the tab |
+| 40+ templates (`encounter-content.ts`, 14 branching files) | encounter resolution | stakes + aftermath | via `economy_shift` | `economy.means.shift` | `outcomeEffects.test.ts` |
+
+**Wired and asserted:** `mortalMeansWant.test.ts` (17 tests) — the want's shape at each line, the Generous/Greedy leans, the rich damp, the 0.82…1.9 range, earning cells, costs off, the paying-work memo, and the board term lifting a paying entry by exactly `1 + MEANS_WANT_WEIGHT × want` without moving the forecast or the fit. `outcomeEffects.test.ts` adds the cast-binding rule (a `$cast:` target must be a materializing actor spec) and pins ≥ 40 Means rows. `npm run measure:means` measures the S2 Done-when on a seeded world.
+
 ## God's stake — prayers and the faithful (THR-1935 S1)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |

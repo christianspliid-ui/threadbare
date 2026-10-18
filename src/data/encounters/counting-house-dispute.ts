@@ -88,6 +88,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { MEANS_STEP } from '../mortal-means-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -423,6 +424,12 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 0,
     variants: {
       positive: {
+        // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+        outcomeEffects: {
+          critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:founder' }, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP, targetAgentId: '$cast:aldane' }],
+          success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:founder' }, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP, targetAgentId: '$cast:aldane' }],
+          success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:founder' }, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP, targetAgentId: '$cast:aldane' }],
+        },
         overview: '{actor} ruled for House Corrow, and House Aldane was told to pay.',
         changes: [],
         byOutcome: {
@@ -718,6 +725,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
       },
       negative: {
+        // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+        outcomeEffects: {
+          critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:founder' }, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP, targetAgentId: '$cast:corrow' }],
+          success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:founder' }, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP, targetAgentId: '$cast:corrow' }],
+        },
         overview: '{actor} ruled for House Aldane, and House Corrow was told to pay.',
         changes: [],
         byOutcome: {
