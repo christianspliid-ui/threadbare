@@ -368,7 +368,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `narrative` (2) | `narrative-constants.ts`, `narrative.ts` | — |
 | `nearest` (1) | `nearestSettlement.ts` | `THR-1549`, `THR-1792` |
 | `notable` (1) | `notableAgendas.ts` | `THR-225`, `THR-630`, `THR-66` |
-| `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-1606`, `THR-666`, `THR-667`, `THR-727` |
+| `notification` (3) | `notificationRouter.ts`, `notificationThreadingGate.ts`, `notificationVisibilityFilter.ts` | `THR-1875`, `THR-666`, `THR-667` |
 | `npc` (2) | `npcGraduation.ts`, `npcSeeding.ts` | — |
 | `nudge` (2) | `nudgeCardRepertoire.ts`, `nudgeGrantLiveness.ts` | `THR-1248`, `THR-791`, `THR-844`, `THR-885`, `THR-887` |
 | `opening` (2) | `openingColoration.ts`, `openingReveal.ts` | `THR-1635`, `THR-1648`, `THR-1837` |
@@ -456,7 +456,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `unrest` (1) | `unrestPressure.ts` | `THR-1934` |
 | `unrestpressure` (5) | `unrestPressure/bands.ts`, `unrestPressure/describe.ts`, `unrestPressure/hunger.ts`, `unrestPressure/inputs.ts`, `unrestPressure/leave.ts` | `THR-1934` |
 | `view` (1) | `viewLevel.ts` | — |
-| `views` (40) | `views/connections.ts`, `views/contentTagChips.ts`, `views/godRail.ts`, `views/hexContents.ts`, `views/knowledge.ts`, `views/landIndex.ts`, `views/ledgerRail.ts`, `views/lenses/lensTypes.ts`, `views/lenses/lensView.ts`, `views/lenses/threadsLens.ts`, `views/lenses/tradeLens.ts`, `views/lenses/troubleLens.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/readView.ts`, `views/selectors.ts`, `views/subjects/actOn.ts`, `views/subjects/factionRows.ts`, `views/subjects/godSheet.ts`, `views/subjects/itemRows.ts`, `views/subjects/landName.ts`, `views/subjects/landProse.ts`, `views/subjects/linkedProse.ts`, `views/subjects/pageResolvers.ts`, `views/subjects/personRows.ts`, `views/subjects/placeRows.ts`, `views/subjects/subjectPage.ts`, `views/subjects/subjectTypes.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1486`, `THR-1521`, `THR-1750`, `THR-1792`, `THR-1820`, `THR-1822`, `THR-1827`, `THR-184`, `THR-1846`, `THR-1876`, `THR-1878`, `THR-1879`, `THR-1893`, `THR-1894`, `THR-1898`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-1906`, `THR-1909`, `THR-1910`, `THR-1911`, `THR-502`, `THR-670` |
+| `views` (42) | `views/connections.ts`, `views/contentTagChips.ts`, `views/godRail.ts`, `views/hexContents.ts`, `views/interruptRegistry.ts`, `views/knowledge.ts`, `views/landIndex.ts`, `views/ledgerRail.ts`, `views/lenses/lensTypes.ts`, `views/lenses/lensView.ts`, `views/lenses/threadsLens.ts`, `views/lenses/tradeLens.ts`, `views/lenses/troubleLens.ts`, `views/map/activityIcons.ts`, `views/map/agentVisibility.ts`, `views/map/agents.ts`, `views/map/armiesAndBattles.ts`, `views/map/companies.ts`, `views/map/focusTargets.ts`, `views/map/mapPosition.ts`, `views/map/mapTypes.ts`, `views/map/places.ts`, `views/map/realmInk.ts`, `views/map/threadLines.ts`, `views/needsYou.ts`, `views/readView.ts`, `views/selectors.ts`, `views/subjects/actOn.ts`, `views/subjects/factionRows.ts`, `views/subjects/godSheet.ts`, `views/subjects/itemRows.ts`, `views/subjects/landName.ts`, `views/subjects/landProse.ts`, `views/subjects/linkedProse.ts`, `views/subjects/pageResolvers.ts`, `views/subjects/personRows.ts`, `views/subjects/placeRows.ts`, `views/subjects/subjectPage.ts`, `views/subjects/subjectTypes.ts`, `views/types.ts`, `views/viewConstants.ts`, `views/viewContext.ts` | `THR-1486`, `THR-1521`, `THR-1608`, `THR-1750`, `THR-1792`, `THR-1820`, `THR-1822`, `THR-1827`, `THR-184`, `THR-1846`, `THR-1853`, `THR-1875`, `THR-1876`, `THR-1877`, `THR-1878`, `THR-1879`, `THR-1893`, `THR-1894`, `THR-1898`, `THR-1899`, `THR-1900`, `THR-1902`, `THR-1906`, `THR-1909`, `THR-1910`, `THR-1911`, `THR-502`, `THR-668`, `THR-670` |
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
 | `war` (1) | `warAims.ts` | `THR-1868`, `THR-1933` |
@@ -470,4 +470,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 230 engine domains · 744 modules._
+_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 230 engine domains · 746 modules._
