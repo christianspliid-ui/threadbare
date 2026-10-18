@@ -55,7 +55,13 @@ import { stepOutcomeWord } from '../../../data/outcome-band-content';
 import { UNDERTAKING_HALT_RATCHET_N } from '../../../data/strategic-action-constants';
 import { SLOT_TAG_DISPLAY_NAMES } from '../../../data/attachment-slot-constants';
 import { ATTACHMENT_TIER_NAMES, type AttachmentTier } from '../../../types/attachments';
-import { AMBITION_PRIMARY_INTERACTIONS, AMBITION_SECONDARY_INTERACTIONS, type AgentKnowledge } from '../../../types/agentKnowledge';
+import {
+  AMBITION_PRIMARY_INTERACTIONS,
+  AMBITION_SECONDARY_INTERACTIONS,
+  OVERVIEW_BACKSTORY_INTERACTIONS,
+  OVERVIEW_GOSSIP_THRESHOLD,
+  type AgentKnowledge,
+} from '../../../types/agentKnowledge';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
 import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry';
 import {
@@ -94,6 +100,12 @@ export interface PersonSheet {
   profile?: AgentFullProfileData;
   state: GameState;
   level: KnowledgeLevel;
+  /**
+   * The god's per-mortal interaction record (`GameState.agentKnowledge`) — the reveals the
+   * profile tabs honour beside the knowledge level (a disposition seen, values shown,
+   * gossip heard). Absent when the god has never dealt with them.
+   */
+  knowledge?: AgentKnowledge;
   /** The thread tier the god holds on this mortal (0 = no thread). */
   threadTier: number;
 }
@@ -137,11 +149,14 @@ export function buildPersonSheet(state: GameState, agentId: string): PersonSheet
   }
   const thread = state.graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.target === agentId);
   const threadTier = typeof thread?.properties.tier === 'number' ? thread.properties.tier : thread ? 1 : 0;
+  const store = state.agentKnowledge;
+  const knowledge = store && typeof store.get === 'function' ? store.get(agentId) : undefined;
   return {
     card,
     profile: getAgentFullProfile(state.graph, agentId, state.ascendantId, level),
     state,
     level,
+    ...(knowledge ? { knowledge } : {}),
     threadTier,
   };
 }
@@ -371,7 +386,7 @@ const currentWork: SectionResolver = (ctx) => {
 
 const leadingAmbition: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  const want = s ? visibleJourneyIntents(s.card)[0] : undefined;
+  const want = s ? visibleJourneyIntents(s.card, s.knowledge)[0] : undefined;
   if (!want) return null;
   return prose('leading_ambition', PERSON_ROW_LABELS.leadingAmbition, [want.displayName], { labelTooltipId: 'ui.thread_want_most' });
 };
@@ -438,8 +453,11 @@ const company: SectionResolver = (ctx) => {
 
 const nature: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  if (!s || !atLeast(s, 'recognised')) return null;
-  const values = s.card.topValues ?? [];
+  if (!s || (!s.knowledge && !atLeast(s, 'recognised'))) return null;
+  const all = s.card.topValues ?? [];
+  const byKnowledge = s.knowledge ? all.filter(v => s.knowledge?.revealedValues.has(v.pair)) : [];
+  const byLevel = atLeast(s, 'recognised') ? all : [];
+  const values = byLevel.length > byKnowledge.length ? byLevel : byKnowledge;
   if (values.length === 0) {
     return panel('nature', PERSON_ROW_LABELS.nature, [{ left: PERSON_ROW_LABELS.nature, right: personLine(PERSON_EMPTY_LINES.natureHidden, { name: s.card.name }) }]);
   }
@@ -486,13 +504,15 @@ const personality: SectionResolver = (ctx) => {
 
 const reputation: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  if (!s || s.card.knowledgeLevel === 'stranger') return null;
-  const revealed = atLeast(s, 'known');
-  const rows: PanelRow[] = [{
-    left: PERSON_FACT_WORDS.reputation,
-    right: revealed && s.card.reputationWord ? s.card.reputationWord : personLine(PERSON_EMPTY_LINES.reputationUnheard, { name: s.card.name }),
-    tooltipId: 'ui.reputation',
-  }];
+  if (!s) return null;
+  const revealed = (s.knowledge != null && s.knowledge.interactionDepth >= OVERVIEW_GOSSIP_THRESHOLD) || atLeast(s, 'known');
+  const word = revealed ? s.card.reputationWord : undefined;
+  const rows: PanelRow[] = [];
+  // The profile's rule: the word when heard; the unheard line for anyone but a stranger.
+  if (word) rows.push({ left: PERSON_FACT_WORDS.reputation, right: word, tooltipId: 'ui.reputation' });
+  else if (s.card.knowledgeLevel !== 'stranger') {
+    rows.push({ left: PERSON_FACT_WORDS.reputation, right: personLine(PERSON_EMPTY_LINES.reputationUnheard, { name: s.card.name }), tooltipId: 'ui.reputation' });
+  }
   if (revealed) {
     for (const standing of getNotableStandings(s.state.graph, ctx.nodeId, PERSON_MAX_STANDINGS)) {
       const node = s.state.graph.getNode(standing.targetId);
@@ -508,27 +528,27 @@ const words: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
   const quotes = s?.card.quotes ?? [];
   if (!s || quotes.length === 0) return null;
-  // Known hears one; intimate and beyond, all (the card already gates the list).
-  const shown = atLeast(s, 'intimate') ? quotes : quotes.slice(0, 1);
-  return prose('words', PERSON_ROW_LABELS.words, shown, { variant: 'quote' });
+  // The card gates the quotes by knowledge level; the profile shows every one it carries.
+  return prose('words', PERSON_ROW_LABELS.words, quotes, { variant: 'quote' });
 };
 
 const origin: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  if (!s || !atLeast(s, 'recognised')) return null;
-  const revealed = atLeast(s, 'intimate') && s.card.backstoryParagraph1;
-  return prose('origin', PERSON_ROW_LABELS.origin, [
-    revealed ? s.card.backstoryParagraph1 : personLine(PERSON_EMPTY_LINES.originHidden, { name: s.card.name }),
-  ]);
+  if (!s) return null;
+  const revealed = (s.knowledge != null && s.knowledge.interactionDepth >= OVERVIEW_BACKSTORY_INTERACTIONS) || atLeast(s, 'intimate');
+  if (revealed && s.card.backstoryParagraph1) return prose('origin', PERSON_ROW_LABELS.origin, [s.card.backstoryParagraph1]);
+  if (!revealed && atLeast(s, 'recognised')) return prose('origin', PERSON_ROW_LABELS.origin, [personLine(PERSON_EMPTY_LINES.originHidden, { name: s.card.name })]);
+  return null;
 };
 
 // ─── Prowess ──────────────────────────────────────────────────────────────────
 
 const domains: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  if (!s || !atLeast(s, 'recognised')) return null;
+  if (!s) return null;
+  const revealedDomain = (domain: string) => s.knowledge?.revealedDomains.has(domain) === true || atLeast(s, 'recognised');
   // The rank word per Reach; the magnitude dots go (Law 10: pips mean odds only).
-  return cards('domains', PERSON_ROW_LABELS.domains, (s.card.domains ?? []).map(d => ({
+  return cards('domains', PERSON_ROW_LABELS.domains, (s.card.domains ?? []).filter(d => revealedDomain(d.domain)).map(d => ({
     title: reachDisplayName(d.domain),
     kindWord: PERSON_FACT_WORDS.reach,
     lines: [d.word],
@@ -547,7 +567,7 @@ const conditions: SectionResolver = (ctx) => {
   const visible = all.filter(entry => {
     if (HARM_SUBCATEGORIES.has(entry.subcategory)) return true;
     if (entry.subcategory === 'blessing') return atLeast(s, 'known');
-    if (entry.subcategory === 'curse') return atLeast(s, 'intimate');
+    if (entry.subcategory === 'curse') return s.knowledge?.revealedConditions.has(entry.id) === true || atLeast(s, 'intimate');
     return atLeast(s, 'recognised');
   });
   return cards('conditions', PERSON_ROW_LABELS.conditions, visible.map(e => attachmentTile(e)));
@@ -555,8 +575,9 @@ const conditions: SectionResolver = (ctx) => {
 
 const bestowedPowers: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  if (!s || !atLeast(s, 'intimate')) return null;
-  const powers = (s.card.giftsAndBurdens ?? []).filter(g => g.subcategory === 'bestowed_power');
+  if (!s || !atLeast(s, 'recognised')) return null;
+  const powers = (s.card.giftsAndBurdens ?? []).filter(g => g.subcategory === 'bestowed_power'
+    && (s.knowledge?.revealedPowers.has(g.id) === true || atLeast(s, 'intimate')));
   return cards('bestowed_powers', PERSON_ROW_LABELS.bestowedPowers, powers.map(e => attachmentTile(e)));
 };
 
@@ -622,7 +643,8 @@ const inactive: SectionResolver = (ctx) => {
 
 const disposition: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  if (!s || !atLeast(s, 'intimate') || !s.card.cooperationStrategy) return null;
+  if (!s || !s.card.cooperationStrategy) return null;
+  if (!(s.knowledge?.dispositionRevealed === true || atLeast(s, 'intimate'))) return null;
   const rows: PanelRow[] = [{
     left: PERSON_FACT_WORDS.strategy,
     right: DISPOSITION_LABEL_MAP[s.card.cooperationStrategy] ?? sentenceCase(humanizeKeySegment(s.card.cooperationStrategy)),
@@ -661,7 +683,7 @@ const designs: SectionResolver = (ctx) => {
 const ambitions: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
   if (!s) return null;
-  const intents = visibleJourneyIntents(s.card);
+  const intents = visibleJourneyIntents(s.card, s.knowledge);
   if (intents.length === 0) return prose('ambitions', PERSON_ROW_LABELS.ambitions, [personLine(PERSON_EMPTY_LINES.ambitionsHidden, { name: s.card.name })]);
   return cards('ambitions', PERSON_ROW_LABELS.ambitions, intents.map(i => ({
     title: i.displayName,
@@ -701,7 +723,8 @@ const theirStory: SectionResolver = (ctx) => {
 
 const timeline: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
-  const events = s?.profile?.historyTimeline ?? [];
+  const all = s?.profile?.historyTimeline ?? [];
+  const events = s?.knowledge ? all.filter(e => s.knowledge?.knownEvents.has(String(e.tick))) : all;
   if (!s || events.length === 0) return null;
   return story('timeline', PERSON_ROW_LABELS.timeline, [...events].reverse().map(e => ({ whenLabel: agoWord(s.state.tick, e.tick), prose: e.event })), null);
 };
@@ -726,7 +749,7 @@ const interactionRecord: SectionResolver = (ctx) => {
 const completedAmbitions: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
   if (!s) return null;
-  const readable = readIntentionFromCard(s.card).readable;
+  const readable = (s.knowledge != null && s.knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS) || readIntentionFromCard(s.card).readable;
   const done = readable ? s.card.completedAmbitions ?? [] : [];
   return story('completed_ambitions', PERSON_ROW_LABELS.completedAmbitions, done.map(a => ({
     whenLabel: a.resolvedTick != null ? agoWord(s.state.tick, a.resolvedTick) : '',

@@ -317,6 +317,26 @@ describe('the person rows resolve in the engine (THR-1909)', () => {
     expect(other.some(s => s.typeId === 'revealed_notices')).toBe(false);
   });
 
+  it('the interaction record opens what the profile opens below the level gates (review gate round 2)', () => {
+    const state = world();
+    // Not the avatar: a stranger by familiarity, whom the god has met in encounters.
+    state.graph.removeEdge('av1');
+    const completedLine = () => {
+      const row = personSections(state).find(x => x.typeId === 'completed_ambitions');
+      return row && row.kind === 'event-card' ? row.prose : '';
+    };
+    expect(completedLine()).toContain("You don't yet know what Kael has accomplished.");
+    const knowledge = {
+      revealedValues: new Set<string>(), revealedDomains: new Set<string>(), revealedBonds: new Map(),
+      revealedAmbitions: new Set<string>(), knownEvents: new Set<string>(), dispositionRevealed: false,
+      interactionDepth: 1, revealedPossessions: new Set<string>(), revealedPowers: new Set<string>(),
+      revealedConditions: new Set<string>(), revealedAgreements: new Set<string>(),
+    };
+    (state as unknown as { agentKnowledge: Map<string, unknown> }).agentKnowledge = new Map([['kael', knowledge]]);
+    // One meaningful exposure opens the ambitions gate, as on the Chronicle tab.
+    expect(completedLine()).toContain('Kael has yet to fulfill an ambition.');
+  });
+
   it('the person rows never resolve without a state (the hover card stays fail-soft)', () => {
     const state = world();
     const sections = composeSections('actor', { nodeId: 'kael', pageKind: 'actor', graph: state.graph, seed: 1, tick: 1 });
