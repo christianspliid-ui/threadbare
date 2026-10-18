@@ -53,10 +53,10 @@ describe('DoomBar', () => {
     expect(container.querySelector('div[style*="width: 25%"]')).toBeTruthy();
   });
 
-  it('shows expired state as UNMADE', () => {
+  it('shows the expired state as "Unmade" in the stage name slot (THR-1875)', () => {
     const expiredState: DoomClockState = { ...mockState, expired: true };
     render(<DoomBar definition={mockDefinition} state={expiredState} />);
-    expect(screen.getByText('UNMADE')).toBeInTheDocument();
+    expect(screen.getByText('Unmade')).toBeInTheDocument();
   });
 
   it('renders the sphere icon for a doom whose cards press one (reckoning → mind)', () => {

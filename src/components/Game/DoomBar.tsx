@@ -21,7 +21,17 @@ interface DoomBarProps {
    * the line that the panel opens when the chapter closes (Law 25).
    */
   locked?: boolean;
+  /**
+   * THR-1875 (frame plan § F3, yield step 3) — the stage name leaves line 1 when the top
+   * bar is short of room. It stays in the tooltip's label, so it is one hover away.
+   */
+  hideStageName?: boolean;
 }
+
+/** THR-1875 — where the stage name ellipsizes before yield step 3 moves it into the tooltip. */
+export const TOPBAR_DOOM_MAX_REM = 15;
+/** THR-1875 — the expired state's word, sentence case (THR-1833: no capitals, no monospace). */
+export const DOOM_UNMADE_WORD = 'Unmade';
 
 function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState): string {
   if (state.expired) return 'The doom has landed';
@@ -33,7 +43,7 @@ function getNextStageHint(definition: DoomClockDefinition, state: DoomClockState
   return `Next: ${nextStage.name}`;
 }
 
-export function DoomBar({ definition, state, journeyLabel, locked = false }: DoomBarProps) {
+export function DoomBar({ definition, state, journeyLabel, locked = false, hideStageName = false }: DoomBarProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
@@ -69,19 +79,22 @@ export function DoomBar({ definition, state, journeyLabel, locked = false }: Doo
     }
   }, [state.currentStage, stageName]);
 
-  const baseDesc = getUITooltip('ui.doom_bar')?.desc;
-  const lockedDesc = locked && baseDesc ? `${baseDesc} ${TOPBAR_LOCKED_SUFFIX}` : undefined;
+  // THR-1875 (§ F9): the journey line and the next-stage hint moved off the bar into
+  // its tooltip — the label keeps today's composition, the description gains the hint.
+  const baseDesc = getUITooltip('ui.doom_bar')?.desc ?? '';
+  const desc = [baseDesc, `${nextStageHint}.`, locked ? TOPBAR_LOCKED_SUFFIX : ''].filter(Boolean).join(' ');
+  const slotWord = state.expired ? DOOM_UNMADE_WORD : stageName;
 
   return (
     <Tooltip
       id="ui.doom_bar"
-      label={`${doomName} — Stage ${state.currentStage}: ${stageName}${journeyLabel ? ` — ${journeyHint}` : ''}`}
-      desc={lockedDesc}
+      label={`${doomName} — Stage ${state.currentStage}: ${stageName} — ${journeyHint}`}
+      desc={desc}
     >
-      <div className="topbar-tier min-w-0" style={{ minWidth: '170px' }}>
-        <span className="topbar-section-label">Doom</span>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
+      <div className="topbar-tier min-w-0" data-doom-stage-shown={hideStageName ? 'false' : 'true'}>
+        <div className="flex items-center justify-between min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="topbar-section-label">Doom</span>
             <Tooltip id={`doom.${definition.archetype}`}>
               <span className="inline-flex items-center" data-doom-sigil={definition.archetype} aria-label={doomName}>
                 {archetypeSphere
@@ -90,27 +103,23 @@ export function DoomBar({ definition, state, journeyLabel, locked = false }: Doo
                 }
               </span>
             </Tooltip>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-              {stageName}
-            </span>
+            {!hideStageName && (
+              <span
+                className="truncate"
+                data-testid="doom-stage-name"
+                style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', maxWidth: `${TOPBAR_DOOM_MAX_REM}rem` }}
+              >
+                {slotWord}
+              </span>
+            )}
           </div>
           {/* THR-1424 (Law 15 ruling, 2026-09-10): doom progress is a unitless proportion, and
               this tier already renders it as the `ProgressBar` below plus the stage name beside
               it. The numeral is dropped, never banded — an adverb is the wrong answer to
               "how much?" (Law 13 amendment, 2026-08-12). `UNMADE` survives: it is a terminal
               state, not a proportion. */}
-          {state.expired && (
-            <span className="figures-tabular ml-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-              UNMADE
-            </span>
-          )}
-        </div>
-        <div
-          className="flex items-center justify-between gap-2"
-          style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}
-        >
-          <span className="truncate">{journeyHint}</span>
-          <span className="truncate" style={{ maxWidth: '84px', textAlign: 'right' }}>{nextStageHint}</span>
+          {/* THR-1424: the bar below is the reading; no numeral. The expired state's
+              word sits in the stage name's slot (THR-1875). */}
         </div>
         <div className={isPulsing ? 'pulse-doom' : ''}>
           <ProgressBar progress={state.progress} color={color} glow={true} />

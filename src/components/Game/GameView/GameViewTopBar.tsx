@@ -14,7 +14,13 @@ import { OmenIndicator } from '../OmenIndicator';
 import { RivalsButton } from '../RivalsButton';
 import { NotablesButton } from '../NotablesButton';
 import { SettingsPanel } from '../SettingsPanel';
-import { IconButton } from '../../shared/IconButton';
+import { Icon } from '../../shared/Icon';
+import { Tooltip } from '../../shared/Tooltip';
+import { NeedsYou } from '../frame/NeedsYou';
+import { useTopBarYield } from '../frame/topBarYield';
+import { TOP_BAR_ITEMS, type TopBarItemDef, type TopBarItemId, type TopBarYieldStep } from '../../../data/frame-registry';
+import { getUITooltip } from '../../../data/ui-content';
+import type { NeedsYouRowVM, NeedsYouVM } from '../../../engine/views/needsYou';
 
 import type { GameState } from '../../../types/gameState';
 import type { FirstScreenReveal } from './firstScreenReveal';
@@ -39,6 +45,19 @@ export const TOPBAR_LIVE_HEIGHT_VAR = '--topbar-live-height';
 
 /** THR-1724 — how far the right group recedes while an encounter veil is open. */
 const TOPBAR_INERT_OPACITY = 0.4;
+
+/**
+ * THR-1875 (frame plan § F3) — the Find slot's minimum between the groups. It shrinks
+ * first (yield step 1), to zero while no `find` entry exists.
+ */
+export const TOP_BAR_CENTRE_MIN_REM = 15;
+
+/** THR-1875 — the debug lever's display-only overrides for the one-row check (§ Debug inspection). */
+export interface TopBarFrameFixture {
+  revealAll?: boolean;
+  omenName?: string;
+  heldBy?: string;
+}
 
 /**
  * THR-1814 — while a veil is open the right group takes no press: its panels open
@@ -150,14 +169,30 @@ export interface GameViewTopBarProps {
    * and which are inside their gold-ring window. Omitted means everything shows.
    */
   opening?: { show: OpeningRevealShow; newly: ReadonlySet<OpeningRevealSurfaceId> };
-  /** THR-1837 — the standing direction line, rendered after the time controls. */
-  directionLine?: ReactNode;
+  /**
+   * THR-1837 — the standing direction line, rendered after the time controls. THR-1875:
+   * a function receives `short` (yield step 5) and returns the short form.
+   */
+  directionLine?: ReactNode | ((short: boolean) => ReactNode);
   /** THR-1837 — the "Show every panel" setting. */
   showEveryPanel?: boolean;
   onToggleShowEveryPanel?: () => void;
   /** THR-1853 — the Rivals and Notables dropdowns report their open state up to GameView. */
   onRivalsOpenChange?: (open: boolean) => void;
   onNotablesOpenChange?: (open: boolean) => void;
+
+  /** THR-1875 (§ F4) — Needs you: the queue, its open state, the gift raise, a row's press. */
+  needsYou?: NeedsYouVM;
+  needsYouOpen?: boolean;
+  setNeedsYouOpen?: (open: boolean) => void;
+  needsYouRaised?: boolean;
+  /** An interrupt holds the clock: Needs-you rows are read-only. */
+  needsYouGuarded?: boolean;
+  onPressNeedsYouRow?: (row: NeedsYouRowVM) => void;
+  /** THR-1875 — the avatar's arrival names the pause (§ F4). */
+  namedPause?: string;
+  /** THR-1875 — `__DEBUG.setFrameFixture` overrides for the one-row check. */
+  frameFixture?: TopBarFrameFixture | null;
 }
 
 export function GameViewTopBar({
@@ -211,15 +246,24 @@ export function GameViewTopBar({
   onToggleShowEveryPanel,
   onRivalsOpenChange,
   onNotablesOpenChange,
+  needsYou,
+  needsYouOpen = false,
+  setNeedsYouOpen,
+  needsYouRaised = false,
+  needsYouGuarded = false,
+  onPressNeedsYouRow,
+  namedPause,
+  frameFixture,
 }: GameViewTopBarProps) {
-  const shown = (id: OpeningRevealSurfaceId) => opening?.show[id] ?? true;
+  const revealAll = frameFixture?.revealAll === true;
+  const shown = (id: OpeningRevealSurfaceId) => revealAll || (opening?.show[id] ?? true);
   /** The gold ring on a panel that just arrived (THR-1837 U4). */
   const ring = (id: OpeningRevealSurfaceId) =>
     opening?.newly.has(id) ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {};
-  const showDoom = reveal?.doom ?? true;
-  const showRivals = reveal?.rivals ?? true;
-  const showNotables = reveal?.notables ?? true;
-  const showOmens = reveal?.omens ?? true;
+  /** THR-1875 — an item is on the bar when its reveal surface and its THR-1648 gate both hold. */
+  const gated = (item: TopBarItemDef) =>
+    revealAll || ((item.revealSurface ? shown(item.revealSurface) : true)
+      && (item.firstScreenGate ? (reveal?.[item.firstScreenGate] ?? true) : true));
 
   // THR-1724 — publish the bar's *rendered* height as `--topbar-live-height`.
   // The encounter veil starts below it, so the time control — which names an
@@ -242,171 +286,235 @@ export function GameViewTopBar({
       root.style.removeProperty(TOPBAR_LIVE_HEIGHT_VAR);
     };
   }, []);
-  // ═══ Top bar — v7 visual language: solid bg, hairline border, two-tier label/value pattern ═══
+  const heldByShown = frameFixture?.heldBy ?? clockHeldBy;
+  const clockHeldShown = clockHeld || !!frameFixture?.heldBy;
+  const omenItem = TOP_BAR_ITEMS.find(i => i.id === 'omen');
+  const omenRendered = !!omenItem && gated(omenItem) && !!gameState.omenState?.primary;
+  const contentKey = [
+    TOP_BAR_ITEMS.filter(gated).map(i => i.id).join(','),
+    heldByShown ?? '', clockAnswerStatus ?? '', namedPause ?? '',
+    omenRendered ? (frameFixture?.omenName ?? gameState.omenState?.primary?.name ?? '') : '',
+    needsYou?.count ? 'ny' : '', directionLine ? 'dir' : '', running ? 'r' : 'p', firstRunPrompt ? 'f' : '',
+  ].join('|');
+  const yielded = useTopBarYield(barRef, contentKey);
+  const y = new Set<TopBarYieldStep>(yielded);
+
+  /** One component per entry (Law 58): a missing id is a type error. */
+  const ITEM: Record<TopBarItemId, () => ReactNode> = {
+    time: () => (
+      <SimulationControls
+        season={seasonName}
+        year={year}
+        running={running}
+        held={clockHeldShown}
+        heldBy={heldByShown}
+        answerStatus={clockAnswerStatus}
+        firstRunPrompt={firstRunPrompt}
+        namedPause={namedPause}
+        statusNarrow={y.has('time_status')}
+        speed={speed}
+        onToggle={handleToggleRunning}
+        onStep={doTick}
+        onSpeedChange={setSpeed}
+        compact
+      />
+    ),
+    needs_you: () => (needsYou && setNeedsYouOpen ? (
+      <NeedsYou
+        vm={needsYou}
+        open={needsYouOpen}
+        onOpenChange={setNeedsYouOpen}
+        guarded={needsYouGuarded}
+        raised={needsYouRaised}
+        onPressRow={row => onPressNeedsYouRow?.(row)}
+      />
+    ) : null),
+    direction_line: () => (typeof directionLine === 'function' ? directionLine(y.has('direction_short')) : directionLine),
+    doom: () => (
+      <div
+        role="button" tabIndex={0}
+        onClick={() => { if (!encounterOpen) setDoomDetailOpen(true); }}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!encounterOpen) setDoomDetailOpen(true); } }}
+        className="cursor-pointer min-w-0"
+        data-newly-revealed={opening?.newly.has('doom') ? 'true' : undefined}
+        style={opening?.newly.has('doom') ? NEWLY_REVEALED_STYLE : undefined}
+        aria-label="View doom clock details"
+        aria-disabled={encounterOpen || undefined}
+      >
+        <DoomBar
+          definition={gameState.doomDefinition}
+          state={gameState.doomClock}
+          journeyLabel={doomJourneyLabel}
+          locked={encounterOpen}
+          hideStageName={y.has('doom_name')}
+        />
+      </div>
+    ),
+    omen: () => (omenRendered ? (
+      <div {...ring('omen')}>
+        <OmenIndicator
+          omenState={gameState.omenState}
+          currentTick={gameState.tick}
+          locked={encounterOpen}
+          hideName={y.has('omen_name')}
+          nameOverride={frameFixture?.omenName}
+        />
+      </div>
+    ) : null),
+    rivals: () => (
+      <RivalsButton
+        definitions={gameState.rivalDefinitions}
+        states={gameState.rivalStates}
+        onOpenChange={onRivalsOpenChange}
+      />
+    ),
+    notables: () => <div {...ring('notables')}><NotablesButton gameState={gameState} onOpenChange={onNotablesOpenChange} /></div>,
+    read_threads: () => (
+      <LabelledButton id="read_threads" active={readThreadsOpen} onClick={() => setReadThreadsOpen(true)} />
+    ),
+    settings: () => (
+      <div className="flex items-center gap-1" style={{ position: 'relative' }}>
+        <LabelledButton
+          id="settings"
+          active={settingsPanelOpen}
+          onClick={() => setSettingsPanelOpen(v => !v)}
+          testId="settings-toggle"
+        />
+        <SettingsPanel
+          open={settingsPanelOpen}
+          onClose={() => setSettingsPanelOpen(false)}
+          fogDisabled={fogDisabled}
+          onToggleFog={() => setFogDisabled(v => !v)}
+          debugPanelOpen={debugPanelOpen}
+          onToggleDebug={handleToggleDebug}
+          showOrganicShore={showOrganicShore}
+          onToggleOrganicShore={() => setShowOrganicShore(v => !v)}
+          notificationPrefs={notificationPrefs}
+          onToggleNotificationCategory={toggleNotifCategory}
+          onSetNotificationMode={setNotifMode}
+          onResetNotificationPrefs={resetNotifPrefs}
+          musicVolume={musicVolume}
+          onMusicVolume={handleMusicVolume}
+          bgVolume={bgVolume}
+          onBgVolume={handleBgVolume}
+          uiVolume={uiVolume}
+          onUiVolume={handleUiVolume}
+          audioMuted={audioMuted}
+          onToggleAudioMute={handleToggleAudioMute}
+          recordingTrouble={recordingTrouble}
+          onToggleRecordTrouble={handleToggleRecordTrouble}
+          includeWorldInSnapshot={includeWorldInSnapshot}
+          onToggleIncludeWorld={handleToggleIncludeWorld}
+          onSaveSnapshot={handleSaveSnapshot}
+          {...(onExitToTitle ? { onExitToTitle } : {})}
+          {...(onToggleShowEveryPanel ? { showEveryPanel, onToggleShowEveryPanel } : {})}
+        />
+      </div>
+    ),
+  };
+
+  const renderItem = (item: TopBarItemDef) => {
+    if (!gated(item)) return null;
+    const guarded = item.guardedWhileEncounter && encounterOpen;
+    return (
+      <div
+        key={item.id}
+        data-topbar-item={item.id}
+        data-topbar-guarded={guarded ? 'true' : undefined}
+        className="flex items-center flex-shrink-0 min-w-0"
+      >
+        {ITEM[item.id]()}
+      </div>
+    );
+  };
+  const byOrder = (a: TopBarItemDef, b: TopBarItemDef) => a.order - b.order;
+  const left = TOP_BAR_ITEMS.filter(i => i.group === 'left').sort(byOrder);
+  const right = TOP_BAR_ITEMS.filter(i => i.group === 'right').sort(byOrder);
+  const rightLocked = encounterOpen && right.some(i => i.guardedWhileEncounter);
+
+  // ═══ Top bar — one row of `--topbar-height`, drawn from TOP_BAR_ITEMS (THR-1875, § F3) ═══
   return (
       <div
         ref={barRef}
         data-testid="game-topbar"
+        data-topbar-yielded={yielded.join(',')}
         className="w-full flex items-center relative z-30 flex-shrink-0"
         style={{
           background: 'var(--bg-deep)',
           borderBottom: '1px solid var(--border-subtle)',
-          minHeight: 'var(--topbar-height)',
-          paddingTop: '4px',
-          paddingBottom: '4px',
+          height: 'var(--topbar-height)',
+          flexWrap: 'nowrap',
+          overflow: 'hidden',
           paddingLeft: 'var(--topbar-padding-x)',
           paddingRight: 'var(--topbar-padding-x)',
           gap: 'var(--topbar-gap)',
         }}
       >
-        {/* LEFT GROUP: identity · time · essence */}
-        <div className="flex items-center flex-1 min-w-0" style={{ gap: 'var(--topbar-gap)' }}>
-          {/* IdentityChip superseded by AscendantBar (THR-184) */}
-
-          {/* Time controls */}
-          {shown('time_controls') && (
-          <SimulationControls
-            season={seasonName}
-            year={year}
-            running={running}
-            held={clockHeld}
-            heldBy={clockHeldBy}
-            answerStatus={clockAnswerStatus}
-            firstRunPrompt={firstRunPrompt}
-            speed={speed}
-            onToggle={handleToggleRunning}
-            onStep={doTick}
-            onSpeedChange={setSpeed}
-            compact
-          />
-          )}
-
-          {/* THR-1837 — the one standing direction line, until the first chapter is seen through */}
-          {directionLine}
-
-          {/* EssencePanel superseded by AscendantBar (THR-184) */}
-
-          {/* THR-1893: the World-Soul line moved to the head of the Chronicle (frame/LedgerRail). */}
-
-          {/* THR-1894: Attention moved to the god rail, under essence (frame/GodRail). */}
+        {/* LEFT GROUP: time · Needs you · the direction line */}
+        <div className="flex items-center flex-shrink-0" style={{ gap: 'var(--topbar-gap)' }}>
+          {left.map(renderItem)}
         </div>
 
-        {/* Group divider — hairline, neutral; gold reserved for active states */}
+        {/* CENTRE: Find's reserved slot (THR-1876 adds the `find` entry); empty space until then, never a stub. */}
         <div
-          className="w-px self-stretch ml-auto flex-shrink-0"
-          style={{ background: 'var(--border-subtle)' }}
+          data-testid="topbar-centre"
+          aria-hidden="true"
+          style={{ flex: '1 1 0', minWidth: y.has('centre') ? 0 : `${TOP_BAR_CENTRE_MIN_REM}rem` }}
         />
 
-        {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug — spacing-only separation */}
-        {/* THR-1814: not `inert` — hover and focus stay live under a veil so Doom and
+        {/* RIGHT GROUP: doom · omen · rivals · notables · read the threads · settings.
+            THR-1814: not `inert` — hover and focus stay live under a veil so Doom and
             Omen still explain themselves (Laws 17, 25). Presses are swallowed instead,
             because every panel in this group opens beneath the veil's z-band. */}
         <div
           className="flex items-center flex-shrink-0"
           data-testid="topbar-right-group"
-          aria-disabled={encounterOpen || undefined}
-          onClickCapture={encounterOpen ? swallowLockedPress : undefined}
-          onKeyDownCapture={encounterOpen ? swallowLockedKey : undefined}
+          aria-disabled={rightLocked || undefined}
+          onClickCapture={rightLocked ? swallowLockedPress : undefined}
+          onKeyDownCapture={rightLocked ? swallowLockedKey : undefined}
           style={{
             gap: 'var(--topbar-gap)',
-            opacity: encounterOpen ? TOPBAR_INERT_OPACITY : undefined,
+            opacity: rightLocked ? TOPBAR_INERT_OPACITY : undefined,
             transition: 'opacity 0.2s ease',
           }}
         >
-          {showDoom && (
-          <div
-            role="button" tabIndex={0}
-            onClick={() => { if (!encounterOpen) setDoomDetailOpen(true); }}
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!encounterOpen) setDoomDetailOpen(true); } }}
-            className="cursor-pointer"
-            data-newly-revealed={opening?.newly.has('doom') ? 'true' : undefined}
-            style={{ minWidth: '140px', ...(opening?.newly.has('doom') ? NEWLY_REVEALED_STYLE : {}) }}
-            aria-label="View doom clock details"
-            aria-disabled={encounterOpen || undefined}
-          >
-            <DoomBar
-              definition={gameState.doomDefinition}
-              state={gameState.doomClock}
-              journeyLabel={doomJourneyLabel}
-              locked={encounterOpen}
-            />
-          </div>
-          )}
-          {showOmens && gameState.omenState?.primary && (
-            <>
-              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div {...ring('omen')}>
-                <OmenIndicator
-                  omenState={gameState.omenState}
-                  currentTick={gameState.tick}
-                  locked={encounterOpen}
-                />
-              </div>
-            </>
-          )}
-          {/* MandateTracker superseded by AscendantBar (THR-184) */}
-          {/* AlertBar disabled */}
-          {showRivals && (
-            <RivalsButton
-              definitions={gameState.rivalDefinitions}
-              states={gameState.rivalStates}
-              onOpenChange={onRivalsOpenChange}
-            />
-          )}
-          {/* Notables intent panel (THR-630) */}
-          {showNotables && <div {...ring('notables')}><NotablesButton gameState={gameState} onOpenChange={onNotablesOpenChange} /></div>}
-          {/* Read the Threads — divine digest review */}
-          {shown('read_threads') && (
-          <IconButton
-            icon={<span>📖</span>}
-            active={readThreadsOpen}
-            onClick={() => setReadThreadsOpen(true)}
-            title="Read the Threads"
-            aria-label="Read the Threads"
-          />
-          )}
-          {shown('settings') && (
-          <div className="flex items-center gap-1" style={{ position: 'relative' }}>
-            <IconButton
-              data-testid="settings-toggle"
-              icon={<span>⚙</span>}
-              active={settingsPanelOpen}
-              onClick={() => setSettingsPanelOpen(v => !v)}
-              title="Settings"
-              aria-label="Settings"
-            />
-            <SettingsPanel
-              open={settingsPanelOpen}
-              onClose={() => setSettingsPanelOpen(false)}
-              fogDisabled={fogDisabled}
-              onToggleFog={() => setFogDisabled(v => !v)}
-              debugPanelOpen={debugPanelOpen}
-              onToggleDebug={handleToggleDebug}
-              showOrganicShore={showOrganicShore}
-              onToggleOrganicShore={() => setShowOrganicShore(v => !v)}
-              notificationPrefs={notificationPrefs}
-              onToggleNotificationCategory={toggleNotifCategory}
-              onSetNotificationMode={setNotifMode}
-              onResetNotificationPrefs={resetNotifPrefs}
-              musicVolume={musicVolume}
-              onMusicVolume={handleMusicVolume}
-              bgVolume={bgVolume}
-              onBgVolume={handleBgVolume}
-              uiVolume={uiVolume}
-              onUiVolume={handleUiVolume}
-              audioMuted={audioMuted}
-              onToggleAudioMute={handleToggleAudioMute}
-              recordingTrouble={recordingTrouble}
-              onToggleRecordTrouble={handleToggleRecordTrouble}
-              includeWorldInSnapshot={includeWorldInSnapshot}
-              onToggleIncludeWorld={handleToggleIncludeWorld}
-              onSaveSnapshot={handleSaveSnapshot}
-              {...(onExitToTitle ? { onExitToTitle } : {})}
-              {...(onToggleShowEveryPanel ? { showEveryPanel, onToggleShowEveryPanel } : {})}
-            />
-          </div>
-          )}
+          {right.map(renderItem)}
         </div>
       </div>
   );
+}
+
+/** A labelled top-bar button: the carved icon and the word, always (THR-1834 § 5). */
+function LabelledButton({ id, active, onClick, testId }: { id: TopBarItemId; active: boolean; onClick: () => void; testId?: string }) {
+  const item = TOP_BAR_ITEMS.find(i => i.id === id);
+  if (!item) return null;
+  const tip = item.tooltipId ? getUITooltip(item.tooltipId) : null;
+  const button = (
+    <button
+      type="button"
+      className="focus-ring flex items-center"
+      data-testid={testId}
+      aria-label={item.label}
+      aria-pressed={active}
+      onClick={onClick}
+      style={{
+        gap: 'var(--space-1)',
+        height: '2rem',
+        padding: '0 var(--space-2)',
+        borderRadius: 'var(--radius-sm, 4px)',
+        border: '1px solid transparent',
+        background: active ? 'var(--bg-hover)' : 'transparent',
+        color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 700,
+        fontSize: 'var(--text-sm)',
+        whiteSpace: 'nowrap',
+        cursor: 'pointer',
+      }}
+    >
+      {item.icon && <Icon name={item.icon} size="chip" decorative />}
+      <span>{item.label}</span>
+    </button>
+  );
+  return tip && item.tooltipId ? <Tooltip id={item.tooltipId} label={tip.label} desc={tip.desc}>{button}</Tooltip> : button;
 }

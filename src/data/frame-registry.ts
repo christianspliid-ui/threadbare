@@ -17,6 +17,7 @@
  * | LEDGER_RAIL_HOTKEY | 'l' | Folds or unfolds the Ledger rail; the flyout while the Inspector is open |
  * | GOD_RAIL_OPEN_ROWS_KEY | 'threadbare.ui.godRail.openRows' | The folded rows the player opened (Law 51) |
  * | GOD_RAIL_HAND_GROUP_KEY | 'threadbare.ui.godRail.handGroup' | The hand group the player last opened (Law 51) |
+ * | NEEDS_YOU_HOTKEY | 'n' | Opens or closes Needs you while its pill renders |
  */
 import type { IconName } from './icons/iconRegistry';
 import type { OpeningRevealSurfaceId } from './opening-reveal-table';
@@ -27,6 +28,8 @@ import {
   STRIP_COUNT_LABELS,
   THREADS_LABEL,
   WORLD_SOUL_LABEL,
+  TOP_BAR_WORDS,
+  NEEDS_YOU_LABEL,
   type CountPair,
 } from './frame-content';
 
@@ -145,6 +148,60 @@ export const GOD_RAIL_OPEN_ROWS_KEY = 'threadbare.ui.godRail.openRows';
 /** The hand group the player last opened, when the hand groups at the rail's limit (Law 51). */
 export const GOD_RAIL_HAND_GROUP_KEY = 'threadbare.ui.godRail.handGroup';
 
+// ─── The top bar (slice 3, THR-1875; plan § F3) ─────────────────────
+
+export type TopBarItemId = 'time' | 'needs_you' | 'direction_line' | 'doom' | 'omen' | 'rivals' | 'notables' | 'read_threads' | 'settings';
+
+/** The THR-1648 quiet-first-screen gates (`FirstScreenReveal`'s keys), ANDed with the reveal. */
+export type FirstScreenGateId = 'bonded' | 'doom' | 'mandate' | 'notables' | 'rivals' | 'omens';
+
+export interface TopBarItemDef {
+  id: TopBarItemId;
+  group: 'left' | 'right';
+  order: number;
+  /** The word, always shown (THR-1834 § 5); '' only where the item is text itself (time, direction line). */
+  label: string;
+  /** null only where the item is text (time, direction line, doom, omen). */
+  icon: IconName | null;
+  /** null only with a named reason in `TOOLTIP_NONE_REASONS`. */
+  tooltipId: string | null;
+  revealSurface: OpeningRevealSurfaceId | null;
+  firstScreenGate: FirstScreenGateId | null;
+  /** THR-1814: dims and swallows presses while an encounter is open. */
+  guardedWhileEncounter: boolean;
+  hotkey: string | null;
+}
+
+/** `N` opens or closes Needs you while its pill renders (§ F10). */
+export const NEEDS_YOU_HOTKEY = 'n';
+
+/**
+ * The top bar, left to right (THR-1828 call 1). The centre between the groups is Find's
+ * reserved slot (THR-1876 adds a `find` entry). Adding a button is one entry here and one
+ * component in `frame/topBarComponents.tsx`.
+ */
+export const TOP_BAR_ITEMS: readonly TopBarItemDef[] = [
+  { id: 'time', group: 'left', order: 1, label: '', icon: null, tooltipId: 'ui.sim_speed', revealSurface: 'time_controls', firstScreenGate: null, guardedWhileEncounter: false, hotkey: null },
+  { id: 'needs_you', group: 'left', order: 2, label: NEEDS_YOU_LABEL, icon: 'needs-you', tooltipId: 'ui.needs_you', revealSurface: null, firstScreenGate: 'bonded', guardedWhileEncounter: false, hotkey: NEEDS_YOU_HOTKEY },
+  { id: 'direction_line', group: 'left', order: 3, label: '', icon: null, tooltipId: null, revealSurface: null, firstScreenGate: null, guardedWhileEncounter: false, hotkey: null },
+  { id: 'doom', group: 'right', order: 1, label: TOP_BAR_WORDS.doom, icon: null, tooltipId: 'ui.doom_bar', revealSurface: 'doom', firstScreenGate: 'doom', guardedWhileEncounter: true, hotkey: null },
+  { id: 'omen', group: 'right', order: 2, label: TOP_BAR_WORDS.omen, icon: null, tooltipId: 'ui.omen', revealSurface: 'omen', firstScreenGate: 'omens', guardedWhileEncounter: true, hotkey: null },
+  { id: 'rivals', group: 'right', order: 3, label: TOP_BAR_WORDS.rivals, icon: 'rivals', tooltipId: 'ui.rival_panel', revealSurface: null, firstScreenGate: 'rivals', guardedWhileEncounter: true, hotkey: null },
+  { id: 'notables', group: 'right', order: 4, label: TOP_BAR_WORDS.notables, icon: 'notables', tooltipId: 'ui.notables', revealSurface: 'notables', firstScreenGate: 'notables', guardedWhileEncounter: true, hotkey: null },
+  { id: 'read_threads', group: 'right', order: 5, label: TOP_BAR_WORDS.readThreads, icon: 'read-the-threads', tooltipId: 'ui.read_threads', revealSurface: 'read_threads', firstScreenGate: null, guardedWhileEncounter: true, hotkey: null },
+  { id: 'settings', group: 'right', order: 6, label: TOP_BAR_WORDS.settings, icon: 'settings', tooltipId: null, revealSurface: 'settings', firstScreenGate: null, guardedWhileEncounter: true, hotkey: null },
+];
+
+/** Why a top-bar item carries no tooltip (check 1 reads this). */
+export const TOOLTIP_NONE_REASONS: Readonly<Partial<Record<TopBarItemId, string>>> = {
+  direction_line: 'THR-1837: the line is its own sentence; its full form is its tooltip when shortened',
+  settings: 'a control, not a concept',
+};
+
+/** What gives way, in order, when the bar would overflow (§ F3). Undone in reverse. */
+export const TOP_BAR_YIELD_ORDER = ['centre', 'time_status', 'doom_name', 'omen_name', 'direction_short'] as const;
+export type TopBarYieldStep = (typeof TOP_BAR_YIELD_ORDER)[number];
+
 /** `L` folds or unfolds the rail; with the Inspector open it toggles the flyout (§ F8, § F10). */
 export const LEDGER_RAIL_HOTKEY = 'l';
 
@@ -153,24 +210,16 @@ export const LEDGER_RAIL_HOTKEY = 'l';
  * `TOP_BAR_KEYS` (`top-bar-keys.ts`), whose overlap test keeps each key single-claimed.
  * Never hand-kept beside the lists. Both cases, as `m` / `M` are.
  */
-export const FRAME_HOTKEYS: readonly string[] = [LEDGER_RAIL_HOTKEY, LEDGER_RAIL_HOTKEY.toUpperCase()];
-
-/**
- * Opening-reveal surfaces whose frame lists land in a later slice, each with the
- * ticket that lists it. Slice 2 (THR-1894) emptied the god rail's part; slice 3 deletes this.
- */
-export const NOT_YET_LISTED: Readonly<Partial<Record<OpeningRevealSurfaceId, string>>> = {
-  time_controls: 'THR-1875',
-  settings: 'THR-1875',
-  read_threads: 'THR-1875',
-  doom: 'THR-1875',
-  notables: 'THR-1875',
-  omen: 'THR-1875',
-};
+export const FRAME_HOTKEYS: readonly string[] = [
+  LEDGER_RAIL_HOTKEY,
+  LEDGER_RAIL_HOTKEY.toUpperCase(),
+  ...TOP_BAR_ITEMS.flatMap(i => (i.hotkey ? [i.hotkey, i.hotkey.toUpperCase()] : [])),
+];
 
 /** Every reveal surface a frame list claims, with the entry that claims it. */
 export function frameRevealClaims(): { surface: OpeningRevealSurfaceId; claimedBy: string }[] {
   const out: { surface: OpeningRevealSurfaceId; claimedBy: string }[] = [];
+  for (const t of TOP_BAR_ITEMS) if (t.revealSurface) out.push({ surface: t.revealSurface, claimedBy: `TOP_BAR_ITEMS.${t.id}` });
   for (const s of LEDGER_RAIL_SECTIONS) for (const r of s.revealSurfaces) out.push({ surface: r, claimedBy: `LEDGER_RAIL_SECTIONS.${s.id}` });
   for (const t of LEDGER_TABS) if (t.revealSurface) out.push({ surface: t.revealSurface, claimedBy: `LEDGER_TABS.${t.id}` });
   for (const l of LEDGER_LINES) out.push({ surface: l.revealSurface, claimedBy: `LEDGER_LINES.${l.id}` });

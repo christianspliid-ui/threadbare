@@ -181,6 +181,11 @@ if (import.meta.env.DEV) {
   } | null = null;
   // THR-1893 — the screen frame's dev levers, registered by the Ledger rail.
   let _frameBridge: { setInspectorOpen: (open: boolean) => boolean } | null = null;
+  // THR-1875 — the top bar registers its dev levers (Needs-you fixture, frame fixture).
+  let _topBarBridge: {
+    pushNeedsYouFixture: (opts?: { news?: number; burst?: number; heldPopup?: boolean }) => { pushed: number };
+    setFrameFixture: (fixture: { revealAll?: boolean; omenName?: string; heldBy?: string } | null) => boolean;
+  } | null = null;
   // THR-1813 — the account record, registered by GameView.
   let _accountBridge: {
     get: () => import('./types/account').AccountRecord | null;
@@ -1156,6 +1161,9 @@ if (import.meta.env.DEV) {
     setFrameInspectorOpen: async (open: boolean) => _frameBridge?.setInspectorOpen(open) ?? false,
     /** @internal the Ledger rail registers the frame bridge here */
     _registerFrameBridge: (bridge) => { _frameBridge = bridge; },
+    pushNeedsYouFixture: async (opts) => _topBarBridge?.pushNeedsYouFixture(opts) ?? { pushed: 0 },
+    setFrameFixture: async (fixture) => _topBarBridge?.setFrameFixture(fixture) ?? false,
+    _registerTopBarBridge: (bridge) => { _topBarBridge = bridge; },
     getAccountRecord: async () => _accountBridge?.get() ?? null,
     previewRunEnd: async () => _accountBridge?.previewRunEnd() ?? null,
     endAge: async () => _accountBridge?.endAge() ?? false,

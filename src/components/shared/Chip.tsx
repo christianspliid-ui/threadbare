@@ -94,6 +94,10 @@ export interface CountChipFullProps extends CountChipBase {
   tint?: ChipCountTint;
   /** Opens the list. Never clears the count (Law 40) — the owner keeps the number. */
   onOpen?: () => void;
+  /** THR-1875 — a visible word before the count ("Needs you 3"); the top bar's pill shows it. */
+  word?: string;
+  /** THR-1875 — the tooltip's description under the spoken label (a registry entry's words). */
+  desc?: string;
 }
 
 /**
@@ -363,7 +367,7 @@ function CountChip(props: CountChipFullProps | CountChipBadgeProps) {
     );
   }
 
-  const { icon, label, tint, onOpen, size = 'md', className, style } = props;
+  const { icon, label, tint, onOpen, size = 'md', className, style, word, desc } = props;
   const ink = tint === 'gold' ? inkFrom('var(--accent-gold)') : NEUTRAL_INK;
   const chip = (
     <Shell
@@ -375,10 +379,11 @@ function CountChip(props: CountChipFullProps | CountChipBadgeProps) {
       extra={{ ...countAttrs, 'data-chip-form': 'full' }}
     >
       <Icon name={icon} size="chip" decorative />
+      {word && <span aria-hidden="true" style={{ fontWeight: 700 }}>{word}</span>}
       <span aria-hidden="true">{n}</span>
     </Shell>
   );
-  return <Tooltip label={label}>{chip}</Tooltip>;
+  return <Tooltip label={label} desc={desc}>{chip}</Tooltip>;
 }
 
 function KeywordChip({ keyword, icon, accent, leading, tooltipId, pressed, onToggle, size = 'sm', className, style }: KeywordChipProps) {

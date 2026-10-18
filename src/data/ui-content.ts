@@ -29,6 +29,9 @@ export const FIRST_RUN_PROMPT_CAPTION = 'Time is still. Press Play or Space to l
  */
 export const OPENING_DIRECTION_CHAPTER_WAITING = 'Watch over {firstName}. A chapter of {theirPossessive} story is waiting →';
 export const OPENING_DIRECTION_LET_TIME_RUN = 'Watch over {firstName}. Let time run, and {theirPossessive} next chapter will come to you.';
+/** THR-1875 (frame plan § F3, yield step 5) — the short forms the top bar takes when short of room. */
+export const OPENING_DIRECTION_CHAPTER_WAITING_SHORT = "{firstName}'s chapter is waiting →";
+export const OPENING_DIRECTION_LET_TIME_RUN_SHORT = 'Let time run for {firstName}';
 /** Said in place of The First's name when none resolves. */
 export const OPENING_DIRECTION_FIRST_FALLBACK = 'The First';
 
@@ -61,8 +64,11 @@ export function formatOpeningDirection(
   mode: 'chapter_waiting' | 'let_time_run',
   firstName: string | undefined,
   theirPossessive: string,
+  short = false,
 ): string {
-  const template = mode === 'chapter_waiting' ? OPENING_DIRECTION_CHAPTER_WAITING : OPENING_DIRECTION_LET_TIME_RUN;
+  const template = short
+    ? (mode === 'chapter_waiting' ? OPENING_DIRECTION_CHAPTER_WAITING_SHORT : OPENING_DIRECTION_LET_TIME_RUN_SHORT)
+    : (mode === 'chapter_waiting' ? OPENING_DIRECTION_CHAPTER_WAITING : OPENING_DIRECTION_LET_TIME_RUN);
   const name = firstName?.trim() || OPENING_DIRECTION_FIRST_FALLBACK;
   return template.replace('{firstName}', () => name).replace('{theirPossessive}', () => theirPossessive);
 }
@@ -360,6 +366,33 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.chronicle': {
     label: 'Chronicle',
     desc: "The story of the world so far, newest first. Now holds the last four seasons; Years keeps every year; Ledger lists your mortals' chapters.",
+  },
+  // THR-1875 (frame plan § Player-facing text) — Needs you and the labelled top bar.
+  'ui.needs_you': {
+    label: 'Needs you',
+    desc: 'Things waiting on you that do not stop time: offers, what your acts bought, news, and moments held behind the one on screen. It shows only when something waits. Press N to open it.',
+  },
+  'ui.needs_you_waiting': {
+    label: 'Waiting for you',
+    desc: 'Things you can open now. They wait until you do.',
+  },
+  'ui.needs_you_held': {
+    label: 'Held behind this chapter',
+    desc: 'Moments that will open, in this order, when the one on screen closes.',
+  },
+  // The description is rebuilt at render from NEEDS_YOU_NEWS_KEEP_DAYS (frame-content.ts),
+  // so a retune never makes it false; this copy is the default it renders to.
+  'ui.needs_you_news': {
+    label: 'News',
+    desc: 'What changed in the world that touches you. A row leaves when you open it, or after three days.',
+  },
+  'ui.read_threads': {
+    label: 'Read the Threads',
+    desc: 'A digest of what your threaded mortals did while you looked elsewhere.',
+  },
+  'ui.notables': {
+    label: 'Notables',
+    desc: 'The rulers and powers with a live or recently finished agenda, and what each is after. The number is how many the list shows. It falls when a finished agenda fades from the list.',
   },
   'ui.chronicle_years': {
     label: 'Years',

@@ -125,11 +125,11 @@ describe('DoomBar — doom progress reads as the bar (THR-1424)', () => {
     expect(container.querySelector('div[style*="width: 25%"]')).toBeTruthy();
   });
 
-  it('keeps UNMADE, which names a terminal state rather than a proportion', () => {
+  it('keeps Unmade, which names a terminal state rather than a proportion (THR-1875: sentence case)', () => {
     const { container } = render(
       <DoomBar definition={doomDefinition} state={{ ...doomState, expired: true }} />
     );
-    expect(screen.getByText('UNMADE')).toBeInTheDocument();
+    expect(screen.getByText('Unmade')).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/%/);
   });
 });

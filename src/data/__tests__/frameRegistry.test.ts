@@ -10,7 +10,9 @@ import {
   LEDGER_RAIL_HOTKEY,
   LEDGER_RAIL_SECTIONS,
   LEDGER_TABS,
-  NOT_YET_LISTED,
+  NEEDS_YOU_HOTKEY,
+  TOP_BAR_ITEMS,
+  TOOLTIP_NONE_REASONS,
   frameRevealClaims,
 } from '../frame-registry';
 import { OPENING_REVEAL_TABLE } from '../opening-reveal-table';
@@ -28,6 +30,20 @@ describe('frame registry — check 1: words, icons, tooltips', () => {
     expect(uniq(LEDGER_TABS.map(t => t.id)), 'duplicate LEDGER_TABS ids').toEqual([]);
     expect(uniq(LEDGER_LINES.map(l => l.id)), 'duplicate LEDGER_LINES ids').toEqual([]);
     expect(uniq(GOD_RAIL_SECTIONS.map(g => g.id)), 'duplicate GOD_RAIL_SECTIONS ids').toEqual([]);
+    expect(uniq(TOP_BAR_ITEMS.map(t => t.id)), 'duplicate TOP_BAR_ITEMS ids').toEqual([]);
+  });
+
+  // THR-1875 (§ F3): a top-bar item with an icon always shows its word (THR-1834 § 5);
+  // a missing tooltip has a named reason.
+  it('every top-bar item with an icon has a word, and every tooltipId resolves or has a reason', () => {
+    for (const t of TOP_BAR_ITEMS) {
+      if (t.icon) {
+        expect(t.label.trim().length, `TOP_BAR_ITEMS.${t.id} has an icon but no word label`).toBeGreaterThan(0);
+        expect(t.icon in ICON_REGISTRY, `TOP_BAR_ITEMS.${t.id}: icon '${t.icon}' is not in ICON_REGISTRY`).toBe(true);
+      }
+      if (t.tooltipId) expect(getUITooltip(t.tooltipId), `TOP_BAR_ITEMS.${t.id}: tooltip ${t.tooltipId} is not registered`).not.toBeNull();
+      else expect(TOOLTIP_NONE_REASONS[t.id], `TOP_BAR_ITEMS.${t.id} has no tooltip and no reason in TOOLTIP_NONE_REASONS`).toBeTruthy();
+    }
   });
 
   it('every entry has a word label and every tooltipId resolves in the ui.* registry', () => {
@@ -60,28 +76,19 @@ describe('frame registry — check 2: the reveal table and the frame agree', () 
   const claims = frameRevealClaims();
   const tableSurfaces = OPENING_REVEAL_TABLE.map(r => r.surface);
 
-  it('every opening-reveal surface is claimed by exactly one frame entry or named as not yet listed', () => {
+  it('every opening-reveal surface is claimed by exactly one frame entry', () => {
     for (const surface of tableSurfaces) {
       const by = claims.filter(c => c.surface === surface).map(c => c.claimedBy);
-      const later = NOT_YET_LISTED[surface];
       expect(
-        by.length + (later ? 1 : 0),
+        by.length,
         `opening-reveal surface '${surface}' has no frame entry: add it to TOP_BAR_ITEMS, GOD_RAIL_SECTIONS, LEDGER_RAIL_SECTIONS or LEDGER_TABS`
-          + (by.length > 1 ? ` (claimed twice: ${by.join(', ')})` : '')
-          + (by.length && later ? ` (claimed by ${by.join(', ')} and still in NOT_YET_LISTED for ${later})` : ''),
+          + (by.length > 1 ? ` (claimed twice: ${by.join(', ')})` : ''),
       ).toBe(1);
     }
   });
 
   it('every claim names a surface the table has', () => {
     for (const c of claims) expect(tableSurfaces, `${c.claimedBy} claims '${c.surface}', which OPENING_REVEAL_TABLE does not have`).toContain(c.surface);
-    for (const s of Object.keys(NOT_YET_LISTED)) expect(tableSurfaces, `NOT_YET_LISTED names '${s}', which OPENING_REVEAL_TABLE does not have`).toContain(s);
-  });
-
-  it('NOT_YET_LISTED names only the top bar (THR-1875): the god rail (THR-1894) lists its own', () => {
-    for (const [surface, ticket] of Object.entries(NOT_YET_LISTED)) {
-      expect(['THR-1875'], `NOT_YET_LISTED.${surface}`).toContain(ticket);
-    }
   });
 
   it('World Pulse has retired: no reveal row and no frame entry', () => {
@@ -114,5 +121,12 @@ describe('frame registry — check 3: keys reach TOP_BAR_KEYS through FRAME_HOTK
   it('L is declared once, on the registry, and spread into TOP_BAR_KEYS', () => {
     expect(LEDGER_RAIL_HOTKEY).toBe('l');
     for (const k of FRAME_HOTKEYS) expect(TOP_BAR_KEYS, `FRAME_HOTKEYS '${k}' missing from TOP_BAR_KEYS`).toContain(k);
+  });
+
+  it('N (Needs you) is declared on its TOP_BAR_ITEMS entry and reaches TOP_BAR_KEYS', () => {
+    expect(NEEDS_YOU_HOTKEY).toBe('n');
+    expect(TOP_BAR_ITEMS.find(t => t.id === 'needs_you')?.hotkey).toBe('n');
+    expect(TOP_BAR_KEYS).toContain('n');
+    expect(TOP_BAR_KEYS).toContain('N');
   });
 });

@@ -2652,11 +2652,28 @@ export interface DebugBridge {
    * THR-1894 adds `godRail`: the sections drawn and open, and the hand (its cards, fit mode
    * whole | grouped, open group, armed card, rest state, free height). Slice 3 adds the top bar.
    */
-  getFrameState: () => Promise<import('./components/Game/frame/frameDebugState').DebugFrameStateSlice1>;
+  getFrameState: () => Promise<import('./components/Game/frame/frameDebugState').DebugFrameState>;
   /** THR-1893 — dev lever: force the Inspector input the Ledger rail folds on. Resolves to the value set. */
   setFrameInspectorOpen: (open: boolean) => Promise<boolean>;
   /** @internal the Ledger rail registers the frame bridge here (THR-1893). */
   _registerFrameBridge: (bridge: { setInspectorOpen: (open: boolean) => boolean }) => void;
+  /**
+   * THR-1875 (frame plan § Debug inspection) — dev lever: push Needs-you fixtures. `news` alerts
+   * land one per tick (current tick minus its index), so they stay separate rows; `burst` alerts
+   * land in one tick and coalesce into one row; `heldPopup` lists a held message. Lines name a
+   * real mortal (The First). Resolves to how many alerts were pushed.
+   */
+  pushNeedsYouFixture: (opts?: { news?: number; burst?: number; heldPopup?: boolean }) => Promise<{ pushed: number }>;
+  /**
+   * THR-1875 — dev lever for the one-row check's worst state: `revealAll` forces every top-bar
+   * gate, `omenName` and `heldBy` are display-only names. Never touches GameState. `null` clears.
+   */
+  setFrameFixture: (fixture: { revealAll?: boolean; omenName?: string; heldBy?: string } | null) => Promise<boolean>;
+  /** @internal GameView registers the top bar's levers here (THR-1875). */
+  _registerTopBarBridge: (bridge: {
+    pushNeedsYouFixture: (opts?: { news?: number; burst?: number; heldPopup?: boolean }) => { pushed: number };
+    setFrameFixture: (fixture: { revealAll?: boolean; omenName?: string; heldBy?: string } | null) => boolean;
+  }) => void;
   /** THR-1902 — the map's chrome state (`fog`: what uncharted land shows). Null before the map mounts. */
   getMapChrome: () => Promise<DebugMapChromeResult | null>;
   /** @internal HexMapV2 registers the map-chrome bridge here (THR-1902). */

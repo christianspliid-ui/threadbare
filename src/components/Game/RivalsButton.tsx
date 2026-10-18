@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalPanel } from './RivalPanel';
 import { IconButton } from '../shared/IconButton';
+import { Icon } from '../shared/Icon';
 import { Dropdown } from '../shared/Dropdown';
 import { hostilityLabel } from '../../data/uiColorPalette';
 
@@ -29,7 +30,7 @@ export function RivalsButton({ definitions, states, onOpenChange }: RivalsButton
       trigger={
         <div className="flex items-center" style={{ gap: 'var(--space-2)' }}>
           <IconButton
-            icon={<span>⚔</span>}
+            icon={<Icon name="rivals" size="chip" decorative />}
             badge={definitions.length}
             badgeOf="rivals"
             active={open}
@@ -49,7 +50,7 @@ export function RivalsButton({ definitions, states, onOpenChange }: RivalsButton
               icon; a dead label reads as a broken panel. Mouse-only — the icon
               button already carries the accessible name and keyboard focus. */}
           <span
-            className="topbar-section-label topbar-compact-hide"
+            className="topbar-section-label"
             data-testid="rivals-chip-label"
             aria-hidden="true"
             style={{ cursor: 'pointer' }}

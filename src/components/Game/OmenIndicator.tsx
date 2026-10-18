@@ -19,10 +19,14 @@ function OmenLine({
   omen,
   isPrimary,
   currentTick,
+  hideName = false,
+  nameOverride,
 }: {
   omen: ActiveOmen;
   isPrimary: boolean;
   currentTick: number;
+  hideName?: boolean;
+  nameOverride?: string;
 }) {
   const template = getOmenTemplateById(omen.templateId);
   const color = omen.sphere ? getSphereColor(omen.sphere) : '#a0956b';
@@ -55,39 +59,29 @@ function OmenLine({
       >
         <OmenMark omen={omen} currentTick={currentTick} />
       </span>
-      <span
-        style={{
-          fontSize: isPrimary ? '11px' : '10px',
-          color: isPrimary ? 'var(--text-secondary)' : 'var(--text-muted)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          maxWidth: isPrimary ? '130px' : '90px',
-        }}
-      >
-        {omen.name}
-      </span>
-      {isPrimary && template.tagline && (
-        <>
-          <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', flexShrink: 0 }}>—</span>
-          <span
-            style={{
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
-              fontStyle: 'italic',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: '160px',
-            }}
-          >
-            &ldquo;{template.tagline}&rdquo;
-          </span>
-        </>
+      {/* THR-1875 (§ F3): the bar shows the omen's name only; its tagline and any
+          second omen live in the flyout. Yield step 4 moves the name into the tooltip. */}
+      {!hideName && (
+        <span
+          data-testid="omen-name"
+          style={{
+            fontSize: 'var(--text-sm)',
+            color: isPrimary ? 'var(--text-secondary)' : 'var(--text-muted)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            maxWidth: `${OMEN_NAME_MAX_REM}rem`,
+          }}
+        >
+          {nameOverride ?? omen.name}
+        </span>
       )}
     </div>
   );
 }
+
+/** THR-1875 — where the omen's name ellipsizes in the top bar. */
+export const OMEN_NAME_MAX_REM = 10;
 
 interface OmenIndicatorProps {
   omenState: OmenState | undefined;
@@ -98,9 +92,13 @@ interface OmenIndicatorProps {
    * would sit beneath the veil's z-band.
    */
   locked?: boolean;
+  /** THR-1875 — yield step 4: the name leaves the bar for the tooltip label. */
+  hideName?: boolean;
+  /** THR-1875 — `__DEBUG.setFrameFixture({ omenName })`: a display-only name for the fit check. */
+  nameOverride?: string;
 }
 
-export function OmenIndicator({ omenState, currentTick, locked = false }: OmenIndicatorProps) {
+export function OmenIndicator({ omenState, currentTick, locked = false, hideName = false, nameOverride }: OmenIndicatorProps) {
   const [detailOpen, setDetailOpen] = useState(false);
 
   if (!omenState?.primary) return null;
@@ -113,7 +111,7 @@ export function OmenIndicator({ omenState, currentTick, locked = false }: OmenIn
 
   return (
     <>
-      <Tooltip id="ui.omen" label={`Omen — ${omenState.primary.name}`} desc={lockedDesc} focusable={false}>
+      <Tooltip id="ui.omen" label={`Omen · ${nameOverride ?? omenState.primary.name}`} desc={lockedDesc} focusable={false}>
       <div
         role="button"
         tabIndex={0}
@@ -141,10 +139,7 @@ export function OmenIndicator({ omenState, currentTick, locked = false }: OmenIn
         }}
       >
         <span className="topbar-section-label">Omen</span>
-        <OmenLine omen={omenState.primary} isPrimary currentTick={currentTick} />
-        {omenState.secondary && (
-          <OmenLine omen={omenState.secondary} isPrimary={false} currentTick={currentTick} />
-        )}
+        <OmenLine omen={omenState.primary} isPrimary currentTick={currentTick} hideName={hideName} nameOverride={nameOverride} />
       </div>
       </Tooltip>
 
