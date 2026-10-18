@@ -73,9 +73,9 @@ function makeState(o: Opts = {}): GameState {
 }
 
 describe('OPENING_REVEAL_TABLE (THR-1837 C1)', () => {
-  it('has 18 rows, one per surface', () => {
-    expect(OPENING_REVEAL_TABLE).toHaveLength(18);
-    expect(new Set(OPENING_REVEAL_TABLE.map(r => r.surface)).size).toBe(18);
+  it('has 17 rows, one per surface (World Pulse retired, THR-1893)', () => {
+    expect(OPENING_REVEAL_TABLE).toHaveLength(17);
+    expect(new Set(OPENING_REVEAL_TABLE.map(r => r.surface)).size).toBe(17);
   });
 
   it('every gift beatId is a real ASCENDANT_SPINE id', () => {
@@ -122,7 +122,7 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
     expect(r.rows.mandate.reason).toBe('waiting:beat.spine.the_seat');
     expect(r.rows.investiture.reason).toBe('waiting:beat.spine.the_seat');
     expect(r.rows.notables.reason).toBe('waiting:beat.spine.the_first_word');
-    for (const s of ['reaches', 'world_pulse', 'world_soul', 'omen'] as const) {
+    for (const s of ['reaches', 'world_soul', 'omen'] as const) {
       expect(r.rows[s].reason, s).toBe('waiting:beat.spine.a_path_opens');
     }
     expect(r.rows.chapter_ledger).toEqual({ revealed: false, reason: 'waiting:first_chapter' });
@@ -235,8 +235,8 @@ describe('opening reveal copy (THR-1837 C2–C4)', () => {
 
   it('a ceiling reveal says nothing more is hidden', () => {
     const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS }));
-    expect(revealToastFor(new Set(['notables', 'reaches', 'world_pulse', 'world_soul', 'omen']), r))
-      .toBe('New beside the map: Notables, your Reaches, World Pulse, the World-Soul and Omens. Nothing more is hidden.');
+    expect(revealToastFor(new Set(['notables', 'reaches', 'world_soul', 'omen']), r))
+      .toBe('New beside the map: Notables, your Reaches, the World-Soul and Omens. Nothing more is hidden.');
   });
 });
 

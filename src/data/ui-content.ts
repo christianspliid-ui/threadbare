@@ -276,8 +276,8 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'The world waits while time is still. Play lets mortals live their days; it stops again for every moment that matters.',
   },
   'ui.sim_speed': {
-    label: 'Tick Speed',
-    desc: 'How fast the world turns — higher speed skips routine events.',
+    label: 'Speed',
+    desc: 'How fast the world turns. Faster speeds skip routine events. Press + or − to change it.',
   },
 
   // ─── Panels ────────────────────────────────────────────────────
@@ -304,22 +304,29 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'The current season and year. Each season spans roughly ninety ticks.',
   },
 
-  // ─── World Pulse ─────────────────────────────────────────────────
-  'ui.world_pulse_tick': {
-    label: 'World Tick',
-    desc: 'The current simulation tick — one turn of the world engine.',
+  // ─── The Ledger rail (THR-1893, frame plan § F7–F8) ───────────────
+  // World Pulse retired with this slice; its four ids had no reader.
+  'ui.threads': {
+    label: 'Threads',
+    desc: 'The mortals you are threaded to, one row each. A row marked "A chapter waits" has a moment of its story ready for you.',
   },
-  'ui.world_pulse_agents': {
-    label: 'Active Agents',
-    desc: 'Number of mortal agents currently alive and acting in the world.',
+  'ui.ledger_fold': {
+    label: 'Fold',
+    desc: 'Fold Threads and the Chronicle to a strip of icons and give the map more room. Press L.',
   },
-  'ui.world_pulse_cultures': {
-    label: 'Cultures',
-    desc: 'Distinct cultural groups shaping behavior, values, and conflict across the world.',
+  // The description is rebuilt at render from CHRONICLE_NOW_SEASONS (frame-content.ts),
+  // so a retune never makes it false; this copy is the default it renders to.
+  'ui.chronicle': {
+    label: 'Chronicle',
+    desc: "The story of the world so far, newest first. Now holds the last four seasons; Years keeps every year; Ledger lists your mortals' chapters.",
   },
-  'ui.world_pulse_mood': {
-    label: 'World Mood',
-    desc: 'A narrative read of the current world tone, drawn from the {{ui.doom_bar}} stage.',
+  'ui.chronicle_years': {
+    label: 'Years',
+    desc: 'Every year of the Chronicle, newest first.',
+  },
+  'ui.chapter_ledger': {
+    label: 'Chapter Ledger',
+    desc: 'Every chapter your threaded mortals have lived, readable at any time. Time stops while you read it.',
   },
 
   // ─── Doom Stages ─────────────────────────────────────────────────
@@ -831,7 +838,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Ordinary chores — mending, foraging, resting. They still happen and still matter, but they never ask for you and stay out of the chapter list.',
   },
   'ui.thread_priority_pip': {
-    label: 'Needs Attention',
+    label: 'A chapter waits',
     desc: 'This thread has a beat waiting on you. The pip clears once you have looked at what it marks.',
   },
   'ui.aspect_badge': {

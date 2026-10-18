@@ -2625,6 +2625,17 @@ export interface DebugBridge {
     get: () => DebugMapLensResult;
     setSuppressed: (on: boolean) => boolean;
   }) => void;
+  /**
+   * THR-1893 (frame plan § Debug inspection) — what the frame drew, read off the DOM:
+   * the Ledger rail's state ('open' | 'strip' | 'hidden'), why it folded, the flyout,
+   * the Chronicle tab and the tabs rendered, the strip counts, and the measured map share.
+   * Slices 2 and 3 add the god rail and the top bar.
+   */
+  getFrameState: () => Promise<import('./components/Game/frame/frameDebugState').DebugFrameStateSlice1>;
+  /** THR-1893 — dev lever: force the Inspector input the Ledger rail folds on. Resolves to the value set. */
+  setFrameInspectorOpen: (open: boolean) => Promise<boolean>;
+  /** @internal the Ledger rail registers the frame bridge here (THR-1893). */
+  _registerFrameBridge: (bridge: { setInspectorOpen: (open: boolean) => boolean }) => void;
   /** THR-1902 — the map's chrome state (`fog`: what uncharted land shows). Null before the map mounts. */
   getMapChrome: () => Promise<DebugMapChromeResult | null>;
   /** @internal HexMapV2 registers the map-chrome bridge here (THR-1902). */

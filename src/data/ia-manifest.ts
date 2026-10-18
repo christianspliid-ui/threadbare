@@ -143,7 +143,7 @@ export const IA_SURFACES: IASurface[] = [
         "visible_when": "always"
       }
     ],
-    "notes": "Pause/play/tick controls. Tick counter.\n",
+    "notes": "Pause/play, the speed stepper (moved here from World Pulse, THR-1893), season and year, and the status line.\n",
     "openUrl": "/?view=game&seeded"
   },
   {
@@ -417,25 +417,6 @@ export const IA_SURFACES: IASurface[] = [
     "openUrl": "/?view=game&seeded"
   },
   {
-    "surface": "game.world-pulse",
-    "view": "game",
-    "mount": "always",
-    "reads": [
-      {
-        "state_path": "phase",
-        "reader": "WorldPulse",
-        "visible_when": "always"
-      },
-      {
-        "state_path": "tick",
-        "reader": "WorldPulse",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "World atmospheric state indicator — phase, tick rate, pressure.\n",
-    "openUrl": "/?view=game&seeded"
-  },
-  {
     "surface": "game.live-location-bar",
     "view": "game",
     "mount": "always",
@@ -458,9 +439,52 @@ export const IA_SURFACES: IASurface[] = [
         "state_path": "chronicleEntries",
         "reader": "ChroniclePanel",
         "visible_when": "always"
+      },
+      {
+        "state_path": "chapterArchive",
+        "reader": "ChroniclePanel",
+        "visible_when": "the Ledger tab, once The First's first chapter reveals it"
       }
     ],
-    "notes": "Rolling chronicle feed of tier-3 events.\n",
+    "notes": "The Chronicle in the Ledger rail (THR-1893): the World-Soul line heads it; tabs Now (the last four seasons, Before you woke pinned, the voice toggle), Years (from the second calendar year) and Ledger (the threaded chapters, unread marked new; replaces the Chapter Ledger launcher). Grows to the rail's free height.\n",
+    "openUrl": "/?view=game&seeded"
+  },
+  {
+    "surface": "game.world-soul-line",
+    "view": "game",
+    "mount": "always",
+    "reads": [
+      {
+        "state_path": "worldSoul.aggregate",
+        "reader": "ChroniclePanel",
+        "visible_when": "after A Path Opens (THR-1837), once an aggregate exists"
+      },
+      {
+        "state_path": "doomClock.currentStage",
+        "reader": "ChroniclePanel",
+        "visible_when": "with the World-Soul line"
+      }
+    ],
+    "notes": "The World-Soul sentence for the dominant sphere and the world's mood for the doom stage, one line per season, heading the Chronicle (moved from the top bar, THR-1893).\n",
+    "openUrl": "/?view=game&seeded"
+  },
+  {
+    "surface": "game.ledger-strip",
+    "view": "game",
+    "mount": "always",
+    "reads": [
+      {
+        "state_path": "chronicleEntries",
+        "reader": "LedgerStrip",
+        "visible_when": "the Ledger rail is folded (L, the Fold control) or the Inspector is open"
+      },
+      {
+        "state_path": "chapterArchive",
+        "reader": "LedgerStrip",
+        "visible_when": "the Ledger rail is folded, once the Chapter Ledger is revealed"
+      }
+    ],
+    "notes": "The Ledger rail folded to a 56 px strip: unfold, then Threads (chapters waiting), Chronicle (new entries) and Chapter Ledger (new chapters), each an icon with a count; the word is in the tooltip (THR-1893).\n",
     "openUrl": "/?view=game&seeded"
   },
   {

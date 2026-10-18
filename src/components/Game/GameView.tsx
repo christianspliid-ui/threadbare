@@ -135,6 +135,7 @@ import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { IdentityChip } from './IdentityChip';
 import { GodRail } from './frame/GodRail';
 import { LedgerRail } from './frame/LedgerRail';
+import { useLedgerKey } from './frame/useLedgerKey';
 import { GameScreenStateProvider, useGameScreenStore } from './frame/GameScreenState';
 import type { CodexRunStateFilter } from '../Codex/codexRunState';
 import { AscendantSheet } from './AscendantSheet';
@@ -1610,6 +1611,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const setMapLensFromBar = useCallback((next: MapLensId | null) => {
     setMapLens(next, 'bar');
   }, [setMapLens]);
+  const handleLedgerKey = useLedgerKey(gameScreen);
   useTopBarHotkeys({
     running,
     speed,
@@ -1618,6 +1620,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     onStep: doTick,
     onMoveClick: handleAvatarMoveClick,
     onToggleLens: toggleMapLens,
+    // THR-1893: L folds the Ledger rail, or toggles its flyout while the Inspector is open.
+    onLedgerKey: handleLedgerKey,
   });
 
   // ── Audio volume handlers ──
@@ -4776,10 +4780,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               handleOpenMomentBadge={handleOpenMomentBadge}
               sustainedControls={sustainedControls}
               openAgentSheetForId={openAgentSheetForId}
-              seasonName={seasonName}
-              year={year}
-              speed={speed}
-              setSpeed={setSpeed}
               beforeYouWoke={beforeYouWoke}
             />
           </div>

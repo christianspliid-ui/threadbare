@@ -16,7 +16,6 @@ import { NotablesButton } from '../NotablesButton';
 import { SettingsPanel } from '../SettingsPanel';
 import { AttentionPoolIndicator } from '../AttentionPoolIndicator';
 import { IconButton } from '../../shared/IconButton';
-import { WorldSoulIndicator } from '../../WorldSoulIndicator';
 
 import type { GameState } from '../../../types/gameState';
 import type { FirstScreenReveal } from './firstScreenReveal';
@@ -293,15 +292,7 @@ export function GameViewTopBar({
 
           {/* EssencePanel superseded by AscendantBar (THR-184) */}
 
-          {/* WorldSoulIndicator — prose description of dominant sphere */}
-          {shown('world_soul') && gameState.worldSoul?.aggregate && (
-            <>
-              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div {...ring('world_soul')}>
-                <WorldSoulIndicator aggregate={gameState.worldSoul.aggregate} />
-              </div>
-            </>
-          )}
+          {/* THR-1893: the World-Soul line moved to the head of the Chronicle (frame/LedgerRail). */}
 
           {/* Attention pool indicator — shows how much focused attention the ascendant has left */}
           {shown('attention') && (() => {

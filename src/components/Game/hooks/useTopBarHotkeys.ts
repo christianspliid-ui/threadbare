@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { SPEED_STEPS } from '../SimulationControls';
 import { mapLensForKey, type MapLensId } from '../../../data/map-lenses';
 import { TOP_BAR_KEYS } from '../../../data/top-bar-keys';
+import { LEDGER_RAIL_HOTKEY } from '../../../data/frame-registry';
 
 interface UseTopBarHotkeysProps {
   running: boolean;
@@ -12,6 +13,8 @@ interface UseTopBarHotkeysProps {
   onMoveClick?: () => void;
   /** THR-1750 — toggle a map lens by its registry key (`1`–`5`, THR-1831). */
   onToggleLens?: (lens: MapLensId) => void;
+  /** THR-1893 — the Ledger rail's key (`LEDGER_RAIL_HOTKEY`, frame plan § F10). */
+  onLedgerKey?: () => void;
 }
 
 function isInputActive(): boolean {
@@ -21,7 +24,7 @@ function isInputActive(): boolean {
   return tag === 'input' || tag === 'textarea' || el.hasAttribute('contenteditable');
 }
 
-export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onStep, onMoveClick, onToggleLens }: UseTopBarHotkeysProps) {
+export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onStep, onMoveClick, onToggleLens, onLedgerKey }: UseTopBarHotkeysProps) {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (isInputActive()) return;
@@ -35,6 +38,12 @@ export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onSt
 
       // THR-1900 — the keys this hook answers are one list, checked against the map's keys.
       if (!TOP_BAR_KEYS.includes(e.key)) return;
+
+      // THR-1893 — the frame's keys come from its registry entries, never a literal here.
+      if (e.key.toLowerCase() === LEDGER_RAIL_HOTKEY) {
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) onLedgerKey?.();
+        return;
+      }
 
       switch (e.key) {
         case ' ': {
@@ -69,5 +78,5 @@ export function useTopBarHotkeys({ running, speed, onToggle, onSpeedChange, onSt
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [running, speed, onToggle, onSpeedChange, onStep, onMoveClick, onToggleLens]);
+  }, [running, speed, onToggle, onSpeedChange, onStep, onMoveClick, onToggleLens, onLedgerKey]);
 }

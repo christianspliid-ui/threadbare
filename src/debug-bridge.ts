@@ -179,6 +179,8 @@ if (import.meta.env.DEV) {
     get: () => import('./debug-bridge.d').DebugMapLensResult;
     setSuppressed: (on: boolean) => boolean;
   } | null = null;
+  // THR-1893 — the screen frame's dev levers, registered by the Ledger rail.
+  let _frameBridge: { setInspectorOpen: (open: boolean) => boolean } | null = null;
   // THR-1813 — the account record, registered by GameView.
   let _accountBridge: {
     get: () => import('./types/account').AccountRecord | null;
@@ -1147,6 +1149,12 @@ if (import.meta.env.DEV) {
     setLensSuppressed: async (on: boolean) => _mapLens?.setSuppressed(on) ?? false,
     /** @internal GameView registers the lens bridge here */
     _registerMapLensBridge: (bridge) => { _mapLens = bridge as typeof _mapLens; },
+    /** THR-1893 — what the frame drew: the Ledger rail's state, tab and strip, and the measured map share. */
+    getFrameState: async () => (await import('./components/Game/frame/frameDebugState')).readFrameState(),
+    /** THR-1893 — force the Inspector input the Ledger rail folds on (THR-1876 writes it once it lands). */
+    setFrameInspectorOpen: async (open: boolean) => _frameBridge?.setInspectorOpen(open) ?? false,
+    /** @internal the Ledger rail registers the frame bridge here */
+    _registerFrameBridge: (bridge) => { _frameBridge = bridge; },
     getAccountRecord: async () => _accountBridge?.get() ?? null,
     previewRunEnd: async () => _accountBridge?.previewRunEnd() ?? null,
     endAge: async () => _accountBridge?.endAge() ?? false,
