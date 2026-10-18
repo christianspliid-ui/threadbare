@@ -53,6 +53,43 @@ export function hexDistance(a: HexCoord, b: HexCoord): number {
   return Math.max(Math.abs(ac.q - bc.q), Math.abs(ac.r - bc.r), Math.abs(ac.s - bc.s));
 }
 
+/**
+ * The hexes on the straight line from `a` to `b` (cube-coordinate lerp, then cube
+ * round). Interior hexes only by default — world-gen's land bridges (pass09) want
+ * the hexes between two shores; `includeEnds` adds `a` and `b` (the Trade lens's
+ * roads, THR-1898). The same two points give the same line every time (NFP #3).
+ */
+export function hexLine(a: HexCoord, b: HexCoord, opts: { includeEnds?: boolean } = {}): HexCoord[] {
+  const ac = offsetToCube(a);
+  const bc = offsetToCube(b);
+  const dist = hexDistance(a, b);
+  const out: HexCoord[] = [];
+  if (opts.includeEnds) out.push({ col: a.col, row: a.row });
+  if (dist === 0) return out;
+  for (let i = 1; i < dist; i++) {
+    const t = i / dist;
+    const lq = ac.q + (bc.q - ac.q) * t;
+    const lr = ac.r + (bc.r - ac.r) * t;
+    const ls = ac.s + (bc.s - ac.s) * t;
+    let rq = Math.round(lq);
+    let rr = Math.round(lr);
+    let rs = Math.round(ls);
+    const dq = Math.abs(rq - lq);
+    const dr = Math.abs(rr - lr);
+    const ds = Math.abs(rs - ls);
+    if (dq > dr && dq > ds) {
+      rq = -rr - rs;
+    } else if (dr > ds) {
+      rr = -rq - rs;
+    } else {
+      rs = -rq - rr;
+    }
+    out.push(cubeToOffset({ q: rq, r: rr, s: rs }));
+  }
+  if (opts.includeEnds) out.push({ col: b.col, row: b.row });
+  return out;
+}
+
 export function hexToPixel(hex: HexCoord, size: number): { x: number; y: number } {
   // Flat-top: horizontal spacing = HEX_SCALE_X * size, vertical spacing = HEX_SCALE_Y * size
   // Odd columns shift down by half the vertical spacing

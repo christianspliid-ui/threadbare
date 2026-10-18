@@ -17,7 +17,7 @@
 import type { WorldGenContext } from '../types';
 import type { TerrainType } from '../../../types';
 import { getTerrainTax } from '../../../data/movement-content';
-import { offsetToCube, cubeToOffset, hexDistance } from '../../../lib/hexMath';
+import { hexDistance, hexLine } from '../../../lib/hexMath';
 
 // ─── Result interface ────────────────────────────────────────────
 
@@ -142,43 +142,6 @@ function bridgeTerrain(original: TerrainType): TerrainType {
   return 'coast';
 }
 
-/** Draw a hex line between two hex coords (cube-coordinate lerp). */
-function hexLineDraw(
-  fromCol: number, fromRow: number,
-  toCol: number, toRow: number,
-): Array<{ col: number; row: number }> {
-  const a = offsetToCube({ col: fromCol, row: fromRow });
-  const b = offsetToCube({ col: toCol, row: toRow });
-  const dist = hexDistance({ col: fromCol, row: fromRow }, { col: toCol, row: toRow });
-  if (dist === 0) return [];
-
-  const results: Array<{ col: number; row: number }> = [];
-  for (let i = 1; i < dist; i++) {
-    const t = i / dist;
-    // Lerp in cube space, then round to nearest hex
-    const lq = a.q + (b.q - a.q) * t;
-    const lr = a.r + (b.r - a.r) * t;
-    const ls = a.s + (b.s - a.s) * t;
-    // Cube round
-    let rq = Math.round(lq);
-    let rr = Math.round(lr);
-    let rs = Math.round(ls);
-    const dq = Math.abs(rq - lq);
-    const dr = Math.abs(rr - lr);
-    const ds = Math.abs(rs - ls);
-    if (dq > dr && dq > ds) {
-      rq = -rr - rs;
-    } else if (dr > ds) {
-      rr = -rq - rs;
-    } else {
-      rs = -rq - rr;
-    }
-    const off = cubeToOffset({ q: rq, r: rr, s: rs });
-    results.push(off);
-  }
-  return results;
-}
-
 interface ConnectivityResult {
   orphanComponentsFixed: number;
   orphanHexesFixed: number;
@@ -273,7 +236,8 @@ function checkAndRepairLandConnectivity(ctx: WorldGenContext): ConnectivityResul
     const mCol = bestMainlandIdx % cols;
     const mRow = Math.floor(bestMainlandIdx / cols);
 
-    const bridgePath = hexLineDraw(oCol, oRow, mCol, mRow);
+    // Interior hexes only (THR-1898 hoisted the line into hexMath; output unchanged).
+    const bridgePath = hexLine({ col: oCol, row: oRow }, { col: mCol, row: mRow });
     for (const hex of bridgePath) {
       if (hex.col < 0 || hex.col >= cols || hex.row < 0 || hex.row >= rows) continue;
       const idx = hex.row * cols + hex.col;

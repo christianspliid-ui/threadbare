@@ -77,6 +77,18 @@ describe('MAP_LENSES coverage (Law 58)', () => {
     expect(legendEntriesFor('threads').map(e => e.word)).toEqual(['The First', 'Retinue', 'Watched', 'Heading']);
   });
 
+  it('the derived Trouble and Trade legends are the plan\'s, word for word (THR-1898)', () => {
+    expect(legendEntriesFor('trouble').map(e => e.word))
+      .toEqual(['Battle', 'Siege', 'Unrest', 'Strife', 'Scheme', 'Drain', 'Omen', 'Lair']);
+    expect(legendEntriesFor('trade').map(e => e.word)).toEqual(['Trade road', 'Threatened road']);
+  });
+
+  it('MapLensId covers the four lenses, keys 1–4 (THR-1898)', () => {
+    expect(MAP_LENSES.map(l => [l.id, l.key])).toEqual([
+      ['dominion', '1'], ['threads', '2'], ['trouble', '3'], ['trade', '4'],
+    ]);
+  });
+
   it('the Dominion arm of selectLensView deep-equals dominionLensVM (no runtime: the off view)', () => {
     const { state, tiles } = lensFixture();
     const view = selectLensView(buildViewContext(null, state, tiles), 'dominion');

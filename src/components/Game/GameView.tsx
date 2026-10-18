@@ -69,11 +69,6 @@ import type { ActivityIconData } from '../HexMapV2/scene/ActivityIconMesh';
 import { ATTENTION_BASE_CAPACITY } from '../../data/attention-constants';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { buildReachSignatureMarkers } from '../../engine/reachSignatureMarkers';
-import {
-  buildRivalInfluenceMarkers,
-  buildRivalSchemeTargets,
-} from '../../engine/rivalInfluenceMarkers';
-import { buildTradeRouteLines, buildRouteTooltipsByHex } from '../../engine/tradeRouteMarkers';
 import { getSustainedControlNodes } from '../../engine/retinue';
 import { buildAppointmentBadges, type AppointmentBadgeModel } from './appointmentBadgeModel';
 import { resolveAxiologicalProfile } from '../../engine/encounterScoring';
@@ -980,31 +975,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [gameState.graph, gameState.controlEffects, runtime.worldVersion],
   );
 
-  // Rival-scheme influence markers → map overlay (THR-66, THR-621, THR-829).
-  // Two inputs: a rival drain sets `contestedBy` on an essence source (graph,
-  // mutated in place — `runtime.worldVersion` is the invalidation signal), and a
-  // materialized scheme is read from `activeCompositions` + `worldFlags` (rivals
-  // are not graph nodes, so there is no edge to read).
-  const rivalSchemeTargets = useMemo(
-    () => buildRivalSchemeTargets(gameState.activeCompositions, gameState.worldFlags),
-    [gameState.activeCompositions, gameState.worldFlags],
-  );
-  const rivalInfluenceMarkers = useMemo(
-    () =>
-      buildRivalInfluenceMarkers(gameState.graph, gameState.rivalDefinitions, rivalSchemeTargets),
-    [gameState.graph, gameState.rivalDefinitions, rivalSchemeTargets, runtime.worldVersion],
-  );
-
-  // Trade-route lines + per-endpoint cargo tooltips (THR-670). Recomputed on
-  // graph mutation (route formation/decay, threatened flips).
-  const tradeRouteLines = useMemo(
-    () => buildTradeRouteLines(gameState.graph),
-    [gameState.graph, runtime.worldVersion],
-  );
-  const routeTooltipsByHex = useMemo(
-    () => buildRouteTooltipsByHex(gameState.graph, gameState.tick),
-    [gameState.graph, gameState.tick, runtime.worldVersion],
-  );
+  // THR-1898: rival marks, trade roads and their tooltip words left the plain map;
+  // the Trouble and Trade lenses read them on the seam (views/lenses/).
 
   // ── Military render data — map.armiesAndBattles (one pass over the actors) ──
   const mapArmiesAndBattles = readView(runtime, gameState, mapArmiesAndBattlesSelector, undefined, tiles);
@@ -4477,9 +4449,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 agentRenderDataWithActivity={agentRenderDataWithActivity}
                 armyRenderData={armyRenderData}
                 reachSignatureMarkers={reachSignatureMarkers}
-                rivalInfluenceMarkers={rivalInfluenceMarkers}
-                tradeRouteLines={tradeRouteLines}
-                routeTooltipsByHex={routeTooltipsByHex}
                 battleRenderData={battleRenderData}
                 threadLineData={threadLineData}
                 companyRenderData={companyRenderData}

@@ -18,6 +18,9 @@ import {
 } from '../map-markers';
 import { MAP_LENSES } from '../map-lenses';
 import { getUITooltip } from '../ui-content';
+import { FALLBACK_ICON_NAME } from '../icons/iconRegistry';
+import { isIconName } from '../../components/shared/iconShape';
+import { BATTLE_ICON, SIEGE_ICON } from '../../components/HexMapV2/scene/BattleIndicatorLayer';
 
 const LENS_IDS = new Set(MAP_LENSES.map(l => l.id));
 
@@ -54,7 +57,19 @@ describe('MAP_MARKERS coverage (Law 58)', () => {
     }
   });
 
-  it.todo('every icon concept resolves through THR-1879\'s concept → shape table to a shape that is not fallback');
+  it.each(MAP_MARKER_KINDS)('MAP_MARKERS.%s: its icon is a registry name, never the fallback (THR-1898)', (kind) => {
+    const icon = MAP_MARKERS[kind].icon;
+    if (icon === null) return;
+    expect(isIconName(icon), `MAP_MARKERS.${kind}.icon '${icon}' is not in ICON_REGISTRY`).toBe(true);
+    expect(icon, `MAP_MARKERS.${kind} draws the fallback icon`).not.toBe(FALLBACK_ICON_NAME);
+  });
+
+  it('battle and siege rows name the carved shapes the sprites draw (THR-1898)', () => {
+    expect(MAP_MARKERS.battle.icon).toBe(BATTLE_ICON);
+    expect(MAP_MARKERS.siege.icon).toBe(SIEGE_ICON);
+    expect(MAP_MARKERS.battle.legendIn).toContain('trouble');
+    expect(MAP_MARKERS.siege.legendIn).toContain('trouble');
+  });
 
   it('the plain agent rows carry THR-1831 § 4\'s sizes', () => {
     expect(MAP_MARKERS.agent.sizePx).toEqual({ fullWorld: null, continental: 10, regional: 14, heroLocal: 48 });

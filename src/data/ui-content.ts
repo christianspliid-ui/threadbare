@@ -182,6 +182,47 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Heading',
     desc: 'Where this mortal is going. The dashed arrow ends at the place.',
   },
+  // THR-1898 — Lenses II: Trouble (key 3) and Trade (key 4), and their marks.
+  'ui.lens.trouble': {
+    label: 'Trouble lens',
+    desc: 'Show where something is going wrong: unrest, strife, battles, sieges, rival schemes and drains, lairs and omens. Key 3.',
+  },
+  'ui.lens.trade': {
+    label: 'Trade lens',
+    desc: 'Show the trade roads you know of, what they carry, and which are threatened. Key 4.',
+  },
+  'ui.lens.mark.unrest': {
+    label: 'Unrest',
+    desc: 'A town here has gone lawless, or the people of this land are agitated or boiling over. Left alone, unrest this deep may turn a town on its rulers.',
+  },
+  'ui.lens.mark.strife': {
+    label: 'Strife',
+    desc: 'Mortals here are arming or fighting: duels and clashes, raising a force, fortifying. Tempers drawn is the start; come to blows is worse.',
+  },
+  'ui.lens.mark.scheme': {
+    label: 'Scheme',
+    desc: 'A rival power is working on this place to turn it away from you.',
+  },
+  'ui.lens.mark.drain': {
+    label: 'Drain',
+    desc: 'A rival power is bleeding one of your sources of essence here.',
+  },
+  'ui.lens.mark.omen': {
+    label: 'Omen',
+    desc: 'An omen hangs over the land inside the dotted ring. Mortals there act on it.',
+  },
+  'ui.lens.mark.lair': {
+    label: 'Lair',
+    desc: 'Something dangerous dens here, and it may grow.',
+  },
+  'ui.lens.mark.road': {
+    label: 'Trade road',
+    desc: 'Goods travel this road between two places. The badge marks its middle.',
+  },
+  'ui.lens.mark.roadThreatened': {
+    label: 'Threatened road',
+    desc: 'Something endangers this road: raiders, a blockade or a war nearby. Its goods may stop.',
+  },
   'ui.dominion.chip': {
     label: 'Ground and price',
     desc: 'The ground you aim at changes the price. The faint pip is what neutral ground would cost.',

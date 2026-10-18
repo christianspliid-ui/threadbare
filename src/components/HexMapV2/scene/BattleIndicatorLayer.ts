@@ -24,6 +24,8 @@ export { battleIndicatorForNode };
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from './HexFillMesh';
+import { buildMapIconTexture } from '../locations/locationIconTextures';
+import { iconShape } from '../../shared/iconShape';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -33,8 +35,18 @@ export const BATTLE_SPRITE_SIZE = 12;
 /** Sprite size for siege indicator (world units — ring around hex) */
 export const SIEGE_RING_SIZE = 20;
 
-/** Canvas resolution for battle indicator sprites */
-export const BATTLE_TEXTURE_SIZE = 64;
+/** Canvas resolution for battle indicator sprites (128 since THR-1898: carved shapes). */
+export const BATTLE_TEXTURE_SIZE = 128;
+
+/** The carved shapes the sprites draw (THR-1898) — the same concepts the Trouble legend names. */
+export const BATTLE_ICON = 'battle';
+export const SIEGE_ICON = 'siege';
+/** Dark outline under the carved shape, as a share of its viewBox. */
+export const BATTLE_ICON_OUTLINE = '#1a0a0a';
+export const BATTLE_ICON_OUTLINE_FRACTION = 0.04;
+/** How far in the icon sits, as a share of the texture: inside the battle disc, inside the siege ring. */
+export const BATTLE_ICON_INSET = 0.2;
+export const SIEGE_ICON_INSET = 0.3;
 
 /** Field battle indicator color */
 export const FIELD_BATTLE_COLOR = '#f87171';
@@ -74,114 +86,53 @@ export interface BattleIndicatorData {
 let fieldBattleTexture: THREE.CanvasTexture | null = null;
 let siegeTexture: THREE.CanvasTexture | null = null;
 
-/** Build or return cached field battle (crossed swords) texture. */
+/**
+ * THR-1898 (plan § D4, D13): the field battle and the siege draw the carved
+ * `battle` (crossed swords) and `siege` (catapult) shapes through the map's one icon
+ * texture builder, so the Trouble legend and the map show one shape. The siege keeps
+ * its dashed encirclement ring as the icon's ground; colours are unchanged.
+ */
 function getFieldBattleTexture(): THREE.CanvasTexture {
   if (fieldBattleTexture) return fieldBattleTexture;
-
-  const canvas = document.createElement('canvas');
-  canvas.width = BATTLE_TEXTURE_SIZE;
-  canvas.height = BATTLE_TEXTURE_SIZE;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    fieldBattleTexture = new THREE.CanvasTexture(canvas);
-    return fieldBattleTexture;
-  }
-
-  const cx = BATTLE_TEXTURE_SIZE / 2;
-  const cy = BATTLE_TEXTURE_SIZE / 2;
-  const r = BATTLE_TEXTURE_SIZE * 0.44;
-
-  // Semi-transparent background circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(200,30,30,0.25)';
-  ctx.fill();
-
-  // Draw crossed swords: two diagonal lines
-  ctx.strokeStyle = FIELD_BATTLE_COLOR;
-  ctx.lineWidth = 4;
-  ctx.lineCap = 'round';
-
-  // First sword: top-left to bottom-right
-  ctx.beginPath();
-  ctx.moveTo(cx - r * 0.55, cy - r * 0.55);
-  ctx.lineTo(cx + r * 0.55, cy + r * 0.55);
-  ctx.stroke();
-
-  // Second sword: top-right to bottom-left
-  ctx.beginPath();
-  ctx.moveTo(cx + r * 0.55, cy - r * 0.55);
-  ctx.lineTo(cx - r * 0.55, cy + r * 0.55);
-  ctx.stroke();
-
-  // Central diamond (crossguards)
-  ctx.fillStyle = FIELD_BATTLE_COLOR;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - r * 0.18);
-  ctx.lineTo(cx + r * 0.18, cy);
-  ctx.lineTo(cx, cy + r * 0.18);
-  ctx.lineTo(cx - r * 0.18, cy);
-  ctx.closePath();
-  ctx.fill();
-
-  fieldBattleTexture = new THREE.CanvasTexture(canvas);
+  fieldBattleTexture = buildMapIconTexture(iconShape(BATTLE_ICON), {
+    size: BATTLE_TEXTURE_SIZE,
+    fill: FIELD_BATTLE_COLOR,
+    outline: BATTLE_ICON_OUTLINE,
+    outlineWidthFraction: BATTLE_ICON_OUTLINE_FRACTION,
+  }, {
+    inset: BATTLE_ICON_INSET,
+    underlay: (ctx, size) => {
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size * 0.44, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(200,30,30,0.25)';
+      ctx.fill();
+    },
+  });
   return fieldBattleTexture;
 }
 
-/** Build or return cached siege (encirclement ring) texture. */
+/** The siege: the carved catapult inside its dashed encirclement ring. */
 function getSiegeTexture(): THREE.CanvasTexture {
   if (siegeTexture) return siegeTexture;
-
-  const canvas = document.createElement('canvas');
-  canvas.width = BATTLE_TEXTURE_SIZE;
-  canvas.height = BATTLE_TEXTURE_SIZE;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    siegeTexture = new THREE.CanvasTexture(canvas);
-    return siegeTexture;
-  }
-
-  const cx = BATTLE_TEXTURE_SIZE / 2;
-  const cy = BATTLE_TEXTURE_SIZE / 2;
-  const outerR = BATTLE_TEXTURE_SIZE * 0.46;
-  const innerR = BATTLE_TEXTURE_SIZE * 0.32;
-
-  // Dashed ring with gap pattern — encirclement
-  ctx.strokeStyle = SIEGE_COLOR;
-  ctx.lineWidth = 4;
-  ctx.setLineDash([6, 4]);
-
-  ctx.beginPath();
-  ctx.arc(cx, cy, (outerR + innerR) / 2, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Arrow-heads pointing inward to signal encirclement
-  ctx.setLineDash([]);
-  ctx.strokeStyle = SIEGE_COLOR;
-  ctx.fillStyle = SIEGE_COLOR;
-  ctx.lineWidth = 2;
-
-  const arrows = 4;
-  for (let i = 0; i < arrows; i++) {
-    const angle = (Math.PI * 2 * i) / arrows - Math.PI / 2;
-    const tipR = innerR + 2;
-    const tx = cx + Math.cos(angle) * tipR;
-    const ty = cy + Math.sin(angle) * tipR;
-    const left = angle + Math.PI / 2;
-    const right = angle - Math.PI / 2;
-    const spread = 5;
-    const baseR = outerR - 4;
-    ctx.beginPath();
-    ctx.moveTo(tx, ty);
-    ctx.lineTo(cx + Math.cos(angle) * baseR + Math.cos(left) * spread,
-               cy + Math.sin(angle) * baseR + Math.sin(left) * spread);
-    ctx.lineTo(cx + Math.cos(angle) * baseR + Math.cos(right) * spread,
-               cy + Math.sin(angle) * baseR + Math.sin(right) * spread);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  siegeTexture = new THREE.CanvasTexture(canvas);
+  siegeTexture = buildMapIconTexture(iconShape(SIEGE_ICON), {
+    size: BATTLE_TEXTURE_SIZE,
+    fill: SIEGE_COLOR,
+    outline: BATTLE_ICON_OUTLINE,
+    outlineWidthFraction: BATTLE_ICON_OUTLINE_FRACTION,
+  }, {
+    inset: SIEGE_ICON_INSET,
+    underlay: (ctx, size) => {
+      const outerR = size * 0.46;
+      const innerR = size * 0.32;
+      ctx.strokeStyle = SIEGE_COLOR;
+      ctx.lineWidth = size / 16;
+      ctx.setLineDash([size * 0.09, size * 0.06]);
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, (outerR + innerR) / 2, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    },
+  });
   return siegeTexture;
 }
 

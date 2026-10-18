@@ -197,3 +197,69 @@ export const THREADS_LENS_WORDS = {
   overflow: 'and others of your people',
   empty: 'You have no threaded mortals yet.',
 } as const;
+
+/**
+ * The Trouble lens (3, THR-1898). "Unrest" is the engine's Location value in the hex
+ * survey's own mood buckets and the Lawless chip's word; "Strife" is the conflict
+ * pulse (plan § D4, PC-6). The strife phrases agree with the plain tooltip's pulse
+ * murmurs for the same level; the lens names the level in one fixed phrase.
+ */
+export const TROUBLE_LENS_WORDS = {
+  label: 'Trouble',
+  legendHead: 'Trouble',
+  /** The legend head's doom part: "Doom: {stage}" — the stage the doom bar shows. */
+  doomHead: 'Doom: {stage}',
+  legend: ['Lit ground is where something is going wrong.'] as readonly string[],
+  unrestLawless: 'Unrest: {place} is lawless.',
+  unrestMood: {
+    agitated: 'Unrest: the people here are agitated.',
+    boiling: 'Unrest: the people here are boiling over.',
+  },
+  strife: {
+    tense: 'Strife: tempers are drawn here.',
+    volatile: 'Strife: it has come to blows here.',
+  },
+  scheme: 'A scheme of {rival}: it is turning {place} away from you.',
+  drainContested: 'A drain of {rival}: it is contesting your source at {place}.',
+  drainDesecrated: 'A drain of {rival}: it has defiled your source at {place}.',
+  /** A rival with no name the player knows. */
+  rivalFallback: 'a rival power',
+  lair: {
+    minor: '{place}: a lair.',
+    major: '{place}: a great lair.',
+    legendary: '{place}: a legendary lair.',
+  },
+  omenSphere: 'An omen of {sphere} hangs over this land.',
+  omenPlain: 'An omen hangs over this land.',
+  overflow: 'and more trouble here',
+  empty: 'Nothing is going wrong that you can see.',
+} as const;
+
+/**
+ * The Trade lens (4, THR-1898). The road words are the ones the plain hex tooltip
+ * showed (THR-670), moved here as sentences; prosperity is a word, never a number.
+ */
+export const TRADE_LENS_WORDS = {
+  label: 'Trade',
+  legendHead: 'Trade',
+  legend: [
+    'Lit ground lies on a trade road you know of.',
+    'A gold road carries goods; a red road is threatened.',
+  ] as readonly string[],
+  /** "A road to {place}, carrying {goods}." */
+  road: 'A road to {place}, carrying {goods}.',
+  /** A road with no manifest. */
+  roadLight: 'A road to {place}, carrying light trade.',
+  /** Lane traffic (THR-1636): `suspended` and `idle`. */
+  blockaded: 'It is blockaded.',
+  fading: 'It is fading.',
+  threatened: 'Threatened.',
+  /** "{place} is {tier}" — joined with "; " for the two ends. */
+  endTier: '{place} is {tier}',
+  /** Appended to an end with scarce goods: " and short of {goods}". */
+  endShort: ' and short of {goods}',
+  /** A far end with no name. */
+  farMarket: 'a far market',
+  overflow: 'and more roads through here',
+  empty: 'No trade road you know of yet.',
+} as const;

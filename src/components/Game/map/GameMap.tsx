@@ -61,9 +61,6 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   agentRenderDataWithActivity: HexMapV2Props['agents'];
   armyRenderData: HexMapV2Props['armies'];
   reachSignatureMarkers: HexMapV2Props['reachSignatureMarkers'];
-  rivalInfluenceMarkers: HexMapV2Props['rivalInfluenceMarkers'];
-  tradeRouteLines: HexMapV2Props['tradeRouteLines'];
-  routeTooltipsByHex: HexMapV2Props['routeTooltipsByHex'];
   battleRenderData: HexMapV2Props['battles'];
   threadLineData: HexMapV2Props['threadLines'];
   companyRenderData: HexMapV2Props['companies'];
@@ -120,9 +117,6 @@ export function GameMap({
   agentRenderDataWithActivity,
   armyRenderData,
   reachSignatureMarkers,
-  rivalInfluenceMarkers,
-  tradeRouteLines,
-  routeTooltipsByHex,
   battleRenderData,
   threadLineData,
   companyRenderData,
@@ -224,9 +218,6 @@ export function GameMap({
         agents={agentRenderDataWithActivity}
         armies={armyRenderData}
         reachSignatureMarkers={reachSignatureMarkers}
-        rivalInfluenceMarkers={rivalInfluenceMarkers}
-        tradeRouteLines={tradeRouteLines}
-        routeTooltipsByHex={routeTooltipsByHex}
         battles={battleRenderData}
         threadLines={threadLineData}
         companies={companyRenderData}
@@ -272,7 +263,7 @@ export function GameMap({
           suppressed={lensSuppressed}
           onChange={setMapLensFromBar}
           bandColors={dominionBandColors}
-          hexLegend={hexLens ? { head: hexLens.legend.head, lines: hexLens.legend.lines, emptyLine: hexLens.emptyLine } : null}
+          hexLegend={hexLens ? { head: hexLens.legend.head, headNote: hexLens.legend.headNote ?? null, lines: hexLens.legend.lines, emptyLine: hexLens.emptyLine } : null}
         />
       )}
 
