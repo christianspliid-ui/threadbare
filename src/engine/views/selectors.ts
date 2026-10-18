@@ -19,6 +19,7 @@ import { mapRealmInkSelector } from './map/realmInk';
 import { subjectPageSelector } from './subjects/subjectPage';
 import { ledgerRailSelector } from './ledgerRail';
 import { godRailSelector } from './godRail';
+import { needsYouSelector } from './needsYou';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- a heterogeneous registry; each entry keeps its own types at its import
 export type AnyViewSelector = ViewSelector<any, unknown>;
@@ -38,6 +39,7 @@ export const VIEW_SELECTORS: readonly AnyViewSelector[] = [
   subjectPageSelector,
   ledgerRailSelector,
   godRailSelector,
+  needsYouSelector,
 ];
 
 export type ViewSelectorId = (typeof VIEW_SELECTORS)[number]['id'];

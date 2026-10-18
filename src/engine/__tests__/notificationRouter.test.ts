@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { TickEvent } from '../../types/gameState';
 import type { NotificationState } from '../../types/notification';
-import { TOAST_MAX_VISIBLE, ALERT_MAX_VISIBLE } from '../../types/notification';
-import { routeNotifications, eventTypeToCategory } from '../notificationRouter';
+import { TOAST_MAX_VISIBLE, ALERT_SAFETY_CAP } from '../../types/notification';
+import { routeNotifications, eventTypeToCategory, ALERT_KEEP_TICKS, trimAlerts } from '../notificationRouter';
 
 function makeEvent(overrides: Partial<TickEvent> & { id: string; tick: number }): TickEvent {
   return {
@@ -113,7 +113,9 @@ describe('routeNotifications', () => {
     });
   });
 
-  it('deduplicates alerts with same icon in same tick, keeping latest message', () => {
+  // THR-1875 (frame plan § F5): same-kind, same-tick alerts are all kept — the old
+  // overwrite was a silent drop. Only an exact repeat of one event is dropped.
+  it('keeps every same-icon alert in one tick, dropping only a repeated sourceEventId', () => {
     const events: TickEvent[] = [
       makeEvent({
         id: 'e1',
@@ -128,9 +130,12 @@ describe('routeNotifications', () => {
         notification: { channel: 'alert', icon: 'doom' },
       }),
     ];
-    const result = routeNotifications(events, EMPTY_STATE, NOW);
-    expect(result.alerts).toHaveLength(1);
-    expect(result.alerts[0].message).toBe('Second doom warning.');
+    events.push(makeEvent({ id: 'e3', tick: 5, message: 'Third doom warning.', notification: { channel: 'alert', icon: 'doom' } }));
+    const first = routeNotifications(events, EMPTY_STATE, NOW);
+    expect(first.alerts.map(a => a.message)).toEqual(['First doom warning.', 'Second doom warning.', 'Third doom warning.']);
+    // The same event routed again is kept once.
+    const again = routeNotifications([events[1]], first, NOW);
+    expect(again.alerts).toHaveLength(3);
   });
 
   it('routes popup events to popupQueue', () => {
@@ -213,21 +218,25 @@ describe('routeNotifications', () => {
     expect(result.alerts[1].message).toBe('New alert.');
   });
 
-  it('caps alerts at ALERT_MAX_VISIBLE', () => {
-    const events: TickEvent[] = Array.from({ length: ALERT_MAX_VISIBLE + 3 }, (_, i) =>
-      makeEvent({
-        id: `e${i}`,
-        tick: i, // different ticks to avoid dedup
-        message: `Alert ${i}`,
-        notification: { channel: 'alert', icon: 'discovery' },
-      }),
+  // THR-1875: the channel trims by age, and a safety cap counts what it drops.
+  it('lapses alerts older than ALERT_KEEP_TICKS', () => {
+    const old = makeEvent({ id: 'old', tick: 10, message: 'Old news.', notification: { channel: 'alert', icon: 'discovery' } });
+    const kept = routeNotifications([old], EMPTY_STATE, NOW);
+    expect(kept.alerts).toHaveLength(1);
+    const late = makeEvent({ id: 'late', tick: 10 + ALERT_KEEP_TICKS, message: 'New news.', notification: { channel: 'alert', icon: 'discovery' } });
+    const after = routeNotifications([late], kept, NOW);
+    expect(after.alerts.map(a => a.id)).toEqual(['late']);
+  });
+
+  it('counts alerts trimmed at ALERT_SAFETY_CAP (101 inside the window → 1)', () => {
+    const events: TickEvent[] = Array.from({ length: ALERT_SAFETY_CAP + 1 }, (_, i) =>
+      makeEvent({ id: `e${i}`, tick: 1, message: `Alert ${i}`, notification: { channel: 'alert', icon: 'discovery' } }),
     );
     const result = routeNotifications(events, EMPTY_STATE, NOW);
-    expect(result.alerts).toHaveLength(ALERT_MAX_VISIBLE);
-    // Should keep the latest ones
-    expect(result.alerts[result.alerts.length - 1].message).toBe(
-      `Alert ${ALERT_MAX_VISIBLE + 2}`,
-    );
+    expect(result.alerts).toHaveLength(ALERT_SAFETY_CAP);
+    expect(result.alertsTrimmedAtCap).toBe(1);
+    expect(result.alerts[result.alerts.length - 1].message).toBe(`Alert ${ALERT_SAFETY_CAP}`);
+    expect(trimAlerts(result.alerts, 1).trimmedAtCap).toBe(0);
   });
 
   // THR-562 — the "becoming" personality beat surfaces as a lifecycle toast.

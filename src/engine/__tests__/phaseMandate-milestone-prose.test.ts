@@ -173,6 +173,17 @@ describe('THR-1197 — mandate milestone prose reaches tick events', () => {
     expect(messages).not.toContain(WITNESS_SETUP_TO_ESCALATION);
   });
 
+  // THR-1875 (frame plan § F5): Needs you shows each alert's message unchanged, so the
+  // fallback line names no raw MandateStage id at any stage.
+  it('the fallback line never prints a stage id, at every stage', () => {
+    let state = makeState(makeUnauthoredDefinition());
+    for (let i = 0; i < 3; i++) state = step(state);
+    const messages = mandateMessages(state);
+    expect(messages.length).toBeGreaterThan(0);
+    for (const m of messages) expect(m).not.toMatch(/\b(setup|escalation|culmination)\b/);
+    expect(messages).toContain('Mandate "Unwritten Ascendancy" enters its next stage.');
+  });
+
   /**
    * THR-1198 — the identity-less path. `generateRememberedMandate` mints
    * `remembrance.{primary}_{secondary}` when there is no remembrance identity,
