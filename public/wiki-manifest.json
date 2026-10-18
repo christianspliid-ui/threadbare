@@ -317,7 +317,7 @@
         "src/engine/phaseProsperity.ts",
         "src/engine/economicChronicle.ts",
         "src/data/economic-chronicle-content.ts",
-        "src/components/Game/LocationView.tsx",
+        "src/engine/views/subjects/placeRows.ts",
         "src/components/Game/debug/EconomyDebugTab.tsx",
         "src/components/ProseKeyword.tsx",
         "src/types/resource.ts"

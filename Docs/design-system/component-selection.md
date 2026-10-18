@@ -25,15 +25,19 @@ text on a surface where a faction chip was a link. Routing is now data, not judg
 
 `src/data/surface-registry.ts` is the table that decides: it maps every `WorldRefKind` to
 its card kind and its sheet, is total by type, and is the only place that answers "what
-does this open". `open(ref, 'card')` (the default) stacks a `DetailModal`; `open(ref,
-'sheet')` reaches the bespoke sheet below, falling back to the card when a kind has none;
-`EntityLink` hovers into a `HoverCard` after a dwell without the caller doing anything.
+does this open". `open(ref, 'card')` (the default) opens the subject in the **Inspector** at
+the row's `opensAt` size; `open(ref, 'sheet')` opens it wide (a live encounter plays on the
+Stage; a content kind opens its Codex entry); `EntityLink` hovers into a `HoverCard` after a
+dwell without the caller doing anything.
 
-The sheets are still the Tier-3 surfaces, reached *through* the router rather than
-selected by hand — `AgentProfileModal`, `LocationProfileModal`, `FactionSheet`,
-`ArmySheet`, `ArtifactSheet`, `AttachmentDetailView`, `AscendantSheet`. `AgentInfoCard`
-(inline summary), `HexDetailView` (a hex's contents in the right panel) and `IdentityChip`
-(inline reference) are not detail surfaces and are unaffected.
+The Inspector (`inspector/InspectorHost.tsx` + `InspectorPage`) is the one detail surface
+(THR-1876). The per-kind sheets it replaced — `AgentProfileModal` and its tabs,
+`LocationProfileModal`, `FactionSheet`, `ArmySheet`, `ArtifactSheet`,
+`AttachmentDetailView`, `AscendantSheet` — the detail column (`ThreadDetailView`,
+`HexDetailView`), the hex-zoom and location views, the `DetailModal` stack and the
+`ActionDrawer` were deleted in THR-1912. A subject's page is a row in the page-layout table
+(`DETAIL_PAGE_REGISTRY`), never a new panel. `IdentityChip` (inline reference) is not a
+detail surface and is unaffected.
 
 `AgentDetailPanel` and `NpcDetailView` were deleted in THR-1492 — they had no production
 mount, and a doc row for a component nothing renders reads as an instruction to use it.
@@ -47,7 +51,7 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 | Agents in player's retinue | `RetinuePanel` | Left sidebar. Grouped by tier. |
 | Active encounters/events log | `EncounterLog` / `EventLog` | Right panel section. Scrollable history. |
 | Recent agent actions | `RecentActivityLog` | Embedded in the agent sheet. |
-| Agent attachments | `AttachmentRow` → `AttachmentDetailView` | Row is list item, detail opens on click. |
+| Agent attachments | `AttachmentRow` | Row is a list item; a click opens the attachment's content card in the Inspector. |
 
 ### Show a card or panel
 
@@ -61,7 +65,6 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 | Domain reach tier display | `DomainCard` | Shows reach art thumbnail + tier prose. |
 | A mortal's standing in one reach, as a compact readout ("STONE · Skilled ●●●○○") | `ReachStanding` (shared primitive) | THR-1724. The sheet's name · rank word · magnitude dots; `layout="stacked"` inside `DomainCard`, `layout="inline"` in the encounter title row. Not for odds (use pips) or progress (use `StepDots` directly). |
 | Rarity-accented wrapper | `RarityBorderBox` | Left-border accent by rarity tier. Wraps any content — use around a sheet or ListRow for rarity emphasis. |
-| Agent compact card | `AgentInfoCard` | Name, tier, activity status. For hover popups or list embeds. |
 
 ### Show a modal or overlay
 
@@ -73,7 +76,6 @@ mount, and a doc row for a component nothing renders reads as an instruction to 
 | Journey flavor text | `JourneyVignetteModal` | Full-screen during movement. |
 | Obscured challenge preview | `EncounterVeil` | Unknown opponent. |
 | Premonition/divine revelation | `PremonitionModal` | Consequence preview with sphere tinting. |
-| Full-screen profile (6 tabs) | `AgentProfileModal` | Deep entity inspection. |
 
 | A subject beside its record (an index and its reader, identity and facts) at L / XL | `SheetColumns` (THR-1820) | Two columns when the container provides `'two'` (`Modal` at L / XL); stacks otherwise. Takes the place of `Modal.Body`. Each column scrolls only at the panel's cap (Law 57). |
 
@@ -157,14 +159,14 @@ cluster (see the catalog note below); a live collapse group today composes `Sect
 | Location labels | `LocationLabelOverlay` / `RegionLabels` | Text labels at zoom-dependent visibility. |
 | Hex hover info | `HexTooltip` | Floating overlay on hover. |
 | Movement paths | `MovementTrails` | Animated paths on map. |
-| Sidebar stats for selected hex | `HexSidebar` | Left panel, 220px expanded. |
+| A hex's contents | The land page in the Inspector | A click on open land opens it (THR-1876 § D10); its *In this land* index lists people, holder and sites. |
 
 ### Provide player controls
 
 | Need | Component | Notes |
 |------|-----------|-------|
-| Available narrative actions | `ActionDrawer` | Bottom drawer with cards. Context-filtered by NarrativeLayer. |
-| Individual action choice | `ActionCard` | Card in hand within ActionDrawer. |
+| Acting on a subject | The Inspector page's Act row | The cards that can touch the open subject, context-filtered; a press casts (THR-1876 § D9). |
+| The god's hand | The god rail's hand (`frame/GodRail.tsx`) | Every revealed card at its par price (THR-1875). |
 | Simulation play/pause/speed | `SimulationControls` | Top bar. |
 | Mandate tracking | `MandateTracker` → `MandateDetail` | Top bar indicator, detail on click. |
 | Essence/mana resource | `EssencePanel` | Top/side bar. |
@@ -203,37 +205,35 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `EntityVisual` | Entity art at three sizes | **The one art path** (Law 3). `hero` 16:9 places/scenes · `portrait` 3:4 people · `chip` 40px inline. Never resolve entity art any other way; missing art falls back to an authored glyph on an id-hashed gradient, which is a designed state, not a hole (Law 4). |
 | `OddsPips` / `CostPips` | Magnitude glyph row | The only sanctioned magnitude glyph language (Law 15). `OddsPips` = effect on the odds; `CostPips` = price, which wears a framed badge so the two never read alike (Law 10). They annotate words, never replace them. |
 | `DeltaCluster` | Realised state change | THR-1082 — how much a state actually moved, on an aftermath consequence chip. Triangles in the encounter hand's own family; a gold `◆` when a way opens rather than a quantity moving. Never `OddsPips`: that row means *effect on the odds* everywhere, and one glyph row in two jobs is the THR-972 §5 confusion (Law 10). |
-| `CardFace` | Every card face (nudge hand, action drawer) | Extracted from the nudge card, not invented (Laws 26/27). Pips mean *effect on the odds* — a cast reads its forecast as a word instead (Law 10). |
+| `CardFace` | Every card face (nudge hand, the god rail's hand) | Extracted from the nudge card, not invented (Laws 26/27). Pips mean *effect on the odds* — a cast reads its forecast as a word instead (Law 10). |
 | `CardKeywordChip` | Nudge card type glyph | Keyed on the live card-type union — a new type without an icon is a **build failure**, not a blank chip (Law 9). |
 | `ProgressBand` | Banded progress readout | Progress shown as a named band rather than a bar. Use when the reading is a tier ("cooling", "taut"), not a fraction; `ProgressBar` when it genuinely is 0–1. |
 | `Divider` | Rule between content groups | Plain separator. Reach for this before inventing a bordered wrapper. |
 | `ActivityIcon` | What an agent is doing | Fixed glyph vocabulary (`boot`, `swords`, `coin`, `hammer`, `bandage`, `hourglass`). One vocabulary per element class (Law 9) — do not add ad-hoc activity emoji beside it. |
 | `Section` | Detail-page section renderer | Dispatches on `SectionKind` (`prose`, `chips`, `event-card`, `panel`, `portrait`, `triggers`, `links`, `cards`). Part of the detail-page cluster — see the note below. THR-1876: `links` is the shape for named world things (identity chip + one fact — what Connections and *In this land* render through; `LinkRows` is exported for them); `cards` is the shape for small tiles (conditions, works, powers); a `panel` row may carry a `ref` (its value becomes an identity chip), a `tooltipId`, and a `meter` (a bar beside the word, only where a retiring surface draws that bar today); `prose` splits paragraphs on a blank line. |
 | `InspectorPage` | One subject's page at one Inspector size (THR-1876) | `src/components/Game/inspector/InspectorPage.tsx` renders a `SubjectPageVM` (`useView('subjectPage', …)`) at `docked`, `wide` or `full`: header, Act row, the registry's sections filtered by size into tabs, "More when widened", Connections last. Never hand-build a page body — add a registry row. See every kind at `?view=inspector-lab`. |
-| `DetailBreadcrumb` | Depth orientation trail | Law 24: any surface deeper than two levels shows where you are. Collapses to an ellipsis past `DETAIL_BREADCRUMB_COLLAPSE_AT`. Detail-page cluster. |
-| `HoverCard` | The glance before the card | Law 20 Tier 1½ (THR-1490): header + first section, anchored beside an `EntityLink` after a dwell. Never stacks on a modal; never interactive. |
-| `DetailModal` | Stacked detail-page overlay | Renders the `DetailModalStackContext` stack; draws nothing while empty. Detail-page cluster. |
+| `HoverCard` | The glance before the page | Law 20 Tier 1½ (THR-1490): header + first section, anchored beside an `EntityLink` after a dwell. Never interactive. |
 
-> **The detail-page cluster is mounted (THR-1490, resolving THR-966 as *mount*).**
-> `Section`, `DetailBreadcrumb` and `DetailModal` are live in `GameView`, and `HoverCard`
-> joins them. THR-966 held the mount-versus-prune decision from 2026-08-02 and is closed by
-> the mount commit. **Build on them through `useRefRouter` and nothing else** — the router
-> is the only thing that may push onto `DetailModalStackContext`, which is what keeps "every
-> link routes by kind" (Law 21) a property of the system rather than of each caller.
+> **The detail-page cluster is the Inspector (THR-1876, THR-1912).** `Section` renders every
+> page's sections inside `InspectorPage`, and `HoverCard` is the glance before it. The
+> `DetailModal` stack and `DetailBreadcrumb` retired with THR-1912 — the Inspector keeps its
+> own trail. **Build on them through `useRefRouter` and nothing else** — the router is the
+> only thing that opens a subject, which is what keeps "every link routes by kind" (Law 21) a
+> property of the system rather than of each caller.
 
 ---
 
 ## Component Composition Patterns
 
-**Entity display chain:** `RarityBorderBox` → a sheet → `Section` stack → (contains `DomainCard`, `RarityBadge`, `SphereIcon`)
+**Entity display chain:** `InspectorPage` → `Section` stack → (contains `DomainCard`, `RarityBadge`, `SphereIcon`)
 
 **Modal content:** `Modal` → `Modal.Header` + `Modal.Body` (your content) + `Modal.Footer` (actions)
 
 **List patterns:** `Card` → `Card.Body` → multiple `ListRow` components
 
-**Progressive disclosure:** `Tooltip` (Tier 1 hover) → `AgentInfoCard` (Tier 2 click) → `AgentProfileModal` (Tier 3 deep dive)
+**Progressive disclosure:** `Tooltip` (Tier 1 hover) → `HoverCard` (Tier 1½ dwell) → the Inspector, docked (Tier 2 click) → wide or Full (Tier 3)
 
-**HexMap interaction:** Click hex → `HexDetailView` (right panel) → click entity → `useRefRouterContext()?.open(ref)`
+**HexMap interaction:** Click hex → the land page in the Inspector → click an entity → `useRefRouterContext()?.open(ref)`
 
 ---
 
@@ -252,10 +252,10 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | Zone | Position | Width | Component Owner |
 |------|----------|-------|----------------|
 | Top bar | Top edge | Full width | `TopBar` / `SimulationControls` |
-| Left sidebar | Left edge | 60-220px (collapsed/expanded) | `HexSidebar` / `ThreadsPanel` / `RetinuePanel` |
+| God rail | Left edge | `var(--rail-left-w)` | `frame/GodRail.tsx` |
 | Hex map canvas | Center | Fills remaining space | `HexMapV2` (Three.js) |
-| Right panel | Right edge | ~380px | `HexDetailView` / `ThreadDetailView` |
-| Bottom drawer | Bottom edge | Full width, slides up | `ActionDrawer` |
+| Inspector | Between the map and the Ledger rail | `var(--inspector-w)` docked, `var(--inspector-wide-w)` wide, Full over the map | `inspector/InspectorHost.tsx` |
+| Ledger rail | Right edge | `var(--rail-right-w)` | `frame/LedgerRail.tsx` (`ThreadsPanel`, `ChroniclePanel`) |
 | Modal layer | Centered overlay | max-width varies, max-height `var(--modal-max-h)` = 85vh (Law 33 — one rule, the shared `Modal` included) | `Modal` and custom modals |
 | Toast/alert layer | Top center | Auto-width | `AlertBar` / `EventPopup` |
 

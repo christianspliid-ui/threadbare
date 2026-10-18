@@ -165,5 +165,3 @@ describe('THR-1750 — sheet view models', () => {
   });
 });
 
-describe('THR-1750 review round 2', () => {
-});

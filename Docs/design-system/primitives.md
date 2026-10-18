@@ -25,8 +25,6 @@ are specified by this table plus their styleguide entry.
 | `Card` | `variant?`, `padding?`, `title`, `count?`, `onBack?`, `trailing?`, `scroll?` | **The titled panel** (THR-1884): `Panel level="panel"` plus `.Header`, `.Body`, `.Footer`. Variants surface → panel, raised → panel + floating, glass → panel + glass. Never nest `Card` in `Card`. | #section-panel-card |
 | `CardKeywordChip` | `keyword`, `icon?`, `muted?` | Glyph keyed on the live card-type union — a new type without an icon is a **build failure** (Law 9). | #section-card-keyword-chip |
 | `CardFace` | `model: CardFaceModel`, `designerView`, `onToggle` | **The** card face — every card in the game renders through it (Law 28). Ten zones in one reading order: picture band, kind chips, name, alternate costs, provenance, effect line + odds, spacer, rarity, resolved band, blocked reason. Numerals live only in `designerLine` (Law 13); the price is framed and the odds are not (Law 10) — `odds.kind: 'delta'` draws pips for a card that *moves* the odds, `'forecast'` draws the tier word for one that *rolls* them. | #section-card-face |
-| `DetailBreadcrumb` | `trail`, `onNavigate` | Collapses to a leading ellipsis past `DETAIL_BREADCRUMB_COLLAPSE_AT` (4). Last crumb is never clickable. Law 24. | #section-detail-page |
-| `DetailModal` | *(none — reads `DetailModalStackContext`)* | Renders the page stack; draws nothing while empty. Escape / ArrowLeft pops. Mounted once in `GameView` (THR-1490); pushed onto only by `useRefRouter`. | #section-detail-page |
 | `Divider` | `gold?` | Plain rule; gold variant for primary separations. | #section-divider |
 | `DomainCard` | `reach`, `tier`, `agentName`, `gender?`, `revealed` | Reach art + tier prose. `revealed: false` renders the unknown state, not a blank. | #section-domaincard |
 | `ReachStanding` | `reach`, `tier`, `revealed?`, `layout?` (`stacked`/`inline`), `nameColor?`, `wordColor?`, `nameTooltip?` | Reach name · rank word · five magnitude dots — the sheet's readout (THR-1724). Tier clamps to 0–4; unrevealed shows `???` and no dots. | #section-reachstanding |
@@ -60,11 +58,11 @@ are specified by this table plus their styleguide entry.
 | `StepDots` | `totalSteps`, `currentStepIndex`, `size?`, `variant?` | Discrete steps. No-op replay dots render **disabled, not clickable** (Law 25, THR-1003). | #section-stepdots |
 | `Tooltip` | `id?`, `label?`, `desc?`, `depth?`, `as?`, `focusable?` | Tier 1 of the disclosure ladder. Copy resolves through `resolveTooltip`, ≤200 chars, chains to `TOOLTIP_MAX_CHAIN_DEPTH` (Laws 17–19). Components pass **ids**, never inline copy. The trigger is keyboard-reachable by default — see `interactions.md` § Tooltip Pattern for the predicate and the one caller override. | #section-tooltip |
 
-> **The detail-page cluster is mounted (THR-1490, resolving THR-966 as *mount*).**
-> `Section`, `DetailBreadcrumb` and `DetailModal` are live in `GameView`, joined by
-> `HoverCard`. Reach them through `useRefRouter().open(ref)` — the router is the only thing
-> permitted to push onto `DetailModalStackContext`, because Law 21's "the link routes by
-> kind" is a property of having one dispatcher, not of each caller getting it right.
+> **The detail-page cluster is the Inspector (THR-1876; THR-1912 deleted `DetailModal` and
+> `DetailBreadcrumb`).** `Section` renders every page's sections inside `InspectorPage`,
+> and `HoverCard` is the glance before it. Reach them through `useRefRouter().open(ref)` —
+> the router is the only thing permitted to open a subject, because Law 21's "the link routes
+> by kind" is a property of having one dispatcher, not of each caller getting it right.
 >
 > The general warning that outlived the specific one: a styleguide entry is **not** evidence
 > a surface is reachable. Check importers before building on one.
