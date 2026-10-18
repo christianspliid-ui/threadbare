@@ -1911,7 +1911,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/agentDetail.ts',
-      'src/engine/views/subjects/personRows.ts',
+      // THR-1912: BondsTab's Blood line retired; no person-page row reads card.grudges yet (THR-1992).
       'src/debug-bridge.ts',
       'scripts/cli.ts',
     ],
@@ -1961,7 +1961,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: NARRATIVE,
     intent:
-      'What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; the person page's "Under your hand" row (`personRows.ts`) renders them — `ActiveEffectChips`, which drew them on the thread detail and the profile sheet, retired with those surfaces in THR-1912.',
+      'What your hand is doing to a mortal is visible on them (THR-1606). `buildAgentInfoCard` turns each live `divineInfluences` entry into a `card.activeEffects` chip with its sheet noun (Dreaming / Compelled) and a hover sentence naming the pole and the `durationLabel`; the person page\'s "Under your hand" row (`personRows.ts`) renders them — `ActiveEffectChips`, which drew them on the thread detail and the profile sheet, retired with those surfaces in THR-1912.',
     ulTerms: ['AxiologicalProfile'],
     mechanism: { kind: 'node-prop', symbols: ['divineInfluences', 'activeEffects'] },
     writeSites: ['src/engine/graphOpExecutor.ts'],
@@ -2051,7 +2051,8 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/playerReceipts.ts'],
     readSites: [
       'src/components/Game/GameView.tsx',
-      'src/engine/views/subjects/actOn.ts',
+      // THR-1912: the ActionDrawer's resolved-band chip retired; the record page reads receipts (THR-1992 for the chip).
+      'src/engine/views/subjects/pageResolvers.ts',
       'src/debug-bridge.ts',
       // THR-1875: an unacknowledged toast-tier receipt is a Needs-you Waiting row.
       'src/engine/views/needsYou.ts',
@@ -5392,7 +5393,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/components/Game/lair/buildLairMonsterCardModel.ts',
       'src/components/Game/lair/LairMonsterCard.tsx',
-      'src/engine/views/landIndex.ts',
+      // THR-1912: HexSidebar, the card's only mount, retired; no Inspector row reads it yet (THR-1992).
     ],
     verifiedLive: {
       date: '2026-09-25',
@@ -6088,7 +6089,8 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/pilgrimWays.ts',
     },
     writeSites: ['src/engine/worldSeed.ts', 'src/data/undertaking-objects.ts'],
-    readSites: ['src/engine/views/subjects/placeRows.ts', 'src/engine/views/subjects/factionRows.ts', 'src/debug-bridge.ts'],
+    // THR-1912: the place and faction sheets that drew PilgrimWayLine retired; no Inspector row reads it yet (THR-1992).
+    readSites: ['src/debug-bridge.ts'],
     verifiedLive: {
       date: '2026-10-03',
       evidence:
