@@ -162,6 +162,7 @@
     "measure:renown-scales": "esbuild scripts/measure-renown-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-renown-scales.mjs --external:fs --external:path && node .cache/measure-renown-scales.mjs",
     "measure:unrest": "esbuild scripts/measure-unrest.ts --bundle --platform=node --format=esm --outfile=.cache/measure-unrest.mjs --external:fs --external:path && node .cache/measure-unrest.mjs",
     "measure:prayers": "esbuild scripts/measure-prayers.ts --bundle --platform=node --format=esm --outfile=.cache/measure-prayers.mjs --external:fs --external:path && node .cache/measure-prayers.mjs",
+    "measure:means": "esbuild scripts/means-comfort-pace.ts --bundle --platform=node --format=esm --outfile=.cache/means-comfort-pace.mjs --external:fs --external:path && node .cache/means-comfort-pace.mjs",
     "measure:crown": "esbuild scripts/measure-crown.ts --bundle --platform=node --format=esm --outfile=.cache/measure-crown.mjs --external:fs --external:path && node .cache/measure-crown.mjs",
     "measure:war-aims": "esbuild scripts/measure-war-aims.ts --bundle --platform=node --format=esm --outfile=.cache/measure-war-aims.mjs --external:fs --external:path && node .cache/measure-war-aims.mjs",
     "measure:army-scales": "esbuild scripts/measure-army-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-army-scales.mjs --external:fs --external:path && node .cache/measure-army-scales.mjs",

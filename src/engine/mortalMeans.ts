@@ -24,10 +24,23 @@ import { resolveToParentLocation } from './sublocationShape';
 import { getAgentLocationId } from './graphQueries';
 import { bankWealth, getWealthTier, readWealth, type WealthTier } from './wealth';
 import { emitTrace } from './traceBuffer';
+import type { StrategicActionTemplate } from '../types/strategicAction';
 import {
   MEANS_BIRTH_HOME_SHIFT,
+  MEANS_CELL_COST,
+  MEANS_CELL_COST_ENABLED,
+  MEANS_COMFORT_LINE,
+  MEANS_EARNING_CELLS,
+  MEANS_GENEROSITY_DAMP,
+  MEANS_GREED_WEIGHT,
   MEANS_POOR_LINE,
   MEANS_POOR_LOSS_SCALE,
+  MEANS_POVERTY_SPAN,
+  MEANS_RICH_DAMPEN,
+  MEANS_RICH_GREED_CEILING,
+  MEANS_RICH_LINE,
+  MEANS_UNAFFORDED_WANT,
+  MEANS_WANT_WEIGHT,
   MORTAL_MEANS_ENABLED,
 } from '../data/mortal-means-constants';
 
@@ -245,15 +258,155 @@ export function buildMeansChange(
   };
 }
 
-/** The debug bridge's read of one mortal's Means (S1: no want yet). */
+// ─── 4. The want (S2, THR-1952) ──────────────────────────────────────────────
+
+/** The greed axis: +1 Generous, −1 Greedy (`axisRegistry.ts`). */
+export const MEANS_GREED_AXIS = 'asceticism_extravagance';
+
+/** What the want was made of — on the board trace and the debug read. */
+export interface MeansWantBreakdown {
+  readonly wealth: number;
+  readonly poverty: number;
+  readonly greed: number;
+  readonly generosity: number;
+  /** The mortal's most-wanted cell is one they cannot afford (founding costs on only). */
+  readonly unafforded: boolean;
+  readonly want: number;
+  /** `1 + MEANS_WANT_WEIGHT × want`, the multiplier on paying work. */
+  readonly multiplier: number;
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.max(lo, Math.min(hi, v));
+}
+
+/**
+ * How much a mortal wants paying work (the THR-1865 decision's rule). Poverty pulls,
+ * a Generous lean softens the pull, a Greedy lean adds to it at any wealth, and a rich
+ * mortal who is not greedy turns away from coin work. Pure; never reads the forecast
+ * (Law 20).
+ *
+ * @param wealth the mortal's Means, 0–100
+ * @param greedLean the `asceticism_extravagance` lean (+1 Generous, −1 Greedy); missing reads 0
+ * @param unafforded the mortal's most-wanted cell is a founding they cannot pay for
+ */
+export function computeMeansWant(wealth: number, greedLean: number, unafforded = false): MeansWantBreakdown {
+  const lean = Number.isFinite(greedLean) ? greedLean : 0;
+  const poverty = clamp((MEANS_COMFORT_LINE - wealth) / MEANS_POVERTY_SPAN, 0, 1);
+  const generosity = clamp(lean, 0, 1);
+  const greed = clamp(-lean, 0, 1);
+  let want = poverty * (1 - MEANS_GENEROSITY_DAMP * generosity) + MEANS_GREED_WEIGHT * greed;
+  if (wealth >= MEANS_RICH_LINE && greed < MEANS_RICH_GREED_CEILING) want = -MEANS_RICH_DAMPEN;
+  if (unafforded && MEANS_CELL_COST_ENABLED) want += MEANS_UNAFFORDED_WANT;
+  return {
+    wealth, poverty, greed, generosity,
+    unafforded: unafforded && MEANS_CELL_COST_ENABLED,
+    want,
+    multiplier: 1 + MEANS_WANT_WEIGHT * want,
+  };
+}
+
+/** The `<cellVariant>×<objectTypeId>` key of an undertaking cell, or null for a non-cell template. */
+export function meansCellKey(
+  template: Pick<StrategicActionTemplate, 'cellVariant' | 'objectTypeId'> | undefined,
+): string | null {
+  if (!template?.cellVariant || !template.objectTypeId) return null;
+  return `${template.cellVariant}×${template.objectTypeId}`;
+}
+
+/** Is this undertaking cell paying work (`MEANS_EARNING_CELLS`)? */
+export function isEarningCell(
+  template: Pick<StrategicActionTemplate, 'cellVariant' | 'objectTypeId'> | undefined,
+): boolean {
+  const key = meansCellKey(template);
+  return key !== null && MEANS_EARNING_CELLS.has(key);
+}
+
+/** What founding this cell costs; 0 when founding costs are off or the cell is free. */
+export function meansCellCost(
+  template: Pick<StrategicActionTemplate, 'cellVariant' | 'objectTypeId'> | undefined,
+): number {
+  if (!MEANS_CELL_COST_ENABLED) return 0;
+  const key = meansCellKey(template);
+  return key ? MEANS_CELL_COST[key] ?? 0 : 0;
+}
+
+/**
+ * Does this encounter pay its actor on a success? Derived from the template's outcome
+ * table and memoized per template id on the session's runtime (never a module-scope
+ * singleton). A template the lookup cannot find is not paying work.
+ */
+export function templatePaysActor(
+  templateId: string,
+  cache: Map<string, boolean> | undefined,
+  lookup: (id: string) => Pick<UnifiedActionTemplate, 'outcomeEffects'> | undefined,
+): boolean {
+  const hit = cache?.get(templateId);
+  if (hit !== undefined) return hit;
+  const template = lookup(templateId);
+  const pays = template ? templatePaysActorOnSuccess(template) : false;
+  cache?.set(templateId, pays);
+  return pays;
+}
+
+/** The want a mortal carries, read off the graph; null when Means is off or the node is no mortal. */
+export function readMeansWant(
+  graph: WorldGraph,
+  agentId: string,
+  profile?: Partial<Record<string, number>>,
+  unafforded = false,
+): MeansWantBreakdown | null {
+  if (!MORTAL_MEANS_ENABLED) return null;
+  const node = graph.getNode(agentId);
+  if (!node || node.type !== 'actor') return null;
+  if (node.properties.actorType !== undefined && node.properties.actorType !== 'individual') return null;
+  const props = node.properties as Record<string, unknown>;
+  const own = props.axiologicalProfile as Partial<Record<string, number>> | undefined;
+  const lean = profile?.[MEANS_GREED_AXIS] ?? own?.[MEANS_GREED_AXIS] ?? 0;
+  return computeMeansWant(readWealth(props), typeof lean === 'number' ? lean : 0, unafforded);
+}
+
+/** The debug bridge's read of one mortal's Means, with the want they would carry onto a board. */
 export function readMortalMeans(
   graph: WorldGraph,
   agentId: string,
-): { wealth: number; band: WealthTier; lastReason: string | null; want: null } | null {
+): { wealth: number; band: WealthTier; lastReason: string | null; want: MeansWantBreakdown | null } | null {
   const node = graph.getNode(agentId);
   if (!node || node.type !== 'actor') return null;
   const props = node.properties as Record<string, unknown>;
   const wealth = readWealth(props);
   const lastReason = typeof props.lastWealthReason === 'string' ? props.lastWealthReason : null;
-  return { wealth, band: getWealthTier(wealth), lastReason, want: null };
+  return { wealth, band: getWealthTier(wealth), lastReason, want: readMeansWant(graph, agentId) };
+}
+
+/** One row of the Economy debug tab's Means table (S2). */
+export interface DeciderMeansRow {
+  readonly agentId: string;
+  readonly name: string;
+  readonly wealth: number;
+  readonly band: WealthTier;
+  readonly lastReason: string | null;
+  readonly want: number | null;
+  readonly multiplier: number | null;
+}
+
+/** Every autonomous decider's Means and want, poorest first (debug surface: numbers are fine). */
+export function describeDeciderMeans(graph: WorldGraph): DeciderMeansRow[] {
+  const rows: DeciderMeansRow[] = [];
+  for (const node of graph.getNodesByType('actor')) {
+    if (!isAutonomousDecisionActor(node)) continue;
+    const read = readMortalMeans(graph, node.id);
+    if (!read) continue;
+    rows.push({
+      agentId: node.id,
+      name: node.name,
+      wealth: read.wealth,
+      band: read.band,
+      lastReason: read.lastReason,
+      want: read.want?.want ?? null,
+      multiplier: read.want?.multiplier ?? null,
+    });
+  }
+  rows.sort((a, b) => (a.wealth - b.wealth) || a.name.localeCompare(b.name));
+  return rows;
 }

@@ -22,6 +22,7 @@ import type {
   EncounterContract,
 } from '../../types/encounter-contract';
 import { MORAL_AXIS_POLES_BY_REACH, QUINTESSENCE_POLES } from '../../types/encounter-contract';
+import { MEANS_STEP } from '../mortal-means-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -144,6 +145,11 @@ const step1Branch: ActionStepBranch = {
 // ─── Aftermath ───────────────────────────────────────────────────
 
 const SIGN_AFTERMATH = {
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+  },
   overview:
     'The cargo arrived wherever the barge was going. The {title}\'s seal on the ' +
     'manifests meant that any inspection that found them would find a name already ' +

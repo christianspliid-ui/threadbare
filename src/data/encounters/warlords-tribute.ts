@@ -21,6 +21,7 @@ import type {
   EncounterContract,
 } from '../../types/encounter-contract';
 import { MORAL_AXIS_POLES_BY_REACH, QUINTESSENCE_POLES } from '../../types/encounter-contract';
+import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -188,6 +189,12 @@ const step1Branch: ActionStepBranch = {
 // ─── Aftermath ───────────────────────────────────────────────────
 
 const ACCEPT_AFTERMATH = {
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+  },
   overview:
     'The warlord\'s blade was housed in the agent\'s quarters before the evening fires were ' +
     'lit. In the hall, his commanders had gone back to their conversation, but it was a different ' +

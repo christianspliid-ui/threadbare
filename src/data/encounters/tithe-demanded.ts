@@ -56,6 +56,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -67,10 +68,16 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.realm.tithe_demanded',
   stakes: {
     goal: 'make the collector take only the true tithe',
-    risk: 'leave the place owing more than it did that morning',
+    risk: 'pay the difference from their own purse, or leave the place owing more',
     won: 'made the collector take only the true tithe',
     lost: 'met the tithe\'s difference out of their own purse',
     lostBadly: 'was marked for arguing, and the place owes more now',
+  },
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+    failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+    critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
   },
   tags: ['#crown_errand'],
   rarityTier: 2,

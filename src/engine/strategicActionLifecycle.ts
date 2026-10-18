@@ -125,6 +125,7 @@ import {
   resolveMentorshipUndertaking,
 } from './mentorshipUndertaking';
 import { emitTrace } from './traceBuffer';
+import { applyMeansShift, meansCellCost } from './mortalMeans';
 import type { TraceEntry } from '../types/trace';
 import { possessive, generateWorkName, generateFailureScarName } from './naming/workNames';
 import { getUndertakingKindForTemplate } from '../data/undertaking-kinds';
@@ -514,6 +515,35 @@ interface InstantMutationResult {
 }
 
 /**
+ * THR-1952 (mortal wealth S2) — bank a founding's cost on the mortal who starts it,
+ * through the one funnel (`applyMeansShift` → `bankWealth`, `reason: 'founding'`). A
+ * no-op while `MEANS_CELL_COST_ENABLED` is off, for a free cell, and for a non-mortal.
+ * Fail-soft: a missing actor writes nothing.
+ */
+function chargeFoundingCost(graph: WorldGraph, candidate: StrategicActionCandidate, tick: number): void {
+  const cost = meansCellCost(getStrategicTemplate(candidate.templateId));
+  if (cost <= 0) return;
+  const actor = graph.getNode(candidate.actorId);
+  if (!actor || actor.type !== 'actor' || actor.properties.actorType !== 'individual') return;
+  const shift = applyMeansShift(actor.properties as Record<string, unknown>, -cost, 'founding');
+  if (!shift) return;
+  emitTrace({
+    tick,
+    category: 'economy.means.shift',
+    agentId: actor.id,
+    sourceTemplateId: null,
+    band: null,
+    amount: shift.amount,
+    wealthBefore: shift.wealthBefore,
+    wealthAfter: shift.wealthAfter,
+    bandBefore: shift.bandBefore,
+    bandAfter: shift.bandAfter,
+    reason: shift.reason,
+    summary: `${actor.name}'s Means ${shift.wealthBefore} → ${shift.wealthAfter} (founding ${candidate.templateId})`,
+  });
+}
+
+/**
  * Execute a strategic action candidate chosen by the unified decision pipeline.
  * Handles instant mutations, project starts, and control claims.
  */
@@ -527,6 +557,10 @@ export function executeStrategicAction(
   const currentState = state.strategicState ?? { projects: [], controls: [], history: [] };
   const graphOps: GraphOpResult[] = [];
   let catalystSeeded = false;
+
+  // THR-1952 — what founding costs is paid when the work starts (founding costs on only;
+  // the board already dropped a founding the mortal could not afford).
+  chargeFoundingCost(graph, candidate, tick);
 
   switch (candidate.executionMode) {
     case 'instant': {

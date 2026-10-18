@@ -66,6 +66,7 @@
 import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { MEANS_STEP, MEANS_STEP_SMALL } from '../mortal-means-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -526,10 +527,16 @@ export const TOLL_OF_BLADES_TEMPLATE: UnifiedActionTemplate = compileOpeningEnve
   id: 'encounter.border.toll_of_blades',
   stakes: {
     goal: 'keep their pack and outlast the war column',
-    risk: 'go down in the mud as the column marches past',
+    risk: 'pay the column\'s toll and go down in the mud as it marches past',
     won: 'kept their pack and outlasted the war column',
-    lost: 'sat down in the verge as the column stepped around',
+    lost: 'sat down in the verge, a little poorer, as the column stepped around',
     lostBadly: 'went down in the mud and woke with the column gone',
+  },
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+    failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL }],
+    critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
   },
   rarityTier: 1,
   intrinsicTier: 'background',

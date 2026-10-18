@@ -72,6 +72,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { MEANS_STEP } from '../mortal-means-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -87,6 +88,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     won: 'copied the sealed page and set the seal back whole',
     lost: 'cracked the seal, and the house found it at dawn',
     lostBadly: 'ran from the clerk with nothing copied',
+  },
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
   },
   rarityTier: 2,
   intrinsicTier: 'background',

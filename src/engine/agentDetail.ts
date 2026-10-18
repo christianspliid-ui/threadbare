@@ -1018,6 +1018,8 @@ function describeWealthSource(reason: string | undefined): string | undefined {
     case 'paid_work': return 'work that paid';
     case 'venture_gain': return 'a venture that paid';
     case 'venture_loss': return 'a venture that cost them';
+    // THR-1952 — founding costs (switched off until the pace predicate holds).
+    case 'founding': return 'what it cost to found something';
     default: return undefined;
   }
 }

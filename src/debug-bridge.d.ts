@@ -1484,7 +1484,16 @@ export interface DebugBridge {
     wealth: number;
     band: 'Destitute' | 'Getting by' | 'Comfortable' | 'Wealthy' | 'Magnate';
     lastReason: string | null;
-    want: null;
+    /** THR-1952 — the want this mortal would carry onto a board; null for a non-mortal or with Means off. */
+    want: {
+      wealth: number;
+      poverty: number;
+      greed: number;
+      generosity: number;
+      unafforded: boolean;
+      want: number;
+      multiplier: number;
+    } | null;
   } | null>;
   getFactionPurse: (factionId: string) => Promise<{
     tick?: number;

@@ -34,6 +34,7 @@
 
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
+import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
 
 // ─── Steps ───────────────────────────────────────────────────────────
 
@@ -149,6 +150,12 @@ const step1Branch: ActionStepBranch = {
 // ─── Aftermath ─────────────────────────────────────────────────────────
 
 const GRANARIES_OPENED_AFTERMATH = {
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+  },
   overview:
     'A region fed through a famine by a hand that did not have to feed it remembers the feeding for longer ' +
     'than the hunger. The merchant-prince came out of the dead winter poorer in coin than any rival and ' +
@@ -266,6 +273,12 @@ const GRANARIES_OPENED_AFTERMATH = {
 } as const;
 
 const MARKET_CLOSED_AFTERMATH = {
+  // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+  },
   overview:
     'A region fed and sold in the same winter does not starve and does not forgive. The merchant-prince came ' +
     'out of the famine the richest house the region had ever produced, sitting on farmland signed over in the ' +
