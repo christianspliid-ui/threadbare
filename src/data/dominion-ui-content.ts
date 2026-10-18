@@ -119,6 +119,23 @@ export const DOMINION_HEX_LINE = {
   terrain: '{band} ground',
 } as const;
 
+/**
+ * THR-1878 (plan § D4, THR-1830 § 5) — the pressure clause under the hex line: why
+ * the band here may move. `{opposite}` is the pressing sphere, `{sphere}` the god's.
+ * `holds` when the god's sphere still outweighs its opposite at the lending place,
+ * `giving` when it does not.
+ */
+export const DOMINION_PRESSURE_LINE = {
+  holds: 'Pressed by a power of {opposite}; your {sphere} holds here.',
+  giving: 'Pressed by a power of {opposite}; your {sphere} is giving way here.',
+} as const;
+
+/**
+ * Below this weighted opposing score (Dominion's opposition weight × the opposite's
+ * score / MAX_SPHERE_SCORE) the hex line adds no pressure clause. NFP #1.
+ */
+export const DOMINION_PRESSURE_LINE_MIN = 0.2;
+
 // ─── Tooltip ids (UI_TOOLTIPS, Law 17) ───────────────────────────────
 
 export const DOMINION_TOOLTIP_IDS = {

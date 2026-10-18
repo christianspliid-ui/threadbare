@@ -43,6 +43,7 @@ import {
 import type { IconName } from '../../data/icons/iconRegistry';
 import { Chip } from './Chip';
 import { Icon } from './Icon';
+import { Tooltip } from './Tooltip';
 
 /** Selected / pressed underline thickness. */
 export const TAB_UNDERLINE_PX = 2;
@@ -59,6 +60,12 @@ export interface TabProps {
   /** An unread count after the label; `label` is its spoken sentence. Zero draws nothing. */
   count?: { value: number; label: string };
   disabled?: boolean;
+  /** A `ui.*` tooltip on the button (Laws 1, 17), e.g. a map lens's own tooltip. */
+  tooltipId?: string;
+  /** Replaces the tooltip's description (a lens held off says why). Needs `tooltipId`. */
+  tooltipDesc?: string;
+  /** `data-testid` on the button, for owners whose tests and probes name it. */
+  testId?: string;
 }
 
 export interface TabsPanelProps {
@@ -266,7 +273,7 @@ function TabsRoot(props: TabsProps) {
           const on = tab.value === current;
           const count = tab.count;
           const spoken = count && count.value > 0 ? `${tab.label}, ${count.label}` : undefined;
-          return (
+          const button = (
             <button
               key={tab.value}
               ref={(el) => {
@@ -276,6 +283,7 @@ function TabsRoot(props: TabsProps) {
               id={tabDomId(tabsId, tab.value)}
               className="tab-button focus-ring"
               data-tab-value={tab.value}
+              data-testid={tab.testId}
               disabled={tab.disabled}
               tabIndex={i === focusIndex ? 0 : -1}
               style={tabStyle(on, Boolean(tab.disabled))}
@@ -299,6 +307,11 @@ function TabsRoot(props: TabsProps) {
               )}
             </button>
           );
+          return tab.tooltipId ? (
+            <Tooltip key={tab.value} id={tab.tooltipId} desc={tab.tooltipDesc}>
+              {button}
+            </Tooltip>
+          ) : button;
         })}
       </div>
       {panels.map((panel) => (

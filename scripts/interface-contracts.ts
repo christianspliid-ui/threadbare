@@ -1685,6 +1685,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/components/Game/GameView.tsx', 'src/components/HexMapV2/HexMapV2.tsx'],
   },
   {
+    id: 'thread-destination-on-threads-lens',
+    producerSystem: 'Movement & Colocation',
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'The player sees where each of their people is going (THR-1878 Lenses I, plan D4). `phaseMovement` writes `movementState.destinationId` on a moving mortal; the Threads lens (`views/lenses/threadsLens.ts`, read through `hexLensViewSelector`) lights each threaded mortal at court the_first / retinue / watched, resolves the destination to its place-tier Location (`resolveToParentLocation`) and draws a dashed arrow to that hex in the court colour, with a hover line naming the place. Nothing is drawn on an unexplored hex (the seen floor hex rule, `views/knowledge.ts`). The Dominion hover line gains its pressure clause on the same pass (`dominion-band-projected-to-hex-map`, extended).',
+    ulTerms: ['The First'],
+    mechanism: { kind: 'node-prop', symbols: ['destinationId'] },
+    writeSites: ['src/engine/phaseMovement.ts'],
+    readSites: ['src/engine/views/lenses/threadsLens.ts'],
+  },
+  {
     id: 'explored-hexes-frame-opening-view',
     producerSystem: 'Intelligence, Knowledge & Familiarity',
     consumerSystem: WORLDGEN,

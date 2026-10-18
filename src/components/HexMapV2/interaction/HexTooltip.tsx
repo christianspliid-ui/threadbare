@@ -7,6 +7,7 @@ import { geoWord, ELEVATION_WORDS, TEMPERATURE_WORDS, MOISTURE_WORDS } from '../
 import { MAP_OVERLAY_Z } from '../overlay/mapOverlayZ';
 import { terrainDisplayName } from '../palette/terrainPalette';
 import type { BattleHexLine } from './battleHexLine';
+import type { LensLine } from '../../../engine/views/lenses/lensTypes';
 import { useSyncExternalStore } from 'react';
 import {
   isNudgeDesignerViewEnabled,
@@ -80,7 +81,7 @@ interface HexTooltipProps {
    * THR-1750 — while the Dominion lens is on: "Held ground, by Hesk Crossing".
    * The band word in its colour; the place's page explains the same band.
    */
-  dominionLine?: { prefix: string; placeName: string | null; word: string; color: string };
+  dominionLine?: { prefix: string; placeName: string | null; word: string; color: string; pressure?: string | null };
   /** THR-1750 — a band-drop badge on this hex: the `ui.dominion.drop` words + the chronicle line. */
   dominionDrop?: { lead: string; line: string };
   /**
@@ -88,6 +89,12 @@ interface HexTooltipProps {
    * label in the marker's colour, then who is fighting. Built by `battleHexLines`.
    */
   battleLines?: BattleHexLine[];
+  /**
+   * THR-1878 — the hex lens's lines for this hex while a lens is on ("Maren Ashfold,
+   * your First, is here."). Name segments render in the name colour; the hover tier
+   * is pointer-events: none, so the names route from the land page, not from here.
+   */
+  lensLines?: LensLine[];
 }
 
 // THR-1451 (Class C): `pct()` drew `73%` on the geo row. The reading exists —
@@ -139,6 +146,7 @@ export function HexTooltip({
   avatarColor,
   dominionLine,
   dominionDrop,
+  lensLines,
   battleLines,
 }: HexTooltipProps) {
   // THR-1804 — grid coordinates and the raw terrain key are map plumbing; cold
@@ -264,8 +272,23 @@ export function HexTooltip({
           <span style={{ color: dominionLine.color, fontWeight: 600 }}>{dominionLine.word}</span>
           {dominionLine.prefix.slice(dominionLine.word.length)}
           {dominionLine.placeName && <span style={{ color: 'var(--text-primary)' }}>{dominionLine.placeName}</span>}
+          {dominionLine.pressure && (
+            <div data-testid="hex-tooltip-dominion-pressure" style={{ whiteSpace: 'normal' }}>{dominionLine.pressure}</div>
+          )}
         </div>
       )}
+      {/* THR-1878 — the lens's own lines for this hex, while a hex lens is on */}
+      {lensLines && lensLines.length > 0 && lensLines.map((line, i) => (
+        <div
+          key={i}
+          data-testid="hex-tooltip-lens-line"
+          style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', lineHeight: 1.5, whiteSpace: 'normal' }}
+        >
+          {line.segments.map((seg, j) => seg.ref
+            ? <span key={j} data-ref-kind={seg.ref.kind} style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{seg.text}</span>
+            : <span key={j}>{seg.text}</span>)}
+        </div>
+      ))}
       {/* THR-1750 — a band drop: news, never an interrupt */}
       {dominionDrop && (
         <div

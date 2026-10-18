@@ -67,6 +67,12 @@ import {
   forceOffering, forceOfferBeatById, resolvePendingBeat, getBeatDefinitionById,
 } from '../../../engine/ascendantBeat';
 import { emitTrace } from '../../../engine/traceBuffer';
+import { MAP_LENSES, isMapLensId, mapLensById, type MapLensId } from '../../../data/map-lenses';
+import { MAP_MARKERS } from '../../../data/map-markers';
+import { DOMINION_DIM_BY_BAND } from '../../../data/dominion-ui-content';
+import { lensLayerOf } from '../../../engine/views/lenses/lensView';
+import type { HexLensVM } from '../../../engine/views/lenses/lensTypes';
+import type { MapLensChangeSource } from '../../../types/traces/ui-traces';
 import { resolveAftermathContextForAgent } from '../../../engine/encounterAftermath';
 import { type BeatDismissalRecord, type BeatInterruptSurface, selectDefaultBeatChoice } from '../beatDismissal';
 import type { WorldRef } from '../../../types/worldRef';
@@ -110,6 +116,12 @@ export interface GameDebugLeverContext {
   dominionProjectionNow: ReturnType<typeof ensureDominionProjection> | null;
   dominionDrops: ReturnType<typeof updateDominionDrops>;
   setDominionLens: (on: boolean) => void;
+  /** THR-1878 — the lens that is on, its suppression, the hex lens VM, and the writers. */
+  activeLens: MapLensId | null;
+  lensSuppressed: boolean;
+  hexLensVM: HexLensVM | null;
+  setMapLens: (next: MapLensId | null, source: MapLensChangeSource) => void;
+  setLensSuppressed: (on: boolean) => void;
   omniscienceMode: boolean;
   setOmniscienceMode: (on: boolean) => void;
   setTieredEncounterState: (next: DebugOpenedEncounter) => void;
@@ -155,6 +167,7 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
+    activeLens, lensSuppressed, hexLensVM, setMapLens, setLensSuppressed,
     omniscienceMode, setOmniscienceMode, setTieredEncounterState, runTicksSync, setBeatEntered,
     applyAftermathReactionForAgent, refRouter,
     getDebugOpenModals, getDebugActiveUIState, getDebugInterruptState, getDebugGiftDelivery,
@@ -338,6 +351,54 @@ export function useGameDebugLevers(ctx: GameDebugLeverContext): void {
       },
     });
   }, [setDominionLens, runtime, gameState.graph, gameState.ascendantId, gameState.tick, tiles]);
+
+  // Debug bridge: setMapLens / getMapLens / setLensSuppressed (THR-1878 § Debug inspection).
+  const mapLensStateRef = useRef({ activeLens, lensSuppressed, hexLensVM, dominionLensBase });
+  mapLensStateRef.current = { activeLens, lensSuppressed, hexLensVM, dominionLensBase };
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerMapLensBridge({
+      set: (id: string | null) => {
+        if (id !== null && !isMapLensId(id)) {
+          console.warn(`[__DEBUG.setMapLens] no MAP_LENSES row for '${id}'`);
+          emitTrace({
+            tick: gameState.tick,
+            category: 'ui_map_lens_changed',
+            from: mapLensStateRef.current.activeLens,
+            to: null,
+            source: 'unknown_id',
+            summary: `ui_map_lens_changed: '${id}' has no MAP_LENSES row (unknown_id)`,
+          });
+          return { error: `Unknown lens '${id}'. Valid: ${MAP_LENSES.map(l => l.id).join(', ')}, or null.` };
+        }
+        setMapLens(id, 'debug');
+        return { active: id };
+      },
+      get: () => {
+        const { activeLens: active, lensSuppressed: suppressed, hexLensVM: vm, dominionLensBase: dom } = mapLensStateRef.current;
+        const marks: Record<string, number> = {};
+        const markFallbacks: string[] = [];
+        let lit = 0;
+        let legendHead: string | null = null;
+        let emptyLine: string | null = null;
+        if (active && lensLayerOf(active) === 'hex' && vm) {
+          lit = vm.lit.length;
+          for (const m of vm.marks) {
+            marks[m.kind] = (marks[m.kind] ?? 0) + 1;
+            if (!(m.kind in MAP_MARKERS) && !markFallbacks.includes(m.kind)) markFallbacks.push(m.kind);
+          }
+          legendHead = vm.legend.head;
+          emptyLine = vm.emptyLine;
+        } else if (active && lensLayerOf(active) === 'dominion') {
+          const hexes = (dom as { hexes?: { band: keyof typeof DOMINION_DIM_BY_BAND }[] } | null)?.hexes ?? [];
+          lit = hexes.filter(h => (DOMINION_DIM_BY_BAND[h.band] ?? 0) <= 0).length;
+          legendHead = mapLensById(active)?.label ?? null;
+        }
+        return { active, suppressed, lit, marks, markFallbacks, legendHead, emptyLine };
+      },
+      setSuppressed: (on: boolean) => { setLensSuppressed(on); return on; },
+    });
+  }, [setMapLens, setLensSuppressed, gameState.tick]);
 
   // ── Debug bridge: scene snapshot + viewport/hex conversion ────────────────
   useEffect(() => {

@@ -47,7 +47,7 @@ import { mapActivitySelector } from '../../engine/views/map/activityIcons';
 import { mapPlacesSelector } from '../../engine/views/map/places';
 import { mapArmiesAndBattlesSelector } from '../../engine/views/map/armiesAndBattles';
 import { mapRealmInkSelector } from '../../engine/views/map/realmInk';
-import { lensViewSelector, dominionProjectionStamp } from '../../engine/views/lenses/lensView';
+import { lensViewSelector, dominionProjectionStamp, lensLayerOf, hexLensViewSelector, type HexLensId } from '../../engine/views/lenses/lensView';
 import { toAgentRenderData, toArmyRenderData, toActivityIconData, toRealmHolderIndex, type AvatarPaint } from './map/mapViewAdapters';
 import { ViewSourceContext, type ViewSource } from '../../contexts/ViewSourceContext';
 import { getSphereColor, getSphereSymbol } from '../../data/sphereIcons';
@@ -267,6 +267,8 @@ import { DOMINION_BANDS, DOMINION_BAND_WORDS } from '../../data/dominion-content
 import { DOMINION_TOOLTIP_IDS } from '../../data/dominion-ui-content';
 import { getUITooltip } from '../../data/ui-content';
 import type { MapLensId } from '../../data/map-lenses';
+import type { MapLensChangeSource } from '../../types/traces/ui-traces';
+import { toggleLensValue } from './frame/GameScreenState';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -1572,20 +1574,42 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [handleOpenEncounterFromNotification, setGameState]);
 
   // ── Keyboard hotkeys ──
-  // THR-1750 — Dominion lens on/off (the rest of the lens block sits with the debug bridges below).
-  const [dominionLensOn, setDominionLensOn] = useState(false);
+  // THR-1878 (plan § D1, D2) — the map lens: one at a time, none by default, kept in
+  // GameScreenState. Everything below keys on the lens's layer family from the list,
+  // never on a lens id. The rest of the lens block sits with the debug bridges below.
+  const activeLens = gameScreen.state.activeLens;
+  const lensSuppressed = gameScreen.state.lensSuppressed;
+  const activeLensLayer = activeLens ? lensLayerOf(activeLens) : null;
+  const dominionLensOn = activeLensLayer === 'dominion';
   const dominionLensOpenedRef = useRef(false);
-  const setDominionLens = useCallback((on: boolean) => {
-    if (on) dominionLensOpenedRef.current = true;
-    setDominionLensOn(on);
-  }, []);
-  const toggleMapLens = useCallback((lens: MapLensId) => {
-    if (lens !== 'dominion') return;
-    setDominionLensOn(prev => {
-      if (!prev) dominionLensOpenedRef.current = true;
-      return !prev;
+  const activeLensRef = useRef(activeLens);
+  activeLensRef.current = activeLens;
+  const tickRef = useRef(gameState.tick);
+  tickRef.current = gameState.tick;
+  const setMapLens = useCallback((next: MapLensId | null, source: MapLensChangeSource) => {
+    const prev = activeLensRef.current;
+    if (prev === next) return;
+    if (next && lensLayerOf(next) === 'dominion') dominionLensOpenedRef.current = true;
+    activeLensRef.current = next;
+    gameScreen.setActiveLens(next);
+    emitTrace({
+      tick: tickRef.current,
+      category: 'ui_map_lens_changed',
+      from: prev,
+      to: next,
+      source,
+      summary: `ui_map_lens_changed: ${prev ?? 'null'} → ${next ?? 'null'} (${source})`,
     });
-  }, []);
+  }, [gameScreen]);
+  const setDominionLens = useCallback((on: boolean) => {
+    setMapLens(on ? 'dominion' : null, 'debug');
+  }, [setMapLens]);
+  const toggleMapLens = useCallback((lens: MapLensId) => {
+    setMapLens(toggleLensValue(activeLensRef.current, lens), 'key');
+  }, [setMapLens]);
+  const setMapLensFromBar = useCallback((next: MapLensId | null) => {
+    setMapLens(next, 'bar');
+  }, [setMapLens]);
   useTopBarHotkeys({
     running,
     speed,
@@ -1983,9 +2007,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     [dominionLensFromSeam, dominionProjectionNow, dominionGodSphere, dominionLensOn],
   );
   const dominionLensForMap = useMemo(
-    () => ({ ...dominionLensBase, drops: dominionDrops }),
-    [dominionLensBase, dominionDrops],
+    // D2: while a moment or an armed card holds the map the lens layer is not drawn;
+    // the band-drop badges are not the lens and stay.
+    () => ({ ...dominionLensBase, on: dominionLensBase.on && !lensSuppressed, drops: dominionDrops }),
+    [dominionLensBase, dominionDrops, lensSuppressed],
   );
+  // THR-1878 — every other lens is a HexLensVM on the seam, drawn by the generic hex layer.
+  const hexLensId = activeLens && activeLensLayer === 'hex' ? (activeLens as HexLensId) : null;
+  const hexLensVM = hexLensId
+    ? readView(runtime, gameState, hexLensViewSelector, { lensId: hexLensId, fogOff: fogDisabled }, tiles)
+    : null;
   const dominionBandColors = useMemo(() => {
     const out: Record<string, string> = {};
     for (const band of DOMINION_BANDS) out[band] = dominionBandColorVar(band, dominionGodSphere);
@@ -1994,13 +2025,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const dominionTooltip = useCallback((col: number, row: number) => {
     const key = dominionHexKey(col, row);
     const drop = dominionDrops.find(d => d.hexKey === key);
-    const lineVm = dominionLensOn ? dominionHexLineVM(gameState.graph, dominionProjectionNow, key) : null;
+    const lineVm = dominionLensOn && !lensSuppressed ? dominionHexLineVM(gameState.graph, dominionProjectionNow, key, gameState.ascendantId) : null;
     if (!drop && !lineVm) return null;
     return {
-      ...(lineVm ? { line: { prefix: lineVm.prefix, placeName: lineVm.placeName, word: DOMINION_BAND_WORDS[lineVm.band], color: dominionBandColorVar(lineVm.band, dominionGodSphere) } } : {}),
+      ...(lineVm ? { line: { prefix: lineVm.prefix, placeName: lineVm.placeName, word: DOMINION_BAND_WORDS[lineVm.band], color: dominionBandColorVar(lineVm.band, dominionGodSphere), pressure: lineVm.pressure ?? null } } : {}),
       ...(drop ? { drop: { lead: getUITooltip(DOMINION_TOOLTIP_IDS.drop)?.desc ?? '', line: drop.line } } : {}),
     };
-  }, [dominionDrops, dominionLensOn, gameState.graph, dominionProjectionNow, dominionGodSphere]);
+  }, [dominionDrops, dominionLensOn, lensSuppressed, gameState.graph, gameState.ascendantId, dominionProjectionNow, dominionGodSphere]);
 
   // ── The view-model seam's source and debug bridge (THR-1822) ──
   // Components below read view models through `useView`; `__DEBUG.getView(id, args)`
@@ -4299,6 +4330,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
+    activeLens, lensSuppressed, hexLensVM, setMapLens, setLensSuppressed: gameScreen.setLensSuppressed,
     omniscienceMode, setOmniscienceMode, setTieredEncounterState, runTicksSync, setBeatEntered,
     applyAftermathReactionForAgent, refRouter,
     getDebugOpenModals, getDebugActiveUIState, getDebugInterruptState, getDebugGiftDelivery,
@@ -4466,8 +4498,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
                 cameraGateCallback={cameraGateCallback}
                 dominionLensForMap={dominionLensForMap}
                 dominionTooltip={dominionTooltip}
-                dominionLensOn={dominionLensOn}
-                toggleMapLens={toggleMapLens}
+                activeLens={activeLens}
+                lensSuppressed={lensSuppressed}
+                hexLens={hexLensVM}
+                setMapLensFromBar={setMapLensFromBar}
                 dominionBandColors={dominionBandColors}
                 locationActivitySummaries={locationActivitySummaries}
                 agendaPickerOpen={agendaPickerOpen}

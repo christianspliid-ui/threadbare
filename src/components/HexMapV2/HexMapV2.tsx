@@ -30,7 +30,7 @@ import { createSignifierMesh } from './scene/SignifierMesh';
 import { createLocationIconMesh, LOCATION_ICON_THRESHOLD } from './scene/LocationIconMesh';
 import { createSettlementModelMesh, disposeSettlementModelMesh } from './scene/SettlementModelMesh';
 import type { LocationNode } from './scene/LocationIconMesh';
-import { createAgentSpriteMesh, loadAgentPortraits, tickAvatarPulse } from './scene/AgentSpriteMesh';
+import { createAgentSpriteMesh, loadAgentPortraits, tickAvatarPulse, updateZoomVisibility } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
 import { createArmyLayer, preloadCoatOfArmsTextures, ARMY_TEXTURE_SIZE } from './scene/ArmyLayer';
@@ -70,6 +70,12 @@ import { createTradeRouteLayer } from './scene/TradeRouteMesh';
 import type { TradeRouteLayer } from './scene/TradeRouteMesh';
 import { createDominionLensLayer, DOMINION_LENS_LAYER_NAME } from './scene/DominionLensLayer';
 import type { DominionLensLayer } from './scene/DominionLensLayer';
+import { createHexLensLayer, HEX_LENS_LAYER_PREFIX, type HexLensLayer, type LensTile } from './scene/HexLensLayer';
+import type { HexLensVM, LensLine } from '../../engine/views/lenses/lensTypes';
+import type { MapLensLayerKind } from '../../data/map-lenses';
+import { MAP_MARKERS } from '../../data/map-markers';
+import { isWaterTerrain } from '../../engine/coastline';
+import { LensNameTags } from './overlay/LensNameTags';
 import { createDominionDropLayer, DOMINION_DROP_LAYER_NAME } from './scene/DominionDropBadge';
 import type { DominionDropLayer } from './scene/DominionDropBadge';
 import type { DominionLensVM } from '../../engine/dominionViewModels';
@@ -389,9 +395,15 @@ export interface HexMapV2Props {
   seatHex?: HexCoord | null;
   /** THR-1900 — the game tick, stamped on `ui_map_camera_jump` traces. */
   tick?: number;
+  /**
+   * THR-1878 — every lens but Dominion, prepared on the seam and drawn by the one
+   * generic hex layer (`createHexLensLayer`). Built when set, disposed when null —
+   * never alpha-hidden. Its hover lines join the hex tooltip.
+   */
+  hexLens?: HexLensVM | null;
   /** THR-1750 — the hex tooltip's Dominion lines for a hovered hex (band line while the lens is on; drop line). */
   dominionTooltip?: (col: number, row: number) => {
-    line?: { prefix: string; placeName: string | null; word: string; color: string };
+    line?: { prefix: string; placeName: string | null; word: string; color: string; pressure?: string | null };
     drop?: { lead: string; line: string };
   } | null;
 }
@@ -589,9 +601,19 @@ function createSelectionOverlayMesh(size: number, color: string): THREE.Mesh {
  * mesh.frustumCulled = true (default) applies bounding-sphere culling at the InstancedMesh level.
  * Per-instance culling is a Phase 7 concern if profiling reveals issues.
  */
+/**
+ * THR-1878 (plan § D1) — which code builds each lens layer family. Dominion is
+ * THR-1750's own layer, unchanged; every other lens is the one generic hex layer.
+ * Keyed on `MapLensLayerKind`, so a new family without a factory is a compile error.
+ */
+export const LENS_LAYER_FACTORIES = {
+  dominion: createDominionLensLayer,
+  hex: createHexLensLayer,
+} satisfies Record<MapLensLayerKind, (...args: never[]) => { group: THREE.Group; dispose(): void }>;
+
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, firstHex = null, seatHex = null, tick = 0 },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, rivalInfluenceMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, tradeRouteLines, routeTooltipsByHex, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, hexLens = null, firstHex = null, seatHex = null, tick = 0 },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -622,6 +644,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const rivalInfluenceLayerRef = useRef<RivalInfluenceLayer | null>(null);
     // THR-1750 — the Dominion lens and its drop badges (built incrementally, below).
     const dominionLensLayerRef = useRef<DominionLensLayer | null>(null);
+    // THR-1878 — the generic hex lens layer, and the agents it draws one step up.
+    const hexLensLayerRef = useRef<HexLensLayer | null>(null);
+    const lensStepIdsRef = useRef<ReadonlySet<string>>(new Set());
     const dominionDropLayerRef = useRef<DominionDropLayer | null>(null);
     // Bumped after every scene build so incremental layers re-attach to the new scene.
     const [sceneEpoch, setSceneEpoch] = useState(0);
@@ -858,7 +883,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         if (companyClusterLayerRef.current?.group.visible) layersActive.push('companyClusters');
         if (activityIconLayerRef.current?.group.visible) layersActive.push('activityIcons');
         if (fogEnabledRef.current) layersActive.push('fog');
-        if (dominionLensLayerRef.current) layersActive.push(DOMINION_LENS_LAYER_NAME);
+        if (dominionLensLayerRef.current) layersActive.push(DOMINION_LENS_LAYER_NAME, `${HEX_LENS_LAYER_PREFIX}dominion`);
+        if (hexLensLayerRef.current) layersActive.push(hexLensLayerRef.current.group.name);
         if ((dominionDropLayerRef.current?.count ?? 0) > 0) layersActive.push(DOMINION_DROP_LAYER_NAME);
 
         return {
@@ -1161,6 +1187,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const agentSpriteGroup = createAgentSpriteMesh(agents ?? []);
         scene.add(agentSpriteGroup.group);
         agentSpriteGroupRef.current = agentSpriteGroup;
+        agentSpriteGroup.lensStepIds = lensStepIdsRef.current;
 
         // Kick off portrait loading (fire-and-forget — fail-soft)
         if ((agents ?? []).length > 0) {
@@ -1913,7 +1940,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       }
       if (!scene || !dominionLens?.on) return;
       try {
-        const layer = createDominionLensLayer(dominionLens);
+        const layer = LENS_LAYER_FACTORIES.dominion(dominionLens);
         scene.add(layer.group);
         dominionLensLayerRef.current = layer;
       } catch (err) {
@@ -1922,6 +1949,50 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       // Keyed on the lens parts, not the VM object: a new drops list must not rebuild the lens.
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dominionLens?.on, dominionLens?.hexes, dominionLens?.edges, sceneEpoch]);
+
+    // ── Hex lenses (THR-1878 § D3): one generic layer, built on toggle, never alpha-hidden ──
+    const lensTiles = useMemo<LensTile[]>(
+      () => tiles.map(t => ({ col: t.coord.col, row: t.coord.row, isWater: isWaterTerrain(t.terrain) })),
+      [tiles],
+    );
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (hexLensLayerRef.current) {
+        hexLensLayerRef.current.group.parent?.remove(hexLensLayerRef.current.group);
+        hexLensLayerRef.current.dispose();
+        hexLensLayerRef.current = null;
+      }
+      let stepIds: ReadonlySet<string> = new Set();
+      if (scene && hexLens) {
+        try {
+          const layer = LENS_LAYER_FACTORIES.hex(hexLens, lensTiles);
+          scene.add(layer.group);
+          hexLensLayerRef.current = layer;
+          stepIds = layer.agentStepIds;
+        } catch (err) {
+          console.warn('[HexMapV2] hex lens build failed; lens left off', err);
+        }
+      }
+      // The agent layer draws the lens's mortals one step up (Threads' medallions).
+      lensStepIdsRef.current = stepIds;
+      const agentGroup = agentSpriteGroupRef.current;
+      if (agentGroup) {
+        agentGroup.lensStepIds = stepIds;
+        updateZoomVisibility(agentGroup, zoomStateRef.current.tier, zoomStateRef.current.k);
+      }
+    }, [hexLens, lensTiles, sceneEpoch]);
+
+    // Lens marks follow MAP_MARKERS' bands (a heading arrow is hidden at full-world zoom).
+    useEffect(() => {
+      const layer = hexLensLayerRef.current;
+      if (!layer) return;
+      const band = ZOOM_BAND_OF_TIER[zoomTier];
+      for (const child of layer.group.children) {
+        const kind = child.userData.lensMark as MapMarkerKind | undefined;
+        if (!kind || !(kind in MAP_MARKERS)) continue;
+        child.visible = MAP_MARKERS[kind].sizePx === 'mesh' || markerSizePx(kind, band) !== null;
+      }
+    }, [zoomTier, hexLens]);
 
     // ── Dominion band-drop badges (THR-1750 § U4): lens on or off ──
     const dominionDrops = dominionLens?.drops;
@@ -2187,6 +2258,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             labelPassStatsRef={labelPassStatsRef}
           />
         )}
+        {/* THR-1878 — Threads lens name tags under each threaded medallion */}
+        {!overlayOpen && hexLens && (
+          <LensNameTags
+            marks={hexLens.marks}
+            agentSpriteGroupRef={agentSpriteGroupRef}
+            cameraRef={cameraRef}
+            canvasWidth={canvasDimensions.w}
+            canvasHeight={canvasDimensions.h}
+            zoomTier={zoomTier}
+            zoomK={zoomK}
+          />
+        )}
         {/* Agent spotlight pulse — world view → encounter handoff (THR-340) */}
         {!overlayOpen && spotlightedAgentId && (
           <AgentPulseOverlay
@@ -2245,6 +2328,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
                 const d = dominionTooltip?.(tooltipHex.col, tooltipHex.row);
                 return { dominionLine: d?.line, dominionDrop: d?.drop };
               })()}
+              lensLines={hexLens?.hover[`${tooltipHex.col},${tooltipHex.row}`] as LensLine[] | undefined}
             />
           );
         })()}

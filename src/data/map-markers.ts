@@ -66,7 +66,9 @@ export type MapMarkerKind =
   | 'army'
   | 'bandDrop'
   | 'battle'
-  | 'siege';
+  | 'siege'
+  | 'medallion'
+  | 'destination';
 
 export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
   /** A mortal the map draws who is not threaded (a group); faction colour. */
@@ -147,6 +149,36 @@ export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
     ink: 'siege',
     legend: [{ word: 'Siege', tooltipId: 'ui.siege' }],
     legendIn: [],
+    labelObstacle: 'never',
+  },
+  /**
+   * Threads lens (THR-1878): a threaded mortal drawn one step up — the agent layer
+   * scales that mortal's own marker by THREADS_LENS_MEDALLION_SCALE, with a name tag.
+   * One legend entry per court tone; the swatch is the court's thread colour.
+   */
+  medallion: {
+    lens: 'threads',
+    draw: 'agentStep',
+    sizePx: 'mesh',
+    icon: null,
+    ink: 'court',
+    legend: [
+      { word: 'The First', tooltipId: 'ui.lens.mark.first', tone: 'first' },
+      { word: 'Retinue', tooltipId: 'ui.lens.mark.retinue', tone: 'retinue' },
+      { word: 'Watched', tooltipId: 'ui.lens.mark.watched', tone: 'watched' },
+    ],
+    legendIn: ['threads'],
+    labelObstacle: 'never',
+  },
+  /** Threads lens: a dashed arrow from a moving mortal's hex to where it is going. */
+  destination: {
+    lens: 'threads',
+    draw: 'arrow',
+    sizePx: { fullWorld: null, continental: 2, regional: 2, heroLocal: 2 },
+    icon: null,
+    ink: 'court',
+    legend: [{ word: 'Heading', tooltipId: 'ui.lens.mark.destination' }],
+    legendIn: ['threads'],
     labelObstacle: 'never',
   },
 };

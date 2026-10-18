@@ -20,7 +20,7 @@ import type {
 } from './traces/mentorship-traces';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
-import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace, StageTrace, UiMapCameraJumpTrace } from './traces/ui-traces';
+import type { UiRefOpenedTrace, UiRefUnroutableTrace, ViewFallbackTrace, StageTrace, UiMapCameraJumpTrace, UiMapLensChangedTrace } from './traces/ui-traces';
 import type { FightClockTrace, FightEndTrace, FightEndingTrace, FightForkTrace, FightStepTrace, FightTriggerGrudgeTrace } from './traces/fight-traces';
 import type { WarReportedTrace } from './traces/war-traces';
 import type {
@@ -620,6 +620,8 @@ export type TraceCategory =
   | 'ui_stage'
   // The map camera — a programmatic camera move (THR-1900).
   | 'ui_map_camera_jump'
+  // The map lens — a lens turned on, off or over (THR-1878).
+  | 'ui_map_lens_changed'
   // Fights — one per fight step (THR-1537). Interfaces in `src/types/traces/fight-traces.ts`.
   | 'fight.step'
   // Fights — the clock writer and the one end per fight (THR-1538).
@@ -690,6 +692,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'view_fallback',
   'ui_stage',
   'ui_map_camera_jump',
+  'ui_map_lens_changed',
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'encounter_step_prose_recorded',
@@ -4952,6 +4955,7 @@ export type TraceEntry =
   | ViewFallbackTrace
   | StageTrace
   | UiMapCameraJumpTrace
+  | UiMapLensChangedTrace
   // Effect vocabulary activation (THR-1239)
   | EffectEventRaisedTrace
   | EffectChargeSpentTrace

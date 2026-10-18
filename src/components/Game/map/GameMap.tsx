@@ -12,6 +12,10 @@
  * cluster in `MapCornerChrome` (bottom-right) and the map keys (`useMapHotkeys`), both
  * running `MAP_COMMANDS` through one `runMapCommand`; the First and the seat are passed to
  * HexMapV2 for the opening view.
+ *
+ * THR-1878 (Lenses I): the lens that is on comes from GameScreenState; a Dominion lens
+ * reaches HexMapV2 as `dominionLens`, every other lens as one `hexLens` view model drawn
+ * by the generic hex layer. The hex click passes through unchanged (D11).
  */
 import { useCallback, useMemo, type RefObject } from 'react';
 import type { GameState } from '../../../types/gameState';
@@ -30,6 +34,8 @@ import { resolveFirstHex, resolveSeatHex } from '../../../engine/views/map/focus
 import { useMapHotkeys } from './useMapHotkeys';
 import { MapLensSwitch } from '../../HexMapV2/chrome/MapLensSwitch';
 import type { MapLensSwitchProps } from '../../HexMapV2/chrome/MapLensSwitch';
+import type { MapLensId } from '../../../data/map-lenses';
+import type { HexLensVM } from '../../../engine/views/lenses/lensTypes';
 import { LiveLocationBar } from '../LiveLocationBar';
 import { MapAnchoredDialogs } from '../hosts/DialogHost';
 import type { MapAnchoredDialogsProps } from '../hosts/DialogHost';
@@ -81,9 +87,12 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   cameraGateCallback: HexMapV2Props['shouldCenterOnAgent'];
   dominionLensForMap: HexMapV2Props['dominionLens'];
   dominionTooltip: HexMapV2Props['dominionTooltip'];
-  // Map lens switch
-  dominionLensOn: boolean;
-  toggleMapLens: MapLensSwitchProps['onToggle'];
+  // Map lens bar (THR-1878): the lens that is on, whether a moment holds it off, the
+  // hex lens's prepared view (null unless a hex lens is on), and the bar's writer.
+  activeLens: MapLensId | null;
+  lensSuppressed: boolean;
+  hexLens: HexLensVM | null;
+  setMapLensFromBar: MapLensSwitchProps['onChange'];
   dominionBandColors: MapLensSwitchProps['bandColors'];
   // Living World summary bar
   locationActivitySummaries: Map<string, LocationActivitySummary>;
@@ -137,8 +146,10 @@ export function GameMap({
   cameraGateCallback,
   dominionLensForMap,
   dominionTooltip,
-  dominionLensOn,
-  toggleMapLens,
+  activeLens,
+  lensSuppressed,
+  hexLens,
+  setMapLensFromBar,
   dominionBandColors,
   locationActivitySummaries,
   agendaPickerOpen,
@@ -239,6 +250,7 @@ export function GameMap({
         shouldCenterOnAgent={cameraGateCallback}
         dominionLens={dominionLensForMap}
         dominionTooltip={dominionTooltip}
+        hexLens={lensSuppressed ? null : hexLens}
         firstHex={firstHex}
         seatHex={seatHex}
         tick={gameState.tick}
@@ -253,12 +265,14 @@ export function GameMap({
         />
       </MapCornerChrome>
 
-      {/* THR-1750 — the map lens switch (lens one: Dominion), key 1 */}
+      {/* THR-1878 — the map lens bar and legend (keys 1–4 from MAP_LENSES); hidden with no god */}
       {gameState.ascendantId && (
         <MapLensSwitch
-          active={dominionLensOn ? 'dominion' : null}
-          onToggle={toggleMapLens}
+          active={activeLens}
+          suppressed={lensSuppressed}
+          onChange={setMapLensFromBar}
           bandColors={dominionBandColors}
+          hexLegend={hexLens ? { head: hexLens.legend.head, lines: hexLens.legend.lines, emptyLine: hexLens.emptyLine } : null}
         />
       )}
 

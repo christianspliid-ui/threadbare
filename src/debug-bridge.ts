@@ -173,6 +173,12 @@ if (import.meta.env.DEV) {
     get: () => import('./debug-bridge.d').DebugDominionLensResult;
     hex: (col: number, row: number) => import('./debug-bridge.d').DebugDominionHexResult | null;
   } | null = null;
+  // THR-1878 — the map lens (any lens), registered by GameView.
+  let _mapLens: {
+    set: (id: string | null) => import('./debug-bridge.d').DebugSetMapLensResult;
+    get: () => import('./debug-bridge.d').DebugMapLensResult;
+    setSuppressed: (on: boolean) => boolean;
+  } | null = null;
   // THR-1813 — the account record, registered by GameView.
   let _accountBridge: {
     get: () => import('./types/account').AccountRecord | null;
@@ -1133,6 +1139,14 @@ if (import.meta.env.DEV) {
     setDominionLens: async (on: boolean) => _dominionLens?.set(on) ?? false,
     /** THR-1750 — the lens state and the projection's counts (computed even while the lens is off). */
     getDominionLens: async () => _dominionLens?.get() ?? null,
+    /** THR-1878 — turn a map lens on (by its MAP_LENSES id) or off (null); an unknown id returns { error }. */
+    setMapLens: async (id: string | null) => _mapLens?.set(id) ?? { error: 'No game is running.' },
+    /** THR-1878 — the lens that is on, whether it is held off, its lit hexes, marks by kind and legend head. */
+    getMapLens: async () => _mapLens?.get() ?? null,
+    /** THR-1878 — hold the lens layer off as the Stage would (D2); the button stays pressed. */
+    setLensSuppressed: async (on: boolean) => _mapLens?.setSuppressed(on) ?? false,
+    /** @internal GameView registers the lens bridge here */
+    _registerMapLensBridge: (bridge) => { _mapLens = bridge as typeof _mapLens; },
     getAccountRecord: async () => _accountBridge?.get() ?? null,
     previewRunEnd: async () => _accountBridge?.previewRunEnd() ?? null,
     endAge: async () => _accountBridge?.endAge() ?? false,

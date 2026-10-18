@@ -152,3 +152,48 @@ export const INSPECTOR_WORDS = {
   factLiege: 'liege',
   factVassal: 'owes fealty',
 } as const;
+
+// ─── Map lenses (THR-1878 plan § D4, § Player-facing text) ──────────────
+
+/** The lens views' shared words: the overflow-free fallback when a lens cannot be built. */
+export const LENS_VIEW_WORDS = {
+  /** Legend line when a lens's view cannot be built (fail-soft table). */
+  unavailable: 'This lens has nothing to show right now.',
+  /** The pressed lens button's tooltip addition while a moment or an armed card holds the map (D2). */
+  suppressedByStage: 'Hidden while a moment plays',
+  suppressedByArming: 'Hidden while a card is armed',
+} as const;
+
+/** The Threads lens (2): legend, hover templates, court phrases, name-tag fallbacks. */
+export const THREADS_LENS_WORDS = {
+  label: 'Threads',
+  legendHead: 'Threads',
+  legend: [
+    'Your people keep their light; the rest is dimmed.',
+    'A dashed arrow shows where each is going.',
+  ] as readonly string[],
+  /** Court position → the phrase after the name. */
+  court: {
+    the_first: 'your First',
+    retinue: 'of your retinue',
+    watched: 'whom you watch',
+  },
+  /** Court position → the name tag when a mortal has no display name. */
+  courtTag: {
+    the_first: 'Your First',
+    retinue: 'Of your retinue',
+    watched: 'Whom you watch',
+  },
+  /** "{name}, {court}, is here." */
+  here: '{name}, {court}, is here.',
+  /** "{name}, {court}, is here, on {their} way to {place}." */
+  hereHeading: '{name}, {court}, is here, on {their} way to {place}.',
+  /** "{name}, {court}, is on {their} way here from {place}." */
+  arriving: '{name}, {court}, is on {their} way here from {place}.',
+  /** The same, when where they set out from has no name the player knows. */
+  arrivingNoPlace: '{name}, {court}, is on {their} way here.',
+  /** Used for `{their} way` when gender is unknown — "on the way". */
+  unknownTheir: 'the',
+  overflow: 'and others of your people',
+  empty: 'You have no threaded mortals yet.',
+} as const;

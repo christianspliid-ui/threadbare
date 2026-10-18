@@ -161,6 +161,27 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Dominion lens',
     desc: 'Show your ground: what is yours, where it ends, and what stands against you. Key 1.',
   },
+  // THR-1878 — the map lenses beyond Dominion, and their legend marks.
+  'ui.lens.threads': {
+    label: 'Threads lens',
+    desc: 'Show where your people are and where each is going. Key 2.',
+  },
+  'ui.lens.mark.first': {
+    label: 'The First',
+    desc: 'The first mortal your thread bound, and the one it holds closest.',
+  },
+  'ui.lens.mark.retinue': {
+    label: 'Retinue',
+    desc: 'Mortals of your court. Your thread holds them, and their stories reach you.',
+  },
+  'ui.lens.mark.watched': {
+    label: 'Watched',
+    desc: 'Mortals you keep an eye on. Your thread touches them lightly.',
+  },
+  'ui.lens.mark.destination': {
+    label: 'Heading',
+    desc: 'Where this mortal is going. The dashed arrow ends at the place.',
+  },
   'ui.dominion.chip': {
     label: 'Ground and price',
     desc: 'The ground you aim at changes the price. The faint pip is what neutral ground would cost.',

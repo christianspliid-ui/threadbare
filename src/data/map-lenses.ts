@@ -1,11 +1,18 @@
 /**
- * map-lenses.ts — the map lens registry (THR-1750, lens one of THR-1823).
+ * map-lenses.ts — the map lens registry (THR-1750 lens one; THR-1878 plan § D1).
  *
- * One row per lens: its switch label, its key, its tooltip and its legend.
- * THR-1830 ("Lenses on the map") adds the other rows and may restyle the switch
- * into its bar; it must not build a second Dominion overlay.
+ * One row per lens: its bar label, its key, its tooltip, its fixed legend lines and
+ * the layer family that draws it. Everything else is derived from this list or keyed
+ * on its union (Law 58): the lens bar maps over it, the key handler reads `key`, the
+ * view model comes from `LENS_SELECTORS` (`src/engine/views/lenses/lensView.ts`, a
+ * total record), the layer from `LENS_LAYER_FACTORIES` (HexMapV2, keyed on `layer`),
+ * and a lens's marks are `MAP_MARKERS` rows naming it. A new hex lens is one row
+ * here, one selector and its marker rows — it writes no layer code.
  *
- * Keys `1`–`5` are reserved for lenses (THR-1831).
+ * Keys `1`–`5` are reserved for lenses (THR-1831); `5` stays unbound. Trouble (`3`)
+ * and Trade (`4`) join in Lenses II (THR-1898).
+ *
+ * Named test: `src/data/__tests__/mapLenses.coverage.test.ts`.
  */
 
 import {
@@ -14,17 +21,32 @@ import {
   DOMINION_LEGEND_LINES,
   DOMINION_TOOLTIP_IDS,
 } from './dominion-ui-content';
+import { THREADS_LENS_WORDS } from './view-content';
 
-export type MapLensId = 'dominion';
+/** The closed union of lens ids — grows one member per row. */
+export type MapLensId = 'dominion' | 'threads';
+
+/**
+ * Which layer family draws a lens. `'dominion'` is THR-1750's own layer, reused
+ * unchanged; `'hex'` is the one generic hex-lens layer every new lens uses (D3).
+ */
+export type MapLensLayerKind = 'dominion' | 'hex';
 
 export interface MapLensDef {
   id: MapLensId;
+  /** "Dominion", "Threads". */
   label: string;
-  /** The keyboard key that toggles this lens. */
+  /** The keyboard key that toggles this lens ('1'..'4'; '5' reserved). */
   key: string;
   tooltipId: string;
+  /** The lens's fixed legend lines (Dominion: as built). */
   legend: readonly string[];
+  /** Which layer family draws it. */
+  layer: MapLensLayerKind;
 }
+
+/** The keys a lens may take. `5` is reserved and unbound. */
+export const MAP_LENS_KEYS: readonly string[] = ['1', '2', '3', '4', '5'];
 
 export const MAP_LENSES: readonly MapLensDef[] = [
   {
@@ -33,10 +55,30 @@ export const MAP_LENSES: readonly MapLensDef[] = [
     key: DOMINION_LENS_KEY_HINT,
     tooltipId: DOMINION_TOOLTIP_IDS.lens,
     legend: DOMINION_LEGEND_LINES,
+    layer: 'dominion',
+  },
+  {
+    id: 'threads',
+    label: THREADS_LENS_WORDS.label,
+    key: '2',
+    tooltipId: 'ui.lens.threads',
+    legend: THREADS_LENS_WORDS.legend,
+    layer: 'hex',
   },
 ];
 
 /** The lens a key toggles, or undefined. */
 export function mapLensForKey(key: string): MapLensDef | undefined {
   return MAP_LENSES.find(l => l.key === key);
+}
+
+/** The row for an id, or undefined for an id with no row (Law 58's plain fallback). */
+export function mapLensById(id: string | null | undefined): MapLensDef | undefined {
+  if (!id) return undefined;
+  return MAP_LENSES.find(l => l.id === id);
+}
+
+/** Whether a string names a lens in the list. */
+export function isMapLensId(id: unknown): id is MapLensId {
+  return typeof id === 'string' && MAP_LENSES.some(l => l.id === id);
 }
