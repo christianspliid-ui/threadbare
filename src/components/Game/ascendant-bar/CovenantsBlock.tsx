@@ -33,7 +33,7 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
         style={{
           fontFamily: 'var(--font-body)',
           fontStyle: 'italic',
-          fontSize: 12,
+          fontSize: 'var(--text-xs)',
           color: 'var(--text-muted)',
         }}
       >
@@ -61,7 +61,7 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
             <span
               style={{
                 fontFamily: 'var(--font-body)',
-                fontSize: 13,
+                fontSize: 'var(--text-xs)',
                 color: 'var(--text-primary)',
                 lineHeight: 1.35,
                 flex: 1,
@@ -74,12 +74,10 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
               <span
                 data-testid={`covenant-contested-${row.effectId}`}
                 style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 9,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-xs)',
                   fontWeight: 600,
                   color: 'var(--negative, #c04040)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.14em',
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -91,12 +89,10 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
           {/* Target */}
           <span
             style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 10,
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
               fontWeight: 600,
               color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.16em',
             }}
           >
             {row.target}
@@ -107,7 +103,7 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
             <span
               style={{
                 fontFamily: 'var(--font-body)',
-                fontSize: 11,
+                fontSize: 'var(--text-xs)',
                 fontStyle: 'italic',
                 color: 'var(--text-secondary)',
                 flex: 1,
@@ -123,12 +119,10 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
               title={COVENANT_RELEASE_TITLE}
               onClick={() => onRelease?.(row.effectId)}
               style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 10,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
                 fontWeight: 600,
                 color: 'var(--text-secondary)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.12em',
                 background: 'transparent',
                 border: '1px solid var(--border-medium)',
                 borderRadius: 3,

@@ -28,7 +28,7 @@ export function MandateBlock({ mandate, onOpen }: MandateBlockProps) {
     >
       {/* Flavor line */}
       <div style={{
-        fontFamily: 'var(--font-body)', fontSize: 13,
+        fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
         color: hov ? 'var(--text-primary)' : 'var(--text-secondary)',
         fontStyle: 'italic', lineHeight: 1.4,
         transition: 'color 0.15s ease',
@@ -47,11 +47,11 @@ export function MandateBlock({ mandate, onOpen }: MandateBlockProps) {
           }} />
         </div>
         <span style={{
-          fontFamily: 'var(--font-display)', fontSize: 12, color: trendColor,
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: trendColor,
           display: 'flex', alignItems: 'center', gap: 4,
-          letterSpacing: '0.04em', whiteSpace: 'nowrap',
+          whiteSpace: 'nowrap',
         }}>
-          {word} <span style={{ fontSize: 14 }}>{arrow}</span>
+          {word} <span style={{ fontSize: 'var(--text-xs)' }}>{arrow}</span>
         </span>
       </div>
     </div>

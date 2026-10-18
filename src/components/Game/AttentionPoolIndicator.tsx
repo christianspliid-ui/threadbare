@@ -11,6 +11,11 @@ export interface AttentionPoolIndicatorProps {
   attentionPool: number;
   attentionCapacity: number;
   attentionRegen: number;
+  /**
+   * THR-1894 — where the meter sits. `rail` (the god rail, under essence) draws a
+   * full-width row at the 16 px floor; `topbar` keeps the compact top-bar tier.
+   */
+  placement?: 'topbar' | 'rail';
 }
 
 /** CSS variable name for each visual state's bar colour. */
@@ -55,6 +60,7 @@ export function AttentionPoolIndicator({
   attentionPool,
   attentionCapacity,
   attentionRegen,
+  placement = 'topbar',
 }: AttentionPoolIndicatorProps) {
   const attentionState: AscendantAttentionState = useMemo(() => ({
     attentionPool:     attentionPool     ?? ATTENTION_BASE_CAPACITY,
@@ -88,6 +94,38 @@ export function AttentionPoolIndicator({
    * rather than banded. The figure stays on the trace.
    */
   const tooltipTitle = `Attention: ${poolDisplay} / ${capDisplay} (${stateLabel})`;
+
+  if (placement === 'rail') {
+    return (
+      <Tooltip id="ui.attention" label={tooltipTitle} block>
+        <div
+          data-testid="attention-pool-indicator"
+          role="meter"
+          aria-valuemin={0}
+          aria-valuemax={attentionState.attentionCapacity}
+          aria-valuenow={attentionState.attentionPool}
+          aria-label={tooltipTitle}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 24, cursor: 'help' }}
+        >
+          <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>
+            {label ? `Attention · ${label}` : 'Attention'}
+          </span>
+          <div style={{ flex: 1, height: 4, borderRadius: 'var(--radius-chip)', backgroundColor: 'var(--bg-surface)', overflow: 'hidden' }}>
+            <div
+              style={{
+                width: `${ratio * 100}%`,
+                height: '100%',
+                backgroundColor: color,
+                opacity,
+                borderRadius: 'var(--radius-chip)',
+                transition: 'width 0.3s ease, background-color 0.3s ease',
+              }}
+            />
+          </div>
+        </div>
+      </Tooltip>
+    );
+  }
 
   return (
     // THR-1814: the desc comes from the registry (`ui.attention`, Law 17); the live

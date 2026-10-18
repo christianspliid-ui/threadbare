@@ -15,11 +15,14 @@
  *
  * ─── Constants ───────────────────────────────────────────────────
  * | LEDGER_RAIL_HOTKEY | 'l' | Folds or unfolds the Ledger rail; the flyout while the Inspector is open |
+ * | GOD_RAIL_OPEN_ROWS_KEY | 'threadbare.ui.godRail.openRows' | The folded rows the player opened (Law 51) |
+ * | GOD_RAIL_HAND_GROUP_KEY | 'threadbare.ui.godRail.handGroup' | The hand group the player last opened (Law 51) |
  */
 import type { IconName } from './icons/iconRegistry';
 import type { OpeningRevealSurfaceId } from './opening-reveal-table';
 import {
   CHRONICLE_LABEL,
+  GOD_RAIL_LABELS,
   CHRONICLE_TAB_LABELS,
   STRIP_COUNT_LABELS,
   THREADS_LABEL,
@@ -102,6 +105,46 @@ export const LEDGER_LINES: readonly LedgerLineDef[] = [
   { id: 'world_soul', label: WORLD_SOUL_LABEL, tooltipId: 'ui.world_soul', revealSurface: 'world_soul' },
 ];
 
+// ─── The god rail (slice 2, THR-1894; plan § F6) ────────────────────
+
+export type GodRailSectionId = 'identity' | 'essence' | 'hand' | 'reaches' | 'mandate' | 'covenants' | 'signatures' | 'hooks';
+
+/** Where a section sits: pinned at the top, the hand filling the middle, or folded to one line at the foot. */
+export type GodRailPlace = 'pinned' | 'fill' | 'folded';
+
+export interface GodRailSectionDef {
+  id: GodRailSectionId;
+  place: GodRailPlace;
+  order: number;
+  label: string;
+  tooltipId: string | null;
+  /** The opening-reveal surfaces this section claims (essence claims Attention; the hand claims Investiture). */
+  revealSurfaces: readonly OpeningRevealSurfaceId[];
+  /** False for covenants, signatures and hooks: an empty section does not render (THR-1814 rule 4). */
+  rendersWhenEmpty: boolean;
+}
+
+/**
+ * The god rail, top to bottom (THR-1828 call 2): who you are, what you hold, what you
+ * can cast, then the folded rows. Adding a row is one entry here and one body in
+ * `frame/godRailComponents.tsx`.
+ */
+export const GOD_RAIL_SECTIONS: readonly GodRailSectionDef[] = [
+  { id: 'identity', place: 'pinned', order: 1, label: GOD_RAIL_LABELS.identity, tooltipId: 'ui.ascendant_name', revealSurfaces: ['identity'], rendersWhenEmpty: true },
+  { id: 'essence', place: 'pinned', order: 2, label: GOD_RAIL_LABELS.essence, tooltipId: null, revealSurfaces: ['essence', 'attention'], rendersWhenEmpty: true },
+  { id: 'hand', place: 'fill', order: 3, label: GOD_RAIL_LABELS.hand, tooltipId: 'ui.your_cards', revealSurfaces: ['hand', 'investiture'], rendersWhenEmpty: true },
+  { id: 'reaches', place: 'folded', order: 4, label: GOD_RAIL_LABELS.reaches, tooltipId: 'ui.reaches', revealSurfaces: ['reaches'], rendersWhenEmpty: true },
+  { id: 'mandate', place: 'folded', order: 5, label: GOD_RAIL_LABELS.mandate, tooltipId: null, revealSurfaces: ['mandate'], rendersWhenEmpty: true },
+  { id: 'covenants', place: 'folded', order: 6, label: GOD_RAIL_LABELS.covenants, tooltipId: 'ui.covenant', revealSurfaces: [], rendersWhenEmpty: false },
+  { id: 'signatures', place: 'folded', order: 7, label: GOD_RAIL_LABELS.signatures, tooltipId: 'ui.signatures', revealSurfaces: [], rendersWhenEmpty: false },
+  { id: 'hooks', place: 'folded', order: 8, label: GOD_RAIL_LABELS.hooks, tooltipId: 'ui.hooks', revealSurfaces: [], rendersWhenEmpty: false },
+];
+
+/** The folded rows the player opened (Law 51). Every row starts closed. */
+export const GOD_RAIL_OPEN_ROWS_KEY = 'threadbare.ui.godRail.openRows';
+/** The hand group the player last opened, when the hand groups at the rail's limit (Law 51). */
+export const GOD_RAIL_HAND_GROUP_KEY = 'threadbare.ui.godRail.handGroup';
+
 /** `L` folds or unfolds the rail; with the Inspector open it toggles the flyout (§ F8, § F10). */
 export const LEDGER_RAIL_HOTKEY = 'l';
 
@@ -114,16 +157,9 @@ export const FRAME_HOTKEYS: readonly string[] = [LEDGER_RAIL_HOTKEY, LEDGER_RAIL
 
 /**
  * Opening-reveal surfaces whose frame lists land in a later slice, each with the
- * ticket that lists it. Slice 2 empties the god rail's part; slice 3 deletes this.
+ * ticket that lists it. Slice 2 (THR-1894) emptied the god rail's part; slice 3 deletes this.
  */
 export const NOT_YET_LISTED: Readonly<Partial<Record<OpeningRevealSurfaceId, string>>> = {
-  identity: 'THR-1894',
-  essence: 'THR-1894',
-  attention: 'THR-1894',
-  hand: 'THR-1894',
-  investiture: 'THR-1894',
-  mandate: 'THR-1894',
-  reaches: 'THR-1894',
   time_controls: 'THR-1875',
   settings: 'THR-1875',
   read_threads: 'THR-1875',
@@ -138,5 +174,6 @@ export function frameRevealClaims(): { surface: OpeningRevealSurfaceId; claimedB
   for (const s of LEDGER_RAIL_SECTIONS) for (const r of s.revealSurfaces) out.push({ surface: r, claimedBy: `LEDGER_RAIL_SECTIONS.${s.id}` });
   for (const t of LEDGER_TABS) if (t.revealSurface) out.push({ surface: t.revealSurface, claimedBy: `LEDGER_TABS.${t.id}` });
   for (const l of LEDGER_LINES) out.push({ surface: l.revealSurface, claimedBy: `LEDGER_LINES.${l.id}` });
+  for (const g of GOD_RAIL_SECTIONS) for (const r of g.revealSurfaces) out.push({ surface: r, claimedBy: `GOD_RAIL_SECTIONS.${g.id}` });
   return out;
 }

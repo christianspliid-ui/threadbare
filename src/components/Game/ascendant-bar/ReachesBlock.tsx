@@ -37,7 +37,7 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
         style={{
           fontFamily: 'var(--font-body)',
           fontStyle: 'italic',
-          fontSize: 12,
+          fontSize: 'var(--text-xs)',
           color: 'var(--text-muted)',
         }}
       >
@@ -57,12 +57,10 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
             <span
               style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 9,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
                 fontWeight: 600,
                 color: 'var(--text-muted)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.18em',
                 minWidth: 62,
               }}
             >
@@ -71,11 +69,10 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
             <Tooltip id={`reach.${row.reach}`}>
             <span
               style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 14,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
                 fontWeight: 600,
                 color: 'var(--text-primary)',
-                letterSpacing: '0.04em',
               }}
             >
               {row.label}
@@ -87,7 +84,7 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
               data-testid={`reach-tier-${row.reach}`}
               style={{
                 fontFamily: 'var(--font-body)',
-                fontSize: 13,
+                fontSize: 'var(--text-xs)',
                 color: 'var(--text-secondary)',
                 fontStyle: 'italic',
               }}
@@ -104,7 +101,7 @@ export function ReachesBlock({ rows }: ReachesBlockProps) {
               style={{
                 fontFamily: 'var(--font-body)',
                 fontStyle: 'italic',
-                fontSize: 11,
+                fontSize: 'var(--text-xs)',
                 color: 'var(--accent-gold)',
                 paddingLeft: 68,
                 lineHeight: 1.35,

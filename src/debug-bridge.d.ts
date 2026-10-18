@@ -2629,7 +2629,8 @@ export interface DebugBridge {
    * THR-1893 (frame plan § Debug inspection) — what the frame drew, read off the DOM:
    * the Ledger rail's state ('open' | 'strip' | 'hidden'), why it folded, the flyout,
    * the Chronicle tab and the tabs rendered, the strip counts, and the measured map share.
-   * Slices 2 and 3 add the god rail and the top bar.
+   * THR-1894 adds `godRail`: the sections drawn and open, and the hand (its cards, fit mode
+   * whole | grouped, open group, armed card, rest state, free height). Slice 3 adds the top bar.
    */
   getFrameState: () => Promise<import('./components/Game/frame/frameDebugState').DebugFrameStateSlice1>;
   /** THR-1893 — dev lever: force the Inspector input the Ledger rail folds on. Resolves to the value set. */

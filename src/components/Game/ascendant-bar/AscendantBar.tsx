@@ -1,63 +1,36 @@
 /**
- * AscendantBar — persistent left rail (360 px) for the hexmap screen.
+ * AscendantBar — the god rail's body (THR-184; rebuilt from `GOD_RAIL_SECTIONS` by
+ * THR-1894, frame plan § F6).
  *
- * Shows ascendant self-state: identity + quintessence, reaches, essence, actions,
- * mandate, and hooks (conditions / clues / vows). Six foldable sections.
+ * The rail is drawn from one list, top to bottom (THR-1828 call 2): the pinned
+ * sections (identity; essence with Attention under it), then **the hand**, headed
+ * "Your cards", filling the rail's free height, then the folded rows at the foot —
+ * Reaches, Mandate, Covenants, Signatures, Hooks — one line each, opening in place
+ * above the row. Which sections exist and where they sit is `GOD_RAIL_SECTIONS`; how
+ * each draws is `GOD_RAIL_COMPONENTS`; what each shows is the `godRail` view model.
+ * Nothing here is a hand-placed section (Law 58).
  *
- * Prose-first, no numbers, 1920×1080 viewport contract.
- * Supersedes: IdentityChip (top bar), AvatarHUD overlay, EssencePanel (right rail),
- * MandateTracker (right rail).
- *
- * THR-184: Ascendant Bar
+ * The open set of folded rows is a remembered preference (Law 51,
+ * `GOD_RAIL_OPEN_ROWS_KEY`); every row starts closed.
  */
-import React, { useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useState, type CSSProperties, type ReactElement } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { AscendantIdentity } from '../../../types/remembrance';
 import type { CodexRunStateFilter } from '../../Codex/codexRunState';
-import { BarSection } from './BarSection';
-import { IdentityStrip } from './IdentityStrip';
-import { EssenceBlock } from './EssenceBlock';
-import { SeatLine } from './SeatLine';
-import { ReachesBlock } from './ReachesBlock';
-import { SignaturesBlock } from './SignaturesBlock';
-import { ActionsBlock } from './ActionsBlock';
-import { CovenantsBlock } from './CovenantsBlock';
-import { MandateBlock } from './MandateBlock';
-import { HooksBlock, countHooks } from './HooksBlock';
-import {
-  selectAscendantIdentityView,
-  selectQuintessenceView,
-  selectEssenceRows,
-  selectActionTray,
-  selectMandateRow,
-  selectReachRows,
-  selectSignaturePaths,
-  selectCovenantRows,
-  selectHomeSeat,
-} from './selectors';
+import { countHooks } from './HooksBlock';
 import styles from './styles.module.css';
 import { NEWLY_REVEALED_STYLE, type OpeningRevealShow } from '../GameView/openingReveal';
 import type { OpeningRevealSurfaceId } from '../../../data/opening-reveal-table';
-
-// ── Default section open/closed state (NFP #1: tunability) ──────────────────
-const ASCENDANT_BAR_SECTION_DEFAULT_OPEN = {
-  identity: true,
-  // Open by default: the two permanent reaches are the player's identity anchor, and the
-  // progression curve is unreadable if the depth readout is folded away (THR-613 §5.D).
-  reaches: true,
-  // Closed by default: the signature-path readout is supplementary legibility (which
-  // headline powers are yours vs. another incarnation's), not always-critical, and eight
-  // rows would push the always-open sections below the fold on the 360px rail.
-  signatures: false,
-  essence: true,
-  actions: true,
-  // Closed by default: covenants are supplementary (most turns hold zero or one), and an
-  // open, potentially multi-row list would push the always-open sections below the fold.
-  covenants: false,
-  mandate: true,
-  hooks: false,
-} as const;
+import { GOD_RAIL_OPEN_ROWS_KEY, GOD_RAIL_SECTIONS, type GodRailSectionDef, type GodRailSectionId } from '../../../data/frame-registry';
+import { GOD_RAIL_ARIA } from '../../../data/frame-content';
+import { godRailSelector, godRailStamp, type GodRailArgs, type GodRailVM } from '../../../engine/views/godRail';
+import { readView } from '../../../engine/views/readView';
+import { ViewSourceContext } from '../../../contexts/ViewSourceContext';
+import { GOD_RAIL_COMPONENTS, type GodRailBag } from '../frame/godRailComponents';
+import type { HandRest } from '../frame/HandSection';
+import { Tooltip } from '../../shared/Tooltip';
+import { Icon } from '../../shared/Icon';
 
 interface AscendantBarProps {
   gameState: GameState;
@@ -73,23 +46,79 @@ interface AscendantBarProps {
   onReleaseControl?: (effectId: string) => void;
   /** Open the Codex path catalog, optionally pre-filtered to a run state (THR-613 Slice 3b-tail). */
   onOpenCodex?: (filter?: CodexRunStateFilter) => void;
-  /**
-   * Open an attachment's sheet from a Hooks chip (THR-1330). Routed straight to
-   * `HooksBlock`; the bar itself has no chip of its own to link.
-   */
+  /** Open an attachment's sheet from a Hooks chip (THR-1330). */
   onOpenAttachment?: (templateNodeId: string) => void;
-  /**
-   * A quiet first screen (THR-1648): the mandate arrives with the bond to The
-   * First. Omitted means shown — the pre-S5 behaviour.
-   */
+  /** A quiet first screen (THR-1648): the mandate arrives with the bond. Omitted means shown. */
   showMandate?: boolean;
   /** THR-1792 — centre the map on the god's seat (the Seat line's link). */
   onCenterOnSeat?: (locationId: string) => void;
-  /**
-   * THR-1837 — the staged opening reveal: which rail surfaces have arrived and
-   * which carry the gold ring. Omitted means everything shows.
-   */
+  /** THR-1837 — the staged opening reveal. Omitted means everything shows. */
   opening?: { show: OpeningRevealShow; newly: ReadonlySet<OpeningRevealSurfaceId> };
+  /** THR-1894 — why the hand rests (a moment is open), or null while it answers. */
+  handRest?: HandRest;
+}
+
+function readOpenRows(): GodRailSectionId[] {
+  try {
+    if (typeof localStorage === 'undefined') return [];
+    const raw = localStorage.getItem(GOD_RAIL_OPEN_ROWS_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((x): x is GodRailSectionId => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeOpenRows(rows: readonly GodRailSectionId[]): void {
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(GOD_RAIL_OPEN_ROWS_KEY, JSON.stringify(rows));
+  } catch {
+    /* private browsing: the choice holds for the session */
+  }
+}
+
+/** The view model through the session's cache; outside a provider (tests, the style guide) built fresh. */
+function useGodRailView(gameState: GameState, args: GodRailArgs): GodRailVM {
+  const source = useContext(ViewSourceContext);
+  return source
+    ? readView(source.runtime, source.state, godRailSelector, args, source.tiles)
+    : readView(null, gameState, godRailSelector, args);
+}
+
+function FoldedRow({
+  def,
+  summary,
+  open,
+  onToggle,
+  children,
+}: {
+  def: GodRailSectionDef;
+  summary: string;
+  open: boolean;
+  onToggle: () => void;
+  children: ReactElement | null;
+}) {
+  const label = <span style={{ fontWeight: 700, color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{def.label}</span>;
+  return (
+    <div data-god-rail-section={def.id} data-place="folded" data-open={open ? 'true' : 'false'} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {open && children && <div data-testid={`god-rail-row-body-${def.id}`}>{children}</div>}
+      <button
+        type="button"
+        className={`focus-ring ${styles.foldedRow}`}
+        aria-expanded={open}
+        onClick={onToggle}
+        data-testid={`god-rail-row-${def.id}`}
+      >
+        {def.tooltipId ? <Tooltip id={def.tooltipId} focusable={false}>{label}</Tooltip> : label}
+        {summary && (
+          <span data-testid={`god-rail-row-summary-${def.id}`} style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+            {summary}
+          </span>
+        )}
+        <Icon name="disclosure" size="floor" decorative style={{ marginLeft: 'auto', flexShrink: 0, transform: open ? 'rotate(180deg)' : 'rotate(90deg)' }} />
+      </button>
+    </div>
+  );
 }
 
 export function AscendantBar({
@@ -97,7 +126,7 @@ export function AscendantBar({
   archetype,
   ascendantIdentity: _ascendantIdentity,
   avatarName,
-  worldVersion,
+  worldVersion: _worldVersion,
   onOpenSheet,
   onOpenMandate,
   onMove,
@@ -108,201 +137,101 @@ export function AscendantBar({
   showMandate = true,
   onCenterOnSeat,
   opening,
+  handRest = null,
 }: AscendantBarProps) {
-  const [open, setOpen] = useState({ ...ASCENDANT_BAR_SECTION_DEFAULT_OPEN });
-  const toggle = (key: keyof typeof open) => setOpen((o) => ({ ...o, [key]: !o[key] }));
+  const [openRows, setOpenRows] = useState<GodRailSectionId[]>(() => readOpenRows());
+  const toggleRow = useCallback((id: GodRailSectionId) => {
+    setOpenRows((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      writeOpenRows(next);
+      return next;
+    });
+  }, []);
 
-  // Memoize derived views on worldVersion
-  const identity = useMemo(
-    () => selectAscendantIdentityView(gameState, archetype, avatarName),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, archetype, avatarName, worldVersion],
-  );
-  const quintessence = useMemo(
-    () => selectQuintessenceView(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
-  const essenceRows = useMemo(
-    () => selectEssenceRows(gameState, archetype),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, archetype, worldVersion],
-  );
-  const actionTray = useMemo(
-    () => selectActionTray(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
-  const mandateRow = useMemo(
-    () => selectMandateRow(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
-  const reachRows = useMemo(
-    () => selectReachRows(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
-  const signaturePaths = useMemo(
-    () => selectSignaturePaths(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
-  // Count = the god's own paths (available + acquirable); the not-this-incarnation
-  // paths are context, not a tally of what the player holds.
-  const yourSignatureCount = useMemo(
-    () => signaturePaths.filter((p) => p.state !== 'locked_incarnation').length,
-    [signaturePaths],
-  );
-  const homeSeat = useMemo(
-    () => selectHomeSeat(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
-  const covenantRows = useMemo(
-    () => selectCovenantRows(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
+  // THR-1307: the Hooks count is the block's own walk, so the row and the block agree.
+  const hookCount = countHooks(gameState);
+  const args: GodRailArgs = useMemo(() => ({
+    primarySphere: archetype.sphereAlignment.primary,
+    secondarySphere: archetype.sphereAlignment.secondary,
+    archetypeTitle: archetype.title,
+    avatarName,
+    hookCount,
+    stamp: godRailStamp(gameState),
+  }), [archetype, avatarName, hookCount, gameState]);
+  const vm = useGodRailView(gameState, args);
 
-  const shown = (id: OpeningRevealSurfaceId) => opening?.show[id] ?? true;
-  const ring = (id: OpeningRevealSurfaceId) =>
-    opening?.newly.has(id) ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {};
-  // THR-1837: Investiture arrives with The Seat.
-  const showInvestiture = shown('investiture');
-  const coreCount = showInvestiture ? 2 : 1;
-  const actionCount = coreCount + actionTray.self.length + actionTray.rare.length; // core = Move (+ Investiture)
-  // THR-1307: counted off the same walk that renders the chips. It used to count
-  // `has_attachment` edges — an edge type with no writer, so the number was zero in
-  // every world — and even had it been live, counting raw edges would have disagreed
-  // with a block that drops anything outside its three buckets.
-  const hookCount = useMemo(
-    () => countHooks(gameState),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [gameState, worldVersion],
-  );
+  const shown = (id: string) => opening?.show[id as OpeningRevealSurfaceId] ?? true;
+  const newly = (id: string) => opening?.newly.has(id as OpeningRevealSurfaceId) ?? false;
+
+  // Bodies are plain functions of the bag (no hooks), so a closed row can build its body cheaply.
+  const bag: GodRailBag = {
+    vm, gameState, shown, newly, handRest,
+    onOpenSheet, onOpenMandate, onMove, onInvestiture, onReleaseControl, onOpenCodex, onOpenAttachment, onCenterOnSeat,
+  };
+
+  /** Whether a section renders now: its reveal and its gate, and — for a row the list marks `rendersWhenEmpty: false` — whether it holds anything (THR-1814 rule 4). */
+  const holdsSomething = (id: GodRailSectionId): boolean =>
+    id === 'reaches' || id === 'mandate' || id === 'covenants' || id === 'signatures' || id === 'hooks' ? vm.rows[id].renders : true;
+  const gated = (def: GodRailSectionDef): boolean => {
+    switch (def.id) {
+      case 'identity': return shown('identity');
+      case 'essence': return shown('essence');
+      case 'hand': return shown('hand');
+      case 'reaches': return shown('reaches');
+      case 'mandate': return showMandate && shown('mandate');
+      // Signatures waits for Reaches, as before.
+      case 'signatures': return shown('reaches');
+      case 'covenants': return true;
+      case 'hooks': return true;
+    }
+  };
+  const renders = (def: GodRailSectionDef): boolean => gated(def) && (def.rendersWhenEmpty || holdsSomething(def.id));
+
+  // The gold reveal ring on a section whose own surface just arrived (Attention and
+  // Investiture ring their own rows inside the section).
+  const ringed = (def: GodRailSectionDef) =>
+    def.revealSurfaces.some((s) => s !== 'attention' && s !== 'investiture' && newly(s));
+  const ring = (def: GodRailSectionDef, style?: CSSProperties) =>
+    ringed(def)
+      ? { 'data-newly-revealed': 'true', style: { ...style, ...NEWLY_REVEALED_STYLE } }
+      : { style };
+
+  const sections = [...GOD_RAIL_SECTIONS].sort((a, b) => a.order - b.order);
+  const visible = sections.filter(renders);
+  const pinned = visible.filter((d) => d.place === 'pinned');
+  const fill = visible.filter((d) => d.place === 'fill');
+  const folded = visible.filter((d) => d.place === 'folded');
+  const summaryOf = (id: GodRailSectionId): string =>
+    id === 'reaches' || id === 'mandate' || id === 'covenants' || id === 'signatures' || id === 'hooks' ? vm.rows[id].summary : '';
 
   return (
-    <aside className={styles.bar} aria-label="Ascendant status">
-      {/* 1. Identity + Quintessence (merged) */}
-      {shown('identity') && (
-      <IdentityStrip
-        identity={identity}
-        quintessence={quintessence}
-        treatment="breathe"
-        onOpen={onOpenSheet}
-      />
-      )}
-
-      {/* 2. Reaches (two permanent domains + depth) */}
-      {shown('reaches') && (
-      <div {...ring('reaches')}>
-      <BarSection
-        label="Reaches"
-        // THR-1713 D7 — what Reaches are, and that Spheres are a separate axis.
-        tooltipId="ui.reaches"
-        count={reachRows.length}
-        open={open.reaches}
-        onToggle={() => toggle('reaches')}
-        placeholder="Your domains are not yet settled."
-      >
-        <ReachesBlock rows={reachRows} />
-      </BarSection>
-      </div>
-      )}
-
-      {/* 2b. Signatures (the eight reach powers — yours vs. another incarnation's).
-          THR-1814: renders only once one is yours — a section with nothing in it
-          does not render (Laws 25, 53); the term arrives with its first entry. */}
-      {shown('reaches') && yourSignatureCount > 0 && (
-      <BarSection
-        label="Signatures"
-        tooltipId="ui.signatures"
-        count={yourSignatureCount}
-        open={open.signatures}
-        onToggle={() => toggle('signatures')}
-      >
-        <SignaturesBlock paths={signaturePaths} onOpenCodex={onOpenCodex} />
-      </BarSection>
-      )}
-
-      {/* 3. Essence — no count (THR-1706). Every other section's count is a
-          tally of things you hold; here it was the number of sphere rows (12),
-          which sits beside the per-sphere balances and reads as an essence
-          amount. Three of three cold testers took it for one. */}
-      {shown('essence') && (
-      <BarSection
-        label="Essence"
-        open={open.essence}
-        onToggle={() => toggle('essence')}
-      >
-        {/* THR-1792 — the god's seat, beside the essence it feeds. */}
-        <SeatLine seat={homeSeat} onCenter={onCenterOnSeat} />
-        <EssenceBlock rows={essenceRows} />
-      </BarSection>
-      )}
-
-      {/* 4. Actions */}
-      {shown('hand') && (
-      <BarSection
-        label="Actions"
-        count={actionCount}
-        open={open.actions}
-        onToggle={() => toggle('actions')}
-        placeholder="No innate actions available."
-      >
-        <ActionsBlock
-          tray={actionTray}
-          onMove={onMove}
-          onInvestiture={onInvestiture}
-          showInvestiture={showInvestiture}
-          investitureNewlyRevealed={opening?.newly.has('investiture') ?? false}
-        />
-      </BarSection>
-      )}
-
-      {/* 4b. Covenants (sustained controls the god holds — THR-613 §5.A).
-          THR-1814: renders only while one is held (Laws 25, 53). */}
-      {covenantRows.length > 0 && (
-      <BarSection
-        label="Covenants"
-        tooltipId="ui.covenant"
-        count={covenantRows.length}
-        open={open.covenants}
-        onToggle={() => toggle('covenants')}
-      >
-        <CovenantsBlock rows={covenantRows} onRelease={onReleaseControl} />
-      </BarSection>
-      )}
-
-      {/* 5. Mandate — hidden until the bond (THR-1648) */}
-      {showMandate && (
-      <div {...ring('mandate')}>
-      <BarSection
-        label="Mandate"
-        open={open.mandate}
-        onToggle={() => toggle('mandate')}
-        placeholder="Awaiting mandate."
-      >
-        {mandateRow ? (
-          <MandateBlock mandate={mandateRow} onOpen={onOpenMandate} />
-        ) : null}
-      </BarSection>
-      </div>
-      )}
-
-      {/* 6. Hooks (conditions / clues / vows). THR-1814: renders only once one
-          exists (Laws 25, 53). */}
-      {hookCount > 0 && (
-      <BarSection
-        label="Hooks"
-        tooltipId="ui.hooks"
-        count={hookCount}
-        open={open.hooks}
-        onToggle={() => toggle('hooks')}
-      >
-        <HooksBlock gameState={gameState} onOpenAttachment={onOpenAttachment} />
-      </BarSection>
+    <aside
+      className={styles.bar}
+      aria-label={GOD_RAIL_ARIA}
+      data-testid="god-rail"
+      data-sections-rendered={visible.map((d) => d.id).join(',')}
+      data-rows-open={openRows.filter((id) => folded.some((d) => d.id === id)).join(',')}
+    >
+      {pinned.map((def) => (
+        <div key={def.id} data-god-rail-section={def.id} data-place="pinned" {...ring(def)}>
+          {GOD_RAIL_COMPONENTS[def.id](bag)}
+        </div>
+      ))}
+      {fill.map((def) => (
+        <div key={def.id} data-god-rail-section={def.id} data-place="fill" {...ring(def, { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' })}>
+          {GOD_RAIL_COMPONENTS[def.id](bag)}
+        </div>
+      ))}
+      {folded.length > 0 && (
+        <div data-testid="god-rail-folded-rows" className={styles.foldedRows}>
+          {folded.map((def) => (
+            <div key={def.id} {...ring(def)}>
+              <FoldedRow def={def} summary={summaryOf(def.id)} open={openRows.includes(def.id)} onToggle={() => toggleRow(def.id)}>
+                {GOD_RAIL_COMPONENTS[def.id](bag)}
+              </FoldedRow>
+            </div>
+          ))}
+        </div>
       )}
     </aside>
   );

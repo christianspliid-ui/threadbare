@@ -14,7 +14,6 @@ import { OmenIndicator } from '../OmenIndicator';
 import { RivalsButton } from '../RivalsButton';
 import { NotablesButton } from '../NotablesButton';
 import { SettingsPanel } from '../SettingsPanel';
-import { AttentionPoolIndicator } from '../AttentionPoolIndicator';
 import { IconButton } from '../../shared/IconButton';
 
 import type { GameState } from '../../../types/gameState';
@@ -95,9 +94,6 @@ export interface GameViewTopBarProps {
   doTick: () => void;
   setSpeed: (speed: number) => void;
 
-  // Attention pool
-  attentionPool: number;
-  attentionCapacity: number;
 
   // Doom
   doomJourneyLabel: string | undefined;
@@ -178,8 +174,6 @@ export function GameViewTopBar({
   handleToggleRunning,
   doTick,
   setSpeed,
-  attentionPool,
-  attentionCapacity,
   doomJourneyLabel,
   setDoomDetailOpen,
   readThreadsOpen,
@@ -294,21 +288,7 @@ export function GameViewTopBar({
 
           {/* THR-1893: the World-Soul line moved to the head of the Chronicle (frame/LedgerRail). */}
 
-          {/* Attention pool indicator — shows how much focused attention the ascendant has left */}
-          {shown('attention') && (() => {
-            const ascNode = gameState.graph.getNode(gameState.ascendantId);
-            const attentionRegen = (ascNode?.properties?.attentionRegen as number) ?? 0.4;
-            return (
-              <>
-                <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-                <AttentionPoolIndicator
-                  attentionPool={attentionPool}
-                  attentionCapacity={attentionCapacity}
-                  attentionRegen={attentionRegen}
-                />
-              </>
-            );
-          })()}
+          {/* THR-1894: Attention moved to the god rail, under essence (frame/GodRail). */}
         </div>
 
         {/* Group divider — hairline, neutral; gold reserved for active states */}

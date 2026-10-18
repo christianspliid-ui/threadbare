@@ -356,7 +356,7 @@ export function HooksBlock({ gameState, onOpenAttachment }: HooksBlockProps) {
 
   if (conditions.length === 0 && clues.length === 0 && vows.length === 0) {
     return (
-      <div style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 13, color: 'var(--text-muted)' }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
         No marks, clues, or vows.
       </div>
     );
@@ -366,7 +366,7 @@ export function HooksBlock({ gameState, onOpenAttachment }: HooksBlockProps) {
     <div data-testid="ascendant-hooks" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {conditions.length > 0 && (
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 4 }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 4 }}>
             Conditions
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -376,7 +376,7 @@ export function HooksBlock({ gameState, onOpenAttachment }: HooksBlockProps) {
       )}
       {clues.length > 0 && (
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 4 }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 4 }}>
             Clues
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
@@ -386,7 +386,7 @@ export function HooksBlock({ gameState, onOpenAttachment }: HooksBlockProps) {
       )}
       {vows.length > 0 && (
         <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 4 }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginBottom: 4 }}>
             Vows & Bonds
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>

@@ -4379,8 +4379,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleToggleRunning={handlePlayControlToggle}
         doTick={doTick}
         setSpeed={setSpeed}
-        attentionPool={attentionPool}
-        attentionCapacity={attentionCapacity}
         doomJourneyLabel={doomJourneyLabel}
         setDoomDetailOpen={setDoomDetailOpen}
         readThreadsOpen={readThreadsOpen}
@@ -4438,6 +4436,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           handleCenterOnHex={handleCenterOnHex}
           handleAvatarMoveClick={handleAvatarMoveClick}
           handleScryWithMutex={handleScryWithMutex}
+          openCodexEntry={openCodexSheet}
+          // THR-1894: the hand rests while a moment is on screen (not while one only waits its turn); an encounter deals its own hand.
+          handRest={interruptResolution.open.length > 0 ? (interruptResolution.open.includes('EncounterVeil') ? 'encounter' : 'moment') : null}
         />
 
         {/* ── Center: map / hex zoom / location ── */}

@@ -30,12 +30,10 @@ function GroupLabel({ text }: { text: string }) {
   return (
     <div
       style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 9,
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-xs)',
         fontWeight: 600,
         color: 'var(--text-muted)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.18em',
       }}
     >
       {text}
@@ -60,12 +58,10 @@ function SignatureRow({ path }: { path: SignaturePathView }) {
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
         <span
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 9,
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-xs)',
             fontWeight: 600,
             color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.14em',
             minWidth: 48,
           }}
         >
@@ -73,11 +69,10 @@ function SignatureRow({ path }: { path: SignaturePathView }) {
         </span>
         <span
           style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 14,
+            fontFamily: 'var(--font-body)',
+            fontSize: 'var(--text-xs)',
             fontWeight: 600,
             color: isLocked ? 'var(--text-secondary)' : 'var(--text-primary)',
-            letterSpacing: '0.04em',
           }}
         >
           {path.name}
@@ -85,7 +80,7 @@ function SignatureRow({ path }: { path: SignaturePathView }) {
         {path.isPrimary && (
           <span
             data-testid={`signature-primary-${path.reach}`}
-            style={{ color: 'var(--accent-gold)', fontSize: 11 }}
+            style={{ color: 'var(--accent-gold)', fontSize: 'var(--text-xs)' }}
             title="Your primary reach"
           >
             ★
@@ -97,7 +92,7 @@ function SignatureRow({ path }: { path: SignaturePathView }) {
         style={{
           fontFamily: 'var(--font-body)',
           fontStyle: 'italic',
-          fontSize: 11,
+          fontSize: 'var(--text-xs)',
           color:
             path.state === 'available'
               ? 'var(--accent-gold)'
@@ -133,9 +128,8 @@ function CodexLink({ onOpenCodex }: { onOpenCodex: (filter?: CodexRunStateFilter
         cursor: 'pointer',
         fontFamily: 'var(--font-body)',
         fontStyle: 'italic',
-        fontSize: 11,
+        fontSize: 'var(--text-xs)',
         color: 'var(--accent-gold-dim)',
-        letterSpacing: '0.02em',
       }}
     >
       What you could still become →
@@ -151,7 +145,7 @@ export function SignaturesBlock({ paths, onOpenCodex }: SignaturesBlockProps) {
           style={{
             fontFamily: 'var(--font-body)',
             fontStyle: 'italic',
-            fontSize: 12,
+            fontSize: 'var(--text-xs)',
             color: 'var(--text-muted)',
           }}
         >

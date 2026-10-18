@@ -3,9 +3,27 @@
  * § Debug inspection; slice 1 THR-1893 fills `ledgerRail` and `mapShare`).
  *
  * Each frame host writes its state as `data-*` attributes on its root; this reads them
- * back, so the accessor reports what is on screen, not what a store believes. Slices 2
- * and 3 add `godRail` and `topBar` / `needsYou`.
+ * back, so the accessor reports what is on screen, not what a store believes. Slice 2
+ * (THR-1894) adds `godRail`; slice 3 adds `topBar` / `needsYou`.
  */
+
+/** The god rail as drawn (THR-1894, frame plan § Tracing). */
+export interface DebugGodRailState {
+  sections: { id: string; rendered: boolean; open: boolean }[];
+  hand: {
+    cards: number;
+    mode: 'whole' | 'grouped';
+    openGroup: string | null;
+    armedCardId: string | null;
+    rest: 'encounter' | 'moment' | null;
+    /** The hand region's measured height; null without a ResizeObserver. */
+    freeHeightPx: number | null;
+    /** Rows wider than their box (`scrollWidth > clientWidth`); 0 or a defect. */
+    overflowingRows: number;
+  };
+  /** Measured rail width in px (320 / 400). */
+  widthPx: number;
+}
 export interface DebugLedgerRailState {
   state: 'open' | 'strip' | 'hidden';
   folded: boolean;
@@ -20,6 +38,7 @@ export interface DebugLedgerRailState {
 
 export interface DebugFrameStateSlice1 {
   ledgerRail: DebugLedgerRailState;
+  godRail: DebugGodRailState;
   /** Measured map area / viewport area: (W − rails) × (H − top bar) / (W × H). */
   mapShare: number;
 }
@@ -61,5 +80,34 @@ export function readFrameState(doc: Document = document, win: Window = window): 
   const mapH = Math.max(0, H - height(topBar));
   const mapShare = W > 0 && H > 0 ? Math.round(((mapW * mapH) / (W * H)) * 1000) / 1000 : 0;
 
-  return { ledgerRail, mapShare };
+  return { ledgerRail, godRail: readGodRail(doc), mapShare };
+}
+
+const GOD_RAIL_SECTION_IDS = ['identity', 'essence', 'hand', 'reaches', 'mandate', 'covenants', 'signatures', 'hooks'] as const;
+
+function readGodRail(doc: Document): DebugGodRailState {
+  const rail = doc.querySelector<HTMLElement>('[data-testid="god-rail"]');
+  const rendered = new Set((rail?.dataset.sectionsRendered ?? '').split(',').filter(Boolean));
+  const open = new Set((rail?.dataset.rowsOpen ?? '').split(',').filter(Boolean));
+  const hand = doc.querySelector<HTMLElement>('[data-testid="god-rail-hand"]');
+  const rest = hand?.dataset.handRest;
+  const free = hand?.dataset.handFreeHeight;
+  const rows = [...doc.querySelectorAll<HTMLElement>('[data-testid="hand-card"]')];
+  return {
+    sections: GOD_RAIL_SECTION_IDS.map((id) => ({
+      id,
+      rendered: rendered.has(id),
+      open: rendered.has(id) && (open.has(id) || ['identity', 'essence', 'hand'].includes(id)),
+    })),
+    hand: {
+      cards: Number(hand?.dataset.handCards ?? 0),
+      mode: hand?.dataset.handMode === 'grouped' ? 'grouped' : 'whole',
+      openGroup: hand?.dataset.handOpenGroup || null,
+      armedCardId: hand?.dataset.armedCard || null,
+      rest: rest === 'encounter' || rest === 'moment' ? rest : null,
+      freeHeightPx: free ? Number(free) : null,
+      overflowingRows: rows.filter((r) => r.scrollWidth > r.clientWidth + 1).length,
+    },
+    widthPx: width(rail),
+  };
 }

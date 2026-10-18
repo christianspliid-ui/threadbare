@@ -38,7 +38,7 @@ import {
   sphereConcept,
   type CodexDetail,
 } from './codexConcepts';
-import { formatEssenceLabel } from '../shared/formatEssence';
+import { essencePriceLabel } from '../shared/formatEssence';
 import { magnitudeWord, durationLabel, type MagnitudeBand } from '../../engine/aftermathWords';
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -348,11 +348,10 @@ function resolveDisplay(
  * exact raw interpolation THR-1006 exists to prevent: no unit, and seventeen digits of IEEE-754
  * noise for an authored fractional price like `0.05`. Routing through {@link formatEssenceLabel}
  * makes the Codex quote the same pool the same way as the hand and the nudge stage. `0` renders
- * `Free`, matching `ActionCard`.
+ * `Free` — through `essencePriceLabel`, the one function the god rail's hand also calls (THR-1894).
  */
 function essenceCostLabel(cost: number | undefined): string {
-  const value = cost ?? 0;
-  return value === 0 ? 'Free' : formatEssenceLabel(value);
+  return essencePriceLabel(cost);
 }
 
 // ─── The rows every action mapper shares (THR-1507) ─────────────

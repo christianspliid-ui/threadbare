@@ -41,8 +41,10 @@ import { countHooks } from '../ascendant-bar/HooksBlock';
 import { selectCovenantRows } from '../ascendant-bar/selectors';
 
 let signaturePathsOverride: unknown[] | null = null;
-vi.mock('../ascendant-bar/selectors', async (importActual) => {
-  const actual = await importActual<typeof import('../ascendant-bar/selectors')>();
+// THR-1894: the god rail reads the selectors through its view model, which imports them from
+// their home in `engine/views/subjects/godSheet` — the module mocked here.
+vi.mock('../../../engine/views/subjects/godSheet', async (importActual) => {
+  const actual = await importActual<typeof import('../../../engine/views/subjects/godSheet')>();
   return {
     ...actual,
     selectSignaturePaths: (gameState: GameState) =>
@@ -187,8 +189,6 @@ function topBarProps(overrides: Partial<GameViewTopBarProps>): GameViewTopBarPro
     handleToggleRunning: vi.fn(),
     doTick: vi.fn(),
     setSpeed: vi.fn(),
-    attentionPool: 3,
-    attentionCapacity: 5,
     doomJourneyLabel: undefined,
     setDoomDetailOpen: vi.fn(),
     readThreadsOpen: false,

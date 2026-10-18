@@ -114,9 +114,9 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
       >
         <SphereIcon sphere={row.sphere} size={16} />
         <span style={{
-          fontFamily: 'var(--font-body)', fontSize: 12,
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)',
           color: row.isPrimary ? 'var(--text-primary)' : row.isSecondary ? 'var(--text-secondary)' : 'var(--text-muted)',
-          minWidth: 60,
+          minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {label}
         </span>
@@ -145,7 +145,7 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
         <span
             data-testid={`essence-balance-${row.sphere}`}
             style={{
-              fontFamily: 'var(--font-display)', fontSize: 12, fontWeight: 600,
+              fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 600,
               color: row.isPrimary || row.isSecondary ? 'var(--text-primary)' : 'var(--text-secondary)',
               minWidth: 22, textAlign: 'right',
               fontVariantNumeric: 'tabular-nums',
@@ -158,7 +158,7 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
           data-testid={`essence-trend-${row.sphere}`}
           data-trend={row.trend}
           aria-label={ESSENCE_TREND_WORDS[row.trend]}
-          style={{ fontFamily: 'var(--font-display)', fontSize: 10, color: trendColor, minWidth: 12 }}
+          style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: trendColor, minWidth: 12 }}
         >
           {arrow}
         </span>
@@ -167,7 +167,7 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
       {expanded && sphereCopy && (
         <div style={{
           fontFamily: 'var(--font-body)', fontStyle: 'italic',
-          fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5,
+          fontSize: 'var(--text-xs)', color: 'var(--text-muted)', lineHeight: 1.5,
           padding: '4px 6px 4px 30px',
         }}>
           {sphereCopy.role}
@@ -235,7 +235,7 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
 
   if (rows.length === 0) {
     return (
-      <div style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 13, color: 'var(--text-muted)' }}>
+      <div style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
         No essence gathered yet.
       </div>
     );
@@ -246,12 +246,14 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
   const elderShown = elderOpen || elderRows.some((r) => r.sphere === preview);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    // THR-1894 (frame plan § F6): the spheres held, two to a row, so the hand keeps the rail's height.
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '2px 8px' }}>
       {ownRows.map((row) => (
         <EssenceRow key={row.sphere} row={row} previewed={row.sphere === preview} />
       ))}
       {elderRows.length > 0 && (
         <>
+          <div style={{ gridColumn: '1 / -1' }}>
           <Tooltip id="ui.essence.foundation_fold" focusable={false}>
             <button
               type="button"
@@ -261,7 +263,7 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
               className={styles.essenceRow}
               style={{
                 border: 'none', background: 'none', width: '100%',
-                fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 12,
+                fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 'var(--text-xs)',
                 color: 'var(--text-muted)', textAlign: 'left',
               }}
             >
@@ -274,6 +276,7 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
               {ESSENCE_ELDER_FOLD_LABEL}
             </button>
           </Tooltip>
+          </div>
           {elderShown && elderRows.map((row) => (
             <EssenceRow key={row.sphere} row={row} previewed={row.sphere === preview} />
           ))}
