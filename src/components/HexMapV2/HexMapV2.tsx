@@ -1137,6 +1137,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           // Derive location label data from location nodes
           const labelData: LocationLabelData[] = locations.map(loc => ({
             id: `loc-${loc.hexCol}-${loc.hexRow}-${loc.name}`,
+            ...(loc.id ? { nodeId: loc.id } : {}),
             name: loc.name,
             hexCol: loc.hexCol,
             hexRow: loc.hexRow,

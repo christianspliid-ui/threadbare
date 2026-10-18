@@ -4,8 +4,8 @@
  * One `getTargetActionSlots` call for the open subject, with exactly the parameters the
  * two `ActionDrawer` hands pass today (`useTargetActions`, `useAgentInteraction`), so a
  * card costs and locks the same on every surface (interface row
- * `dominion-band-prices-god-casts`). Casting from the row arrives with S3 (THR-1911);
- * S1 shows which cards work on the subject and why a locked one is locked.
+ * `dominion-band-prices-god-casts`). S3 (THR-1911) casts from the row through
+ * `useCastOnTarget`, which re-reads one card's slot here (`actOnSlots`).
  *
  * Range is unchanged (§ D9): person and place contexts carry no position, so only cards
  * cast on bare land are bound by `DEFAULT_LOCAL_RANGE`.

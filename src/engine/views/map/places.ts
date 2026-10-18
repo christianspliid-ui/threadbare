@@ -25,6 +25,8 @@ export const mapPlacesSelector: ViewSelector<void, MapPlaceVM[]> = {
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
       .filter(n => !n.properties.sublocationTypeId)
       .map(n => ({
+        // THR-1911: the node id, so a click on the place's label opens the place itself.
+        id: n.id,
         locationType: (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string,
         hexCol: n.properties.hexCol as number,
         hexRow: n.properties.hexRow as number,

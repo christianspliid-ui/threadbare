@@ -151,6 +151,8 @@ export type LocationImportance = 'capital' | 'city' | 'town' | 'small';
 /** Input data for a single location label. */
 export interface LocationLabelData {
   id: string;
+  /** THR-1911 — the Location node a click opens. Absent: the label is not clickable. */
+  nodeId?: string;
   name: string;
   hexCol: number;
   hexRow: number;
@@ -211,6 +213,7 @@ function isLabelVisible(importance: LocationImportance, zoomLevel: number): bool
 
 interface ProjectedLocationLabel {
   id: string;
+  nodeId?: string;
   name: string;
   importance: LocationImportance;
   screenX: number;
@@ -409,6 +412,7 @@ export function LocationLabelOverlay({
         const orig = locations.find(l => l.id === sl.id);
         return {
           id: sl.id,
+          ...(orig?.nodeId ? { nodeId: orig.nodeId } : {}),
           name: sl.text,
           importance: orig?.importance ?? 'small',
           screenX: sl.screenX,
@@ -460,14 +464,14 @@ export function LocationLabelOverlay({
               top: `${pl.screenY}px`,
               opacity,
               visibility: pl.visible ? 'visible' : 'hidden',
-              ...(onLabelClick && pl.visible ? { pointerEvents: 'auto', cursor: 'pointer' } : {}),
+              ...(onLabelClick && pl.visible && pl.nodeId ? { pointerEvents: 'auto', cursor: 'pointer' } : {}),
             }}
             data-place-label={pl.id}
-            {...(onLabelClick && pl.visible ? {
+            {...(onLabelClick && pl.visible && pl.nodeId ? {
               // The canvas's pan never starts on a label; the click opens the place.
               onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
               onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
-              onClick: (e: React.MouseEvent) => { e.stopPropagation(); onLabelClick(pl.id); },
+              onClick: (e: React.MouseEvent) => { e.stopPropagation(); onLabelClick(pl.nodeId!); },
             } : {})}
           >
             {pl.name}
