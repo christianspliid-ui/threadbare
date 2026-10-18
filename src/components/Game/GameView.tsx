@@ -142,6 +142,7 @@ import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/bui
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { spendAuthoredChoiceEssence, spendNudgeEssence, type NudgeSpendRequest } from './encounter-stage/nudgeCommit';
 import { resolveInterveneChoice } from './encounter-stage/resolveInterveneChoice';
+import { claimAuthoredChoiceCommit } from './encounter-stage/authoredChoiceCommitGuard';
 import { forecastWithNudges } from './encounter-stage/useNudgeHand';
 import { NUDGE_REJECT_TOAST_MS, CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK, CHAPTER_ANSWER_TOAST_MS, chapterAnswerChoiceLine, resolveClockHolder } from '../../data/nudge-stage-content';
 import { sphereWord } from '../shared/formatEssence';
@@ -3090,10 +3091,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     keepChapterOnScreenAfterCommit,
   ]);
 
+  /**
+   * THR-1976 — the veil's Play button. It used to call `handleEncounterIntervene`
+   * directly, which charges and records but never closes the veil, so the step
+   * could not resolve (the open veil holds the clock), a free choice looked
+   * dead, and every further press charged again. This handler is the one the
+   * veil commits through: one commit per step, then the answering card or the
+   * close, exactly as a committed hand does.
+   */
   const handleEncounterCommitAndContinue = useCallback((choiceId: string, essenceSpent: number) => {
     if (!tieredEncounterState) return;
+    const commit = claimAuthoredChoiceCommit(
+      tieredEncounterState.notification.id,
+      committedEncounterNotificationIds.current,
+    );
+    if (!commit.claimed) return;
     // THR-1720 — a rejected spend leaves the stage open, like a rejected hand.
-    if (!handleEncounterIntervene(choiceId, essenceSpent)) return;
+    if (!handleEncounterIntervene(choiceId, essenceSpent)) {
+      commit.release();
+      return;
+    }
     suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
     // THR-1812 — same answering card as a committed hand. A legacy encounter
     // with no unified action has no step to watch, so it closes as before.
@@ -4979,7 +4996,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleToggleFollow={handleToggleFollow}
         encounterPayingEssence={encounterPayingEssence}
         encounterPayingSphere={encounterPayingSphere}
-        handleEncounterIntervene={handleEncounterIntervene}
+        handleEncounterCommitAndContinue={handleEncounterCommitAndContinue}
         handleEncounterBoost={handleEncounterBoost}
         handleEncounterPeek={handleEncounterPeek}
         handleEncounterDisregard={handleEncounterDisregard}

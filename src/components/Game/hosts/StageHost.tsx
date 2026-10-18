@@ -60,7 +60,8 @@ export interface StageHostProps {
   handleToggleFollow: (agentId: string, source: 'arc_panel' | 'encounter_ui') => void;
   encounterPayingEssence: number;
   encounterPayingSphere: SphereName;
-  handleEncounterIntervene: (choiceId: string, essenceSpent: number) => boolean;
+  /** THR-1976 — commits, then closes the veil or shows the answering card. */
+  handleEncounterCommitAndContinue: (choiceId: string, essenceSpent: number) => void;
   handleEncounterBoost: (essenceSpent: number) => void;
   handleEncounterPeek: () => void;
   handleEncounterDisregard: () => void;
@@ -109,7 +110,7 @@ export function StageHost({
   handleToggleFollow,
   encounterPayingEssence,
   encounterPayingSphere,
-  handleEncounterIntervene,
+  handleEncounterCommitAndContinue,
   handleEncounterBoost,
   handleEncounterPeek,
   handleEncounterDisregard,
@@ -176,7 +177,9 @@ export function StageHost({
             essenceSphere={encounterPayingSphere}
             tick={gameState.tick}
             autoResolveTick={tieredEncounterState.notification.autoResolveTick}
-            onIntervene={handleEncounterIntervene}
+            // THR-1976 — the handler that closes the veil or shows the answering
+            // card; the bare commit left the step on screen, holding the clock.
+            onIntervene={handleEncounterCommitAndContinue}
             onBoost={handleEncounterBoost}
             onPeek={handleEncounterPeek}
             onDisregard={handleEncounterDisregard}

@@ -328,7 +328,11 @@ export function chapterAnswerText(template: string, chapterName: string | null |
  * never shown as ids; an empty result reads as silence.
  */
 export function chapterAnswerChoiceLine(names: ReadonlyArray<string | null | undefined>): string {
-  const resolved = names.map(n => n?.trim()).filter((n): n is string => Boolean(n));
+  // THR-1976 — an authored choice's label is a sentence ("Stay your hand. Let
+  // the truth surface."); drop its closing stop so the line does not end "..".
+  const resolved = names
+    .map(n => n?.trim().replace(/[.!?]+$/, ''))
+    .filter((n): n is string => Boolean(n));
   return resolved.length > 0
     ? CHAPTER_ANSWER_PLAYED_LINE.replace('{cards}', resolved.join(', '))
     : CHAPTER_ANSWER_SILENT_LINE;
