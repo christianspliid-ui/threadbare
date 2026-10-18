@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-18 15:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-18 17:00 local (15:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,16 +34,16 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-10-18: the fix for armies bleeding out within a week, with almost none raised again** ([THR-1973](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again)). Merged via [#2480](https://github.com/christianspliid-ui/threadbare/pull/2480), publishing now.
+- **2026-10-18: every new game now starts with a First — Advanced World Setup is a developer-only screen** ([THR-1978](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first)). Merged via [#2483](https://github.com/christianspliid-ui/threadbare/pull/2483) and live.
+- **2026-10-18: Observe and Agent Thread now charge their price from the pool the card names, and Agent Thread answers at once** ([THR-1977](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand)). Merged via [#2481](https://github.com/christianspliid-ui/threadbare/pull/2481) and live.
+- **2026-10-18: the fix for armies bleeding out within a week, with almost none raised again** ([THR-1973](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again)). Merged via [#2480](https://github.com/christianspliid-ui/threadbare/pull/2480) and live.
 - **2026-10-18: every link, card and map click now opens the Inspector beside the map, and you can cast from its Act row (the Inspector in the game)** ([THR-1911](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click)). Merged via [#2479](https://github.com/christianspliid-ui/threadbare/pull/2479) and live.
 - **2026-10-18: pressing Play on a chapter choice now moves the story on, once (the main-map wall from cold playtest round 4)** ([THR-1976](https://linear.app/threadbare/issue/THR-1976)). Merged via [#2477](https://github.com/christianspliid-ui/threadbare/pull/2477) and live.
 - **2026-10-18: the god rail puts Attention beside essence, your cards in the rail, and folds its rows (screen frame, second slice)** ([THR-1894](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand)). Merged via [#2474](https://github.com/christianspliid-ui/threadbare/pull/2474) and live.
 - **2026-10-18: the Ledger rail opens the screen frame, with the World-Soul heading the chronicle and unread chapters marked (screen frame, first slice)** ([THR-1893](https://linear.app/threadbare/issue/THR-1893/screen-frame-slice-1-the-ledger-rail-world-soul-heads-the-chronicle)). Merged via [#2473](https://github.com/christianspliid-ui/threadbare/pull/2473) and live.
 - **2026-10-18: the map gets a lens list, with a Threads lens that follows your mortals, and a Dominion pressure line (map lenses, first slice)** ([THR-1878](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and)). Merged via [#2472](https://github.com/christianspliid-ui/threadbare/pull/2472) and live.
 - **2026-10-18: the Inspector's place, faction, army, artifact and attachment pages now draw their rows from the page-layout table (the Inspector, second sheet set)** ([THR-1910](https://linear.app/threadbare/issue/THR-1910/inspector-s2b-move-the-place-faction-army-artifact-and-attachment)). Merged via [#2471](https://github.com/christianspliid-ui/threadbare/pull/2471) and live.
-- **2026-10-18: the Inspector's person page now draws its 34 fields from the page-layout table (the Inspector, person sheet)** ([THR-1909](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table)). Merged via [#2470](https://github.com/christianspliid-ui/threadbare/pull/2470) and live.
 - **2026-10-18: 41 money encounters now pay or cost their mortal, and poor or greedy mortals lean toward paying work (mortal wealth, second slice)** ([THR-1952](https://linear.app/threadbare/issue/THR-1952/mortal-wealth-s2-the-money-encounters-pay-their-mortal-and-poor-or)). Merged via [#2469](https://github.com/christianspliid-ui/threadbare/pull/2469) and live.
-- **2026-10-18: one docked panel, the Inspector, now shows every place and person, with their Connections (the Inspector, first slice)** ([THR-1876](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and)). Merged via [#2468](https://github.com/christianspliid-ui/threadbare/pull/2468) and live.
 
 ---
 

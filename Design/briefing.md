@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 15:58 local (13:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 17:00 local (15:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -7,7 +7,7 @@
 
 ## Also waiting (4)
 
-- **New — should "Fated" be gold instead of grey?** You set Fated grey on 4 October; a round-4 tester read it as the *worst* word. The plan keeps your grey and fixes it with words. Say **keep grey** (the default), **make it gold**, or **turn the pip grey too**. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided)) *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-18d.md)*
+- **Should "Fated" be gold instead of grey?** You set Fated grey on 4 October; a round-4 tester read it as the *worst* word. The plan keeps your grey and fixes it with words. Say **keep grey** (the default), **make it gold**, or **turn the pip grey too**. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided)) *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-18d.md)*
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
 - **Monday 14 and Tuesday 15 September:** the same thing happened. Was the app closed?
 - **Fog or witness:** should a stranger's sheet show the wound you just watched them take? If you say nothing, it stays as it is.
@@ -37,23 +37,20 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ruling — **the hiring realm pays, feeds and directs the company.** *Veto:* **"vassals should always fight their lord's wars"**.
 - Same ruling — **a company leaves when the pay stops or a richer lord outbids.** *Veto:* **"a hired company should serve out its term"**.
 - Same ruling — **a realm holding two hired companies counts as a Crown.** *Veto:* **"hired companies should not make a Crown"**. [The build plan](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays) waits until 19 Oct 01:35 UTC.
-- [The god's stake in the economy](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) — **your god hears one prayer at a time, a season apart**, hungriest town first. ([plan change](https://github.com/christianspliid-ui/threadbare/pull/2464)) *Veto:* **"let every hungry town pray at once"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17d.md)*
-- Same ruling — **no hungry town on your ground means no prayers**, and that is correct. *Veto:* **"there should always be someone praying"**.
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 25 ready, 1 in progress.** The fix for [two map spells cost nothing despite their price](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand) is built and set to merge on its own once its checks pass ([#2481](https://github.com/christianspliid-ui/threadbare/pull/2481)).
+**Backed up: 25 ready, 1 in progress.** The builder took [the screen frame's top bar and "Needs you"](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the) (High) right after the orchestrator promoted it. Since the last brief, [the map spells now charge their price](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand) ([#2481](https://github.com/christianspliid-ui/threadbare/pull/2481)) and [every new game starts with a First](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first) ([#2483](https://github.com/christianspliid-ui/threadbare/pull/2483)) — both live.
 
-- New: [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows) (High), from the "words teach themselves" plan, held for veto until 19 Oct 13:50 UTC.
-- [The end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural) passed its veto window at 13:50 UTC today with no veto; the builder can take it now.
-- High and waiting: [Advanced World Setup starts a game with no First](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first), [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- Held for veto: [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows) (High) until 19 Oct 13:50 UTC; [the First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read) until 19 Oct 10:41 UTC.
+- High and waiting: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site is up to date; main's checks and the scheduled background jobs pass. One PR is waiting on its checks ([#2481](https://github.com/christianspliid-ui/threadbare/pull/2481), 12 min old). All 12 scheduled lanes are on time, and the builder is working normally.
-- Engine speed: tick cost 169 ms/tick steady, 37% above the 7-day median (124, 135 rows since 8f9853c2); top phase agent_decision, 624 agents. Name the merges between 8f9853c2 and 4bf693b2: git log --oneline --merges 8f9853c2..4bf693b2. Sixth reading in a row above the line (175, 164, 171, 183, 161, now 169). Executor work, not yours.
+- The live site serves the latest commit on main (2db65f97); main's checks and the scheduled background jobs pass. No PR is waiting to merge. All 12 scheduled lanes are on time, and the builder is working normally.
+- Engine speed: tick cost 465 ms/tick steady, 275% above the 7-day median (124, 135 rows since 8f9853c2); top phase agent_decision, 624 agents. Name the merges between 8f9853c2 and 2db65f97: git log --oneline --merges 8f9853c2..2db65f97. The only new merge since the 169 ms reading an hour ago is a title-screen change, and the builder was working on the same machine during the measurement, so this jump is probably machine load; the earlier run of readings (161–183) is still above the line. Executor work, not yours.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That was overnight and into the weekend, so it is not a separate ask; the lead ask covers it.
-- The tidy-up job reports 556 old worktrees, with 6 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job (last run 16:40) reports 554 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
