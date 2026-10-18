@@ -147,4 +147,15 @@ export const INSPECTOR_LAB_EXTRA: readonly LabPick[] = [
     },
     fallback: 'No Area in this world',
   },
+  {
+    // THR-1910 (S2b): the attachment card's effect, duration, trigger and source rows.
+    label: 'Attachment — a condition template, one with triggers when there is one',
+    pick: s => {
+      const conditions = s.graph.getNodesByType('trait').filter(n => n.properties.subcategory === 'condition');
+      const withTriggers = conditions.find(n => Array.isArray(n.properties.effects) && (n.properties.effects as { type?: string }[]).some(e => e?.type === 'action_trigger'));
+      const t = withTriggers ?? conditions[0];
+      return t ? { kind: 'attachment', id: t.id, name: t.name } : null;
+    },
+    fallback: 'No condition template in this world',
+  },
 ];

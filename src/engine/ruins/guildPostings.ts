@@ -19,7 +19,7 @@ import {
   RUIN_QUEST_POSTING_FACTION_DEF_ID,
 } from './constants';
 import { FACTION_ENCOUNTER_TEMPLATES } from '../../data/faction-encounter-content';
-import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
+import { getFactionDefinition } from '../../data/faction-definition-lookup';
 import { GUILD_POSTING_LINES } from '../../data/subject-sheet-words';
 
 export type PostingTier = 'Minor' | 'Major' | 'Saga';
@@ -52,7 +52,7 @@ const FACTION_HALL_LOCATION_SUBTYPE = 'guild-hall';
 
 /**
  * A guild hall is any faction hall whose owning faction resolves through
- * FACTION_DEFINITIONS — not the adventuring guild alone (THR-818). A board here does
+ * `getFactionDefinition` — not the adventuring guild alone (THR-818). A board here does
  * not mean a posting here (THR-1026): the empty state says which of the two silences it is.
  */
 function isFactionHall(node: GraphNode | undefined): boolean {
@@ -62,12 +62,13 @@ function isFactionHall(node: GraphNode | undefined): boolean {
     props.sublocationTypeId === FACTION_HALL_SUBLOCATION_TYPE_ID ||
     props.locationSubtype === FACTION_HALL_LOCATION_SUBTYPE;
   if (!isHall) return false;
-  return typeof props.factionDefId === 'string' && FACTION_DEFINITIONS.has(props.factionDefId);
+  // The id lookup, not the static map (THR-1155 tripwire): a run-founded faction's hall counts too.
+  return typeof props.factionDefId === 'string' && getFactionDefinition(props.factionDefId) != null;
 }
 
 /** The posting guild's display name, from its definition (one source for a name). */
 export const ADVENTURING_GUILD_LABEL =
-  FACTION_DEFINITIONS.get(RUIN_QUEST_POSTING_FACTION_DEF_ID)?.nameTemplate ?? GUILD_POSTING_LINES.fallbackGuild;
+  getFactionDefinition(RUIN_QUEST_POSTING_FACTION_DEF_ID)?.nameTemplate ?? GUILD_POSTING_LINES.fallbackGuild;
 
 export function postingTier(magnitude: number): PostingTier {
   if (magnitude <= RUIN_MAGNITUDE_MINOR_MAX) return 'Minor';

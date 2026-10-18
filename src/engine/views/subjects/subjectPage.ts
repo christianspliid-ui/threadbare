@@ -40,6 +40,7 @@ import { tileAt } from './pageResolvers';
 import { attachmentDetailFromNode } from '../../attachmentTemplateDetail';
 import { humanizeKeySegment } from '../../aftermathWords';
 import { ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
+import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../../data/realm-content';
 import type {
   ContentCardVM,
   GenericSubjectPageVM,
@@ -163,7 +164,8 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
       ...base,
       pageKind: 'faction',
       layoutKind: 'faction',
-      header: { ...base.header, kindLabel: sentenceCase(subtitleForNode(node, 'faction')), standing: dominionChip(state, node.id) },
+      // A Realm reads as a Realm, never its stored `political` type (THR-1155; parity with the sheet, THR-1910).
+      header: { ...base.header, kindLabel: node.properties.factionClass === REALM_FACTION_CLASS ? REALM_HEADWORD : sentenceCase(subtitleForNode(node, 'faction')), standing: dominionChip(state, node.id) },
       actOn: null,
       body: graphBody(state, node.id, 'faction'),
       connections: buildConnections(graph, state, { cls: 'faction', id: node.id }),
