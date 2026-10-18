@@ -106,6 +106,20 @@ describe('ledgerRail view model', () => {
     expect(vm.strip.ledger).toBe(1);
   });
 
+  it('with two live chapters, the one that started last is the one marked new', () => {
+    const state = makeState({ tick: 500 });
+    state.graph.addNode({ id: 'oren', type: 'actor', name: 'Oren', properties: { actorType: 'individual' } });
+    state.graph.addEdge({ id: 't1', type: 'thread', source: 'asc', target: 'elara', properties: {} });
+    state.graph.addEdge({ id: 't2', type: 'thread', source: 'asc', target: 'oren', properties: {} });
+    (state as unknown as { unifiedActions: unknown[] }).unifiedActions = [
+      { actionId: 'first', templateId: 'encounter.deep_descent', actorId: 'elara', resolved: false, currentStep: 0 },
+      { actionId: 'second', templateId: 'encounter.deep_descent', actorId: 'oren', resolved: false, currentStep: 0 },
+    ];
+    const vm = buildLedgerRail(state, { ...ARGS, seenLedger: 1 });
+    expect(vm.ledger.rows.map(r => r.recordId)).toEqual(['second', 'first']);
+    expect(vm.ledger.rows.map(r => r.isNew)).toEqual([true, false]);
+  });
+
   it('the strip counts: threads from the rail, chronicle since last seen, never negative', () => {
     const state = makeState({ entries: [entry('a', 1), entry('b', 2), entry('c', 3)] });
     const vm = buildLedgerRail(state, { seenChronicle: 1, seenLedger: 9, threadsWaiting: 2 });

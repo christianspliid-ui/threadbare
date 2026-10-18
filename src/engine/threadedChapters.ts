@@ -109,7 +109,10 @@ export function buildLedgerRows(gameState: GameState, opts: { withStakes?: boole
     participantIds: [a.actorId, ...(a.supportBindings ?? []).map(b => b.nodeId)],
   }));
 
-  return [...activeRows, ...archivedRows];
+  // Live chapters all sort at the current tick, and `unifiedActions` is appended in
+  // start order, so the newest start is listed first: the rows the Ledger tab marks
+  // "new" by position are then the chapters that arrived last (review gate, THR-1893).
+  return [...activeRows.reverse(), ...archivedRows];
 }
 
 /** Newest first. Stable: rows with the same tick keep their build order (live first). */
