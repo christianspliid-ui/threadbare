@@ -53,7 +53,7 @@ import { isRoutineTemplate } from '../../attentionCadence';
 import { getReputationWord } from '../../../data/domain-words';
 import { stepOutcomeWord } from '../../../data/outcome-band-content';
 import { UNDERTAKING_HALT_RATCHET_N } from '../../../data/strategic-action-constants';
-import { SLOT_CAPS, CONDITION_CAPS, SLOT_TAG_DISPLAY_NAMES } from '../../../data/attachment-slot-constants';
+import { SLOT_TAG_DISPLAY_NAMES } from '../../../data/attachment-slot-constants';
 import { ATTACHMENT_TIER_NAMES, type AttachmentTier } from '../../../types/attachments';
 import { AMBITION_PRIMARY_INTERACTIONS, AMBITION_SECONDARY_INTERACTIONS, type AgentKnowledge } from '../../../types/agentKnowledge';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
@@ -266,6 +266,10 @@ function story(
 /** "three days ago" — `elapsedLabel` with the preposition (never "N turns ago"). */
 function agoWord(now: number, tick: number): string {
   return `${elapsedLabel(Math.max(0, now - tick))} ago`;
+}
+
+function sentenceCase(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function tierName(tier: unknown): string {
@@ -594,11 +598,10 @@ const slots: SectionResolver = (ctx) => {
   for (const tag of order) {
     const items = groups.get(tag);
     if (!items || items.length === 0) continue;
+    // The "(n/cap)" numeral retires (Law 13): the group's tiles sit together, so the count
+    // is what the player sees, and the cap is a rule of the slot, not a fact about them.
     const name = SLOT_TAG_DISPLAY_NAMES[tag] ?? humanizeKeySegment(tag);
-    // "(n/cap)" becomes the group's count, the way a links group reads "Who · 15".
-    const capped = (SLOT_CAPS[tag] ?? CONDITION_CAPS[tag]) != null;
-    const groupWord = capped && items.length > 1 ? `${name} · ${items.length}` : name;
-    for (const item of items) tiles.push(attachmentTile(item, `${groupWord}${tierName(item.tier) ? ` · ${tierName(item.tier)}` : ''}`));
+    for (const item of items) tiles.push(attachmentTile(item, `${name}${tierName(item.tier) ? ` · ${tierName(item.tier)}` : ''}`));
   }
   return cards('slots', PERSON_ROW_LABELS.slots, tiles);
 };
@@ -624,7 +627,7 @@ const disposition: SectionResolver = (ctx) => {
   if (!s || !atLeast(s, 'intimate') || !s.card.cooperationStrategy) return null;
   const rows: PanelRow[] = [{
     left: PERSON_FACT_WORDS.strategy,
-    right: DISPOSITION_LABEL_MAP[s.card.cooperationStrategy] ?? humanizeKeySegment(s.card.cooperationStrategy),
+    right: DISPOSITION_LABEL_MAP[s.card.cooperationStrategy] ?? sentenceCase(humanizeKeySegment(s.card.cooperationStrategy)),
   }];
   if (s.card.reputationWord) rows.push({ left: PERSON_FACT_WORDS.reputation, right: s.card.reputationWord, tooltipId: 'ui.reputation' });
   return panel('disposition', PERSON_ROW_LABELS.disposition, rows);

@@ -77,7 +77,7 @@ const PERSON_FIELDS: Record<string, Home> = {
   // Attachments
   'attachments: companions': { connections: 'who' },
   'attachments: slot groups': { row: 'slots' },
-  'attachments: (n/cap) count': { row: 'slots' },
+  'attachments: (n/cap) count': { retired: 'raw-number-or-key', why: 'Law 13: the tiles sit together; the cap is a slot rule' },
   'attachments: knows': { row: 'knows' },
   'attachments: inactive': { row: 'inactive' },
   // Bonds
