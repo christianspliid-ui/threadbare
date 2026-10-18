@@ -4106,8 +4106,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       selectedFactionId,
       selectedHex: selectedHexCoord ?? selectedHex ?? focusedHex ?? null,
       openModals,
-      actionDrawerOpen: (drawerOpen && !!selectedAgentId)
-        || (nonAgentDrawerOpen && !!enrichedNonAgentSlots?.length && !selectedAgentId),
+      // THR-1911: both ActionDrawer mounts are retired; the Act row in the Inspector casts.
+      actionDrawerOpen: false,
       scryActive: scryVisible,
       cameraFocusHex: cameraCenter ?? null,
       simRunning: running,

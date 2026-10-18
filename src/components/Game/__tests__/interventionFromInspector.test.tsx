@@ -1,9 +1,14 @@
 // @vitest-environment jsdom
 /**
- * THR-1911 review-gate finding 1 — an intervention card cast from a person's page has no
- * drawer behind it, so `wheelSlots` is null. The cast carries its own slot, and the
- * agenda picker's confirm reads it: the intervention resolves instead of returning early
- * and leaving `pendingIntervention` stuck.
+ * THR-1911 — the drawer-less hand-off to the agenda picker, as a contract test.
+ *
+ * What this does NOT cover: no card the Act row deals today reaches it. Every slot comes
+ * from `getTargetActionSlots`, which deals `type: 'target_action'` (targetActions.ts), and
+ * those cast through `preparePlayerCast` in `useCastOnTarget` (covered by
+ * InspectorHost.render.test.tsx). The `type: 'intervention'` branch is kept for parity with
+ * the drawer's own intervention branch, and this test pins what that branch would need if
+ * a template ever deals such a slot with no drawer open: the cast carries its slot into
+ * the picker (`wheelSlots` is null) and the confirm resolves instead of sticking.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -33,7 +38,7 @@ const slot: WheelSlot = {
   essenceCost: 2, sphere: 'mind', interventionType: 'inspire_intervention', rangeStatus: 'unlimited', hexDistance: null, description: '',
 } as WheelSlot;
 
-describe('an intervention cast from the Inspector (no drawer)', () => {
+describe('the agenda-picker hand-off without a drawer (contract; no Act-row card deals it today)', () => {
   it('carries its slot into the picker, and the confirm resolves it', () => {
     const setGameState = vi.fn();
     const openInspector = vi.fn();
