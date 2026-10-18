@@ -17,11 +17,17 @@ remediation ticket or the build fails.
 |---|---|
 | 🟢 LIVE | 192 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 7 |
+| 🔴 LEAKED | 8 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 78 |
-| **Total** | **278** |
+| **Total** | **279** |
+
+## ⚠️ LEAKED / HOLLOW without a remediation ticket
+
+These fail the build. Either fix the contract or file a `Deferral` issue and cite it.
+
+- `thread-destination-on-threads-lens` — Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'buildThreadsLens' src/engine/phaseMovement.ts before treating this as a leak.
 
 ## Contracts by producing subsystem
 
@@ -315,6 +321,12 @@ remediation ticket or the build fails.
 | `restless-moves-people` | A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent. | node-prop: `relocationIntent`, `population` | Movement & Colocation | 🟢 LIVE | — |
 | `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `unrest-pressure-inputs` | Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement's unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town's leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page's Fortunes sentence names the band and its largest input. The god's stake (THR-1935) reads the same props later. | node-prop: `unrestInputs`, `hungerDays`, `unrestTarget` | Ambitions & Undertakings | 🟢 LIVE | — |
+
+### Movement & Colocation
+
+| Contract | Intent | Mechanism | Consumer | Status | Ticket |
+|---|---|---|---|---|---|
+| `thread-destination-on-threads-lens` | The player sees where each of their people is going (THR-1878 Lenses I, plan D4). `phaseMovement` writes `movementState.destinationId` on a moving mortal; the Threads lens (`views/lenses/threadsLens.ts`, read through `hexLensViewSelector`) lights each threaded mortal at court the_first / retinue / watched, resolves the destination to its place-tier Location (`resolveToParentLocation`) and draws a dashed arrow to that hex in the court colour, with a hover line naming the place. Nothing is drawn on an unexplored hex (the seen floor hex rule, `views/knowledge.ts`). The Dominion hover line gains its pressure clause on the same pass (`dominion-band-projected-to-hex-map`, extended). | function: `buildThreadsLens`, `hexLensViewSelector`, `createHexLensLayer` | Intelligence, Knowledge & Familiarity | 🔴 LEAKED | — |
 
 ### Personality & Emergent Traits
 
@@ -1024,10 +1036,10 @@ exit
 - **Intent:** A company travels as one — members share a destination instead of wandering off separately.
 - **Producer → Consumer:** Companies & Group Travel → Movement & Colocation
 - **UL terms:** *Company*
-- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
+- **Production hits:** 20 total — 1 write, 1 read, 18 unclassified
 - **Write sites:** `src/engine/groups/groupMovement.ts`
 - **Read sites:** `src/engine/phaseMovement.ts`
-- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/data/action-technical-effects.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts` +12 more
+- **Other hits:** `src/components/AgentInfoCard/AgentInfoCard.tsx`, `src/data/action-technical-effects.ts`, `src/data/agent-behavior-constants.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts` +13 more
 - **Verdict:** Verified 2026-07-24: phaseGroups writes members' MovementState and phaseMovement (next phase in runTick) executes it. 72-tick CLI smoke, seed 42 medium: "The Watch of the Nameless Road" members Nareth and Hestia both at Wolfton; "The Steadfast Sparrows" both at Shadow-shade.
 
 ### `company-gates-exclusive-content-reachability` — 🟢 LIVE
@@ -2344,10 +2356,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 42 total — 2 write, 1 read, 39 unclassified
+- **Production hits:** 45 total — 2 write, 1 read, 42 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +34 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounter-stage/types.ts`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx` +37 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
@@ -3263,6 +3275,17 @@ exit
 - **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/encounter-stage/adapters/chipCollaborators.ts` +108 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
+### `thread-destination-on-threads-lens` — 🔴 LEAKED
+
+- **Intent:** The player sees where each of their people is going (THR-1878 Lenses I, plan D4). `phaseMovement` writes `movementState.destinationId` on a moving mortal; the Threads lens (`views/lenses/threadsLens.ts`, read through `hexLensViewSelector`) lights each threaded mortal at court the_first / retinue / watched, resolves the destination to its place-tier Location (`resolveToParentLocation`) and draws a dashed arrow to that hex in the court colour, with a hover line naming the place. Nothing is drawn on an unexplored hex (the seen floor hex rule, `views/knowledge.ts`). The Dominion hover line gains its pressure clause on the same pass (`dominion-band-projected-to-hex-map`, extended).
+- **Producer → Consumer:** Movement & Colocation → Intelligence, Knowledge & Familiarity
+- **UL terms:** *The First*
+- **Production hits:** 7 total — 0 write, 2 read, 5 unclassified
+- **Write sites:** —
+- **Read sites:** `src/components/HexMapV2/scene/HexLensLayer.ts`, `src/engine/views/lenses/threadsLens.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/engine/views/knowledge.ts`, `src/engine/views/lenses/lensView.ts`, `src/engine/views/selectors.ts`
+- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'buildThreadsLens' src/engine/phaseMovement.ts before treating this as a leak.
+
 ### `thread-luck-protection` — 🟢 LIVE
 
 - **Intent:** A thread from the player's god marks a mortal as the player's own, and the player's own mortals get fair luck: their d100 comes from a marble bag and a hidden deadline ends any Legendary drought (Game Design Laws § I).
@@ -3623,9 +3646,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 129 total — 2 write, 3 read, 124 unclassified
+- **Production hits:** 130 total — 2 write, 3 read, 125 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/components/Game/tabs/OverviewTab.tsx`, `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +119 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +120 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 
