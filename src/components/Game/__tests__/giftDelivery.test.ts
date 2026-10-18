@@ -146,6 +146,7 @@ describe('openPlayerSurfaces', () => {
       scryOpen: true,
       rivalsOpen: true,
       notablesOpen: true,
+      inspectorFullOpen: true,
     });
     const sheets = ['location', 'faction', 'army', 'artifact'].map(
       c => openPlayerSurfaces({ ...NO_SURFACES, stubSheetCategory: c })[0],

@@ -175,3 +175,40 @@ export function buildActOn(state: GameState, target: ActOnTarget, name: string, 
   if (cards.length === 0) return empty();
   return { heading, cards, emptyLine: null };
 }
+
+/**
+ * THR-1911 — the ref kind a Location id opens as in the Inspector: a Place (a Location
+ * carrying `parentLocationId`, THR-1183) is a `sublocation`, a settlement a `location`.
+ */
+export function placeRefKind(state: Pick<GameState, 'graph'>, locationId: string): 'location' | 'sublocation' {
+  return state.graph.getNode(locationId)?.properties.parentLocationId ? 'sublocation' : 'location';
+}
+
+/** THR-1911 — the hex a cast on this target lands on (the particle burst), or null. */
+export function castHexOf(state: Pick<GameState, 'graph'>, target: ActOnTarget, nodeId: string): { col: number; row: number } | null {
+  if (target.kind === 'hex') return { col: target.col, row: target.row };
+  const graph = state.graph;
+  const node = graph.getNode(nodeId);
+  if (!node) return null;
+  let col = node.properties.hexCol as number | undefined;
+  let row = node.properties.hexRow as number | undefined;
+  if (col == null || row == null) {
+    const at = graph.getOutgoingEdges(nodeId, 'located_at')[0]?.target;
+    const loc = at ? graph.getNode(at) : undefined;
+    col = loc?.properties.hexCol as number | undefined;
+    row = loc?.properties.hexRow as number | undefined;
+  }
+  return col != null && row != null ? { col, row } : null;
+}
+
+/**
+ * THR-1911 — what the agenda picker needs to open on a person (the drawer's intervention
+ * branch read it inline): their value profile and narrative archetype. Null when the
+ * person has no profile, so no picker opens.
+ */
+export function interventionSubjectOf(state: Pick<GameState, 'graph'>, agentId: string): { profile: unknown; archetypeId: string } | null {
+  const node = state.graph.getNode(agentId);
+  const profile = node?.properties?.axiologicalProfile;
+  if (!profile) return null;
+  return { profile, archetypeId: (node?.properties?.narrativeArchetype as string) ?? 'unknown' };
+}

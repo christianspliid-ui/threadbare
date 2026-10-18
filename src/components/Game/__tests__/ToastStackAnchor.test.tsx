@@ -36,7 +36,7 @@ describe('ToastStack — anchored inside the map area (THR-1711)', () => {
     // THR-1881 step d: the map itself lives in `map/GameMap.tsx`; GameView mounts
     // that host where HexMapV2 stood, so the order is pinned against `<GameMap`.
     const src = readFileSync(resolve(__dirname, '../GameView.tsx'), 'utf8');
-    const mapArea = src.indexOf('{/* ── Center: map / hex zoom / location ── */}');
+    const mapArea = src.indexOf('{/* ── Center: the map, and the Inspector beside it');
     const mount = src.indexOf('<ToastStack', mapArea);
     const map = src.indexOf('<GameMap', mapArea);
     expect(mapArea).toBeGreaterThan(-1);

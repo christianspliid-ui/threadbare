@@ -70,20 +70,14 @@ export function ActOnRow({ actOn, targetName, onCast }: { actOn: ActOnVM; target
               <span key={card.actionId} data-act-card={card.actionId} data-available={card.available ? 'true' : 'false'} data-armed={isArmed ? 'true' : 'false'}
                 className={shaking === card.actionId ? 'anim-shake-no' : undefined}
                 style={{ display: 'inline-flex', flexDirection: 'column', gap: '4px', opacity: card.available ? 1 : 0.6, minWidth: 0 }}>
-                {onCast ? (
-                  <button
-                    type="button"
-                    onClick={() => press(card.actionId, card.available, card.reason)}
-                    aria-pressed={isArmed}
-                    aria-disabled={!card.available || undefined}
-                    aria-label={isArmed ? INSPECTOR_WORDS.armedCard.replace('{card}', card.name).replace('{name}', name) : card.name}
-                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', borderRadius: '999px', outline: isArmed ? '2px solid var(--border-gold)' : undefined, outlineOffset: '2px' }}
-                  >
-                    <Chip role="state" size="sm" label={card.name} tint={tint} />
-                  </button>
-                ) : (
-                  <Chip role="state" size="sm" label={card.name} tint={tint} />
-                )}
+                <Chip
+                  role="state"
+                  size="sm"
+                  label={card.name}
+                  tint={tint}
+                  onOpen={onCast ? () => press(card.actionId, card.available, card.reason) : undefined}
+                  style={isArmed ? { outline: '2px solid var(--border-gold)', outlineOffset: '2px' } : undefined}
+                />
                 {isArmed && (
                   <Button variant="primary" size="sm" onClick={() => press(card.actionId, true, null)} data-act-cast={card.actionId}>
                     {INSPECTOR_WORDS.castOn.replace('{name}', name)}

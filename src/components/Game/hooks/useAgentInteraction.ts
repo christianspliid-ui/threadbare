@@ -28,6 +28,7 @@ import { getAvatarHexPosition } from '../../../engine/visibility';
 import type { ToastItem } from '../../../types/notification';
 import type { WorldRef } from '../../../types/worldRef';
 import type { WheelSlot } from '../../../engine/wheel';
+import { interventionSubjectOf } from '../../../engine/views/subjects/actOn';
 import type { HexCoord } from '../../../types';
 import type { TabId as ProfileTabId } from '../tabs/TabBar';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
@@ -481,15 +482,13 @@ export function useAgentInteraction({
    */
   const beginIntervention = useCallback((agentId: string, slotId: string, interventionType: NonNullable<WheelSlot['interventionType']>) => {
     if (pendingIntervention || playingCardId) return;
-    const targetNode = gameState.graph.getNode(agentId);
-    const profile = targetNode?.properties?.axiologicalProfile as any;
-    const archetypeId = (targetNode?.properties?.narrativeArchetype as string) ?? 'unknown';
-    if (!profile) return;
+    const subject = interventionSubjectOf(gameState, agentId);
+    if (!subject) return;
     setSelectedAgentId(agentId);
     const agendas = generateAgendas({
       interventionType,
-      targetArchetypeId: archetypeId,
-      targetProfile: profile,
+      targetArchetypeId: subject.archetypeId,
+      targetProfile: subject.profile as any,
       playerPrimarySphere: archetype.sphereAlignment.primary,
       seed: gameState.seed + gameState.tick,
     });

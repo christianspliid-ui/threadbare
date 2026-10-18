@@ -30,6 +30,7 @@ import { useGameScreenState } from '../frame/GameScreenState';
 import { useEscapeLayer, ESCAPE_LAYER_Z_PANEL } from '../../shared/useEscapeLayer';
 import { Z_BAND } from '../../shared/zBands';
 import { IconButton } from '../../shared/IconButton';
+import { Button } from '../../shared/Button';
 import { Icon } from '../../shared/Icon';
 import { Tooltip } from '../../shared/Tooltip';
 import { InspectorPage, type InspectorPageReport } from './InspectorPage';
@@ -188,7 +189,7 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
       {size !== 'full' && (
         <nav aria-label={T.trail} data-inspector-trail="" style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', whiteSpace: 'nowrap', fontSize: 'var(--text-xs)' }}>
           {trail.more && (
-            <button type="button" onClick={() => setInspector(prev => goTo(prev, Math.max(0, prev.index - trail.steps.length)))} aria-label={T.trailMore} style={trailLinkStyle}>…</button>
+            <Button variant="ghost" size="sm" onClick={() => setInspector(prev => goTo(prev, Math.max(0, prev.index - trail.steps.length)))} aria-label={T.trailMore} style={trailLinkStyle}>…</Button>
           )}
           {trail.steps.map((step, i) => (
             <span key={step.index} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', minWidth: 0 }}>
@@ -196,7 +197,7 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
               {step.current ? (
                 <span aria-current="page" style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.name}</span>
               ) : (
-                <button type="button" onClick={() => setInspector(prev => goTo(prev, step.index))} style={trailLinkStyle}>{step.name}</button>
+                <Button variant="ghost" size="sm" onClick={() => setInspector(prev => goTo(prev, step.index))} style={trailLinkStyle}>{step.name}</Button>
               )}
             </span>
           ))}
@@ -235,7 +236,7 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
             i === inspector.index ? (
               <span key={`${step.key}-${i}`} aria-current="page" style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{step.name}</span>
             ) : (
-              <button key={`${step.key}-${i}`} type="button" onClick={() => setInspector(prev => goTo(prev, i))} style={{ ...trailLinkStyle, textAlign: 'left' }}>{step.name}</button>
+              <Button key={`${step.key}-${i}`} variant="ghost" size="sm" onClick={() => setInspector(prev => goTo(prev, i))} style={{ ...trailLinkStyle, justifyContent: 'flex-start' }}>{step.name}</Button>
             )
           ))}
         </nav>
@@ -254,12 +255,8 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
 }
 
 const trailLinkStyle: CSSProperties = {
-  background: 'none',
-  border: 'none',
-  padding: 0,
-  cursor: 'pointer',
+  padding: '0 4px',
   color: 'var(--accent-gold)',
-  fontSize: 'inherit',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',

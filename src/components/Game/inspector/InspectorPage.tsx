@@ -169,7 +169,7 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
   const isLand = page.pageKind === 'land';
 
   // Focus lands on the heading when a page opens (Law 50); the host owns the ref.
-  const header = <div ref={headingRef} tabIndex={-1} data-inspector-heading="" style={{ outline: 'none' }}><SubjectHeader header={page.header} graph={graph} compact={size === 'docked'} /></div>;
+  const header = <div ref={headingRef} tabIndex={-1} data-inspector-heading=""><SubjectHeader header={page.header} graph={graph} compact={size === 'docked'} /></div>;
   const act = page.actOn ? <ActOnRow key={page.subjectKey} actOn={page.actOn} targetName={page.header.name} onCast={onCast} /> : null;
   const land = isLand ? <InThisLand index={page.inThisLand} /> : null;
   const body = <Body key={planKey} tabs={tabs} tabsLabel={page.header.name} />;

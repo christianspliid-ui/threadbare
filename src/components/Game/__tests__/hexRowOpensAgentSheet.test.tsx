@@ -125,15 +125,18 @@ describe('THR-1705 — a hex-panel row opens its mortal and the hand names them'
     expect(screen.getByTestId('action-drawer-target').textContent).toBe(`Casting on ${STRANGER_NAME}`);
   });
 
-  it('GameView wires the hex panel row to the thread-node opener, not the bare select', () => {
+  // THR-1911 retired the detail column and both ActionDrawer mounts: a hex row, a map
+  // click and every link open the Inspector, whose Act row names its subject ("Cast on
+  // <name>") for strangers and retinue alike. The two source pins that held the old
+  // wiring now hold its retirement.
+  it('GameView mounts neither the detail column nor an ActionDrawer, and mounts the Inspector (THR-1911)', () => {
     const source = readFileSync(resolve(__dirname, '..', 'GameView.tsx'), 'utf8');
-    const block = source.match(/<HexDetailView[\s\S]*?\/>/)?.[0] ?? '';
-    expect(block).toContain("onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}");
-    expect(block).not.toMatch(/onAgentClick=\{handleAgentSelect\}/);
+    expect(source).not.toMatch(/<HexDetailView|<ThreadDetailView|<ActionDrawer/);
+    expect(source).toContain('<InspectorHost');
   });
 
-  it('GameView names a stranger in the drawer, not only a retinue member', () => {
-    const source = readFileSync(resolve(__dirname, '..', 'GameView.tsx'), 'utf8');
-    expect(source).toContain('targetName={selectedRetinueAgent?.name ?? gameState.graph.getNode(selectedAgentId)?.name ??');
+  it('a person selected from a hex row opens their page through the thread-node opener (THR-1911)', () => {
+    const source = readFileSync(resolve(__dirname, '..', 'hooks', 'useAgentInteraction.ts'), 'utf8');
+    expect(source).toContain("openInspector({ kind: category, id: nodeId }, 'docked', fromMap);");
   });
 });

@@ -45,7 +45,7 @@ describe('AlertBar — actorId click-through', () => {
     const linkedAlert: AlertItem = { ...baseAlert, actorId: 'actor.warrior' };
     render(<AlertBar alerts={[linkedAlert]} onDismiss={vi.fn()} onSelectAgent={vi.fn()} />);
     const btn = screen.getByRole('listitem');
-    expect(btn.getAttribute('aria-label')).toContain('click to navigate');
+    expect(btn.getAttribute('aria-label')).toContain('(open)');
   });
 
   it('dismisses on right-click', () => {

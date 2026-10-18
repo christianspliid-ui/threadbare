@@ -19,7 +19,7 @@ import type { SphereName } from '../../../types';
 import type { ToastItem } from '../../../types/notification';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import type { WheelSlot } from '../../../engine/wheel';
-import { actOnSlots, type ActOnTarget } from '../../../engine/views/subjects/actOn';
+import { actOnSlots, castHexOf, type ActOnTarget } from '../../../engine/views/subjects/actOn';
 import { templateIdFromSlotId } from '../../../engine/targetActions';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { preparePlayerCast, commitPlayerCast } from '../../../engine/playerCastDispatch';
@@ -54,23 +54,6 @@ export interface CastOnTargetDeps {
   beginIntervention?: (agentId: string, slotId: string, interventionType: NonNullable<WheelSlot['interventionType']>) => void;
   openScry?: () => void;
   startMeeting?: (locationId: string) => void;
-}
-
-/** The hex a cast lands on, for the particle burst. */
-function targetHex(state: GameState, target: ActOnTarget, nodeId: string): { col: number; row: number } | null {
-  if (target.kind === 'hex') return { col: target.col, row: target.row };
-  const graph = state.graph;
-  const node = graph.getNode(nodeId);
-  if (!node) return null;
-  let col = node.properties.hexCol as number | undefined;
-  let row = node.properties.hexRow as number | undefined;
-  if (col == null || row == null) {
-    const at = graph.getOutgoingEdges(nodeId, 'located_at')[0]?.target;
-    const loc = at ? graph.getNode(at) : undefined;
-    col = loc?.properties.hexCol as number | undefined;
-    row = loc?.properties.hexRow as number | undefined;
-  }
-  return col != null && row != null ? { col, row } : null;
 }
 
 export function useCastOnTarget(deps: CastOnTargetDeps): (actionId: string, target: ActOnTarget) => CastOutcome {
@@ -137,7 +120,7 @@ export function useCastOnTarget(deps: CastOnTargetDeps): (actionId: string, targ
           expiresAt: Date.now() + CAST_TOAST_MS,
         });
       }
-      const hex = targetHex(gameState, target, targetId);
+      const hex = castHexOf(gameState, target, targetId);
       if (particleBurst && hex) particleBurst(hex.col, hex.row, getSphereColor(sphere));
 
       setGameState(prev => commitPlayerCast(prev, opensRite

@@ -126,6 +126,7 @@ import { LedgerRail } from './frame/LedgerRail';
 import { useLedgerKey } from './frame/useLedgerKey';
 import { GameScreenStateProvider, useGameScreenStore } from './frame/GameScreenState';
 import { InspectorHost } from './inspector/InspectorHost';
+import { placeRefKind } from '../../engine/views/subjects/actOn';
 import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
 import type { InspectorPageReport } from './inspector/InspectorPage';
@@ -611,10 +612,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // THR-1911 (§ D13): the `location` and `hex-zoom` views retire — a place and a hex
   // open their pages in the Inspector. The names stay, so every caller keeps its call.
   const handleLocationClick = useCallback((locationId: string) => {
-    const node = gameState.graph.getNode(locationId);
-    const kind: WorldRefKind = node?.properties.parentLocationId ? 'sublocation' : 'location';
-    openPage({ kind, id: locationId });
-  }, [gameState.graph, openPage]);
+    openPage({ kind: placeRefKind(gameState, locationId), id: locationId });
+  }, [gameState, openPage]);
   const handleHexClick = useCallback((coord: import('../../types').HexCoord) => {
     openPage({ kind: 'hex', id: `${coord.col},${coord.row}` });
   }, [openPage]);
@@ -721,10 +720,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleThreadNodeSelect(nodeId, category, true);
   }, [handleThreadNodeSelect]);
   const handlePlaceLabelClick = useCallback((locationId: string) => {
-    const node = gameState.graph.getNode(locationId);
-    const kind: WorldRefKind = node?.properties.parentLocationId ? 'sublocation' : 'location';
-    openInspector({ kind, id: locationId }, 'docked', true);
-  }, [gameState.graph, openInspector]);
+    openInspector({ kind: placeRefKind(gameState, locationId), id: locationId }, 'docked', true);
+  }, [gameState, openInspector]);
 
   // ── Composite hex click: move avatar if moveMode is active, otherwise select hex ──
   // moveMode is activated by handleAvatarMoveClick; once a destination is picked (or Escape pressed)
@@ -3255,10 +3252,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       setStubModalStateRaw(null);
       return;
     }
-    const node = gameState.graph.getNode(value.nodeId);
-    const kind: WorldRefKind = value.category === 'location' && node?.properties.parentLocationId ? 'sublocation' : value.category;
+    const kind: WorldRefKind = value.category === 'location' ? placeRefKind(gameState, value.nodeId) : value.category;
     openPage({ kind, id: value.nodeId }, 'sheet');
-  }, [gameState.graph, openPage]);
+  }, [gameState, openPage]);
 
   // ── Attachment sheet, opened from an aftermath consequence chip (THR-1120) ──
   //
