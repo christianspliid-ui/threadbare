@@ -127,6 +127,7 @@ import { LedgerRail } from './frame/LedgerRail';
 import { useLedgerKey } from './frame/useLedgerKey';
 import { GameScreenStateProvider, useGameScreenStore } from './frame/GameScreenState';
 import { InspectorHost } from './inspector/InspectorHost';
+import { canOpenMeetTheFirst, offersMeetTheFirstCard } from './meetTheFirstCard';
 import { placeRefKind } from '../../engine/views/subjects/actOn';
 import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
@@ -3510,6 +3511,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
   [gameState.graph, gameState.ascendantId, gameState.tick]);
 
+  // THR-1978: the flow mounts only with an identity, so no surface offers the
+  // card on a run without one (the dev-only Advanced World Setup path).
+  const meetTheFirstOpenable = canOpenMeetTheFirst({
+    meetTheFirstAvailable,
+    hasAscendantIdentity: !!ascendantIdentity,
+  });
+
   // ── Auto-trigger Meet The First right after "Reach Down" (THR-1605 S1) ──
   // The meeting comes to the player: it opens at the settlement nearest the
   // avatar (`pickMeetingLocation`) as soon as the spine opening beat resolves,
@@ -3566,7 +3574,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // Inject Meet The First card into non-agent slots when on a location view
   const enrichedNonAgentSlots = useMemo(() => {
     const base = nonAgentSlots ?? [];
-    if (viewLevel !== 'location' || !meetTheFirstAvailable || !focusedLocation) return base;
+    if (!offersMeetTheFirstCard({
+      viewLevel,
+      meetTheFirstAvailable,
+      hasFocusedLocation: !!focusedLocation,
+      hasAscendantIdentity: !!ascendantIdentity,
+    })) return base;
     const meetSlot: WheelSlot = {
       id: MEET_THE_FIRST_SLOT_ID,
       label: 'Meet The First',
@@ -3582,7 +3595,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       description: 'Claim a mortal as your champion — The First to carry your will.',
     };
     return [meetSlot, ...base];
-  }, [nonAgentSlots, viewLevel, meetTheFirstAvailable, focusedLocation, focusedLocationAgents, archetype.sphereAlignment.primary]);
+  }, [nonAgentSlots, viewLevel, meetTheFirstAvailable, focusedLocation, focusedLocationAgents, archetype.sphereAlignment.primary, ascendantIdentity]);
 
   // THR-1911 (§ D13): FactionSheet's "act on it" opens the faction's page; its Act row casts.
   const handleOpenFactionActions = useCallback((factionId: string) => {
@@ -4611,7 +4624,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           onCast={castOnTarget}
           onShowOnMap={(hex) => hexMapRef.current?.focusOn(hex)}
           onReport={handleInspectorReport}
-          meetTheFirst={meetTheFirstAvailable ? { actionId: MEET_THE_FIRST_SLOT_ID, sphere: archetype.sphereAlignment.primary } : null}
+          meetTheFirst={meetTheFirstOpenable ? { actionId: MEET_THE_FIRST_SLOT_ID, sphere: archetype.sphereAlignment.primary } : null}
         />
         </div>
 
