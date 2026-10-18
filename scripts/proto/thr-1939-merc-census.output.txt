@@ -1,0 +1,34 @@
+# THR-1939 census output (design lane 2026-10-18a). Harness: initializeGameState + runTick, as scripts/measure-tick-cost.ts. main @ 66713d98.
+
+## seed 42, medium, 60 of 100 days (run stopped at day 60)
+=== seed 42: 52 factions, 2 mercenary companies
+  faction_def_mercenary_company_0 "undefined" type=military defId=mercenary_company class=undefined
+  faction_def_mercenary_company_1 "undefined" type=military defId=mercenary_company class=undefined
+  day 0: allArmies=5 oaths=0 || faction_def_mercenary_company_0: w=80.0 armies=1 | faction_def_mercenary_company_1: w=80.0 armies=1
+  day 10: allArmies=2 oaths=3 || faction_def_mercenary_company_0: w=63.8 armies=0 | faction_def_mercenary_company_1: w=77.1 armies=0 sworn->faction_1(persuaded)
+  day 20: allArmies=1 oaths=7 || faction_def_mercenary_company_0: w=68.9 armies=0 | faction_def_mercenary_company_1: w=84.0 armies=0 sworn->faction_1(persuaded)
+  day 30: allArmies=0 oaths=13 || faction_def_mercenary_company_0: w=74.0 armies=0 | faction_def_mercenary_company_1: w=87.5 armies=0 sworn->faction_1(persuaded)
+  day 40: allArmies=1 oaths=13 || faction_def_mercenary_company_0: w=79.2 armies=0 | faction_def_mercenary_company_1: w=91.0 armies=0 sworn->faction_1(persuaded)
+  day 50: allArmies=0 oaths=13 || faction_def_mercenary_company_0: w=84.3 armies=0 | faction_def_mercenary_company_1: w=94.5 armies=0 sworn->faction_1(persuaded)
+  day 60: allArmies=0 oaths=14 || faction_def_mercenary_company_0: w=89.4 armies=0 | faction_def_mercenary_company_1: w=98.0 armies=0 sworn->faction_1(persuaded)
+
+## seed 99, medium, 30 days
+=== seed 99: 59 factions, 2 mercenary companies
+  day 0: allArmies=5 oaths=0 || faction_def_mercenary_company_0: w=80.0 armies=1 | faction_def_mercenary_company_1: w=80.0 armies=1
+  day 10: allArmies=2 oaths=1 || faction_def_mercenary_company_0: w=57.6 armies=0 | faction_def_mercenary_company_1: w=61.1 armies=0
+  day 20: allArmies=1 oaths=4 || faction_def_mercenary_company_0: w=18.4 armies=0 | faction_def_mercenary_company_1: w=63.0 armies=0
+  day 30: allArmies=0 oaths=7 || faction_def_mercenary_company_0: w=11.4 armies=0 sworn->faction_2(bought) | faction_def_mercenary_company_1: w=64.9 armies=0
+  oath kinds at day 30: {"coerced":2,"bought":5}
+
+## army probe, seed 42, the two company hosts day by day (thr-1939-merc-army-probe.ts)
+  d1 army_faction_def_mercenary_company_0_0 cohesion=85.0/100 supply=100.0 paidThrough=12
+  d1 army_faction_def_mercenary_company_1_0 cohesion=79.0/100 supply=46.0 paidThrough=12
+  d2 army_faction_def_mercenary_company_0_0 cohesion=70.0/100 supply=100.0 paidThrough=24
+  d2 army_faction_def_mercenary_company_1_0 cohesion=45.2/100 supply=0.0 paidThrough=24
+  d3 army_faction_def_mercenary_company_0_0 cohesion=55.0/100 supply=100.0 paidThrough=36
+  d3 army_faction_def_mercenary_company_1_0 cohesion=0.2/100 supply=0.0 paidThrough=36   (gone by d4: starving)
+  d4 army_faction_def_mercenary_company_0_0 cohesion=40.0/100 supply=100.0 paidThrough=48
+  d5 army_faction_def_mercenary_company_0_0 cohesion=25.0/100 supply=100.0 paidThrough=60
+  d6 army_faction_def_mercenary_company_0_0 cohesion=10.0/100 supply=100.0 paidThrough=72   (gone by d7: paid and fed, bled 1.25/tick)
+
+Reading: both hosts were paid every day; one starved (no held town to eat from, armySupply.ts isSupplyHost reads only the army's own faction's controls), the other bled out on base attrition with no recovery path. Neither company raised another army through day 60 / day 30 although each held 57–98 coin (a host needs 50 + 3.5).
