@@ -12,9 +12,41 @@
   padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  /* THR-1894: the rail never scrolls as a page; the hand region and the open rows scroll inside their own limits (Laws 33, 57). */
+  overflow: hidden;
+}
+
+/* ── Folded rows (THR-1894, frame plan § F6) ───────────────────────── */
+.foldedRows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+  max-height: 50%;
   overflow-y: auto;
   overflow-x: hidden;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.foldedRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 28px;
+  padding: 2px 4px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+}
+.foldedRow:hover {
+  background: var(--bg-hover);
 }
 
 /* ── Halo animations ───────────────────────────────────────────── */
@@ -91,47 +123,6 @@
   50%       { background-color: rgba(220, 50, 50, 0.04); }
 }
 
-/* ── Section header ─────────────────────────────────────────────── */
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-  background: none;
-  border: none;
-  padding: 0;
-  width: 100%;
-  text-align: left;
-}
-
-.sectionLabel {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  white-space: nowrap;
-}
-
-.sectionCount {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-}
-
-.sectionRule {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(90deg, var(--border-subtle), transparent);
-}
-
-.sectionBody {
-  padding-left: 18px;
-}
-
 .chevron {
   flex-shrink: 0;
   transition: transform 0.18s ease;
@@ -184,10 +175,9 @@
 
 .nameText {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: var(--text-lg); /* 22 px: Cinzel's floor (THR-1833) */
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: 0.04em;
   line-height: 1;
 }
 
@@ -195,7 +185,8 @@
 .essenceRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
   padding: 4px 6px;
   border-radius: 4px;
   cursor: pointer;
@@ -219,7 +210,7 @@
   align-items: baseline;
   gap: 6px;
   padding: 2px 6px 6px;
-  font-size: 13px;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 .seatLink {
@@ -239,45 +230,6 @@
   color: var(--accent-gold);
 }
 
-/* ── Action rows ────────────────────────────────────────────────── */
-.actionRow {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: baseline;
-  gap: 10px;
-  padding: 5px 8px 5px 6px;
-  background: transparent;
-  border: none;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  text-align: left;
-  width: 100%;
-}
-.actionRow:hover:not(:disabled) {
-  background: var(--bg-hover);
-}
-.actionRow:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.actionGroupHeader {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  padding-bottom: 2px;
-  border-bottom: 1px dotted var(--border-subtle);
-  cursor: pointer;
-  user-select: none;
-  background: none;
-  border-left: none;
-  border-right: none;
-  border-top: none;
-  width: 100%;
-  text-align: left;
-}
-
 /* ── Chip primitives ────────────────────────────────────────────── */
 .chip {
   display: inline-flex;
@@ -286,10 +238,9 @@
   padding: 3px 8px;
   border-radius: 3px;
   border: 1px solid;
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
   /* No `cursor` here (THR-1330). It read `pointer` unconditionally, so an inert chip
      advertised a click target in the one channel the player reads *before* committing
      to the click — Law 25's cursor half, which THR-1307 left behind when it removed the

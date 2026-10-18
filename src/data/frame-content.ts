@@ -94,3 +94,56 @@ export const THREAD_PIP_LABEL = 'A chapter waits';
 
 export const SPEED_DOWN_ARIA = 'Decrease speed';
 export const SPEED_UP_ARIA = 'Increase speed';
+
+// ─── The god rail (slice 2, THR-1894) ───────────────────────────────
+
+export const GOD_RAIL_ARIA = 'Ascendant status';
+export const ESSENCE_LABEL = 'Essence';
+export const ESSENCE_PRIMARY_LABEL = 'Primary';
+export const ATTENTION_LABEL = 'Attention';
+/** "Your First: Kael Thorne" — after the bond only (Law 56). */
+export const YOUR_FIRST_LABEL = 'Your First';
+
+/** The hand's header on screen. "Your cards", never "Your hand" (UL: a hand is a step's dealt cards). */
+export const HAND_HEADER = 'Your cards';
+export const HAND_EMPTY_LINE = "No cards yet. Your story's gifts bring them.";
+/** The rest lines while a moment is open (§ F6). */
+export const HAND_REST_LINES = {
+  encounter: 'Your cards wait. This encounter deals its own hand.',
+  moment: 'Your cards wait while this moment is open.',
+} as const;
+/** A grouped hand's header: "Spirit · 4". */
+export const HAND_GROUP_HEADER = '{sphere} · {n}';
+/** A card the pool cannot pay even on sovereign ground. */
+export const HAND_UNPAYABLE_REASON = 'Not enough {sphere} essence';
+/** The two core verbs that head the hand. */
+export const HAND_CORE_VERBS = {
+  move: { label: 'Move', desc: 'Navigate through the world' },
+  investiture: { label: 'Investiture', desc: 'Manage your divine court' },
+} as const;
+
+/** The longest folded-row summary; longer falls back to the shorter form. */
+export const GOD_RAIL_SUMMARY_MAX_CH = 24;
+/** Folded-row summaries. Reaches is "{reach} · {tier}", falling back to "{tier}". */
+export const GOD_RAIL_ROW_SUMMARIES = {
+  reaches: '{reach} · {tier}',
+  covenants: { one: '{n} held', other: '{n} held' } as CountPair,
+  signatures: { one: '{n} yours', other: '{n} yours' } as CountPair,
+  hooks: { one: '{n} on you', other: '{n} on you' } as CountPair,
+} as const;
+/** The god rail's section labels. */
+export const GOD_RAIL_LABELS = {
+  identity: 'Identity',
+  essence: ESSENCE_LABEL,
+  hand: HAND_HEADER,
+  reaches: 'Reaches',
+  mandate: 'Mandate',
+  covenants: 'Covenants',
+  signatures: 'Signatures',
+  hooks: 'Hooks',
+} as const;
+
+/** The par price's tooltip (`ui.hand_price`): the Foreign band's line, then the cast clause. */
+export const HAND_PRICE_TOOLTIP = 'The price on {par} ground: {parLine} {sovereign}. {hostile}. A target\'s own price shows when you choose it.';
+/** Added for the two cards whose price follows the target's tier. */
+export const HAND_PRICE_TIER_SCALED = 'A rarer target costs more.';

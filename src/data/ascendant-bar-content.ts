@@ -116,14 +116,6 @@ export function quintessenceLine(sphere: SphereName, band: QuintessenceBand): st
   return perSpherePoetics[sphere]?.[band] ?? GENERIC_QUINTESSENCE_LADDER[band];
 }
 
-// ─── Action tray empty-state copy ────────────────────────────────────────────
-
-export const TRAY_EMPTY_COPY = {
-  core: 'No core actions available.',
-  self: 'No self-actions available.',
-  rare: 'No rare actions in reach.',
-} as const;
-
 // ─── Mandate trend vocabulary ─────────────────────────────────────────────────
 
 export const MANDATE_TREND_WORD: Record<string, string> = {
@@ -274,8 +266,8 @@ export const SIGNATURE_STATE_COPY: Record<SignaturePathState, string> = {
 
 /** Group headers for the two partitions the readout shows. */
 export const SIGNATURE_GROUP_COPY = {
-  yours: 'Your Paths',
-  other: 'Not This Incarnation',
+  yours: 'Your paths',
+  other: 'Not this incarnation',
 } as const;
 
 /** Placeholder when the ascendant's paths cannot be read (legacy save / no ascendant). */

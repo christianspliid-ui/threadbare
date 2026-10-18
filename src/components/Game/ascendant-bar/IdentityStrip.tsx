@@ -164,7 +164,7 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
 
         <div style={{
           display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap',
-          fontFamily: 'var(--font-body)', fontSize: 13, color: 'var(--text-tertiary)',
+          fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)',
           marginTop: 1,
         }}>
           {/* The archetype *title* is generated flavour (96 sphere-keyed strings in
@@ -184,9 +184,9 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
             <span
               data-testid="identity-quintessence-label"
               style={{
-                fontFamily: 'var(--font-display)', fontSize: 9, fontWeight: 600,
-                color: 'var(--text-muted)', textTransform: 'uppercase',
-                letterSpacing: '0.18em', cursor: 'help',
+                // THR-1894: a bold sentence-case label at the floor, never 9 px tracked capitals.
+                fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', fontWeight: 700,
+                color: 'var(--text-muted)', cursor: 'help',
               }}
             >
               {QUINTESSENCE_CONCEPT_LABEL}
@@ -194,8 +194,8 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
           </Tooltip>
           <Tooltip id={`quintessence.${band}`}>
             <span style={{
-              fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 14,
-              color: bandColor(band), letterSpacing: '0.06em', cursor: 'help',
+              fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: 'var(--text-xs)',
+              color: bandColor(band), cursor: 'help',
             }} className={keywordAnimation(band, treatment)}>
               {lexiconWord}
             </span>
@@ -213,8 +213,8 @@ export function IdentityStrip({ identity, quintessence, treatment = 'breathe', o
                 style={{
                   display: 'block',
                   fontFamily: 'var(--font-body)', fontStyle: 'italic',
-                  fontSize: 12, color: 'var(--text-muted)', marginTop: 3,
-                  letterSpacing: '0.01em', lineHeight: 1.35,
+                  fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 3,
+                  lineHeight: 1.35,
                 }}
               >
                 {quintessenceLine(identity.primarySphere, band)}

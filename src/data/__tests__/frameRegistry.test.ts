@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   FRAME_HOTKEYS,
+  GOD_RAIL_SECTIONS,
   LEDGER_LINES,
   LEDGER_RAIL_HOTKEY,
   LEDGER_RAIL_SECTIONS,
@@ -26,6 +27,7 @@ describe('frame registry — check 1: words, icons, tooltips', () => {
     expect(uniq(LEDGER_RAIL_SECTIONS.map(s => s.id)), 'duplicate LEDGER_RAIL_SECTIONS ids').toEqual([]);
     expect(uniq(LEDGER_TABS.map(t => t.id)), 'duplicate LEDGER_TABS ids').toEqual([]);
     expect(uniq(LEDGER_LINES.map(l => l.id)), 'duplicate LEDGER_LINES ids').toEqual([]);
+    expect(uniq(GOD_RAIL_SECTIONS.map(g => g.id)), 'duplicate GOD_RAIL_SECTIONS ids').toEqual([]);
   });
 
   it('every entry has a word label and every tooltipId resolves in the ui.* registry', () => {
@@ -33,6 +35,7 @@ describe('frame registry — check 1: words, icons, tooltips', () => {
       ...LEDGER_RAIL_SECTIONS.map(s => ({ list: 'LEDGER_RAIL_SECTIONS', id: s.id, label: s.label, tooltipId: s.tooltipId })),
       ...LEDGER_TABS.map(t => ({ list: 'LEDGER_TABS', id: t.id, label: t.label, tooltipId: t.tooltipId })),
       ...LEDGER_LINES.map(l => ({ list: 'LEDGER_LINES', id: l.id, label: l.label, tooltipId: l.tooltipId })),
+      ...GOD_RAIL_SECTIONS.map(g => ({ list: 'GOD_RAIL_SECTIONS', id: g.id, label: g.label, tooltipId: g.tooltipId })),
     ];
     for (const e of entries) {
       expect(e.label.trim().length, `${e.list}.${e.id} has no word label`).toBeGreaterThan(0);
@@ -75,14 +78,35 @@ describe('frame registry — check 2: the reveal table and the frame agree', () 
     for (const s of Object.keys(NOT_YET_LISTED)) expect(tableSurfaces, `NOT_YET_LISTED names '${s}', which OPENING_REVEAL_TABLE does not have`).toContain(s);
   });
 
-  it('NOT_YET_LISTED names only the god rail (THR-1894) and the top bar (THR-1875)', () => {
+  it('NOT_YET_LISTED names only the top bar (THR-1875): the god rail (THR-1894) lists its own', () => {
     for (const [surface, ticket] of Object.entries(NOT_YET_LISTED)) {
-      expect(['THR-1894', 'THR-1875'], `NOT_YET_LISTED.${surface}`).toContain(ticket);
+      expect(['THR-1875'], `NOT_YET_LISTED.${surface}`).toContain(ticket);
     }
   });
 
   it('World Pulse has retired: no reveal row and no frame entry', () => {
     expect(tableSurfaces as string[]).not.toContain('world_pulse');
+  });
+});
+
+describe('frame registry — the god rail (THR-1894, plan § F6)', () => {
+  it('runs top to bottom: pinned sections, then the hand, then the folded rows', () => {
+    const sorted = [...GOD_RAIL_SECTIONS].sort((a, b) => a.order - b.order);
+    const rank = { pinned: 0, fill: 1, folded: 2 } as const;
+    for (let i = 1; i < sorted.length; i++) {
+      expect(rank[sorted[i].place], `GOD_RAIL_SECTIONS.${sorted[i].id} sits above a ${sorted[i - 1].place} section`).toBeGreaterThanOrEqual(rank[sorted[i - 1].place]);
+    }
+    expect(GOD_RAIL_SECTIONS.filter(g => g.place === 'fill').map(g => g.id)).toEqual(['hand']);
+  });
+
+  it('Attention is claimed by the essence section, and Investiture by the hand', () => {
+    const claims = frameRevealClaims();
+    expect(claims.find(c => c.surface === 'attention')?.claimedBy).toBe('GOD_RAIL_SECTIONS.essence');
+    expect(claims.find(c => c.surface === 'investiture')?.claimedBy).toBe('GOD_RAIL_SECTIONS.hand');
+  });
+
+  it('covenants, signatures and hooks do not render empty (THR-1814 rule 4)', () => {
+    expect(GOD_RAIL_SECTIONS.filter(g => !g.rendersWhenEmpty).map(g => g.id).sort()).toEqual(['covenants', 'hooks', 'signatures']);
   });
 });
 

@@ -38,6 +38,8 @@ const { state: world } = initializeGameState(
 devSeedAscendantTestPackage(world);
 
 function renderBar(onOpenAttachment?: (id: string) => void) {
+  // THR-1894: the open rows are a remembered preference; each capture starts from closed.
+  localStorage.clear();
   const utils = render(
     <AscendantBar
       gameState={world as GameState}
@@ -50,7 +52,7 @@ function renderBar(onOpenAttachment?: (id: string) => void) {
       onOpenAttachment={onOpenAttachment}
     />,
   );
-  // Hooks is closed by default on the rail (ASCENDANT_BAR_SECTION_DEFAULT_OPEN) — the
+  // Hooks is a folded row on the rail and every row starts closed (THR-1894) — the
   // player's first act on this surface is to open it, so the capture does the same.
   fireEvent.click(screen.getByText('Hooks'));
   return utils;
