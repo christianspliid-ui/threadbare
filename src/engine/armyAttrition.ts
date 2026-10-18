@@ -187,7 +187,7 @@ export function phaseArmyAttrition(state: GameState): void {
       emitTrace({
         tick: state.tick,
         category: 'faction_ambition',
-        summary: `Army ${armyNode.name}: cohesion ${cohesionBefore.toFixed(1)}→${cohesionAfter.toFixed(1)} (−${totalAttrition.toFixed(1)})${thresholdCrossed ? ` [${thresholdCrossed}]` : ''}`,
+        summary: `Army ${armyNode.name}: cohesion ${cohesionBefore.toFixed(1)}→${cohesionAfter.toFixed(1)} ${garrisoned ? `(+${ARMY_GARRISON_RECOVERY.toFixed(1)} garrisoned; sources not charged)` : `(−${totalAttrition.toFixed(1)})`}${thresholdCrossed ? ` [${thresholdCrossed}]` : ''}`,
         armyId: armyNode.id,
         event: 'attrition',
         cohesionBefore,
@@ -338,5 +338,6 @@ export function disbandArmy(state: GameState, armyId: string, reason: DisbandRea
     factionId,
     commanderId,
     event: 'army_disbanded',
+    reason,
   });
 }

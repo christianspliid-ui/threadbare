@@ -77,8 +77,8 @@ function runSeed(seed: number): void {
         if (tr.event === 'army_raised' && tr.factionId) raises[String(tr.factionId)] = (raises[String(tr.factionId)] ?? 0) + 1;
         if (tr.event === 'army_disbanded') {
           const src = lastAttrition.get(String(tr.armyId));
-          let key = 'other';
-          if (src) {
+          let key = String(tr.reason ?? 'other');
+          if (tr.reason === 'attrition' && src) {
             const top = Object.entries(src).filter(([k]) => k !== 'base').sort((a, b) => b[1] - a[1])[0];
             key = `attrition:${top && top[1] > 0 ? top[0] : 'base'}`;
           }
