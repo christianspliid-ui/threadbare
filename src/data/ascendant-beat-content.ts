@@ -87,6 +87,9 @@ export const GIFT_HOLD_SURFACES: readonly string[] = [
   // (and every arrival) mounted over them and took the next click.
   'RivalsPanel',
   'NotablesPanel',
+  // THR-1911: the Inspector's Full view is a deliberate read and holds a gift; a docked
+  // or wide Inspector is a passive panel and does not (plan § D13).
+  'InspectorFull',
 ];
 /**
  * THR-1853 — player surfaces that do NOT hold a world-pushed interrupt (an arrival).
@@ -94,7 +97,12 @@ export const GIFT_HOLD_SURFACES: readonly string[] = [
  * so counting it would freeze the world with nothing on screen whenever a mortal is
  * selected. It still holds a waiting gift (`GIFT_HOLD_SURFACES`).
  */
-export const ARRIVAL_HOLD_EXEMPT_SURFACES: readonly string[] = ['ActionDrawer'];
+export const ARRIVAL_HOLD_EXEMPT_SURFACES: readonly string[] = [
+  'ActionDrawer',
+  // THR-1911: an arrival is a pause-tier interrupt, and it steps Full down to docked
+  // rather than waiting behind it (plan § D2).
+  'InspectorFull',
+];
 /**
  * THR-1853 — how long after another interrupt closes a held spine gift may still enter
  * on its own. Wall-clock milliseconds; the effect that enters it runs in the same commit

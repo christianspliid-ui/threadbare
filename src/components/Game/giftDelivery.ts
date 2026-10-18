@@ -130,6 +130,8 @@ export interface PlayerSurfaceFlags {
   rivalsOpen?: boolean;
   /** THR-1853 — the top bar's Notables dropdown. Optional: absent = closed. */
   notablesOpen?: boolean;
+  /** THR-1911 — the Inspector at its Full size. Optional: absent = closed. */
+  inspectorFullOpen?: boolean;
 }
 
 const STUB_SHEET_IDS: Readonly<Record<string, string>> = {
@@ -162,6 +164,7 @@ export function openPlayerSurfaces(f: PlayerSurfaceFlags): string[] {
   if (f.scryOpen) open.push('ScryOverlay');
   if (f.rivalsOpen) open.push('RivalsPanel');
   if (f.notablesOpen) open.push('NotablesPanel');
+  if (f.inspectorFullOpen) open.push('InspectorFull');
   return open;
 }
 

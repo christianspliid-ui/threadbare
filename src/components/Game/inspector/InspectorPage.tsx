@@ -14,7 +14,7 @@
  * inside itself (Law 33). Folding is planned once per subject and size (kill criterion 4),
  * and a group the player opened with "Show all" stays open.
  */
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { SubjectPageVM } from '../../../engine/views/subjects/subjectTypes';
 import type { WorldGraph } from '../../../engine/graph';
 import type { InspectorTabId, PageSurface, Section as DetailSection } from '../../../types/detailPage';
@@ -25,7 +25,7 @@ import { Tabs } from '../../shared/Tabs';
 import { Panel } from '../../shared/Panel';
 import { SheetColumns, SheetLayoutContext } from '../../shared/SheetColumns';
 import { SubjectHeader } from './SubjectHeader';
-import { ActOnRow, ConnectionsBlock, InThisLand, MoreWhenWidened } from './InspectorParts';
+import { ActOnRow, ConnectionsBlock, InThisLand, MoreWhenWidened, type ActCastResult } from './InspectorParts';
 import { planFolds, type FoldableGroup } from './planFolds';
 
 export type InspectorSize = 'docked' | 'wide' | 'full';
@@ -115,9 +115,13 @@ interface InspectorPageProps {
   onReport?: (report: InspectorPageReport) => void;
   /** Toolbar content from the host (S3). Absent: no toolbar row (Law 25). */
   toolbar?: ReactNode;
+  /** THR-1911 — cast one of the Act row's cards on this subject. Absent (the lab): no buttons. */
+  onCast?: (actionId: string) => ActCastResult;
+  /** THR-1911 — the page heading, focused when a subject opens (Law 50). */
+  headingRef?: React.Ref<HTMLDivElement>;
 }
 
-export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar }: InspectorPageProps) {
+export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, onCast, headingRef }: InspectorPageProps) {
   const tabs = useMemo(() => tabsAt(page.body, size), [page.body, size]);
   const hidden = useMemo(() => hiddenForWidth(page.body, size), [page.body, size]);
   const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
@@ -164,8 +168,9 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar }:
   const effectiveFolded = new Set([...folded].filter(id => !opened.has(id)));
   const isLand = page.pageKind === 'land';
 
-  const header = <SubjectHeader header={page.header} graph={graph} compact={size === 'docked'} />;
-  const act = page.actOn ? <ActOnRow actOn={page.actOn} /> : null;
+  // Focus lands on the heading when a page opens (Law 50); the host owns the ref.
+  const header = <div ref={headingRef} tabIndex={-1} data-inspector-heading="" style={{ outline: 'none' }}><SubjectHeader header={page.header} graph={graph} compact={size === 'docked'} /></div>;
+  const act = page.actOn ? <ActOnRow key={page.subjectKey} actOn={page.actOn} targetName={page.header.name} onCast={onCast} /> : null;
   const land = isLand ? <InThisLand index={page.inThisLand} /> : null;
   const body = <Body key={planKey} tabs={tabs} tabsLabel={page.header.name} />;
   const more = <MoreWhenWidened hidden={hidden} onWiden={onWiden} />;

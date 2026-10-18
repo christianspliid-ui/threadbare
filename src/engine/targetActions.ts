@@ -374,7 +374,9 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
 
     // 2. Subtype gate
     if (template.targetSubtypes && template.targetSubtypes.length > 0) {
-      if (!target.subtype || !(template.targetSubtypes as readonly string[]).includes(target.subtype)) {
+      // THR-1911: a Place's own category sits beside its 'sublocation' subtype.
+      const gateSubtype = target.subtype === 'sublocation' ? (target.sublocationCategory ?? null) : target.subtype;
+      if (!gateSubtype || !(template.targetSubtypes as readonly string[]).includes(gateSubtype)) {
         counts.bySubtype++;
         continue;
       }

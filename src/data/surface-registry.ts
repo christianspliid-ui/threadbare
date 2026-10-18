@@ -56,6 +56,12 @@ export interface SurfaceRow {
   readonly sheet: SheetTarget | null;
   /** Why the sheet is null, when it is — the ruling, quotable. */
   readonly note?: string;
+  /**
+   * THR-1911 (Inspector plan § D4) — the size a `card` open lands at in the Inspector.
+   * Absent = docked. Factions and past events open wide (THR-1827 call 12); a `sheet`
+   * open is always wide.
+   */
+  readonly opensAt?: 'docked' | 'wide';
 }
 
 /**
@@ -75,7 +81,7 @@ export interface SurfaceRow {
  */
 export const SURFACE_BY_WORLD_REF: Readonly<Record<WorldRefKind, SurfaceRow>> = {
   agent: { card: 'actor', sheet: 'agent' },
-  faction: { card: 'faction', sheet: 'faction' },
+  faction: { card: 'faction', sheet: 'faction', opensAt: 'wide' },
   location: { card: 'place', sheet: 'location' },
   // A Place's sheet is its parent Location's — the surface that draws it, as today.
   sublocation: { card: 'place', sheet: 'location' },
@@ -93,9 +99,9 @@ export const SURFACE_BY_WORLD_REF: Readonly<Record<WorldRefKind, SurfaceRow>> = 
     note: 'Withheld by ruling (THR-1096): `openEntity` returned undefined for companions on purpose. A companion is a person but not an agent node and not a thread, so the agent drawer and the stub-modal path would each open the wrong sheet. The card still opens — a companion is a face with a name and a bearer, and that is a card.',
   },
   army: { card: 'group', sheet: 'army' },
-  encounter: { card: 'event', sheet: 'encounter' },
-  journey: { card: 'event', sheet: 'journey' },
-  receipt: { card: 'event', sheet: 'receipt' },
+  encounter: { card: 'event', sheet: 'encounter', opensAt: 'wide' },
+  journey: { card: 'event', sheet: 'journey', opensAt: 'wide' },
+  receipt: { card: 'event', sheet: 'receipt', opensAt: 'wide' },
 };
 
 /**

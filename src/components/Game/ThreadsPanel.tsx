@@ -725,7 +725,7 @@ function CompactThreadRow({
                   backgroundColor: 'transparent',
                   cursor: onChampionChipClick ? 'pointer' : 'default',
                 }}
-                aria-label={`${championLabel} — open agent profile`}
+                aria-label={`${championLabel} — open their page`}
               >
                 <Icon name={ICON_FOR_THREAD_ROW_MARK.champion} size="floor" decorative /> {championLabel}
               </button>

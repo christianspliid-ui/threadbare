@@ -285,7 +285,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // and an archetype title is procedurally picked flavour with no per-title meaning.
   'ui.ascendant_name': {
     label: 'Divine Name',
-    desc: 'The name your ascension took. It carries the shape of what you were before you rose. Open the sheet for the whole of it.',
+    desc: 'The name your ascension took. It carries the shape of what you were before you rose. Open your page for the whole of it.',
   },
   'ui.ascendant_archetype': {
     label: 'Archetype',

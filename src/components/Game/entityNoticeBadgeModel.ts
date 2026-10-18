@@ -85,8 +85,8 @@ export const NOTICE_FACTION_DEFAULT_LABEL = 'Word from the order';
  * screen reader.
  */
 export const NOTICE_ARIA_OPEN_SUFFIX: Record<EntityNoticeAnchorKind, string> = {
-  agent: 'open their thread',
-  faction: 'open the faction’s thread',
+  agent: 'open their page',
+  faction: 'open the faction’s page',
 };
 
 /** Resolve the tooltip heading for one notice, honouring its anchor kind. */

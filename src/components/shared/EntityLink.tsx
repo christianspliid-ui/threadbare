@@ -103,7 +103,7 @@ export function EntityLink({ id, name, entityRef, onOpenEntity }: EntityLinkProp
       onFocus={routes ? handleEnter : undefined}
       onBlur={routes ? handleLeave : undefined}
       style={LINK_STYLE}
-      aria-label={`${name} — open profile`}
+      aria-label={`${name} — open page`}
     >
       {name}
     </button>

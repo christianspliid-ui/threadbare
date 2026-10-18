@@ -2,7 +2,7 @@
  * The Inspector page's parts (THR-1876 § D5): the Act row, the Connections block,
  * *In this land* and "More when widened". Each renders a view model; none reads the graph.
  */
-import type { CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import type { ActOnVM, ConnectionsVM, LandIndexVM } from '../../../engine/views/subjects/subjectTypes';
 import type { SphereName } from '../../../types';
 import { Chip } from '../../shared/Chip';
@@ -12,12 +12,49 @@ import { INSPECTOR_WORDS } from '../../../data/view-content';
 
 const blockStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 };
 
+/** What a press on an armed card reports back (the host's one cast path). */
+export interface ActCastResult {
+  cast: boolean;
+  reason: string | null;
+}
+
 /**
- * Act on <name> (call 1): the subject's cards, sphere-tinted (the loved tint). S1 shows
- * which cards work here and why a locked one is locked; arming and casting from this row
- * arrive with S3 (THR-1911), so nothing here is a button yet (Law 25: no dead control).
+ * Act on <name> (call 1): the subject's cards, sphere-tinted (the loved tint).
+ *
+ * With `onCast` (the game, THR-1911) each card is a button and casting takes two beats
+ * (Law 48): the first press arms the card and offers "Cast on <name>", the second press
+ * (or Cast) casts it. A locked card arms nothing: it shakes and names its reason (Law 47).
+ * Without `onCast` (the lab) the cards are plain chips — no dead buttons (Law 25).
  */
-export function ActOnRow({ actOn }: { actOn: ActOnVM }) {
+export function ActOnRow({ actOn, targetName, onCast }: { actOn: ActOnVM; targetName?: string; onCast?: (actionId: string) => ActCastResult }) {
+  const [armed, setArmed] = useState<string | null>(null);
+  const [shaking, setShaking] = useState<string | null>(null);
+  const [said, setSaid] = useState<{ id: string; reason: string } | null>(null);
+  const name = targetName ?? '';
+  // A card that left the row (cast, spent, gone locked) disarms itself.
+  useEffect(() => {
+    if (armed && !actOn.cards.some(c => c.actionId === armed && c.available)) setArmed(null);
+  }, [actOn.cards, armed]);
+
+  const press = (actionId: string, available: boolean, reason: string | null) => {
+    if (!onCast) return;
+    if (!available) {
+      setArmed(null);
+      setShaking(actionId);
+      setSaid(reason ? { id: actionId, reason } : null);
+      setTimeout(() => setShaking(s => (s === actionId ? null : s)), 400);
+      return;
+    }
+    if (armed !== actionId) {
+      setArmed(actionId);
+      setSaid(null);
+      return;
+    }
+    const result = onCast(actionId);
+    setArmed(null);
+    if (!result.cast && result.reason) setSaid({ id: actionId, reason: result.reason });
+  };
+
   return (
     <section data-inspector-act="" style={blockStyle} aria-label={actOn.heading}>
       <SectionLabel label={actOn.heading} gold={true} />
@@ -25,13 +62,37 @@ export function ActOnRow({ actOn }: { actOn: ActOnVM }) {
         <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>{actOn.emptyLine}</p>
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {actOn.cards.map(card => (
-            <span key={card.actionId} data-act-card={card.actionId} data-available={card.available ? 'true' : 'false'}
-              style={{ display: 'inline-flex', flexDirection: 'column', gap: '2px', opacity: card.available ? 1 : 0.6, minWidth: 0 }}>
-              <Chip role="state" size="sm" label={card.name} tint={card.sphere ? { sphere: card.sphere as SphereName } : 'neutral'} />
-              {card.reason && <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{card.reason}</span>}
-            </span>
-          ))}
+          {actOn.cards.map(card => {
+            const tint = card.sphere ? { sphere: card.sphere as SphereName } : ('neutral' as const);
+            const isArmed = armed === card.actionId;
+            const reason = said?.id === card.actionId ? said.reason : card.reason;
+            return (
+              <span key={card.actionId} data-act-card={card.actionId} data-available={card.available ? 'true' : 'false'} data-armed={isArmed ? 'true' : 'false'}
+                className={shaking === card.actionId ? 'anim-shake-no' : undefined}
+                style={{ display: 'inline-flex', flexDirection: 'column', gap: '4px', opacity: card.available ? 1 : 0.6, minWidth: 0 }}>
+                {onCast ? (
+                  <button
+                    type="button"
+                    onClick={() => press(card.actionId, card.available, card.reason)}
+                    aria-pressed={isArmed}
+                    aria-disabled={!card.available || undefined}
+                    aria-label={isArmed ? INSPECTOR_WORDS.armedCard.replace('{card}', card.name).replace('{name}', name) : card.name}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', borderRadius: '999px', outline: isArmed ? '2px solid var(--border-gold)' : undefined, outlineOffset: '2px' }}
+                  >
+                    <Chip role="state" size="sm" label={card.name} tint={tint} />
+                  </button>
+                ) : (
+                  <Chip role="state" size="sm" label={card.name} tint={tint} />
+                )}
+                {isArmed && (
+                  <Button variant="primary" size="sm" onClick={() => press(card.actionId, true, null)} data-act-cast={card.actionId}>
+                    {INSPECTOR_WORDS.castOn.replace('{name}', name)}
+                  </Button>
+                )}
+                {reason && <span role={said?.id === card.actionId ? 'status' : undefined} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{reason}</span>}
+              </span>
+            );
+          })}
         </div>
       )}
     </section>

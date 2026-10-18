@@ -12,7 +12,8 @@
  * - Collision detection via removeOverlaps (debounced). Map markers that are label
  *   obstacles (threaded medallions, the avatar, close-up portraits) are immovable
  *   boxes: a name that hits one moves to its free slot below its anchor, or hides
- * - pointer-events: none throughout — labels are display-only
+ * - pointer-events: none on the layer; a label takes clicks only when `onLabelClick` is
+ *   given (THR-1911: a place label opens the place in the Inspector)
  *
  * NFP #1 Tunability: All font sizes, weights, and zoom thresholds are named constants.
  * NFP #4 Fail-soft: Renders nothing if camera is not available.
@@ -171,6 +172,8 @@ interface LocationLabelOverlayProps {
   getMarkerObstacles?: () => ScreenBBox[];
   /** THR-1899: written after each collision pass, for `__DEBUG.getMapChrome().labels`. */
   labelPassStatsRef?: React.MutableRefObject<LabelPassStats>;
+  /** THR-1911 (Inspector plan § D10): a visible label is clickable and opens its place. */
+  onLabelClick?: (locationId: string) => void;
 }
 
 // ── Label styles ──────────────────────────────────────────────────────────────
@@ -289,6 +292,7 @@ export function LocationLabelOverlay({
   prePlacedBBoxesRef,
   getMarkerObstacles,
   labelPassStatsRef,
+  onLabelClick,
 }: LocationLabelOverlayProps) {
   const [projected, setProjected] = useState<ProjectedLocationLabel[]>([]);
   const lastCollisionTime = useRef<number>(0);
@@ -456,7 +460,15 @@ export function LocationLabelOverlay({
               top: `${pl.screenY}px`,
               opacity,
               visibility: pl.visible ? 'visible' : 'hidden',
+              ...(onLabelClick && pl.visible ? { pointerEvents: 'auto', cursor: 'pointer' } : {}),
             }}
+            data-place-label={pl.id}
+            {...(onLabelClick && pl.visible ? {
+              // The canvas's pan never starts on a label; the click opens the place.
+              onPointerDown: (e: React.PointerEvent) => e.stopPropagation(),
+              onMouseDown: (e: React.MouseEvent) => e.stopPropagation(),
+              onClick: (e: React.MouseEvent) => { e.stopPropagation(); onLabelClick(pl.id); },
+            } : {})}
           >
             {pl.name}
           </div>

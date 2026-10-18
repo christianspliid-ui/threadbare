@@ -20,6 +20,7 @@ import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import type { MapLensId } from '../../../data/map-lenses';
 import type { LedgerSectionId } from '../../../data/frame-registry';
 import { readLedgerFoldedPref } from './ledgerFold';
+import { INITIAL_INSPECTOR_STATE, type InspectorState } from '../inspector/inspectorState';
 
 export interface GameScreenFlags {
   /** Read the Threads panel (THR-603 family). */
@@ -70,6 +71,12 @@ export interface GameScreenFlags {
    * null opens it at the newest.
    */
   chapterLedgerInitialKey: string | null;
+  /**
+   * THR-1911 (Inspector plan § D1) — the Inspector's subject, history, size and pin. The
+   * map, the god rail, the router and the host read it; GameView mirrors whether it is
+   * open into `inspectorOpen` for the Ledger fold.
+   */
+  inspector: InspectorState;
 }
 
 export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
@@ -86,6 +93,7 @@ export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
   ledgerLastSection: 'threads',
   inspectorOpen: false,
   chapterLedgerInitialKey: null,
+  inspector: INITIAL_INSPECTOR_STATE,
 };
 
 type FlagKey = keyof GameScreenFlags;
@@ -119,6 +127,7 @@ export interface GameScreenStore {
   setLedgerLastSection: Dispatch<SetStateAction<LedgerSectionId>>;
   setInspectorOpen: Dispatch<SetStateAction<boolean>>;
   setChapterLedgerInitialKey: Dispatch<SetStateAction<string | null>>;
+  setInspector: Dispatch<SetStateAction<InspectorState>>;
 }
 
 /** The one-at-a-time rule: pressing the lens that is on turns it off; any other replaces it. */
@@ -148,6 +157,7 @@ export function useGameScreenStore(): GameScreenStore {
     setLedgerLastSection: (value: SetStateAction<LedgerSectionId>) => dispatch({ type: 'set', key: 'ledgerLastSection', value }),
     setInspectorOpen: (value: SetStateAction<boolean>) => dispatch({ type: 'set', key: 'inspectorOpen', value }),
     setChapterLedgerInitialKey: (value: SetStateAction<string | null>) => dispatch({ type: 'set', key: 'chapterLedgerInitialKey', value }),
+    setInspector: (value: SetStateAction<InspectorState>) => dispatch({ type: 'set', key: 'inspector', value }),
   }), []);
   return useMemo(() => ({ state, ...setters }), [state, setters]);
 }
@@ -173,6 +183,7 @@ const INERT_STORE: GameScreenStore = {
   setLedgerLastSection: noop,
   setInspectorOpen: noop,
   setChapterLedgerInitialKey: noop,
+  setInspector: noop,
 };
 
 const GameScreenStateContext = createContext<GameScreenStore>(INERT_STORE);

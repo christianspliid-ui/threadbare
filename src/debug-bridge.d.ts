@@ -467,6 +467,26 @@ export interface DebugInspectorLabCell {
   leaks: string[];
 }
 
+/** Result of `getInspectorState()` (THR-1911). Null before a game is running. */
+export interface DebugInspectorState {
+  open: boolean;
+  size: 'docked' | 'wide' | 'full';
+  pinned: boolean;
+  /** The open subject's key (`agent:abc`, `hex:3,4`), or null when closed. */
+  subjectKey: string | null;
+  /** The page kind the Inspector built for it (`person`, `land`, `faction`…). */
+  pageKind: string | null;
+  name: string | null;
+  /** History, oldest first, as subject keys; `index` is the open step. */
+  history: string[];
+  index: number;
+  sectionsShown: string[];
+  foldedGroups: string[];
+  hiddenForWidth: string[];
+  /** The Act row's card ids, as the page shows them. */
+  actCards: string[];
+}
+
 /** Result of `getInspectorLab()` (THR-1876). */
 export interface DebugInspectorLabResult {
   tier: '1080' | '1440';
@@ -2694,6 +2714,21 @@ export interface DebugBridge {
    *   await window.__DEBUG.getInspectorLab()
    */
   getInspectorLab: () => Promise<DebugInspectorLabResult | null>;
+  /**
+   * THR-1911 — the Inspector in the game: open, size, pin, the subject and history, and
+   * what its page shows. Null before a game is running.
+   *
+   *   await window.__DEBUG.openInInspector('faction', 'faction_0')
+   *   await window.__DEBUG.getInspectorState()   // { open: true, size: 'wide', … }
+   */
+  getInspectorState: () => Promise<DebugInspectorState | null>;
+  /**
+   * THR-1911 — open a world ref through the router, as a link would (`card` opens at the
+   * kind's `opensAt`; `sheet` opens wide). Resolves false before a game is running.
+   */
+  openInInspector: (kind: string, id: string, mode?: 'card' | 'sheet') => Promise<boolean>;
+  /** @internal GameView registers the Inspector bridge here (THR-1911). */
+  _registerInspectorBridge: (bridge: { getState: () => DebugInspectorState; open: (kind: string, id: string, mode?: 'card' | 'sheet') => boolean } | null) => void;
   /** @internal The Inspector lab registers its reading here (THR-1876). */
   _registerInspectorLabBridge: (bridge: (() => DebugInspectorLabResult) | null) => void;
   /** THR-1748 — how many top-level places stand in each Dominion band. Null before a game is running. */

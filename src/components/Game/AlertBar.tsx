@@ -73,8 +73,8 @@ export function AlertBar({ alerts, onDismiss, onSelectAgent, onNavigate }: Alert
               opacity: isDismissing ? 0 : 1,
               transition: 'opacity 150ms ease-out',
             }}
-            title={`${alert.message}${isNavigable ? ' — click to navigate, right-click to dismiss' : ' — right-click to dismiss'}`}
-            aria-label={`${alert.icon} alert: ${alert.message}${isNavigable ? ' (click to navigate)' : ''}`}
+            title={`${alert.message}${isNavigable ? ' — click to open, right-click to dismiss' : ' — right-click to dismiss'}`}
+            aria-label={`${alert.icon} alert: ${alert.message}${isNavigable ? ' (open)' : ''}`}
             aria-description="Right-click to dismiss"
           >
             <Icon name={getIcon(alert.icon)} size="chip" decorative />

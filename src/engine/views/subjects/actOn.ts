@@ -11,7 +11,12 @@
  * cast on bare land are bound by `DEFAULT_LOCAL_RANGE`.
  */
 import type { GameState } from '../../../types/gameState';
-import type { TargetContext } from '../../../types/targetContext';
+import type { TargetCategory, TargetContext } from '../../../types/targetContext';
+import type { WorldRef } from '../../../types/worldRef';
+import { parseHexRefId } from '../../../types/worldRef';
+import type { WheelSlot } from '../../wheel';
+import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
+import { isPlaceNode } from '../../sublocationShape';
 import type { SphereName } from '../../../types';
 import { getTargetActionSlots } from '../../targetActions';
 import {
@@ -19,6 +24,8 @@ import {
   buildArtifactTargetContext,
   buildHexTargetContext,
   buildLocationTargetContext,
+  buildLegendaryArtifactTargetContext,
+  buildSublocationTargetContext,
 } from '../../targetContextBuilders';
 import { getAscendantDomainAffinities } from '../../ascendant';
 import { castCapabilityByReach } from '../../playerCastReadout';
@@ -35,43 +42,99 @@ import { tileAt } from './pageResolvers';
 export type ActOnTarget =
   | { kind: 'agent'; id: string }
   | { kind: 'location'; id: string }
+  | { kind: 'sublocation'; id: string }
   | { kind: 'artifact'; id: string }
   | { kind: 'hex'; col: number; row: number };
 
-function contextFor(state: GameState, target: ActOnTarget): TargetContext | null {
-  const graph = state.graph;
+/** One builder per target category: given the subject's id (`'c,r'` for a hex), its context. */
+export type TargetContextBuilder = (state: GameState, id: string) => TargetContext | null;
+
+function threadTierOf(state: GameState, nodeId: string): number | undefined {
+  return state.graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.target === nodeId)?.properties.tier as number | undefined;
+}
+
+/**
+ * THR-1911 (plan § D9, Law 58) — the one list of how a card's target is described to the
+ * gates. `Record<TargetCategory, …>`: a new target category is a type error until it has a
+ * builder. The sublocation and artifact builders get their first callers here.
+ */
+export const TARGET_CONTEXT_BUILDERS: Record<TargetCategory, TargetContextBuilder> = {
+  actor: (state, id) => buildActorTargetContext(id, state.graph, threadTierOf(state, id) ?? 0),
+  location: (state, id) => buildLocationTargetContext(id, state.graph),
+  sublocation: (state, id) => buildSublocationTargetContext(id, state.graph),
+  hex: (state, id) => {
+    const at = parseHexRefId(id);
+    if (!at) return null;
+    const tile = tileAt(state, at.col, at.row);
+    return buildHexTargetContext({ col: at.col, row: at.row, terrain: tile?.terrain ?? 'plains', graph: state.graph });
+  },
+  artifact: (state, id) => buildArtifactTargetContext(id, state.graph),
+  artifact_legendary: (state, id) => buildLegendaryArtifactTargetContext(id, state.graph),
+};
+
+/** The category and id a target is built from. */
+export function categoryFor(state: GameState, target: ActOnTarget): { category: TargetCategory; id: string } {
   switch (target.kind) {
-    case 'agent': {
-      const tier = graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.target === target.id)?.properties.tier as number | undefined;
-      return buildActorTargetContext(target.id, graph, tier ?? 0);
-    }
-    case 'location':
-      return buildLocationTargetContext(target.id, graph);
+    case 'agent': return { category: 'actor', id: target.id };
+    case 'location': return { category: 'location', id: target.id };
+    case 'sublocation': return { category: 'sublocation', id: target.id };
     case 'artifact':
-      return buildArtifactTargetContext(target.id, graph);
-    case 'hex': {
-      const tile = tileAt(state, target.col, target.row);
-      return buildHexTargetContext({ col: target.col, row: target.row, terrain: tile?.terrain ?? 'plains', graph });
-    }
+      return { category: state.graph.getNode(target.id)?.type === 'artifact_legendary' ? 'artifact_legendary' : 'artifact', id: target.id };
+    case 'hex': return { category: 'hex', id: `${target.col},${target.row}` };
   }
 }
 
 /**
- * The subject's cards. `name` is the subject's display name for the heading
- * ("Act on Shutash"); a land page passes `land: true` for "Act on this land".
+ * The Act row's target for a world ref, or null when nothing can be cast on that kind
+ * (records, attachments, Areas). Factions and companions are actor nodes.
  */
-export function buildActOn(state: GameState, target: ActOnTarget, name: string, land = false): ActOnVM {
-  const heading = land ? INSPECTOR_WORDS.actOnLand : INSPECTOR_WORDS.actOn.replace('{name}', name);
-  const empty = (): ActOnVM => ({ heading, cards: [], emptyLine: INSPECTOR_WORDS.actOnEmpty.replace('{name}', land ? 'this land' : name) });
+export function actOnTargetForRef(state: GameState, ref: WorldRef): ActOnTarget | null {
+  switch (ref.kind) {
+    case 'agent':
+    case 'faction':
+    case 'companion':
+      return { kind: 'agent', id: ref.id };
+    case 'location':
+    case 'sublocation': {
+      const node = state.graph.getNode(ref.id);
+      return node && isPlaceNode(node) ? { kind: 'sublocation', id: ref.id } : { kind: 'location', id: ref.id };
+    }
+    case 'artifact':
+      return { kind: 'artifact', id: ref.id };
+    case 'hex': {
+      const at = parseHexRefId(ref.id);
+      return at ? { kind: 'hex', col: at.col, row: at.row } : null;
+    }
+    default:
+      return null;
+  }
+}
+
+/** The target's context, through `TARGET_CONTEXT_BUILDERS`. */
+export function targetContextFor(state: GameState, target: ActOnTarget): TargetContext | null {
+  const { category, id } = categoryFor(state, target);
+  return TARGET_CONTEXT_BUILDERS[category](state, id);
+}
+
+/**
+ * The target's slots, with exactly the parameters the two `ActionDrawer` hands passed
+ * (`useTargetActions`, `useAgentInteraction`). `templates` narrows the set — the cast path
+ * re-reads one card's slot through it (plan § D9 "one cast path").
+ */
+export function actOnSlots(
+  state: GameState,
+  target: ActOnTarget,
+  templates?: readonly UnifiedActionTemplate[],
+): { ctx: TargetContext; slots: WheelSlot[] } | null {
   const spheres = godSpheres(state);
-  const ctx = contextFor(state, target);
-  if (!spheres || !ctx) return empty();
+  const ctx = targetContextFor(state, target);
+  if (!spheres || !ctx) return null;
 
   const graph = state.graph;
-  const threadTier = graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.target === ctx.nodeId)?.properties.tier as number | undefined;
+  const threadTier = threadTierOf(state, ctx.nodeId);
   const slots = getTargetActionSlots({
     target: ctx,
-    templates: target.kind === 'agent' ? AGENT_INTERVENTION_TEMPLATES : UNIFIED_ACTION_TEMPLATES,
+    templates: templates ?? (target.kind === 'agent' ? AGENT_INTERVENTION_TEMPLATES : UNIFIED_ACTION_TEMPLATES),
     pool: state.essencePool,
     primarySphere: spheres.primary,
     avatarPos: getAvatarHexPosition(graph, state.ascendantId) ?? undefined,
@@ -86,6 +149,19 @@ export function buildActOn(state: GameState, target: ActOnTarget, name: string, 
     pendingActions: state.unifiedActions,
     spellTeachingPreview: teachSpellPreview(graph, state.ascendantId, ctx.nodeId, Number(state.seed ?? 0)),
   });
+  return { ctx, slots };
+}
+
+/**
+ * The subject's cards. `name` is the subject's display name for the heading
+ * ("Act on Shutash"); a land page passes `land: true` for "Act on this land".
+ */
+export function buildActOn(state: GameState, target: ActOnTarget, name: string, land = false): ActOnVM {
+  const heading = land ? INSPECTOR_WORDS.actOnLand : INSPECTOR_WORDS.actOn.replace('{name}', name);
+  const empty = (): ActOnVM => ({ heading, cards: [], emptyLine: INSPECTOR_WORDS.actOnEmpty.replace('{name}', land ? 'this land' : name) });
+  const read = actOnSlots(state, target);
+  if (!read) return empty();
+  const { slots } = read;
 
   const cards = slots
     .filter(s => s.type === 'target_action' || s.type === 'intervention')

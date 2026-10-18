@@ -17,6 +17,8 @@ import { parseHexRefId } from '../../../types/worldRef';
 import type { GameState } from '../../../types/gameState';
 import type { GraphNode } from '../../../types/graph';
 import type { Section } from '../../../types/detailPage';
+import type { SectionResolverContext } from '../../detailPageResolvers';
+import type { RealmProjection } from '../../realmProjection';
 import type { WorldGraph } from '../../graph';
 import { generateDetailPage, generateGodPage, generateLandPage, generateRecordPage, subtitleForNode, composeSections } from '../../detailPageGenerator';
 import { resolveToParentLocation, isPlaceNode } from '../../sublocationShape';
@@ -122,7 +124,17 @@ function whereOf(state: GameState, node: GraphNode): RefRow[] {
 }
 
 /** The body for a graph page kind, from the table, with the god as the protagonist. */
-function graphBody(state: GameState, nodeId: string, pageKind: Parameters<typeof generateDetailPage>[0]['pageKind']): Section[] {
+/**
+ * THR-1911 — what only GameView holds, passed into the compose context when the Inspector
+ * runs in the game (S2a's input note): the notices a badge click just revealed, and the
+ * realm projection so a person's allegiance row names the Realm. Absent in the lab.
+ */
+export interface SubjectPageExtras {
+  revealedNotices?: SectionResolverContext['revealedNotices'];
+  realmProjection?: RealmProjection | null;
+}
+
+function graphBody(state: GameState, nodeId: string, pageKind: Parameters<typeof generateDetailPage>[0]['pageKind'], extras: SubjectPageExtras = {}): Section[] {
   // `generateDetailPage` keeps its legacy signature and cache; the Inspector's body reads
   // the same rows through the shared composer with the state in context, so state rows
   // (the Dominion row) resolve.
@@ -134,10 +146,12 @@ function graphBody(state: GameState, nodeId: string, pageKind: Parameters<typeof
     tick: state.tick,
     protagonistId: state.ascendantId,
     state,
+    ...(extras.revealedNotices ? { revealedNotices: extras.revealedNotices } : {}),
+    ...(extras.realmProjection ? { realmProjection: extras.realmProjection } : {}),
   });
 }
 
-function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSubjectPageVM {
+function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: SubjectPageExtras = {}): GenericSubjectPageVM {
   const graph = state.graph;
   const actorType = node.properties.actorType;
   const key = subjectKeyOf(ref);
@@ -167,7 +181,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
       // A Realm reads as a Realm, never its stored `political` type (THR-1155; parity with the sheet, THR-1910).
       header: { ...base.header, kindLabel: node.properties.factionClass === REALM_FACTION_CLASS ? REALM_HEADWORD : sentenceCase(subtitleForNode(node, 'faction')), standing: dominionChip(state, node.id) },
       actOn: null,
-      body: graphBody(state, node.id, 'faction'),
+      body: graphBody(state, node.id, 'faction', extras),
       connections: buildConnections(graph, state, { cls: 'faction', id: node.id }),
     };
   }
@@ -178,7 +192,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
       layoutKind: 'group',
       header: { ...base.header, kindLabel: sentenceCase(subtitleForNode(node, 'group')), follow: true },
       actOn: null,
-      body: graphBody(state, node.id, 'group'),
+      body: graphBody(state, node.id, 'group', extras),
       connections: buildConnections(graph, state, { cls: 'army', id: node.id }),
     };
   }
@@ -204,12 +218,12 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
         follow: true,
       },
       actOn: buildActOn(state, { kind: 'agent', id: node.id }, node.name),
-      body: graphBody(state, node.id, 'actor'),
+      body: graphBody(state, node.id, 'actor', extras),
       connections: buildConnections(graph, state, { cls: 'person', id: node.id }),
     };
   }
   if (node.type === 'location' || node.type === 'region') {
-    const target: ActOnTarget = { kind: 'location', id: node.id };
+    const target: ActOnTarget = isPlaceNode(node) ? { kind: 'sublocation', id: node.id } : { kind: 'location', id: node.id };
     return {
       ...base,
       pageKind: 'location',
@@ -220,7 +234,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
         standing: dominionChip(state, node.id),
       },
       actOn: node.type === 'region' ? null : buildActOn(state, target, node.name),
-      body: graphBody(state, node.id, 'place'),
+      body: graphBody(state, node.id, 'place', extras),
       connections: node.type === 'region' ? { title: 'Connections', groups: [] } : buildConnections(graph, state, { cls: 'location', id: node.id }),
     };
   }
@@ -232,7 +246,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode): GenericSub
       layoutKind: 'item',
       header: { ...base.header, kindLabel: sentenceCase(subtitleForNode(node, 'item')), standing: [...rarity, ...dominionChip(state, node.id)] },
       actOn: buildActOn(state, { kind: 'artifact', id: node.id }, node.name),
-      body: graphBody(state, node.id, 'item'),
+      body: graphBody(state, node.id, 'item', extras),
       connections: buildConnections(graph, state, { cls: 'artifact', id: node.id }),
     };
   }
@@ -430,7 +444,7 @@ function eventNodePage(state: GameState, id: string): GenericSubjectPageVM {
  * The one dispatcher. Exhaustive over `WorldRefKind` (a new kind is a compile error here),
  * content refs and graph event nodes. A gone or mismatched subject is the missing page.
  */
-export function buildSubjectPage(state: GameState, subject: InspectorSubject, runtime: Parameters<typeof readView>[0] = null): SubjectPageVM {
+export function buildSubjectPage(state: GameState, subject: InspectorSubject, runtime: Parameters<typeof readView>[0] = null, extras: SubjectPageExtras = {}): SubjectPageVM {
   if (subject.kind === 'event-node') return eventNodePage(state, subject.id);
   if (isContentRef(subject as AnyRef)) return contentPage(state, subject as ContentRef);
   const ref = subject as WorldRef;
@@ -453,8 +467,8 @@ export function buildSubjectPage(state: GameState, subject: InspectorSubject, ru
       if (node.type === 'companion') return companionPage(state, ref, node);
       // A Place is a Location node carrying `parentLocationId` — one page class for both tiers.
       if ((ref.kind === 'location' || ref.kind === 'sublocation') && node.type !== 'location') return missingPage(ref);
-      if (ref.kind === 'sublocation' && !isPlaceNode(node)) return graphPage(state, { ...ref, kind: 'location' }, node);
-      return graphPage(state, ref, node);
+      if (ref.kind === 'sublocation' && !isPlaceNode(node)) return graphPage(state, { ...ref, kind: 'location' }, node, extras);
+      return graphPage(state, ref, node, extras);
     }
     case 'attachment':
       return attachmentPage(state, ref);
