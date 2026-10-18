@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 03:56 local (01:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 04:58 local (02:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -44,14 +44,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** [Mortal wealth, second slice](https://linear.app/threadbare/issue/THR-1952/mortal-wealth-s2-the-money-encounters-pay-their-mortal-and-poor-or) merged ([#2469](https://github.com/christianspliid-ui/threadbare/pull/2469)) and is live: 41 money encounters now pay or cost their mortal, and poor or greedy mortals lean toward paying work. The builder is now working on [the Inspector's person sheet](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table).
+**Backed up: 21 ready, one in progress.** [The Inspector's person sheet](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table) merged ([#2470](https://github.com/christianspliid-ui/threadbare/pull/2470)) and is live: the person page's 34 fields now come from the page-layout table. The builder is now working on [the Inspector's place, faction and army sheets](https://linear.app/threadbare/issue/THR-1910/inspector-s2b-move-the-place-faction-army-artifact-and-attachment).
 
+- New and high, waiting: [every army bleeds out within a week and almost none are raised again](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again), and [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
-- High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) and [the Inspector's place, faction and army sheets](https://linear.app/threadbare/issue/THR-1910/inspector-s2b-move-the-place-faction-army-artifact-and-attachment).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site serves the latest main (mortal wealth, second slice). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge. All 12 scheduled lanes are on time, and the builder is mid-run.
+- All green. The live site serves the latest main (the Inspector's person sheet). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge. All 12 scheduled lanes are on time, and the builder is mid-run. Engine speed is steady (144 ms a tick, within the normal range).
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run (03:40) reports 549 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run (04:46) reports 551 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.

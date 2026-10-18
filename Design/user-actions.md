@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-18 03:56 local (01:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-18 04:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-18: the Inspector's person page now draws its 34 fields from the page-layout table (the Inspector, person sheet)** ([THR-1909](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table)). Merged via [#2470](https://github.com/christianspliid-ui/threadbare/pull/2470) and live.
 - **2026-10-18: 41 money encounters now pay or cost their mortal, and poor or greedy mortals lean toward paying work (mortal wealth, second slice)** ([THR-1952](https://linear.app/threadbare/issue/THR-1952/mortal-wealth-s2-the-money-encounters-pay-their-mortal-and-poor-or)). Merged via [#2469](https://github.com/christianspliid-ui/threadbare/pull/2469) and live.
 - **2026-10-18: one docked panel, the Inspector, now shows every place and person, with their Connections (the Inspector, first slice)** ([THR-1876](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and)). Merged via [#2468](https://github.com/christianspliid-ui/threadbare/pull/2468) and live.
 - **2026-10-18: hungry towns on your ground now pray to your god, one prayer a season, and fed towns can keep faith with you (prayers and the faithful, first slice)** ([THR-1935](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground)). Merged via [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-17: new delivery-pipeline work is frozen until 13 Nov; only removals and fixes for broken runs go ahead** ([THR-1946](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes)). Merged via [#2461](https://github.com/christianspliid-ui/threadbare/pull/2461).
 - **2026-10-17: a town's unrest now rises with hunger, armies, sickness and grief, and calms when it is fed (hunger and unrest, first slice)** ([THR-1934](https://linear.app/threadbare/issue/THR-1934/plan-doc-hunger-and-unrest-a-hungry-town-boils-over-through-restless)). Merged via [#2460](https://github.com/christianspliid-ui/threadbare/pull/2460) and live.
 - **2026-10-17: towns whose crisis has burned out free their slot, so new scarcity crises can start elsewhere** ([THR-1919](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint)). Merged via [#2459](https://github.com/christianspliid-ui/threadbare/pull/2459) and live.
-- **2026-10-17: armies fight only enemies, defend first, and march for what a town is worth (war aims, first slice)** ([THR-1933](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest)). Merged via [#2457](https://github.com/christianspliid-ui/threadbare/pull/2457) and live.
 
 ---
 
