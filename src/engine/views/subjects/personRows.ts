@@ -336,12 +336,10 @@ const storySoFar: SectionResolver = (ctx) => {
 };
 
 const revealedNotices: SectionResolver = (ctx) => {
-  if (!sheetOf(ctx)) return null;
-  const notices = (ctx.entityNotices ?? [])
-    .filter(n => n.anchorId === ctx.nodeId)
-    .map((n, index) => ({ n, index }))
-    .sort((a, b) => (b.n.tick - a.n.tick) || (a.index - b.index));
-  return prose('revealed_notices', PERSON_ROW_LABELS.revealedNotices, notices.map(({ n }) => n.message));
+  const group = ctx.revealedNotices;
+  if (!sheetOf(ctx) || !group || group.anchorId !== ctx.nodeId) return null;
+  // The snapshot is newest first already (`buildRevealedNotices`); keep its order.
+  return prose('revealed_notices', PERSON_ROW_LABELS.revealedNotices, group.lines.map(l => l.message));
 };
 
 const underYourHand: SectionResolver = (ctx) => {

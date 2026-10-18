@@ -302,19 +302,19 @@ describe('the person rows resolve in the engine (THR-1909)', () => {
     expect(byId.get('current_work')?.labelTooltipId).toBe('ui.thread_work');
   });
 
-  it('Word of them lists the god\'s uncleared notices about this person, newest first, only when passed', () => {
+  it('Word of them shows the notices a badge click revealed, for this person only (S3 passes the snapshot)', () => {
     const state = world();
     expect(personSections(state).some(s => s.typeId === 'revealed_notices')).toBe(false);
-    const notices = [
-      { id: 'n1', anchorId: 'kael', anchorKind: 'agent', category: 'social', message: 'Kael argued at the forge.', tick: 300 },
-      { id: 'n2', anchorId: 'kael', anchorKind: 'agent', category: 'social', message: 'Kael won the bridge toll.', tick: 390 },
-      { id: 'n3', anchorId: 'someone', anchorKind: 'agent', category: 'social', message: 'Not about Kael.', tick: 395 },
-    ];
-    const row = personSections(state, { entityNotices: notices }).find(s => s.typeId === 'revealed_notices');
+    const revealed = { anchorId: 'kael', lines: [
+      { message: 'Kael won the bridge toll.', tick: 390 },
+      { message: 'Kael argued at the forge.', tick: 300 },
+    ] };
+    const row = personSections(state, { revealedNotices: revealed }).find(s => s.typeId === 'revealed_notices');
     expect(row?.kind).toBe('prose');
     const text = row && row.kind === 'prose' ? row.prose : '';
     expect(text.indexOf('bridge toll')).toBeLessThan(text.indexOf('forge'));
-    expect(text).not.toContain('Not about Kael');
+    const other = personSections(state, { revealedNotices: { anchorId: 'someone', lines: revealed.lines } });
+    expect(other.some(s => s.typeId === 'revealed_notices')).toBe(false);
   });
 
   it('the person rows never resolve without a state (the hover card stays fail-soft)', () => {

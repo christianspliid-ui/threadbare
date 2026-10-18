@@ -46,7 +46,6 @@ import {
 } from '../data/detail-page-fallback-templates';
 import type { GameState } from '../types/gameState';
 import type { ContentRef } from '../types/contentRef';
-import type { EntityNotice } from '../types/notification';
 import { elapsedLabel, humanizeKeySegment } from './aftermathWords';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { computeRankFromReputation } from '../types/faction';
@@ -97,11 +96,13 @@ export interface SectionResolverContext {
   /** THR-1876: the content a `content` page describes. */
   contentRef?: ContentRef;
   /**
-   * THR-1909 (additive): the per-entity notices the god has not yet cleared — the
-   * notification store, which lives beside `GameState`, not in it. The person page's
-   * *Word of them* row reads it; absent (the lab, the hover card) the row is skipped.
+   * THR-1909 (additive): the notices a badge click just revealed — the snapshot the
+   * thread column's *Word of them* shows (THR-935), taken at click time because the click
+   * clears them from the store. Not the live store: what the row tells is what was cleared.
+   * GameView holds it beside `GameState`; the Inspector in the game (THR-1911, S3)
+   * passes it. Absent (the lab, the hover card, no click yet) the row is skipped.
    */
-  entityNotices?: readonly EntityNotice[];
+  revealedNotices?: { readonly anchorId: string; readonly lines: readonly { readonly message: string; readonly tick: number }[] } | null;
 }
 
 /** A section resolver returns 0 or 1 section. Returning null = "skip this section". */
