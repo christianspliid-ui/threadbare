@@ -137,7 +137,8 @@ export function LedgerRail({
     if (chronicleOnScreen) setSeenChronicle(entries.length);
   }, [chronicleOnScreen, entries.length]);
 
-  const vm = useView(ledgerRailSelector, { seenChronicle, seenLedger: chapterLedgerSeenCount, threadsWaiting });
+  const contentStamp = `${entries.length}|${gameState.chapterArchive?.length ?? 0}|${gameState.unifiedActions.length}`;
+  const vm = useView(ledgerRailSelector, { seenChronicle, seenLedger: chapterLedgerSeenCount, threadsWaiting, contentStamp });
 
   // Opening the reader from the Ledger tab. The dialog hands focus back to its invoker
   // on close (Law 50); for a tab row that would let the next Enter reopen it, so the

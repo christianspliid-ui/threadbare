@@ -25,7 +25,7 @@ function entry(id: string, tick: number): ChronicleEntry {
 function archived(actionId: string, resolvedTick: number, threaded = true) {
   return {
     actionId, templateId: 'encounter.deep_descent', templateName: `Chapter ${actionId}`, actorId: 'elara', actorName: 'Elara',
-    targetId: 'elara', targetName: 'Elara', scale: 'personal', startTick: 0, resolvedTick, resolved: true,
+    targetId: 'elara', targetName: 'Elara', scale: 'personal', startTick: resolvedTick - 10, resolvedTick, resolved: true,
     threaded, participants: [], openingProse: '', steps: [], outcome: 'success',
   };
 }
@@ -118,6 +118,23 @@ describe('ledgerRail view model', () => {
     const vm = buildLedgerRail(state, { ...ARGS, seenLedger: 1 });
     expect(vm.ledger.rows.map(r => r.recordId)).toEqual(['second', 'first']);
     expect(vm.ledger.rows.map(r => r.isNew)).toEqual([true, false]);
+  });
+
+  it('a chapter that began and resolved while an older one stays live is the one marked new', () => {
+    const state = makeState({ tick: 115, chapters: [{ ...archived('b', 110), startTick: 100 }] });
+    state.graph.addEdge({ id: 't1', type: 'thread', source: 'asc', target: 'elara', properties: {} });
+    (state as unknown as { unifiedActions: unknown[] }).unifiedActions = [
+      { actionId: 'a', templateId: 'encounter.deep_descent', actorId: 'elara', resolved: false, currentStep: 0, startTick: 50 },
+    ];
+    const vm = buildLedgerRail(state, { ...ARGS, seenLedger: 1 });
+    expect(vm.ledger.rows.map(r => r.recordId)).toEqual(['a', 'b']);
+    expect(vm.ledger.rows.map(r => r.isNew)).toEqual([false, true]);
+  });
+
+  it('the cache key moves with the content, so an append without touchWorld is not served stale', () => {
+    const k1 = ledgerRailSelector.key({ ...ARGS, contentStamp: '3|0|0' });
+    const k2 = ledgerRailSelector.key({ ...ARGS, contentStamp: '4|0|0' });
+    expect(k1).not.toBe(k2);
   });
 
   it('the strip counts: threads from the rail, chronicle since last seen, never negative', () => {

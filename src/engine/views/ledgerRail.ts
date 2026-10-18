@@ -50,6 +50,12 @@ export interface LedgerRailArgs {
    * rows say one thing.
    */
   threadsWaiting: number;
+  /**
+   * The Chronicle, archive and live-action sizes, in the cache key only. Some writers
+   * (an offering taken while the clock is held) append without `touchWorld`, so the
+   * `world` counter alone would hand back a stale model (review gate, THR-1893).
+   */
+  contentStamp?: string;
 }
 
 export interface LedgerRailWorldSoul {
@@ -140,13 +146,19 @@ export function buildLedgerRail(state: GameState, args: LedgerRailArgs): LedgerR
 
   const chapters = selectThreadedChapters(state, { withStakes: false });
   const unread = Math.max(0, chapters.length - Math.max(0, args.seenLedger));
-  const rows: LedgerRailChapterRow[] = chapters.map((r, i) => ({
+  // A chapter joins the unread count when it begins, so the unread ones are the
+  // `unread` latest to begin — never the top rows by position, because a live chapter
+  // sorts above every resolved one (review gate, THR-1893). Ties keep the newest-first list order.
+  const byArrival = chapters.map((r, i) => ({ key: r.key, startTick: r.startTick, i }))
+    .sort((a, b) => b.startTick - a.startTick || a.i - b.i);
+  const newKeys = new Set(byArrival.slice(0, unread).map(x => x.key));
+  const rows: LedgerRailChapterRow[] = chapters.map((r) => ({
     recordId: r.key,
     name: r.templateName,
     mortalId: r.actorId,
     mortalName: r.actorName,
     state: r.statusLabel,
-    isNew: i < unread,
+    isNew: newKeys.has(r.key),
   }));
 
   return {
@@ -175,7 +187,7 @@ export function emptyLedgerRail(): LedgerRailVM {
 export const ledgerRailSelector: ViewSelector<LedgerRailArgs, LedgerRailVM> = {
   id: 'ledgerRail',
   invalidation: 'world',
-  key: (a) => `${a?.seenChronicle ?? 0}|${a?.seenLedger ?? 0}|${a?.threadsWaiting ?? 0}`,
+  key: (a) => `${a?.seenChronicle ?? 0}|${a?.seenLedger ?? 0}|${a?.threadsWaiting ?? 0}|${a?.contentStamp ?? ''}`,
   build: (ctx, a) => buildLedgerRail(ctx.state, {
     seenChronicle: a?.seenChronicle ?? 0,
     seenLedger: a?.seenLedger ?? 0,

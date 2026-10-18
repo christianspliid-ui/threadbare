@@ -78,8 +78,8 @@ export const BEFORE_YOU_WOKE_COLLAPSE_STORE_KEY = 'threadbare.ui.chronicle.befor
 /** THR-1893 — the selected Chronicle tab and voice, remembered (Law 51). */
 export const CHRONICLE_TAB_KEY = 'threadbare.ui.chronicle.tab';
 export const CHRONICLE_VOICE_KEY = 'threadbare.ui.chronicle.voice';
-/** THR-1893 — the Years groups the player opened or folded, remembered. */
-export const CHRONICLE_YEARS_TOGGLED_KEY = 'threadbare.ui.chronicle.yearsToggled';
+/** THR-1893 — each Years group the player opened or folded, by year, remembered. */
+export const CHRONICLE_YEARS_TOGGLED_KEY = 'threadbare.ui.chronicle.yearsOpen';
 
 function readStored<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
   try {
@@ -272,12 +272,14 @@ function WorldSoulLine({ worldSoul, newly }: { worldSoul: NonNullable<ChronicleV
   );
 }
 
-function readYearsToggled(): Set<number> {
+/** Each year the player opened or folded, by year (review gate, THR-1893: never a flip of a default that moves). */
+function readYearsChosen(): Record<string, boolean> {
   try {
-    const parsed: unknown = JSON.parse(localStorage.getItem(CHRONICLE_YEARS_TOGGLED_KEY) ?? '[]');
-    return new Set(Array.isArray(parsed) ? parsed.filter((n): n is number => typeof n === 'number') : []);
+    const parsed: unknown = JSON.parse(localStorage.getItem(CHRONICLE_YEARS_TOGGLED_KEY) ?? '{}');
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed as Record<string, unknown>).filter(([, v]) => typeof v === 'boolean')) as Record<string, boolean>;
   } catch {
-    return new Set();
+    return {};
   }
 }
 
@@ -293,21 +295,19 @@ function YearsList({
   voiceMode: ChronicleVoiceMode;
   currentTick?: number;
 }) {
-  const [toggled, setToggled] = useState<Set<number>>(readYearsToggled);
-  const toggle = (year: number) => setToggled(prev => {
-    const next = new Set(prev);
-    if (next.has(year)) next.delete(year);
-    else next.add(year);
-    writeStored(CHRONICLE_YEARS_TOGGLED_KEY, JSON.stringify([...next]));
+  const [chosen, setChosen] = useState<Record<string, boolean>>(readYearsChosen);
+  const toggle = (year: number, open: boolean) => setChosen(prev => {
+    const next = { ...prev, [String(year)]: !open };
+    writeStored(CHRONICLE_YEARS_TOGGLED_KEY, JSON.stringify(next));
     return next;
   });
   return (
     <div data-testid="chronicle-years" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
       {years.map((group, i) => {
-        const open = (i === 0) !== toggled.has(group.year);
+        const open = chosen[String(group.year)] ?? i === 0;
         return (
           <div key={group.year} data-testid={`chronicle-year-${group.year}`}>
-            <button type="button" onClick={() => toggle(group.year)} aria-expanded={open} style={{ ...TOGGLE_STYLE, minHeight: '1.5rem' }}>
+            <button type="button" onClick={() => toggle(group.year, open)} aria-expanded={open} style={{ ...TOGGLE_STYLE, minHeight: '1.5rem' }}>
               <Icon name="disclosure" size="floor" decorative style={{ transform: open ? 'rotate(90deg)' : 'none' }} />
               <span style={LABEL_STYLE}>{group.label}</span>
             </button>

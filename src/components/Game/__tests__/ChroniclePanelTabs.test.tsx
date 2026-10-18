@@ -76,6 +76,21 @@ describe('ChroniclePanel tabs (THR-1893)', () => {
     expect(onOpen).toHaveBeenLastCalledWith(null);
   });
 
+  it('a folded year stays folded when a newer year arrives', () => {
+    const oneYear = vm({ years: [{ year: 2, label: 'Year 2 · 1 entry', entryIds: ['b'] }, { year: 1, label: 'Year 1 · 1 entry', entryIds: ['a'] }] });
+    const first = render(<ChroniclePanel entries={ENTRIES} vm={oneYear} />);
+    fireEvent.click(screen.getByTestId('chronicle-tab-years'));
+    const yearTwo = () => screen.getByTestId('chronicle-year-2').querySelector('button')!;
+    expect(yearTwo().getAttribute('aria-expanded')).toBe('true');
+    fireEvent.click(yearTwo());
+    expect(yearTwo().getAttribute('aria-expanded')).toBe('false');
+    first.unmount();
+    const threeYears = vm({ years: [{ year: 3, label: 'Year 3 · 1 entry', entryIds: ['b'] }, ...oneYear.years] });
+    render(<ChroniclePanel entries={ENTRIES} vm={threeYears} />);
+    expect(yearTwo().getAttribute('aria-expanded')).toBe('false');
+    expect(screen.getByTestId('chronicle-year-3').querySelector('button')!.getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('the selected tab and the voice persist across a remount', () => {
     const first = render(<ChroniclePanel entries={ENTRIES} vm={vm()} />);
     fireEvent.click(screen.getByText('Poet'));

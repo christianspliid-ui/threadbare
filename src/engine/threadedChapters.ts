@@ -29,6 +29,8 @@ export interface LedgerRow {
   stakesLine?: string;
   statusLabel: string;
   sortTick: number;
+  /** When the chapter began — when it joined the unread count (review gate, THR-1893). */
+  startTick: number;
   threaded: boolean;
   /** THR-1715 — daily life: shown only under the Daily-life filter. */
   routine: boolean;
@@ -90,6 +92,7 @@ export function buildLedgerRows(gameState: GameState, opts: { withStakes?: boole
     stakesLine: r.stakesLine,
     statusLabel: resolvedStatusLabel(r.outcome),
     sortTick: r.resolvedTick,
+    startTick: r.startTick ?? r.resolvedTick,
     threaded: r.threaded,
     routine: isRoutineChapter(r),
     participantIds: [r.actorId, ...r.participants.map(p => p.id)],
@@ -104,6 +107,7 @@ export function buildLedgerRows(gameState: GameState, opts: { withStakes?: boole
     stakesLine: withStakes ? liveStakesLine(gameState, a) : undefined,
     statusLabel: `active · step ${a.currentStep + 1}`,
     sortTick: gameState.tick,
+    startTick: a.startTick ?? gameState.tick,
     threaded: isThreaded(gameState, a.actorId),
     routine: isRoutineTemplate(a.templateId),
     participantIds: [a.actorId, ...(a.supportBindings ?? []).map(b => b.nodeId)],
