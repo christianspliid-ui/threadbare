@@ -112,18 +112,24 @@ export function hexLensFallback(lensId: HexLensId): HexLensVM {
 
 export interface HexLensViewArgs {
   lensId: HexLensId;
+  /**
+   * Fog is off (`?nofog`, the dev fog lever): the map draws every hex, so the lens
+   * treats every hex as known too, instead of reading the real fog underneath.
+   */
+  fogOff?: boolean;
 }
 
 /** A hex lens's view model, on the seam (`getView('lens.hex', { lensId })`). */
 export const hexLensViewSelector: ViewSelector<HexLensViewArgs, HexLensVM> = {
   id: 'lens.hex',
   invalidation: 'world',
-  key: (args) => args.lensId,
+  key: (args) => `${args.lensId}|${args.fogOff ? 'nofog' : 'fog'}`,
   fallback: (args) => hexLensFallback(args.lensId),
-  build(ctx, { lensId }) {
+  build(ctx, { lensId, fogOff }) {
     const entry = HEX_LENS_SELECTORS[lensId];
     if (!entry) return hexLensFallback(lensId);
-    return entry.build(ctx);
+    const seen = fogOff ? { ...ctx, state: { ...ctx.state, visibilityMap: new Map() } } : ctx;
+    return entry.build(seen);
   },
 };
 

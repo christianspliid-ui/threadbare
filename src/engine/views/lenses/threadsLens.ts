@@ -75,7 +75,11 @@ function readMortal(ctx: ViewContext, agentId: string, court: ThreadsLensCourt):
   const graph = ctx.graph;
   const node = graph.getNode(agentId);
   if (!node) return null;
-  const pos = nodeMapHex(graph, node);
+  const located = nodeMapHex(graph, node);
+  const ms = node.properties.movementState as MovementState | undefined;
+  // A mortal on a road stands on its road hex, as the agent layer draws it
+  // (`views/map/agents.ts`); `located_at` moves only when the leg ends.
+  const pos = ms?.currentHexPosition ?? located;
   if (!pos) return null;
   const key = hexKey(pos.col, pos.row);
   if (!isHexKnown(ctx.state, key)) return null;
@@ -84,7 +88,6 @@ function readMortal(ctx: ViewContext, agentId: string, court: ThreadsLensCourt):
   const herePlace = placeOfNode(ctx, locEdge ? graph.getNode(locEdge.target) : undefined);
 
   let heading: ThreadedMortal['heading'] = null;
-  const ms = node.properties.movementState as MovementState | undefined;
   if (ms?.destinationId && (ms.movementQueue?.length ?? 0) > 0) {
     const dest = graph.getNode(ms.destinationId);
     const place = dest ? (resolveToParentLocation(graph, dest) ?? dest) : undefined;

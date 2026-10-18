@@ -5,8 +5,9 @@
  * covers lens objects in the scene (render order below FOG), and the view model keeps
  * them off unexplored hexes too — two guards for one rule (THR-1878 plan § D3).
  *
- * Fails open: with no visibility map, or an empty one (fog off, `?nofog`, a test
- * world), every hex counts as known.
+ * Fails open: with no visibility map, or an empty one (a test world), every hex
+ * counts as known. With fog off the caller passes an empty map (`hexLensViewSelector`'s
+ * `fogOff`), because the real fog underneath is still populated.
  */
 import type { GameState } from '../../types/gameState';
 

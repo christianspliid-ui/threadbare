@@ -81,6 +81,27 @@ describe('Threads lens view model', () => {
     expect(vm.hover['1,1'].map(lensLineText)).toEqual(['Maren Ashfold, your First, is here.']);
   });
 
+  it('a mortal partway along a road is lit on its road hex, where the agent layer draws it', () => {
+    const { state, tiles } = lensFixture();
+    const maren = state.graph.getNode('maren')!;
+    (maren.properties.movementState as Record<string, unknown>).currentHexPosition = { col: 2, row: 1 };
+    const vm = buildThreadsLens(buildViewContext(null, state, tiles));
+    expect(vm.marks.find(m => m.kind === 'medallion' && m.agentId === 'maren')?.hexKey).toBe('2,1');
+    expect(vm.marks.find(m => m.kind === 'destination')).toMatchObject({ hexKey: '2,1', toHexKey: '4,1' });
+    expect(vm.lit).toContain('2,1');
+    expect(vm.lit).not.toContain('1,1');
+    // Where she set out from is still her located place.
+    expect(vm.hover['4,1'].map(lensLineText)[0]).toBe('Maren Ashfold, your First, is on her way here from Millbrook.');
+  });
+
+  it('with fog off, the lens treats every hex as known, as the map does', () => {
+    const { state, tiles } = lensFixture({ explored: ['1,1'] });
+    const fogged = readView(null, state, hexLensViewSelector, { lensId: 'threads' }, tiles);
+    const fogOff = readView(null, state, hexLensViewSelector, { lensId: 'threads', fogOff: true }, tiles);
+    expect(fogged.lit).toEqual(['1,1']);
+    expect(fogOff.lit).toEqual(['1,1', '4,1', '6,3']);
+  });
+
   it('before the bond: nothing lit and the empty line', () => {
     const vm = threads({ noThreads: true });
     expect(vm.lit).toEqual([]);

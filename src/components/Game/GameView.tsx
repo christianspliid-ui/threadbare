@@ -2015,7 +2015,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // THR-1878 — every other lens is a HexLensVM on the seam, drawn by the generic hex layer.
   const hexLensId = activeLens && activeLensLayer === 'hex' ? (activeLens as HexLensId) : null;
   const hexLensVM = hexLensId
-    ? readView(runtime, gameState, hexLensViewSelector, { lensId: hexLensId }, tiles)
+    ? readView(runtime, gameState, hexLensViewSelector, { lensId: hexLensId, fogOff: fogDisabled }, tiles)
     : null;
   const dominionBandColors = useMemo(() => {
     const out: Record<string, string> = {};
