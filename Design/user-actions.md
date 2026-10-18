@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-18 07:55 local (05:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-18 08:58 local (06:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-18: the Ledger rail opens the screen frame, with the World-Soul heading the chronicle and unread chapters marked (screen frame, first slice)** ([THR-1893](https://linear.app/threadbare/issue/THR-1893/screen-frame-slice-1-the-ledger-rail-world-soul-heads-the-chronicle)). Merged via [#2473](https://github.com/christianspliid-ui/threadbare/pull/2473) and live.
 - **2026-10-18: the map gets a lens list, with a Threads lens that follows your mortals, and a Dominion pressure line (map lenses, first slice)** ([THR-1878](https://linear.app/threadbare/issue/THR-1878/plan-doc-map-lenses-and-map-chrome-dominion-threads-trouble-trade-and)). Merged via [#2472](https://github.com/christianspliid-ui/threadbare/pull/2472) and live.
 - **2026-10-18: the Inspector's place, faction, army, artifact and attachment pages now draw their rows from the page-layout table (the Inspector, second sheet set)** ([THR-1910](https://linear.app/threadbare/issue/THR-1910/inspector-s2b-move-the-place-faction-army-artifact-and-attachment)). Merged via [#2471](https://github.com/christianspliid-ui/threadbare/pull/2471) and live.
 - **2026-10-18: the Inspector's person page now draws its 34 fields from the page-layout table (the Inspector, person sheet)** ([THR-1909](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table)). Merged via [#2470](https://github.com/christianspliid-ui/threadbare/pull/2470) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-17: dialogs now grow to fit before they scroll — four size tiers, the Ledger at the largest** ([THR-1820](https://linear.app/threadbare/issue/THR-1820/design-dialog-size-tiers-panels-grow-to-fit-before-they-truncate-or)). Merged via [#2467](https://github.com/christianspliid-ui/threadbare/pull/2467) and live.
 - **2026-10-17: mortals are now born with Means, and money encounters pay or cost it (mortal wealth, first slice)** ([THR-1936](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money)). Merged via [#2465](https://github.com/christianspliid-ui/threadbare/pull/2465) and live.
 - **2026-10-17: the data tables, the Codex, callings, ambitions, omens and card chips now draw the carved icons (icon sweep 2)** ([THR-1907](https://linear.app/threadbare/issue/THR-1907/icon-sweep-2-the-data-tables-and-the-codex-onto-carved-icons)). Merged via [#2462](https://github.com/christianspliid-ui/threadbare/pull/2462) and live.
-- **2026-10-17: new delivery-pipeline work is frozen until 13 Nov; only removals and fixes for broken runs go ahead** ([THR-1946](https://linear.app/threadbare/issue/THR-1946/freeze-new-delivery-pipeline-work-until-2026-11-13-removals-and-fixes)). Merged via [#2461](https://github.com/christianspliid-ui/threadbare/pull/2461).
 
 ---
 
