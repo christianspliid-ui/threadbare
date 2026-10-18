@@ -140,6 +140,7 @@ import {
   type MeansWantBreakdown,
 } from './mortalMeans';
 import { readWealth } from './wealth';
+import { MEANS_CELL_COST_ENABLED } from '../data/mortal-means-constants';
 
 // ─── Contract ───────────────────────────────────────────────────
 
@@ -577,13 +578,15 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   let topCellUnaffordable = false;
   const deciderNode = graph.getNode(agentId);
   const deciderWealth = readWealth((deciderNode?.properties ?? {}) as Record<string, unknown>);
-  {
+  if (MEANS_CELL_COST_ENABLED) {
     let topCellDesire = -Infinity;
+    // The most-wanted cell is judged over every cell on the board, free or costed: a
+    // free cell the mortal wants more means the unaffordable founding is not their top.
     for (const [index, candidate] of input.strategicCandidates.entries()) {
       const template = getStrategicTemplate(candidate.templateId);
+      if (!template?.cellVariant) continue;
       const cost = meansCellCost(template);
-      if (cost <= 0) continue;
-      const unaffordable = deciderWealth < cost;
+      const unaffordable = cost > 0 && deciderWealth < cost;
       if (unaffordable) {
         droppedIdx.add(index);
         meansDropped.push(candidate.templateId);

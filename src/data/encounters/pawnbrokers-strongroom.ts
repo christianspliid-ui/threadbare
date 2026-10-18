@@ -59,6 +59,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
   outcomeEffects: {
     critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
     success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
   },
   rarityTier: 2,
