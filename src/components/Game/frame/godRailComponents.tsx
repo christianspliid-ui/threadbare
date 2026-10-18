@@ -26,6 +26,7 @@ import { sphereWord } from '../../../data/essence-format';
 import { REACH_EMPTY_COPY } from '../../../data/ascendant-bar-content';
 import { ESSENCE_LABEL, ESSENCE_PRIMARY_LABEL, YOUR_FIRST_LABEL } from '../../../data/frame-content';
 import { HandSection, type HandRest } from './HandSection';
+import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
 
 /** Everything a section body may read. */
 export interface GodRailBag {
@@ -93,7 +94,7 @@ function EssenceBody({ vm, shown, newly, onCenterOnSeat }: GodRailBag): ReactEle
       {shown('attention') && (
         <div
           data-testid="god-rail-attention"
-          {...(newly('attention') ? { 'data-newly-revealed': 'true' } : {})}
+          {...(newly('attention') ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {})}
         >
           <AttentionPoolIndicator
             placement="rail"

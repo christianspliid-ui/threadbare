@@ -169,20 +169,23 @@ export function AscendantBar({
     onOpenSheet, onOpenMandate, onMove, onInvestiture, onReleaseControl, onOpenCodex, onOpenAttachment, onCenterOnSeat,
   };
 
-  /** Whether a section renders now: its reveal, its gate, and (for the optional rows) whether it holds anything. */
-  const renders = (def: GodRailSectionDef): boolean => {
+  /** Whether a section renders now: its reveal and its gate, and — for a row the list marks `rendersWhenEmpty: false` — whether it holds anything (THR-1814 rule 4). */
+  const holdsSomething = (id: GodRailSectionId): boolean =>
+    id === 'reaches' || id === 'mandate' || id === 'covenants' || id === 'signatures' || id === 'hooks' ? vm.rows[id].renders : true;
+  const gated = (def: GodRailSectionDef): boolean => {
     switch (def.id) {
       case 'identity': return shown('identity');
       case 'essence': return shown('essence');
       case 'hand': return shown('hand');
       case 'reaches': return shown('reaches');
       case 'mandate': return showMandate && shown('mandate');
-      // THR-1814 rule 4: renders only once one is yours; it also waits for Reaches, as before.
-      case 'signatures': return shown('reaches') && vm.rows.signatures.renders;
-      case 'covenants': return vm.rows.covenants.renders;
-      case 'hooks': return vm.rows.hooks.renders;
+      // Signatures waits for Reaches, as before.
+      case 'signatures': return shown('reaches');
+      case 'covenants': return true;
+      case 'hooks': return true;
     }
   };
+  const renders = (def: GodRailSectionDef): boolean => gated(def) && (def.rendersWhenEmpty || holdsSomething(def.id));
 
   // The gold reveal ring on a section whose own surface just arrived (Attention and
   // Investiture ring their own rows inside the section).
