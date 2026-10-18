@@ -27,6 +27,7 @@ import { hexKey } from '../../../lib/hexKey';
 import { hexDistance } from '../../../lib/hexMath';
 import { TROUBLE_LENS_WORDS } from '../../../data/view-content';
 import { LOCATION_TRAIT_IDS } from '../../../data/location-trait-constants';
+import { EMITTED_OMEN_LOCAL_DEFAULT_RADIUS } from '../../../data/game-config';
 import type { MoodBucket } from '../../../data/survey-prose-tables';
 import { getLocationNodes } from '../../sublocationShape';
 import { deriveMoodBucket } from '../../surveyProseComposer';
@@ -47,8 +48,8 @@ import {
 /** The mood at which a hex counts as Trouble for Unrest: past restless (unrest above 60 of 100). NFP #1. */
 export const TROUBLE_UNREST_MIN_MOOD: MoodBucket = 'agitated';
 
-/** Reach of a local omen whose scope gives no radius. NFP #1. */
-export const TROUBLE_OMEN_DEFAULT_RADIUS = 1;
+/** Reach of a local omen whose scope gives no radius — the engine's own default, so the ring agrees with who acts on it. NFP #1. */
+export const TROUBLE_OMEN_DEFAULT_RADIUS = EMITTED_OMEN_LOCAL_DEFAULT_RADIUS;
 
 const MOOD_ORDER: readonly MoodBucket[] = ['calm', 'restless', 'agitated', 'boiling'];
 

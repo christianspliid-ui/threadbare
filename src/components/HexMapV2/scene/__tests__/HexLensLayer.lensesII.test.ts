@@ -112,12 +112,16 @@ describe('HexLensLayer — zoom and picking', () => {
       const { layer } = layerFor(build);
       layer.group.updateMatrixWorld(true);
       const ray = new THREE.Raycaster(new THREE.Vector3(0, 0, 50), new THREE.Vector3(0, 0, -1));
-      for (let x = 0; x < 120; x += 6) {
-        for (let y = 0; y < 90; y += 6) {
+      // World y is the pixel y negated (hexToWorld), so the fixture marks sit at negative y.
+      let probed = 0;
+      for (let x = 0; x < 120; x += 3) {
+        for (let y = -90; y < 10; y += 3) {
+          probed++;
           ray.set(new THREE.Vector3(x, y, 50), new THREE.Vector3(0, 0, -1));
           expect(ray.intersectObject(layer.group, true)).toEqual([]);
         }
       }
+      expect(probed).toBeGreaterThan(0);
     }
   });
 });

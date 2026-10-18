@@ -38,7 +38,8 @@ export function lensToneColor(tone: string | undefined): string {
  */
 export const MARKER_INK_COLORS: Readonly<Record<MarkerInk, string>> = {
   faction: LENS_FALLBACK_INK,
-  court: THREAD_COLORS.the_first,
+  /** No single court colour: a toneless court entry (Heading) keeps the neutral swatch, since its arrows take each mortal's own colour. */
+  court: LENS_FALLBACK_INK,
   trouble: LENS_TONE_COLORS.trouble,
   caravan: LENS_TONE_COLORS.caravan,
   threat: LENS_TONE_COLORS.threat,
