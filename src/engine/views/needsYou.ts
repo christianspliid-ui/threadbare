@@ -26,6 +26,7 @@ import { TICKS_PER_DAY } from '../../data/attention-constants';
 import { NEEDS_YOU_NEWS_KEEP_DAYS } from './viewConstants';
 import { elapsedLabel } from '../aftermathWords';
 import type { ViewSelector } from './readView';
+import type { GameState } from '../../types/gameState';
 
 export type NeedsYouGroup = 'waiting' | 'held' | 'news';
 export type NeedsYouProducerId = 'beat_offer' | 'receipt_unacked' | 'named_pause' | 'held_moment' | 'alert';
@@ -386,3 +387,20 @@ export const needsYouSelector: ViewSelector<NeedsYouArgs, NeedsYouVM> = {
   build: (_ctx, a) => (a?.sources ? buildNeedsYou(a.sources) : emptyNeedsYou()),
   fallback: () => emptyNeedsYou(),
 };
+
+/**
+ * `__DEBUG.pushNeedsYouFixture` names a real mortal: the first actor the god threads (The
+ * First at the start of a run). Read here so the UI never queries the graph (NFP #2).
+ */
+export function needsYouFixtureSubject(state: GameState): { id: string; name: string } | null {
+  try {
+    if (!state.ascendantId) return null;
+    for (const e of state.graph.getOutgoingEdges(state.ascendantId, 'thread')) {
+      const node = state.graph.getNode(e.target);
+      if (node?.type === 'actor') return { id: node.id, name: node.name };
+    }
+  } catch {
+    // fail-soft: a fixture without a subject still renders
+  }
+  return null;
+}

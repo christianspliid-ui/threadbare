@@ -15,6 +15,7 @@ import { RivalsButton } from '../RivalsButton';
 import { NotablesButton } from '../NotablesButton';
 import { SettingsPanel } from '../SettingsPanel';
 import { Icon } from '../../shared/Icon';
+import { Button } from '../../shared/Button';
 import { Tooltip } from '../../shared/Tooltip';
 import { NeedsYou } from '../frame/NeedsYou';
 import { useTopBarYield } from '../frame/topBarYield';
@@ -490,9 +491,9 @@ function LabelledButton({ id, active, onClick, testId }: { id: TopBarItemId; act
   if (!item) return null;
   const tip = item.tooltipId ? getUITooltip(item.tooltipId) : null;
   const button = (
-    <button
-      type="button"
-      className="focus-ring flex items-center"
+    <Button
+      variant="ghost"
+      className="focus-ring"
       data-testid={testId}
       aria-label={item.label}
       aria-pressed={active}
@@ -514,7 +515,7 @@ function LabelledButton({ id, active, onClick, testId }: { id: TopBarItemId; act
     >
       {item.icon && <Icon name={item.icon} size="chip" decorative />}
       <span>{item.label}</span>
-    </button>
+    </Button>
   );
   return tip && item.tooltipId ? <Tooltip id={item.tooltipId} label={tip.label} desc={tip.desc}>{button}</Tooltip> : button;
 }

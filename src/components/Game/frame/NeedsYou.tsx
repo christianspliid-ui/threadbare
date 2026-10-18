@@ -13,6 +13,7 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
+import { Button } from '../../shared/Button';
 import { Chip } from '../../shared/Chip';
 import { Icon } from '../../shared/Icon';
 import { Tooltip } from '../../shared/Tooltip';
@@ -36,6 +37,7 @@ import {
   NEEDS_YOU_LIST_W_REM,
   NEEDS_YOU_NEWS_KEEP_TICKS,
   NEEDS_YOU_ROW_H_REM,
+  burstSuffix,
   foldNeedsYou,
   needsYouCapacityRows,
   type NeedsYouGroup,
@@ -122,16 +124,18 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow }
 
   // Esc closes the list (Law 23); focus moves into it and back to the pill (Law 50).
   useEscapeLayer(open, close, Z_BAND.menu, NEEDS_YOU_LABEL);
+  // The list mounts once the pill is measured, so focus waits for it (`listMounted`).
   const wasOpen = useRef(false);
+  const listMounted = open && rect !== null;
   useEffect(() => {
-    if (open) {
-      const first = listRef.current?.querySelector<HTMLElement>('[data-needs-you-row]');
+    if (listMounted) {
+      const first = listRef.current?.querySelector<HTMLElement>('[data-needs-you-row], [data-needs-you-fold]');
       first?.focus();
-    } else if (wasOpen.current) {
+    } else if (!open && wasOpen.current) {
       anchorRef.current?.querySelector<HTMLElement>('button')?.focus();
     }
     wasOpen.current = open;
-  }, [open]);
+  }, [open, listMounted]);
 
   // Close on a press outside the list and the pill.
   useEffect(() => {
@@ -236,15 +240,15 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow }
                   />
                 ))}
                 {n > 0 && (
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
                     data-needs-you-fold={g}
                     className="focus-ring"
                     onClick={() => setExpanded(prev => new Set(prev).add(g))}
                     style={rowStyle(true)}
                   >
                     <span style={{ color: 'var(--text-secondary)' }}>{countWords(n, NEEDS_YOU_FOLD_ROW)}</span>
-                  </button>
+                  </Button>
                 )}
               </section>
             );
@@ -281,8 +285,10 @@ function rowStyle(interactive: boolean): CSSProperties {
   return {
     display: 'flex',
     alignItems: 'center',
+    justifyContent: 'flex-start',
     gap: 'var(--space-2)',
     width: '100%',
+    borderRadius: 0,
     height: `${NEEDS_YOU_ROW_H_REM}rem`,
     padding: '0 var(--space-3)',
     background: 'none',
@@ -337,7 +343,13 @@ function Row({
   const body = (
     <>
       <Icon name={row.icon} size="chip" decorative />
-      <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{row.line}</span>
+      {/* A burst's "· and {n} more like it" never ellipsizes away (Law 49): the head line gives way first. */}
+      <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {row.burst && row.burst.length > 1 ? row.burst[0].line : row.line}
+      </span>
+      {row.burst && row.burst.length > 1 && (
+        <span style={{ flexShrink: 0, whiteSpace: 'nowrap', color: 'var(--text-secondary)' }}>{burstSuffix(row.burst.length - 1).trim()}</span>
+      )}
       {action && (
         <span style={{ flexShrink: 0, color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{action}</span>
       )}
@@ -351,9 +363,9 @@ function Row({
   if (onToggleBurst) {
     return (
       <Tooltip label={tip} block focusable={false}>
-        <button type="button" className="focus-ring" {...common} aria-expanded={false} onClick={onToggleBurst} style={rowStyle(true)}>
+        <Button variant="ghost" className="focus-ring" {...common} onClick={onToggleBurst} style={rowStyle(true)}>
           {body}
-        </button>
+        </Button>
       </Tooltip>
     );
   }
@@ -366,9 +378,9 @@ function Row({
   }
   return (
     <Tooltip label={tip} block focusable={false}>
-      <button type="button" className="focus-ring" {...common} onClick={() => onPress(row)} style={rowStyle(true)}>
+      <Button variant="ghost" className="focus-ring" {...common} onClick={() => onPress(row)} style={rowStyle(true)}>
         {body}
-      </button>
+      </Button>
     </Tooltip>
   );
 }

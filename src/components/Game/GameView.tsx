@@ -80,7 +80,7 @@ import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { GameViewTopBar, type TopBarFrameFixture } from './GameView/GameViewTopBar';
 import { beatOfferWords } from './AscendantBeatModal';
-import { buildNeedsYou, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
+import { buildNeedsYou, needsYouFixtureSubject, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
 import type { AlertItem } from '../../types/notification';
 import { AgentInfoCard } from './AgentInfoCard';
 import { prepareEncounterHandoff } from './encounterHandoff';
@@ -4119,15 +4119,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const pushNeedsYouFixture = useCallback((opts: { news?: number; burst?: number; heldPopup?: boolean } = {}) => {
     const g = _gameStateRef.current;
     const tick = g.tick;
-    const firstId = g.ascendantId
-      ? g.graph.getOutgoingEdges(g.ascendantId, 'thread').map(e => e.target).find(id => g.graph.getNode(id)?.type === 'actor')
-      : undefined;
-    const name = (firstId && g.graph.getNode(firstId)?.name) || 'A mortal';
+    const subject = needsYouFixtureSubject(g);
+    const firstId = subject?.id;
+    const name = subject?.name ?? 'A mortal';
     const nav = firstId ? { kind: 'agent' as const, agentId: firstId } : undefined;
     const stamp = Date.now();
     const out: AlertItem[] = [];
     for (let i = 0; i < Math.max(0, opts.news ?? 0); i++) {
-      out.push({ id: `fixture_news_${stamp}_${i}`, icon: 'discovery', message: `${name} hears of a new road (${i + 1}).`, sourceEventId: `fixture_news_${stamp}_${i}`, tick: Math.max(0, tick - i), ...(nav ? { navigationTarget: nav } : {}) });
+      out.push({ id: `fixture_news_${stamp}_${i}`, icon: 'discovery', message: `${name} hears of a new road (${i + 1}).`, sourceEventId: `fixture_news_${stamp}_${i}`, tick: tick - i, ...(nav ? { navigationTarget: nav } : {}) });
     }
     for (let i = 0; i < Math.max(0, opts.burst ?? 0); i++) {
       out.push({ id: `fixture_burst_${stamp}_${i}`, icon: 'faction', message: `${name}'s standing shifts (${i + 1}).`, sourceEventId: `fixture_burst_${stamp}_${i}`, tick, ...(nav ? { navigationTarget: nav } : {}) });

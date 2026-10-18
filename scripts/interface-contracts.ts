@@ -2053,7 +2053,25 @@ export const CONTRACTS: readonly Contract[] = [
       'src/components/Game/GameView.tsx',
       'src/components/Game/ActionDrawer.tsx',
       'src/debug-bridge.ts',
+      // THR-1875: an unacknowledged toast-tier receipt is a Needs-you Waiting row.
+      'src/engine/views/needsYou.ts',
     ],
+  },
+  // -- The alert channel -> Needs you (THR-1875, frame plan § F5) --------------
+  // The channel was produced and rendered nowhere (AlertBar was never mounted), and
+  // it overwrote a same-kind alert in the same tick — a silent drop. Needs you's News
+  // group is its first production reader; the router now appends, trims by age with a
+  // counted safety cap, and the view model coalesces a burst into one row.
+  {
+    id: 'alert-channel-to-needs-you',
+    producerSystem: NARRATIVE,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Alert-level tick events reach the player as Needs-you News rows. The router keeps every alert it routes (only a repeated `sourceEventId` drops), lapses them after `NEEDS_YOU_NEWS_KEEP_DAYS` × `TICKS_PER_DAY` ticks and counts any trimmed at `ALERT_SAFETY_CAP` on `alertsTrimmedAtCap`; `buildNeedsYou` applies the same window and turns a same-kind burst in one tick into one row "· and N more like it". The interrupt registry’s `held` list feeds the Held group, so a moment waiting behind the one on screen is named.',
+    ulTerms: [],
+    mechanism: { kind: 'function', symbols: ['routeNotifications', 'trimAlerts', 'buildNeedsYou', 'NEEDS_YOU_PRODUCERS', 'resolveInterrupts'], module: 'src/engine/views/needsYou.ts' },
+    writeSites: ['src/engine/notificationRouter.ts', 'src/engine/views/interruptRegistry.ts'],
+    readSites: ['src/engine/views/needsYou.ts', 'src/components/Game/GameView.tsx', 'src/components/Game/frame/NeedsYou.tsx'],
   },
   {
     id: 'receipt-event-band-toast',

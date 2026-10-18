@@ -468,7 +468,7 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
-2026-10-18 by Claude Code (THR-1894 — the god rail's view model). **Read sites only, no new
+2026-10-18 by Claude Code (THR-1875 — the top bar and Needs you). **One contract added,** `alert-channel-to-needs-you` (Attention, Chronicle & Narrative → itself): the alert channel's first production reader is Needs you's News group; the router appends instead of overwriting a same-kind same-tick alert, lapses by `NEEDS_YOU_NEWS_KEEP_DAYS` and counts `ALERT_SAFETY_CAP` trims; the interrupt registry (moved to `src/engine/views/`) feeds the Held group. **Read site added:** `player-action-receipts-queue` gains `src/engine/views/needsYou.ts` (an unacknowledged toast receipt is a Waiting row). Earlier: 2026-10-18 by Claude Code (THR-1894 — the god rail's view model). **Read sites only, no new
 contract:** `src/engine/views/godRail.ts` now reads `essencePool` (the essence block and the hand's
 payable check, row `essence-spend-moves-the-bar`) and `unlockedActionIds` through `isActionRevealed`
 (the hand, row `offering-take-up-unlocks-card`) — reads the drawer and the ascendant bar already

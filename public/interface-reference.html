@@ -206,9 +206,9 @@
   <section class="section">
     <h2>One screen, no scrolling<span class="lead">The world fills exactly one viewport. The map is the centre; everything else is a frame that reads the same world back to you in a different register.</span></h2>
     <p>Threadbearer is played on a single screen. Nothing scrolls off the bottom, nothing hides below a fold — the whole interface is one glance, so your attention is spent on the <em>world</em>, not on hunting for controls. The <span class="term">hex map</span> sits at the centre and <em>is</em> the world; wrapped around it is a frame of always-visible gauges, and tucked into the edges are the panels and drawers you open when you want to look closer or act.</p>
-    <div class="screen-mock" role="img" aria-label="Schematic of the game screen: identity and clocks along the top, panels and feeds in the side rails, the hex map in the centre, the action drawer and event feed along the bottom.">
+    <div class="screen-mock" role="img" aria-label="Schematic of the game screen: time, Needs you and the clocks in one row along the top, panels and feeds in the side rails, the hex map in the centre, the action drawer and event feed along the bottom.">
       <div class="mk-row">
-        <div class="mk-cell mk-top">Top frame — who you are &amp; the two clocks<span class="mk-note">identity · essence · doom · omen · mandate · attention</span></div>
+        <div class="mk-cell mk-top">The top bar — one row<span class="mk-note">time · Needs you · doom · omen · rivals · notables · read the threads · settings</span></div>
       </div>
       <div class="mk-row">
         <div class="mk-cell mk-rail">Left / right rails<span class="mk-note">threads · chronicle · rivals · hex sidebar</span></div>
@@ -216,7 +216,7 @@
         <div class="mk-cell mk-rail">Detail on click<span class="mk-note">hex → location → sublocation · agent cards · sheets</span></div>
       </div>
       <div class="mk-row">
-        <div class="mk-cell mk-bot">Bottom frame — where you act &amp; what just happened<span class="mk-note">action drawer · toasts · alerts · narrative feed</span></div>
+        <div class="mk-cell mk-bot">Bottom frame — where you act &amp; what just happened<span class="mk-note">action drawer · toasts · narrative feed</span></div>
       </div>
     </div>
     <p>The regions above are not exact pixels — layouts shift as the game grows — but the <em>logic</em> is stable: <strong>who you are and how the run is going</strong> live at the top, <strong>the world</strong> lives in the middle, <strong>what you can do and what just happened</strong> live at the bottom, and <strong>the deeper story</strong> is one click away in the rails.</p>
@@ -227,16 +227,16 @@
     <p>These surfaces are mounted <span class="term">always</span>: no click summons them, they are part of the frame. Read left-to-right and top-to-bottom, they answer "how is the run going?" without you asking.</p>
     <div class="surf-grid">
       <div class="surf"><h4>Essence Panel</h4><p>Your divine fuel, held <em>per Sphere</em> — the tight economy every action spends from. Always visible so a cost is never a surprise.</p></div>
-      <div class="surf"><h4>Simulation Controls</h4><p>Pause or play, the speed stepper (‹ 2× ›, or + and −), the season and year, and a line saying why time is still. The world waits here until you tell it to move — this is where "do nothing" is expressed.</p></div>
-      <div class="surf"><h4>Doom Bar</h4><p>The countdown made into a strip. Click it to expand the full archetype detail. The shadow you are always living under.</p></div>
-      <div class="surf"><h4>Omen Indicator</h4><p>The world's atmospheric pressure — up to two active omens. Click for the omen detail. The mood of the hour.</p></div>
+      <div class="surf"><h4>Simulation Controls</h4><p>Pause or play, the speed stepper (‹ 2× ›, or + and −), the season and year, and a line saying why time is still — a moment holding it, an answer coming, or a named pause such as "paused · Your ascendant has arrived at Oreblack Deep." The world waits here until you tell it to move — this is where "do nothing" is expressed.</p></div>
+      <div class="surf act"><h4>Needs you</h4><p>A gold pill beside the time, shown only while something waits on you without stopping time: an offer or gift to open, what your acts bought, a named pause, moments held behind the one on screen, and news that touches you. Press it, or N, for the list. Opening it never clears it; a row leaves when you open its thing, and news leaves after three days. While a moment is open the rows wait for it to close.</p></div>
+      <div class="surf"><h4>Doom Bar</h4><p>The countdown made into a strip: "Doom", its sigil and the stage, over the bar. Hover for the stage, your First's journey and the next stage; click for the full archetype detail. The shadow you are always living under.</p></div>
+      <div class="surf"><h4>Omen Indicator</h4><p>The world's atmospheric pressure: "Omen" over the active omen's name. Click for the omen detail, which names any second omen. The mood of the hour.</p></div>
       <div class="surf"><h4>Mandate Tracker</h4><p>Your declared win-state, tilting toward or away. Click for the full stakes. The count-up against the count-down.</p></div>
       <div class="surf"><h4>The god rail</h4><p>The left rail, top to bottom: who you are (your name opens your full sheet; once bonded, your First by name), your essence with Attention beneath it, then <em>Your cards</em> — Move, Investiture and every card your story has given you, each tinted by the pool that pays it and priced on neutral ground. When they no longer fit, they group by sphere. While a moment is open they wait. At the foot, Reaches, Mandate, Covenants, Signatures and Hooks fold to one line each; press one to open it.</p></div>
       <div class="surf"><h4>Attention Indicator</h4><p>You cannot watch everything. This shows how much attention is spoken for and when a thread is tugging for it. It sits in the god rail, under your essence.</p></div>
       <div class="surf"><h4>Live-Location Bar</h4><p>A context strip naming whatever hex or place you have focused. (World Pulse retired: its speed control moved to the time controls, its mood line to the World-Soul line at the head of the Chronicle.)</p></div>
       <div class="surf act"><h4>Toast Stack</h4><p>Transient notices that rise and fade — a mortal became, a thread deepened. Filtered to what a player should feel.</p></div>
-      <div class="surf act"><h4>Alert Bar</h4><p>A persistent row for the loud events — the ones you should not miss even while looking elsewhere.</p></div>
-      <div class="surf"><h4>Rivals Button</h4><p>A compact read on the other gods watching your domain. Click opens the full rival panel.</p></div>
+      <div class="surf"><h4>Rivals, Notables, Read the Threads, Settings</h4><p>The top bar's right end: each a carved icon with its word, always. Rivals opens the other gods watching your domain; Notables the powers with a live agenda; Read the Threads the digest of what your mortals did; Settings the game's settings. When the bar is short of room, text moves into tooltips — no button ever loses its word.</p></div>
       <div class="surf act"><h4>Map Controls</h4><p>Four buttons in the map's bottom-right corner: zoom in, zoom out, centre on your First, show all the land you know. Each says why when it cannot act (&ldquo;Closest view&rdquo;). The keys do the same: Page Up / Page Down zoom, the arrows pan, Home centres on your First, F shows known land.</p></div>
     </div>
     <div class="callout blue">
@@ -375,7 +375,7 @@
       <h3>Surface → reads[] discipline <span class="flag impl">IMPL</span></h3>
       <ul>
         <li>Every surface declares which <code>GameState</code> paths it reads and the <code>reader</code> component that consumes them, each with a <code>visible_when</code> predicate (e.g. <code>game.mandate-tracker</code> reads <code>mandateState</code> visible-when <code>mandateState !== null</code>). This is the contract the interface-audit and <code>playtest-interface</code> tooling asserts against — a surface that stops reading its declared state, or renders when its predicate is false, is a regression the manifest catches.</li>
-        <li>The player-facing filter matters: <code>game.toast-stack</code> reads <code>tickEvents</code> only <em>with a notification directive</em>, and <code>game.alert-bar</code> only those <em>marked alert-level</em>. Not every tick event reaches the player — the routing is deliberate (see <a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>).</li>
+        <li>The player-facing filter matters: <code>game.toast-stack</code> reads <code>tickEvents</code> only <em>with a notification directive</em>, and <code>game.needs-you</code> lists only those <em>marked alert-level</em> (its News group). Not every tick event reaches the player — the routing is deliberate (see <a href="attention-story-reference.html">Attention, the Digest &amp; the Chronicle</a>).</li>
         <li>The <code>game.action-drawer</code> open/close state is exposed for tests via <code>__DEBUG.getActiveUIState().actionDrawerOpen</code>; the drawer's cards are context-filtered per target, not a fixed set (see <a href="divine-actions-reference.html">Divine Actions</a>).</li>
       </ul>
 
