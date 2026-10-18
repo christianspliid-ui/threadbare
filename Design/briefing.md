@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-18 01:59 local (23:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-18 02:56 local (00:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,7 +30,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same plan — **the screen says "faithful", never "congregation".** *Veto:* **"call them congregations anyway"**.
 - Same plan — **helping a hungry town off your own ground counts once a year.** *Veto:* **"every act of kindness should count"**.
 - Same plan — **Open the Markets' thieves' guild becomes a temptation, not a certainty.** *Veto:* **"the boom should always breed a thieves' guild"**.
-- [Undertakings in the economy](https://linear.app/threadbare/issue/THR-1937) — **a town a mortal founds goes on open ground near where they set out.** ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-17-thr-1937-undertakings-in-the-economy.md)) *Veto:* **"let founded towns sit beside existing ones"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17a.md)*
+- [Undertakings in the economy](https://linear.app/threadbare/issue/THR-1937) — **a town a mortal founds goes on open ground near where they set out.** ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-17-thr-1937-undertakings-in-the-economy.md)) *Veto:* **"let founded towns sit beside existing ones"**. *— [design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-17a.md)* (veto window closes 18 Oct 10:01 UTC)
 - Same plan — **a founded guild takes its calling from its founder's strongest Reach.** *Veto:* **"founded guilds should have no trade"**.
 - Same plan — **a trade run pays a mortal at most once a day.** *Veto:* **"pay every trade run"**.
 - Same plan — **a lane a mortal claims counts as a lane they hold.** *Veto:* **"only lanes they opened or toll"**.
@@ -40,7 +40,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, one in progress.** [Prayers and the faithful](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground) merged ([#2463](https://github.com/christianspliid-ui/threadbare/pull/2463)) and is live: hungry towns on your ground now pray, one prayer a season. The builder finished the first slice of [the Inspector](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and) (one docked panel for every place and person) and it is waiting on its checks in [#2468](https://github.com/christianspliid-ui/threadbare/pull/2468); it merges on its own when they pass. Not your call.
+**Backed up: 21 ready, one in progress.** The first slice of [the Inspector](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and) merged ([#2468](https://github.com/christianspliid-ui/threadbare/pull/2468)) and is live: one docked panel for every place and person. The builder is now working on [mortal wealth, second slice](https://linear.app/threadbare/issue/THR-1952/mortal-wealth-s2-the-money-encounters-pay-their-mortal-and-poor-or) (money encounters pay their mortal, and poor or greedy mortals lean toward paying work). The orchestrator moved [the Inspector's person sheet](https://linear.app/threadbare/issue/THR-1909/inspector-s2a-move-the-person-sheets-fields-into-the-page-layout-table) into the queue as the next slice.
 
 - Held for your veto until 18 Oct 13:50 UTC: [the end of the age](https://linear.app/threadbare/issue/THR-1381/twilight-authorship-vs-emergence-specify-the-authored-beat-procedural).
 - High, waiting: [cutting per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject). It removes steps, so the freeze allows it.
@@ -48,7 +48,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- All green. The live site serves the latest main (prayers). Main's checks and the scheduled background jobs pass. One PR ([#2468](https://github.com/christianspliid-ui/threadbare/pull/2468)) is waiting on its checks and will merge on green. All 12 scheduled lanes are on time.
-- Engine speed is back to normal: 116 ms/tick, 4% under the 7-day median. Last hour's 31% reading was one slow measurement, not a lasting slowdown.
+- All green. The live site serves the latest main (the Inspector). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge. All 12 scheduled lanes are on time.
 - Overnight quiet: every lane stopped at 18:39 Friday and came back at 11:33 Saturday. That gap was overnight and into the weekend, so it is not a separate ask. The lead ask covers it.
-- The tidy-up job's latest run (01:40) reports 548 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The tidy-up job's latest run (02:40) reports 548 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.

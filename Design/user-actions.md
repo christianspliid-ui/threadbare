@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-18 01:59 local (23:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-18 02:56 local (00:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -28,6 +28,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-18: one docked panel, the Inspector, now shows every place and person, with their Connections (the Inspector, first slice)** ([THR-1876](https://linear.app/threadbare/issue/THR-1876/plan-doc-the-inspector-one-docked-panel-for-every-place-person-and)). Merged via [#2468](https://github.com/christianspliid-ui/threadbare/pull/2468) and live.
 - **2026-10-18: hungry towns on your ground now pray to your god, one prayer a season, and fed towns can keep faith with you (prayers and the faithful, first slice)** ([THR-1935](https://linear.app/threadbare/issue/THR-1935/plan-doc-the-gods-stake-in-the-economy-hungry-towns-on-your-ground)). Merged via [#2463](https://github.com/christianspliid-ui/threadbare/pull/2463) and live.
 - **2026-10-17: dialogs now grow to fit before they scroll — four size tiers, the Ledger at the largest** ([THR-1820](https://linear.app/threadbare/issue/THR-1820/design-dialog-size-tiers-panels-grow-to-fit-before-they-truncate-or)). Merged via [#2467](https://github.com/christianspliid-ui/threadbare/pull/2467) and live.
 - **2026-10-17: mortals are now born with Means, and money encounters pay or cost it (mortal wealth, first slice)** ([THR-1936](https://linear.app/threadbare/issue/THR-1936/plan-doc-mortal-wealth-a-mortals-means-becomes-a-want-and-the-money)). Merged via [#2465](https://github.com/christianspliid-ui/threadbare/pull/2465) and live.
@@ -37,7 +38,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-17: towns whose crisis has burned out free their slot, so new scarcity crises can start elsewhere** ([THR-1919](https://linear.app/threadbare/issue/THR-1919/scarcity-arcs-jam-three-towns-hold-all-three-arc-slots-at-flashpoint)). Merged via [#2459](https://github.com/christianspliid-ui/threadbare/pull/2459) and live.
 - **2026-10-17: armies fight only enemies, defend first, and march for what a town is worth (war aims, first slice)** ([THR-1933](https://linear.app/threadbare/issue/THR-1933/plan-doc-economic-war-aims-armies-march-on-enemies-for-their-richest)). Merged via [#2457](https://github.com/christianspliid-ui/threadbare/pull/2457) and live.
 - **2026-10-17: armies no longer besiege towns they have no quarrel with** ([THR-1922](https://linear.app/threadbare/issue/THR-1922/armies-besiege-towns-they-have-no-quarrel-with-the-civic-guard)). Merged via [#2456](https://github.com/christianspliid-ui/threadbare/pull/2456) and live.
-- **2026-10-17: seizing a trade lane now tolls the lane that was seized** ([THR-1883](https://linear.app/threadbare/issue/THR-1883/seizing-a-trade-lane-tolls-the-wrong-lane-the-toll-lands-on-the)). Merged via [#2455](https://github.com/christianspliid-ui/threadbare/pull/2455) and live.
 
 ---
 
