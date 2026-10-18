@@ -182,7 +182,7 @@ Below 1600px: `.topbar-compact-hide` elements are hidden to save horizontal spac
 
 | Visibility | Components |
 |-----------|------------|
-| **Always visible** | Top bar (`SimulationControls`, `MandateTracker`, `DoomBar`, `EssencePanel`), Right sidebar (`ThreadsPanel`, `WorldPulse`), Hex map canvas, Action drawer (card hand) |
+| **Always visible** | Top bar (`SimulationControls`, `MandateTracker`, `DoomBar`, `EssencePanel`), Right sidebar (`ThreadsPanel`, `ChroniclePanel`; folds to `LedgerStrip`), Hex map canvas, Action drawer (card hand) |
 | **User-toggled** | `HexSidebar` (expand/collapse), `DebugPanel` (backtick/F1), `SettingsPanel` |
 | **Selection-triggered** | `HexDetailView` (click hex), `AgentDetailPanel` (click agent), entity detail views |
 | **Event-triggered** | `AlertBar`, `EventPopup`, `MeetingEncounterModal`, `JourneyVignetteModal`, `EncounterVeil`, `PremonitionModal` |
