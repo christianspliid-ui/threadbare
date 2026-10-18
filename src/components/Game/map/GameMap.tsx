@@ -21,7 +21,6 @@ import { useCallback, useMemo, type RefObject } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { HexCoord } from '../../../types';
 import type { VisibilityMap } from '../../../types/visibility';
-import type { LocationActivitySummary } from '../../../types/locationActivity';
 import type { HarvestResult } from '../../../engine/cycleEnd';
 import type { ThreadCategory } from '../../../engine/retinue';
 import HexMapV2 from '../../HexMapV2/HexMapV2';
@@ -36,7 +35,6 @@ import { MapLensSwitch } from '../../HexMapV2/chrome/MapLensSwitch';
 import type { MapLensSwitchProps } from '../../HexMapV2/chrome/MapLensSwitch';
 import type { MapLensId } from '../../../data/map-lenses';
 import type { HexLensVM } from '../../../engine/views/lenses/lensTypes';
-import { LiveLocationBar } from '../LiveLocationBar';
 import { MapAnchoredDialogs } from '../hosts/DialogHost';
 import type { MapAnchoredDialogsProps } from '../hosts/DialogHost';
 
@@ -93,8 +91,6 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   hexLens: HexLensVM | null;
   setMapLensFromBar: MapLensSwitchProps['onChange'];
   dominionBandColors: MapLensSwitchProps['bandColors'];
-  // Living World summary bar
-  locationActivitySummaries: Map<string, LocationActivitySummary>;
 }
 
 export function GameMap({
@@ -148,7 +144,6 @@ export function GameMap({
   hexLens,
   setMapLensFromBar,
   dominionBandColors,
-  locationActivitySummaries,
   agendaPickerOpen,
   pendingAgendas,
   wheelSlots,
@@ -270,13 +265,6 @@ export function GameMap({
           hexLegend={hexLens ? { head: hexLens.legend.head, headNote: hexLens.legend.headNote ?? null, lines: hexLens.legend.lines, emptyLine: hexLens.emptyLine } : null}
         />
       )}
-
-      {/* Living World summary bar — top-3 active locations (THR-127) */}
-      <LiveLocationBar
-        summaries={locationActivitySummaries}
-        tick={gameState.tick}
-        onCenterOnHex={(col, row) => hexMapRef.current?.focusOn({ col, row })}
-      />
 
       {/* Agenda picker, intervention confirm, effect choice set (THR-1881 step b) */}
       <MapAnchoredDialogs

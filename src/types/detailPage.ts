@@ -8,61 +8,8 @@ import type { WorldRef } from './worldRef';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────────────────
 
-/** Max nested DetailModal depth before breadcrumb collapses to `…`. */
-export const MAX_DETAIL_STACK_DEPTH = 4;
-
-/** Stack depth at which breadcrumb starts collapsing. */
-export const DETAIL_BREADCRUMB_COLLAPSE_AT = 4;
-
-/** Fraction of black added to each layer beneath a modal (CSS rgba). */
-export const DETAIL_DIM_BENEATH_PCT = 0.28;
-
-/** Audio duck applied (dB) when any detail modal is open. */
-export const DETAIL_AMBIENT_DUCK_DB = -6;
-
-/** Beat indicator opacity while any detail modal is open. */
-export const DETAIL_BEAT_INDICATOR_OPACITY_PAUSED = 0.5;
-
-/** Default modal width in px. */
-export const DETAIL_DEFAULT_W = 720;
-
-/** Default modal height in px. */
-export const DETAIL_DEFAULT_H = 620;
-
-/** Place detail width in px — accommodates painting. */
-export const DETAIL_PLACE_W = 800;
-
-/** Place detail height in px — accommodates painting. */
-export const DETAIL_PLACE_H = 720;
-
-/** Event detail width in px — accommodates richer event prose context. */
-export const DETAIL_EVENT_W = 800;
-
-/** Event detail height in px — accommodates richer event prose context. */
-export const DETAIL_EVENT_H = 720;
-
-/**
- * Group detail width / height in px.
- *
- * Equal to the default today, and named anyway (NFP #1): a group card that wants more
- * room for its roster should then be a number someone changes, not a branch someone adds.
- */
-export const DETAIL_GROUP_W = 720;
-
-/** Group detail height in px. See {@link DETAIL_GROUP_W}. */
-export const DETAIL_GROUP_H = 620;
-
-/**
- * Content detail width / height in px (THR-1491).
- *
- * Equal to the default, and named for the same reason `DETAIL_GROUP_W` is: a content card
- * is four short things — name, kind word, prose, tags — and if it ever needs a shape of
- * its own that should be a number, not a branch.
- */
-export const DETAIL_CONTENT_W = 720;
-
-/** Content detail height in px. See {@link DETAIL_CONTENT_W}. */
-export const DETAIL_CONTENT_H = 620;
+// THR-1912: the DetailModal stack retired with its depth, dim, duck and per-kind size
+// constants (`MAX_DETAIL_STACK_DEPTH`, `DETAIL_*_W/_H`, …); the Inspector owns its sizes.
 
 /** Hover-card dwell before the card opens. Below it, only the tooltip (Law 20 Tier 1). */
 export const HOVER_CARD_DELAY_MS = 350;

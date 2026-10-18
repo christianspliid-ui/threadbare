@@ -13,10 +13,9 @@
  * describes, so a link drawn as clickable is never a dead click (Law 25).
  *
  * **A faction opens its sheet, not a card.** The faction card is a short stub; the sheet
- * holds the agenda, the people and the standing the player went looking for. The card
- * stack closes first because a card's z-band sits above every sheet (the stacking table
- * in `GameView`), so a sheet opened under a live card would be invisible. Every other
- * kind stacks as a card, which is what a card's links have always meant.
+ * holds the agenda, the people and the standing the player went looking for — in the
+ * Inspector, wide. Every other kind opens as a card, which is what a card's links have
+ * always meant.
  */
 import { useCallback } from 'react';
 import type { GraphPageKind, NodeRef } from '../types/detailPage';
@@ -78,7 +77,7 @@ const CARD_KIND_BY_PAGE_KIND: Readonly<Record<GraphPageKind, WorldRefKind>> = {
 };
 
 export function useDetailNodeRefOpener(
-  router: Pick<RefRouter, 'open' | 'stack'>,
+  router: Pick<RefRouter, 'open'>,
   getGraph: () => NodeLookup,
 ): (ref: NodeRef) => void {
   return useCallback(
@@ -89,7 +88,6 @@ export function useDetailNodeRefOpener(
         return;
       }
       if (worldRef.kind === 'faction') {
-        router.stack.popTo(-1);
         router.open(worldRef, 'sheet', { via: 'detail-link' });
         return;
       }

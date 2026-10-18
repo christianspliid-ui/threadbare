@@ -13,8 +13,9 @@
  * This hook is the whole dispatch:
  *
  *     row = (content ? SURFACE_BY_CONTENT_KIND : SURFACE_BY_WORLD_REF)[ref.kind]
- *     card / hover → generateDetailPage | generateContentPage → push
- *     sheet        → openSheet(toNavigationTarget(ref)) | openCodexEntry(id)
+ *     card  → the Inspector, at the row's `opensAt` (THR-1911)
+ *     sheet → the Inspector, wide | a live encounter's Stage | openCodexEntry(id)
+ *     hover → generateDetailPage | generateContentPage → the hover card
  *
  * **Two vocabularies, one dispatch (THR-1491).** A `WorldRef` names something the engine
  * minted; a `ContentRef` names something a person wrote. They route to different tiers of
@@ -31,8 +32,8 @@
  * **Why a hook and not only a context.** `GameView` needs `open` inside its own handlers,
  * and a component cannot consume a context it renders. So `GameView` builds the router
  * here, uses it directly, and publishes it to its descendants through
- * `RefRouterContext`. That is also why the detail stack's state is owned here rather than
- * by `DetailModalStackProvider` — see `useDetailModalStackState`.
+ * `RefRouterContext`. The detail stack it once pushed onto retired with the sheets
+ * (THR-1912): the Inspector keeps its own trail.
  */
 
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -49,10 +50,6 @@ import { isContentRef } from '../types/contentRef';
 import type { WorldRef } from '../types/worldRef';
 import { toNavigationTarget } from '../types/worldRefAdapters';
 import type { RefOpenAdapter, RefOpenMode } from '../types/traces/ui-traces';
-import {
-  useDetailModalStackState,
-  type DetailModalStackState,
-} from '../contexts/DetailModalStackContext';
 import { generateDetailPage } from '../engine/detailPageGenerator';
 import { generateContentPage } from '../engine/contentPageGenerator';
 import { emitTrace } from '../engine/traceBuffer';
@@ -106,13 +103,13 @@ export interface RefRouterConfig {
    */
   readonly codexHasEntry?: (entryId: string) => boolean;
   /**
-   * THR-1911 (Inspector plan § D4) — opens a subject in the Inspector at a size. When
-   * present it is the destination of the `card` arm (at the registry row's `opensAt`) and
-   * of the world `sheet` arm (wide). A live encounter still asks `openSheet` first — it
-   * plays on the Stage — and falls back to its record page here. Absent (style guide,
-   * tests) keeps the detail stack.
+   * THR-1911 (Inspector plan § D4) — opens a subject in the Inspector at a size. It is
+   * the destination of the `card` arm (at the registry row's `opensAt`) and of the world
+   * `sheet` arm (wide). A live encounter still asks `openSheet` first — it plays on the
+   * Stage — and falls back to its record page here. Required since THR-1912 deleted the
+   * detail stack it used to fall back to.
    */
-  readonly openInspector?: (subject: AnyRef, size: 'docked' | 'wide') => void;
+  readonly openInspector: (subject: AnyRef, size: 'docked' | 'wide') => void;
 }
 
 export interface OpenRefOptions {
@@ -137,8 +134,6 @@ export interface RefRouter {
   canOpen(ref: AnyRef, mode: RefOpenMode): boolean;
   /** The surface row for a kind — what the card and the CTA are drawn from. */
   rowFor(ref: AnyRef): SurfaceRow;
-  /** The detail stack this router pushes onto. `GameView` publishes it unchanged. */
-  readonly stack: DetailModalStackState;
   /** The open hover card, or null. */
   readonly hoverCard: HoverCardState | null;
   /** Dismiss the hover card (pointer leave, Escape, or a real card opening over it). */
@@ -150,7 +145,6 @@ export interface RefRouter {
 }
 
 export function useRefRouter(config: RefRouterConfig): RefRouter {
-  const stack = useDetailModalStackState();
   const [hoverCard, setHoverCard] = useState<HoverCardState | null>(null);
   const dwellTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -214,7 +208,7 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
         ? SURFACE_BY_CONTENT_KIND[ref.kind]
         : SURFACE_BY_WORLD_REF[ref.kind];
 
-      const traceOpened = (actualMode: RefOpenMode, depth: number) => {
+      const traceOpened = (actualMode: RefOpenMode) => {
         emitTrace({
           tick: cfg.tick,
           category: 'ui_ref_opened',
@@ -223,7 +217,6 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
           mode: actualMode,
           cardKind: row.card,
           viaAdapter: options.via,
-          stackDepth: depth,
           summary: `ui_ref_opened: ${ref.kind} ${ref.id} as ${actualMode}`,
         });
       };
@@ -240,10 +233,10 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
 
       // THR-1911: every world sheet is the Inspector, wide — except a live encounter, which
       // plays on the Stage (it asks `openSheet` below and falls back to its record page).
-      if (mode === 'sheet' && cfg.openInspector && !isContentRef(ref) && ref.kind !== 'encounter') {
+      if (mode === 'sheet' && !isContentRef(ref) && ref.kind !== 'encounter') {
         closeHover();
         cfg.openInspector(ref, 'wide');
-        traceOpened('sheet', stack.stack.length);
+        traceOpened('sheet');
         return;
       }
 
@@ -256,43 +249,39 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
           // arm of that vocabulary — see `openCodexEntry` on the config.
           if (cfg.openCodexEntry?.(ref.id)) {
             closeHover();
-            traceOpened('sheet', stack.stack.length);
+            traceOpened('sheet');
             return;
           }
           traceUnroutable('no_sheet_opener');
         } else {
           const target = toNavigationTarget(ref, { agentId: options.agentId });
           if (target && cfg.openSheet(target)) {
-            // A sheet replaces the card rather than sitting under it — the sheets mount at
-            // their own z-band and a stale card beneath one is a second answer to the same
-            // question.
+            // A live encounter plays on the Stage, which replaces any hover card.
             closeHover();
-            traceOpened('sheet', stack.stack.length);
+            traceOpened('sheet');
             return;
           }
           if (target) traceUnroutable('no_sheet_opener');
           // A past encounter has no Stage to play on: its record page, wide.
-          if (cfg.openInspector) {
-            closeHover();
-            cfg.openInspector(ref, 'wide');
-            traceOpened('sheet', stack.stack.length);
-            return;
-          }
+          closeHover();
+          cfg.openInspector(ref, 'wide');
+          traceOpened('sheet');
+          return;
         }
         // Fall through to the card. Never a no-op click (Law 25).
         mode = 'card';
       }
 
       // The Inspector builds its own page (THR-1911), so a card open goes straight there.
-      if (mode === 'card' && cfg.openInspector) {
+      if (mode === 'card') {
         closeHover();
         cfg.openInspector(ref, row.opensAt ?? 'docked');
-        traceOpened('card', stack.stack.length);
+        traceOpened('card');
         return;
       }
 
-      // `row.card` is `'content'` exactly when the ref is a `ContentRef` — both records
-      // say so by construction — so this fork is total without a default branch.
+      // Hover. `row.card` is `'content'` exactly when the ref is a `ContentRef` — both
+      // records say so by construction — so this fork is total without a default branch.
       const page = isContentRef(ref)
         ? buildContentPage(ref)
         : buildPage(ref, row.card as GraphPageKind);
@@ -300,21 +289,12 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
         traceUnroutable('unknown_id');
         return;
       }
-
-      if (mode === 'hover') {
-        const anchorEl = options.anchorEl;
-        // A hover card never stacks on a modal — two floating answers to one question.
-        if (!anchorEl || stack.isOpen) return;
-        setHoverCard({ page, anchorEl, ref });
-        traceOpened('hover', stack.stack.length);
-        return;
-      }
-
-      closeHover();
-      stack.push(page);
-      traceOpened('card', stack.stack.length + 1);
+      const anchorEl = options.anchorEl;
+      if (!anchorEl) return;
+      setHoverCard({ page, anchorEl, ref });
+      traceOpened('hover');
     },
-    [buildPage, buildContentPage, closeHover, stack],
+    [buildPage, buildContentPage, closeHover],
   );
 
   const armHover = useCallback(
@@ -347,11 +327,9 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
       }
       return true;
     }
-    const row = SURFACE_BY_WORLD_REF[ref.kind];
-    // With the Inspector wired every world kind has a wide page (THR-1911, § D4).
-    if (mode === 'sheet') return row.sheet !== null || !!configRef.current.openInspector;
-    // Card and hover are always available: every row has a card, and an unresolvable id
-    // still gets the stub, which says the thing is gone instead of saying nothing.
+    // Every world kind has a wide Inspector page (THR-1911, § D4), and card and hover are
+    // always available: an unresolvable id still gets the stub, which says the thing is
+    // gone instead of saying nothing.
     return true;
   }, []);
 
@@ -362,7 +340,7 @@ export function useRefRouter(config: RefRouterConfig): RefRouter {
   );
 
   return useMemo(
-    () => ({ open, canOpen, rowFor, stack, hoverCard, closeHover, armHover, disarmHover }),
-    [open, canOpen, rowFor, stack, hoverCard, closeHover, armHover, disarmHover],
+    () => ({ open, canOpen, rowFor, hoverCard, closeHover, armHover, disarmHover }),
+    [open, canOpen, rowFor, hoverCard, closeHover, armHover, disarmHover],
   );
 }

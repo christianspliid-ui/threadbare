@@ -29,8 +29,6 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { FactionSheet } from '../FactionSheet';
 import { WorldGraph } from '../../../engine/graph';
 import { foundFaction } from '../../../engine/strategicGraphOps';
 import {
@@ -248,40 +246,3 @@ describe('THR-1322 — the context-free consumers reach the founded order', () =
 });
 
 // ─── The surface as composed (browser-verify substitution) ───────────────────
-
-describe('THR-1322 — FactionSheet renders a run-founded order as itself', () => {
-  it('shows the founded order’s own description, motto and rank ladder', () => {
-    const { state, factionId } = charter();
-    render(
-      <FactionSheet factionId={factionId} name={ORDER_NAME}
-        graph={state.graph} onClose={() => {}} />,
-    );
-
-    expect(screen.getByText(DESCRIPTION)).toBeInTheDocument();
-    expect(screen.getByText(`“${MOTTO}”`)).toBeInTheDocument();
-    // The rank ladder is the definition-only half of the sheet — a definition-less
-    // faction renders no Ranks table at all.
-    expect(screen.getByText('Ranks')).toBeInTheDocument();
-  });
-
-  it('renders none of it when the run has not chartered the order', () => {
-    // The absence face. Same node, same sheet, mirror withheld — which is exactly the
-    // degraded render every founded order got before this ticket.
-    const { state, factionId } = charter();
-    clearDynamicFactionDefinitions();
-
-    render(
-      <FactionSheet factionId={factionId} name={ORDER_NAME}
-        graph={state.graph} onClose={() => {}} />,
-    );
-
-    expect(screen.queryByText(DESCRIPTION)).toBeNull();
-    expect(screen.queryByText(`“${MOTTO}”`)).toBeNull();
-    expect(screen.queryByText('Ranks')).toBeNull();
-    // Not a crash and not an empty modal — the fallback the ticket calls "present,
-    // nameless, and silently degraded". Read off `document.body`, not the render
-    // container: `Modal` portals, so the container is empty either way and a
-    // `toContain` on it would pass for the wrong reason in the arm above.
-    expect(document.body.textContent).toContain(ORDER_NAME);
-  });
-});

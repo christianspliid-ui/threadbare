@@ -82,7 +82,7 @@ export const MOMENT_CARD_CONTENT: Readonly<Record<UndertakingMomentClass, Moment
   afflicted: {
     title: 'Something Is On Them',
     opening: '{actor} carries something they did not ask for.',
-    consequence: 'It sits on them until it wears off or someone lifts it. Their sheet says what it is, and whether they know whose doing it was.',
+    consequence: 'It sits on them until it wears off or someone lifts it. Their page says what it is, and whether they know whose doing it was.',
   },
   // The plotter is never named (THR-1430): the god is told that harm is coming and
   // not from whom, because finding that out is what the god's own verbs are for.

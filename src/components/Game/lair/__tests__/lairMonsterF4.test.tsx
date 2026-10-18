@@ -9,15 +9,14 @@
  * Cleared Lair Section; "slain by {name}" renders when the monster's sheet names
  * the killer and not when it does not; the card matches `listMonsters`.
  */
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup, within } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 import { WorldGraph } from '../../../../engine/graph';
 import type { GraphNode } from '../../../../types/graph';
 import { listMonsters } from '../../../../engine/monsters/listMonsters';
 import { getAgentInfoCard } from '../../../../engine/agentDetail';
 import { buildLairMonsterCardModel } from '../buildLairMonsterCardModel';
-import { HexSidebar } from '../../HexSidebar';
-import { DREAD_PHRASES, MIGHT_PHRASES, TEMPER_CLAUSES, FIGHT_CLOCK_PIP_SIZE } from '../../../../data/fight-screen-content';
+import { DREAD_PHRASES, MIGHT_PHRASES, TEMPER_CLAUSES } from '../../../../data/fight-screen-content';
 
 const ELITE_ID = 'elite_lair_ashen_hollow_1';
 const OLD_ELITE_ID = 'elite_lair_ashen_hollow_0';
@@ -82,30 +81,6 @@ function graphWith(...nodes: GraphNode[]): WorldGraph {
     g.addEdge({ id: `e.${n.id}.temper`, source: n.id, target: TEMPER_TRAIT_ID, type: 'has_trait', properties: {} });
   }
   return g;
-}
-
-const baseProps = {
-  terrain: 'hills' as const,
-  hexCol: 3,
-  hexRow: 4,
-  sphereInfluence: null,
-  regionData: null,
-  agentsByLocation: {},
-  lineOfSight: 'full' as const,
-  cultures: [],
-  factions: [],
-};
-
-function renderSidebar(graph: WorldGraph, subtype: 'lair' | 'cleared_lair', lairTier = 'major', onMonsterClick = vi.fn()) {
-  const lair = graph.getNode(LAIR_ID)!;
-  return render(
-    <HexSidebar
-      {...baseProps}
-      locations={[{ id: LAIR_ID, name: lair.name, properties: { ...lair.properties, locationSubtype: subtype, lairTier } }]}
-      lairMonsterCards={{ [LAIR_ID]: buildLairMonsterCardModel(graph, LAIR_ID, TICK) }}
-      onMonsterClick={onMonsterClick}
-    />,
-  );
 }
 
 afterEach(() => cleanup());
@@ -204,66 +179,5 @@ describe('buildLairMonsterCardModel (F4: the card)', () => {
     expect(card.sentenceText.toLowerCase()).toContain(MIGHT_PHRASES[listed.might]);
     expect(listed.temper).toBe('berserk');
     expect(card.sentenceText).toContain(TEMPER_CLAUSES[listed.temper]);
-  });
-});
-
-describe('HexSidebar lair card (F4)', () => {
-  it('renders the sentence, square pips at the pip size, and the clock word, with no digits', () => {
-    const graph = graphWith(lairNode(), eliteNode({}, { clockFilled: 3 }));
-    renderSidebar(graph, 'lair');
-    const card = screen.getByTestId('lair-monster-card');
-    expect(within(card).getByTestId('lair-monster-sentence').textContent).toContain(MIGHT_PHRASES.steep);
-    expect(within(card).getByTestId('lair-monster-clock-word').textContent).toBe('half-broken');
-    const pips = within(card).getByTestId('lair-monster-pips');
-    expect(pips.querySelector('[aria-label="half-broken"]')).not.toBeNull();
-    const pip = pips.querySelector('[aria-label="half-broken"] > *') as HTMLElement | null;
-    expect(pip?.style.width).toBe(`${FIGHT_CLOCK_PIP_SIZE}px`);
-    // Law 13/16: no numeral, no `word: value` strip.
-    expect(card.textContent).not.toMatch(/\d/);
-    expect(card.textContent).not.toMatch(/\b(dread|might|clock)\s*:/i);
-  });
-
-  it('keeps the temper clause off the card before any fight and shows it after one', () => {
-    renderSidebar(graphWith(lairNode(), eliteNode()), 'lair');
-    expect(screen.getByTestId('lair-monster-card').textContent).not.toContain(TEMPER_CLAUSES.berserk);
-    cleanup();
-    renderSidebar(graphWith(lairNode(), eliteNode({}, { temperShown: true })), 'lair');
-    expect(screen.getByTestId('lair-monster-card').textContent).toContain(TEMPER_CLAUSES.berserk);
-  });
-
-  it('shows a legendary lair\'s slain beast in the lair block, killer named and linked', () => {
-    const graph = graphWith(
-      lairNode({ lairTier: 'legendary', namedEliteId: undefined }),
-      eliteNode({ deceased: true, deceasedTick: 90, deathCause: 'fight', slainBy: KILLER_ID }),
-      killerNode(),
-    );
-    const onMonsterClick = vi.fn();
-    const { container } = renderSidebar(graph, 'lair', 'legendary', onMonsterClick);
-    const card = screen.getByTestId('lair-monster-card');
-    expect(card.getAttribute('data-deceased')).toBe('true');
-    expect(within(card).getByTestId('lair-monster-clock-word').textContent).toBe('slain by Tam Rook');
-    fireEvent.click(within(card).getByTestId('lair-monster-killer'));
-    expect(onMonsterClick).toHaveBeenCalledWith(KILLER_ID);
-    expect(container.innerHTML).not.toContain('elite_');
-  });
-
-  it('shows a cleared major lair\'s slain beast in the Cleared Lair Section, unnamed killer', () => {
-    const graph = graphWith(
-      lairNode({ locationSubtype: 'cleared_lair', namedEliteId: undefined }),
-      eliteNode({ deceased: true, deceasedTick: 90, deathCause: 'plot', slainBy: KILLER_ID }),
-      killerNode(),
-    );
-    const { container } = renderSidebar(graph, 'cleared_lair');
-    expect(container.textContent).toContain('Cleared Lair');
-    const card = screen.getByTestId('lair-monster-card');
-    expect(within(card).getByTestId('lair-monster-clock-word').textContent).toBe('slain');
-    expect(within(card).queryByTestId('lair-monster-killer')).toBeNull();
-    expect(container.innerHTML).not.toContain('elite_');
-  });
-
-  it('renders no card in the Cleared Lair Section when no slain beast names the lair', () => {
-    const graph = graphWith(lairNode({ locationSubtype: 'cleared_lair', namedEliteId: undefined }));
-    renderSidebar(graph, 'cleared_lair');
-    expect(screen.queryByTestId('lair-monster-card')).toBeNull();
   });
 });

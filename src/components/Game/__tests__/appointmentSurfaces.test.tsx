@@ -14,13 +14,11 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ThreadsPanel } from '../ThreadsPanel';
-import { BondsTab } from '../tabs/BondsTab';
 import { EncounterSeedsTab } from '../debug/EncounterSeedsTab';
 import { appointmentBadgeText, buildAppointmentBadges, type AppointmentBadgeModel } from '../appointmentBadgeModel';
 import { WorldGraph } from '../../../engine/graph';
 import { APPOINTMENT_FAVOUR_PROP, type AppointmentReadout } from '../../../engine/appointments';
 import type { ThreadedNode } from '../../../engine/retinue';
-import type { AgentInfoCardData, LeverageSummary } from '../../../engine/agentDetail';
 import type { PendingEncounterSeed } from '../../../types/unifiedAction';
 
 const noop = () => {};
@@ -105,42 +103,6 @@ describe('the badge model — read off the seed queue, in words', () => {
     expect(b.desc).toContain('A promise falls due.');
     expect(b.text).not.toMatch(/\d/);
     expect(buildAppointmentBadges({ graph, tick: 50, pendingEncounterSeeds: [] }, ['a1'], () => ({ courage_prudence: 0, loyalty_ambition: 0 })).size).toBe(0);
-  });
-});
-
-describe('the sheet Bonds row', () => {
-  const emptyStrand = { secretsHeld: [], secretsAbout: [], favorsOwed: [], favorsOwedToMe: [] };
-  const cardWith = (favorsOwed: unknown[]): AgentInfoCardData =>
-    ({ name: 'Oswen', knowledgeLevel: 'known', leverage: { ...emptyStrand, favorsOwed } as LeverageSummary } as unknown as AgentInfoCardData);
-
-  it('reads an appointment favour as the meeting it is', () => {
-    render(<BondsTab card={cardWith([{
-      counterpartyId: 'stranger', counterpartyName: 'The Stranger', magnitude: 0.5, context: 'appointment', isDebtor: true,
-      appointment: { placeId: 'loc-cross', placeName: 'The Crossroads', dueTick: 182, broken: false },
-    }])} />);
-    const text = screen.getByTestId('modal-agreements').textContent ?? '';
-    expect(text).toContain('They owe');
-    expect(text).toContain('The Stranger');
-    expect(text).toContain('a meeting at The Crossroads.');
-    expect(text).not.toContain('broken');
-  });
-
-  it('reads a missed one as broken', () => {
-    render(<BondsTab card={cardWith([{
-      counterpartyId: 'stranger', counterpartyName: 'The Stranger', magnitude: 0.5, context: 'appointment', isDebtor: true,
-      appointment: { placeId: 'loc-cross', placeName: 'The Crossroads', dueTick: 182, broken: true },
-    }])} />);
-    expect(screen.getByTestId('modal-agreements').textContent).toContain('a meeting at The Crossroads — broken.');
-  });
-
-  it('leaves an ordinary favour reading untouched', () => {
-    render(<BondsTab card={cardWith([{
-      counterpartyId: 'hask', counterpartyName: 'Hask', magnitude: 0.5, context: 'pressed', isDebtor: true,
-    }])} />);
-    const text = screen.getByTestId('modal-agreements').textContent ?? '';
-    expect(text).toContain('They owe');
-    expect(text).toContain(' a favour.');
-    expect(text).not.toContain('meeting');
   });
 });
 

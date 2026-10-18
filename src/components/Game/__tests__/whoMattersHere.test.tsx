@@ -7,39 +7,12 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { BondsTab } from '../tabs/BondsTab';
 import { NotableLine } from '../NotableLine';
 import { NotablesPanel } from '../NotablesPanel';
 import { WorldGraph } from '../../../engine/graph';
 import { agendaFlags } from '../../../engine/notableAgendas';
-import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import type { SettlementNotable } from '../../../engine/settlementNotable';
 import type { GameState, ActiveComposition } from '../../../types/gameState';
-
-describe('BondsTab — the bond word (THR-1655)', () => {
-  const card = (basis: string | undefined) => ({
-    name: 'Old Maerin',
-    knowledgeLevel: 'known',
-    topBonds: [{ targetId: 'a.maren', name: 'Maren Dusk', strengthWord: 'deep', sentiment: 'positive', basis }],
-  }) as unknown as AgentInfoCardData;
-
-  it('shows the word before the name, and the name stays a link', () => {
-    render(<BondsTab card={card('kin')} />);
-    expect(screen.getByTestId('bond-word').textContent).toBe('kin');
-    expect(screen.getByText('Maren Dusk')).toBeTruthy();
-  });
-
-  it('folds an alias to its word', () => {
-    render(<BondsTab card={card('friendship')} />);
-    expect(screen.getByTestId('bond-word').textContent).toBe('friend');
-  });
-
-  it('renders no chip for a basis with no word', () => {
-    render(<BondsTab card={card('unknown')} />);
-    expect(screen.queryByTestId('bond-word')).toBeNull();
-    expect(screen.getByText('Maren Dusk')).toBeTruthy();
-  });
-});
 
 describe('NotableLine — the settlement page (THR-1655)', () => {
   const notable: SettlementNotable = {

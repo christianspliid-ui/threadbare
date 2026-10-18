@@ -6,7 +6,7 @@
  *
  * **No numerals** (UI Law 13): magnitudes are *a little / noticeably / much / far*,
  * skill is *a touch / somewhat / a good deal*, time is days not ticks, chance is *about
- * one time in four*. Pure over `effects[]`, so the sheet derives the words at render and
+ * one time in four*. Pure over `effects[]`, so the page derives the words at render and
  * they never go stale when tier advancement rescales an effect.
  */
 
@@ -71,7 +71,7 @@ export function describeItem(effects: readonly AttachmentEffect[], catchIndexes:
       if (j >= 0) {
         used.add(j);
         const v = (E[j].effect as { contributions: Partial<Record<ReachDomain, number>> }).contributions[e.reach] ?? 0;
-        s += `, and ${statWord(v)} more skilled at it for as long as they carry it${v > 1.0 ? ' — a lift big enough to show on their sheet' : ''}`;
+        s += `, and ${statWord(v)} more skilled at it for as long as they carry it${v > 1.0 ? ' — a lift big enough to show on their page' : ''}`;
       }
       const k2 = E.findIndex((p, k) => !used.has(k) && k !== i && p.role === role && p.effect.type === 'conditional' && p.effect.value > 0 && p.effect.reach === e.reach && PRED[p.effect.condition]);
       if (k2 >= 0) {
@@ -106,7 +106,7 @@ function sentence(e: AttachmentEffect): string {
       const contributions = e.contributions as Partial<Record<ReachDomain, number>>;
       const parts = (Object.entries(contributions) as [ReachDomain, number][]).map(([r, v]) => (v > 0 ? `${statWord(v)} more skilled at ${reachDo(r)}` : `${statWord(v)} less skilled at ${reachDo(r)}`));
       const big = Object.values(contributions).some(v => Math.abs(v ?? 0) > 1.0);
-      return `Carrying it makes its bearer ${parts.join(' and ')}${big ? ' — a lift big enough to show on their sheet' : ''}.`;
+      return `Carrying it makes its bearer ${parts.join(' and ')}${big ? ' — a lift big enough to show on their page' : ''}.`;
     }
     case 'conditional': {
       const c = String(e.condition);

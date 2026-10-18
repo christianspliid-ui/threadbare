@@ -23,8 +23,6 @@ export type {
 } from './CardFace';
 export { Divider } from './Divider';
 export { downloadTextFile } from './downloadTextFile';
-export { DetailBreadcrumb } from './DetailBreadcrumb';
-export { DetailModal } from './DetailModal';
 export { DomainCard } from './DomainCard';
 export { ReachStanding, reachStandingWord, REACH_DISPLAY_NAMES } from './ReachStanding';
 export { Dropdown } from './Dropdown';

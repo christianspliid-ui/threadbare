@@ -71,13 +71,9 @@ import { ProgressBand } from '../shared/ProgressBand';
 import { Divider } from '../shared/Divider';
 import { EntityLink } from '../shared/EntityLink';
 import { HeldByLine } from '../shared/HeldByLine';
-import { DetailBreadcrumb } from '../shared/DetailBreadcrumb';
-import { DetailModal } from '../shared/DetailModal';
 import { HoverCard } from '../shared/HoverCard';
 import { Section } from '../shared/Section';
-import { DetailModalStackProvider, useDetailStack } from '../../contexts/DetailModalStackContext';
 import {
-  DETAIL_BREADCRUMB_COLLAPSE_AT,
   type DetailPage,
   type Section as DetailPageSection,
 } from '../../types/detailPage';
@@ -162,26 +158,17 @@ const SECTIONS = [
   { id: 'domaincard', label: 'DomainCard' },
   { id: 'reachstanding', label: 'ReachStanding (THR-1724)' },
   { id: 'activityicon', label: 'ActivityIcon' },
-  { id: 'detail-page', label: 'DetailBreadcrumb / Section / DetailModal' },
+  { id: 'detail-page', label: 'Section / HoverCard' },
   { id: 'culture-phonetics', label: 'CulturePhoneticsInspector' },
 ];
 
 // ─── Detail-page sample data ──────────────────────────────────────────────────
-// The detail-page cluster (DetailBreadcrumb / Section / DetailModal) has no
-// production mount — THR-966 defers that call. These fixtures exist so the
-// cluster still satisfies Law 29's "every shared primitive renders at
-// ?view=styleguide with sample data" while its disposition is open.
+// The section shapes and the hover card are what remain of the detail-page cluster
+// since THR-1912 retired DetailModal and DetailBreadcrumb (the Inspector replaced
+// them). These fixtures keep Law 29's "every shared primitive renders at
+// ?view=styleguide with sample data".
 
 const SAMPLE_DETAIL_TRAIL = ['Encounter', 'Captain Veiren'];
-
-/** One crumb past DETAIL_BREADCRUMB_COLLAPSE_AT, so the ellipsis branch renders. */
-const SAMPLE_DETAIL_TRAIL_LONG = [
-  'Encounter',
-  'THE IRON MARKET',
-  'Captain Veiren',
-  'THE ASHEN COMPACT',
-  'HER WRIT OF PASSAGE',
-].slice(0, DETAIL_BREADCRUMB_COLLAPSE_AT + 2);
 
 const SAMPLE_DETAIL_SECTIONS: DetailPageSection[] = [
   {
@@ -303,22 +290,6 @@ const SAMPLE_DETAIL_PAGE: DetailPage = {
   sections: SAMPLE_DETAIL_SECTIONS,
   hasFullSheet: true,
 };
-
-/**
- * DetailModal renders from the stack context and draws nothing while the stack
- * is empty, so a styleguide entry needs a control that pushes a page onto it.
- */
-function SampleDetailModalLauncher() {
-  const { push, isOpen } = useDetailStack();
-  return (
-    <>
-      <Button variant="secondary" size="sm" onClick={() => push(SAMPLE_DETAIL_PAGE)} disabled={isOpen}>
-        {isOpen ? 'Sample page open — Escape closes it' : 'Open sample detail page'}
-      </Button>
-      <DetailModal />
-    </>
-  );
-}
 
 /**
  * HoverCard anchors to a live element and portals to `document.body`, so a styleguide
@@ -2001,29 +1972,17 @@ export default function StyleGuide() {
 
           {/* ── Detail page cluster ───────────────────────────── */}
           <section id="section-detail-page" style={{ marginBottom: SECTION_GAP }}>
-            <SectionHeading ornamental>DetailBreadcrumb / Section / DetailModal / HoverCard</SectionHeading>
+            <SectionHeading ornamental>Section / HoverCard</SectionHeading>
             <div style={{ marginTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <GameErrorBoundary>
                 <Label>
                   The detail-page cluster — live in the game since THR-1490, which resolved THR-966
                   as <em>mount</em>. Everything here is reached through one dispatcher,
                   {' '}<code>useRefRouter</code>, which reads <code>src/data/surface-registry.ts</code>
-                  {' '}to decide what a kind opens. Nothing else may push onto the stack; that is what
-                  makes "every link routes by kind" (Law 21) a property of the system rather than of
-                  each caller remembering.
+                  {' '}to decide what a kind opens — a card or a page opens in the Inspector. Nothing
+                  else may open a subject; that is what makes "every link routes by kind" (Law 21) a
+                  property of the system rather than of each caller remembering.
                 </Label>
-
-                <div>
-                  <Label>DetailBreadcrumb — trail under the collapse threshold, every crumb but the last clickable</Label>
-                  <DetailBreadcrumb trail={SAMPLE_DETAIL_TRAIL} onNavigate={() => {}} />
-                </div>
-
-                <div>
-                  <Label>
-                    DetailBreadcrumb — trail over DETAIL_BREADCRUMB_COLLAPSE_AT, leading crumbs collapse to an ellipsis
-                  </Label>
-                  <DetailBreadcrumb trail={SAMPLE_DETAIL_TRAIL_LONG} onNavigate={() => {}} />
-                </div>
 
                 <div>
                   <Label>
@@ -2049,16 +2008,6 @@ export default function StyleGuide() {
                       <Section key={section.typeId} section={section} />
                     ))}
                   </div>
-                </div>
-
-                <div>
-                  <Label>
-                    DetailModal — reads the stack context and renders nothing while the stack is empty, so the
-                    sample below supplies its own provider and pushes one page
-                  </Label>
-                  <DetailModalStackProvider>
-                    <SampleDetailModalLauncher />
-                  </DetailModalStackProvider>
                 </div>
 
                 <div>

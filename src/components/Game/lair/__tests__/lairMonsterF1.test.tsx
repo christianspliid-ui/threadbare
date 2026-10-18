@@ -8,12 +8,11 @@
  * non-monster individuals; a chip anchored to a monster draws the monster
  * portrait rather than an initial-letter tile.
  */
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 import { WorldGraph } from '../../../../engine/graph';
 import type { GraphNode } from '../../../../types/graph';
 import { buildLairMonsterCardModel } from '../buildLairMonsterCardModel';
-import { HexSidebar } from '../../HexSidebar';
 import { buildChipIconResolver } from '../../encounter-stage/adapters/chipCollaborators';
 import { resolveEntityVisual } from '../../../shared/entityVisualResolver';
 import { getMonsterPortraitUrl } from '../../../../data/portrait-assets';
@@ -94,64 +93,6 @@ describe('buildLairMonsterCardModel (F1 — the name)', () => {
 
   it('returns null for a missing lair (fail-soft)', () => {
     expect(buildLairMonsterCardModel(graphWith(), 'loc.nowhere')).toBeNull();
-  });
-});
-
-describe('HexSidebar lair block (F1)', () => {
-  const baseProps = {
-    terrain: 'hills' as const,
-    hexCol: 3,
-    hexRow: 4,
-    sphereInfluence: null,
-    regionData: null,
-    agentsByLocation: {},
-    lineOfSight: 'full' as const,
-    cultures: [],
-    factions: [],
-    locations: [{
-      id: LAIR_ID,
-      name: 'The Ashen Hollow',
-      properties: { locationSubtype: 'lair', lairTier: 'major', namedEliteId: ELITE_ID },
-    }],
-  };
-
-  it('renders the monster by name, as a link, and no raw elite_ id anywhere', () => {
-    const graph = graphWith(lairNode(), eliteNode());
-    const onMonsterClick = vi.fn();
-    const { container } = render(
-      <HexSidebar
-        {...baseProps}
-        lairMonsterCards={{ [LAIR_ID]: buildLairMonsterCardModel(graph, LAIR_ID) }}
-        onMonsterClick={onMonsterClick}
-      />,
-    );
-    const link = screen.getByTestId('lair-monster-link');
-    expect(link.textContent).toBe('Grothmaw the Hollow');
-    fireEvent.click(link);
-    expect(onMonsterClick).toHaveBeenCalledWith(ELITE_ID);
-    expect(container.innerHTML).not.toContain('elite_');
-  });
-
-  it('draws the family portrait on the lair card chip, graph-free (THR-1554)', () => {
-    const model = buildLairMonsterCardModel(graphWith(lairNode(), eliteNode()), LAIR_ID);
-    expect(model?.monster?.portraitSrc).toBe(MONSTER_PORTRAIT);
-    const { container } = render(<HexSidebar {...baseProps} lairMonsterCards={{ [LAIR_ID]: model }} />);
-    const img = container.querySelector('[data-testid="lair-monster-card"] img');
-    expect(img?.getAttribute('src')).toBe(MONSTER_PORTRAIT);
-  });
-
-  it('renders no monster row, and still no raw id, when the elite does not resolve', () => {
-    const graph = graphWith(lairNode());
-    const { container } = render(
-      <HexSidebar {...baseProps} lairMonsterCards={{ [LAIR_ID]: buildLairMonsterCardModel(graph, LAIR_ID) }} />,
-    );
-    expect(screen.queryByTestId('lair-monster-row')).toBeNull();
-    expect(container.innerHTML).not.toContain('elite_');
-  });
-
-  it('renders no raw id when no card is supplied at all', () => {
-    const { container } = render(<HexSidebar {...baseProps} />);
-    expect(container.innerHTML).not.toContain('elite_');
   });
 });
 

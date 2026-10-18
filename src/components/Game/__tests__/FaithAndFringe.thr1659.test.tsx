@@ -13,23 +13,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { FactionSheet } from '../FactionSheet';
-import { HexSidebar } from '../HexSidebar';
 import { WorldGraph } from '../../../engine/graph';
 import { getHexCultures } from '../../../engine/hexZoom';
 import { CULTURE_FRINGE_STRENGTH, formatHexCultureName } from '../../../data/world-scenario';
-
-function factionGraph(properties: Record<string, unknown>): WorldGraph {
-  const graph = new WorldGraph();
-  graph.addNode({
-    id: 'faction_c0',
-    type: 'actor',
-    name: 'The Varn Congregation of the Spheres',
-    properties: { actorType: 'faction', factionDefId: 'temple_of_spheres', ...properties },
-  } as never);
-  return graph;
-}
 
 /** One hex holding two settlements, each linked to the same culture. */
 function hexGraph(fringeFlags: [boolean, boolean]): WorldGraph {
@@ -50,56 +36,6 @@ function hexGraph(fringeFlags: [boolean, boolean]): WorldGraph {
   return graph;
 }
 
-describe('FactionSheet — a congregation names its sphere (THR-1659)', () => {
-  it('renders "Venerates Light." under the kind for a congregation', () => {
-    render(
-      <FactionSheet
-        factionId="faction_c0"
-        name="The Varn Congregation of the Spheres"
-        graph={factionGraph({ factionType: 'religious', veneratedSphere: 'light' })}
-        onClose={() => {}}
-      />,
-    );
-    expect(screen.getByTestId('faction-venerates-line').textContent).toBe('Venerates Light.');
-  });
-
-  it('shows no line for a faction that venerates nothing, or a sphereless congregation', () => {
-    const { unmount } = render(
-      <FactionSheet
-        factionId="faction_c0"
-        name="A guild"
-        graph={factionGraph({ factionType: 'guild' })}
-        onClose={() => {}}
-      />,
-    );
-    expect(screen.queryByTestId('faction-venerates-line')).toBeNull();
-    unmount();
-    render(
-      <FactionSheet
-        factionId="faction_c0"
-        name="The Varn Congregation of the Spheres"
-        graph={factionGraph({ factionType: 'religious', veneratedSphere: null })}
-        onClose={() => {}}
-      />,
-    );
-    expect(screen.queryByTestId('faction-venerates-line')).toBeNull();
-  });
-
-  it("reads a town guild's kind as Guild", () => {
-    render(
-      <FactionSheet
-        factionId="faction_c0"
-        name="The Tallow Guild"
-        graph={factionGraph({ factionType: 'guild', factionClass: 'guild' })}
-        onClose={() => {}}
-      />,
-    );
-    const chip = screen.getByTestId('faction-type-chip');
-    expect(chip.textContent).toBe('guild');
-    expect(chip.style.textTransform).toBe('capitalize');
-  });
-});
-
 describe('hex culture panel — a fringe settlement reads as fringe (THR-1659)', () => {
   it('flags a culture fringe only when every link to it in the hex is fringe', () => {
     expect(getHexCultures(hexGraph([true, true]), 2, 3)[0].fringe).toBe(true);
@@ -113,24 +49,4 @@ describe('hex culture panel — a fringe settlement reads as fringe (THR-1659)',
     expect(formatHexCultureName({ cultureName: 'Varn' })).toBe('Varn');
   });
 
-  it('renders "Varn fringe" in the sidebar with no strength number (Law 13)', () => {
-    const cultures = getHexCultures(hexGraph([true, true]), 2, 3);
-    render(
-      <HexSidebar
-        terrain="grassland"
-        hexCol={2}
-        hexRow={3}
-        sphereInfluence={null}
-        regionData={null}
-        locations={[]}
-        agentsByLocation={{}}
-        lineOfSight="full"
-        cultures={cultures}
-        factions={[]}
-      />,
-    );
-    const line = screen.getByTestId('hex-sidebar-culture');
-    expect(line.textContent).toBe('Varn fringe');
-    expect(line.parentElement?.textContent ?? '').not.toMatch(/\d/);
-  });
 });

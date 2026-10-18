@@ -10,11 +10,11 @@
  * `Browser-verify substitution: jsdom-render — unattended run, no startable dev server`.
  *
  * So the shape below is deliberate. It is not a unit test of `open()`: every case renders
- * the **real** `DetailModal` / `HoverCard` / `EntityLink` through the **real** router over
- * a **real** `WorldGraph`, and asserts what a player would see. The six card kinds, the
- * three fail-soft paths, the TTS button, the hover card and the two Law-25 absences are
- * each a face the change produces, and each is checked here because no screenshot could
- * be taken of it this run.
+ * the **real** `HoverCard` / `EntityLink` through the **real** router over a **real**
+ * `WorldGraph`, and asserts what a player would see. THR-1912 retired the `DetailModal`
+ * stack: a card or a sheet now opens the Inspector, so those cases assert the Inspector
+ * was asked, and the generated page is read through the hover card, the one floating
+ * surface left that draws it.
  *
  * What it deliberately does **not** claim: nothing here is evidence about paint, z-order,
  * overflow or the 1920×1080 contract — the three things the gate exists for and the three
@@ -30,10 +30,9 @@ import { WorldGraph } from '../../engine/graph';
 import type { GraphEdge, GraphNode } from '../../types/graph';
 import type { NavigationTarget } from '../../types/notification';
 import type { WorldRef } from '../../types/worldRef';
+import type { AnyRef } from '../../types/contentRef';
 import { useRefRouter, type RefRouter } from '../useRefRouter';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
-import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
-import { DetailModal } from '../../components/shared/DetailModal';
 import { HoverCard } from '../../components/shared/HoverCard';
 import { EntityLink } from '../../components/shared/EntityLink';
 import { HOVER_CARD_DELAY_MS } from '../../types/detailPage';
@@ -78,37 +77,44 @@ function worldGraph(): WorldGraph {
 }
 
 /**
- * Mounts the router exactly as `GameView` does — its own state, published through both
- * providers, with `DetailModal` and `HoverCard` beneath. `onRouter` hands the live router
- * back so a case can drive it the way a click would.
+ * Mounts the router exactly as `GameView` does — its own state, published through the
+ * provider, with `HoverCard` beneath. `onRouter` hands the live router back so a case can
+ * drive it the way a click would; `openInspector` is the spy every card and sheet reaches.
  */
 function Harness({
   onRouter,
   openSheet = () => true,
+  openInspector,
   children,
 }: {
   onRouter?: (r: RefRouter) => void;
   openSheet?: (t: NavigationTarget) => boolean;
+  openInspector: (ref: AnyRef, size: 'docked' | 'wide') => void;
   children?: ReactNode;
 }) {
-  const router = useRefRouter({ graph: worldGraph(), tick: 6, seed: 42, protagonistId: 'protag', openSheet });
+  const router = useRefRouter({ graph: worldGraph(), tick: 6, seed: 42, protagonistId: 'protag', openSheet, openInspector });
   onRouter?.(router);
   return (
-    <DetailModalStackValueProvider value={router.stack}>
-      <RefRouterProvider router={router}>
-        {children}
-        <DetailModal />
-        {router.hoverCard && <HoverCard page={router.hoverCard.page} anchorEl={router.hoverCard.anchorEl} />}
-      </RefRouterProvider>
-    </DetailModalStackValueProvider>
+    <RefRouterProvider router={router}>
+      {children}
+      {router.hoverCard && <HoverCard page={router.hoverCard.page} anchorEl={router.hoverCard.anchorEl} />}
+    </RefRouterProvider>
   );
 }
 
 /** Render the harness and return a handle on the live router. */
 function mount(opts: { openSheet?: (t: NavigationTarget) => boolean; children?: ReactNode } = {}) {
   let router!: RefRouter;
-  const utils = render(<Harness onRouter={r => { router = r; }} openSheet={opts.openSheet} children={opts.children} />);
-  return { ...utils, open: (ref: WorldRef, mode?: 'card' | 'sheet') => act(() => { router.open(ref, mode); }) };
+  const openInspector = vi.fn();
+  const utils = render(<Harness onRouter={r => { router = r; }} openSheet={opts.openSheet} openInspector={openInspector} children={opts.children} />);
+  const anchor = document.createElement('span');
+  document.body.appendChild(anchor);
+  return {
+    ...utils,
+    openInspector,
+    open: (ref: WorldRef, mode?: 'card' | 'sheet') => act(() => { router.open(ref, mode); }),
+    hover: (ref: WorldRef) => act(() => { router.open(ref, 'hover', { anchorEl: anchor }); }),
+  };
 }
 
 // ─── Every card kind the registry can produce ────────────────────────────────
@@ -123,114 +129,63 @@ describe('the card renders for every card kind (Law 21 — every kind opens)', (
     { ref: { kind: 'army', id: 'host' }, card: 'group', name: 'The Iron Covenant — Host' },
   ];
 
-  it.each(CASES)('$ref.kind opens a $card card showing "$name"', ({ ref, card, name }) => {
+  it.each(CASES)('$ref.kind draws a $card card showing "$name"', ({ ref, card, name }) => {
     // The registry's claim, and then the rendered proof of it — asserting only the
     // registry would be a test of a table against itself.
     expect(SURFACE_BY_WORLD_REF[ref.kind].card).toBe(card);
 
-    const { open, getByTestId, queryByTestId } = mount();
-    expect(queryByTestId('detail-panel-0')).toBeNull();
+    const { hover, getByTestId, queryByTestId } = mount();
+    expect(queryByTestId('hover-card')).toBeNull();
 
-    open(ref);
-    const panel = getByTestId('detail-panel-0');
-    expect(panel.textContent).toContain(name);
+    hover(ref);
+    expect(getByTestId('hover-card').textContent).toContain(name);
   });
 
-  it('the group card says who leads them and what they are doing, in words', () => {
-    // Law 13/14: `ArmyState` carries headcount 10000 and cohesion 90 and neither may
-    // reach the surface. The card reads the same word table `ArmySheet` does.
-    const { open, getByTestId } = mount();
-    open({ kind: 'army', id: 'host' });
-    const text = getByTestId('detail-panel-0').textContent ?? '';
-    expect(text).toContain('Captain Veiren');      // commander chip
-    expect(text).toContain('The Iron Guard');      // the banner that raised them
-    expect(text).toContain('The Iron Market');     // the objective, as a sentence
-    expect(text).not.toMatch(/10000|\b90\b/);      // no raw magnitudes (Law 13)
+  it('the group card reads in words, never in magnitudes (Law 13)', () => {
+    // `ArmyState` carries headcount 10000 and cohesion 90 and neither may reach the surface.
+    const { hover, getByTestId } = mount();
+    hover({ kind: 'army', id: 'host' });
+    const text = getByTestId('hover-card').textContent ?? '';
+    expect(text).toContain('The Iron Covenant — Host');
+    expect(text).not.toMatch(/10000|90/);
   });
 });
 
-// ─── The three fail-soft paths (NFP #4, Law 25) ──────────────────────────────
+// ─── The fail-soft paths (NFP #4, Law 25) ────────────────────────────────────
 
 describe('no click is ever swallowed', () => {
-  it('an id that resolves to nothing opens the stub, not nothing', () => {
-    const { open, getByTestId } = mount();
-    open({ kind: 'agent', id: 'nobody-at-all' });
-    expect(getByTestId('detail-panel-0').textContent).toContain('Unknown');
+  it('an id that resolves to nothing draws the stub, not nothing', () => {
+    const { hover, getByTestId } = mount();
+    hover({ kind: 'agent', id: 'nobody-at-all' });
+    expect(getByTestId('hover-card').textContent).toContain('Unknown');
   });
 
-  it('a sheet ask on a sheet:null kind opens the card instead', () => {
-    // companion — withheld by THR-1096. The old behaviour was `undefined` and a dead
-    // click; the new behaviour is its card.
-    expect(SURFACE_BY_WORLD_REF.companion.sheet).toBeNull();
-    const { open, getByTestId } = mount();
-    open({ kind: 'companion', id: 'veiren' }, 'sheet');
-    expect(getByTestId('detail-panel-0')).toBeTruthy();
+  it('a card opens the Inspector at its row size', () => {
+    const { open, openInspector } = mount();
+    open({ kind: 'agent', id: 'veiren' });
+    expect(openInspector).toHaveBeenCalledWith({ kind: 'agent', id: 'veiren' }, 'docked');
   });
 
-  it('a sheet ask this host has no opener for falls back to the card', () => {
-    const { open, getByTestId } = mount({ openSheet: () => false });
-    open({ kind: 'agent', id: 'veiren' }, 'sheet');
-    expect(getByTestId('detail-panel-0').textContent).toContain('Captain Veiren');
-  });
-
-  it('a sheet ask this host CAN open does not also stack a card', () => {
+  it('a sheet ask opens the Inspector wide, and a live encounter its Stage', () => {
     const seen: NavigationTarget[] = [];
-    const { open, queryByTestId } = mount({ openSheet: t => { seen.push(t); return true; } });
+    const { open, openInspector } = mount({ openSheet: t => { seen.push(t); return true; } });
     open({ kind: 'agent', id: 'veiren' }, 'sheet');
-    expect(seen).toEqual([{ kind: 'agent', agentId: 'veiren' }]);
-    expect(queryByTestId('detail-panel-0')).toBeNull();
-  });
-});
-
-// ─── The card's own furniture ────────────────────────────────────────────────
-
-describe('the card body (THR-966 closed as mount)', () => {
-  // Swept across every card kind rather than sampled on one, because the first
-  // implementation filtered on `kind === 'prose'` and that put no button on the *actor*
-  // card — an actor page leads with a `portrait` section whose paragraph is `bodyProse`.
-  // Checking one kind is how that shipped; checking all six is how it did not.
-  it.each(['agent', 'faction', 'location', 'artifact', 'encounter', 'army'] as const)(
-    'carries the narration button on the %s card',
-    kind => {
-      const ids: Record<string, string> = {
-        agent: 'veiren', faction: 'guard', location: 'market',
-        artifact: 'token', encounter: 'evt', army: 'host',
-      };
-      const { open, getByTestId } = mount();
-      open({ kind, id: ids[kind] });
-      expect(getByTestId('prose-tts-button')).toBeTruthy();
-    },
-  );
-
-  it('stacks, and the breadcrumb orients the depth (Law 24)', () => {
-    const { open, getByTestId } = mount();
-    open({ kind: 'agent', id: 'veiren' });
-    open({ kind: 'faction', id: 'guard' });
-    expect(getByTestId('detail-panel-1').textContent).toContain('The Iron Guard');
-    // The trail names where you came from, not only where you are. (The breadcrumb
-    // renders ALLCAPS — asserting the display form, not the node name.)
-    expect(getByTestId('detail-panel-1').textContent).toContain('Captain Veiren');
-  });
-
-  it('Escape closes the topmost card, not the whole stack (Law 23)', () => {
-    const { open, getByTestId, queryByTestId } = mount();
-    open({ kind: 'agent', id: 'veiren' });
-    open({ kind: 'faction', id: 'guard' });
-    act(() => { fireEvent.keyDown(document, { key: 'Escape' }); });
-    expect(queryByTestId('detail-panel-1')).toBeNull();
-    expect(getByTestId('detail-panel-0').textContent).toContain('Captain Veiren');
+    expect(openInspector).toHaveBeenCalledWith({ kind: 'agent', id: 'veiren' }, 'wide');
+    expect(seen).toEqual([]);
+    open({ kind: 'encounter', id: 'evt' }, 'sheet');
+    expect(seen).toHaveLength(1);
   });
 });
 
 // ─── EntityLink and the hover card ───────────────────────────────────────────
 
 describe('EntityLink routes itself', () => {
-  it('renders a control and opens the card on click', () => {
-    const { getByRole, getByTestId } = mount({
+  it('renders a control and opens the Inspector on click', () => {
+    const { getByRole, openInspector } = mount({
       children: <EntityLink id="veiren" name="Captain Veiren" entityRef={{ kind: 'agent', id: 'veiren' }} />,
     });
     act(() => { fireEvent.click(getByRole('button', { name: /Captain Veiren/ })); });
-    expect(getByTestId('detail-panel-0').textContent).toContain('Captain Veiren');
+    expect(openInspector).toHaveBeenCalledWith({ kind: 'agent', id: 'veiren' }, 'docked');
   });
 
   it('opens a hover card after the dwell, and closes it on leave', async () => {
@@ -267,22 +222,5 @@ describe('EntityLink routes itself', () => {
       <EntityLink id="veiren" name="Captain Veiren" entityRef={{ kind: 'agent', id: 'veiren' }} />,
     );
     expect(queryByRole('button')).toBeNull();
-  });
-});
-
-describe('the hover card never competes with a card', () => {
-  it('is refused while a card is open — two floating answers to one question', () => {
-    vi.useFakeTimers();
-    try {
-      const { open, getByRole, queryByTestId } = mount({
-        children: <EntityLink id="guard" name="The Iron Guard" entityRef={{ kind: 'faction', id: 'guard' }} />,
-      });
-      open({ kind: 'agent', id: 'veiren' });
-      act(() => { fireEvent.mouseEnter(getByRole('button', { name: /The Iron Guard/ })); });
-      act(() => { vi.advanceTimersByTime(HOVER_CARD_DELAY_MS + 50); });
-      expect(queryByTestId('hover-card')).toBeNull();
-    } finally {
-      vi.useRealTimers();
-    }
   });
 });

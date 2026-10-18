@@ -40,11 +40,6 @@ const NO_SURFACES: PlayerSurfaceFlags = {
   settingsPanelOpen: false,
   readThreadsOpen: false,
   agendaPickerOpen: false,
-  actionDrawerOpen: false,
-  agentProfileOpen: false,
-  stubSheetCategory: null,
-  attachmentSheetOpen: false,
-  ascendantSheetOpen: false,
   doomDetailOpen: false,
   mandateDetailOpen: false,
   harvestOpen: false,
@@ -96,7 +91,7 @@ describe('resolveGiftDelivery', () => {
     const d = resolveGiftDelivery(input({
       pendingBeatId: 'beat.spine.opening',
       isArrivalBeat: true,
-      playerSurfacesOpen: ['AgentProfileModal'],
+      playerSurfacesOpen: ['Codex'],
       msSinceLastInput: 0,
       atResumeBoundary: false,
     }));
@@ -133,11 +128,6 @@ describe('openPlayerSurfaces', () => {
       settingsPanelOpen: true,
       readThreadsOpen: true,
       agendaPickerOpen: true,
-      actionDrawerOpen: true,
-      agentProfileOpen: true,
-      stubSheetCategory: null,
-      attachmentSheetOpen: true,
-      ascendantSheetOpen: true,
       doomDetailOpen: true,
       mandateDetailOpen: true,
       harvestOpen: true,
@@ -148,16 +138,8 @@ describe('openPlayerSurfaces', () => {
       notablesOpen: true,
       inspectorFullOpen: true,
     });
-    const sheets = ['location', 'faction', 'army', 'artifact'].map(
-      c => openPlayerSurfaces({ ...NO_SURFACES, stubSheetCategory: c })[0],
-    );
-    const union = new Set([...all, ...sheets]);
-    expect(union).toEqual(new Set(GIFT_HOLD_SURFACES));
+    expect(new Set(all)).toEqual(new Set(GIFT_HOLD_SURFACES));
     expect(all).toEqual(GIFT_HOLD_SURFACES.filter(id => all.includes(id)));
-  });
-
-  it('ignores an unknown stub-sheet category', () => {
-    expect(openPlayerSurfaces({ ...NO_SURFACES, stubSheetCategory: 'mystery' })).toEqual([]);
   });
 });
 

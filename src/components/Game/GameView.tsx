@@ -25,9 +25,6 @@ import type { UndertakingMomentRecord } from '../../types/strategicAction';
 import { useSimulation } from './hooks/useSimulation';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { CardPlayTallyEntry } from '../../types/gameState';
-import { getEncountersForLocation } from '../../data/encounter-content';
-import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
-import { useHexZoomData } from './hooks/useHexZoomData';
 import { useLocationActivities } from './hooks/useLocationActivities';
 import { useAvatarData } from './hooks/useAvatarData';
 import { useIncidentCapture } from './hooks/useIncidentCapture';
@@ -52,14 +49,12 @@ import { lensViewSelector, dominionProjectionStamp, lensLayerOf, hexLensViewSele
 import { toAgentRenderData, toArmyRenderData, toActivityIconData, toRealmHolderIndex, type AvatarPaint } from './map/mapViewAdapters';
 import { ViewSourceContext, type ViewSource } from '../../contexts/ViewSourceContext';
 import { getSphereColor, getSphereSymbol } from '../../data/sphereIcons';
-import { avatarGodTitleLine } from '../../data/avatar-framing';
 import { AFTERMATH_REACTION_REFUSAL_COPY } from '../../data/aftermath-reaction-copy';
 import { ANOMALY_SPHERE_MAP } from '../../components/HexMapV2/scene/anomalyConstants';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
 import { useDebugOpenModal } from './useDebugOpenModal';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
-import { AnimateMount } from '../shared/AnimateMount';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
 import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
@@ -82,31 +77,16 @@ import { GameViewTopBar, type TopBarFrameFixture } from './GameView/GameViewTopB
 import { beatOfferWords } from './AscendantBeatModal';
 import { buildNeedsYou, needsYouFixtureSubject, needsYouStamp, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
 import type { AlertItem } from '../../types/notification';
-import { AgentInfoCard } from './AgentInfoCard';
-import { prepareEncounterHandoff } from './encounterHandoff';
 import { shouldCenterOnAgentMove } from './cameraInteractionGate';
 import { REACH_TO_SPHERE, SPHERE_COLORS } from '../icons/constants';
 import type { ReachDomain } from '../../types/traits';
-import { LocationProfileModal } from './LocationProfileModal';
-import { FactionSheet } from './FactionSheet';
-import { ArmySheet } from './ArmySheet';
-import { ArtifactSheet } from './ArtifactSheet';
-import { AttachmentDetailView } from './AttachmentDetailView';
-import { resolveAttachmentTemplateDetail } from '../../engine/attachmentTemplateDetail';
-import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../shared/Modal';
 import { useEscapeLayer, ESCAPE_LAYER_Z_PANEL } from '../shared/useEscapeLayer';
-import { AgentProfileModal } from './AgentProfileModal';
 import { countThreadedChapters } from './ChapterLedger';
 import { useFirstScreenReveal } from './GameView/firstScreenReveal';
 import { useOpeningReveal } from './GameView/openingReveal';
 import { OpeningDirectionLine } from './OpeningDirectionLine';
 import { getPronouns } from '../../data/domain-prose';
 import { OPENING_REVEAL_TOAST_MS } from '../../data/ui-content';
-import { LocationView } from './LocationView';
-import { HexBreadcrumb } from './HexBreadcrumb';
-import { HexSidebar } from './HexSidebar';
-import { buildLairMonsterCardModel, type LairMonsterCardModel } from './lair/buildLairMonsterCardModel';
-import { HexChronicle } from './HexChronicle';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
@@ -119,8 +99,6 @@ import { useRefRouter } from '../../hooks/useRefRouter';
 import { RefRouterProvider } from '../../contexts/RefRouterContext';
 import { DetailPageOpenerProvider } from '../../contexts/DetailPageOpenerContext';
 import { useDetailNodeRefOpener, worldRefForNodeId } from '../../hooks/useDetailNodeRefOpener';
-import { DetailModalStackValueProvider } from '../../contexts/DetailModalStackContext';
-import { DetailModal } from '../shared/DetailModal';
 import { HoverCard } from '../shared/HoverCard';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { IdentityChip } from './IdentityChip';
@@ -129,7 +107,7 @@ import { LedgerRail } from './frame/LedgerRail';
 import { useLedgerKey } from './frame/useLedgerKey';
 import { GameScreenStateProvider, useGameScreenStore } from './frame/GameScreenState';
 import { InspectorHost } from './inspector/InspectorHost';
-import { canOpenMeetTheFirst, offersMeetTheFirstCard } from './meetTheFirstCard';
+import { canOpenMeetTheFirst } from './meetTheFirstCard';
 import { placeRefKind } from '../../engine/views/subjects/actOn';
 import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
@@ -140,7 +118,6 @@ import { INSPECTOR_WORDS } from '../../data/view-content';
 import type { WorldRef, WorldRefKind } from '../../types/worldRef';
 import type { AnyRef } from '../../types/contentRef';
 import type { CodexRunStateFilter } from '../Codex/codexRunState';
-import { AscendantSheet } from './AscendantSheet';
 import { courtPositionToThreadTier } from './encounter-stage/types';
 import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition';
 import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition, spendPremonitionEssence } from '../../engine/premonitionActions';
@@ -166,14 +143,13 @@ import {
   resolveNotificationsOnVeilLeave,
   runEncounterAutoOpenScan,
   type ActiveEncounterDisplay,
-  selectEncounterRuntimeForDisplay,
   selectEncounterRuntimeForNotification,
 } from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
 import { recordJourneyChoice } from '../../engine/journeyEngine';
 import { recordStoryBeatDismissed } from '../../engine/phaseAttention';
-import { getThreadsFrom, getAvatarsOf } from '../../engine/graphQueries';
+import { getThreadsFrom } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, isMeetTheFirstAvailable, pickMeetingLocation } from '../../engine/meetingEncounter';
 import { bondFirstFromMeeting } from './meetingBond';
@@ -219,9 +195,6 @@ import {
   PLAYER_SURFACE_INTERRUPT_IDS,
   type GiftDelivery,
 } from './giftDelivery';
-import { buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
-import { useTargetActions } from './hooks/useTargetActions';
-import type { WheelSlot } from '../../engine/wheel';
 import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { preparePlayerCast, commitPlayerCast } from '../../engine/playerCastDispatch';
 import { withEssenceSpend, recordEssenceMovement } from '../../engine/essenceMovement';
@@ -261,7 +234,7 @@ import {
   type HexStrategicOverlay,
 } from '../../engine/strategicPresentation';
 import { dominionScaledEssenceCost } from '../../engine/dominion';
-import { dominionSheetVM, dominionLensVM, dominionHexLineVM, dominionBandColorVar, godPrimarySphere } from '../../engine/dominionViewModels';
+import { dominionLensVM, dominionHexLineVM, dominionBandColorVar, godPrimarySphere } from '../../engine/dominionViewModels';
 import { ensureDominionProjection, updateDominionDrops } from '../../engine/simulationRuntime';
 import { hexKey as dominionHexKey } from '../../lib/hexKey';
 import { DOMINION_BANDS, DOMINION_BAND_WORDS } from '../../data/dominion-content';
@@ -445,14 +418,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleToggleRunningRespectingHold();
   }, [tagClockToggle, handleToggleRunningRespectingHold]);
 
-  // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
-  const tileMap = useMemo(() => {
-    const m = new Map<string, HexTile>();
-    for (const t of tiles) m.set(`${t.coord.col},${t.coord.row}`, t);
-    return m;
-  }, [tiles]);
-  const getTile = useCallback((col: number, row: number) => tileMap.get(`${col},${row}`), [tileMap]);
-
   // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
   const {
     avatarPos,
@@ -546,17 +511,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const [uiVolume, setUiVolumeState] = useState(() => getUiVolume());
   const [audioMuted, setAudioMuted] = useState(() => isAllMuted());
 
-  // ── Ascendant sheet modal state ──
-  const [ascendantSheetOpen, setAscendantSheetOpenRaw] = useState(false);
+  // ── The god page ──
   /**
    * THR-1911 (§ D13): the god's name in the rail opens the god page, wide — the subject
-   * `{ kind: 'agent', id: ascendantId }`. Closing still closes the retired sheet if the
-   * debug lever opened it.
+   * `{ kind: 'agent', id: ascendantId }`. The god sheet it replaced retired (THR-1912);
+   * closing is the Inspector's own.
    */
   const setAscendantSheetOpen = useCallback((value: React.SetStateAction<boolean>) => {
     const next = typeof value === 'function' ? value(false) : value;
     if (next) openPage({ kind: 'agent', id: gameState.ascendantId }, 'sheet');
-    else setAscendantSheetOpenRaw(false);
   }, [openPage, gameState.ascendantId]);
 
   // ── Codex overlay (THR-613 Slice 3b-tail): full three-state path catalog ──
@@ -606,10 +569,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   // ── View navigation hook ──
   const {
-    hoveredHex, setHoveredHex, selectedHex, viewLevel,
-    focusedHex, focusedLocationId, moveMode, hexMapRef,
-    handleBackToWorld,
-    handleBackToHex, handleCenterOnAvatar,
+    hoveredHex, setHoveredHex, selectedHex,
+    moveMode, hexMapRef,
+    handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
   } = useViewNavigation({ gameState, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled, setRunning });
 
@@ -657,21 +619,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const {
     selectedAgentId,
     selectedThreadNode,
-    drawerOpen,
     pendingIntervention,
     pendingChoice,
     setPendingChoice,
-    profileModalAgentId,
-    profileInitialTab,
-    handleProfileChronicleViewed,
     selectedAgenda,
     agendaPickerOpen,
     pendingAgendas,
     retinueAgents,
     threadedNodes,
     agentDetail,
-    agentInfoCard,
-    agentFullProfile,
     wheelSlots,
     strandData,
     handleAgentSelect,
@@ -682,14 +638,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     handleInterventionCancel,
     handleAgendaSelect,
     handleAgendaCancel,
-    handleDrawerClose,
     handleStrandClose,
     handleBackFromAgentDetail,
     handleViewPsyche,
     handleOpenDrawer,
     handleAvatarActionClick,
-    handleCloseProfile,
-    openAgentProfileForId,
     openAgentSheetForId,
     closeAllAgentOverlays,
     handleThreadDetailClose,
@@ -1727,115 +1680,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     setChapterLedgerOpen(true);
   }, [openingReveal.reveal.direction.firstId, gameState, handleOpenEncounterFromNotification]);
 
-  // ── Non-agent target context (hex-zoom and location views) ──
-  const [nonAgentDrawerOpen, setNonAgentDrawerOpen] = useState(false);
-  const [manualTargetContext, setManualTargetContext] = useState<import('../../types/targetContext').TargetContext | null>(null);
-
-  // Build a TargetContext for the currently focused hex or location, or selected hex on world map
-  const autoNonAgentTargetContext = useMemo(() => {
-    if (viewLevel === 'hex-zoom' && focusedHex) {
-      // Use gameState.tiles for live mutable state (divineInfluence, corruption)
-      const liveTile = getTile(focusedHex.col, focusedHex.row);
-      return buildHexTargetContext({
-        col: focusedHex.col,
-        row: focusedHex.row,
-        terrain: liveTile?.terrain ?? 'plains',
-        divineInfluence: liveTile?.divineInfluence,
-        corruption: liveTile?.corruption,
-        graph: gameState.graph,
-      });
-    }
-    if (viewLevel === 'location' && focusedLocationId) {
-      return buildLocationTargetContext(focusedLocationId, gameState.graph);
-    }
-    // Selected hex on world map (click-to-select pattern)
-    if (selectedHexCoord) {
-      const liveTile = getTile(selectedHexCoord.col, selectedHexCoord.row);
-      return buildHexTargetContext({
-        col: selectedHexCoord.col,
-        row: selectedHexCoord.row,
-        terrain: liveTile?.terrain ?? 'plains',
-        divineInfluence: liveTile?.divineInfluence,
-        corruption: liveTile?.corruption,
-        graph: gameState.graph,
-      });
-    }
-    return null;
-  // runtime.worldVersion: hexPlaceName reads the graph, which is mutated in place (THR-1804).
-  }, [viewLevel, focusedHex, focusedLocationId, selectedHexCoord, getTile, gameState.graph, runtime.worldVersion]);
-
-  const nonAgentTargetContext = manualTargetContext ?? autoNonAgentTargetContext;
-
-  // Auto-open the non-agent drawer when a targetable context is active.
-  // World map: hex selected → show hex actions. Location view: show location actions.
-  // Hex-zoom: no auto-open — user picks targets (locations, agents) within the chronicle.
-  useEffect(() => {
-    if (manualTargetContext) return;
-    const hasTarget =
-      (viewLevel === 'location' && !!focusedLocationId) ||
-      (viewLevel === 'world' && !!selectedHexCoord);
-    setNonAgentDrawerOpen(hasTarget);
-  }, [viewLevel, selectedHexCoord, focusedLocationId, manualTargetContext]);
-
-  const nonAgentSlots = useTargetActions({
-    target: nonAgentTargetContext,
-    gameState,
-    archetype,
-    drawerOpen: nonAgentDrawerOpen,
-  });
-
-  // ── Hex zoom derived data ──
-  const {
-    hexLocations,
-    hexAgentsByLocation,
-    hexFactionsByLocation,
-    hexConnections,
-    hexSphereInfluence,
-    hexLineOfSight,
-    hexTotalAgents,
-    hexCultures,
-    hexFactions,
-    hexRegionData,
-    focusedLocation,
-    focusedLocationAgents,
-  } = useHexZoomData({
-    graph: gameState.graph,
-    ascendantId: gameState.ascendantId,
-    focusedHex,
-    focusedLocationId,
-    tiles,
-    fogDisabled,
-    worldVersion: runtime.worldVersion,
-  });
-
-  // ── Lair monster cards for the focused hex's lairs (THR-1550, THR-1552) ──
-  // Keyed on worldVersion, not graph identity (the graph mutates in place). A
-  // cleared lair gets a card too: it shows the beast that held it, slain.
-  const hexLairMonsterCards = useMemo(() => {
-    const cards: Record<string, LairMonsterCardModel | null> = {};
-    for (const loc of hexLocations) {
-      const subtype = loc.properties?.locationSubtype ?? loc.properties?.locationType;
-      if (subtype !== 'lair' && subtype !== 'cleared_lair') continue;
-      cards[loc.id] = buildLairMonsterCardModel(gameState.graph, loc.id, gameState.tick, gameState.ascendantId);
-    }
-    return cards;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hexLocations, gameState.graph, gameState.ascendantId, runtime.worldVersion]);
-
-  // ── Survey people-layer prose — most-recent survey_completed event for the focused hex (THR-439) ──
-  const surveyPeopleEvent = useMemo(() => {
-    if (!focusedHex) return undefined;
-    const hexCol = focusedHex.col;
-    const hexRow = focusedHex.row;
-    let latest: (typeof gameState.recentEvents)[number] | undefined;
-    for (const ev of gameState.recentEvents) {
-      if (ev.type !== 'survey_completed') continue;
-      if (ev.hexCoords?.col !== hexCol || ev.hexCoords?.row !== hexRow) continue;
-      if (!latest || ev.tick > latest.tick) latest = ev;
-    }
-    return latest;
-  }, [gameState.recentEvents, focusedHex]);
-
   // ── Location activity summaries — drives murmur tooltips on hex hover (THR-22) ──
   const { summaries: locationActivitySummaries } = useLocationActivities({
     graph: gameState.graph,
@@ -1879,33 +1723,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [locationActivitySummaries]);
 
   // ── Ambient audio context inputs ──
-  /** Dominant location sound subtype for the hex chronicle panel (priority 1). */
-  const hexChronicleSubtype = useMemo<import('../../types').LocationSubtype | null>(() => {
-    if (viewLevel !== 'hex-zoom' || !focusedHex) return null;
-    const locs = locationNodes.filter(
-      l => l.hexCol === focusedHex.col && l.hexRow === focusedHex.row
-    );
-    if (locs.length === 0) return null;
-    const PRIORITY = [
-      'city', 'capital', 'castle', 'fort', 'temple', 'shrine', 'healing_spring',
-      'standing_stones', 'ley_nexus', 'fey_crossing', 'living_archive',
-      'cavern', 'ruins', 'ruined_city', 'crystal_cavern', 'ancient_vault', 'shadow_hollow',
-      'sacrifice_site', 'haunted_ground', 'corruption_zone', 'nest', 'lair', 'battleground',
-      'hamlet', 'town',
-    ] as const;
-    for (const s of PRIORITY) {
-      if (locs.some(l => l.locationType === s)) return s as import('../../types').LocationSubtype;
-    }
-    return (locs[0]!.locationType as import('../../types').LocationSubtype) ?? null;
-  }, [viewLevel, focusedHex, locationNodes]);
-
-  /** Location subtype for the open location detail panel (priority 2). */
-  const locationDetailSubtype = useMemo<import('../../types').LocationSubtype | null>(() => {
-    if (viewLevel !== 'location') return null;
-    const subtype = focusedLocation?.properties?.locationSubtype as string | undefined;
-    return (subtype as import('../../types').LocationSubtype) ?? null;
-  }, [viewLevel, focusedLocation]);
-
   /** Active encounter template for audio override (priority 3). */
   const activeUnifiedActionTemplate = useMemo<UnifiedActionTemplate | null>(() => {
     const active = gameState.encounterProgress.find(ep => ep.status === 'active');
@@ -1917,67 +1734,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useAmbientContext({
     terrainHex: selectedHex ?? cameraCenter,
     tiles,
-    hexChronicleSubtype,
-    locationDetailSubtype,
+    // THR-1912: the hex chronicle and location panels that fed priorities 1 and 2 retired.
+    hexChronicleSubtype: null,
+    locationDetailSubtype: null,
     activeUnifiedActionTemplate,
   });
 
-  // ── Location encounter data (available + active) ──
-  const locationEncounters = useMemo(() => {
-    if (!focusedLocation || viewLevel !== 'location') {
-      return { available: [], active: [] };
-    }
-
-    // Get location subtype for encounter lookup
-    const locProps = (focusedLocation.properties ?? {}) as Record<string, unknown>;
-    const subtype = typeof locProps.locationSubtype === 'string'
-      ? locProps.locationSubtype
-      : '';
-
-    // Get available encounters for this location type + its sublocation types
-    const sublocationTypeIds = (SUBTYPE_SUBLOCATION_MAP[subtype] ?? []).map(d => d.id);
-    const available = subtype ? getEncountersForLocation(subtype, sublocationTypeIds) : [];
-
-    // Get active encounters whose actor is at this location.
-    // Unified actions are the primary display model; legacy progress only fills gaps.
-    const activeByActor = new Map<string, ActiveEncounterDisplay>();
-    const actorAtFocusedLocation = (actorId: string) => {
-      const actorEdges = gameState.graph.getAllEdgesForNode(actorId);
-      return actorEdges.some(e => e.type === 'located_at' && e.target === focusedLocation.id);
-    };
-
-    for (const progress of gameState.encounterProgress) {
-      if (progress.status !== 'active') continue;
-      if (!actorAtFocusedLocation(progress.actorId)) continue;
-      activeByActor.set(progress.actorId, buildActiveEncounterDisplayFromLegacyProgress(progress));
-    }
-
-    for (const action of gameState.unifiedActions) {
-      if (action.resolved) continue;
-      if (!getUnifiedTemplateById(action.templateId)) continue;
-      if (!actorAtFocusedLocation(action.actorId)) continue;
-      activeByActor.set(action.actorId, buildActiveEncounterDisplayFromUnifiedAction(action, gameState.tick));
-    }
-
-    const active = Array.from(activeByActor.values());
-
-    return { available, active };
-  }, [focusedLocation, viewLevel, gameState.encounterProgress, gameState.graph, gameState.tick, gameState.unifiedActions]);
-
-  // RC-002: Extracted to avoid inline arrow in render
-  const getAgentName = useCallback(
-    (id: string) => gameState.graph.getNode(id)?.name ?? 'Unknown',
-    [gameState.graph, runtime.worldVersion],
-  );
-
   // IX-002: Wrapped scry click with cross-hook overlay mutual exclusion
-  // Also clears agent & hex selection so ActionDrawers don't persist behind the court overlay
+  // Also clears agent & hex selection so nothing selected persists behind the court overlay
   const handleScryWithMutex = useCallback(() => {
     closeAllAgentOverlays();
     handleBackFromAgentDetail(); // clears selectedAgentId + drawerOpen
     handleHexDetailClose();      // clears selectedHexCoord
-    setNonAgentDrawerOpen(false);
-    setManualTargetContext(null);
     handleAvatarScryClick();
   }, [closeAllAgentOverlays, handleBackFromAgentDetail, handleHexDetailClose, handleAvatarScryClick]);
 
@@ -2236,89 +2004,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return map;
   }, [gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
-  /** Open the tiered encounter modal from ThreadsPanel or EncounterLog click */
-  const handleEncounterClick = useCallback((
-    agentId: string,
-    encounter: ActiveEncounterDisplay,
-    template: UnifiedActionTemplate,
-  ) => {
-    // Resolve live runtime first so the modal opens from unified state when available.
-    const { encounter: runtimeEncounter, activeAction } = selectEncounterRuntimeForDisplay(
-      encounter,
-      gameState.encounterProgress,
-      gameState.unifiedActions,
-      gameState.tick,
-    );
-    if (!runtimeEncounter) return;
-    const notif = (gameState.encounterNotifications ?? []).find(
-      n => n.agentId === agentId
-        && n.encounterId === encounter.encounterId
-        && (
-          n.kind === 'aftermath'
-            ? Boolean(runtimeEncounter.aftermathSummary)
-            : (n.stepIndex ?? runtimeEncounter.currentStepIndex) === runtimeEncounter.currentStepIndex
-        )
-        && !n.resolved,
-    );
-    // Build a synthetic notification if none exists (e.g., for non-threaded agents)
-    const notification: EncounterNotification = notif ?? {
-      id: `synthetic-${agentId}-${encounter.encounterId}`,
-      agentId,
-      agentName: gameState.graph.getNode(agentId)?.name ?? 'Unknown',
-      courtPosition: null,
-      encounterId: encounter.encounterId,
-      kind: runtimeEncounter.aftermathSummary ? 'aftermath' : 'step',
-      stepIndex: runtimeEncounter.aftermathSummary ? undefined : runtimeEncounter.currentStepIndex,
-      encounterName: template.name,
-      prose: runtimeEncounter.aftermathSummary
-        ? runtimeEncounter.aftermathSummary.overview
-        : template.steps[runtimeEncounter.currentStepIndex]?.narrative ?? '',
-      choices: [],
-      createdTick: runtimeEncounter.startedTick,
-      autoResolveTick: null,
-      viewed: true,
-      resolved: false,
-      sourceSystem: runtimeEncounter.sourceSystem,
-      actionId: runtimeEncounter.actionId ?? activeAction?.actionId,
-    };
-    const threadTier = courtPositionToThreadTier(notification.courtPosition);
-    const clearanceGateRuntimeId = activeAction?.clearanceGateIds?.[0];
-    const clearanceGateStateSnapshot = clearanceGateRuntimeId
-      ? gameState.clearanceGateStates?.get(clearanceGateRuntimeId)
-      : undefined;
-
-    // World view → encounter handoff (THR-340 / Phase F2):
-    // emit `spotlight_changed` trace, then write the new spotlightedAgent to GameState.
-    // The world freeze (the Stellaris clock — time stops for every moment) is
-    // enforced by the central interrupt auto-pause, which runs `setRunning(false)`
-    // when tieredEncounterState mounts.
-    const prevSpotlight = gameState.spotlightedAgent ?? null;
-    if (prevSpotlight !== agentId) {
-      prepareEncounterHandoff({
-        fromAgentId: prevSpotlight,
-        toAgentId: agentId,
-        trigger: 'world_handoff',
-        tick: gameState.tick,
-      });
-      setGameState(prev => (prev.spotlightedAgent === agentId
-        ? prev
-        : { ...prev, spotlightedAgent: agentId }));
-    }
-
-    setTieredEncounterState({
-      notification,
-      encounter: runtimeEncounter,
-      template,
-      agentId,
-      agentName: notification.agentName,
-      threadTier,
-      openedAsInterrupt: false,
-      activeActionId: activeAction?.actionId,
-      clearanceGateRuntimeId,
-      activeActionSnapshot: activeAction,
-      clearanceGateStateSnapshot,
-    });
-  }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.spotlightedAgent, gameState.tick, gameState.unifiedActions, setGameState]);
 
   const suppressedEncounterNotificationId = useRef<string | null>(null);
   /**
@@ -3255,41 +2940,29 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
 
-  // ── Stub modal state for non-agent thread types (Plan 16-02) ──
-  const [stubModalState, setStubModalStateRaw] = useState<{ nodeId: string; category: import('../../engine/retinue').ThreadCategory } | null>(null);
+  // ── Sheet openers for non-agent thread types (Plan 16-02) ──
   /**
-   * THR-1911 (§ D13): every caller of the stub sheets (place, faction, army, artifact)
-   * keeps its call and reaches the subject's page, wide. Only the debug lever still opens
-   * a retired sheet, for comparison until S4 deletes them.
+   * THR-1911 (§ D13): every caller of the old place, faction, army and artifact sheets
+   * keeps its call and reaches the subject's page, wide. The sheets themselves retired
+   * with THR-1912; `null` (close) is the Inspector's own.
    */
   const setStubModalState = useCallback((value: { nodeId: string; category: import('../../engine/retinue').ThreadCategory } | null) => {
-    if (value === null) {
-      setStubModalStateRaw(null);
-      return;
-    }
+    if (value === null) return;
     const kind: WorldRefKind = value.category === 'location' ? placeRefKind(gameState, value.nodeId) : value.category;
     openPage({ kind, id: value.nodeId }, 'sheet');
   }, [gameState, openPage]);
 
-  // ── Attachment sheet, opened from an aftermath consequence chip (THR-1120) ──
-  //
-  // Deliberately its own state rather than a fifth `stubModalState.category`:
-  // that field is a `ThreadCategory`, the divine-court vocabulary THR-1099 ruled
-  // off-limits for things that are not threads. A granted condition is not a
-  // thread the god holds — it is a thing that happened to someone.
-  const [attachmentSheetId, setAttachmentSheetIdRaw] = useState<string | null>(null);
+  // ── Attachment page, opened from an aftermath consequence chip (THR-1120) ──
   /** THR-1911 (§ D13): an attachment opens its content card in the Inspector. */
   const setAttachmentSheetId = useCallback((id: string | null) => {
-    if (id === null) setAttachmentSheetIdRaw(null);
-    else openPage({ kind: 'attachment', id });
+    if (id !== null) openPage({ kind: 'attachment', id });
   }, [openPage]);
 
   // ═══ The one ref router (THR-1490) ═══════════════════════════════════════
   //
   // Built here rather than in a provider because GameView's own handlers call `open`,
   // and a component cannot consume a context it renders. It is published to the tree
-  // below through `RefRouterProvider`, and the detail stack it owns through
-  // `DetailModalStackValueProvider` — mounted once, for the whole game.
+  // below through `RefRouterProvider`.
   //
   // Placed at this line and not beside the other handlers because the Tier-3 openers it
   // needs (`setStubModalState`, `setAttachmentSheetId`) are declared just above.
@@ -3381,10 +3054,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const openDetailNodeRef = useDetailNodeRefOpener(refRouter, getLiveGraph);
 
   // ── Debug modal auto-opener (dev-only, tree-shaken in prod) ──
+  // THR-1912: the levers open the Inspector pages that replaced the retired sheets.
   useDebugOpenModal(_gameStateRef, {
-    openAgentProfileForId,
-    // The debug lever still opens a retired sheet directly (comparison until S4).
-    openStubModal: (nodeId, category) => setStubModalStateRaw({ nodeId, category }),
+    openAgentProfileForId: openAgentSheetForId,
+    openStubModal: (nodeId, category) => setStubModalState({ nodeId, category }),
   });
 
   useEffect(() => {
@@ -3582,37 +3255,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameState.tick, meetTheFirstAvailable, meetingState, gameState.meetTheFirstAutoTriggered, openingBeatResolved, ascendantIdentity]);
 
-  // Inject Meet The First card into non-agent slots when on a location view
-  const enrichedNonAgentSlots = useMemo(() => {
-    const base = nonAgentSlots ?? [];
-    if (!offersMeetTheFirstCard({
-      viewLevel,
-      meetTheFirstAvailable,
-      hasFocusedLocation: !!focusedLocation,
-      hasAscendantIdentity: !!ascendantIdentity,
-    })) return base;
-    const meetSlot: WheelSlot = {
-      id: MEET_THE_FIRST_SLOT_ID,
-      label: 'Meet The First',
-      type: 'intervention',
-      angleDeg: 0,
-      available: true,
-      lockedReason: null,
-      essenceCost: 0,
-      sphere: archetype.sphereAlignment.primary,
-      interventionType: null,
-      rangeStatus: 'unlimited',
-      hexDistance: null,
-      description: 'Claim a mortal as your champion — The First to carry your will.',
-    };
-    return [meetSlot, ...base];
-  }, [nonAgentSlots, viewLevel, meetTheFirstAvailable, focusedLocation, focusedLocationAgents, archetype.sphereAlignment.primary, ascendantIdentity]);
-
-  // THR-1911 (§ D13): FactionSheet's "act on it" opens the faction's page; its Act row casts.
-  const handleOpenFactionActions = useCallback((factionId: string) => {
-    openPage({ kind: 'faction', id: factionId });
-  }, [openPage]);
-
   // ── Attention mode toggle (TB-040) ──
   // THR-1715: changing attention mode is free (ATTENTION_MODE_CHANGE_COST = 0);
   // the old charge wrote `prev.essence`, a field GameState does not have, so it
@@ -3747,19 +3389,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     settingsPanelOpen,
     readThreadsOpen,
     agendaPickerOpen: agendaPickerOpen && !!pendingAgendas,
-    // The agent drawer's render guard includes `wheelSlots`: with no slots nothing is on
-    // screen, and a hold on an invisible drawer would keep the gift waiting for nothing.
-    // THR-1911: both ActionDrawer mounts are gone; the Act row casts from the Inspector.
-    actionDrawerOpen: false,
     inspectorFullOpen,
-    agentProfileOpen: !!profileModalAgentId && !!agentInfoCard,
-    // Same guard as the stub sheet's render: a sheet whose node is gone renders nothing.
-    stubSheetCategory: stubModalState
-      && (threadedNodes.some(n => n.id === stubModalState.nodeId) || gameState.graph.getNode(stubModalState.nodeId))
-      ? stubModalState.category
-      : null,
-    attachmentSheetOpen: !!attachmentSheetId,
-    ascendantSheetOpen,
     doomDetailOpen,
     mandateDetailOpen: mandateDetailOpen && !!gameState.mandateDefinition && !!gameState.mandateState,
     harvestOpen: !!harvestResult,
@@ -4223,18 +3853,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const getDebugActiveUIState = useCallback(() => {
     const urlView = new URLSearchParams(window.location.search).get('view') ?? 'game';
     const openModals = getDebugOpenModals();
-    const selectedFactionId = stubModalState?.category === 'faction'
-      ? stubModalState.nodeId
-      : selectedThreadNode?.category === 'faction'
-        ? selectedThreadNode.nodeId
-        : null;
+    const selectedFactionId = selectedThreadNode?.category === 'faction'
+      ? selectedThreadNode.nodeId
+      : null;
 
     return {
       view: urlView,
       selectedAgentId: selectedAgentId ?? null,
-      selectedLocationId: focusedLocationId,
+      selectedLocationId: selectedThreadNode?.category === 'location' ? selectedThreadNode.nodeId : null,
       selectedFactionId,
-      selectedHex: selectedHexCoord ?? selectedHex ?? focusedHex ?? null,
+      selectedHex: selectedHexCoord ?? selectedHex ?? null,
       openModals,
       // THR-1911: both ActionDrawer mounts are retired; the Act row in the Inspector casts.
       actionDrawerOpen: false,
@@ -4244,19 +3872,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     };
   }, [
     cameraCenter,
-    drawerOpen,
-    enrichedNonAgentSlots,
-    focusedHex,
-    focusedLocationId,
     getDebugOpenModals,
-    nonAgentDrawerOpen,
     running,
     scryVisible,
     selectedAgentId,
     selectedHex,
     selectedHexCoord,
     selectedThreadNode,
-    stubModalState,
   ]);
 
   // ── Incident snapshot (THR-1134) ──
@@ -4378,7 +4000,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // it reads is already defined; each lever keeps the deps it had inline.
   useGameDebugLevers({
     gameState, setGameState, runtime, tiles, hexMapRef,
-    handleAgentSelect, openAgentProfileForId, fogDisabled, setFogDisabled, _gameStateRef,
+    handleAgentSelect, openAgentProfileForId: openAgentSheetForId, fogDisabled, setFogDisabled, _gameStateRef,
     viewSource, avatarNodeId, threadedAgentIdsForActivity, activityActionsVersion,
     needsYouSources, needsYouStamp: needsYouStamp(needsYouSources),
     dominionLensBase, dominionLensOn, dominionProjectionNow, dominionDrops, setDominionLens,
@@ -4449,16 +4071,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return () => window.__DEBUG?._registerInspectorBridge(null);
   }, [refRouter]);
 
-  // IX-013: Wrapped location click closes drawer before drilling down
-  const handleLocationClickWithClose = useCallback((locationId: string) => {
-    handleDrawerClose();
-    handleLocationClick(locationId);
-  }, [handleDrawerClose, handleLocationClick]);
-
   return (
     <GameErrorBoundary>
       <ViewSourceContext.Provider value={viewSource}>
-      <DetailModalStackValueProvider value={refRouter.stack}>
       <RefRouterProvider router={refRouter}>
       <DetailPageOpenerProvider value={openDetailNodeRef}>
       <GameScreenStateProvider value={gameScreen}>
@@ -4570,171 +4185,71 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               receiptOpenLocked={interruptResolution.foreground !== null}
             />
             {/* The world map: HexMapV2, lens switch, summary bar, map-anchored dialogs (THR-1881 step d) */}
-            {viewLevel === 'world' && (
-              <GameMap
-                gameState={gameState}
-                setGameState={setGameState}
-                runtime={runtime}
-                hexMapRef={hexMapRef}
-                tiles={tiles}
-                COLS={COLS}
-                ROWS={ROWS}
-                hoveredHex={hoveredHex}
-                selectedHexCoord={selectedHexCoord}
-                selectedHex={selectedHex}
-                riverPaths={riverPaths}
-                lakeIds={lakeIds}
-                areaProjection={areaProjection}
-                realmProjection={realmProjection}
-                realmHolderIndex={realmHolderIndex}
-                locationNodes={locationNodes}
-                anomalyNodes={anomalyNodes}
-                roadPaths={roadPaths}
-                agentRenderDataWithActivity={agentRenderDataWithActivity}
-                armyRenderData={armyRenderData}
-                reachSignatureMarkers={reachSignatureMarkers}
-                battleRenderData={battleRenderData}
-                threadLineData={threadLineData}
-                companyRenderData={companyRenderData}
-                activityIconData={activityIconData}
-                attentionRatio={attentionRatio}
-                fogDisabled={fogDisabled}
-                effectiveVisibilityMap={effectiveVisibilityMap}
-                showOrganicShore={showOrganicShore}
-                scryVisible={scryVisible}
-                harvestResult={harvestResult}
-                sphereColor={sphereColor}
-                avatarTargetHex={avatarTargetHex}
-                setCameraCenter={setCameraCenter}
-                handleHexClickFull={handleHexClickFull}
-                setHoveredHex={setHoveredHex}
-                // THR-1911 (§ D10): agents and armies open themselves; a pinned Inspector stays.
-                handleThreadNodeSelect={handleMapNodeSelect}
-                handleOpenProfileModal={handleMapNodeSelect}
-                onPlaceLabelClick={handlePlaceLabelClick}
-                hexStrategicOverlays={hexStrategicOverlays}
-                locationActivityByHex={locationActivityByHex}
-                spotlightThreadColor={spotlightThreadColor}
-                cameraGateCallback={cameraGateCallback}
-                dominionLensForMap={dominionLensForMap}
-                dominionTooltip={dominionTooltip}
-                activeLens={activeLens}
-                lensSuppressed={lensSuppressed}
-                hexLens={hexLensVM}
-                setMapLensFromBar={setMapLensFromBar}
-                dominionBandColors={dominionBandColors}
-                locationActivitySummaries={locationActivitySummaries}
-                agendaPickerOpen={agendaPickerOpen}
-                pendingAgendas={pendingAgendas}
-                wheelSlots={wheelSlots}
-                pendingIntervention={pendingIntervention}
-                handleAgendaSelect={handleAgendaSelect}
-                handleAgendaCancel={handleAgendaCancel}
-                selectedAgenda={selectedAgenda}
-                handleInterventionConfirm={handleInterventionConfirm}
-                handleInterventionCancel={handleInterventionCancel}
-                pendingChoice={pendingChoice}
-                setPendingChoice={setPendingChoice}
-              />
-            )}
+            <GameMap
+              gameState={gameState}
+              setGameState={setGameState}
+              runtime={runtime}
+              hexMapRef={hexMapRef}
+              tiles={tiles}
+              COLS={COLS}
+              ROWS={ROWS}
+              hoveredHex={hoveredHex}
+              selectedHexCoord={selectedHexCoord}
+              selectedHex={selectedHex}
+              riverPaths={riverPaths}
+              lakeIds={lakeIds}
+              areaProjection={areaProjection}
+              realmProjection={realmProjection}
+              realmHolderIndex={realmHolderIndex}
+              locationNodes={locationNodes}
+              anomalyNodes={anomalyNodes}
+              roadPaths={roadPaths}
+              agentRenderDataWithActivity={agentRenderDataWithActivity}
+              armyRenderData={armyRenderData}
+              reachSignatureMarkers={reachSignatureMarkers}
+              battleRenderData={battleRenderData}
+              threadLineData={threadLineData}
+              companyRenderData={companyRenderData}
+              activityIconData={activityIconData}
+              attentionRatio={attentionRatio}
+              fogDisabled={fogDisabled}
+              effectiveVisibilityMap={effectiveVisibilityMap}
+              showOrganicShore={showOrganicShore}
+              scryVisible={scryVisible}
+              harvestResult={harvestResult}
+              sphereColor={sphereColor}
+              avatarTargetHex={avatarTargetHex}
+              setCameraCenter={setCameraCenter}
+              handleHexClickFull={handleHexClickFull}
+              setHoveredHex={setHoveredHex}
+              // THR-1911 (§ D10): agents and armies open themselves; a pinned Inspector stays.
+              handleThreadNodeSelect={handleMapNodeSelect}
+              handleOpenProfileModal={handleMapNodeSelect}
+              onPlaceLabelClick={handlePlaceLabelClick}
+              hexStrategicOverlays={hexStrategicOverlays}
+              locationActivityByHex={locationActivityByHex}
+              spotlightThreadColor={spotlightThreadColor}
+              cameraGateCallback={cameraGateCallback}
+              dominionLensForMap={dominionLensForMap}
+              dominionTooltip={dominionTooltip}
+              activeLens={activeLens}
+              lensSuppressed={lensSuppressed}
+              hexLens={hexLensVM}
+              setMapLensFromBar={setMapLensFromBar}
+              dominionBandColors={dominionBandColors}
+              agendaPickerOpen={agendaPickerOpen}
+              pendingAgendas={pendingAgendas}
+              wheelSlots={wheelSlots}
+              pendingIntervention={pendingIntervention}
+              handleAgendaSelect={handleAgendaSelect}
+              handleAgendaCancel={handleAgendaCancel}
+              selectedAgenda={selectedAgenda}
+              handleInterventionConfirm={handleInterventionConfirm}
+              handleInterventionCancel={handleInterventionCancel}
+              pendingChoice={pendingChoice}
+              setPendingChoice={setPendingChoice}
+            />
 
-            {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (() => {
-              const focusedTile = getTile(focusedHex.col, focusedHex.row);
-              const hexTerrain = focusedTile?.terrain ?? 'grassland';
-              const hexDangerLevel = focusedTile?.dangerLevel ?? 0;
-              return (
-                <div className="flex flex-col h-full w-full">
-                  <HexBreadcrumb
-                    hexCol={focusedHex.col}
-                    hexRow={focusedHex.row}
-                    terrain={hexTerrain}
-                    locationCount={hexLocations.length}
-                    agentCount={hexTotalAgents}
-                    lineOfSight={hexLineOfSight}
-                    sphereInfluence={hexSphereInfluence}
-                    cultures={hexCultures}
-                    factions={hexFactions}
-                    regionName={hexRegionData?.regionName}
-                    onBack={handleBackToWorld}
-                    data-testid="hex-breadcrumb"
-                  />
-                  <div className="flex-1 flex overflow-hidden">
-                    {/* Left: Collapsible stats sidebar */}
-                    <HexSidebar
-                      terrain={hexTerrain}
-                      hexCol={focusedHex.col}
-                      hexRow={focusedHex.row}
-                      sphereInfluence={hexSphereInfluence}
-                      regionData={hexRegionData}
-                      locations={hexLocations}
-                      agentsByLocation={hexAgentsByLocation}
-                      lineOfSight={hexLineOfSight}
-                      cultures={hexCultures}
-                      factions={hexFactions}
-                      dangerLevel={hexDangerLevel}
-                      onLocationClick={(locationId) => setStubModalState({ nodeId: locationId, category: 'location' })}
-                      lairMonsterCards={hexLairMonsterCards}
-                      onMonsterClick={(monsterId) => handleThreadNodeSelect(monsterId, 'agent')}
-                    />
-
-                    {/* Main: Narrative chronicle */}
-                    <HexChronicle
-                      terrain={hexTerrain}
-                      hexCol={focusedHex.col}
-                      hexRow={focusedHex.row}
-                      lineOfSight={hexLineOfSight}
-                      sphereInfluence={hexSphereInfluence}
-                      cultures={hexCultures}
-                      factions={hexFactions}
-                      locations={hexLocations}
-                      agentsByLocation={hexAgentsByLocation}
-                      factionsByLocation={hexFactionsByLocation}
-                      regionData={hexRegionData}
-                      onLocationClick={handleLocationClickWithClose}
-                      onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
-                      onFactionClick={(factionId) => handleThreadNodeSelect(factionId, 'faction')}
-                      graph={gameState.graph}
-                      seed={gameState.seed}
-                      tick={gameState.tick}
-                      runtime={runtime}
-                      controlEffects={(gameState.controlEffects ?? []).filter(
-                        e => e.active && e.targetHexCol === focusedHex.col && e.targetHexRow === focusedHex.row
-                      )}
-                      surveyPeopleProse={surveyPeopleEvent?.message}
-                      surveyPeopleProseTick={surveyPeopleEvent?.tick}
-                    />
-                  </div>
-                </div>
-              );
-            })()}
-
-            {viewLevel === 'location' && focusedLocation && focusedHex && (
-              <LocationView
-                location={focusedLocation}
-                agents={focusedLocationAgents}
-                hexTerrain={getTile(focusedHex.col, focusedHex.row)?.terrain ?? 'grassland'}
-                hexCol={focusedHex.col}
-                hexRow={focusedHex.row}
-                onAgentClick={handleAgentSelect}
-                onBack={handleBackToHex}
-                availableEncounters={locationEncounters.available}
-                activeEncounters={locationEncounters.active}
-                getAgentName={getAgentName}
-                onEncounterClick={handleEncounterClick}
-                getUnifiedActionTemplate={getUnifiedTemplateById}
-                graph={gameState.graph}
-                seed={gameState.seed}
-                tick={gameState.tick}
-                runtime={runtime}
-                onNavigateToRuin={handleZoomToLocation}
-                rivalDefinitions={gameState.rivalDefinitions}
-                strategicState={gameState.strategicState}
-                pastKnowledge={pastKnowledge}
-                familiarityMap={gameState.familiarityMap}
-                dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, focusedLocation.id, gameState.controlEffects, true)}
-                ascendantId={gameState.ascendantId}
-              />
-            )}
           </div>
 
         </div>
@@ -4888,146 +4403,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handleRiteWithoutHand={handleRiteWithoutHand}
       />
 
-      {/* Agent Profile Modal overlay */}
-      <AnimateMount show={!!profileModalAgentId && !!agentInfoCard} animation="anim-fade-up">
-        {agentInfoCard && (
-          <AgentProfileModal
-            card={agentInfoCard}
-            dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, agentInfoCard.id)}
-            profile={agentFullProfile}
-            onClose={handleCloseProfile}
-            scrollToNewStrata={agentInfoCard.backstory?.strata.some(s => s.isNew) ?? false}
-            // THR-1963 — the thread panel's work/ambition lines and the work moments open Journey.
-            initialTab={profileInitialTab}
-            onChronicleViewed={handleProfileChronicleViewed}
-            knowledge={profileModalAgentId ? gameState.agentKnowledge.get(profileModalAgentId) : undefined}
-            gameState={gameState}
-            runtime={runtime}
-            // THR-1500 judgement call 1 — the sheet's own cast links navigate
-            // *between* sheets while this modal is open, so the swap is not a
-            // pure one: `openAgentSheetForId` also moves `selectedAgentId` (and
-            // closes the drawer) behind the modal. That is the decision taken,
-            // not a side effect tolerated. There is no variant that moves the
-            // card without moving the selection — `agentInfoCard` is memoised on
-            // `selectedAgentId` (`useAgentInteraction.ts:194`), so a card for the
-            // companion cannot exist until the selection is theirs; the only
-            // alternative was re-keying that memo on `profileModalAgentId`, a
-            // wide change to the drawer's card for one link's sake. Moving the
-            // selection is also the truthful state: the player is now reading
-            // this mortal, so closing the sheet should leave the world on them
-            // rather than on whoever they arrived from.
-            onOpenEntity={openAgentSheetForId}
-            // The Faction section opens the faction's own sheet (THR-1149) —
-            // the same stub-modal route the hex and thread surfaces use, not
-            // `onOpenEntity`, which resolves every id to an agent profile.
-            onOpenFaction={(factionNodeId) => setStubModalState({ nodeId: factionNodeId, category: 'faction' })}
-            // The ledger's object link opens the place (THR-1434).
-            onOpenLocation={handleLocationClick}
-            // Opens above a modal-tier interrupt (THR-1139) — the premonition
-            // renders later in this file and would otherwise win the equal-z tie.
-            zIndex={MODAL_Z_ABOVE_INTERRUPT}
-            // THR-1299 slice 4 — the arc panel's follow toggle.
-            followState={profileModalAgentId ? describeFollowFor(profileModalAgentId) : undefined}
-            onToggleFollow={(agentId) => handleToggleFollow(agentId, 'arc_panel')}
-            // THR-1609 — the avatar's sheet names it as the player's own shape.
-            mortalShape={profileModalAgentId && profileModalAgentId === avatarNodeId
-              ? { godTitleLine: avatarGodTitleLine(gameState.ascendantIdentity?.divineName, archetype.title, gameState.ascendantIdentity?.hungerName),
-                  sphereColor,
-                  portraitUrl: getOriginPortraitUrl(gameState.ascendantIdentity?.originFragmentId ?? ''),
-                }
-              : undefined}
-          />
-        )}
-      </AnimateMount>
-
-      {/* Stub profile modals for non-agent thread types */}
-      <AnimateMount show={stubModalState !== null} animation="anim-fade-up">
-        {stubModalState && (() => {
-          // Look in retinue first; fall back to full graph so non-retinue nodes also work.
-          const retinueNode = threadedNodes.find(n => n.id === stubModalState.nodeId);
-          const graphNode = retinueNode ?? gameState.graph.getNode(stubModalState.nodeId);
-          if (!graphNode) return null;
-          const nodeId = stubModalState.nodeId;
-          const nodeName = graphNode.name;
-          const onClose = () => setStubModalState(null);
-          switch (stubModalState.category) {
-            case 'location':
-              return (
-                <LocationProfileModal
-                  name={nodeName}
-                  locationId={nodeId}
-                  graph={gameState.graph}
-                  // THR-1206 — the viewer whose standing with this place the sheet
-                  // shows. The avatar is the player's body in the world, so it is the
-                  // only honest answer to "your reputation here".
-                  viewerAgentId={
-                    getAvatarsOf(gameState.graph, gameState.ascendantId)[0]?.id
-                  }
-                  // THR-1155 — the *held by* line is a door. Same route the chronicle's
-                  // faction entries take, so a holder opens the sheet a player already
-                  // knows rather than a second faction surface.
-                  onOpenFaction={(factionId) => handleThreadNodeSelect(factionId, 'faction')}
-                  onClose={onClose}
-                />
-              );
-            case 'faction':
-              return (
-                <FactionSheet
-                  factionId={nodeId}
-                  name={nodeName}
-                  graph={gameState.graph}
-                  onClose={onClose}
-                  onOpenTargetActions={handleOpenFactionActions}
-                  dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, nodeId)}
-                />
-              );
-            case 'army':
-              return (
-                <ArmySheet
-                  name={nodeName}
-                  armyId={nodeId}
-                  graph={gameState.graph}
-                  onClose={onClose}
-                />
-              );
-            case 'artifact':
-              return (
-                <ArtifactSheet
-                  name={nodeName}
-                  artifactId={nodeId}
-                  graph={gameState.graph}
-                  worldVersion={runtime.worldVersion}
-                  onClose={onClose}
-                  dominion={dominionSheetVM(gameState.graph, gameState.ascendantId, nodeId)}
-                />
-              );
-            default:
-              return null;
-          }
-        })()}
-      </AnimateMount>
-
-      {/* Attachment sheet — the consequence chip's link half (THR-1120).
-          `Modal` sits at z-index 60 against the veil's 50, so the sheet opens
-          *over* the aftermath rather than behind it, and closing returns the
-          player to the ending they were reading. An id that resolves to no
-          attachment renders nothing: the chip that offered it was never
-          clickable, so this is belt-and-braces, not a silent failure path. */}
-      {attachmentSheetId && (() => {
-        const detail = resolveAttachmentTemplateDetail(gameState.graph, attachmentSheetId);
-        if (!detail) return null;
-        return (
-          <Modal open={true} onClose={() => setAttachmentSheetId(null)} maxWidth={720}>
-            <div data-testid="aftermath-attachment-sheet">
-              <AttachmentDetailView
-                attachment={detail}
-                onBack={() => setAttachmentSheetId(null)}
-              />
-            </div>
-          </Modal>
-        );
-      })()}
-
       {/* The Stage (THR-1881 split step c): the encounter veil and the one-moment
           interrupts — emergence dilemma, moment card, journey vignette, story beat,
           premonition. All of them portal, so this mount point decides no stacking. */}
@@ -5075,26 +4450,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         handlePremonitionDismiss={handlePremonitionDismiss}
       />
 
-      {/* Ascendant Sheet modal (character sheet for the player's god) */}
-      <AscendantSheet
-        open={ascendantSheetOpen}
-        onClose={() => setAscendantSheetOpen(false)}
-        gameState={gameState}
-        archetype={archetype}
-        avatarName={avatarName}
-        sphereColor={sphereColor}
-        originFragmentId={ascendantIdentity?.originFragmentId ?? ''}
-        onOpenCodex={openCodex}
-      />
-
-      {/* ═══ The detail stack (THR-1490, resolving THR-966 as mount) ═══
-          Built in 2026-05 (THR-301 Phase E) and imported by nothing but the style guide
-          ever since: generator, resolvers, fallback prose, breadcrumbs, snapshot tests,
-          and no consumer. This is the mount. Both components portal to `document.body`,
-          so their position in this tree costs nothing and their z-band is their own —
-          the card at 70+2·depth, above every sheet and every interrupt, because it is
-          the thing you opened *from* one of those. */}
-      <DetailModal />
       {refRouter.hoverCard && (
         <HoverCard page={refRouter.hoverCard.page} anchorEl={refRouter.hoverCard.anchorEl} />
       )}
@@ -5102,7 +4457,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       </GameScreenStateProvider>
       </DetailPageOpenerProvider>
       </RefRouterProvider>
-      </DetailModalStackValueProvider>
       </ViewSourceContext.Provider>
     </GameErrorBoundary>
   );
