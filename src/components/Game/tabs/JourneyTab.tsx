@@ -16,11 +16,6 @@ import type { AgentInfoCardData } from '../../../engine/agentDetail';
 import { summarizeActiveUndertakings, type ActiveUndertakingSummary } from '../../../engine/agentDetail';
 import type { AgentKnowledge } from '../../../types/agentKnowledge';
 import type { GameState } from '../../../types/gameState';
-import {
-  AMBITION_PRIMARY_INTERACTIONS,
-  AMBITION_SECONDARY_INTERACTIONS,
-} from '../../../types/agentKnowledge';
-import { readIntentionFromCard } from '../../../engine/intentionReading';
 import { SectionHeading } from '../../shared/SectionHeading';
 import { StepDots } from '../../shared/StepDots';
 import { Tooltip } from '../../shared/Tooltip';
@@ -28,31 +23,10 @@ import { IntentSection } from '../IntentSection';
 import { FollowToggle, type FollowDescriptor } from '../FollowToggle';
 import { getAgentArc, type AgentArcEntry } from '../../../engine/agentArc';
 import { stepOutcomeWord } from '../../../data/outcome-band-content';
-import { UNDERTAKING_HALT_RATCHET_N } from '../../../data/strategic-action-constants';
-
-// ─── Knowledge level helpers ──────────────────────────────────────
-
-const KNOWLEDGE_RANK: Record<string, number> = {
-  stranger: 0,
-  recognised: 1,
-  known: 2,
-  intimate: 3,
-  transparent: 4,
-};
-
-function hasKnowledge(level: string, minimum: string): boolean {
-  return (KNOWLEDGE_RANK[level] ?? 0) >= (KNOWLEDGE_RANK[minimum] ?? 0);
-}
-
-// ─── Words for the work ──────────────────────────────────────────
-
-/** The halts sentence: how close the work is to its fork, in words. */
-export function haltsSentence(u: ActiveUndertakingSummary): string {
-  if (u.escalated) return 'Doubled down once already; another run of halts ends it.';
-  if (u.halts <= 0) return 'Going as planned.';
-  if (u.halts >= UNDERTAKING_HALT_RATCHET_N - 1) return 'Halted again and again — one more and they must choose.';
-  return 'Halted once; pressing on.';
-}
+// The halts sentence and the ambitions gate moved into the engine (THR-1909) so the
+// Inspector's person rows and this tab read one copy; re-exported for existing callers.
+import { haltsSentence, visibleJourneyIntents } from '../../../engine/views/subjects/personRows';
+export { haltsSentence, visibleJourneyIntents };
 
 function UndertakingCard({ u }: { u: ActiveUndertakingSummary }) {
   const total = 5;
@@ -153,28 +127,6 @@ function DeedLine({ deed, onOpenEntity, onOpenLocation }: {
   );
 }
 
-/**
- * The ambitions the Journey tab lists, in its order, behind its knowledge gate.
- * Shared with the thread panel's "What they want most" line (THR-1963) so that
- * line is hidden exactly when the Ambitions section is.
- */
-export function visibleJourneyIntents(card: AgentInfoCardData, knowledge?: AgentKnowledge) {
-  // Whether to show ambitions — either via interaction depth OR the one mind-reading
-  // rule (THR-1433): familiarity, a followed mortal's mark, or a followed network.
-  const showAmbitions =
-    (knowledge != null && knowledge.interactionDepth >= AMBITION_PRIMARY_INTERACTIONS)
-    || readIntentionFromCard(card).readable;
-
-  // Whether to show secondary ambitions
-  const showSecondaryAmbitions =
-    (knowledge != null && knowledge.interactionDepth >= AMBITION_SECONDARY_INTERACTIONS)
-    || hasKnowledge(card.knowledgeLevel, 'intimate');
-
-  if (!card.intents || card.intents.length === 0) return [];
-  if (!showAmbitions) return [];
-  if (showSecondaryAmbitions) return card.intents;
-  return card.intents.filter(i => i.priority === 'primary');
-}
 
 export function JourneyTab({ card, knowledge, onOpenEntity, onOpenLocation, gameState, followState, onToggleFollow }: JourneyTabProps) {
   const visibleIntents = visibleJourneyIntents(card, knowledge);

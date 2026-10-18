@@ -245,6 +245,12 @@ export interface SectionBase {
   visibleAt?: readonly PageSurface[];
   /** Which Inspector tab it sits in, copied from its registry row. Absent = 'overview'. */
   tab?: InspectorTabId;
+  /**
+   * THR-1909 (additive): the section's label explains itself on hover (Law 17) — the
+   * `tooltipResolver` id a retiring sheet put on the same heading (`ui.arc_strip`,
+   * `ui.intention.*`). Absent = a plain label.
+   */
+  labelTooltipId?: string;
 }
 
 export interface ProseSection extends SectionBase {
@@ -270,12 +276,29 @@ export interface ChipsSection extends SectionBase {
 
 export interface EventCardSection extends SectionBase {
   kind: 'event-card';
-  /** "47 TURNS AGO · THE IRON MARKET" style header. */
+  /** "Three days ago · The Iron Market" style header. */
   whenLabel: string;
   /** Italic prose body. */
   prose: string;
-  /** Click target: opens the Event detail modal for this event. */
-  eventRef: NodeRef;
+  /**
+   * Click target: opens the Event detail modal for this event. THR-1909 made it
+   * optional — a story *list* (`entries`) is many happenings, and a store record with
+   * no graph node has nothing to open; the card then draws as plain text.
+   */
+  eventRef?: NodeRef;
+  /**
+   * THR-1909 (additive): a story told as a list — a person's timeline, arc, chapters.
+   * Each entry is a when-word and one line, newest or oldest first as the resolver
+   * orders them. Present = the card renders the list; `whenLabel`/`prose` then hold
+   * the empty-list line (`''` when there is none).
+   */
+  entries?: EventEntry[];
+}
+
+/** One line of a story list (THR-1909). `whenLabel` is words — `elapsedLabel`, never "N turns ago". */
+export interface EventEntry {
+  whenLabel: string;
+  prose: string;
 }
 
 /** One row of a `panel` (facts) section. */

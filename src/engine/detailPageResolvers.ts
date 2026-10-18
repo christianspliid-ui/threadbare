@@ -46,6 +46,7 @@ import {
 } from '../data/detail-page-fallback-templates';
 import type { GameState } from '../types/gameState';
 import type { ContentRef } from '../types/contentRef';
+import type { EntityNotice } from '../types/notification';
 import { elapsedLabel, humanizeKeySegment } from './aftermathWords';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { computeRankFromReputation } from '../types/faction';
@@ -95,6 +96,12 @@ export interface SectionResolverContext {
   record?: { kind: 'encounter' | 'journey' | 'receipt'; id: string; name?: string };
   /** THR-1876: the content a `content` page describes. */
   contentRef?: ContentRef;
+  /**
+   * THR-1909 (additive): the per-entity notices the god has not yet cleared — the
+   * notification store, which lives beside `GameState`, not in it. The person page's
+   * *Word of them* row reads it; absent (the lab, the hover card) the row is skipped.
+   */
+  entityNotices?: readonly EntityNotice[];
 }
 
 /** A section resolver returns 0 or 1 section. Returning null = "skip this section". */
@@ -394,36 +401,8 @@ const factionAllegiancesResolver: SectionResolver = (ctx) => {
   return section;
 };
 
-const notableCapabilitiesResolver: SectionResolver = (ctx) => {
-  const actor = ctx.graph.getNode(ctx.nodeId);
-  if (!actor) return null;
-  const reaches = actor.properties?.reaches as Record<string, number> | undefined;
-  if (!reaches) return null;
-
-  // Pick reaches >= 0.6 — "notable" in the colloquial sense.
-  const NOTABLE_REACH_THRESHOLD = 0.6;
-  const entries = Object.entries(reaches)
-    .filter(([, v]) => typeof v === 'number' && v >= NOTABLE_REACH_THRESHOLD)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 4);
-  if (entries.length === 0) return null;
-
-  const chips: ChipDescriptor[] = entries.map(([reach, value]) => ({
-    label: reach,
-    flavour: value >= 0.85 ? 'mastery' : value >= 0.7 ? 'strong' : 'capable',
-  }));
-
-  const section: ChipsSection = {
-    kind: 'chips',
-    typeId: 'notable_capabilities',
-    label: 'Notable capabilities',
-    gold: false,
-    tier: 'routine',
-    source: 'notableCapabilitiesResolver',
-    chips,
-  };
-  return section;
-};
+// THR-1909: `notable_capabilities` retired — it read `properties.reaches`, which no actor
+// writes; the person page's `domains` row replaces it (plan § D7.1).
 
 // ─── Item resolvers ───────────────────────────────────────────────────────────
 
@@ -921,7 +900,6 @@ export const ACTOR_RESOLVERS = {
   threads_between_them: threadsBetweenThemResolver,
   recent_encounters: recentEncountersResolver,
   faction_allegiances: factionAllegiancesResolver,
-  notable_capabilities: notableCapabilitiesResolver,
 } satisfies Record<string, SectionResolver>;
 
 export const ITEM_RESOLVERS = {

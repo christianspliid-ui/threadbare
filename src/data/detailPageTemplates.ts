@@ -39,6 +39,7 @@ import {
   recordFallback,
 } from '../engine/views/subjects/pageResolvers';
 import { CONTENT_RESOLVERS_BY_ROW } from '../engine/contentPageResolvers';
+import { PERSON_RESOLVERS } from '../engine/views/subjects/personRows';
 
 // ─── Tunable thresholds (NFP #1) ──────────────────────────────────────────────
 
@@ -57,6 +58,8 @@ export const DETAIL_PROSE_CACHE_TTL_TICKS = 1;
 const ALL: readonly PageSurface[] = ['hover', 'docked', 'wide', 'full'];
 /** The Inspector's three sizes, not the hover card. */
 const DWF: readonly PageSurface[] = ['docked', 'wide', 'full'];
+/** Wide and Full only — a docked page lists it under "More when widened". */
+const WF: readonly PageSurface[] = ['wide', 'full'];
 /** The hover card only (the Inspector's header or another row supersedes it there). */
 const HOVER: readonly PageSurface[] = ['hover'];
 
@@ -87,7 +90,17 @@ export type DetailPageRegistry = Record<PageLayoutKind, SectionSchemaEntry[]>;
 
 // ─── Per-kind schemas ─────────────────────────────────────────────────────────
 
-/** D7.1 Person — the S1 rows; S2a (THR-1909) ports the profile's fields. */
+/** A person row ported from the profile (THR-1909, S2a): engine-resolved, never mandatory. */
+function personRow(typeId: keyof typeof PERSON_RESOLVERS, order: number, tab: InspectorTabId, visibleAt: readonly PageSurface[]): SectionSchemaEntry {
+  return { typeId, order, mandatory: false, defaultResolver: PERSON_RESOLVERS[typeId], showcaseOverridable: false, visibleAt, tab };
+}
+
+/**
+ * D7.1 Person — tabs Overview · Prowess · Attachments · Bonds · Journey · Chronicle ·
+ * Chapters (the profile's seven). S1 built the table's first rows; S2a (THR-1909) ports
+ * every profile and thread-column field. `notable_capabilities` retired in S2a (no writer;
+ * `domains` replaces it).
+ */
 const ACTOR_SCHEMA: SectionSchemaEntry[] = [
   {
     typeId: 'portrait_with_disposition',
@@ -99,6 +112,14 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
     visibleAt: ALL,
     tab: 'overview',
   },
+  personRow('fate', 15, 'overview', DWF),
+  personRow('story_so_far', 20, 'overview', DWF),
+  personRow('revealed_notices', 25, 'overview', DWF),
+  personRow('under_your_hand', 30, 'overview', DWF),
+  personRow('intention', 35, 'overview', DWF),
+  personRow('current_work', 36, 'overview', DWF),
+  personRow('leading_ambition', 37, 'overview', DWF),
+  personRow('who_they_are', 40, 'overview', DWF),
   {
     typeId: 'dominion',
     order: 42,
@@ -108,15 +129,32 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
     visibleAt: DWF,
     tab: 'overview',
   },
-  {
-    typeId: 'notable_capabilities',
-    // Last, as before THR-1876: it reads `properties.reaches`, which no actor writes; S2a retires it.
-    order: 920,
-    mandatory: false,
-    defaultResolver: ACTOR_RESOLVERS.notable_capabilities,
-    showcaseOverridable: false,
-    tab: 'prowess',
-  },
+  personRow('allegiance', 45, 'overview', DWF),
+  personRow('company', 50, 'overview', WF),
+  personRow('nature', 55, 'overview', DWF),
+  personRow('core', 60, 'overview', WF),
+  personRow('personality', 65, 'overview', WF),
+  personRow('reputation', 70, 'overview', DWF),
+  personRow('words', 75, 'overview', WF),
+  personRow('origin', 80, 'overview', WF),
+  personRow('domains', 100, 'prowess', DWF),
+  personRow('conditions', 110, 'prowess', DWF),
+  personRow('bestowed_powers', 120, 'prowess', DWF),
+  personRow('slots', 200, 'attachments', DWF),
+  personRow('knows', 210, 'attachments', DWF),
+  personRow('inactive', 220, 'attachments', WF),
+  personRow('disposition', 320, 'bonds', DWF),
+  personRow('the_work', 400, 'journey', DWF),
+  personRow('designs', 410, 'journey', DWF),
+  personRow('ambitions', 420, 'journey', DWF),
+  personRow('arc_so_far', 430, 'journey', DWF),
+  personRow('their_story', 500, 'chronicle', WF),
+  personRow('timeline', 510, 'chronicle', WF),
+  personRow('full_account', 520, 'chronicle', WF),
+  personRow('interaction_record', 530, 'chronicle', WF),
+  personRow('completed_ambitions', 540, 'chronicle', WF),
+  personRow('intelligence', 550, 'chronicle', WF),
+  personRow('chapters', 600, 'chapters', WF),
   {
     typeId: 'what_she_is_to_him',
     order: 300,
