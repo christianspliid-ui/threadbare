@@ -671,6 +671,12 @@ export function EncounterVeil({
   // scrolls it (`forwardVeilWheel`). One ref: only one path renders at a time.
   const contentColumnRef = useRef<HTMLDivElement>(null);
   const handleVeilWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    // THR-1895 — a left column long enough to scroll keeps its own wheel, so the
+    // cast list scrolls without dragging the scene along with it.
+    if (event.target instanceof Element) {
+      const left = event.target.closest('[data-testid="veil-left-column"]');
+      if (left && left.scrollHeight > left.clientHeight + 1) return;
+    }
     forwardVeilWheel(contentColumnRef.current, event.target, event.deltaY);
   }, []);
 
@@ -716,12 +722,21 @@ export function EncounterVeil({
   const frame = (f: EncounterVeilFrame): ReactNode =>
     renderFrame ? renderFrame(f) : <InPlaceVeilFrame {...f} />;
 
-  /** THR-1895 — the left column: art, then the cast and *At stake* (plan THR-1877 § D4). */
-  const leftColumn = (art: { opacity: number; filter?: string }, withCast: boolean): ReactNode | null => {
-    const castNode = withCast && (model.cast.length > 0 || model.falloutPreview.length > 0) ? (
+  /**
+   * THR-1895 — the left column: art, then the cast and *At stake* (plan THR-1877 § D4).
+   * *At stake* is a forecast ("may decrease on failure"), so it shows only before the
+   * roll; on the aftermath the consequences say what happened, and the cast stays.
+   */
+  const leftColumn = (
+    art: { opacity: number; filter?: string },
+    show: { cast: boolean; atStake: boolean },
+  ): ReactNode | null => {
+    const showCast = show.cast && model.cast.length > 0;
+    const showAtStake = show.atStake && model.falloutPreview.length > 0;
+    const castNode = showCast || showAtStake ? (
       <>
-        <CastStrip cast={model.cast} threadTier={threadTier} onSelectAgent={onSelectAgent} />
-        <FalloutPreview fallout={model.falloutPreview} />
+        {showCast && <CastStrip cast={model.cast} threadTier={threadTier} onSelectAgent={onSelectAgent} />}
+        {showAtStake && <FalloutPreview fallout={model.falloutPreview} />}
       </>
     ) : null;
     if (!hasArt && !castNode) return null;
@@ -886,7 +901,7 @@ export function EncounterVeil({
       path: 'aftermath',
       onWheel: handleVeilWheel,
       label: aftermath.title ?? 'Aftermath',
-      left: leftColumn({ opacity: 0.5, filter: 'saturate(0.7)' }, true),
+      left: leftColumn({ opacity: 0.5, filter: 'saturate(0.7)' }, { cast: true, atStake: false }),
       right: (
         <div
           ref={contentColumnRef}
@@ -1732,7 +1747,7 @@ export function EncounterVeil({
       path: 'watched',
       onWheel: handleVeilWheel,
       label: model.header.title,
-      left: leftColumn({ opacity: ART_OPACITY.watched, filter: 'grayscale(40%)' }, true),
+      left: leftColumn({ opacity: ART_OPACITY.watched, filter: 'grayscale(40%)' }, { cast: true, atStake: true }),
       right: (
       <div
         data-testid="veil-watched-column"
@@ -2164,7 +2179,7 @@ export function EncounterVeil({
     path: 'step',
     onWheel: handleVeilWheel,
     label: model.header.title,
-    left: leftColumn({ opacity: ART_OPACITY[threadTier] }, !replayEntry),
+    left: leftColumn({ opacity: ART_OPACITY[threadTier] }, { cast: !replayEntry, atStake: !replayEntry }),
     right: (
     <div
       data-testid="veil-step-column"

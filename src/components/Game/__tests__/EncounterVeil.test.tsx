@@ -2827,6 +2827,33 @@ describe('THR-1895 — the encounter on the Stage', () => {
     expect(frames.map(f => f.label)).toContain('Gate Duty');
   });
 
+  // Review gate, round 1: *At stake* is a forecast, so it never stands beside an ending.
+  it('shows At stake on the step but not on the aftermath', () => {
+    const fallout = [{ kind: 'reputation' as const, label: 'Reputation may decrease on failure' }];
+    const step = render(<EncounterVeil {...defaultProps} model={{ ...mockModel, falloutPreview: fallout }} />);
+    expect(screen.getByTestId('veil-fallout-preview')).toBeInTheDocument();
+    step.unmount();
+    render(
+      <EncounterVeil
+        {...defaultProps}
+        model={{ ...mockModel, falloutPreview: fallout, aftermath: { title: 'Aftermath', overview: 'It passed.' } }}
+      />,
+    );
+    expect(screen.queryByTestId('veil-fallout-preview')).toBeNull();
+  });
+
+  // Review gate, round 1: a left column long enough to scroll keeps its own wheel.
+  it('does not scroll the scene when a wheel turns over a scrolling left column', () => {
+    const fallout = [{ kind: 'reputation' as const, label: 'Reputation may decrease on failure' }];
+    render(<EncounterVeil {...defaultProps} model={{ ...mockModel, falloutPreview: fallout }} />);
+    const left = screen.getByTestId('veil-left-column');
+    Object.defineProperty(left, 'scrollHeight', { configurable: true, value: 900 });
+    Object.defineProperty(left, 'clientHeight', { configurable: true, value: 400 });
+    const column = screen.getByTestId('veil-content-column');
+    fireEvent.wheel(screen.getByTestId('veil-fallout-preview'), { deltaY: 120 });
+    expect(column.scrollTop).toBe(0);
+  });
+
   it('renders in place, never into a portal, when no host supplies a frame', () => {
     const { container } = render(<EncounterVeil {...defaultProps} />);
     expect(container.querySelector('[data-testid="encounter-veil-frame"]')).not.toBeNull();
