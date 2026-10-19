@@ -485,6 +485,12 @@ export interface DebugInspectorState {
   hiddenForWidth: string[];
   /** The Act row's card ids, as the page shows them. */
   actCards: string[];
+  /** THR-1913 — every rendered row's card count (`row` is `kind:id`); rows with no card are absent. */
+  rowCounts: Array<{ row: string; count: number }>;
+  /** THR-1913 — the row whose card tray is open (`kind:id`), or null. */
+  trayOpen: string | null;
+  /** THR-1913 — the card armed in the open tray and the row it targets, or null. */
+  trayArmed: { actionId: string; target: string } | null;
 }
 
 /** Result of `getInspectorLab()` (THR-1876). */

@@ -22,7 +22,7 @@ import type { GameState } from '../../../types/gameState';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { buildSubjectPage, type SubjectPageExtras } from '../../../engine/views/subjects/subjectPage';
 import type { ActOnCardVM, SubjectPageVM } from '../../../engine/views/subjects/subjectTypes';
-import { actOnTargetForRef, type ActOnTarget } from '../../../engine/views/subjects/actOn';
+import { actOnRowCards, actOnRowTargetName, actOnTargetForRef, type ActOnTarget } from '../../../engine/views/subjects/actOn';
 import type { WorldRef } from '../../../types/worldRef';
 import { isContentRef, type AnyRef } from '../../../types/contentRef';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
@@ -35,6 +35,7 @@ import { Icon } from '../../shared/Icon';
 import { Tooltip } from '../../shared/Tooltip';
 import { InspectorPage, type InspectorPageReport } from './InspectorPage';
 import type { ActCastResult } from './InspectorParts';
+import { RowCardsProvider } from './RowCards';
 import {
   currentEntry,
   cycleSize,
@@ -171,6 +172,29 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
 
   const cast = useCallback((actionId: string): ActCastResult => (castTarget ? onCast(actionId, castTarget) : { cast: false, reason: null }), [castTarget, onCast]);
 
+  // THR-1913 — a row's cards and its tray's cast. A new reader per world state, so every
+  // rendered row re-reads once per state and a folded row never reads (plan § D9 way 2).
+  const rowCardsFor = useCallback((ref: WorldRef) => {
+    try {
+      return actOnRowCards(gameState, ref);
+    } catch (err) {
+      console.warn('[InspectorHost] row cards failed:', err);
+      return [];
+    }
+  }, [gameState]);
+  const rowTargetName = useCallback((ref: WorldRef) => {
+    try {
+      return actOnRowTargetName(gameState, ref);
+    } catch (err) {
+      console.warn('[InspectorHost] row target name failed:', err);
+      return null;
+    }
+  }, [gameState]);
+  const castOnRow = useCallback((actionId: string, ref: WorldRef): ActCastResult => {
+    const target = actOnTargetForRef(gameState, ref);
+    return target ? onCast(actionId, target) : { cast: false, reason: null };
+  }, [gameState, onCast]);
+
   const report = useCallback((r: InspectorPageReport) => {
     if (page) onReport?.({ ...r, subjectKey: page.subjectKey, pageKind: page.pageKind });
   }, [onReport, page]);
@@ -212,17 +236,18 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
   );
 
   const pageEl = (
-    <InspectorPage
-      key={entry.key}
-      page={page}
-      size={size}
-      graph={gameState.graph}
-      onWiden={() => setInspector(widen)}
-      onReport={report}
-      toolbar={toolbar}
-      onCast={castTarget ? cast : undefined}
-      headingRef={headingRef}
-    />
+    <RowCardsProvider key={entry.key} cardsFor={rowCardsFor} targetNameFor={rowTargetName} cast={castOnRow}>
+      <InspectorPage
+        page={page}
+        size={size}
+        graph={gameState.graph}
+        onWiden={() => setInspector(widen)}
+        onReport={report}
+        toolbar={toolbar}
+        onCast={castTarget ? cast : undefined}
+        headingRef={headingRef}
+      />
+    </RowCardsProvider>
   );
 
   if (size === 'full') {

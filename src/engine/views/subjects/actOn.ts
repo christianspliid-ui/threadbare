@@ -34,7 +34,7 @@ import { getAvatarHexPosition } from '../../visibility';
 import { AGENT_INTERVENTION_TEMPLATES, UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { actionBlockedReason } from '../../../data/action-card-display';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
-import type { ActOnVM } from './subjectTypes';
+import type { ActOnCardVM, ActOnVM } from './subjectTypes';
 import { godSpheres } from './pageResolvers';
 import { tileAt } from './pageResolvers';
 
@@ -166,9 +166,14 @@ export function buildActOn(state: GameState, target: ActOnTarget, name: string, 
   const empty = (): ActOnVM => ({ heading, cards: [], emptyLine: INSPECTOR_WORDS.actOnEmpty.replace('{name}', land ? 'this land' : name) });
   const read = actOnSlots(state, target);
   if (!read) return empty();
-  const { slots } = read;
+  const cards = cardsOf(read.slots);
+  if (cards.length === 0) return empty();
+  return { heading, cards, emptyLine: null };
+}
 
-  const cards = slots
+/** The Act row's cards from a target's slots: the castable kinds, in slot order. */
+function cardsOf(slots: readonly WheelSlot[]): ActOnCardVM[] {
+  return slots
     .filter(s => s.type === 'target_action' || s.type === 'intervention')
     .map(s => ({
       actionId: s.id,
@@ -177,8 +182,52 @@ export function buildActOn(state: GameState, target: ActOnTarget, name: string, 
       available: s.available,
       reason: s.available ? null : (actionBlockedReason(s.lockedReason, s.rangeStatus) ?? null),
     }));
-  if (cards.length === 0) return empty();
-  return { heading, cards, emptyLine: null };
+}
+
+/** The key a row's count is filed under: `kind:id`, as `data-link-row` spells it. */
+export function rowCardsKey(ref: Pick<WorldRef, 'kind' | 'id'>): string {
+  return `${ref.kind}:${ref.id}`;
+}
+
+/**
+ * THR-1913 (plan § D9 way 2) — the cards a world-ref row's tray holds: the cards the god
+ * can cast on that row's thing now. Locked cards stay on the thing's own Act row, where
+ * they shake with their reason; a row counts only what it can do (Law 25 — "0 cards"
+ * and a tray of locks are noise). Empty for a ref nothing can be cast on.
+ */
+export function actOnRowCards(state: GameState, ref: WorldRef): ActOnCardVM[] {
+  const target = actOnTargetForRef(state, ref);
+  if (!target) return [];
+  const read = actOnSlots(state, target);
+  return read ? cardsOf(read.slots).filter(c => c.available) : [];
+}
+
+/**
+ * THR-1913 — the name a row's cast lands on, for the tray's "Cast on <name>" (Law 48).
+ * A row's own label can name something else (a Resources row says "Iron" and links its
+ * Location; a Covenants row says the covenant and links the hex), so the tray names the
+ * target the cast resolves to. Null when nothing can be cast on the ref.
+ */
+export function actOnRowTargetName(state: GameState, ref: WorldRef): string | null {
+  const target = actOnTargetForRef(state, ref);
+  if (!target) return null;
+  return targetContextFor(state, target)?.displayName ?? null;
+}
+
+/**
+ * THR-1913 — card counts for rows, keyed by `rowCardsKey`. One `getTargetActionSlots`
+ * per ref, so the caller passes the rows it renders and no more (the Inspector computes
+ * one row at a time as each row mounts; a folded row is never counted). A ref with no
+ * castable card counts 0, which renders nothing.
+ */
+export function actOnCounts(state: GameState, refs: readonly WorldRef[]): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const ref of refs) {
+    const key = rowCardsKey(ref);
+    if (key in counts) continue;
+    counts[key] = actOnRowCards(state, ref).length;
+  }
+  return counts;
 }
 
 /**

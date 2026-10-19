@@ -129,7 +129,11 @@ export const LAND_RESOLVERS = {
  * game agree without threading the archetype through every resolver.
  */
 export function godSpheres(state: GameState): { primary: SphereName; secondary: SphereName } | null {
-  const alignment = state.ascendantIdentity?.sphereAlignment;
+  // THR-1913: a run started without the remembrance flow (`?seeded`, the plain init path)
+  // carries no identity; the god's node holds the same alignment (`createAscendant`), so
+  // the cards and the god's page read that rather than draw nothing (fail-soft, NFP #4).
+  const alignment = state.ascendantIdentity?.sphereAlignment
+    ?? (state.graph?.getNode(state.ascendantId)?.properties.sphereAlignment as { primary?: SphereName; secondary?: SphereName } | undefined);
   if (!alignment?.primary) return null;
   return { primary: alignment.primary, secondary: alignment.secondary ?? alignment.primary };
 }

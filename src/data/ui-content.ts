@@ -167,6 +167,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Dominion lens',
     desc: 'Show your ground: what is yours, where it ends, and what stands against you. Key 1.',
   },
+  // THR-1913 — the Inspector's card count on a row (plan § D9 way 2).
+  'ui.inspector.cards': {
+    label: 'Your cards',
+    desc: 'How many of your cards you can cast on this now. Press it to open them here, then cast without leaving the page.',
+  },
   // THR-1878 — the map lenses beyond Dominion, and their legend marks.
   'ui.lens.threads': {
     label: 'Threads lens',

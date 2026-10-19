@@ -25,3 +25,11 @@ export const CONNECTIONS_DOCKED_FOLD_AFTER = 6;
  * before they read it (plan § Kill criteria).
  */
 export const NEEDS_YOU_NEWS_KEEP_DAYS = 3;
+
+/**
+ * THR-1913 (Inspector plan § Constants, S5 Done-when) — one frame, in ms: the measured
+ * ceiling for `actOnCounts` over a docked page's rendered rows on the seed-42 medium world
+ * (and, with S6, for `buildArmedTargets`). Over it, plan kill criterion 6 applies: count
+ * rows lazily as they scroll into view.
+ */
+export const INSPECTOR_VIEW_BUDGET_MS = 16;

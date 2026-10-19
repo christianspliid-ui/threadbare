@@ -26,7 +26,13 @@ export interface ActCastResult {
  * (or Cast) casts it. A locked card arms nothing: it shakes and names its reason (Law 47).
  * Without `onCast` (the lab) the cards are plain chips — no dead buttons (Law 25).
  */
-export function ActOnRow({ actOn, targetName, onCast }: { actOn: ActOnVM; targetName?: string; onCast?: (actionId: string) => ActCastResult }) {
+export function ActOnRow({ actOn, targetName, onCast, compact = false }: {
+  actOn: ActOnVM;
+  targetName?: string;
+  onCast?: (actionId: string) => ActCastResult;
+  /** THR-1913 — the row tray: no heading drawn (the row above names the target); the section keeps its name. */
+  compact?: boolean;
+}) {
   const [armed, setArmed] = useState<string | null>(null);
   const [shaking, setShaking] = useState<string | null>(null);
   const [said, setSaid] = useState<{ id: string; reason: string } | null>(null);
@@ -57,7 +63,7 @@ export function ActOnRow({ actOn, targetName, onCast }: { actOn: ActOnVM; target
 
   return (
     <section data-inspector-act="" style={blockStyle} aria-label={actOn.heading}>
-      <SectionLabel label={actOn.heading} gold={true} />
+      {!compact && <SectionLabel label={actOn.heading} gold={true} />}
       {actOn.cards.length === 0 ? (
         <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>{actOn.emptyLine}</p>
       ) : (
