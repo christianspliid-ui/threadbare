@@ -1,4 +1,4 @@
-import { useCallback, type MouseEvent } from 'react';
+import { Fragment, createContext, useCallback, useContext, type MouseEvent, type ReactNode } from 'react';
 import type {
   CardsSection,
   ChipDescriptor,
@@ -335,20 +335,37 @@ function LinksSectionRenderer({ section }: { section: LinksSection }) {
   );
 }
 
+/**
+ * THR-1913 — what a host adds to each world-ref row (the Inspector's card count and its
+ * tray): `trailing` after the row's fact, `below` as a list item of its own under the row
+ * (it renders nothing while closed). Absent — every surface but the Inspector in the game —
+ * the row is chip and fact only (Law 25). Each returns an element, so the work it does
+ * runs as that row mounts: a folded row never computes one.
+ */
+export interface LinkRowAccessory {
+  trailing: (row: LinksSection['rows'][number]) => ReactNode;
+  below: (row: LinksSection['rows'][number]) => ReactNode;
+}
+export const LinkRowAccessoryContext = createContext<LinkRowAccessory | null>(null);
+
 /** The rows of one links group: chip, then its fact. Shared with the Inspector's Connections block. */
 export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
+  const accessory = useContext(LinkRowAccessoryContext);
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
       {rows.map((row, index) => (
-        <li
-          // Two rows may name one thing (a Location yielding two resources), so the index joins the key.
-          key={`${row.ref.kind}:${row.ref.id}:${index}`}
-          data-link-row={`${row.ref.kind}:${row.ref.id}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)' }}
-        >
-          <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
-          {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
-        </li>
+        // Two rows may name one thing (a Location yielding two resources), so the index joins the key.
+        <Fragment key={`${row.ref.kind}:${row.ref.id}:${index}`}>
+          <li
+            data-link-row={`${row.ref.kind}:${row.ref.id}`}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)' }}
+          >
+            <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
+            {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
+            {accessory?.trailing(row)}
+          </li>
+          {accessory?.below(row)}
+        </Fragment>
       ))}
     </ul>
   );

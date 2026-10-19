@@ -4046,7 +4046,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         const st = inspectorStateRef.current;
         const entry = currentEntry(st);
         const r = inspectorReportRef.current && entry && inspectorReportRef.current.subjectKey === entry.key ? inspectorReportRef.current : null;
-        const actCards = Array.from(document.querySelectorAll<HTMLElement>('[data-inspector-host] [data-act-card]')).map(el => el.dataset.actCard ?? '');
+        const actCards = Array.from(document.querySelectorAll<HTMLElement>('[data-inspector-host] [data-inspector-act] [data-act-card]'))
+          .filter(el => !el.closest('[data-row-tray]'))
+          .map(el => el.dataset.actCard ?? '');
+        // THR-1913 — the open row tray and the card armed in it, as the page shows them.
+        const trayEl = document.querySelector<HTMLElement>('[data-inspector-host] [data-row-tray]');
+        const trayArmedEl = trayEl?.querySelector<HTMLElement>('[data-act-card][data-armed="true"]');
+        const rowCounts = Array.from(document.querySelectorAll<HTMLElement>('[data-inspector-host] [data-row-cards]'))
+          .map(el => ({ row: el.dataset.rowCards ?? '', count: Number(el.querySelector<HTMLElement>('[data-count]')?.dataset.count ?? 0) }));
         return {
           open: isInspectorOpen(st),
           size: st.size,
@@ -4060,6 +4067,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           foldedGroups: r?.foldedGroups ?? [],
           hiddenForWidth: r?.hiddenForWidth ?? [],
           actCards,
+          rowCounts,
+          trayOpen: trayEl?.dataset.rowTray ?? null,
+          trayArmed: trayEl && trayArmedEl ? { actionId: trayArmedEl.dataset.actCard ?? '', target: trayEl.dataset.rowTray ?? '' } : null,
         };
       },
       open: (kind, id, mode = 'card') => {
