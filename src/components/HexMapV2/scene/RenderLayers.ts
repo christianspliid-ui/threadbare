@@ -37,7 +37,9 @@ export const RENDER_ORDER = {
   DOMINION_DROP_BADGE: 10.95, // THR-1750 band-drop badge (broken gold ring)
   EVENTS:            11,
   LABELS:            12,
+  STAGE_DIM:         12.5,  // THR-1892 the Stage dim — above agents, events and canvas labels, below fog
   FOG:               13,
+  STAGE_RING:        13.5,  // THR-1892 the Stage's lit-hex ring and glow — above fog, so a ring shows in fog
 } as const;
 
 export type RenderLayerName = keyof typeof RENDER_ORDER;
@@ -75,5 +77,7 @@ export const LAYER_Z = {
   DOMINION_DROP_BADGE: 6.095, // THR-1750 band-drop badge
   PARTICLE_BURST:    6.060,  // Sphere-colored particle effects above battles, below events
   EVENTS:            6.100,
+  STAGE_DIM:        11.000,  // THR-1892 — above events, below the fog overlay
   FOG_OVERLAY:      12.000,  // Parchment fog overlay — must clear tallest 3D model spires
+  STAGE_RING:       12.500,  // THR-1892 — above the fog overlay
 } as const;

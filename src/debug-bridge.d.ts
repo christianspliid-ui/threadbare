@@ -236,6 +236,35 @@ export interface DebugViewportProjection {
   visible: boolean;
 }
 
+/**
+ * `getStage()` (THR-1892, plan THR-1877 § Debug inspection) — what the Stage was given and
+ * where everything landed: the moment, its view model, the panel and window rectangles,
+ * the lit hex on screen, the camera, the map's dim, and the frame folded around it.
+ */
+export interface DebugStageState {
+  open: { kind: string; surfaceId: string; phase: 'entering' | 'open' | 'closing'; layout: 'full' | 'compact' } | null;
+  /** Exactly what the Stage was given (`StageVM`, `src/engine/views/stage/stageView.ts`). */
+  vm: unknown | null;
+  held: { kind: string; behind: string | null }[];
+  panelRect: { x: number; y: number; w: number; h: number } | null;
+  windowRect: { x: number; y: number; w: number; h: number } | null;
+  /** The lit hex's centre on screen now. */
+  litHexScreen: { x: number; y: number } | null;
+  /** The camera assertion: the lit hex sits inside the window. */
+  litHexInWindow: boolean;
+  camera: { k: number; mode: 'eased' | 'cut' | 'stayed' | 'timed_out' } | null;
+  mapDim: { strength: number; lit: number; dimmed: number } | null;
+  folded: { inspector: boolean; ledgerRail: boolean; lensSuppressed: boolean; mapControlsHidden: boolean };
+  /** Law 57: scroll boxes inside the panel that scroll. Empty when lawful. */
+  scrollingBelowCap: { element: string; axis: 'x' | 'y' }[];
+}
+
+/** `openHomedSurface(kind)` (THR-1892) — whether the lever opened the moment, and why not. */
+export interface DebugOpenHomedSurfaceResult {
+  opened: boolean;
+  reason?: string;
+}
+
 /** `getInterruptState()` (THR-1608) — the Stellaris clock's registry, as data. */
 export interface DebugInterruptState {
   /** Interrupt ids open right now, from the registry. */
@@ -2223,6 +2252,19 @@ export interface DebugBridge {
    */
   getInterruptState(): Promise<DebugInterruptState>;
   /**
+   * THR-1892 — the Stage: the open moment, its view model, the panel and window rectangles
+   * (viewport px), the lit hex on screen and whether it sits in the window, the camera's
+   * zoom and mode, the map dim's counts, and the frame folded around the Stage.
+   * Async. Returns the closed shape when no moment plays on the Stage.
+   */
+  getStage(): Promise<DebugStageState>;
+  /**
+   * THR-1892 — open one homed surface by kind (`HomedSurfaceKind`, `src/data/homed-surfaces.ts`).
+   * `'story-beat'` stages the pacing governor's beat on an unresolved chapter, so it plays on
+   * the Stage. Kinds whose lever lands with a later slice say so in `reason`. Async.
+   */
+  openHomedSurface(kind: string): Promise<DebugOpenHomedSurfaceResult>;
+  /**
    * THR-1814 — who holds the clock: `{ held, holder, runsOnAfter }`, the same
    * values the TIME readout renders ("held by {holder} · runs on when it closes").
    * Async. Returns `{ held: false, holder: null, runsOnAfter: null }` before GameView mounts.
@@ -2242,6 +2284,9 @@ export interface DebugBridge {
   _registerOpenModalsProvider(fn: () => string[]): void;
   /** @internal GameView registers the interrupt-state provider here (THR-1608) */
   _registerInterruptStateProvider(fn: () => DebugInterruptState): void;
+  /** @internal THR-1892 — GameView registers the Stage reader and the homed-surface lever. */
+  _registerStageProvider(fn: () => DebugStageState): void;
+  _registerOpenHomedSurface(fn: (kind: string) => Promise<DebugOpenHomedSurfaceResult>): void;
   _registerClockHoldProvider(fn: () => DebugClockHold): void;
   /** THR-1716 — GameView registers the UI-session half of `getOpeningState()`. */
   _registerOpeningUiProvider(fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }): void;

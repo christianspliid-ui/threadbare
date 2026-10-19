@@ -20,6 +20,7 @@ import { subjectPageSelector } from './subjects/subjectPage';
 import { ledgerRailSelector } from './ledgerRail';
 import { godRailSelector } from './godRail';
 import { needsYouSelector } from './needsYou';
+import { stageViewSelector } from './stage/stageView';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- a heterogeneous registry; each entry keeps its own types at its import
 export type AnyViewSelector = ViewSelector<any, unknown>;
@@ -40,6 +41,7 @@ export const VIEW_SELECTORS: readonly AnyViewSelector[] = [
   ledgerRailSelector,
   godRailSelector,
   needsYouSelector,
+  stageViewSelector,
 ];
 
 export type ViewSelectorId = (typeof VIEW_SELECTORS)[number]['id'];

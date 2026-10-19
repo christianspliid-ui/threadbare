@@ -36,6 +36,7 @@ import { useGameScreenState } from './GameScreenState';
 import { LEDGER_SECTION_COMPONENTS, type LedgerSectionBag } from './ledgerComponents';
 import { LedgerStrip, type LedgerStripItem, type LedgerStripItemId } from './LedgerStrip';
 import { ledgerFoldReason, ledgerRailState, writeLedgerFoldedPref } from './ledgerFold';
+import { isStageOpen } from '../stage/stageState';
 
 /** Height Threads leaves for the Chronicle before Threads scrolls inside its own region. */
 export const LEDGER_CHRONICLE_MIN_REM = 12;
@@ -102,7 +103,7 @@ export function LedgerRail({
   beforeYouWoke,
 }: LedgerRailProps) {
   const {
-    state: { chapterLedgerOpen, chapterLedgerSeenCount, ledgerFoldPref, ledgerFlyout, inspectorOpen },
+    state: { chapterLedgerOpen, chapterLedgerSeenCount, ledgerFoldPref, ledgerFlyout, inspectorOpen, stage },
     setChapterLedgerOpen,
     setChapterLedgerSeenCount,
     setChapterLedgerInitialKey,
@@ -113,7 +114,7 @@ export function LedgerRail({
   } = useGameScreenState();
 
   // § F8: the player's fold, the Inspector, and (THR-1892) the Stage.
-  const foldInputs = { foldPref: ledgerFoldPref, inspectorOpen, stageOpen: false };
+  const foldInputs = { foldPref: ledgerFoldPref, inspectorOpen, stageOpen: isStageOpen(stage) };
   const railState = ledgerRailState(foldInputs);
   const foldedBy = ledgerFoldReason(foldInputs);
   const flyoutOpen = railState === 'strip' && inspectorOpen && ledgerFlyout !== null;

@@ -8,6 +8,7 @@
 import { useCallback, useRef } from 'react';
 import type { GameScreenStore } from './GameScreenState';
 import { ledgerKeyPress } from './ledgerFold';
+import { isStageOpen } from '../stage/stageState';
 
 export function useLedgerKey(store: GameScreenStore): () => void {
   const ref = useRef(store);
@@ -17,7 +18,7 @@ export function useLedgerKey(store: GameScreenStore): () => void {
     const next = ledgerKeyPress({
       foldPref: state.ledgerFoldPref,
       inspectorOpen: state.inspectorOpen,
-      stageOpen: false, // THR-1892 adds the Stage read
+      stageOpen: isStageOpen(state.stage),
       flyout: state.ledgerFlyout,
       lastSection: state.ledgerLastSection,
     });
