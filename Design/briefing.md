@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-19 23:56 local (21:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 00:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,7 +17,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-All from [the hiring-a-free-company plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md) ([THR-1974](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays)), decided by [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-19a.md) tonight:
+From [the design lane tonight](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20a.md):
+
+- [Ordinary scenes still hand The First a trade she never had](https://linear.app/threadbare/issue/THR-1983/ordinary-scenes-still-hand-the-first-a-trade-she-never-had-guild) — of 28 everyday scenes that assume her trade, **six now wait for a mortal of the right trade**; **twenty-one stay open to anyone** and stop saying she already works it (a healer may still try the smiths' iron test, as a healer). *Veto:* "a mortal should only be offered work in her own trade".
+
+From [the hiring-a-free-company plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md) ([THR-1974](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays)), decided by [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-19a.md):
 
 - **A hired company fights its paymaster's wars, not its own.** *Veto:* "a hired company should still fight its own enemies too".
 - **A lord keeps two days of its own soldiers' pay before it pays anyone else's.** *Veto:* "a lord should spend its last coin on its sworn swords".
@@ -30,13 +34,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 28 ready, 1 in progress.** The builder is still on [Inspector S6: card-first — arm a card and its targets light up](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light) (High), in a run that started at 22:51 and is still working.
+**Backed up: 30 ready, 1 in progress.** The builder is still on [Inspector S6: card-first — arm a card and its targets light up](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light) (High); its [PR #2489](https://github.com/christianspliid-ui/threadbare/pull/2489) is waiting on checks and will merge on green.
 
-- New in the queue: [the Stage, slice 3 — encounters play on the Stage](https://linear.app/threadbare/issue/THR-1895/the-stage-slice-3-encounters-play-on-the-stage-the-veils-step-shells) (High), unblocked now that slice 2 is live ([the orchestrator's note](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-19d.md)).
-- High and waiting: [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows); [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- New in the queue: [a shorter road to the first mortal](https://linear.app/threadbare/issue/THR-1989/a-shorter-road-to-the-first-mortal-the-what-echoes-pick-becomes-the) ([the orchestrator's note](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-19e.md)), and [ordinary scenes stop recasting The First](https://linear.app/threadbare/issue/THR-1993/ordinary-scenes-stop-recasting-the-first-six-scenes-wait-for-a-mortal) is filed to follow [The First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read).
+- High and waiting: [the Stage, slice 3](https://linear.app/threadbare/issue/THR-1895/the-stage-slice-3-encounters-play-on-the-stage-the-veils-step-shells); [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows); [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- [The Crossroads](https://linear.app/threadbare/issue/THR-1926) has a merged plan but sits in Implementation Planning, never reaching the builder's queue (flagged by the design lane for the orchestrator).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site serves the latest commit on main (0d34850b). Main's checks and the scheduled background jobs pass. One PR is waiting on its checks and will merge on green. Every scheduled lane is on time. The engine runs at 115 ms a tick, faster than its week's median.
-- The tidy-up job reports 559 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The live site is current (0d34850b; later commits were docs only). Main's checks and the scheduled background jobs pass. Every scheduled lane is on time. The engine runs at 117 ms a tick, 14% faster than its week's median.
+- The tidy-up job reports 560 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
