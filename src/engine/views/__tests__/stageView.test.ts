@@ -163,3 +163,21 @@ describe('stage view model — shared contract (THR-1822 § D17)', () => {
     expect(vm.layout).toBe('compact');
   });
 });
+
+describe('stage view model — review round 2', () => {
+  it('a travelling mortal is lit where the map draws them, not at a stale located_at', () => {
+    const state = makeState();
+    state.graph.getNode('kael')!.properties.movementState = { currentHexPosition: { col: 7, row: 7 } };
+    const r = resolveMomentHexes(buildViewContext(null, state), beat({ subjectAgentId: 'kael' }));
+    expect(r.litHex).toBe('7,7');
+    expect(r.litSource).toBe('agent_location');
+  });
+
+  it('names the Location the subject stands at, not the alphabetically first on the hex', () => {
+    const state = makeState();
+    state.graph.addNode({ id: 'ashford', type: 'location', name: 'Ashford', properties: { hexCol: 13, hexRow: 9 } });
+    const vm = buildStageView(buildViewContext(null, state), beat({ subjectAgentId: 'maren' }));
+    expect(vm.place?.name).toBe('Millbrook');
+    expect(vm.contextLine?.text).toBe('Maren Ashfold at Millbrook');
+  });
+});

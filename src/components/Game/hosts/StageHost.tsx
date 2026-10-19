@@ -43,7 +43,8 @@ import type { ChapterAnswerRunHandle } from '../hooks/useChapterAnswerRun';
 import { EncounterVeil } from '../EncounterVeil';
 import { MomentCard } from '../MomentCard';
 import { JourneyVignetteModal } from '../JourneyVignetteModal';
-import { StoryBeatStageBody } from '../StoryBeatModal';
+import { StoryBeatModal, StoryBeatStageBody } from '../StoryBeatModal';
+import { isStageFrameKind } from '../../../data/stage-content';
 import { Stage } from '../stage/Stage';
 import type { StageVM } from '../../../engine/views/stage/stageView';
 import { PremonitionModal } from '../PremonitionModal';
@@ -298,8 +299,16 @@ export function StageHost({
         />
       );
 
-    // Story beat (pacing governor) — on the Stage, compact (THR-1892).
-    case 'story-beat': return activeStoryBeatId && activeStoryBeatTemplate && storyBeatStageVM && (
+    // Story beat (pacing governor) — on the Stage, compact (THR-1892), while
+    // `STAGE_FRAME_KINDS` lists it; otherwise its dialog, as before.
+    case 'story-beat': return activeStoryBeatId && activeStoryBeatTemplate && (!isStageFrameKind('story-beat') || !storyBeatStageVM ? (
+        <StoryBeatModal
+          open={true}
+          onDismiss={handleStoryBeatDismiss}
+          template={activeStoryBeatTemplate}
+          agentName={activeStoryBeatAgentName}
+        />
+      ) : (
         <Stage
           key={activeStoryBeatId}
           kind="story-beat"
@@ -316,7 +325,7 @@ export function StageHost({
             />
           )}
         />
-      );
+      ));
 
     // Divine Premonition modal (Whisper / Compulsion)
     case 'premonition': return activePremonition && (

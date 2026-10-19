@@ -7,14 +7,15 @@
  * around the moment's own body: which hex is lit and why, what the camera frames, the
  * place tag over the window, the compact context line, the layout and the palette.
  *
- * **Lit-hex order** (THR-1829 § 4): the moment's own hex (a queued story beat's
- * `hexCol/hexRow`, an encounter header's) → the subject agent's Location (`located_at`,
- * a Place resolved up to its Location) → the ruin's Location → null: nothing lit, the
- * whole map dims and the camera stays.
+ * **Lit-hex order** (THR-1829 § 4): the moment's own hex (an encounter header's) → the
+ * subject agent's hex, where the map draws them (`movementState.currentHexPosition` on a
+ * road, else `hexCol/hexRow`, else `located_at` with a Place resolved up to its
+ * Location — the rule `map/agents.ts` uses) → the ruin's Location → null: nothing lit,
+ * the whole map dims and the camera stays.
  *
- * **Place naming** is the land naming rule's pick: the hex's named Location (a link to
- * it), else the land's name (a link to the land page). An undiscovered place is never
- * named (`namedLocationOnHex`).
+ * **Place naming:** the Location the subject actually stands at, when it is on the lit
+ * hex and discovered; else the land naming rule's pick — the hex's named Location, else
+ * the land's name (a link to the land page). An undiscovered place is never named.
  *
  * Refinements over D12, each to keep one vocabulary: the kind is `StageHomedKind`, derived
  * from `HOMED_SURFACES`; the encounter's step / aftermath / watched view is a `phase`, not
@@ -96,12 +97,26 @@ function hexOfLocation(node: GraphNode | undefined): HexKey | null {
   return typeof col === 'number' && typeof row === 'number' ? toHexKey(col, row) : null;
 }
 
-/** An agent's hex: `located_at` → (a Place up to its Location) → its hex. */
+/** The Location (outer tier) an agent stands at: `located_at`, a Place resolved up. */
+export function agentLocation(graph: WorldGraph, agentId: string | null | undefined): GraphNode | undefined {
+  if (!agentId) return undefined;
+  const edge = graph.getOutgoingEdges(agentId, 'located_at')[0];
+  return edge ? resolveToParentLocation(graph, graph.getNode(edge.target)) : undefined;
+}
+
+/**
+ * An agent's hex, where the map draws them (`map/agents.ts`): on a road its
+ * `movementState.currentHexPosition` (`located_at` is stale while travelling), else its
+ * own `hexCol/hexRow`, else its Location's hex.
+ */
 export function agentHex(graph: WorldGraph, agentId: string | null | undefined): HexKey | null {
   if (!agentId) return null;
-  const edge = graph.getOutgoingEdges(agentId, 'located_at')[0];
-  if (!edge) return null;
-  return hexOfLocation(resolveToParentLocation(graph, graph.getNode(edge.target)));
+  const node = graph.getNode(agentId);
+  const moving = (node?.properties.movementState as { currentHexPosition?: { col: number; row: number } } | undefined)?.currentHexPosition;
+  if (moving && Number.isFinite(moving.col) && Number.isFinite(moving.row)) return toHexKey(moving.col, moving.row);
+  const own = hexOfLocation(node);
+  if (own) return own;
+  return hexOfLocation(agentLocation(graph, agentId));
 }
 
 /** A ruin's hex: the ruin is a Location (or a Place inside one). */
@@ -136,9 +151,16 @@ function parseKey(key: HexKey): { col: number; row: number } {
   return { col, row };
 }
 
-/** The lit hex by the naming rule: its named Location, else the land. */
-export function placeOfHex(ctx: ViewContext, key: HexKey): RefRow {
+/**
+ * The lit hex's name: the subject's own Location when it is on this hex and discovered,
+ * else the naming rule — the hex's named Location, else the land.
+ */
+export function placeOfHex(ctx: ViewContext, key: HexKey, subjectAgentId?: string | null): RefRow {
   const { col, row } = parseKey(key);
+  const own = agentLocation(ctx.graph, subjectAgentId);
+  if (own?.name && own.properties.discovered !== false && hexOfLocation(own) === key) {
+    return { ref: { kind: 'location', id: own.id }, name: own.name };
+  }
   const loc = namedLocationOnHex(ctx.graph, col, row);
   if (loc) return { ref: { kind: 'location', id: loc.id }, name: loc.name };
   return { ref: { kind: 'hex', id: key }, name: landNameFor(ctx.state, col, row) };
@@ -172,7 +194,7 @@ function paletteOf(kind: StageHomedKind): HomedSurfacePalette | null {
 
 export function buildStageView(ctx: ViewContext, input: StageMomentInput): StageVM {
   const hexes = resolveMomentHexes(ctx, input);
-  const place = hexes.litHex ? placeOfHex(ctx, hexes.litHex) : null;
+  const place = hexes.litHex ? placeOfHex(ctx, hexes.litHex, input.subjectAgentId) : null;
   const subject = subjectRow(ctx.graph, input.subjectAgentId);
   const suffix = place ? STAGE_WORDS.placeTagSuffix : null;
   return {
