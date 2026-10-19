@@ -242,7 +242,8 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
       )}
       {size === 'full' && <span style={{ flex: 1 }} />}
       <ToolButton label={inspector.pinned ? T.unpin : T.pin} icon="pin" onClick={() => setInspector(togglePin)} active={inspector.pinned} />
-      {hex && <ToolButton label={T.eye} icon="show-on-map" onClick={() => onShowOnMap(hex)} />}
+      {/* THR-1892: over the Stage the map holds still, so the eye does not render (Law 25). */}
+      {hex && !overStage && <ToolButton label={T.eye} icon="show-on-map" onClick={() => onShowOnMap(hex)} />}
       <ToolButton label={widenLabel} icon="widen" onClick={() => setInspector(cycleSize)} active={size !== 'docked'} />
       <ToolButton label={T.close} icon="close" onClick={overStage ? foldBack : () => setInspector(closeInspector)} />
     </div>

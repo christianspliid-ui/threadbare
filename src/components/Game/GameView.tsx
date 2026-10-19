@@ -3388,20 +3388,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return '';
   }, [activeStoryBeatId, gameState.unifiedActions, gameState.graph]);
 
-  // THR-1892 — the story beat's Stage view model: its queued hex, else its mortal's Location.
+  // THR-1892 — the story beat's Stage view model, lit at its mortal's Location. The active
+  // beat keeps no hex of its own: it either fired without being queued, or was shifted out
+  // of `storyBeatQueue`, whose leftover copies carry the agent's hex from the tick they were
+  // queued (or the 0,0 fallback). Reading the queue would light a stale place.
   const activeStoryBeatAgentId = useMemo(() => {
     if (!activeStoryBeatId) return null;
     return gameState.unifiedActions?.find(a => a.actionId === activeStoryBeatId)?.actorId ?? null;
   }, [activeStoryBeatId, gameState.unifiedActions]);
-  const activeStoryBeatHex = useMemo(() => {
-    if (!activeStoryBeatId) return null;
-    const queued = gameState.storyBeatQueue?.find(b => b.actionId === activeStoryBeatId || b.encounterId === activeStoryBeatId);
-    return queued ? { col: queued.hexCol, row: queued.hexRow } : null;
-  }, [activeStoryBeatId, gameState.storyBeatQueue]);
   const storyBeatStageVM: StageVM | null = activeStoryBeatId && activeStoryBeatTemplate
     ? readView(runtime, gameState, stageViewSelector, {
       kind: 'story-beat',
-      hex: activeStoryBeatHex,
+      hex: null,
       subjectAgentId: activeStoryBeatAgentId,
       hasArt: false,
       hasCast: false,
