@@ -21,7 +21,7 @@ import type {
   EncounterStageNarrativeParagraph,
   EncounterStageNarrativeReference,
   EncounterStageNarrativeSegment,
-} from '../../../components/Game/encounter-stage/types';
+} from './types';
 
 // ─── Token-Based Paragraph Builder ──────────────────────────────
 // Extracted from buildGateDutyEncounterStageModel.ts — the generic

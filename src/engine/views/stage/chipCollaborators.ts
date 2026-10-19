@@ -20,7 +20,7 @@ import type { WorldGraph } from '../../graph';
 import type { UnifiedAction } from '../../../types/unifiedAction';
 import { resolveAnchorDeclaration } from '../../../data/content-eval/chipAnchorDeclarations';
 import type { RealmProjectionThunk } from '../../sceneRealm';
-import { resolveEntityVisual } from '../../../components/shared/entityVisualResolver';
+import { resolveEntityVisual } from '../entityVisualResolver';
 import { isMonster } from '../../monsters/isMonster';
 import type { ChipIconResolver } from './buildAftermathConsequences';
 import type { FightChipWorld } from './buildFightChanges';

@@ -1060,7 +1060,7 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
   {
     label: 'EncounterStageNarrativeSegment.entityKind',
     read: { via: 'property', propertyName: 'entityKind' },
-    sourceRel: 'src/components/Game/encounter-stage/types.ts',
+    sourceRel: 'src/engine/views/stage/types.ts',
     what: 'What a linked noun inside encounter prose points at.',
     extraMembers: {},
     absentKinds: CHIP_UNION_ABSENT_KINDS,
@@ -1068,7 +1068,7 @@ export const CONSUMER_UNION_SPECS: readonly ConsumerUnionSpec[] = [
   {
     label: 'ChangeItem.nounEntityKind',
     read: { via: 'property', propertyName: 'nounEntityKind' },
-    sourceRel: 'src/components/Game/encounter-stage/types.ts',
+    sourceRel: 'src/engine/views/stage/types.ts',
     what: 'What a consequence row\'s subject noun points at (THR-1153).',
     extraMembers: {},
     absentKinds: CHIP_UNION_ABSENT_KINDS,

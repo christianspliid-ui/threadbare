@@ -28,7 +28,7 @@
  */
 
 import type { WorldGraph } from '../../graph';
-import { formatEssenceLabel } from '../../../components/shared/formatEssence';
+import { formatEssenceLabel } from '../../../data/essence-format';
 import type { GameState } from '../../../types/gameState';
 import type { SphereName } from '../../../types/index';
 import { toHungerId } from '../../../types/hunger';
@@ -119,7 +119,7 @@ import type {
   EncounterStageNudgePhaseModel,
   EncounterStageSkillModel,
   EncounterStageWithheldNudgeModel,
-} from '../../../components/Game/encounter-stage/types';
+} from './types';
 
 /**
  * Codes the player stage withholds entirely. `essence_unavailable` is

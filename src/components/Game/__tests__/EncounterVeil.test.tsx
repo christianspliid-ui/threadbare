@@ -2,7 +2,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
-import { EncounterVeil } from '../EncounterVeil';
+import { readFileSync } from 'node:fs';
+import { dirname as dirnamePath, resolve as resolvePath } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { EncounterVeil, type EncounterVeilFrame } from '../EncounterVeil';
 import { Modal, MODAL_Z_ABOVE_INTERRUPT } from '../../shared/Modal';
 import type { EncounterStageModel } from '../encounter-stage/types';
 import {
@@ -641,7 +644,7 @@ describe('aftermath mode', () => {
     const pinned = screen.getByTestId('aftermath-pinned-exit');
     expect(pinned.style.position).toBe('sticky');
     expect(pinned.style.bottom).toBe('0px');
-    expect(within(pinned).getByText('Return to the world')).toBeInTheDocument();
+    expect(within(pinned).getByText('Continue')).toBeInTheDocument();
     expect(within(pinned).getByText('A debt')).toBeInTheDocument();
     expect(within(pinned).getByText('A grudge')).toBeInTheDocument();
   });
@@ -653,7 +656,7 @@ describe('aftermath mode', () => {
     fireEvent.wheel(screen.getByRole('dialog'), { deltaY: 120 });
     expect(column.scrollTop).toBe(120);
     // Inside the column the browser scrolls natively; nothing is added twice.
-    fireEvent.wheel(screen.getByText('Return to the world'), { deltaY: 120 });
+    fireEvent.wheel(screen.getByText('Continue'), { deltaY: 120 });
     expect(column.scrollTop).toBe(120);
   });
 
@@ -753,7 +756,7 @@ describe('aftermath mode', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Step 1 — held' }));
     // The exit is deliberately absent mid-replay: two return-shaped controls
     // with different destinations on one screen is the Law 21 failure.
-    expect(screen.queryByText('Return to the world')).not.toBeInTheDocument();
+    expect(screen.queryByText('Continue')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /return/i }));
     expect(screen.getByTestId('aftermath-section-label')).toBeInTheDocument();
@@ -885,15 +888,15 @@ describe('aftermath mode', () => {
     expect(screen.getByText("The Merchant's Debt")).toBeInTheDocument();
   });
 
-  it('shows Return to the world button', () => {
+  it('shows the Continue button (THR-1895: was "Return to the world")', () => {
     render(<EncounterVeil {...defaultProps} model={aftermathModel} />);
-    expect(screen.getByText('Return to the world')).toBeInTheDocument();
+    expect(screen.getByText('Continue')).toBeInTheDocument();
   });
 
   it('calls onAcknowledgeAftermath when return button is clicked', () => {
     const onAcknowledge = vi.fn();
     render(<EncounterVeil {...defaultProps} model={aftermathModel} onAcknowledgeAftermath={onAcknowledge} />);
-    fireEvent.click(screen.getByText('Return to the world'));
+    fireEvent.click(screen.getByText('Continue'));
     expect(onAcknowledge).toHaveBeenCalled();
   });
 
@@ -1785,7 +1788,7 @@ describe('aftermath mode', () => {
     expect(screen.queryByText('Choose what to carry forward.')).not.toBeInTheDocument();
   });
 
-  it('keeps "Return to the world" as the exit after a pick — the encounter is escapable (THR-1477)', () => {
+  it('keeps "Continue" as the exit after a pick — the encounter is escapable (THR-1477)', () => {
     const onAcknowledgeAftermath = vi.fn();
     render(
       <EncounterVeil
@@ -1795,7 +1798,7 @@ describe('aftermath mode', () => {
         onAcknowledgeAftermath={onAcknowledgeAftermath}
       />,
     );
-    fireEvent.click(screen.getByText('Return to the world'));
+    fireEvent.click(screen.getByText('Continue'));
     expect(onAcknowledgeAftermath).toHaveBeenCalled();
   });
 
@@ -2787,5 +2790,45 @@ describe('EncounterVeil — slice cast, composed surface (THR-1465)', () => {
     ]);
     const census = domCensus();
     expect(census).toEqual([{ label: 'View 老 Marrow', disabled: false }]);
+  });
+});
+
+// THR-1895 — the encounter plays on the Stage: the veil renders two columns into the
+// frame its host supplies, and positions nothing itself (plan THR-1877 § D4).
+describe('THR-1895 — the encounter on the Stage', () => {
+  const veilSource = readFileSync(resolvePath(dirnamePath(fileURLToPath(import.meta.url)), '../EncounterVeil.tsx'), 'utf8');
+
+  it('keeps no document.body portal, no full-screen inset and no 540 / 500 px caps', () => {
+    expect(veilSource).not.toMatch(/createPortal\(/);
+    expect(veilSource).not.toMatch(/VEIL_ROOT_INSET|SCENE_PROSE_MAX_WIDTH_PX|SCENE_SIDE_COLUMN_PX/);
+    expect(veilSource).not.toMatch(/maxWidth:\s*(540|500)\b/);
+  });
+
+  it('hands every path to the frame as left and right columns', () => {
+    const frames: EncounterVeilFrame[] = [];
+    const renderFrame = (f: EncounterVeilFrame) => {
+      frames.push(f);
+      return <div data-testid={`frame-${f.path}`}>{f.left}{f.right}</div>;
+    };
+    const { unmount } = render(<EncounterVeil {...defaultProps} renderFrame={renderFrame} />);
+    expect(screen.getByTestId('frame-step')).toBeInTheDocument();
+    // The cast and *At stake* sit in the left column, apart from the prose.
+    expect(within(screen.getByTestId('veil-left-column')).queryByTestId('veil-scene-prose')).toBeNull();
+    unmount();
+
+    const aftermath: EncounterStageModel = { ...mockModel, aftermath: { title: 'Aftermath', overview: 'It passed.' } };
+    const second = render(<EncounterVeil {...defaultProps} model={aftermath} renderFrame={renderFrame} />);
+    expect(screen.getByTestId('frame-aftermath')).toBeInTheDocument();
+    expect(screen.getByText('Continue')).toBeInTheDocument();
+    second.unmount();
+
+    render(<EncounterVeil {...defaultProps} threadTier="watched" renderFrame={renderFrame} />);
+    expect(screen.getByTestId('frame-watched')).toBeInTheDocument();
+    expect(frames.map(f => f.label)).toContain('Gate Duty');
+  });
+
+  it('renders in place, never into a portal, when no host supplies a frame', () => {
+    const { container } = render(<EncounterVeil {...defaultProps} />);
+    expect(container.querySelector('[data-testid="encounter-veil-frame"]')).not.toBeNull();
   });
 });

@@ -46,6 +46,8 @@ describe('buildGateDutyEncounterStageModel', () => {
     };
     const notification: EncounterNotification = {
       id: 'notif-gate-duty',
+      hexCol: 7,
+      hexRow: 3,
       agentId: 'agent.guard',
       agentName: 'Sergeant Tal',
       courtPosition: 'the_first',
@@ -143,6 +145,9 @@ describe('buildGateDutyEncounterStageModel', () => {
 
     expect(model.header.title).toBe('Gate Duty');
     expect(model.header.locationLabel).toBe('South Quarantine Gate');
+    // THR-1895 — the gate-duty adapter sets the encounter's hex, as the unified and
+    // simple adapters do, so the Stage lights the checkpoint (`litSource: 'beat'`).
+    expect([model.header.hexCol, model.header.hexRow]).toEqual([7, 3]);
     expect(model.header.threatLabel).toBe('Mundane');
     expect(model.illustration?.src).toBeUndefined();
     expect(model.shellState?.state).toBe('flagged');

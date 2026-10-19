@@ -21,9 +21,9 @@ import type { EncounterNotification } from '../../../types/encounterVisibility';
 import { isActionStepBranch, isStepSuccess, type UnifiedAction, type UnifiedActionTemplate } from '../../../types/unifiedAction';
 import { getRarityName } from '../../../types/rarity';
 import type { ReachDomain } from '../../../types/traits';
-import type { ThreadTier } from '../../../components/Game/encounter-stage/types';
-import type { ActiveEncounterDisplay } from '../../../components/Game/encounterNotificationRuntime';
-import { getAttachmentGlyph } from '../../../components/Game/attachmentGlyphs';
+import type { ThreadTier } from './types';
+import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
+import { getAttachmentGlyph } from '../../../data/attachment-glyphs';
 import type {
   EncounterCastRole,
   EncounterStageAftermathActorModel,
@@ -34,7 +34,7 @@ import type {
   EncounterStageNarrativeParagraph,
   EncounterStageNarrativeReference,
   EncounterStageSignalModel,
-} from '../../../components/Game/encounter-stage/types';
+} from './types';
 import {
   autoLinkNarrative,
   buildLinkedParagraph,

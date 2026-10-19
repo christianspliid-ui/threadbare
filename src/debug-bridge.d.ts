@@ -255,8 +255,13 @@ export interface DebugStageState {
   camera: { k: number; mode: 'eased' | 'cut' | 'stayed' | 'timed_out' } | null;
   mapDim: { strength: number; lit: number; dimmed: number } | null;
   folded: { inspector: boolean; ledgerRail: boolean; lensSuppressed: boolean; mapControlsHidden: boolean };
-  /** Law 57: scroll boxes inside the panel that scroll. Empty when lawful. */
+  /** Law 57: scroll boxes inside the panel that scroll while shorter than it. Empty when lawful. */
   scrollingBelowCap: { element: string; axis: 'x' | 'y' }[];
+  /**
+   * THR-1895 — scroll boxes as tall as the panel that scroll: the moment's one lawful
+   * scroll region, scrolling at the cap (Law 57). Reported so evidence can name it.
+   */
+  scrollingAtCap?: { element: string; axis: 'x' | 'y' }[];
 }
 
 /** `openHomedSurface(kind)` (THR-1892) — whether the lever opened the moment, and why not. */

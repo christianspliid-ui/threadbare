@@ -11,19 +11,19 @@
 import type { ActionStep, UnifiedAction, UnifiedActionTemplate } from '../../../types/unifiedAction';
 import { isActionStepBranch, isStepSuccess } from '../../../types/unifiedAction';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
-import type { ActiveEncounterDisplay } from '../../../components/Game/encounterNotificationRuntime';
+import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import type { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { SphereName } from '../../../types/index';
 import type { EncounterResolutionSnapshot } from '../../../types/encounter';
-import type { ThreadTier } from '../../../components/Game/encounter-stage/types';
+import type { ThreadTier } from './types';
 import type {
   EncounterStageModel,
   EncounterStageChoiceModel,
   EncounterStageHistoryModel,
   EncounterStageNarrativeParagraph,
   EncounterStageResolutionCheckModel,
-} from '../../../components/Game/encounter-stage/types';
+} from './types';
 import { enrichProse, gatherNarrativeContext } from '../../proseEnrichment';
 import type { NarrativeContext } from '../../proseEnrichment';
 import { computeCapability } from '../../domainCapability';
@@ -33,7 +33,7 @@ import { RARITY_TO_THREAT } from '../../encounterCache';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../data/outcome-band-content';
 import { getAgentPortraitUrlFromProperties } from '../../../data/portrait-assets';
 import type { RarityTier } from '../../../types/rarity';
-import { formatEssenceLabel } from '../../../components/shared/formatEssence';
+import { formatEssenceLabel } from '../../../data/essence-format';
 import { interventionStanceWord } from '../../interventionStanceWords';
 import { fightRoleOf } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';

@@ -24,6 +24,7 @@ const MOUNT_COLORS: Record<SurfaceMount, string> = {
   always:  '#166534',
   modal:   '#7c2d12',
   drillin: '#1e3a8a',
+  stage:   'var(--accent-gold)',
 };
 
 // ── Props ─────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ export function IASurfaceViewer({ data, searchQuery, selectedKey, onSelectItem }
 // ── Filter Bar ────────────────────────────────────────────────
 
 const VIEW_OPTIONS: Array<SurfaceView | 'all'> = ['all', 'start', 'ascendant', 'game', 'codex', 'styleguide', 'cms'];
-const MOUNT_OPTIONS: Array<SurfaceMount | 'all'> = ['all', 'always', 'modal', 'drillin'];
+const MOUNT_OPTIONS: Array<SurfaceMount | 'all'> = ['all', 'always', 'modal', 'drillin', 'stage'];
 
 function FilterBar({
   viewFilter, mountFilter, onViewFilter, onMountFilter, totalCount, filteredCount,

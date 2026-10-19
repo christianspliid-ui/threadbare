@@ -271,6 +271,13 @@ describe('contract 2 — one band ladder in the engine', () => {
       .map((f) => f.replace(/.*[\\/]/, ''))
       .sort();
     expect(importers).toEqual([
+      // Added by THR-1895, deliberately and in the open: the encounter builders moved
+      // from `src/components/Game/encounter-stage/adapters/` into
+      // `src/engine/views/stage/` (THR-1822 D16 step 5), so this scan now sees them.
+      // Both import `forecastAction` only, to quote the step's odds on the veil. They
+      // roll nothing and classify no band; the import is unchanged by the move.
+      'buildNudgePhaseModel.ts',
+      'buildSimpleEncounterStageModel.ts',
       // Added by THR-1581 (dice re-fit), deliberately and in the open. Each had its
       // own local `capability − difficulty` formula, which the re-fit would have left
       // behind on the old dice. They now read `computeResolutionThreshold` — the

@@ -91,7 +91,7 @@ import type {
 } from '../../../types/unifiedAction';
 // The bound lives with the component that draws the marks, so the adapter's
 // clamp and the renderer's clamp cannot drift to different numbers.
-import { DELTA_CLUSTER_MAX } from '../../../components/shared/DeltaCluster';
+import { DELTA_CLUSTER_MAX } from '../../../data/delta-cluster-content';
 import { GROWTH_DELTA_CLUSTER_COLLAPSE, durationLabel } from '../../aftermathWords';
 import type {
   EncounterStageConsequenceCategory,
@@ -102,7 +102,7 @@ import type {
   EncounterStageConsequenceTone,
   EncounterStageNarrativeParagraph,
   EncounterStageNarrativeSegment,
-} from '../../../components/Game/encounter-stage/types';
+} from './types';
 
 /** Kind tag drawn on the chip. Uppercased at the data layer so the surface does not have to. */
 export const CONSEQUENCE_KIND_LABELS: Record<EncounterStageConsequenceKind, string> = {

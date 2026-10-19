@@ -22,7 +22,7 @@ import type {
   StepCastRecord,
   StepCastWrite,
 } from '../../../types/unifiedAction';
-import type { EncounterStageStepCastModel } from '../../../components/Game/encounter-stage/types';
+import type { EncounterStageStepCastModel } from './types';
 import type { FightChipWorld } from './buildFightChanges';
 import { fillFightChipSlots } from './buildFightChanges';
 import { getSpellTemplate, resolveSpellTemplate, spellDefinitionNodeId } from '../../../data/spell-templates';

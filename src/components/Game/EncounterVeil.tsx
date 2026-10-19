@@ -171,6 +171,11 @@ export interface EncounterVeilFrame {
   /** Art, cast and *At stake*; null when the path has none of them. */
   left: ReactNode | null;
   right: ReactNode;
+  /**
+   * A wheel anywhere in the frame outside the right column scrolls it
+   * (`forwardVeilWheel`, THR-1856): the reader never has to find the scroll box first.
+   */
+  onWheel: (event: WheelEvent<HTMLDivElement>) => void;
 }
 
 /**
@@ -178,9 +183,10 @@ export interface EncounterVeilFrame {
  * No portal and no full-screen cover; the Stage is the only thing that positions
  * the encounter on screen.
  */
-function InPlaceVeilFrame({ label, left, right }: EncounterVeilFrame) {
+function InPlaceVeilFrame({ label, left, right, onWheel }: EncounterVeilFrame) {
   return (
     <div
+      onWheel={onWheel}
       role="dialog"
       aria-modal="true"
       aria-label={label}
@@ -202,8 +208,7 @@ function InPlaceVeilFrame({ label, left, right }: EncounterVeilFrame) {
 /**
  * THR-1895 — the Stage's left column for an encounter (plan THR-1877 § D4): the scene
  * art as the hero picture (Law 7), its caption, then the cast and *At stake* together,
- * apart from the prose (THR-1724). A wheel here scrolls the right column
- * (`forwardVeilWheel`), so the reader never has to find the scroll box first.
+ * apart from the prose (THR-1724).
  */
 function VeilLeftColumn({
   illustration,
@@ -212,7 +217,6 @@ function VeilLeftColumn({
   visible,
   reducedMotion,
   cast,
-  onWheel,
 }: {
   illustration: { src: string; alt?: string; caption?: string } | undefined;
   artOpacity: number;
@@ -220,16 +224,14 @@ function VeilLeftColumn({
   visible: boolean;
   reducedMotion: boolean;
   cast: ReactNode;
-  onWheel: (event: WheelEvent<HTMLDivElement>) => void;
 }) {
   return (
     <div
       data-testid="veil-left-column"
-      onWheel={onWheel}
       style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0, flex: 1, overflowY: 'auto', background: 'var(--veil-void)' }}
     >
       {illustration && (
-        <figure style={{ margin: 0, flexShrink: 0 }}>
+        <figure style={{ margin: 0, flexShrink: 0, overflow: 'hidden' }}>
           <div
             role="img"
             aria-label={illustration.alt ?? ''}
@@ -242,9 +244,12 @@ function VeilLeftColumn({
               backgroundPosition: 'center',
               opacity: visible ? artOpacity : 0,
               filter: artFilter,
+              // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and fades the
+              // art in at --anim-fast. The art still arrives. The figure clips the zoom.
+              transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
               transition: reducedMotion
                 ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
-                : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s`,
+                : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
             }}
           />
           {illustration.caption && (
@@ -728,7 +733,6 @@ export function EncounterVeil({
         visible={visible}
         reducedMotion={reducedMotion}
         cast={castNode}
-        onWheel={handleVeilWheel}
       />
     );
   };
@@ -880,6 +884,7 @@ export function EncounterVeil({
 
     return frame({
       path: 'aftermath',
+      onWheel: handleVeilWheel,
       label: aftermath.title ?? 'Aftermath',
       left: leftColumn({ opacity: 0.5, filter: 'saturate(0.7)' }, true),
       right: (
@@ -1725,6 +1730,7 @@ export function EncounterVeil({
 
     return frame({
       path: 'watched',
+      onWheel: handleVeilWheel,
       label: model.header.title,
       left: leftColumn({ opacity: ART_OPACITY.watched, filter: 'grayscale(40%)' }, true),
       right: (
@@ -2156,6 +2162,7 @@ export function EncounterVeil({
 
   return frame({
     path: 'step',
+    onWheel: handleVeilWheel,
     label: model.header.title,
     left: leftColumn({ opacity: ART_OPACITY[threadTier] }, !replayEntry),
     right: (

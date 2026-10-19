@@ -240,7 +240,7 @@ export const STATIC_ARTIFACT_SOURCES: Readonly<Record<string, readonly string[]>
     "src/types/worldRefAdapters.ts",
     "src/types/notification.ts",
     "src/data/entity-visual-fallbacks.ts",
-    "src/components/Game/encounter-stage/types.ts",
+    "src/engine/views/stage/types.ts",
     "scripts/anchor-catalog-sources.ts",
   ],
   // generate-consumption-ledger (THR-1212 slice 4): code in, doc out — the harmless

@@ -44,6 +44,7 @@
  */
 
 import { memo } from 'react';
+import { DELTA_CLUSTER_MAX } from '../../data/delta-cluster-content';
 
 /** Law 11 — the shipped legibility floor for a meaning-bearing glyph. */
 export const DELTA_CLUSTER_GLYPH_SIZE_PX = 14;
@@ -61,8 +62,7 @@ export const DELTA_LOSS_GLYPH = '▼';
  */
 export const PATH_MARKER_GLYPH = '◆';
 
-/** Most marks a cluster draws — past three, a row stops being countable at a glance. */
-export const DELTA_CLUSTER_MAX = 3;
+export { DELTA_CLUSTER_MAX };
 
 export interface DeltaClusterProps {
   /** `gain`/`loss` draw a run of triangles; `opens` draws the single PATH marker. */

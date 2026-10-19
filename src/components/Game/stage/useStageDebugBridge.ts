@@ -33,18 +33,33 @@ function rectOf(selector: string): { x: number; y: number; w: number; h: number 
   return { x: r.left, y: r.top, w: r.width, h: r.height };
 }
 
-/** Law 57: any scroll box inside the panel that actually scrolls. */
-function scrollingInside(panel: Element | null): { element: string; axis: 'x' | 'y' }[] {
-  if (!panel) return [];
-  const out: { element: string; axis: 'x' | 'y' }[] = [];
+type ScrollBox = { element: string; axis: 'x' | 'y' };
+
+/**
+ * Law 57: the scroll boxes inside the panel that actually scroll, split by where they
+ * scroll. A box as tall as the panel scrolls **at** the cap — the Stage's one lawful
+ * scroll region, "the whole height of the panel" (THR-1895; the same rule
+ * `getDialogSizes()` applies to a dialog at its cap). Any shorter box scrolls **below**
+ * it, and that is the violation.
+ */
+function scrollingInside(panel: Element | null): { below: ScrollBox[]; atCap: ScrollBox[] } {
+  const below: ScrollBox[] = [];
+  const atCap: ScrollBox[] = [];
+  if (!panel) return { below, atCap };
+  const capPx = panel.clientHeight;
   for (const el of [panel, ...panel.querySelectorAll('*')]) {
     const style = getComputedStyle(el);
     const name = el.getAttribute('data-testid') ?? [...el.attributes].find(a => a.name.startsWith('data-'))?.name ?? el.tagName.toLowerCase();
-    if (/(auto|scroll)/.test(style.overflowY) && el.scrollHeight > el.clientHeight + 1) out.push({ element: name, axis: 'y' });
-    if (/(auto|scroll)/.test(style.overflowX) && el.scrollWidth > el.clientWidth + 1) out.push({ element: name, axis: 'x' });
+    if (/(auto|scroll)/.test(style.overflowY) && el.scrollHeight > el.clientHeight + 1) {
+      (el !== panel && el.clientHeight >= capPx - STAGE_SCROLL_CAP_TOLERANCE_PX ? atCap : below).push({ element: name, axis: 'y' });
+    }
+    if (/(auto|scroll)/.test(style.overflowX) && el.scrollWidth > el.clientWidth + 1) below.push({ element: name, axis: 'x' });
   }
-  return out;
+  return { below, atCap };
 }
+
+/** A column as tall as the panel, give or take its border, counts as at the cap. */
+const STAGE_SCROLL_CAP_TOLERANCE_PX = 2;
 
 const later = (kind: HomedSurfaceKind, how: string): Lever => async () => ({ opened: false, reason: `${kind} has no one-call lever yet — ${how}` });
 
@@ -97,7 +112,10 @@ export function useStageDebugBridge(args: {
           lensSuppressed: gameScreen.state.lensSuppressed,
           mapControlsHidden: document.querySelector('[data-testid="map-corner-chrome"]') === null,
         },
-        scrollingBelowCap: open ? scrollingInside(document.querySelector('[data-stage-panel]')) : [],
+        ...(() => {
+          const scroll = open ? scrollingInside(document.querySelector('[data-stage-panel]')) : { below: [], atCap: [] };
+          return { scrollingBelowCap: scroll.below, scrollingAtCap: scroll.atCap };
+        })(),
       };
     };
 

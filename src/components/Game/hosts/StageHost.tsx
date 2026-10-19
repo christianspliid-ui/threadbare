@@ -259,7 +259,7 @@ export function StageHost({
             onLetWorldTurn={handleChapterLetWorldTurn}
             onBackToMap={handleChapterBackToMap}
             onShowOnMap={(col, row) => hexMapRef.current?.focusOn({ col, row })}
-            renderFrame={isStageFrameKind('encounter') && encounterStageVM ? ({ label, left, right }) => (
+            renderFrame={isStageFrameKind('encounter') && encounterStageVM ? ({ label, left, right, onWheel }) => (
               <Stage
                 kind="encounter"
                 vm={encounterStageVM}
@@ -269,7 +269,8 @@ export function StageHost({
                 holdLineShowsOnMap
                 ground="var(--veil-void)"
                 tick={gameState.tick}
-                left={left}
+                // A wheel over the art or the cast scrolls the right column (THR-1856).
+                left={left && <div onWheel={onWheel} style={{ display: 'contents' }}>{left}</div>}
                 right={right}
               />
             ) : undefined}

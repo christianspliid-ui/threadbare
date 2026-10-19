@@ -22,7 +22,7 @@ import { buildChipAnchorNameResolver, buildChipAnchorResolver, buildChipIconReso
 import { buildFightChanges, mergeFightChanges } from './buildFightChanges';
 import { buildCastChanges, stepCastModelFor } from './buildStepCastModel';
 import type { RealmProjectionThunk } from '../../sceneRealm';
-import { resolveEntityVisual } from '../../../components/shared/entityVisualResolver';
+import { resolveEntityVisual } from '../entityVisualResolver';
 import { getFamiliarity, getKnowledgeLevel } from '../../familiarity';
 import { supportRoleWord } from '../../supportRoleWords';
 import { isDefaultSupportSpec } from '../../../data/default-support-bundles';
@@ -57,9 +57,9 @@ import {
   type UnifiedActionOutcome,
   type UnifiedActionTemplate,
 } from '../../../types/unifiedAction';
-import type { ThreadTier } from '../../../components/Game/encounter-stage/types';
+import type { ThreadTier } from './types';
 import type { DoomIdentityMatrix } from '../../../types/doomIdentity';
-import { formatEssenceLabel } from '../../../components/shared/formatEssence';
+import { formatEssenceLabel } from '../../../data/essence-format';
 import type {
   EncounterCastRole,
   EncounterStageAftermathActorModel,
@@ -71,7 +71,7 @@ import type {
   EncounterStageHistoryModel,
   EncounterStageModel,
   EncounterStageNarrativeParagraph,
-} from '../../../components/Game/encounter-stage/types';
+} from './types';
 
 // ─── Args ─────────────────────────────────────────────────────────
 
@@ -537,7 +537,7 @@ function buildHistory(
 
     let afterimage: string | undefined;
     let complication: { prose: string; name: string; severity: 'minor' | 'standard' | 'severe'; category: string } | undefined;
-    let cast: import('../../../components/Game/encounter-stage/types').EncounterStageStepCastModel | undefined;
+    let cast: import('./types').EncounterStageStepCastModel | undefined;
     // THR-636 replay fields
     let outcome: import('../../../types/unifiedAction').StepOutcome | undefined;
     let outcomeWord: string | undefined;
