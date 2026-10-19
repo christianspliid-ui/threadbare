@@ -73,6 +73,8 @@ import { LensNameTags } from './overlay/LensNameTags';
 import { createDominionDropLayer, DOMINION_DROP_LAYER_NAME } from './scene/DominionDropBadge';
 import type { DominionDropLayer } from './scene/DominionDropBadge';
 import type { DominionLensVM } from '../../engine/dominionViewModels';
+import { createStageFocusLayer, STAGE_FOCUS_LAYER_NAME, type StageFocusLayer, type StageMapFocus } from './scene/StageFocusLayer';
+import { centreForWorldAt, centroid } from './camera/stageCamera';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -479,6 +481,25 @@ export interface HexMapV2Handle {
    * Call when an anomaly discovery encounter completes successfully.
    */
   triggerAnomalyReveal: (hexCol: number, hexRow: number, sphereColor: string) => void;
+  /**
+   * THR-1892 (plan THR-1877 § D5) — the map under the Stage: dim every hex but the lit
+   * ones and ring the lit hex. Built on a focus, disposed on null; fades in over
+   * `fadeMs` (0 = at once, the reduced-motion cut).
+   */
+  setStageFocus: (focus: StageMapFocus | null, options?: { fadeMs?: number }) => void;
+  /** THR-1892 — the Stage layer's counts now, or null when no Stage dims the map. */
+  getStageFocusState: () => { strength: number; lit: number; dimmed: number } | null;
+  /**
+   * THR-1892 (§ D6) — move the camera so the centroid of `hexKeys` lands at a viewport
+   * point, at `zoom`. Resolves when the camera lands: `'eased'` after the transition,
+   * `'cut'` when `instant`, `'stayed'` when it was already there or there is no map.
+   * Additive: `centerOn` and `focusOn` are unchanged.
+   */
+  /** THR-1892 — the canvas's viewport rectangle (the visible map), or null before mount. */
+  /** THR-1892 — a hex's centre in viewport pixels, on the canvas or not; null before mount. */
+  projectHex: (col: number, row: number) => { x: number; y: number } | null;
+  getCanvasRect: () => { left: number; top: number; right: number; bottom: number } | null;
+  centerHexesAt: (hexKeys: readonly string[], screenPoint: { x: number; y: number }, options: { zoom: number; instant: boolean }) => Promise<'eased' | 'cut' | 'stayed'>;
 }
 
 // ─── Selected hex ring geometry ──────────────────────────────────────────────
@@ -635,6 +656,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // THR-1878 — the generic hex lens layer, and the agents it draws one step up.
     const hexLensLayerRef = useRef<HexLensLayer | null>(null);
     const lensStepIdsRef = useRef<ReadonlySet<string>>(new Set());
+    // THR-1892 — the Stage's dim and ring, built on a focus and disposed on null.
+    const stageFocusLayerRef = useRef<StageFocusLayer | null>(null);
+    const [stageFocus, setStageFocusState] = useState<{ focus: StageMapFocus; fadeMs: number } | null>(null);
     const dominionDropLayerRef = useRef<DominionDropLayer | null>(null);
     // Bumped after every scene build so incremental layers re-attach to the new scene.
     const [sceneEpoch, setSceneEpoch] = useState(0);
@@ -870,6 +894,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         if (dominionLensLayerRef.current) layersActive.push(DOMINION_LENS_LAYER_NAME, `${HEX_LENS_LAYER_PREFIX}dominion`);
         if (hexLensLayerRef.current) layersActive.push(hexLensLayerRef.current.group.name);
         if ((dominionDropLayerRef.current?.count ?? 0) > 0) layersActive.push(DOMINION_DROP_LAYER_NAME);
+        if (stageFocusLayerRef.current) layersActive.push(STAGE_FOCUS_LAYER_NAME);
 
         return {
           hexCount: fillResultRef.current?.landMesh.count ?? tiles.length,
@@ -934,6 +959,57 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           performance.now(),
         );
         activeBurstsRef.current.push(burst);
+      },
+      setStageFocus(focus: StageMapFocus | null, options?: { fadeMs?: number }) {
+        setStageFocusState(focus ? { focus, fadeMs: Math.max(0, options?.fadeMs ?? 0) } : null);
+      },
+      getStageFocusState() {
+        const layer = stageFocusLayerRef.current;
+        return layer ? { strength: layer.strength, lit: layer.counts.lit, dimmed: layer.counts.dimmed } : null;
+      },
+      projectHex(col: number, row: number) {
+        const camera = cameraRef.current;
+        const canvas = canvasRef.current;
+        if (!camera || !canvas) return null;
+        const world = hexToWorld({ col, row }, HEX_CONSTANTS.HEX_SIZE);
+        const local = worldToScreen(new THREE.Vector3(world.x, world.y, 0), camera, canvas);
+        const rect = canvas.getBoundingClientRect();
+        return { x: rect.left + local.x, y: rect.top + local.y };
+      },
+      getCanvasRect() {
+        const r = canvasRef.current?.getBoundingClientRect();
+        return r ? { left: r.left, top: r.top, right: r.right, bottom: r.bottom } : null;
+      },
+      centerHexesAt(hexKeys: readonly string[], screenPoint: { x: number; y: number }, options: { zoom: number; instant: boolean }) {
+        const canvas = canvasRef.current;
+        const zoom = zoomRef.current;
+        const worlds = hexKeys
+          .map(key => key.split(',').map(Number))
+          .filter(([c, r]) => Number.isFinite(c) && Number.isFinite(r))
+          .map(([col, row]) => hexToWorld({ col, row }, HEX_CONSTANTS.HEX_SIZE));
+        const target = centroid(worlds);
+        if (!canvas || !zoom || !target) return Promise.resolve('stayed' as const);
+        const rect = canvas.getBoundingClientRect();
+        const [minK, maxK] = zoom.scaleExtent();
+        const k = Math.max(minK, Math.min(maxK, options.zoom));
+        const centre = centreForWorldAt(target, { x: screenPoint.x - rect.left, y: screenPoint.y - rect.top }, { w: rect.width, h: rect.height }, k);
+        const next = d3.zoomIdentity.translate(-centre.x * k, centre.y * k).scale(k);
+        const now = d3.zoomTransform(canvas);
+        if (Math.abs(now.k - next.k) < 1e-6 && Math.abs(now.x - next.x) < 0.5 && Math.abs(now.y - next.y) < 0.5) {
+          return Promise.resolve('stayed' as const);
+        }
+        if (options.instant) {
+          d3.select(canvas).interrupt().call(zoom.transform, next);
+          return Promise.resolve('cut' as const);
+        }
+        return new Promise<'eased'>(resolve => {
+          d3.select(canvas)
+            .transition()
+            .duration(CAMERA_CONSTANTS.JUMP_TO_DURATION_MS)
+            .call(zoom.transform, next)
+            .on('end', () => resolve('eased'))
+            .on('interrupt', () => resolve('eased'));
+        });
       },
       triggerAnomalyReveal(hexCol: number, hexRow: number, sphereColor: string): void {
         // Fire particle burst
@@ -1910,6 +1986,39 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       if (!layer) return;
       updateHexLensZoom(layer, ZOOM_BAND_OF_TIER[zoomTier], zoomK);
     }, [zoomTier, zoomK, hexLens]);
+
+    // ── The Stage (THR-1892, plan THR-1877 § D5): built on a focus, never alpha-hidden ──
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (stageFocusLayerRef.current) {
+        stageFocusLayerRef.current.group.parent?.remove(stageFocusLayerRef.current.group);
+        stageFocusLayerRef.current.dispose();
+        stageFocusLayerRef.current = null;
+      }
+      if (!scene || !stageFocus) return;
+      let layer: StageFocusLayer;
+      try {
+        layer = createStageFocusLayer(stageFocus.focus, lensTiles);
+      } catch (err) {
+        console.warn('[HexMapV2] Stage focus build failed; the map is left undimmed', err);
+        return;
+      }
+      scene.add(layer.group);
+      stageFocusLayerRef.current = layer;
+      // The dim fades in with the camera ease; reduced motion (fadeMs 0) shows it at once.
+      if (stageFocus.fadeMs <= 0) {
+        layer.setProgress(1);
+        return;
+      }
+      layer.setProgress(0);
+      const start = performance.now();
+      let frame = requestAnimationFrame(function step(now) {
+        const t = (now - start) / stageFocus.fadeMs;
+        layer.setProgress(t);
+        if (t < 1) frame = requestAnimationFrame(step);
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [stageFocus, lensTiles, sceneEpoch]);
 
     // ── Dominion band-drop badges (THR-1750 § U4): lens on or off ──
     const dominionDrops = dominionLens?.drops;

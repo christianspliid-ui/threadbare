@@ -16,8 +16,16 @@
  * button cycle the size; Esc steps one down (full → wide → docked → closed) through the
  * escape stack, below every dialog. Focus moves to the page heading when a subject opens
  * and returns to the invoker when the Inspector closes (Law 50; non-modal, no trap).
+ *
+ * THR-1892 (plan THR-1877 § D7): while a moment plays on the Stage the Inspector folds and
+ * keeps its subject. A name clicked on the Stage opens its page **over the Stage** — docked
+ * at the right, at `Z_BAND.modal`, below the top bar — and Escape or its close folds it
+ * back to the moment, which never closed. When the Stage closes the Inspector returns with
+ * the last subject opened.
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
+import { isStageOpen } from '../stage/stageState';
 import type { GameState } from '../../../types/gameState';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { buildSubjectPage, type SubjectPageExtras } from '../../../engine/views/subjects/subjectPage';
@@ -102,9 +110,14 @@ function ToolButton({ label, icon, onClick, disabled, active }: { label: string;
 }
 
 export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap, meetTheFirst, onReport }: InspectorHostProps) {
-  const { state: screen, setInspector } = useGameScreenState();
+  const { state: screen, setInspector, setStage } = useGameScreenState();
   const inspector = screen.inspector;
   const open = isInspectorOpen(inspector);
+  // THR-1892 — folded under the Stage; over it when a name on the Stage asked for it.
+  const stageOpen = isStageOpen(screen.stage);
+  const overStage = stageOpen && screen.stage.inspectorOverStage;
+  const shown = open && (!stageOpen || overStage);
+  const foldBack = useCallback(() => setStage(prev => ({ ...prev, inspectorOverStage: false })), [setStage]);
   const entry = currentEntry(inspector);
   const size = inspector.size;
 
@@ -162,9 +175,9 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
   }, [entryKey]);
 
   const onEscape = useCallback(() => setInspector(escapeStep), [setInspector]);
-  useEscapeLayer(open, onEscape, ESCAPE_LAYER_Z_PANEL, 'Inspector');
+  useEscapeLayer(shown, overStage ? foldBack : onEscape, overStage ? Z_BAND.modal : ESCAPE_LAYER_Z_PANEL, 'Inspector');
   useInspectorHotkeys({
-    open,
+    open: shown,
     onCycleSize: () => setInspector(cycleSize),
     onBack: () => setInspector(goBack),
     onForward: () => setInspector(goForward),
@@ -199,7 +212,7 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
     if (page) onReport?.({ ...r, subjectKey: page.subjectKey, pageKind: page.pageKind });
   }, [onReport, page]);
 
-  if (!open || !entry || !page) return null;
+  if (!shown || !entry || !page) return null;
 
   const hex = hexOf(page);
   const trail = trailSteps(inspector);
@@ -229,9 +242,10 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
       )}
       {size === 'full' && <span style={{ flex: 1 }} />}
       <ToolButton label={inspector.pinned ? T.unpin : T.pin} icon="pin" onClick={() => setInspector(togglePin)} active={inspector.pinned} />
-      {hex && <ToolButton label={T.eye} icon="show-on-map" onClick={() => onShowOnMap(hex)} />}
+      {/* THR-1892: over the Stage the map holds still, so the eye does not render (Law 25). */}
+      {hex && !overStage && <ToolButton label={T.eye} icon="show-on-map" onClick={() => onShowOnMap(hex)} />}
       <ToolButton label={widenLabel} icon="widen" onClick={() => setInspector(cycleSize)} active={size !== 'docked'} />
-      <ToolButton label={T.close} icon="close" onClick={() => setInspector(closeInspector)} />
+      <ToolButton label={T.close} icon="close" onClick={overStage ? foldBack : () => setInspector(closeInspector)} />
     </div>
   );
 
@@ -249,6 +263,18 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
       />
     </RowCardsProvider>
   );
+
+  if (overStage) {
+    // Over the Stage: docked at the right edge, above the Stage panel and below the top bar.
+    const width = size === 'docked' ? SIZE_WIDTH.docked : SIZE_WIDTH.wide;
+    return createPortal(
+      <aside data-inspector-host="" data-inspector-size={size} data-inspector-over-stage="" aria-label={page.header.name}
+        style={{ position: 'fixed', top: 'var(--topbar-height)', right: 0, bottom: 0, width, zIndex: Z_BAND.modal, borderLeft: '1px solid var(--border-gold)', background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, minHeight: 0 }}>{pageEl}</div>
+      </aside>,
+      document.body,
+    );
+  }
 
   if (size === 'full') {
     // Full: the trail column · the page (two columns and the Connections aside). The top bar

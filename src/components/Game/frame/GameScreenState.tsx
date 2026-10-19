@@ -21,6 +21,7 @@ import type { MapLensId } from '../../../data/map-lenses';
 import type { LedgerSectionId } from '../../../data/frame-registry';
 import { readLedgerFoldedPref } from './ledgerFold';
 import { INITIAL_INSPECTOR_STATE, type InspectorState } from '../inspector/inspectorState';
+import { IDLE_STAGE, type StageScreenState } from '../stage/stageState';
 
 export interface GameScreenFlags {
   /** Read the Threads panel (THR-603 family). */
@@ -77,6 +78,11 @@ export interface GameScreenFlags {
    * open into `inspectorOpen` for the Ledger fold.
    */
   inspector: InspectorState;
+  /**
+   * THR-1892 (plan THR-1877 § D9) — the Stage: which moment it plays, its phase, what it
+   * asks of the map and what the camera did. `phase !== 'idle'` folds the frame around it.
+   */
+  stage: StageScreenState;
 }
 
 export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
@@ -94,6 +100,7 @@ export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
   inspectorOpen: false,
   chapterLedgerInitialKey: null,
   inspector: INITIAL_INSPECTOR_STATE,
+  stage: IDLE_STAGE,
 };
 
 type FlagKey = keyof GameScreenFlags;
@@ -128,6 +135,7 @@ export interface GameScreenStore {
   setInspectorOpen: Dispatch<SetStateAction<boolean>>;
   setChapterLedgerInitialKey: Dispatch<SetStateAction<string | null>>;
   setInspector: Dispatch<SetStateAction<InspectorState>>;
+  setStage: Dispatch<SetStateAction<StageScreenState>>;
 }
 
 /** The one-at-a-time rule: pressing the lens that is on turns it off; any other replaces it. */
@@ -158,6 +166,7 @@ export function useGameScreenStore(): GameScreenStore {
     setInspectorOpen: (value: SetStateAction<boolean>) => dispatch({ type: 'set', key: 'inspectorOpen', value }),
     setChapterLedgerInitialKey: (value: SetStateAction<string | null>) => dispatch({ type: 'set', key: 'chapterLedgerInitialKey', value }),
     setInspector: (value: SetStateAction<InspectorState>) => dispatch({ type: 'set', key: 'inspector', value }),
+    setStage: (value: SetStateAction<StageScreenState>) => dispatch({ type: 'set', key: 'stage', value }),
   }), []);
   return useMemo(() => ({ state, ...setters }), [state, setters]);
 }
@@ -184,6 +193,7 @@ const INERT_STORE: GameScreenStore = {
   setInspectorOpen: noop,
   setChapterLedgerInitialKey: noop,
   setInspector: noop,
+  setStage: noop,
 };
 
 const GameScreenStateContext = createContext<GameScreenStore>(INERT_STORE);

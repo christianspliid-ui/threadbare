@@ -208,6 +208,9 @@ if (import.meta.env.DEV) {
   // GameView registers modal + UI state providers for playtest assertions
   let _openModalsProvider: (() => string[]) | null = null;
   let _interruptStateProvider: (() => DebugInterruptState) | null = null;
+  // THR-1892 — the Stage reader and the homed-surface lever.
+  let _stageProvider: (() => import('./debug-bridge.d').DebugStageState) | null = null;
+  let _openHomedSurfaceCb: ((kind: string) => Promise<import('./debug-bridge.d').DebugOpenHomedSurfaceResult>) | null = null;
   let _clockHoldProvider: (() => DebugClockHold) | null = null;
   // THR-1716: the arrival's UI-session half of `getOpeningState()` (not in GameState).
   let _openingUiProvider: (() => { arrivalBeatOffered: boolean; clockEverRan: boolean }) | null = null;
@@ -1374,6 +1377,13 @@ if (import.meta.env.DEV) {
     getCountChips: async () => (await import('./components/shared/Chip')).readCountChips(),
     getInterruptState: async () => _interruptStateProvider?.()
       ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false, heldArrivals: [], rendering: [], foreground: null, stage: null, held: [], homedSurfaces: [] },
+    getStage: async () => _stageProvider?.() ?? {
+      open: null, vm: null, held: [], panelRect: null, windowRect: null, litHexScreen: null, litHexInWindow: false,
+      camera: null, mapDim: null,
+      folded: { inspector: false, ledgerRail: false, lensSuppressed: false, mapControlsHidden: false },
+      scrollingBelowCap: [],
+    },
+    openHomedSurface: async (kind: string) => _openHomedSurfaceCb?.(kind) ?? { opened: false, reason: 'Game not loaded' },
     getClockHold: async () => _clockHoldProvider?.()
       ?? { held: false, holder: null, runsOnAfter: null },
     getActiveUIState: async () => {
@@ -1391,6 +1401,8 @@ if (import.meta.env.DEV) {
     _registerHexAtViewport: (fn: (x: number, y: number) => { col: number; row: number } | null) => { _hexAtViewport = fn; },
     _registerOpenModalsProvider: (fn: () => string[]) => { _openModalsProvider = fn; },
     _registerInterruptStateProvider: (fn: () => DebugInterruptState) => { _interruptStateProvider = fn; },
+    _registerStageProvider: (fn: () => import('./debug-bridge.d').DebugStageState) => { _stageProvider = fn; },
+    _registerOpenHomedSurface: (fn: (kind: string) => Promise<import('./debug-bridge.d').DebugOpenHomedSurfaceResult>) => { _openHomedSurfaceCb = fn; },
     _registerClockHoldProvider: (fn: () => DebugClockHold) => { _clockHoldProvider = fn; },
     _registerOpeningUiProvider: (fn: () => { arrivalBeatOffered: boolean; clockEverRan: boolean }) => { _openingUiProvider = fn; },
     _registerOpeningRevealProvider: (fn: () => import('./engine/openingReveal').OpeningReveal) => { _openingRevealProvider = fn; },

@@ -13,6 +13,10 @@
  * THR-1877 (S1): the host renders by the home list. Each surface mounts only while the
  * interrupt resolution names its kind in `rendering`, through one exhaustive switch
  * over `StageHomedKind`; the resolution holds every other one (one foreground).
+ *
+ * THR-1892 (S2): a story beat plays on the Stage frame (`stage/Stage.tsx`), compact, over
+ * the dimmed map with its hex lit. The other Stage kinds keep their own screens until
+ * their slice moves them (`STAGE_FRAME_KINDS`).
  */
 import { Fragment, type Dispatch, type ReactNode, type RefObject, type SetStateAction } from 'react';
 import type { HomedSurfaceKind, StageHomedKind } from '../../../data/homed-surfaces';
@@ -39,7 +43,10 @@ import type { ChapterAnswerRunHandle } from '../hooks/useChapterAnswerRun';
 import { EncounterVeil } from '../EncounterVeil';
 import { MomentCard } from '../MomentCard';
 import { JourneyVignetteModal } from '../JourneyVignetteModal';
-import { StoryBeatModal } from '../StoryBeatModal';
+import { StoryBeatModal, StoryBeatStageBody } from '../StoryBeatModal';
+import { isStageFrameKind } from '../../../data/stage-content';
+import { Stage } from '../stage/Stage';
+import type { StageVM } from '../../../engine/views/stage/stageView';
 import { PremonitionModal } from '../PremonitionModal';
 
 export interface StageHostProps {
@@ -88,6 +95,8 @@ export interface StageHostProps {
   activeStoryBeatId: string | null;
   activeStoryBeatTemplate: UnifiedActionTemplate | null;
   activeStoryBeatAgentName: string;
+  /** THR-1892 — the Stage view model for the open story beat (lit hex, place tag, context line). */
+  storyBeatStageVM: StageVM | null;
   handleStoryBeatDismiss: () => void;
   // Premonition
   activePremonition: PremonitionEvent | null;
@@ -134,6 +143,7 @@ export function StageHost({
   activeStoryBeatId,
   activeStoryBeatTemplate,
   activeStoryBeatAgentName,
+  storyBeatStageVM,
   handleStoryBeatDismiss,
   activePremonition,
   handleWhisperChoice,
@@ -289,15 +299,33 @@ export function StageHost({
         />
       );
 
-    // Story beat modal (pacing governor)
-    case 'story-beat': return activeStoryBeatId && activeStoryBeatTemplate && (
+    // Story beat (pacing governor) — on the Stage, compact (THR-1892), while
+    // `STAGE_FRAME_KINDS` lists it; otherwise its dialog, as before.
+    case 'story-beat': return activeStoryBeatId && activeStoryBeatTemplate && (!isStageFrameKind('story-beat') || !storyBeatStageVM ? (
         <StoryBeatModal
           open={true}
           onDismiss={handleStoryBeatDismiss}
           template={activeStoryBeatTemplate}
           agentName={activeStoryBeatAgentName}
         />
-      );
+      ) : (
+        <Stage
+          key={activeStoryBeatId}
+          kind="story-beat"
+          vm={storyBeatStageVM}
+          label={`Story beat: ${activeStoryBeatTemplate.name}`}
+          onEscape={handleStoryBeatDismiss}
+          tick={gameState.tick}
+          right={(
+            <StoryBeatStageBody
+              template={activeStoryBeatTemplate}
+              contextLine={storyBeatStageVM.contextLine}
+              agentName={activeStoryBeatAgentName}
+              onDismiss={handleStoryBeatDismiss}
+            />
+          )}
+        />
+      ));
 
     // Divine Premonition modal (Whisper / Compulsion)
     case 'premonition': return activePremonition && (

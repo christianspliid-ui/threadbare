@@ -16,6 +16,11 @@
  * THR-1878 (Lenses I): the lens that is on comes from GameScreenState; a Dominion lens
  * reaches HexMapV2 as `dominionLens`, every other lens as one `hexLens` view model drawn
  * by the generic hex layer. The hex click passes through unchanged (D11).
+ *
+ * THR-1892 (plan THR-1877 § D5, § D9): the map side of the Stage lives here. While a moment
+ * plays on the Stage the map dims with its hex lit (`useStageCamera`), and the map's HTML
+ * overlays and corner controls hide — the map holds still, so they would do nothing (Law 25).
+ * The lens bar stays, under the panel, with its lens pressed.
  */
 import { useCallback, useMemo, type RefObject } from 'react';
 import type { GameState } from '../../../types/gameState';
@@ -37,6 +42,9 @@ import type { MapLensId } from '../../../data/map-lenses';
 import type { HexLensVM } from '../../../engine/views/lenses/lensTypes';
 import { MapAnchoredDialogs } from '../hosts/DialogHost';
 import type { MapAnchoredDialogsProps } from '../hosts/DialogHost';
+import { useGameScreenState } from '../frame/GameScreenState';
+import { isStageOpen } from '../stage/stageState';
+import { useStageCamera } from '../stage/useStageCamera';
 
 export interface GameMapProps extends MapAnchoredDialogsProps {
   gameState: GameState;
@@ -193,7 +201,12 @@ export function GameMap({
     }
   }, [hexMapRef, firstHex, seatHex]);
 
-  useMapHotkeys(runMapCommand);
+  // THR-1892 — the Stage drives the map through GameScreenState; the Stage holds no handle.
+  const { state: screen, setStage } = useGameScreenState();
+  const stageOpen = isStageOpen(screen.stage);
+  useStageCamera(hexMapRef, screen.stage, setStage);
+  // The map holds still under the Stage: its keys rest too.
+  useMapHotkeys(runMapCommand, !stageOpen);
 
   return (
     <>
@@ -224,7 +237,7 @@ export function GameMap({
         visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
         fogEnabled={!fogDisabled}
         showOrganicShore={showOrganicShore}
-        overlayOpen={scryVisible || harvestResult !== null}
+        overlayOpen={scryVisible || harvestResult !== null || stageOpen}
         selectionColor={sphereColor}
         moveDestinationHex={avatarTargetHex}
         onCameraCenterHex={setCameraCenter}
@@ -247,13 +260,15 @@ export function GameMap({
       />
 
       {/* THR-1900 — the bottom-right corner: the control cluster (the minimap joins it, THR-1901) */}
-      <MapCornerChrome>
-        <MapControls
-          hexMapRef={hexMapRef}
-          hasFocusTarget={firstHex !== null || seatHex !== null}
-          onCommand={runMapCommand}
-        />
-      </MapCornerChrome>
+      {!stageOpen && (
+        <MapCornerChrome>
+          <MapControls
+            hexMapRef={hexMapRef}
+            hasFocusTarget={firstHex !== null || seatHex !== null}
+            onCommand={runMapCommand}
+          />
+        </MapCornerChrome>
+      )}
 
       {/* THR-1878 — the map lens bar and legend (keys 1–4 from MAP_LENSES); hidden with no god */}
       {gameState.ascendantId && (

@@ -293,3 +293,26 @@ export const TRADE_LENS_WORDS = {
   overflow: 'and more roads through here',
   empty: 'No trade road you know of yet.',
 } as const;
+
+/**
+ * The Stage's words (THR-1892, plan THR-1877 § D4, § D5, C3). The place tag names the lit
+ * hex over the window; the context line heads a compact moment; the hold line answers a
+ * drag, wheel or click on the held map (PC-8). Empty slots drop their words (Law 43).
+ */
+export const STAGE_WORDS = {
+  /** "Millbrook · where it is happening" — the place is a link. */
+  placeTagSuffix: ' · where it is happening',
+  /** A premonition: "Millbrook · where Maren Ashfold is" (S4). */
+  placeTagSubjectSuffix: ' · where {subject} is',
+  /** "Maren Ashfold at Millbrook" — both names are links. */
+  contextJoin: ' at ',
+  /** No subject: "At Millbrook". */
+  contextAtOnly: 'At ',
+  holdLine: 'The map holds still while this moment is open.',
+  /** Added during an encounter, which can be set down (S3). */
+  holdLineShowOnMap: 'Show on map lets you look around.',
+  /** The lit-hex button's accessible name: "Open Millbrook". */
+  litHexLabel: 'Open {place}',
+  /** The Stage's accessible name when its moment names none. */
+  stageLabel: 'A moment',
+} as const;

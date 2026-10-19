@@ -132,6 +132,20 @@ transition: background-color var(--anim-fast) ease,
 
 ---
 
+## The Stage: camera ease, entrance, reduced-motion cut (THR-1892)
+
+When a moment opens on the Stage (`src/components/Game/stage/`), the camera eases its hex into the window at the right edge, then the panel enters:
+
+| Step | Full motion | Reduced motion (Law 44) |
+|---|---|---|
+| Rails settle | `STAGE_LAYOUT_SETTLE_FRAMES` (2) animation frames, then the window is measured | same |
+| Camera | `centerHexesAt` eases over `JUMP_TO_DURATION_MS` (500 ms); the player's zoom is kept when the place is legible there (k ≥ 5 and the hex ≤ 0.8 of the window), else `FOCUS_ZOOM` 10 | **cut** — the camera jumps (`camera.mode === 'cut'`) |
+| Map dim | fades to `STAGE_MAP_DIM` (0.7) over `STAGE_DIM_FADE_MS` (500 ms), with the camera | appears at once |
+| Panel | enters on the ceremonial tier, `opacity` over `STAGE_PANEL_ENTRANCE_S` (0.6 s), when the camera lands or after `STAGE_CAMERA_SETTLE_TIMEOUT_MS` (800 ms) | `--anim-fast` fade |
+| Close | the dim goes; **the camera stays** (THR-1829 § 5) — unless the returning Ledger rail would cover the place, then it eases the least distance that keeps it `STAGE_CLOSE_EDGE_MARGIN_PX` inside the visible map | cut |
+
+Nothing is carried by the motion alone: the ring and the place tag say where. The constants live in `src/data/stage-content.ts`.
+
 ## Ceremonial tier (UI Law 41, amended 2026-08-06)
 
 The duration caps above govern **game-UI chrome**. The **ceremonial tier** — encounter-veil entrance staggers (0.2–1.8s), long art zooms (up to 8s), 1.2s informational fades — is a named exception whose spec is the veil's own constants (`ENTRANCE_DELAYS`, `watchedEntrance`). It exists for arrival ceremony only; it is not a license for `transition: all` (banned everywhere) and it collapses to plain `--anim-fast` fades under `prefers-reduced-motion` (UI Law 44).

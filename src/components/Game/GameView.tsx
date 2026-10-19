@@ -38,6 +38,9 @@ import { useAgentInteraction, unthreadedAgentTierName } from './hooks/useAgentIn
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { resolvePlaceHex } from '../../engine/views/map/focusTargets';
 import { readView } from '../../engine/views/readView';
+import { stageViewSelector, type StageVM } from '../../engine/views/stage/stageView';
+import { isStageOpen } from './stage/stageState';
+import { useStageDebugBridge } from './stage/useStageDebugBridge';
 import { mapAgentsSelector } from '../../engine/views/map/agents';
 import { mapThreadLinesSelector } from '../../engine/views/map/threadLines';
 import { mapCompaniesSelector } from '../../engine/views/map/companies';
@@ -1542,6 +1545,17 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // never on a lens id. The rest of the lens block sits with the debug bridges below.
   const activeLens = gameScreen.state.activeLens;
   const lensSuppressed = gameScreen.state.lensSuppressed;
+  // THR-1892 (plan THR-1877 § D7) — while a moment plays on the Stage the lens is suppressed,
+  // not switched off: two dims never compose, the bar keeps its lens pressed, and the lens
+  // draws again when the moment ends. Written on the Stage's transitions only.
+  const stageOpen = isStageOpen(gameScreen.state.stage);
+  const setLensSuppressedFromStage = gameScreen.setLensSuppressed;
+  const stageWasOpenRef = useRef(false);
+  useEffect(() => {
+    if (stageOpen === stageWasOpenRef.current) return;
+    stageWasOpenRef.current = stageOpen;
+    setLensSuppressedFromStage(stageOpen);
+  }, [stageOpen, setLensSuppressedFromStage]);
   const activeLensLayer = activeLens ? lensLayerOf(activeLens) : null;
   const dominionLensOn = activeLensLayer === 'dominion';
   const dominionLensOpenedRef = useRef(false);
@@ -3374,6 +3388,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     return '';
   }, [activeStoryBeatId, gameState.unifiedActions, gameState.graph]);
 
+  // THR-1892 — the story beat's Stage view model, lit at its mortal's Location. The active
+  // beat keeps no hex of its own: it either fired without being queued, or was shifted out
+  // of `storyBeatQueue`, whose leftover copies carry the agent's hex from the tick they were
+  // queued (or the 0,0 fallback). Reading the queue would light a stale place.
+  const activeStoryBeatAgentId = useMemo(() => {
+    if (!activeStoryBeatId) return null;
+    return gameState.unifiedActions?.find(a => a.actionId === activeStoryBeatId)?.actorId ?? null;
+  }, [activeStoryBeatId, gameState.unifiedActions]);
+  const storyBeatStageVM: StageVM | null = activeStoryBeatId && activeStoryBeatTemplate
+    ? readView(runtime, gameState, stageViewSelector, {
+      kind: 'story-beat',
+      hex: null,
+      subjectAgentId: activeStoryBeatAgentId,
+      hasArt: false,
+      hasCast: false,
+    }, tiles)
+    : null;
+
   const handleStoryBeatDismiss = useCallback(() => {
     setGameState(prev => {
       // THR-1822 § D15: the engine writes the dismissal and bumps worldVersion.
@@ -3463,6 +3495,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useEffect(() => {
     foregroundIncumbentRef.current = interruptForeground;
   }, [interruptForeground]);
+  // THR-1892 — `__DEBUG.getStage()` and `__DEBUG.openHomedSurface(kind)`.
+  useStageDebugBridge({ gameScreen, hexMapRef, interruptResolution, stageVM: storyBeatStageVM, setGameState, runtime });
   // A set-down kind is forgotten once its own flag clears, so its next opening shows.
   const wishedHomedKey = interruptResolution.wished.join('|');
   useEffect(() => {
@@ -4103,7 +4137,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         // THR-1812 — the TIME readout names a chapter answer the clock is turning
         // toward, or one waiting on a paused clock.
         clockAnswerStatus={chapterAnswer.answerStatus}
-        encounterOpen={Boolean(tieredEncounterState && encounterVeilModel)}
+        // THR-1892 — the guard covers every Stage moment, not only the encounter (plan § D7).
+        encounterOpen={Boolean(tieredEncounterState && encounterVeilModel) || stageOpen}
         firstRunPrompt={firstRunPrompt}
         speed={speed}
         handleToggleRunning={handlePlayControlToggle}
@@ -4453,6 +4488,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         activeStoryBeatId={activeStoryBeatId}
         activeStoryBeatTemplate={activeStoryBeatTemplate}
         activeStoryBeatAgentName={activeStoryBeatAgentName}
+        storyBeatStageVM={storyBeatStageVM}
         handleStoryBeatDismiss={handleStoryBeatDismiss}
         activePremonition={activePremonition}
         handleWhisperChoice={handleWhisperChoice}
