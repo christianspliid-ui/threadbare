@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 00:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 01:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-19: Inspector S6 — arm a card from your hand and its targets light up on the map** ([THR-1914](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light)). Merged via [#2489](https://github.com/christianspliid-ui/threadbare/pull/2489) and live.
 - **2026-10-19: the Stage, slice 2 — story beats play over the dimmed map with their place lit** ([THR-1892](https://linear.app/threadbare/issue/THR-1892)). Merged via [#2488](https://github.com/christianspliid-ui/threadbare/pull/2488) and live.
 - **2026-10-19: Inspector S5 — every Inspector row shows how many cards can act on it, with an inline tray of those cards** ([THR-1913](https://linear.app/threadbare/issue/THR-1913/inspector-s5-card-counts-on-every-row-with-an-inline-tray-of-those)). Merged via [#2486](https://github.com/christianspliid-ui/threadbare/pull/2486) and live.
 - **2026-10-18: Inspector S4 — the old detail screens are deleted; every page now opens in the Inspector** ([THR-1912](https://linear.app/threadbare/issue/THR-1912/inspector-s4-delete-the-retired-detail-surfaces-once-their-fields-have)). Merged via [#2485](https://github.com/christianspliid-ui/threadbare/pull/2485) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-18: the fix for armies bleeding out within a week, with almost none raised again** ([THR-1973](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again)). Merged via [#2480](https://github.com/christianspliid-ui/threadbare/pull/2480) and live.
 - **2026-10-18: every link, card and map click now opens the Inspector beside the map, and you can cast from its Act row** ([THR-1911](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click)). Merged via [#2479](https://github.com/christianspliid-ui/threadbare/pull/2479) and live.
 - **2026-10-18: pressing Play on a chapter choice now moves the story on, once (the main-map wall from cold playtest round 4)** ([THR-1976](https://linear.app/threadbare/issue/THR-1976)). Merged via [#2477](https://github.com/christianspliid-ui/threadbare/pull/2477) and live.
-- **2026-10-18: the god rail puts Attention beside essence, your cards in the rail, and folds its rows (screen frame, second slice)** ([THR-1894](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand)). Merged via [#2474](https://github.com/christianspliid-ui/threadbare/pull/2474) and live.
 
 ---
 
