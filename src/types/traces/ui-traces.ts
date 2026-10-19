@@ -156,7 +156,28 @@ export interface UiMapLensChangedTrace extends TraceBase {
   summary: string;
 }
 
-export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace | StageTrace | UiMapCameraJumpTrace | UiMapLensChangedTrace;
+/** What happened to an armed card (THR-1914, Inspector plan § Tracing). */
+export type UiCardArmEvent = 'armed' | 'staged' | 'cast' | 'refused' | 'disarmed';
+
+/** Where the card was armed or its target chosen from. */
+export type UiCardArmOrigin = 'hand' | 'act_row' | 'tray' | 'find' | 'drag' | 'map' | 'inspector';
+
+/**
+ * Emitted when a card is armed from the hand, given a target, cast, refused or disarmed
+ * (THR-1914). `reason` is the locked reason, `not_a_target` or `card_left_hand`.
+ */
+export interface UiCardArmTrace extends TraceBase {
+  category: 'ui_card_arm';
+  actionId: string;
+  event: UiCardArmEvent;
+  origin: UiCardArmOrigin;
+  targetKind?: string;
+  targetId?: string;
+  reason?: string;
+  summary: string;
+}
+
+export type UiTrace = UiRefOpenedTrace | UiRefUnroutableTrace | ViewFallbackTrace | StageTrace | UiMapCameraJumpTrace | UiMapLensChangedTrace | UiCardArmTrace;
 
 /** The categories this module registers, for the vocabulary gate. */
-export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback', 'ui_stage', 'ui_map_camera_jump', 'ui_map_lens_changed'] as const;
+export const UI_TRACE_CATEGORIES = ['ui_ref_opened', 'ui_ref_unroutable', 'view_fallback', 'ui_stage', 'ui_map_camera_jump', 'ui_map_lens_changed', 'ui_card_arm'] as const;

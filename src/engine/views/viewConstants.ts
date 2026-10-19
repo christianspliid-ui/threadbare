@@ -33,3 +33,16 @@ export const NEEDS_YOU_NEWS_KEEP_DAYS = 3;
  * rows lazily as they scroll into view.
  */
 export const INSPECTOR_VIEW_BUDGET_MS = 16;
+
+/**
+ * THR-1914 (Inspector plan § Constants) — how long "Illuminating Whisper left your hand.
+ * Nothing was spent." stays in the banner (or as a toast) before it clears, in ms.
+ */
+export const ARMED_CLEARED_LINE_MS = 2500;
+
+/**
+ * THR-1914 — the lit strength of a hex holding only locked targets, as a fraction of a
+ * castable hex's: 1 is as bright as castable, 0 as dim as a non-target. The dim plate on
+ * such a hex is drawn at `LENS_DIM_ALPHA × (1 − ARMED_LOCKED_LIT)`.
+ */
+export const ARMED_LOCKED_LIT = 0.5;

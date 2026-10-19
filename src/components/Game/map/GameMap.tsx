@@ -97,6 +97,8 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   activeLens: MapLensId | null;
   lensSuppressed: boolean;
   hexLens: HexLensVM | null;
+  /** THR-1914 — an armed card's lit hexes (the lens is suppressed meanwhile), or null. */
+  armedHighlight?: HexMapV2Props['armedHighlight'];
   setMapLensFromBar: MapLensSwitchProps['onChange'];
   dominionBandColors: MapLensSwitchProps['bandColors'];
 }
@@ -150,6 +152,7 @@ export function GameMap({
   activeLens,
   lensSuppressed,
   hexLens,
+  armedHighlight = null,
   setMapLensFromBar,
   dominionBandColors,
   agendaPickerOpen,
@@ -254,6 +257,7 @@ export function GameMap({
         dominionLens={dominionLensForMap}
         dominionTooltip={dominionTooltip}
         hexLens={lensSuppressed ? null : hexLens}
+        armedHighlight={armedHighlight}
         firstHex={firstHex}
         seatHex={seatHex}
         tick={gameState.tick}

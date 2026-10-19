@@ -14,7 +14,15 @@ export interface HandPressValue {
   press: (cardId: string) => void;
   /** The armed card's template id, when the provider arms cards; null otherwise. */
   armedActionId: string | null;
+  /**
+   * THR-1914 — a drag began on this card. Present only when the provider arms cards: the
+   * row is draggable then, and the drop chooses a target (never casts). Click always works.
+   */
+  dragStart?: (cardId: string) => void;
 }
+
+/** THR-1914 — a dragged hand card's payload type: the card's template id. */
+export const CARD_DRAG_MIME = 'application/x-threadbearer-card';
 
 const HandPressContext = createContext<HandPressValue | null>(null);
 
@@ -30,6 +38,11 @@ export function useHandPressProvider(): HandPressValue | null {
 /** What a hand row's press calls. Outside any provider, a press does nothing (fail-soft). */
 export function useHandPress(): (cardId: string) => void {
   return useContext(HandPressContext)?.press ?? noop;
+}
+
+/** The drag seam, or null when the provider does not arm (the row is not draggable then). */
+export function useHandDragStart(): ((cardId: string) => void) | null {
+  return useContext(HandPressContext)?.dragStart ?? null;
 }
 
 /** The armed card, or null while nothing is armed (or no provider arms). */

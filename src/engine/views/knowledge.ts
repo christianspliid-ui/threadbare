@@ -11,10 +11,25 @@
  */
 import type { GameState } from '../../types/gameState';
 
+/**
+ * THR-1914 (Inspector plan § D9) — the surfaces that ask the seen floor's hex rule. Each
+ * one is a place the player could otherwise learn what fog hides: a lens mark, or a card's
+ * lit target while it is armed. The rule is the same for every surface; the list names
+ * who reads it, so a new reader is one entry (Law 58).
+ */
+export type KnowledgeSurface = 'lensMarks' | 'armedTargets';
+
+export const KNOWLEDGE_SURFACES: readonly KnowledgeSurface[] = ['lensMarks', 'armedTargets'];
+
 /** Whether the player may be shown things on this hex ("col,row"). */
 export function isHexKnown(state: Pick<GameState, 'visibilityMap'>, key: string): boolean {
   const map = state.visibilityMap;
   if (!map || typeof map.get !== 'function' || map.size === 0) return true;
   const entry = map.get(key);
   return !!entry && entry.state !== 'unexplored';
+}
+
+/** The hex rule, asked by a named surface. Every surface reads the one rule today. */
+export function isHexKnownFor(_surface: KnowledgeSurface, state: Pick<GameState, 'visibilityMap'>, key: string): boolean {
+  return isHexKnown(state, key);
 }

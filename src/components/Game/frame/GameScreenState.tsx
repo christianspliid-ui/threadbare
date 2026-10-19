@@ -22,6 +22,7 @@ import type { LedgerSectionId } from '../../../data/frame-registry';
 import { readLedgerFoldedPref } from './ledgerFold';
 import { INITIAL_INSPECTOR_STATE, type InspectorState } from '../inspector/inspectorState';
 import { IDLE_STAGE, type StageScreenState } from '../stage/stageState';
+import type { ArmedSlice } from '../inspector/armedState';
 
 export interface GameScreenFlags {
   /** Read the Threads panel (THR-603 family). */
@@ -83,6 +84,14 @@ export interface GameScreenFlags {
    * asks of the map and what the camera did. `phase !== 'idle'` folds the frame around it.
    */
   stage: StageScreenState;
+  /**
+   * THR-1914 (Inspector plan § D9 way 3) — the card armed from the hand, its chosen target
+   * and the banner's answer line, or null. The arming hook writes it; the hand, the banner,
+   * the Inspector's rows and the map read it. While set, `lensSuppressed` is set too.
+   */
+  armed: ArmedSlice;
+  /** THR-1914 — "… left your hand. Nothing was spent." while it shows, else null. */
+  armedCleared: string | null;
 }
 
 export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
@@ -101,6 +110,8 @@ export const INITIAL_GAME_SCREEN_FLAGS: GameScreenFlags = {
   chapterLedgerInitialKey: null,
   inspector: INITIAL_INSPECTOR_STATE,
   stage: IDLE_STAGE,
+  armed: null,
+  armedCleared: null,
 };
 
 type FlagKey = keyof GameScreenFlags;
@@ -136,6 +147,8 @@ export interface GameScreenStore {
   setChapterLedgerInitialKey: Dispatch<SetStateAction<string | null>>;
   setInspector: Dispatch<SetStateAction<InspectorState>>;
   setStage: Dispatch<SetStateAction<StageScreenState>>;
+  setArmed: Dispatch<SetStateAction<ArmedSlice>>;
+  setArmedCleared: Dispatch<SetStateAction<string | null>>;
 }
 
 /** The one-at-a-time rule: pressing the lens that is on turns it off; any other replaces it. */
@@ -167,6 +180,8 @@ export function useGameScreenStore(): GameScreenStore {
     setChapterLedgerInitialKey: (value: SetStateAction<string | null>) => dispatch({ type: 'set', key: 'chapterLedgerInitialKey', value }),
     setInspector: (value: SetStateAction<InspectorState>) => dispatch({ type: 'set', key: 'inspector', value }),
     setStage: (value: SetStateAction<StageScreenState>) => dispatch({ type: 'set', key: 'stage', value }),
+    setArmed: (value: SetStateAction<ArmedSlice>) => dispatch({ type: 'set', key: 'armed', value }),
+    setArmedCleared: (value: SetStateAction<string | null>) => dispatch({ type: 'set', key: 'armedCleared', value }),
   }), []);
   return useMemo(() => ({ state, ...setters }), [state, setters]);
 }
@@ -194,6 +209,8 @@ const INERT_STORE: GameScreenStore = {
   setChapterLedgerInitialKey: noop,
   setInspector: noop,
   setStage: noop,
+  setArmed: noop,
+  setArmedCleared: noop,
 };
 
 const GameScreenStateContext = createContext<GameScreenStore>(INERT_STORE);

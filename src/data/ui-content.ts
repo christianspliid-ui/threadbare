@@ -281,7 +281,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.essence_panel': {
     label: 'Divine Essence',
-    desc: 'Your power reserve. Spent on {{ui.avatar_wheel}} interventions, replenished by {{ui.mandate_tracker}} completion.',
+    desc: 'Your power reserve. Spent on {{ui.your_cards}}, replenished by {{ui.mandate_tracker}} completion.',
   },
   'ui.mandate_tracker': {
     label: 'Active Mandates',
@@ -307,10 +307,6 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.avatar_move': {
     label: 'Move Avatar',
     desc: 'Relocate your divine presence to a visible hex on the map.',
-  },
-  'ui.avatar_wheel': {
-    label: 'Agent Wheel',
-    desc: 'Open the wheel of divine interventions for the selected agent.',
   },
   'ui.avatar_scry': {
     label: 'Investiture',
@@ -1238,10 +1234,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Your divine court: the mortals you have raised to act in your name. Open it to see who serves you, and in what seat.',
   },
   // THR-1894 — the god rail's hand ("Your cards", not "Your hand": the UL's hand is a
-  // step's dealt nudge cards). Interim words until THR-1876's arming lands.
+  // step's dealt nudge cards). THR-1914 (Inspector plan § D14): a press arms the card; the
+  // retired 'ui.avatar_wheel' (the wheel of interventions) folded into this entry.
   'ui.your_cards': {
     label: 'Your cards',
-    desc: 'The cards you can cast on the world. Press one to read it in the Codex.',
+    desc: 'Arm one, then choose what it touches. Press it again, or Esc, to put it down.',
   },
   // THR-1894 — a hand row's par price. The description is built at render
   // (`handPriceTooltipDesc`, frame-content.ts) from the Foreign band's own line and

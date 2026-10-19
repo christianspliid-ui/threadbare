@@ -210,6 +210,8 @@ if (import.meta.env.DEV) {
   let _interruptStateProvider: (() => DebugInterruptState) | null = null;
   // THR-1892 — the Stage reader and the homed-surface lever.
   let _stageProvider: (() => import('./debug-bridge.d').DebugStageState) | null = null;
+  // THR-1914 — card-first arming: the lit targets and the arm / choose / cast levers.
+  let _armedBridge: import('./debug-bridge.d').DebugArmedBridge | null = null;
   let _openHomedSurfaceCb: ((kind: string) => Promise<import('./debug-bridge.d').DebugOpenHomedSurfaceResult>) | null = null;
   let _clockHoldProvider: (() => DebugClockHold) | null = null;
   // THR-1716: the arrival's UI-session half of `getOpeningState()` (not in GameState).
@@ -1192,6 +1194,12 @@ if (import.meta.env.DEV) {
     getInspectorState: async () => _inspectorBridge?.getState() ?? null,
     openInInspector: async (kind, id, mode) => _inspectorBridge?.open(kind, id, mode) ?? false,
     _registerInspectorBridge: (bridge) => { _inspectorBridge = bridge; },
+    getArmedTargets: async () => _armedBridge?.getTargets() ?? null,
+    armCard: async (actionId: string) => _armedBridge?.arm(actionId) ?? false,
+    chooseArmedTarget: async (kind: string, id: string) => _armedBridge?.choose(kind, id) ?? null,
+    castArmed: async () => _armedBridge?.cast() ?? { cast: false, reason: 'no game running' },
+    disarmCard: async () => { _armedBridge?.disarm(); return true; },
+    _registerArmedBridge: (bridge) => { _armedBridge = bridge; },
     /** How many top-level places stand in each band. */
     getDominionCensus: async () => {
       const [{ dominionOf }, { getLocationNodes }] = await Promise.all([

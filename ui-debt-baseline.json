@@ -185,9 +185,9 @@
       }
     },
     "glyph-icon-data": {
-      "total": 53,
+      "total": 51,
       "perFile": {
-        "src/data/action-card-display.ts": 8,
+        "src/data/action-card-display.ts": 6,
         "src/data/doom-archetype-presentation.ts": 7,
         "src/data/entity-visual-fallbacks.ts": 1,
         "src/data/nudge-card-display.ts": 5,
