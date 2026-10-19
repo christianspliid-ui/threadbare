@@ -203,7 +203,7 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
     const a = live.current.armed;
     if (!a) return;
     const key = `${coord.col},${coord.row}`;
-    const entries = vm ? Object.values(vm.lit).filter(e => e.hexKey === key) : [];
+    const entries = vm ? Object.values(vm.lit).filter(e => e.hexKeys.includes(key)) : [];
     const castable = entries.filter(e => e.state === 'castable');
     if (castable.length > 1 || (castable.length === 0 && entries.length > 1)) {
       // Several things here: open the land page with them lit, and let the god pick by name.

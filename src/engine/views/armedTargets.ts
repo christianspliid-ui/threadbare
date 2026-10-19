@@ -69,7 +69,10 @@ export interface ArmedTargetEntry {
   reason: string | null;
   ref: WorldRef;
   name: string;
+  /** The first hex the target was met on. */
   hexKey: HexKey;
+  /** Every seen hex the target is on — a faction holds a hall on several (3–5 at seeding). */
+  hexKeys: HexKey[];
   slotId: string | null;
 }
 
@@ -219,19 +222,32 @@ export function buildArmedTargetsFrom(
   const lockedHexes = new Set<HexKey>();
   const hover: Record<HexKey, string[]> = {};
 
-  const consider = (ref: WorldRef, name: string, hexKey: HexKey) => {
-    const key = refKey(ref);
-    if (lit[key]) return;
-    const verdict = evaluateCardOnTarget(state, actionId, ref);
-    if (verdict.state === 'not_a_target') return;
-    lit[key] = { state: verdict.state, reason: verdict.reason, ref, name, hexKey, slotId: verdict.slotId };
-    if (verdict.state === 'castable') {
+  const mark = (entry: ArmedTargetEntry, name: string, hexKey: HexKey) => {
+    if (entry.state === 'castable') {
       castableHexes.add(hexKey);
       (hover[hexKey] ??= []).push(name);
     } else {
       lockedHexes.add(hexKey);
-      (hover[hexKey] ??= []).push(verdict.reason ? ARMED_WORDS.hoverLocked.replace('{name}', name).replace('{reason}', lowerFirst(verdict.reason)) : name);
+      (hover[hexKey] ??= []).push(entry.reason ? ARMED_WORDS.hoverLocked.replace('{name}', name).replace('{reason}', lowerFirst(entry.reason)) : name);
     }
+  };
+
+  const consider = (ref: WorldRef, name: string, hexKey: HexKey) => {
+    const key = refKey(ref);
+    const seen = lit[key];
+    if (seen) {
+      // The verdict is the ref's, not the hex's: light each further hex it stands on too.
+      if (!seen.hexKeys.includes(hexKey)) {
+        seen.hexKeys.push(hexKey);
+        mark(seen, name, hexKey);
+      }
+      return;
+    }
+    const verdict = evaluateCardOnTarget(state, actionId, ref);
+    if (verdict.state === 'not_a_target') return;
+    const entry: ArmedTargetEntry = { state: verdict.state, reason: verdict.reason, ref, name, hexKey, hexKeys: [hexKey], slotId: verdict.slotId };
+    lit[key] = entry;
+    mark(entry, name, hexKey);
   };
 
   for (const category of cardTargetCategories(template) as readonly (TargetCategory | 'faction')[]) {

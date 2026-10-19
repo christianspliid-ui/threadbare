@@ -10,7 +10,8 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile } from '../../../types';
-import { buildArmedTargets, evaluateCardOnTarget, armedTargetWords, armedCardName, refKey, refForMapNode } from '../armedTargets';
+import type { HexContentsVM } from '../hexContents';
+import { buildArmedTargets, buildArmedTargetsFrom, evaluateCardOnTarget, armedTargetWords, armedCardName, refKey, refForMapNode } from '../armedTargets';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { ARMED_TARGET_WORDS } from '../../../data/view-content';
 import { KNOWLEDGE_SURFACES } from '../knowledge';
@@ -105,6 +106,18 @@ describe('buildArmedTargets', () => {
     expect(vm.map.lit).toEqual([]);
     expect(vm.map.litLocked).toEqual(['3,4']);
     expect(vm.map.hover['3,4']).toMatch(/Shutash — not enough/);
+  });
+
+  it('a target on several hexes (a faction\'s halls) lights every one of them', () => {
+    const hex = (key: string, col: number, row: number): HexContentsVM => ({
+      hexKey: key, col, row, people: [{ ref: { kind: 'agent', id: 'shutash' }, name: 'Shutash' }], locations: [], places: [],
+      armies: [], artifacts: [], lairs: [], ruins: [], halls: [], resources: [], covenants: [],
+    });
+    const vm = buildArmedTargetsFrom(world(), WHISPER, { '3,4': hex('3,4', 3, 4), '5,5': hex('5,5', 5, 5) });
+    const entry = vm.lit[refKey({ kind: 'agent', id: 'shutash' })];
+    expect(entry.hexKeys.sort()).toEqual(['3,4', '5,5']);
+    expect(vm.map.lit).toEqual(['3,4', '5,5']);
+    expect(vm.map.hover['5,5']).toContain('Shutash');
   });
 
   it('says so when nothing in sight can be touched', () => {

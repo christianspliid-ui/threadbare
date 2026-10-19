@@ -530,6 +530,8 @@ export interface DebugArmedTarget {
   state: 'castable' | 'locked';
   reason: string | null;
   hexKey: string;
+  /** Every seen hex the target is on (a faction's halls). */
+  hexKeys: string[];
 }
 
 /** Result of `getArmedTargets()` (THR-1914): the armed card's lit targets, or null while nothing is armed. */

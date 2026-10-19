@@ -30,7 +30,7 @@ export function useArmedDebugBridge(arming: CardArming, gameState: GameState, le
           origin: a.armed.origin,
           staged: a.armed.target ? refKey(a.armed.target) : null,
           note: a.armed.note,
-          lit: vm ? Object.entries(vm.lit).map(([ref, e]) => ({ ref, name: e.name, state: e.state, reason: e.reason, hexKey: e.hexKey })) : [],
+          lit: vm ? Object.entries(vm.lit).map(([ref, e]) => ({ ref, name: e.name, state: e.state, reason: e.reason, hexKey: e.hexKey, hexKeys: e.hexKeys })) : [],
           map: vm ? vm.map : { lit: [], litLocked: [], hover: {} },
           emptyLine: vm?.emptyLine ?? null,
           lensSuppressed: suppressed,
