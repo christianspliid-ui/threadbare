@@ -31,7 +31,7 @@ const TEST_TIMEOUT_MS = 180_000;
 
 function renderedRefs(page: SubjectPageVM): WorldRef[] {
   const refs: WorldRef[] = [];
-  for (const row of page.inThisLand?.rows ?? []) refs.push(...row.rows.map(r => r.ref));
+  if (page.pageKind === 'land') for (const row of page.inThisLand.rows) refs.push(...row.rows.map(r => r.ref));
   for (const group of page.connections.groups) refs.push(...group.rows.slice(0, group.foldAfter).map(r => r.ref));
   return refs;
 }

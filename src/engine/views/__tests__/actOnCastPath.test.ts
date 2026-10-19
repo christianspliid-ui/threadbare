@@ -21,7 +21,7 @@ import { getAscendantDomainAffinities } from '../../ascendant';
 import { castCapabilityByReach } from '../../playerCastReadout';
 import { teachSpellPreview } from '../../ascendantExpression';
 import { getAvatarHexPosition } from '../../visibility';
-import { TARGET_CONTEXT_BUILDERS, actOnTargetForRef, buildActOn, categoryFor } from '../subjects/actOn';
+import { TARGET_CONTEXT_BUILDERS, actOnCounts, actOnRowCards, actOnTargetForRef, buildActOn, categoryFor } from '../subjects/actOn';
 
 const ASC = 'asc';
 
@@ -145,5 +145,25 @@ describe('the Act-row golden: the same slot ids the drawers dealt', () => {
     const state = world();
     const row = buildActOn(state, { kind: 'hex', col: 3, row: 4 }, 'Open grassland', true);
     expect(row.cards.map(c => c.actionId)).toEqual(drawerIds(state, buildHexTargetContext({ col: 3, row: 4, terrain: 'grassland', graph: state.graph }), false));
+  });
+});
+
+describe('THR-1913 — row cards and the identity-less run', () => {
+  it('a run with no identity reads the god\'s spheres from its node, so the Act row still deals', () => {
+    const state = world();
+    const withIdentity = buildActOn(state, { kind: 'location', id: 'quarter' }, 'Temple Quarter').cards.map(c => c.actionId);
+    const bare = { ...state, ascendantIdentity: null } as unknown as GameState;
+    state.graph.getNode(ASC)!.properties.sphereAlignment = { primary: 'spirit', secondary: 'mind' };
+    expect(withIdentity.length).toBeGreaterThan(0);
+    expect(buildActOn(bare, { kind: 'location', id: 'quarter' }, 'Temple Quarter').cards.map(c => c.actionId)).toEqual(withIdentity);
+  });
+
+  it('a row counts only the cards it can cast now, and a ref nothing can be cast on counts 0', () => {
+    const state = world();
+    const all = buildActOn(state, { kind: 'location', id: 'quarter' }, 'Temple Quarter').cards;
+    const counts = actOnCounts(state, [{ kind: 'location', id: 'quarter' } as never, { kind: 'record', id: 'r1' } as never]);
+    expect(counts['location:quarter']).toBe(all.filter(c => c.available).length);
+    expect(counts['record:r1']).toBe(0);
+    expect(actOnRowCards(state, { kind: 'location', id: 'quarter' } as never).every(c => c.available)).toBe(true);
   });
 });
