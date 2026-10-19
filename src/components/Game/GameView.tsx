@@ -3414,6 +3414,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }, tiles)
     : null;
 
+  // THR-1895 — the encounter's Stage view model: lit at the encounter's own hex (its
+  // header's, set by every adapter), else its mortal's Location. Full layout: the left
+  // column always holds the cast and *At stake*.
+  const encounterStageVM: StageVM | null = tieredEncounterState && encounterVeilModel
+    ? readView(runtime, gameState, stageViewSelector, {
+      kind: 'encounter',
+      hex: typeof encounterVeilModel.header.hexCol === 'number' && typeof encounterVeilModel.header.hexRow === 'number'
+        ? { col: encounterVeilModel.header.hexCol, row: encounterVeilModel.header.hexRow }
+        : null,
+      subjectAgentId: tieredEncounterState.agentId,
+      phase: encounterVeilModel.aftermath ? 'aftermath' : tieredEncounterState.threadTier === 'watched' ? 'watched' : 'step',
+      hasArt: Boolean(encounterVeilModel.illustration),
+      hasCast: true,
+    }, tiles)
+    : null;
+
   const handleStoryBeatDismiss = useCallback(() => {
     setGameState(prev => {
       // THR-1822 § D15: the engine writes the dismissal and bumps worldVersion.
@@ -3504,7 +3520,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     foregroundIncumbentRef.current = interruptForeground;
   }, [interruptForeground]);
   // THR-1892 — `__DEBUG.getStage()` and `__DEBUG.openHomedSurface(kind)`.
-  useStageDebugBridge({ gameScreen, hexMapRef, interruptResolution, stageVM: storyBeatStageVM, setGameState, runtime });
+  useStageDebugBridge({ gameScreen, hexMapRef, interruptResolution, stageVM: interruptResolution.stage === 'encounter' ? encounterStageVM : storyBeatStageVM, setGameState, runtime });
   // A set-down kind is forgotten once its own flag clears, so its next opening shows.
   const wishedHomedKey = interruptResolution.wished.join('|');
   useEffect(() => {
@@ -4518,6 +4534,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         openAgentSheetForId={openAgentSheetForId}
         tieredEncounterState={tieredEncounterState}
         encounterVeilModel={encounterVeilModel}
+        encounterStageVM={encounterStageVM}
         describeFollowFor={describeFollowFor}
         handleToggleFollow={handleToggleFollow}
         encounterPayingEssence={encounterPayingEssence}

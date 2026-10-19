@@ -3297,7 +3297,7 @@ export interface DebugBridge {
    *  Resolves `{ header: null, currentStep }` off a fight step and `{ error }` for an
    *  unknown action. **Async.** */
   getOpponentHeaderModel: (actionId: string) => Promise<
-    | import('./components/Game/encounter-stage/adapters/buildOpponentHeaderModel').OpponentHeaderModel
+    | import('./engine/views/stage/buildOpponentHeaderModel').OpponentHeaderModel
     | { readonly header: null; readonly currentStep: number }
     | { readonly error: string }
   >;

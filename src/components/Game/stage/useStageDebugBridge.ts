@@ -128,7 +128,7 @@ export function useStageDebugBridge(args: {
       'warm-start': later('warm-start', 'it opens on a warm start (?warm)'),
       'meet-the-first': later('meet-the-first', 'use ?view=game&firstunmet'),
       'threading-rite': later('threading-rite', 'use __DEBUG.openThreadingRite(agentId)'),
-      encounter: later('encounter', 'use ?forceencounters or __DEBUG.spawnEncounter (its Stage lands with THR-1895)'),
+      encounter: later('encounter', 'use ?forceencounters or __DEBUG.spawnEncounter; it plays on the Stage'),
       premonition: later('premonition', 'use __DEBUG.forcePremonition(agent) (its Stage lands with THR-1897)'),
       'journey-vignette': later('journey-vignette', 'its lever and Stage land with THR-1897'),
       'story-beat': storyBeat,

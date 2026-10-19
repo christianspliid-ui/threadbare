@@ -877,7 +877,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/effectAura.ts',
       'src/engine/phaseQuintessence.ts',
       'src/engine/unifiedActionResolution.ts',
-      'src/components/Game/encounter-stage/adapters/buildStepCastModel.ts',
+      'src/engine/views/stage/buildStepCastModel.ts',
     ],
     verifiedLive: {
       date: '2026-10-03',
@@ -942,7 +942,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/stepCast.ts',
       'src/engine/unifiedActionResolution.ts',
       'src/engine/debugEncounterTools.ts',
-      'src/components/Game/encounter-stage/adapters/buildStepCastModel.ts',
+      'src/engine/views/stage/buildStepCastModel.ts',
     ],
     verifiedLive: {
       date: '2026-10-03',
@@ -2652,7 +2652,7 @@ export const CONTRACTS: readonly Contract[] = [
     // resolution site is named here as a contract rather than left implicit.
     readSites: [
       'src/engine/unifiedActionResolution.ts',
-      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/engine/views/stage/buildNudgePhaseModel.ts',
       'src/debug-bridge.ts',
     ],
     // LIVE since THR-1254. The `badgeOverride` is deleted rather than reworded,
@@ -2684,7 +2684,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/engine/encounters/dealHand.ts',
       'src/engine/unifiedActionResolution.ts',
-      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/engine/views/stage/buildNudgePhaseModel.ts',
     ],
     verifiedLive: {
       date: '2026-09-28',
@@ -3168,7 +3168,7 @@ export const CONTRACTS: readonly Contract[] = [
     },
     writeSites: ['src/types/unifiedAction.ts', 'src/data/nudge-constants.ts'],
     readSites: [
-      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/engine/views/stage/buildNudgePhaseModel.ts',
       'src/engine/meetingEncounter.ts',
     ],
     // `effectiveNudgeCost` is shared by the affordability check and the deduction on
@@ -3254,7 +3254,7 @@ export const CONTRACTS: readonly Contract[] = [
       symbols: ['buildRepertoire', 'isMemberUnlocked', 'memberAccess'],
       module: 'src/engine/nudgeCardRepertoire.ts',
     },
-    writeSites: ['src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts'],
+    writeSites: ['src/engine/views/stage/buildNudgePhaseModel.ts'],
     readSites: ['src/engine/encounters/nudges.ts'],
     // Milestone card unlocks read `GameState.unlockedActionIds` — the set
     // `unlock_action` already writes and `StepNudge.requiredUnlock` already
@@ -3289,7 +3289,7 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/essenceEarned.ts'],
     readSites: [
       'src/engine/nudgeCardRepertoire.ts',
-      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/engine/views/stage/buildNudgePhaseModel.ts',
     ],
     // The production read is `isMemberUnlocked`'s `sphere_attunement` case, which
     // `buildNudgePhaseModel` reaches by threading the counter into
@@ -3325,7 +3325,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/encounters/dealHand.ts',
-      'src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts',
+      'src/engine/views/stage/buildNudgePhaseModel.ts',
       'src/debug-bridge.ts',
     ],
     verifiedLive: {
@@ -3347,7 +3347,7 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/nudgeCardRepertoire.ts',
     },
     writeSites: ['src/engine/cycleEnd.ts'],
-    readSites: ['src/components/Game/encounter-stage/adapters/buildNudgePhaseModel.ts'],
+    readSites: ['src/engine/views/stage/buildNudgePhaseModel.ts'],
     // The tally the selection reads (`GameState.cardPlayTally`) is written at
     // nudge commit and starts empty in every new world (THR-1813: a run wakes in
     // a new world, so nothing carries the old tally) — both sides land together,
@@ -5324,11 +5324,11 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: {
       kind: 'function',
       symbols: ['buildOpponentHeaderModel', 'readOpponentCard', 'fightState'],
-      module: 'src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts',
+      module: 'src/engine/views/stage/buildOpponentHeaderModel.ts',
     },
     writeSites: ['src/engine/fights/fightState.ts', 'src/engine/fights/fightClock.ts'],
     readSites: [
-      'src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts',
+      'src/engine/views/stage/buildOpponentHeaderModel.ts',
       'src/components/Game/encounter-stage/OpponentHeader.tsx',
     ],
     verifiedLive: {
@@ -5352,7 +5352,7 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: {
       kind: 'function',
       symbols: ['buildFightChanges', 'fightState'],
-      module: 'src/components/Game/encounter-stage/adapters/buildFightChanges.ts',
+      module: 'src/engine/views/stage/buildFightChanges.ts',
     },
     writeSites: [
       'src/engine/fights/fightState.ts',
@@ -5360,8 +5360,8 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/unifiedActionResolution.ts',
     ],
     readSites: [
-      'src/components/Game/encounter-stage/adapters/buildFightChanges.ts',
-      'src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts',
+      'src/engine/views/stage/buildFightChanges.ts',
+      'src/engine/views/stage/buildUnifiedEncounterStageModel.ts',
     ],
     verifiedLive: {
       date: '2026-09-25',
@@ -5383,7 +5383,7 @@ export const CONTRACTS: readonly Contract[] = [
     mechanism: {
       kind: 'function',
       symbols: ['buildLairMonsterCardModel', 'readOpponentCard', 'monsterState', 'getAgentInfoCard'],
-      module: 'src/components/Game/lair/buildLairMonsterCardModel.ts',
+      module: 'src/engine/views/stage/buildLairMonsterCardModel.ts',
     },
     writeSites: [
       'src/engine/monsters/monsterCard.ts',
@@ -5391,7 +5391,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/agentLifecycle.ts',
     ],
     readSites: [
-      'src/components/Game/lair/buildLairMonsterCardModel.ts',
+      'src/engine/views/stage/buildLairMonsterCardModel.ts',
       'src/components/Game/lair/LairMonsterCard.tsx',
       // THR-1912: HexSidebar, the card's only mount, retired; no Inspector row reads it yet (THR-1992).
     ],
@@ -6647,7 +6647,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/chapterArchive.ts',
     ],
     readSites: [
-      'src/components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel.ts',
+      'src/engine/views/stage/buildUnifiedEncounterStageModel.ts',
       'src/engine/threadedChapters.ts', // THR-1893: the ledger's rows moved out of ChapterLedger.tsx
       'src/components/Game/encounterStakesRows.ts',
       'src/debug-bridge.ts',

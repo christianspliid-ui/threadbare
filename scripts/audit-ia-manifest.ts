@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { IA_SURFACES } from '../src/data/ia-manifest';
 
-type MountKind = 'always' | 'modal' | 'drillin';
+type MountKind = 'always' | 'modal' | 'drillin' | 'stage';
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx']);
 const TSX_EXTENSION = '.tsx';

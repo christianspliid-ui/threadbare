@@ -14,6 +14,9 @@
  * interrupt resolution names its kind in `rendering`, through one exhaustive switch
  * over `StageHomedKind`; the resolution holds every other one (one foreground).
  *
+ * THR-1895 (S3): the encounter plays on the Stage too, full layout — every step, the
+ * aftermath and the watched view.
+ *
  * THR-1892 (S2): a story beat plays on the Stage frame (`stage/Stage.tsx`), compact, over
  * the dimmed map with its hex lit. The other Stage kinds keep their own screens until
  * their slice moves them (`STAGE_FRAME_KINDS`).
@@ -63,6 +66,8 @@ export interface StageHostProps {
     notification: Pick<EncounterNotification, 'autoResolveTick'>;
   } | null;
   encounterVeilModel: EncounterStageModel | null;
+  /** THR-1895 — the Stage view model for the open encounter (lit hex, place tag). */
+  encounterStageVM: StageVM | null;
   describeFollowFor: (agentId: string) => FollowDescriptor;
   handleToggleFollow: (agentId: string, source: 'arc_panel' | 'encounter_ui') => void;
   encounterPayingEssence: number;
@@ -115,6 +120,7 @@ export function StageHost({
   openAgentSheetForId,
   tieredEncounterState,
   encounterVeilModel,
+  encounterStageVM,
   describeFollowFor,
   handleToggleFollow,
   encounterPayingEssence,
@@ -172,10 +178,11 @@ export function StageHost({
       );
 
     // EncounterVeil — unified encounter display for all encounter types.
-    // Wrapped in `anim-encounter-handoff-fade-up` so the world view → encounter
-    // transition lands as a 400ms fade-up (THR-340 / design plan §5.8).
+    // THR-1895 — it plays on the Stage, in the full layout: the veil renders its
+    // columns into the panel's slots (`renderFrame`), and the Stage's own entrance
+    // replaces the THR-340 handoff fade. The veil keeps its own Escape (it minimises),
+    // so the Stage's is off.
     case 'encounter': return tieredEncounterState && encounterVeilModel && (
-        <div className="anim-encounter-handoff-fade-up" data-testid="encounter-handoff-fade-up">
           <EncounterVeil
             open={true}
             model={encounterVeilModel}
@@ -252,8 +259,21 @@ export function StageHost({
             onLetWorldTurn={handleChapterLetWorldTurn}
             onBackToMap={handleChapterBackToMap}
             onShowOnMap={(col, row) => hexMapRef.current?.focusOn({ col, row })}
+            renderFrame={isStageFrameKind('encounter') && encounterStageVM ? ({ label, left, right }) => (
+              <Stage
+                kind="encounter"
+                vm={encounterStageVM}
+                label={label}
+                onEscape={handleEncounterMinimize}
+                closeOnEscape={false}
+                holdLineShowsOnMap
+                ground="var(--veil-void)"
+                tick={gameState.tick}
+                left={left}
+                right={right}
+              />
+            ) : undefined}
           />
-        </div>
       );
 
     // Moment card — a followed mortal's undertaking said something (THR-1299 slice 3).
