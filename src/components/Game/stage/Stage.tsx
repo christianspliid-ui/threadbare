@@ -44,6 +44,7 @@ import type { RefRouter } from '../../../hooks/useRefRouter';
 import { Overlay } from '../../shared/Overlay';
 import { Panel } from '../../shared/Panel';
 import { EntityLink } from '../../shared/EntityLink';
+import { Button } from '../../shared/Button';
 import { GameErrorBoundary } from '../../shared/GameErrorBoundary';
 import { useGameScreenState } from '../frame/GameScreenState';
 import { IDLE_STAGE } from './stageState';
@@ -221,7 +222,6 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
     opacity: open ? 1 : 0,
     visibility: open ? 'visible' : 'hidden',
     transition: entrance,
-    outline: 'none',
   };
 
   const holdLine = holdLineShowsOnMap ? `${STAGE_WORDS.holdLine} ${STAGE_WORDS.holdLineShowOnMap}` : STAGE_WORDS.holdLine;
@@ -270,7 +270,7 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
             data-stage-place-tag=""
             style={{
               position: 'absolute', top: 'var(--stage-gutter)', left: '50%', transform: 'translateX(-50%)',
-              maxWidth: 'calc(100% - 2 * var(--stage-gutter))', padding: '4px 10px', borderRadius: '4px',
+              maxWidth: 'calc(100% - 2 * var(--stage-gutter))', padding: '4px 10px', borderRadius: 'var(--radius-control)',
               background: 'var(--scrim-heavy)', color: 'var(--text-primary)', fontSize: 'var(--text-sm)',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center',
             }}
@@ -294,7 +294,8 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
 
       {/* The lit hex is a real control: its place's tooltip on hover, its page on click (Law 46). */}
       {lit && layerRect && vm.place && (
-        <button
+        <Button
+          variant="ghost"
           type="button"
           data-stage-lit-hex=""
           aria-label={STAGE_WORDS.litHexLabel.replace('{place}', vm.place.name)}
@@ -307,10 +308,8 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
             width: hitSize,
             height: hitSize,
             clipPath: 'polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0% 50%)',
-            background: 'transparent',
-            border: 'none',
             padding: 0,
-            cursor: 'pointer',
+            border: 'none',
           }}
         />
       )}

@@ -17,6 +17,10 @@ import { SheetColumns, SheetLayoutContext } from '../shared/SheetColumns';
 import { DIALOG_SIZES, type DialogSize } from '../shared/dialogSize';
 import { Overlay, type OverlayBackdrop } from '../shared/Overlay';
 import { Panel } from '../shared/Panel';
+import { Stage } from '../Game/stage/Stage';
+import { GameScreenStateProvider, useGameScreenStore } from '../Game/frame/GameScreenState';
+import type { StageVM } from '../../engine/views/stage/stageView';
+import { STAGE_WORDS } from '../../data/view-content';
 import { Icon, type IconSize } from '../shared/Icon';
 import { Chip, type ChipStateTint } from '../shared/Chip';
 import { Tabs } from '../shared/Tabs';
@@ -133,6 +137,7 @@ const SECTIONS = [
   { id: 'modal', label: 'Modal' },
   { id: 'dialog-sizes', label: 'Dialog sizes and SheetColumns (THR-1820)' },
   { id: 'overlay', label: 'Overlay (THR-1884)' },
+  { id: 'stage', label: 'Stage frame (THR-1892)' },
   { id: 'dialog-contexts', label: 'Dialogue contexts (THR-1586)' },
   { id: 'medallion', label: 'Medallion (THR-799)' },
   { id: 'flavorquote', label: 'FlavorQuote (THR-799)' },
@@ -655,6 +660,61 @@ function EscapeLayerReadout() {
     <ol data-testid="escape-layers-readout" style={{ margin: 0, paddingLeft: '1.25rem', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
       {layers.length === 0 ? <li>no layer open</li> : layers.map((l, i) => <li key={i}>{l.label} · band {l.band}</li>)}
     </ol>
+  );
+}
+
+/** THR-1892 — sample moments for the Stage frame entry (no map: the panel enters on its timeout). */
+const STAGE_SAMPLE_VM: Record<'full' | 'compact', StageVM> = {
+  full: {
+    kind: 'story-beat', phase: null, palette: 'story', litHex: null, litSource: null, options: [], frame: [],
+    place: { ref: { kind: 'location', id: 'sample_millbrook' }, name: 'Millbrook' },
+    placeTag: 'Millbrook · where it is happening', placeTagSuffix: STAGE_WORDS.placeTagSuffix,
+    subject: { ref: { kind: 'agent', id: 'sample_maren' }, name: 'Maren Ashfold' },
+    contextLine: null, layout: 'full',
+  },
+  compact: {
+    kind: 'story-beat', phase: null, palette: 'story', litHex: null, litSource: null, options: [], frame: [],
+    place: { ref: { kind: 'location', id: 'sample_millbrook' }, name: 'Millbrook' },
+    placeTag: 'Millbrook · where it is happening', placeTagSuffix: STAGE_WORDS.placeTagSuffix,
+    subject: { ref: { kind: 'agent', id: 'sample_maren' }, name: 'Maren Ashfold' },
+    contextLine: null, layout: 'compact',
+  },
+};
+
+function StageSection() {
+  const store = useGameScreenStore();
+  const [layout, setLayout] = useState<'full' | 'compact' | null>(null);
+  const close = () => setLayout(null);
+  return (
+    <GameScreenStateProvider value={store}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <Label>The panel a moment plays on, over the dimmed map, with the place lit in the window at the right. Escape or Continue closes it. The geometry is tokens only: full 1272 × 984 with a 280 px window at 1080p, 1592 × 1336 with a 520 px window at 1440p; compact 860 wide.</Label>
+        <Row>
+          <Button variant="secondary" size="sm" data-styleguide-stage="full" onClick={() => setLayout('full')}>Open the Stage — full</Button>
+          <Button variant="secondary" size="sm" data-styleguide-stage="compact" onClick={() => setLayout('compact')}>Open the Stage — compact</Button>
+        </Row>
+        {layout && (
+          <Stage
+            key={layout}
+            kind="story-beat"
+            vm={STAGE_SAMPLE_VM[layout]}
+            label="Stage sample"
+            onEscape={close}
+            tick={0}
+            left={<div style={{ padding: '20px', color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>Art, cast and At stake sit here.</div>}
+            right={(
+              <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <SectionHeading>The Unsafe Bridge</SectionHeading>
+                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', maxWidth: 'var(--measure-prose)' }}>
+                  The header, the scene, the forecast and the hand sit here; a compact moment uses this one column.
+                </p>
+                <Row><Button variant="primary" size="sm" onClick={close}>Continue</Button></Row>
+              </div>
+            )}
+          />
+        )}
+      </div>
+    </GameScreenStateProvider>
   );
 }
 
@@ -1266,6 +1326,16 @@ export default function StyleGuide() {
             <div style={{ marginTop: '1.25rem' }}>
               <GameErrorBoundary>
                 <OverlaySection />
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Stage frame (THR-1892) ──────────────────────────── */}
+          <section id="section-stage" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Stage frame</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <StageSection />
               </GameErrorBoundary>
             </div>
           </section>

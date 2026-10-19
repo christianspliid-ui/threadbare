@@ -24,6 +24,8 @@ export const STORY_BEAT_WORDS = {
   eyebrow: 'Story beat',
   unfolding: 'This encounter is unfolding in the world. The outcome will be resolved automatically.',
   continue: 'Continue',
+  /** Fills `{actor}` when the beat has no named mortal. */
+  someone: 'someone',
 } as const;
 
 // ─── Props ──────────────────────────────────────────────────────────
@@ -90,7 +92,15 @@ function StoryBeatTitle({ template, byline }: { template: UnifiedActionTemplate;
   );
 }
 
-function StoryBeatProse({ template }: { template: UnifiedActionTemplate }) {
+/**
+ * A template's prose names its actor as `{actor}`; the beat fills it with the mortal's name,
+ * so no token reaches the screen (Law 43). With no name the word is "someone".
+ */
+export function fillStoryBeatActor(text: string, agentName: string): string {
+  return text.replace(/\{actor\}/g, agentName || STORY_BEAT_WORDS.someone);
+}
+
+function StoryBeatProse({ template, agentName }: { template: UnifiedActionTemplate; agentName: string }) {
   return (
     <>
       <p style={{
@@ -102,7 +112,7 @@ function StoryBeatProse({ template }: { template: UnifiedActionTemplate }) {
         margin: '0 auto var(--space-4)',
         maxWidth: 'var(--measure-prose)',
       }}>
-        {template.description}
+        {fillStoryBeatActor(template.description ?? '', agentName)}
       </p>
 
       {template.narrativeTemplates?.initiation && (
@@ -114,7 +124,7 @@ function StoryBeatProse({ template }: { template: UnifiedActionTemplate }) {
           maxWidth: 'var(--measure-prose)',
         }}>
           {/* THR-1040: fail-soft — omitted by whole faction sets despite being required on the type. */}
-          {template.narrativeTemplates?.initiation ?? ''}
+          {fillStoryBeatActor(template.narrativeTemplates?.initiation ?? '', agentName)}
         </p>
       )}
 
@@ -194,7 +204,7 @@ export function StoryBeatStageBody({
     <div data-story-beat-stage="" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: 'var(--panel-padding, 20px)' }}>
       <StoryBeatTitle template={template} byline={byline} />
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--space-4) 0' }}>
-        <StoryBeatProse template={template} />
+        <StoryBeatProse template={template} agentName={agentName} />
       </div>
       <ContinueButton onDismiss={onDismiss} />
     </div>
@@ -225,7 +235,7 @@ export const StoryBeatModal = memo(function StoryBeatModal({
         />
       </Modal.Header>
       <Modal.Body>
-        <StoryBeatProse template={template} />
+        <StoryBeatProse template={template} agentName={agentName} />
       </Modal.Body>
       <Modal.Footer>
         <ContinueButton onDismiss={onDismiss} />

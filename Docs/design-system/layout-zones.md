@@ -75,6 +75,21 @@ Overlay layers (centered, above everything):
 | Contents | One subject's page (`InspectorPage`): header, Act row, the page-layout table's sections as tabs, Connections | `inspector/InspectorPage.tsx` |
 | Behavior | Every open goes through `useRefRouter` (card → the registry row's `opensAt`, sheet → wide). History, trail, pin, Follow; Escape steps Full down, then closes. The page's Act row casts (the Action Drawer retired, THR-1912). | plan THR-1876 § D1–D4, D9 |
 
+### The Stage
+
+A mortal's moment plays on one panel over the dimmed map, beside the god rail, with its hex lit in a window of open map at the right edge (THR-1892; plan `Docs/plans/2026-10-14-thr-1877-encounter-stage.md` § D3). Story beats play here from S2; the encounter (THR-1895) and the journey, undertaking, premonition and emergence moments (THR-1897) follow.
+
+| Property | Value | Source |
+|----------|-------|--------|
+| Layer | The map region: right of the god rail, below the top bar — x 320 → 1920, y 48 → 1080 at 1920×1080; x 400 → 2560, y 56 → 1440 at 2560×1440. Transparent; takes pointer and wheel events, so the map under it holds still | `stage/Stage.tsx` (`<Overlay band="stage" inset="belowTopBar" backdrop="none">`) |
+| Panel, full | 100vw − `--rail-left-w` − `--stage-window-w` − 2 × `--stage-gutter`: **1272 × 984** at (344, 72) at 1080p, **1592 × 1336** at (424, 80) at 1440p. Left column `--stage-left-col-w` (340 / 560) | `STAGE_PANEL_WIDTH` |
+| Panel, compact | `--stage-compact-w`: **860** × 984 at 1080p, **967.5** × 1336 at 1440p | `STAGE_PANEL_WIDTH` |
+| Height | 100vh − `--topbar-height` − 2 × `--stage-gutter`, fixed for both layouts (one chrome, Law 37). The panel is the limit: nothing inside scrolls before it (Law 57) | `Stage.tsx` |
+| Window | The open map right of the panel, measured from the DOM (`data-stage-window`), never computed: 280 / 520 wide (full), 692 / 1144.5 (compact). The place tag names the lit hex at its top | `Stage.tsx` |
+| Frame while open | The Ledger rail steps aside (`hidden`), the Inspector folds and keeps its subject, the top bar's guard covers the moment, the lens is suppressed (the bar keeps its lens pressed), the map's corner controls, keys and HTML overlays hide | `ledgerFold.ts`, `InspectorHost.tsx`, `GameMap.tsx` |
+| Inspector over the Stage | A name or the lit hex clicked on the Stage opens its page docked at the right edge, at `Z_BAND.modal` (60), below the top bar, no backdrop. Escape or its close folds it back to the moment | `InspectorHost.tsx` |
+| Debug | `await window.__DEBUG.getStage()` — panel and window rects, `litHexInWindow`, camera, map dim, folds | `stage/useStageDebugBridge.ts` |
+
 ### Modal Layer
 
 | Property | Value | Source |
@@ -123,7 +138,8 @@ From bottom to top — every layer that participates in the stacking context:
 | 30 | Top bar | Top bar container | `relative z-30` in GameView |
 | 40 | Inspector at Full | `InspectorHost` (`Z_BAND.drawer`) | Covers the map region right of the god rail; docked and wide sit in flow (THR-1876) |
 | 45 | Debug panel | `DebugPanel` | Dev-only, above the Inspector |
-| 50 | Focused overlays · the Stage | `SettingsPanel`, `EncounterVeil` (`Z_BAND.stage`), the full-screen ceremonies — `MeetTheFirstFlow`, `ThreadingRite`, `HarvestScreen` on `<Overlay band="focused" backdrop="void">` | Settings, ceremony (THR-1884) |
+| 50 | Focused overlays · the Stage | `SettingsPanel`, the Stage (`stage/Stage.tsx`, `Z_BAND.stage`), `EncounterVeil` (`Z_BAND.stage`), the full-screen ceremonies — `MeetTheFirstFlow`, `ThreadingRite`, `HarvestScreen` on `<Overlay band="focused" backdrop="void">` | Settings, ceremony (THR-1884); the Stage (THR-1892) |
+| 60 | Inspector over the Stage | `InspectorHost` (`Z_BAND.modal`) while a name on the Stage is open | Docked at the right edge, below the top bar; Escape returns to the moment (THR-1892) |
 | 60 | Modals | `Modal` (shared primitive) | Standard dialogs — `MODAL_Z_DEFAULT` |
 | 62 | Held-gift pill | `AscendantBeatOfferBanner` carrying a waiting opening gift | `GIFT_PILL_Z` — above the player surfaces that hold the gift (Modal 60) so the pill stays visible over them. It rises only while nothing but the player's own surfaces or recent input holds the gift; under an interrupt or a vignette it stays at 40, below the backdrop, as does the pool-beat pill (THR-1809). Both pills sit at `PILL_TOP`, one spacing step below the top bar's rendered height (`--topbar-live-height`), never over the bar's controls (THR-1853) |
 | 65 | Dialog over interrupt | (none today — the character sheet that used it retired in THR-1912) | `MODAL_Z_ABOVE_INTERRUPT`, via `Modal`'s `zIndex` prop (THR-1139) |
