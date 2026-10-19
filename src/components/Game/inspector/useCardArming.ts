@@ -29,6 +29,7 @@ import {
   armedCardName,
   armedTargetName,
   armedTargetsSelector,
+  armedTargetsStamp,
   evaluateCardOnTarget,
   type ArmedTargetsVM,
   type CardOnTarget,
@@ -48,7 +49,7 @@ import { Z_BAND } from '../../shared/zBands';
 import { isInspectorOpen } from './inspectorState';
 import { armForDrag, noteArmed, pressHandCard, stageTarget, type ArmedSlice } from './armedState';
 import type { CastOnTarget, CastOutcome } from './useCastOnTarget';
-import { godRailStamp } from '../../../engine/views/godRail';
+export { armedTargetsStamp } from '../../../engine/views/armedTargets';
 
 /** The Esc layer's label in `__DEBUG.getEscapeLayers()`. */
 export const ARMED_ESCAPE_LABEL = 'Armed card';
@@ -283,15 +284,6 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
   }, [armed, cardName, targetName, evaluate, gameState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { armed, vm, cardName, handPress, evaluate, choose, chooseHex, castOn, disarm, targetName, commitLine };
-}
-
-/**
- * What the verdicts read that a cast changes without moving `worldVersion`: the pool, the
- * held and pending actions, the god's covenants, and the avatar's hex (the range gate).
- */
-export function armedTargetsStamp(state: GameState): string {
-  const at = state.graph.getNode(state.ascendantId)?.properties;
-  return [godRailStamp(state), (state.controlEffects ?? []).length, at?.hexCol ?? '', at?.hexRow ?? '', state.visibilityMap?.size ?? 0].join('|');
 }
 
 function cardNameOf(actionId: string): string {

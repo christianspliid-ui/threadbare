@@ -42,6 +42,7 @@ import { landNameFor } from './subjects/landName';
 import { hexContentsIndexSelector, type HexContentsVM } from './hexContents';
 import { isHexKnownFor } from './knowledge';
 import { readView, type ViewSelector } from './readView';
+import { godRailStamp } from './godRail';
 import type { RefRow } from './types';
 
 export type ArmedTargetState = 'castable' | 'locked' | 'not_a_target';
@@ -279,6 +280,16 @@ export interface ArmedTargetsArgs {
    * caller (`armedTargetsStamp`), the godRail lesson.
    */
   stamp?: string;
+}
+
+/**
+ * What the verdicts read that a cast changes without moving `worldVersion`: the pool, the
+ * held and pending actions, the god's covenants, and the avatar's hex (the range gate).
+ * Lives here, not in `useCardArming`, so the UI reads no graph (NFP #2, the view-model seam).
+ */
+export function armedTargetsStamp(state: GameState): string {
+  const at = state.graph.getNode(state.ascendantId)?.properties;
+  return [godRailStamp(state), (state.controlEffects ?? []).length, at?.hexCol ?? '', at?.hexRow ?? '', state.visibilityMap?.size ?? 0].join('|');
 }
 
 /** World-keyed per card: people move every tick, and essence changes what is castable. */
