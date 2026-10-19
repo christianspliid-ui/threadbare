@@ -66,7 +66,10 @@ import type { ReachSignatureMarker } from '../../engine/reachSignatureMarkers';
 import { createDominionLensLayer, DOMINION_LENS_LAYER_NAME } from './scene/DominionLensLayer';
 import type { DominionLensLayer } from './scene/DominionLensLayer';
 import { createHexLensLayer, updateHexLensZoom, HEX_LENS_LAYER_PREFIX, type HexLensLayer, type LensTile } from './scene/HexLensLayer';
+import { createArmedTargetsLayer, ARMED_TARGETS_LAYER_NAME, type ArmedTargetsLayer } from './scene/ArmedTargetsLayer';
+import type { MapHighlightVM } from '../../engine/views/armedTargets';
 import type { HexLensVM, LensLine } from '../../engine/views/lenses/lensTypes';
+import { plainLine } from '../../engine/views/lenses/lensTypes';
 import type { MapLensLayerKind } from '../../data/map-lenses';
 import { isWaterTerrain } from '../../engine/coastline';
 import { LensNameTags } from './overlay/LensNameTags';
@@ -392,6 +395,11 @@ export interface HexMapV2Props {
    * never alpha-hidden. Its hover lines join the hex tooltip.
    */
   hexLens?: HexLensVM | null;
+  /**
+   * THR-1914 — a card armed from the hand: its lit and dim-lit hexes and their hover lines.
+   * Built when set, disposed when null (the host suppresses the lens meanwhile).
+   */
+  armedHighlight?: MapHighlightVM | null;
   /** THR-1750 — the hex tooltip's Dominion lines for a hovered hex (band line while the lens is on; drop line). */
   dominionTooltip?: (col: number, row: number) => {
     line?: { prefix: string; placeName: string | null; word: string; color: string; pressure?: string | null };
@@ -623,7 +631,7 @@ export const LENS_LAYER_FACTORIES = {
 
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, onPlaceLabelClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, hexLens = null, firstHex = null, seatHex = null, tick = 0 },
+    { tiles, cols, rows, seed = 42, hoveredHex, selectedHex, onHexClick, onHexHover, onAgentClick, onArmyClick, onPlaceLabelClick, riverPaths, lakeIds, realmProjection, realmHolderIndex, areaProjection, locations, anomalies, roadPaths, agents, armies, reachSignatureMarkers, battles, threadLines, companies, activityIcons, strategicOverlays, attentionRatio = 1.0, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false, selectionColor, moveDestinationHex, onCameraCenterHex, locationActivityMap, spotlightedAgentId, spotlightThreadColor, shouldCenterOnAgent, dominionLens, dominionTooltip, hexLens = null, armedHighlight = null, firstHex = null, seatHex = null, tick = 0 },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -655,6 +663,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const dominionLensLayerRef = useRef<DominionLensLayer | null>(null);
     // THR-1878 — the generic hex lens layer, and the agents it draws one step up.
     const hexLensLayerRef = useRef<HexLensLayer | null>(null);
+    const armedTargetsLayerRef = useRef<ArmedTargetsLayer | null>(null);
     const lensStepIdsRef = useRef<ReadonlySet<string>>(new Set());
     // THR-1892 — the Stage's dim and ring, built on a focus and disposed on null.
     const stageFocusLayerRef = useRef<StageFocusLayer | null>(null);
@@ -895,6 +904,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         if (hexLensLayerRef.current) layersActive.push(hexLensLayerRef.current.group.name);
         if ((dominionDropLayerRef.current?.count ?? 0) > 0) layersActive.push(DOMINION_DROP_LAYER_NAME);
         if (stageFocusLayerRef.current) layersActive.push(STAGE_FOCUS_LAYER_NAME);
+        if (armedTargetsLayerRef.current) layersActive.push(ARMED_TARGETS_LAYER_NAME);
 
         return {
           hexCount: fillResultRef.current?.landMesh.count ?? tiles.length,
@@ -1987,6 +1997,24 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       updateHexLensZoom(layer, ZOOM_BAND_OF_TIER[zoomTier], zoomK);
     }, [zoomTier, zoomK, hexLens]);
 
+    // ── An armed card (THR-1914, Inspector plan § D9 way 3): built while armed, never alpha-hidden ──
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (armedTargetsLayerRef.current) {
+        armedTargetsLayerRef.current.group.parent?.remove(armedTargetsLayerRef.current.group);
+        armedTargetsLayerRef.current.dispose();
+        armedTargetsLayerRef.current = null;
+      }
+      if (!scene || !armedHighlight) return;
+      try {
+        const layer = createArmedTargetsLayer(armedHighlight, lensTiles);
+        scene.add(layer.group);
+        armedTargetsLayerRef.current = layer;
+      } catch (err) {
+        console.warn('[HexMapV2] armed-targets build failed; the map is left unlit', err);
+      }
+    }, [armedHighlight, lensTiles, sceneEpoch]);
+
     // ── The Stage (THR-1892, plan THR-1877 § D5): built on a focus, never alpha-hidden ──
     useEffect(() => {
       const scene = sceneRef.current;
@@ -2336,7 +2364,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
                 const d = dominionTooltip?.(tooltipHex.col, tooltipHex.row);
                 return { dominionLine: d?.line, dominionDrop: d?.drop };
               })()}
-              lensLines={hexLens?.hover[`${tooltipHex.col},${tooltipHex.row}`] as LensLine[] | undefined}
+              lensLines={(() => {
+                const key = `${tooltipHex.col},${tooltipHex.row}`;
+                // THR-1914: an armed card's hover line names what it can land on here, or why not.
+                const armedLine = armedHighlight?.hover[key];
+                if (armedLine) return [plainLine(armedLine)];
+                return hexLens?.hover[key] as LensLine[] | undefined;
+              })()}
             />
           );
         })()}

@@ -350,6 +350,57 @@ export function updateHexLensZoom(layer: Pick<HexLensLayer, 'group'>, band: Zoom
 }
 
 /** Build the lens group from its prepared view model. Never throws on missing data. */
+/** Every land hex not in `lit`, as `col,row` keys — what a dim covers. */
+export function dimKeysOf(tiles: readonly LensTile[], lit: ReadonlySet<string>): string[] {
+  const keys: string[] = [];
+  for (const t of tiles) {
+    if (t.isWater) continue;
+    const key = `${t.col},${t.row}`;
+    if (!lit.has(key)) keys.push(key);
+  }
+  return keys;
+}
+
+/**
+ * The lens grammar's dim-and-lit plate builder (THR-1878 § D3; generalised for THR-1914's
+ * armed lighting, which imports it and never forks it): one InstancedMesh of hex plates
+ * over `keys`, in Dominion's dim colour at `alpha`, at the lens dim's render slot, not
+ * pickable. Adds the mesh to `group` and its geometry and material to `disposables`;
+ * returns how many plates it drew.
+ */
+export function addLensDimPlates(
+  group: THREE.Group,
+  disposables: Array<{ dispose(): void }>,
+  keys: readonly string[],
+  alpha: number,
+): number {
+  if (keys.length === 0 || alpha <= 0) return 0;
+  const geo = buildHexGeometry(HEX_CONSTANTS.HEX_SIZE);
+  const mat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color().setStyle(DOMINION_DIM_COLOR, THREE.SRGBColorSpace),
+    transparent: true,
+    opacity: alpha,
+    depthWrite: false,
+  });
+  const mesh = new THREE.InstancedMesh(geo, mat, keys.length);
+  mesh.renderOrder = RENDER_ORDER.LENS_DIM;
+  mesh.frustumCulled = false;
+  mesh.raycast = noRaycast;
+  const m = new THREE.Matrix4();
+  let drawn = 0;
+  for (const key of keys) {
+    const p = worldOf(key);
+    if (!p) continue;
+    m.makeTranslation(p.x, p.y, LAYER_Z.LENS_DIM);
+    mesh.setMatrixAt(drawn++, m);
+  }
+  mesh.count = drawn;
+  mesh.instanceMatrix.needsUpdate = true;
+  group.add(mesh);
+  disposables.push(geo, mat);
+  return drawn;
+}
+
 export function createHexLensLayer(vm: HexLensVM, tiles: readonly LensTile[]): HexLensLayer {
   const group = new THREE.Group();
   group.name = `${HEX_LENS_LAYER_PREFIX}${vm.lensId}`;
@@ -359,36 +410,7 @@ export function createHexLensLayer(vm: HexLensVM, tiles: readonly LensTile[]): H
   const markFallbacks: string[] = [];
 
   // ── Dim: every land hex not lit ──
-  const lit = new Set(vm.lit);
-  const dimKeys: string[] = [];
-  for (const t of tiles) {
-    if (t.isWater) continue;
-    const key = `${t.col},${t.row}`;
-    if (!lit.has(key)) dimKeys.push(key);
-  }
-  if (dimKeys.length > 0) {
-    const geo = buildHexGeometry(HEX_CONSTANTS.HEX_SIZE);
-    const mat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color().setStyle(DOMINION_DIM_COLOR, THREE.SRGBColorSpace),
-      transparent: true,
-      opacity: LENS_DIM_ALPHA,
-      depthWrite: false,
-    });
-    const mesh = new THREE.InstancedMesh(geo, mat, dimKeys.length);
-    mesh.renderOrder = RENDER_ORDER.LENS_DIM;
-    mesh.frustumCulled = false;
-    mesh.raycast = noRaycast;
-    const m = new THREE.Matrix4();
-    dimKeys.forEach((key, i) => {
-      const p = worldOf(key)!;
-      m.makeTranslation(p.x, p.y, LAYER_Z.LENS_DIM);
-      mesh.setMatrixAt(i, m);
-    });
-    mesh.instanceMatrix.needsUpdate = true;
-    group.add(mesh);
-    disposables.push(geo, mat);
-    counts.dimmed = dimKeys.length;
-  }
+  counts.dimmed = addLensDimPlates(group, disposables, dimKeysOf(tiles, new Set(vm.lit)), LENS_DIM_ALPHA);
 
   // ── Marks ──
   const lookup = (kind: string) => (MAP_MARKERS as Record<string, MapMarkerDef | undefined>)[kind];

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef, type DragEvent } from 'react';
 import { flushSync } from 'react-dom';
 import type { CosmologyProfile, SphereName } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
@@ -114,6 +114,10 @@ import { canOpenMeetTheFirst } from './meetTheFirstCard';
 import { placeRefKind } from '../../engine/views/subjects/actOn';
 import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
+import { useCardArming, refForMapNode } from './inspector/useCardArming';
+import { useArmedDebugBridge } from './inspector/useArmedDebugBridge';
+import { ArmedBanner, ArmedCardProvider, isCardDrag } from './inspector/ArmedCard';
+import { HandPressProvider } from './frame/HandPressContext';
 import type { InspectorPageReport } from './inspector/InspectorPage';
 import { currentEntry, isInspectorOpen, openFromMap, openSubject, stepFullToDocked } from './inspector/inspectorState';
 import { SURFACE_BY_WORLD_REF } from '../../data/surface-registry';
@@ -4066,6 +4070,45 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     openScry: handleOpenScry,
     startMeeting: handleStartMeeting,
   });
+  // THR-1914 (plan § D9 way 3) — card-first from the hand: arm, light, choose, cast.
+  const arming = useCardArming({
+    gameState,
+    runtime,
+    castOnTarget,
+    pushToast: handlePushToast,
+    openInspector,
+    fogOff: fogDisabled,
+  });
+  useArmedDebugBridge(arming, gameState, lensSuppressed);
+  const armedNow = arming.armed !== null;
+  const armedChooseHex = arming.chooseHex;
+  const armedChoose = arming.choose;
+  // While a card is armed a map click chooses a target instead of opening a page (§ D3).
+  const handleMapHexClick = useCallback((coord: import('../../types').HexCoord) => {
+    if (armedNow && !moveMode) armedChooseHex(coord, 'map');
+    else handleHexClickFull(coord);
+  }, [armedNow, moveMode, armedChooseHex, handleHexClickFull]);
+  const handleMapNodeClick = useCallback((nodeId: string, category: import('../../engine/retinue').ThreadCategory) => {
+    if (armedNow) {
+      const ref = refForMapNode(gameState, nodeId);
+      if (ref) { armedChoose(ref, 'map'); return; }
+    }
+    handleMapNodeSelect(nodeId, category);
+  }, [armedNow, gameState, armedChoose, handleMapNodeSelect]);
+  const handleMapPlaceLabelClick = useCallback((locationId: string) => {
+    if (armedNow) armedChoose({ kind: placeRefKind(gameState, locationId), id: locationId }, 'map');
+    else handlePlaceLabelClick(locationId);
+  }, [armedNow, gameState, armedChoose, handlePlaceLabelClick]);
+  // A hand card dropped on the map chooses what is under it (never casts).
+  const handleMapDragOver = useCallback((e: DragEvent) => {
+    if (armedNow && isCardDrag(e)) e.preventDefault();
+  }, [armedNow]);
+  const handleMapDrop = useCallback((e: DragEvent) => {
+    if (!armedNow || !isCardDrag(e)) return;
+    e.preventDefault();
+    const hex = hexMapRef.current?.getHexAtViewport(e.clientX, e.clientY);
+    if (hex) armedChooseHex(hex, 'drag');
+  }, [armedNow, armedChooseHex]);
   const inspectorReportRef = useRef<(InspectorPageReport & { subjectKey: string; pageKind: string }) | null>(null);
   const handleInspectorReport = useCallback((r: InspectorPageReport & { subjectKey: string; pageKind: string }) => {
     inspectorReportRef.current = r;
@@ -4194,7 +4237,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
       {/* ═══ Main content area ═══ */}
       <div className="flex flex-1 overflow-hidden">
-        {/* ── Left rail: the God rail, the Ascendant Bar (THR-184; THR-1881 step e) ── */}
+        {/* ── Left rail: the God rail, the Ascendant Bar (THR-184; THR-1881 step e) ──
+            THR-1914: the hand's press arms a card (replaces the Codex default). */}
+        <ArmedCardProvider value={arming}>
+        <HandPressProvider value={arming.handPress}>
         <GodRail
           gameState={gameState}
           setGameState={setGameState}
@@ -4214,12 +4260,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           // THR-1894: the hand rests while a moment is on screen (not while one only waits its turn); an encounter deals its own hand.
           handRest={interruptResolution.open.length > 0 ? (interruptResolution.open.includes('EncounterVeil') ? 'encounter' : 'moment') : null}
         />
+        </HandPressProvider>
 
         {/* ── Center: the map, and the Inspector beside it (THR-1911, plan § D1).
             The wrap is the map region right of the god rail: Full covers exactly it. ── */}
         <div className="flex-1 flex overflow-hidden relative" data-map-region="">
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex-1 overflow-hidden relative">
+          <div className="flex-1 overflow-hidden relative" onDragOver={handleMapDragOver} onDrop={handleMapDrop}>
+            {/* THR-1914 — with the Inspector closed, the armed card's banner sits over the map. */}
+            {!inspectorIsOpen && <ArmedBanner floating />}
             {/* Toast notifications */}
             <ToastStack
               toasts={[...notificationState.toasts, ...actionToasts]}
@@ -4265,12 +4314,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               sphereColor={sphereColor}
               avatarTargetHex={avatarTargetHex}
               setCameraCenter={setCameraCenter}
-              handleHexClickFull={handleHexClickFull}
+              handleHexClickFull={handleMapHexClick}
               setHoveredHex={setHoveredHex}
               // THR-1911 (§ D10): agents and armies open themselves; a pinned Inspector stays.
-              handleThreadNodeSelect={handleMapNodeSelect}
-              handleOpenProfileModal={handleMapNodeSelect}
-              onPlaceLabelClick={handlePlaceLabelClick}
+              handleThreadNodeSelect={handleMapNodeClick}
+              handleOpenProfileModal={handleMapNodeClick}
+              onPlaceLabelClick={handleMapPlaceLabelClick}
               hexStrategicOverlays={hexStrategicOverlays}
               locationActivityByHex={locationActivityByHex}
               spotlightThreadColor={spotlightThreadColor}
@@ -4280,6 +4329,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               activeLens={activeLens}
               lensSuppressed={lensSuppressed}
               hexLens={hexLensVM}
+              armedHighlight={arming.vm?.map ?? null}
               setMapLensFromBar={setMapLensFromBar}
               dominionBandColors={dominionBandColors}
               agendaPickerOpen={agendaPickerOpen}
@@ -4311,6 +4361,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           meetTheFirst={meetTheFirstOpenable ? { actionId: MEET_THE_FIRST_SLOT_ID, sphere: archetype.sphereAlignment.primary } : null}
         />
         </div>
+
+        </ArmedCardProvider>
 
         {/* ── Right panel: Debug Panel OR sidebar ── */}
         {debugPanelOpen ? (

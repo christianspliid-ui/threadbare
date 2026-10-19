@@ -522,6 +522,42 @@ export interface DebugInspectorState {
   trayArmed: { actionId: string; target: string } | null;
 }
 
+/** THR-1914 — one lit target of the armed card. */
+export interface DebugArmedTarget {
+  /** `kind:id` */
+  ref: string;
+  name: string;
+  state: 'castable' | 'locked';
+  reason: string | null;
+  hexKey: string;
+}
+
+/** Result of `getArmedTargets()` (THR-1914): the armed card's lit targets, or null while nothing is armed. */
+export interface DebugArmedTargets {
+  actionId: string;
+  cardName: string;
+  targetWords: string;
+  origin: 'hand' | 'drag';
+  /** The chosen target (`kind:id`) once a map click or a drop chose one, else null. */
+  staged: string | null;
+  /** The banner's answer to the last click, or null. */
+  note: string | null;
+  lit: DebugArmedTarget[];
+  map: { lit: string[]; litLocked: string[]; hover: Record<string, string> };
+  emptyLine: string | null;
+  /** Whether the active lens is held off while the card is armed. */
+  lensSuppressed: boolean;
+}
+
+/** @internal THR-1914 — what GameView registers for the arming levers. */
+export interface DebugArmedBridge {
+  getTargets: () => DebugArmedTargets | null;
+  arm: (actionId: string) => boolean;
+  choose: (kind: string, id: string) => { staged: string | null; note: string | null } | null;
+  cast: () => { cast: boolean; reason: string | null };
+  disarm: () => void;
+}
+
 /** Result of `getInspectorLab()` (THR-1876). */
 export interface DebugInspectorLabResult {
   tier: '1080' | '1440';
@@ -2795,6 +2831,24 @@ export interface DebugBridge {
    * kind's `opensAt`; `sheet` opens wide). Resolves false before a game is running.
    */
   openInInspector: (kind: string, id: string, mode?: 'card' | 'sheet') => Promise<boolean>;
+  /**
+   * THR-1914 — the card armed from the hand and every target it lights, on the map and in
+   * the Inspector. Null while nothing is armed.
+   *
+   *   await window.__DEBUG.armCard('whisper_insight')
+   *   await window.__DEBUG.getArmedTargets()   // { cardName: 'Illuminating Whisper', lit: [...] }
+   */
+  getArmedTargets: () => Promise<DebugArmedTargets | null>;
+  /** THR-1914 — arm a hand card as a press would (a second press disarms). False when it is not in the hand. */
+  armCard: (actionId: string) => Promise<boolean>;
+  /** THR-1914 — choose a target for the armed card as a map click would; never casts. */
+  chooseArmedTarget: (kind: string, id: string) => Promise<{ staged: string | null; note: string | null } | null>;
+  /** THR-1914 — cast the armed card on its chosen target (the commit line's cast button). */
+  castArmed: () => Promise<{ cast: boolean; reason: string | null }>;
+  /** THR-1914 — put the armed card down (Esc). */
+  disarmCard: () => Promise<boolean>;
+  /** @internal GameView registers the arming levers here (THR-1914). */
+  _registerArmedBridge: (bridge: DebugArmedBridge | null) => void;
   /** @internal GameView registers the Inspector bridge here (THR-1911). */
   _registerInspectorBridge: (bridge: { getState: () => DebugInspectorState; open: (kind: string, id: string, mode?: 'card' | 'sheet') => boolean } | null) => void;
   /** @internal The Inspector lab registers its reading here (THR-1876). */

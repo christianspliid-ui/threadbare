@@ -8,7 +8,7 @@ describe('UI_TOOLTIPS', () => {
       'ui.essence_panel',
       'ui.mandate_tracker',
       'ui.avatar_move',
-      'ui.avatar_wheel',
+      'ui.your_cards',
       'ui.avatar_scry',
       'ui.sim_play_pause',
       'ui.sim_speed',

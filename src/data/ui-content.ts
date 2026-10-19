@@ -281,7 +281,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.essence_panel': {
     label: 'Divine Essence',
-    desc: 'Your power reserve. Spent on {{ui.avatar_wheel}} interventions, replenished by {{ui.mandate_tracker}} completion.',
+    desc: 'Your power reserve. Spent on {{ui.your_cards}}, replenished by {{ui.mandate_tracker}} completion.',
   },
   'ui.mandate_tracker': {
     label: 'Active Mandates',
@@ -308,9 +308,10 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Move Avatar',
     desc: 'Relocate your divine presence to a visible hex on the map.',
   },
-  'ui.avatar_wheel': {
-    label: 'Agent Wheel',
-    desc: 'Open the wheel of divine interventions for the selected agent.',
+  // THR-1914 (Inspector plan § D14): the wheel retired; the hand arms a card, then the god chooses its target.
+  'ui.your_cards': {
+    label: 'Your cards',
+    desc: 'Your cards: arm one, then choose what it touches.',
   },
   'ui.avatar_scry': {
     label: 'Investiture',

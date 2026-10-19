@@ -138,19 +138,6 @@ export function upkeepChannelLabel(word: UpkeepWord): string {
  * asserted in `actionEffectsProse.test.ts`, and the corpus meets it.
  */
 
-/**
- * First-contact legend for the action hand (Law 12).
- *
- * Every glyph vocabulary on the face, named once, so a player meeting the drawer
- * for the first time is told what they are looking at rather than left to infer
- * it. The nudge hand's `NUDGE_GLYPH_LEGEND` is the same idea for the other card.
- */
-export const ACTION_CARD_GLYPH_LEGEND: readonly { readonly glyph: string; readonly meaning: string }[] = [
-  { glyph: '✸', meaning: 'what the working does' },
-  { glyph: '✦', meaning: 'essence it costs' },
-  { glyph: UPKEEP_CHANNEL_ICON, meaning: 'upkeep while it holds' },
-] as const;
-
 /** Blocked reason for a target outside the action's reach — words, not a hex count. */
 export const ACTION_BLOCKED_OUT_OF_RANGE = 'Too far from here.';
 

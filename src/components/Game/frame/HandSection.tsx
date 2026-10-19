@@ -29,7 +29,7 @@ import {
 } from '../../../data/frame-content';
 import { GOD_RAIL_HAND_GROUP_KEY } from '../../../data/frame-registry';
 import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
-import { useArmedCard, useHandPress } from './HandPressContext';
+import { CARD_DRAG_MIME, useArmedCard, useHandDragStart, useHandPress } from './HandPressContext';
 import {
   HAND_REST_OPACITY,
   HAND_ROW_EST_PX,
@@ -78,6 +78,10 @@ const labelStyle: CSSProperties = {
 
 function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; armed: boolean }) {
   const press = useHandPress();
+  // THR-1914: with an arming provider a card can be dragged onto a row or the map — a
+  // shortcut that chooses a target and never casts; the click always works.
+  const dragStart = useHandDragStart();
+  const draggable = !!dragStart && !rest;
   const tint = getSphereColor(card.paySphere);
   return (
     <button
@@ -87,7 +91,14 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
       data-pay-sphere={card.paySphere}
       data-payable={card.payable ? 'true' : 'false'}
       data-armed={armed ? 'true' : undefined}
+      aria-pressed={dragStart ? armed : undefined}
       aria-disabled={rest ? true : undefined}
+      draggable={draggable || undefined}
+      onDragStart={draggable ? (e) => {
+        e.dataTransfer.setData(CARD_DRAG_MIME, card.id);
+        e.dataTransfer.effectAllowed = 'link';
+        dragStart!(card.id);
+      } : undefined}
       onClick={() => {
         if (rest) return;
         press(card.id);

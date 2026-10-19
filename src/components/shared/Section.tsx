@@ -346,7 +346,18 @@ export interface LinkRowAccessory {
   /** `rowId` names this row on this page, unique even when two rows share one ref. */
   trailing: (row: LinksSection['rows'][number], rowId: string) => ReactNode;
   below: (row: LinksSection['rows'][number], rowId: string) => ReactNode;
+  /**
+   * THR-1914 — how an armed card sees this row: lit (castable), locked (lit dimmer) or dim
+   * (not a target). Absent, or null, draws the row as usual.
+   */
+  rowState?: (row: LinksSection['rows'][number]) => LinkRowArmedState | null;
 }
+
+/** THR-1914 — an armed card's verdict on a row, as the row draws it. */
+export type LinkRowArmedState = 'lit' | 'locked' | 'dim';
+
+/** The row's opacity per armed verdict (NFP #1): lit full, locked dimmer, a non-target dimmest. */
+export const LINK_ROW_ARMED_OPACITY: Readonly<Record<LinkRowArmedState, number>> = { lit: 1, locked: 0.7, dim: 0.4 };
 export const LinkRowAccessoryContext = createContext<LinkRowAccessory | null>(null);
 
 /** The rows of one links group: chip, then its fact. Shared with the Inspector's Connections block. */
@@ -365,11 +376,14 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
   });
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      {rows.map((row, index) => (
+      {rows.map((row, index) => {
+        const armed = accessory?.rowState?.(row) ?? null;
+        return (
         <Fragment key={rowKeys[index]}>
           <li
             data-link-row={`${row.ref.kind}:${row.ref.id}`}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)' }}
+            data-armed={armed ?? undefined}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)', opacity: armed ? LINK_ROW_ARMED_OPACITY[armed] : undefined, transition: 'opacity var(--anim-fast)' }}
           >
             <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
             {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
@@ -377,7 +391,8 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
           </li>
           {accessory?.below(row, `${listId}:${rowKeys[index]}`)}
         </Fragment>
-      ))}
+        );
+      })}
     </ul>
   );
 }

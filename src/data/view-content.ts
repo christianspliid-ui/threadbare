@@ -6,6 +6,7 @@
  * the whole vocabulary. Tooltip bodies live in `ui-content.ts` (`ui.land.*`).
  */
 import type { InspectorTabId } from '../types/detailPage';
+import type { TargetCategory } from '../types/targetContext';
 
 /** Tab labels, sentence case (THR-1833). Total over `InspectorTabId` by type. */
 export const INSPECTOR_TAB_LABELS: Readonly<Record<InspectorTabId, string>> = {
@@ -181,6 +182,50 @@ export const INSPECTOR_WORDS = {
   /** THR-1910: the fealty rows (THR-1932). */
   factLiege: 'liege',
   factVassal: 'owes fealty',
+} as const;
+
+// ─── Card-first arming (THR-1914, Inspector plan § D9 way 3, § Player-facing text) ──
+
+/**
+ * What an armed card asks for, by the card's target category: "choose a person". Total
+ * over `TargetCategory` by type (§ D15 — a new kind of target is a type error until it
+ * has its words here and a builder in `TARGET_CONTEXT_BUILDERS`). `faction` is authored on eight
+ * cards outside the type; a faction is an actor node, so those cards land on factions.
+ */
+export const ARMED_TARGET_WORDS: Readonly<Record<TargetCategory | 'faction', string>> = {
+  actor: 'a person',
+  location: 'a place',
+  sublocation: 'a place within',
+  hex: 'open land',
+  artifact: 'an artifact',
+  artifact_legendary: 'an artifact',
+  faction: 'a faction',
+};
+
+/** The arming flow's lines. `{card}` is the card's name, `{name}` the target's. */
+export const ARMED_WORDS = {
+  /** The banner while a card waits for its target. `{target}` is an `ARMED_TARGET_WORDS` value. */
+  banner: '{card}: choose {target}. You can keep following links.',
+  /** "or" between two target words, when a card lands on more than one kind. */
+  targetOr: ' or ',
+  /** The commit line, once a target is chosen: the card, the target, the card's own effect line. */
+  commit: '{card} on {name}.',
+  /** The row button that casts on that row's thing. */
+  castHere: 'Cast here',
+  /** A click on a thing the card cannot land on. */
+  notATarget: '{card} cannot touch that.',
+  /** The arm ended because the card left the hand. */
+  cleared: '{card} left your hand. Nothing was spent.',
+  /** Nothing in sight the card can land on. */
+  empty: 'Nothing you can see is something {card} can touch.',
+  /** A card whose target category has no builder (fail-soft table). */
+  nowhere: 'This card has nowhere to land yet.',
+  /** The Esc cap's label on the banner. */
+  escHint: 'Put the card down',
+  /** The map's hover line on a lit-but-locked hex: "The plateau at Oreblack Deep — too far from here." */
+  hoverLocked: '{name} — {reason}',
+  /** The banner's region label for screen readers. */
+  regionLabel: 'Armed card',
 } as const;
 
 // ─── Map lenses (THR-1878 plan § D4, § Player-facing text) ──────────────

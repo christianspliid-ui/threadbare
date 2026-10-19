@@ -23,7 +23,7 @@
  * back to the moment, which never closed. When the Stage closes the Inspector returns with
  * the last subject opened.
  */
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties, type DragEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { isStageOpen } from '../stage/stageState';
 import type { GameState } from '../../../types/gameState';
@@ -44,6 +44,7 @@ import { Tooltip } from '../../shared/Tooltip';
 import { InspectorPage, type InspectorPageReport } from './InspectorPage';
 import type { ActCastResult } from './InspectorParts';
 import { RowCardsProvider } from './RowCards';
+import { ArmedBanner, ArmedRowsProvider, isCardDrag, refFromDrop, useArmedCardState } from './ArmedCard';
 import {
   currentEntry,
   cycleSize,
@@ -208,6 +209,19 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
     return target ? onCast(actionId, target) : { cast: false, reason: null };
   }, [gameState, onCast]);
 
+  // THR-1914 — a hand card dropped on a row chooses that row's thing (never casts).
+  const arming = useArmedCardState();
+  const onDragOver = useCallback((e: DragEvent) => {
+    if (arming?.armed && isCardDrag(e)) e.preventDefault();
+  }, [arming?.armed]);
+  const onDrop = useCallback((e: DragEvent) => {
+    if (!arming?.armed || !isCardDrag(e)) return;
+    e.preventDefault();
+    const ref = refFromDrop(e.target);
+    if (ref) arming.choose(ref, 'drag');
+  }, [arming]);
+  const subjectRef = castTarget && entry && !isContentRef(entry.subject as AnyRef) && entry.subject.kind !== 'event-node' ? (entry.subject as WorldRef) : null;
+
   const report = useCallback((r: InspectorPageReport) => {
     if (page) onReport?.({ ...r, subjectKey: page.subjectKey, pageKind: page.pageKind });
   }, [onReport, page]);
@@ -251,16 +265,20 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
 
   const pageEl = (
     <RowCardsProvider key={entry.key} cardsFor={rowCardsFor} targetNameFor={rowTargetName} cast={castOnRow}>
-      <InspectorPage
-        page={page}
-        size={size}
-        graph={gameState.graph}
-        onWiden={() => setInspector(widen)}
-        onReport={report}
-        toolbar={toolbar}
-        onCast={castTarget ? cast : undefined}
-        headingRef={headingRef}
-      />
+      <ArmedRowsProvider>
+        <div onDragOver={onDragOver} onDrop={onDrop} style={{ height: '100%', minHeight: 0 }}>
+          <InspectorPage
+            page={page}
+            size={size}
+            graph={gameState.graph}
+            onWiden={() => setInspector(widen)}
+            onReport={report}
+            toolbar={<>{toolbar}<ArmedBanner subject={subjectRef} /></>}
+            onCast={castTarget ? cast : undefined}
+            headingRef={headingRef}
+          />
+        </div>
+      </ArmedRowsProvider>
     </RowCardsProvider>
   );
 
