@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-19 21:58 local (19:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-19 22:56 local (20:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,15 +15,27 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+All from [the hiring-a-free-company plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md) ([THR-1974](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays)), decided by [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-19a.md) tonight:
+
+- **A hired company fights its paymaster's wars, not its own.** *Veto:* "a hired company should still fight its own enemies too".
+- **A lord keeps two days of its own soldiers' pay before it pays anyone else's.** *Veto:* "a lord should spend its last coin on its sworn swords".
+- **A company is priced on the soldiers it keeps.** *Veto:* "price companies on what they earn, like everyone else".
+- **A company that swears for protection, with no army left, gets no help to raise one.** *Veto:* "a lord should pay to raise its vassal's army at once".
+- **Two hired companies still make a realm a Crown.** *Veto:* "hired companies should not count toward a Crown".
+- **The player reads "pays its soldiers", never a sum, and never *mercenary*, *contract* or *hire*.** *Veto:* "call them mercenaries on screen".
+
+Say 'veto <title>' to reverse any of these.
+
 ## Queue
 
-**Backed up: 27 ready, 1 in progress.** The builder is now on [the Stage, slice 2: the Stage frame over the dimmed map](https://linear.app/threadbare/issue/THR-1892/the-stage-slice-2-the-stage-frame-over-the-dimmed-map-with-the-lit-hex) (High), in a run that started at 21:31 and is still working.
+**Backed up: 27 ready, 1 in progress.** The builder is now on [Inspector S6: card-first — arm a card and its targets light up](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light) (High), in a run that started at 22:51 and is still working.
 
-- High and waiting: [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows); [Inspector S6: card-first](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light); [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- High and waiting: [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows); [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site serves the latest commit on main (04ed4c85), which includes [Inspector S5: card counts on every row](https://linear.app/threadbare/issue/THR-1913/inspector-s5-card-counts-on-every-row-with-an-inline-tray-of-those). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge.
-- Engine speed: tick cost 307 ms/tick steady, 125% above the 7-day median (137, 110 rows since f3c397f3); top phase agent_decision, 624 agents. Name the merges between f3c397f3 and 04ed4c85: git log --oneline --merges f3c397f3..04ed4c85. The builder was running during this measurement, so much of this is machine load. Executor work, not yours.
-- The tidy-up job (last run 21:40) reports 557 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The live site serves the latest commit on main (0d34850b), which includes [the Stage, slice 2: story beats play over the dimmed map with their place lit](https://linear.app/threadbare/issue/THR-1892). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge. Every scheduled lane is on time.
+- The tidy-up job reports 558 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.

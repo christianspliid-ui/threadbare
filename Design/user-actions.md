@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-19 21:58 local (19:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-19 22:56 local (20:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -12,7 +12,7 @@ Recent gaps: 12–13 Oct overnight (03:57–13:57), Thursday 15 Oct (14:50–20:
 
 ### Sunday 18 – Monday 19 Oct: was the app closed, or was this a pause? (new 19 Oct)
 
-The silence check says: "No scheduled Claude Code lane has written to origin/main or origin/ops since 2026-10-18T18:26:51.000Z — 23.5h of fleet-wide silence, past the 6h threshold, and no pause marker is set. Either the lanes are broken, or this is a deliberate pause that was never declared." Lanes resumed about 19:42 local Monday. **If the app was closed or the computer was off:** just say so. **If it wasn't:** say so, and it becomes a fault to chase.
+The silence check says: "The scheduled lanes went silent for 23.3h (2026-10-18T18:26:51.000Z → 2026-10-19T17:42:15.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." **If the app was closed or the computer was off:** just say so. **If it wasn't:** say so, and it becomes a fault to chase.
 
 ### Should "Fated" be gold instead of grey? (18 Oct)
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-19: the Stage, slice 2 — story beats play over the dimmed map with their place lit** ([THR-1892](https://linear.app/threadbare/issue/THR-1892)). Merged via [#2488](https://github.com/christianspliid-ui/threadbare/pull/2488) and live.
 - **2026-10-19: Inspector S5 — every Inspector row shows how many cards can act on it, with an inline tray of those cards** ([THR-1913](https://linear.app/threadbare/issue/THR-1913/inspector-s5-card-counts-on-every-row-with-an-inline-tray-of-those)). Merged via [#2486](https://github.com/christianspliid-ui/threadbare/pull/2486) and live.
 - **2026-10-18: Inspector S4 — the old detail screens are deleted; every page now opens in the Inspector** ([THR-1912](https://linear.app/threadbare/issue/THR-1912/inspector-s4-delete-the-retired-detail-surfaces-once-their-fields-have)). Merged via [#2485](https://github.com/christianspliid-ui/threadbare/pull/2485) and live.
 - **2026-10-18: the screen frame's top bar, with "Needs you"** ([THR-1875](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the)). Merged via [#2484](https://github.com/christianspliid-ui/threadbare/pull/2484) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-18: every link, card and map click now opens the Inspector beside the map, and you can cast from its Act row** ([THR-1911](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click)). Merged via [#2479](https://github.com/christianspliid-ui/threadbare/pull/2479) and live.
 - **2026-10-18: pressing Play on a chapter choice now moves the story on, once (the main-map wall from cold playtest round 4)** ([THR-1976](https://linear.app/threadbare/issue/THR-1976)). Merged via [#2477](https://github.com/christianspliid-ui/threadbare/pull/2477) and live.
 - **2026-10-18: the god rail puts Attention beside essence, your cards in the rail, and folds its rows (screen frame, second slice)** ([THR-1894](https://linear.app/threadbare/issue/THR-1894/screen-frame-slice-2-the-god-rail-attention-beside-essence-your-hand)). Merged via [#2474](https://github.com/christianspliid-ui/threadbare/pull/2474) and live.
-- **2026-10-18: the Ledger rail opens the screen frame, with the World-Soul heading the chronicle and unread chapters marked (screen frame, first slice)** ([THR-1893](https://linear.app/threadbare/issue/THR-1893/screen-frame-slice-1-the-ledger-rail-world-soul-heads-the-chronicle)). Merged via [#2473](https://github.com/christianspliid-ui/threadbare/pull/2473) and live.
 
 ---
 
