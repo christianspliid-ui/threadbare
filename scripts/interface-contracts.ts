@@ -7117,13 +7117,13 @@ export const CONTRACTS: readonly Contract[] = [
     intent:
       'An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window.',
     ulTerms: ['Encounter', 'Location'],
-    mechanism: { kind: 'function', symbols: ['resolveMomentHexes', 'buildStageView'], module: 'src/engine/views/stage/stageView.ts' },
+    mechanism: { kind: 'property', symbols: ['hexCol', 'hexRow'] },
     writeSites: [
       'src/engine/views/stage/buildUnifiedEncounterStageModel.ts',
       'src/engine/views/stage/buildSimpleEncounterStageModel.ts',
       'src/engine/views/stage/buildGateDutyEncounterStageModel.ts',
     ],
-    readSites: ['src/components/Game/GameView.tsx', 'src/engine/views/stage/stageView.ts'],
+    readSites: ['src/components/Game/GameView.tsx'],
     verifiedLive: {
       date: '2026-10-20',
       evidence: 'THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.',
