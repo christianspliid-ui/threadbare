@@ -273,13 +273,19 @@ export interface ArmedTargetsArgs {
   actionId: string;
   /** Fog off (the debug lever): every hex counts as seen, as the lenses read it. */
   fogOff?: boolean;
+  /**
+   * What the verdicts read that moves without `worldVersion` (the pool, held actions,
+   * covenants, the avatar's hex): a cast while paused must relight the map. Built by the
+   * caller (`armedTargetsStamp`), the godRail lesson.
+   */
+  stamp?: string;
 }
 
 /** World-keyed per card: people move every tick, and essence changes what is castable. */
 export const armedTargetsSelector: ViewSelector<ArmedTargetsArgs, ArmedTargetsVM> = {
   id: 'armedTargets',
   invalidation: 'world',
-  key: (args) => `${args.actionId}|${args.fogOff ? 'nofog' : 'fog'}`,
+  key: (args) => `${args.actionId}|${args.fogOff ? 'nofog' : 'fog'}|${args.stamp ?? ''}`,
   fallback: (args) => emptyArmedTargets(args.actionId),
   build(ctx, { actionId, fogOff }) {
     const index = readView(ctx.runtime, ctx.state, hexContentsIndexSelector, undefined, ctx.tiles);

@@ -46,8 +46,8 @@ import { useEscapeLayer } from '../../shared/useEscapeLayer';
 import { Z_BAND } from '../../shared/zBands';
 import { isInspectorOpen } from './inspectorState';
 import { armForDrag, noteArmed, pressHandCard, stageTarget, type ArmedSlice } from './armedState';
-import type { CastOutcome } from './useCastOnTarget';
-import type { ActOnTarget } from '../../../engine/views/subjects/actOn';
+import type { CastOnTarget, CastOutcome } from './useCastOnTarget';
+import { godRailStamp } from '../../../engine/views/godRail';
 
 /** The Esc layer's label in `__DEBUG.getEscapeLayers()`. */
 export const ARMED_ESCAPE_LABEL = 'Armed card';
@@ -59,7 +59,7 @@ export interface CardArmingDeps {
   gameState: GameState;
   runtime: SimulationRuntime | null;
   /** The one cast path. */
-  castOnTarget: (actionId: string, target: ActOnTarget) => CastOutcome;
+  castOnTarget: CastOnTarget;
   pushToast: (toast: ToastItem) => void;
   /** Open a page in the Inspector — a map click on a hex with several lit targets opens it. */
   openInspector: (subject: AnyRef, size: 'docked' | 'wide', fromMap?: boolean) => void;
@@ -130,7 +130,7 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
 
   const vm = useMemo<ArmedTargetsVM | null>(() => {
     if (!armed) return null;
-    return readView(runtime, gameState, armedTargetsSelector, { actionId: armed.actionId, fogOff }, gameState.tiles);
+    return readView(runtime, gameState, armedTargetsSelector, { actionId: armed.actionId, fogOff, stamp: armedTargetsStamp(gameState) }, gameState.tiles);
     // The world is mutated in place: re-read on every state the game hands down.
   }, [armed?.actionId, gameState, runtime, fogOff]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -227,7 +227,9 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
     }
     let outcome: CastOutcome;
     try {
-      outcome = castOnTarget(verdict.slotId, actOn);
+      // Re-read this card alone: the full hand stops at MAX_SLOTS, and a lit card must cast.
+      const template = getUnifiedTemplateById(a.actionId);
+      outcome = castOnTarget(verdict.slotId, actOn, template ? [template] : undefined);
     } catch (err) {
       console.warn('[useCardArming] cast failed:', err);
       outcome = { cast: false, reason: null };
@@ -237,7 +239,8 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
       setArmed(null);
     } else {
       traceArm(s.tick, a.actionId, 'refused', origin, target, outcome.reason ?? 'cast_refused');
-      if (outcome.reason) setArmed(prev => noteArmed(prev, outcome.reason!));
+      // Every refusal answers (Law 47): the reason, or the not-a-target line.
+      setArmed(prev => noteArmed(prev, outcome.reason ?? ARMED_WORDS.notATarget.replace('{card}', cardNameOf(a.actionId))));
     }
     return outcome;
   }, [evaluate, castOnTarget, setArmed]);
@@ -283,6 +286,15 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
   }, [armed, cardName, targetName, evaluate, gameState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { armed, vm, cardName, handPress, evaluate, choose, chooseHex, castOn, disarm, targetName, commitLine };
+}
+
+/**
+ * What the verdicts read that a cast changes without moving `worldVersion`: the pool, the
+ * held and pending actions, the god's covenants, and the avatar's hex (the range gate).
+ */
+export function armedTargetsStamp(state: GameState): string {
+  const at = state.graph.getNode(state.ascendantId)?.properties;
+  return [godRailStamp(state), (state.controlEffects ?? []).length, at?.hexCol ?? '', at?.hexRow ?? '', state.visibilityMap?.size ?? 0].join('|');
 }
 
 function cardNameOf(actionId: string): string {

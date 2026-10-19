@@ -19,6 +19,7 @@ import type { SphereName } from '../../../types';
 import type { ToastItem } from '../../../types/notification';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import type { WheelSlot } from '../../../engine/wheel';
+import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 import { actOnSlots, castHexOf, type ActOnTarget } from '../../../engine/views/subjects/actOn';
 import { templateIdFromSlotId } from '../../../engine/targetActions';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
@@ -56,10 +57,17 @@ export interface CastOnTargetDeps {
   startMeeting?: (locationId: string) => void;
 }
 
-export function useCastOnTarget(deps: CastOnTargetDeps): (actionId: string, target: ActOnTarget) => CastOutcome {
+/**
+ * The one cast path. `templates` narrows the re-read to those cards: card-first arming
+ * (THR-1914) passes the armed card alone, because the full hand is capped at
+ * `MAX_SLOTS` and a card past the cap would light but never cast.
+ */
+export type CastOnTarget = (actionId: string, target: ActOnTarget, templates?: readonly UnifiedActionTemplate[]) => CastOutcome;
+
+export function useCastOnTarget(deps: CastOnTargetDeps): CastOnTarget {
   const { gameState, setGameState, runtime, primarySphere, pushToast, particleBurst, playCastSound, beginIntervention, openScry, startMeeting } = deps;
 
-  return useCallback((actionId: string, target: ActOnTarget): CastOutcome => {
+  return useCallback((actionId: string, target: ActOnTarget, templates?: readonly UnifiedActionTemplate[]): CastOutcome => {
     if (actionId === SCRY_SLOT_ID) {
       openScry?.();
       return { cast: !!openScry, reason: null };
@@ -70,7 +78,7 @@ export function useCastOnTarget(deps: CastOnTargetDeps): (actionId: string, targ
       return { cast: !!startMeeting, reason: null };
     }
 
-    const read = actOnSlots(gameState, target);
+    const read = actOnSlots(gameState, target, templates);
     if (!read) return { cast: false, reason: null };
     const slot = read.slots.find(s => s.id === actionId);
     if (!slot) return { cast: false, reason: null };
