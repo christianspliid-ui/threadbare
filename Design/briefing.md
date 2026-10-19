@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-10-19 22:56 local (20:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-19 23:56 local (21:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Set the Claude app to open when Windows starts.** No lane ran from 20:26 Sunday until about 19:42 tonight. That is all of Monday, with 25 jobs ready for the builder. Every recent silence has the same shape: the computer starts or wakes, and the app does not reopen. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
+**Set the Claude app to open when Windows starts.** No lane ran from 20:26 Sunday until about 19:42 Monday. That is all of Monday, with 25 jobs ready for the builder. Every recent silence has the same shape: the computer starts or wakes, and the app does not reopen. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
 ## Also waiting (5)
 
@@ -30,12 +30,13 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 27 ready, 1 in progress.** The builder is now on [Inspector S6: card-first — arm a card and its targets light up](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light) (High), in a run that started at 22:51 and is still working.
+**Backed up: 28 ready, 1 in progress.** The builder is still on [Inspector S6: card-first — arm a card and its targets light up](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light) (High), in a run that started at 22:51 and is still working.
 
+- New in the queue: [the Stage, slice 3 — encounters play on the Stage](https://linear.app/threadbare/issue/THR-1895/the-stage-slice-3-encounters-play-on-the-stage-the-veils-step-shells) (High), unblocked now that slice 2 is live ([the orchestrator's note](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-19d.md)).
 - High and waiting: [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows); [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site serves the latest commit on main (0d34850b), which includes [the Stage, slice 2: story beats play over the dimmed map with their place lit](https://linear.app/threadbare/issue/THR-1892). Main's checks and the scheduled background jobs pass. No PRs are waiting to merge. Every scheduled lane is on time.
-- The tidy-up job reports 558 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- The live site serves the latest commit on main (0d34850b). Main's checks and the scheduled background jobs pass. One PR is waiting on its checks and will merge on green. Every scheduled lane is on time. The engine runs at 115 ms a tick, faster than its week's median.
+- The tidy-up job reports 559 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
