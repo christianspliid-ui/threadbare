@@ -87,6 +87,10 @@ function RowCardTray({ row, rowId }: { row: Row; rowId: string }) {
 function OpenTray({ row, ctx }: { row: Row; ctx: RowCardsValue }) {
   const cards = useRowCards(row.ref);
   const { cast, close, targetNameFor } = ctx;
+  // The Esc layer lives with the drawn tray: Esc closes it before it steps the Inspector
+  // down (a later layer wins its band). A row that leaves the page takes its tray and its
+  // Esc layer with it, so no unseen tray holds the next Esc.
+  useEscapeLayer(true, close, ESCAPE_LAYER_Z_PANEL, 'Inspector card tray');
   // The thing the cast lands on, which a row's own label may not name (a resource, a covenant).
   const name = useMemo(() => targetNameFor(row.ref) ?? row.name, [targetNameFor, row.ref, row.name]);
   const onCast = useCallback((actionId: string): ActCastResult => {
@@ -121,8 +125,6 @@ export function RowCardsProvider({ cardsFor, targetNameFor, cast, children }: {
   const [openRow, setOpenRow] = useState<string | null>(null);
   const toggle = useCallback((rowId: string) => setOpenRow(prev => (prev === rowId ? null : rowId)), []);
   const close = useCallback(() => setOpenRow(null), []);
-  // Esc closes the open tray before it steps the Inspector down (a later layer wins its band).
-  useEscapeLayer(openRow !== null, close, ESCAPE_LAYER_Z_PANEL, 'Inspector card tray');
   const value = useMemo<RowCardsValue>(() => ({ cardsFor, targetNameFor, cast, openRow, toggle, close }), [cardsFor, targetNameFor, cast, openRow, toggle, close]);
   return (
     <RowCardsContext.Provider value={value}>

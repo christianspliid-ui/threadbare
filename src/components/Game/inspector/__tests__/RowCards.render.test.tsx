@@ -13,6 +13,7 @@ import type { ActOnCardVM, ConnectionsVM, LinkRowVM } from '../../../../engine/v
 import type { WorldRef } from '../../../../types/worldRef';
 import { ConnectionsBlock } from '../InspectorParts';
 import { RowCardsProvider } from '../RowCards';
+import { getEscapeLayers } from '../../../shared/useEscapeLayer';
 import { RefRouterProvider } from '../../../../contexts/RefRouterContext';
 
 function row(kind: WorldRef['kind'], id: string, name: string): LinkRowVM {
@@ -125,6 +126,27 @@ describe('RowCards (THR-1913)', () => {
     fireEvent.click(container.querySelector('[data-row-cards="location:quarter"] [data-chip-role="count"]')!);
     fireEvent.click(container.querySelector('[data-row-tray] [data-act-card="ta_sacred_ground"] button')!);
     expect(container.querySelector('[data-row-tray] [data-act-cast]')?.textContent).toBe('Cast on Temple Quarter');
+  });
+
+  it('an open tray stays under its thing when a row above it leaves, and leaves with its row (review round 2)', () => {
+    const cardsFor = vi.fn(() => [SACRED]);
+    const cast = vi.fn(() => ({ cast: true, reason: null }));
+    const view = (rows: LinkRowVM[]) => (
+      <RowCardsProvider cardsFor={cardsFor} targetNameFor={() => null} cast={cast}>
+        <ConnectionsBlock connections={connections(rows)} folded={new Set()} onShowAll={() => {}} />
+      </RowCardsProvider>
+    );
+    const [a, b, c] = [row('agent', 'a', 'A'), row('agent', 'b', 'B'), row('agent', 'c', 'C')];
+    const { container, rerender } = render(view([a, b, c]));
+    fireEvent.click(container.querySelector('[data-row-cards="agent:b"] [data-chip-role="count"]')!);
+    fireEvent.click(container.querySelector('[data-row-tray] [data-act-card] button')!);
+    rerender(view([b, c]));
+    expect(container.querySelector('[data-row-tray]')?.getAttribute('data-row-tray')).toBe('agent:b');
+    expect(container.querySelector('[data-row-tray] [data-act-card]')?.getAttribute('data-armed')).toBe('true');
+    rerender(view([c]));
+    expect(container.querySelector('[data-row-tray]')).toBeNull();
+    // No unseen tray holds Esc: the escape stack is empty again.
+    expect(getEscapeLayers().some(l => l.label === 'Inspector card tray')).toBe(false);
   });
 
   it('draws nothing without a provider (the lab, every other surface)', () => {

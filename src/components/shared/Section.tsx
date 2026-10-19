@@ -353,20 +353,29 @@ export const LinkRowAccessoryContext = createContext<LinkRowAccessory | null>(nu
 export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
   const accessory = useContext(LinkRowAccessoryContext);
   const listId = useId();
+  // Two rows may name one thing (a Location yielding two resources), so a row is its ref plus
+  // which occurrence of that ref it is. Unlike the index, that holds when rows above it come
+  // and go between ticks, so an open tray stays under the thing it was opened on.
+  const seen = new Map<string, number>();
+  const rowKeys = rows.map(row => {
+    const ref = `${row.ref.kind}:${row.ref.id}`;
+    const n = seen.get(ref) ?? 0;
+    seen.set(ref, n + 1);
+    return `${ref}:${n}`;
+  });
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
       {rows.map((row, index) => (
-        // Two rows may name one thing (a Location yielding two resources), so the index joins the key.
-        <Fragment key={`${row.ref.kind}:${row.ref.id}:${index}`}>
+        <Fragment key={rowKeys[index]}>
           <li
             data-link-row={`${row.ref.kind}:${row.ref.id}`}
             style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, fontSize: 'var(--text-sm)' }}
           >
             <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
             {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
-            {accessory?.trailing(row, `${listId}:${index}`)}
+            {accessory?.trailing(row, `${listId}:${rowKeys[index]}`)}
           </li>
-          {accessory?.below(row, `${listId}:${index}`)}
+          {accessory?.below(row, `${listId}:${rowKeys[index]}`)}
         </Fragment>
       ))}
     </ul>
