@@ -203,6 +203,18 @@ export function actOnRowCards(state: GameState, ref: WorldRef): ActOnCardVM[] {
 }
 
 /**
+ * THR-1913 — the name a row's cast lands on, for the tray's "Cast on <name>" (Law 48).
+ * A row's own label can name something else (a Resources row says "Iron" and links its
+ * Location; a Covenants row says the covenant and links the hex), so the tray names the
+ * target the cast resolves to. Null when nothing can be cast on the ref.
+ */
+export function actOnRowTargetName(state: GameState, ref: WorldRef): string | null {
+  const target = actOnTargetForRef(state, ref);
+  if (!target) return null;
+  return targetContextFor(state, target)?.displayName ?? null;
+}
+
+/**
  * THR-1913 — card counts for rows, keyed by `rowCardsKey`. One `getTargetActionSlots`
  * per ref, so the caller passes the rows it renders and no more (the Inspector computes
  * one row at a time as each row mounts; a folded row is never counted). A ref with no

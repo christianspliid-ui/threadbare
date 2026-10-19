@@ -1,4 +1,4 @@
-import { Fragment, createContext, useCallback, useContext, type MouseEvent, type ReactNode } from 'react';
+import { Fragment, createContext, useCallback, useContext, useId, type MouseEvent, type ReactNode } from 'react';
 import type {
   CardsSection,
   ChipDescriptor,
@@ -343,14 +343,16 @@ function LinksSectionRenderer({ section }: { section: LinksSection }) {
  * runs as that row mounts: a folded row never computes one.
  */
 export interface LinkRowAccessory {
-  trailing: (row: LinksSection['rows'][number]) => ReactNode;
-  below: (row: LinksSection['rows'][number]) => ReactNode;
+  /** `rowId` names this row on this page, unique even when two rows share one ref. */
+  trailing: (row: LinksSection['rows'][number], rowId: string) => ReactNode;
+  below: (row: LinksSection['rows'][number], rowId: string) => ReactNode;
 }
 export const LinkRowAccessoryContext = createContext<LinkRowAccessory | null>(null);
 
 /** The rows of one links group: chip, then its fact. Shared with the Inspector's Connections block. */
 export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
   const accessory = useContext(LinkRowAccessoryContext);
+  const listId = useId();
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
       {rows.map((row, index) => (
@@ -362,9 +364,9 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
           >
             <Chip role="identity" size="sm" target={row.ref} label={row.name} tooltipId={row.ref.tooltipId} />
             {row.fact && <span style={{ color: 'var(--text-tertiary)', minWidth: 0, overflowWrap: 'anywhere' }}>{row.fact}</span>}
-            {accessory?.trailing(row)}
+            {accessory?.trailing(row, `${listId}:${index}`)}
           </li>
-          {accessory?.below(row)}
+          {accessory?.below(row, `${listId}:${index}`)}
         </Fragment>
       ))}
     </ul>

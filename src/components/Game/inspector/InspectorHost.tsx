@@ -22,7 +22,7 @@ import type { GameState } from '../../../types/gameState';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { buildSubjectPage, type SubjectPageExtras } from '../../../engine/views/subjects/subjectPage';
 import type { ActOnCardVM, SubjectPageVM } from '../../../engine/views/subjects/subjectTypes';
-import { actOnRowCards, actOnTargetForRef, type ActOnTarget } from '../../../engine/views/subjects/actOn';
+import { actOnRowCards, actOnRowTargetName, actOnTargetForRef, type ActOnTarget } from '../../../engine/views/subjects/actOn';
 import type { WorldRef } from '../../../types/worldRef';
 import { isContentRef, type AnyRef } from '../../../types/contentRef';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
@@ -182,6 +182,14 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
       return [];
     }
   }, [gameState]);
+  const rowTargetName = useCallback((ref: WorldRef) => {
+    try {
+      return actOnRowTargetName(gameState, ref);
+    } catch (err) {
+      console.warn('[InspectorHost] row target name failed:', err);
+      return null;
+    }
+  }, [gameState]);
   const castOnRow = useCallback((actionId: string, ref: WorldRef): ActCastResult => {
     const target = actOnTargetForRef(gameState, ref);
     return target ? onCast(actionId, target) : { cast: false, reason: null };
@@ -228,7 +236,7 @@ export function InspectorHost({ gameState, runtime, extras, onCast, onShowOnMap,
   );
 
   const pageEl = (
-    <RowCardsProvider key={entry.key} cardsFor={rowCardsFor} cast={castOnRow}>
+    <RowCardsProvider key={entry.key} cardsFor={rowCardsFor} targetNameFor={rowTargetName} cast={castOnRow}>
       <InspectorPage
         page={page}
         size={size}

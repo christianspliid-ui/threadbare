@@ -33,10 +33,12 @@ function mount(opts: { rows: LinkRowVM[]; folded?: boolean; foldAfter?: number; 
   const cardsFor = vi.fn(opts.cardsFor ?? ((ref: WorldRef) => (ref.id === 'quarter' ? [SACRED, WHISPER] : ref.id === 'docks' ? [WHISPER] : [])));
   const cast = vi.fn(() => ({ cast: true, reason: null }));
   const open = vi.fn();
+  const names: Record<string, string> = { quarter: 'Temple Quarter', docks: 'The Docks', well: 'Old Well' };
+  const targetNameFor = (ref: WorldRef) => names[ref.id] ?? null;
   const router = { open, peek: vi.fn(), close: vi.fn() } as unknown as Parameters<typeof RefRouterProvider>[0]['router'];
   const utils = render(
     <RefRouterProvider router={router}>
-      <RowCardsProvider cardsFor={cardsFor} cast={cast}>
+      <RowCardsProvider cardsFor={cardsFor} targetNameFor={targetNameFor} cast={cast}>
         <ConnectionsBlock
           connections={connections(opts.rows, opts.foldAfter)}
           folded={new Set(opts.folded ? ['places'] : [])}
@@ -103,6 +105,26 @@ describe('RowCards (THR-1913)', () => {
     expect(cast).toHaveBeenCalledWith('ta_sacred_ground', { kind: 'location', id: 'quarter' });
     expect(container.querySelector('[data-row-tray]')).toBeNull();
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('two rows linking one thing open one tray, under the row pressed (review round 1)', () => {
+    const shared = [row('location', 'quarter', 'Iron'), row('location', 'quarter', 'Salt')];
+    const { container } = mount({ rows: shared });
+    const chips = container.querySelectorAll('[data-row-cards="location:quarter"] [data-chip-role="count"]');
+    expect(chips.length).toBe(2);
+    fireEvent.click(chips[1]);
+    const trays = container.querySelectorAll('[data-row-tray]');
+    expect(trays.length).toBe(1);
+    // The tray sits directly under the second row.
+    const items = Array.from(container.querySelectorAll('li'));
+    expect(items.indexOf(trays[0] as HTMLLIElement)).toBe(2);
+  });
+
+  it('names the thing the cast lands on, not the row\'s own label (review round 1)', () => {
+    const { container } = mount({ rows: [row('location', 'quarter', 'Iron')] });
+    fireEvent.click(container.querySelector('[data-row-cards="location:quarter"] [data-chip-role="count"]')!);
+    fireEvent.click(container.querySelector('[data-row-tray] [data-act-card="ta_sacred_ground"] button')!);
+    expect(container.querySelector('[data-row-tray] [data-act-cast]')?.textContent).toBe('Cast on Temple Quarter');
   });
 
   it('draws nothing without a provider (the lab, every other surface)', () => {
