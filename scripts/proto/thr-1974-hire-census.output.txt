@@ -1,0 +1,77 @@
+[WorldGen] Living world: realm edges dropped at guild halls 8 · routes 6 · freeholds 6 · possessions 7 · ties kin 14/friend 14/rival 14 (no pool 0) · home-realm moves 2 · favours 9 · quarrels 4 · marks 4 · notables 47 (no holding 6 / no quarrel 0 / no secret-or-favour 3 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 111/111 casters wield a spell (111 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 198 spells across 33 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +111 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 54, dead 2+3+4, descent 124/487, 2 war(s) without a burned town, ambitions 4 minted / 2 skipped (5 ms)
+
+=== seed 42: 2 free companies: faction_def_mercenary_company_0, faction_def_mercenary_company_1
+  day 1 faction_def_mercenary_company_0: wealth=76.9 income=0.40 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[] reachedBy=0 presence=5 sworn=no
+  day 1 faction_def_mercenary_company_1: wealth=77.2 income=0.68 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=4 sworn=no
+  day 1 realms: faction_0: inc=8.7 w=66 Wealthy oaths=0 | faction_1: inc=5.2 w=82 Wealthy oaths=1
+  hire@day10 faction_def_mercenary_company_0: bidders=0 → none
+  hire@day10 faction_def_mercenary_company_1: bidders=2 → faction_0
+  day 30 faction_def_mercenary_company_0: wealth=0.6 income=0.51 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[] reachedBy=0 presence=6 sworn=no
+  day 30 faction_def_mercenary_company_1: wealth=28.9 income=0.52 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=5 sworn=faction_1(persuaded)
+  day 30 realms: faction_0: inc=9.5 w=145 Magnate oaths=0 | faction_1: inc=6.1 w=14 Getting by oaths=3
+  day 60 faction_def_mercenary_company_0: wealth=8.9 income=0.51 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00] reachedBy=1 presence=5 sworn=faction_0(bought)
+  day 60 faction_def_mercenary_company_1: wealth=2.7 income=0.68 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.32,0.00] reachedBy=2 presence=5 sworn=faction_0(bought)
+  day 60 realms: faction_0: inc=11.5 w=157 Magnate oaths=12 | faction_1: inc=4.5 w=51 Comfortable oaths=1 | faction_2: inc=3.9 w=2 Getting by oaths=0
+  day 90 faction_def_mercenary_company_0: wealth=7.7 income=0.51 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00] reachedBy=1 presence=5 sworn=faction_0(bought)
+  day 90 faction_def_mercenary_company_1: wealth=2.6 income=0.43 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.15,0.00] reachedBy=2 presence=4 sworn=faction_0(bought)
+  day 90 realms: faction_0: inc=12.5 w=152 Magnate oaths=14 | faction_1: inc=4.4 w=43 Comfortable oaths=1 | faction_2: inc=3.4 w=12 Getting by oaths=0
+  faction_def_mercenary_company_0: candidate on 2/90 days, reached on 45/90 days
+  faction_def_mercenary_company_1: candidate on 2/90 days, reached on 90/90 days
+  wages faction_0 ← faction_def_mercenary_company_1: spent=7.0 over days 10-90; covered 2 days, could not cover 0; lowest shadow purse=63.6; peak wage share of income=31%
+  crown tip: 4/22 realm-samples hold exactly one oath and reach a company
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 17/friend 17/rival 17 (no pool 0) · home-realm moves 6 · favours 16 · quarrels 6 · marks 5 · notables 67 (no holding 10 / no quarrel 0 / no secret-or-favour 2 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 135/135 casters wield a spell (135 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 186 spells across 31 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +146 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 2, founded 77, dead 2+3+4, descent 137/500, ambitions 3 minted / 3 skipped (3 ms)
+
+=== seed 99: 2 free companies: faction_def_mercenary_company_0, faction_def_mercenary_company_1
+  day 1 faction_def_mercenary_company_0: wealth=77.3 income=0.79 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=6 sworn=no
+  day 1 faction_def_mercenary_company_1: wealth=76.8 income=0.26 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[0.00] reachedBy=1 presence=4 sworn=no
+  day 1 realms: faction_0: inc=9.0 w=85 Wealthy oaths=0 | faction_1: inc=7.3 w=84 Wealthy oaths=0 | faction_2: inc=11.5 w=88 Wealthy oaths=0
+  hire@day10 faction_def_mercenary_company_0: bidders=2 → faction_2
+  hire@day10 faction_def_mercenary_company_1: bidders=1 → faction_1
+  day 30 faction_def_mercenary_company_0: wealth=0.6 income=0.89 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.23] reachedBy=2 presence=7 sworn=no
+  day 30 faction_def_mercenary_company_1: wealth=1.9 income=0.19 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=4 sworn=no
+  day 30 realms: faction_0: inc=9.4 w=12 Wealthy oaths=1 | faction_1: inc=6.7 w=7 Getting by oaths=0 | faction_2: inc=14.6 w=156 Magnate oaths=8
+  day 60 faction_def_mercenary_company_0: wealth=9.0 income=1.10 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=6 sworn=faction_2(bought)
+  day 60 faction_def_mercenary_company_1: wealth=6.7 income=0.11 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00] reachedBy=1 presence=3 sworn=no
+  day 60 realms: faction_0: inc=9.1 w=7 Comfortable oaths=1 | faction_1: inc=5.8 w=3 Getting by oaths=1 | faction_2: inc=18.2 w=150 Magnate oaths=18
+  day 90 faction_def_mercenary_company_0: wealth=8.2 income=0.93 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.00,1.00] reachedBy=3 presence=6 sworn=faction_2(bought)
+  day 90 faction_def_mercenary_company_1: wealth=2.8 income=0.11 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00] reachedBy=1 presence=3 sworn=faction_2(bought)
+  day 90 realms: faction_0: inc=9.2 w=21 Comfortable oaths=1 | faction_1: inc=5.7 w=14 Getting by oaths=1 | faction_2: inc=18.2 w=464 Magnate oaths=19
+  faction_def_mercenary_company_0: candidate on 35/90 days, reached on 90/90 days
+  faction_def_mercenary_company_1: candidate on 68/90 days, reached on 84/90 days
+  wages faction_2 ← faction_def_mercenary_company_0: spent=0.0 over days 10-90; covered 0 days, could not cover 0; lowest shadow purse=112.8; peak wage share of income=0%
+  wages faction_1 ← faction_def_mercenary_company_1: spent=10.5 over days 10-90; covered 3 days, could not cover 1; lowest shadow purse=-10.0; peak wage share of income=52%
+  crown tip: 12/26 realm-samples hold exactly one oath and reach a company
+[WorldGen] Living world: realm edges dropped at guild halls 7 · routes 6 · freeholds 7 · possessions 9 · ties kin 16/friend 16/rival 16 (no pool 0) · home-realm moves 1 · favours 13 · quarrels 4 · marks 5 · notables 72 (no holding 16 / no quarrel 0 / no secret-or-favour 0 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 128/128 casters wield a spell (128 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 186 spells across 31 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +148 settlement-authored NPCs
+[worldgen] past: elder war 1, living wars 3, founded 80, dead 3+3+4, descent 138/593, 3 war(s) without a burned town, ambitions 4 minted / 3 skipped (3 ms)
+
+=== seed 7: 2 free companies: faction_def_mercenary_company_0, faction_def_mercenary_company_1
+  day 1 faction_def_mercenary_company_0: wealth=77.2 income=0.73 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=4 sworn=no
+  day 1 faction_def_mercenary_company_1: wealth=76.9 income=0.40 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=5 sworn=no
+  day 1 realms: faction_0: inc=7.5 w=84 Wealthy oaths=0 | faction_1: inc=11.2 w=88 Wealthy oaths=0 | faction_2: inc=7.0 w=84 Wealthy oaths=0
+  hire@day10 faction_def_mercenary_company_0: bidders=2 → faction_1
+  hire@day10 faction_def_mercenary_company_1: bidders=2 → faction_1
+  day 30 faction_def_mercenary_company_0: wealth=0.1 income=1.22 upkeep=3.5 armies=yes priceBase30d=105.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=5 sworn=faction_2(persuaded)
+  day 30 faction_def_mercenary_company_1: wealth=5.4 income=0.55 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=6 sworn=no
+  day 30 realms: faction_1: inc=11.4 w=16 Getting by oaths=0 | faction_2: inc=10.3 w=30 Comfortable oaths=4
+  day 60 faction_def_mercenary_company_0: wealth=2.4 income=0.86 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=4 sworn=faction_2(persuaded)
+  day 60 faction_def_mercenary_company_1: wealth=9.0 income=0.43 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.00] reachedBy=2 presence=5 sworn=no
+  day 60 realms: faction_1: inc=11.0 w=23 Comfortable oaths=0 | faction_2: inc=11.3 w=100 Wealthy oaths=5
+  day 90 faction_def_mercenary_company_0: wealth=9.3 income=0.78 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,0.76] reachedBy=2 presence=5 sworn=faction_2(persuaded)
+  day 90 faction_def_mercenary_company_1: wealth=3.0 income=0.47 upkeep=0.0 armies=no priceBase30d=45.0 todayGiftShare=[0.00,1.00] reachedBy=2 presence=6 sworn=faction_2(bought)
+  day 90 realms: faction_1: inc=9.6 w=24 Comfortable oaths=1 | faction_2: inc=12.6 w=168 Wealthy oaths=16
+  faction_def_mercenary_company_0: candidate on 6/90 days, reached on 90/90 days
+  faction_def_mercenary_company_1: candidate on 78/90 days, reached on 90/90 days
+  wages faction_1 ← faction_def_mercenary_company_0: spent=14.0 over days 10-90; covered 4 days, could not cover 0; lowest shadow purse=-7.7; peak wage share of income=31%
+  wages faction_1 ← faction_def_mercenary_company_1: spent=10.5 over days 10-90; covered 3 days, could not cover 0; lowest shadow purse=-4.2; peak wage share of income=27%
+  crown tip: 3/18 realm-samples hold exactly one oath and reach a company
