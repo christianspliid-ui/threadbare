@@ -308,11 +308,6 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Move Avatar',
     desc: 'Relocate your divine presence to a visible hex on the map.',
   },
-  // THR-1914 (Inspector plan § D14): the wheel retired; the hand arms a card, then the god chooses its target.
-  'ui.your_cards': {
-    label: 'Your cards',
-    desc: 'Your cards: arm one, then choose what it touches.',
-  },
   'ui.avatar_scry': {
     label: 'Investiture',
     desc: 'Open the Divine Court — assign agents to positions of power and bestow sacred titles.',
@@ -1239,10 +1234,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     desc: 'Your divine court: the mortals you have raised to act in your name. Open it to see who serves you, and in what seat.',
   },
   // THR-1894 — the god rail's hand ("Your cards", not "Your hand": the UL's hand is a
-  // step's dealt nudge cards). Interim words until THR-1876's arming lands.
+  // step's dealt nudge cards). THR-1914 (Inspector plan § D14): a press arms the card; the
+  // retired 'ui.avatar_wheel' (the wheel of interventions) folded into this entry.
   'ui.your_cards': {
     label: 'Your cards',
-    desc: 'The cards you can cast on the world. Press one to read it in the Codex.',
+    desc: 'Arm one, then choose what it touches. Press it again, or Esc, to put it down.',
   },
   // THR-1894 — a hand row's par price. The description is built at render
   // (`handPriceTooltipDesc`, frame-content.ts) from the Foreign band's own line and

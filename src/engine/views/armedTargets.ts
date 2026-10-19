@@ -35,6 +35,7 @@ import { actionBlockedReason } from '../../data/action-card-display';
 import { ARMED_TARGET_WORDS, ARMED_WORDS } from '../../data/view-content';
 import { TARGET_ACTION_CONSTANTS, templateIdFromSlotId } from '../targetActions';
 import { hexDistance } from '../delivery';
+import { isArmyGroupNode } from '../groupShape';
 import { getAvatarHexPosition } from '../visibility';
 import { actOnSlots, actOnTargetForRef, categoryFor, rowCardsKey, targetContextFor } from './subjects/actOn';
 import { landNameFor } from './subjects/landName';
@@ -297,4 +298,18 @@ export function buildArmedTargets(state: GameState, actionId: string, tiles: rea
 export function armedTargetName(state: GameState, ref: WorldRef): string | null {
   const target = actOnTargetForRef(state, ref);
   return target ? targetContextFor(state, target)?.displayName ?? null : null;
+}
+
+/**
+ * The world ref a map click on a node chooses: a person, a faction, an army, or a place
+ * (either tier). Null for a node nothing on the map stands for.
+ */
+export function refForMapNode(state: Pick<GameState, 'graph'>, nodeId: string): WorldRef | null {
+  const node = state.graph.getNode(nodeId);
+  if (!node) return null;
+  if (node.type === 'location') return { kind: node.properties.parentLocationId ? 'sublocation' : 'location', id: nodeId };
+  if (node.type === 'artifact' || node.type === 'artifact_legendary') return { kind: 'artifact', id: nodeId };
+  if (node.type !== 'actor') return null;
+  if (isArmyGroupNode(node)) return { kind: 'army', id: nodeId };
+  return node.properties.actorType === 'faction' ? { kind: 'faction', id: nodeId } : { kind: 'agent', id: nodeId };
 }

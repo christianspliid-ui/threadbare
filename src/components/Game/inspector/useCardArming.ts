@@ -35,12 +35,11 @@ import {
 import { actOnTargetForRef } from '../../../engine/views/subjects/actOn';
 import { isGodCard } from '../../../engine/views/godRail';
 import { isActionRevealed } from '../../../engine/actionUnlock';
-import { isArmyGroupNode } from '../../../engine/groupShape';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { ARMED_WORDS } from '../../../data/view-content';
 import { ARMED_CLEARED_LINE_MS } from '../../../engine/views/viewConstants';
 import { emitTrace } from '../../../engine/traceBuffer';
-import { useGameScreenState } from '../frame/GameScreenState';
+import type { GameScreenStore } from '../frame/GameScreenState';
 import type { HandPressValue } from '../frame/HandPressContext';
 export { CARD_DRAG_MIME } from '../frame/HandPressContext';
 import { useEscapeLayer } from '../../shared/useEscapeLayer';
@@ -66,6 +65,11 @@ export interface CardArmingDeps {
   openInspector: (subject: AnyRef, size: 'docked' | 'wide', fromMap?: boolean) => void;
   /** The debug fog lever: with fog off every hex counts as seen, as the lenses read it. */
   fogOff: boolean;
+  /**
+   * The screen store. GameView owns it and sits above its own provider, so the hook takes
+   * it as an argument rather than reading the context (which is inert there).
+   */
+  screenStore: GameScreenStore;
 }
 
 export interface CardArming {
@@ -112,8 +116,8 @@ function traceArm(tick: number, actionId: string, event: UiCardArmEvent, origin:
   });
 }
 
-export function useCardArming({ gameState, runtime, castOnTarget, pushToast, openInspector, fogOff }: CardArmingDeps): CardArming {
-  const { state: screen, setArmed, setArmedCleared, setLensSuppressed } = useGameScreenState();
+export function useCardArming({ gameState, runtime, castOnTarget, pushToast, openInspector, fogOff, screenStore }: CardArmingDeps): CardArming {
+  const { state: screen, setArmed, setArmedCleared, setLensSuppressed } = screenStore;
   const armed = screen.armed;
   const inspectorOpen = isInspectorOpen(screen.inspector);
 
@@ -279,20 +283,6 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
   }, [armed, cardName, targetName, evaluate, gameState]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { armed, vm, cardName, handPress, evaluate, choose, chooseHex, castOn, disarm, targetName, commitLine };
-}
-
-/**
- * The world ref a map click on a node chooses: a person, a faction, an army, or a place
- * (either tier). Null for a node nothing on the map stands for.
- */
-export function refForMapNode(state: Pick<GameState, 'graph'>, nodeId: string): WorldRef | null {
-  const node = state.graph.getNode(nodeId);
-  if (!node) return null;
-  if (node.type === 'location') return { kind: node.properties.parentLocationId ? 'sublocation' : 'location', id: nodeId };
-  if (node.type === 'artifact' || node.type === 'artifact_legendary') return { kind: 'artifact', id: nodeId };
-  if (node.type !== 'actor') return null;
-  if (isArmyGroupNode(node)) return { kind: 'army', id: nodeId };
-  return node.properties.actorType === 'faction' ? { kind: 'faction', id: nodeId } : { kind: 'agent', id: nodeId };
 }
 
 function cardNameOf(actionId: string): string {

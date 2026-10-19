@@ -6,8 +6,8 @@
  * - `ArmedBanner` — "Illuminating Whisper: choose a person. You can keep following links."
  *   with the Esc cap; once a target is chosen, the commit line and "Cast on Shutash"; the
  *   answer to the last click (a locked reason, "… cannot touch that."); the cleared line.
- *   It sits at the top of the Inspector when it is open, and over the top of the map when
- *   it is closed (`floating`).
+ *   It sits at the top of the Inspector when it is open, and at the bottom centre of the map
+ *   when it is closed (`floating`).
  * - `ArmedRowsProvider` — while armed, every world-ref row in the Inspector is lit
  *   (castable: "Cast here" replaces its count chip), locked (lit dimmer, its reason in
  *   words) or dimmed (not a target). Unarmed, the rows keep their counts and trays.
@@ -81,7 +81,8 @@ export function ArmedBanner({ floating = false, subject = null }: { floating?: b
   if (!arming || (!armed && !cleared)) return null;
 
   const style: CSSProperties = floating
-    ? { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: Z_BAND.hud, maxWidth: 'min(36rem, calc(100% - 24px))' }
+    // Bottom centre of the map: clear of the lens bar (top left) and the map controls (bottom right).
+    ? { position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: Z_BAND.hud, maxWidth: 'min(36rem, calc(100% - 160px))' }
     : { margin: '0 0 8px 0' };
 
   if (!armed) {

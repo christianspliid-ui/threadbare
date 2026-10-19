@@ -115,7 +115,10 @@ function CardRow({ card, rest, armed }: { card: HandCardVM; rest: HandRest; arme
         textAlign: 'left',
         padding: '4px 8px 4px 10px',
         background: armed ? 'var(--bg-raised)' : 'transparent',
-        border: armed ? '1px solid var(--border-accent)' : '1px solid transparent',
+        // Longhands only: React warns when a shorthand and a longhand of one value change together.
+        borderTop: armed ? '1px solid var(--border-accent)' : '1px solid transparent',
+        borderRight: armed ? '1px solid var(--border-accent)' : '1px solid transparent',
+        borderBottom: armed ? '1px solid var(--border-accent)' : '1px solid transparent',
         borderLeft: `3px solid ${tint}`,
         borderRadius: 'var(--radius-control)',
         cursor: rest ? 'default' : 'pointer',

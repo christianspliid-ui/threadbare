@@ -114,7 +114,8 @@ import { canOpenMeetTheFirst } from './meetTheFirstCard';
 import { placeRefKind } from '../../engine/views/subjects/actOn';
 import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
-import { useCardArming, refForMapNode } from './inspector/useCardArming';
+import { useCardArming } from './inspector/useCardArming';
+import { refForMapNode } from '../../engine/views/armedTargets';
 import { useArmedDebugBridge } from './inspector/useArmedDebugBridge';
 import { ArmedBanner, ArmedCardProvider, isCardDrag } from './inspector/ArmedCard';
 import { HandPressProvider } from './frame/HandPressContext';
@@ -4078,6 +4079,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     pushToast: handlePushToast,
     openInspector,
     fogOff: fogDisabled,
+    screenStore: gameScreen,
   });
   useArmedDebugBridge(arming, gameState, lensSuppressed);
   const armedNow = arming.armed !== null;

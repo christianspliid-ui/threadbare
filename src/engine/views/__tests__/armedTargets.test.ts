@@ -10,7 +10,7 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile } from '../../../types';
-import { buildArmedTargets, evaluateCardOnTarget, armedTargetWords, armedCardName, refKey } from '../armedTargets';
+import { buildArmedTargets, evaluateCardOnTarget, armedTargetWords, armedCardName, refKey, refForMapNode } from '../armedTargets';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { ARMED_TARGET_WORDS } from '../../../data/view-content';
 import { KNOWLEDGE_SURFACES } from '../knowledge';
@@ -127,5 +127,15 @@ describe('the words', () => {
 
   it('the seen floor names the armed-targets surface', () => {
     expect(KNOWLEDGE_SURFACES).toContain('armedTargets');
+  });
+});
+
+describe('refForMapNode', () => {
+  it('maps a clicked node to the ref a choice takes', () => {
+    const state = world();
+    expect(refForMapNode(state, 'shutash')).toEqual({ kind: 'agent', id: 'shutash' });
+    expect(refForMapNode(state, 'quarter')).toEqual({ kind: 'location', id: 'quarter' });
+    expect(refForMapNode(state, 'shrine')).toEqual({ kind: 'sublocation', id: 'shrine' });
+    expect(refForMapNode(state, 'gone')).toBeNull();
   });
 });
