@@ -8,7 +8,8 @@
  * (Law 48), through the one cast path (`useCastOnTarget`).
  *
  * This hook is the only writer of `GameScreenState.armed`. It also:
- * - sets `lensSuppressed` while a card is armed, so two dims never stack (THR-1878 D2);
+ * - holds the lens off while a card is armed, so two dims never stack (THR-1878 D2) —
+ *   GameView's one `lensSuppressed` writer reads `armed` beside the Stage;
  * - registers the Esc layer above the dialog band, so Esc puts the card down first;
  * - clears an arm whose card left the hand, saying so ("… left your hand. Nothing was
  *   spent.") in the banner, or as a toast with the Inspector closed;
@@ -117,7 +118,7 @@ function traceArm(tick: number, actionId: string, event: UiCardArmEvent, origin:
 }
 
 export function useCardArming({ gameState, runtime, castOnTarget, pushToast, openInspector, fogOff, screenStore }: CardArmingDeps): CardArming {
-  const { state: screen, setArmed, setArmedCleared, setLensSuppressed } = screenStore;
+  const { state: screen, setArmed, setArmedCleared } = screenStore;
   const armed = screen.armed;
   const inspectorOpen = isInspectorOpen(screen.inspector);
 
@@ -245,11 +246,7 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
     return outcome;
   }, [evaluate, castOnTarget, setArmed]);
 
-  // Two dims never stack: the lens hides while a card is armed and returns on disarm.
   const isArmed = armed !== null;
-  useEffect(() => {
-    setLensSuppressed(isArmed);
-  }, [isArmed, setLensSuppressed]);
 
   // Esc puts the card down first (above the dialog band, plan § Debug inspection).
   useEscapeLayer(isArmed, disarm, Z_BAND.modalAboveInterrupt, ARMED_ESCAPE_LABEL);

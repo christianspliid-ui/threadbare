@@ -1552,15 +1552,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const lensSuppressed = gameScreen.state.lensSuppressed;
   // THR-1892 (plan THR-1877 § D7) — while a moment plays on the Stage the lens is suppressed,
   // not switched off: two dims never compose, the bar keeps its lens pressed, and the lens
-  // draws again when the moment ends. Written on the Stage's transitions only.
+  // draws again when the moment ends. THR-1914: an armed card dims the map too, so the one
+  // writer suppresses while either holds — neither can lift the other's suppression.
   const stageOpen = isStageOpen(gameScreen.state.stage);
+  const cardArmed = gameScreen.state.armed !== null;
+  const lensHeldOff = stageOpen || cardArmed;
   const setLensSuppressedFromStage = gameScreen.setLensSuppressed;
-  const stageWasOpenRef = useRef(false);
+  const lensHeldOffRef = useRef(false);
   useEffect(() => {
-    if (stageOpen === stageWasOpenRef.current) return;
-    stageWasOpenRef.current = stageOpen;
-    setLensSuppressedFromStage(stageOpen);
-  }, [stageOpen, setLensSuppressedFromStage]);
+    if (lensHeldOff === lensHeldOffRef.current) return;
+    lensHeldOffRef.current = lensHeldOff;
+    setLensSuppressedFromStage(lensHeldOff);
+  }, [lensHeldOff, setLensSuppressedFromStage]);
   const activeLensLayer = activeLens ? lensLayerOf(activeLens) : null;
   const dominionLensOn = activeLensLayer === 'dominion';
   const dominionLensOpenedRef = useRef(false);
@@ -4331,7 +4334,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               activeLens={activeLens}
               lensSuppressed={lensSuppressed}
               hexLens={hexLensVM}
-              armedHighlight={arming.vm?.map ?? null}
+              // Under the Stage the map is the moment's backdrop: no armed lighting on top of it.
+              armedHighlight={stageOpen ? null : (arming.vm?.map ?? null)}
               setMapLensFromBar={setMapLensFromBar}
               dominionBandColors={dominionBandColors}
               agendaPickerOpen={agendaPickerOpen}
