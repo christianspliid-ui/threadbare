@@ -101,7 +101,7 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, 
 
 #### `EncounterStageNarrativeSegment.entityKind`
 
-What a linked noun inside encounter prose points at. — `src/components/Game/encounter-stage/types.ts`
+What a linked noun inside encounter prose points at. — `src/engine/views/stage/types.ts`
 
 Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, `area`
 
@@ -116,7 +116,7 @@ Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, 
 
 #### `ChangeItem.nounEntityKind`
 
-What a consequence row's subject noun points at (THR-1153). — `src/components/Game/encounter-stage/types.ts`
+What a consequence row's subject noun points at (THR-1153). — `src/engine/views/stage/types.ts`
 
 Members: `agent`, `faction`, `artifact`, `companion`, `attachment`, `location`, `area`
 

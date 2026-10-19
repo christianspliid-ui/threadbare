@@ -15,19 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 192 |
+| 🟢 LIVE | 193 |
 | 🟠 PARTIAL | 1 |
-| 🔴 LEAKED | 8 |
+| 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 83 |
 | **Total** | **284** |
-
-## ⚠️ LEAKED / HOLLOW without a remediation ticket
-
-These fail the build. Either fix the contract or file a `Deferral` issue and cite it.
-
-- `encounter-hex-lights-stage` — Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'resolveMomentHexes' src/engine/views/stage/buildUnifiedEncounterStageModel.ts before treating this as a leak. NOTE: verifiedLive (2026-10-20) is now STALE — re-verify or retire the contract.
 
 ## Contracts by producing subsystem
 
@@ -201,7 +195,7 @@ These fail the build. Either fix the contract or file a `Deferral` issue and cit
 | `content-objects-registry` | Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485). | function: `CONTENT_OBJECT_KINDS`, `CONTENT_CATALOGS`, `entriesOfKind`, `contentKindsForId`, `contentKindsForWorldObject`, `SHARED_ID_PREFIXES` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `content-tag-vocabulary` | Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486). | function: `CONTENT_TAGS`, `isContentTag`, `axisOfContentTag`, `contentTagsOnAxis`, `contentTagTooltipId`, `effectiveTags`, `authoredTags`, `projectedTags` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
-| `encounter-hex-lights-stage` | An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window. | function: `resolveMomentHexes`, `buildStageView` | Attention, Chronicle & Narrative | 🔴 LEAKED | — |
+| `encounter-hex-lights-stage` | An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window. | property: `hexCol`, `hexRow` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `encounter-outcomes-write-mortal-means` | A money encounter pays or costs the mortal who took it by how the dice fell: the template's outcome table writes their Means once, at the roll, through the one funnel, and the sheet and the aftermath say what it did in words. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-scored-binder-optin` | An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive. | function: `useScoredBinder`, `EncounterBinderContext`, `prepareEncounterSupportBundle`, `resolveBinding` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `encounter-seed-resolves-by-query` | An encounter plants its sequel by naming a family in game words — { kind: "encounter_template", tags: ["#circle_errand"] } — and the one content-query resolver finds it when the seed comes due, so a renamed template keeps its family and a newly authored one joins by carrying the tag. This replaces two rotting operands: a literal templateId, and encounterFamily, which was an id *prefix* and rotted the same way one level up. Measured before the change: of the 51 families the corpus authors, 41 matched no template at all, and seven seeds named templateIds that do not exist — so 48 kinds of promised follow-up had been withering on arrival, indistinguishable from a system that was never wired. The query travels on the seed rather than being drawn at plant time, so one site resolves and the family may have grown in the twenty ticks before the sequel is owed (THR-1488, slice 4 of THR-1481). | function: `seedContentQuery`, `ENCOUNTER_FAMILY_TAGS`, `validateEncounterSeedRefs`, `describeContentQuery` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -1522,16 +1516,16 @@ exit
 - **Other hits:** `src/engine/nudgeCardRepertoire.ts`, `src/types/gameState.ts`
 - **Verdict:** Verified 2026-10-09: THR-1753. src/engine/__tests__/foundationDiscovery-seededRun.test.ts (seed 42, small map): transformRuinConsequence on a real elder ruin of the seeded map patches foundationSpheresFound = [chaos, order, light, darkness], emits four ruins.foundation_sphere_found traces, and buildRepertoire then holds gambit, stumble, favor, whisper, veil and undertow; a catastrophic ruin of spirit finds nothing, of darkness finds darkness only; a 60-tick ordinary run with the pool drained earns Foundation essence through income yet finds nothing. dealtCardProvenance.test.tsx renders the dealt face "Darkness found in the ruins."
 
-### `encounter-hex-lights-stage` — 🔴 LEAKED
+### `encounter-hex-lights-stage` — 🟢 LIVE
 
 - **Intent:** An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *Location*
-- **Module:** `src/engine/views/stage/stageView.ts`
-- **Production hits:** 1 total — 0 write, 1 read, 0 unclassified
-- **Write sites:** —
-- **Read sites:** `src/engine/views/stage/stageView.ts`
-- **Verdict:** Tier 2: read sites present, declared write sites empty — nothing produces this contract. — or the declared symbol does not appear at the declared site: grep 'resolveMomentHexes' src/engine/views/stage/buildUnifiedEncounterStageModel.ts before treating this as a leak. NOTE: verifiedLive (2026-10-20) is now STALE — re-verify or retire the contract.
+- **Production hits:** 161 total — 3 write, 1 read, 157 unclassified
+- **Write sites:** `src/engine/views/stage/buildGateDutyEncounterStageModel.ts`, `src/engine/views/stage/buildSimpleEncounterStageModel.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
+- **Read sites:** `src/components/Game/GameView.tsx`
+- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GuildQuestPanel.tsx` +152 more
+- **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
 
 ### `encounter-outcomes-write-mortal-means` — 🔵 UNVERIFIED-OK
 
