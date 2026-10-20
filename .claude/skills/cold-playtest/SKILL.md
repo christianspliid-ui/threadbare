@@ -1,7 +1,7 @@
 ---
 name: cold-playtest
 description: Run one cold playtest round of Threadbearer — three no-knowledge testers (fresh `claude -p` processes outside the repo, browser tools only) play the deployed build from its real front door — or, in `--warm` mode, arrive a few seasons into a world with The First already bonded, to reach the mid-game (factions, undertakings, ambitions). Then verify every finding against source, file the verified ones into a round milestone, track earlier rounds' findings as fixed-confirmed / not-exercised / recurred, and publish the round report and scorecard to `ops`. Run by the daily `tb-cold-playtest` lane (gated) or by hand. Triggers on "cold playtest", "/cold-playtest", "run a playtest round", "cold tester", "new-player playtest", "warm playtest", "/cold-playtest --warm", "mid-game playtest".
-last_validated_against: 2026-10-06
+last_validated_against: 2026-10-20
 invocation: /cold-playtest [--warm] [--dry-run] [--lane]
 audience: claude-code
 ---
@@ -19,7 +19,7 @@ Every other verification lane is driven by an agent that knows the rules and usu
 | `scripts/cold-playtest/config.json` | every tunable (cadence, budget, model, pinned Playwright MCP, thresholds) |
 | `scripts/cold-playtest/personas.json` | the fixed persona set: `story`, `veteran`, `skimmer` |
 | `scripts/cold-playtest/player-brief.md` | brief v1: the store-page pitch, persona slot, playtest-log protocol, 7-section debrief |
-| `scripts/cold-playtest/player-brief-warm.md` | warm brief v1 (`warmBriefVersion`): "you played the opening an hour ago and are coming back"; the playtest-log, budget and debrief sections are cold's, verbatim |
+| `scripts/cold-playtest/player-brief-warm.md` | warm brief v2 (`warmBriefVersion`; v2 since 2026-10-20, the curiosity line names factions, THR-1861): "you played the opening an hour ago and are coming back"; the playtest-log, budget and debrief sections are cold's, verbatim |
 | `scripts/cold-playtest/run-player.ps1` | one tester: fresh `claude -p`, replaced system prompt, `--setting-sources local`, Playwright-only tools. `-Mode warm` swaps in the warm brief and `warmStartUrl` |
 | `scripts/cold-playtest/run-round.ps1` | all personas in parallel, then `round.json` (with `mode`, `warmTicks`, per-persona `coverage`), then screenshot pruning. `-Mode warm` writes under `%USERPROFILE%\.threadbare\warm-playtest\` |
 | `scripts/cold-playtest/extract.mjs` | transcript → `log.md` + `summary.json` (verdict, tag counts, debrief bullet counts, cost, `coverage`; warm adds `warmStartOk`). `--coverage-only <dir>` prints just the coverage block |

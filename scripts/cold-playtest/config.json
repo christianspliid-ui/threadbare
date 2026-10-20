@@ -14,22 +14,22 @@
   "keepRoundsWithScreenshots": 3,
   "warmTicks": 300,
   "warmStartUrl": "https://threadbearer.co/?view=game&seeded&size=medium&warm={{WARM_TICKS}}",
-  "warmBriefVersion": 1,
+  "warmBriefVersion": 2,
   "warmMinDaysBetweenRounds": 7,
   "warmMilestoneProject": "Thematic Pressure & Living World",
   "minCoveredPersonas": 2,
   "warmStartLogMarker": "[warm-start] done",
   "coverageMarkers": {
     "faction": {
-      "reached": ["Network Graph", "Current Agenda", "Ascendant Actions"],
+      "reached": ["Current agenda", "Strongest reaches"],
       "empty": []
     },
     "undertaking": {
-      "reached": ["heading \"The Work\""],
+      "reached": ["Their work", "See the work"],
       "empty": ["No long work under way"]
     },
     "ambition": {
-      "reached": ["heading \"Intent\"", "Completed Ambitions"],
+      "reached": ["What they want most", "Leading ambition"],
       "empty": ["know what drives"]
     },
     "threadHistory": {
