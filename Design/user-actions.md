@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 09:57 local (07:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-20: hunger and unrest S2 — a town on the edge turns to a better lord, and a town that rises throws off its holder** ([THR-1957](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a)). Merged via [#2496](https://github.com/christianspliid-ui/threadbare/pull/2496) and live.
 - **2026-10-20: find anything with Ctrl+K — the search finds what the god has seen and opens it in the Inspector** ([THR-1915](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the)). Merged via [#2495](https://github.com/christianspliid-ui/threadbare/pull/2495) and live.
 - **2026-10-20: heavy simulation tests green again — the card-arming speed checks now use a named budget sized for the shared test machine** ([THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)). Merged via [#2494](https://github.com/christianspliid-ui/threadbare/pull/2494).
 - **2026-10-20: the pour and the odds explain themselves — refill words on the essence rows, a one-sentence odds ladder, "still Doomed" on a move inside a tier, and the full pip legend** ([THR-1985](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows)). Merged via [#2492](https://github.com/christianspliid-ui/threadbare/pull/2492) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-19: Inspector S5 — every Inspector row shows how many cards can act on it, with an inline tray of those cards** ([THR-1913](https://linear.app/threadbare/issue/THR-1913/inspector-s5-card-counts-on-every-row-with-an-inline-tray-of-those)). Merged via [#2486](https://github.com/christianspliid-ui/threadbare/pull/2486) and live.
 - **2026-10-18: Inspector S4 — the old detail screens are deleted; every page now opens in the Inspector** ([THR-1912](https://linear.app/threadbare/issue/THR-1912/inspector-s4-delete-the-retired-detail-surfaces-once-their-fields-have)). Merged via [#2485](https://github.com/christianspliid-ui/threadbare/pull/2485) and live.
 - **2026-10-18: the screen frame's top bar, with "Needs you"** ([THR-1875](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the)). Merged via [#2484](https://github.com/christianspliid-ui/threadbare/pull/2484) and live.
-- **2026-10-18: every new game now starts with a First — Advanced World Setup is a developer-only screen** ([THR-1978](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first)). Merged via [#2483](https://github.com/christianspliid-ui/threadbare/pull/2483) and live.
 
 ---
 
