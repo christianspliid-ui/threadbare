@@ -1,12 +1,13 @@
 # Briefing
-**Generated:** 2026-10-20 18:56 local (16:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 19:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Set the Claude app to open when Windows starts.** No lane ran from 20:26 Sunday until about 19:42 Monday. That is all of Monday, with 25 jobs ready for the builder. Every recent silence has the same shape: the computer starts or wakes, and the app does not reopen. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
-## Also waiting (5)
+## Also waiting (6)
 
+- **New: the builder is not allowed to edit the checks it was asked to loosen.** [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) was parked at 16:55 UTC. The safety layer refused the gate and Definition-of-Done edits as needing a person. **Either run it with me in a session you are watching, or let the unattended builder edit the gate and CI files.** [Run the review gate only on large changes](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) will hit the same wall.
 - **Sunday evening to Monday evening (18–19 Oct):** "The scheduled lanes went silent for 23.3h (2026-10-18T18:26:51.000Z → 2026-10-19T17:42:15.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
@@ -25,12 +26,12 @@ From [the design lane this morning, run c](https://github.com/christianspliid-ui
 
 - [Reward category shares still fold into item weights](https://linear.app/threadbare/issue/THR-1890/reward-category-shares-still-fold-into-item-weights-decide-whether): a reward draw rolls its **rarity first, exactly as today**. Then it picks **the kind of reward the scene asked for** (a thing, a condition or a power) by the scene's own shares, and only then the item. Rarity and Legendaries do not change. On scenes that offer several kinds, **permanent powers come up about twice as often** (8% → 16% of those prizes), because that is what the scenes were written to give. *Veto:* "keep today's mix of rewards".
 
-From [the design lane tonight, run b](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20b.md):
+From [the design lane last night, run b](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20b.md):
 
 - [Warm brief v2 — the next mid-game playtest round](https://linear.app/threadbare/issue/THR-1861/warm-brief-v2-trigger-fired-round-2-had-3-coverage-failures-on-v1-03) tells returning testers they are curious **"which factions have risen while you were away"**, as agreed after round 2 if it failed again (0 of 3 reached the mid-game). The pass bar stays at 2 of 3. *Veto:* "keep the old brief".
 - Same ticket: the round's "did they reach the mid-game" check now looks for the new Inspector's pages, since the faction sheet and Journey tab it looked for were deleted on 18 October. Harness repair ([PR #2493](https://github.com/christianspliid-ui/threadbare/pull/2493)).
 
-From [the design lane tonight, run a](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20a.md):
+From [the design lane last night, run a](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20a.md):
 
 - [Ordinary scenes still hand The First a trade she never had](https://linear.app/threadbare/issue/THR-1983/ordinary-scenes-still-hand-the-first-a-trade-she-never-had-guild): of 28 everyday scenes that assume her trade, **six now wait for a mortal of the right trade**. **Twenty-one stay open to anyone** and stop saying she already works it (a healer may still try the smiths' iron test, as a healer). *Veto:* "a mortal should only be offered work in her own trade".
 
@@ -47,14 +48,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 28 ready, 1 in progress.** The builder picked up [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) a few minutes ago; its run is live, with no branch yet.
+**Backed up: 28 ready, 2 in progress.**
 
-- Two fixes merged and went live this hour: [encounter debts now count](https://linear.app/threadbare/issue/THR-1920/encounter-debts-never-count-reward-agreements-write-agreement-true-but) ([PR #2506](https://github.com/christianspliid-ui/threadbare/pull/2506)) and [nine encounters lose a family tag their story did not earn](https://linear.app/threadbare/issue/THR-1941/nine-encounters-wear-a-family-tag-their-prose-does-not-earn-anomaly) ([PR #2507](https://github.com/christianspliid-ui/threadbare/pull/2507)).
-- New in the queue: [agreements never expire, so a debt stays on the sheet for ever](https://linear.app/threadbare/issue/THR-1999/agreement-edges-never-expire-an-encounter-debts-term-never-counts-down) (Low), found while fixing the debts.
+- The builder is building [war aims S2: regional monopolies pay rent and can embargo an enemy's towns](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys) (claimed 17:13 UTC). Its run is live, with edits in its worktree and a pushed branch.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, for about an hour. No file was changed. It waits on the ask above.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (413b19ca). Main's checks are green, no PRs are waiting, and all 13 scheduled lanes are on time.
-- The engine runs at 142 ms a tick, 6% above its week's median (133). That is inside normal noise.
+- The live site is current (413b19ca). Main's checks are green, no PRs are waiting, and all 13 scheduled lanes are on time.
+- Engine speed: "tick cost 180 ms/tick steady, 34% above the 7-day median (135, 119 rows since bbe2a6c9); top phase agent_decision, 625 agents. Name the merges between bbe2a6c9 and 413b19ca: git log --oneline --merges bbe2a6c9..413b19ca". The same commit measured 142 ms last hour, so this is probably the machine being busy with the builder's run. If it holds next hour, it is the builder's to chase.
 - The tidy-up job reports 571 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.

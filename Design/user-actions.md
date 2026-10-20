@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 18:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -9,6 +9,10 @@
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
 Recent gaps: 12–13 Oct overnight (03:57–13:57), Thursday 15 Oct (14:50–20:44), Friday 16 into Saturday 17 Oct (18:31–11:34, 21 jobs ready), and **Sunday 18 into Monday 19 Oct (20:26 Sunday – about 19:42 Monday, 25 jobs ready)**.
+
+### Let the builder edit the gate and CI files, or run THR-1947 with me watching (new 20 Oct)
+
+[Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) asks the builder to drop the two ledger rows from every PR and turn one check into a warning. The unattended run at 16:55 UTC was refused by the safety layer: changing a check counted as a "CI bypass", and editing the Definition of Done needed a person's approval. Nothing was changed. **Either open a session and let me run it while you watch, or allow the unattended builder to edit the gate and CI files.** [Run the review gate only on large changes](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) needs the same.
 
 ### Sunday 18 – Monday 19 Oct: was the app closed, or was this a pause? (new 19 Oct)
 
