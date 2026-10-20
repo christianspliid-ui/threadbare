@@ -51,6 +51,12 @@ export const ESSENCE_REFILL_TAG_SEPARATOR = ' · ';
  */
 export const ESSENCE_REFILL_UPKEEP_HOVER = '{word}: your threads’ upkeep is paid from this pool.';
 
+/**
+ * The key under the essence rows (Law 12): the rail's rows are too narrow for the
+ * word at 1920 and 2560, so one line names what the dots beside each bar mean.
+ */
+export const ESSENCE_REFILL_KEY = 'how fast each pool refills';
+
 /** The rung's accessible name, e.g. "Refills fast, 3 of 3". */
 export function essenceRefillAriaLabel(band: EssenceRefillBand): string {
   const words = ESSENCE_REFILL_WORDS[band];

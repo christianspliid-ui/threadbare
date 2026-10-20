@@ -323,7 +323,9 @@ function visibleTierWords(root: HTMLElement): string[] {
   const found: string[] = [];
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   for (let n = walker.nextNode(); n; n = walker.nextNode()) {
-    if (n.parentElement?.closest('[aria-hidden="true"], [role="tooltip"]')) continue;
+    // THR-1985 — the first-contact legend names the whole ladder on purpose
+    // (worst to best), once, and is dismissed; it is a key, not a reading.
+    if (n.parentElement?.closest('[aria-hidden="true"], [role="tooltip"], [data-testid="nudge-reading-legend"]')) continue;
     for (const token of (n.textContent ?? '').toLowerCase().split(/[^a-z]+/)) {
       if (words.includes(token)) found.push(token);
     }

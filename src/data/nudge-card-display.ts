@@ -22,6 +22,7 @@ import {
   type NudgeCardTypeId,
 } from './nudge-card-library';
 import type { IconName } from './icons/iconRegistry';
+import { PIP_ODDS_TIERS } from './nudge-pip-vocabulary';
 
 /** One essence pip. Cost is drawn, never counted out in digits. */
 export const ESSENCE_PIP_GLYPH = '✦';
@@ -127,7 +128,7 @@ export interface NudgeGlyphLegendEntry {
 export const NUDGE_GLYPH_LEGEND: readonly NudgeGlyphLegendEntry[] = [
   { id: 'price', glyph: ESSENCE_PIP_GLYPH, label: 'price' },
   // THR-1985 — the whole pip ladder, so ★ reads as the strongest odds, not the price.
-  { id: 'odds', glyph: '● ■ ◆ ★', label: 'odds, weakest to strongest' },
+  { id: 'odds', glyph: PIP_ODDS_TIERS.map((t) => t.filledGlyph).join(' '), label: 'odds, weakest to strongest' },
   { id: 'setback', glyph: '▼', label: 'setback' },
 ];
 

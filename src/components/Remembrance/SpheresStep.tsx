@@ -151,7 +151,7 @@ export function SpheresStep({ preset, visible, onConfirm, onChooseAgain }: Spher
                 <span
                   data-testid={`sphere-refill-${sphere}`}
                   data-refill-band={refill.bands[sphere]}
-                  style={{ ...proseFont, fontSize: 'var(--text-xs)', color: active ? 'rgba(212,196,158,0.8)' : 'rgba(180,170,140,0.6)', marginTop: '2px' }}
+                  style={{ ...proseFont, fontSize: 'var(--text-xs)', color: active ? 'var(--text-secondary)' : 'var(--text-muted)', marginTop: '2px' }}
                 >
                   {ESSENCE_REFILL_WORDS[refill.bands[sphere]].pour}
                   {refill.deepest === sphere && `${ESSENCE_REFILL_TAG_SEPARATOR}${ESSENCE_UPKEEP_TAG}`}

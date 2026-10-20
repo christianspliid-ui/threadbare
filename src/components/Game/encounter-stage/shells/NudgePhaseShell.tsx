@@ -593,9 +593,10 @@ export function NudgePhaseShell({
                     <span
                       key={entry.id}
                       data-testid={`nudge-legend-${entry.id}`}
-                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: TEXT_WHISPER, whiteSpace: 'nowrap' }}
                     >
-                      <span aria-hidden="true" style={{ fontSize: LEGEND_GLYPH_PX, lineHeight: 1 }}>
+                      {/* THR-1985 — the odds entry is the whole pip ladder; it stays on one line. */}
+                      <span aria-hidden="true" style={{ fontSize: LEGEND_GLYPH_PX, lineHeight: 1, whiteSpace: 'nowrap' }}>
                         {entry.glyph}
                       </span>
                       {entry.label}
