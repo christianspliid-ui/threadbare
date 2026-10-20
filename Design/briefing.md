@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 17:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 18:56 local (16:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -47,14 +47,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 29 ready, 1 in progress.** The builder is fixing [encounter debts that never count](https://linear.app/threadbare/issue/THR-1920/encounter-debts-never-count-reward-agreements-write-agreement-true-but): one reader for both kinds of agreement. Its [PR #2506](https://github.com/christianspliid-ui/threadbare/pull/2506) is waiting on checks and will merge on green.
+**Backed up: 28 ready, 1 in progress.** The builder picked up [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) a few minutes ago; its run is live, with no branch yet.
 
-- The builder is working again after two short runs last hour, so there is no stall.
-- Next up after that: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
+- Two fixes merged and went live this hour: [encounter debts now count](https://linear.app/threadbare/issue/THR-1920/encounter-debts-never-count-reward-agreements-write-agreement-true-but) ([PR #2506](https://github.com/christianspliid-ui/threadbare/pull/2506)) and [nine encounters lose a family tag their story did not earn](https://linear.app/threadbare/issue/THR-1941/nine-encounters-wear-a-family-tag-their-prose-does-not-earn-anomaly) ([PR #2507](https://github.com/christianspliid-ui/threadbare/pull/2507)).
+- New in the queue: [agreements never expire, so a debt stays on the sheet for ever](https://linear.app/threadbare/issue/THR-1999/agreement-edges-never-expire-an-encounter-debts-term-never-counts-down) (Low), found while fixing the debts.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (fbe8b54b). Main's checks are green, and all 13 scheduled lanes are on time.
-- The engine runs at 116 ms a tick, 13% below its week's median (133).
-- The tidy-up job reports 570 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
+- All green. The live site is current (413b19ca). Main's checks are green, no PRs are waiting, and all 13 scheduled lanes are on time.
+- The engine runs at 142 ms a tick, 6% above its week's median (133). That is inside normal noise.
+- The tidy-up job reports 571 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.

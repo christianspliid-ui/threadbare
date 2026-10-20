@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 18:56 local (16:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-20: nine encounters lose a family tag their story did not earn** ([THR-1941](https://linear.app/threadbare/issue/THR-1941/nine-encounters-wear-a-family-tag-their-prose-does-not-earn-anomaly)). Merged via [#2507](https://github.com/christianspliid-ui/threadbare/pull/2507) and live.
+- **2026-10-20: encounter debts now count — a mortal granted a debt becomes debt-laden** ([THR-1920](https://linear.app/threadbare/issue/THR-1920/encounter-debts-never-count-reward-agreements-write-agreement-true-but)). Merged via [#2506](https://github.com/christianspliid-ui/threadbare/pull/2506) and live.
 - **2026-10-20: realms no longer lose most of their members by tick 600 — a mortal is cast out only for a cause** ([THR-1918](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications)). Merged via [#2505](https://github.com/christianspliid-ui/threadbare/pull/2505) and live.
 - **2026-10-20: land-page art for the plateau and the lair** ([THR-1916](https://linear.app/threadbare/issue/THR-1916/land-page-hero-art-plateau-and-lair-have-no-art-of-their-own)). Merged via [#2503](https://github.com/christianspliid-ui/threadbare/pull/2503) and live.
 - **2026-10-20: the minimap — the whole world in small, open at 1440p and folded at 1080p** ([THR-1901](https://linear.app/threadbare/issue/THR-1901/the-minimap-the-whole-world-in-small-open-at-1440p-and-folded-at-1080p)). Merged via [#2502](https://github.com/christianspliid-ui/threadbare/pull/2502) and live.
@@ -42,8 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-20: the hand-built dialogs move onto the size tiers — Settings, the choice sets, the Divine Court, the Codex and the warm-start card** ([THR-1880](https://linear.app/threadbare/issue/THR-1880/move-the-six-hand-built-dialogs-onto-the-size-tiers-settings-effect)). Merged via [#2498](https://github.com/christianspliid-ui/threadbare/pull/2498) and live.
 - **2026-10-20: words that wait for their moment — first-use captions, Attention at the first chapter, Dominion and Elder powers when they matter, threaded-only Chronicle growth in words, "Go on"** ([THR-1986](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the)). Merged via [#2497](https://github.com/christianspliid-ui/threadbare/pull/2497) and live.
 - **2026-10-20: hunger and unrest S2 — a town on the edge turns to a better lord, and a town that rises throws off its holder** ([THR-1957](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a)). Merged via [#2496](https://github.com/christianspliid-ui/threadbare/pull/2496) and live.
-- **2026-10-20: find anything with Ctrl+K — the search finds what the god has seen and opens it in the Inspector** ([THR-1915](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the)). Merged via [#2495](https://github.com/christianspliid-ui/threadbare/pull/2495) and live.
-- **2026-10-20: heavy simulation tests green again — the card-arming speed checks now use a named budget sized for the shared test machine** ([THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)). Merged via [#2494](https://github.com/christianspliid-ui/threadbare/pull/2494).
 
 ---
 
