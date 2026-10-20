@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { FirstUseCaption, FirstUseCaptionZone } from '../shared/FirstUseCaption';
 import type { ThreadedNode, ThreadCategory, SustainedControlNode, SustainedControlCategory } from '../../engine/retinue';
 import { groupThreadedNodes, SUSTAIN_BAR_MIN_VISIBLE_FRACTION, SUSTAIN_LAPSE_RISK_TIGHTENING_TICKS } from '../../engine/retinue';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
@@ -859,13 +860,21 @@ function CompactThreadRow({
           {node.category === 'agent' && node.courtPosition && onToggleAttentionMode && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
               <div style={{ marginLeft: 'auto' }}>
-                <AutoToggle
-                  asking={node.attentionMode === 'pause'}
-                  name={node.name}
-                  onToggle={() => onToggleAttentionMode(node.threadEdgeId)}
-                />
+                <FirstUseCaptionZone id="asks_you">
+                  <AutoToggle
+                    asking={node.attentionMode === 'pause'}
+                    name={node.name}
+                    onToggle={() => onToggleAttentionMode(node.threadEdgeId)}
+                  />
+                </FirstUseCaptionZone>
               </div>
             </div>
+          )}
+          {/* THR-1986 — "Asks you" says The First's chapters keep happening either way.
+              One row only: the caption store limits by id, so a caption on every court
+              row would break the two-at-once rule. */}
+          {node.category === 'agent' && node.courtPosition === 'the_first' && onToggleAttentionMode && (
+            <FirstUseCaption id="asks_you" name={node.name} />
           )}
         </div>
       </div>
@@ -1181,7 +1190,7 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
   }
 
   return (
-    <>
+    <FirstUseCaptionZone id="threads">
       <div className="panel" style={{ padding: 'var(--space-3)' }}>
         {/* Panel title */}
         <div
@@ -1195,6 +1204,8 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
         >
           Threads
         </div>
+        {/* THR-1986 — what the panel holds, until the player uses it once. */}
+        <FirstUseCaption id="threads" />
 
         {/* Sections */}
         {SECTION_ORDER.map((category) => {
@@ -1285,6 +1296,6 @@ export const ThreadsPanel = React.memo(function ThreadsPanel({
           );
         })}
       </div>
-    </>
+    </FirstUseCaptionZone>
   );
 });

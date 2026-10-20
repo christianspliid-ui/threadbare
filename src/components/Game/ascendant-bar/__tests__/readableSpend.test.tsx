@@ -18,6 +18,8 @@ import {
   essenceFillPct,
   setEssencePreviewSphere,
   resetEssencePreview,
+  writeElderHeaderLatch,
+  ESSENCE_ELDER_HEADER_LATCH_KEY,
 } from '../essenceDisplay';
 import { INITIAL_ESSENCE_PER_SPHERE } from '../../../../engine/influence';
 import type { GameState } from '../../../../types/gameState';
@@ -35,6 +37,7 @@ const FORECAST_TIERS: readonly ForecastTier[] = ['doomed', 'perilous', 'uncertai
 afterEach(() => {
   cleanup();
   resetEssencePreview();
+  try { localStorage.removeItem(ESSENCE_ELDER_HEADER_LATCH_KEY); } catch { /* jsdom only */ }
 });
 
 function archetype(primary: SphereName, secondary: SphereName): AscendantArchetype {
@@ -142,6 +145,7 @@ describe('EssenceBlock', () => {
   }
 
   it('shows each whole-number balance and keeps the Elder powers folded', () => {
+    writeElderHeaderLatch();
     const pool = fullPool();
     pool.mind = 42.7;
     render(<EssenceBlock rows={rowsFor(pool)} />);
@@ -187,6 +191,7 @@ describe('EssenceBlock', () => {
   });
 
   it('a charge that empties an elder pool (its row drops out) still opens the fold', () => {
+    writeElderHeaderLatch();
     const pool = fullPool();
     pool.chaos = 4;
     const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
@@ -195,7 +200,31 @@ describe('EssenceBlock', () => {
     expect(screen.getByTestId('essence-elder-fold').getAttribute('aria-expanded')).toBe('true');
   });
 
+  // THR-1986 — on a fresh profile the Elder powers header waits for its moment.
+  it('the Elder powers header is absent on a fresh profile and arrives with the first elder charge, latched', () => {
+    const pool = fullPool();
+    const { rerender, unmount } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    expect(screen.queryByTestId('essence-elder-fold')).toBeNull();
+    rerender(<EssenceBlock rows={rowsFor({ ...pool, chaos: pool.chaos - 4 })} />);
+    expect(screen.getByTestId('essence-elder-fold')).toBeTruthy();
+    expect(localStorage.getItem(ESSENCE_ELDER_HEADER_LATCH_KEY)).toBe('1');
+    unmount();
+    // Remembered (Law 51): a fresh mount with no new charge keeps the header.
+    render(<EssenceBlock rows={rowsFor(pool)} />);
+    expect(screen.getByTestId('essence-elder-fold')).toBeTruthy();
+  });
+
+  it('the Elder powers header arrives on the first hover of a card that draws an elder sphere', () => {
+    render(<EssenceBlock rows={rowsFor(fullPool())} />);
+    expect(screen.queryByTestId('essence-elder-fold')).toBeNull();
+    act(() => { setEssencePreviewSphere('chaos'); });
+    expect(screen.getByTestId('essence-elder-fold')).toBeTruthy();
+    act(() => { setEssencePreviewSphere(null); });
+    expect(screen.getByTestId('essence-elder-fold')).toBeTruthy();
+  });
+
   it('an elder pool refilling does not open the fold', () => {
+    writeElderHeaderLatch();
     const pool = fullPool();
     pool.chaos -= 10;
     const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);

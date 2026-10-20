@@ -5,6 +5,8 @@
  * the hand; every other panel arrives with the gift whose words introduce it.
  * (THR-1893: World Pulse retired, so its row went; the a_path_opens toast now reads
  * "New beside the map: your Reaches, the World-Soul and Omens.")
+ * (THR-1986: Attention waits for the first chapter, the first moment that draws
+ * on it; Dominion arrives with the Reaches it is read with.)
  * Each row keys one dashboard surface (by id, never by screen position) to the
  * thing that brings it: the bond, The First's first chapter, or one opening gift.
  *
@@ -13,7 +15,7 @@
  * the bond (`unknown_beat`).
  *
  * ─── Constants ───────────────────────────────────────────────────
- * | OPENING_REVEAL_TABLE         | 17 rows   | Which surface waits for which trigger |
+ * | OPENING_REVEAL_TABLE         | 18 rows   | Which surface waits for which trigger |
  * | OPENING_REVEAL_CEILING_TICKS | 200       | Ticks after the bond when every row reveals |
  * | OPENING_REVEAL_HIGHLIGHT_MS  | 6000      | Gold ring on a newly revealed panel (0 = off) |
  * | OPENING_REVEAL_SHOW_ALL_KEY  | localStorage key for "Show every panel" |
@@ -36,7 +38,8 @@ export type OpeningRevealSurfaceId =
   | 'notables'
   | 'reaches'
   | 'world_soul'
-  | 'omen';
+  | 'omen'
+  | 'dominion';
 
 export type OpeningRevealTrigger =
   | { readonly kind: 'bond' }
@@ -58,7 +61,7 @@ export const OPENING_REVEAL_TABLE: readonly OpeningRevealRow[] = [
   { surface: 'time_controls', trigger: BOND },
   { surface: 'identity', trigger: BOND },
   { surface: 'essence', trigger: BOND },
-  { surface: 'attention', trigger: BOND },
+  { surface: 'attention', trigger: { kind: 'first_chapter' }, newLabel: 'Attention' },
   { surface: 'hand', trigger: BOND },
   { surface: 'threads', trigger: BOND },
   { surface: 'chapter_ledger', trigger: { kind: 'first_chapter' }, newLabel: 'the Chapter Ledger' },
@@ -70,6 +73,7 @@ export const OPENING_REVEAL_TABLE: readonly OpeningRevealRow[] = [
   { surface: 'investiture', trigger: gift('beat.spine.the_seat'), newLabel: 'Investiture' },
   { surface: 'notables', trigger: gift('beat.spine.the_first_word'), newLabel: 'Notables' },
   { surface: 'reaches', trigger: gift('beat.spine.a_path_opens'), newLabel: 'your Reaches' },
+  { surface: 'dominion', trigger: gift('beat.spine.a_path_opens'), newLabel: 'Dominion' },
   { surface: 'world_soul', trigger: gift('beat.spine.a_path_opens'), newLabel: 'the World-Soul' },
   { surface: 'omen', trigger: gift('beat.spine.a_path_opens'), newLabel: 'Omens' },
 ];
@@ -82,3 +86,15 @@ export const OPENING_REVEAL_HIGHLIGHT_MS = 6000;
 
 /** localStorage key for the "Show every panel" setting. */
 export const OPENING_REVEAL_SHOW_ALL_KEY = 'tb.openingReveal.showAll';
+
+/**
+ * The "Show every panel" setting, for readers outside the screen's reveal hook
+ * (THR-1986: the inspector's Dominion row). Fail-soft: unreadable storage is off.
+ */
+export function readOpeningRevealShowAllSetting(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(OPENING_REVEAL_SHOW_ALL_KEY) === '1';
+  } catch {
+    return false;
+  }
+}

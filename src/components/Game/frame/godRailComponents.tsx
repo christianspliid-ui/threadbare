@@ -27,6 +27,7 @@ import { REACH_EMPTY_COPY } from '../../../data/ascendant-bar-content';
 import { ESSENCE_LABEL, ESSENCE_PRIMARY_LABEL, YOUR_FIRST_LABEL } from '../../../data/frame-content';
 import { HandSection, type HandRest } from './HandSection';
 import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
+import { FirstUseCaption, FirstUseCaptionZone } from '../../shared/FirstUseCaption';
 
 /** Everything a section body may read. */
 export interface GodRailBag {
@@ -89,19 +90,26 @@ function EssenceBody({ vm, shown, newly, onCenterOnSeat }: GodRailBag): ReactEle
       </div>
       {/* THR-1792 — the god's seat, beside the essence it feeds. */}
       <SeatLine seat={vm.essence.seat} onCenter={onCenterOnSeat} />
-      <EssenceBlock rows={vm.essence.rows} />
+      {/* THR-1986 — the essence caption, until the player hovers or uses a row once. */}
+      <FirstUseCaptionZone id="essence">
+        <EssenceBlock rows={vm.essence.rows} />
+        <FirstUseCaption id="essence" />
+      </FirstUseCaptionZone>
       {/* THR-1894 — Attention moved here from the top bar, under the essence it spends beside. */}
       {shown('attention') && (
         <div
           data-testid="god-rail-attention"
           {...(newly('attention') ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {})}
         >
-          <AttentionPoolIndicator
-            placement="rail"
-            attentionPool={att.pool}
-            attentionCapacity={att.capacity}
-            attentionRegen={0}
-          />
+          <FirstUseCaptionZone id="attention">
+            <AttentionPoolIndicator
+              placement="rail"
+              attentionPool={att.pool}
+              attentionCapacity={att.capacity}
+              attentionRegen={0}
+            />
+            <FirstUseCaption id="attention" />
+          </FirstUseCaptionZone>
         </div>
       )}
     </div>
@@ -121,11 +129,23 @@ function HandBody({ vm, shown, newly, handRest, onMove, onInvestiture }: GodRail
   );
 }
 
-function ReachesBody({ vm }: GodRailBag): ReactElement {
+function ReachesBody({ vm, shown }: GodRailBag): ReactElement {
+  // THR-1986 — Dominion arrives with the Reaches it is read with; its caption rides here.
+  const captions = (
+    <>
+      <FirstUseCaption id="reaches" />
+      {shown('dominion') && <FirstUseCaption id="dominion" />}
+    </>
+  );
   if (vm.bodies.reaches.length === 0) {
-    return <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>{REACH_EMPTY_COPY}</div>;
+    return <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>{REACH_EMPTY_COPY}{captions}</div>;
   }
-  return <ReachesBlock rows={vm.bodies.reaches} />;
+  return (
+    <FirstUseCaptionZone id="reaches">
+      <ReachesBlock rows={vm.bodies.reaches} />
+      {captions}
+    </FirstUseCaptionZone>
+  );
 }
 
 function MandateBody({ vm, onOpenMandate }: GodRailBag): ReactElement | null {

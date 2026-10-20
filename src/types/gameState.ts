@@ -172,6 +172,19 @@ export interface TickEvent {
    * parses the message. Present on an undertaking's completion event.
    */
   refs?: readonly import('./worldRef').WorldRef[];
+  /**
+   * The line the player reads in the Chronicle, when it differs from `message`
+   * (THR-1986): no tier number, no `Q`. `message` stays byte-identical for
+   * traces, logs and the agent analyser; the Chronicle reads
+   * `playerProse ?? message`.
+   */
+  playerProse?: string;
+  /**
+   * The producer's declaration of who the Chronicle tells about this line
+   * (THR-1986, Law 2). `'threaded_only'`: it enters the Chronicle only when the
+   * god holds a thread to `actorId`.
+   */
+  chronicleGate?: 'threaded_only';
 }
 
 export interface ArchetypeDrift {

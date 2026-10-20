@@ -79,28 +79,12 @@ describe('ChronicleEntryCard', () => {
     expect(heading.textContent).not.toMatch(/tick/i);
   });
 
-  it('renders positive Q-delta annotation in green', () => {
-    const entry: ChronicleEntry = { ...legacyEntry, quintessenceDelta: 0.5 };
-    render(<ChronicleEntryCard entry={entry} voiceMode="witness" />);
-    const annotation = screen.getByText(/\+0\.50Q/);
-    expect(annotation).toBeDefined();
-    expect(annotation.style.color).toBe('var(--positive)');
-  });
-
-  it('renders negative Q-delta annotation in red', () => {
-    const entry: ChronicleEntry = { ...legacyEntry, quintessenceDelta: -1.25 };
-    render(<ChronicleEntryCard entry={entry} voiceMode="witness" />);
-    const annotation = screen.getByText(/-1\.25Q/);
-    expect(annotation).toBeDefined();
-    expect(annotation.style.color).toBe('var(--negative)');
-  });
-
-  it('renders zero Q-delta in tertiary color', () => {
-    const entry: ChronicleEntry = { ...legacyEntry, quintessenceDelta: 0 };
-    render(<ChronicleEntryCard entry={entry} voiceMode="witness" />);
-    const annotation = screen.getByText(/0\.00Q/);
-    expect(annotation).toBeDefined();
-    expect(annotation.style.color).toBe('var(--text-tertiary)');
+  // THR-1986 (Law 13): the Chronicle speaks in words — a quintessence delta on the
+  // entry never prints as "+0.50Q", whatever its sign.
+  it.each([0.5, -1.25, 0])('prints no Q for a quintessenceDelta of %s', (delta) => {
+    const entry: ChronicleEntry = { ...legacyEntry, quintessenceDelta: delta };
+    const { container } = render(<ChronicleEntryCard entry={entry} voiceMode="witness" />);
+    expect(container.textContent ?? '').not.toMatch(/\d\.\d\dQ/);
   });
 
   it('renders no Q-delta annotation when quintessenceDelta is absent', () => {

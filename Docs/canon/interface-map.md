@@ -436,6 +436,13 @@ and scarce stock reach the Trade lens; the route words moved there from the plai
 UI reads only: no state is written. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1986 (2026-10-20), growth told only about followed mortals** —
+`threaded-growth-reaches-chronicle` (a tier-up, rarity graduation or critical success declares
+`chronicleGate: 'threaded_only'` and a word-only `playerProse`; `phaseNarrative` and the rarity
+blocks' direct pushes admit it only when `isThreadedByPlayer` holds, tracing each skip as
+`chronicle.intake.skipped`). `message` is preserved for every existing reader. Per-row evidence:
+[`interface-map.generated.md`](interface-map.generated.md).
+
 Ambition display lives on the person page (`views/subjects/personRows.ts`); the older sheets
 (`AgentDetailPanel`, then `AgentProfileModal`) were deleted in THR-1492 and THR-1912.
 

@@ -37,6 +37,29 @@ export const ESSENCE_SPEND_FLASH_MS = 2500;
 export const ESSENCE_FOUNDATION_FOLDED_DEFAULT = true;
 
 /**
+ * THR-1986 — Law 51 key for the Elder powers header latch. The header stays off
+ * the rail until the first charge to an elder pool or the first hover of a card
+ * that draws on one, then stays for good.
+ */
+export const ESSENCE_ELDER_HEADER_LATCH_KEY = 'threadbare.ui.elderPowersSeen';
+
+export function readElderHeaderLatch(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(ESSENCE_ELDER_HEADER_LATCH_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function writeElderHeaderLatch(): void {
+  try {
+    globalThis.localStorage?.setItem(ESSENCE_ELDER_HEADER_LATCH_KEY, '1');
+  } catch {
+    // In memory only — the component state still holds it this session.
+  }
+}
+
+/**
  * Fill percentage for a pool. Fail-soft (NFP #4): a non-finite or negative
  * level draws an empty bar rather than a NaN width.
  */

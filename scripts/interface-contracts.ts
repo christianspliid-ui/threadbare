@@ -7173,6 +7173,17 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.',
     },
   },
+  {
+    id: 'threaded-growth-reaches-chronicle',
+    producerSystem: 'Encounters & Dilemmas',
+    consumerSystem: NARRATIVE,
+    intent:
+      'The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs.',
+    ulTerms: ['Chronicle', 'Thread'],
+    mechanism: { kind: 'property', symbols: ['chronicleGate', 'playerProse'] },
+    writeSites: ['src/engine/orchestrator.ts', 'src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/chronicleGrowth.ts', 'src/engine/orchestrator.ts'],
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

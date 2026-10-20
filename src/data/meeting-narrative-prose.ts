@@ -49,8 +49,11 @@ export const TESTING_BETWEEN_DILEMMAS = 'Another moment comes.';
  *
  * Deliberately not "Continue": the player is acknowledging what fate did, not
  * approving it. The register is plain and descriptive per the WS6 mandate.
+ *
+ * THR-1986: was "Let it stand", which read as a choice with a hidden
+ * alternative; it is the screen's only button, so it says the onward step.
  */
-export const MEETING_FATE_REVEAL_CONTINUE = 'Let it stand';
+export const MEETING_FATE_REVEAL_CONTINUE = 'Go on';
 
 /** Beat 3 transition prose. */
 export const SPARK_TRANSITION_IN = 'They have changed, and they are open to you now. What do you give them?';
