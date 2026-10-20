@@ -8,8 +8,8 @@
  *
  * `openHomedSurface(kind)` is one lever per kind through a `Record` over
  * `HomedSurfaceKind`, so a kind without a lever is a type error. S2 builds the story
- * beat's (none existed); the kinds whose Stage lands with a later slice name the lever
- * that opens them today.
+ * beat's; S4 (THR-1897) the journey moment's and the emergence dilemma's, and routes the
+ * premonition and the undertaking moment to their existing levers.
  */
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { GameState } from '../../../types/gameState';
@@ -74,7 +74,7 @@ export function useStageDebugBridge(args: {
   gameScreen: GameScreenStore;
   hexMapRef: RefObject<HexMapV2Handle>;
   interruptResolution: InterruptResolution;
-  /** The view model of the moment on the Stage now (S2: the story beat's). */
+  /** The view model of the moment on the Stage now. */
   stageVM: StageVM | null;
   setGameState: Dispatch<SetStateAction<GameState>>;
   runtime: SimulationRuntime | null;
@@ -154,13 +154,13 @@ export function useStageDebugBridge(args: {
       const { setGameState } = latest.current;
       setGameState(prev => {
         const first = getThreadsFrom(prev.graph, prev.ascendantId)
-          .find(e => (e.properties as ThreadEdgeProperties).courtPosition === 'the_first');
+          .find(e => (e.properties as unknown as ThreadEdgeProperties).courtPosition === 'the_first');
         const agent = first ? prev.graph.getNode(first.target) : undefined;
         if (!first || !agent) {
           resolve({ opened: false, reason: 'no First is bonded — use ?view=game&seeded' });
           return prev;
         }
-        const props = first.properties as ThreadEdgeProperties;
+        const props = first.properties as unknown as ThreadEdgeProperties;
         const phase = props.storyPhase && props.storyPhase !== 'return' ? props.storyPhase : 'call';
         const snapshot = buildStateSnapshot(prev.graph, agent.id, props);
         const picked = selectTemplate(JOURNEY_BEAT_TEMPLATES, phase, snapshot, prev.seed + prev.tick, props.beatHistory ?? []);
@@ -192,8 +192,8 @@ export function useStageDebugBridge(args: {
           return prev;
         }
         const first = getThreadsFrom(prev.graph, prev.ascendantId)
-          .find(e => (e.properties as ThreadEdgeProperties).courtPosition === 'the_first');
-        const agentId = first?.target ?? prev.graph.getNodesByType('agent')[0]?.id;
+          .find(e => (e.properties as unknown as ThreadEdgeProperties).courtPosition === 'the_first');
+        const agentId = first?.target ?? prev.graph.getNodesByType('actor').find(n => n.properties.actorType === 'individual')?.id;
         if (!agentId) {
           resolve({ opened: false, reason: 'no mortal in the world' });
           return prev;
@@ -214,11 +214,19 @@ export function useStageDebugBridge(args: {
       });
     });
 
-    // THR-1897 — routes to the existing levers: the whisper opens at once (a compulsion is
+    // THR-1897 — routes to the existing levers: a whisper about The First opens at once (a compulsion is
     // composed at a scoring moment: `forcePremonition('@hero', 'compulsion')` then `tick(1)`);
     // `forceMoments(true)` makes the next undertaking checkpoint an interrupt.
     const premonition: Lever = async () => {
-      const result = await window.__DEBUG?.forcePremonition?.('@hero', 'whisper');
+      // About The First when one is bonded (the mortal a god dreams through), else `@hero`.
+      const firstId = await new Promise<string | null>(resolve => {
+        latest.current.setGameState(prev => {
+          resolve(getThreadsFrom(prev.graph, prev.ascendantId)
+            .find(e => (e.properties as unknown as ThreadEdgeProperties).courtPosition === 'the_first')?.target ?? null);
+          return prev;
+        });
+      });
+      const result = await window.__DEBUG?.forcePremonition?.(firstId ?? '@hero', 'whisper');
       if (!result || 'error' in result) return { opened: false, reason: result && 'error' in result ? result.error : 'no premonition lever' };
       return { opened: true };
     };

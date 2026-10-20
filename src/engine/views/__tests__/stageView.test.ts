@@ -181,3 +181,69 @@ describe('stage view model — review round 2', () => {
     expect(vm.contextLine?.text).toBe('Maren Ashfold at Millbrook');
   });
 });
+
+// ── THR-1897 (S4) — the premonition's option places and the emergence dilemma ──
+
+describe('stage view model — premonition options (S4)', () => {
+  const premonition = (o: Partial<StageMomentInput> = {}): StageMomentInput => ({ kind: 'premonition', hasArt: false, hasCast: true, ...o });
+
+  it('each option with a Location becomes a place; the frame is the lit hex, then the options', () => {
+    const r = resolveMomentHexes(ctx(), premonition({ subjectAgentId: 'kael', optionLocationIds: ['ruin', null, 'mill_square'] }));
+    expect(r.litHex).toBe('13,9');
+    expect(r.options.map(o => [o.index, o.hexKey])).toEqual([[0, '4,2'], [2, '13,9']]);
+    // The lit hex is not framed twice.
+    expect(r.frame).toEqual(['13,9', '4,2']);
+  });
+
+  it('an option in unexplored fog is ring-only; a known one is not', () => {
+    const state = makeState();
+    (state as unknown as { visibilityMap: Map<string, { state: string }> }).visibilityMap = new Map([
+      ['13,9', { state: 'visible' }],
+      ['4,2', { state: 'unexplored' }],
+    ]);
+    const r = resolveMomentHexes(buildViewContext(null, state), premonition({ subjectAgentId: 'kael', optionLocationIds: ['ruin', 'millbrook'] }));
+    expect(r.options.find(o => o.hexKey === '4,2')?.ringOnly).toBe(true);
+    expect(r.options.find(o => o.hexKey === '13,9')?.ringOnly).toBe(false);
+  });
+
+  it('an undiscovered option place is never named: the land stands in', () => {
+    const r = resolveMomentHexes(ctx(), premonition({ subjectAgentId: 'kael', optionLocationIds: ['ruin'] }));
+    expect(r.options[0].place.name).not.toBe('Old Barrow');
+  });
+
+  it('the tag says where the mortal is', () => {
+    const vm = buildStageView(ctx(), premonition({ subjectAgentId: 'kael' }));
+    expect(vm.placeTag).toBe('Millbrook · where Kael is');
+    expect(vm.layout).toBe('full');
+  });
+
+  it('every other kind keeps "where it is happening" and has no options', () => {
+    const vm = buildStageView(ctx(), { kind: 'undertaking-moment', subjectAgentId: 'kael', hasArt: false, hasCast: false, optionLocationIds: ['ruin'] });
+    expect(vm.placeTagSuffix).toBe(STAGE_WORDS.placeTagSuffix);
+    expect(vm.layout).toBe('compact');
+  });
+
+  it('the selector key changes with the options', () => {
+    const a = stageViewSelector.key(premonition({ subjectAgentId: 'kael', optionLocationIds: ['ruin'] }));
+    const b = stageViewSelector.key(premonition({ subjectAgentId: 'kael', optionLocationIds: ['millbrook'] }));
+    expect(a).not.toBe(b);
+  });
+});
+
+describe('stage view model — the emergence dilemma (S4)', () => {
+  it('is lit at its ruin before its mortal', () => {
+    const r = resolveMomentHexes(ctx(), { kind: 'emergence-dilemma', subjectAgentId: 'kael', ruinId: 'ruin', hasArt: false, hasCast: false });
+    expect(r.litHex).toBe('4,2');
+    expect(r.litSource).toBe('ruin_location');
+  });
+
+  it('falls back to its mortal when the ruin has no hex', () => {
+    const r = resolveMomentHexes(ctx(), { kind: 'emergence-dilemma', subjectAgentId: 'kael', ruinId: 'nowhere', hasArt: false, hasCast: false });
+    expect(r.litHex).toBe('13,9');
+    expect(r.litSource).toBe('agent_location');
+  });
+
+  it('takes the elder palette from the home list', () => {
+    expect(buildStageView(ctx(), { kind: 'emergence-dilemma', ruinId: 'ruin', hasArt: false, hasCast: false }).palette).toBe('elder');
+  });
+});
