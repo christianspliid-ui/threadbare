@@ -2234,6 +2234,37 @@ export interface UnrestRiotSeedTrace extends TraceBase {
   seeded: boolean;
 }
 
+/** THR-1957 — one lord's view as a town on the edge sees it (the defection trace's parts). */
+export interface TownLordViewParts {
+  factionId: string;
+  protection: number;
+  standing: number;
+  fed: number;
+  solvent: number;
+  view: number;
+}
+
+/** THR-1957 — a held town on the edge weighed the lords near it, and turned (or did not). */
+export interface UnrestDefectTrace extends TraceBase {
+  category: 'unrest.defect.considered' | 'unrest.defect';
+  locationId: string;
+  holderId: string;
+  holderView: number;
+  best: TownLordViewParts | null;
+  margin: number;
+}
+
+/** THR-1957 — a town at the rising line rose, emptied, or had no one to rise. */
+export interface UnrestRisingTrace extends TraceBase {
+  category: 'unrest.rising' | 'unrest.rising.no_one';
+  locationId: string;
+  holderId: string | null;
+  path: 'split' | 'founded' | 'emptied' | 'none';
+  newFactionId: string | null;
+  residentsMoved: number;
+  sackedBuildingId: string | null;
+}
+
 /** THR-1935 — a hungry town on the god's ground opened a prayer. */
 export interface PrayerOpenedTrace extends TraceBase {
   category: 'prayer.opened';
@@ -5173,6 +5204,8 @@ export type TraceEntry =
   | UnrestTargetTrace
   | UnrestLeaveTrace
   | UnrestRiotSeedTrace
+  | UnrestDefectTrace
+  | UnrestRisingTrace
   // Prayers and the faithful (THR-1935)
   | PrayerOpenedTrace
   | PrayerAnsweredTrace

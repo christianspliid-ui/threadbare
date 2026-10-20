@@ -8,7 +8,8 @@
  * settlement's target is summed from hunger, poverty, a siege, sickness and its recent
  * dead, less its contentment, and every tick unrest drifts toward it by at most
  * `UNREST_DRIFT_PER_DAY` a day. Restless towns lose people; a town that turns Lawless
- * while hungry riots. The 70 / 90 bands (defection, rising) are S2's (THR-1957).
+ * while hungry riots. S2 (THR-1957): a held town On the edge (70) may turn to a better
+ * lord, and a town at 90 rises against its holder (or, unheld, empties).
  *
  * With the flag off, the legacy model below runs unchanged:
  *   - Driven UP by player actions (Incite Unrest), agent betrayals, low prosperity
@@ -29,6 +30,7 @@ import {
 } from '../data/location-action-constants';
 import { UNREST_PRESSURE_ENABLED } from '../data/unrest-pressure-constants';
 import { runUnrestPressure } from './unrestPressure';
+import type { TurnHooks } from './unrestPressure/turns';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -47,13 +49,18 @@ export const UNREST_SACK_THRESHOLD = 90;
  */
 export function phaseUnrest(
   state: GameState,
-  opts: { pressure?: boolean } = {},
+  opts: { pressure?: boolean } & TurnHooks = {},
 ): Partial<GameState> {
   if (opts.pressure ?? UNREST_PRESSURE_ENABLED) {
-    const { seeds } = runUnrestPressure(state);
-    return seeds.length > 0
-      ? { pendingEncounterSeeds: [...(state.pendingEncounterSeeds ?? []), ...seeds] }
-      : {};
+    const { seeds, chronicleEntries, events } = runUnrestPressure(state, {
+      getProjection: opts.getProjection,
+      onStructure: opts.onStructure,
+    });
+    const out: Partial<GameState> = {};
+    if (seeds.length > 0) out.pendingEncounterSeeds = [...(state.pendingEncounterSeeds ?? []), ...seeds];
+    if (chronicleEntries.length > 0) out.chronicleEntries = [...(state.chronicleEntries ?? []), ...chronicleEntries];
+    if (events.length > 0) out.tickEvents = [...(state.tickEvents ?? []), ...events];
+    return out;
   }
   const graph = state.graph;
   const tick = state.tick;

@@ -3940,7 +3940,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 6.637: Unrest — pressure toward a daily target; Restless leave, Lawless riot (THR-1934)
   {
-    const r = runInlinePhase('unrest', s, () => phaseUnrest(s));
+    // THR-1957: a town that turns or rises moves `controls` (the map outline reads it).
+    const r = runInlinePhase('unrest', s, () => phaseUnrest(s, {
+      getProjection: runtime
+        ? () => ensureRealmProjection(runtime, s.graph, s.tiles, s.tick)
+        : () => buildRealmProjection(s.graph, s.tiles),
+      onStructure: runtime ? () => touchStructure(runtime) : undefined,
+    }));
     s = r.next;
     phaseEventCounts['unrest'] = r.eventDelta;
   }

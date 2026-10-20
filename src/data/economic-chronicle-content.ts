@@ -17,6 +17,10 @@ import {
   CROWN_CHRONICLE_TEMPLATES,
   CROWN_CHRONICLE_SIGNIFICANCE,
 } from './crown-chronicle-content';
+import {
+  UNREST_CHRONICLE_TEMPLATES,
+  UNREST_CHRONICLE_SIGNIFICANCE,
+} from './unrest-chronicle-content';
 
 // ─── Trigger Types ──────────────────────────────────────────────────────────
 
@@ -48,7 +52,12 @@ export type EconomicChronicleTrigger =
   | 'crown_lost'
   | 'oath_sworn'
   | 'oath_broken'
-  | 'rebellion';
+  | 'rebellion'
+  // Hunger and unrest S2 (THR-1957) — content in unrest-chronicle-content.ts
+  | 'town_on_the_edge'
+  | 'town_defects'
+  | 'town_rises'
+  | 'town_empties';
 
 // ─── Significance defaults per trigger ──────────────────────────────────────
 
@@ -71,6 +80,7 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
   holding_income: 0.3,
   ...FACTION_PURSE_CHRONICLE_SIGNIFICANCE,
   ...CROWN_CHRONICLE_SIGNIFICANCE,
+  ...UNREST_CHRONICLE_SIGNIFICANCE,
 };
 
 // ─── Chronicle Templates ────────────────────────────────────────────────────
@@ -224,6 +234,10 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
   oath_sworn: [...CROWN_CHRONICLE_TEMPLATES.oath_sworn],
   oath_broken: [...CROWN_CHRONICLE_TEMPLATES.oath_broken],
   rebellion: [...CROWN_CHRONICLE_TEMPLATES.rebellion],
+  town_on_the_edge: [...UNREST_CHRONICLE_TEMPLATES.town_on_the_edge],
+  town_defects: [...UNREST_CHRONICLE_TEMPLATES.town_defects],
+  town_rises: [...UNREST_CHRONICLE_TEMPLATES.town_rises],
+  town_empties: [...UNREST_CHRONICLE_TEMPLATES.town_empties],
 };
 
 // ─── Wealth Tier Flavor ─────────────────────────────────────────────────────

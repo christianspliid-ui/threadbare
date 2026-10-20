@@ -1356,6 +1356,11 @@ export const LOCATION_TRAIT_PROSE: Record<string, string[]> = {
     'The law has left {name}. The watch is gone, and the lawless streets belong to whoever is strongest tonight.',
     'Unrest has made {name} lawless. Quiet work is easy here, and honest folk keep their doors barred after dark.',
   ],
+  'trait.condition.location.on_the_edge': [
+    '{name} is on the edge. Its people have had enough of their lord, and they talk openly of who might serve them better.',
+    'The people of {name} are on the edge. Men count the days since the last cart of grain, and nobody bows to the reeve.',
+    '{name} is on the edge of turning. A better lord nearby would find its gates open; left like this, it may rise.',
+  ],
   'trait.condition.location.veil_thin': [
     'The veil is thin at {name}. Rites take hold easily here, and stranger things than rites come looking for the gap.',
     'Magic has soaked into the ground at {name} and stayed. The veil is thin, and the locals no longer remark on what they see at dusk.',

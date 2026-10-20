@@ -4211,6 +4211,15 @@ if (import.meta.env.DEV) {
       return describeUnrest(graph, locationIdOrName);
     },
 
+    // THR-1957: how a town sees its holder and the lords near it — each lord's
+    // protection, standing, fed and solvent parts and the summed view.
+    getTownView: async (locationIdOrName: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+      const { describeTownView } = await import('./engine/unrestPressure/describe');
+      return describeTownView(graph, _gameStateProvider?.()?.tick ?? 0, locationIdOrName);
+    },
+
     // THR-1935: prayers — every prayer opened this run, with its status and window.
     getPrayers: async () => {
       const graph = _graphProvider?.();

@@ -7,6 +7,10 @@
  *   two ways the game already tells it: a place-tier Location here carries the Lawless
  *   condition (the chip on its page), or the hex's mood bucket (`deriveMoodBucket`, the
  *   average the hex survey reads) is at or past `TROUBLE_UNREST_MIN_MOOD`.
+ * - **Unrest, On the edge** (THR-1957) — a place carrying the On the edge chip says so
+ *   in the band's words, naming the holder it may turn from; it replaces the Lawless line.
+ * - **Hunger** (THR-1957) — a settlement hungry today (`hungerDays > 0`, the unrest
+ *   pressure's counter): one red badge and the line. Restless alone never lights a hex.
  * - **Strife** — the conflict pulse (`deriveLocationActivities`' hex pulse, tense or
  *   volatile): mortals here arming or fighting.
  * - **Battles and sieges** — lit, but no badge: the plain map already draws their sprites,
@@ -30,6 +34,8 @@ import { LOCATION_TRAIT_IDS } from '../../../data/location-trait-constants';
 import { EMITTED_OMEN_LOCAL_DEFAULT_RADIUS } from '../../../data/game-config';
 import type { MoodBucket } from '../../../data/survey-prose-tables';
 import { getLocationNodes } from '../../sublocationShape';
+import { taxHolderOf } from '../../factionPurse/income';
+import { isPressureSettlement, HUNGER_DAYS_PROP } from '../../unrestPressure/inputs';
 import { deriveMoodBucket } from '../../surveyProseComposer';
 import { deriveLocationActivities } from '../../deriveLocationActivities';
 import { buildRivalInfluenceMarkers, buildRivalSchemeTargets } from '../../rivalInfluenceMarkers';
@@ -54,7 +60,7 @@ export const TROUBLE_OMEN_DEFAULT_RADIUS = EMITTED_OMEN_LOCAL_DEFAULT_RADIUS;
 const MOOD_ORDER: readonly MoodBucket[] = ['calm', 'restless', 'agitated', 'boiling'];
 
 /** The order a hex's hover lines are told in — the legend's order. */
-const LINE_ORDER = ['unrest', 'strife', 'scheme', 'drain', 'omen', 'lair'] as const;
+const LINE_ORDER = ['unrest', 'hunger', 'strife', 'scheme', 'drain', 'omen', 'lair'] as const;
 type LineKind = (typeof LINE_ORDER)[number];
 
 interface HexEntry {
@@ -104,6 +110,12 @@ function isLawless(ctx: ViewContext, locId: string): boolean {
   return ctx.graph.getOutgoingEdges(locId, 'has_trait').some(e => e.target === LOCATION_TRAIT_IDS.lawless);
 }
 
+function isOnTheEdge(ctx: ViewContext, locId: string): boolean {
+  return ctx.graph.getOutgoingEdges(locId, 'has_trait').some(e => e.target === LOCATION_TRAIT_IDS.onTheEdge);
+}
+
+const NO_REALM_MAP: ReadonlyMap<string, string> = new Map();
+
 function visibleHexKeys(ctx: ViewContext): ReadonlySet<string> {
   const map = ctx.state.visibilityMap;
   if (!map || typeof map.get !== 'function' || map.size === 0) {
@@ -142,7 +154,8 @@ export function buildTroubleLens(ctx: ViewContext): HexLensVM {
   // ── Unrest: Lawless places, then the hex mood ──
   const lawlessHexes = new Set<string>();
   for (const loc of getLocationNodes(ctx.graph)) {
-    if (!isLawless(ctx, loc.id)) continue;
+    const edge = isOnTheEdge(ctx, loc.id);
+    if (!edge && !isLawless(ctx, loc.id)) continue;
     const pos = nodeHex(loc);
     if (!pos) continue;
     const key = hexKey(pos.col, pos.row);
@@ -150,10 +163,21 @@ export function buildTroubleLens(ctx: ViewContext): HexLensVM {
     lawlessHexes.add(key);
     lit.add(key);
     const place = loc.name || '';
+    const placeRef: LensLineSegment['ref'] = { kind: 'location', id: loc.id, name: place };
+    let line: LensLine;
+    if (edge) {
+      const holderId = taxHolderOf(ctx.graph, loc.id, NO_REALM_MAP);
+      const holder = holderId ? (ctx.graph.getNode(holderId)?.name || '') : '';
+      line = holderId && holder
+        ? fillLine(TROUBLE_LENS_WORDS.unrestOnTheEdgeHeld, { place, holder }, { place: placeRef, holder: { kind: 'faction', id: holderId, name: holder } })
+        : fillLine(TROUBLE_LENS_WORDS.unrestOnTheEdgeUnheld, { place }, { place: placeRef });
+    } else {
+      line = fillLine(TROUBLE_LENS_WORDS.unrestLawless, { place }, { place: placeRef });
+    }
     entry(key).lines.push({
       kind: 'unrest',
       sort: `${place}|${loc.id}`,
-      line: fillLine(TROUBLE_LENS_WORDS.unrestLawless, { place }, { place: { kind: 'location', id: loc.id, name: place } }),
+      line,
     });
     addMark({ kind: 'unrest', hexKey: key, tone: 'trouble', ref: { kind: 'location', id: loc.id, name: place } });
   }
@@ -173,6 +197,26 @@ export function buildTroubleLens(ctx: ViewContext): HexLensVM {
     lit.add(key);
     entry(key).lines.push({ kind: 'unrest', sort: '', line: plainLine(text) });
     addMark({ kind: 'unrest', hexKey: key, tone: 'trouble' });
+  }
+
+  // ── Hunger: a settlement that cannot feed its people today ──
+  for (const loc of getLocationNodes(ctx.graph)) {
+    if (!isPressureSettlement(loc)) continue;
+    const days = loc.properties[HUNGER_DAYS_PROP];
+    if (typeof days !== 'number' || !(days > 0)) continue;
+    const pos = nodeHex(loc);
+    if (!pos) continue;
+    const key = hexKey(pos.col, pos.row);
+    if (!known(key)) continue;
+    lit.add(key);
+    const place = loc.name || '';
+    const ref: LensLineSegment['ref'] = { kind: 'location', id: loc.id, name: place };
+    entry(key).lines.push({
+      kind: 'hunger',
+      sort: `${place}|${loc.id}`,
+      line: fillLine(TROUBLE_LENS_WORDS.hunger, { place }, { place: ref }),
+    });
+    addMark({ kind: 'hunger', hexKey: key, tone: 'trouble', ref: ref ?? undefined });
   }
 
   // ── Strife: the conflict pulse ──

@@ -286,6 +286,11 @@ export const TROUBLE_LENS_WORDS = {
   doomHead: 'Doom: {stage}',
   legend: ['Lit ground is where something is going wrong.'] as readonly string[],
   unrestLawless: 'Unrest: {place} is lawless.',
+  /** THR-1957 — the On the edge band words (the visibility decision's). */
+  unrestOnTheEdgeHeld: 'Unrest: {place} is on the edge. It may turn from {holder} to a lord who can feed it.',
+  unrestOnTheEdgeUnheld: 'Unrest: {place} is on the edge. Its people may leave it.',
+  /** THR-1957 — the Hunger mark's line. */
+  hunger: "Hunger: {place}'s fields cannot feed its people.",
   unrestMood: {
     agitated: 'Unrest: the people here are agitated.',
     boiling: 'Unrest: the people here are boiling over.',

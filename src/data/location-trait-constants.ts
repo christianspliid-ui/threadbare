@@ -40,6 +40,8 @@ export const LOCATION_TRAIT_IDS = {
   lawless: `${LOCATION_CONDITION_ID_PREFIX}lawless`,
   // THR-1934 — the settlement economy plan's word (THR-1923), whichever lands first adds it.
   restless: `${LOCATION_CONDITION_ID_PREFIX}restless`,
+  // THR-1957 — above Lawless on the same number: the town may turn to another lord.
+  onTheEdge: `${LOCATION_CONDITION_ID_PREFIX}on_the_edge`,
   veilThin: `${LOCATION_CONDITION_ID_PREFIX}veil_thin`,
   haunted: `${LOCATION_CONDITION_ID_PREFIX}haunted`,
   // THR-1528 — minted from battle records, not from any scalar.
@@ -100,6 +102,15 @@ export const LOCATION_TRAIT_LAWLESS_RELEASE = 30;
  */
 export const LOCATION_TRAIT_RESTLESS_ENTER = 30;
 export const LOCATION_TRAIT_RESTLESS_RELEASE = 15;
+
+/**
+ * Unrest band for *On the edge* (0–100), THR-1957 (hunger and unrest S2). It enters
+ * above Lawless and releases above Restless, so a town that shows it also shows
+ * Lawless. A held town on the edge weighs the lords nearby once a day and may turn to
+ * one (`unrestPressure/defection.ts`); an unheld one talks of leaving.
+ */
+export const ON_THE_EDGE_ENTER = 70;
+export const ON_THE_EDGE_RELEASE = 55;
 
 /**
  * Saturation band for *Veil-thin* (0–1). `phaseMagicalSaturation.ts` names 0.3 as
@@ -204,6 +215,11 @@ export const LOCATION_TRAIT_ENCOUNTER_BONUS: Readonly<
     '#heart': 0.04,
     '#iron': 0.03,
     '#gold': 0.03,
+  },
+  // A town on the edge argues about whom to follow: hard words, hard men at the gate.
+  [LOCATION_TRAIT_IDS.onTheEdge]: {
+    '#heart': 0.04,
+    '#iron': 0.05,
   },
   // A lawless town is where the quiet work and the loud work both get done.
   [LOCATION_TRAIT_IDS.lawless]: {

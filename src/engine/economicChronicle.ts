@@ -12,6 +12,7 @@
  */
 
 import { CROWN_CHRONICLE_TITLES } from '../data/crown-chronicle-content';
+import { UNREST_CHRONICLE_TITLES } from '../data/unrest-chronicle-content';
 import type { TickEvent } from '../types/gameState';
 import type { ChronicleChapter } from '../types/chronicle';
 import type { SphereName } from '../types/index';
@@ -290,6 +291,7 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     army_unpaid_desertion: 'An Army Melts Away',
     purse_recovered: 'Coin Returns',
     ...CROWN_CHRONICLE_TITLES,
+    ...UNREST_CHRONICLE_TITLES,
   };
   return titles[trigger];
 }

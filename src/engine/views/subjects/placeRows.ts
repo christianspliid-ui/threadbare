@@ -117,6 +117,16 @@ const fortunes: SectionResolver = (ctx) => {
   if (!p) return null;
   const s = fortunesSentence(ctx.graph, p.node.id);
   if (!s) return null;
+  // THR-1957: a town on the edge names the holder it may turn from — the name routes (Law 21).
+  const at = s.holder ? s.tail.indexOf(s.holder.name) : -1;
+  if (s.holder && at >= 0) {
+    const parts: ProsePart[] = [
+      `${s.lead}${s.prosperityWord}${s.tail.slice(0, at)}`,
+      { text: s.holder.name, ref: { kind: 'faction', id: s.holder.id } },
+      s.tail.slice(at + s.holder.name.length),
+    ];
+    return linkedProseSection('fortunes', SUBJECT_ROW_LABELS.fortunes, parts, 'fortunesSentence', { labelTooltipId: 'ui.econ.prosperity' });
+  }
   return prose('fortunes', SUBJECT_ROW_LABELS.fortunes, `${s.lead}${s.prosperityWord}${s.tail}`, 'fortunesSentence', { labelTooltipId: 'ui.econ.prosperity' });
 };
 

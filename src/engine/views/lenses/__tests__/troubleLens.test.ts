@@ -158,3 +158,46 @@ describe('Trouble lens — on the shared fixture', () => {
     expect(vm.lit.length).toBeGreaterThan(0);
   });
 });
+
+describe('Trouble lens — hunger and On the edge (THR-1957)', () => {
+  function edgeWorld(opts: { held: boolean; hungerDays: number }) {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({ id: 'trait.condition.location.lawless', type: 'trait', name: 'Lawless', properties: {} });
+    graph.addNode({ id: 'trait.condition.location.on_the_edge', type: 'trait', name: 'On the edge', properties: {} });
+    graph.addNode({ id: 'ferris', type: 'location', name: 'Ferris', properties: { locationSubtype: 'town', hexCol: 2, hexRow: 2, unrest: 75, hungerDays: opts.hungerDays } });
+    for (const t of ['lawless', 'on_the_edge']) {
+      graph.addEdge({ id: `ferris_${t}`, source: 'ferris', target: `trait.condition.location.${t}`, type: 'has_trait', properties: {} });
+    }
+    if (opts.held) {
+      graph.addNode({ id: 'ashfold', type: 'actor', name: 'House Ashfold', properties: { actorType: 'faction' } });
+      graph.addEdge({ id: 'ctl', source: 'ashfold', target: 'ferris', type: 'controls', properties: {} });
+    }
+    const state = {
+      graph, ascendantId: 'asc', tick: 1, visibilityMap: new Map(), unifiedActions: [], familiarityMap: new Map(),
+      rivalDefinitions: [], emittedOmens: [],
+    } as unknown as GameState;
+    return buildTroubleLens(buildViewContext(null, state, [lensTile(2, 2)]));
+  }
+
+  it('a held town on the edge names the holder it may turn from, in place of the Lawless line', () => {
+    const vm = edgeWorld({ held: true, hungerDays: 0 });
+    expect(hoverText(vm, '2,2')).toEqual(['Unrest: Ferris is on the edge. It may turn from House Ashfold to a lord who can feed it.']);
+    const holderSeg = vm.hover['2,2'][0].segments.find(s => s.text === 'House Ashfold');
+    expect(holderSeg?.ref).toMatchObject({ kind: 'faction', id: 'ashfold' });
+  });
+
+  it('a hungry town carries the Hunger mark and its line, after the Unrest line', () => {
+    const vm = edgeWorld({ held: false, hungerDays: 3 });
+    expect(hoverText(vm, '2,2')).toEqual([
+      'Unrest: Ferris is on the edge. Its people may leave it.',
+      "Hunger: Ferris's fields cannot feed its people.",
+    ]);
+    expect(vm.marks.map(m => m.kind)).toEqual(['unrest', 'hunger']);
+  });
+
+  it('a fed town draws no Hunger mark', () => {
+    const vm = edgeWorld({ held: true, hungerDays: 0 });
+    expect(vm.marks.map(m => m.kind)).toEqual(['unrest']);
+  });
+});
