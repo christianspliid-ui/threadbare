@@ -24,6 +24,27 @@ export type AgreementShape = 'flat' | 'nested';
 
 export interface ReadAgreement extends Partial<AgreementProperties> {
   shape: AgreementShape;
+  /** Flat shape only: the tick the reward writer stamped. Its `ticksRemaining` is the full term from here. */
+  acquiredTick?: number;
+  /** `false` when the edge carries `active: false`. */
+  active: boolean;
+}
+
+/**
+ * Has this agreement stopped binding at `tick`?
+ *
+ * Nothing on the graph counts an agreement edge's `ticksRemaining` down or removes the edge when
+ * its term ends, so the flat reward shape's term is read here instead: the writer stamps
+ * `acquiredTick` and the full term, and the agreement lapses once `tick` reaches their sum.
+ * A null term never lapses. The nested shape carries no acquisition tick, so only `active`
+ * can lapse it — its behaviour is unchanged.
+ */
+export function agreementLapsed(agreement: ReadAgreement, tick: number): boolean {
+  if (!agreement.active) return true;
+  if (agreement.shape !== 'flat') return false;
+  const term = agreement.ticksRemaining;
+  if (term == null || agreement.acquiredTick == null) return false;
+  return tick >= agreement.acquiredTick + term;
 }
 
 /**
@@ -35,13 +56,17 @@ export function readAgreement(props: Record<string, unknown> | undefined): ReadA
   const raw = props.agreement;
   if (!raw) return null;
 
+  const active = props.active !== false;
+
   if (typeof raw === 'object') {
-    return { ...(raw as Partial<AgreementProperties>), shape: 'nested' };
+    return { ...(raw as Partial<AgreementProperties>), shape: 'nested', active };
   }
 
   // Flat shape: the fields live beside `agreement: true` on the edge itself.
   return {
     shape: 'flat',
+    active,
+    acquiredTick: typeof props.acquiredTick === 'number' ? props.acquiredTick : undefined,
     type: typeof props.agreementType === 'string' ? (props.agreementType as AgreementType) : undefined,
     tier: typeof props.tier === 'number' ? (props.tier as AttachmentTier) : undefined,
     tags: Array.isArray(props.tags) ? (props.tags as string[]) : undefined,

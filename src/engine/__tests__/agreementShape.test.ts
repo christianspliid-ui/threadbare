@@ -9,7 +9,7 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { instantiateAgreementReward } from '../rewardPool';
 import { getAgreementTemplate } from '../../data/agreement-reward-catalog';
-import { readAgreement } from '../agreementShape';
+import { readAgreement, agreementLapsed } from '../agreementShape';
 import { countDebts, phaseEconomicTraits } from '../phaseEconomicTraits';
 import { getAgentAttachments } from '../agentAttachments';
 import { getTraitsForNode } from '../traits';
@@ -58,9 +58,9 @@ describe('THR-1920: one agreement shape for every reader', () => {
     const result = instantiateAgreementReward(graph, 'debtor', 'creditor1', debtTemplate, 10);
     expect(result).not.toBeNull();
 
-    expect(countDebts(graph, 'debtor')).toBe(1);
+    expect(countDebts(graph, 'debtor', 10)).toBe(1);
     // The creditor holds the other end of the edge; it owes nothing.
-    expect(countDebts(graph, 'creditor1')).toBe(0);
+    expect(countDebts(graph, 'creditor1', 10)).toBe(0);
   });
 
   it('enough reward-path debts make the recipient debt-laden on the next economic-traits pass', () => {
@@ -68,7 +68,7 @@ describe('THR-1920: one agreement shape for every reader', () => {
     for (let i = 0; i < ECON_TRAIT_DEBT_LADEN_MIN_DEBTS; i++) {
       instantiateAgreementReward(graph, 'debtor', `creditor${(i % 2) + 1}`, debtTemplate, 10 + i);
     }
-    expect(countDebts(graph, 'debtor')).toBe(ECON_TRAIT_DEBT_LADEN_MIN_DEBTS);
+    expect(countDebts(graph, 'debtor', 20)).toBe(ECON_TRAIT_DEBT_LADEN_MIN_DEBTS);
 
     phaseEconomicTraits(state(graph, 20));
     expect(hasTrait(graph, 'debtor', DEBT_LADEN)).toBe(true);
@@ -99,13 +99,39 @@ describe('THR-1920: one agreement shape for every reader', () => {
     expect(vows[0]).toMatchObject({ label: debtTemplate.name, def: debtTemplate.terms, valence: 'debt' });
   });
 
+  it('a reward-path debt lapses when its term runs out, and debt-laden clears with it', () => {
+    const graph = makeWorld();
+    const term = debtTemplate.ticksRemaining!;
+    instantiateAgreementReward(graph, 'debtor', 'creditor1', debtTemplate, 10);
+    instantiateAgreementReward(graph, 'debtor', 'creditor2', { ...debtTemplate, ticksRemaining: term * 2 }, 10);
+
+    phaseEconomicTraits(state(graph, 11));
+    expect(hasTrait(graph, 'debtor', DEBT_LADEN)).toBe(true);
+
+    // The first debt has run its term; the second still binds.
+    expect(countDebts(graph, 'debtor', 10 + term)).toBe(1);
+    // Both have run out: the count is zero and the trait goes.
+    expect(countDebts(graph, 'debtor', 10 + term * 2)).toBe(0);
+    phaseEconomicTraits(state(graph, 10 + term * 2));
+    expect(hasTrait(graph, 'debtor', DEBT_LADEN)).toBe(false);
+  });
+
+  it('an inactive or permanent agreement reads as lapsed / never lapsing', () => {
+    const inactive = readAgreement({ agreement: true, agreementType: 'debt', active: false, acquiredTick: 0, ticksRemaining: 50 })!;
+    expect(agreementLapsed(inactive, 1)).toBe(true);
+    const permanent = readAgreement({ agreement: true, agreementType: 'debt', acquiredTick: 0, ticksRemaining: null })!;
+    expect(agreementLapsed(permanent, 100000)).toBe(false);
+    const nested = readAgreement({ agreement: { type: 'debt', ticksRemaining: 5 } })!;
+    expect(agreementLapsed(nested, 100000)).toBe(false);
+  });
+
   it('nested-shape debts keep their original either-direction count', () => {
     const graph = makeWorld();
     graph.addEdge({
       id: 'legacy', source: 'creditor1', target: 'debtor', type: 'relates_to',
       properties: { agreement: { type: 'debt', tier: 1, terms: 'owes gold' } },
     });
-    expect(countDebts(graph, 'debtor')).toBe(1);
-    expect(countDebts(graph, 'creditor1')).toBe(1);
+    expect(countDebts(graph, 'debtor', 10)).toBe(1);
+    expect(countDebts(graph, 'creditor1', 10)).toBe(1);
   });
 });

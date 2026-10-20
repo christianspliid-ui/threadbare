@@ -13,7 +13,7 @@ import { getFactionMembershipEdges } from './graphQueries';
 import type { WorldGraph } from './graph';
 import { readWealth, WEALTH_TIER_WEALTHY, WEALTH_TIER_COMFORTABLE, WEALTH_TIER_GETTING_BY } from './wealth';
 import { readTradeRouteProps } from './tradeRoute';
-import { readAgreement } from './agreementShape';
+import { readAgreement, agreementLapsed } from './agreementShape';
 import { assignTrait, removeTrait, getTraitsForNode } from './traits';
 import { emitTrace } from './traceBuffer';
 import {
@@ -113,18 +113,23 @@ function hasMonopoly(graph: WorldGraph, actorId: string): boolean {
  * Direction: the reward writer always puts the bearer (the debtor) at the edge's source and the
  * creditor at its target, so a flat-shape debt counts only for its source — otherwise the
  * encounter's creditor (the dean's factor in `cathedral_loan`) would turn debt-laden too. The
- * nested shape keeps its original either-direction count unchanged.
+ * nested shape keeps its original either-direction count.
+ *
+ * Term: nothing expires an agreement edge, so a debt whose term has run out at `tick`, or whose
+ * edge reads `active: false`, is skipped here (`agreementLapsed`) — otherwise a 96-tick debt
+ * would keep its bearer debt-laden for ever.
  */
-export function countDebts(graph: WorldGraph, actorId: string): number {
+export function countDebts(graph: WorldGraph, actorId: string, tick: number): number {
   let count = 0;
   const outgoing = graph.getOutgoingEdges(actorId, 'relates_to');
   for (const edge of outgoing) {
-    if (readAgreement(edge.properties)?.type === 'debt') count++;
+    const agreement = readAgreement(edge.properties);
+    if (agreement?.type === 'debt' && !agreementLapsed(agreement, tick)) count++;
   }
   const incoming = graph.getIncomingEdges(actorId, 'relates_to');
   for (const edge of incoming) {
     const agreement = readAgreement(edge.properties);
-    if (agreement?.shape === 'nested' && agreement.type === 'debt') count++;
+    if (agreement?.shape === 'nested' && agreement.type === 'debt' && !agreementLapsed(agreement, tick)) count++;
   }
   return count;
 }
@@ -293,7 +298,7 @@ export function phaseEconomicTraits(state: GameState): Partial<GameState> {
     }
 
     // ─── 6. Debt-Laden ──────────────────────────────────────────────
-    const debtCount = countDebts(graph, actorId);
+    const debtCount = countDebts(graph, actorId, tick);
     if (debtCount >= ECON_TRAIT_DEBT_LADEN_MIN_DEBTS) {
       if (!hasTrait(graph, actorId, TRAIT_DEBT_LADEN)) {
         assignTrait(graph, actorId, TRAIT_DEBT_LADEN, {
