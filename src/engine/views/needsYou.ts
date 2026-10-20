@@ -1,6 +1,7 @@
 /**
  * needsYou — the Needs-you queue as a view model (THR-1875, frame plan § F5; THR-1822 D13
- * amended: no count cap, `opens: 'place'`, no Chronicle promise).
+ * amended: no count cap, `opens: 'place'`). The Chronicle promise holds since THR-1896: every
+ * alert that reaches News also writes a Chronicle line (`alertChronicle.ts`).
  *
  * Needs you lists what waits on the god without stopping time: offers and receipts to
  * open, the named pause, moments held behind the one on screen, and the alert channel's

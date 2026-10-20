@@ -2265,6 +2265,7 @@ export function executeStepResult(
 
     // Emit a 'complication' tick event for narrative visibility
     const severity = consequence.complication.severity;
+    // alert-chronicle: complication
     const complicationNotification: import('../types/notification').NotificationDirective | undefined =
       severity === 'severe'
         ? { channel: 'alert', icon: 'discovery' }

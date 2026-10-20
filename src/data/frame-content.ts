@@ -166,10 +166,12 @@ export const NEEDS_YOU_LIST_ARIA = 'Things that need you';
 
 /**
  * `ui.needs_you_news`'s description, built at render from `NEEDS_YOU_NEWS_KEEP_DAYS` so a
- * retune can never make it false. `{keep}` is a duration in words ("three days").
+ * retune can never make it false. `{keep}` is a duration in words ("three days"). The
+ * Chronicle sentence is true because every alert that reaches News also writes a
+ * Chronicle line (THR-1896, `src/engine/alertChronicle.ts`).
  */
 export const NEEDS_YOU_NEWS_TOOLTIP =
-  'What changed in the world that touches you. A row leaves when you open it, or after {keep}.';
+  'What changed in the world that touches you. A row leaves when you open it, or after {keep}. Older news is in the Chronicle.';
 
 export function needsYouNewsTooltipDesc(keepWords: string): string {
   return NEEDS_YOU_NEWS_TOOLTIP.replace('{keep}', keepWords);

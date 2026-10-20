@@ -271,6 +271,7 @@ function chronicle(
     message,
     significance: PRAYER_CHRONICLE_SIGNIFICANCE,
     ...(col !== undefined && row !== undefined ? { hexCoords: { col, row } } : {}),
+    // alert-chronicle: narrative
     ...(alert ? { notification: { channel: 'alert' as const } } : {}),
   });
 }

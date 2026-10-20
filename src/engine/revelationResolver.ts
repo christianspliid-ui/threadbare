@@ -260,6 +260,7 @@ export function buildDiscoveryTickEvent(
   tick: number,
 ): TickEvent {
   const isElder = reveal.hasElderMagic;
+  // alert-chronicle: elder_site_discovered
   const notification: NotificationDirective = isElder
     ? {
         channel: 'alert',

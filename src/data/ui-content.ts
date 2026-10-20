@@ -393,7 +393,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // so a retune never makes it false; this copy is the default it renders to.
   'ui.needs_you_news': {
     label: 'News',
-    desc: 'What changed in the world that touches you. A row leaves when you open it, or after three days.',
+    desc: 'What changed in the world that touches you. A row leaves when you open it, or after three days. Older news is in the Chronicle.',
   },
   'ui.read_threads': {
     label: 'Read the Threads',

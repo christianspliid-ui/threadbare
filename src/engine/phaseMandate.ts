@@ -341,6 +341,7 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
           transition,
           `Mandate "${definition.name}" enters its next stage.`,
           MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
+          // alert-chronicle: mandate_progress
           { channel: 'alert', icon: 'mandate' },
         ),
       );
@@ -362,6 +363,7 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
         'completed',
         `Victory! Mandate "${definition.name}" fulfilled before the final doom closes.`,
         1.0,
+        // alert-chronicle: mandate_progress
         { channel: 'alert', icon: 'mandate' },
       ),
     );
@@ -472,6 +474,7 @@ function evaluateLegacyMandate(state: GameState): Partial<GameState> {
           transition,
           `Mandate "${state.mandateDefinition.name}" enters its next stage.`,
           MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
+          // alert-chronicle: mandate_progress
           { channel: 'alert', icon: 'mandate' },
         ),
       );
@@ -486,6 +489,7 @@ function evaluateLegacyMandate(state: GameState): Partial<GameState> {
         'completed',
         `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
         1.0,
+        // alert-chronicle: mandate_progress
         { channel: 'alert', icon: 'mandate' },
       ),
     );
