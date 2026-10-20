@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 06:57 local (04:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 07:57 local (05:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,7 +8,7 @@
 ## Also waiting (5)
 
 - **Sunday evening to Monday evening (18–19 Oct):** "The scheduled lanes went silent for 23.3h (2026-10-18T18:26:51.000Z → 2026-10-19T17:42:15.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed, or was this a pause?
-- **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided)) *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-18d.md)*
+- **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
 - **Monday 14 and Tuesday 15 September:** the same thing happened. Was the app closed?
 - **Fog or witness:** should a stranger's sheet show the wound you just watched them take? If you say nothing, it stays as it is.
@@ -24,7 +24,7 @@ From [the design lane tonight, run b](https://github.com/christianspliid-ui/thre
 
 From [the design lane tonight, run a](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20a.md):
 
-- [Ordinary scenes still hand The First a trade she never had](https://linear.app/threadbare/issue/THR-1983/ordinary-scenes-still-hand-the-first-a-trade-she-never-had-guild) — of 28 everyday scenes that assume her trade, **six now wait for a mortal of the right trade**; **twenty-one stay open to anyone** and stop saying she already works it (a healer may still try the smiths' iron test, as a healer). *Veto:* "a mortal should only be offered work in her own trade".
+- [Ordinary scenes still hand The First a trade she never had](https://linear.app/threadbare/issue/THR-1983/ordinary-scenes-still-hand-the-first-a-trade-she-never-had-guild): of 28 everyday scenes that assume her trade, **six now wait for a mortal of the right trade**. **Twenty-one stay open to anyone** and stop saying she already works it (a healer may still try the smiths' iron test, as a healer). *Veto:* "a mortal should only be offered work in her own trade".
 
 From [the hiring-a-free-company plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md) ([THR-1974](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays)), decided by [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-19a.md):
 
@@ -39,13 +39,13 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 30 ready, 1 in progress.** [Find anything with Ctrl+K](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the) shipped ([PR #2495](https://github.com/christianspliid-ui/threadbare/pull/2495)) and is live. The builder is now on [a town on the edge turns to a better lord](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a) (High, claimed 03:30 UTC; a builder run is active right now).
+**Backed up: 32 ready, 1 in progress.** The builder is on [a town on the edge turns to a better lord](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a) (High, claimed 03:30 UTC). A builder run has been active since 04:51 UTC.
 
 - Next up: [words that wait for their moment](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the) and [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (both High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (53ec5332). Main's checks, including heavy simulation tests, are green, and all 13 scheduled lanes are on time. No pull requests are waiting to merge.
-- The engine runs at 117 ms a tick, 14% faster than its week's median.
-- The tidy-up job reports 565 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- All green. The live site is current (53ec5332). Main's checks, including the heavy simulation tests, are green, and the scheduled lanes are on time. No pull requests are waiting to merge.
+- The engine runs at 144 ms a tick, 6% above its week's median (136). That is inside normal variation.
+- The tidy-up job reports 564 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
