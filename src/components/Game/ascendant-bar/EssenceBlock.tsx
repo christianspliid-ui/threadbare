@@ -27,6 +27,14 @@ import { formatEssencePool } from '../../shared/formatEssence';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { SPHERE_COPY, ESSENCE_ELDER_FOLD_LABEL, ESSENCE_TREND_WORDS } from '../../../data/ascendant-bar-content';
 import { sphereDeltaReading } from '../../../engine/aftermathWords';
+import {
+  ESSENCE_REFILL_RUNG_STEPS,
+  ESSENCE_REFILL_TAG_SEPARATOR,
+  ESSENCE_REFILL_KEY,
+  ESSENCE_REFILL_WORDS,
+  ESSENCE_UPKEEP_TAG,
+  essenceRefillAriaLabel,
+} from '../../../data/essence-refill-content';
 import type { SphereName } from '../../../types';
 import type { EssenceRowView } from './selectors';
 import {
@@ -79,6 +87,39 @@ function useSpendFlash(level: number): number {
   return shown;
 }
 
+/**
+ * THR-1985 — the refill rung: three small dots, filled to the band. Tighter than
+ * `StepDots` (its 6px gap does not fit under a two-digit balance in the
+ * 1080p rail). Same step tokens, so it reads as the same magnitude mark.
+ */
+function RefillRung({ testId, band, filled, upkeep, label }: {
+  testId?: string;
+  band?: string;
+  filled: number;
+  upkeep?: boolean;
+  label?: string;
+}) {
+  return (
+    <span
+      data-testid={testId}
+      data-refill-band={band}
+      data-upkeep={upkeep || undefined}
+      {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
+      style={{ display: 'inline-flex', gap: 2, lineHeight: 0 }}
+    >
+      {Array.from({ length: ESSENCE_REFILL_RUNG_STEPS }, (_, i) => (
+        <span
+          key={i}
+          style={{
+            width: 4, height: 4, borderRadius: '50%',
+            background: i < filled ? 'var(--step-completed)' : 'var(--step-pending)',
+          }}
+        />
+      ))}
+    </span>
+  );
+}
+
 interface EssenceRowProps {
   row: EssenceRowView;
   previewed: boolean;
@@ -94,6 +135,8 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
   const fillPct = essenceFillPct(row.level);
   const spent = useSpendFlash(row.level);
   const spendReading = spent > 0 ? sphereDeltaReading(-spent / ESSENCE_BAR_CEILING, label) : null;
+
+  const refillWords = row.refill ? ESSENCE_REFILL_WORDS[row.refill.band] : null;
 
   return (
     <div>
@@ -142,6 +185,11 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
             />
           </span>
         )}
+        {/* THR-1985 — how fast this pool refills: a rung under the balance, so it
+            takes no width from the label or the bar; the word is the rung's
+            accessible name and the row hover's first sentence (Law 13: a word,
+            never a rate). */}
+        <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
         <span
             data-testid={`essence-balance-${row.sphere}`}
             style={{
@@ -154,6 +202,20 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
           >
             {formatEssencePool(row.level)}
           </span>
+          {row.refill && refillWords && (
+            <RefillRung
+              testId={`essence-refill-${row.sphere}`}
+              band={row.refill.band}
+              filled={refillWords.rung}
+              upkeep={row.refill.upkeep}
+              label={
+                row.refill.upkeep
+                  ? `${essenceRefillAriaLabel(row.refill.band)}${ESSENCE_REFILL_TAG_SEPARATOR}${ESSENCE_UPKEEP_TAG}`
+                  : essenceRefillAriaLabel(row.refill.band)
+              }
+            />
+          )}
+        </span>
         <span
           data-testid={`essence-trend-${row.sphere}`}
           data-trend={row.trend}
@@ -281,6 +343,21 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
             <EssenceRow key={row.sphere} row={row} previewed={row.sphere === preview} />
           ))}
         </>
+      )}
+      {/* THR-1985 — Law 12: the rung is named once, under the rows, since a
+          row is too narrow for its word; each row's hover still says it. */}
+      {rows.some((r) => r.refill) && (
+        <div
+          data-testid="essence-refill-key"
+          style={{
+            gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 6,
+            padding: '2px 6px', fontFamily: 'var(--font-body)', fontStyle: 'italic',
+            fontSize: 'var(--text-xs)', color: 'var(--text-muted)',
+          }}
+        >
+          <RefillRung filled={ESSENCE_REFILL_WORDS.steady.rung} />
+          {ESSENCE_REFILL_KEY}
+        </div>
       )}
     </div>
   );

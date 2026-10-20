@@ -594,6 +594,19 @@ if (import.meta.env.DEV) {
       return state.essenceMovement ?? {};
     },
 
+    // THR-1985 — each sphere's refill band (net as a share of total gross income),
+    // and the deepest sphere, which pays upkeep and carries "pays your upkeep".
+    getEssenceRefill: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'no live game state' };
+      const { readEssenceRefill } = await import('./engine/views/essenceRefill');
+      const reading = readEssenceRefill(state.graph, state.ascendantId, state.controlEffects);
+      const alignment = state.graph.getNode(state.ascendantId)?.properties.sphereAlignment as
+        | { primary?: import('./types').SphereName }
+        | undefined;
+      return { ...reading, upkeepSphere: alignment?.primary ?? null };
+    },
+
     // THR-1768 — sphere bags per node kind: total / seeded / unseeded / non-integer / route.
     getSphereSeedCensus: async () => {
       const state = _gameStateProvider?.();

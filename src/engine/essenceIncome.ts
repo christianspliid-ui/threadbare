@@ -36,11 +36,25 @@ export function computeEssenceIncome(
   ascendantId: string,
   controlEffects?: readonly ControlEffect[],
 ): EssencePool {
+  return computeEssenceIncomeBreakdown(graph, ascendantId, controlEffects).net;
+}
+
+/**
+ * THR-1985 — the same ledger read, plus the god's total **gross** income per tick
+ * (every sphere's share of the base, thread, seat, place and aspect income, plus
+ * typed-source and control-effect income, before upkeep). The refill band reads a
+ * sphere's net as a share of this total (`essenceRefillBand`).
+ */
+export function computeEssenceIncomeBreakdown(
+  graph: WorldGraph,
+  ascendantId: string,
+  controlEffects?: readonly ControlEffect[],
+): { net: EssencePool; grossTotal: number } {
   const node = graph.getNode(ascendantId);
-  if (!node) return emptyPool();
+  if (!node) return { net: emptyPool(), grossTotal: 0 };
 
   const alignment = node.properties.sphereAlignment as SphereAlignment | undefined;
-  if (!alignment) return emptyPool();
+  if (!alignment) return { net: emptyPool(), grossTotal: 0 };
 
   // Gross generation
   let totalRate = BASE_ESSENCE_PER_TICK;
@@ -93,13 +107,17 @@ export function computeEssenceIncome(
 
   const net = { ...gross };
   net[alignment.primary] = gross[alignment.primary] - totalMaintenance;
+  let grossTotal = totalRate;
 
   // Typed essence-source income (THR-611) — per-sphere, tier/DR scaled. Mirrors
   // the term in computeEssenceGeneration; untyped sources stay on the legacy path.
   const sourceIncome = computeSourceIncome(graph, ascendantId);
   for (const [sphere, amount] of Object.entries(sourceIncome)) {
     const s = sphere as SphereName;
-    if (amount && SPHERE_NAMES.includes(s)) net[s] = (net[s] ?? 0) + amount;
+    if (amount && SPHERE_NAMES.includes(s)) {
+      net[s] = (net[s] ?? 0) + amount;
+      grossTotal += amount;
+    }
   }
 
   // Control effect income (per-sphere, not distributed by alignment)
@@ -110,10 +128,11 @@ export function computeEssenceIncome(
         const s = sphere as SphereName;
         if (SPHERE_NAMES.includes(s)) {
           net[s] = (net[s] ?? 0) + (income as number);
+          grossTotal += income as number;
         }
       }
     }
   }
 
-  return net;
+  return { net, grossTotal };
 }

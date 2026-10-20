@@ -203,7 +203,6 @@
   overflow: hidden;
   flex: 1;
 }
-
 /* ── Seat line (THR-1792) ──────────────────────────────────────── */
 .seatLine {
   display: flex;

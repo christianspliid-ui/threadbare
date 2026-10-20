@@ -32,6 +32,12 @@ import {
   sphereWord,
 } from './sphereBuy';
 import { ChooseAgainButton } from './remembranceChoice';
+import { previewPourRefill } from '../../engine/views/essenceRefill';
+import {
+  ESSENCE_REFILL_TAG_SEPARATOR,
+  ESSENCE_REFILL_WORDS,
+  ESSENCE_UPKEEP_TAG,
+} from '../../data/essence-refill-content';
 
 interface SpheresStepProps {
   /** The hunger's preset — the step opens on it, and "As my hunger shaped me" returns to it. */
@@ -52,6 +58,8 @@ export function SpheresStep({ preset, visible, onConfirm, onChooseAgain }: Spher
 
   const remaining = SPHERE_POINT_BUDGET - spentOf(positions);
   const isPreset = positions.every((v, i) => v === presetPositions[i]);
+  // THR-1985 — what the pour does, said live: each sphere's refill word moves as points are poured.
+  const refill = useMemo(() => previewPourRefill(pointsFromPositions(positions)), [positions]);
 
   const setRow = useCallback((row: number, position: number) => {
     if (!isPositionAffordable(positions, row, position)) {
@@ -139,6 +147,14 @@ export function SpheresStep({ preset, visible, onConfirm, onChooseAgain }: Spher
                 </Tooltip>
                 <span style={{ ...proseFont, fontSize: 'var(--text-xs)', color: 'rgba(180,170,140,0.55)', marginTop: '2px' }}>
                   {SPHERE_BUY_LINES[sphere as keyof typeof SPHERE_BUY_LINES]}
+                </span>
+                <span
+                  data-testid={`sphere-refill-${sphere}`}
+                  data-refill-band={refill.bands[sphere]}
+                  style={{ ...proseFont, fontSize: 'var(--text-xs)', color: active ? 'var(--text-secondary)' : 'var(--text-muted)', marginTop: '2px' }}
+                >
+                  {ESSENCE_REFILL_WORDS[refill.bands[sphere]].pour}
+                  {refill.deepest === sphere && `${ESSENCE_REFILL_TAG_SEPARATOR}${ESSENCE_UPKEEP_TAG}`}
                 </span>
               </div>
             );

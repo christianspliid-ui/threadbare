@@ -94,7 +94,7 @@ describe('THR-1714 — show the roll in the meeting', () => {
     fireEvent.click(screen.getByTestId(`nudge-card-${card.id}`));
     const moved = screen.queryByTestId('nudge-forecast-moved');
     if (moved) {
-      expect(moved.textContent).toMatch(/^[▲▼] your hand (lifts|lowers) the odds$/);
+      expect(moved.textContent).toMatch(/^[▲▼] your hand (lifts|lowers) the odds( — (still|close to) [A-Z][a-z]+)?$/);
       expect(moved.textContent).not.toMatch(/\bwas\b/);
     }
   });

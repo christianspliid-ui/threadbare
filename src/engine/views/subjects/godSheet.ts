@@ -35,6 +35,11 @@ import {
   ESSENCE_DRAWN_LEAD,
 } from '../../../data/ascendant-bar-content';
 import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
+import { readEssenceRefill, type EssenceRefillBand } from '../essenceRefill';
+import {
+  ESSENCE_REFILL_UPKEEP_HOVER,
+  ESSENCE_REFILL_WORDS,
+} from '../../../data/essence-refill-content';
 import { heldSources } from '../../../engine/essenceSources';
 import { faithLine } from '../../../engine/prayers';
 import { resolveToParentLocation } from '../../../engine/sublocationShape';
@@ -144,6 +149,18 @@ export interface EssenceRowView {
    * two things that fed it and two that drew on it — in words, never rates.
    */
   hoverDesc?: string;
+  /**
+   * THR-1985 — how fast the pool refills, as a band (a share of the god's total
+   * income, never a rate). `upkeep` marks the deepest sphere, which pays thread
+   * and source upkeep and carries "pays your upkeep" beside its word. Absent when
+   * the ledger read gave no band (fail-soft: the row shows no word).
+   */
+  refill?: EssenceRowRefill;
+}
+
+export interface EssenceRowRefill {
+  band: EssenceRefillBand;
+  upkeep: boolean;
 }
 
 /** Join cause phrases as "a" / "a and b". */
@@ -156,9 +173,21 @@ function joinPhrases(phrases: readonly string[]): string {
  * through `readEssenceMovement`. An absent record reads *Steady* with the role
  * alone (fail-soft — the designed empty state).
  */
-export function essenceRowHover(sphere: SphereName, reading: EssenceMovementReading): string {
+export function essenceRowHover(
+  sphere: SphereName,
+  reading: EssenceMovementReading,
+  refill?: EssenceRowRefill,
+): string {
   const role = SPHERE_COPY[sphere]?.role ?? '';
-  const parts = [role, `${ESSENCE_TREND_WORDS[reading.trend]}.`];
+  // THR-1985 — the hover's first sentence names the refill speed; the deepest
+  // sphere's says why it can read slower than the pour screen promised.
+  const refillWord = refill ? ESSENCE_REFILL_WORDS[refill.band].row : '';
+  const refillSentence = !refill
+    ? ''
+    : refill.upkeep
+      ? ESSENCE_REFILL_UPKEEP_HOVER.replace('{word}', refillWord)
+      : `${refillWord}.`;
+  const parts = [refillSentence, role, `${ESSENCE_TREND_WORDS[reading.trend]}.`];
   if (reading.feeds.length > 0) {
     parts.push(`${ESSENCE_FED_LEAD} ${joinPhrases(reading.feeds.map((c) => ESSENCE_CAUSE_PHRASES[c].fed))}.`);
   }
@@ -185,6 +214,8 @@ export function selectEssenceRows(
   const primary = archetype.sphereAlignment.primary;
   const secondary = archetype.sphereAlignment.secondary;
   const foundation = new Set<SphereName>(FOUNDATION_SPHERE_NAMES);
+  // THR-1985 — one ledger read for every row's refill band.
+  const refill = readEssenceRefill(gameState.graph, gameState.ascendantId, gameState.controlEffects).spheres;
 
   const identity: SphereName[] = primary === secondary ? [primary] : [primary, secondary];
   const rest = SPHERE_NAMES.filter((sphere) => !identity.includes(sphere));
@@ -200,6 +231,8 @@ export function selectEssenceRows(
       const isSecondary = sphere === secondary && !isPrimary;
       // THR-1713 — the arrow and the hover read one record, so they cannot disagree.
       const reading = readEssenceMovement(gameState.essenceMovement?.[sphere], gameState.tick);
+      const band = refill[sphere]?.band;
+      const rowRefill: EssenceRowRefill | undefined = band ? { band, upkeep: isPrimary } : undefined;
       return {
         sphere,
         level,
@@ -207,7 +240,8 @@ export function selectEssenceRows(
         isPrimary,
         isSecondary,
         isElder: foundation.has(sphere) && !isPrimary && !isSecondary,
-        hoverDesc: essenceRowHover(sphere, reading),
+        hoverDesc: essenceRowHover(sphere, reading, rowRefill),
+        ...(rowRefill ? { refill: rowRefill } : {}),
       };
     });
 }
