@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 04:02 local (02:02 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 04:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-20: heavy simulation tests green again — the card-arming speed checks now use a named budget sized for the shared test machine** ([THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)). Merged via [#2494](https://github.com/christianspliid-ui/threadbare/pull/2494).
 - **2026-10-20: the pour and the odds explain themselves — refill words on the essence rows, a one-sentence odds ladder, "still Doomed" on a move inside a tier, and the full pip legend** ([THR-1985](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows)). Merged via [#2492](https://github.com/christianspliid-ui/threadbare/pull/2492) and live.
 - **2026-10-20: the Stage, slice 3 — encounters play on the Stage beside the lit map, and the aftermath closes with "Continue"** ([THR-1895](https://linear.app/threadbare/issue/THR-1895/the-stage-slice-3-encounters-play-on-the-stage-the-veils-step-shells)). Merged via [#2491](https://github.com/christianspliid-ui/threadbare/pull/2491) and live.
 - **2026-10-19: Inspector S6 — arm a card from your hand and its targets light up on the map** ([THR-1914](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light)). Merged via [#2489](https://github.com/christianspliid-ui/threadbare/pull/2489) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-18: the screen frame's top bar, with "Needs you"** ([THR-1875](https://linear.app/threadbare/issue/THR-1875/plan-doc-the-screen-frame-top-bar-with-needs-you-the-god-rail-with-the)). Merged via [#2484](https://github.com/christianspliid-ui/threadbare/pull/2484) and live.
 - **2026-10-18: every new game now starts with a First — Advanced World Setup is a developer-only screen** ([THR-1978](https://linear.app/threadbare/issue/THR-1978/the-title-screens-advanced-world-setup-starts-a-game-with-no-first)). Merged via [#2483](https://github.com/christianspliid-ui/threadbare/pull/2483) and live.
 - **2026-10-18: Observe and Agent Thread now charge their price from the pool the card names, and Agent Thread answers at once** ([THR-1977](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand)). Merged via [#2481](https://github.com/christianspliid-ui/threadbare/pull/2481) and live.
-- **2026-10-18: the fix for armies bleeding out within a week, with almost none raised again** ([THR-1973](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again)). Merged via [#2480](https://github.com/christianspliid-ui/threadbare/pull/2480) and live.
 
 ---
 

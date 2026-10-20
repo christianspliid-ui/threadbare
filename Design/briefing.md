@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 04:02 local (02:02 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 04:58 local (02:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,15 +37,16 @@ From [the hiring-a-free-company plan](https://github.com/christianspliid-ui/thre
 
 Say 'veto <title>' to reverse any of these.
 
+
 ## Queue
 
-**Backed up: 30 ready, 1 in progress.** [Show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows) merged ([PR #2492](https://github.com/christianspliid-ui/threadbare/pull/2492)) at 01:53 UTC and is live; Linear still shows it In Dev while the auto-close catches up. The builder's last two runs found nothing to claim while that PR was merging.
+**Backed up: 30 ready, 1 in progress.** The builder is working on [find anything with Ctrl+K](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the) (High, claimed 01:29 UTC). The fix for the red heavy tests, [THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured), merged at 02:51 UTC ([PR #2494](https://github.com/christianspliid-ui/threadbare/pull/2494)).
 
-- Top of the queue: [find anything with Ctrl+K](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the) (High, promoted by the orchestrator this hour), [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High), and the new heavy-tests fix below (High).
+- Next up: [words that wait for their moment](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the) (High, promoted by the orchestrator this hour) and [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- **Heavy simulation tests red on main since 00:25 UTC** — one speed check on the card-arming code measured 17.2 ms against a 16 ms budget on the shared test machine. Ticket [THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured) filed for the builder. A fresh run on the newest main is in progress.
-- The live site is current (e6bfdb97). Main's required checks and all scheduled lanes are on time. The engine runs at 115 ms a tick, 16% faster than its week's median.
-- The tidy-up job reports 561 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- All green. Heavy simulation tests are green on main again. The live site is current (0173c085). Main's checks and all scheduled lanes are on time. No pull requests are waiting to merge.
+- The engine runs at 115 ms a tick, 16% faster than its week's median.
+- The tidy-up job reports 563 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
