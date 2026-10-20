@@ -50,8 +50,7 @@ export interface DialogContextSurface {
 /**
  * The surface → context map, as data. Surfaces not listed here are neutral.
  * Derived from the home list (`HOMED_SURFACES`, THR-1877): each entry's `palette`.
- * `MeetingEncounterModal` (unmounted) and `MeetTheFirstFlow` (not a `Modal`) carry no
- * palette, so they are absent, as before.
+ * `MeetTheFirstFlow` (not a `Modal`) carries no palette, so it is absent, as before.
  */
 export const DIALOG_CONTEXT_SURFACES: ReadonlyArray<DialogContextSurface> =
   (HOMED_SURFACES as readonly HomedSurfaceEntry[]).flatMap(e => (e.palette

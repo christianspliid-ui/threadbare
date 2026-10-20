@@ -592,7 +592,7 @@ export const IA_SURFACES: IASurface[] = [
   {
     "surface": "game.journey-vignette-modal",
     "view": "game",
-    "mount": "modal",
+    "mount": "stage",
     "reads": [
       {
         "state_path": "pendingVignettes",
@@ -600,7 +600,7 @@ export const IA_SURFACES: IASurface[] = [
         "visible_when": "pendingVignettes non-empty"
       }
     ],
-    "notes": "Journey-beat vignette popup.\n"
+    "notes": "Journey moment on the Stage.\n"
   },
   {
     "surface": "game.encounter-veil",

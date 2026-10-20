@@ -496,7 +496,9 @@ export interface HexMapV2Handle {
    */
   setStageFocus: (focus: StageMapFocus | null, options?: { fadeMs?: number }) => void;
   /** THR-1892 — the Stage layer's counts now, or null when no Stage dims the map. */
-  getStageFocusState: () => { strength: number; lit: number; dimmed: number } | null;
+  getStageFocusState: () => { strength: number; lit: number; dimmed: number; options: number; hoveredOption: string | null } | null;
+  /** THR-1897 — show one premonition option's dashed ring (its `col,row`); null hides them. Kept across a rebuild. */
+  setStageOptionHover: (hexKey: string | null) => void;
   /**
    * THR-1892 (§ D6) — move the camera so the centroid of `hexKeys` lands at a viewport
    * point, at `zoom`. Resolves when the camera lands: `'eased'` after the transition,
@@ -668,6 +670,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // THR-1892 — the Stage's dim and ring, built on a focus and disposed on null.
     const stageFocusLayerRef = useRef<StageFocusLayer | null>(null);
     const [stageFocus, setStageFocusState] = useState<{ focus: StageMapFocus; fadeMs: number } | null>(null);
+    // THR-1897 — the premonition option the player is hovering, re-applied when the layer rebuilds.
+    const stageOptionHoverRef = useRef<string | null>(null);
     const dominionDropLayerRef = useRef<DominionDropLayer | null>(null);
     // Bumped after every scene build so incremental layers re-attach to the new scene.
     const [sceneEpoch, setSceneEpoch] = useState(0);
@@ -975,7 +979,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       },
       getStageFocusState() {
         const layer = stageFocusLayerRef.current;
-        return layer ? { strength: layer.strength, lit: layer.counts.lit, dimmed: layer.counts.dimmed } : null;
+        return layer
+          ? { strength: layer.strength, lit: layer.counts.lit, dimmed: layer.counts.dimmed, options: layer.counts.options, hoveredOption: layer.getHoveredOption() }
+          : null;
+      },
+      setStageOptionHover(hexKey: string | null) {
+        stageOptionHoverRef.current = hexKey;
+        stageFocusLayerRef.current?.setHoveredOption(hexKey);
       },
       projectHex(col: number, row: number) {
         const camera = cameraRef.current;
@@ -2033,6 +2043,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       }
       scene.add(layer.group);
       stageFocusLayerRef.current = layer;
+      layer.setHoveredOption(stageOptionHoverRef.current);
       // The dim fades in with the camera ease; reduced motion (fadeMs 0) shows it at once.
       if (stageFocus.fadeMs <= 0) {
         layer.setProgress(1);

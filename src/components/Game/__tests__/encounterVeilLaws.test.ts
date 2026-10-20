@@ -291,10 +291,12 @@ describe('Law 27 — the ceremonial prose serif lives in the token layer', () =>
 // ── Laws 23/26/35 — the family composes Modal, it does not fork it ─
 
 describe('Laws 23/26 — no forked overlays in the interrupt family', () => {
-  it('EmergenceDilemmaModal composes Modal', () => {
+  // THR-1897 — the dilemma moved from Modal onto the Stage (plan THR-1877 S4); the Stage
+  // composes the shared Overlay, so the family still does not fork it.
+  it('EmergenceDilemmaModal composes the Stage', () => {
     const src = readCode(EMERGENCE);
-    expect(src).toMatch(/from '\.\.\/shared\/Modal'/);
-    expect(src).toMatch(/<Modal\b/);
+    expect(src).toMatch(/from '\.\.\/Game\/stage\/Stage'/);
+    expect(src).toMatch(/<Stage\b/);
   });
 
   it('no longer hand-rolls a dialog or invents a z-index (Law 35)', () => {

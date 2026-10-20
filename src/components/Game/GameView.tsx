@@ -142,7 +142,7 @@ import { forecastWithNudges } from './encounter-stage/useNudgeHand';
 import { NUDGE_REJECT_TOAST_MS, CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK, CHAPTER_ANSWER_TOAST_MS, chapterAnswerChoiceLine, resolveClockHolder } from '../../data/nudge-stage-content';
 import { sphereWord } from '../shared/formatEssence';
 import { buildSimpleEncounterStageModel } from './encounter-stage/adapters/buildSimpleEncounterStageModel';
-import { buildMomentCardModel } from './momentCardModel';
+import { buildMomentCardModel } from '../../engine/views/stage/momentCardModel';
 import { selectMomentBadges, type MomentBadgeModel } from './momentBadgeModel';
 import { describeFollow } from './FollowToggle';
 import {
@@ -170,7 +170,7 @@ import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
 import { resolveInterrupts, INTERRUPT_QUIET_AFTER_INPUT_MS } from './interruptRegistry';
-import { HOMED_SURFACES, type HomedSurfaceKind } from '../../data/homed-surfaces';
+import { HOMED_SURFACES, type HomedSurfaceKind, type StageHomedKind } from '../../data/homed-surfaces';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
 import { selectThreadTugBadges } from './threadTugBadgeModel';
@@ -813,8 +813,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // THR-1213 slice 2 deleted an `ascendantLens` memo here. It built a stub lens
   // from *archetype* spheres, nothing read it, and the real lens now comes from
   // the player's remembrance identity inside `MeetTheFirstFlow` — where a lens
-  // can actually reach the deal. The identity-less path builds its own stub in
-  // `MeetingEncounterModal`, at the one call site that needs it.
+  // can actually reach the deal. (The identity-less `MeetingEncounterModal`, never
+  // mounted, was deleted by THR-1897.)
 
   // ── Camera interaction gate (THR-463) ──
   // Stable callback that the HexMapV2 follow-mode checks on every hex change.
@@ -3438,6 +3438,55 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     }, tiles)
     : null;
 
+  // THR-1897 (S4) — the last four Stage moments' view models. A journey moment and an
+  // undertaking moment are lit at their mortal's place; a premonition at its mortal's, with
+  // its options' places ringed on hover; the emergence dilemma at its ruin, else its mortal.
+  const vignetteStageVM: StageVM | null = activeVignette
+    ? readView(runtime, gameState, stageViewSelector, {
+      kind: 'journey-vignette',
+      subjectAgentId: activeVignette.data.agentId,
+      hasArt: false,
+      hasCast: false,
+    }, tiles)
+    : null;
+  const momentStageVM: StageVM | null = pendingMoment && momentCardModel
+    ? readView(runtime, gameState, stageViewSelector, {
+      kind: 'undertaking-moment',
+      subjectAgentId: momentCardModel.actorExists ? momentCardModel.actorId : null,
+      hasArt: false,
+      hasCast: false,
+    }, tiles)
+    : null;
+  const premonitionStageVM: StageVM | null = activePremonition
+    ? readView(runtime, gameState, stageViewSelector, {
+      kind: 'premonition',
+      subjectAgentId: activePremonition.agentId,
+      optionLocationIds: activePremonition.type === 'compulsion'
+        ? (activePremonition.compulsionCandidates ?? []).map(c => c.locationId || null)
+        : null,
+      hasArt: false,
+      hasCast: true,
+    }, tiles)
+    : null;
+  const pendingEmergence = gameState.pendingEmergenceDecision;
+  const emergenceStageVM: StageVM | null = pendingEmergence
+    ? readView(runtime, gameState, stageViewSelector, {
+      kind: 'emergence-dilemma',
+      ruinId: pendingEmergence.ruinId,
+      subjectAgentId: pendingEmergence.agentId,
+      hasArt: false,
+      hasCast: false,
+    }, tiles)
+    : null;
+  const stageVMByKind: Partial<Record<StageHomedKind, StageVM | null>> = {
+    'story-beat': storyBeatStageVM,
+    encounter: encounterStageVM,
+    'journey-vignette': vignetteStageVM,
+    'undertaking-moment': momentStageVM,
+    premonition: premonitionStageVM,
+    'emergence-dilemma': emergenceStageVM,
+  };
+
   const handleStoryBeatDismiss = useCallback(() => {
     setGameState(prev => {
       // THR-1822 § D15: the engine writes the dismissal and bumps worldVersion.
@@ -3528,7 +3577,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     foregroundIncumbentRef.current = interruptForeground;
   }, [interruptForeground]);
   // THR-1892 — `__DEBUG.getStage()` and `__DEBUG.openHomedSurface(kind)`.
-  useStageDebugBridge({ gameScreen, hexMapRef, interruptResolution, stageVM: interruptResolution.stage === 'encounter' ? encounterStageVM : storyBeatStageVM, setGameState, runtime });
+  useStageDebugBridge({ gameScreen, hexMapRef, interruptResolution, stageVM: interruptResolution.stage ? stageVMByKind[interruptResolution.stage] ?? null : null, setGameState, runtime });
   // A set-down kind is forgotten once its own flag clears, so its next opening shows.
   const wishedHomedKey = interruptResolution.wished.join('|');
   useEffect(() => {
@@ -4602,6 +4651,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         momentCardModel={momentCardModel}
         handleAcknowledgeMoment={handleAcknowledgeMoment}
         handleMomentDivineAct={handleMomentDivineAct}
+        momentStageVM={momentStageVM}
+        vignetteStageVM={vignetteStageVM}
+        premonitionStageVM={premonitionStageVM}
+        emergenceStageVM={emergenceStageVM}
         activeVignette={activeVignette}
         handleJourneyChoice={handleJourneyChoice}
         activeStoryBeatId={activeStoryBeatId}

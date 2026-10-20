@@ -46,7 +46,7 @@ import { Panel } from '../../shared/Panel';
 import { EntityLink } from '../../shared/EntityLink';
 import { Button } from '../../shared/Button';
 import { GameErrorBoundary } from '../../shared/GameErrorBoundary';
-import { useGameScreenState } from '../frame/GameScreenState';
+import { isInertGameScreenStore, useGameScreenState } from '../frame/GameScreenState';
 import { IDLE_STAGE } from './stageState';
 
 /** The panel's width in each layout, from tokens alone (§ D3). */
@@ -76,6 +76,13 @@ export interface StageProps {
    * `--veil-void`); otherwise the `Panel` level's.
    */
   ground?: string;
+  /**
+   * THR-1897 — a premonition's option hovered or focused now (its `col,row`): its dashed
+   * ring shows on the map and the place tag names it ("… · where the dream pulls").
+   */
+  hoveredOption?: string | null;
+  /** THR-1897 — the dream's tone, which colours the option rings. */
+  optionTone?: 'whisper' | 'compulsion';
 }
 
 function rectOf(el: Element | null): { x: number; y: number; w: number; h: number } | null {
@@ -84,8 +91,11 @@ function rectOf(el: Element | null): { x: number; y: number; w: number; h: numbe
   return { x: r.left, y: r.top, w: r.width, h: r.height };
 }
 
-export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, right, holdLineShowsOnMap = false, tick, ground }: StageProps) {
-  const { state: screen, setStage } = useGameScreenState();
+export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, right, holdLineShowsOnMap = false, tick, ground, hoveredOption = null, optionTone = 'compulsion' }: StageProps) {
+  const store = useGameScreenState();
+  const { state: screen, setStage } = store;
+  // THR-1897 — no frame to write to (a lab or a test): the panel shows at once (fail-soft).
+  const inert = isInertGameScreenStore(store);
   const stage = screen.stage;
   const reducedMotion = usePrefersReducedMotion();
   const windowRef = useRef<HTMLDivElement | null>(null);
@@ -120,6 +130,8 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
   // ── After the rails settle, measure the window and ask the map for its focus. ──
   const litKey = vm.litHex;
   const frameKey = vm.frame.join('|');
+  // THR-1897 — a premonition's option places, ringed on the map while hovered.
+  const optionsKey = vm.options.map(o => `${o.hexKey}${o.ringOnly ? '~' : ''}`).join('|');
   useEffect(() => {
     let frames = STAGE_LAYOUT_SETTLE_FRAMES;
     let id = 0;
@@ -135,7 +147,9 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
         cameraMode: null,
         focus: {
           lit: litKey ? [litKey] : [],
-          options: [],
+          options: optionsKey
+            ? optionsKey.split('|').map(k => ({ hexKey: k.replace('~', ''), tone: optionTone, ringOnly: k.endsWith('~'), hovered: false }))
+            : [],
           strength: STAGE_MAP_DIM,
           frame: frameKey ? frameKey.split('|') : [],
           windowRect,
@@ -145,7 +159,12 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
     };
     id = requestAnimationFrame(step);
     return () => cancelAnimationFrame(id);
-  }, [litKey, frameKey, reducedMotion, setStage]);
+  }, [litKey, frameKey, optionsKey, optionTone, reducedMotion, setStage]);
+
+  // ── THR-1897: the hovered option goes to the map (its ring) through the frame's state. ──
+  useEffect(() => {
+    setStage(prev => (prev.hoveredOption === hoveredOption ? prev : { ...prev, hoveredOption }));
+  }, [hoveredOption, setStage]);
 
   // ── The panel enters when the camera lands, or after the timeout if it never reports. ──
   const focusPosted = stage.focus !== null;
@@ -157,7 +176,7 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
     return () => clearTimeout(t);
   }, [focusPosted, stage.cameraSettled, setStage]);
 
-  const open = stage.cameraSettled;
+  const open = stage.cameraSettled || inert;
   useEffect(() => {
     if (!open) return;
     setStage(prev => (prev.phase === 'entering' ? { ...prev, phase: 'open' } : prev));
@@ -232,6 +251,11 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
     ...(ground ? { background: ground } : {}),
   };
 
+  // The place tag: the lit place, or while a premonition option is hovered, the option's place.
+  const hoveredPlace = hoveredOption ? vm.options.find(o => o.hexKey === hoveredOption)?.place ?? null : null;
+  const tagPlace = hoveredPlace ?? vm.place;
+  const tagSuffix = hoveredPlace ? STAGE_WORDS.placeTagDreamSuffix : vm.placeTagSuffix;
+
   const holdLine = holdLineShowsOnMap ? `${STAGE_WORDS.holdLine} ${STAGE_WORDS.holdLineShowOnMap}` : STAGE_WORDS.holdLine;
   const context = vm.palette === 'story' || vm.palette === 'elder' || vm.palette === 'gain' ? vm.palette : undefined;
 
@@ -275,9 +299,10 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
         data-stage-window=""
         style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: `calc(2 * var(--stage-gutter) + ${panelWidth})` }}
       >
-        {vm.place && vm.placeTagSuffix && (
+        {tagPlace && tagSuffix && (
           <div
             data-stage-place-tag=""
+            data-stage-place-tag-option={hoveredPlace ? '' : undefined}
             style={{
               position: 'absolute', top: 'var(--stage-gutter)', left: '50%', transform: 'translateX(-50%)',
               maxWidth: 'calc(100% - 2 * var(--stage-gutter))', padding: '4px 10px', borderRadius: 'var(--radius-control)',
@@ -285,8 +310,8 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textAlign: 'center',
             }}
           >
-            <EntityLink id={vm.place.ref.id} name={vm.place.name} entityRef={vm.place.ref} />
-            <span>{vm.placeTagSuffix}</span>
+            <EntityLink id={tagPlace.ref.id} name={tagPlace.name} entityRef={tagPlace.ref} />
+            <span>{tagSuffix}</span>
           </div>
         )}
         <p

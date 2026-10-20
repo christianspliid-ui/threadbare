@@ -253,7 +253,8 @@ export interface DebugStageState {
   /** The camera assertion: the lit hex sits inside the window. */
   litHexInWindow: boolean;
   camera: { k: number; mode: 'eased' | 'cut' | 'stayed' | 'timed_out' } | null;
-  mapDim: { strength: number; lit: number; dimmed: number } | null;
+  /** THR-1897 adds `options` (premonition option rings built) and `hoveredOption` (the one shown). */
+  mapDim: { strength: number; lit: number; dimmed: number; options: number; hoveredOption: string | null } | null;
   folded: { inspector: boolean; ledgerRail: boolean; lensSuppressed: boolean; mapControlsHidden: boolean };
   /** Law 57: scroll boxes inside the panel that scroll while shorter than it. Empty when lawful. */
   scrollingBelowCap: { element: string; axis: 'x' | 'y' }[];
@@ -2335,7 +2336,11 @@ export interface DebugBridge {
   /**
    * THR-1892 — open one homed surface by kind (`HomedSurfaceKind`, `src/data/homed-surfaces.ts`).
    * `'story-beat'` stages the pacing governor's beat on an unresolved chapter, so it plays on
-   * the Stage. Kinds whose lever lands with a later slice say so in `reason`. Async.
+   * the Stage. THR-1897: `'journey-vignette'` queues The First's beat for her phase;
+   * `'emergence-dilemma'` stages a transformed dilemma at an elder ruin; `'premonition'` queues a
+   * whisper about The First, else `@hero` (a compulsion, with option rings: `forcePremonition('@hero', 'compulsion')`
+   * then `tick(1)`); `'undertaking-moment'` arms `forceMoments(true)` and answers `opened: false`
+   * until a checkpoint fires. Kinds with no one-call lever say so in `reason`. Async.
    */
   openHomedSurface(kind: string): Promise<DebugOpenHomedSurfaceResult>;
   /**

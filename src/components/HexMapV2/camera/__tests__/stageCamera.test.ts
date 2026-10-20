@@ -2,7 +2,7 @@
  * THR-1892 — the Stage's camera math (plan THR-1877 § D6).
  */
 import { describe, it, expect } from 'vitest';
-import { centreForWorldAt, centroid, chooseStageZoom, hexScreenWidth, nudgeInside } from '../stageCamera';
+import { centreForWorldAt, centroid, chooseStageFrame, chooseStageZoom, hexScreenWidth, nudgeInside } from '../stageCamera';
 import { CAMERA_CONSTANTS } from '../D3ZoomCamera';
 
 describe('centreForWorldAt', () => {
@@ -54,5 +54,28 @@ describe('centroid and nudgeInside', () => {
 
   it('a rect too small for its margin moves nothing', () => {
     expect(nudgeInside({ x: 0, y: 0 }, { left: 0, top: 0, right: 50, bottom: 50 }, 48)).toBeNull();
+  });
+});
+
+// THR-1897 (§ D6) — a premonition frames its options' places when they all fit at k ≥ 5.
+describe('chooseStageFrame', () => {
+  const window = { w: 280, h: 984 };
+
+  it('one point frames itself at the chosen zoom', () => {
+    expect(chooseStageFrame([{ x: 0, y: 0 }], 10, window, 1)).toEqual({ framed: 1, zoom: 10 });
+  });
+
+  it('places that fit at the chosen zoom are all framed there', () => {
+    expect(chooseStageFrame([{ x: 0, y: 0 }, { x: 10, y: 0 }], 5, window, 1)).toEqual({ framed: 2, zoom: 5 });
+  });
+
+  it('places that fit only further out are framed at the zoom that fits, while it is at least 5', () => {
+    const r = chooseStageFrame([{ x: 0, y: 0 }, { x: 30, y: 0 }], 10, window, 1);
+    expect(r.framed).toBe(2);
+    expect(r.zoom).toBeCloseTo(280 / 50);
+  });
+
+  it('places too far apart to fit at 5 frame the mortal alone, at the chosen zoom', () => {
+    expect(chooseStageFrame([{ x: 0, y: 0 }, { x: 200, y: 0 }], 10, window, 1)).toEqual({ framed: 1, zoom: 10 });
   });
 });

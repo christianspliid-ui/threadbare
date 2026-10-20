@@ -10,11 +10,17 @@
  * (`data/ruin-words.ts` for the fate, `getDurationWord` for the wait) rather
  * than interpolating engine values — THR-1080.
  *
- * 1920×1080 compliant: max-height 85vh, no internal overflow.
+ * THR-1897 (plan THR-1877 § D4, S4): the dilemma plays on the Stage, lit at the ruin's
+ * place (else the mortal's), in the `elder` palette; compact, since a ruin carries no art
+ * of its own today. The Stage's context line names the mortal and the place under the
+ * header. Its `Modal` is gone; its words are not. The panel's body is the only scroll box
+ * (Law 57).
  */
 
 import React, { useMemo } from 'react';
-import { Modal } from '../shared/Modal';
+import { Stage } from '../Game/stage/Stage';
+import { StageContextLine } from '../Game/StoryBeatModal';
+import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
 import type { GameState } from '../../types/gameState';
 import type { EmergenceChoice } from '../../engine/ruins/ruinTransformation';
 import {
@@ -27,19 +33,18 @@ import { getDurationWord } from '../../data/domain-words';
 interface Props {
   gameState: GameState;
   onResolve: (choice: EmergenceChoice) => void;
+  /** THR-1897 — the Stage view model (lit at the ruin); absent ⇒ nothing lit. */
+  stageVM?: StageVM | null;
 }
 
-/**
- * Panel width. Was `min(720px, 92vw)` on the forked overlay; `Modal` takes the
- * max width and applies its own `width: 90%` for the small-viewport half.
- */
-const PANEL_MAX_WIDTH_PX = 720;
+/** The Stage's accessible name. */
+const STAGE_LABEL = 'Emergence Dilemma';
 
 /**
  * What Escape and a backdrop click resolve to (Laws 23, 48).
  *
  * This surface has no dismiss — it is a forced choice with a countdown — so
- * `Modal`'s close contract had to be given a meaning rather than wired to a
+ * the Stage's Escape had to be given a meaning rather than wired to a
  * no-op. `let` is the right one and is not a judgement call: it is exactly what
  * `phaseDelveEmergence` fires when `autoFiresTick` passes (`delveVariant.ts`,
  * `emergenceChoice: 'let'`). So the keypress cannot reach an outcome that
@@ -154,7 +159,7 @@ const CHOICE_SPECS: ChoiceSpec[] = [
   },
 ];
 
-export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
+export function EmergenceDilemmaModal({ gameState, onResolve, stageVM }: Props) {
   const pending = gameState.pendingEmergenceDecision;
 
   const totalEssence = useMemo(() => {
@@ -188,15 +193,17 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
     return '';
   }
 
+  const vm = stageVM ?? fallbackStageView({ kind: 'emergence-dilemma', hasArt: false, hasCast: false });
+
   return (
-    <Modal
-      open
-      onClose={() => onResolve(CLOSE_RESOLVES_TO)}
-      maxWidth={PANEL_MAX_WIDTH_PX}
-      aria-label="Emergence Dilemma"
-      context="elder"
-    >
-      <Modal.Body>
+    <Stage
+      kind="emergence-dilemma"
+      vm={vm}
+      label={STAGE_LABEL}
+      onEscape={() => onResolve(CLOSE_RESOLVES_TO)}
+      tick={gameState.tick}
+      right={(
+      <div data-emergence-dilemma-stage="" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--panel-padding, 20px)' }}>
         <div style={BODY}>
           <div style={HEADER}>
             <span>Emergence dilemma · {getRuinFateWord(pending.consequenceRoll)}</span>
@@ -209,6 +216,7 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
               {ticksRemaining === 0 ? 'Auto-firing now' : `Auto-fires ${getDurationWord(ticksRemaining)}`}
             </span>
           </div>
+          <StageContextLine line={vm.contextLine} />
           <div style={{ fontFamily: 'var(--font-body)', fontStyle: 'italic', fontSize: 'var(--text-xs)', color: 'var(--text-primary)', lineHeight: 1.5 }}>
             The delve has reached its last breath. What do you do with what remains?
           </div>
@@ -242,7 +250,8 @@ export function EmergenceDilemmaModal({ gameState, onResolve }: Props) {
             })}
           </div>
         </div>
-      </Modal.Body>
-    </Modal>
+      </div>
+      )}
+    />
   );
 }

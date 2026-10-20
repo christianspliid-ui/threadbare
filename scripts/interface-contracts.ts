@@ -3246,7 +3246,6 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/ascendantLens.ts', 'src/engine/meetingEncounter.ts'],
     readSites: [
       'src/components/MeetTheFirst/MeetTheFirstFlow.tsx',
-      'src/components/Game/MeetingEncounterModal.tsx',
     ],
     // This row replaces a contract that was LEAKED for the whole life of the
     // feature and never audited, because it was never written down: the dilemma

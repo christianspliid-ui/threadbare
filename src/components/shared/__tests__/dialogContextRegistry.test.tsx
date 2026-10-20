@@ -21,6 +21,8 @@ import { render } from '@testing-library/react';
 import { Modal } from '../Modal';
 import { DIALOG_CONTEXT_CLASS, DIALOG_CONTEXT_SURFACES, dialogContextClass } from '../dialogContext';
 import { StoryBeatModal } from '../../Game/StoryBeatModal';
+import { HOMED_SURFACES } from '../../../data/homed-surfaces';
+import { isStageFrameKind } from '../../../data/stage-content';
 import type { UnifiedActionTemplate } from '../../../types/unifiedAction';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -88,9 +90,20 @@ describe('every registry surface declares its context (THR-1586)', () => {
   });
 
   for (const { surface, context } of adopting) {
-    it(`${surface} passes context="${context}"`, () => {
+    // THR-1897 — a surface that plays on the Stage takes its palette from the home list
+    // through the Stage view model (`vm.palette` → the panel's context), so its source
+    // names the Stage and its kind instead of a `context` prop.
+    const entry = HOMED_SURFACES.find(e => e.surfaceId === surface);
+    const onStage = entry?.home === 'stage' && isStageFrameKind(entry.kind) && surface !== 'StoryBeatModal';
+    it(onStage ? `${surface} plays on the Stage as ${entry!.kind} (palette ${context} from the list)` : `${surface} passes context="${context}"`, () => {
       const src = readFileSync(resolve(components, SURFACE_FILES[surface]), 'utf8');
-      expect(src).toContain(`context="${context}"`);
+      if (onStage) {
+        expect(src).toMatch(/<Stage\b/);
+        expect(src).toContain(`kind="${entry!.kind}"`);
+        expect(entry!.palette).toBe(context);
+      } else {
+        expect(src).toContain(`context="${context}"`);
+      }
     });
   }
 

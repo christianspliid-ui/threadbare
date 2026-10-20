@@ -1372,7 +1372,7 @@ exit
 - **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
 - **Write sites:** `src/engine/dominion.ts`
 - **Read sites:** `src/engine/playerCastDispatch.ts`, `src/engine/targetActions.ts`, `src/engine/unifiedActionResolution.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/momentCardModel.ts`, `src/engine/playerCastReadout.ts`, `src/engine/views/godRail.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/engine/playerCastReadout.ts`, `src/engine/views/godRail.ts`, `src/engine/views/stage/momentCardModel.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `dominion-band-projected-to-hex-map` — 🔵 UNVERIFIED-OK
@@ -1415,10 +1415,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 51 total — 1 write, 1 read, 49 unclassified
+- **Production hits:** 52 total — 1 write, 1 read, 50 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/journeyEngine.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +44 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +45 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -2091,7 +2091,7 @@ exit
 - **Production hits:** 105 total — 2 write, 3 read, 100 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/momentCardModel.ts`, `src/components/shared/EntityLink.tsx`, `src/data/action-template-content.ts` +95 more
+- **Other hits:** `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/shared/EntityLink.tsx`, `src/data/action-template-content.ts`, `src/data/actionEffectsProse.ts` +95 more
 - **Verdict:** Verified 2026-09-02: Constructed proof against the real pipeline (seed 42, medium): `createUndertakingOutcomeNode` wrote evt_und_proof_60 (property_destroyed, culprit ind_0 "Oswen", victim agent_mc_cmdr_1), the tick-75 mint pass wrote the `pursues` edge {grievance:true, culpritAgentId:"ind_0", harmMagnitude:0.8, heat:0.8, mintedByLabel:"the razing of Wilderness (13, 6) — Oswen's work"}, and `getAgentInfoCard` rendered it as `Seek Revenge -> burning · against Oswen, after the razing of Wilderness (13, 6) — Oswen's work`. Locked by src/engine/__tests__/agentDetail-grievance.test.ts and src/components/Game/__tests__/grievance-surfaces.test.tsx, each guard falsified by a reverted mutation.
 
 ### `group-command-changes-through-one-writer` — 🟢 LIVE
@@ -2417,10 +2417,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 46 total — 2 write, 1 read, 43 unclassified
+- **Production hits:** 47 total — 2 write, 1 read, 44 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +38 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +39 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE
@@ -2488,7 +2488,7 @@ exit
 - **Production hits:** 9 total — 1 write, 1 read, 7 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`
 - **Read sites:** `src/engine/foreshadowing/motiveReceipt.ts`
-- **Other hits:** `src/components/Game/momentCardModel.ts`, `src/debug-bridge.ts`, `src/engine/ambitionAssignment.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/worldPastAmbitions.ts` +2 more
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/ambitionAssignment.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/views/stage/momentCardModel.ts`, `src/engine/worldPastAmbitions.ts` +2 more
 - **Verdict:** Verified 2026-07-24: THR-726: `ambitionTick.ts` writes `mintedByEventId`/`mintedByLabel` on the minted `pursues` edge; `motiveReceipt.ts` `resolveMintedAmbitionProvenance` reads them and overrides the ambition contribution's provenance detail so the receipt names the origin event.
 
 ### `missed-appointment-breaks-agreement` — 🟢 LIVE
@@ -2913,10 +2913,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 254 total — 2 write, 2 read, 250 unclassified
+- **Production hits:** 255 total — 2 write, 2 read, 251 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +245 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +246 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -2973,7 +2973,7 @@ exit
 - **Production hits:** 132 total — 1 write, 1 read, 130 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/components/Game/MeetingEncounterModal.tsx` +125 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/components/Game/stage/useStageDebugBridge.ts` +125 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -3153,10 +3153,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 417 total — 1 write, 1 read, 415 unclassified
+- **Production hits:** 418 total — 1 write, 1 read, 416 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +410 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +411 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3428,10 +3428,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 249 total — 2 write, 2 read, 245 unclassified
+- **Production hits:** 250 total — 2 write, 2 read, 246 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +240 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +241 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE

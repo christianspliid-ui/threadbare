@@ -77,3 +77,28 @@ export function nudgeInside(
   const y = Math.max(minY, Math.min(maxY, point.y));
   return x === point.x && y === point.y ? null : { x, y };
 }
+
+/**
+ * THR-1897 (§ D6) — a premonition frames its mortal's place and every option's place, but
+ * only when all of them fit the window at a zoom of at least `STAGE_CAMERA_KEEP_MIN_K`;
+ * otherwise it frames the mortal's place alone. `points[0]` is the lit hex. Returns how
+ * many of the points to frame (all, or 1) and the zoom to frame them at.
+ */
+export function chooseStageFrame(
+  points: readonly { x: number; y: number }[],
+  zoom: number,
+  window: { w: number; h: number },
+  minK: number,
+): { framed: number; zoom: number } {
+  if (points.length <= 1) return { framed: points.length, zoom };
+  const xs = points.map(p => p.x);
+  const ys = points.map(p => p.y);
+  const across = HEX_CONSTANTS.HEX_SIZE * 2;
+  const spanW = Math.max(...xs) - Math.min(...xs) + across;
+  const spanH = Math.max(...ys) - Math.min(...ys) + across;
+  const fitK = Math.min(window.w / spanW, window.h / spanH);
+  if (!Number.isFinite(fitK)) return { framed: 1, zoom };
+  if (zoom <= fitK) return { framed: points.length, zoom };
+  const k = Math.max(minK, fitK);
+  return k >= STAGE_CAMERA_KEEP_MIN_K && k <= fitK ? { framed: points.length, zoom: k } : { framed: 1, zoom };
+}
