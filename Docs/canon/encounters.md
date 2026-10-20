@@ -239,6 +239,16 @@ Two of these are new as of 2026-09-10, and both existed to close a gap that made
 
 `check:encounter` now fails a sentinel pointed at a field it can never satisfy. It says nothing about `$target`, deliberately: what an encounter resolves against is a runtime fact no template declares, and a gate that guessed produced a false positive on the first try.
 
+## A beast you can fight is a monster; any other animal is scenery (THR-1274)
+
+Decided by the design lane under delegation, 2026-10-20 (process.md rule 4; veto in chat). There is **no creature cast primitive**, and none is planned.
+
+- **A non-human opponent the scene binds is a lair's monster.** Bind it with `matchProperty` on the support spec (e.g. `{ key: 'isMonsterElite', value: true }`), as `monster.hunt.named_elite` does. A monster is a class of Mortal ([monsters plan](../plans/2026-09-23-monsters-as-opponents.md) § Engine 3, `src/engine/monsters/isMonster.ts`), so it can be cast, fought (`opponentRef`), opposed by a card (`StepNudge.opposes`) and remembered between visits. A `matchProperty` spec always takes the legacy binding route; the scored binder cannot read a property match.
+- **Any other animal stays scenery:** a bear in the granary, a wolf pack, a herd, a swarm. It lives in prose, in conditions on the people it hurts, and in the place's state. It is never minted as a node, and never given a human `spawnNpcRole`. To give it a name in prose, give the scene a person who speaks for the danger (the drover who tracks the pack, the keeper who holds the door). That person can carry the Stumble (`opposes`). Six shipped beast-opposition scenes (`wolf-winter-watch`, `hill-conduit`, `granary-riot`, `silver-drift-rescue`, `gallows-pardon`, `the-beast-in-the-granary`) already work this way.
+- **A card aimed at a scenery animal** still moves the odds it charged for. It is credited to the card, not the animal (`resolveOpposedCastNodeId`, fail-soft by design).
+- **Why:** [Monster opponents](https://linear.app/threadbare/issue/THR-1268) set the scope as "just enough monster", with no bestiary and no ecology. A persistent animal in the world *is* a monster, so a second persistent-animal kind would duplicate it. Minting an actor per ordinary animal would also put it into every `actorType === 'individual'` sweep (about 98 sites, measured 2026-09-21 on the THR-1274 ticket).
+- **What would reopen it:** an authored sequel that needs the *same* ordinary animal to come back, or a decision to put wildlife and ecology into the game. That second one is Christian's call.
+
 ## Active design plans
 
 - [2026-05-04-encounter-experience-design-plan.md](../plans/2026-05-04-encounter-experience-design-plan.md) — encounter experience design (THR-300). Status: **partially superseded (2026-08-25, THR-1252)** — Rules 1/2/4 and the cast-tile/clickable-primitive decisions stand; Rule 3 (per-scene verb prose on choice cards), §3.4, and §4.3 (voice/Chronicle prose) are superseded by the nudge pivot + Prose Doctrine v2, marked in-file. Consult it for the surviving rules only.
