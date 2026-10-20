@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 09:57 local (07:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 10:56 local (08:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -39,14 +39,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 34 ready, 1 in progress.** The builder is working on [words that wait for their moment](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the) (High) right now.
+**Backed up: 34 ready, 1 in progress.** The builder is working on [moving the six hand-built dialogs onto the size tiers](https://linear.app/threadbare/issue/THR-1880/move-the-six-hand-built-dialogs-onto-the-size-tiers-settings-effect) right now (run started 08:31 UTC, active).
 
-- [A town on the edge turns to a better lord](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a) merged ([PR #2496](https://github.com/christianspliid-ui/threadbare/pull/2496)) and is live.
+- [Words that wait for their moment](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the) merged ([PR #2497](https://github.com/christianspliid-ui/threadbare/pull/2497)) and is live.
 - Next up: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (6bd86c64). Main’s checks, including the heavy simulation tests, are green, no pull request is waiting, and the scheduled lanes are on time.
-- The engine runs at 119 ms a tick, 13% below its week’s median (136).
-- The tidy-up job reports 565 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
+- All green. The live site is current (a452c380). Main's checks, including the heavy simulation tests, are green, no pull request is waiting, and the scheduled lanes are on time.
+- The engine runs at 115 ms a tick, 15% below its week's median (135).
+- The tidy-up job reports 567 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
