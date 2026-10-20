@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 11:58 local (09:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 12:56 local (10:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-20: news that leaves "Needs you" lives on in the Chronicle** ([THR-1896](https://linear.app/threadbare/issue/THR-1896/news-that-leaves-needs-you-should-live-on-in-the-chronicle-mandate)). Merged via [#2499](https://github.com/christianspliid-ui/threadbare/pull/2499) and live.
 - **2026-10-20: the hand-built dialogs move onto the size tiers — Settings, the choice sets, the Divine Court, the Codex and the warm-start card** ([THR-1880](https://linear.app/threadbare/issue/THR-1880/move-the-six-hand-built-dialogs-onto-the-size-tiers-settings-effect)). Merged via [#2498](https://github.com/christianspliid-ui/threadbare/pull/2498) and live.
 - **2026-10-20: words that wait for their moment — first-use captions, Attention at the first chapter, Dominion and Elder powers when they matter, threaded-only Chronicle growth in words, "Go on"** ([THR-1986](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the)). Merged via [#2497](https://github.com/christianspliid-ui/threadbare/pull/2497) and live.
 - **2026-10-20: hunger and unrest S2 — a town on the edge turns to a better lord, and a town that rises throws off its holder** ([THR-1957](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a)). Merged via [#2496](https://github.com/christianspliid-ui/threadbare/pull/2496) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-20: the Stage, slice 3 — encounters play on the Stage beside the lit map, and the aftermath closes with "Continue"** ([THR-1895](https://linear.app/threadbare/issue/THR-1895/the-stage-slice-3-encounters-play-on-the-stage-the-veils-step-shells)). Merged via [#2491](https://github.com/christianspliid-ui/threadbare/pull/2491) and live.
 - **2026-10-19: Inspector S6 — arm a card from your hand and its targets light up on the map** ([THR-1914](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light)). Merged via [#2489](https://github.com/christianspliid-ui/threadbare/pull/2489) and live.
 - **2026-10-19: the Stage, slice 2 — story beats play over the dimmed map with their place lit** ([THR-1892](https://linear.app/threadbare/issue/THR-1892)). Merged via [#2488](https://github.com/christianspliid-ui/threadbare/pull/2488) and live.
-- **2026-10-19: Inspector S5 — every Inspector row shows how many cards can act on it, with an inline tray of those cards** ([THR-1913](https://linear.app/threadbare/issue/THR-1913/inspector-s5-card-counts-on-every-row-with-an-inline-tray-of-those)). Merged via [#2486](https://github.com/christianspliid-ui/threadbare/pull/2486) and live.
 
 ---
 

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 11:58 local (09:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 12:56 local (10:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -16,6 +16,10 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From [the design lane this morning, run c](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20c.md):
+
+- [Reward category shares still fold into item weights](https://linear.app/threadbare/issue/THR-1890/reward-category-shares-still-fold-into-item-weights-decide-whether): a reward draw rolls its **rarity first, exactly as today**. Then it picks **the kind of reward the scene asked for** (a thing, a condition or a power) by the scene's own shares, and only then the item. Rarity and Legendaries do not change. On scenes that offer several kinds, **permanent powers come up about twice as often** (8% → 16% of those prizes), because that is what the scenes were written to give. *Veto:* "keep today's mix of rewards".
 
 From [the design lane tonight, run b](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20b.md):
 
@@ -39,14 +43,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 34 ready, 1 in progress.** The builder is working on [keeping news that leaves "Needs you" in the Chronicle](https://linear.app/threadbare/issue/THR-1896/news-that-leaves-needs-you-should-live-on-in-the-chronicle-mandate) right now (run started 09:31 UTC, active).
+**Backed up: 32 ready, 1 in progress.** The builder is working on [the Stage, slice 4 — journey moments, undertaking moments, premonitions and the ruin emergence on the Stage](https://linear.app/threadbare/issue/THR-1897/the-stage-slice-4-journey-moments-undertaking-moments-premonitions-and) right now (run started 10:31 UTC, active).
 
-- [The hand-built dialogs on the size tiers](https://linear.app/threadbare/issue/THR-1880/move-the-six-hand-built-dialogs-onto-the-size-tiers-settings-effect) merged ([PR #2498](https://github.com/christianspliid-ui/threadbare/pull/2498)) and is live.
+- [News that leaves "Needs you" now lives on in the Chronicle](https://linear.app/threadbare/issue/THR-1896/news-that-leaves-needs-you-should-live-on-in-the-chronicle-mandate) merged ([PR #2499](https://github.com/christianspliid-ui/threadbare/pull/2499)) and is live.
 - Next up: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (76a38c7b). Main's checks, including the heavy simulation tests, are green, no pull request is waiting, and the scheduled lanes are on time.
-- The engine runs at 111 ms a tick, 17% below its week's median (134).
-- The tidy-up job reports 568 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
+- All green. The live site is current (c85132cb). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
+- The engine runs at 119 ms a tick, 11% below its week's median (134).
+- The tidy-up job reports 570 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
