@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 83 |
-| **Total** | **284** |
+| 🔵 UNVERIFIED-OK | 84 |
+| **Total** | **285** |
 
 ## Contracts by producing subsystem
 
@@ -291,6 +291,7 @@ remediation ticket or the build fails.
 |---|---|---|---|---|---|
 | `explored-hexes-frame-opening-view` | The run opens on the First with all the land the god knows in view (THR-1900, plan THR-1878 D8). The fog `visibilityMap` is read for every hex not `unexplored`; `fitKnownLand` fits their bounds, and `computeOpeningView` clamps that zoom to [6, 10] and centres on the First (else the seat, else the known land) — ZOOM-05's k-15 close-up retired. The "Show known land" button and key `F` read the same fit. Fog off falls back to the whole-grid fit. | function: `fitKnownLand`, `computeOpeningView` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `god-reads-mortal-intention` | The god reads what a mortal is set on — the ambition and the work it heads toward — through one rule everywhere: having watched them, or a followed mortal’s mark on them, or a followed network’s people near them. A mortal’s intelligence work counts as the god’s own knowledge, so running a ring or digging up a secret changes what the player can see on a sheet; and a secret work (the plot) is never read by watching alone. | function: `canReadIntention`, `readIntentionFromCard`, `intentionRead`, `INTENTION_KNOWLEDGE_TIER`, `SECRET_CELL_IDS` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `knowledge-floor-gates-find` | Find names only what the god has seen (THR-1915, THR-1822 § D5/D10, Inspector plan § D11). The fog `visibilityMap`, `familiarityMap` and the god's `thread` / `avatar_of` edges feed the seen floor (`createSeenFloor`, `views/knowledge.ts`): a place on a visible or remembered hex, a Place inside one unless hidden, a person known to `recognised` or threaded or in sight now, a power with a nameable member or held place, an army in sight, an artifact the god's people hold or one at a nameable place. `buildFindIndex` (`views/find.ts`, `getView('findIndex')`) lists nothing else, so a query that matches only unseen names returns the same result as nonsense — "Nothing you know of by that name." A UI read only: no state is written. | function: `createSeenFloor`, `buildFindIndex`, `matchFind` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
 
 ### Mandate
 
@@ -1521,10 +1522,10 @@ exit
 - **Intent:** An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *Location*
-- **Production hits:** 161 total — 3 write, 1 read, 157 unclassified
+- **Production hits:** 162 total — 3 write, 1 read, 158 unclassified
 - **Write sites:** `src/engine/views/stage/buildGateDutyEncounterStageModel.ts`, `src/engine/views/stage/buildSimpleEncounterStageModel.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`
-- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GuildQuestPanel.tsx` +152 more
+- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/GuildQuestPanel.tsx` +153 more
 - **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
 
 ### `encounter-outcomes-write-mortal-means` — 🔵 UNVERIFIED-OK
@@ -2108,10 +2109,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
 - **UL terms:** *Faction*, *Encounter*
 - **Module:** `src/engine/factionReputation.ts`
-- **Production hits:** 25 total — 1 write, 2 read, 22 unclassified
+- **Production hits:** 26 total — 1 write, 2 read, 23 unclassified
 - **Write sites:** `src/data/faction-encounter-content.ts`
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/factionMetaScope.ts`
-- **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/encounters/keepers-petition.ts`, `src/data/faction-constants.ts` +17 more
+- **Other hits:** `src/data/arcane-circle-encounter-content.ts`, `src/data/builders-fellowship-encounter-content.ts`, `src/data/civic-guard-encounter-content.ts`, `src/data/encounters/keepers-petition.ts`, `src/data/faction-constants.ts` +18 more
 - **Verdict:** Verified 2026-07-26: THR-805. `FACTION_ENCOUNTER_META.minRank` was authored on ~150 template metas and typed at types/faction.ts:72, with NO production reader — its only non-data references were three tests asserting the data round-trips — so every tier-restricted guild template was drawable by any agent at the right location. filterByPrerequisites now consults it for entries whose questType is senior/elite/leadership (RANK_GATED_QUEST_TYPES); the 123 `standard` quest/social metas stay ungated, since minRank is a REQUIRED field and gating on its presence would have closed the entry tier behind mere membership. Rank is derived from member_of.reputation via computeRankFromReputation on every check, never read from the edge's cached rank/role (those refresh only on a tier change, so a decay in progress reads stale). Non-membership closes the gate; unresolvable data (unknown factionDefId, or a minRank naming no tier) fails OPEN, because a typo that silently orphans content is the worse failure. Two adjacent substrates were rejected and are recorded so they are not revived: the `faction_rank:` predicate in effectPredicates.ts reads agentNode.properties.factionRank, which NOTHING writes (grep the assignment side — every other hit is a local display string), so it is permanently 0 and false for any threshold; and FactionRankTier.encounterAccess prefix allowlists are equally unread AND already drifted (merchant_consortium declares mc_trade.* while its templates are mct.*). Non-vacuous by live payload intersection and measured blast radius: 60 rank-gated metas exist, exactly 12 are present in a live tick-150 seed-42 cache (the guild tail THR-779/THR-803 registered), and a live sweep shows the gate closed for a real low-rank member and open for that same member once promoted past the floor. Locked by src/engine/__tests__/factionRankGate.test.ts (14 tests), falsified at 2-of-14 red with the gate disabled. The gate deliberately does NOT depend on resolving the template — it needs only the id and its meta. That independence was load-bearing when it shipped, because the pipeline's `getAnyEncounterById` returned undefined for every cache-registered regional template, leaving the sibling trait/broken/group gates in the same loop inert for those ids. THR-811 closed that gap on 2026-07-27: the loop now resolves via getUnifiedTemplateById, which covers all 213 cache-registrable ids (43 of them were unresolvable before), so the sibling gates are live for this id set too. THR-1155 slice 3 rerouted which faction the gate asks about: the meta row may now be CLASS-SCOPED (factionClass: 'realm'), because a Realm is minted per world as realm.<cultureId> and no static factionDefId can name one — so realm.* court work resolved nothing and the REALM_RANK_LADDER it guards could never be climbed. Both this gate and the sibling join-prerequisite gate now read the faction through resolveMetaFactionDefId (src/engine/factionMetaScope.ts): the Realm the agent has standing with, else the Realm holding the ground the encounter sits on, the latter asked of the map (getLocationHolder) so it can never return the guild or monster faction that holds a town. The ~150 authored rows carry no factionClass and the resolver returns their id untouched, so guild behaviour is unchanged by construction; the one new negative is this gate closing on a class-scoped row that resolves to nothing, which is the direction a gate may fail. Guarded by a shape tripwire (src/data/__tests__/faction-encounter-meta.readsites.test.ts), because a re-introduced direct read of meta.factionDefId would pass every behavioural test in the repo — guild rows resolve to themselves either way, and a realm row read directly resolves to nothing, so the symptom is a court that quietly stops paying standing rather than an exception.
 
 ### `guild-social-templates-reach-shared-members` — 🟢 LIVE
@@ -2180,10 +2181,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 178 total — 3 write, 7 read, 168 unclassified
+- **Production hits:** 179 total — 3 write, 7 read, 169 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx`, `src/components/Game/encounterHandoff.ts` +163 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx`, `src/components/Game/encounterHandoff.ts` +164 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -2266,6 +2267,16 @@ exit
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/encounterFilterPipeline.ts`
 - **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/movement-content.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterTimeline.ts`, `src/engine/groups/groupMovement.ts` +5 more
 - **Verdict:** Verified 2026-09-29: THR-1674: arrival decisions (all mortals, attended medium world, 150 ticks) that re-picked the goal template at a different hex than the trip was for — 3 in 23 seeds on main (seeds 1, 14, 19; each logged journeyGoal: kept), 0 after the commitment was scoped to the copy here (seeds 1, 14, 19, 42, 99, 11, 7, 123); first-encounter-gate unchanged on 42/99/11/7/123 (gaps 24/14/16/28/23). THR-1668, readers/journeys.ts (medium, 200 ticks): arrivals that start their goal within 2 ticks, main → this change, seed 42 19.6% → 79.2%, seed 99 21.4% → 78.6%; pinned by arrivalCommitmentBoard.test.ts (heavy lane) and the decisionBoard arrivalGoal tests. THR-1639: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First's longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan's first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.
+
+### `knowledge-floor-gates-find` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Find names only what the god has seen (THR-1915, THR-1822 § D5/D10, Inspector plan § D11). The fog `visibilityMap`, `familiarityMap` and the god's `thread` / `avatar_of` edges feed the seen floor (`createSeenFloor`, `views/knowledge.ts`): a place on a visible or remembered hex, a Place inside one unless hidden, a person known to `recognised` or threaded or in sight now, a power with a nameable member or held place, an army in sight, an artifact the god's people hold or one at a nameable place. `buildFindIndex` (`views/find.ts`, `getView('findIndex')`) lists nothing else, so a query that matches only unseen names returns the same result as nonsense — "Nothing you know of by that name." A UI read only: no state is written.
+- **Producer → Consumer:** Intelligence, Knowledge & Familiarity → Intelligence, Knowledge & Familiarity
+- **UL terms:** *The First*
+- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Write sites:** `src/engine/views/knowledge.ts`
+- **Read sites:** `src/components/Game/find/FindBox.tsx`, `src/engine/views/find.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `lair-arrival-spawns-confront` — 🟢 LIVE
 
@@ -2589,10 +2600,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Offering*
 - **Module:** `src/engine/ascendantBeat.ts`
-- **Production hits:** 27 total — 1 write, 3 read, 23 unclassified
+- **Production hits:** 28 total — 1 write, 3 read, 24 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`, `src/engine/targetActions.ts`, `src/engine/views/godRail.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +18 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +19 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts` "taking one up unlocks it, spends from the ledger, and never touches the earned counter": the card lands in `unlockedActionIds`, `essenceEarnedBySphere` is unchanged and `offeringSpentBySphere` rises by the traced `offering.taken` price; seed 42 headless rose an offering of three cards at tick 21 that passed at the tick-36 day boundary.
 
 ### `one-namer-shared-primitives` — 🟢 LIVE
@@ -2933,10 +2944,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 131 total — 1 write, 1 read, 129 unclassified
+- **Production hits:** 132 total — 1 write, 1 read, 130 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/components/Game/MeetingEncounterModal.tsx` +124 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/components/Game/MeetingEncounterModal.tsx` +125 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -2956,10 +2967,10 @@ exit
 - **Producer → Consumer:** Ascendant Beats & Progression → Essence & Divine Economy
 - **UL terms:** *Ascendant Beat*, *Rung*, *Key card*
 - **Module:** `src/engine/phaseAscendantProgression.ts`
-- **Production hits:** 27 total — 2 write, 1 read, 24 unclassified
+- **Production hits:** 28 total — 2 write, 1 read, 25 unclassified
 - **Write sites:** `src/engine/ascendantBeat.ts`, `src/engine/phaseAscendantProgression.ts`
 - **Read sites:** `src/engine/actionUnlock.ts`
-- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +19 more
+- **Other hits:** `src/components/Codex/codexRunState.ts`, `src/components/Game/AscendantBeatModal.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +20 more
 - **Verdict:** Verified 2026-10-14: THR-1811 — `godProgression.test.ts`: three summed marks open rung 2, the secondary signature is the first gift, the next key waits `RUNG_GIFT_SPACING`, a held key is skipped, and the resolve traces `via: rung`.
 
 ### `rung-reads-attunement-marks` — 🟢 LIVE
@@ -3116,10 +3127,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 409 total — 1 write, 1 read, 407 unclassified
+- **Production hits:** 411 total — 1 write, 1 read, 409 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +402 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +404 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3314,10 +3325,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 119 total — 2 write, 4 read, 113 unclassified
+- **Production hits:** 121 total — 2 write, 4 read, 115 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/NotableLine.tsx` +108 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/NotableLine.tsx` +110 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `thread-destination-on-threads-lens` — 🔵 UNVERIFIED-OK
@@ -3678,10 +3689,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 292 total — 2 write, 6 read, 284 unclassified
+- **Production hits:** 294 total — 2 write, 6 read, 286 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +279 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +281 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
