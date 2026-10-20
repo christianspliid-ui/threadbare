@@ -41,7 +41,7 @@ export function SubjectHeader({ header, graph, compact }: { header: SubjectHeade
       <div style={{ width: visualWidth, flexShrink: 0 }}>
         <EntityVisual
           size={portrait ? 'portrait' : 'hero'}
-          entity={{ id: header.visual.id, kind: VISUAL_KIND[header.visual.kind], name: header.name }}
+          entity={{ id: header.visual.id, kind: VISUAL_KIND[header.visual.kind], name: header.name, knownSrc: header.visual.src ?? null }}
           graph={graph}
           opts={header.visual.portraitGate === 'silhouette' ? { knowledgeLevel: 'stranger' } : undefined}
         />
