@@ -74,6 +74,10 @@ const INVENTORY: Record<string, { disposition: Disposition; why: string }> = {
     disposition: 'bumps',
     why: 'applyConquestOrVacuum — the conquest producer; retargets, adds or removes and calls touchStructure on each',
   },
+  'defection.ts': {
+    disposition: 'bumps',
+    why: "THR-1957: moveControls retargets a holder's controls to the lord a town on the edge turns to, or to the faction a rising raises; runTownTurns calls the unrest phase's onStructure hook (touchStructure) after every move",
+  },
   'battleResolution.ts': {
     disposition: 'reads-only',
     why: 'reads the holder for spotlight selection (the swept controlled_by read); writes no controls edge',
@@ -215,6 +219,10 @@ describe('faction `controls` writers all participate (THR-1155)', () => {
       // helper with no runtime of its own, and both callers own the bump. Asserted
       // behaviourally below rather than by grep.
       .filter(file => file !== 'monsterFactionSeed.ts')
+      // `defection.ts` (THR-1957) lives in `unrestPressure/` and bumps through the unrest
+      // phase's `onStructure` hook; asserted behaviourally in unrestPressureS2.test.ts
+      // ("a defection bumps the structural cache through the onStructure hook").
+      .filter(file => file !== 'defection.ts')
       .filter(file => !readFileSync(join(ENGINE_DIR, file), 'utf8').includes('touchStructure'));
 
     expect(missing).toEqual([]);

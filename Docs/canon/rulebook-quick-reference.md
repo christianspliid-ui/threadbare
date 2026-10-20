@@ -85,7 +85,7 @@ Four design rules: (1) Path over adjective. (2) Moral axis is structural — eac
 
 Locations hold **resource stocks** in named classes (staple / strategic / luxury / arcane), resolving to three tiers: **scarce · adequate · surplus**. Tier drives prosperity, and surfaces as a plain-prose **Livelihood** line — you read hunger or glut, never a number.
 
-**Unrest is pressure, not a spike.** It creeps (a few points a day) toward what a town lives through — hunger above all, then want, siege, sickness, its recent dead — and sudden blows fade back. **Restless** towns lose people to a fed, calm town nearby; **Lawless** towns riot over the granaries and pay half their tax. The place page's **Fortunes** row says it in one sentence, never a number.
+**Unrest is pressure, not a spike.** It creeps (a few points a day) toward what a town lives through — hunger above all, then want, siege, sickness, its recent dead — and sudden blows fade back. **Restless** towns lose people to a fed, calm town nearby; **Lawless** towns riot over the granaries and pay half their tax. A town **On the edge** turns to a clearly better lord nearby, and its old lord wants it back; a town that **rises** throws its lord off and holds itself. The place page's **Fortunes** row says it in one sentence, never a number.
 
 Trade routes carry a **cargo manifest** naming what actually moves, derived from what each endpoint has spare and what it wants. Merchants prefer **complementary** partners — a surplus beside a shortage beats two towns with the same granary. A lane **lives while both its towns stand**; it dies only when a town is razed or its roads are cursed, and a blockade suspends it rather than killing it.
 

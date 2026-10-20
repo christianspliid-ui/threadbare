@@ -85,6 +85,7 @@ describe('locationTraitResolver', () => {
       welcoming: 'welcoming',
       restless: 'restless',
       lawless: 'lawless',
+      onTheEdge: 'on the edge',
       veilThin: 'veil',
       haunted: 'haunted',
       bloodSoaked: 'blood',

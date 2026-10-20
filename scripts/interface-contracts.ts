@@ -7030,6 +7030,39 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-1934. economicPower.test.ts: the arc\'s unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.',
     },
   },
+  // ── THR-1957 S2 — the town turns ──────────────────────────────────────
+  {
+    id: 'town-defection-moves-controls',
+    producerSystem: ECONOMY,
+    consumerSystem: FACTIONS,
+    intent:
+      'A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown\'s offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.25 the holder\'s controls edges are retargeted to it with via defection and takenFrom, the old holder\'s relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown\'s holding_lost reads takenFrom; war aims\' isEnemyFaction reads the grudge.',
+    ulTerms: ['Settlement', 'Unrest', 'Faction', 'Ambition'],
+    mechanism: { kind: 'edge', symbols: ['controls', 'relates_to', 'pursues'] },
+    writeSites: ['src/engine/unrestPressure/defection.ts', 'src/engine/factionAmbitions.ts'],
+    readSites: ['src/engine/crown.ts', 'src/engine/warAims/enemy.ts', 'src/engine/factionAmbitions.ts'],
+    verifiedLive: {
+      date: '2026-10-20',
+      evidence:
+        'THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.',
+    },
+  },
+  {
+    id: 'rising-founds-rebel',
+    producerSystem: ECONOMY,
+    consumerSystem: FACTIONS,
+    intent:
+      'A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder\'s members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town\'s controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims\' enemy rule reads. No resident: no rising.',
+    ulTerms: ['Settlement', 'Unrest', 'Faction'],
+    mechanism: { kind: 'edge', symbols: ['controls', 'hostile_to', 'member_of'] },
+    writeSites: ['src/engine/unrestPressure/rising.ts', 'src/engine/factionSplinter.ts'],
+    readSites: ['src/engine/warAims/enemy.ts', 'src/engine/crown.ts'],
+    verifiedLive: {
+      date: '2026-10-20',
+      evidence:
+        'THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.',
+    },
+  },
   // ── THR-1935 S1 — prayers and the faithful ───────────────────────────
   {
     id: 'hungry-town-prays-on-gods-ground',

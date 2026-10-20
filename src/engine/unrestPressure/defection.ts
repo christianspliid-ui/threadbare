@@ -205,7 +205,8 @@ function relationEdge(graph: WorldGraph, a: string, b: string, tick: number) {
  * Move the town's `controls` from its holder to `toId`, and stamp the turn on both
  * sides. `via` is `'defection'` here and `'rising'` for a rising. Edges are retargeted,
  * never delete-and-add (the edge id is the audit trail, as for a conquest). Returns the
- * number of edges moved; the caller bumps structure.
+ * number of edges moved; the caller bumps structure — `runTownTurns` calls the unrest
+ * phase's `onStructure` hook, which is `touchStructure(runtime)` in the orchestrator.
  */
 export function moveControls(
   graph: WorldGraph,

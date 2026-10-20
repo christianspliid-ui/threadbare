@@ -177,6 +177,13 @@ describe('defection (Done when S2: the fixture defects on the next daily pass)',
     expect(getTraces().some(t => t.category === 'unrest.defect')).toBe(true);
   });
 
+  it('a defection bumps the structural cache through the onStructure hook (THR-1155)', () => {
+    const { graph } = defectionWorld();
+    let bumps = 0;
+    phaseUnrest(state(graph, DAY), { pressure: true, onStructure: () => { bumps += 1; } });
+    expect(bumps).toBe(1);
+  });
+
   it('a town on its turn cooldown is only weighed, never moved', () => {
     const { graph, ferris } = defectionWorld();
     ferris.properties[LAST_TURN_TICK_PROP] = DAY - (TOWN_TURN_COOLDOWN_DAYS - 1) * TICKS_PER_DAY;
