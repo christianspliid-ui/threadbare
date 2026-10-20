@@ -68,6 +68,16 @@ export const GUILD_SPOTLIGHT_COVERAGE_MIN = 5;
 export const FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS = 100;
 
 /**
+ * THR-1918 — a member is struck from the rolls only with a cause: it also belongs to
+ * a rival faction, or its standing (`member_of.reputation`, 0–1) is at or below this
+ * floor. Before this gate `excommunicate` struck the lowest-standing member every time
+ * it came off cooldown, whatever that standing was — realms and guilds lost ~25
+ * members each over 600 ticks (mean standing of the struck: 0.36). A faction with no
+ * member at cause cannot pick the action. Raise to purge more; 1 restores the old purge.
+ */
+export const FACTION_EXCOMMUNICATE_MAX_REPUTATION = 0.1;
+
+/**
  * The resolved bands in which a join or promotion **lands** on the live
  * unified-action path (THR-1640). A near miss is a miss: the mortal was turned away
  * and may try again after the cooldown.
