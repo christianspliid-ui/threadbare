@@ -18,6 +18,7 @@ import {
   phaseAlertChronicle,
 } from '../alertChronicle';
 import { buildDiscoveryTickEvent } from '../revelationResolver';
+import { hexKeyFromCoord } from '../../lib/hexKey';
 
 const ENGINE_DIR = join(__dirname, '..');
 /** Any channel expression that can yield 'alert', including a conditional one. */
@@ -152,6 +153,19 @@ describe('phaseAlertChronicle', () => {
     const result = collectAlertChronicle(state);
     expect(result.entries).toEqual([]);
     expect(result.suppressedIds).toEqual(['amb_stranger']);
+  });
+
+  it('leaves out an alert on a hex the player cannot see — the same fog filter News applies', () => {
+    const fogged = alertEvent({ id: 'prayer_fog', type: 'narrative', hexCoords: { col: 5, row: 6 }, notification: { channel: 'alert' } });
+    const seen = alertEvent({ id: 'prayer_seen', type: 'narrative', hexCoords: { col: 1, row: 2 }, notification: { channel: 'alert' } });
+    const state = makeState([fogged, seen]);
+    (state as { visibilityMap: unknown }).visibilityMap = new Map([
+      [hexKeyFromCoord({ col: 5, row: 6 }), { state: 'explored' }],
+      [hexKeyFromCoord({ col: 1, row: 2 }), { state: 'visible' }],
+    ]);
+    const result = collectAlertChronicle(state);
+    expect(result.writtenIds).toEqual(['prayer_seen']);
+    expect(result.unseenIds).toEqual(['prayer_fog']);
   });
 
   it('ignores toasts and popups, and writes a repeated id once', () => {

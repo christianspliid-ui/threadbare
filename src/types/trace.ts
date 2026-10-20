@@ -7142,6 +7142,7 @@ export interface ChronicleAlertIntakeTrace extends TraceBase {
   writtenIds: string[];
   exemptIds: string[];
   suppressedIds: string[];
+  unseenIds: string[];
 }
 
 export interface ChronicleIntakeSkippedTrace extends TraceBase {

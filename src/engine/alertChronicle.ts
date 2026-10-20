@@ -15,8 +15,9 @@
  *
  *   - the Chronicle already holds a line with the event's id (`phaseNarrative` took it);
  *   - `ALERT_CHRONICLE_POLICY` names an exemption for its type;
- *   - the threading gate suppresses it (`resolveEventRouting` → `suppress`): the player
- *     never saw that alert in News, so the Chronicle does not tell it either.
+ *   - the threading gate suppresses it (`resolveEventRouting` → `suppress`), or its hex
+ *     is not visible this tick (`filterEventsByVisibility`, the fog filter News applies):
+ *     the player never saw that alert in News, so the Chronicle does not tell it either.
  *
  * **One list.** Every alert producer in `src/engine` carries an
  * `// alert-chronicle: <type>` marker naming the event type(s) it raises, and every
@@ -35,6 +36,7 @@ import type { GameState, TickEvent } from '../types/gameState';
 import type { ChronicleEntry } from '../types/narrative';
 import type { ChronicleAlertIntakeTrace } from '../types/trace';
 import { buildThreadingGate } from './notificationThreadingGate';
+import { filterEventsByVisibility } from './notificationVisibilityFilter';
 import { emitTrace } from './traceBuffer';
 
 export const ALERT_CHRONICLE_ENABLED = true;
@@ -80,9 +82,11 @@ export interface AlertChronicleResult {
   readonly writtenIds: string[];
   readonly exemptIds: string[];
   readonly suppressedIds: string[];
+  /** Alerts on a hex the player cannot see this tick — fogged out of News too. */
+  readonly unseenIds: string[];
 }
 
-const EMPTY_RESULT: AlertChronicleResult = { entries: [], writtenIds: [], exemptIds: [], suppressedIds: [] };
+const EMPTY_RESULT: AlertChronicleResult = { entries: [], writtenIds: [], exemptIds: [], suppressedIds: [], unseenIds: [] };
 
 function isAlert(event: TickEvent): boolean {
   return event.notification?.channel === 'alert';
@@ -128,10 +132,16 @@ export function collectAlertChronicle(state: GameState): AlertChronicleResult {
   }
 
   const gate = buildThreadingGate(state.graph, state.ascendantId);
+  // The same fog filter useNotifications applies before News sees an event. Without a
+  // visibility map (a bare test state) nothing is fogged.
+  const seen = state.visibilityMap
+    ? new Set(filterEventsByVisibility(alerts, state.visibilityMap))
+    : null;
   const entries: ChronicleEntry[] = [];
   const writtenIds: string[] = [];
   const exemptIds: string[] = [];
   const suppressedIds: string[] = [];
+  const unseenIds: string[] = [];
 
   for (const event of alerts) {
     if (written.has(event.id)) continue;
@@ -143,11 +153,15 @@ export function collectAlertChronicle(state: GameState): AlertChronicleResult {
       suppressedIds.push(event.id);
       continue;
     }
+    if (seen && !seen.has(event)) {
+      unseenIds.push(event.id);
+      continue;
+    }
     entries.push(chronicleEntryForAlert(state, event));
     writtenIds.push(event.id);
     written.add(event.id);
   }
-  return { entries, writtenIds, exemptIds, suppressedIds };
+  return { entries, writtenIds, exemptIds, suppressedIds, unseenIds };
 }
 
 /** The phase patch: append the owed lines and trace what was kept and why. */
@@ -158,15 +172,16 @@ export function phaseAlertChronicle(state: GameState): Partial<GameState> {
   } catch {
     return {};
   }
-  const { entries, writtenIds, exemptIds, suppressedIds } = result;
-  if (writtenIds.length + exemptIds.length + suppressedIds.length > 0) {
+  const { entries, writtenIds, exemptIds, suppressedIds, unseenIds } = result;
+  if (writtenIds.length + exemptIds.length + suppressedIds.length + unseenIds.length > 0) {
     emitTrace({
       category: 'chronicle.intake.alert',
       tick: state.tick,
       writtenIds,
       exemptIds,
       suppressedIds,
-      summary: `Alert Chronicle: ${writtenIds.length} written, ${exemptIds.length} exempt, ${suppressedIds.length} suppressed (unthreaded)`,
+      unseenIds,
+      summary: `Alert Chronicle: ${writtenIds.length} written, ${exemptIds.length} exempt, ${suppressedIds.length} suppressed (unthreaded), ${unseenIds.length} unseen (fogged)`,
     } as ChronicleAlertIntakeTrace);
   }
   return entries.length > 0
