@@ -268,7 +268,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `caster` (1) | `casterIdentity.ts` | `THR-1229`, `THR-1230`, `THR-1571` |
 | `chapter` (1) | `chapterArchive.ts` | `THR-603` |
 | `chosen` (1) | `chosenFactionPowers.ts` | `THR-509`, `THR-513` |
-| `chronicle` (1) | `chronicle.ts` | `THR-21` |
+| `chronicle` (2) | `chronicle.ts`, `chronicleGrowth.ts` | `THR-1986`, `THR-21` |
 | `clearance` (1) | `clearanceGate.ts` | — |
 | `coastline` (1) | `coastline.ts` | — |
 | `companions` (1) | `companions.ts` | `THR-1096` |
@@ -470,4 +470,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 230 engine domains · 769 modules._
+_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 230 engine domains · 770 modules._
