@@ -215,6 +215,11 @@ const INERT_STORE: GameScreenStore = {
 
 const GameScreenStateContext = createContext<GameScreenStore>(INERT_STORE);
 
+/** THR-1897 — true for the fail-soft default (no provider): nothing can write the frame's state. */
+export function isInertGameScreenStore(store: GameScreenStore): boolean {
+  return store === INERT_STORE;
+}
+
 export function GameScreenStateProvider({ value, children }: { value: GameScreenStore; children: ReactNode }) {
   return <GameScreenStateContext.Provider value={value}>{children}</GameScreenStateContext.Provider>;
 }

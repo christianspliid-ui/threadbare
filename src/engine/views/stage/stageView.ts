@@ -31,6 +31,7 @@ import { hexKey as toHexKey, type HexKey } from '../../hexActorIndex';
 import { resolveToParentLocation } from '../../sublocationShape';
 import type { WorldGraph } from '../../graph';
 import { landNameFor, namedLocationOnHex } from '../subjects/landName';
+import { isHexKnown } from '../knowledge';
 import type { ViewContext } from '../viewContext';
 import type { ViewSelector } from '../readView';
 import type { RefRow } from '../types';
@@ -47,6 +48,8 @@ export interface StageMomentInput {
   subjectAgentId?: string | null;
   /** The emergence dilemma's ruin. */
   ruinId?: string | null;
+  /** A premonition's option places (THR-1897), in option order; an option without a Location passes null. */
+  optionLocationIds?: readonly (string | null)[] | null;
   /** The encounter's step, aftermath or watched view; other kinds have none. */
   phase?: StagePhase | null;
   hasArt: boolean;
@@ -58,6 +61,10 @@ export interface StageOptionVM {
   hexKey: HexKey;
   /** The option's hex is in fog: its ring draws over the fog and reveals nothing. */
   ringOnly: boolean;
+  /** Which option this is (its index in the premonition's options). */
+  index: number;
+  /** The option hex's name by the one naming rule, for the place tag while it is hovered. */
+  place: RefRow;
 }
 
 export interface StageContextLineVM {
@@ -73,7 +80,7 @@ export interface StageVM {
   palette: HomedSurfacePalette | null;
   litHex: HexKey | null;
   litSource: StageLitSource | null;
-  /** Premonition places (S4); empty for every S2 kind. */
+  /** Premonition places (S4); empty for every other kind. */
   options: StageOptionVM[];
   /** What the camera fits in the window: the lit hex (and, for a premonition, its options' places). */
   frame: HexKey[];
@@ -128,6 +135,11 @@ export function ruinHex(graph: WorldGraph, ruinId: string | null | undefined): H
 function litHexFor(graph: WorldGraph, input: StageMomentInput): LitHex {
   const own = input.hex;
   if (own && Number.isFinite(own.col) && Number.isFinite(own.row)) return { key: toHexKey(own.col, own.row), source: 'beat' };
+  // THR-1897 — the emergence dilemma is lit at its ruin, else its mortal (plan § D1 row 10).
+  if (input.kind === 'emergence-dilemma') {
+    const atRuinFirst = ruinHex(graph, input.ruinId);
+    if (atRuinFirst) return { key: atRuinFirst, source: 'ruin_location' };
+  }
   const atAgent = agentHex(graph, input.subjectAgentId);
   if (atAgent) return { key: atAgent, source: 'agent_location' };
   const atRuin = ruinHex(graph, input.ruinId);
@@ -135,14 +147,40 @@ function litHexFor(graph: WorldGraph, input: StageMomentInput): LitHex {
   return null;
 }
 
+/**
+ * THR-1897 — a premonition's option places: each option's Location hex, ring-only when
+ * the hex is unexplored. An option with no Location, or whose Location has no hex, lights
+ * nothing (the others still do).
+ */
+function optionHexes(ctx: ViewContext, input: StageMomentInput): StageOptionVM[] {
+  const ids = input.optionLocationIds ?? [];
+  const out: StageOptionVM[] = [];
+  ids.forEach((locationId, index) => {
+    if (!locationId) return;
+    const key = hexOfLocation(resolveToParentLocation(ctx.graph, ctx.graph.getNode(locationId)));
+    if (!key) return;
+    out.push({
+      ref: { kind: 'location', id: locationId },
+      hexKey: key,
+      ringOnly: !isHexKnown(ctx.state, key),
+      index,
+      place: placeOfHex(ctx, key),
+    });
+  });
+  return out;
+}
+
 /** THR-1822 D12 — what the Stage lights and what the camera frames. */
 export function resolveMomentHexes(ctx: ViewContext, input: StageMomentInput): Pick<StageVM, 'litHex' | 'litSource' | 'options' | 'frame'> {
   const lit = litHexFor(ctx.graph, input);
+  const options = optionHexes(ctx, input);
+  // The lit hex first: the camera frames it alone when the options do not fit (§ D6).
+  const frame = [...new Set([...(lit ? [lit.key] : []), ...options.map(o => o.hexKey)])];
   return {
     litHex: lit?.key ?? null,
     litSource: lit?.source ?? null,
-    options: [],
-    frame: lit ? [lit.key] : [],
+    options,
+    frame,
   };
 }
 
@@ -196,7 +234,12 @@ export function buildStageView(ctx: ViewContext, input: StageMomentInput): Stage
   const hexes = resolveMomentHexes(ctx, input);
   const place = hexes.litHex ? placeOfHex(ctx, hexes.litHex, input.subjectAgentId) : null;
   const subject = subjectRow(ctx.graph, input.subjectAgentId);
-  const suffix = place ? STAGE_WORDS.placeTagSuffix : null;
+  // A premonition's tag says where its mortal is (§ D5): "Millbrook · where Maren Ashfold is".
+  const suffix = !place
+    ? null
+    : input.kind === 'premonition' && subject
+      ? STAGE_WORDS.placeTagSubjectSuffix.replace('{subject}', subject.name)
+      : STAGE_WORDS.placeTagSuffix;
   return {
     kind: input.kind,
     phase: input.phase ?? null,
@@ -239,6 +282,7 @@ export const stageViewSelector: ViewSelector<StageMomentInput, StageVM> = {
     a.subjectAgentId ?? '',
     a.hex ? `${a.hex.col},${a.hex.row}` : '',
     a.ruinId ?? '',
+    (a.optionLocationIds ?? []).map(id => id ?? '-').join(','),
     a.hasArt ? 'a' : '',
     a.hasCast ? 'c' : '',
   ].join('|'),

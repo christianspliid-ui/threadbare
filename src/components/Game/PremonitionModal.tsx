@@ -6,11 +6,19 @@
  *
  * Colors follow the nudge target's sphere from the cosmology model.
  *
+ * THR-1897 (plan THR-1877 § D4, D5, S4): a premonition plays on the Stage, in the full
+ * layout — the mortal's subject block (portrait, name with its tooltip) on the left; the
+ * header, the dream, the options and the dismiss on the right, every word unchanged.
+ * Hovering or focusing a compulsion option lights its place on the map with a dashed ring
+ * in the dream's tone, and the place tag names it ("… · where the dream pulls"). Escape
+ * still does nothing (THR-1711). Its `Modal` is gone.
+ *
  * @see Docs/plans/2026-04-04-divine-premonition-design.md
  */
 
-import { useMemo } from 'react';
-import { Modal } from '../shared/Modal';
+import { useMemo, useState } from 'react';
+import { Stage } from './stage/Stage';
+import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
 import { EntityVisual } from '../shared/EntityVisual';
 import { Tooltip } from '../shared/Tooltip';
 import type { PremonitionEvent, WhisperNudge, CompulsionCandidate } from '../../types/premonition';
@@ -49,6 +57,10 @@ interface PremonitionModalProps {
    */
   onViewAgent?: (agentId: string) => void;
   onDismiss: () => void;
+  /** THR-1897 — the Stage view model (lit hex, option places, place tag); absent ⇒ nothing lit. */
+  stageVM?: StageVM | null;
+  /** The game tick, for the Stage's traces. */
+  tick?: number;
 }
 
 // ─── Tokens (Law 30, THR-1031) ──────────────────────────────────
@@ -153,17 +165,33 @@ function capitalize(s: string): string {
 
 // ─── Whisper Option Row ─────────────────────────────────────────
 
+/** THR-1897 — an option row reports when it is hovered or focused, so the map can ring its place. */
+interface OptionHoverProps {
+  onHoverChange?: (hovered: boolean) => void;
+}
+
+function hoverHandlers(onHoverChange: OptionHoverProps['onHoverChange']) {
+  if (!onHoverChange) return {};
+  return {
+    onMouseEnter: () => onHoverChange(true),
+    onMouseLeave: () => onHoverChange(false),
+    onFocus: () => onHoverChange(true),
+    onBlur: () => onHoverChange(false),
+  };
+}
+
 function WhisperOptionRow({
   nudge,
   affordable,
   isWhisper,
   onClick,
+  onHoverChange,
 }: {
   nudge: WhisperNudge;
   affordable: boolean;
   isWhisper: boolean;
   onClick: () => void;
-}) {
+} & OptionHoverProps) {
   const color = nudge.category === 'gather_strength'
     ? QUINTESSENCE_COLOR
     : getSphereColor(nudge.sphere);
@@ -178,6 +206,7 @@ function WhisperOptionRow({
       }}
       disabled={!affordable}
       onClick={onClick}
+      {...hoverHandlers(onHoverChange)}
     >
       <div className="flex justify-between items-center">
         <span className="text-sm" style={{ color: sphereTint(color, 'text') }}>
@@ -206,11 +235,15 @@ function CompulsionOptionRow({
   candidate,
   affordable,
   onClick,
+  onHoverChange,
+  lightsPlace,
 }: {
   candidate: CompulsionCandidate;
   affordable: boolean;
   onClick: () => void;
-}) {
+  /** The option's place is ringed on the map while it is hovered or focused. */
+  lightsPlace?: boolean;
+} & OptionHoverProps) {
   const color = getSphereColor(candidate.sphere);
 
   return (
@@ -223,6 +256,8 @@ function CompulsionOptionRow({
       }}
       disabled={!affordable}
       onClick={onClick}
+      data-premonition-option-lights={lightsPlace ? '' : undefined}
+      {...hoverHandlers(onHoverChange)}
     >
       {/* THR-1802 — the option names the encounter it asks for, the same name the
           result toast prints. The retcon hook alone ("they could make a
@@ -266,8 +301,12 @@ export function PremonitionModal({
   onCompulsionChoice,
   onViewAgent,
   onDismiss,
+  stageVM,
+  tick = 0,
 }: PremonitionModalProps) {
   const isWhisper = premonition.type === 'whisper';
+  // THR-1897 — the option hovered or focused now, by its index in the premonition's options.
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   /**
    * `agent.*` is a context-bearing prefix — `Tooltip`'s own `id` path calls
@@ -282,151 +321,183 @@ export function PremonitionModal({
   );
 
   const headerText = isWhisper ? 'A stirring in the thread' : "The God's will";
-  const dismissText = isWhisper ? 'Let the dream fade' : 'Release your hold \u2014 let them choose';
+  const dismissText = isWhisper ? 'Let the dream fade' : 'Release your hold — let them choose';
+
+  if (!open) return null;
+  const vm = stageVM ?? fallbackStageView({ kind: 'premonition', hasArt: false, hasCast: true });
+  const hexForOption = (index: number): string | null => vm.options.find(o => o.index === index)?.hexKey ?? null;
+  const hoveredOption = hoveredIndex === null ? null : hexForOption(hoveredIndex);
+  const hoverFor = (index: number) => (hovered: boolean) =>
+    setHoveredIndex(prev => (hovered ? index : prev === index ? null : prev));
+
+  // ── Left column: the mortal the dream is about (THR-1139) ──
+  const left = (
+    <div
+      data-premonition-subject=""
+      className="flex flex-col items-center text-center"
+      style={{ color: fullText(isWhisper), fontFamily: 'var(--font-prose)', padding: 'var(--panel-padding, 20px)' }}
+    >
+      {/* Law 1 — the subject carries its image. Entity Visual Header pattern
+          (THR-637); the resolver is knowledge-gated but fail-open when no
+          level is passed, and a threaded mortal always resolves to art or
+          the authored fallback tile. Clicking it does what the name does. */}
+      <EntityVisual
+        size="portrait"
+        shape="rounded"
+        entity={{ id: premonition.agentId, kind: 'agent', name: premonition.agentName }}
+        graph={graph ?? null}
+        onClick={onViewAgent ? () => onViewAgent(premonition.agentId) : undefined}
+        aria-label={
+          onViewAgent
+            ? `Open ${premonition.agentName}'s page`
+            : `Portrait of ${premonition.agentName}`
+        }
+        data-testid="premonition-subject-portrait"
+        style={{
+          width: SUBJECT_PORTRAIT_PX,
+          minWidth: SUBJECT_PORTRAIT_PX,
+          height: Math.round(SUBJECT_PORTRAIT_PX * 4 / 3),
+          marginBottom: 10,
+        }}
+      />
+      {/* Law 45: was `opacity-40` (~2.5:1 composed). Which mortal the
+          premonition is about is the one thing on this surface that cannot
+          be inferred from anything else on it.
+          Law 21/20: the name is the link to the mortal's page, and the
+          tooltip is the hover tier above it. */}
+      <Tooltip label={subjectTooltip?.label} desc={subjectTooltip?.desc}>
+        {onViewAgent ? (
+          <button
+            type="button"
+            onClick={() => onViewAgent(premonition.agentId)}
+            data-testid="premonition-subject-name"
+            className="text-xs mt-1 bg-transparent border-none cursor-pointer hover:brightness-125 transition-[filter]"
+            style={{
+              color: dimText(isWhisper),
+              fontFamily: 'inherit',
+              minHeight: SUBJECT_NAME_MIN_HIT_PX,
+              padding: '0 8px',
+              textDecoration: 'underline',
+              textDecorationStyle: 'dotted',
+              textUnderlineOffset: 3,
+            }}
+          >
+            {premonition.agentName}
+          </button>
+        ) : (
+          <span
+            className="text-xs mt-1"
+            data-testid="premonition-subject-name"
+            style={{ color: dimText(isWhisper) }}
+          >
+            {premonition.agentName}
+          </span>
+        )}
+      </Tooltip>
+    </div>
+  );
+
+  // ── Right column: the header, the dream, the options and the dismiss — the same words ──
+  const right = (
+    <div
+      data-premonition-stage=""
+      style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, overflowY: 'auto', color: fullText(isWhisper), fontFamily: 'var(--font-prose)' }}
+    >
+      {/* Header */}
+      <div className="text-center pt-5 pb-2">
+        <div
+          style={{
+            color: accent(isWhisper, '--premonition-accent-text-alpha'),
+            fontFamily: 'var(--font-body)',
+            fontWeight: 700,
+            fontSize: 'var(--text-xs)',
+          }}
+        >
+          {headerText}
+        </div>
+      </div>
+
+      {/* Vignette */}
+      <div className="px-6 pb-4">
+        <div
+          className="italic leading-relaxed text-sm"
+          style={{
+            borderLeft: `2px solid ${accent(isWhisper, '--premonition-accent-rule-alpha')}`,
+            padding: '12px 16px',
+            maxWidth: 'var(--measure-prose)',
+          }}
+        >
+          {premonition.vignetteProse}
+        </div>
+      </div>
+
+      {/* Context line — whisper only; compulsion vignette already explains the mechanic */}
+      {isWhisper && (
+        <div className="px-6 pb-3">
+          <div className="text-xs" style={{ color: dimText(isWhisper) }}>
+            You sense currents pulling at your mortal:
+          </div>
+        </div>
+      )}
+
+      {/* Options */}
+      <div className="px-6 pb-4 flex flex-col gap-2.5">
+        {isWhisper && premonition.whisperOptions?.map((nudge, i) => (
+          <WhisperOptionRow
+            key={`whisper-${i}`}
+            nudge={nudge}
+            affordable={canAfford(essencePool, nudge.sphere, nudge.essenceCost)}
+            isWhisper={isWhisper}
+            onClick={() => onWhisperChoice(nudge)}
+            onHoverChange={hoverFor(i)}
+          />
+        ))}
+        {!isWhisper && premonition.compulsionCandidates?.map((candidate, i) => (
+          <CompulsionOptionRow
+            key={`compulsion-${i}`}
+            candidate={candidate}
+            affordable={canAfford(essencePool, candidate.sphere, candidate.essenceCost)}
+            onClick={() => onCompulsionChoice(candidate)}
+            onHoverChange={hoverFor(i)}
+            lightsPlace={hexForOption(i) !== null}
+          />
+        ))}
+      </div>
+
+      {/* Dismiss */}
+      <div className="text-center pb-5">
+        {/* Law 45: the dismiss control's own label was `opacity-40`. Hover
+            still brightens it — the rest state is what had to clear AA. */}
+        <button
+          className="text-xs hover:brightness-125 transition-[filter] cursor-pointer bg-transparent border-none"
+          style={{ color: dimText(isWhisper) }}
+          data-testid="premonition-dismiss"
+          onClick={onDismiss}
+        >
+          {dismissText}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     // THR-1711 (1): Escape and a backdrop click do NOT decline. A premonition is a
     // one-shot choice — `handlePremonitionDismiss` drops it from the queue for good —
     // and Escape is the key the player presses to close the action drawer under it.
-    // Only the explicit decline button below declines. `closeOnEscape={false}`
-    // keeps it off the escape registry so that Escape still reaches the drawer (THR-1816).
-    <Modal open={open} onClose={IGNORE_IMPLICIT_CLOSE} closeOnEscape={false} maxWidth={520} aria-label={headerText}>
-      <div
-        className="rounded-lg overflow-hidden"
-        style={{
-          background: `var(${isWhisper ? '--premonition-whisper-bg' : '--premonition-compulsion-bg'})`,
-          color: fullText(isWhisper),
-          fontFamily: 'var(--font-prose)',
-        }}
-      >
-        {/* Header */}
-        <div className="text-center pt-5 pb-2 flex flex-col items-center">
-          {/* Law 1 — the subject carries its image. Entity Visual Header pattern
-              (THR-637); the resolver is knowledge-gated but fail-open when no
-              level is passed, and a threaded mortal always resolves to art or
-              the authored fallback tile. Clicking it does what the name does. */}
-          <EntityVisual
-            size="portrait"
-            shape="rounded"
-            entity={{ id: premonition.agentId, kind: 'agent', name: premonition.agentName }}
-            graph={graph ?? null}
-            onClick={onViewAgent ? () => onViewAgent(premonition.agentId) : undefined}
-            aria-label={
-              onViewAgent
-                ? `Open ${premonition.agentName}'s page`
-                : `Portrait of ${premonition.agentName}`
-            }
-            data-testid="premonition-subject-portrait"
-            style={{
-              width: SUBJECT_PORTRAIT_PX,
-              minWidth: SUBJECT_PORTRAIT_PX,
-              height: Math.round(SUBJECT_PORTRAIT_PX * 4 / 3),
-              marginBottom: 10,
-            }}
-          />
-          <div
-            style={{
-              color: accent(isWhisper, '--premonition-accent-text-alpha'),
-              fontFamily: 'var(--font-body)',
-              fontWeight: 700,
-              fontSize: 'var(--text-xs)',
-            }}
-          >
-            {headerText}
-          </div>
-          {/* Law 45: was `opacity-40` (~2.5:1 composed). Which mortal the
-              premonition is about is the one thing on this surface that cannot
-              be inferred from anything else on it.
-              Law 21/20: the name is the link to the mortal's page, and the
-              tooltip is the hover tier above it. */}
-          <Tooltip label={subjectTooltip?.label} desc={subjectTooltip?.desc}>
-            {onViewAgent ? (
-              <button
-                type="button"
-                onClick={() => onViewAgent(premonition.agentId)}
-                data-testid="premonition-subject-name"
-                className="text-xs mt-1 bg-transparent border-none cursor-pointer hover:brightness-125 transition-[filter]"
-                style={{
-                  color: dimText(isWhisper),
-                  fontFamily: 'inherit',
-                  minHeight: SUBJECT_NAME_MIN_HIT_PX,
-                  padding: '0 8px',
-                  textDecoration: 'underline',
-                  textDecorationStyle: 'dotted',
-                  textUnderlineOffset: 3,
-                }}
-              >
-                {premonition.agentName}
-              </button>
-            ) : (
-              <span
-                className="text-xs mt-1"
-                data-testid="premonition-subject-name"
-                style={{ color: dimText(isWhisper) }}
-              >
-                {premonition.agentName}
-              </span>
-            )}
-          </Tooltip>
-        </div>
-
-        {/* Vignette */}
-        <div className="px-6 pb-4">
-          <div
-            className="italic leading-relaxed text-sm"
-            style={{
-              borderLeft: `2px solid ${accent(isWhisper, '--premonition-accent-rule-alpha')}`,
-              padding: '12px 16px',
-            }}
-          >
-            {premonition.vignetteProse}
-          </div>
-        </div>
-
-        {/* Context line — whisper only; compulsion vignette already explains the mechanic */}
-        {isWhisper && (
-          <div className="px-6 pb-3">
-            <div className="text-xs" style={{ color: dimText(isWhisper) }}>
-              You sense currents pulling at your mortal:
-            </div>
-          </div>
-        )}
-
-        {/* Options */}
-        <div className="px-6 pb-4 flex flex-col gap-2.5">
-          {isWhisper && premonition.whisperOptions?.map((nudge, i) => (
-            <WhisperOptionRow
-              key={`whisper-${i}`}
-              nudge={nudge}
-              affordable={canAfford(essencePool, nudge.sphere, nudge.essenceCost)}
-              isWhisper={isWhisper}
-              onClick={() => onWhisperChoice(nudge)}
-            />
-          ))}
-          {!isWhisper && premonition.compulsionCandidates?.map((candidate, i) => (
-            <CompulsionOptionRow
-              key={`compulsion-${i}`}
-              candidate={candidate}
-              affordable={canAfford(essencePool, candidate.sphere, candidate.essenceCost)}
-              onClick={() => onCompulsionChoice(candidate)}
-            />
-          ))}
-        </div>
-
-        {/* Dismiss */}
-        <div className="text-center pb-5">
-          {/* Law 45: the dismiss control's own label was `opacity-40`. Hover
-              still brightens it — the rest state is what had to clear AA. */}
-          <button
-            className="text-xs hover:brightness-125 transition-[filter] cursor-pointer bg-transparent border-none"
-            style={{ color: dimText(isWhisper) }}
-            data-testid="premonition-dismiss"
-            onClick={onDismiss}
-          >
-            {dismissText}
-          </button>
-        </div>
-      </div>
-    </Modal>
+    // Only the explicit decline button declines. `closeOnEscape={false}` keeps the
+    // Stage off the escape registry so that Escape still reaches the drawer (THR-1816).
+    <Stage
+      kind="premonition"
+      vm={vm}
+      label={headerText}
+      onEscape={IGNORE_IMPLICIT_CLOSE}
+      closeOnEscape={false}
+      tick={tick}
+      ground={`var(${isWhisper ? '--premonition-whisper-bg' : '--premonition-compulsion-bg'})`}
+      hoveredOption={hoveredOption}
+      optionTone={isWhisper ? 'whisper' : 'compulsion'}
+      left={left}
+      right={right}
+    />
   );
 }

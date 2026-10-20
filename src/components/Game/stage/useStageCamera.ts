@@ -15,7 +15,9 @@
  */
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
-import { chooseStageZoom, hexScreenWidth, nudgeInside } from '../../HexMapV2/camera/stageCamera';
+import { chooseStageFrame, chooseStageZoom, hexScreenWidth, nudgeInside } from '../../HexMapV2/camera/stageCamera';
+import { hexToWorld } from '../../../lib/worldPosition';
+import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
 import { STAGE_CLOSE_EDGE_MARGIN_PX, STAGE_DIM_FADE_MS, STAGE_LAYOUT_SETTLE_FRAMES } from '../../../data/stage-content';
 import { isStageOpen, type StageCameraMode, type StageScreenState } from './stageState';
 
@@ -63,11 +65,22 @@ export function useStageCamera(
       return () => { cancelled = true; };
     }
     const { k, minK, maxK } = map.getCameraState();
-    const zoom = chooseStageZoom(k, w.w, minK, maxK);
-    map.centerHexesAt(focus.frame, { x: w.x + w.w / 2, y: w.y + w.h / 2 }, { zoom, instant: focus.instant })
+    // THR-1897 — a premonition frames its options too, when they all fit at k ≥ 5.
+    const points = focus.frame.map(parseKey).filter((h): h is { col: number; row: number } => h !== null)
+      .map(h => hexToWorld(h, HEX_CONSTANTS.HEX_SIZE));
+    const fit = chooseStageFrame(points, chooseStageZoom(k, w.w, minK, maxK), { w: w.w, h: w.h }, minK);
+    const frame = focus.frame.slice(0, Math.max(1, fit.framed));
+    map.centerHexesAt(frame, { x: w.x + w.w / 2, y: w.y + w.h / 2 }, { zoom: fit.zoom, instant: focus.instant })
       .then(settle, () => settle('timed_out'));
     return () => { cancelled = true; };
   }, [focus, hexMapRef, setStage]);
+
+  // ── THR-1897: the premonition option hovered or focused shows its ring. ──
+  const hoveredOption = stage.hoveredOption;
+  useEffect(() => {
+    if (!focus) return;
+    hexMapRef.current?.setStageOptionHover(hoveredOption);
+  }, [focus, hoveredOption, hexMapRef]);
 
   // ── Close: the dim goes; the camera stays, unless returning chrome would cover the place. ──
   const open = isStageOpen(stage);
@@ -76,6 +89,7 @@ export function useStageCamera(
     const map = hexMapRef.current;
     if (!map) return;
     map.setStageFocus(null);
+    map.setStageOptionHover(null);
     const last = lastLit.current;
     lastLit.current = null;
     const at = parseKey(last?.key);

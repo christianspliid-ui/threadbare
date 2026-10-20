@@ -11,17 +11,23 @@
  * a Law 48 armed act — the record stays for the badge to count.
  *
  * Everything rendered comes off `MomentCardModel`; the component computes nothing.
+ *
+ * THR-1897 (plan THR-1877 § D4, S4): an undertaking moment plays on the Stage, in the
+ * compact layout, lit at the mortal's place; the Stage's context line ("Maren Ashfold at
+ * Millbrook") sits under the undertaking's name. Its `Modal` is gone; its words are not.
  */
 import { useState } from 'react';
-import { Modal, MODAL_Z_DEFAULT } from '../shared/Modal';
 import { Button } from '../shared/Button';
+import { Stage } from './stage/Stage';
+import { StageContextLine } from './StoryBeatModal';
+import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
 import { Tooltip } from '../shared/Tooltip';
 import { EntityVisual } from '../shared/EntityVisual';
 import { StepDots } from '../shared/StepDots';
 import { bandAccentColor } from './outcomeBandAccent';
 import { MOMENT_CARD_PAUSE_NOTE, MOMENT_SEE_WORK_LABEL } from '../../data/moment-card-content';
 import type { WorldGraph } from '../../engine/graph';
-import type { MomentCardChip, MomentCardModel, MomentChipTone } from './momentCardModel';
+import type { MomentCardChip, MomentCardModel, MomentChipTone } from '../../engine/views/stage/momentCardModel';
 
 export interface MomentCardProps {
   open: boolean;
@@ -38,6 +44,10 @@ export interface MomentCardProps {
    * card can say inline what happened (Law 48: blocked acts fail fast inline).
    */
   onDivineAct?: (templateId: string, targetAgentId: string) => { success: boolean; message?: string };
+  /** THR-1897 — the Stage view model (lit hex, place tag, context line); absent ⇒ nothing lit. */
+  stageVM?: StageVM | null;
+  /** The game tick, for the Stage's traces. */
+  tick?: number;
 }
 
 const TONE_COLOR: Record<MomentChipTone, string> = {
@@ -138,7 +148,7 @@ function ChipRow({ chip, onSelectAgent }: { chip: MomentCardChip; onSelectAgent?
   );
 }
 
-export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, onSeeWork, onDivineAct }: MomentCardProps) {
+export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, onSeeWork, onDivineAct, stageVM, tick = 0 }: MomentCardProps) {
   const accent = bandAccentColor(model.outcomeBand ?? undefined, 'var(--accent-gold)');
   // Law 48 — an essence spend is armed, then fired. `staged` holds the verb the
   // player has armed; a second press on the same verb commits it.
@@ -148,15 +158,11 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
   const showActions = model.actionable && !!onDivineAct;
   const portraitClickable = model.actorExists && !!onSelectAgent;
 
-  return (
-    <Modal
-      open={open}
-      onClose={onAcknowledge}
-      maxWidth={560}
-      zIndex={MODAL_Z_DEFAULT}
-      context="gain"
-      aria-label={`${model.title}: ${model.undertakingName}`}
-    >
+  if (!open) return null;
+  const vm = stageVM ?? fallbackStageView({ kind: 'undertaking-moment', hasArt: false, hasCast: false });
+
+  const body = (
+    <div data-moment-card-stage="" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {/* Identity chrome (Law 37): portrait, undertaking, class word, checkpoint position, band. */}
       <div
         data-testid="moment-card"
@@ -170,6 +176,7 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
           borderTopRightRadius: '12px',
           borderBottom: `2px solid ${accent}`,
           background: 'var(--dlg-bg, linear-gradient(160deg, var(--bg-raised), var(--bg-abyss)))',
+          flexShrink: 0,
         }}
       >
         <EntityVisual
@@ -202,6 +209,7 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
           >
             {model.undertakingName}
           </div>
+          <StageContextLine line={vm.contextLine} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginTop: 'var(--space-1)', flexWrap: 'wrap' }}>
             {model.checkpoints && (
               <Tooltip id="ui.moment_checkpoints">
@@ -241,7 +249,7 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
         </div>
       </div>
 
-      <Modal.Body>
+      <div data-moment-card-body="" style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 'var(--panel-padding)' }}>
         {/* Prose — narrator mode, two lines. */}
         <p
           data-testid="moment-card-opening"
@@ -336,9 +344,9 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
             )}
           </div>
         )}
-      </Modal.Body>
+      </div>
 
-      <Modal.Footer>
+      <footer style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--panel-padding)', borderTop: '1px solid var(--border-subtle)', flexShrink: 0 }}>
         <Tooltip id="ui.moment_pause">
           <span
             data-testid="moment-card-pause-note"
@@ -350,7 +358,18 @@ export function MomentCard({ open, model, graph, onAcknowledge, onSelectAgent, o
         <Button variant="primary" size="sm" onClick={onAcknowledge} data-testid="moment-card-acknowledge">
           Acknowledge
         </Button>
-      </Modal.Footer>
-    </Modal>
+      </footer>
+    </div>
+  );
+
+  return (
+    <Stage
+      kind="undertaking-moment"
+      vm={vm}
+      label={`${model.title}: ${model.undertakingName}`}
+      onEscape={onAcknowledge}
+      tick={tick}
+      right={body}
+    />
   );
 }

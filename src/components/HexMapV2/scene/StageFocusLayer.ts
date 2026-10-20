@@ -11,6 +11,10 @@
  * - **Ring** — a parchment line on the lit hex's six edges (`--text-primary`, never gold:
  *   gold on the map is the Dominion frontier), above the fog so it shows in fog too.
  * - **Glow** — an additive radial glow in the ring's colour (the `HexPulseMesh` pattern).
+ * - **Option rings** (THR-1897, a premonition) — a dashed ring per option place in the dream's
+ *   tone, shown only while that option is hovered or focused (`setHoveredOption`). An option
+ *   outside fog has its own dim plate, lifted while hovered so its terrain shows; an option in
+ *   fog (`ringOnly`) stays under the dim and the fog: its ring draws over both, revealing nothing.
  *
  * Built when the Stage opens and disposed when it closes — never hidden by alpha — so
  * the Stage changes nothing else on the map. `setProgress(t)` fades it in with the camera.
@@ -27,6 +31,9 @@ import {
   STAGE_DIM_COLOR,
   STAGE_GLOW_ALPHA,
   STAGE_GLOW_SCALE_FRACTION,
+  STAGE_OPTION_RING_COLOR_FALLBACK,
+  STAGE_OPTION_RING_COLOR_VAR,
+  STAGE_OPTION_RING_DASH,
   STAGE_RING_COLOR_FALLBACK,
   STAGE_RING_COLOR_VAR,
   STAGE_RING_WIDTH_FRACTION,
@@ -39,7 +46,7 @@ export const STAGE_FOCUS_LAYER_NAME = 'stage_focus';
 export interface StageMapFocus {
   /** The lit hexes, `col,row` (0 or 1 in S2). */
   lit: string[];
-  /** Premonition places (S4); S2 passes none. */
+  /** Premonition places (S4); every other kind passes none. */
   options: { hexKey: string; tone: 'whisper' | 'compulsion'; ringOnly: boolean; hovered: boolean }[];
   /** The dim's alpha (`STAGE_MAP_DIM`). */
   strength: number;
@@ -47,10 +54,13 @@ export interface StageMapFocus {
 
 export interface StageFocusLayer {
   group: THREE.Group;
-  counts: { lit: number; dimmed: number };
+  counts: { lit: number; dimmed: number; options: number };
   strength: number;
   /** 0 → nothing drawn, 1 → the full dim, ring and glow. */
   setProgress(t: number): void;
+  /** THR-1897 — show one premonition option's ring (and lift its plate unless it is in fog); null hides them all. */
+  setHoveredOption(hexKey: string | null): void;
+  getHoveredOption(): string | null;
   dispose(): void;
 }
 
@@ -85,6 +95,22 @@ function glowTexture(): THREE.CanvasTexture | null {
   }
 }
 
+/** An `r g b` triplet token (the premonition palette's form) as a CSS colour. */
+export function rgbTripletColor(name: string, fallback: string): string {
+  const v = cssVarColor(name, '');
+  const parts = v.split(/[\s,]+/).filter(Boolean);
+  return parts.length === 3 && parts.every(n => Number.isFinite(Number(n))) ? `rgb(${parts.join(', ')})` : fallback;
+}
+
+/** The dashes along one edge, as [from, to] shares of it (`STAGE_OPTION_RING_DASH`). */
+export function dashSpans(): Array<[number, number]> {
+  const { dash, gap } = STAGE_OPTION_RING_DASH;
+  const spans: Array<[number, number]> = [];
+  if (!(dash > 0)) return [[0, 1]];
+  for (let a = 0; a < 1; a += dash + Math.max(0, gap)) spans.push([a, Math.min(1, a + dash)]);
+  return spans;
+}
+
 const _m = new THREE.Matrix4();
 
 function parseKey(key: string): { col: number; row: number } | null {
@@ -103,8 +129,15 @@ export function createStageFocusLayer(focus: StageMapFocus, tiles: readonly { co
   const litSet = new Set(focus.lit);
   const strength = Math.max(0, Math.min(1, focus.strength));
 
-  // ── Dim: every hex but the lit ones ──
-  const dimmed = tiles.filter(t => !litSet.has(`${t.col},${t.row}`));
+  // ── Option places (S4): an option outside fog keeps its own plate, lifted while hovered ──
+  const optionPlateKeys = [...new Set(focus.options.filter(o => !o.ringOnly && !litSet.has(o.hexKey)).map(o => o.hexKey))];
+  const optionPlateSet = new Set(optionPlateKeys);
+
+  // ── Dim: every hex but the lit ones (option places get their own plates, below) ──
+  const dimmed = tiles.filter(t => {
+    const key = `${t.col},${t.row}`;
+    return !litSet.has(key) && !optionPlateSet.has(key);
+  });
   const hexGeo = buildHexGeometry(size);
   const dimMat = new THREE.MeshBasicMaterial({ color: STAGE_DIM_COLOR, transparent: true, opacity: 0, depthWrite: false, depthTest: false });
   disposables.push(hexGeo, dimMat);
@@ -166,15 +199,83 @@ export function createStageFocusLayer(focus: StageMapFocus, tiles: readonly { co
     group.add(mesh);
   }
 
+  // ── Option plates: the dim over each option place outside fog, one instance each ──
+  const optionPlates = optionPlateKeys.map(parseKey).filter((h): h is { col: number; row: number } => h !== null);
+  const plateMesh = optionPlates.length > 0 ? new THREE.InstancedMesh(hexGeo, dimMat, optionPlates.length) : null;
+  const placePlate = (i: number, shown: boolean) => {
+    if (!plateMesh) return;
+    const wp = hexToWorld(optionPlates[i], size);
+    const s = shown ? 1 : 0;
+    _m.makeScale(s, s, 1);
+    _m.setPosition(wp.x, wp.y, LAYER_Z.STAGE_DIM);
+    plateMesh.setMatrixAt(i, _m);
+  };
+  if (plateMesh) {
+    plateMesh.renderOrder = RENDER_ORDER.STAGE_DIM;
+    plateMesh.frustumCulled = false;
+    optionPlates.forEach((_, i) => placePlate(i, true));
+    plateMesh.instanceMatrix.needsUpdate = true;
+    group.add(plateMesh);
+  }
+
+  // ── Option rings (S4): dashed, in the dream's tone, shown only while that option is hovered ──
+  const optionRings = new Map<string, THREE.Mesh>();
+  const optionMats: THREE.MeshBasicMaterial[] = [];
+  for (const o of focus.options) {
+    const h = parseKey(o.hexKey);
+    if (!h || optionRings.has(o.hexKey)) continue;
+    const positions: number[] = [];
+    const centre = hexToWorld(h, size);
+    for (let dir = 0; dir < 6; dir++) {
+      const { start, end } = getEdgePoints(centre, dir, size);
+      for (const [a, b] of dashSpans()) {
+        buildThickEdge(
+          start.x + (end.x - start.x) * a, start.y + (end.y - start.y) * a,
+          start.x + (end.x - start.x) * b, start.y + (end.y - start.y) * b,
+          half, LAYER_Z.STAGE_RING, positions,
+        );
+      }
+    }
+    const color = new THREE.Color();
+    color.setStyle(rgbTripletColor(STAGE_OPTION_RING_COLOR_VAR[o.tone], STAGE_OPTION_RING_COLOR_FALLBACK[o.tone]), THREE.SRGBColorSpace);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false, depthTest: false, side: THREE.DoubleSide });
+    disposables.push(geo, mat);
+    optionMats.push(mat);
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.renderOrder = RENDER_ORDER.STAGE_RING;
+    mesh.frustumCulled = false;
+    mesh.visible = false;
+    mesh.name = `stage_option_ring:${o.hexKey}`;
+    group.add(mesh);
+    optionRings.set(o.hexKey, mesh);
+  }
+
+  let progress = 0;
+  let hoveredOption: string | null = null;
   const layer: StageFocusLayer = {
     group,
-    counts: { lit: lit.length, dimmed: dimmed.length },
+    counts: { lit: lit.length, dimmed: dimmed.length + optionPlates.length, options: optionRings.size },
     strength,
     setProgress(t: number) {
       const p = Math.max(0, Math.min(1, t));
+      progress = p;
       dimMat.opacity = strength * p;
       if (ringMat) ringMat.opacity = p;
       if (glowMat) glowMat.opacity = STAGE_GLOW_ALPHA * p;
+      for (const m of optionMats) m.opacity = p;
+    },
+    setHoveredOption(hexKey: string | null) {
+      hoveredOption = hexKey && optionRings.has(hexKey) ? hexKey : null;
+      for (const [key, mesh] of optionRings) mesh.visible = key === hoveredOption;
+      // A hovered option outside fog shows its terrain; one in fog stays a ring only.
+      optionPlates.forEach((h, i) => placePlate(i, `${h.col},${h.row}` !== hoveredOption));
+      if (plateMesh) plateMesh.instanceMatrix.needsUpdate = true;
+      for (const m of optionMats) m.opacity = progress;
+    },
+    getHoveredOption() {
+      return hoveredOption;
     },
     dispose() {
       for (const d of disposables) {

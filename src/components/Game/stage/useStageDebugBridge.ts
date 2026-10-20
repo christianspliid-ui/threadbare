@@ -23,6 +23,13 @@ import type { GameScreenStore } from '../frame/GameScreenState';
 import type { InterruptResolution } from '../interruptRegistry';
 import type { DebugOpenHomedSurfaceResult, DebugStageState } from '../../../debug-bridge.d';
 import { isStageOpen } from './stageState';
+import { getThreadsFrom } from '../../../engine/graphQueries';
+import type { ThreadEdgeProperties } from '../../../types/influence';
+import { buildStateSnapshot, buildVignetteData, selectTemplate } from '../../../engine/journeyEngine';
+import { JOURNEY_BEAT_TEMPLATES } from '../../../data/journey-content';
+
+/** How long a debug-staged emergence dilemma waits before `let` auto-fires. */
+const DEBUG_EMERGENCE_WAIT_TICKS = 30;
 
 type Lever = () => Promise<DebugOpenHomedSurfaceResult>;
 
@@ -142,21 +149,99 @@ export function useStageDebugBridge(args: {
       });
     });
 
+    // THR-1897 — The First's journey moment: a real beat for her current phase, queued now.
+    const journeyVignette: Lever = () => new Promise(resolve => {
+      const { setGameState } = latest.current;
+      setGameState(prev => {
+        const first = getThreadsFrom(prev.graph, prev.ascendantId)
+          .find(e => (e.properties as ThreadEdgeProperties).courtPosition === 'the_first');
+        const agent = first ? prev.graph.getNode(first.target) : undefined;
+        if (!first || !agent) {
+          resolve({ opened: false, reason: 'no First is bonded — use ?view=game&seeded' });
+          return prev;
+        }
+        const props = first.properties as ThreadEdgeProperties;
+        const phase = props.storyPhase && props.storyPhase !== 'return' ? props.storyPhase : 'call';
+        const snapshot = buildStateSnapshot(prev.graph, agent.id, props);
+        const picked = selectTemplate(JOURNEY_BEAT_TEMPLATES, phase, snapshot, prev.seed + prev.tick, props.beatHistory ?? []);
+        if (!picked) {
+          resolve({ opened: false, reason: `no journey beat for the ${phase} phase` });
+          return prev;
+        }
+        const data = buildVignetteData(agent.id, agent.name, phase, 0, prev.doomClock.progress, picked.template, picked.variant, snapshot, prev.tick);
+        resolve({ opened: true });
+        return {
+          ...prev,
+          pendingVignettes: [
+            ...(prev.pendingVignettes ?? []).filter(v => v.data.agentId !== agent.id),
+            { id: `vignette_debug_${agent.id}_${prev.tick}`, data, priority: 100, queuedTick: prev.tick },
+          ],
+        };
+      });
+    });
+
+    // THR-1897 — a ruin's emergence dilemma: the nearest-to-hand elder ruin and the First
+    // (or any mortal), with a transformed outcome so every card can be chosen.
+    const emergenceDilemma: Lever = () => new Promise(resolve => {
+      const { setGameState } = latest.current;
+      setGameState(prev => {
+        const ruin = prev.graph.getNodesByType('location')
+          .find(n => n.properties.locationType === 'elder_ruin' || n.properties.locationSubtype === 'elder_ruin');
+        if (!ruin) {
+          resolve({ opened: false, reason: 'no elder ruin in this world' });
+          return prev;
+        }
+        const first = getThreadsFrom(prev.graph, prev.ascendantId)
+          .find(e => (e.properties as ThreadEdgeProperties).courtPosition === 'the_first');
+        const agentId = first?.target ?? prev.graph.getNodesByType('agent')[0]?.id;
+        if (!agentId) {
+          resolve({ opened: false, reason: 'no mortal in the world' });
+          return prev;
+        }
+        resolve({ opened: true });
+        return {
+          ...prev,
+          pendingEmergenceDecision: {
+            delveId: `delve_debug_${prev.tick}`,
+            agentId,
+            ruinId: ruin.id,
+            ruinMagnitude: 1,
+            sphereAlignment: 'force',
+            consequenceRoll: 'transformed',
+            autoFiresTick: prev.tick + DEBUG_EMERGENCE_WAIT_TICKS,
+          },
+        };
+      });
+    });
+
+    // THR-1897 — routes to the existing levers: the whisper opens at once (a compulsion is
+    // composed at a scoring moment: `forcePremonition('@hero', 'compulsion')` then `tick(1)`);
+    // `forceMoments(true)` makes the next undertaking checkpoint an interrupt.
+    const premonition: Lever = async () => {
+      const result = await window.__DEBUG?.forcePremonition?.('@hero', 'whisper');
+      if (!result || 'error' in result) return { opened: false, reason: result && 'error' in result ? result.error : 'no premonition lever' };
+      return { opened: true };
+    };
+    const undertakingMoment: Lever = async () => {
+      await window.__DEBUG?.forceMoments?.(true);
+      return { opened: false, reason: 'armed — the next undertaking checkpoint opens on the Stage; tick the world (__DEBUG.tick(n))' };
+    };
+
     const levers: Record<HomedSurfaceKind, Lever> = {
       'warm-start': later('warm-start', 'it opens on a warm start (?warm)'),
       'meet-the-first': later('meet-the-first', 'use ?view=game&firstunmet'),
       'threading-rite': later('threading-rite', 'use __DEBUG.openThreadingRite(agentId)'),
       encounter: later('encounter', 'use ?forceencounters or __DEBUG.spawnEncounter; it plays on the Stage'),
-      premonition: later('premonition', 'use __DEBUG.forcePremonition(agent) (its Stage lands with THR-1897)'),
-      'journey-vignette': later('journey-vignette', 'its lever and Stage land with THR-1897'),
+      premonition,
+      'journey-vignette': journeyVignette,
       'story-beat': storyBeat,
       'ascendant-beat': later('ascendant-beat', 'use __DEBUG.forceOffering()'),
       'choice-set': later('choice-set', 'cast a choice-set card from the god rail'),
-      'emergence-dilemma': later('emergence-dilemma', 'its lever and Stage land with THR-1897'),
+      'emergence-dilemma': emergenceDilemma,
       'divine-receipt': later('divine-receipt', 'it opens when a divine act resolves'),
       'chapter-ledger': later('chapter-ledger', 'open it from the Ledger rail'),
       'divine-court': later('divine-court', 'open it from the god rail'),
-      'undertaking-moment': later('undertaking-moment', 'use __DEBUG.forceMoments(true) (its Stage lands with THR-1897)'),
+      'undertaking-moment': undertakingMoment,
       'event-popup': later('event-popup', 'it opens on a doom stage or the Mandate'),
       'cycle-harvest': later('cycle-harvest', 'it opens at the end of the age'),
     };

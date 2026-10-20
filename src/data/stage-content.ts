@@ -8,7 +8,7 @@
  *
  * | Constant | Default | Purpose |
  * |---|---|---|
- * | STAGE_FRAME_KINDS | ['story-beat', 'encounter'] | the Stage-home kinds that play on the Stage frame now; S3 adds the encounter, S4 the rest |
+ * | STAGE_FRAME_KINDS | every Stage-home kind | the Stage-home kinds that play on the Stage frame; S2 the story beat, S3 the encounter, S4 the rest |
  * | STAGE_MAP_DIM | 0.7 | the dim's alpha over every unlit hex (THR-1829) |
  * | STAGE_DIM_COLOR | DOMINION_DIM_COLOR | the lens grammar's near-black, imported, never re-typed |
  * | STAGE_RING_COLOR_VAR | --text-primary | parchment, never gold (gold on the map is the Dominion frontier) |
@@ -22,6 +22,8 @@
  * | STAGE_MAP_HINT_MS | 2000 | how long the hold line shows after an input on the map |
  * | STAGE_LIT_HEX_MIN_HIT_PX | 24 | the lit-hex button's smallest hit area (Law 46) |
  * | STAGE_CLOSE_EDGE_MARGIN_PX | 48 | on close, how far inside the visible map the place is kept |
+ * | STAGE_OPTION_RING_DASH | { dash: 0.18, gap: 0.12 } | a premonition option ring's dashes, as shares of an edge (S4) |
+ * | STAGE_OPTION_RING_COLOR_VAR | whisper / compulsion text rgb | an option ring's colour, the premonition's dream tone (S4) |
  */
 import { DOMINION_DIM_COLOR } from './dominion-ui-content';
 import type { StageHomedKind } from './homed-surfaces';
@@ -30,7 +32,15 @@ import type { StageHomedKind } from './homed-surfaces';
  * The Stage-home kinds that play on the Stage frame in this slice. The others keep their
  * own screens until their slice moves them (THR-1895 the encounter, THR-1897 the rest).
  */
-export const STAGE_FRAME_KINDS: readonly StageHomedKind[] = ['story-beat', 'encounter'];
+export const STAGE_FRAME_KINDS: readonly StageHomedKind[] = [
+  'story-beat',
+  'encounter',
+  // THR-1897 (S4): the last four Stage moments.
+  'journey-vignette',
+  'undertaking-moment',
+  'premonition',
+  'emergence-dilemma',
+];
 
 export function isStageFrameKind(kind: string | null | undefined): kind is StageHomedKind {
   return kind != null && (STAGE_FRAME_KINDS as readonly string[]).includes(kind);
@@ -54,6 +64,16 @@ export const STAGE_LAYOUT_SETTLE_FRAMES = 2;
 export const STAGE_MAP_HINT_MS = 2000;
 export const STAGE_LIT_HEX_MIN_HIT_PX = 24;
 export const STAGE_CLOSE_EDGE_MARGIN_PX = 48;
+
+/** THR-1897 — a premonition option ring is dashed: each edge is dash, gap, dash… as shares of the edge. */
+export const STAGE_OPTION_RING_DASH = { dash: 0.18, gap: 0.12 } as const;
+/** The option ring's colour, read from the premonition's dream tone (an `r g b` triplet token). */
+export const STAGE_OPTION_RING_COLOR_VAR = {
+  whisper: '--premonition-whisper-text-rgb',
+  compulsion: '--premonition-compulsion-text-rgb',
+} as const;
+/** Used when the token cannot be read (no document). */
+export const STAGE_OPTION_RING_COLOR_FALLBACK = { whisper: '#c8b8d8', compulsion: '#d8c0c8' } as const;
 
 /** The panel's entrance once the camera lands (Law 41's ceremonial tier); reduced motion uses `--anim-fast`. */
 export const STAGE_PANEL_ENTRANCE_S = 0.6;

@@ -354,6 +354,8 @@ export const STAGE_WORDS = {
   placeTagSuffix: ' · where it is happening',
   /** A premonition: "Millbrook · where Maren Ashfold is" (S4). */
   placeTagSubjectSuffix: ' · where {subject} is',
+  /** A premonition option hovered or focused: "Corran Fields · where the dream pulls" (S4). */
+  placeTagDreamSuffix: ' · where the dream pulls',
   /** "Maren Ashfold at Millbrook" — both names are links. */
   contextJoin: ' at ',
   /** No subject: "At Millbrook". */

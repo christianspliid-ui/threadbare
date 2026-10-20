@@ -1,5 +1,5 @@
 /**
- * JourneyVignetteModal — auto-interrupt modal for The First's journey beats.
+ * JourneyVignetteModal — the journey moment: The First's journey beats, on the Stage.
  *
  * Displays the beat's setup prose, tension prose, and player choices.
  * Special treatment for the Ordeal (higher stakes UI).
@@ -8,11 +8,17 @@
  * replaces the choices with a Continue button, and the choice is committed on
  * Continue (or on any close once answered). Focus opens on the scene, not on the
  * first choice, so no answer reads as pre-selected.
+ *
+ * THR-1897 (plan THR-1877 § D4, S4): a journey moment plays on the Stage, in the compact
+ * layout, lit at The First's place — the title, then the Stage's context line
+ * ("Maren Ashfold at Millbrook"), then the same words as before. Its `Modal` is gone.
  */
 
 import { memo, useState, useCallback } from 'react';
-import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
+import { Stage } from './stage/Stage';
+import { StageContextLine } from './StoryBeatModal';
+import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
 import type { JourneyVignetteData, BeatChoice } from '../../types/journeyEngine';
 import { formatPhaseName } from '../../engine/journeyEngine';
 import { formatEssence } from '../shared/formatEssence';
@@ -30,6 +36,10 @@ interface JourneyVignetteModalProps {
    * A choice costing more renders disabled. Omitted = unknown, nothing disabled.
    */
   essenceAvailable?: number;
+  /** THR-1897 — the Stage view model (lit hex, place tag, context line); absent ⇒ nothing lit. */
+  stageVM?: StageVM | null;
+  /** The game tick, for the Stage's traces. */
+  tick?: number;
 }
 
 // ─── Phase Badge ────────────────────────────────────────────────────
@@ -140,7 +150,7 @@ function ChoiceButton({
   );
 }
 
-// ─── Main Modal ─────────────────────────────────────────────────────
+// ─── The moment ──────────────────────────────────────────────────────
 
 export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   open,
@@ -148,6 +158,8 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
   onChoice,
   vignette,
   essenceAvailable,
+  stageVM,
+  tick = 0,
 }: JourneyVignetteModalProps) {
   // The answered choice, while its consequence line is showing (THR-1854).
   const [answered, setAnswered] = useState<BeatChoice | null>(null);
@@ -173,26 +185,33 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
 
   const phaseName = formatPhaseName(vignette.phase);
 
+  if (!open) return null;
+  const vm = stageVM ?? fallbackStageView({ kind: 'journey-vignette', subjectAgentId: vignette.agentId, hasArt: false, hasCast: false });
+  const title = vignette.isOrdeal ? 'The Ordeal' : `${vignette.agentName}'s Journey`;
+
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      size="s"
-      context="story"
-    >
-      <Modal.Header>
-        <div style={{ textAlign: 'center' }}>
+    <Stage
+      kind="journey-vignette"
+      vm={vm}
+      label={title}
+      onEscape={handleClose}
+      tick={tick}
+      right={(
+    <div data-journey-vignette-stage="" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: 'var(--panel-padding, 20px)' }}>
+      <header style={{ paddingBottom: 'var(--space-3)' }}>
+        <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)' }}>
           <div style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'var(--text-lg)',
             color: vignette.isOrdeal ? 'var(--accent-gold)' : 'var(--text-primary)',
           }}>
-            {vignette.isOrdeal ? 'The Ordeal' : `${vignette.agentName}'s Journey`}
+            {title}
           </div>
+          <StageContextLine line={vm.contextLine} />
         </div>
-      </Modal.Header>
+      </header>
 
-      <Modal.Body>
+      <div data-journey-vignette-body="" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
         <PhaseBadge phase={phaseName} />
 
         {/* Setup prose — the scene takes focus on open, not the first choice (THR-1854) */}
@@ -284,9 +303,9 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
             })}
           </div>
         )}
-      </Modal.Body>
+      </div>
 
-      <Modal.Footer>
+      <footer style={{ paddingTop: 'var(--space-3)', borderTop: '1px solid var(--border-subtle)' }}>
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -298,7 +317,9 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
           <span data-testid="journey-stage">{JOURNEY_STAGE_LABELS[vignette.phase] ?? phaseName}</span>
           <span>{vignette.agentName}</span>
         </div>
-      </Modal.Footer>
-    </Modal>
+      </footer>
+    </div>
+      )}
+    />
   );
 });

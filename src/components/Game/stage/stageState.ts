@@ -22,7 +22,7 @@ export interface StageRect {
 
 /** What the Stage asks of the map: the dim and ring, what to frame, and where the window is. */
 export type StageFocusRequest = StageMapFocus & {
-  /** The hexes the camera fits in the window (the lit hex in S2). */
+  /** The hexes the camera fits in the window: the lit hex first, then a premonition's option places (S4). */
   frame: string[];
   /** The window's measured rectangle (viewport pixels), read after the rails settle. */
   windowRect: StageRect;
@@ -42,6 +42,8 @@ export interface StageScreenState {
   litHexScreen: { x: number; y: number; size: number } | null;
   /** A name clicked on the Stage opened the Inspector over it (Escape folds it back). */
   inspectorOverStage: boolean;
+  /** THR-1897 — the premonition option hovered or focused now (its `col,row`); its ring shows on the map. */
+  hoveredOption: string | null;
 }
 
 export const IDLE_STAGE: StageScreenState = {
@@ -53,6 +55,7 @@ export const IDLE_STAGE: StageScreenState = {
   cameraK: null,
   litHexScreen: null,
   inspectorOverStage: false,
+  hoveredOption: null,
 };
 
 export function isStageOpen(stage: Pick<StageScreenState, 'phase'>): boolean {

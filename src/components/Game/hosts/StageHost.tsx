@@ -18,8 +18,12 @@
  * aftermath and the watched view.
  *
  * THR-1892 (S2): a story beat plays on the Stage frame (`stage/Stage.tsx`), compact, over
- * the dimmed map with its hex lit. The other Stage kinds keep their own screens until
- * their slice moves them (`STAGE_FRAME_KINDS`).
+ * the dimmed map with its hex lit.
+ *
+ * THR-1897 (S4): the last four play on the Stage too — the journey moment and the
+ * undertaking moment compact, the premonition full (its options' places ringed on hover),
+ * the emergence dilemma lit at its ruin. Each component renders its own `Stage`; this
+ * host hands it the Stage view model. No Stage-home surface renders through `Modal`.
  */
 import { Fragment, type Dispatch, type ReactNode, type RefObject, type SetStateAction } from 'react';
 import type { HomedSurfaceKind, StageHomedKind } from '../../../data/homed-surfaces';
@@ -40,7 +44,7 @@ import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
 import { EmergenceDilemmaModal } from '../../ruins/EmergenceDilemmaModal';
 import type { courtPositionToThreadTier, EncounterStageModel } from '../encounter-stage/types';
 import type { FollowDescriptor } from '../FollowToggle';
-import type { MomentCardModel } from '../momentCardModel';
+import type { MomentCardModel } from '../../../engine/views/stage/momentCardModel';
 import type { InterruptResolution } from '../interruptRegistry';
 import type { ChapterAnswerRunHandle } from '../hooks/useChapterAnswerRun';
 import { EncounterVeil } from '../EncounterVeil';
@@ -96,6 +100,11 @@ export interface StageHostProps {
   momentCardModel: MomentCardModel | null;
   handleAcknowledgeMoment: () => void;
   handleMomentDivineAct: (templateId: string, targetAgentId: string) => { success: boolean; message: string };
+  /** THR-1897 — the Stage view models of the last four Stage moments (lit hex, place tag, context line). */
+  momentStageVM?: StageVM | null;
+  vignetteStageVM?: StageVM | null;
+  premonitionStageVM?: StageVM | null;
+  emergenceStageVM?: StageVM | null;
   // Journey vignette
   activeVignette: PendingVignette | null;
   handleJourneyChoice: (choiceId: string) => void;
@@ -148,6 +157,10 @@ export function StageHost({
   momentCardModel,
   handleAcknowledgeMoment,
   handleMomentDivineAct,
+  momentStageVM,
+  vignetteStageVM,
+  premonitionStageVM,
+  emergenceStageVM,
   activeVignette,
   handleJourneyChoice,
   activeStoryBeatId,
@@ -173,10 +186,12 @@ export function StageHost({
   const renderStageSurface = (kind: StageHomedKind): ReactNode => {
     if (!renders.has(kind)) return null;
     switch (kind) {
-    // Emergence Dilemma — blocking modal when a delve awaits a divine decision (THR-153)
+    // Emergence Dilemma — a delve awaits a divine decision (THR-153); on the Stage (THR-1897).
     case 'emergence-dilemma': return gameState.pendingEmergenceDecision && (
         <EmergenceDilemmaModal
+          key={gameState.pendingEmergenceDecision.delveId}
           gameState={gameState}
+          stageVM={emergenceStageVM}
           onResolve={(choice) => {
             setGameState(prev => ({
               ...prev,
@@ -296,9 +311,12 @@ export function StageHost({
     // than stacking on it; the slot survives, the card returns when the veil closes.
     case 'undertaking-moment': return pendingMoment && momentCardModel && (
         <MomentCard
+          key={pendingMoment.id}
           open={true}
           model={momentCardModel}
           graph={gameState.graph}
+          stageVM={momentStageVM}
+          tick={gameState.tick}
           onAcknowledge={handleAcknowledgeMoment}
           // THR-1500 — a moment arrives for a *followed* mortal, which is exactly
           // the case where the selection is someone else. Same root cause as the
@@ -316,6 +334,8 @@ export function StageHost({
           key={activeVignette.id}
           open={true}
           essenceAvailable={encounterPayingEssence}
+          stageVM={vignetteStageVM}
+          tick={gameState.tick}
           onClose={() => {
             // Dismissing = step back choice (withdrawn)
             const fallbackChoice = activeVignette.data.choices.find(c => c.effects.interventionType === 'withdrawn');
@@ -366,8 +386,11 @@ export function StageHost({
     case 'premonition': return activePremonition && (
         <PremonitionModal
           open={true}
+          key={activePremonition.id}
           premonition={activePremonition}
           essencePool={gameState.essencePool}
+          stageVM={premonitionStageVM}
+          tick={gameState.tick}
           graph={gameState.graph}
           tooltipContext={{
             graph: gameState.graph,
