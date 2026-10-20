@@ -2085,6 +2085,18 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/notificationRouter.ts', 'src/engine/views/interruptRegistry.ts'],
     readSites: ['src/engine/views/needsYou.ts', 'src/components/Game/GameView.tsx', 'src/components/Game/frame/NeedsYou.tsx'],
   },
+  // THR-1896 — the News row lapses; the Chronicle keeps the line.
+  {
+    id: 'alert-channel-to-chronicle',
+    producerSystem: NARRATIVE,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Every alert-channel tick event that reaches News also writes one Witness-voice Chronicle line in its own words (`playerProse ?? message`), so news that lapses out of Needs you can be reread. `phaseAlertChronicle` runs last among the tick\'s event phases (after the post-narrative slot, where mandate alerts are raised) and skips an id the Chronicle already holds, a type `ALERT_CHRONICLE_POLICY` exempts, and an alert the threading gate suppresses. Each alert site carries an `// alert-chronicle: <type>` marker; `alertChronicle.test.ts` fails on an unclassified one. Traced as `chronicle.intake.alert`.',
+    ulTerms: ['Chronicle'],
+    mechanism: { kind: 'property', symbols: ['chronicleEntries'] },
+    writeSites: ['src/engine/alertChronicle.ts'],
+    readSites: ['src/engine/views/ledgerRail.ts'],
+  },
   {
     id: 'receipt-event-band-toast',
     producerSystem: ENCOUNTERS,

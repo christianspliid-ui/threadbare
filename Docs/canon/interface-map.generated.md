@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 85 |
-| **Total** | **288** |
+| 🔵 UNVERIFIED-OK | 86 |
+| **Total** | **289** |
 
 ## Contracts by producing subsystem
 
@@ -113,6 +113,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `account-carries-echoes-to-the-next-world` | When an age ends the world remembers it: the places the god held, the mortals it raised and the relics its chosen carried are kept, and the next world wakes with them in its memory. | function: `concludeRun`, `liveEchoes` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
+| `alert-channel-to-chronicle` | Every alert-channel tick event that reaches News also writes one Witness-voice Chronicle line in its own words (`playerProse ?? message`), so news that lapses out of Needs you can be reread. `phaseAlertChronicle` runs last among the tick's event phases (after the post-narrative slot, where mandate alerts are raised) and skips an id the Chronicle already holds, a type `ALERT_CHRONICLE_POLICY` exempts, and an alert the threading gate suppresses. Each alert site carries an `// alert-chronicle: <type>` marker; `alertChronicle.test.ts` fails on an unclassified one. Traced as `chronicle.intake.alert`. | property: `chronicleEntries` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `alert-channel-to-needs-you` | Alert-level tick events reach the player as Needs-you News rows. The router keeps every alert it routes (only a repeated `sourceEventId` drops), lapses them after `NEEDS_YOU_NEWS_KEEP_DAYS` × `TICKS_PER_DAY` ticks and counts any trimmed at `ALERT_SAFETY_CAP` on `alertsTrimmedAtCap`; `buildNeedsYou` applies the same window and turns a same-kind burst in one tick into one row "· and N more like it". The interrupt registry’s `held` list feeds the Held group, so a moment waiting behind the one on screen is named. | function: `routeNotifications`, `trimAlerts`, `buildNeedsYou`, `NEEDS_YOU_PRODUCERS`, `resolveInterrupts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `content-ref-opens-codex-overlay` | Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card's sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491). | function: `SURFACE_BY_CONTENT_KIND`, `generateContentPage`, `resolveContentEntry` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `minimised-step-hold` | The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". | state-field: `playerHold`, `isPlayerHoldLive`, `progressActionsWithPlayerHolds` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
@@ -513,6 +514,17 @@ remediation ticket or the build fails.
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
 - **Other hits:** `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +97 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
+
+### `alert-channel-to-chronicle` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Every alert-channel tick event that reaches News also writes one Witness-voice Chronicle line in its own words (`playerProse ?? message`), so news that lapses out of Needs you can be reread. `phaseAlertChronicle` runs last among the tick's event phases (after the post-narrative slot, where mandate alerts are raised) and skips an id the Chronicle already holds, a type `ALERT_CHRONICLE_POLICY` exempts, and an alert the threading gate suppresses. Each alert site carries an `// alert-chronicle: <type>` marker; `alertChronicle.test.ts` fails on an unclassified one. Traced as `chronicle.intake.alert`.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Attention, Chronicle & Narrative
+- **UL terms:** *Chronicle*
+- **Production hits:** 34 total — 1 write, 1 read, 32 unclassified
+- **Write sites:** `src/engine/alertChronicle.ts`
+- **Read sites:** `src/engine/views/ledgerRail.ts`
+- **Other hits:** `src/components/Game/frame/LedgerRail.tsx`, `src/data/ia-manifest.ts`, `src/debug-bridge.ts`, `src/engine/ascendantBeat.ts`, `src/engine/crown.ts` +27 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `alert-channel-to-needs-you` — 🔵 UNVERIFIED-OK
 
@@ -1804,10 +1816,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Narrative Event*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
+- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/uiColorPalette.ts` +7 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/uiColorPalette.ts` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-endings-show-as-chips` — 🟢 LIVE
@@ -3382,10 +3394,10 @@ exit
 - **Intent:** The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Chronicle*, *Thread*
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/orchestrator.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/chronicleGrowth.ts`
-- **Other hits:** `src/types/gameState.ts`
+- **Other hits:** `src/engine/alertChronicle.ts`, `src/types/gameState.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -3620,10 +3632,10 @@ exit
 - **Producer → Consumer:** War, Armies & Battles → Attention, Chronicle & Narrative
 - **UL terms:** *Narrative Event*, *Chronicle Entry*
 - **Module:** `src/engine/armyNotifications.ts`
-- **Production hits:** 21 total — 5 write, 1 read, 15 unclassified
+- **Production hits:** 22 total — 5 write, 1 read, 16 unclassified
 - **Write sites:** `src/engine/armyAttrition.ts`, `src/engine/armySpawning.ts`, `src/engine/battleAftermath.ts`, `src/engine/battleResolution.ts`, `src/engine/siegeResolution.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts` +10 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts` +11 more
 - **Verdict:** Verified 2026-09-24: THR-1564. `warNews.test.ts` (21) drives the real writers — `spawnArmy`, `disbandArmy`, `phaseArmyAttrition`, `createBattleNode`, `createSiegeNode`, `resolveBattle`, `applyConquestOrVacuum` — with tracing DISABLED and asserts each kind writes its line in the same tick at the loudness table’s significance; a threaded mortal’s losing army whose commander dies in the aftermath still reports threaded (seed searched, not guessed); a siege that takes its town writes the territory line and no battle line; no line carries a digit; tracing on and off write identical lines. Headless, seed 42 medium, 150 ticks, tracing OFF: 80 war lines, 11 battle and siege endings in `chronicleEntries`, 0 digits — byte-identical to the same run with tracing ON. Before this change the tracing-off run wrote 0.
 
 ### `wheel-slot-card-face` — 🟢 LIVE
