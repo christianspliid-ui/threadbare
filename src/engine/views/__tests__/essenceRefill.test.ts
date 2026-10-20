@@ -107,6 +107,16 @@ describe('readEssenceRefill — the live rows', () => {
     }
   });
 
+  it('a sustained control draining a pool reads Drains; a relic-waived one does not', () => {
+    const effect = {
+      effectId: 'ce.1', active: true, perTickCost: { spirit: 0.3 }, perTickIncome: undefined,
+    } as never;
+    expect(readEssenceRefill(graph, ascendantId, [effect]).spheres.spirit!.band).toBe('drains');
+    graph.addNode({ id: 'relic.1', type: 'artifact' as never, name: 'Relic', properties: {} });
+    const waived = { ...(effect as object), upkeepArtifactId: 'relic.1' } as never;
+    expect(readEssenceRefill(graph, ascendantId, [waived]).spheres.spirit!.band).toBe('slow');
+  });
+
   it('the essence rows carry the band and mark the deepest sphere with upkeep', () => {
     const state = {
       graph,

@@ -13,6 +13,7 @@ import type { SphereName } from '../../types';
 import type { ControlEffect } from '../../types/controlEffect';
 import type { WorldGraph } from '../graph';
 import { computeEssenceIncomeBreakdown } from '../essenceIncome';
+import { getUpkeepStatus } from '../ascendantPrimitives';
 import { BASE_ESSENCE_PER_TICK } from '../../types/influence';
 import { deriveAlignmentFromPoints, distributeBySpherePoints, type SpherePoints } from '../spherePoints';
 import {
@@ -59,7 +60,19 @@ export function readEssenceRefill(
   controlEffects?: readonly ControlEffect[],
 ): EssenceRefillReading {
   try {
-    const { net, grossTotal } = computeEssenceIncomeBreakdown(graph, ascendantId, controlEffects);
+    const { net: ledgerNet, grossTotal } = computeEssenceIncomeBreakdown(graph, ascendantId, controlEffects);
+    // A sustained control's per-tick cost is charged from the pool by
+    // phaseControlEffects (Step 3b) but is not part of the income mirror; the
+    // band nets it out so a pool a control is draining reads "Drains". A cost a
+    // sustaining relic waives is not charged, so it is not netted here either.
+    const net = { ...ledgerNet };
+    for (const effect of controlEffects ?? []) {
+      if (!effect.active || getUpkeepStatus(effect, graph) !== 'no_relic') continue;
+      for (const [sphere, cost] of Object.entries(effect.perTickCost)) {
+        const s = sphere as SphereName;
+        if (typeof cost === 'number' && cost > 0 && s in net) net[s] -= cost;
+      }
+    }
     const spheres: Partial<Record<SphereName, EssenceRefillSphere>> = {};
     for (const sphere of SPHERE_NAMES) {
       const netPerTick = net[sphere] ?? 0;
