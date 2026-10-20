@@ -407,6 +407,7 @@ export function processFactionOutcome(
         type: 'faction_rank_changed',
         message: `${agentName} has been promoted to ${rankName} in ${factionName}.`,
         significance: 0.7,
+        // alert-chronicle: faction_rank_changed
         notification: { channel: 'alert', icon: 'faction' },
         hexCoords,
         actorId: progress.actorId,

@@ -38,6 +38,7 @@ import {
 import { readEssenceSource } from './essenceSources';
 import { phaseNotableAgendas } from './notableAgendas';
 import { buildTierUpProse, eventSkipsChronicle, shouldSkipForChronicle } from './chronicleGrowth';
+import { phaseAlertChronicle } from './alertChronicle';
 import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
 import {
   RIVAL_SCHEME_PHASE_INVEST_TICKS,
@@ -2868,6 +2869,7 @@ export function phaseInfluenceTierPromotion(
     return {
       id: nextEventId(),
       tick: state.tick,
+      // alert-chronicle: backstory_unlock
       type: 'backstory_unlock' as const,
       message: `${agentName}'s story deepens`,
       significance: 0.6,
@@ -4122,6 +4124,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     phaseEventCounts['doom_expiry'] = r.eventDelta;
   }
 
+
   // THR-1768 D2: a second pass of the sphere-bag sweep, for anything minted after the
   // pressure phase ran this tick (births, mint-queue drains, late place mints), so no
   // node ends a tick without a bag. Same predicate as the head-of-phase pass; seeds
@@ -4306,6 +4309,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
 
 
+
+  // THR-1896: every alert this tick that the Chronicle intake did not take (it runs
+  // before the post-narrative slot and only above 0.8) gets one Witness line, so news
+  // that lapses out of Needs you lives on in the Chronicle. It runs after the
+  // resolved-action block above, which raises the live faction promotion alerts —
+  // keep it after every tickEvents append.
+  {
+    const r = runInlinePhase('alert_chronicle', s, () => phaseAlertChronicle(s));
+    s = r.next;
+  }
 
   // Phase end: Drift Decay — passive per-tick decay toward zero (THR-323)
   {

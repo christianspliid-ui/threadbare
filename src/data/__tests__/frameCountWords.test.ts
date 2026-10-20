@@ -68,6 +68,8 @@ describe('frame count words', () => {
     const keep = durationLabel(NEEDS_YOU_NEWS_KEEP_DAYS * TICKS_PER_DAY);
     expect(needsYouNewsTooltipDesc(keep)).toContain(`after ${keep}.`);
     expect(needsYouNewsTooltipDesc(durationLabel(5 * TICKS_PER_DAY))).toContain('after five days.');
+    // THR-1896 — the lapse promise: older news lives on in the Chronicle.
+    expect(needsYouNewsTooltipDesc(keep)).toMatch(/Older news is in the Chronicle\.$/);
     // The registry copy is the default the render produces.
     expect(getUITooltip('ui.needs_you_news')?.desc).toBe(needsYouNewsTooltipDesc(keep));
   });

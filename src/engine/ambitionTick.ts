@@ -810,6 +810,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           : template.abandonmentProse[0] ?? `${actor.name} abandoned: ${template.displayName}`,
           graph, actor.id);
 
+        // alert-chronicle: ambition_completed, ambition_abandoned
         newEvents.push({
           id: nextAmbitionEventId(tick),
           tick,
@@ -997,6 +998,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
                 id: nextAmbitionEventId(tick),
                 tick,
                 type: 'ambition_abandoned',
+                // alert-chronicle: ambition_abandoned
                 message: `${holderName} sets aside ${displacedName} — a vendetta against ${culpritName} takes its place.`,
                 significance: GRIEVANCE_DISPLACE_EVENT_SIGNIFICANCE,
                 actorId: holderId,

@@ -584,6 +584,8 @@ export type TraceCategory =
   | 'chronicle.aggregate_failed'
   // Chronicle growth gate — a stranger's growth left out (THR-1986)
   | 'chronicle.intake.skipped'
+  // Alert news kept in the Chronicle (THR-1896)
+  | 'chronicle.intake.alert'
   | 'naming.constrained_reject'
   | 'rival.scheme_phase_advanced'
   | 'rival.scheme_materialized'
@@ -1202,6 +1204,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'chronicle.aggregated',
   'chronicle.aggregate_failed',
   'chronicle.intake.skipped',
+  'chronicle.intake.alert',
   'naming.constrained_reject',
   'rival.scheme_phase_advanced',
   'rival.scheme_materialized',
@@ -5295,6 +5298,7 @@ export type TraceEntry =
   // Event feed hygiene (THR-456)
   | ChronicleAggregatedTrace
   | ChronicleIntakeSkippedTrace
+  | ChronicleAlertIntakeTrace
   | NamingConstrainedRejectTrace
   | NamingFatalFallbackTrace
   | ProseRepetitionSkipTrace
@@ -7132,6 +7136,15 @@ export interface ChronicleAggregatedTrace extends TraceBase {
  * to the actor (THR-1986). Only skips are traced; an admitted entry is its own
  * record.
  */
+/** Trace: this tick's alerts kept in the Chronicle, exempted, or left out as unthreaded (THR-1896). */
+export interface ChronicleAlertIntakeTrace extends TraceBase {
+  category: 'chronicle.intake.alert';
+  writtenIds: string[];
+  exemptIds: string[];
+  suppressedIds: string[];
+  unseenIds: string[];
+}
+
 export interface ChronicleIntakeSkippedTrace extends TraceBase {
   category: 'chronicle.intake.skipped';
   eventId: string;
