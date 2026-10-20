@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 15:58 local (13:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 16:56 local (14:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -47,14 +47,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 29 ready, 1 in progress.** The builder is working on [realms losing most of their members by tick 600](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) right now (run started 13:51 UTC, active).
+**Backed up: 30 ready, none in progress.** The builder finished [realms losing most of their members by tick 600](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications): a mortal is now cast out of a realm only for a cause. Merged ([PR #2505](https://github.com/christianspliid-ui/threadbare/pull/2505)) and live.
 
-- [Land-page art for the plateau and the lair](https://linear.app/threadbare/issue/THR-1916/land-page-hero-art-plateau-and-lair-have-no-art-of-their-own) merged ([PR #2503](https://github.com/christianspliid-ui/threadbare/pull/2503)) and is live.
+- The two pickup runs since then (14:33 and 14:51 UTC) each ended within a minute without claiming. Three in a row would count as a stall; the next hour's brief checks.
 - Next up: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (06e0c108). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
-- The engine runs at 119 ms a tick, 11% below its week's median (133).
+- All green. The live site is current (fbe8b54b). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
+- The engine runs at 110 ms a tick, 18% below its week's median (133).
 - The tidy-up job reports 570 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.

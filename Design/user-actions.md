@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 15:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 16:56 local (14:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-20: realms no longer lose most of their members by tick 600 — a mortal is cast out only for a cause** ([THR-1918](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications)). Merged via [#2505](https://github.com/christianspliid-ui/threadbare/pull/2505) and live.
 - **2026-10-20: land-page art for the plateau and the lair** ([THR-1916](https://linear.app/threadbare/issue/THR-1916/land-page-hero-art-plateau-and-lair-have-no-art-of-their-own)). Merged via [#2503](https://github.com/christianspliid-ui/threadbare/pull/2503) and live.
 - **2026-10-20: the minimap — the whole world in small, open at 1440p and folded at 1080p** ([THR-1901](https://linear.app/threadbare/issue/THR-1901/the-minimap-the-whole-world-in-small-open-at-1440p-and-folded-at-1080p)). Merged via [#2502](https://github.com/christianspliid-ui/threadbare/pull/2502) and live.
 - **2026-10-20: the Stage, slice 4 — journey moments, undertaking moments, premonitions and the ruin emergence play on the Stage** ([THR-1897](https://linear.app/threadbare/issue/THR-1897/the-stage-slice-4-journey-moments-undertaking-moments-premonitions-and)). Merged via [#2501](https://github.com/christianspliid-ui/threadbare/pull/2501) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-20: hunger and unrest S2 — a town on the edge turns to a better lord, and a town that rises throws off its holder** ([THR-1957](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a)). Merged via [#2496](https://github.com/christianspliid-ui/threadbare/pull/2496) and live.
 - **2026-10-20: find anything with Ctrl+K — the search finds what the god has seen and opens it in the Inspector** ([THR-1915](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the)). Merged via [#2495](https://github.com/christianspliid-ui/threadbare/pull/2495) and live.
 - **2026-10-20: heavy simulation tests green again — the card-arming speed checks now use a named budget sized for the shared test machine** ([THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)). Merged via [#2494](https://github.com/christianspliid-ui/threadbare/pull/2494).
-- **2026-10-20: the pour and the odds explain themselves — refill words on the essence rows, a one-sentence odds ladder, "still Doomed" on a move inside a tier, and the full pip legend** ([THR-1985](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows)). Merged via [#2492](https://github.com/christianspliid-ui/threadbare/pull/2492) and live.
 
 ---
 
