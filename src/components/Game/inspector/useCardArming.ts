@@ -47,7 +47,7 @@ export { CARD_DRAG_MIME } from '../frame/HandPressContext';
 import { useEscapeLayer } from '../../shared/useEscapeLayer';
 import { Z_BAND } from '../../shared/zBands';
 import { isInspectorOpen } from './inspectorState';
-import { armForDrag, noteArmed, pressHandCard, stageTarget, type ArmedSlice } from './armedState';
+import { armForDrag, armFromFind, noteArmed, pressHandCard, stageTarget, type ArmedSlice } from './armedState';
 import type { CastOnTarget, CastOutcome } from './useCastOnTarget';
 export { armedTargetsStamp } from '../../../engine/views/armedTargets';
 
@@ -82,6 +82,8 @@ export interface CardArming {
   cardName: string | null;
   /** The god rail's press seam (replaces the frame's Codex default). */
   handPress: HandPressValue;
+  /** THR-1915 — a card picked in Find arms (`origin: 'find'`). */
+  armFromFind: (cardId: string) => void;
   /** The armed card on one ref (rows the build did not draw — Connections are open). */
   evaluate: (ref: WorldRef) => CardOnTarget;
   /** A map click or a drop on a thing: stage it, or answer why not. Never casts. */
@@ -180,6 +182,16 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
     },
     armedActionId: armed?.actionId ?? null,
   }), [armed?.actionId, setArmed, setArmedCleared]);
+
+  const armFind = useCallback((cardId: string) => {
+    const prev = live.current.armed;
+    const next = armFromFind(prev, cardId);
+    if (next === prev) return;
+    if (prev) traceArm(live.current.gameState.tick, prev.actionId, 'disarmed', prev.origin, prev.target);
+    traceArm(live.current.gameState.tick, cardId, 'armed', 'find');
+    setArmedCleared(null);
+    setArmed(next);
+  }, [setArmed, setArmedCleared]);
 
   const choose = useCallback((ref: WorldRef, origin: UiCardArmOrigin) => {
     const a = live.current.armed;
@@ -283,7 +295,7 @@ export function useCardArming({ gameState, runtime, castOnTarget, pushToast, ope
     // gameState: the target's name and effect line read the live world.
   }, [armed, cardName, targetName, evaluate, gameState]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { armed, vm, cardName, handPress, evaluate, choose, chooseHex, castOn, disarm, targetName, commitLine };
+  return { armed, vm, cardName, handPress, armFromFind: armFind, evaluate, choose, chooseHex, castOn, disarm, targetName, commitLine };
 }
 
 function cardNameOf(actionId: string): string {

@@ -115,6 +115,8 @@ import { placeRefKind } from '../../engine/views/subjects/actOn';
 import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
 import { useCardArming } from './inspector/useCardArming';
+import { FindBox } from './find/FindBox';
+import type { FindCodexSeed } from '../../engine/views/find';
 import { refForMapNode } from '../../engine/views/armedTargets';
 import { useArmedDebugBridge } from './inspector/useArmedDebugBridge';
 import { ArmedBanner, ArmedCardProvider, isCardDrag } from './inspector/ArmedCard';
@@ -124,6 +126,7 @@ import { currentEntry, isInspectorOpen, openFromMap, openSubject, stepFullToDock
 import { SURFACE_BY_WORLD_REF } from '../../data/surface-registry';
 import { INSPECTOR_WORDS } from '../../data/view-content';
 import type { WorldRef, WorldRefKind } from '../../types/worldRef';
+import { parseHexRefId } from '../../types/worldRef';
 import type { AnyRef } from '../../types/contentRef';
 import type { CodexRunStateFilter } from '../Codex/codexRunState';
 import { courtPositionToThreadTier } from './encounter-stage/types';
@@ -3031,11 +3034,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
    * milliseconds after mount and never draws a dead one.
    */
   const [codexEntryIds, setCodexEntryIds] = useState<ReadonlySet<string>>(() => new Set());
+  // THR-1915 — Find lists the Codex's entries; the same lazy load hands them over.
+  const [codexFindSeeds, setCodexFindSeeds] = useState<readonly FindCodexSeed[]>(() => []);
   useEffect(() => {
     let live = true;
     void import('../Codex/codexRegistry')
       .then((m) => {
-        if (live) setCodexEntryIds(new Set(m.getAllCodexEntries().map((e) => e.id)));
+        if (!live) return;
+        const entries = m.getAllCodexEntries();
+        setCodexEntryIds(new Set(entries.map((e) => e.id)));
+        setCodexFindSeeds(entries.map((e) => ({ id: e.id, name: e.name, fact: e.category })));
       })
       // A failed chunk load costs the CTA, never the card (NFP #4).
       .catch(() => undefined);
@@ -4101,6 +4109,38 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     screenStore: gameScreen,
   });
   useArmedDebugBridge(arming, gameState, lensSuppressed);
+
+  // ── Find (THR-1915, Inspector plan § D11) ──
+  // A world result flies the camera there and opens through the router (never around it);
+  // the router's card arm reaches the Inspector at the row's `opensAt` (factions wide) and
+  // replaces a pinned subject, because a search is a deliberate ask (§ D3).
+  const findRecentKeys = useMemo(
+    () => inspectorState.history.slice(0, inspectorState.index + 1).map(h => h.key).reverse(),
+    [inspectorState.history, inspectorState.index],
+  );
+  const findFlyTo = useCallback((hexKey: string | null) => {
+    const hex = hexKey ? parseHexRefId(hexKey) : undefined;
+    if (hex) hexMapRef.current?.focusOn(hex);
+  }, [hexMapRef]);
+  const findOpenWorld = useCallback((ref: WorldRef, hexKey: string | null) => {
+    findFlyTo(hexKey);
+    refRouter.open(ref, 'card', { via: 'find' });
+  }, [findFlyTo, refRouter]);
+  const findArmCard = arming.armFromFind;
+  const findSlot = (
+    <FindBox
+      gameState={gameState}
+      runtime={runtime}
+      fogOff={fogDisabled}
+      recentKeys={findRecentKeys}
+      codex={codexFindSeeds}
+      onPickWorld={findOpenWorld}
+      onArmCard={findArmCard}
+      onOpenCodex={openCodexSheet}
+      onShowOnMap={findFlyTo}
+      disabled={Boolean(tieredEncounterState && encounterVeilModel) || stageOpen}
+    />
+  );
   const armedNow = arming.armed !== null;
   const armedChooseHex = arming.chooseHex;
   const armedChoose = arming.choose;
@@ -4254,6 +4294,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         namedPause={namedPause?.line}
         alertsTrimmedAtCap={notificationState.alertsTrimmedAtCap ?? 0}
         frameFixture={frameFixture}
+        findSlot={findSlot}
       />
 
       {/* ═══ Main content area ═══ */}

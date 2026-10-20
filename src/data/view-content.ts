@@ -361,3 +361,51 @@ export const STAGE_WORDS = {
   /** The Stage's accessible name when its moment names none. */
   stageLabel: 'A moment',
 } as const;
+
+// ─── Find (THR-1915, Inspector plan § D11, THR-1832) ────────────────────
+
+/** Find's words. A miss never says whether the thing exists (THR-1832 § 2). */
+export const FIND_WORDS = {
+  /** The field's label in the top bar, and its placeholder (THR-1828). */
+  field: 'Find a place, a person, a power, a card…',
+  /** The box's hint on an empty query. */
+  emptyHint: 'A place, a person, a power, a card…',
+  /** The one miss line — identical for an unseen name and a name that does not exist. */
+  miss: 'Nothing you know of by that name.',
+  /** A group's overflow link; `{n}` is the group's whole count. */
+  showAll: 'Show all {n}',
+  /** The eye's label on a map-located row; `{name}` is the row's name. */
+  showOnMap: 'Show {name} on the map',
+  /** A remembered place's stale fact; `{when}` is an `elapsedLabel`. */
+  lastSeen: 'Last seen {when} ago',
+  /** The box's region label for screen readers. */
+  regionLabel: 'Find',
+  /** The Esc layer's label in `__DEBUG.getEscapeLayers()`. */
+  escapeLabel: 'Find box',
+  /** The key hint drawn in the field. */
+  keyHint: 'Ctrl K',
+} as const;
+
+/** Group headings, in `FIND_GROUPS` order, then the empty box's two lists. */
+export const FIND_GROUP_LABELS = {
+  places: 'Places',
+  people: 'People',
+  powers: 'Powers',
+  things: 'Things',
+  cards: 'Your cards',
+  codex: 'Codex',
+  recent: 'Recent',
+  yourPeople: 'Your people',
+} as const;
+
+/** The one plain fact on a row, by what the row is. `{name}` / `{place}` fill in. */
+export const FIND_FACT_WORDS = {
+  at: 'At {place}',
+  heldBy: 'Held by {name}',
+  yourFirst: 'Your First',
+  threaded: 'Threaded to you',
+  members: 'A power',
+  army: 'An army',
+  card: 'A card in your hand',
+  codex: 'In the Codex',
+} as const;

@@ -87,6 +87,7 @@ describe('layoutContract — CSS ↔ TS parity', () => {
     const base = rootBlock('base');
     expect(decl(base, '--tooltip-max-w')).toBe(`${TEXT_TOKENS_REM.tooltipMaxW}rem`);
     expect(decl(base, '--hovercard-w')).toBe(`${TEXT_TOKENS_REM.hovercardW}rem`);
+    expect(decl(base, '--find-box-w')).toBe(`${TEXT_TOKENS_REM.findBoxW}rem`);
     expect(decl(base, '--toast-w')).toBe(`${TEXT_TOKENS_REM.toastW}rem`);
     expect(decl(base, '--stage-compact-w')).toBe(`${TEXT_TOKENS_REM.stageCompactW}rem`);
     expect(decl(base, '--dialog-s-w')).toBe(`${TEXT_TOKENS_REM.dialogSW}rem`);

@@ -402,6 +402,7 @@
     --stage-compact-w: 53.75rem;     /* 860px at 1080p — THR-1829 compact tier */
     --dialog-s-w: 37.5rem;           /* 600px at 1080p, 675 at 1440p — THR-1820 S */
     --dialog-m-w: 60rem;             /* 960px at 1080p, 1080 at 1440p — THR-1820 M */
+    --find-box-w: 35rem;             /* 560px at 1080p, 630 at 1440p — THR-1915 Find box */
     /* The one dialog height cap (Law 33). Containers (Inspector, Stage) are
        not dialogs; drop-down caps (NotablesPanel, Find) are outside it. */
     --modal-max-h: 85vh;

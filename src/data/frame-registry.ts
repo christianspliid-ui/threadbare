@@ -150,14 +150,15 @@ export const GOD_RAIL_HAND_GROUP_KEY = 'threadbare.ui.godRail.handGroup';
 
 // ─── The top bar (slice 3, THR-1875; plan § F3) ─────────────────────
 
-export type TopBarItemId = 'time' | 'needs_you' | 'direction_line' | 'doom' | 'omen' | 'rivals' | 'notables' | 'read_threads' | 'settings';
+export type TopBarItemId = 'time' | 'needs_you' | 'direction_line' | 'find' | 'doom' | 'omen' | 'rivals' | 'notables' | 'read_threads' | 'settings';
 
 /** The THR-1648 quiet-first-screen gates (`FirstScreenReveal`'s keys), ANDed with the reveal. */
 export type FirstScreenGateId = 'bonded' | 'doom' | 'mandate' | 'notables' | 'rivals' | 'omens';
 
 export interface TopBarItemDef {
   id: TopBarItemId;
-  group: 'left' | 'right';
+  /** `centre` is Find's slot between the groups (THR-1915). */
+  group: 'left' | 'centre' | 'right';
   order: number;
   /** The word, always shown (THR-1834 § 5); '' only where the item is text itself (time, direction line). */
   label: string;
@@ -177,13 +178,15 @@ export const NEEDS_YOU_HOTKEY = 'n';
 
 /**
  * The top bar, left to right (THR-1828 call 1). The centre between the groups is Find's
- * reserved slot (THR-1876 adds a `find` entry). Adding a button is one entry here and one
- * component in `frame/topBarComponents.tsx`.
+ * slot (THR-1915: the `find` entry). Adding a button is one entry here and one component
+ * in `GameViewTopBar`'s `ITEM` map. Find's keys (`/`, Ctrl+K) are `FIND_HOTKEYS` /
+ * `FIND_CTRL_KEY` in `top-bar-keys.ts`, so its `hotkey` stays null here.
  */
 export const TOP_BAR_ITEMS: readonly TopBarItemDef[] = [
   { id: 'time', group: 'left', order: 1, label: '', icon: null, tooltipId: 'ui.sim_speed', revealSurface: 'time_controls', firstScreenGate: null, guardedWhileEncounter: false, hotkey: null },
   { id: 'needs_you', group: 'left', order: 2, label: NEEDS_YOU_LABEL, icon: 'needs-you', tooltipId: 'ui.needs_you', revealSurface: null, firstScreenGate: 'bonded', guardedWhileEncounter: false, hotkey: NEEDS_YOU_HOTKEY },
   { id: 'direction_line', group: 'left', order: 3, label: '', icon: null, tooltipId: null, revealSurface: null, firstScreenGate: null, guardedWhileEncounter: false, hotkey: null },
+  { id: 'find', group: 'centre', order: 1, label: TOP_BAR_WORDS.find, icon: 'find', tooltipId: null, revealSurface: null, firstScreenGate: 'bonded', guardedWhileEncounter: true, hotkey: null },
   { id: 'doom', group: 'right', order: 1, label: TOP_BAR_WORDS.doom, icon: null, tooltipId: 'ui.doom_bar', revealSurface: 'doom', firstScreenGate: 'doom', guardedWhileEncounter: true, hotkey: null },
   { id: 'omen', group: 'right', order: 2, label: TOP_BAR_WORDS.omen, icon: null, tooltipId: 'ui.omen', revealSurface: 'omen', firstScreenGate: 'omens', guardedWhileEncounter: true, hotkey: null },
   { id: 'rivals', group: 'right', order: 3, label: TOP_BAR_WORDS.rivals, icon: 'rivals', tooltipId: 'ui.rival_panel', revealSurface: null, firstScreenGate: 'rivals', guardedWhileEncounter: true, hotkey: null },
@@ -196,6 +199,7 @@ export const TOP_BAR_ITEMS: readonly TopBarItemDef[] = [
 export const TOOLTIP_NONE_REASONS: Readonly<Partial<Record<TopBarItemId, string>>> = {
   direction_line: 'THR-1837: the line is its own sentence; its full form is its tooltip when shortened',
   settings: 'a control, not a concept',
+  find: 'a search field; its placeholder says what it finds',
 };
 
 /** What gives way, in order, when the bar would overflow (§ F3). Undone in reverse. */

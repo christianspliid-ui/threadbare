@@ -45,7 +45,7 @@ import type {
 export const TOPBAR_LIVE_HEIGHT_VAR = '--topbar-live-height';
 
 /** THR-1724 — how far the right group recedes while an encounter veil is open. */
-const TOPBAR_INERT_OPACITY = 0.4;
+export const TOPBAR_INERT_OPACITY = 0.4;
 
 /**
  * THR-1875 (frame plan § F3) — the Find slot's minimum between the groups. It shrinks
@@ -196,6 +196,8 @@ export interface GameViewTopBarProps {
   alertsTrimmedAtCap?: number;
   /** THR-1875 — `__DEBUG.setFrameFixture` overrides for the one-row check. */
   frameFixture?: TopBarFrameFixture | null;
+  /** THR-1915 — the Find field (`FindBox`), drawn in the centre slot. Absent → the slot stays empty. */
+  findSlot?: ReactNode;
 }
 
 export function GameViewTopBar({
@@ -258,6 +260,7 @@ export function GameViewTopBar({
   namedPause,
   alertsTrimmedAtCap = 0,
   frameFixture,
+  findSlot,
 }: GameViewTopBarProps) {
   const revealAll = frameFixture?.revealAll === true;
   const shown = (id: OpeningRevealSurfaceId) => revealAll || (opening?.show[id] ?? true);
@@ -305,6 +308,7 @@ export function GameViewTopBar({
 
   /** One component per entry (Law 58): a missing id is a type error. */
   const ITEM: Record<TopBarItemId, () => ReactNode> = {
+    find: () => findSlot ?? null,
     time: () => (
       <SimulationControls
         season={seasonName}
@@ -434,6 +438,7 @@ export function GameViewTopBar({
   };
   const byOrder = (a: TopBarItemDef, b: TopBarItemDef) => a.order - b.order;
   const left = TOP_BAR_ITEMS.filter(i => i.group === 'left').sort(byOrder);
+  const centre = TOP_BAR_ITEMS.filter(i => i.group === 'centre').sort(byOrder);
   const right = TOP_BAR_ITEMS.filter(i => i.group === 'right').sort(byOrder);
   const rightLocked = encounterOpen && right.some(i => i.guardedWhileEncounter);
 
@@ -460,12 +465,19 @@ export function GameViewTopBar({
           {left.map(renderItem)}
         </div>
 
-        {/* CENTRE: Find's reserved slot (THR-1876 adds the `find` entry); empty space until then, never a stub. */}
+        {/* CENTRE: Find (THR-1915). Empty space while Find is gated or absent, never a stub. */}
         <div
           data-testid="topbar-centre"
-          aria-hidden="true"
+          aria-hidden={findSlot && centre.some(gated) ? undefined : 'true'}
+          className="flex items-center justify-center"
           style={{ flex: '1 1 0', minWidth: y.has('centre') ? 0 : `${TOP_BAR_CENTRE_MIN_REM}rem` }}
-        />
+        >
+          {findSlot && centre.map(item => (gated(item) ? (
+            <div key={item.id} data-topbar-item={item.id} data-topbar-guarded={item.guardedWhileEncounter && encounterOpen ? 'true' : undefined} className="flex items-center justify-center min-w-0" style={{ width: '100%' }}>
+              {ITEM[item.id]()}
+            </div>
+          ) : null))}
+        </div>
 
         {/* RIGHT GROUP: doom · omen · rivals · notables · read the threads · settings.
             THR-1814: not `inert` — hover and focus stay live under a veil so Doom and

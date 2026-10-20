@@ -1696,6 +1696,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/views/lenses/threadsLens.ts'],
   },
   {
+    id: 'knowledge-floor-gates-find',
+    producerSystem: 'Intelligence, Knowledge & Familiarity',
+    consumerSystem: 'Intelligence, Knowledge & Familiarity',
+    intent:
+      'Find names only what the god has seen (THR-1915, THR-1822 § D5/D10, Inspector plan § D11). The fog `visibilityMap`, `familiarityMap` and the god's `thread` / `avatar_of` edges feed the seen floor (`createSeenFloor`, `views/knowledge.ts`): a place on a visible or remembered hex, a Place inside one unless hidden, a person known to `recognised` or threaded or in sight now, a power with a nameable member or held place, an army in sight, an artifact the god's people hold or one at a nameable place. `buildFindIndex` (`views/find.ts`, `getView('findIndex')`) lists nothing else, so a query that matches only unseen names returns the same result as nonsense — "Nothing you know of by that name." A UI read only: no state is written.',
+    ulTerms: ['The First'],
+    mechanism: { kind: 'function', symbols: ['createSeenFloor', 'buildFindIndex', 'matchFind'] },
+    writeSites: ['src/engine/views/knowledge.ts'],
+    readSites: ['src/engine/views/find.ts', 'src/components/Game/find/FindBox.tsx'],
+  },
+  {
     id: 'local-omen-on-trouble-lens',
     producerSystem: 'Omens & Atmospheric Pressure',
     consumerSystem: 'Intelligence, Knowledge & Familiarity',
