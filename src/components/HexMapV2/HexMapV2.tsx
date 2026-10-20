@@ -1543,6 +1543,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
                 syncCameraToZoom(cameraRef.current, currentTransform, rw, rh);
               }
               setCanvasDimensions({ w: rw, h: rh });
+              // THR-1901 — the view changed size without a zoom event: the minimap's
+              // view rectangle (a camera subscriber) must follow the new canvas.
+              mapCameraRef.current?.notify();
             }
           }
         });
