@@ -100,11 +100,14 @@ export const MERCHANT_CONSORTIUM_DEFINITION: FactionDefinition = {
   reputationDecayPerTick: FACTION_REPUTATION_DECAY_PER_TICK,
   joinEncounterTemplateId: 'mct.join',
   promotionEncounterTemplateId: 'mct.promotion',
+  // THR-1955 — every id resolves to a template. trade_war and monopoly_bid map to
+  // trade_monopoly, trade_empire to market_domination; escort_goods, appraise_cargo,
+  // open_market, collect_debts and royal_charter had no template and are dropped (the
+  // royal charter is the crown's to grant later).
   questTemplateIds: [
-    'mct.quest.negotiate_contract', 'mct.quest.escort_goods', 'mct.quest.appraise_cargo',
-    'mct.quest.open_market', 'mct.quest.collect_debts',
-    'mct.senior.trade_war', 'mct.senior.monopoly_bid', 'mct.senior.foreign_deal',
-    'mct.elite.trade_empire', 'mct.elite.royal_charter',
+    'mct.quest.negotiate_contract',
+    'mct.senior.trade_monopoly', 'mct.senior.foreign_deal',
+    'mct.elite.market_domination',
   ],
   socialTemplateIds: [
     'mct.social.wine_tasting', 'mct.social.ledger_review', 'mct.social.guild_feast',

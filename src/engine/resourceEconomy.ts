@@ -98,6 +98,11 @@ export interface LocationStockDerivation {
 export function deriveLocationStockTiers(
   props: Record<string, unknown>,
   sublocationCount: number,
+  /**
+   * THR-1955 — per-resource balance cuts (an embargo's `EMBARGO_BALANCE_CUT`). Additive
+   * term on the resource's balance, clamped to [-1, 1]. Omitted = no cut.
+   */
+  balanceCuts?: ReadonlyMap<string, number>,
 ): LocationStockDerivation {
   const resources = readResources(props);
   const demand = computeLocationDemand(props, sublocationCount);
@@ -108,7 +113,8 @@ export function deriveLocationStockTiers(
 
   for (const [resourceId, instance] of Object.entries(resources)) {
     if (!instance || typeof instance.quantity !== 'number') continue;
-    const balance = computeResourceBalance(instance, demand, resourceId);
+    const cut = balanceCuts?.get(resourceId) ?? 0;
+    const balance = clamp(computeResourceBalance(instance, demand, resourceId) - cut, -1, 1);
     perResource[resourceId] = { tier: tierFromBalance(balance), balance };
 
     const value = getResourceClass(resourceId).baseValue;

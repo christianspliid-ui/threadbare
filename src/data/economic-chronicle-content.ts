@@ -21,6 +21,10 @@ import {
   UNREST_CHRONICLE_TEMPLATES,
   UNREST_CHRONICLE_SIGNIFICANCE,
 } from './unrest-chronicle-content';
+import {
+  EMBARGO_CHRONICLE_TEMPLATES,
+  EMBARGO_CHRONICLE_SIGNIFICANCE,
+} from './embargo-chronicle-content';
 
 // ─── Trigger Types ──────────────────────────────────────────────────────────
 
@@ -57,7 +61,10 @@ export type EconomicChronicleTrigger =
   | 'town_on_the_edge'
   | 'town_defects'
   | 'town_rises'
-  | 'town_empties';
+  | 'town_empties'
+  // Regional monopolies and embargo (THR-1955) — content in embargo-chronicle-content.ts
+  | 'embargo_laid'
+  | 'embargo_lifted';
 
 // ─── Significance defaults per trigger ──────────────────────────────────────
 
@@ -81,6 +88,7 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
   ...FACTION_PURSE_CHRONICLE_SIGNIFICANCE,
   ...CROWN_CHRONICLE_SIGNIFICANCE,
   ...UNREST_CHRONICLE_SIGNIFICANCE,
+  ...EMBARGO_CHRONICLE_SIGNIFICANCE,
 };
 
 // ─── Chronicle Templates ────────────────────────────────────────────────────
@@ -136,22 +144,24 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'With the founding of the {guildName}, {settlement} gains a new centre of gravity. {flavor}.',
   ],
 
+  // THR-1955 — regional: a holder holds *most* of a good around a town, never all of it.
+  // {settlement} is the region's anchor town; {resource} the good's name, lower case.
   monopoly_established: [
-    '{actor} seizes control of the {resource} supply in {settlement}. Prices climb; murmurs of resistance begin.',
-    'The {resource} trade in {settlement} now answers to {actor} alone. Competitors have been bought, broken, or driven out.',
-    '{actor} has cornered the {resource} market in {settlement}. Those who need it must now pay whatever {actor} demands.',
-    'A stranglehold tightens: {actor} controls all {resource} in {settlement}. The free market is a memory.',
-    'One hand controls the {resource} in {settlement}, and it belongs to {actor}. The price is whatever they say it is.',
-    '{actor} has eliminated the last competitor. The {resource} supply in {settlement} flows through a single gate now.',
+    '{actor} now holds most of the {resource} around {settlement}. Those who need it must pay its price.',
+    'The {resource} trade around {settlement} answers to {actor} now. Rivals sell what little is left.',
+    '{actor} has gathered most of the {resource} around {settlement} into its hands. Prices climb.',
+    'Most of the {resource} around {settlement} flows through {actor} now, and it sets the price.',
+    'Around {settlement}, the {resource} belongs mostly to {actor}. Buyers grumble and pay.',
+    '{actor} holds the {resource} of the country around {settlement}. The other sellers are few and small.',
   ],
 
   monopoly_broken: [
-    'The {resource} monopoly in {settlement} collapses. Markets breathe again.',
-    'Competition returns to {settlement}. The grip on {resource} has been broken, and prices begin their slow descent.',
-    'The {resource} stranglehold in {settlement} is no more. Traders flood back, and the old order crumbles.',
-    'Freedom, of a kind: the {resource} monopoly that choked {settlement} has shattered. New merchants fill the void.',
-    'The {resource} gates in {settlement} open to all comers once more. The monopoly is over.',
-    'Prices fall in {settlement} as the {resource} market finds its feet again. Competition returns.',
+    'The hold of {actor} on the {resource} around {settlement} is broken. Prices begin to fall.',
+    '{actor} no longer holds most of the {resource} around {settlement}. Other sellers return.',
+    'The {resource} around {settlement} slips out of the hands of {actor}. The markets breathe again.',
+    'Competition returns around {settlement}. {actor} has lost its grip on the {resource}.',
+    'The {resource} around {settlement} has more than one master again. The price of {actor} no longer holds.',
+    'Prices fall around {settlement} as the {resource} trade escapes {actor}.',
   ],
 
   mercenary_hire: [
@@ -238,6 +248,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
   town_defects: [...UNREST_CHRONICLE_TEMPLATES.town_defects],
   town_rises: [...UNREST_CHRONICLE_TEMPLATES.town_rises],
   town_empties: [...UNREST_CHRONICLE_TEMPLATES.town_empties],
+  embargo_laid: [...EMBARGO_CHRONICLE_TEMPLATES.embargo_laid],
+  embargo_lifted: [...EMBARGO_CHRONICLE_TEMPLATES.embargo_lifted],
 };
 
 // ─── Wealth Tier Flavor ─────────────────────────────────────────────────────

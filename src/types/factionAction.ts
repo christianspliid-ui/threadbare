@@ -23,7 +23,9 @@ export type FactionActionType =
   | 'hold_conclave'
   | 'issue_bounty'
   // THR-1932 — a realm courts fealty (persuade, buy, or coerce). Executor in engine/crown.ts.
-  | 'seek_fealty';
+  | 'seek_fealty'
+  // THR-1955 — a regional monopoly holder shuts the region's roads to an enemy. Executor in engine/embargo.ts.
+  | 'embargo';
 
 // ─── Action Template ─────────────────────────────────────────────────────────
 
@@ -52,7 +54,9 @@ export type FactionActionPrerequisite =
   // THR-1932 — a realm that may court (holds a town, owes no fealty) with a candidate
   | { type: 'can_court' }
   // THR-1918 — at least one member has a cause to be struck (rival dual-member or low standing)
-  | { type: 'has_excommunication_cause' };
+  | { type: 'has_excommunication_cause' }
+  // THR-1955 — holds a regional monopoly, has no standing embargo, and an enemy town in the region to cut
+  | { type: 'holds_regional_monopoly' };
 
 // ─── Action Record (stored on faction node) ───────────────────────────────────
 

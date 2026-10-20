@@ -16,6 +16,7 @@ import { getLocationNodes, isPlaceNode } from '../sublocationShape';
 import { taxHolderOf } from '../factionPurse/income';
 import { readResources } from '../resourceEconomy';
 import { SETTLEMENT_TARGET_SUBTYPES } from '../../types/army';
+import type { BearingIndex } from '../regionalMonopoly';
 
 /** A location that can be marched on, with its hex and today's tax holder. */
 export interface WarTown {
@@ -38,6 +39,8 @@ export interface WarAimContext {
   /** Town id → its sublocations that carry a resource bag. */
   townPlaces: Map<string, GraphNode[]>;
   fields: WarField[];
+  /** THR-1955 — resource → bearing places, built on first use by the monopoly bonuses. */
+  bearing?: BearingIndex;
 }
 
 function num(v: unknown): number | null {

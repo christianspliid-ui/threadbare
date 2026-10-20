@@ -13,6 +13,7 @@
 
 import { CROWN_CHRONICLE_TITLES } from '../data/crown-chronicle-content';
 import { UNREST_CHRONICLE_TITLES } from '../data/unrest-chronicle-content';
+import { EMBARGO_CHRONICLE_TITLES } from '../data/embargo-chronicle-content';
 import type { TickEvent } from '../types/gameState';
 import type { ChronicleChapter } from '../types/chronicle';
 import type { SphereName } from '../types/index';
@@ -276,7 +277,7 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     trade_route_established: 'New Trade Route',
     trade_route_died: 'A Road Falls Silent',
     guild_founded: 'Guild Founded',
-    monopoly_established: 'Monopoly Seized',
+    monopoly_established: 'A Hold on the Market',
     monopoly_broken: 'Monopoly Broken',
     mercenary_hire: 'Sellswords Hired',
     assassination_commissioned: 'Blood Money',
@@ -292,6 +293,7 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     purse_recovered: 'Coin Returns',
     ...CROWN_CHRONICLE_TITLES,
     ...UNREST_CHRONICLE_TITLES,
+    ...EMBARGO_CHRONICLE_TITLES,
   };
   return titles[trigger];
 }
