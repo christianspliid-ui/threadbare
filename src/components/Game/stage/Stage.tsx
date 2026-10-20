@@ -256,7 +256,9 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
         style={panelStyle}
       >
         <GameErrorBoundary>
-          {layout === 'full' ? (
+          {/* THR-1895 — a full-layout moment with nothing for the left column (no art,
+              no cast) gives the right column the whole panel, never a blank column. */}
+          {layout === 'full' && left != null && left !== false ? (
             <>
               <div data-stage-left="" style={{ width: 'var(--stage-left-col-w)', flexShrink: 0, minHeight: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border-subtle)' }}>{left}</div>
               <div data-stage-right="" style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>{right}</div>

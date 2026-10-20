@@ -4535,6 +4535,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         tieredEncounterState={tieredEncounterState}
         encounterVeilModel={encounterVeilModel}
         encounterStageVM={encounterStageVM}
+        openEncounterKey={openEncounterKey}
         describeFollowFor={describeFollowFor}
         handleToggleFollow={handleToggleFollow}
         encounterPayingEssence={encounterPayingEssence}
