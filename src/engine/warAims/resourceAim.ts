@@ -7,8 +7,9 @@
  * the faction is short of. Distance is measured from the faction's seat (its home
  * location, else its first controlled settlement by id); with no seat it is 0.
  *
- * The ambition counts as **met** while the faction holds any regional monopoly
- * (`met: true` on the ambition node; THR-1937's undertakings plan reads it).
+ * The ambition counts as **met** while the faction holds any regional monopoly. That is a
+ * predicate (`resourceAcquisitionMet`), not a stored flag: its reader is THR-1937's
+ * undertakings plan, and a stored field with no reader would only drift.
  *
  * No target found → the ambition's target is left as it was (an older pick still names a
  * real town; the abandon check clears a destroyed one). No random draw (NFP #3).
@@ -61,7 +62,7 @@ export function pickResourceAim(ctx: WarAimContext, factionId: string): string |
   return best?.id ?? null;
 }
 
-/** Point every `resource_acquisition` ambition at its town and write whether it is met. */
+/** Point every `resource_acquisition` ambition at its town. */
 export function aimResourceAmbitions(state: GameState, getCtx: () => WarAimContext): void {
   if (!REGIONAL_MONOPOLY_ENABLED) return;
   const graph = state.graph;
@@ -74,12 +75,8 @@ export function aimResourceAmbitions(state: GameState, getCtx: () => WarAimConte
         .map(e => graph.getNode(e.target))
         .find(n => n && !n.properties.compositionId && n.properties.ambitionType === 'resource_acquisition');
       if (!amb) continue;
-      const met = resourceAcquisitionMet(graph, faction.id);
       const target = pickResourceAim(getCtx(), faction.id);
-      const patch: Record<string, unknown> = {};
-      if (amb.properties.met !== met) patch.met = met;
-      if (target && amb.properties.targetNodeId !== target) patch.targetNodeId = target;
-      if (Object.keys(patch).length > 0) graph.updateNode(amb.id, { properties: patch });
+      if (target && amb.properties.targetNodeId !== target) graph.updateNode(amb.id, { properties: { targetNodeId: target } });
     } catch (err) {
       console.warn(`[war_aims] resource aim failed for ${faction.id}`, err);
     }

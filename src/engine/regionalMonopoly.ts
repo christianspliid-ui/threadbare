@@ -17,6 +17,15 @@
  * and `embargoedLanesOf` derive them, so the stock pass, the Trade lens and the debug
  * view read one source.
  *
+ * **One holder rule.** Every question this subsystem asks about who holds a place — the
+ * bearing index's controller, the embargo's target towns, the war-aim break and complete
+ * bonuses — goes through `controllerOfPlace` / `taxHolderOf` without the realm-border
+ * tie-break, so counting, embargo and bonuses agree with each other. The tie-break is left
+ * out on purpose: it needs the realm projection, which the Trade lens and the stock pass do
+ * not hold, and it only differs on a place with two controllers. The purse's scarcity rent
+ * is paid on yield the purse holder actually collects, from a place inside a region that
+ * holder holds.
+ *
  * Pure helpers only — every caller passes the graph; nothing here is cached (the graph is
  * mutated in place, CLAUDE.md load-bearing decisions).
  *

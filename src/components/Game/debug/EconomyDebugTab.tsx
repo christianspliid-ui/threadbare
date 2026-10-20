@@ -437,7 +437,6 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
         <PursesTable graph={graph} currentTick={currentTick} />
         <MeansTable graph={graph} currentTick={currentTick} />
         <OathsTable graph={graph} currentTick={currentTick} />
-      <MonopoliesTable graph={graph} currentTick={currentTick} />
         <MonopoliesTable graph={graph} currentTick={currentTick} />
         <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
@@ -451,6 +450,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
       <PursesTable graph={graph} currentTick={currentTick} />
       <MeansTable graph={graph} currentTick={currentTick} />
       <OathsTable graph={graph} currentTick={currentTick} />
+      <MonopoliesTable graph={graph} currentTick={currentTick} />
       <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
       <div style={{ marginBottom: '10px', color: 'var(--text-tertiary)' }}>
