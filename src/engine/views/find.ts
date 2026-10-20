@@ -16,11 +16,12 @@
 import type { WorldRef, WorldRefKind } from '../../types/worldRef';
 import type { AnyRef, ContentObjectKindId } from '../../types/contentRef';
 import type { GraphNode } from '../../types/graph';
+import type { GameState } from '../../types/gameState';
 import type { HexKey } from '../hexActorIndex';
 import { readView, type ViewSelector } from './readView';
 import type { ViewContext } from './viewContext';
 import { hexContentsIndexSelector } from './hexContents';
-import { createSeenFloor, godsPeopleIds } from './knowledge';
+import { createSeenFloor, godsPeopleIds, isHexKnown } from './knowledge';
 import { getFirstId } from '../meetingEncounter';
 import { isActionRevealed } from '../actionUnlock';
 import { isGodCard } from './godRail';
@@ -142,6 +143,20 @@ export interface FindIndexArgs {
   /** The debug fog lever: with fog off, everything is nameable. */
   fogOff?: boolean;
   codex?: readonly FindCodexSeed[];
+  /**
+   * `findIndexStamp(state)`: what the index reads that can change without `touchWorld` —
+   * fog revealed and a card unlocked by a cast while paused (as `armedTargetsStamp` does).
+   */
+  stamp?: string;
+}
+
+/** The parts of the state Find reads that can move while `worldVersion` stands still. */
+export function findIndexStamp(state: Pick<GameState, 'visibilityMap' | 'unlockedActionIds' | 'familiarityMap'>): string {
+  let seen = 0;
+  const map = state.visibilityMap;
+  if (map && typeof map.forEach === 'function') map.forEach(v => { if (v.state !== 'unexplored') seen++; });
+  const fam = state.familiarityMap as { size?: number } | undefined;
+  return `${seen}|${state.unlockedActionIds?.length ?? 0}|${fam?.size ?? 0}`;
 }
 
 // ─── Folding and ranking ────────────────────────────────────────────────────
@@ -180,7 +195,8 @@ function entry(ref: AnyRef, entryKind: FindEntryKind, name: string, fact: string
   if (!group || !name) return null;
   return {
     ref,
-    key: `${ref.kind}:${ref.id}`,
+    // A Codex entry may share its id with a card (action entries reuse the template id).
+    key: entryKind === 'codex' ? `codex:${ref.id}` : `${ref.kind}:${ref.id}`,
     entryKind,
     name,
     kindLabel: FIND_KIND_LABELS[entryKind],
@@ -218,11 +234,22 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
     if (e) out.push(e);
   };
   const named = (ref: WorldRef) => floor.canName(ref);
+  const floorState = args.fogOff ? { visibilityMap: new Map() } : state;
+  /** "At {place}" from the thing's own `located_at`, only when the floor may name that place. */
+  const atFact = (id: string): string => {
+    const e = graph.getOutgoingEdges(id, 'located_at')[0];
+    const place = e ? graph.getNode(e.target) : undefined;
+    if (!place?.name) return '';
+    const kind = place.properties.parentLocationId ? 'sublocation' : 'location';
+    return named({ kind, id: place.id }) ? FIND_FACT_WORDS.at.replace('{place}', place.name) : '';
+  };
 
   const index = readView(ctx.runtime, state, hexContentsIndexSelector, undefined, ctx.tiles);
   for (const hex of Object.values(index)) {
-    const placeName = hex.locations[0]?.name ?? '';
-    const at = placeName ? FIND_FACT_WORDS.at.replace('{place}', placeName) : '';
+    // A thing on a hex the god has not explored keeps its name (the floor allowed it) but
+    // never its place or its hex: no "At …" fact, no eye, no fly-to (the leak rule).
+    const hexKnown = isHexKnown(floorState, hex.hexKey);
+    const hexOrNull = hexKnown ? hex.hexKey : null;
     for (const row of hex.locations) {
       if (!named(row.ref)) continue;
       const n = graph.getNode(row.ref.id);
@@ -232,23 +259,23 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
     for (const row of hex.places) {
       if (!named(row.ref)) continue;
       const parentId = graph.getNode(row.ref.id)?.properties.parentLocationId as string | undefined;
-      const parent = parentId ? graph.getNode(parentId)?.name ?? placeName : placeName;
+      const parent = parentId ? graph.getNode(parentId)?.name ?? '' : '';
       const fact = floor.staleFact(row.ref) ?? (parent ? FIND_FACT_WORDS.at.replace('{place}', parent) : FIND_KIND_LABELS.sublocation);
       push(entry({ kind: 'sublocation', id: row.ref.id, name: row.name }, 'sublocation', row.name, fact, hex.hexKey, false));
     }
     for (const row of hex.people) {
       if (!named(row.ref)) continue;
       const mine = people.has(row.ref.id);
-      const fact = row.ref.id === firstId ? FIND_FACT_WORDS.yourFirst : mine ? FIND_FACT_WORDS.threaded : at;
-      push(entry({ kind: 'agent', id: row.ref.id, name: row.name }, 'agent', row.name, fact, hex.hexKey, mine));
+      const fact = row.ref.id === firstId ? FIND_FACT_WORDS.yourFirst : mine ? FIND_FACT_WORDS.threaded : atFact(row.ref.id);
+      push(entry({ kind: 'agent', id: row.ref.id, name: row.name }, 'agent', row.name, fact, hexOrNull, mine));
     }
     for (const row of hex.armies) {
       if (!named(row.ref)) continue;
-      push(entry({ kind: 'army', id: row.ref.id, name: row.name }, 'army', row.name, at || FIND_FACT_WORDS.army, hex.hexKey, false));
+      push(entry({ kind: 'army', id: row.ref.id, name: row.name }, 'army', row.name, atFact(row.ref.id) || FIND_FACT_WORDS.army, hexOrNull, false));
     }
     for (const row of hex.artifacts) {
       if (!named(row.ref)) continue;
-      push(entry({ kind: 'artifact', id: row.ref.id, name: row.name }, 'artifact', row.name, at, hex.hexKey, false));
+      push(entry({ kind: 'artifact', id: row.ref.id, name: row.name }, 'artifact', row.name, atFact(row.ref.id), hexOrNull, false));
     }
   }
 
@@ -270,7 +297,7 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
   for (const [areaId, hexes] of areaHexes) {
     const area = graph.getNode(areaId);
     if (!area?.name || !named({ kind: 'area', id: areaId })) continue;
-    push(entry({ kind: 'area', id: areaId, name: area.name }, 'area', area.name, FIND_KIND_LABELS.area, hexes[0] ?? null, false));
+    push(entry({ kind: 'area', id: areaId, name: area.name }, 'area', area.name, FIND_KIND_LABELS.area, hexes.find(k => isHexKnown(floorState, k)) ?? null, false));
   }
 
   // Powers: factions are not on one hex.
@@ -379,7 +406,7 @@ export function matchFind(index: FindIndexVM, query: string, recent: readonly st
 export const findIndexSelector: ViewSelector<FindIndexArgs | undefined, FindIndexVM> = {
   id: 'findIndex',
   invalidation: 'world',
-  key: (args) => `${args?.fogOff ? 1 : 0}|${args?.codex?.length ?? 0}`,
+  key: (args) => `${args?.fogOff ? 1 : 0}|${args?.codex?.length ?? 0}|${args?.stamp ?? ''}`,
   fallback: () => ({ entries: [] }),
   build: (ctx, args) => buildFindIndex(ctx, args ?? {}),
 };

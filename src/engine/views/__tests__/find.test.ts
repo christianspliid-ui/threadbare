@@ -12,7 +12,7 @@ import { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile } from '../../../types';
 import { buildViewContext } from '../viewContext';
-import { buildFindIndex, matchFind, foldForSearch, matchScore, FIND_GROUPS, FIND_KIND_GROUP, findIndexSelector, type FindIndexVM, type FindEntryVM } from '../find';
+import { buildFindIndex, findIndexStamp, matchFind, foldForSearch, matchScore, FIND_GROUPS, FIND_KIND_GROUP, findIndexSelector, type FindIndexVM, type FindEntryVM } from '../find';
 import { createSeenFloor, KNOWLEDGE_SURFACES } from '../knowledge';
 import { getViewSelector } from '../selectors';
 import { WORLD_REF_KINDS } from '../../../types/worldRef';
@@ -125,6 +125,37 @@ describe('the leak test (THR-1822 § D10)', () => {
     const found = matchFind(indexOf(world(), true), 'Zarquun');
     expect(found.miss).toBeNull();
     expect(found.groups.flatMap(g => g.rows.map(r => r.ref.id))).toEqual(expect.arrayContaining(['fog', 'ghost', 'secret']));
+  });
+
+  it('a person known by name on an unexplored hex keeps no place and no hex', () => {
+    const s = world();
+    (s.familiarityMap as Map<string, number>).set('ghost', 1000);
+    const ghost = indexOf(s).entries.find(e => e.ref.id === 'ghost');
+    expect(ghost).toBeDefined();
+    expect(ghost!.fact).toBe('');
+    expect(ghost!.hexKey).toBeNull();
+    expect(ghost!.mapLocated).toBe(false);
+    expect(indexOf(s).entries.map(e => e.fact).join(' ')).not.toMatch(/Zarquun Hold/);
+  });
+
+  it('a seen person is "At" their own place', () => {
+    const shutash = indexOf(world()).entries.find(e => e.ref.id === 'shutash');
+    expect(shutash?.fact).toBe('At The Shrine');
+  });
+
+  it('the stamp moves when fog lifts or a card unlocks', () => {
+    const s = world();
+    const before = findIndexStamp(s);
+    (s.visibilityMap as Map<string, { state: string }>).set('9,9', { state: 'visible' });
+    expect(findIndexStamp(s)).not.toBe(before);
+  });
+
+  it('a Codex entry never shares a key with a card of the same id', () => {
+    const s = world();
+    (s as unknown as { unlockedActionIds: string[] }).unlockedActionIds = ['whisper_insight'];
+    const idx = buildFindIndex(buildViewContext(null, s), { codex: [{ id: 'whisper_insight', name: 'Illuminating Whisper' }] });
+    const keys = idx.entries.filter(e => e.ref.id === 'whisper_insight').map(e => e.key);
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   it('the registered selector holds no unseen ref', () => {

@@ -22,7 +22,7 @@ import type { GameState } from '../../../types/gameState';
 import type { WorldRef } from '../../../types/worldRef';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { readView } from '../../../engine/views/readView';
-import { findIndexSelector, matchFind, type FindCodexSeed, type FindEntryVM, type FindIndexVM, type FindListId } from '../../../engine/views/find';
+import { findIndexSelector, findIndexStamp, matchFind, type FindCodexSeed, type FindEntryVM, type FindIndexVM, type FindListId } from '../../../engine/views/find';
 import { FIND_BOX_MAX_VH } from '../../../engine/views/viewConstants';
 import { FIND_WORDS } from '../../../data/view-content';
 import { FIND_CTRL_KEY, FIND_HOTKEYS } from '../../../data/top-bar-keys';
@@ -82,7 +82,7 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
   useEffect(() => {
     if (!open) return;
     try {
-      setIndex(readView(runtime, gameState, findIndexSelector, { fogOff, codex: [...codex] }, gameState.tiles));
+      setIndex(readView(runtime, gameState, findIndexSelector, { fogOff, codex: [...codex], stamp: findIndexStamp(gameState) }, gameState.tiles));
     } catch (err) {
       console.warn('[FindBox] index build failed:', err);
       setIndex({ entries: [] });
