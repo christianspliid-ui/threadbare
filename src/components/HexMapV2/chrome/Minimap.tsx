@@ -30,7 +30,7 @@ import {
   type MinimapVM,
 } from '../../../engine/views/map/minimap';
 import type { HexMapV2Handle } from '../HexMapV2';
-import { computeMinimapLayout, minimapToWorld, viewRectOnMinimap, worldToMinimap, type MinimapLayout } from './minimapGeometry';
+import { computeMinimapLayout, gridPixelBounds, minimapToWorld, viewRectOnMinimap, worldToMinimap, type MinimapLayout } from './minimapGeometry';
 import { setMinimapViewRect } from './minimapState';
 
 /** Minimap size (THR-1831 § 2). */
@@ -82,6 +82,14 @@ function drawTerrain(canvas: HTMLCanvasElement, vm: MinimapVM, layout: MinimapLa
     ctx.fillRect(0, 0, MINIMAP_W_PX, MINIMAP_H_PX);
     return;
   }
+  // The grid's box first, in the uncharted tone: the odd columns' half-row stagger would
+  // otherwise leave a zigzag of off-grid margin along the top and bottom edges.
+  const bounds = gridPixelBounds(vm.cols, vm.rows, HEX_CONSTANTS.HEX_SIZE);
+  const tl = worldToMinimap(layout, bounds.minX, -bounds.minY);
+  const br = worldToMinimap(layout, bounds.maxX, -bounds.maxY);
+  ctx.fillStyle = uncharted;
+  ctx.fillRect(tl.x, tl.y, br.x - tl.x, br.y - tl.y);
+
   const tones = familyTones();
   // Cells overlap by a hair so no seam of the off-grid margin shows between them.
   const w = layout.cellW + 0.6;
@@ -92,7 +100,8 @@ function drawTerrain(canvas: HTMLCanvasElement, vm: MinimapVM, layout: MinimapLa
       if (cell === undefined) continue;
       const { x, y } = hexToWorld({ col, row }, HEX_CONSTANTS.HEX_SIZE);
       const p = worldToMinimap(layout, x, y);
-      ctx.fillStyle = cell === MINIMAP_UNCHARTED ? uncharted : tones[cell];
+      if (cell === MINIMAP_UNCHARTED) continue;
+      ctx.fillStyle = tones[cell];
       ctx.fillRect(p.x - w / 2, p.y - h / 2, w, h);
     }
   }
