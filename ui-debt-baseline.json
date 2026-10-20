@@ -182,13 +182,13 @@
       }
     },
     "glyph-icon-data": {
-      "total": 74,
+      "total": 73,
       "perFile": {
         "src/data/action-card-display.ts": 6,
         "src/data/attachment-glyphs.ts": 23,
         "src/data/doom-archetype-presentation.ts": 7,
         "src/data/entity-visual-fallbacks.ts": 1,
-        "src/data/nudge-card-display.ts": 5,
+        "src/data/nudge-card-display.ts": 4,
         "src/data/sphereIcons.ts": 9,
         "src/data/sublocation-concept-art.ts": 13,
         "src/data/ui-content.ts": 6,

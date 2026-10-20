@@ -860,7 +860,7 @@ function CompactThreadRow({
           {node.category === 'agent' && node.courtPosition && onToggleAttentionMode && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
               <div style={{ marginLeft: 'auto' }}>
-                <FirstUseCaptionZone id="asks_you" hoverSelector='[role="switch"]'>
+                <FirstUseCaptionZone id="asks_you">
                   <AutoToggle
                     asking={node.attentionMode === 'pause'}
                     name={node.name}

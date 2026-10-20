@@ -66,7 +66,7 @@ describe('FirstUseCaption', () => {
     render(
       <>
         <FirstUseCaptionZone id="essence">
-          <span data-tooltip-id="ui.essence.row" data-testid="row">Life 50</span>
+          <span data-tooltip-trigger="" data-testid="row">Life 50</span>
           <FirstUseCaption id="essence" />
         </FirstUseCaptionZone>
         <FirstUseCaption id="threads" />

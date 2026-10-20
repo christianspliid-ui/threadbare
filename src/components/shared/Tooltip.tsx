@@ -597,6 +597,9 @@ export const Tooltip = React.memo(function Tooltip({
         // THR-1713 — the registry id a trigger carries, readable from the DOM so
         // a browser check can assert *which* hover a mark has without hovering it.
         data-tooltip-id={id}
+        // THR-1986 — every trigger, registry id or not, so a first-use caption can
+        // tell "the player hovered this panel's tooltip" from a pass over the panel.
+        data-tooltip-trigger=""
         {...(isFocusable
           ? {
               tabIndex: 0,

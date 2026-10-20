@@ -15,13 +15,16 @@
  * fixed height), 42 (plain register), 51 (dismissal remembered), 53 (temporary).
  */
 
-import { useCallback, useEffect, useSyncExternalStore, type ReactNode, type PointerEvent, type CSSProperties } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type PointerEvent, type CSSProperties, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
+import { Z_BAND } from './zBands';
 import {
   dismissFirstUseCaption,
   getFirstUseCaptionSnapshot,
   mountFirstUseCaption,
   subscribeFirstUseCaptions,
 } from './firstUseCaptionStore';
+import { Button } from './Button';
 import { FIRST_USE_CAPTION_DISMISS_LABEL, getFirstUseCaptionText } from '../../data/first-use-captions';
 
 export interface FirstUseCaptionProps {
@@ -31,8 +34,9 @@ export interface FirstUseCaptionProps {
   readonly name?: string;
   /**
    * Float below the anchor instead of taking a line in flow — for a top-bar item,
-   * whose row has no room for a second line (Law 33). The anchor must be
-   * `position: relative`. It sits over the map edge, never over a control (Law 25).
+   * whose row has no room for a second line and clips what overflows it (Law 33).
+   * The anchor must be `position: relative`; the line is portalled to the body at
+   * the anchor's lower right, over the map edge, never over a control (Law 25).
    */
   readonly floating?: boolean;
 }
@@ -42,19 +46,39 @@ export function useFirstUseCaptionVisible(id: string): boolean {
   return snap.visible.includes(id);
 }
 
+/** Where a floating caption's anchor sits on screen, re-read on resize. */
+function useAnchorRect(active: boolean): [RefObject<HTMLSpanElement | null>, { top: number; right: number } | null] {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const [rect, setRect] = useState<{ top: number; right: number } | null>(null);
+  useLayoutEffect(() => {
+    if (!active) return;
+    const read = () => {
+      const r = ref.current?.getBoundingClientRect();
+      if (r) setRect({ top: r.top, right: r.right });
+    };
+    read();
+    window.addEventListener('resize', read);
+    return () => window.removeEventListener('resize', read);
+  }, [active]);
+  return [ref, rect];
+}
+
 export function FirstUseCaption({ id, name, floating = false }: FirstUseCaptionProps) {
   useEffect(() => mountFirstUseCaption(id), [id]);
   const visible = useFirstUseCaptionVisible(id);
   const dismiss = useCallback(() => dismissFirstUseCaption(id), [id]);
-  if (!visible) return null;
-  const text = getFirstUseCaptionText(id, name);
+  const text = visible ? getFirstUseCaptionText(id, name) : null;
+  const [anchorRef, anchor] = useAnchorRect(floating && !!text);
   if (!text) return null;
-  return (
+  const line = (
     <div
       data-testid={`first-use-caption-${id}`}
       data-first-use-caption={id}
       style={{
         ...(floating ? FLOATING_STYLE : null),
+        ...(floating && anchor
+          ? { top: anchor.top + 4, left: Math.max(8, anchor.right - FLOATING_WIDTH_PX) }
+          : null),
         display: 'flex',
         alignItems: 'baseline',
         gap: 8,
@@ -67,41 +91,38 @@ export function FirstUseCaption({ id, name, floating = false }: FirstUseCaptionP
       }}
     >
       <span style={{ flex: '1 1 auto', minWidth: 0 }}>{text}</span>
-      <button
+      <Button
+        variant="ghost"
+        size="sm"
         className="focus-ring"
-        type="button"
         data-testid={`first-use-caption-${id}-dismiss`}
         onClick={(e) => { e.stopPropagation(); dismiss(); }}
-        style={{
-          flex: '0 0 auto',
-          background: 'none',
-          border: 'none',
-          // Law 46 — the mark stays small, the hit area does not.
-          padding: '6px 8px',
-          margin: '-6px -8px',
-          font: 'inherit',
-          fontStyle: 'normal',
-          color: 'var(--text-tertiary)',
-          borderBottom: '1px solid var(--border-subtle)',
-          cursor: 'pointer',
-        }}
+        style={{ flex: '0 0 auto', fontStyle: 'normal' }}
       >
         {FIRST_USE_CAPTION_DISMISS_LABEL}
-      </button>
+      </Button>
     </div>
+  );
+  if (!floating) return line;
+  return (
+    <>
+      <span ref={anchorRef} aria-hidden style={{ position: 'absolute', top: '100%', right: 0, width: 0, height: 0 }} />
+      {anchor && typeof document !== 'undefined' ? createPortal(line, document.body) : null}
+    </>
   );
 }
 
+const FLOATING_WIDTH_PX = 260;
+
 const FLOATING_STYLE: CSSProperties = {
-  position: 'absolute',
-  top: '100%',
-  right: 0,
-  zIndex: 5,
-  width: 260,
+  position: 'fixed',
+  // Over the map, under the top bar's own menus and every modal.
+  zIndex: Z_BAND.hud,
+  width: FLOATING_WIDTH_PX,
   padding: '6px 10px',
   background: 'var(--bg-raised)',
   border: '1px solid var(--border-subtle)',
-  borderRadius: 6,
+  borderRadius: 'var(--radius-control)',
   boxShadow: 'var(--shadow-panel)',
 };
 
@@ -111,7 +132,7 @@ export interface FirstUseCaptionZoneProps {
   readonly children: ReactNode;
   readonly style?: CSSProperties;
   readonly testId?: string;
-  /** What counts as the panel's tooltip trigger. Default: any registry tooltip. */
+  /** What counts as the panel's tooltip trigger. Default: any `Tooltip` trigger. */
   readonly hoverSelector?: string;
 }
 
@@ -120,7 +141,7 @@ export interface FirstUseCaptionZoneProps {
  * player using the word once. `display: contents` by default, so wrapping a
  * panel never changes its layout.
  */
-export function FirstUseCaptionZone({ id, children, style, testId, hoverSelector = '[data-tooltip-id]' }: FirstUseCaptionZoneProps) {
+export function FirstUseCaptionZone({ id, children, style, testId, hoverSelector = '[data-tooltip-trigger]' }: FirstUseCaptionZoneProps) {
   const onPointerOver = useCallback((e: PointerEvent<HTMLDivElement>) => {
     const target = e.target as Element | null;
     if (target && typeof target.closest === 'function' && target.closest(hoverSelector)) {

@@ -54,6 +54,7 @@ export { Overlay } from './Overlay';
 export { Panel, panelStyle } from './Panel';
 export { OddsPips, CostPips } from './OddsPips';
 export { DeltaCluster } from './DeltaCluster';
+export { FirstUseCaption, FirstUseCaptionZone } from './FirstUseCaption';
 export { RevealCard } from './RevealCard';
 export { SheetColumns, SheetLayoutContext, useSheetLayout, type SheetLayout } from './SheetColumns';
 export {
