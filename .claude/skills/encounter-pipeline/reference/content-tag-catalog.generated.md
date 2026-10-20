@@ -148,9 +148,9 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#rival_strike` | A rival's people, sent for a mortal whose god was noticed. | encounter 1 | 1 |  |
 | `#guild_errand` | Work set by the Adventurers' Guild — a posting taken off the board. | encounter 5 | 5 |  |
 | `#circle_errand` | Work set by the Arcane Circle — study, survey, and the reagents study needs. | encounter 5 | 5 |  |
-| `#fellowship_errand` | Work set by the Builders' Fellowship — stone cut, walls held, bridges thrown. | encounter 5 | 5 |  |
+| `#fellowship_errand` | Work set by the Builders' Fellowship — stone cut, walls held, tools forged, sites surveyed, commissions filled. | encounter 5 | 5 |  |
 | `#watch_errand` | Work set by the Civic Guard — the patrol, the gate, the crime nobody has solved. | encounter 5 | 5 |  |
-| `#dawn_errand` | Work set by the Holy Order of the Dawn — rites kept and the unclean turned back. | encounter 5 | 5 |  |
+| `#dawn_errand` | Work set by the Holy Order of the Dawn — rites kept, heresy judged, and the unclean turned back. | encounter 5 | 5 |  |
 | `#covenant_errand` | Work set by the Lorekeepers' Covenant — what is written down, and keeping it. | encounter 5 | 5 |  |
 | `#company_errand` | Work set by a Mercenary Company — the contract, the escort, the bounty. | encounter 5 | 5 |  |
 | `#consortium_errand` | Work set by the Merchant Consortium — cargo, routes, and the terms they travel under. | encounter 5 | 5 |  |
