@@ -101,7 +101,7 @@ describe('Trade lens view model', () => {
     expect(vm.marks.find(m => m.toHexKey === '4,1')?.tone).toBe('embargoed');
     expect(hoverText(vm, '4,1')).toEqual([
       'A road to Millbrook, carrying grain and salt.',
-      'Embargoed by House Varr: no grain moves on it.',
+      'Embargoed by House Varr: the towns it shuts out go short of grain.',
       'Tolled by House Varr.',
       'and more roads through here',
     ]);

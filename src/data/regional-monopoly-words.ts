@@ -3,14 +3,16 @@
  * § Player-facing text; THR-1870's decided words).
  *
  * Words only, never a share or a count (UI Law 13). An embargo cuts one good, so the road
- * line names it ("no salt moves on it"): people and armies still pass (Game Design Law 45).
+ * line names it ("the towns it shuts out go short of salt"): people and armies still pass (Game Design Law 45).
+ * The words say only what the engine does today, a stock cut on the target's towns
+ * (`EMBARGO_BALANCE_CUT`); the lane's own cargo is untouched until THR-1923.
  */
 
 export const MONOPOLY_WORDS = {
   /** The Purse panel chip, one per good held: "Holds the region's salt". */
   chip: "Holds the region's {good}",
   /** Trade lens hover: an embargoed road. */
-  embargoed: 'Embargoed by {holder}: no {good} moves on it.',
+  embargoed: 'Embargoed by {holder}: the towns it shuts out go short of {good}.',
   /** Trade lens hover: a tolled road (`controlledBy` on the lane). */
   tolled: 'Tolled by {holder}.',
   /** Trade lens hover: a good the road carries is held in this region. */

@@ -241,7 +241,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // THR-1955 — war aims S2 (THR-1870's words, narrowed to the one good an embargo cuts).
   'ui.lens.mark.embargoed': {
     label: 'Embargoed road',
-    desc: 'A road a faction has shut to its enemies. None of the embargoed good moves on it until the embargo ends.',
+    desc: 'A road a faction has shut to its enemies. Their towns go short of the embargoed good until the embargo ends.',
   },
   'ui.econ.monopoly': {
     label: 'Holds the region',
