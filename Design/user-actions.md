@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 01:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-20 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-20: the Stage, slice 3 — encounters play on the Stage beside the lit map, and the aftermath closes with "Continue"** ([THR-1895](https://linear.app/threadbare/issue/THR-1895/the-stage-slice-3-encounters-play-on-the-stage-the-veils-step-shells)). Merged via [#2491](https://github.com/christianspliid-ui/threadbare/pull/2491) and live.
 - **2026-10-19: Inspector S6 — arm a card from your hand and its targets light up on the map** ([THR-1914](https://linear.app/threadbare/issue/THR-1914/inspector-s6-card-first-arm-a-card-from-the-hand-and-its-targets-light)). Merged via [#2489](https://github.com/christianspliid-ui/threadbare/pull/2489) and live.
 - **2026-10-19: the Stage, slice 2 — story beats play over the dimmed map with their place lit** ([THR-1892](https://linear.app/threadbare/issue/THR-1892)). Merged via [#2488](https://github.com/christianspliid-ui/threadbare/pull/2488) and live.
 - **2026-10-19: Inspector S5 — every Inspector row shows how many cards can act on it, with an inline tray of those cards** ([THR-1913](https://linear.app/threadbare/issue/THR-1913/inspector-s5-card-counts-on-every-row-with-an-inline-tray-of-those)). Merged via [#2486](https://github.com/christianspliid-ui/threadbare/pull/2486) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-18: Observe and Agent Thread now charge their price from the pool the card names, and Agent Thread answers at once** ([THR-1977](https://linear.app/threadbare/issue/THR-1977/observe-and-bind-thread-are-free-when-cast-and-say-nothing-the-hand)). Merged via [#2481](https://github.com/christianspliid-ui/threadbare/pull/2481) and live.
 - **2026-10-18: the fix for armies bleeding out within a week, with almost none raised again** ([THR-1973](https://linear.app/threadbare/issue/THR-1973/every-army-bleeds-out-within-a-week-and-almost-none-are-raised-again)). Merged via [#2480](https://github.com/christianspliid-ui/threadbare/pull/2480) and live.
 - **2026-10-18: every link, card and map click now opens the Inspector beside the map, and you can cast from its Act row** ([THR-1911](https://linear.app/threadbare/issue/THR-1911/inspector-s3-the-inspector-in-the-game-every-link-card-and-map-click)). Merged via [#2479](https://github.com/christianspliid-ui/threadbare/pull/2479) and live.
-- **2026-10-18: pressing Play on a chapter choice now moves the story on, once (the main-map wall from cold playtest round 4)** ([THR-1976](https://linear.app/threadbare/issue/THR-1976)). Merged via [#2477](https://github.com/christianspliid-ui/threadbare/pull/2477) and live.
 
 ---
 
