@@ -25,11 +25,11 @@
       "empty": []
     },
     "undertaking": {
-      "reached": ["Their work"],
+      "reached": ["Their work", "See the work"],
       "empty": ["No long work under way"]
     },
     "ambition": {
-      "reached": ["What they want most"],
+      "reached": ["What they want most", "Leading ambition"],
       "empty": ["know what drives"]
     },
     "threadHistory": {
