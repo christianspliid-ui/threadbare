@@ -22,6 +22,7 @@ import { godRailSelector } from './godRail';
 import { needsYouSelector } from './needsYou';
 import { stageViewSelector } from './stage/stageView';
 import { armedTargetsSelector } from './armedTargets';
+import { findIndexSelector } from './find';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- a heterogeneous registry; each entry keeps its own types at its import
 export type AnyViewSelector = ViewSelector<any, unknown>;
@@ -40,6 +41,7 @@ export const VIEW_SELECTORS: readonly AnyViewSelector[] = [
   hexLensViewSelector,
   subjectPageSelector,
   armedTargetsSelector,
+  findIndexSelector,
   ledgerRailSelector,
   godRailSelector,
   needsYouSelector,

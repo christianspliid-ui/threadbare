@@ -187,4 +187,6 @@ export const TOP_BAR_WORDS = {
   notables: 'Notables',
   readThreads: 'Read the Threads',
   settings: 'Settings',
+  /** THR-1915 — the Find field's word (its placeholder says the rest). */
+  find: 'Find',
 } as const;

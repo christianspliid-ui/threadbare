@@ -156,6 +156,8 @@ export const TEXT_TOKENS_REM = {
   dialogSW: 37.5,
   /** Dialog size tier M (`--dialog-m-w`, THR-1820) — 960 px at 1080p, 1080 at 1440p. */
   dialogMW: 60,
+  /** The Find box (`--find-box-w`, THR-1915) — 560 px at 1080p, 630 at 1440p. */
+  findBoxW: 35,
   /** `--panel-padding` at ≥1920 (1rem below). */
   panelPaddingFhd: 1.25,
 } as const;

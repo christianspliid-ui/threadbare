@@ -21,4 +21,16 @@ export const INSPECTOR_HOTKEYS: readonly string[] = ['w', 'W'];
  */
 export const INSPECTOR_HISTORY_KEYS = { back: 'ArrowLeft', forward: 'ArrowRight' } as const;
 
-export const TOP_BAR_KEYS: readonly string[] = [' ', '+', '=', '-', '.', 'm', 'M', ...FRAME_HOTKEYS, ...INSPECTOR_HOTKEYS];
+/**
+ * THR-1915 (Inspector plan § D3, § D11) — `/` opens Find when no input has focus. A bare
+ * key, so it joins `TOP_BAR_KEYS` and the overlap test.
+ */
+export const FIND_HOTKEYS: readonly string[] = ['/'];
+
+/**
+ * THR-1915 — Ctrl+K / Cmd+K opens Find from anywhere, an input included. Modifier-qualified,
+ * so it is not in `TOP_BAR_KEYS` (which compares bare keys), like the Inspector's Alt+arrows.
+ */
+export const FIND_CTRL_KEY = 'k';
+
+export const TOP_BAR_KEYS: readonly string[] = [' ', '+', '=', '-', '.', 'm', 'M', ...FRAME_HOTKEYS, ...INSPECTOR_HOTKEYS, ...FIND_HOTKEYS];

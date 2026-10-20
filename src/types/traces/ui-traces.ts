@@ -46,7 +46,9 @@ export type RefOpenAdapter =
   // THR-1885 — an identity chip (`Chip role="identity"`).
   | 'chip'
   // THR-1892 — the Stage's lit-hex button.
-  | 'stage';
+  | 'stage'
+  // THR-1915 — a Find result.
+  | 'find';
 
 /** The three rungs of Law 20's ladder that the router can put on screen. */
 export type RefOpenMode = 'hover' | 'card' | 'sheet';

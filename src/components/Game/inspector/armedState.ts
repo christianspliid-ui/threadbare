@@ -14,7 +14,7 @@ export interface ArmedCard {
   /** The card's template id (the hand row's id). */
   actionId: string;
   /** Where it was armed from. */
-  origin: Extract<UiCardArmOrigin, 'hand' | 'drag'>;
+  origin: Extract<UiCardArmOrigin, 'hand' | 'drag' | 'find'>;
   /** The chosen target, or null while the card waits for one. */
   target: WorldRef | null;
   /** The answer to the last click — a locked reason, or the not-a-target line — or null. */
@@ -27,6 +27,15 @@ export type ArmedSlice = ArmedCard | null;
 export function pressHandCard(prev: ArmedSlice, actionId: string, origin: ArmedCard['origin'] = 'hand'): ArmedSlice {
   if (prev && prev.actionId === actionId && origin === 'hand') return null;
   return { actionId, origin, target: null, note: null };
+}
+
+/**
+ * A card picked in Find arms (THR-1915, `origin: 'find'`). Never toggles off: a search is a
+ * deliberate ask, so finding the armed card again keeps it armed.
+ */
+export function armFromFind(prev: ArmedSlice, actionId: string): ArmedSlice {
+  if (prev && prev.actionId === actionId) return prev;
+  return { actionId, origin: 'find', target: null, note: null };
 }
 
 /** A drag from the hand arms the card it carries (never toggles it off). */

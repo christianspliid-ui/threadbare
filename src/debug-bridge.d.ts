@@ -544,7 +544,7 @@ export interface DebugArmedTargets {
   actionId: string;
   cardName: string;
   targetWords: string;
-  origin: 'hand' | 'drag';
+  origin: 'hand' | 'drag' | 'find';
   /** The chosen target (`kind:id`) once a map click or a drop chose one, else null. */
   staged: string | null;
   /** The banner's answer to the last click, or null. */

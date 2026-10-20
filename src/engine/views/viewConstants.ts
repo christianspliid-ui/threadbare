@@ -59,3 +59,15 @@ export const ARMED_CLEARED_LINE_MS = 2500;
  * such a hex is drawn at `LENS_DIM_ALPHA × (1 − ARMED_LOCKED_LIT)`.
  */
 export const ARMED_LOCKED_LIT = 0.5;
+
+/**
+ * THR-1915 (Inspector plan § D11, THR-1832) — Find. Rows each group shows before "Show all
+ * N"; how many recent Inspector subjects the empty box lists; the shortest query that
+ * searches (shorter shows the empty box); and the box's height cap, in vh.
+ */
+export const FIND_RESULTS_PER_GROUP = 6;
+export const FIND_RECENT_COUNT = 5;
+/** How many opened subjects Find remembers for Recent (survives an Inspector close). */
+export const FIND_RECENT_MEMORY = 30;
+export const FIND_MIN_QUERY_CHARS = 1;
+export const FIND_BOX_MAX_VH = 60;

@@ -404,6 +404,14 @@ retinue retired). "Show known land" (button and key `F`) reads the same fit. A U
 no state is written. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1915 (2026-10-20), Find** — `knowledge-floor-gates-find`: the
+seen floor (`views/knowledge.ts`, `createSeenFloor`) gates what Find can name. Fog, familiarity
+and the god's threads decide it — a place on a seen or remembered hex, a person known to
+`recognised`, threaded or in sight, a power with a nameable member or place, an army in sight,
+an artifact the god's people hold or one at a nameable place. `buildFindIndex` lists nothing
+else, so a miss on an unseen name equals a miss on nonsense. A UI read only: no state is
+written. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
+
 **One contract added by THR-1878 (2026-10-18), the Threads lens** —
 `thread-destination-on-threads-lens`: `phaseMovement`'s `movementState.destinationId` reaches the
 map for the first time. The Threads lens (`views/lenses/threadsLens.ts`, on the seam as
