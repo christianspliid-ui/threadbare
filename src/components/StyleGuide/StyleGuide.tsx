@@ -49,6 +49,7 @@ import { CardKeywordChip } from '../shared/CardKeywordChip';
 import { CardFace, type CardFaceModel } from '../shared/CardFace';
 import { CostPips, OddsPips } from '../shared/OddsPips';
 import { DeltaCluster } from '../shared/DeltaCluster';
+import { FirstUseCaption, FirstUseCaptionZone } from '../shared/FirstUseCaption';
 import {
   PIP_ODDS_TIERS,
   PIP_PENALTY_TIER,
@@ -152,6 +153,7 @@ const SECTIONS = [
   { id: 'spheres', label: 'SphereIcon' },
   { id: 'odds-pips', label: 'OddsPips / CostPips (THR-890)' },
   { id: 'delta-cluster', label: 'DeltaCluster (THR-1082)' },
+  { id: 'first-use-caption', label: 'FirstUseCaption (THR-1986)' },
   { id: 'card-keyword-chip', label: 'CardKeywordChip (THR-890)' },
   { id: 'card-face', label: 'CardFace (THR-1002)' },
   { id: 'rivalicon', label: 'RivalIcon' },
@@ -1779,6 +1781,29 @@ export default function StyleGuide() {
                 <Row>
                   <CostPips cost={3} emphasised />
                 </Row>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── FirstUseCaption (THR-1986) ─────────────────────── */}
+          <section id="section-first-use-caption" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>FirstUseCaption — a word that teaches itself once</SectionHeading>
+            <div style={{ marginTop: '1.25rem' }}>
+              <GameErrorBoundary>
+                <Label>
+                  One muted line under its panel until the player hovers the panel's tooltip,
+                  presses inside it, or presses &ldquo;got it&rdquo; (remembered, Law 51). At most
+                  two show at once; the rest wait in table order. Wrap the panel in
+                  FirstUseCaptionZone; pass name for a caption about a mortal. Press
+                  &ldquo;got it&rdquo; here and it stays dismissed (reset with
+                  __DEBUG.resetFirstUseCaptions()).
+                </Label>
+                <div style={{ maxWidth: 320 }}>
+                  <FirstUseCaptionZone id="essence">
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>Life 50 · Order 50</div>
+                    <FirstUseCaption id="essence" />
+                  </FirstUseCaptionZone>
+                </div>
               </GameErrorBoundary>
             </div>
           </section>

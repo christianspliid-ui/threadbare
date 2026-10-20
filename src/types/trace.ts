@@ -582,6 +582,8 @@ export type TraceCategory =
   | 'edge_schema_refused'
   | 'chronicle.aggregated'
   | 'chronicle.aggregate_failed'
+  // Chronicle growth gate — a stranger's growth left out (THR-1986)
+  | 'chronicle.intake.skipped'
   | 'naming.constrained_reject'
   | 'rival.scheme_phase_advanced'
   | 'rival.scheme_materialized'
@@ -1199,6 +1201,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trust_change',
   'chronicle.aggregated',
   'chronicle.aggregate_failed',
+  'chronicle.intake.skipped',
   'naming.constrained_reject',
   'rival.scheme_phase_advanced',
   'rival.scheme_materialized',
@@ -5291,6 +5294,7 @@ export type TraceEntry =
   | ThreadStoryComposedTrace
   // Event feed hygiene (THR-456)
   | ChronicleAggregatedTrace
+  | ChronicleIntakeSkippedTrace
   | NamingConstrainedRejectTrace
   | NamingFatalFallbackTrace
   | ProseRepetitionSkipTrace
@@ -7121,6 +7125,19 @@ export interface ChronicleAggregatedTrace extends TraceBase {
   memberCount: number;
   memberIds: string[];
   phraseId: string;
+}
+
+/**
+ * Trace: a growth line the Chronicle left out because the god holds no thread
+ * to the actor (THR-1986). Only skips are traced; an admitted entry is its own
+ * record.
+ */
+export interface ChronicleIntakeSkippedTrace extends TraceBase {
+  category: 'chronicle.intake.skipped';
+  eventId: string;
+  eventType: 'tier_promotion' | 'agent_action_resolved' | 'rarity_graduation';
+  actorId: string;
+  reason: 'not_threaded';
 }
 
 /** Trace: phonetic name candidate rejected by constraint (syllables/consonants/vowels) */

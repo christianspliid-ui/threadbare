@@ -37,6 +37,7 @@ import {
 } from './rivalSourceContestation';
 import { readEssenceSource } from './essenceSources';
 import { phaseNotableAgendas } from './notableAgendas';
+import { buildTierUpProse, eventSkipsChronicle, shouldSkipForChronicle } from './chronicleGrowth';
 import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
 import {
   RIVAL_SCHEME_PHASE_INVEST_TICKS,
@@ -1086,6 +1087,11 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
         message: `${agentName} reached ${result.growth.domain} tier ${result.growth.newTier}: "${result.promotion.traitGranted}"`,
         significance: 0.8,
         actorId: progress.actorId,
+        // THR-1986: the Chronicle tells growth only for a threaded mortal, in words.
+        chronicleGate: 'threaded_only',
+        playerProse: buildTierUpProse(
+          state.graph, progress.actorId, agentName, result.growth.domain, result.promotion.traitGranted,
+        ),
       });
       // A reach tier crossing can move the leading reach pair — the calling's
       // third event site (THR-1299 slice 5).
@@ -1145,11 +1151,13 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
               significance: 0.9,
               actorId: actorNodeForRarity.id,
               notification: { channel: 'toast' as const },
+              chronicleGate: 'threaded_only',
             });
             const poetProse = graduationTier >= 4
               ? `The weave folds around ${nodeName} like water around a stone that has always been there. What was mortal has become something else entirely.`
               : `The name ${nodeName} is spoken differently now — with something between reverence and quiet dread.`;
-            graduationChronicles.push({
+            // THR-1986: a stranger's graduation stays out of the Chronicle by this path too.
+            if (!shouldSkipForChronicle(state, actorNodeForRarity.id, `rarity-grad-${actorNodeForRarity.id}-${state.tick}`, 'rarity_graduation')) graduationChronicles.push({
               id: `rarity-grad-${actorNodeForRarity.id}-${state.tick}`,
               tier: 'chronicle',
               title: message,
@@ -1220,11 +1228,13 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
                 significance: 0.9,
                 actorId: targetNode.id,
                 notification: { channel: 'toast' as const },
+                chronicleGate: 'threaded_only',
               });
               const targetPoetProse = targetGradTier >= 4
                 ? `The weave folds around ${targetName} like water around a stone that has always been there. What was mortal has become something else entirely.`
                 : `The name ${targetName} is spoken differently now — with something between reverence and quiet dread.`;
-              graduationChronicles.push({
+              // THR-1986: a stranger's graduation stays out of the Chronicle by this path too.
+              if (!shouldSkipForChronicle(state, targetNode.id, `rarity-grad-${targetNode.id}-${state.tick}`, 'rarity_graduation')) graduationChronicles.push({
                 id: `rarity-grad-${targetNode.id}-${state.tick}`,
                 tier: 'chronicle',
                 title: message,
@@ -2678,7 +2688,8 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
     // Omen start/expire events use a lower chronicle threshold (THR-19)
     const omenEvent = event.type === 'omen_started' || event.type === 'omen_expired';
     const chronicleThreshold = omenEvent ? 0.65 : 0.8;
-    if (event.significance >= chronicleThreshold) {
+    // THR-1986: a growth line declared threaded-only skips a stranger (traced).
+    if (event.significance >= chronicleThreshold && !eventSkipsChronicle(state, event)) {
       // Build narrative context for notable/chronicle events
       const narrativeEvent: NarrativeEvent = {
         id: event.id,
@@ -2692,12 +2703,14 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
 
       const context = buildNarrativeContext(narrativeEvent, state.graph);
 
+      // The player reads `playerProse` when the producer wrote one; `message` stays for traces.
+      const playerLine = event.playerProse ?? event.message;
       newChronicleEntries.push({
         id: event.id,
         tier: 'chronicle',
-        title: event.message.slice(0, 50),
-        prose: event.message,
-        witnessFacts: [event.message],
+        title: playerLine.slice(0, 50),
+        prose: playerLine,
+        witnessFacts: [playerLine],
         promptContext: {
           actors: context.contextObjects
             .filter(co => co.category === 'character')

@@ -43,20 +43,8 @@ export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleE
             chronicle entry (Laws 13/14). The chronicle is ordered newest-first, so what the
             index carried is how long ago the entry happened; `elapsedLabel` says it in days. */}
         {elapsedLabel((currentTick ?? entry.tick) - entry.tick)} ago · {entry.title}
-        {entry.quintessenceDelta != null && (
-          <span
-            style={{
-              marginLeft: '6px',
-              color: entry.quintessenceDelta > 0
-                ? 'var(--positive)'
-                : entry.quintessenceDelta < 0
-                  ? 'var(--negative)'
-                  : 'var(--text-tertiary)',
-            }}
-          >
-            {entry.quintessenceDelta > 0 ? '+' : ''}{entry.quintessenceDelta.toFixed(2)}Q
-          </span>
-        )}
+        {/* THR-1986 (Law 13): the quintessence delta no longer prints here — the
+            Chronicle speaks in words; the number stays on the entry for the designer view. */}
       </div>
 
       {showPoet && poetText && (

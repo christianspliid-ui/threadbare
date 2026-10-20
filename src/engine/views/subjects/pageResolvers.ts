@@ -25,6 +25,7 @@ import { SIGNATURE_STATE_COPY } from '../../../data/ascendant-bar-content';
 import { DIVINE_NATURE_PHRASES, essenceToProseDescriptor } from '../../../data/divine-nature-content';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
 import { dominionSheetVM } from '../../dominionViewModels';
+import { selectOpeningReveal } from '../../openingReveal';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -265,6 +266,10 @@ function dominionResolverFor(withTend: boolean): SectionResolver {
   return (ctx) => {
     // The god is read off the state only: a legacy caller's `protagonistId` may be a mortal.
     const ascendantId = ctx.state?.ascendantId;
+    // THR-1986: Dominion arrives with the *A path opens* gift, beside the Reaches it is
+    // read with; before then no page carries the row. Fail-soft: the selector reveals
+    // every row when it cannot tell.
+    if (ctx.state && !selectOpeningReveal(ctx.state).rows.dominion?.revealed) return null;
     const vm = dominionSheetVM(ctx.graph, ascendantId, ctx.nodeId, ctx.state?.controlEffects, withTend);
     if (!vm) return null;
     const rows: PanelRow[] = [

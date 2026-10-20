@@ -73,9 +73,9 @@ function makeState(o: Opts = {}): GameState {
 }
 
 describe('OPENING_REVEAL_TABLE (THR-1837 C1)', () => {
-  it('has 17 rows, one per surface (World Pulse retired, THR-1893)', () => {
-    expect(OPENING_REVEAL_TABLE).toHaveLength(17);
-    expect(new Set(OPENING_REVEAL_TABLE.map(r => r.surface)).size).toBe(17);
+  it('has 18 rows, one per surface (World Pulse retired, THR-1893; Dominion added, THR-1986)', () => {
+    expect(OPENING_REVEAL_TABLE).toHaveLength(18);
+    expect(new Set(OPENING_REVEAL_TABLE.map(r => r.surface)).size).toBe(18);
   });
 
   it('every gift beatId is a real ASCENDANT_SPINE id', () => {
@@ -115,14 +115,16 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
 
   it('right after the bond shows The First\'s screen and every gift row waits for its gift', () => {
     const r = selectOpeningReveal(makeState());
-    for (const s of ['time_controls', 'identity', 'essence', 'attention', 'hand', 'threads', 'chronicle', 'settings', 'read_threads'] as const) {
+    for (const s of ['time_controls', 'identity', 'essence', 'hand', 'threads', 'chronicle', 'settings', 'read_threads'] as const) {
       expect(r.rows[s], s).toEqual({ revealed: true, reason: 'at_bond' });
     }
+    // THR-1986: Attention waits for the first chapter, the first moment that draws on it.
+    expect(r.rows.attention).toEqual({ revealed: false, reason: 'waiting:first_chapter' });
     expect(r.rows.doom).toEqual({ revealed: false, reason: 'waiting:beat.spine.the_seat' });
     expect(r.rows.mandate.reason).toBe('waiting:beat.spine.the_seat');
     expect(r.rows.investiture.reason).toBe('waiting:beat.spine.the_seat');
     expect(r.rows.notables.reason).toBe('waiting:beat.spine.the_first_word');
-    for (const s of ['reaches', 'world_soul', 'omen'] as const) {
+    for (const s of ['reaches', 'dominion', 'world_soul', 'omen'] as const) {
       expect(r.rows[s].reason, s).toBe('waiting:beat.spine.a_path_opens');
     }
     expect(r.rows.chapter_ledger).toEqual({ revealed: false, reason: 'waiting:first_chapter' });
@@ -138,6 +140,8 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
   it('The First\'s open chapter brings the Chapter Ledger and the chapter_waiting direction', () => {
     const r = selectOpeningReveal(makeState({ activeChapter: true }));
     expect(r.rows.chapter_ledger).toEqual({ revealed: true, reason: 'first_chapter' });
+    // THR-1986: Attention arrives with the same chapter.
+    expect(r.rows.attention).toEqual({ revealed: true, reason: 'first_chapter' });
     expect(r.direction).toEqual({ show: true, mode: 'chapter_waiting', firstId: 'elara', chapterActionId: 'act-1' });
   });
 
@@ -165,6 +169,16 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
   it('counts from now on the one render between the bond and the doom wake', () => {
     const r = selectOpeningReveal(makeState({ wokeAtTick: null, tick: 500 }));
     expect(r.rows.doom.reason).toBe('waiting:beat.spine.the_seat');
+  });
+
+  it('A path opens brings Dominion with the Reaches (THR-1986), and not before', () => {
+    const before = selectOpeningReveal(makeState({ resolvedBeats: ['beat.spine.opening', 'beat.spine.the_seat'] }));
+    expect(before.rows.dominion.revealed).toBe(false);
+    const r = selectOpeningReveal(makeState({ resolvedBeats: ['beat.spine.opening', 'beat.spine.a_path_opens'] }));
+    expect(r.rows.dominion).toEqual({ revealed: true, reason: 'gift:beat.spine.a_path_opens' });
+    expect(r.rows.reaches.revealed).toBe(true);
+    expect(revealToastFor(new Set(['reaches', 'dominion', 'world_soul', 'omen']), r))
+      .toBe('New beside the map: your Reaches, Dominion, the World-Soul and Omens.');
   });
 
   it('spine_done reveals gift rows once the spine is finished by any route', () => {
@@ -230,6 +244,8 @@ describe('opening reveal copy (THR-1837 C2–C4)', () => {
     expect(revealToastFor(new Set(['investiture', 'doom', 'mandate']), r)).toBe('New beside the map: Doom, Mandates and Investiture.');
     expect(revealToastFor(new Set(['chapter_ledger', 'doom', 'mandate', 'investiture']), r))
       .toBe('New beside the map: the Chapter Ledger, Doom, Mandates and Investiture.');
+    expect(revealToastFor(new Set(['attention', 'chapter_ledger']), r))
+      .toBe('New beside the map: Attention and the Chapter Ledger.');
     expect(formatOpeningRevealToast([], false)).toBeNull();
   });
 

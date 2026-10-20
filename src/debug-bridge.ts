@@ -3373,6 +3373,18 @@ if (import.meta.env.DEV) {
       return selectOpeningReveal(state);
     },
 
+    /** THR-1986 — see `debug-bridge.d.ts`. */
+    getFirstUseCaptions: async () => {
+      const { getFirstUseCaptionSnapshot } = await import('./components/shared/firstUseCaptionStore');
+      const snap = getFirstUseCaptionSnapshot();
+      return { visible: [...snap.visible], dismissed: [...snap.dismissed], queued: [...snap.queued] };
+    },
+
+    resetFirstUseCaptions: async () => {
+      const { resetFirstUseCaptions } = await import('./components/shared/firstUseCaptionStore');
+      resetFirstUseCaptions();
+    },
+
     getOpeningState: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };

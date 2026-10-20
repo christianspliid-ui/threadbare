@@ -41,11 +41,14 @@ import {
   ESSENCE_BAR_CEILING,
   ESSENCE_SPEND_FLASH_MS,
   ESSENCE_FOUNDATION_FOLDED_DEFAULT,
+  readElderHeaderLatch,
+  writeElderHeaderLatch,
   essenceFillPct,
   getEssencePreviewSphere,
   subscribeEssencePreview,
 } from './essenceDisplay';
 import styles from './styles.module.css';
+import { FirstUseCaption, FirstUseCaptionZone } from '../../shared/FirstUseCaption';
 
 /**
  * The smallest drop between two renders that counts as a spend worth flashing.
@@ -294,6 +297,13 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
   useEffect(() => {
     if (elderCharged) setElderOpen(true);
   }, [elderCharged]);
+  const [elderHeaderLatched, setElderHeaderLatched] = useState(readElderHeaderLatch);
+  const elderHoveredNow = elderRows.some((r) => r.sphere === preview);
+  useEffect(() => {
+    if (elderHeaderLatched || !(elderCharged || elderHoveredNow)) return;
+    setElderHeaderLatched(true);
+    writeElderHeaderLatch();
+  }, [elderHeaderLatched, elderCharged, elderHoveredNow]);
 
   if (rows.length === 0) {
     return (
@@ -305,7 +315,11 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
 
   // A hovered card that draws on an elder power opens the fold for as long as it
   // is hovered — the preview must land on a row the player can see.
-  const elderShown = elderOpen || elderRows.some((r) => r.sphere === preview);
+  const elderHovered = elderRows.some((r) => r.sphere === preview);
+  const elderShown = elderOpen || elderHovered;
+  // THR-1986 — the header itself waits for the first elder charge or elder-card
+  // hover, then stays (latched, Law 51).
+  const elderHeaderShown = elderHeaderLatched || elderCharged || elderHovered;
 
   return (
     // THR-1894 (frame plan § F6): the spheres held, two to a row, so the hand keeps the rail's height.
@@ -313,9 +327,10 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
       {ownRows.map((row) => (
         <EssenceRow key={row.sphere} row={row} previewed={row.sphere === preview} />
       ))}
-      {elderRows.length > 0 && (
+      {elderRows.length > 0 && elderHeaderShown && (
         <>
           <div style={{ gridColumn: '1 / -1' }}>
+          <FirstUseCaptionZone id="elder_powers">
           <Tooltip id="ui.essence.foundation_fold" focusable={false}>
             <button
               type="button"
@@ -338,6 +353,8 @@ export function EssenceBlock({ rows }: EssenceBlockProps) {
               {ESSENCE_ELDER_FOLD_LABEL}
             </button>
           </Tooltip>
+          <FirstUseCaption id="elder_powers" />
+          </FirstUseCaptionZone>
           </div>
           {elderShown && elderRows.map((row) => (
             <EssenceRow key={row.sphere} row={row} previewed={row.sphere === preview} />

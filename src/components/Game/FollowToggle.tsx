@@ -11,6 +11,7 @@
  * Follow state is game state (per save), not a Law 51 preference.
  */
 
+import { FirstUseCaption, FirstUseCaptionZone } from '../shared/FirstUseCaption';
 import type { GameState } from '../../types/gameState';
 import type { WorldGraph } from '../../engine/graph';
 import { isDefaultFollowed, isMuted } from '../../engine/followedAgents';
@@ -92,16 +93,21 @@ export interface FollowToggleProps {
   surface: 'arc_panel' | 'encounter_ui';
   /** Compact hides the state label; the button carries a self-explaining action (`compactAction`). */
   compact?: boolean;
+  /** The mortal's name, for the "Stop interruptions" first-use caption (THR-1986). */
+  name?: string;
 }
 
-export function FollowToggle({ descriptor, onToggle, surface, compact }: FollowToggleProps) {
+export function FollowToggle({ descriptor, onToggle, surface, compact, name }: FollowToggleProps) {
   const copy = followToggleCopy(descriptor);
+  // THR-1986 — "Stop interruptions" read as "stop her chapters"; the caption says they still happen.
+  const stopCaption = !!compact && descriptor.byBond && !descriptor.explicit && !descriptor.muted;
   return (
     <span
       data-testid={`follow-toggle-${surface}`}
       data-follow-state={descriptor.muted ? 'muted' : descriptor.followed ? (descriptor.explicit ? 'explicit' : 'bond') : 'none'}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-2)' }}
+      style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-2)' }}
     >
+      <FirstUseCaptionZone id="stop_interruptions">
       {!compact && (
         <span style={{ fontSize: 'var(--text-xs)', color: descriptor.followed ? 'var(--accent-gold)' : 'var(--text-tertiary)' }}>
           {copy.label}
@@ -118,6 +124,12 @@ export function FollowToggle({ descriptor, onToggle, surface, compact }: FollowT
           {compact ? copy.compactAction : copy.action}
         </Button>
       </Tooltip>
+      {stopCaption && (
+        <span style={{ flexBasis: '100%', maxWidth: 320 }}>
+          <FirstUseCaption id="stop_interruptions" name={name} />
+        </span>
+      )}
+      </FirstUseCaptionZone>
     </span>
   );
 }

@@ -14,6 +14,7 @@
  * All functions are pure or take explicit state — no hidden globals.
  */
 
+import { buildTierUpProse } from './chronicleGrowth';
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SphereName } from '../types/index';
 import type {
@@ -2408,6 +2409,11 @@ export function executeStepResult(
           message: `${agentName} reached ${(resolutionStats?.reach ?? step.reach)} tier ${growthResult.newTier}: "${promotion.traitGranted}"`,
           significance: 0.8,
           actorId: action.actorId,
+          // THR-1986: the Chronicle tells growth only for a threaded mortal, in words.
+          chronicleGate: 'threaded_only',
+          playerProse: buildTierUpProse(
+            state.graph, action.actorId, agentName, (resolutionStats?.reach ?? step.reach), promotion.traitGranted,
+          ),
         });
       }
 
@@ -3033,6 +3039,10 @@ export function executeStepResult(
       message: `${currentActorName} ${outcomeMsg} ${playerFacingTemplateName(template)}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
       significance,
       actorId: action.actorId,
+      // THR-1986: the player's line drops the Q suffix; a critical success (the
+      // one path to the Chronicle here) is told only for a threaded mortal.
+      playerProse: `${currentActorName} ${outcomeMsg} ${playerFacingTemplateName(template)}${metadataSuffix}${clearanceSuffix}.`,
+      ...(finalAction.outcome === 'critical_success' ? { chronicleGate: 'threaded_only' as const } : {}),
     });
   } else {
     // Multi-step: report step progression with rich outcome
@@ -3054,6 +3064,7 @@ export function executeStepResult(
       message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps})${metadataSuffix}${clearanceSuffix}${stepQSuffix}.`,
       significance: stepSignificance,
       actorId: action.actorId,
+      playerProse: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps})${metadataSuffix}${clearanceSuffix}.`,
     });
   }
 

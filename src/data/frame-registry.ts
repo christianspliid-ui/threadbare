@@ -136,7 +136,7 @@ export const GOD_RAIL_SECTIONS: readonly GodRailSectionDef[] = [
   { id: 'identity', place: 'pinned', order: 1, label: GOD_RAIL_LABELS.identity, tooltipId: 'ui.ascendant_name', revealSurfaces: ['identity'], rendersWhenEmpty: true },
   { id: 'essence', place: 'pinned', order: 2, label: GOD_RAIL_LABELS.essence, tooltipId: null, revealSurfaces: ['essence', 'attention'], rendersWhenEmpty: true },
   { id: 'hand', place: 'fill', order: 3, label: GOD_RAIL_LABELS.hand, tooltipId: 'ui.your_cards', revealSurfaces: ['hand', 'investiture'], rendersWhenEmpty: true },
-  { id: 'reaches', place: 'folded', order: 4, label: GOD_RAIL_LABELS.reaches, tooltipId: 'ui.reaches', revealSurfaces: ['reaches'], rendersWhenEmpty: true },
+  { id: 'reaches', place: 'folded', order: 4, label: GOD_RAIL_LABELS.reaches, tooltipId: 'ui.reaches', revealSurfaces: ['reaches', 'dominion'], rendersWhenEmpty: true },
   { id: 'mandate', place: 'folded', order: 5, label: GOD_RAIL_LABELS.mandate, tooltipId: null, revealSurfaces: ['mandate'], rendersWhenEmpty: true },
   { id: 'covenants', place: 'folded', order: 6, label: GOD_RAIL_LABELS.covenants, tooltipId: 'ui.covenant', revealSurfaces: [], rendersWhenEmpty: false },
   { id: 'signatures', place: 'folded', order: 7, label: GOD_RAIL_LABELS.signatures, tooltipId: 'ui.signatures', revealSurfaces: [], rendersWhenEmpty: false },

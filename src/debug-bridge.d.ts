@@ -3070,6 +3070,14 @@ export interface DebugBridge {
    *
    *  Resolves `{ error }` with no live game state. **Async** (`await` it). */
   getOpeningReveal: () => Promise<{ error: string } | import('./engine/openingReveal').OpeningReveal>;
+  /**
+   * THR-1986 — the first-use captions: which show now (at most two, table order),
+   * which the player dismissed (remembered, Law 51), and which wait for a slot.
+   * **Async** (`await` it).
+   */
+  getFirstUseCaptions: () => Promise<{ visible: string[]; dismissed: string[]; queued: string[] }>;
+  /** THR-1986 — forget every caption dismissal, for repeat captures. **Async**. */
+  resetFirstUseCaptions: () => Promise<void>;
 
   /** THR-1632 — faith and politics at game start.
    *

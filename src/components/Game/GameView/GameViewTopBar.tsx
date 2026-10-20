@@ -8,6 +8,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 
+import { FirstUseCaption, FirstUseCaptionZone } from '../../shared/FirstUseCaption';
 import { SimulationControls } from '../SimulationControls';
 import { DoomBar } from '../DoomBar';
 import { OmenIndicator } from '../OmenIndicator';
@@ -339,7 +340,9 @@ export function GameViewTopBar({
       />
     ) : null),
     direction_line: () => (typeof directionLine === 'function' ? directionLine(y.has('direction_short')) : directionLine),
+    // THR-1986 — Doom and Omen carry a floating first-use caption under their item.
     doom: () => (
+      <FirstUseCaptionZone id="doom" style={{ position: 'relative', minWidth: 0 }}>
       <div
         role="button" tabIndex={0}
         onClick={() => { if (!encounterOpen) setDoomDetailOpen(true); }}
@@ -358,8 +361,11 @@ export function GameViewTopBar({
           hideStageName={y.has('doom_name')}
         />
       </div>
+      <FirstUseCaption id="doom" floating />
+      </FirstUseCaptionZone>
     ),
     omen: () => (omenRendered ? (
+      <FirstUseCaptionZone id="omen" style={{ position: 'relative' }}>
       <div {...ring('omen')}>
         <OmenIndicator
           omenState={gameState.omenState}
@@ -369,6 +375,8 @@ export function GameViewTopBar({
           nameOverride={frameFixture?.omenName}
         />
       </div>
+      <FirstUseCaption id="omen" floating />
+      </FirstUseCaptionZone>
     ) : null),
     rivals: () => (
       <RivalsButton

@@ -7,6 +7,7 @@
  * list is gone, so the list takes the rail's free height and scrolls inside it only at
  * the rail's limit (Law 57). The Chapter Ledger launcher button became the Ledger tab.
  */
+import { FirstUseCaption, FirstUseCaptionZone } from '../shared/FirstUseCaption';
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactElement } from 'react';
 import type { ChronicleEntry } from '../../types/narrative';
 import type { BeforeYouWokeGroup, BeforeYouWokeGroupKey } from '../../engine/worldPastWords';
@@ -441,7 +442,13 @@ function YearsPanel({ vm, byId, voiceMode, currentTick }: ChronicleTabPanelProps
 }
 
 function LedgerPanel({ vm, shown, onOpenLedger, onLedgerSeen }: ChronicleTabPanelProps) {
-  return <LedgerTab ledger={vm.ledger} shown={shown} onOpenLedger={onOpenLedger} onLedgerSeen={onLedgerSeen} />;
+  // THR-1986 — the ledger's first-use caption sits above the rows it explains.
+  return (
+    <FirstUseCaptionZone id="chapter_ledger">
+      <FirstUseCaption id="chapter_ledger" />
+      <LedgerTab ledger={vm.ledger} shown={shown} onOpenLedger={onOpenLedger} onLedgerSeen={onLedgerSeen} />
+    </FirstUseCaptionZone>
+  );
 }
 
 /**
@@ -510,7 +517,10 @@ export function ChroniclePanel({
       </Tooltip>
 
       {vm.worldSoul && (reveal?.worldSoul ?? true) && (
-        <WorldSoulLine worldSoul={vm.worldSoul} newly={!!reveal?.newlyWorldSoul} />
+        <FirstUseCaptionZone id="world_soul">
+          <WorldSoulLine worldSoul={vm.worldSoul} newly={!!reveal?.newlyWorldSoul} />
+          <FirstUseCaption id="world_soul" />
+        </FirstUseCaptionZone>
       )}
 
       {/* Tabs renders its bar and panels as siblings, so this column holds them both. */}

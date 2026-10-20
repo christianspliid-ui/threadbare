@@ -114,6 +114,11 @@ export interface ActionCardModelOptions {
   readonly interactive?: boolean;
   /** Open the codex entry for this action (Law 21). Absent ⇒ the name is text. */
   readonly onOpenName?: () => void;
+  /**
+   * THR-1986 — whether Dominion has arrived (the *A path opens* gift). False drops
+   * the Dominion chip and the price ghost; absent means shown.
+   */
+  readonly showDominion?: boolean;
 }
 
 /**
@@ -182,7 +187,7 @@ export function actionCardModel(slot: WheelSlot, opts: ActionCardModelOptions = 
     markTooltips: true,
     cost: slot.essenceCost,
     costEmphasised,
-    ...dominionChipFields(slot),
+    ...(opts.showDominion === false ? {} : dominionChipFields(slot)),
     ...(costChannels.length > 0 ? { costChannels } : {}),
     name: slot.spellName ?? slot.label,
     ...(onOpenName ? { onOpenName } : {}),

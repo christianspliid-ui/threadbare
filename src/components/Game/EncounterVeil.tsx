@@ -3440,6 +3440,7 @@ function ContextStrip({
           onToggle={() => onToggleFollow!(header.focalActorId!)}
           surface="encounter_ui"
           compact
+          name={name}
         />
       )}
 
