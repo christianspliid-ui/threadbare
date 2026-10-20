@@ -180,6 +180,12 @@ export function StageHost({
   // router context, so it marks the flag the Stage's own router would.
   const { setStage } = useGameScreenState();
   const markInspectorOverStage = () => setStage(prev => (prev.phase === 'idle' ? prev : { ...prev, inspectorOverStage: true }));
+  // THR-1897 — the moment card's and the premonition's name controls: the sheet opens over
+  // the Stage, as the encounter's does, never folded away under it (Law 21).
+  const openSheetOverStage = (agentId: string, initialTab?: import('../hooks/useAgentInteraction').ProfileTabId) => {
+    markInspectorOverStage();
+    openAgentSheetForId(agentId, initialTab);
+  };
   // THR-1877 — the Stage renders only the kinds the resolution names (one foreground,
   // so at most one of these), each through this exhaustive switch.
   const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
@@ -321,9 +327,10 @@ export function StageHost({
           // THR-1500 — a moment arrives for a *followed* mortal, which is exactly
           // the case where the selection is someone else. Same root cause as the
           // premonition's name control (THR-1461), same primitive.
-          onSelectAgent={openAgentSheetForId}
+          // THR-1897 — on the Stage, the sheet opens in the Inspector over it (§ D7).
+          onSelectAgent={openSheetOverStage}
           // THR-1963 — "See the work" opens the same sheet on its Journey tab.
-          onSeeWork={(agentId) => openAgentSheetForId(agentId, 'journey')}
+          onSeeWork={(agentId) => openSheetOverStage(agentId, 'journey')}
           onDivineAct={handleMomentDivineAct}
         />
       );
@@ -416,7 +423,8 @@ export function StageHost({
           // at z 40 — invisible beneath this modal at z 60, a Law 21 dead click.
           // A caller behind a full-screen interrupt wants the sheet on top, which
           // is the distinction `openAgentSheetForId` exists to draw.
-          onViewAgent={openAgentSheetForId}
+          // THR-1897 — on the Stage, the sheet opens in the Inspector over it (§ D7).
+          onViewAgent={openSheetOverStage}
           onDismiss={handlePremonitionDismiss}
         />
       );

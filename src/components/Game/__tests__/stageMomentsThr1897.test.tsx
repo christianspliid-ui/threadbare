@@ -218,3 +218,15 @@ describe('the journey moment on the Stage (THR-1897)', () => {
     expect(store.state.stage.kind).toBe('journey-vignette');
   });
 });
+
+describe('a name on a Stage moment opens its page over the Stage (THR-1897 review)', () => {
+  it('StageHost marks the Inspector over the Stage before the moment card and premonition open a sheet', () => {
+    const src = code('Game/hosts/StageHost.tsx');
+    // A bare `openAgentSheetForId` opens the Inspector folded under the Stage: a dead click (Law 21).
+    expect(src).not.toMatch(/onViewAgent=\{openAgentSheetForId\}/);
+    expect(src).not.toMatch(/onSelectAgent=\{openAgentSheetForId\}/);
+    expect(src).toMatch(/onViewAgent=\{openSheetOverStage\}/);
+    expect(src).toMatch(/onSelectAgent=\{openSheetOverStage\}/);
+    expect(src).toMatch(/const openSheetOverStage = [\s\S]*?markInspectorOverStage\(\);[\s\S]*?openAgentSheetForId\(/);
+  });
+});
