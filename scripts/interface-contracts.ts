@@ -7036,7 +7036,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ECONOMY,
     consumerSystem: FACTIONS,
     intent:
-      'A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown\'s offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.25 the holder\'s controls edges are retargeted to it with via defection and takenFrom, the old holder\'s relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown\'s holding_lost reads takenFrom; war aims\' isEnemyFaction reads the grudge.',
+      'A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown\'s offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder\'s controls edges are retargeted to it with via defection and takenFrom, the old holder\'s relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown\'s holding_lost reads takenFrom; war aims\' isEnemyFaction reads the grudge.',
     ulTerms: ['Settlement', 'Unrest', 'Faction', 'Ambition'],
     mechanism: { kind: 'edge', symbols: ['controls', 'relates_to', 'pursues'] },
     writeSites: ['src/engine/unrestPressure/defection.ts', 'src/engine/factionAmbitions.ts'],

@@ -58,9 +58,10 @@ function ambitionOf(graph: WorldGraph, armyId: string) {
 }
 
 /**
- * The faction a revenge ambition holds its grievance against. A revenge ambition records
- * no target faction today, so it is the enemy this faction has the worst `relates_to`
- * sentiment toward (ties by id). Null when there is none.
+ * The faction a revenge ambition holds its grievance against when the ambition names
+ * none: the enemy this faction has the worst `relates_to` sentiment toward (ties by
+ * id). Null when there is none. A revenge that names its lord (`grievanceSourceId`,
+ * written when a town defects — THR-1957) aims at that lord instead (`pickFor`).
  */
 export function grievanceFactionOf(graph: WorldGraph, factionId: string): string | null {
   let worst: { id: string; s: number } | null = null;
@@ -144,8 +145,13 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
 /** Pick by value for one army; the revenge focus reads the army's ambition. */
 function pickFor(state: GameState, ctx: WarAimContext, armyId: string, factionId: string, armyHex: HexCoord): WarAimPick {
   const amb = ambitionOf(state.graph, armyId);
+  // THR-1957: a revenge the ambition names (a town that defected) aims at that lord
+  // while it is still an enemy; otherwise the worst-sentiment enemy, as before.
+  const named = amb?.properties.grievanceSourceId;
   const grievanceFactionId = amb?.properties.ambitionType === 'revenge'
-    ? grievanceFactionOf(state.graph, factionId)
+    ? (typeof named === 'string' && isEnemyFaction(state.graph, factionId, named)
+      ? named
+      : grievanceFactionOf(state.graph, factionId))
     : null;
   return pickWarAim(state, ctx, factionId, armyHex, { grievanceFactionId }, marchableFrom(ctx, armyId));
 }

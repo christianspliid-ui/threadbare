@@ -9,7 +9,9 @@
  *   shared splinter writes (`factionSplinter.ts`, the `resident_of` selector's test).
  * - **Founded** — when no member of the holder lives there, the resident with the
  *   highest `member_of.rank` in any faction (else the earliest arrival, ties by id)
- *   founds a free town through `foundFaction` and is its first member.
+ *   founds a free town and leads it. Not through `foundFaction`: that charters an order
+ *   with 3–5 halls drawn from towns across the map, and a free town is one town — it
+ *   keeps no hall anywhere else, so it never reads as present in a town it never touched.
  * - **None** — no resident at all: no one to rise; the town keeps its holder.
  *
  * Either way the new faction takes the town's `controls` (`via: 'rising'`,
@@ -29,11 +31,8 @@ import type { GameState } from '../../types/gameState';
 import type { GraphNode } from '../../types/graph';
 import type { WorldGraph } from '../graph';
 import { splinterFaction, residesIn } from '../factionSplinter';
-import { foundFaction } from '../strategicGraphOps';
 import { RESIDENCE_ARRIVED_PROP } from '../agentResidence';
 import { DEFAULT_FACTION_REPUTATION } from '../encounterAftermath';
-import { UNDERTAKING_DEFAULT_FACTION_SEED } from '../../data/strategic-action-constants';
-import type { StrategicFactionSeed } from '../../types/strategicAction';
 import {
   RISING_RELIEF,
   RISING_REPUTATION_SHARE,
@@ -43,16 +42,6 @@ import {
   FREE_TOWN_FOUNDER_RANK,
 } from '../../data/unrest-pressure-constants';
 import { moveControls, LAST_TURN_TICK_PROP } from './defection';
-
-/** The free town's charter: a political order, seated in the town that rose. */
-export const FREE_TOWN_FACTION_SEED: StrategicFactionSeed = {
-  ...UNDERTAKING_DEFAULT_FACTION_SEED,
-  factionType: 'political',
-  nameTemplate: FREE_TOWN_FACTION_NAME,
-  description: 'A town that rose against its lord and now answers to its own people.',
-  themeColor: '#7a3b2e',
-  locationTypes: ['hamlet', 'town', 'city', 'capital'],
-};
 
 export type RisingPath = 'split' | 'founded' | 'none';
 
@@ -155,12 +144,28 @@ export function applyRising(state: GameState, town: GraphNode, holderId: string)
       if (!founder) {
         return { path: 'none', newFactionId: null, residentsMoved: 0, sackedBuildingId: null, failReason: 'no_one' };
       }
-      const name = FREE_TOWN_FACTION_NAME.replace('{town}', townName);
-      const res = foundFaction(state, founder.id, town.id, FREE_TOWN_FACTION_SEED, {}, name, tick);
-      if (!res.success || !res.createdId) {
-        return { path: 'none', newFactionId: null, residentsMoved: 0, sackedBuildingId: null, failReason: res.error ?? 'found_failed' };
-      }
-      newFactionId = res.createdId;
+      newFactionId = `faction_free_${town.id}_${tick}`;
+      graph.addNode({
+        id: newFactionId,
+        type: 'actor',
+        name: FREE_TOWN_FACTION_NAME.replace('{town}', townName),
+        properties: {
+          actorType: 'faction',
+          actorStatus: 'active',
+          factionType: 'political',
+          foundedTick: tick,
+          homeLocationId: town.id,
+        },
+      });
+      try {
+        graph.addEdge({
+          id: `commanded_by_${newFactionId}_${founder.id}`,
+          source: newFactionId,
+          target: founder.id,
+          type: 'commanded_by',
+          properties: { assignedTick: tick },
+        });
+      } catch { /* fail-soft: duplicate id */ }
       try {
         graph.addEdge({
           id: `member_of_${founder.id}_${newFactionId}`,

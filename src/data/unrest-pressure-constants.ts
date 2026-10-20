@@ -92,8 +92,8 @@ export const GRANARY_RIOT_TEMPLATE_ID = 'encounter.town.granary_riot';
 
 /** Hex radius within which a lord's own towns make it a candidate for a town on the edge. */
 export const DEFECTION_RADIUS_HEXES = 8;
-/** How much better a lord's view must be than the holder's before the town turns. */
-export const DEFECTION_MARGIN = 0.25;
+/** How much better a lord's view must be than the holder's before the town turns. Plan default 0.25; raised to 0.4 by the plan's kill criterion (THR-1957 measure: one seed-99 town turned 3 times in 100 days at 0.25). */
+export const DEFECTION_MARGIN = 0.4;
 /** The town's view of a lord: weight of the protection term (the crown's, over this one town). */
 export const DEFECT_W_PROTECTION = 1.0;
 /** Weight of standing: +1 a hall or a resident member here, −1 a recent siege of the town. */

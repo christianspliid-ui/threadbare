@@ -144,6 +144,20 @@ describe('the town view of a lord (plan § Engine 9)', () => {
     expect(townStanding(graph, ferris, 'saltmarch', DAY)).toBe(-1);
   });
 
+  it('a real siege node stamps its besieger through the attacking army (review round 1)', () => {
+    const { graph, ferris } = defectionWorld();
+    graph.addNode({ id: 'army_s', type: 'actor', name: 'Host', properties: { actorType: 'group' } });
+    graph.addEdge({ id: 'mo_army_s', source: 'army_s', target: 'saltmarch', type: 'member_of', properties: { reputation: 0.5, rank: 0, role: 'member', joinedTick: 0 } });
+    graph.addNode({
+      id: 'siege_1', type: 'actor', name: 'Siege of Ferris',
+      properties: { actorType: 'group', battleState: { battleType: 'siege', settlementId: 'ferris', attackerArmyId: 'army_s', defenderArmyId: 'ferris' } },
+    });
+    ferris.properties[LAST_TURN_TICK_PROP] = DAY; // keep it from turning, so only the stamp is read
+    phaseUnrest(state(graph, DAY), { pressure: true });
+    expect(ferris.properties[SIEGED_BY_PROP]).toEqual({ saltmarch: DAY });
+    expect(townStanding(graph, ferris, 'saltmarch', DAY)).toBe(-1);
+  });
+
   it('__DEBUG.getTownView reads the same parts', () => {
     const { graph } = defectionWorld();
     const r = describeTownView(graph, DAY, 'Ferris')!;

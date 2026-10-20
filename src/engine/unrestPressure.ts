@@ -94,19 +94,21 @@ function num(v: unknown): number | undefined {
 }
 
 /**
- * Settlement ids a siege actor names this tick, each with the factions besieging it
- * (the siege actor's `member_of`, plus any `factionId` on its battle state). S2's
- * standing term reads who laid a siege (`SIEGED_BY_PROP`).
+ * Settlement ids a siege actor names this tick, each with the factions besieging it.
+ * A siege node (`createSiegeNode`) carries no faction of its own: the besieger is the
+ * faction of its `battleState.attackerArmyId` (that army's `member_of`). S2's standing
+ * term reads who laid a siege (`SIEGED_BY_PROP`).
  */
 function besiegedSettlements(state: GameState): Map<string, Set<string>> {
   const out = new Map<string, Set<string>>();
   const graph = state.graph;
   for (const actor of graph.getNodesByType('actor')) {
-    const bs = actor.properties?.battleState as { battleType?: string; settlementId?: string; factionId?: string } | undefined;
+    const bs = actor.properties?.battleState as { battleType?: string; settlementId?: string; attackerArmyId?: string } | undefined;
     if (!bs || bs.battleType !== 'siege' || typeof bs.settlementId !== 'string') continue;
     const set = out.get(bs.settlementId) ?? new Set<string>();
-    for (const e of graph.getOutgoingEdges(actor.id, 'member_of')) set.add(e.target);
-    if (typeof bs.factionId === 'string') set.add(bs.factionId);
+    if (typeof bs.attackerArmyId === 'string') {
+      for (const e of graph.getOutgoingEdges(bs.attackerArmyId, 'member_of')) set.add(e.target);
+    }
     out.set(bs.settlementId, set);
   }
   return out;

@@ -1062,7 +1062,7 @@ export interface DebugBridge {
    * settlement within 8 hexes). Each view is the four parts — `protection` (the
    * crown's term over this town), `standing` (−1 a recent siege, +1 a hall or a
    * resident member), `fed` (share of the lord's towns not hungry), `solvent` — and
-   * their weighted sum. A town On the edge turns when the best beats the holder by 0.25.
+   * their weighted sum. A town On the edge turns when the best beats the holder by 0.4 (DEFECTION_MARGIN).
    * `holder` is null for an unheld town. Null when nothing matches. Always `await` it.
    */
   getTownView: (locationIdOrName: string) => Promise<{

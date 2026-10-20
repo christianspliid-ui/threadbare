@@ -307,6 +307,21 @@ describe('ambitions take their target (§ Engine 5)', () => {
     graph.updateEdge('e_rel_a_b', { properties: { sentiment: -0.4, isRival: true } });
     expect(grievanceFactionOf(graph, 'a')).toBe('c');
   });
+
+  it('a revenge that names its lord (a town defected, THR-1957) aims at that lord, not the most hated', () => {
+    const run = (named: string | null) => {
+      const graph = warWorld();
+      relate(graph, 'a', 'c', { sentiment: -0.9 });
+      graph.updateEdge('e_rel_a_b', { properties: { sentiment: -0.4, isRival: true } });
+      graph.addNode({ id: 'amb', type: 'ambition', name: 'amb', properties: { ambitionType: 'revenge', targetNodeId: null, ...(named ? { grievanceSourceId: named } : {}) } });
+      addArmy(graph, 'army_a', 'a', 't0');
+      graph.addEdge({ id: 'e_p', source: 'army_a', target: 'amb', type: 'pursues', properties: {} });
+      aimNewArmy(makeState(graph), 'army_a', noProjection);
+      return armyState(graph, 'army_a').objective?.targetNodeId;
+    };
+    expect(run(null)).toBe('t4');
+    expect(run('b')).toBe('t6');
+  });
 });
 
 describe('the army sheet words (§ Player-facing text)', () => {
