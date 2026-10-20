@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 02:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 04:02 local (02:02 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,7 +17,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-From [the design lane tonight](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20a.md):
+From [the design lane tonight, run b](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20b.md):
+
+- [Warm brief v2 — the next mid-game playtest round](https://linear.app/threadbare/issue/THR-1861/warm-brief-v2-trigger-fired-round-2-had-3-coverage-failures-on-v1-03) tells returning testers they are curious **"which factions have risen while you were away"**, as agreed after round 2 if it failed again (0 of 3 reached the mid-game). The pass bar stays at 2 of 3. *Veto:* "keep the old brief".
+- Same ticket: the round's "did they reach the mid-game" check now looks for the new Inspector's pages, since the faction sheet and Journey tab it looked for were deleted on 18 October. Harness repair ([PR #2493](https://github.com/christianspliid-ui/threadbare/pull/2493)).
+
+From [the design lane tonight, run a](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20a.md):
 
 - [Ordinary scenes still hand The First a trade she never had](https://linear.app/threadbare/issue/THR-1983/ordinary-scenes-still-hand-the-first-a-trade-she-never-had-guild) — of 28 everyday scenes that assume her trade, **six now wait for a mortal of the right trade**; **twenty-one stay open to anyone** and stop saying she already works it (a healer may still try the smiths' iron test, as a healer). *Veto:* "a mortal should only be offered work in her own trade".
 
@@ -34,12 +39,13 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 28 ready, 1 in progress.** [The Stage, slice 3: encounters play on the Stage](https://linear.app/threadbare/issue/THR-1895/the-stage-slice-3-encounters-play-on-the-stage-the-veils-step-shells) merged ([PR #2491](https://github.com/christianspliid-ui/threadbare/pull/2491)) and is live. The builder is now on [show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows) (High); its run is active right now, with no pull request yet.
+**Backed up: 30 ready, 1 in progress.** [Show what the pour and the odds do](https://linear.app/threadbare/issue/THR-1985/show-what-the-pour-and-the-odds-do-refill-words-on-the-essence-rows) merged ([PR #2492](https://github.com/christianspliid-ui/threadbare/pull/2492)) at 01:53 UTC and is live; Linear still shows it In Dev while the auto-close catches up. The builder's last two runs found nothing to claim while that PR was merging.
 
-- Next in line: [the Stage, slice 4: journeys, undertakings, premonitions and the ruin emergence play on the Stage](https://linear.app/threadbare/issue/THR-1897/the-stage-slice-4-journey-moments-undertaking-moments-premonitions-and); High and waiting: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject).
+- Top of the queue: [find anything with Ctrl+K](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the) (High, promoted by the orchestrator this hour), [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High), and the new heavy-tests fix below (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site is current (b0f9a26e). Main's checks and the scheduled background jobs pass. Every scheduled lane is on time. The engine runs at 114 ms a tick, 16% faster than its week's median.
-- The tidy-up job reports 562 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- **Heavy simulation tests red on main since 00:25 UTC** — one speed check on the card-arming code measured 17.2 ms against a 16 ms budget on the shared test machine. Ticket [THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured) filed for the builder. A fresh run on the newest main is in progress.
+- The live site is current (e6bfdb97). Main's required checks and all scheduled lanes are on time. The engine runs at 115 ms a tick, 16% faster than its week's median.
+- The tidy-up job reports 561 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
