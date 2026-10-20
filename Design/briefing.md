@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 16:56 local (14:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 17:58 local (15:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -47,14 +47,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 30 ready, none in progress.** The builder finished [realms losing most of their members by tick 600](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications): a mortal is now cast out of a realm only for a cause. Merged ([PR #2505](https://github.com/christianspliid-ui/threadbare/pull/2505)) and live.
+**Backed up: 29 ready, 1 in progress.** The builder is fixing [encounter debts that never count](https://linear.app/threadbare/issue/THR-1920/encounter-debts-never-count-reward-agreements-write-agreement-true-but): one reader for both kinds of agreement. Its [PR #2506](https://github.com/christianspliid-ui/threadbare/pull/2506) is waiting on checks and will merge on green.
 
-- The two pickup runs since then (14:33 and 14:51 UTC) each ended within a minute without claiming. Three in a row would count as a stall; the next hour's brief checks.
-- Next up: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
+- The builder is working again after two short runs last hour, so there is no stall.
+- Next up after that: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (fbe8b54b). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
-- The engine runs at 110 ms a tick, 18% below its week's median (133).
+- All green. The live site is current (fbe8b54b). Main's checks are green, and all 13 scheduled lanes are on time.
+- The engine runs at 116 ms a tick, 13% below its week's median (133).
 - The tidy-up job reports 570 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
