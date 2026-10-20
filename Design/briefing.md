@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 13:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 14:58 local (12:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,14 +43,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 31 ready, 1 in progress.** The builder is working on [the minimap — the whole world in small, open at 1440p and folded at 1080p](https://linear.app/threadbare/issue/THR-1901/the-minimap-the-whole-world-in-small-open-at-1440p-and-folded-at-1080p) right now (run started 11:51 UTC, active).
+**Backed up: 30 ready, 1 in progress.** The builder is working on [land-page art for the plateau and the lair](https://linear.app/threadbare/issue/THR-1916/land-page-hero-art-plateau-and-lair-have-no-art-of-their-own) right now (run started 12:51 UTC, active).
 
-- [The Stage, slice 4 — journey moments, undertaking moments, premonitions and the ruin emergence play on the Stage](https://linear.app/threadbare/issue/THR-1897/the-stage-slice-4-journey-moments-undertaking-moments-premonitions-and) merged ([PR #2501](https://github.com/christianspliid-ui/threadbare/pull/2501)) and is live.
+- [The minimap — the whole world in small, open at 1440p and folded at 1080p](https://linear.app/threadbare/issue/THR-1901/the-minimap-the-whole-world-in-small-open-at-1440p-and-folded-at-1080p) merged ([PR #2502](https://github.com/christianspliid-ui/threadbare/pull/2502)) and is live.
 - Next up: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (43d1cb29). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
-- The engine runs at 117 ms a tick, 12% below its week's median (133).
+- All green. The live site is current (de5e0847). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
+- The engine runs at 117 ms a tick, 13% below its week's median (134).
 - The tidy-up job reports 569 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
