@@ -319,7 +319,7 @@ remediation ticket or the build fails.
 | `restless-moves-people` | A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent. | node-prop: `relocationIntent`, `population` | Movement & Colocation | 🟢 LIVE | — |
 | `rising-founds-rebel` | A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising. | edge: `controls`, `hostile_to`, `member_of` | Factions & Succession | 🟢 LIVE | — |
 | `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
-| `town-defection-moves-controls` | A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.25 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge. | edge: `controls`, `relates_to`, `pursues` | Factions & Succession | 🟢 LIVE | — |
+| `town-defection-moves-controls` | A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge. | edge: `controls`, `relates_to`, `pursues` | Factions & Succession | 🟢 LIVE | — |
 | `unrest-on-trouble-lens` | Unrest the player can raise shows where it is (THR-1898 Lenses II, plan D4, PC-6). `phaseUnrest` writes per-Location `unrest` (raised by Incite Unrest, doom cards and scarcity arcs) and `phaseLocationTraits` mints the Lawless condition from it; the Trouble lens lights a hex when a Location on it carries Lawless ("Unrest: Ferris is lawless.") or when its mood bucket — `deriveMoodBucket`, the average the hex survey reads — is agitated or worse, so the lens never disagrees with the chip or the survey. The conflict pulse (`computeLocationPulse`, tense/volatile) lights the same lens as Strife; rival schemes and drains (`buildRivalInfluenceMarkers`, consumer moved here from the retired `RivalInfluenceMesh`) name the rival. | node-prop: `unrest` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
 | `unrest-pressure-inputs` | Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement's unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town's leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page's Fortunes sentence names the band and its largest input. The god's stake (THR-1935) reads the same props later. | node-prop: `unrestInputs`, `hungerDays`, `unrestTarget` | Ambitions & Undertakings | 🟢 LIVE | — |
 
@@ -2087,10 +2087,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Ambitions & Undertakings
 - **UL terms:** *Company*, *Army*, *Undertaking*
 - **Module:** `src/engine/groups/groupCommand.ts`
-- **Production hits:** 30 total — 3 write, 2 read, 25 unclassified
+- **Production hits:** 31 total — 3 write, 2 read, 26 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/groups/groupCommand.ts`, `src/engine/groups/groupDissolution.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts`, `src/engine/armyAttrition.ts` +20 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts`, `src/engine/armyAttrition.ts` +21 more
 - **Verdict:** Verified 2026-09-08: THR-1438. `promoteNewLeader` now calls `setCommander(..., 'promotion')` and the old `promoted: true` property is gone — measured before the change as one writer and **zero readers**, so the rename repointed nobody. The four cells that change a command (`claim × Company`, `claim × Army`, `seize × Company`, `seize × Army`) call the same writer with their own `via`. Pinned in `src/engine/__tests__/peopleThingsOps.test.ts`: the edge is replaced not appended (exactly one `commanded_by` after), roles flip to `member` on everyone but the new commander, a claimant who was never a member is admitted as `leader`, and a missing group or actor writes nothing and returns the reason. On a generated small world (seed 42, tick 30) a commander marked dead through `markMortalDead` makes `cell.control_claim.company` and `cell.control_claim.army` appear on a living member's board where neither was offered before (`peopleThingsCells.test.ts`).
 
 ### `group-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -2900,10 +2900,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 253 total — 2 write, 2 read, 249 unclassified
+- **Production hits:** 254 total — 2 write, 2 read, 250 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +244 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +245 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -3140,10 +3140,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 415 total — 1 write, 1 read, 413 unclassified
+- **Production hits:** 416 total — 1 write, 1 read, 414 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +408 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +409 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3401,13 +3401,13 @@ exit
 
 ### `town-defection-moves-controls` — 🟢 LIVE
 
-- **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.25 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
+- **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 248 total — 2 write, 2 read, 244 unclassified
+- **Production hits:** 249 total — 2 write, 2 read, 245 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +239 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +240 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
@@ -3541,10 +3541,10 @@ exit
 - **Intent:** A work done *through* others — a garrison established, supply lines raided — must reach the site through something its owner actually commands, and is not offered at all when nothing is there. Refusing at proposal is the `no_eligible_apprentice` doctrine: an undertaking nobody can foot is not a decision, and starting one only to stall it teaches the player their armies are decorative. The winning anchor joins the cast as `$anchor` must-persist, so severing an army is a named complication for everything it was footing.
 - **Producer → Consumer:** War, Armies & Battles → Ambitions & Undertakings
 - **Module:** `src/engine/binding/remoteAnchor.ts`
-- **Production hits:** 31 total — 1 write, 2 read, 28 unclassified
+- **Production hits:** 32 total — 1 write, 2 read, 29 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`
 - **Read sites:** `src/engine/binding/remoteAnchor.ts`, `src/engine/strategicActionCandidates.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts`, `src/data/undertaking-objects.ts` +23 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/data/battle-spotlight-content.ts`, `src/data/strategic-packs/warlordStrategicPack.ts`, `src/data/undertaking-kinds.ts`, `src/data/undertaking-objects.ts` +24 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertakings-reach-the-player` — 🟢 LIVE

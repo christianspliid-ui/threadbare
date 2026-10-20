@@ -180,9 +180,9 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#reputation` | A reputation — what others have come to say about the bearer, deserved or not. | trait 19 | 19 |  |
 | `#cultural` | A formative mark a culture or a guild stamps on its own. | trait 1 | 1 |  |
 | `#temper` | How a creature breaks when a fight turns. | trait 4 | 4 |  |
-| `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 23 | 23 |  |
+| `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 24 | 24 |  |
 | `#scar` | A scar — a condition that does not heal; what a loss left behind. | condition 3 | 3 |  |
-| `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 12 | 12 |  |
+| `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 13 | 13 |  |
 | `#virtue` | The virtue pole of a continuum or axis — the bearer leans toward the better end. | trait 13 | 13 |  |
 | `#vice` | The vice pole — the bearer leans toward the worse end, and it shows. | trait 13 | 13 |  |
 | `#core_warmth` | Of the Warmth continuum — Warm to Cold; how much care a mortal spends on others. | trait 2 | 2 |  |
@@ -230,7 +230,7 @@ Whether the thing is good or ill to carry. The two words the condition proxy-eve
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
 | `#positive` | A good thing to carry — it helps the one who holds it. | condition 26 · trait 8 | 34 |  |
-| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 46 · trait 8 | 54 |  |
+| `#negative` | An ill thing to carry — it costs the one who holds it. | condition 47 · trait 8 | 55 |  |
 
 ## Kinds and their required axes
 
