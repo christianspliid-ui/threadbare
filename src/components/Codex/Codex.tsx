@@ -159,8 +159,9 @@ export default function Codex({
 
   return (
     <div
-      className="h-screen flex flex-col overflow-hidden"
-      style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-primary)' }}
+      // Embedded, it fills the XL dialog's fixed 85vh panel (THR-1880); standalone, the screen.
+      className={`${embedded ? 'h-full' : 'h-screen'} flex flex-col overflow-hidden`}
+      style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-primary)', ...(embedded ? { flex: 1, minHeight: 0 } : {}) }}
     >
       {/* Top bar */}
       <header

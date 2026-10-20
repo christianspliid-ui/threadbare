@@ -47,6 +47,7 @@ import { describeOffering, isRungOpeningOffer } from '../../../engine/godProgres
 import { isSpineBeatId } from '../../../data/ascendant-beat-content';
 import { buildCodexRunContext, type CodexRunStateFilter } from '../../Codex/codexRunState';
 import { AnimateMount } from '../../shared/AnimateMount';
+import { Modal } from '../../shared/Modal';
 import { DelveProgressPanel } from '../../ruins/DelveProgressPanel';
 import type { UseWarmStartResult } from '../hooks/useWarmStart';
 import { unplacedHomedKinds, type InterruptResolution } from '../interruptRegistry';
@@ -362,34 +363,29 @@ export function DialogHost({
       {/* THR-1875: the beat offer is a Needs-you Waiting row in the top bar; its floating pill retired. */}
       {renderDialog('ascendant-beat')}
 
-      {/* Codex overlay — full three-state path catalog for this incarnation (THR-613 Slice 3b-tail) */}
-      {codexOpen && (
-        <div
-          className="fixed inset-0"
-          style={{ zIndex: 60 }}
-          role="dialog"
-          aria-label="Path codex"
+      {/* The Codex — the full three-state path catalog (THR-613 Slice 3b-tail), an XL
+          dialog over the dimmed game (THR-1880): Escape or "Close codex" closes it. Mounted
+          only while open, so the run context is not rebuilt on every game render. */}
+      {codexOpen && <Modal open onClose={() => setCodexOpen(false)} size="xl" aria-label="Path codex">
+        <Suspense
+          fallback={
+            <div
+              className="h-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}
+            >
+              Loading Codex…
+            </div>
+          }
         >
-          <Suspense
-            fallback={
-              <div
-                className="h-screen flex items-center justify-center"
-                style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}
-              >
-                Loading Codex…
-              </div>
-            }
-          >
-            <Codex
-              embedded
-              onClose={() => setCodexOpen(false)}
-              runContext={buildCodexRunContext(gameState)}
-              initialStateFilter={codexInitialFilter}
-              initialEntryId={codexInitialEntryId}
-            />
-          </Suspense>
-        </div>
-      )}
+          <Codex
+            embedded
+            onClose={() => setCodexOpen(false)}
+            runContext={buildCodexRunContext(gameState)}
+            initialStateFilter={codexInitialFilter}
+            initialEntryId={codexInitialEntryId}
+          />
+        </Suspense>
+      </Modal>}
 
       {/* Doom clock detail modal */}
       <DoomClockDetail

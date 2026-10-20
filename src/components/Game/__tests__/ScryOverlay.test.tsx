@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ScryOverlay, SCRY_PANEL_MAX_HEIGHT } from '../ScryOverlay';
+import { render, screen, fireEvent, act, within } from '@testing-library/react';
+import { ScryOverlay } from '../ScryOverlay';
+import { SCRY_BACK_TO_COURT_LABEL } from '../../../data/ui-content';
 import { ScryProvider } from '../contexts/ScryContext';
 import { createScryState, initializeCourt, assignAgentToPosition } from '../../../engine/scry';
 import type { RetinueAgent } from '../../../engine/retinue';
@@ -110,19 +111,21 @@ describe('ScryOverlay', () => {
     expect(closeBtn).toBeInTheDocument();
   });
 
-  it('portals to <body>, outside any mount wrapper, with the ✕ outside the scroll area (THR-1709)', () => {
+  it('is an L dialog portalled to <body>, two columns, with the ✕ outside the scroll regions (THR-1709, THR-1880)', () => {
     const { container } = renderWithContext();
     const overlay = screen.getByTestId('scry-overlay');
     // Not inside the render container — no ancestor stacking context can trap it.
     expect(container.contains(overlay)).toBe(false);
-    expect(overlay.parentElement).toBe(document.body);
-    // The outer layer never scrolls; only the court body does.
-    expect(overlay.className).toContain('overflow-hidden');
-    const body = screen.getByTestId('scry-overlay-body');
-    expect(body.className).toContain('overflow-y-auto');
-    expect((body.parentElement as HTMLElement).style.maxHeight).toBe(SCRY_PANEL_MAX_HEIGHT);
-    // The close button is in the header, never inside the scrolling body.
-    expect(body.contains(screen.getByLabelText('Close Divine Court'))).toBe(false);
+    const panel = overlay.closest('[data-dialog-size]') as HTMLElement;
+    expect(panel.getAttribute('data-dialog-size')).toBe('l');
+    expect(screen.getByTestId('sheet-columns').getAttribute('data-layout')).toBe('two');
+    // Name, flavour and art left; the seats right.
+    const aside = screen.getByTestId('sheet-columns-aside');
+    expect(within(aside).getByText('The High House')).toBeInTheDocument();
+    const main = screen.getByTestId('sheet-columns-main');
+    expect(main.contains(screen.getByTestId('scry-overlay-body'))).toBe(true);
+    // The close button is in the header, never inside a scroll region.
+    expect(screen.getByTestId('sheet-columns').contains(screen.getByLabelText('Close Divine Court'))).toBe(false);
   });
 
   it('calls onClose when close button clicked', () => {
@@ -229,29 +232,15 @@ describe('ScryOverlay', () => {
     renderWithContext(context);
 
     const emptySlots = screen.getAllByText(/Empty/i);
-    fireEvent.click(emptySlots[0]); // Apex
-
-    const agentName = screen.getByText('Kalam');
-    fireEvent.click(agentName);
-
-    // Wait for title picker to appear by checking for cost text
+    fireEvent.click(emptySlots[emptySlots.length - 1]); // Outer — affordable with the mock pool
+    fireEvent.click(screen.getByText('Kalam'));
     expect(screen.getByText(/Cost:/i)).toBeInTheDocument();
 
-    // Get all buttons in the title picker area (the dialog)
-    const dialog = screen.getByText(/Select Title for Kalam/i).closest('div');
-    if (dialog) {
-      const titleButtons = dialog.querySelectorAll('button');
-      // Filter to get actual title proposal buttons (not the back button)
-      const proposalButtons = Array.from(titleButtons).filter(
-        btn => btn.textContent.length > 10 && !btn.getAttribute('aria-label')
-      );
-
-      if (proposalButtons.length > 0) {
-        fireEvent.click(proposalButtons[0]);
-        // onAssign should have been called
-        expect(onAssign).toHaveBeenCalled();
-      }
-    }
+    const picker = screen.getByTestId('scry-title-picker');
+    const proposal = within(picker).getAllByRole('button').find(btn => btn.textContent !== SCRY_BACK_TO_COURT_LABEL);
+    expect(proposal).toBeDefined();
+    fireEvent.click(proposal!);
+    expect(onAssign).toHaveBeenCalled();
   });
 
   it('closing agent picker resets picker mode', () => {
@@ -261,10 +250,10 @@ describe('ScryOverlay', () => {
 
     expect(screen.getByText('Choose Agent')).toBeInTheDocument();
 
-    const closeBtn = screen.getByLabelText('Close Agent Picker');
-    fireEvent.click(closeBtn);
+    fireEvent.click(screen.getByRole('button', { name: SCRY_BACK_TO_COURT_LABEL }));
 
     expect(screen.queryByText('Choose Agent')).not.toBeInTheDocument();
+    expect(screen.getByTestId('scry-overlay-body')).toBeInTheDocument();
   });
 
   it('renders flavor text for court structure', () => {
@@ -336,7 +325,7 @@ describe('ScryOverlay', () => {
     expect(screen.getByText('Tattersail')).toBeInTheDocument();
     // Kalam is already in apex — must NOT appear in the picker agent list
     // (Kalam's name may appear in the filled slot, so scope to picker)
-    const pickerPanel = pickerHeading.closest('[class*="absolute"]');
+    const pickerPanel = screen.getByTestId('scry-agent-picker');
     const kalamInPicker = pickerPanel?.querySelector?.('button')
       ? Array.from(pickerPanel.querySelectorAll('button')).some(
           btn => btn.textContent?.includes('Kalam')
@@ -365,5 +354,64 @@ describe('ScryOverlay', () => {
 
     // Should show insufficient essence message for apex (costs 30)
     expect(screen.getByText(/Insufficient/i)).toBeInTheDocument();
+  });
+
+  describe('picker views in the court column (THR-1880)', () => {
+    it('opens the agent picker as a view in the right column, replacing the seats', () => {
+      renderWithContext();
+      fireEvent.click(screen.getAllByText(/Empty/i)[0]);
+      const main = screen.getByTestId('sheet-columns-main');
+      expect(main.contains(screen.getByTestId('scry-agent-picker'))).toBe(true);
+      expect(screen.queryByTestId('scry-overlay-body')).toBeNull();
+      // The court stays named on the left (Law 24).
+      expect(within(screen.getByTestId('sheet-columns-aside')).getByText('The High House')).toBeInTheDocument();
+      // No nested scroll box.
+      expect(screen.getByTestId('scry-agent-picker').innerHTML).not.toContain('max-h-96');
+    });
+
+    it('Escape returns to the seats first, and a second Escape closes the court', () => {
+      const onClose = vi.fn();
+      renderWithContext({ ...baseContextValue, onClose });
+      fireEvent.click(screen.getAllByText(/Empty/i)[0]);
+      expect(screen.getByText('Choose Agent')).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(screen.queryByText('Choose Agent')).toBeNull();
+      expect(onClose).not.toHaveBeenCalled();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('the title picker goes back to the court, not to the agent list', () => {
+      renderWithContext();
+      fireEvent.click(screen.getAllByText(/Empty/i)[0]);
+      fireEvent.click(screen.getByText('Kalam'));
+      expect(screen.getByText(/Select Title for Kalam/i)).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: SCRY_BACK_TO_COURT_LABEL }));
+      expect(screen.queryByText(/Select Title for Kalam/i)).toBeNull();
+      expect(screen.queryByText('Choose Agent')).toBeNull();
+      expect(screen.getByTestId('scry-overlay-body')).toBeInTheDocument();
+    });
+
+    it('a pick returns to the seats with the filled seat highlighted, then the ring fades', () => {
+      vi.useFakeTimers();
+      try {
+        const onAssign = vi.fn();
+        renderWithContext({ ...baseContextValue, onAssign });
+        const emptySlots = screen.getAllByText(/Empty/i);
+        fireEvent.click(emptySlots[emptySlots.length - 1]); // Outer — affordable
+        fireEvent.click(screen.getByText('Kalam'));
+        const picker = screen.getByTestId('scry-title-picker');
+        const proposal = within(picker).getAllByRole('button').find(b => b.textContent !== SCRY_BACK_TO_COURT_LABEL);
+        expect(proposal).toBeDefined();
+        fireEvent.click(proposal!);
+        expect(onAssign).toHaveBeenCalledTimes(1);
+        expect(screen.getByTestId('scry-overlay-body')).toBeInTheDocument();
+        expect(document.querySelectorAll('[data-filled-highlight="true"]')).toHaveLength(1);
+        act(() => { vi.runAllTimers(); });
+        expect(document.querySelectorAll('[data-filled-highlight="true"]')).toHaveLength(0);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });

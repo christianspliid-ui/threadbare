@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IconButton } from '../shared/IconButton';
+import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
 import { OPENING_REVEAL_SHOW_ALL_LABEL, OPENING_REVEAL_SHOW_ALL_HELP } from '../../data/ui-content';
 import type { NotificationPreferences, NotificationCategoryKey, NotificationMode } from '../../types/notification';
@@ -11,6 +12,9 @@ import {
   PALETTE_THEMES,
   type PaletteThemeId,
 } from '../HexMapV2/palette/paletteTheme';
+
+/** Narrowest a Settings section column may be; M (960 px at 1080p) holds three. */
+export const SETTINGS_SECTION_MIN_W = '18rem';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -85,43 +89,13 @@ export function SettingsPanel({
   showEveryPanel,
   onToggleShowEveryPanel,
 }: SettingsPanelProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
   const [paletteId, setPaletteId] = useState<PaletteThemeId>(getActivePaletteId());
   // Leaving loses the world (there is no save), so the first press only asks.
   const [confirmingExit, setConfirmingExit] = useState(false);
   useEffect(() => { if (!open) setConfirmingExit(false); }, [open]);
 
-  // Handle Escape key and click-outside
-  useEffect(() => {
-    if (!open) return;
+  // Escape, the backdrop and focus belong to Modal (THR-1880): no document listeners here.
 
-    const handleEscapeKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    const handleClickOutside = (e: MouseEvent) => {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscapeKey);
-    // Defer click-outside listener so the opening click doesn't
-    // immediately trigger close via event propagation.
-    const timeoutId = setTimeout(() => {
-      document.addEventListener('mousedown', handleClickOutside);
-    }, 0);
-
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener('keydown', handleEscapeKey);
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
 
   const handlePaletteChange = (id: PaletteThemeId) => {
     if (id === paletteId) return;
@@ -135,23 +109,6 @@ export function SettingsPanel({
       url.searchParams.set('palette', id);
     }
     window.location.href = url.toString();
-  };
-
-  const panelStyle: React.CSSProperties = {
-    position: 'fixed',
-    top: '52px',
-    right: '8px',
-    width: '280px',
-    maxHeight: 'var(--modal-max-h)',
-    backgroundColor: 'rgba(10, 10, 14, 0.95)',
-    border: '1px solid rgba(212, 175, 55, 0.3)',
-    borderRadius: '8px',
-    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-    zIndex: 50,
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    fontFamily: 'var(--font-body)',
   };
 
   const headerStyle: React.CSSProperties = {
@@ -169,9 +126,17 @@ export function SettingsPanel({
     color: 'var(--text-primary)',
   };
 
+  // M tier (THR-1820 § 7): the sections sit side by side, so every section shows
+  // without scrolling (Law 57). Each column is at least SETTINGS_SECTION_MIN_W wide.
   const contentStyle: React.CSSProperties = {
     padding: '12px 0',
-    overflow: 'auto',
+    display: 'grid',
+    gridTemplateColumns: `repeat(auto-fill, minmax(${SETTINGS_SECTION_MIN_W}, 1fr))`,
+    alignItems: 'start',
+    columnGap: 'var(--space-2)',
+    overflowY: 'auto',
+    flex: 1,
+    minHeight: 0,
   };
 
   const sectionStyle: React.CSSProperties = {
@@ -251,12 +216,7 @@ export function SettingsPanel({
   const paletteOptions = Object.values(PALETTE_THEMES);
 
   return (
-    <div
-      ref={panelRef}
-      style={panelStyle}
-      role="menu"
-      aria-label="Settings"
-    >
+    <Modal open={open} onClose={onClose} size="m" aria-label="Settings">
       {/* Header */}
       <div style={headerStyle}>
         <h2 style={headerTitleStyle}>Settings</h2>
@@ -576,6 +536,6 @@ export function SettingsPanel({
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

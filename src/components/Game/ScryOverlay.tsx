@@ -1,18 +1,20 @@
 /**
- * ScryOverlay — Full-screen divine court visualization and assignment UI.
+ * ScryOverlay — the Divine Court: an L dialog (THR-1880, Law 57) with the court's
+ * name, flavour and art in the left column and its seats in the right.
  *
  * Displays the player's court structure with position slots (Apex/Inner/Outer),
  * sacred site and artifact holdings. Supports agent assignment via a three-step
  * picker (position → agent → title), title proposal viewing, and position demotion.
+ * Each picker is a view in the right column, not a box over the court: "Back to the
+ * court" or Escape returns to the seats, and a second Escape closes the court.
  *
  * Visual features:
- * - Sphere-themed background art based on ascendant's primary sphere
+ * - Sphere-themed court art (16:9, the left column) from the ascendant's primary sphere
  * - SVG thread connections between court positions in secondary sphere color
  * - Agent portraits in filled slots with domain-colored frames
  */
 
-import { useState, useCallback, useEffect, useMemo, memo } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useCallback, useEffect, useMemo, useRef, memo } from 'react';
 import type { Title, TitleProposal, Position } from '../../types/scry';
 import { RANK_MIN_TIER } from '../../types/scry';
 import type { SphereName } from '../../types';
@@ -28,6 +30,10 @@ import { DOMAIN_COLORS, DEFAULT_AGENT_COLOR } from '../../data/agent-visual-cont
 import { useScryContext } from './contexts/ScryContext';
 import { Tooltip } from '../shared/Tooltip';
 import { formatEssencePool } from '../shared/formatEssence';
+import { Modal } from '../shared/Modal';
+import { SheetColumns } from '../shared/SheetColumns';
+import { Button } from '../shared/Button';
+import { SCRY_BACK_TO_COURT_LABEL } from '../../data/ui-content';
 
 type PickerMode = 'closed' | 'agent' | 'title';
 
@@ -271,24 +277,18 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
   const eligible = agents.filter(a => a.tier >= minTier && !assignedAgentIds.has(a.id));
 
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(10, 10, 14, 0.6)' }}>
-      <div
-        className="border rounded-xl p-6 max-w-md w-full mx-4"
-        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-gold)' }}
-      >
+    <div
+      data-testid="scry-agent-picker"
+      className="border rounded-xl p-6"
+      style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-gold)' }}
+    >
         <div className="flex items-center justify-between mb-4">
           <Tooltip id="ui.scry_assign">
             <h3 className="text-lg font-bold cursor-help" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Choose Agent</h3>
           </Tooltip>
-          <button
-            onClick={onClose}
-            aria-label="Close Agent Picker"
-            title="Close (Esc)"
-            className="text-xl"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            ✕
-          </button>
+          <Button variant="secondary" size="sm" onClick={onClose} title="Back to the court (Esc)">
+            {SCRY_BACK_TO_COURT_LABEL}
+          </Button>
         </div>
         <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
           Position: <span style={{ color: 'var(--text-primary)' }}>{position.archetype}</span>
@@ -301,7 +301,7 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
             <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No eligible agents available.</p>
           </div>
         ) : (
-          <div className="space-y-2 max-h-96 overflow-y-auto">
+          <div className="space-y-2">
             {eligible.map(agent => {
               const domainColor = agent.primaryDomain
                 ? (DOMAIN_COLORS[agent.primaryDomain] ?? DEFAULT_AGENT_COLOR)
@@ -345,7 +345,6 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
             })}
           </div>
         )}
-      </div>
     </div>
   );
 });
@@ -449,22 +448,16 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
   const canAfford = essencePool[primarySphere] >= reassignmentCost;
 
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(10, 10, 14, 0.6)' }}>
-      <div
-        className="border rounded-xl p-6 max-w-2xl w-full mx-4"
-        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-gold)' }}
-      >
+    <div
+      data-testid="scry-title-picker"
+      className="border rounded-xl p-6"
+      style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-gold)' }}
+    >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Select Title for {agent.name}</h3>
-          <button
-            onClick={onBack}
-            aria-label="close"
-            title="Close"
-            className="text-xl"
-            style={{ color: 'var(--text-tertiary)' }}
-          >
-            ✕
-          </button>
+          <Button variant="secondary" size="sm" onClick={onBack} title="Back to the court (Esc)">
+            {SCRY_BACK_TO_COURT_LABEL}
+          </Button>
         </div>
 
         <div className="mb-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
@@ -472,7 +465,7 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
           <span className="capitalize">{primarySphere}</span> essence
         </div>
 
-        <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
+        <div className="grid grid-cols-2 gap-3">
           {proposals.map((proposal, idx) => {
             const title = proposal.title;
             const sphereColor = getSphereColor(title.sphereAffinity);
@@ -518,13 +511,12 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
             {formatEssencePool(essencePool[primarySphere])}
           </div>
         )}
-      </div>
     </div>
   );
 });
 
-/** The court panel's height cap — the Modal primitive's value (Viewport Contract, THR-1709). */
-export const SCRY_PANEL_MAX_HEIGHT = 'var(--modal-max-h)';
+/** How long a seat a pick just filled stays highlighted after the view returns (THR-1880). */
+export const SCRY_FILLED_SEAT_HIGHLIGHT_MS = 1600;
 
 export function ScryOverlay() {
   const {
@@ -561,28 +553,27 @@ export function ScryOverlay() {
     }
   }, [retinueIds, scryState.positions, onDemote]);
 
-  // IX-012: Handle Escape key to close overlay
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (pickerMode !== 'closed') {
-          setPickerMode('closed');
-          setSelectedPositionId(null);
-          setSelectedAgentForAssignment(null);
-          setTitleProposals(null);
-        } else {
-          onClose();
-        }
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [pickerMode, onClose]);
+  // The court's Escape belongs to Modal (THR-1880, Law 23): with a picker view open it
+  // returns to the seats; with the seats showing it closes the court.
+  const returnToSeats = useCallback(() => {
+    setPickerMode('closed');
+    setSelectedPositionId(null);
+    setSelectedAgentForAssignment(null);
+    setTitleProposals(null);
+  }, []);
+  const handleEscape = useCallback(() => {
+    if (pickerMode !== 'closed') returnToSeats();
+    else onClose();
+  }, [pickerMode, returnToSeats, onClose]);
+
+  // The seat a pick just filled stays highlighted for a moment after the view returns.
+  const [filledSeatId, setFilledSeatId] = useState<string | null>(null);
+  const filledSeatTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (filledSeatTimer.current) clearTimeout(filledSeatTimer.current);
+  }, []);
 
   const structDef = getCourtStructureDefinition(scryState.courtStructureType);
-  if (!structDef) {
-    return null;
-  }
 
   const handlePositionClick = useCallback(
     (positionId: string) => {
@@ -637,14 +628,14 @@ export function ScryOverlay() {
 
       onAssign(selectedPositionId, selectedAgentForAssignment.id, title, cost);
 
-      // Reset picker
-      setSelectedPositionId(null);
-      setPickerMode('closed');
-      setSelectedAgentForAssignment(null);
-      setTitleProposals(null);
+      // Back to the seats, the filled one highlighted (THR-1880).
+      setFilledSeatId(selectedPositionId);
+      if (filledSeatTimer.current) clearTimeout(filledSeatTimer.current);
+      filledSeatTimer.current = setTimeout(() => setFilledSeatId(null), SCRY_FILLED_SEAT_HIGHLIGHT_MS);
+      returnToSeats();
       setContextMenuPositionId(null);
     },
-    [selectedPositionId, selectedAgentForAssignment, scryState, onAssign]
+    [selectedPositionId, selectedAgentForAssignment, scryState, onAssign, returnToSeats]
   );
 
   const handleDemote = useCallback(() => {
@@ -682,53 +673,35 @@ export function ScryOverlay() {
   // Background image from primary sphere
   const bgImage = COURT_BACKGROUNDS[primarySphere];
 
-  // IX-012: Backdrop click handler — close overlay when clicking outside content
-  const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
+  // A seat a pick just filled carries a gold ring for SCRY_FILLED_SEAT_HIGHLIGHT_MS.
+  const seatHighlight = (positionId: string) =>
+    filledSeatId === positionId
+      ? {
+          'data-filled-highlight': 'true',
+          style: {
+            borderRadius: '8px',
+            boxShadow: '0 0 0 3px var(--accent-gold)',
+            transition: 'box-shadow var(--anim-fast, 150ms) ease-out',
+          },
+        }
+      : { style: { transition: 'box-shadow var(--anim-fast, 150ms) ease-out' } };
 
-  // THR-1709: portalled to <body> so no ancestor stacking context (GameView's
-  // mount wrappers) can trap the z-50 under the top bar or the Active Locations
-  // strip. The outer layer never scrolls; the panel is capped at the Modal
-  // primitive's --modal-max-h (85vh) and centred with margin:auto, so its header and ✕ always sit
-  // inside the viewport and only the court body scrolls (Viewport Contract).
-  const overlay = (
-    <div
-      className="fixed inset-0 z-50 flex overflow-hidden anim-fade-enter"
-      data-testid="scry-overlay"
-      style={{
-        backgroundColor: 'rgba(10, 10, 14, 0.95)',
-        backdropFilter: 'blur(4px)',
-        pointerEvents: 'auto',
-      }}
-      onClick={handleBackdropClick}
-    >
-      {/* Sphere-themed background image */}
-      <img
-        src={bgImage}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ opacity: 0.15, mixBlendMode: 'screen' }}
-        loading="eager"
-      />
+  if (!structDef) {
+    return null;
+  }
 
-      <div
-        className="w-full max-w-4xl mx-auto my-auto px-4 relative flex flex-col"
-        style={{ maxHeight: SCRY_PANEL_MAX_HEIGHT }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header — outside the scroll area, so the ✕ is always reachable */}
-        <div className="flex items-center justify-between mb-6 px-6 shrink-0">
-          <div>
-            <div className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--text-tertiary)' }}>✦</div>
-            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-              Divine Court
-            </h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{structDef.name}</p>
-            <p className="text-xs italic mt-1" style={{ color: 'var(--text-tertiary)' }}>{structDef.flavorText}</p>
-          </div>
+  const showingPicker = pickerMode !== 'closed' && selectedPositionId !== null;
+
+  // THR-1880: an L dialog (Law 57). Modal portals to <body> (THR-1709), caps the panel
+  // at 85vh and owns Escape; the court's name, flavour and art sit left, the seats right.
+  return (
+    <Modal open onClose={handleEscape} size="l" aria-label="Divine Court">
+      <div data-testid="scry-overlay" className="flex flex-col overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
+        {/* Header — outside the scroll regions, so the ✕ is always reachable */}
+        <div className="flex items-center justify-between px-6 pt-5 shrink-0">
+          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
+            Divine Court
+          </h1>
           <button
             onClick={onClose}
             aria-label="Close Divine Court"
@@ -740,240 +713,250 @@ export function ScryOverlay() {
           </button>
         </div>
 
-        <div
-          className="rounded-lg border p-6 space-y-6 relative flex-1 min-h-0 overflow-y-auto"
-          data-testid="scry-overlay-body"
-          style={{
-            backgroundColor: 'rgba(20, 18, 15, 0.85)',
-            borderColor: 'var(--border-gold)',
-          }}
-        >
-          {/* SVG thread connections behind position slots */}
-          <CourtThreads threadColor={threadColor} />
-
-          {/* The First — auto-populated from court position, above all other ranks */}
-          {theFirstAgent && (
-            <div className="relative z-10 mb-2">
-              <h2
-                className="text-sm font-bold uppercase tracking-wider mb-3 text-center"
-                style={{ color: 'var(--accent-gold)' }}
+        <SheetColumns
+          asideLabel="The court"
+          mainLabel={showingPicker ? 'Choose for the seat' : 'The seats'}
+          aside={
+            <>
+              {/* Sphere-themed court art, 16:9 across the column (Law 5) */}
+              <div className="rounded-lg overflow-hidden border mb-4" style={{ aspectRatio: '16 / 9', borderColor: 'var(--border-gold)' }}>
+                <img src={bgImage} alt="" className="w-full h-full object-cover" loading="eager" />
+              </div>
+              <div className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--text-tertiary)' }}>✦</div>
+              <p className="text-lg" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-display)' }}>{structDef.name}</p>
+              <p className="text-xs italic mt-1" style={{ color: 'var(--text-tertiary)' }}>{structDef.flavorText}</p>
+              {/* Structure Bonus */}
+              <div
+                className="p-3 rounded-lg text-xs italic mt-4"
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  borderColor: 'var(--border-gold)',
+                  border: '1px solid',
+                  color: 'var(--text-secondary)',
+                }}
               >
-                The First
-              </h2>
-              <div className="flex justify-center">
-                <button
-                  onClick={() => onAgentSelect?.(theFirstAgent.id)}
-                  className="rounded-lg overflow-hidden relative transition-all hover:scale-105 hover:brightness-110"
-                  style={{
-                    width: SLOT_SIZES.apex.width,
-                    height: SLOT_SIZES.apex.height,
-                    border: '3px solid var(--accent-gold)',
-                    boxShadow: '0 0 12px rgba(212, 160, 64, 0.35)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {theFirstAgent.portraitUrl ? (
-                    <img
-                      src={theFirstAgent.portraitUrl}
-                      alt={theFirstAgent.name}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background: 'linear-gradient(135deg, rgba(212,160,64,0.3), rgba(212,160,64,0.08), #0a0a0e)',
-                      }}
-                    />
+                <span className="font-bold">Structure Bonus:</span> {structDef.structureBonus.description}
+              </div>
+              {/* Sacred Sites & Artifacts */}
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    Sacred Sites
+                  </h2>
+                  <div className="space-y-2">
+                    {scryState.sacredSites.slice(0, 2).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-lg text-center text-xs"
+                        style={{
+                          backgroundColor: 'var(--bg-surface)',
+                          borderColor: 'var(--border-gold)',
+                          border: '1px solid',
+                          color: 'var(--text-tertiary)',
+                        }}
+                      >
+                        ◇ Coming Soon
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    Divine Artifacts
+                  </h2>
+                  <div className="space-y-2">
+                    {scryState.artifacts.slice(0, 2).map((_, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-lg text-center text-xs"
+                        style={{
+                          backgroundColor: 'var(--bg-surface)',
+                          borderColor: 'var(--border-gold)',
+                          border: '1px solid',
+                          color: 'var(--text-tertiary)',
+                        }}
+                      >
+                        ◇ Coming Soon
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          }
+        >
+          {showingPicker ? (
+            <div data-testid="scry-picker-view">
+              {/* Picker views — in this column, never over the court (THR-1880) */}
+              {pickerMode === 'agent' && selectedPositionId && (
+                <AgentPickerPanel
+                  position={scryState.positions.find(p => p.id === selectedPositionId)}
+                  agents={retinueAgents}
+                  minTier={minTierForSelectedPosition}
+                  assignedAgentIds={assignedAgentIds}
+                  onSelectAgent={handleSelectAgent}
+                  onClose={returnToSeats}
+                />
+              )}
+
+              {pickerMode === 'title' && selectedAgentForAssignment && titleProposals && selectedPositionId && (
+                <TitlePickerPanel
+                  agent={selectedAgentForAssignment}
+                  proposals={titleProposals}
+                  reassignmentCost={getReassignmentCost(
+                    scryState.positions.find(p => p.id === selectedPositionId)?.rank || 'outer',
+                    scryState.totalReassignmentCount
                   )}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 p-2"
-                    style={{
-                      background: 'linear-gradient(transparent, rgba(10, 10, 14, 0.85) 40%)',
-                    }}
+                  onSelectTitle={handleSelectTitle}
+                  onBack={returnToSeats}
+                />
+              )}
+            </div>
+          ) : (
+            <div
+              className="rounded-lg border p-6 space-y-6 relative"
+              data-testid="scry-overlay-body"
+              style={{
+                backgroundColor: 'rgba(20, 18, 15, 0.85)',
+                borderColor: 'var(--border-gold)',
+              }}
+            >
+              {/* SVG thread connections behind position slots */}
+              <CourtThreads threadColor={threadColor} />
+
+              {/* The First — auto-populated from court position, above all other ranks */}
+              {theFirstAgent && (
+                <div className="relative z-10 mb-2">
+                  <h2
+                    className="text-sm font-bold uppercase tracking-wider mb-3 text-center"
+                    style={{ color: 'var(--accent-gold)' }}
                   >
-                    <div
-                      className="text-xs font-bold"
-                      style={{ color: 'var(--accent-gold)' }}
+                    The First
+                  </h2>
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => onAgentSelect?.(theFirstAgent.id)}
+                      className="rounded-lg overflow-hidden relative transition-all hover:scale-105 hover:brightness-110"
+                      style={{
+                        width: SLOT_SIZES.apex.width,
+                        height: SLOT_SIZES.apex.height,
+                        border: '3px solid var(--accent-gold)',
+                        boxShadow: '0 0 12px rgba(212, 160, 64, 0.35)',
+                        cursor: 'pointer',
+                      }}
                     >
-                      The First
-                    </div>
-                    <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-tertiary)' }}>
-                      {theFirstAgent.name}
-                    </div>
+                      {theFirstAgent.portraitUrl ? (
+                        <img
+                          src={theFirstAgent.portraitUrl}
+                          alt={theFirstAgent.name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background: 'linear-gradient(135deg, rgba(212,160,64,0.3), rgba(212,160,64,0.08), #0a0a0e)',
+                          }}
+                        />
+                      )}
+                      <div
+                        className="absolute bottom-0 left-0 right-0 p-2"
+                        style={{
+                          background: 'linear-gradient(transparent, rgba(10, 10, 14, 0.85) 40%)',
+                        }}
+                      >
+                        <div
+                          className="text-xs font-bold"
+                          style={{ color: 'var(--accent-gold)' }}
+                        >
+                          The First
+                        </div>
+                        <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-tertiary)' }}>
+                          {theFirstAgent.name}
+                        </div>
+                      </div>
+                    </button>
                   </div>
-                </button>
+                </div>
+              )}
+
+              {/* FE-TT-15: Apex with tooltip */}
+              <div className="relative z-10">
+                <Tooltip id="ui.scry_rank_champion">
+                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
+                    Apex
+                  </h2>
+                </Tooltip>
+                <div className="flex gap-4 justify-center">
+                  {apexPositions.map(pos => (
+                    <div key={pos.id} {...seatHighlight(pos.id)}>
+                      <PositionSlotRow
+                        position={pos}
+                        contextMenuOpen={contextMenuPositionId === pos.id}
+                        onPositionClick={handlePositionClick}
+                        onAgentClick={onAgentSelect}
+                        onDemote={handleDemote}
+                        onCloseMenu={handleCloseContextMenu}
+                        retinueAgents={retinueAgents}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
+
+              {/* FE-TT-15: Inner with tooltip */}
+              <div className="relative z-10">
+                <Tooltip id="ui.scry_rank_steward">
+                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
+                    Inner Circle
+                  </h2>
+                </Tooltip>
+                <div className="flex gap-4 justify-center">
+                  {innerPositions.map(pos => (
+                    <div key={pos.id} {...seatHighlight(pos.id)}>
+                      <PositionSlotRow
+                        position={pos}
+                        contextMenuOpen={contextMenuPositionId === pos.id}
+                        onPositionClick={handlePositionClick}
+                        onAgentClick={onAgentSelect}
+                        onDemote={handleDemote}
+                        onCloseMenu={handleCloseContextMenu}
+                        retinueAgents={retinueAgents}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* FE-TT-15: Outer with tooltip */}
+              <div className="relative z-10">
+                <Tooltip id="ui.scry_rank_herald">
+                  <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
+                    Outer Reaches
+                  </h2>
+                </Tooltip>
+                <div className="flex gap-3 justify-center flex-wrap">
+                  {outerPositions.map(pos => (
+                    <div key={pos.id} {...seatHighlight(pos.id)}>
+                      <PositionSlotRow
+                        position={pos}
+                        contextMenuOpen={contextMenuPositionId === pos.id}
+                        onPositionClick={handlePositionClick}
+                        onAgentClick={onAgentSelect}
+                        onDemote={handleDemote}
+                        onCloseMenu={handleCloseContextMenu}
+                        retinueAgents={retinueAgents}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
           )}
-
-          {/* FE-TT-15: Apex with tooltip */}
-          <div className="relative z-10">
-            <Tooltip id="ui.scry_rank_champion">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
-                Apex
-              </h2>
-            </Tooltip>
-            <div className="flex gap-4 justify-center">
-              {apexPositions.map(pos => (
-                <div key={pos.id}>
-                  <PositionSlotRow
-                    position={pos}
-                    contextMenuOpen={contextMenuPositionId === pos.id}
-                    onPositionClick={handlePositionClick}
-                    onAgentClick={onAgentSelect}
-                    onDemote={handleDemote}
-                    onCloseMenu={handleCloseContextMenu}
-                    retinueAgents={retinueAgents}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* FE-TT-15: Inner with tooltip */}
-          <div className="relative z-10">
-            <Tooltip id="ui.scry_rank_steward">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
-                Inner Circle
-              </h2>
-            </Tooltip>
-            <div className="flex gap-4 justify-center">
-              {innerPositions.map(pos => (
-                <div key={pos.id}>
-                  <PositionSlotRow
-                    position={pos}
-                    contextMenuOpen={contextMenuPositionId === pos.id}
-                    onPositionClick={handlePositionClick}
-                    onAgentClick={onAgentSelect}
-                    onDemote={handleDemote}
-                    onCloseMenu={handleCloseContextMenu}
-                    retinueAgents={retinueAgents}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* FE-TT-15: Outer with tooltip */}
-          <div className="relative z-10">
-            <Tooltip id="ui.scry_rank_herald">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
-                Outer Reaches
-              </h2>
-            </Tooltip>
-            <div className="flex gap-3 justify-center flex-wrap">
-              {outerPositions.map(pos => (
-                <div key={pos.id}>
-                  <PositionSlotRow
-                    position={pos}
-                    contextMenuOpen={contextMenuPositionId === pos.id}
-                    onPositionClick={handlePositionClick}
-                    onAgentClick={onAgentSelect}
-                    onDemote={handleDemote}
-                    onCloseMenu={handleCloseContextMenu}
-                    retinueAgents={retinueAgents}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Sacred Sites & Artifacts */}
-          <div className="grid grid-cols-2 gap-6 mt-8 relative z-10">
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
-                Sacred Sites
-              </h2>
-              <div className="space-y-2">
-                {scryState.sacredSites.slice(0, 2).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-lg text-center text-xs"
-                    style={{
-                      backgroundColor: 'var(--bg-surface)',
-                      borderColor: 'var(--border-gold)',
-                      border: '1px solid',
-                      color: 'var(--text-tertiary)',
-                    }}
-                  >
-                    ◇ Coming Soon
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
-                Divine Artifacts
-              </h2>
-              <div className="space-y-2">
-                {scryState.artifacts.slice(0, 2).map((_, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-lg text-center text-xs"
-                    style={{
-                      backgroundColor: 'var(--bg-surface)',
-                      borderColor: 'var(--border-gold)',
-                      border: '1px solid',
-                      color: 'var(--text-tertiary)',
-                    }}
-                  >
-                    ◇ Coming Soon
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Structure Bonus */}
-          <div
-            className="p-3 rounded-lg text-xs italic relative z-10"
-            style={{
-              backgroundColor: 'var(--bg-surface)',
-              borderColor: 'var(--border-gold)',
-              border: '1px solid',
-              color: 'var(--text-secondary)',
-            }}
-          >
-            <span className="font-bold">Structure Bonus:</span> {structDef.structureBonus.description}
-          </div>
-        </div>
+        </SheetColumns>
       </div>
-
-      {/* Pickers */}
-      {pickerMode === 'agent' && selectedPositionId && (
-        <AgentPickerPanel
-          position={scryState.positions.find(p => p.id === selectedPositionId)}
-          agents={retinueAgents}
-          minTier={minTierForSelectedPosition}
-          assignedAgentIds={assignedAgentIds}
-          onSelectAgent={handleSelectAgent}
-          onClose={() => {
-            setPickerMode('closed');
-            setSelectedPositionId(null);
-          }}
-        />
-      )}
-
-      {pickerMode === 'title' && selectedAgentForAssignment && titleProposals && selectedPositionId && (
-        <TitlePickerPanel
-          agent={selectedAgentForAssignment}
-          proposals={titleProposals}
-          reassignmentCost={getReassignmentCost(
-            scryState.positions.find(p => p.id === selectedPositionId)?.rank || 'outer',
-            scryState.totalReassignmentCount
-          )}
-          onSelectTitle={handleSelectTitle}
-          onBack={() => {
-            setPickerMode('agent');
-            setSelectedAgentForAssignment(null);
-            setTitleProposals(null);
-          }}
-        />
-      )}
-    </div>
+    </Modal>
   );
-
-  return typeof document !== 'undefined' ? createPortal(overlay, document.body) : overlay;
 }
