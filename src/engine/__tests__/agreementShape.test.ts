@@ -13,6 +13,7 @@ import { readAgreement } from '../agreementShape';
 import { countDebts, phaseEconomicTraits } from '../phaseEconomicTraits';
 import { getAgentAttachments } from '../agentAttachments';
 import { getTraitsForNode } from '../traits';
+import { extractChips } from '../../components/Game/ascendant-bar/HooksBlock';
 import { ECON_TRAIT_DEBT_LADEN_MIN_DEBTS } from '../../data/economic-trait-content';
 import type { GameState } from '../../types/gameState';
 
@@ -88,6 +89,14 @@ describe('THR-1920: one agreement shape for every reader', () => {
     expect(entry.agreementType).toBe('debt');
     expect(entry.name).toBe(debtTemplate.name);
     expect(entry.mechanicalSummary).toBe(debtTemplate.terms);
+  });
+
+  it('the ascendant bar paints a reward-path debt with the debt swatch, not the pact one', () => {
+    const graph = makeWorld();
+    instantiateAgreementReward(graph, 'debtor', 'creditor1', debtTemplate, 10);
+    const { vows } = extractChips({ graph, ascendantId: 'debtor' } as unknown as GameState);
+    expect(vows).toHaveLength(1);
+    expect(vows[0]).toMatchObject({ label: debtTemplate.name, def: debtTemplate.terms, valence: 'debt' });
   });
 
   it('nested-shape debts keep their original either-direction count', () => {
