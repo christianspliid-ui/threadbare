@@ -278,6 +278,7 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
           : `${checkpoint.label} held. Your mandate stays on pace.`
         : `${checkpoint.label} missed. Doom will strike harder at the next escalation.`,
       significance: passed ? 0.65 : 0.8,
+      // alert-chronicle: mandate_progress
       notification: {
         channel: passed ? 'alert' : 'popup',
         icon: 'mandate',

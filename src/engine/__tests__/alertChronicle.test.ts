@@ -20,7 +20,8 @@ import {
 import { buildDiscoveryTickEvent } from '../revelationResolver';
 
 const ENGINE_DIR = join(__dirname, '..');
-const ALERT_SITE = /channel:\s*'alert'/;
+/** Any channel expression that can yield 'alert', including a conditional one. */
+const ALERT_SITE = /channel:[^,}\n]*'alert'/;
 const MARKER = /\/\/ alert-chronicle: (.+)$/;
 /** How far above an alert site its marker may sit. */
 const MARKER_WINDOW_LINES = 12;
