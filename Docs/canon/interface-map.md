@@ -406,6 +406,12 @@ retinue retired). "Show known land" (button and key `F`) reads the same fit. A U
 no state is written. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract added by THR-1901 (2026-10-20), the minimap** — `explored-hexes-draw-minimap`:
+the same fog `visibilityMap` draws the minimap. `buildMinimapVM` (`map.minimap`) marks every hex
+that is not `unexplored` with its terrain family (`MINIMAP_TERRAIN_FAMILY`) and the rest as
+uncharted; fog off counts every hex as known. A UI read only: no state is written. Per-row
+evidence: [`interface-map.generated.md`](interface-map.generated.md).
+
 **One contract added by THR-1915 (2026-10-20), Find** — `knowledge-floor-gates-find`: the
 seen floor (`views/knowledge.ts`, `createSeenFloor`) gates what Find can name. Fog, familiarity
 and the god's threads decide it — a place on a seen or remembered hex, a person known to

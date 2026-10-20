@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 86 |
-| **Total** | **289** |
+| 🔵 UNVERIFIED-OK | 87 |
+| **Total** | **290** |
 
 ## Contracts by producing subsystem
 
@@ -291,6 +291,7 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `explored-hexes-draw-minimap` | The minimap draws what the god knows (THR-1901, plan THR-1878 D10). `buildMinimapVM` reads the fog `visibilityMap` with the same rule as `fitKnownLand`: a hex not `unexplored` is drawn in its terrain family’s tone (`MINIMAP_TERRAIN_FAMILY`), every other in-grid hex in the map’s uncharted tone. Fog off counts every hex as known. A UI read only: no state is written. | function: `buildMinimapVM`, `mapMinimapSelector` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `explored-hexes-frame-opening-view` | The run opens on the First with all the land the god knows in view (THR-1900, plan THR-1878 D8). The fog `visibilityMap` is read for every hex not `unexplored`; `fitKnownLand` fits their bounds, and `computeOpeningView` clamps that zoom to [6, 10] and centres on the First (else the seat, else the known land) — ZOOM-05's k-15 close-up retired. The "Show known land" button and key `F` read the same fit. Fog off falls back to the whole-grid fit. | function: `fitKnownLand`, `computeOpeningView` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `god-reads-mortal-intention` | The god reads what a mortal is set on — the ambition and the work it heads toward — through one rule everywhere: having watched them, or a followed mortal’s mark on them, or a followed network’s people near them. A mortal’s intelligence work counts as the god’s own knowledge, so running a ring or digging up a secret changes what the player can see on a sheet; and a secret work (the plot) is never read by watching alone. | function: `canReadIntention`, `readIntentionFromCard`, `intentionRead`, `INTENTION_KNOWLEDGE_TIER`, `SECRET_CELL_IDS` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `knowledge-floor-gates-find` | Find names only what the god has seen (THR-1915, THR-1822 § D5/D10, Inspector plan § D11). The fog `visibilityMap`, `familiarityMap` and the god's `thread` / `avatar_of` edges feed the seen floor (`createSeenFloor`, `views/knowledge.ts`): a place on a visible or remembered hex, a Place inside one unless hidden, a person known to `recognised` or threaded or in sight now, a power with a nameable member or held place, an army in sight, an artifact the god's people hold or one at a nameable place. `buildFindIndex` (`views/find.ts`, `getView('findIndex')`) lists nothing else, so a query that matches only unseen names returns the same result as nonsense — "Nothing you know of by that name." A UI read only: no state is written. | function: `createSeenFloor`, `buildFindIndex`, `matchFind` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
@@ -1657,6 +1658,17 @@ exit
 - **Other hits:** `src/components/Game/ascendant-bar/EssenceBlock.tsx`, `src/components/Game/contexts/ScryContext.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/hooks/useGameDebugLevers.ts` +48 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `explored-hexes-draw-minimap` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The minimap draws what the god knows (THR-1901, plan THR-1878 D10). `buildMinimapVM` reads the fog `visibilityMap` with the same rule as `fitKnownLand`: a hex not `unexplored` is drawn in its terrain family’s tone (`MINIMAP_TERRAIN_FAMILY`), every other in-grid hex in the map’s uncharted tone. Fog off counts every hex as known. A UI read only: no state is written.
+- **Producer → Consumer:** Intelligence, Knowledge & Familiarity → World Generation, Terrain & Places
+- **UL terms:** *The First*
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/views/map/minimap.ts`
+- **Read sites:** `src/components/Game/map/GameMap.tsx`
+- **Other hits:** `src/engine/views/selectors.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `explored-hexes-frame-opening-view` — 🔵 UNVERIFIED-OK
 
 - **Intent:** The run opens on the First with all the land the god knows in view (THR-1900, plan THR-1878 D8). The fog `visibilityMap` is read for every hex not `unexplored`; `fitKnownLand` fits their bounds, and `computeOpeningView` clamps that zoom to [6, 10] and centres on the First (else the seat, else the known land) — ZOOM-05's k-15 close-up retired. The "Show known land" button and key `F` read the same fit. Fog off falls back to the whole-grid fit.
@@ -2913,10 +2925,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 255 total — 2 write, 2 read, 251 unclassified
+- **Production hits:** 256 total — 2 write, 2 read, 252 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +246 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +247 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -3153,10 +3165,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 418 total — 1 write, 1 read, 416 unclassified
+- **Production hits:** 421 total — 1 write, 1 read, 419 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +411 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +414 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3428,10 +3440,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 250 total — 2 write, 2 read, 246 unclassified
+- **Production hits:** 251 total — 2 write, 2 read, 247 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +241 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +242 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE

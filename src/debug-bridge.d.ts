@@ -635,6 +635,12 @@ export interface DebugMapChromeResult {
    * because they have no map icon entry (Law 58). Empty when every place drew its shape.
    */
   placeIcons: { fallbacks: string[] };
+  /**
+   * THR-1901 — the minimap: open (default open on a canvas ≥ 1400 px wide, so open at
+   * 2560×1440 and folded at 1920×1080), whether that is the default or the player's kept
+   * choice, and the view rectangle in minimap px (null while folded).
+   */
+  minimap: { open: boolean; source: 'default' | 'player'; viewRect: { x: number; y: number; w: number; h: number } | null };
 }
 
 /** Result of `getDominionLens()`. THR-1750 */

@@ -58,6 +58,29 @@ function getNoise2D(seed: number): ReturnType<typeof createNoise2D> {
 }
 
 /**
+ * The active palette's flat colour (#RRGGBB) for a terrain, before per-hex noise — the
+ * lookup `getHexColor` paints with, shared with the minimap's family tones (THR-1901), so
+ * the two can never disagree about what colour a terrain is.
+ *
+ * Priority: a lake hex → lake; ocean depth-band terrain → deep ocean; other water → its
+ * water colour; land → theme override, base palette, then the theme's fallback.
+ */
+export function resolveTerrainColorHex(terrain: string, lakeId?: number): string {
+  const theme = getActivePalette();
+  const tOverrides = theme.terrainOverrides;
+  const wOverrides = theme.waterOverrides;
+  const fallback = theme.fallbackTerrainColor;
+  const waterColor = (key: string): string => wOverrides[key] ?? WATER_PALETTE[key] ?? fallback;
+
+  // A lake hex uses the lake colour regardless of terrain.
+  if (lakeId !== undefined && lakeId >= 0) return waterColor('lake');
+  // Ocean terrain → uniform deep_ocean colour; organic contour fills layer the depth on top.
+  if (DEPTH_BAND_TERRAINS.has(terrain)) return waterColor('deep_ocean');
+  if (WATER_TERRAIN_KEYS.has(terrain)) return getWaterColor(terrain, wOverrides) ?? fallback;
+  return tOverrides[terrain] ?? TERRAIN_PALETTE[terrain] ?? fallback;
+}
+
+/**
  * Main color lookup entry point.
  *
  * Priority order:
@@ -85,34 +108,8 @@ export function getHexColor(
     lakeId?: number;
   },
 ): [number, number, number] {
-  const { elevation, lakeId } = options ?? {};
-  const theme = getActivePalette();
-  const tOverrides = theme.terrainOverrides;
-  const wOverrides = theme.waterOverrides;
-  const fallback = theme.fallbackTerrainColor;
-
-  // Helper: resolve water key with theme override
-  const waterColor = (key: string): string =>
-    wOverrides[key] ?? WATER_PALETTE[key] ?? fallback;
-
-  // Priority 1: Lake hex — use lake color regardless of terrain
-  let colorHex: string;
-  if (lakeId !== undefined && lakeId >= 0) {
-    colorHex = waterColor('lake');
-  }
-  // Priority 2: Ocean terrain → uniform deep_ocean color (darkest blue)
-  // Organic contour fills layer on top to create depth gradient: deep → mid → shallows
-  else if (DEPTH_BAND_TERRAINS.has(terrain)) {
-    colorHex = waterColor('deep_ocean');
-  }
-  // Priority 3: Other water terrain → flat water palette
-  else if (WATER_TERRAIN_KEYS.has(terrain)) {
-    colorHex = getWaterColor(terrain, wOverrides) ?? fallback;
-  }
-  // Priority 4: Land terrain (theme override → base palette → fallback)
-  else {
-    colorHex = tOverrides[terrain] ?? TERRAIN_PALETTE[terrain] ?? fallback;
-  }
+  const { lakeId } = options ?? {};
+  const colorHex = resolveTerrainColorHex(terrain, lakeId);
 
   // Parse to float RGB
   let [r, g, b] = hexToThreeColor(colorHex);

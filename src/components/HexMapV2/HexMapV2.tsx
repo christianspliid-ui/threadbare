@@ -130,6 +130,7 @@ import { avatarHoverLine } from '../../data/avatar-framing';
 import type { LocationActivitySummary } from '../../types/locationActivity';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
 import { getPlaceIconStatus } from './locations/locationIconTextures';
+import { getMinimapStatus } from './chrome/minimapState';
 import { getFixedSlotOffset } from '../../lib/movementPath';
 import {
   SLOT_RING_RADIUS,
@@ -425,6 +426,8 @@ export interface HexMapV2Handle {
   showKnownLand: () => void;
   /** THR-1900 — pan by a share of the canvas (+x right, +y up). */
   panBy: (dx: number, dy: number) => void;
+  /** THR-1901 — centre on a world point (y-up) at the current zoom: eased, or at once for a drag. */
+  lookAt: (point: { x: number; y: number }, animate: boolean) => void;
   /** THR-1900 — the zoom and its limits now. */
   getCameraState: () => MapCameraState;
   /** THR-1900 — called now and on every zoom event; returns the unsubscribe. */
@@ -858,6 +861,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       },
       panBy(dx: number, dy: number) {
         mapCamera.panBy(dx, dy);
+      },
+      lookAt(point: { x: number; y: number }, animate: boolean) {
+        mapCamera.lookAt(point, animate);
       },
       getCameraState() {
         return mapCamera.getState();
@@ -1537,6 +1543,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
                 syncCameraToZoom(cameraRef.current, currentTransform, rw, rh);
               }
               setCanvasDimensions({ w: rw, h: rh });
+              // THR-1901 — the view changed size without a zoom event: the minimap's
+              // view rectangle (a camera subscriber) must follow the new canvas.
+              mapCameraRef.current?.notify();
             }
           }
         });
@@ -1809,6 +1818,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             opening: mapCamera.getOpening(),
             // THR-1903 — place types that drew the fallback mark (Law 58).
             placeIcons: getPlaceIconStatus(),
+            // THR-1901 — open or folded, who chose, and the view rectangle in minimap px.
+            minimap: getMinimapStatus(),
           };
         },
       });

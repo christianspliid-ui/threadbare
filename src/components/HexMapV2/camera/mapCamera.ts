@@ -10,6 +10,8 @@
  * - `showKnownLand()` — fit the explored hexes (D8's `fitKnownLand`); the whole grid with fog off.
  * - `panBy(dx, dy)` — arrow keys, a share of the canvas.
  * - `applyOpening(first, seat)` — the opening view, applied with no animation (D8).
+ * - `lookAt(point, animate)` — the minimap (THR-1901, D10): centre on a world point at the
+ *   current zoom, eased on a click, at once while the view rectangle is dragged.
  *
  * Every programmatic jump emits `ui_map_camera_jump` (pans do not: they are a drag by keyboard).
  * `subscribe` lets the control cluster read the zoom without re-rendering the map host.
@@ -43,6 +45,21 @@ export interface MapCameraState {
   k: number;
   minK: number;
   maxK: number;
+  /**
+   * THR-1901 — the view now: the world point at the canvas centre (y-up) and the canvas
+   * size in CSS px, so the minimap can draw the view rectangle (`w / k` world units wide).
+   * Null until d3-zoom is attached.
+   */
+  viewport: MapViewport | null;
+}
+
+/** The camera's centre (world units, y-up), zoom and canvas size (CSS px). */
+export interface MapViewport {
+  x: number;
+  y: number;
+  k: number;
+  w: number;
+  h: number;
 }
 
 export interface MapCameraDeps {
@@ -61,6 +78,8 @@ export interface MapCamera {
   zoomBy(factor: number): boolean;
   showKnownLand(): void;
   panBy(dx: number, dy: number): void;
+  /** THR-1901 — centre on a world point (y-up) at the current zoom; eased unless `animate` is false. */
+  lookAt(point: { x: number; y: number }, animate: boolean): void;
   applyOpening(firstHex: HexCoord | null, seatHex: HexCoord | null): { k: number; centredOn: OpeningCentre } | null;
   getOpening(): { k: number; centredOn: OpeningCentre } | null;
   getState(): MapCameraState;
@@ -105,8 +124,14 @@ export function createMapCamera(deps: MapCameraDeps): MapCamera {
   function getState(): MapCameraState {
     const canvas = deps.canvas();
     const [minK, maxK] = limits();
-    const k = canvas && deps.zoom() ? d3.zoomTransform(canvas).k : CAMERA_CONSTANTS.DEFAULT_ZOOM;
-    return { k, minK, maxK };
+    if (!canvas || !deps.zoom()) return { k: CAMERA_CONSTANTS.DEFAULT_ZOOM, minK, maxK, viewport: null };
+    const view = viewOfTransform(d3.zoomTransform(canvas));
+    return {
+      k: view.k,
+      minK,
+      maxK,
+      viewport: { x: view.x, y: view.y, k: view.k, w: canvas.clientWidth, h: canvas.clientHeight },
+    };
   }
 
   function trace(reason: MapCameraJumpReason, k: number, target: string | null): void {
@@ -169,6 +194,21 @@ export function createMapCamera(deps: MapCameraDeps): MapCamera {
       if (!a) return;
       const view = viewOfTransform(d3.zoomTransform(a.canvas));
       moveTo(panView(view, dx, dy, a.canvas.clientWidth, a.canvas.clientHeight), CAMERA_CONSTANTS.PAN_DURATION_MS);
+    },
+
+    lookAt(point, animate) {
+      const a = attached();
+      if (!a) return;
+      const k = d3.zoomTransform(a.canvas).k;
+      if (animate) {
+        moveTo({ x: point.x, y: point.y, k });
+        trace('minimap', k, centreKey({ x: point.x, y: point.y, k }));
+        return;
+      }
+      // A drag: follow the pointer this frame, cutting any eased move still running.
+      const sel = d3.select(a.canvas);
+      sel.interrupt();
+      sel.call(a.zoom.transform, d3.zoomIdentity.translate(-point.x * k, point.y * k).scale(k));
     },
 
     applyOpening(firstHex, seatHex) {

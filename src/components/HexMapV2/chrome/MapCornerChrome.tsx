@@ -1,6 +1,6 @@
 /**
  * MapCornerChrome — the map canvas's bottom-right corner: one mount for the control cluster
- * and, later, the minimap above it (THR-1900, plan THR-1878 D6, D10).
+ * and the minimap above it (THR-1900 / THR-1901, plan THR-1878 D6, D10).
  *
  * One wrapper so the Stage build (THR-1877 / THR-1892) can hide both with one condition
  * while a moment holds the map still (Law 25: controls that would do nothing are not shown).

@@ -1751,6 +1751,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/components/HexMapV2/camera/mapCamera.ts'],
   },
   {
+    id: 'explored-hexes-draw-minimap',
+    producerSystem: 'Intelligence, Knowledge & Familiarity',
+    consumerSystem: WORLDGEN,
+    intent:
+      'The minimap draws what the god knows (THR-1901, plan THR-1878 D10). `buildMinimapVM` reads the fog `visibilityMap` with the same rule as `fitKnownLand`: a hex not `unexplored` is drawn in its terrain family’s tone (`MINIMAP_TERRAIN_FAMILY`), every other in-grid hex in the map’s uncharted tone. Fog off counts every hex as known. A UI read only: no state is written.',
+    ulTerms: ['The First'],
+    mechanism: { kind: 'function', symbols: ['buildMinimapVM', 'mapMinimapSelector'] },
+    writeSites: ['src/engine/views/map/minimap.ts'],
+    readSites: ['src/components/Game/map/GameMap.tsx', 'src/components/HexMapV2/chrome/Minimap.tsx'],
+  },
+  {
     id: 'dominion-band-on-card-and-cast-bar',
     producerSystem: QUINTESSENCE,
     consumerSystem: 'Essence & Divine Economy',

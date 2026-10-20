@@ -16,6 +16,7 @@ import { mapPlacesSelector } from './map/places';
 import { mapArmiesAndBattlesSelector } from './map/armiesAndBattles';
 import { lensViewSelector, hexLensViewSelector } from './lenses/lensView';
 import { mapRealmInkSelector } from './map/realmInk';
+import { mapMinimapSelector } from './map/minimap';
 import { subjectPageSelector } from './subjects/subjectPage';
 import { ledgerRailSelector } from './ledgerRail';
 import { godRailSelector } from './godRail';
@@ -35,6 +36,7 @@ export const VIEW_SELECTORS: readonly AnyViewSelector[] = [
   mapPlacesSelector,
   mapArmiesAndBattlesSelector,
   mapRealmInkSelector,
+  mapMinimapSelector,
   hexContentsIndexSelector,
   hexContentsSelector,
   lensViewSelector,
