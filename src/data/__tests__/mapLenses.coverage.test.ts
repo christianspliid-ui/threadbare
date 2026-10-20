@@ -80,7 +80,7 @@ describe('MAP_LENSES coverage (Law 58)', () => {
   it('the derived Trouble and Trade legends are the plan\'s, word for word (THR-1898)', () => {
     expect(legendEntriesFor('trouble').map(e => e.word))
       .toEqual(['Battle', 'Siege', 'Unrest', 'Hunger', 'Strife', 'Scheme', 'Drain', 'Omen', 'Lair']);
-    expect(legendEntriesFor('trade').map(e => e.word)).toEqual(['Trade road', 'Threatened road']);
+    expect(legendEntriesFor('trade').map(e => e.word)).toEqual(['Trade road', 'Threatened road', 'Embargoed road']);
   });
 
   it('MapLensId covers the four lenses, keys 1–4 (THR-1898)', () => {

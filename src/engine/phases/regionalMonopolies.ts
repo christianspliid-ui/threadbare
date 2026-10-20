@@ -19,7 +19,6 @@
 
 import type { GameState } from '../../types/gameState';
 import type { GraphNode } from '../../types/graph';
-import type { MonopolyTransitionTrace, FactionEmbargoTrace, TraceEntryInput } from '../../types/trace';
 import type { WorldGraph } from '../graph';
 import { emitTrace } from '../traceBuffer';
 import { hexDistance } from '../../lib/hexMath';
@@ -122,7 +121,7 @@ function traceTransition(
     controlFraction: transition === 'established' ? m.share : 0,
     anchorLocationId: m.anchorLocationId,
     chronicled,
-  } satisfies Omit<MonopolyTransitionTrace, 'id' | 'timestamp'> as unknown as TraceEntryInput);
+  });
 }
 
 /** Emit the embargo trace for a record (laid or lifted). */
@@ -143,7 +142,7 @@ export function traceEmbargo(
     roads: embargoedLanesOf(graph, record).length,
     untilTick: record.untilTick,
     ...(why ? { why } : {}),
-  } satisfies Omit<FactionEmbargoTrace, 'id' | 'timestamp'> as unknown as TraceEntryInput);
+  });
 }
 
 /**

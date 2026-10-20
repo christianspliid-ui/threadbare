@@ -22,9 +22,6 @@ import { factionPurseView, type PursePart } from '../../engine/factionPurse/purs
 import { fealtyPurseSentence } from '../../engine/crown/fealtySentences';
 import { Tooltip } from '../shared/Tooltip';
 import { EntityLink } from '../shared/EntityLink';
-import { readRegionalMonopolies } from '../../engine/regionalMonopoly';
-import { goodWord } from '../../engine/views/lenses/tradeLens';
-import { MONOPOLY_WORDS, fillMonopolyWords } from '../../data/regional-monopoly-words';
 
 interface FactionPursePanelProps {
   factionId: string;
@@ -63,8 +60,6 @@ export function FactionPursePanel({ factionId, graph }: FactionPursePanelProps) 
   const { band, broke } = view;
   // THR-1932 — one sentence when this faction paid fealty today (words only, no amount).
   const fealty = fealtyPurseSentence(graph, readPurseDay(graph.getNode(factionId)));
-  // THR-1955 — one chip per good held, deduplicated across regions, id-sorted.
-  const monopolyGoods = [...new Set(readRegionalMonopolies(graph.getNode(factionId)?.properties).map(m => m.resourceId))].sort();
 
   return (
     <div data-testid="faction-purse" style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: 'var(--text-sm)' }}>
@@ -92,22 +87,22 @@ export function FactionPursePanel({ factionId, graph }: FactionPursePanelProps) 
       <span data-testid="faction-purse-spending" style={{ color: broke ? 'var(--negative)' : 'var(--text-tertiary)' }}>
         {view.spending}
       </span>
-      {monopolyGoods.length > 0 && (
+      {view.monopolies.length > 0 && (
         <span data-testid="faction-purse-monopolies" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {monopolyGoods.map(rid => (
-            <Tooltip key={rid} id="ui.econ.monopoly">
+          {view.monopolies.map(text => (
+            <Tooltip key={text} id="ui.econ.monopoly">
               <span
                 data-testid="faction-purse-monopoly"
                 className="cursor-help"
                 role="term"
                 style={{
                   padding: '1px 8px',
-                  borderRadius: '999px',
+                  borderRadius: 'var(--radius-chip)',
                   border: '1px solid var(--border-subtle)',
                   color: 'var(--text-secondary)',
                 }}
               >
-                {fillMonopolyWords(MONOPOLY_WORDS.chip, { good: goodWord(rid) })}
+                {text}
               </span>
             </Tooltip>
           ))}
