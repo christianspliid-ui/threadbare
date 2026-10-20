@@ -66,6 +66,12 @@ export const FORECAST_TIER_PERILOUS_MAX = 0.4;
 export const FORECAST_TIER_UNCERTAIN_MAX = 0.6;
 // Forecast tier boundary for "favorable".
 export const FORECAST_TIER_FAVORABLE_MAX = 0.8;
+/**
+ * THR-1985 — a move inside one tier whose new odds sit within this of the next
+ * rung (in the move's direction) reads "— close to {Next}" instead of
+ * "— still {Tier}". A probability distance; the player never sees it.
+ */
+export const FORECAST_NEAR_NEXT_TIER_MARGIN = 0.05;
 
 // Maximum number of visible forecast factors with hover expansion.
 export const FORECAST_FACTORS_VISIBLE_HOVER_MAX = 4;

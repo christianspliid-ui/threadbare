@@ -49,7 +49,10 @@ describe('THR-1858 — intra-tier forecast move', () => {
         designerView={false}
       />,
     );
-    expect(screen.getByTestId('nudge-forecast-moved').textContent).toBe(NUDGE_FORECAST_SHIFT_LINES.up);
+    // THR-1985 — the line then says the word held (or is close to the next rung).
+    expect(screen.getByTestId('nudge-forecast-moved').textContent).toMatch(
+      new RegExp(`^${NUDGE_FORECAST_SHIFT_LINES.up} — (still|close to) `),
+    );
     expect(screen.getByTestId('nudge-forecast-pill').textContent?.toLowerCase())
       .toBe(FORECAST_TIER_WORDS.uncertain.toLowerCase());
   });

@@ -34,10 +34,20 @@ import {
   NUDGE_READING_LEGEND_ENTRIES,
   NUDGE_READING_LEGEND_STORE_KEY,
   NUDGE_FORECAST_SHIFT_LINES,
+  NUDGE_FORECAST_HOLD_LINES,
+  FORECAST_TIER_WORDS,
   NUDGE_LEGEND_FORECAST_SAMPLE_WORD,
   FORECAST_TIER_LADDER,
   NUDGE_FACTOR_KIND_TAGS,
 } from '../../../../data/nudge-stage-content';
+import {
+  FORECAST_TIER_DOOMED_MAX,
+  FORECAST_TIER_PERILOUS_MAX,
+  FORECAST_TIER_UNCERTAIN_MAX,
+  FORECAST_TIER_FAVORABLE_MAX,
+  FORECAST_NEAR_NEXT_TIER_MARGIN,
+} from '../../../../data/encounter-experience-constants';
+import type { ForecastTier } from '../../../../types/traces/encounter-traces';
 import type {
   EncounterStageForecastModel,
   EncounterStageTestPanelModel,
@@ -194,7 +204,7 @@ export function NudgeReadingMarks({
               whiteSpace: 'nowrap',
             }}
           >
-            {NUDGE_FORECAST_SHIFT_LINES[forecastMoveDirection(baseForecast, forecast)]}
+            {forecastMoveLine(forecastMoveDetail(baseForecast, forecast))}
           </span>
         )}
       </span>
@@ -232,6 +242,60 @@ export function forecastMoveDirection(
 ): 'up' | 'down' {
   if (from.tier !== to.tier) return forecastShiftDirection(from.tier, to.tier);
   return to.probability < from.probability ? 'down' : 'up';
+}
+
+/**
+ * THR-1985 — the upper boundary of each rung below Fated, read from the tier
+ * constants (never re-typed). Rung `i` spans (MAX[i-1], MAX[i]].
+ */
+const FORECAST_TIER_UPPER_BOUNDS: readonly number[] = [
+  FORECAST_TIER_DOOMED_MAX,
+  FORECAST_TIER_PERILOUS_MAX,
+  FORECAST_TIER_UNCERTAIN_MAX,
+  FORECAST_TIER_FAVORABLE_MAX,
+];
+
+export interface ForecastMoveDetail {
+  direction: 'up' | 'down';
+  /** The tier the move stayed inside; absent when the tier changed. */
+  heldTier?: ForecastTier;
+  /** The next rung in the move's direction, when the held odds sit within the margin of it. */
+  nearNext?: ForecastTier;
+}
+
+/**
+ * THR-1985 (plan E3) — what a move did, in words: its direction, and when it
+ * stayed inside one tier, that the word held — or that it now sits close to
+ * the next rung. Pure; an unknown tier reads as a plain direction (fail-soft).
+ */
+export function forecastMoveDetail(
+  from: Pick<EncounterStageForecastModel, 'tier' | 'probability'>,
+  to: Pick<EncounterStageForecastModel, 'tier' | 'probability'>,
+): ForecastMoveDetail {
+  const direction = forecastMoveDirection(from, to);
+  if (from.tier !== to.tier) return { direction };
+  const rung = FORECAST_TIER_LADDER.indexOf(to.tier as ForecastTier);
+  if (rung < 0) return { direction };
+  const heldTier = FORECAST_TIER_LADDER[rung];
+  const p = to.probability;
+  if (direction === 'up' && rung < FORECAST_TIER_UPPER_BOUNDS.length) {
+    if (FORECAST_TIER_UPPER_BOUNDS[rung] - p <= FORECAST_NEAR_NEXT_TIER_MARGIN) {
+      return { direction, heldTier, nearNext: FORECAST_TIER_LADDER[rung + 1] };
+    }
+  } else if (direction === 'down' && rung > 0) {
+    if (p - FORECAST_TIER_UPPER_BOUNDS[rung - 1] <= FORECAST_NEAR_NEXT_TIER_MARGIN) {
+      return { direction, heldTier, nearNext: FORECAST_TIER_LADDER[rung - 1] };
+    }
+  }
+  return { direction, heldTier };
+}
+
+/** The move line: direction, then "— close to {Next}" or "— still {Tier}" when the tier held. */
+export function forecastMoveLine(detail: ForecastMoveDetail): string {
+  const base = NUDGE_FORECAST_SHIFT_LINES[detail.direction];
+  if (detail.nearNext) return base + NUDGE_FORECAST_HOLD_LINES.near.replace('{tier}', FORECAST_TIER_WORDS[detail.nearNext]);
+  if (detail.heldTier) return base + NUDGE_FORECAST_HOLD_LINES.held.replace('{tier}', FORECAST_TIER_WORDS[detail.heldTier]);
+  return base;
 }
 
 /**

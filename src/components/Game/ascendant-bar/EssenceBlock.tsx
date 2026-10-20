@@ -23,10 +23,18 @@ import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { SphereIcon } from '../../shared/SphereIcon';
 import { Tooltip } from '../../shared/Tooltip';
 import { DeltaCluster } from '../../shared/DeltaCluster';
+import { StepDots } from '../../shared/StepDots';
 import { formatEssencePool } from '../../shared/formatEssence';
 import { getSphereColor } from '../../../data/sphereIcons';
 import { SPHERE_COPY, ESSENCE_ELDER_FOLD_LABEL, ESSENCE_TREND_WORDS } from '../../../data/ascendant-bar-content';
 import { sphereDeltaReading } from '../../../engine/aftermathWords';
+import {
+  ESSENCE_REFILL_RUNG_STEPS,
+  ESSENCE_REFILL_TAG_SEPARATOR,
+  ESSENCE_REFILL_WORDS,
+  ESSENCE_UPKEEP_TAG,
+  essenceRefillAriaLabel,
+} from '../../../data/essence-refill-content';
 import type { SphereName } from '../../../types';
 import type { EssenceRowView } from './selectors';
 import {
@@ -95,8 +103,10 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
   const spent = useSpendFlash(row.level);
   const spendReading = spent > 0 ? sphereDeltaReading(-spent / ESSENCE_BAR_CEILING, label) : null;
 
+  const refillWords = row.refill ? ESSENCE_REFILL_WORDS[row.refill.band] : null;
+
   return (
-    <div>
+    <div className={styles.essenceRowOuter}>
       <Tooltip label={label} desc={row.hoverDesc ?? sphereCopy?.role ?? ''} focusable={false} block>
       <div
         className={styles.essenceRow}
@@ -162,6 +172,34 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
         >
           {arrow}
         </span>
+        {/* THR-1985 — how fast this pool refills: a rung always, the word where
+            the row has room (Law 13: a word, never a rate). */}
+        {row.refill && refillWords && (
+          <span
+            data-testid={`essence-refill-${row.sphere}`}
+            data-refill-band={row.refill.band}
+            data-upkeep={row.refill.upkeep || undefined}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0 }}
+          >
+            <StepDots
+              totalSteps={ESSENCE_REFILL_RUNG_STEPS}
+              currentStepIndex={refillWords.rung}
+              variant="magnitude"
+              size={4}
+              ariaLabel={
+                row.refill.upkeep
+                  ? `${essenceRefillAriaLabel(row.refill.band)}${ESSENCE_REFILL_TAG_SEPARATOR}${ESSENCE_UPKEEP_TAG}`
+                  : essenceRefillAriaLabel(row.refill.band)
+              }
+            />
+            <span className={styles.essenceRefillWord} data-testid={`essence-refill-word-${row.sphere}`} aria-hidden="true">
+              {refillWords.row}
+              {row.refill.upkeep && (
+                <span className={styles.essenceUpkeepTag}>{ESSENCE_REFILL_TAG_SEPARATOR}{ESSENCE_UPKEEP_TAG}</span>
+              )}
+            </span>
+          </span>
+        )}
       </div>
       </Tooltip>
       {expanded && sphereCopy && (

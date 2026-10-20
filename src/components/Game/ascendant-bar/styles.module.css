@@ -196,6 +196,29 @@
   background: var(--bg-hover);
 }
 
+/* THR-1985 — the row measures its own width: the refill word shows only where it
+   fits beside the bar; narrower rows keep the rung alone (the hover carries the word). */
+.essenceRowOuter {
+  container-type: inline-size;
+  min-width: 0;
+}
+.essenceRefillWord {
+  display: none;
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.essenceUpkeepTag {
+  display: none;
+}
+@container (min-width: 300px) {
+  .essenceRefillWord { display: inline; }
+}
+@container (min-width: 420px) {
+  .essenceUpkeepTag { display: inline; }
+}
+
 .essenceFillBar {
   height: 3px;
   border-radius: 2px;

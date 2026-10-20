@@ -1916,6 +1916,19 @@ export interface DebugBridge {
   >;
 
   /**
+   * THR-1985 — how fast each essence pool refills, as a band: the sphere's net
+   * income as a share of the god's total gross income (`fast` ≥ 0.2, `steady`
+   * ≥ 0.08, `slow` > 0, else `drains`). `upkeepSphere` is the deepest sphere,
+   * which pays thread and source upkeep and carries "pays your upkeep".
+   */
+  getEssenceRefill: () => Promise<
+    | (import('./engine/views/essenceRefill').EssenceRefillReading & {
+        upkeepSphere: import('./types').SphereName | null;
+      })
+    | { error: string }
+  >;
+
+  /**
    * THR-1768 — sphere bags per node kind (`ascendant`, `individual`, `culture`,
    * `faction`, `place`, `sublocation`, `other`): total, seeded, unseeded, nodes with a
    * non-integer score, and the seed route each seeded node takes.

@@ -32,6 +32,20 @@ export const FORECAST_TIER_WORDS: Readonly<Record<ForecastTier, string>> = {
   fated: 'Fated',
 };
 
+/**
+ * The forecast ladder, worst to best — the order a hand's move is read against
+ * when the moved-forecast note names its direction (THR-1791).
+ * Declared beside the words because the legend sentence below is built from it
+ * at module load (THR-1985).
+ */
+export const FORECAST_TIER_LADDER: readonly ForecastTier[] = [
+  'doomed',
+  'perilous',
+  'uncertain',
+  'favorable',
+  'fated',
+];
+
 /** Motive chip copy — why this mortal is standing here (`classifyMotive`). */
 export const MOTIVE_CHIP_LABELS: Readonly<Record<MotiveSource, string>> = {
   choice: 'BY CHOICE',
@@ -186,11 +200,25 @@ export interface NudgeReadingLegendEntry {
  * and a colour vocabulary belongs in the legend rather than in a rulebook
  * tooltip repeated on every line.
  */
+/**
+ * THR-1985 — the legend reads as one sentence that names the ladder, worst to
+ * best, so the order says Fated is the best word whatever its colour (round 4:
+ * "I couldn't parse it at all"; grey Fated read as the worst). Its two halves
+ * stay two hover targets so each keeps its registry tooltip (Law 17). Built from
+ * the ladder and the tier words, never typed twice.
+ */
 export const NUDGE_READING_LEGEND_ENTRIES: readonly NudgeReadingLegendEntry[] = [
-  { id: 'forecast', tooltipId: 'ui.nudge_forecast', label: 'how it looks' },
+  {
+    id: 'forecast',
+    tooltipId: 'ui.nudge_forecast',
+    label: `The word is how it looks now, worst to best: ${FORECAST_TIER_LADDER.map((t) => FORECAST_TIER_WORDS[t]).join(', ')}.`,
+  },
   // THR-1713 D6 — the key names the kind tags the lines now carry.
-  { id: 'balance', tooltipId: 'ui.nudge_factors', label: 'helps · hinders' },
+  { id: 'balance', tooltipId: 'ui.nudge_factors', label: 'Green lines help, red lines hinder.' },
 ];
+
+/** The whole legend as the player reads it — one sentence (THR-1985). */
+export const NUDGE_READING_LEGEND_SENTENCE = NUDGE_READING_LEGEND_ENTRIES.map((e) => e.label).join(' ');
 
 /**
  * The kind tag before each coloured factor line (THR-1713 D6, Law 31): the
@@ -339,18 +367,6 @@ export function chapterAnswerChoiceLine(names: ReadonlyArray<string | null | und
 }
 
 /**
- * The forecast ladder, worst to best — the order a hand's move is read against
- * when the moved-forecast note names its direction (THR-1791).
- */
-export const FORECAST_TIER_LADDER: readonly ForecastTier[] = [
-  'doomed',
-  'perilous',
-  'uncertain',
-  'favorable',
-  'fated',
-];
-
-/**
  * The moved-forecast note beside the pill (THR-1714, THR-1791). Present tense
  * and names its cause: the old "was Perilous" read as *the roll already
  * happened*. It names the **direction** only — the pill beside it already
@@ -360,6 +376,18 @@ export const FORECAST_TIER_LADDER: readonly ForecastTier[] = [
 export const NUDGE_FORECAST_SHIFT_LINES: Readonly<Record<'up' | 'down', string>> = {
   up: '▲ your hand lifts the odds',
   down: '▼ your hand lowers the odds',
+};
+
+/**
+ * THR-1985 — a move that keeps the forecast word says the word held, so a card
+ * that cost essence visibly did something ("Doomed that didn't move", round 4).
+ * `near` replaces `held` when the new odds sit within
+ * `FORECAST_NEAR_NEXT_TIER_MARGIN` of the next rung in the move's direction.
+ * `{tier}` is a `FORECAST_TIER_WORDS` word.
+ */
+export const NUDGE_FORECAST_HOLD_LINES: Readonly<Record<'held' | 'near', string>> = {
+  held: ' — still {tier}',
+  near: ' — close to {tier}',
 };
 
 /**

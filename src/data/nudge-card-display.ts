@@ -126,7 +126,8 @@ export interface NudgeGlyphLegendEntry {
 
 export const NUDGE_GLYPH_LEGEND: readonly NudgeGlyphLegendEntry[] = [
   { id: 'price', glyph: ESSENCE_PIP_GLYPH, label: 'price' },
-  { id: 'odds', glyph: '●', label: 'odds' },
+  // THR-1985 — the whole pip ladder, so ★ reads as the strongest odds, not the price.
+  { id: 'odds', glyph: '● ■ ◆ ★', label: 'odds, weakest to strongest' },
   { id: 'setback', glyph: '▼', label: 'setback' },
 ];
 

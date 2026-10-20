@@ -1099,7 +1099,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.forecast.fated': {
     label: 'Fated',
-    desc: 'As things stand, this attempt all but cannot fail. Even so, fate rolls and the ending is its own. See {{ui.nudge_forecast}}.',
+    desc: 'The best word on the ladder. As things stand, this attempt all but cannot fail. Even so, fate rolls and the ending is its own. See {{ui.nudge_forecast}}.',
   },
 
   // ─── A readable spend (THR-1607, plan B4) ─────────────────────────────────
