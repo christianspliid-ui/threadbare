@@ -120,7 +120,7 @@ A mortal's moment plays on one panel over the dimmed map, beside the god rail, w
 
 | Property | Value | Source |
 |----------|-------|--------|
-| Z-index | `50` | `SettingsPanel.tsx:121` |
+| Z-index | `60` — an M `Modal` (THR-1880; was a 50 flyout) | `SettingsPanel.tsx` |
 
 ---
 
@@ -138,7 +138,7 @@ From bottom to top — every layer that participates in the stacking context:
 | 30 | Top bar | Top bar container | `relative z-30` in GameView |
 | 40 | Inspector at Full | `InspectorHost` (`Z_BAND.drawer`) | Covers the map region right of the god rail; docked and wide sit in flow (THR-1876) |
 | 45 | Debug panel | `DebugPanel` | Dev-only, above the Inspector |
-| 50 | Focused overlays · the Stage | `SettingsPanel`, the Stage (`stage/Stage.tsx`, `Z_BAND.stage`), `EncounterVeil` (`Z_BAND.stage`), the full-screen ceremonies — `MeetTheFirstFlow`, `ThreadingRite`, `HarvestScreen` on `<Overlay band="focused" backdrop="void">` | Settings, ceremony (THR-1884); the Stage (THR-1892) |
+| 50 | Focused overlays · the Stage | `WarmStartOverlay` (`<Overlay band="focused" backdrop="heavy">`, S card, THR-1880), the Stage (`stage/Stage.tsx`, `Z_BAND.stage`), `EncounterVeil` (`Z_BAND.stage`), the full-screen ceremonies — `MeetTheFirstFlow`, `ThreadingRite`, `HarvestScreen` on `<Overlay band="focused" backdrop="void">` | Warm-start, ceremony (THR-1884); the Stage (THR-1892). Settings, the Divine Court and the Codex are `Modal`s at 60 (M · L · XL, THR-1880) |
 | 60 | Inspector over the Stage | `InspectorHost` (`Z_BAND.modal`) while a name on the Stage is open | Docked at the right edge, below the top bar; Escape returns to the moment (THR-1892) |
 | 60 | Modals | `Modal` (shared primitive) | Standard dialogs — `MODAL_Z_DEFAULT` |
 | 62 | Held-gift pill | `AscendantBeatOfferBanner` carrying a waiting opening gift | `GIFT_PILL_Z` — above the player surfaces that hold the gift (Modal 60) so the pill stays visible over them. It rises only while nothing but the player's own surfaces or recent input holds the gift; under an interrupt or a vignette it stays at 40, below the backdrop, as does the pool-beat pill (THR-1809). Both pills sit at `PILL_TOP`, one spacing step below the top bar's rendered height (`--topbar-live-height`), never over the bar's controls (THR-1853) |
@@ -243,7 +243,7 @@ GameView (h-screen flex flex-col overflow-hidden)
   │
   ├── Overlay Layer (z:50–60)
   │     ├── EncounterVeil
-  │     ├── SettingsPanel (z:50)
+  │     ├── WarmStartOverlay (z:50)
   │     └── PremonitionModal
   │
   └── Alert Layer (top, highest z)

@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "styleguide", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-10-17
+last_validated_against: 2026-10-20
 validated_doctrine: ui-laws@1
 ---
 
@@ -155,7 +155,7 @@ Full reference: `Docs/design-system/layout-zones.md`. The game fills one viewpor
 | 30 | Top bar | Top bar container |
 | 40 | Action card hand | `ActionDrawer` |
 | 45 | Debug panel | `DebugPanel` |
-| 50 | Focused overlays | ActionDrawer backdrop, `SettingsPanel`, `EncounterVeil` |
+| 50 | Focused overlays | ActionDrawer backdrop, `EncounterVeil`, `WarmStartOverlay` (Settings, the court and the Codex are `Modal`s at 60 since THR-1880) |
 | 60 | Modals | `Modal` (shared) |
 | 70+ | Tooltips | `Tooltip` (70 + nesting depth) |
 | 9999 | Portaled menus | `Dropdown` |
