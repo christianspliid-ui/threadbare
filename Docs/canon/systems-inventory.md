@@ -396,7 +396,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `quintessence` (1) | `quintessenceActions.ts` | `Phase 2`, `Phase 3` |
 | `rarity` (2) | `rarity.ts`, `raritySeeding.ts` | — |
 | `reach` (2) | `reachPractice.ts`, `reachSignatureMarkers.ts` | `THR-1811`, `THR-550`, `THR-551`, `THR-552`, `THR-554`, `THR-613` |
-| `realm` (3) | `realmHolder.ts`, `realmProjection.ts`, `realmSeat.ts` | `THR-1155` |
+| `realm` (4) | `realmBorderMap.ts`, `realmHolder.ts`, `realmProjection.ts`, `realmSeat.ts` | `THR-1155`, `THR-1955` |
 | `region` (5) | `regionDetection.ts`, `regionLabels.ts`, `regionNaming.ts`, `regionPolitical.ts`, `regionTypes.ts` | `THR-1155` |
 | `regional` (1) | `regionalMonopoly.ts` | `THR-1955` |
 | `rekindle` (1) | `rekindleThread.ts` | `THR-605`, `THR-773` |
@@ -464,7 +464,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
 | `war` (1) | `warAims.ts` | `THR-1868`, `THR-1933` |
-| `waraims` (7) | `warAims/context.ts`, `warAims/defence.ts`, `warAims/enemy.ts`, `warAims/resourceAim.ts`, `warAims/score.ts`, `warAims/sheetView.ts`, `warAims/townValue.ts` | `THR-1922`, `THR-1933`, `THR-1937`, `THR-1955` |
+| `waraims` (6) | `warAims/context.ts`, `warAims/defence.ts`, `warAims/enemy.ts`, `warAims/score.ts`, `warAims/sheetView.ts`, `warAims/townValue.ts` | `THR-1922`, `THR-1933` |
 | `wealth` (1) | `wealth.ts` | `THR-1931` |
 | `wheel` (1) | `wheel.ts` | — |
 | `work` (1) | `workProgress.ts` | `THR-1962` |
