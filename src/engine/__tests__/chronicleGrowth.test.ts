@@ -98,6 +98,14 @@ describe('Chronicle growth gate (THR-1986 E4)', () => {
     expect(guarded.length).toBe(pushes.length);
   });
 
+  it('the god\'s own avatar counts as followed (avatar_of, no thread)', () => {
+    const state = makeState(false);
+    state.graph.addNode({ id: 'vessel', type: 'actor', name: 'Vessel', properties: { actorType: 'individual' } });
+    state.graph.addEdge({ id: 'av', type: 'avatar_of', source: 'vessel', target: 'asc', properties: {} });
+    state.tickEvents = [tierUp('vessel', 'Vessel')];
+    expect(phaseNarrative(state).chronicleEntries).toHaveLength(1);
+  });
+
   it('a missing actorId reads as not threaded', () => {
     expect(shouldSkipForChronicle(makeState(true), undefined, 'e', 'tier_promotion')).toBe(true);
   });

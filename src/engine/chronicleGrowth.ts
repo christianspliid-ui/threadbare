@@ -51,7 +51,19 @@ export function buildTierUpProse(
 }
 
 /**
- * True when the gate is on and the god holds no thread to `actorId` — the
+ * True when the god follows this mortal: a thread from the god, or the god's own
+ * avatar (linked by `avatar_of`, never by a thread — the same reason
+ * `collectThreadedAgents` adds the avatar separately).
+ */
+export function isFollowedByGod(state: GameState, actorId: string): boolean {
+  if (isThreadedByPlayer(state, actorId)) return true;
+  const ascendantId = state.ascendantId;
+  if (!ascendantId) return false;
+  return state.graph.getOutgoingEdges(actorId, 'avatar_of').some((e) => e.target === ascendantId);
+}
+
+/**
+ * True when the gate is on and the god does not follow `actorId` — the
  * entry stays out of the Chronicle, and a `chronicle.intake.skipped` trace says
  * so. A missing `actorId` reads as not threaded.
  */
@@ -64,7 +76,7 @@ export function shouldSkipForChronicle(
   if (!CHRONICLE_THREADED_GROWTH_ONLY) return false;
   let threaded = false;
   try {
-    threaded = !!actorId && isThreadedByPlayer(state, actorId);
+    threaded = !!actorId && isFollowedByGod(state, actorId);
   } catch {
     threaded = false;
   }

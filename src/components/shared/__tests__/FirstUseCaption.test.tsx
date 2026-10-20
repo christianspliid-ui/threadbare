@@ -95,6 +95,20 @@ describe('FirstUseCaption', () => {
     expect(screen.queryByTestId('first-use-caption-threads')).toBeNull();
   });
 
+  it('"got it" on a caption nested in another panel dismisses only that caption', () => {
+    render(
+      <FirstUseCaptionZone id="threads">
+        <FirstUseCaption id="threads" />
+        <FirstUseCaption id="asks_you" name="Elara" />
+      </FirstUseCaptionZone>,
+    );
+    const inner = screen.getByTestId('first-use-caption-asks_you-dismiss');
+    fireEvent.pointerDown(inner);
+    fireEvent.click(inner);
+    expect(getFirstUseCaptionSnapshot().dismissed).toEqual(['asks_you']);
+    expect(screen.getByTestId('first-use-caption-threads')).toBeTruthy();
+  });
+
   it('a dismissal survives a reload (fresh store module, same localStorage)', async () => {
     act(() => dismissFirstUseCaption('essence'));
     vi.resetModules();

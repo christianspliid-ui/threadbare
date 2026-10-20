@@ -157,7 +157,14 @@ export function FirstUseCaptionZone({ id, children, style, testId, hoverSelector
       dismissFirstUseCaption(id);
     }
   }, [id, hoverSelector]);
-  const onPointerDown = useCallback(() => dismissFirstUseCaption(id), [id]);
+  // A press on another caption nested in this panel (its "got it") is that
+  // caption's own act, not a use of this panel.
+  const onPointerDown = useCallback((e: PointerEvent<HTMLDivElement>) => {
+    const target = e.target as Element | null;
+    const caption = target && typeof target.closest === 'function' ? target.closest('[data-first-use-caption]') : null;
+    if (caption && caption.getAttribute('data-first-use-caption') !== id) return;
+    dismissFirstUseCaption(id);
+  }, [id]);
   return (
     <div
       {...(testId ? { 'data-testid': testId } : {})}
