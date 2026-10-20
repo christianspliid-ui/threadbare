@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 14:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 15:58 local (13:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -16,6 +16,10 @@
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
 ## Decided for you
+
+From [the design lane this afternoon, run d](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20d.md):
+
+- [A beast cannot be a bound scene actor](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor): the game gets **no separate creature type**. A beast a mortal can fight and meet again is **a lair's monster**, which already works. Any other animal (the bear in the granary, a wolf pack) stays **scenery**, in the story text and the wounds it leaves. When a scene needs someone to work against, a person speaks for the danger, like the drover who tracks the pack. Nothing changes in play. The canon note is [PR #2504](https://github.com/christianspliid-ui/threadbare/pull/2504), merged. *Veto:* "animals should live in the world".
 
 From [the design lane this morning, run c](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20c.md):
 
@@ -43,14 +47,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 30 ready, 1 in progress.** The builder is working on [land-page art for the plateau and the lair](https://linear.app/threadbare/issue/THR-1916/land-page-hero-art-plateau-and-lair-have-no-art-of-their-own) right now (run started 12:51 UTC, active).
+**Backed up: 29 ready, 1 in progress.** The builder is working on [realms losing most of their members by tick 600](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications) right now (run started 13:51 UTC, active).
 
-- [The minimap — the whole world in small, open at 1440p and folded at 1080p](https://linear.app/threadbare/issue/THR-1901/the-minimap-the-whole-world-in-small-open-at-1440p-and-folded-at-1080p) merged ([PR #2502](https://github.com/christianspliid-ui/threadbare/pull/2502)) and is live.
+- [Land-page art for the plateau and the lair](https://linear.app/threadbare/issue/THR-1916/land-page-hero-art-plateau-and-lair-have-no-art-of-their-own) merged ([PR #2503](https://github.com/christianspliid-ui/threadbare/pull/2503)) and is live.
 - Next up: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (de5e0847). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
-- The engine runs at 117 ms a tick, 13% below its week's median (134).
-- The tidy-up job reports 569 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
+- All green. The live site is current (06e0c108). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
+- The engine runs at 119 ms a tick, 11% below its week's median (133).
+- The tidy-up job reports 570 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
