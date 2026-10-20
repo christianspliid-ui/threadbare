@@ -324,7 +324,7 @@ export const TRADE_LENS_WORDS = {
   legendHead: 'Trade',
   legend: [
     'Lit ground lies on a trade road you know of.',
-    'A gold road carries goods; a red road is threatened.',
+    'A gold road carries goods; a red road is threatened; a dashed red road is embargoed.',
   ] as readonly string[],
   /** "A road to {place}, carrying {goods}." */
   road: 'A road to {place}, carrying {goods}.',

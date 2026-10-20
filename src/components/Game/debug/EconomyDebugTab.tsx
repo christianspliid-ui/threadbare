@@ -20,6 +20,7 @@ import { TICKS_PER_DAY } from '../../../data/attention-constants';
 import { describeDeciderMeans } from '../../../engine/mortalMeans';
 import { resolveAxiologicalProfile } from '../../../engine/encounterScoring';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
+import { allRegionalMonopolies, allActiveEmbargoes } from '../../../engine/regionalMonopoly';
 
 interface PurseRow {
   id: string;
@@ -302,6 +303,80 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
   );
 }
 
+/**
+ * THR-1955 — regional monopolies (holder, good, anchor, share, places) and standing embargoes.
+ * The embargoed towns and roads are left to `__DEBUG.getRegionalMonopolies()`: deriving them
+ * needs the realm border map, which this tab does not hold.
+ */
+function MonopoliesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  const { monopolies, embargoes } = useMemo(() => {
+    if (!graph) return { monopolies: [], embargoes: [] };
+    const name = (id: string) => graph.getNode(id)?.name ?? id;
+    return {
+      monopolies: allRegionalMonopolies(graph).map(({ factionId, monopoly: m }) => ({
+        key: [factionId, m.resourceId, m.anchorLocationId].join("|"),
+        holder: name(factionId),
+        good: m.resourceId,
+        anchor: name(m.anchorLocationId),
+        share: m.share,
+        places: m.placeIds.length,
+        sinceDay: Math.floor((m.sinceTick ?? 0) / TICKS_PER_DAY),
+      })),
+      embargoes: allActiveEmbargoes(graph).map(({ holderId, record }) => ({
+        key: [holderId, record.untilTick].join("|"),
+        holder: name(holderId),
+        target: name(record.targetFactionId),
+        good: record.resourceId,
+        anchor: name(record.anchorLocationId),
+        untilDay: Math.floor(record.untilTick / TICKS_PER_DAY),
+      })),
+    };
+  }, [graph, currentTick]);
+  if (monopolies.length === 0 && embargoes.length === 0) return null;
+  const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
+  const left = { ...cell, textAlign: 'left' as const };
+  return (
+    <div data-testid="economy-monopolies" style={{ marginBottom: '12px' }}>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>Regional monopolies — {monopolies.length}</div>
+      <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '6px' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)' }}>
+            <th style={left}>holder</th><th style={left}>good</th><th style={left}>anchor</th><th style={cell}>share</th><th style={cell}>places</th><th style={cell}>since day</th>
+          </tr>
+        </thead>
+        <tbody>
+          {monopolies.map(m => (
+            <tr key={m.key} style={{ color: 'var(--text-secondary)' }}>
+              <td style={left}>{m.holder}</td><td style={left}>{m.good}</td><td style={left}>{m.anchor}</td>
+              <td style={cell}>{m.share.toFixed(2)}</td><td style={cell}>{m.places}</td><td style={cell}>{m.sinceDay}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {embargoes.length > 0 && (
+        <>
+          <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>Embargoes — {embargoes.length}</div>
+          <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+            <thead>
+              <tr style={{ color: 'var(--text-tertiary)' }}>
+                <th style={left}>holder</th><th style={left}>target</th><th style={left}>good</th><th style={left}>anchor</th><th style={cell}>until day</th>
+              </tr>
+            </thead>
+            <tbody>
+              {embargoes.map(e => (
+                <tr key={e.key} style={{ color: '#e06c5a' }}>
+                  <td style={left}>{e.holder}</td><td style={left}>{e.target}</td><td style={left}>{e.good}</td><td style={left}>{e.anchor}</td>
+                  <td style={cell}>{e.untilDay}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </div>
+  );
+}
+
 interface EconomyDebugTabProps {
   graph?: WorldGraph;
   currentTick: number;
@@ -364,6 +439,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
         <PursesTable graph={graph} currentTick={currentTick} />
         <MeansTable graph={graph} currentTick={currentTick} />
         <OathsTable graph={graph} currentTick={currentTick} />
+        <MonopoliesTable graph={graph} currentTick={currentTick} />
         <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
         <div style={EMPTY_STATE_STYLE}>No locations with resources yet.</div>
@@ -376,6 +452,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
       <PursesTable graph={graph} currentTick={currentTick} />
       <MeansTable graph={graph} currentTick={currentTick} />
       <OathsTable graph={graph} currentTick={currentTick} />
+      <MonopoliesTable graph={graph} currentTick={currentTick} />
       <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
       <div style={{ marginBottom: '10px', color: 'var(--text-tertiary)' }}>

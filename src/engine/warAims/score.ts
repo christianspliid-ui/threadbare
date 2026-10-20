@@ -30,12 +30,14 @@ import {
   WAR_AIM_REQUIRE_SUPPLY_REACH,
 } from '../../data/war-aims-constants';
 import { isEnemyFaction, hallBarsAttack, mayBesiege } from './enemy';
-import { townValueFor, feedsLackingStaple, scarceStaplesOf, monopolyBonusFor } from './townValue';
+import { townValueFor, feedsLackingStaple, scarceStaplesOf, monopolyAimFor } from './townValue';
 import { placeTierLocationOf, type WarAimContext } from './context';
 
 export interface ScoredTown extends WarAimCandidate {
   reason: Exclude<WarAimReason, 'defence'>;
   reasonResourceId?: string;
+  /** THR-1955 — the enemy whose monopoly a `breaks_monopoly` pick breaks. */
+  reasonFactionId?: string;
 }
 
 export interface WarAimPick {
@@ -139,8 +141,11 @@ export function pickWarAim(
     const hexes = hexDistance(armyHex, town.hex);
     const value = townValueFor(ctx, town.node.id);
     const staple = feedsLackingStaple(ctx, town.node.id, scarce);
-    const monopoly = monopolyBonusFor(ctx, factionId, town.node.id);
-    const bonuses = monopoly + (staple ? WAR_AIM_BONUS_FEEDS_STAPLE : 0);
+    const monopoly = monopolyAimFor(ctx, factionId, town.node.id);
+    const bonuses = monopoly.bonus + (staple ? WAR_AIM_BONUS_FEEDS_STAPLE : 0);
+    // The largest contributor names the reason (plan § Engine 3): a monopoly bonus at
+    // least the staple bonus wins, else the staple, else "richest".
+    const monopolyWins = monopoly.reason !== null && monopoly.bonus >= (staple ? WAR_AIM_BONUS_FEEDS_STAPLE : 0);
     let score = value * (1 + bonuses) / (1 + hexes / WAR_AIM_HALF_VALUE_HEXES);
     if (opts.grievanceFactionId && town.holderId === opts.grievanceFactionId) score *= WAR_AIM_REVENGE_FOCUS;
     scored.push({
@@ -150,8 +155,16 @@ export function pickWarAim(
       hexes,
       score,
       inReach: true,
-      reason: staple ? 'feeds_staple' : 'richest',
-      ...(staple ? { reasonResourceId: staple } : {}),
+      ...(monopolyWins
+        ? {
+          reason: monopoly.reason!,
+          ...(monopoly.resourceId ? { reasonResourceId: monopoly.resourceId } : {}),
+          ...(monopoly.holderId ? { reasonFactionId: monopoly.holderId } : {}),
+        }
+        : {
+          reason: staple ? 'feeds_staple' as const : 'richest' as const,
+          ...(staple ? { reasonResourceId: staple } : {}),
+        }),
     });
   }
 
@@ -169,6 +182,7 @@ export function pickWarAim(
       estimatedAttrition: 0,
       reason: best.reason,
       ...(best.reasonResourceId ? { reasonResourceId: best.reasonResourceId } : {}),
+      ...(best.reasonFactionId ? { reasonFactionId: best.reasonFactionId } : {}),
       source: 'war_aim',
     }
     : null;

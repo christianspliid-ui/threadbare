@@ -2648,6 +2648,26 @@ if (import.meta.env.DEV) {
       const arm = a && b ? enemyArm(state.graph, a, b) : null;
       return { enemy: arm !== null, arm };
     },
+    /**
+     * THR-1955 — every regional monopoly (holder, good, anchor, share, places, since) and
+     * every standing embargo with its derived towns and roads.
+     */
+    getRegionalMonopolies: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return { monopolies: [], embargoes: [] };
+      const m = await import('./engine/regionalMonopoly');
+      const { realmBorderMap } = await import('./engine/realmBorderMap');
+      const realms = realmBorderMap(_runtimeProvider?.(), state.graph, state.tiles, state.tick);
+      return {
+        monopolies: m.allRegionalMonopolies(state.graph).map(({ factionId, monopoly }) => ({ factionId, ...monopoly })),
+        embargoes: m.allActiveEmbargoes(state.graph).map(({ holderId, record }) => ({
+          holderId,
+          ...record,
+          townIds: m.embargoedTownsOf(state.graph, record, realms).map(t => t.id),
+          laneIds: m.embargoedLanesOf(state.graph, record, realms).map(e => e.id),
+        })),
+      };
+    },
     /** THR-1932 — every live oath, vassal → liege, with the edge's properties. */
     getOaths: async () => {
       const state = _gameStateProvider?.();

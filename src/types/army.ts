@@ -86,6 +86,8 @@ export interface ArmyObjective {
   reason?: WarAimReason;
   /** THR-1933 — the staple behind a `feeds_staple` reason (the sheet names the good). */
   reasonResourceId?: string;
+  /** THR-1955 — the enemy whose regional monopoly a `breaks_monopoly` march breaks. */
+  reasonFactionId?: string;
   /** THR-1933 — the enemy army a `defend` objective holds against. */
   againstArmyId?: string;
   /** THR-1933 — who set it. `agenda` (a notable's campaign) is never re-aimed. Missing reads as `war_aim`. */

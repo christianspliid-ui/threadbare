@@ -83,6 +83,37 @@ describe('Trade lens view model', () => {
     for (const lines of Object.values(a.hover)) for (const l of lines) expect(lensLineText(l)).not.toMatch(/\d/);
   });
 
+  it('THR-1955: an embargoed road is drawn embargoed and says so, then the toll and the monopoly, from state only', () => {
+    const { state, tiles } = lensFixture();
+    const g = state.graph;
+    g.addNode({ id: 'f_varr', type: 'actor', name: 'House Varr', properties: { actorType: 'faction' } });
+    g.addNode({ id: 'f_ash', type: 'actor', name: 'Ashfold', properties: { actorType: 'faction' } });
+    g.addEdge({ id: 'c_ash_hesk', source: 'f_ash', target: 'loc_hesk', type: 'controls', properties: {} });
+    const before = buildTradeLens(buildViewContext(null, state, tiles));
+    expect(before.marks.some(m => m.tone === 'embargoed')).toBe(false);
+
+    g.getNode('f_varr')!.properties.regionalMonopolies = [
+      { resourceId: 'grain', anchorLocationId: 'loc_mill', share: 0.75, placeIds: ['loc_mill'], sinceTick: 0 },
+    ];
+    g.getNode('f_varr')!.properties.activeEmbargo = { targetFactionId: 'f_ash', resourceId: 'grain', anchorLocationId: 'loc_mill', untilTick: 999 };
+    g.getEdge('route_mill_hesk')!.properties.controlledBy = 'f_varr';
+    const vm = buildTradeLens(buildViewContext(null, state, tiles));
+    expect(vm.marks.find(m => m.toHexKey === '4,1')?.tone).toBe('embargoed');
+    expect(hoverText(vm, '4,1')).toEqual([
+      'A road to Millbrook, carrying grain and salt.',
+      'Embargoed by House Varr: the towns it shuts out go short of grain.',
+      'Tolled by House Varr.',
+      'and more roads through here',
+    ]);
+    const embargoLine = vm.hover['4,1'][1];
+    expect(embargoLine.segments.find(s => s.ref)?.ref).toEqual({ kind: 'faction', id: 'f_varr', name: 'House Varr' });
+    // The lifted embargo leaves no mark (Law 56).
+    g.getNode('f_varr')!.properties.activeEmbargo = null;
+    const after = buildTradeLens(buildViewContext(null, state, tiles));
+    expect(after.marks.some(m => m.tone === 'embargoed')).toBe(false);
+    expect(hoverText(after, '4,1')).toContain('House Varr holds the grain of this region.');
+  });
+
   it('joins words the way the road line reads', () => {
     expect(joinWords(['grain'])).toBe('grain');
     expect(joinWords(['grain', 'salt'])).toBe('grain and salt');

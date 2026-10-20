@@ -32,6 +32,9 @@ import { deriveLocationStockTiers, readResources } from '../resourceEconomy';
 import { resolveEconomicChronicle } from '../economicChronicle';
 import type { EconomicChronicleTrigger } from '../../data/economic-chronicle-content';
 import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
+import { embargoCutsByLocation } from '../regionalMonopoly';
+import { realmBorderMap } from '../realmBorderMap';
+import { REGIONAL_MONOPOLY_ENABLED, EMBARGO_BALANCE_CUT } from '../../data/regional-monopoly-constants';
 import { THREAD_TUG_LINGER } from '../../data/attention-constants';
 import {
   getResourceClass,
@@ -87,6 +90,12 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
   // and shrines still count as living in that settlement's economy).
   const threadedByLocation = buildThreadedResidentMap(state);
 
+  // THR-1955 — embargoed towns lose `EMBARGO_BALANCE_CUT` on the embargoed good. Derived
+  // from the holders' `activeEmbargo` records once per pass; nothing is stored on towns.
+  const embargoCuts = REGIONAL_MONOPOLY_ENABLED
+    ? embargoCutsByLocation(graph, realmBorderMap(ctx.runtime, graph, state.tiles, tick))
+    : new Map<string, Set<string>>();
+
   const newEvents: TickEvent[] = [];
   const newChronicleEntries: ChronicleEntry[] = [];
   const newTugs: ThreadTug[] = [];
@@ -101,7 +110,9 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
 
     const fullDetail = i < ECON_PHASE_SPOTLIGHT_CAP;
     const sublocationCount = getSublocationsAt(graph, loc.id).length;
-    const derivation = deriveLocationStockTiers(props, sublocationCount);
+    const cutSet = embargoCuts.get(loc.id);
+    const cuts = cutSet ? new Map([...cutSet].map(rid => [rid, EMBARGO_BALANCE_CUT] as const)) : undefined;
+    const derivation = deriveLocationStockTiers(props, sublocationCount, cuts);
 
     // Store aggregate balance for the prosperity term (read next by phaseProsperity).
     props.resourceBalance = derivation.aggregateBalance;

@@ -227,6 +227,7 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
   if (!WAR_AIMS_ENABLED) return;
   if (state.tick % WAR_AIM_REAIM_INTERVAL_TICKS !== 0) return;
   const graph = state.graph;
+  let ctx: WarAimContext | null = null;
   const armies = graph.getNodesByType('actor')
     .filter(n => n.properties.armyState != null)
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -241,7 +242,6 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
     });
   }
 
-  let ctx: WarAimContext | null = null;
   for (const army of armies) {
     try {
       const armyState = army.properties.armyState as ArmyState;

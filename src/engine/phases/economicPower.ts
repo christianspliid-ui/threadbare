@@ -52,6 +52,9 @@ import {
   SCARCITY_ARC_FLASHPOINT_HOLD_DAYS,
 } from '../../data/economic-power-config';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
+import { REGIONAL_MONOPOLY_ENABLED } from '../../data/regional-monopoly-constants';
+import { resolveRegionalMonopolies, type ChroniclePush } from './regionalMonopolies';
+import { realmBorderMap } from '../realmBorderMap';
 import { UNREST_PRESSURE_ENABLED, GRANARY_RIOT_TEMPLATE_ID } from '../../data/unrest-pressure-constants';
 import type { PendingEncounterSeed } from '../../types/unifiedAction';
 
@@ -90,47 +93,7 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
   const graph = state.graph;
 
   // ── 1. Monopoly resolution ────────────────────────────────────────────────
-  // resource id → (bearing location count, per-faction control counts, a
-  // representative controlled settlement name for the chronicle).
-  const bearing = new Map<string, { total: number; byFaction: Map<string, number>; sampleSettlement: Map<string, string> }>();
-  for (const loc of graph.getNodesByType('location')) {
-    const resources = readResources(loc.properties);
-    const resourceIds = Object.keys(resources);
-    if (resourceIds.length === 0) continue;
-    const controller =
-      (graph.getIncomingEdges(loc.id, 'controls')[0]?.source) ??
-      (typeof loc.properties.monopolyControlledBy === 'string'
-        ? (loc.properties.monopolyControlledBy as string)
-        : undefined);
-    for (const rid of resourceIds) {
-      const entry = bearing.get(rid) ?? { total: 0, byFaction: new Map(), sampleSettlement: new Map() };
-      entry.total++;
-      if (controller) {
-        entry.byFaction.set(controller, (entry.byFaction.get(controller) ?? 0) + 1);
-        if (!entry.sampleSettlement.has(controller)) entry.sampleSettlement.set(controller, loc.name);
-      }
-      bearing.set(rid, entry);
-    }
-  }
-
-  // Current holder per resource (at most one — fractions above 0.6 are exclusive).
-  const holderByResource = new Map<string, { factionId: string; fraction: number; settlement: string }>();
-  for (const [rid, entry] of bearing) {
-    if (entry.total < MONOPOLY_MIN_LOCATIONS) continue;
-    for (const [factionId, count] of entry.byFaction) {
-      const fraction = count / entry.total;
-      if (fraction >= MONOPOLY_CONTROL_FRACTION) {
-        holderByResource.set(rid, {
-          factionId,
-          fraction,
-          settlement: entry.sampleSettlement.get(factionId) ?? 'the region',
-        });
-        break;
-      }
-    }
-  }
-
-  // Diff against per-faction ledgers → transitions.
+  // Chronicle lines from every section below collect here.
   const chronicleEntries: ChronicleEntry[] = [];
   const newEvents: TickEvent[] = [];
   const pushChronicle = (
@@ -155,69 +118,20 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
   };
   let established = 0;
   let broken = 0;
-  const factions = graph
-    .getNodesByType('actor')
-    .filter((n) => n.properties.actorType === 'faction')
-    .sort((a, b) => a.id.localeCompare(b.id));
-  for (const faction of factions) {
-    const held = new Set(readMonopolies(faction.properties));
-    const now = new Set<string>();
-    for (const [rid, holder] of holderByResource) {
-      if (holder.factionId === faction.id) now.add(rid);
-    }
-    if (held.size === 0 && now.size === 0) continue;
-
-    const gained = [...now].filter((r) => !held.has(r)).sort();
-    const lost = [...held].filter((r) => !now.has(r)).sort();
-    if (gained.length === 0 && lost.length === 0) continue;
-
-    for (const rid of gained) {
-      const holder = holderByResource.get(rid)!;
-      const result = resolveEconomicChronicle(
-        'monopoly_established',
-        { actor: faction.name, actorId: faction.id, resource: rid, settlement: holder.settlement },
-        tick,
-        chronicleSeed(state.seed, `${faction.id}_${rid}_${tick}`),
-      );
-      pushChronicle(result, holder.settlement);
-      established++;
-      emitEconTrace({
-        category: 'monopoly_transition' as const,
-        tick,
-        summary: `${faction.name} establishes a ${rid} monopoly (${Math.round(holder.fraction * 100)}% control)`,
-        factionId: faction.id,
-        resourceId: rid,
-        transition: 'established' as const,
-        controlFraction: holder.fraction,
-      });
-    }
-    for (const rid of lost) {
-      const result = resolveEconomicChronicle(
-        'monopoly_broken',
-        { actor: faction.name, actorId: faction.id, resource: rid, settlement: 'the region' },
-        tick,
-        chronicleSeed(state.seed, `${faction.id}_${rid}_${tick}_broken`),
-      );
-      pushChronicle(result, 'the region');
-      broken++;
-      emitEconTrace({
-        category: 'monopoly_transition' as const,
-        tick,
-        summary: `${faction.name}'s ${rid} monopoly is broken`,
-        factionId: faction.id,
-        resourceId: rid,
-        transition: 'broken' as const,
-        controlFraction: 0,
-      });
-    }
-
-    faction.properties.monopolies = [...now].sort();
-  }
-  if (established + broken > 0 && ctx.runtime) {
-    // The faction's `monopolies` list changed. Nothing reads it yet (what a monopoly
-    // should do is open on the economy wayfinder map, THR-1862); bump the version so a
-    // future reader keyed on worldVersion sees the change.
-    touchWorld(ctx.runtime);
+  let monopoliesHeld = 0;
+  if (REGIONAL_MONOPOLY_ENABLED) {
+    // THR-1955 — the regional rule (war aims S2 § Engine 6) and embargo upkeep (§ 9).
+    const r = resolveRegionalMonopolies(state, pushChronicle, realmBorderMap(ctx.runtime, graph, state.tiles, tick));
+    monopoliesHeld = r.held;
+    established = r.established;
+    broken = r.broken;
+    if (r.changed && ctx.runtime) touchWorld(ctx.runtime);
+  } else {
+    const r = resolveWorldWideMonopolies(state, pushChronicle);
+    monopoliesHeld = r.held;
+    established = r.established;
+    broken = r.broken;
+    if (established + broken > 0 && ctx.runtime) touchWorld(ctx.runtime);
   }
 
   // ── 2. Sphere drift from sustained flows ─────────────────────────────────
@@ -411,8 +325,8 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
   emitEconTrace({
     category: 'economic_power_scan' as const,
     tick,
-    summary: `economic power scan: ${holderByResource.size} monopolies held, +${established}/-${broken} transitions, ${flowsDrifted} flows drifting spheres, ${arcsActive} scarcity arcs (${arcTransitions} transitions)`,
-    monopoliesHeld: holderByResource.size,
+    summary: `economic power scan: ${monopoliesHeld} monopolies held, +${established}/-${broken} transitions, ${flowsDrifted} flows drifting spheres, ${arcsActive} scarcity arcs (${arcTransitions} transitions)`,
+    monopoliesHeld,
     established,
     broken,
     flowsDrifted,
@@ -442,3 +356,117 @@ export const economicPowerPhase: EnginePhase = {
   label: 'Economic Power',
   run: (state, ctx) => phaseEconomicPower(state, ctx),
 };
+
+/**
+ * The THR-617 world-wide rule (≥ `MONOPOLY_CONTROL_FRACTION` of every bearing location of
+ * a resource). Kept behind `REGIONAL_MONOPOLY_ENABLED = false` as the rollback; it never
+ * fires on a generated world, which is why S2 replaced it.
+ */
+function resolveWorldWideMonopolies(
+  state: GameState,
+  pushChronicle: ChroniclePush,
+): { held: number; established: number; broken: number } {
+  const tick = state.tick;
+  const graph = state.graph;
+  // resource id → (bearing location count, per-faction control counts, a
+  // representative controlled settlement name for the chronicle).
+  const bearing = new Map<string, { total: number; byFaction: Map<string, number>; sampleSettlement: Map<string, string> }>();
+  for (const loc of graph.getNodesByType('location')) {
+    const resources = readResources(loc.properties);
+    const resourceIds = Object.keys(resources);
+    if (resourceIds.length === 0) continue;
+    const controller =
+      (graph.getIncomingEdges(loc.id, 'controls')[0]?.source) ??
+      (typeof loc.properties.monopolyControlledBy === 'string'
+        ? (loc.properties.monopolyControlledBy as string)
+        : undefined);
+    for (const rid of resourceIds) {
+      const entry = bearing.get(rid) ?? { total: 0, byFaction: new Map(), sampleSettlement: new Map() };
+      entry.total++;
+      if (controller) {
+        entry.byFaction.set(controller, (entry.byFaction.get(controller) ?? 0) + 1);
+        if (!entry.sampleSettlement.has(controller)) entry.sampleSettlement.set(controller, loc.name);
+      }
+      bearing.set(rid, entry);
+    }
+  }
+
+  // Current holder per resource (at most one — fractions above 0.6 are exclusive).
+  const holderByResource = new Map<string, { factionId: string; fraction: number; settlement: string }>();
+  for (const [rid, entry] of bearing) {
+    if (entry.total < MONOPOLY_MIN_LOCATIONS) continue;
+    for (const [factionId, count] of entry.byFaction) {
+      const fraction = count / entry.total;
+      if (fraction >= MONOPOLY_CONTROL_FRACTION) {
+        holderByResource.set(rid, {
+          factionId,
+          fraction,
+          settlement: entry.sampleSettlement.get(factionId) ?? 'the region',
+        });
+        break;
+      }
+    }
+  }
+
+  let established = 0;
+  let broken = 0;
+  const factions = graph
+    .getNodesByType('actor')
+    .filter((n) => n.properties.actorType === 'faction')
+    .sort((a, b) => a.id.localeCompare(b.id));
+  for (const faction of factions) {
+    const held = new Set(readMonopolies(faction.properties));
+    const now = new Set<string>();
+    for (const [rid, holder] of holderByResource) {
+      if (holder.factionId === faction.id) now.add(rid);
+    }
+    if (held.size === 0 && now.size === 0) continue;
+
+    const gained = [...now].filter((r) => !held.has(r)).sort();
+    const lost = [...held].filter((r) => !now.has(r)).sort();
+    if (gained.length === 0 && lost.length === 0) continue;
+
+    for (const rid of gained) {
+      const holder = holderByResource.get(rid)!;
+      const result = resolveEconomicChronicle(
+        'monopoly_established',
+        { actor: faction.name, actorId: faction.id, resource: rid, settlement: holder.settlement },
+        tick,
+        chronicleSeed(state.seed, `${faction.id}_${rid}_${tick}`),
+      );
+      pushChronicle(result, holder.settlement);
+      established++;
+      emitEconTrace({
+        category: 'monopoly_transition' as const,
+        tick,
+        summary: `${faction.name} establishes a ${rid} monopoly (${Math.round(holder.fraction * 100)}% control)`,
+        factionId: faction.id,
+        resourceId: rid,
+        transition: 'established' as const,
+        controlFraction: holder.fraction,
+      });
+    }
+    for (const rid of lost) {
+      const result = resolveEconomicChronicle(
+        'monopoly_broken',
+        { actor: faction.name, actorId: faction.id, resource: rid, settlement: 'the region' },
+        tick,
+        chronicleSeed(state.seed, `${faction.id}_${rid}_${tick}_broken`),
+      );
+      pushChronicle(result, 'the region');
+      broken++;
+      emitEconTrace({
+        category: 'monopoly_transition' as const,
+        tick,
+        summary: `${faction.name}'s ${rid} monopoly is broken`,
+        factionId: faction.id,
+        resourceId: rid,
+        transition: 'broken' as const,
+        controlFraction: 0,
+      });
+    }
+
+    faction.properties.monopolies = [...now].sort();
+  }
+  return { held: holderByResource.size, established, broken };
+}

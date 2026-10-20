@@ -48,6 +48,6 @@ describe('LensLegend — Lenses II', () => {
     for (const line of TRADE_LENS_WORDS.legend) expect(screen.getByText(line)).toBeTruthy();
     expect(screen.getByTestId('map-lens-legend-empty').textContent).toBe('No trade road you know of yet.');
     expect([...container.querySelectorAll('[data-legend-mark]')].map(m => m.getAttribute('data-legend-mark')))
-      .toEqual(['Trade road', 'Threatened road']);
+      .toEqual(['Trade road', 'Threatened road', 'Embargoed road']);
   });
 });

@@ -95,6 +95,8 @@ export type TraceCategory =
   | 'economy.means.birth' | 'economy.means.shift'
   // THR-1933 — war aims
   | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
+  // THR-1955 — regional monopolies and embargo
+  | 'faction.embargo.laid' | 'faction.embargo.lifted'
   // THR-1932 — the crown (fealty)
   | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
   | 'settlement_tier_change' | 'target_action_filter'
@@ -712,6 +714,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
   'economy.means.birth', 'economy.means.shift',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
+  'faction.embargo.laid', 'faction.embargo.lifted',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
@@ -1995,6 +1998,22 @@ export interface WarAimReaimTrace extends TraceBase {
 }
 
 /** THR-1933 — the purse is off, so towns are priced by prosperity. */
+/** THR-1955 — a monopoly holder laid an embargo on an enemy's towns, or it was lifted. */
+export interface FactionEmbargoTrace extends TraceBase {
+  category: 'faction.embargo.laid' | 'faction.embargo.lifted';
+  holderId: string;
+  targetFactionId: string;
+  resourceId: string;
+  anchorLocationId: string;
+  /** Embargoed towns (derived) at the moment of the trace. */
+  townIds: string[];
+  /** Embargoed `trades_with` lanes (derived). */
+  roads: number;
+  untilTick: number;
+  /** Lifted only: why. */
+  why?: 'expired' | 'monopoly_lost';
+}
+
 export interface WarAimValueFallbackTrace extends TraceBase {
   category: 'war.aim.value_fallback';
   reason: 'purse_not_built' | 'purse_disabled';
@@ -4964,6 +4983,7 @@ export type TraceEntry =
   | WarAimHoldTrace
   | WarAimReaimTrace
   | WarAimValueFallbackTrace
+  | FactionEmbargoTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
   | TradeRouteUpkeepTrace
@@ -6863,6 +6883,10 @@ export interface MonopolyTransitionTrace extends TraceBase {
   resourceId: string;
   transition: 'established' | 'broken';
   controlFraction: number;
+  /** THR-1955 — the region's anchor place (regional rule only). */
+  anchorLocationId?: string;
+  /** THR-1955 — false when `MONOPOLY_MIN_HOLD_DAYS` de-duplication kept the line out of the chronicle. */
+  chronicled?: boolean;
 }
 
 /** Trace: one aggregate economic-power scan record per scan tick. */

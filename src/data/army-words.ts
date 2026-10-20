@@ -149,6 +149,10 @@ export interface ArmyAimInput {
   attackerFactionName?: string | null;
   /** True when the defend line has a nameable enemy (`{enemy}` is filled by the sheet). */
   hasNamedEnemy?: boolean;
+  /** THR-1955 — the good behind a monopoly reason, lower case. */
+  monopolyResourceName?: string | null;
+  /** THR-1955 — the enemy whose hold a `breaks_monopoly` march breaks. */
+  monopolyHolderName?: string | null;
 }
 
 /**
@@ -170,6 +174,15 @@ export function armyAimTemplate(input: ArmyAimInput): string | null {
       return `${ARMY_OBJECTIVE_VERBS.conquer} {town}, the richest enemy town within reach.`;
     }
     return `${ARMY_OBJECTIVE_VERBS.conquer} {town} for its ${input.resourceName}: ${input.scarceClause} in ${input.attackerFactionName}'s towns.`;
+  }
+  // THR-1955 — the two monopoly reasons (plan § Player-facing text, S2 rows).
+  if (reason === 'breaks_monopoly' || reason === 'completes_monopoly') {
+    const good = input.monopolyResourceName;
+    if (!good) return `${ARMY_OBJECTIVE_VERBS.conquer} {town}, the richest enemy town within reach.`;
+    if (reason === 'completes_monopoly') return `${ARMY_OBJECTIVE_VERBS.conquer} {town}, to make the region's ${good} its own.`;
+    return input.monopolyHolderName
+      ? `${ARMY_OBJECTIVE_VERBS.conquer} {town}, to break ${input.monopolyHolderName}'s hold on the region's ${good}.`
+      : `${ARMY_OBJECTIVE_VERBS.conquer} {town}, to break an enemy's hold on the region's ${good}.`;
   }
   return null;
 }

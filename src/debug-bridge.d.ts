@@ -1676,7 +1676,7 @@ export interface DebugBridge {
   }>>;
   /**
    * THR-1933 — an army's war aim. `objective.reason` says why it marches
-   * (`richest` / `feeds_staple` / `defence`); `holdReason` is set while it holds for want
+   * (`richest` / `feeds_staple` / `breaks_monopoly` / `completes_monopoly` / `defence`); `holdReason` is set while it holds for want
    * of a target; `candidates` are the top scored towns from its last pick (never rendered).
    * `null` when the id is not an army.
    */
@@ -1685,6 +1685,14 @@ export interface DebugBridge {
     holdReason: string | null;
     candidates: Array<{ townId: string; value: number; bonuses: number; hexes: number; score: number; inReach: boolean }>;
   } | null>;
+  /**
+   * THR-1955 — every regional monopoly and every standing embargo (towns and roads are
+   * derived from the holder's one record; nothing is stored on them).
+   */
+  getRegionalMonopolies: () => Promise<{
+    monopolies: Array<{ factionId: string; resourceId: string; anchorLocationId: string; share: number; placeIds: string[]; sinceTick: number }>;
+    embargoes: Array<{ holderId: string; targetFactionId: string; resourceId: string; anchorLocationId: string; untilTick: number; townIds: string[]; laneIds: string[] }>;
+  }>;
   /** THR-1933 — the war-aims enemy rule for two factions, with the arm that fired (or null). */
   isEnemyFaction: (a: string, b: string) => Promise<{ enemy: boolean; arm: 'hostile_to' | 'rival' | 'war' | 'sentiment' | 'monster' | null }>;
   /**

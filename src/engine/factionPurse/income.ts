@@ -22,6 +22,7 @@ import { readResources } from '../resourceEconomy';
 import { getResourceClass } from '../../data/resource-classes';
 import { WEALTH_ROUTE_CONTROL_INCOME } from '../wealth';
 import { isPlaceNode } from '../sublocationShape';
+import { scarcityRentFor } from '../regionalMonopoly';
 import { LOCATION_TRAIT_IDS } from '../../data/location-trait-constants';
 import { RUINED_SETTLEMENT_PROSPERITY_FLOOR } from '../../data/strategic-action-constants';
 import {
@@ -216,8 +217,12 @@ export function townTaxOf(settlement: GraphNode, graph?: WorldGraph): number {
   return lawless ? tax * LAWLESS_TOWN_TAX_FACTOR : tax;
 }
 
-/** What a held place's resource bag yields today. Read only. */
-export function placeYieldOf(place: GraphNode): number {
+/**
+ * What a held place's resource bag yields today. Read only.
+ * THR-1955 — `rentFor` (optional) multiplies one resource's line: the holder's regional
+ * monopoly scarcity rent (`MONOPOLY_SCARCITY_RENT`). Omitted = every line × 1.
+ */
+export function placeYieldOf(place: GraphNode, rentFor?: (resourceId: string) => number): number {
   let sum = 0;
   for (const [rid, r] of Object.entries(readResources(place.properties))) {
     const q = num((r as { quantity?: unknown }).quantity) ?? 0;
@@ -225,7 +230,7 @@ export function placeYieldOf(place: GraphNode): number {
     const rate = YIELD_RATE[getResourceClass(rid).category] ?? 0;
     const tier = (r as { stockTier?: unknown }).stockTier;
     const mult = typeof tier === 'string' ? (STOCK_TIER_MULT[tier] ?? 1) : 1;
-    sum += (q / 100) * rate * mult;
+    sum += (q / 100) * rate * mult * (rentFor ? rentFor(rid) : 1);
   }
   return sum;
 }
@@ -341,7 +346,7 @@ export function computePurseIncome(
       day.taxHolderOf.push(placeId);
       add(holder, 'town', placeId, tax);
     }
-    const yieldAmount = placeYieldOf(place);
+    const yieldAmount = placeYieldOf(place, scarcityRentFor(graph, holder, place));
     if (yieldAmount > 0) {
       day.income.placeYield += yieldAmount;
       add(holder, isSettlement(place) ? 'town' : 'place', placeId, yieldAmount);

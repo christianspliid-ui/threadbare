@@ -24,7 +24,9 @@ export interface LensLine {
   segments: LensLineSegment[];
 }
 
-export type LensMarkTone = 'first' | 'retinue' | 'watched' | 'trouble' | 'caravan' | 'threat';
+export type LensMarkTone = 'first' | 'retinue' | 'watched' | 'trouble' | 'caravan' | 'threat'
+  // THR-1955 — an embargoed road (red, dashed), Trade lens only.
+  | 'embargoed';
 
 export interface LensMark {
   /** A `MAP_MARKERS` key whose lens is this lens. */

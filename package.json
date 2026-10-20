@@ -160,6 +160,7 @@
     "check:content-model-census": "esbuild scripts/content-model-census.ts --bundle --platform=node --format=esm --outfile=.cache/content-model-census.mjs --external:fs --external:path --external:process --external:url && node .cache/content-model-census.mjs",
     "check:grudge-duels": "esbuild scripts/check-grudge-duels.ts --bundle --platform=node --format=esm --outfile=.cache/check-grudge-duels.mjs --external:fs --external:path && node .cache/check-grudge-duels.mjs",
     "measure:renown-scales": "esbuild scripts/measure-renown-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-renown-scales.mjs --external:fs --external:path && node .cache/measure-renown-scales.mjs",
+    "measure:monopolies": "esbuild scripts/measure-monopolies.ts --bundle --platform=node --format=esm --outfile=.cache/measure-monopolies.mjs --external:fs --external:path && node .cache/measure-monopolies.mjs",
     "measure:unrest": "esbuild scripts/measure-unrest.ts --bundle --platform=node --format=esm --outfile=.cache/measure-unrest.mjs --external:fs --external:path && node .cache/measure-unrest.mjs",
     "measure:prayers": "esbuild scripts/measure-prayers.ts --bundle --platform=node --format=esm --outfile=.cache/measure-prayers.mjs --external:fs --external:path && node .cache/measure-prayers.mjs",
     "measure:means": "esbuild scripts/means-comfort-pace.ts --bundle --platform=node --format=esm --outfile=.cache/means-comfort-pace.mjs --external:fs --external:path && node .cache/means-comfort-pace.mjs",

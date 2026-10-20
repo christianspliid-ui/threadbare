@@ -68,6 +68,10 @@ import { buildRealmProjection } from './realmProjection';
 import { canCourt, crownActive, executeSeekFealty } from './crown';
 import { buildCrownWorld, type CrownWorld } from './crown/eligibility';
 import { SEEK_FEALTY_WEIGHT, SEEK_FEALTY_COOLDOWN_TICKS } from '../data/crown-constants';
+import { planEmbargo, executeEmbargo } from './embargo';
+import { realmBorderMap } from './realmBorderMap';
+import { EMBARGO_WEIGHT, EMBARGO_COOLDOWN_TICKS } from '../data/regional-monopoly-constants';
+import type { PendingEncounterSeed } from '../types/unifiedAction';
 
 // ─── PRNG (mulberry32 — same as all engine modules) ──────────────────────────
 
@@ -157,6 +161,18 @@ export const FACTION_ACTION_TEMPLATES: ReadonlyMap<FactionActionType, FactionAct
     prerequisite: { type: 'can_court' },
     weight: SEEK_FEALTY_WEIGHT,
   }],
+  // THR-1955 — after seek_fealty, for the same reason: only a monopoly holder ever draws
+  // this row's noise, so no other faction's rolls move.
+  ['embargo', {
+    type: 'embargo',
+    name: 'Embargo',
+    treasuryCost: 0,
+    cooldownTicks: EMBARGO_COOLDOWN_TICKS,
+    minMembers: 0,
+    ambitionAffinity: ['resource_acquisition', 'revenge'],
+    prerequisite: { type: 'holds_regional_monopoly' },
+    weight: EMBARGO_WEIGHT,
+  }],
 ]);
 
 /**
@@ -169,6 +185,8 @@ interface CrownSweep {
   world: CrownWorld | null;
   built: boolean;
   chronicle: ChronicleEntry[];
+  /** THR-1955 — encounter seeds the sweep's actions planted (an embargo's scene). */
+  seeds: PendingEncounterSeed[];
 }
 
 function crownWorldFor(state: GameState, sweep: CrownSweep | undefined): CrownWorld | null {
@@ -186,6 +204,11 @@ function crownWorldFor(state: GameState, sweep: CrownSweep | undefined): CrownWo
     }
   }
   return sweep.world;
+}
+
+/** THR-1955 — the realm border map the embargo's holder questions use (cached per session). */
+function embargoRealmMap(state: GameState, sweep: CrownSweep | undefined): ReadonlyMap<string, string> {
+  return realmBorderMap(sweep?.runtime, state.graph, state.tiles, state.tick);
 }
 
 // ─── Leader Personality Bias ──────────────────────────────────────────────────
@@ -314,6 +337,9 @@ function checkPrerequisite(
     }
     case 'has_excommunication_cause': {
       return excommunicationCauses(state, factionId).length > 0;
+    }
+    case 'holds_regional_monopoly': {
+      return planEmbargo(state, factionId, embargoRealmMap(state, sweep)) !== null;
     }
   }
 }
@@ -929,7 +955,7 @@ export function phaseFactionActions(state: GameState, runtime?: SimulationRuntim
   const factionNodes = state.graph.getNodesByType('actor')
     .filter(n => n.properties.actorType === 'faction');
 
-  const sweep: CrownSweep = { runtime, world: null, built: false, chronicle: [] };
+  const sweep: CrownSweep = { runtime, world: null, built: false, chronicle: [], seeds: [] };
   for (const faction of factionNodes) {
     try {
       processFaction(state, faction, sweep);
@@ -946,6 +972,7 @@ export function phaseFactionActions(state: GameState, runtime?: SimulationRuntim
   const patch: Partial<GameState> = {};
   if (memberWorkEvents.length > 0) patch.tickEvents = [...state.tickEvents, ...memberWorkEvents];
   if (sweep.chronicle.length > 0) patch.chronicleEntries = [...state.chronicleEntries, ...sweep.chronicle];
+  if (sweep.seeds.length > 0) patch.pendingEncounterSeeds = [...(state.pendingEncounterSeeds ?? []), ...sweep.seeds];
   return patch;
 }
 
@@ -1174,6 +1201,14 @@ function processFaction(state: GameState, faction: GraphNode, sweep?: CrownSweep
       if (!result) break;
       record = result.record;
       sweep.chronicle.push(...result.chronicle);
+      break;
+    }
+    case 'embargo': {
+      const result = executeEmbargo(state, faction, [...(state.pendingEncounterSeeds ?? []), ...(sweep?.seeds ?? [])], embargoRealmMap(state, sweep));
+      if (!result) break;
+      record = result.record;
+      sweep?.chronicle.push(...result.chronicle);
+      sweep?.seeds.push(...result.seeds);
       break;
     }
   }

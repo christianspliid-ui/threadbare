@@ -6,8 +6,9 @@
  *   2. the income sentence — the two largest sources by name, and who takes a share,
  *   3. the spending sentence — its armies and how long the purse keeps them, or the
  *      broke line when any army went unpaid today,
- *   4. the monopoly chip slot — empty until economic war aims (THR-1933) writes the
- *      state that fills it (Law 56: no chip without state).
+ *   4. the monopoly chips — one "Holds the region's salt" per good the faction holds a
+ *      regional monopoly on (THR-1955), read from its regionalMonopolies record; they
+ *      clear the day the share drops (Law 56: no chip without state).
  *
  * Every line is composed from the `purseLastDay` the `faction_purse` phase wrote, so
  * the chip, the sentences and the chronicle cannot disagree (Law 56). Names route
@@ -86,7 +87,27 @@ export function FactionPursePanel({ factionId, graph }: FactionPursePanelProps) 
       <span data-testid="faction-purse-spending" style={{ color: broke ? 'var(--negative)' : 'var(--text-tertiary)' }}>
         {view.spending}
       </span>
-      {/* Monopoly chip slot — renders nothing until THR-1933 writes the state (Law 56). */}
+      {view.monopolies.length > 0 && (
+        <span data-testid="faction-purse-monopolies" style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          {view.monopolies.map(text => (
+            <Tooltip key={text} id="ui.econ.monopoly">
+              <span
+                data-testid="faction-purse-monopoly"
+                className="cursor-help"
+                role="term"
+                style={{
+                  padding: '1px 8px',
+                  borderRadius: 'var(--radius-chip)',
+                  border: '1px solid var(--border-subtle)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {text}
+              </span>
+            </Tooltip>
+          ))}
+        </span>
+      )}
     </div>
   );
 }

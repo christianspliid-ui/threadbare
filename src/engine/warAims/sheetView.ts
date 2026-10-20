@@ -71,6 +71,10 @@ export function armyAimView(graph: WorldGraph, armyId: string): ArmyAimView | nu
     scarceClause: rid ? scarceClauseOf(rid, getResourceTierProse(rid, 'scarce')) : null,
     attackerFactionName: attackerId ? (graph.getNode(attackerId)?.name ?? null) : null,
     hasNamedEnemy: enemy !== null,
+    monopolyResourceName: rid ? (RESOURCE_DEFINITIONS[rid]?.name ?? rid).toLowerCase() : null,
+    monopolyHolderName: typeof objective.reasonFactionId === 'string'
+      ? (graph.getNode(objective.reasonFactionId)?.name ?? null)
+      : null,
   });
   if (!template) return null;
   return { template, slots: { town: { id: town.id, name: town.name, kind: 'location' }, enemy } };

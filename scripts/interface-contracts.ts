@@ -6903,6 +6903,52 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'regional-monopoly-pays-rent',
+    producerSystem: ECONOMY,
+    consumerSystem: FACTIONS,
+    intent:
+      'A faction holds a regional monopoly on a good when, around an anchor place it holds, at least MONOPOLY_REGION_MIN_PLACES place-tier bearing places lie within MONOPOLY_REGION_RADIUS_HEXES and it holds MONOPOLY_CONTROL_FRACTION of them (THR-1955, war aims S2). phaseEconomicPower writes faction.regionalMonopolies ({ resourceId, anchorLocationId, share, placeIds, sinceTick }) and keeps faction.monopolies (resource ids) daily, chronicling "holds most of" lines de-duplicated by MONOPOLY_MIN_HOLD_DAYS. Readers: the purse\'s place yield pays MONOPOLY_SCARCITY_RENT on the held good (scarcityRentFor), the war-aim score\'s break/complete bonuses (monopolyAimFor), the embargo prerequisite, the Purse panel chip and the Trade lens monopoly line.',
+    ulTerms: ['Faction', 'Settlement'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['regionalMonopolies', 'monopolies', 'scarcityRentFor', 'monopolyAimFor'],
+    },
+    writeSites: ['src/engine/phases/regionalMonopolies.ts'],
+    readSites: [
+      'src/engine/factionPurse/income.ts',
+      'src/engine/warAims/townValue.ts',
+      'src/engine/embargo.ts',
+      'src/components/Game/FactionPursePanel.tsx',
+      'src/engine/views/lenses/tradeLens.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-20',
+      evidence: 'THR-1955. src/engine/__tests__/regionalMonopoly.test.ts (11): a 3-of-4 region holds at 0.75, a far place is another market, the record clears the day the share drops, a loss inside the hold window is traced not chronicled, rent multiplies the held good, the break and complete bonuses fire. npm run measure:monopolies, seeds 42/99/7: 4 / 8 / 9 regional monopolies at day 10.',
+    },
+  },
+  {
+    id: 'faction-embargo-starves-region',
+    producerSystem: FACTIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'The embargo faction action (THR-1955, war aims S2): a regional monopoly holder writes one activeEmbargo record ({ targetFactionId, resourceId, anchorLocationId, untilTick }) on itself, against the enemy (isEnemyFaction) whose settlements in the region carry most of the good, for EMBARGO_DAYS. Nothing is written on towns or lanes: embargoedTownsOf / embargoedLanesOf derive them. phaseResourceStockTiers subtracts EMBARGO_BALANCE_CUT from each embargoed town\'s balance on the good (embargoCutsByLocation → deriveLocationStockTiers balanceCuts); the Trade lens draws the derived lanes red and dashed with the "Embargoed by …" hover line; one encounter_route_embargo seed goes on the busiest lane. phaseEconomicPower lifts it on expiry or when the monopoly is lost, chronicling embargo_lifted.',
+    ulTerms: ['Faction', 'Settlement'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['activeEmbargo', 'embargoedTownsOf', 'embargoedLanesOf', 'embargoCutsByLocation'],
+    },
+    writeSites: ['src/engine/embargo.ts', 'src/engine/phases/regionalMonopolies.ts'],
+    readSites: [
+      'src/engine/phases/resourceStockTiers.ts',
+      'src/engine/views/lenses/tradeLens.ts',
+      'src/components/Game/debug/EconomyDebugTab.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-10-20',
+      evidence: 'THR-1955. regionalMonopoly.test.ts: plan targets the enemy in the region, one record with derived towns and lanes and nothing on the town, the cut lowers the balance by EMBARGO_BALANCE_CUT, lifted on expiry (chronicle) and on monopoly loss (trace). npm run measure:monopolies: every embargo on seeds 42/99/7 left an embargo_laid line and a stock change in the target region (5 of 5 in 132-tick runs; 8 of 8 over 60 days on seed 42).',
+    },
+  },
+  {
     id: 'war-aim-targets-faction-ambitions',
     producerSystem: 'War, Armies & Battles',
     consumerSystem: FACTIONS,

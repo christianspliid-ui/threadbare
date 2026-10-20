@@ -14,6 +14,8 @@ import { isSettlement } from './income';
 import { readResources } from '../resourceEconomy';
 import { ARMY_UPKEEP_PER_DAY } from '../../data/faction-purse-constants';
 import type { ArmySizeCategory } from '../../types/army';
+import { readRegionalMonopolies } from '../regionalMonopoly';
+import { MONOPOLY_WORDS, fillMonopolyWords } from '../../data/regional-monopoly-words';
 
 /** A run of sentence text, or a name the UI renders as a link. */
 export type PursePart =
@@ -156,6 +158,8 @@ export interface FactionPurseView {
   broke: boolean;
   income: PursePart[];
   spending: string;
+  /** THR-1955 — one chip text per good the faction holds a regional monopoly on (id-sorted). */
+  monopolies: string[];
 }
 
 /**
@@ -177,5 +181,7 @@ export function factionPurseView(
     broke: (day?.armiesUnpaid.length ?? 0) > 0,
     income: incomeSentence(graph, day),
     spending: spendingSentence(graph, day, wealth),
+    monopolies: [...new Set(readRegionalMonopolies(node.properties).map(m => m.resourceId))].sort()
+      .map(rid => fillMonopolyWords(MONOPOLY_WORDS.chip, { good: resourceWord(rid) })),
   };
 }
