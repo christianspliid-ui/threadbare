@@ -19,7 +19,7 @@ import { readView } from '../readView';
 import { hexContentsIndexSelector } from '../hexContents';
 import { buildArmedTargetsFrom } from '../armedTargets';
 import { isGodCard } from '../godRail';
-import { INSPECTOR_VIEW_BUDGET_MS } from '../viewConstants';
+import { INSPECTOR_VIEW_BUDGET_MS, INSPECTOR_VIEW_CI_CEILING_MS } from '../viewConstants';
 import { AGENT_INTERVENTION_TEMPLATES, UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import type { GameState } from '../../../types/gameState';
 
@@ -70,8 +70,8 @@ describe('buildArmedTargets frame budget on seed 42 medium (THR-1914)', () => {
       if (lit > 0) litAny++;
       if (ms > worst.ms) worst = { id: card.id, ms, lit };
     }
-    console.log(`[THR-1914] ${cards.length} hand cards, ${litAny} light something; worst ${worst.id}: ${worst.lit} lit, median ${worst.ms.toFixed(2)} ms (budget ${INSPECTOR_VIEW_BUDGET_MS}); hex-contents index ${indexMs.toFixed(2)} ms`);
+    console.log(`[THR-1914] ${cards.length} hand cards, ${litAny} light something; worst ${worst.id}: ${worst.lit} lit, median ${worst.ms.toFixed(2)} ms (budget ${INSPECTOR_VIEW_BUDGET_MS}, asserted ceiling ${INSPECTOR_VIEW_CI_CEILING_MS} — THR-1995); hex-contents index ${indexMs.toFixed(2)} ms`);
     expect(litAny).toBeGreaterThan(0);
-    expect(worst.ms).toBeLessThan(INSPECTOR_VIEW_BUDGET_MS);
+    expect(worst.ms).toBeLessThan(INSPECTOR_VIEW_CI_CEILING_MS);
   }, TEST_TIMEOUT_MS);
 });

@@ -35,6 +35,19 @@ export const NEEDS_YOU_NEWS_KEEP_DAYS = 3;
 export const INSPECTOR_VIEW_BUDGET_MS = 16;
 
 /**
+ * THR-1995 — how much slower a shared CI runner may be than the dev machine when the heavy
+ * lane asserts `INSPECTOR_VIEW_BUDGET_MS`. Measured on heavy-tests.yml: the same code ran the
+ * armed-targets worst card at 10.5 ms and 17.2 ms on consecutive runs, and the untouched
+ * hex-contents index at 4.5 ms and 7.6 ms (×1.7). The frame budget stays the product target
+ * (each budget test logs it); the assertion uses the budget × this factor, so the lane fails
+ * on a real regression (well over twice a frame) and not on runner load.
+ */
+export const SHARED_RUNNER_SLOWDOWN = 2;
+
+/** THR-1995 — the wall-clock ceiling the heavy budget tests assert: one frame on a slow runner. */
+export const INSPECTOR_VIEW_CI_CEILING_MS = INSPECTOR_VIEW_BUDGET_MS * SHARED_RUNNER_SLOWDOWN;
+
+/**
  * THR-1914 (Inspector plan § Constants) — how long "Illuminating Whisper left your hand.
  * Nothing was spent." stays in the banner (or as a toast) before it clears, in ms.
  */

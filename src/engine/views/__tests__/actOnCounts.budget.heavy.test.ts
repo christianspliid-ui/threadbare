@@ -19,7 +19,7 @@ import { createSimulationRuntime } from '../../simulationRuntime';
 import { getLocationNodes } from '../../sublocationShape';
 import { buildSubjectPage } from '../subjects/subjectPage';
 import { actOnCounts, actOnSlots, actOnTargetForRef } from '../subjects/actOn';
-import { INSPECTOR_VIEW_BUDGET_MS } from '../viewConstants';
+import { INSPECTOR_VIEW_BUDGET_MS, INSPECTOR_VIEW_CI_CEILING_MS } from '../viewConstants';
 import { AGENT_INTERVENTION_TEMPLATES, UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import type { SubjectPageVM } from '../subjects/subjectTypes';
 import type { WorldRef } from '../../../types/worldRef';
@@ -82,8 +82,8 @@ describe('actOnCounts frame budget on seed 42 medium (THR-1913)', () => {
     for (const { p, refs } of [heaviestPlace, heaviestLand]) {
       const ms = medianMs(state, refs);
       const counts = actOnCounts(state, refs);
-      console.log(`[THR-1913] ${p.subjectKey} (${p.pageKind}): ${refs.length} rows, ${Object.values(counts).filter(n => n > 0).length} with cards, median ${ms.toFixed(2)} ms (budget ${INSPECTOR_VIEW_BUDGET_MS})`);
-      expect(ms).toBeLessThan(INSPECTOR_VIEW_BUDGET_MS);
+      console.log(`[THR-1913] ${p.subjectKey} (${p.pageKind}): ${refs.length} rows, ${Object.values(counts).filter(n => n > 0).length} with cards, median ${ms.toFixed(2)} ms (budget ${INSPECTOR_VIEW_BUDGET_MS}, asserted ceiling ${INSPECTOR_VIEW_CI_CEILING_MS} — THR-1995)`);
+      expect(ms).toBeLessThan(INSPECTOR_VIEW_CI_CEILING_MS);
     }
     // The measurement read real slots, not an early return: every castable row is read through the hand it deals
     // (a fresh world's cards are mostly still locked, so the counts themselves may be 0).
