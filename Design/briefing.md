@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 04:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 05:55 local (03:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,13 +40,13 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 30 ready, 1 in progress.** The builder is working on [find anything with Ctrl+K](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the) (High, claimed 01:29 UTC). The fix for the red heavy tests, [THR-1995](https://linear.app/threadbare/issue/THR-1995/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured), merged at 02:51 UTC ([PR #2494](https://github.com/christianspliid-ui/threadbare/pull/2494)).
+**Backed up: 30 ready, 1 in progress.** The builder is still working on [find anything with Ctrl+K](https://linear.app/threadbare/issue/THR-1915/find-anything-ctrlk-finds-what-the-god-has-seen-and-opens-it-in-the) (High, claimed 01:29 UTC; its current run has been active for an hour, last activity a minute ago).
 
-- Next up: [words that wait for their moment](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the) (High, promoted by the orchestrator this hour) and [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
+- Next up: [words that wait for their moment](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the), [a town on the edge turns to a better lord](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a) and [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (all High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. Heavy simulation tests are green on main again. The live site is current (0173c085). Main's checks and all scheduled lanes are on time. No pull requests are waiting to merge.
-- The engine runs at 115 ms a tick, 16% faster than its week's median.
-- The tidy-up job reports 563 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
+- All green. The live site is current (0173c085). Main's checks, including heavy simulation tests, are green, and all 13 scheduled lanes are on time. No pull requests are waiting to merge.
+- The engine runs at 125 ms a tick, 9% faster than its week's median.
+- The tidy-up job reports 564 old worktrees, with 5 items waiting for a decision. Builder housekeeping. You sent no new Discord messages.
