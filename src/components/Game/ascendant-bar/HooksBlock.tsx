@@ -53,6 +53,7 @@
 import React from 'react';
 import type { GameState } from '../../../types/gameState';
 import { attachmentDetailFromNode } from '../../../engine/attachmentTemplateDetail';
+import { readAgreement } from '../../../engine/agreementShape';
 import { Tooltip } from '../../shared/Tooltip';
 import {
   HOOK_LABEL_FALLBACK,
@@ -313,9 +314,8 @@ export function extractChips(gameState: GameState): {
   ];
   for (const edge of agreementEdges) {
     const edgeProps = edge.properties as Record<string, unknown>;
-    const agreement = edgeProps.agreement as
-      | { type?: string; terms?: string }
-      | undefined;
+    // Both the flat reward shape and the nested fixture shape (THR-1920).
+    const agreement = readAgreement(edgeProps);
     if (!agreement) continue;
 
     const counterpartyId = edge.source === ascendantId ? edge.target : edge.source;

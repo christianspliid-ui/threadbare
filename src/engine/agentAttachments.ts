@@ -16,6 +16,7 @@ import type {
 } from '../types/attachments';
 import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
 import { resolveSlotTag } from './attachmentSlotResolver';
+import { readAgreement } from './agreementShape';
 import { isSpellSuppressedFor } from './effects/effectSuppression';
 import type { SpellTemplate } from '../types/effects';
 import { describeSpell } from './spellGenerator/describeSpell';
@@ -413,7 +414,8 @@ export function getAgentAttachments(
 
   for (const edge of relatesEdges) {
     const edgeProps = edge.properties as Record<string, unknown>;
-    const agreementProps = edgeProps.agreement as Partial<AgreementProperties> | undefined;
+    // Both the flat reward shape and the nested fixture shape (THR-1920).
+    const agreementProps: Partial<AgreementProperties> | null = readAgreement(edgeProps);
     if (!agreementProps) continue;
 
     // Determine counterparty
