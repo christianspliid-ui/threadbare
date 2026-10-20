@@ -24,6 +24,7 @@ import { hexContentsIndexSelector } from './hexContents';
 import { createSeenFloor, godsPeopleIds, isHexKnown } from './knowledge';
 import { getFirstId } from '../meetingEncounter';
 import { isActionRevealed } from '../actionUnlock';
+import { HOLDING_ATTACHMENT_CATEGORY } from '../holdings';
 import { isGodCard } from './godRail';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { FIND_FACT_WORDS, FIND_GROUP_LABELS, FIND_WORDS } from '../../data/view-content';
@@ -274,6 +275,7 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
       push(entry({ kind: 'army', id: row.ref.id, name: row.name }, 'army', row.name, atFact(row.ref.id) || FIND_FACT_WORDS.army, hexOrNull, false));
     }
     for (const row of hex.artifacts) {
+      if (graph.getNode(row.ref.id)?.properties.attachmentCategory === HOLDING_ATTACHMENT_CATEGORY) continue;
       if (!named(row.ref)) continue;
       push(entry({ kind: 'artifact', id: row.ref.id, name: row.name }, 'artifact', row.name, atFact(row.ref.id), hexOrNull, false));
     }
@@ -285,7 +287,8 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
     for (const type of ['possesses', 'bonded_to'] as const) {
       for (const e of graph.getOutgoingEdges(holderId, type)) {
         const art = graph.getNode(e.target);
-        if (!art || !named({ kind: 'artifact', id: art.id })) continue;
+        // A holding face mirrors a held place; the place is already listed under Places.
+        if (!art || art.properties.attachmentCategory === HOLDING_ATTACHMENT_CATEGORY || !named({ kind: 'artifact', id: art.id })) continue;
         if (out.some(x => x.key === `artifact:${art.id}`)) continue;
         const fact = holder?.name ? FIND_FACT_WORDS.heldBy.replace('{name}', holder.name) : '';
         push(entry({ kind: 'artifact', id: art.id, name: art.name }, 'artifact', art.name, fact, null, true));

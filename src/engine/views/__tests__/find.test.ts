@@ -158,6 +158,13 @@ describe('the leak test (THR-1822 § D10)', () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
+  it('a held place holding face is not listed as a Thing', () => {
+    const s = world();
+    s.graph.addNode({ id: 'face', type: 'artifact', name: 'Temple Quarter', properties: { attachmentCategory: 'holding' } });
+    s.graph.addEdge({ id: 'p1', source: 'eloise', target: 'face', type: 'possesses', properties: {} });
+    expect(indexOf(s).entries.some(e => e.ref.id === 'face')).toBe(false);
+  });
+
   it('the registered selector holds no unseen ref', () => {
     const sel = getViewSelector('findIndex');
     expect(sel).toBe(findIndexSelector);
