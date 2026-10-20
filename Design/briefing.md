@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 19:58 local (17:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 20:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -7,7 +7,7 @@
 
 ## Also waiting (6)
 
-- **New: the builder is not allowed to edit the checks it was asked to loosen.** [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) was parked at 16:55 UTC. The safety layer refused the gate and Definition-of-Done edits as needing a person. **Either run it with me in a session you are watching, or let the unattended builder edit the gate and CI files.** [Run the review gate only on large changes](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) will hit the same wall.
+- **The builder is not allowed to edit the checks it was asked to loosen.** [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) was parked at 16:55 UTC. The safety layer refused the gate and Definition-of-Done edits as needing a person. **Either run it with me in a session you are watching, or let the unattended builder edit the gate and CI files.** [Run the review gate only on large changes](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) will hit the same wall.
 - **Sunday evening to Monday evening (18–19 Oct):** "The scheduled lanes went silent for 23.3h (2026-10-18T18:26:51.000Z → 2026-10-19T17:42:15.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
@@ -50,12 +50,12 @@ Say 'veto <title>' to reverse any of these.
 
 **Backed up: 28 ready, 2 in progress.**
 
-- The builder is building [war aims S2: regional monopolies pay rent and can embargo an enemy's towns](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys) (claimed 17:13 UTC). Its run is live, with edits in its worktree and a pushed branch.
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, for about an hour. No file was changed. It waits on the ask above.
+- The builder is building [war aims S2: regional monopolies pay rent and can embargo an enemy's towns](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys) (claimed 17:13 UTC). Its run is still live (last active 18:54 UTC), with a [pushed branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1955-regional-monopolies-embargo).
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, for about two hours. No file was changed. It waits on the ask above.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
 - The live site is current (413b19ca). Main's checks are green, no PRs are waiting, and all 13 scheduled lanes are on time.
-- Engine speed: "tick cost 180 ms/tick steady, 34% above the 7-day median (135, 119 rows since bbe2a6c9); top phase agent_decision, 625 agents. Name the merges between bbe2a6c9 and 413b19ca: git log --oneline --merges bbe2a6c9..413b19ca". The same commit measured 142 ms last hour, so this is probably the machine being busy with the builder's run. If it holds next hour, it is the builder's to chase.
+- Engine speed: "tick cost 180 ms/tick steady, 32% above the 7-day median (137, 119 rows since 7756da78); top phase agent_decision, 625 agents. Name the merges between 7756da78 and 413b19ca: git log --oneline --merges 7756da78..413b19ca". Second hour in a row on the same commit, again while the builder's run was busy on this machine. It is the builder's to chase once its run ends; not yours.
 - The tidy-up job reports 571 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
