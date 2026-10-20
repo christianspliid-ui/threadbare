@@ -16,6 +16,7 @@ import type { WorldRef, WorldRefKind } from '../../../types/worldRef';
 import { parseHexRefId } from '../../../types/worldRef';
 import type { GameState } from '../../../types/gameState';
 import type { GraphNode } from '../../../types/graph';
+import type { TerrainType } from '../../../types';
 import type { Section } from '../../../types/detailPage';
 import type { SectionResolverContext } from '../../detailPageResolvers';
 import type { RealmProjection } from '../../realmProjection';
@@ -39,6 +40,8 @@ import { buildActOn, type ActOnTarget } from './actOn';
 import { landNameFor } from './landName';
 import { biomeParagraphs, landHexSeed } from './landProse';
 import { tileAt } from './pageResolvers';
+import { pickConceptArt } from '../../../data/concept-art-assets';
+import { getOwnLocationConceptArtUrl } from '../../../data/location-concept-art';
 import { attachmentDetailFromNode } from '../../attachmentTemplateDetail';
 import { humanizeKeySegment } from '../../aftermathWords';
 import { ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
@@ -282,6 +285,27 @@ function godPage(state: GameState, ref: WorldRef | null): GenericSubjectPageVM {
   };
 }
 
+/**
+ * The land page's hero (THR-1876 § D10, THR-1916): a lair the land shows in *In this land*
+ * gives its own art — a monster's den is the land's story; otherwise the terrain's
+ * landscape, scored with the land's locations. No terrain ⇒ null, the designed fallback
+ * tile (Law 4).
+ */
+export function landHeroArt(
+  state: GameState,
+  terrain: TerrainType | undefined,
+  lairIds: readonly string[],
+  locationIds: readonly string[],
+): string | null {
+  for (const id of lairIds) {
+    const art = getOwnLocationConceptArtUrl(state.graph.getNode(id)?.properties.locationSubtype as string | undefined);
+    if (art) return art;
+  }
+  if (!terrain) return null;
+  const locations = locationIds.map(id => state.graph.getNode(id)).filter((n): n is GraphNode => !!n);
+  return pickConceptArt(terrain, locations, null);
+}
+
 function landPage(state: GameState, col: number, row: number, runtimeState: { runtime: Parameters<typeof readView>[0] }): LandPageVM {
   const key = toHexKey(col, row);
   const tile = tileAt(state, col, row);
@@ -304,7 +328,7 @@ function landPage(state: GameState, col: number, row: number, runtimeState: { ru
       ref: { kind: 'hex', id: key, name },
       name,
       kindLabel: INSPECTOR_WORDS.landKind,
-      visual: { kind: 'land', id: key, portraitGate: 'shown' },
+      visual: { kind: 'land', id: key, portraitGate: 'shown', src: landHeroArt(state, tile?.terrain, contents.lairs.map(l => l.ref.id), contents.locations.map(l => l.ref.id)) },
       whereLine,
       standing,
       lede,

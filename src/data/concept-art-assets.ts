@@ -92,9 +92,17 @@ export const CONCEPT_ART_REGISTRY: ConceptArtEntry[] = [
   {
     id: 'hills',
     image: 'hills.png',
-    terrains: ['hills', 'forested_hills', 'plateau', 'mountain_pass'],
+    terrains: ['hills', 'forested_hills', 'mountain_pass'],
     locationBoost: ['fort', 'castle', 'town', 'mining'],
     sphereBoost: ['matter', 'force'],
+  },
+  {
+    // THR-1916: the plateau had no art of its own and borrowed the green hills.
+    id: 'plateau',
+    image: 'plateau.png',
+    terrains: ['plateau'],
+    locationBoost: ['fort', 'tower', 'shrine'],
+    sphereBoost: ['matter', 'order'],
   },
   {
     id: 'mountains',
@@ -142,7 +150,8 @@ function scoreEntry(
   if (locations.length > 0) {
     const subtypes = new Set(
       locations
-        .map((loc) => loc.properties?.subtype as LocationSubtype | undefined)
+        // Location nodes carry `locationSubtype` (THR-1916); `subtype` is the older key.
+        .map((loc) => (loc.properties?.locationSubtype ?? loc.properties?.subtype) as LocationSubtype | undefined)
         .filter(Boolean),
     );
     for (const subtype of subtypes) {

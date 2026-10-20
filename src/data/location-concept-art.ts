@@ -28,6 +28,8 @@ const LOCATION_ART_MAP: Partial<Record<LocationSubtype, string>> = {
   battleground: 'battleground.png',
   oasis: 'oasis.png',
   unexplored_poi: 'ruins.png',
+  // THR-1916: a monster's lair had no art of its own and borrowed the camp.
+  lair: 'lair.png',
 };
 
 /** Fallback image for unknown location subtypes */
@@ -39,6 +41,15 @@ const FALLBACK_IMAGE = 'camp.png';
  * Fail-soft: unknown subtypes get the camp image.
  */
 export function getLocationConceptArtUrl(subtype: string | undefined): string {
-  const filename = (subtype && LOCATION_ART_MAP[subtype as LocationSubtype]) || FALLBACK_IMAGE;
-  return `/concept-art/locations/${filename}`;
+  return getOwnLocationConceptArtUrl(subtype) ?? `/concept-art/locations/${FALLBACK_IMAGE}`;
+}
+
+/**
+ * The subtype's own concept art, or null when it has none (no camp fallback).
+ * For callers that fall back to something better than the camp, e.g. the land
+ * page's terrain landscape (THR-1916).
+ */
+export function getOwnLocationConceptArtUrl(subtype: string | undefined): string | null {
+  const filename = subtype ? LOCATION_ART_MAP[subtype as LocationSubtype] : undefined;
+  return filename ? `/concept-art/locations/${filename}` : null;
 }

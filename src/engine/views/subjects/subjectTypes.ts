@@ -39,8 +39,12 @@ export interface SubjectHeaderVM {
   epithet: string | null;
   /** Containment, innermost first: Temple Quarter → The Bone Coast. */
   whereLine: RefRow[];
-  /** What `EntityVisual` draws: the subject's kind and id, and the Law 8 portrait gate. */
-  visual: { kind: WorldRefKind | 'god' | 'land' | 'content' | 'record' | 'missing'; id: string; portraitGate: 'shown' | 'silhouette' };
+  /**
+   * What `EntityVisual` draws: the subject's kind and id, and the Law 8 portrait gate.
+   * `src` is art the page already chose (the land page's hero, THR-1916); it wins over
+   * the resolver's own lookup. Absent ⇒ the resolver decides.
+   */
+  visual: { kind: WorldRefKind | 'god' | 'land' | 'content' | 'record' | 'missing'; id: string; portraitGate: 'shown' | 'silhouette'; src?: string | null };
   standing: StateChipVM[];
   /** What the subject is doing now, one sentence. */
   doingLine: string | null;

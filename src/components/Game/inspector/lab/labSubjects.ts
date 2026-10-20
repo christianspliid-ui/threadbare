@@ -148,6 +148,26 @@ export const INSPECTOR_LAB_EXTRA: readonly LabPick[] = [
     fallback: 'No Area in this world',
   },
   {
+    // THR-1916: the plateau's own hero art.
+    label: 'Land — a plateau',
+    pick: s => {
+      const t = s.tiles.find(x => x.terrain === 'plateau');
+      return t ? { kind: 'hex', id: `${t.coord.col},${t.coord.row}` } : null;
+    },
+    fallback: 'No plateau in this world',
+  },
+  {
+    // THR-1916: a lair's hex shows the lair's own hero art.
+    label: "Land — a lair's",
+    pick: s => {
+      const lair = s.graph.getNodesByType('location').find(n => n.properties.locationSubtype === 'lair');
+      const col = lair?.properties.hexCol as number | undefined;
+      const row = lair?.properties.hexRow as number | undefined;
+      return col != null && row != null ? { kind: 'hex', id: `${col},${row}` } : null;
+    },
+    fallback: 'No lair in this world',
+  },
+  {
     // THR-1910 (S2b): the attachment card's effect, duration, trigger and source rows.
     label: 'Attachment — a condition template, one with triggers when there is one',
     pick: s => {
