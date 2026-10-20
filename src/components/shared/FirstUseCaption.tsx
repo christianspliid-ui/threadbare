@@ -54,11 +54,17 @@ function useAnchorRect(active: boolean): [RefObject<HTMLSpanElement | null>, { t
     if (!active) return;
     const read = () => {
       const r = ref.current?.getBoundingClientRect();
-      if (r) setRect({ top: r.top, right: r.right });
+      if (r) setRect(prev => (prev && prev.top === r.top && prev.right === r.right ? prev : { top: r.top, right: r.right }));
     };
     read();
+    // The top bar re-lays itself out without a window resize (a yield step hides a
+    // name, Needs you appears), so the anchor is re-read while the line is up.
+    const timer = window.setInterval(read, FLOATING_REREAD_MS);
     window.addEventListener('resize', read);
-    return () => window.removeEventListener('resize', read);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener('resize', read);
+    };
   }, [active]);
   return [ref, rect];
 }
@@ -113,6 +119,9 @@ export function FirstUseCaption({ id, name, floating = false }: FirstUseCaptionP
 }
 
 const FLOATING_WIDTH_PX = 260;
+
+/** How often a floating caption re-reads its anchor while it is on screen. */
+const FLOATING_REREAD_MS = 400;
 
 const FLOATING_STYLE: CSSProperties = {
   position: 'fixed',

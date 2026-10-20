@@ -870,8 +870,10 @@ function CompactThreadRow({
               </div>
             </div>
           )}
-          {/* THR-1986 — "Asks you" says her chapters keep happening either way. */}
-          {node.category === 'agent' && node.courtPosition && onToggleAttentionMode && (
+          {/* THR-1986 — "Asks you" says The First's chapters keep happening either way.
+              One row only: the caption store limits by id, so a caption on every court
+              row would break the two-at-once rule. */}
+          {node.category === 'agent' && node.courtPosition === 'the_first' && onToggleAttentionMode && (
             <FirstUseCaption id="asks_you" name={node.name} />
           )}
         </div>

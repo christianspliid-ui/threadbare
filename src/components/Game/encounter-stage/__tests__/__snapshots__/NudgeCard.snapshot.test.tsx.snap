@@ -38,6 +38,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless on
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -78,6 +79,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a chipless on
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >
@@ -164,6 +166,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
         <span
           class="focus-ring"
           data-tooltip-id="sphere.force"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -221,6 +224,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -261,6 +265,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a dimmed card
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >
@@ -352,6 +357,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
         <span
           class="focus-ring"
           data-tooltip-id="sphere.force"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -409,6 +415,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -449,6 +456,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders a selected ca
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >
@@ -534,6 +542,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
         <span
           class="focus-ring"
           data-tooltip-id="sphere.force"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -591,6 +600,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -671,6 +681,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders alternate cos
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >
@@ -756,6 +767,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         <span
           class="focus-ring"
           data-tooltip-id="sphere.force"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -813,6 +825,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -852,6 +865,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
       <span
         class="focus-ring"
         data-tooltip-id="sphere.darkness"
+        data-tooltip-trigger=""
         style="display: inline-block; cursor: inherit;"
         tabindex="0"
       >
@@ -875,6 +889,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >
@@ -960,6 +975,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         <span
           class="focus-ring"
           data-tooltip-id="sphere.force"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -1017,6 +1033,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -1064,6 +1081,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders provenance wi
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >
@@ -1149,6 +1167,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
         <span
           class="focus-ring"
           data-tooltip-id="sphere.force"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -1206,6 +1225,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -1246,6 +1266,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the designer 
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >
@@ -1339,6 +1360,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
         <span
           class="focus-ring"
           data-tooltip-id="sphere.force"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -1396,6 +1418,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
         <span
           class="focus-ring"
           data-tooltip-id="ui.card.cost"
+          data-tooltip-trigger=""
           style="display: inline-flex; cursor: inherit;"
           tabindex="0"
         >
@@ -1436,6 +1459,7 @@ exports[`NudgeCard DOM (pre-extraction pin — THR-1002) > renders the ordinary 
       <span
         class="focus-ring"
         data-tooltip-id="ui.card.odds.faint"
+        data-tooltip-trigger=""
         style="display: inline-flex; cursor: inherit;"
         tabindex="0"
       >

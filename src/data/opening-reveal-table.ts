@@ -86,3 +86,15 @@ export const OPENING_REVEAL_HIGHLIGHT_MS = 6000;
 
 /** localStorage key for the "Show every panel" setting. */
 export const OPENING_REVEAL_SHOW_ALL_KEY = 'tb.openingReveal.showAll';
+
+/**
+ * The "Show every panel" setting, for readers outside the screen's reveal hook
+ * (THR-1986: the inspector's Dominion row). Fail-soft: unreadable storage is off.
+ */
+export function readOpeningRevealShowAllSetting(): boolean {
+  try {
+    return globalThis.localStorage?.getItem(OPENING_REVEAL_SHOW_ALL_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
