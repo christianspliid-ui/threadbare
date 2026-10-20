@@ -50,7 +50,9 @@ export type FactionActionPrerequisite =
   | { type: 'leader_exists' }
   | { type: 'no_active_conclave' }
   // THR-1932 — a realm that may court (holds a town, owes no fealty) with a candidate
-  | { type: 'can_court' };
+  | { type: 'can_court' }
+  // THR-1918 — at least one member has a cause to be struck (rival dual-member or low standing)
+  | { type: 'has_excommunication_cause' };
 
 // ─── Action Record (stored on faction node) ───────────────────────────────────
 

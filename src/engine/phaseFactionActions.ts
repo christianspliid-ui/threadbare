@@ -57,7 +57,10 @@ import { refreshFactionDerivedFlags, getFactionLeaderId, getAnointedLeaderId } f
 import { resolveFactionMemberWork } from './factionMemberWork';
 import type { FactionStirDissentTrace } from '../types/factionAction';
 import { getFactionMembershipEdges } from './graphQueries';
-import { FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS } from '../data/faction-constants';
+import {
+  FACTION_EXCOMMUNICATE_NOVICE_GRACE_TICKS,
+  FACTION_EXCOMMUNICATE_MAX_REPUTATION,
+} from '../data/faction-constants';
 import type { ChronicleEntry } from '../types/narrative';
 import type { SimulationRuntime } from './simulationRuntime';
 import { ensureRealmProjection, touchStructure } from './simulationRuntime';
@@ -121,6 +124,8 @@ export const FACTION_ACTION_TEMPLATES: ReadonlyMap<FactionActionType, FactionAct
     cooldownTicks: 20,
     minMembers: 2,
     ambitionAffinity: ['revenge', 'defensive_consolidation'],
+    // THR-1918 — no purge without a member at cause.
+    prerequisite: { type: 'has_excommunication_cause' },
   }],
   ['hold_conclave', {
     type: 'hold_conclave',
@@ -306,6 +311,9 @@ function checkPrerequisite(
     }
     case 'leader_exists': {
       return getFactionLeader(state, factionId) !== null;
+    }
+    case 'has_excommunication_cause': {
+      return excommunicationCauses(state, factionId).length > 0;
     }
   }
 }
@@ -529,24 +537,24 @@ function executeProposeAlliance(
   };
 }
 
-function executeExcommunicate(
-  state: GameState,
-  faction: GraphNode,
-  rng: () => number,
-): FactionActionRecord | null {
-  const memberEdges = state.graph.getIncomingEdges(faction.id, 'member_of');
-  if (memberEdges.length < 2) return null; // Keep at least 1 member
+interface ExcommCause { edge: GraphEdge; member: GraphNode; rep: number; isInRivalFaction: boolean }
 
-  // Score candidates for excommunication: lowest reputation OR dual-member in rival faction
+/**
+ * THR-1918 — the members a faction has a cause to strike: past the novice grace, and
+ * either also sworn to a rival faction or at or below FACTION_EXCOMMUNICATE_MAX_REPUTATION.
+ * Draws no RNG, so the eligibility gate and the executor read the same list.
+ */
+function excommunicationCauses(state: GameState, factionId: string): ExcommCause[] {
+  const memberEdges = state.graph.getIncomingEdges(factionId, 'member_of');
+  if (memberEdges.length < 2) return []; // Keep at least 1 member
+
   const rivalFactionIds = new Set(
-    state.graph.getOutgoingEdges(faction.id, 'relates_to')
+    state.graph.getOutgoingEdges(factionId, 'relates_to')
       .filter(e => e.properties.isRival)
       .map(e => e.target),
   );
 
-  interface ExcommCandidate { edge: GraphEdge; member: GraphNode; score: number }
-  const candidates: ExcommCandidate[] = [];
-
+  const causes: ExcommCause[] = [];
   for (const edge of memberEdges) {
     const member = state.graph.getNode(edge.source);
     if (!member || member.type !== 'actor') continue;
@@ -564,10 +572,23 @@ function executeExcommunicate(
     // Check if this member also belongs to a rival faction
     const isInRivalFaction = getFactionMembershipEdges(state.graph, member.id)
       .some(me => rivalFactionIds.has(me.target));
-
-    const score = (isInRivalFaction ? 1.0 : 0) + (1 - rep) * 0.5 + rng() * 0.1;
-    candidates.push({ edge, member, score });
+    if (!isInRivalFaction && rep > FACTION_EXCOMMUNICATE_MAX_REPUTATION) continue;
+    causes.push({ edge, member, rep, isInRivalFaction });
   }
+  return causes;
+}
+
+function executeExcommunicate(
+  state: GameState,
+  faction: GraphNode,
+  rng: () => number,
+): FactionActionRecord | null {
+  // Score the members at cause: dual-member in a rival faction first, then lowest reputation
+  const candidates = excommunicationCauses(state, faction.id).map(c => ({
+    edge: c.edge,
+    member: c.member,
+    score: (c.isInRivalFaction ? 1.0 : 0) + (1 - c.rep) * 0.5 + rng() * 0.1,
+  }));
 
   if (candidates.length === 0) return null;
   candidates.sort((a, b) => b.score - a.score);

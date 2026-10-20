@@ -249,6 +249,39 @@ describe('phaseFactionActions', () => {
     expect(excommFound || getHistory(graph, 'faction-x').length > 0).toBe(true);
   });
 
+  // THR-1918 — no purge without a cause: every member in good standing, none in a rival faction.
+  it('never excommunicates a member in good standing with no rival membership', () => {
+    addFaction(graph, 'faction-x', 'Steady Council', 0);
+    addMember(graph, 'agent-1', 'faction-x', 0.3);
+    addMember(graph, 'agent-2', 'faction-x', 0.5);
+    addMember(graph, 'agent-3', 'faction-x', 0.9);
+    graph.addNode({ id: 'ambition-rev', type: 'event', name: 'Revenge', properties: { ambitionType: 'revenge' } });
+    graph.addEdge({
+      id: 'e_pursues_rev', source: 'faction-x', target: 'ambition-rev', type: 'pursues',
+      properties: { priority: 1.0, status: 'active' },
+    });
+
+    for (let i = 1; i <= 40; i++) phaseFactionActions(makeState(graph, FACTION_ACTION_INTERVAL * i));
+
+    expect(getHistory(graph, 'faction-x').some(r => r.actionType === 'excommunicate')).toBe(false);
+    expect(graph.getIncomingEdges('faction-x', 'member_of')).toHaveLength(3);
+    expect(graph.getOutgoingEdges('faction-x', 'hostile_to')).toHaveLength(0);
+  });
+
+  it('excommunicates only the member at cause, never the one in good standing', () => {
+    addFaction(graph, 'faction-x', 'Purge Council', 0);
+    addMember(graph, 'loyal-agent', 'faction-x', 0.6);
+    addMember(graph, 'steady-agent', 'faction-x', 0.4);
+    addMember(graph, 'weak-agent', 'faction-x', 0.05);
+
+    for (let i = 1; i <= 40; i++) phaseFactionActions(makeState(graph, FACTION_ACTION_INTERVAL * i));
+
+    const struck = graph.getOutgoingEdges('faction-x', 'hostile_to').map(e => e.target);
+    expect(struck).toEqual(['weak-agent']);
+    expect(graph.getIncomingEdges('faction-x', 'member_of').map(e => e.source).sort())
+      .toEqual(['loyal-agent', 'steady-agent']);
+  });
+
   it('skips all actions when treasury is below minimum required cost', () => {
     addFaction(graph, 'faction-poor', 'Broke Guild', 0);
     addMember(graph, 'agent-1', 'faction-poor');
