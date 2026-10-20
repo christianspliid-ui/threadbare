@@ -6907,7 +6907,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ECONOMY,
     consumerSystem: FACTIONS,
     intent:
-      'A faction holds a regional monopoly on a good when, around an anchor place it holds, at least MONOPOLY_REGION_MIN_PLACES place-tier bearing places lie within MONOPOLY_REGION_RADIUS_HEXES and it holds MONOPOLY_CONTROL_FRACTION of them (THR-1955, war aims S2). phaseEconomicPower writes faction.regionalMonopolies ({ resourceId, anchorLocationId, share, placeIds, sinceTick }) and keeps faction.monopolies (resource ids) daily, chronicling "holds most of" lines de-duplicated by MONOPOLY_MIN_HOLD_DAYS. Readers: the purse\'s place yield pays MONOPOLY_SCARCITY_RENT on the held good (scarcityRentFor), the war-aim score\'s break/complete bonuses (monopolyAimFor), the embargo prerequisite, resource_acquisition\'s met predicate, the Purse panel chip and the Trade lens monopoly line.',
+      'A faction holds a regional monopoly on a good when, around an anchor place it holds, at least MONOPOLY_REGION_MIN_PLACES place-tier bearing places lie within MONOPOLY_REGION_RADIUS_HEXES and it holds MONOPOLY_CONTROL_FRACTION of them (THR-1955, war aims S2). phaseEconomicPower writes faction.regionalMonopolies ({ resourceId, anchorLocationId, share, placeIds, sinceTick }) and keeps faction.monopolies (resource ids) daily, chronicling "holds most of" lines de-duplicated by MONOPOLY_MIN_HOLD_DAYS. Readers: the purse\'s place yield pays MONOPOLY_SCARCITY_RENT on the held good (scarcityRentFor), the war-aim score\'s break/complete bonuses (monopolyAimFor), the embargo prerequisite, the Purse panel chip and the Trade lens monopoly line.',
     ulTerms: ['Faction', 'Settlement'],
     mechanism: {
       kind: 'node-prop',
@@ -6918,7 +6918,6 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/factionPurse/income.ts',
       'src/engine/warAims/townValue.ts',
       'src/engine/embargo.ts',
-      'src/engine/warAims/resourceAim.ts',
       'src/components/Game/FactionPursePanel.tsx',
       'src/engine/views/lenses/tradeLens.ts',
     ],

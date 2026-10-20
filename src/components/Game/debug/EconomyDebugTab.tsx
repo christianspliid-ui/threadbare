@@ -20,7 +20,7 @@ import { TICKS_PER_DAY } from '../../../data/attention-constants';
 import { describeDeciderMeans } from '../../../engine/mortalMeans';
 import { resolveAxiologicalProfile } from '../../../engine/encounterScoring';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
-import { allRegionalMonopolies, allActiveEmbargoes, embargoedTownsOf, embargoedLanesOf } from '../../../engine/regionalMonopoly';
+import { allRegionalMonopolies, allActiveEmbargoes } from '../../../engine/regionalMonopoly';
 
 interface PurseRow {
   id: string;
@@ -303,7 +303,11 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
   );
 }
 
-/** THR-1955 — regional monopolies (holder, good, anchor, share, places) and standing embargoes. */
+/**
+ * THR-1955 — regional monopolies (holder, good, anchor, share, places) and standing embargoes.
+ * The embargoed towns and roads are left to `__DEBUG.getRegionalMonopolies()`: deriving them
+ * needs the realm border map, which this tab does not hold.
+ */
 function MonopoliesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
   const { monopolies, embargoes } = useMemo(() => {
     if (!graph) return { monopolies: [], embargoes: [] };
@@ -324,8 +328,6 @@ function MonopoliesTable({ graph, currentTick }: { graph?: WorldGraph; currentTi
         target: name(record.targetFactionId),
         good: record.resourceId,
         anchor: name(record.anchorLocationId),
-        towns: embargoedTownsOf(graph, record).map(t => t.name).join(', ') || '—',
-        roads: embargoedLanesOf(graph, record).length,
         untilDay: Math.floor(record.untilTick / TICKS_PER_DAY),
       })),
     };
@@ -357,14 +359,14 @@ function MonopoliesTable({ graph, currentTick }: { graph?: WorldGraph; currentTi
           <table style={{ borderCollapse: 'collapse', width: '100%' }}>
             <thead>
               <tr style={{ color: 'var(--text-tertiary)' }}>
-                <th style={left}>holder</th><th style={left}>target</th><th style={left}>good</th><th style={left}>anchor</th><th style={left}>towns</th><th style={cell}>roads</th><th style={cell}>until day</th>
+                <th style={left}>holder</th><th style={left}>target</th><th style={left}>good</th><th style={left}>anchor</th><th style={cell}>until day</th>
               </tr>
             </thead>
             <tbody>
               {embargoes.map(e => (
                 <tr key={e.key} style={{ color: '#e06c5a' }}>
                   <td style={left}>{e.holder}</td><td style={left}>{e.target}</td><td style={left}>{e.good}</td><td style={left}>{e.anchor}</td>
-                  <td style={left}>{e.towns}</td><td style={cell}>{e.roads}</td><td style={cell}>{e.untilDay}</td>
+                  <td style={cell}>{e.untilDay}</td>
                 </tr>
               ))}
             </tbody>
