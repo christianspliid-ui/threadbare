@@ -71,6 +71,11 @@ export interface StageProps {
   holdLineShowsOnMap?: boolean;
   /** The game tick, for traces. */
   tick: number;
+  /**
+   * THR-1895 — the panel's ground, when the moment brings its own (the encounter's
+   * `--veil-void`); otherwise the `Panel` level's.
+   */
+  ground?: string;
 }
 
 function rectOf(el: Element | null): { x: number; y: number; w: number; h: number } | null {
@@ -79,7 +84,7 @@ function rectOf(el: Element | null): { x: number; y: number; w: number; h: numbe
   return { x: r.left, y: r.top, w: r.width, h: r.height };
 }
 
-export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, right, holdLineShowsOnMap = false, tick }: StageProps) {
+export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, right, holdLineShowsOnMap = false, tick, ground }: StageProps) {
   const { state: screen, setStage } = useGameScreenState();
   const stage = screen.stage;
   const reducedMotion = usePrefersReducedMotion();
@@ -173,10 +178,12 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
     showHint();
   }, [showHint]);
   // A wheel over the layer must never reach the map: listen non-passively and stop it.
+  // THR-1895 — a wheel inside the panel is the panel's own: it scrolls the moment's column.
   useEffect(() => {
     const el = layerRef.current;
     if (!el) return;
     const onWheel = (e: WheelEvent) => {
+      if (panelRef.current && e.target instanceof Node && panelRef.current.contains(e.target)) return;
       e.preventDefault();
       onLayerInput(e);
     };
@@ -222,6 +229,7 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
     opacity: open ? 1 : 0,
     visibility: open ? 'visible' : 'hidden',
     transition: entrance,
+    ...(ground ? { background: ground } : {}),
   };
 
   const holdLine = holdLineShowsOnMap ? `${STAGE_WORDS.holdLine} ${STAGE_WORDS.holdLineShowOnMap}` : STAGE_WORDS.holdLine;
@@ -248,7 +256,9 @@ export function Stage({ kind, vm, label, onEscape, closeOnEscape = true, left, r
         style={panelStyle}
       >
         <GameErrorBoundary>
-          {layout === 'full' ? (
+          {/* THR-1895 — a full-layout moment with nothing for the left column (no art,
+              no cast) gives the right column the whole panel, never a blank column. */}
+          {layout === 'full' && left != null && left !== false ? (
             <>
               <div data-stage-left="" style={{ width: 'var(--stage-left-col-w)', flexShrink: 0, minHeight: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border-subtle)' }}>{left}</div>
               <div data-stage-right="" style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>{right}</div>

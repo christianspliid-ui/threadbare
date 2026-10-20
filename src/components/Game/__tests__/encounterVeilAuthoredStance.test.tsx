@@ -193,7 +193,7 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
 
     // `stand back · ◆ 0 essence · fate decides` is the longest meta row the
     // change can produce, and the ticket asks whether it wraps or pushes the
-    // 540px card. The half that is answerable without a layout engine is the
+    // card. The half that is answerable without a layout engine is the
     // decisive one: this row sets no `flexWrap`, so it is `nowrap` by CSS
     // default and *cannot* wrap whatever it holds.
     const withdrawn = screen.getByText('stand back').closest('button');
@@ -210,9 +210,11 @@ describe('THR-1411 — the authored hand reaches the attended veil with its stan
     expect(metaRow!.textContent).toContain('essence');
     expect(metaRow!.textContent).toContain('fate decides');
 
-    // And the card keeps its width cap, so a long row overflows rather than
-    // widening the column.
-    expect(withdrawn!.style.maxWidth).toBe('540px');
+    // THR-1895 — the 540px cap left with the full-screen veil: on the Stage the
+    // card fills its column (plan THR-1877 § D4), so a long row is bounded by the
+    // column, never wider than it.
+    expect(withdrawn!.style.width).toBe('100%');
+    expect(withdrawn!.style.maxWidth).toBe('');
   });
 
   it('Law 14 — no interventionType key reaches the DOM verbatim', () => {

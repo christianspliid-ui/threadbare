@@ -7,7 +7,8 @@
  * is now hand-maintained (THR-1357).
  */
 
-export type SurfaceMount = 'always' | 'modal' | 'drillin';
+/** `stage` (THR-1895): plays on the Stage panel over the dimmed map (plan THR-1877). */
+export type SurfaceMount = 'always' | 'modal' | 'drillin' | 'stage';
 export type SurfaceView = 'start' | 'ascendant' | 'game' | 'codex' | 'styleguide' | 'cms' | 'ul';
 
 export interface IAReader {
@@ -604,7 +605,7 @@ export const IA_SURFACES: IASurface[] = [
   {
     "surface": "game.encounter-veil",
     "view": "game",
-    "mount": "modal",
+    "mount": "stage",
     "reads": [
       {
         "state_path": "unifiedActions",
@@ -617,7 +618,7 @@ export const IA_SURFACES: IASurface[] = [
         "visible_when": "always"
       }
     ],
-    "notes": "Encounter-in-progress overlay (watched mode).\n"
+    "notes": "An encounter on the Stage (steps, aftermath, watched).\n"
   },
   {
     "surface": "game.inspector",

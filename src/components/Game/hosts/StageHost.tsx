@@ -14,6 +14,9 @@
  * interrupt resolution names its kind in `rendering`, through one exhaustive switch
  * over `StageHomedKind`; the resolution holds every other one (one foreground).
  *
+ * THR-1895 (S3): the encounter plays on the Stage too, full layout — every step, the
+ * aftermath and the watched view.
+ *
  * THR-1892 (S2): a story beat plays on the Stage frame (`stage/Stage.tsx`), compact, over
  * the dimmed map with its hex lit. The other Stage kinds keep their own screens until
  * their slice moves them (`STAGE_FRAME_KINDS`).
@@ -46,6 +49,7 @@ import { JourneyVignetteModal } from '../JourneyVignetteModal';
 import { StoryBeatModal, StoryBeatStageBody } from '../StoryBeatModal';
 import { isStageFrameKind } from '../../../data/stage-content';
 import { Stage } from '../stage/Stage';
+import { useGameScreenState } from '../frame/GameScreenState';
 import type { StageVM } from '../../../engine/views/stage/stageView';
 import { PremonitionModal } from '../PremonitionModal';
 
@@ -63,6 +67,10 @@ export interface StageHostProps {
     notification: Pick<EncounterNotification, 'autoResolveTick'>;
   } | null;
   encounterVeilModel: EncounterStageModel | null;
+  /** THR-1895 — the Stage view model for the open encounter (lit hex, place tag). */
+  encounterStageVM: StageVM | null;
+  /** THR-1895 — which encounter is open; keys its Stage so a new one mounts fresh. */
+  openEncounterKey: string | null;
   describeFollowFor: (agentId: string) => FollowDescriptor;
   handleToggleFollow: (agentId: string, source: 'arc_panel' | 'encounter_ui') => void;
   encounterPayingEssence: number;
@@ -115,6 +123,8 @@ export function StageHost({
   openAgentSheetForId,
   tieredEncounterState,
   encounterVeilModel,
+  encounterStageVM,
+  openEncounterKey,
   describeFollowFor,
   handleToggleFollow,
   encounterPayingEssence,
@@ -152,6 +162,11 @@ export function StageHost({
   onHomedSurfaceSkip,
   onHomedSurfaceFallback,
 }: StageHostProps) {
+  // THR-1895 — a name or chip clicked in the encounter opens the Inspector *over* the
+  // Stage (plan THR-1877 § D7). The veil opens it through callbacks, not the Stage's
+  // router context, so it marks the flag the Stage's own router would.
+  const { setStage } = useGameScreenState();
+  const markInspectorOverStage = () => setStage(prev => (prev.phase === 'idle' ? prev : { ...prev, inspectorOverStage: true }));
   // THR-1877 — the Stage renders only the kinds the resolution names (one foreground,
   // so at most one of these), each through this exhaustive switch.
   const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
@@ -172,10 +187,11 @@ export function StageHost({
       );
 
     // EncounterVeil — unified encounter display for all encounter types.
-    // Wrapped in `anim-encounter-handoff-fade-up` so the world view → encounter
-    // transition lands as a 400ms fade-up (THR-340 / design plan §5.8).
+    // THR-1895 — it plays on the Stage, in the full layout: the veil renders its
+    // columns into the panel's slots (`renderFrame`), and the Stage's own entrance
+    // replaces the THR-340 handoff fade. The veil keeps its own Escape (it minimises),
+    // so the Stage's is off.
     case 'encounter': return tieredEncounterState && encounterVeilModel && (
-        <div className="anim-encounter-handoff-fade-up" data-testid="encounter-handoff-fade-up">
           <EncounterVeil
             open={true}
             model={encounterVeilModel}
@@ -214,7 +230,10 @@ export function StageHost({
             // (no selection) or the previously selected agent. THR-1461 is the
             // same root cause on the premonition's name control; this ticket
             // builds the primitive, that one repoints its own surfaces.
-            onSelectAgent={openAgentSheetForId}
+            onSelectAgent={(agentId) => {
+              markInspectorOverStage();
+              openAgentSheetForId(agentId);
+            }}
             // THR-1490 — the veil's `visualKind` adapter. Everything the four branches
             // this replaced used to do by hand — attachment to its sheet, faction and
             // artifact to the stub modal, Area to its centre hex — the router now does
@@ -230,6 +249,7 @@ export function StageHost({
             // defect THR-1477 fixed for the agent's name. The card's own footer carries
             // "open its sheet ↗" for the player who wants the whole of it.
             onSelectEntity={(entityId, kind) => {
+              markInspectorOverStage();
               // THR-1670 — a spell's shared definition node is a Power, not an item:
               // open its catalog card (and codex sheet) by template id. The `attachment`
               // world card reads artifacts only, so this would render as "Unknown".
@@ -252,8 +272,23 @@ export function StageHost({
             onLetWorldTurn={handleChapterLetWorldTurn}
             onBackToMap={handleChapterBackToMap}
             onShowOnMap={(col, row) => hexMapRef.current?.focusOn({ col, row })}
+            renderFrame={isStageFrameKind('encounter') && encounterStageVM ? ({ label, left, right, onWheel }) => (
+              <Stage
+                key={openEncounterKey ?? 'encounter'}
+                kind="encounter"
+                vm={encounterStageVM}
+                label={label}
+                onEscape={handleEncounterMinimize}
+                closeOnEscape={false}
+                holdLineShowsOnMap
+                ground="var(--veil-void)"
+                tick={gameState.tick}
+                // A wheel over the art or the cast scrolls the right column (THR-1856).
+                left={left && <div onWheel={onWheel} style={{ display: 'contents' }}>{left}</div>}
+                right={right}
+              />
+            ) : undefined}
           />
-        </div>
       );
 
     // Moment card — a followed mortal's undertaking said something (THR-1299 slice 3).

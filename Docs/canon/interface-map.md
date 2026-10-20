@@ -468,6 +468,8 @@ draws one box per subsystem listed here — a row without a box there is a wiki 
 see the plan doc § User verdicts.)*
 
 ## Last-reviewed
+2026-10-20 by Claude Code (THR-1895 — the encounter on the Stage). **One contract added,** `encounter-hex-lights-stage` (Encounters & Dilemmas → Attention, Chronicle & Narrative): the three encounter adapters write the notification's hex into the stage model header, and `resolveMomentHexes` lights it first. This is THR-1822's D16 step-5 row, registered now that its consumer ships. The gate-duty adapter becomes a producer. The encounter builders moved to `src/engine/views/stage/`, and every row that named their old paths now names the new ones.
+
 2026-10-18 by Claude Code (THR-1875 — the top bar and Needs you). **One contract added,** `alert-channel-to-needs-you` (Attention, Chronicle & Narrative → itself): the alert channel's first production reader is Needs you's News group; the router appends instead of overwriting a same-kind same-tick alert, lapses by `NEEDS_YOU_NEWS_KEEP_DAYS` and counts `ALERT_SAFETY_CAP` trims; the interrupt registry (moved to `src/engine/views/`) feeds the Held group. **Read site added:** `player-action-receipts-queue` gains `src/engine/views/needsYou.ts` (an unacknowledged toast receipt is a Waiting row). Earlier: 2026-10-18 by Claude Code (THR-1894 — the god rail's view model). **Read sites only, no new
 contract:** `src/engine/views/godRail.ts` now reads `essencePool` (the essence block and the hand's
 payable check, row `essence-spend-moves-the-bar`) and `unlockedActionIds` through `isActionRevealed`

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore, type ReactNode, type WheelEvent } from 'react';
-import { createPortal } from 'react-dom';
 import { EntityVisual } from '../shared/EntityVisual';
 import { FollowToggle, type FollowDescriptor } from './FollowToggle';
 import { Tooltip } from '../shared/Tooltip';
@@ -155,6 +154,122 @@ export interface EncounterVeilProps {
   onLetWorldTurn?: () => void;
   /** THR-1812 — close; the clock stays paused and the answer waits. */
   onBackToMap?: () => void;
+  /**
+   * THR-1895 — the frame the encounter plays in. The veil renders its content into
+   * two slots (art, cast and *At stake* on the left; the rest on the right) and
+   * hands them here; `StageHost` wraps them in the Stage panel over the dimmed map.
+   * Absent (tests, the styleguide), the two columns render in place.
+   */
+  renderFrame?: (frame: EncounterVeilFrame) => ReactNode;
+}
+
+/** THR-1895 — what the veil hands its frame: one path's two columns. */
+export interface EncounterVeilFrame {
+  path: 'step' | 'aftermath' | 'watched';
+  /** The frame's accessible name (the encounter's title). */
+  label: string;
+  /** Art, cast and *At stake*; null when the path has none of them. */
+  left: ReactNode | null;
+  right: ReactNode;
+  /**
+   * A wheel anywhere in the frame outside the right column scrolls it
+   * (`forwardVeilWheel`, THR-1856): the reader never has to find the scroll box first.
+   */
+  onWheel: (event: WheelEvent<HTMLDivElement>) => void;
+}
+
+/**
+ * THR-1895 — the frame when no host supplies one: the same two columns, in place.
+ * No portal and no full-screen cover; the Stage is the only thing that positions
+ * the encounter on screen.
+ */
+function InPlaceVeilFrame({ label, left, right, onWheel }: EncounterVeilFrame) {
+  return (
+    <div
+      onWheel={onWheel}
+      role="dialog"
+      aria-modal="true"
+      aria-label={label}
+      data-testid="encounter-veil-frame"
+      style={{ display: 'flex', height: '100%', minHeight: 0, background: 'var(--veil-void)' }}
+    >
+      {left && (
+        <div data-veil-left="" style={{ width: 'var(--stage-left-col-w)', flexShrink: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          {left}
+        </div>
+      )}
+      <div data-veil-right="" style={{ flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {right}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * THR-1895 — the Stage's left column for an encounter (plan THR-1877 § D4): the scene
+ * art as the hero picture (Law 7), its caption, then the cast and *At stake* together,
+ * apart from the prose (THR-1724).
+ */
+function VeilLeftColumn({
+  illustration,
+  artOpacity,
+  artFilter,
+  visible,
+  reducedMotion,
+  cast,
+}: {
+  illustration: { src: string; alt?: string; caption?: string } | undefined;
+  artOpacity: number;
+  artFilter?: string;
+  visible: boolean;
+  reducedMotion: boolean;
+  cast: ReactNode;
+}) {
+  return (
+    <div
+      data-testid="veil-left-column"
+      style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0, flex: 1, overflowY: 'auto', background: 'var(--veil-void)' }}
+    >
+      {illustration && (
+        <figure style={{ margin: 0, flexShrink: 0, overflow: 'hidden' }}>
+          <div
+            role="img"
+            aria-label={illustration.alt ?? ''}
+            data-testid="veil-scene-art"
+            style={{
+              aspectRatio: '16 / 9',
+              width: '100%',
+              backgroundImage: `url(${illustration.src})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: visible ? artOpacity : 0,
+              filter: artFilter,
+              // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and fades the
+              // art in at --anim-fast. The art still arrives. The figure clips the zoom.
+              transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
+              transition: reducedMotion
+                ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
+                : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
+            }}
+          />
+          {illustration.caption && (
+            <figcaption
+              style={{
+                padding: '8px 16px 0',
+                fontFamily: FONT_PROSE,
+                fontStyle: 'italic',
+                fontSize: 'var(--text-xs)',
+                color: TEXT_GHOST,
+              }}
+            >
+              {illustration.caption}
+            </figcaption>
+          )}
+        </figure>
+      )}
+      {cast && <div data-testid="veil-scene-side" style={{ padding: '0 16px 16px', minWidth: 0 }}>{cast}</div>}
+    </div>
+  );
 }
 
 // ── Design tokens ──────────────────────────────────────────────────
@@ -317,19 +432,12 @@ const VEIL_FOOTER_HEIGHT_PX = 94;
 const VEIL_FOOTER_CLEARANCE_PX = 24;
 
 /**
- * THR-1724 — the attended column's top inset. Was `6vh`; with the card band at
- * 16:9 a five-card hand takes two rows, and the viewport contract (Law 33) only
- * holds if the chrome above the scene gives some height back.
+ * THR-1895 — the right column's padding on the Stage panel: 20 px a side
+ * (`--panel-padding`), so a hand of four 210 px cards (876 px) fits the 932 px
+ * column at 1920×1080 (plan THR-1877 § D3). Was a `3vh` / `5vw` / `3vw` inset on
+ * the full-screen veil.
  */
-const VEIL_COLUMN_TOP_INSET = '3vh';
-
-/**
- * THR-1856 — the aftermath column's top inset. Was `10vh` top and bottom, which
- * at 1920×1080 spent 216px of chrome and pushed the exit and the reaction
- * choice below the fold once the consequence legend was open. The bottom inset
- * is gone: the pinned exit block carries its own padding.
- */
-const AFTERMATH_COLUMN_TOP_INSET = '4vh';
+const VEIL_COLUMN_PADDING = 'var(--stage-gutter) var(--panel-padding, 20px) 0';
 
 /**
  * THR-1856 — the pinned exit block's fade from transparent to the veil void,
@@ -337,7 +445,7 @@ const AFTERMATH_COLUMN_TOP_INSET = '4vh';
  */
 const AFTERMATH_PIN_FADE_PX = 24;
 
-/** THR-1856 — breathing room under "Return to the world" at the column's edge. */
+/** THR-1856 — breathing room under the aftermath's exit at the column's edge. */
 const AFTERMATH_PIN_PAD_BOTTOM_PX = 24;
 
 /**
@@ -358,12 +466,17 @@ export function forwardVeilWheel(
 }
 
 /**
- * THR-1724 — the scene prose's measure on the attended veil. The prose now
- * shares its row with the cast column, so it may use the left column's width
- * rather than the old 540px — fewer, longer lines, which is height the hand
- * needs at 1920×1080.
+ * THR-1895 — prose caps at the reading measure (`--measure-prose`, THR-1833), and
+ * every other block fills its column: the 540 / 500 px caps of the full-screen veil
+ * are gone with it (plan THR-1877 § D4).
  */
-const SCENE_PROSE_MAX_WIDTH_PX = 760;
+const PROSE_MEASURE = 'var(--measure-prose)';
+
+/**
+ * THR-1895 — the aftermath's exit. Was "Return to the world"; on the Stage the world
+ * never left the screen, so the ending simply continues (plan THR-1877 § D10).
+ */
+export const AFTERMATH_CONTINUE_LABEL = 'Continue';
 
 /**
  * Law 44 (THR-1010) — the one duration reduced motion collapses everything to,
@@ -434,33 +547,12 @@ const TYPE_LABEL_COLORS: Record<string, string> = {
 // (Law 52, amended), and "threat" was a third difficulty vocabulary (Law 13).
 
 /**
- * THR-1724 — every veil surface starts below the live top bar, so the time
- * control (which names an encounter's auto-pause — Law 52, amended
- * 2026-10-04) stays in view. `--topbar-live-height` is the bar's rendered
- * height, published by `GameViewTopBar`; a host with no bar (tests, the meeting)
- * leaves it unset and the veil covers the full screen, as before.
- */
-const VEIL_ROOT_INSET = {
-  top: 'var(--topbar-live-height, 0px)',
-  right: 0,
-  bottom: 0,
-  left: 0,
-} as const;
-
-/**
  * The veil's stacking band — the Stage band in `zBands.ts` (50), below the modal
  * band (60). Also its escape-layer rank (THR-1816): a modal over the veil takes
  * Escape first. A re-export of `Z_BAND.stage` (THR-1884).
  */
 export const ENCOUNTER_VEIL_Z = Z_BAND.stage;
 
-/**
- * THR-1724 — the scene's two columns: prose on the left, the cast and what is
- * at stake on the right. The side column is fixed so the prose keeps its
- * measure; the gap is the breathing room between them.
- */
-const SCENE_SIDE_COLUMN_PX = 220;
-const SCENE_COLUMN_GAP_PX = 24;
 
 /** Staggered entrance animation delays (seconds) */
 const ENTRANCE_DELAYS = {
@@ -507,6 +599,7 @@ export function EncounterVeil({
   answering,
   onLetWorldTurn,
   onBackToMap,
+  renderFrame,
 }: EncounterVeilProps) {
   /**
    * Law 44 (THR-1010). The veil's ceremonial motion is entirely inline, so a
@@ -578,6 +671,12 @@ export function EncounterVeil({
   // scrolls it (`forwardVeilWheel`). One ref: only one path renders at a time.
   const contentColumnRef = useRef<HTMLDivElement>(null);
   const handleVeilWheel = useCallback((event: WheelEvent<HTMLDivElement>) => {
+    // THR-1895 — a left column long enough to scroll keeps its own wheel, so the
+    // cast list scrolls without dragging the scene along with it.
+    if (event.target instanceof Element) {
+      const left = event.target.closest('[data-testid="veil-left-column"]');
+      if (left && left.scrollHeight > left.clientHeight + 1) return;
+    }
     forwardVeilWheel(contentColumnRef.current, event.target, event.deltaY);
   }, []);
 
@@ -603,7 +702,7 @@ export function EncounterVeil({
   const isAttendedPending = !model.aftermath && threadTier !== 'watched';
   // THR-1812 — on the answering card, leaving is *Back to the map*.
   // THR-1856 — on the aftermath, leaving is acknowledging: Escape resolves what
-  // "Return to the world" resolves, or a sibling step reopens the same ending.
+  // "Continue" resolves, or a sibling step reopens the same ending.
   const leaveVeil = answering && onBackToMap
     ? onBackToMap
     : model.aftermath ? onAcknowledgeAftermath
@@ -615,6 +714,43 @@ export function EncounterVeil({
   useEscapeLayer(open, leaveVeil, ENCOUNTER_VEIL_Z);
 
   const hasArt = !!model.illustration;
+
+  /**
+   * THR-1895 — the encounter plays in a frame: the Stage panel when the host supplies
+   * one, the same two columns in place otherwise. No path positions itself on screen.
+   */
+  const frame = (f: EncounterVeilFrame): ReactNode =>
+    renderFrame ? renderFrame(f) : <InPlaceVeilFrame {...f} />;
+
+  /**
+   * THR-1895 — the left column: art, then the cast and *At stake* (plan THR-1877 § D4).
+   * *At stake* is a forecast ("may decrease on failure"), so it shows only before the
+   * roll; on the aftermath the consequences say what happened, and the cast stays.
+   */
+  const leftColumn = (
+    art: { opacity: number; filter?: string },
+    show: { cast: boolean; atStake: boolean },
+  ): ReactNode | null => {
+    const showCast = show.cast && model.cast.length > 0;
+    const showAtStake = show.atStake && model.falloutPreview.length > 0;
+    const castNode = showCast || showAtStake ? (
+      <>
+        {showCast && <CastStrip cast={model.cast} threadTier={threadTier} onSelectAgent={onSelectAgent} />}
+        {showAtStake && <FalloutPreview fallout={model.falloutPreview} />}
+      </>
+    ) : null;
+    if (!hasArt && !castNode) return null;
+    return (
+      <VeilLeftColumn
+        illustration={model.illustration}
+        artOpacity={art.opacity}
+        artFilter={art.filter}
+        visible={visible}
+        reducedMotion={reducedMotion}
+        cast={castNode}
+      />
+    );
+  };
 
   // Resolve current step index from history
   const { currentStepIndex, totalSteps } = useMemo(() => {
@@ -761,89 +897,23 @@ export function EncounterVeil({
             transition: `opacity ${duration}s ease ${delay}s, transform ${duration}s ease ${delay}s`,
           };
 
-    return createPortal(
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={aftermath.title ?? 'Aftermath'}
-        onWheel={handleVeilWheel}
-        style={{
-          position: 'fixed',
-          ...VEIL_ROOT_INSET,
-          background: VOID,
-          zIndex: ENCOUNTER_VEIL_Z,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* Art layer — dimmed + desaturated */}
-        {hasArt && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: `url(${model.illustration!.src})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              maskImage:
-                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
-              WebkitMaskImage:
-                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
-              opacity: visible ? 0.5 : 0,
-              filter: 'saturate(0.7)',
-              // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and
-              // fades the art in at --anim-fast. The art still arrives.
-              transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
-              transition: reducedMotion
-                ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
-                : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
-            }}
-          />
-        )}
-
-        {/* THR-1003 — the corner step dots that used to live here moved into the
-            content column below, as the same `StepNavigator` the step view
-            renders. A separate hand-rolled dot row in the corner was the whole
-            reason the ending read as its own screen: it said "resolved" without
-            ever saying resolved *what*. */}
-
-        {/* THR-1136 §1 — the top-right `{tier} · Aftermath` label is gone, on
-            the director's explicit ask. Both halves of it were chrome the
-            ending does not need: the content column already opens with the
-            AFTERMATH section marker (THR-1003), so the suffix said the same
-            word twice, and the thread-tier word is process vocabulary — how
-            closely the player is following this mortal — which has nothing to
-            say about what just happened to them. The live (step) and watched
-            paths keep their corner labels; there the tier is still telling the
-            player which affordances they have. */}
-
-        {/* ── Scrollable content zone ────────────────────── */}
+    return frame({
+      path: 'aftermath',
+      onWheel: handleVeilWheel,
+      label: aftermath.title ?? 'Aftermath',
+      left: leftColumn({ opacity: 0.5, filter: 'saturate(0.7)' }, { cast: true, atStake: false }),
+      right: (
         <div
           ref={contentColumnRef}
           data-testid="aftermath-content-column"
           style={{
-            position: 'absolute',
-            top: 0,
-            right: hasArt ? 0 : undefined,
-            bottom: 0,
-            left: hasArt ? undefined : '50%',
-            width: hasArt ? '52%' : '65%',
-            transform: hasArt ? undefined : 'translateX(-50%)',
+            flex: 1,
+            minHeight: 0,
             display: 'flex',
             flexDirection: 'column',
-            // 'safe' keeps the column top reachable when content overflows the
-            // scroll zone — plain 'center' strands the first lines above an
-            // unscrollable edge (THR-925). Engines without 'safe' drop the
-            // declaration and fall back to flex-start, which scrolls correctly.
-            justifyContent: 'safe center',
-            padding: `${AFTERMATH_COLUMN_TOP_INSET} 5vw 0 3vw`,
-            background: hasArt
-              ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
-              : 'transparent',
-            zIndex: 10,
+            padding: VEIL_COLUMN_PADDING,
+            background: VOID,
+            // The column's only scroll box, the whole height of the panel (Law 57).
             overflowY: 'auto',
           }}
         >
@@ -956,7 +1026,7 @@ export function EncounterVeil({
                   lineHeight: 1.85,
                   color: TEXT_WARM,
                   marginBottom: 24,
-                  maxWidth: 540,
+                  maxWidth: PROSE_MEASURE,
                 }}
               >
                 <span
@@ -986,7 +1056,6 @@ export function EncounterVeil({
                 flexDirection: 'column',
                 gap: 16,
                 marginBottom: 24,
-                maxWidth: 540,
                 ...aftermathEntrance(1.2, 0.9),
               }}
             >
@@ -1052,7 +1121,6 @@ export function EncounterVeil({
                 flexDirection: 'column',
                 gap: 12,
                 marginBottom: 22,
-                maxWidth: 540,
                 ...aftermathEntrance(1.3, 0.9),
               }}
             >
@@ -1376,7 +1444,6 @@ export function EncounterVeil({
                 flexDirection: 'column',
                 gap: 10,
                 marginBottom: 20,
-                maxWidth: 540,
                 ...aftermathEntrance(1.4, 0.9),
               }}
             >
@@ -1444,7 +1511,6 @@ export function EncounterVeil({
                 flexDirection: 'column',
                 gap: 10,
                 marginBottom: 20,
-                maxWidth: 540,
                 ...aftermathEntrance(1.5, 0.9),
               }}
             >
@@ -1455,7 +1521,7 @@ export function EncounterVeil({
                 the director read the prompt back verbatim as the defect.
 
                 The lone reaction keeps its button rather than folding into the
-                footer's "Return to the world", because it is not inert: the
+                aftermath's "Continue", because it is not inert: the
                 reaction path (`applyAftermathReactionForAgent` in GameView)
                 consumes matching hidden marks, runs `observeResolutionIntelligence`,
                 and resolves the encounter notification — none of which the plain
@@ -1617,7 +1683,7 @@ export function EncounterVeil({
               its handler are unchanged; only its position moved.
 
               Deliberately not rendered during a step replay: the replay has its
-              own return, and offering "Return to the world" beside it would put
+              own return, and offering "Continue" beside it would put
               two return-shaped controls with different destinations on one
               screen (Law 21). Closing the whole encounter stays one step away —
               leave the replay, then leave the ending. */}
@@ -1625,7 +1691,6 @@ export function EncounterVeil({
             style={{
               display: 'flex',
               justifyContent: 'flex-start',
-              maxWidth: 540,
               marginTop: 8,
               ...aftermathEntrance(1.6, 0.8),
             }}
@@ -1657,16 +1722,15 @@ export function EncounterVeil({
                 e.currentTarget.style.textShadow = 'none';
               }}
             >
-              Return to the world
+              {AFTERMATH_CONTINUE_LABEL}
             </button>
           </div>
           </div>
           </>
           )}
         </div>
-      </div>,
-      document.body,
-    );
+      ),
+    });
   }
 
   // ── Watched tier rendering path ────────────────────────────────
@@ -1679,16 +1743,19 @@ export function EncounterVeil({
       transition: `opacity ${ceremonialDuration(duration)}s ease ${ceremonialDelay(delay)}s`,
     });
 
-    return createPortal(
+    return frame({
+      path: 'watched',
+      onWheel: handleVeilWheel,
+      label: model.header.title,
+      left: leftColumn({ opacity: ART_OPACITY.watched, filter: 'grayscale(40%)' }, { cast: true, atStake: true }),
+      right: (
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={model.header.title}
+        data-testid="veil-watched-column"
         style={{
-          position: 'fixed',
-          ...VEIL_ROOT_INSET,
+          position: 'relative',
+          flex: 1,
+          minHeight: 0,
           background: VOID,
-          zIndex: ENCOUNTER_VEIL_Z,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
@@ -1696,37 +1763,13 @@ export function EncounterVeil({
           justifyContent: 'center',
         }}
       >
-        {/* Art layer — desaturated */}
-        {hasArt && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              backgroundImage: `url(${model.illustration!.src})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              maskImage:
-                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
-              WebkitMaskImage:
-                'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
-              opacity: visible ? ART_OPACITY.watched : 0,
-              filter: 'grayscale(40%)',
-              // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and
-              // fades the art in at --anim-fast. The art still arrives.
-              transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
-              transition: reducedMotion
-                ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
-                : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
-            }}
-          />
-        )}
 
         {/* Tier label — top-right */}
         <div
           style={{
             position: 'absolute',
-            top: '4vh',
-            right: '5vw',
+            top: 'var(--stage-gutter)',
+            right: 'var(--panel-padding, 20px)',
             zIndex: 20,
             textAlign: 'right',
             ...watchedEntrance(0.6, 0.8),
@@ -1886,8 +1929,7 @@ export function EncounterVeil({
               flexDirection: 'column',
               alignItems: 'center',
               gap: 24,
-              maxWidth: 540,
-              padding: '0 5vw',
+              padding: '0 var(--panel-padding, 20px)',
               ...watchedEntrance(0.1, 0.6),
             }}
           >
@@ -2004,7 +2046,7 @@ export function EncounterVeil({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '2.5vh 5vw',
+            padding: '16px var(--panel-padding, 20px)',
             zIndex: 20,
             background: `linear-gradient(to top, ${VOID} 0%, rgba(10,10,15,0.6) 60%, transparent 100%)`,
             ...watchedEntrance(0.8, 0.8),
@@ -2087,9 +2129,9 @@ export function EncounterVeil({
             )}
           </div>
         </div>
-      </div>,
-      document.body,
-    );
+      </div>
+      ),
+    });
   }
 
   // THR-1724 — the nudge stage has no footer strip (see the footer below).
@@ -2131,22 +2173,26 @@ export function EncounterVeil({
     };
   }
 
-  return createPortal(
+  const showAutoResolveTimer = threadTier === 'light' && ticksUntilAutoResolve !== null;
+
+  return frame({
+    path: 'step',
+    onWheel: handleVeilWheel,
+    label: model.header.title,
+    left: leftColumn({ opacity: ART_OPACITY[threadTier] }, { cast: !replayEntry, atStake: !replayEntry }),
+    right: (
     <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={model.header.title}
-      onWheel={handleVeilWheel}
+      data-testid="veil-step-column"
       style={{
-        position: 'fixed',
-        ...VEIL_ROOT_INSET,
+        position: 'relative',
+        flex: 1,
+        minHeight: 0,
         background: VOID,
-        zIndex: ENCOUNTER_VEIL_Z,
         overflow: 'hidden',
       }}
     >
       {/* ── Auto-resolve timer bar (lightly threaded only) ── */}
-      {threadTier === 'light' && ticksUntilAutoResolve !== null && (
+      {showAutoResolveTimer && (
         <div
           style={{
             position: 'absolute',
@@ -2157,7 +2203,7 @@ export function EncounterVeil({
             display: 'flex',
             alignItems: 'center',
             gap: 12,
-            padding: '0 5vw',
+            padding: '0 var(--panel-padding, 20px)',
             height: 28,
           }}
         >
@@ -2198,88 +2244,29 @@ export function EncounterVeil({
         </div>
       )}
 
-      {/* ── Art layer ─────────────────────────────────────── */}
-      {hasArt && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `url(${model.illustration!.src})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            maskImage:
-              'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
-            WebkitMaskImage:
-              'radial-gradient(ellipse 85% 80% at 35% 40%, black 20%, transparent 75%)',
-            opacity: visible ? ART_OPACITY[threadTier] : 0,
-            // Law 44 (THR-1010): reduced motion drops the 8s slow zoom and
-            // fades the art in at --anim-fast. The art still arrives.
-            transform: reducedMotion ? undefined : visible ? 'scale(1)' : 'scale(1.02)',
-            transition: reducedMotion
-              ? `opacity ${REDUCED_MOTION_FADE_S}s ease`
-              : `opacity 1.2s ease ${ENTRANCE_DELAYS.art}s, transform 8s ease-out ${ENTRANCE_DELAYS.art}s`,
-          }}
-        />
-      )}
-
-      {/* ── Art caption ───────────────────────────────────── */}
-      {hasArt && model.illustration!.caption && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '6vh',
-            left: '4vw',
-            fontFamily: FONT_DISPLAY,
-            fontSize: '1.05rem',
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            color: 'rgba(255, 255, 255, 0.18)',
-            zIndex: 5,
-            ...entranceStyle(1.0, 1.0),
-          }}
-        >
-          {model.illustration!.caption}
-        </div>
-      )}
-
       {/* ── Content zone (reading area) ───────────────────── */}
       <div
         ref={contentColumnRef}
         data-testid="veil-content-column"
         style={{
           position: 'absolute',
-          top: 0,
-          right: hasArt ? 0 : undefined,
-          bottom: 0,
-          left: hasArt ? undefined : '50%',
-          width: hasArt ? '52%' : '65%',
-          transform: hasArt ? undefined : 'translateX(-50%)',
+          inset: 0,
           display: 'flex',
           flexDirection: 'column',
-          // 'safe' keeps the column top reachable when content overflows the
-          // scroll zone — plain 'center' strands the first lines above an
-          // unscrollable edge (THR-925). Engines without 'safe' drop the
-          // declaration and fall back to flex-start, which scrolls correctly.
-          justifyContent: 'safe center',
-          padding: `${VEIL_COLUMN_TOP_INSET} 5vw 0 3vw`,
+          justifyContent: 'flex-start',
+          padding: VEIL_COLUMN_PADDING,
+          // THR-1895 — clear the auto-resolve bar when it shows.
+          paddingTop: showAutoResolveTimer ? 'calc(var(--stage-gutter) + 28px)' : 'var(--stage-gutter)',
           // THR-1410 — the bottom reservation is px, not vh, because what it
           // has to clear is the footer strip, and the strip's height is what
-          // the column must track. A `vh` bottom padding tracks the viewport
-          // instead, which is how it drifted 8px short of the strip and left
-          // the commit control unclickable at max scroll.
-          //
-          // THR-1724 — the nudge stage draws no footer (see below), so it
-          // reserves only the clearance. THR-1732 — its hand bar needs no
-          // reservation either: it is sticky *in* the flow, the last thing in
-          // the scroll content, so at max scroll it sits at its natural place
-          // and cannot be stranded the way THR-1410's floating footer was.
+          // the column must track. THR-1724 — the nudge stage draws no footer,
+          // so it reserves only the clearance; its hand bar is sticky *in* the
+          // flow (THR-1732), so it needs no reservation either.
           paddingBottom: showVeilFooter
             ? VEIL_FOOTER_HEIGHT_PX + VEIL_FOOTER_CLEARANCE_PX
             : VEIL_FOOTER_CLEARANCE_PX,
-          background: hasArt
-            ? 'linear-gradient(to right, transparent 0%, rgba(10,10,15,0.55) 10%, rgba(10,10,15,0.82) 28%, rgba(10,10,15,0.93) 50%, rgba(10,10,15,0.97) 100%)'
-            : 'transparent',
           zIndex: 10,
+          // The column's only scroll box, the whole height of the panel (Law 57).
           overflowY: 'auto',
         }}
       >
@@ -2426,9 +2413,6 @@ export function EncounterVeil({
         <div
           data-testid="veil-scene-columns"
           style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: SCENE_COLUMN_GAP_PX,
             ...entranceStyle(ENTRANCE_DELAYS.prose, 1.0, 12),
           }}
         >
@@ -2451,7 +2435,7 @@ export function EncounterVeil({
                   lineHeight: 1.85,
                   color: TEXT_WARM,
                   marginBottom: 16,
-                  maxWidth: SCENE_PROSE_MAX_WIDTH_PX,
+                  maxWidth: PROSE_MEASURE,
                 }}
               >
                 {isFirst && text.length > 0 ? (
@@ -2531,7 +2515,7 @@ export function EncounterVeil({
                     </span>
                   )}
                 </div>
-                <p style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-xs)', lineHeight: 1.7, color: 'rgb(var(--veil-gold-rgb) / 0.7)', margin: 0, maxWidth: 500 }}>
+                <p style={{ fontFamily: FONT_PROSE, fontStyle: 'italic', fontSize: 'var(--text-xs)', lineHeight: 1.7, color: 'rgb(var(--veil-gold-rgb) / 0.7)', margin: 0, maxWidth: PROSE_MEASURE }}>
                   {mostRecentComplication.prose}
                 </p>
               </div>
@@ -2546,15 +2530,6 @@ export function EncounterVeil({
           </>
           )}
         </div>
-        {!replayEntry && (model.cast.length > 0 || model.falloutPreview.length > 0) && (
-          <div
-            data-testid="veil-scene-side"
-            style={{ flex: `0 0 ${SCENE_SIDE_COLUMN_PX}px`, minWidth: 0 }}
-          >
-            <CastStrip cast={model.cast} threadTier={threadTier} onSelectAgent={onSelectAgent} />
-            <FalloutPreview fallout={model.falloutPreview} />
-          </div>
-        )}
         </div>
 
         {/* ── The player's move (hidden while replaying a resolved step) ──
@@ -2642,7 +2617,7 @@ export function EncounterVeil({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '2.5vh 5vw',
+          padding: '16px var(--panel-padding, 20px)',
           // THR-1410 — the strip's height is what the content column reserves
           // above it, so it is pinned rather than left to fall out of the `vh`
           // padding: a floor here makes the reservation true by construction at
@@ -2684,9 +2659,9 @@ export function EncounterVeil({
         </div>
       </div>
       )}
-    </div>,
-    document.body,
-  );
+    </div>
+    ),
+  });
 }
 
 // ── ChapterAnsweringCard (THR-1812) ────────────────────────────────
@@ -2830,7 +2805,6 @@ function ResolutionReadoutBlock({
     <div
       style={{
         marginTop: 22,
-        maxWidth: 540,
         padding: '14px 16px',
         border: '1px solid rgb(var(--veil-gold-rgb) / 0.12)',
         background: 'rgb(var(--veil-gold-rgb) / 0.03)',
@@ -3043,7 +3017,6 @@ function ChoiceBlock({ choice, selected, onClick }: ChoiceBlockProps) {
         border: 'none',
         textAlign: 'left' as const,
         width: '100%',
-        maxWidth: 540,
         transition: 'background-color 0.5s ease',
       }}
     >
@@ -3816,7 +3789,7 @@ function StepCastLine({
           lineHeight: 1.7,
           color: TEXT_WARM,
           margin: 0,
-          maxWidth: 500,
+          maxWidth: PROSE_MEASURE,
         }}
       >
         {cast.prose}
@@ -3831,7 +3804,7 @@ function StepCastLine({
             lineHeight: 1.7,
             color: 'rgba(220, 100, 60, 0.75)',
             margin: '6px 0 0',
-            maxWidth: 500,
+            maxWidth: PROSE_MEASURE,
           }}
         >
           {cast.backlashProse}
@@ -3916,7 +3889,7 @@ function StepReplayView({
             lineHeight: 1.85,
             color: TEXT_WARM,
             marginBottom: 14,
-            maxWidth: 540,
+            maxWidth: PROSE_MEASURE,
           }}
         >
           {prose}
@@ -3933,7 +3906,7 @@ function StepReplayView({
             lineHeight: 1.7,
             color: TEXT_WHISPER,
             marginBottom: 14,
-            maxWidth: 540,
+            maxWidth: PROSE_MEASURE,
           }}
         >
           {entry.afterimage}
@@ -3991,7 +3964,7 @@ function StepReplayView({
               lineHeight: 1.7,
               color: 'rgb(var(--veil-gold-rgb) / 0.7)',
               margin: 0,
-              maxWidth: 500,
+              maxWidth: PROSE_MEASURE,
             }}
           >
             {entry.complication.prose}

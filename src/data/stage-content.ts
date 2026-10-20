@@ -8,7 +8,7 @@
  *
  * | Constant | Default | Purpose |
  * |---|---|---|
- * | STAGE_FRAME_KINDS | ['story-beat'] | the Stage-home kinds that play on the Stage frame now; S3 adds the encounter, S4 the rest |
+ * | STAGE_FRAME_KINDS | ['story-beat', 'encounter'] | the Stage-home kinds that play on the Stage frame now; S3 adds the encounter, S4 the rest |
  * | STAGE_MAP_DIM | 0.7 | the dim's alpha over every unlit hex (THR-1829) |
  * | STAGE_DIM_COLOR | DOMINION_DIM_COLOR | the lens grammar's near-black, imported, never re-typed |
  * | STAGE_RING_COLOR_VAR | --text-primary | parchment, never gold (gold on the map is the Dominion frontier) |
@@ -30,7 +30,7 @@ import type { StageHomedKind } from './homed-surfaces';
  * The Stage-home kinds that play on the Stage frame in this slice. The others keep their
  * own screens until their slice moves them (THR-1895 the encounter, THR-1897 the rest).
  */
-export const STAGE_FRAME_KINDS: readonly StageHomedKind[] = ['story-beat'];
+export const STAGE_FRAME_KINDS: readonly StageHomedKind[] = ['story-beat', 'encounter'];
 
 export function isStageFrameKind(kind: string | null | undefined): kind is StageHomedKind {
   return kind != null && (STAGE_FRAME_KINDS as readonly string[]).includes(kind);
