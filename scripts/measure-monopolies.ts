@@ -66,7 +66,7 @@ function runSeed(seed: number) {
     const g = state.graph;
     const newChron = state.chronicleEntries.slice(chronBefore);
     for (const c of newChron) {
-      if (/hold/i.test(c.title) && monopolyLines.length < 4) monopolyLines.push(`t${state.tick} ${c.title}: ${c.prose}`);
+      if ((c.title === 'A Hold on the Market' || c.title === 'Monopoly Broken') && monopolyLines.length < 4) monopolyLines.push(`t${state.tick} ${c.title}: ${c.prose}`);
     }
 
     for (const f of g.getNodesByType('actor')) {

@@ -62,6 +62,10 @@ export const LENS_BADGE_ICON_INSET = 0.24;
 export const LENS_OMEN_RING_DASH = 3;
 export const LENS_OMEN_RING_GAP = 3;
 export const LENS_OMEN_RING_OPACITY = 0.85;
+/** THR-1955 — the embargoed road's dash, gap (world units) and opacity. */
+export const LENS_EMBARGO_DASH = 6;
+export const LENS_EMBARGO_GAP = 4;
+export const LENS_EMBARGO_OPACITY = 0.95;
 /** Bands that draw badges (Trouble's marks and Trade's mid-road badge). */
 export const LENS_BADGE_BANDS: readonly ZoomBand[] = ['regional', 'heroLocal'];
 
@@ -259,9 +263,36 @@ function drawOmenRing(mark: LensMark, ctx: RenderCtx): boolean {
   return true;
 }
 
+/** THR-1955 — an embargoed road: one dashed line in the embargo ink, end to end. */
+function drawEmbargoedRoad(mark: LensMark, ctx: RenderCtx): boolean {
+  const a = worldOf(mark.hexKey);
+  const b = mark.toHexKey ? worldOf(mark.toHexKey) : null;
+  if (!a || !b) return false;
+  const geo = new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(a.x, a.y, LAYER_Z.LENS_ARROWS),
+    new THREE.Vector3(b.x, b.y, LAYER_Z.LENS_ARROWS),
+  ]);
+  const color = new THREE.Color().setStyle(lensToneColor(mark.tone), THREE.SRGBColorSpace);
+  const mat = new THREE.LineDashedMaterial({
+    color, dashSize: LENS_EMBARGO_DASH, gapSize: LENS_EMBARGO_GAP, transparent: true, opacity: LENS_EMBARGO_OPACITY, depthTest: false,
+  });
+  const line = new THREE.Line(geo, mat);
+  line.computeLineDistances();
+  line.renderOrder = RENDER_ORDER.LENS_ARROWS;
+  line.raycast = noRaycast;
+  line.userData.lensMark = mark.kind;
+  line.userData.embargoed = true;
+  ctx.group.add(line);
+  ctx.disposables.push(geo, mat);
+  const icon = ctx.def?.icon;
+  if (icon) addBadgeSprite(ctx, mark.kind, icon, lensToneColor(mark.tone), { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+  return true;
+}
+
 /** Trade's road: the route line (TradeRouteMesh, its look unchanged) and one badge mid-road. */
 function drawRoad(mark: LensMark, ctx: RenderCtx): boolean {
   if (!mark.toHexKey) return false;
+  if (mark.tone === 'embargoed') return drawEmbargoedRoad(mark, ctx);
   const [fc, fr] = mark.hexKey.split(',').map(Number);
   const [tc, tr] = mark.toHexKey.split(',').map(Number);
   if (![fc, fr, tc, tr].every(Number.isFinite)) return false;

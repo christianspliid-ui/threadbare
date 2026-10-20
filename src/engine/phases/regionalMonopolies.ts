@@ -54,6 +54,18 @@ interface MonopolyLoss {
 
 const HOLD_TICKS = MONOPOLY_MIN_HOLD_DAYS * TICKS_PER_DAY;
 
+/**
+ * A resolved line whose first word is a lower-case faction name ("hold of Witness
+ * Skyfield …") starts with a capital. Mutates and returns the result.
+ */
+export function capitalised<T extends ReturnType<typeof resolveEconomicChronicle>>(result: T): T {
+  if (result) {
+    const p = result.chronicleChapter.prose;
+    result.chronicleChapter.prose = p.charAt(0).toUpperCase() + p.slice(1);
+  }
+  return result;
+}
+
 /** A good's display name, lower case, for a chronicle line. Fail-soft to the id. */
 export function resourceWord(resourceId: string): string {
   return (RESOURCE_DEFINITIONS[resourceId]?.name ?? resourceId).toLowerCase();
@@ -157,7 +169,17 @@ export function resolveRegionalMonopolies(
     const prev = readRegionalMonopolies(props);
     const now = today.get(faction.id) ?? [];
     held += now.length;
-    if (prev.length === 0 && now.length === 0) continue;
+    // An old save carries the world-wide ledger (`monopolies`) with no regional record:
+    // its entries are dropped quietly (traced, never chronicled) once the regional rule runs.
+    const legacy = prev.length === 0 && Array.isArray(props.monopolies)
+      ? (props.monopolies as unknown[]).filter((x): x is string => typeof x === 'string') : [];
+    if (prev.length === 0 && now.length === 0 && legacy.length === 0) continue;
+    for (const rid of legacy) {
+      if (now.some(n => n.resourceId === rid)) continue;
+      changed = true;
+      broken++;
+      traceTransition(tick, faction, { resourceId: rid, anchorLocationId: '', share: 0, placeIds: [], sinceTick: tick }, 'broken', false);
+    }
 
     const losses = readLosses(props).filter(l => tick - l.tick < HOLD_TICKS);
     const matched = new Set<RegionalMonopoly>();
@@ -174,12 +196,12 @@ export function resolveRegionalMonopolies(
       const recentLoss = losses.some(l => sameRegion(graph, l, n));
       if (!recentLoss) {
         const town = regionTownName(graph, n.anchorLocationId);
-        push(resolveEconomicChronicle(
+        push(capitalised(resolveEconomicChronicle(
           'monopoly_established',
           { actor: faction.name, actorId: faction.id, resource: resourceWord(n.resourceId), settlement: town },
           tick,
           chronicleSeed(state.seed, `${faction.id}_${n.resourceId}_${n.anchorLocationId}_${tick}`),
-        ), town);
+        )), town);
       }
       traceTransition(tick, faction, n, 'established', !recentLoss);
     }
@@ -191,12 +213,12 @@ export function resolveRegionalMonopolies(
       const stood = tick - (typeof p.sinceTick === 'number' ? p.sinceTick : tick) >= HOLD_TICKS;
       if (stood) {
         const town = regionTownName(graph, p.anchorLocationId);
-        push(resolveEconomicChronicle(
+        push(capitalised(resolveEconomicChronicle(
           'monopoly_broken',
           { actor: faction.name, actorId: faction.id, resource: resourceWord(p.resourceId), settlement: town },
           tick,
           chronicleSeed(state.seed, `${faction.id}_${p.resourceId}_${p.anchorLocationId}_${tick}_broken`),
-        ), town);
+        )), town);
       }
       losses.push({ resourceId: p.resourceId, anchorLocationId: p.anchorLocationId, tick });
       traceTransition(tick, faction, p, 'broken', stood);
@@ -218,7 +240,7 @@ export function resolveRegionalMonopolies(
     changed = true;
     const town = regionTownName(graph, record.anchorLocationId);
     const target = graph.getNode(record.targetFactionId);
-    push(resolveEconomicChronicle(
+    push(capitalised(resolveEconomicChronicle(
       'embargo_lifted',
       {
         actor: faction.name, actorId: faction.id,
@@ -227,7 +249,7 @@ export function resolveRegionalMonopolies(
       },
       tick,
       chronicleSeed(state.seed, `${faction.id}_embargo_${record.untilTick}_lifted`),
-    ), town);
+    )), town);
     traceEmbargo(graph, tick, faction, record, 'faction.embargo.lifted', expired ? 'expired' : 'monopoly_lost');
     (faction.properties as Record<string, unknown>).activeEmbargo = null;
   }

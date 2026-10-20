@@ -21,6 +21,9 @@ import { RESOURCE_DEFINITIONS } from '../../../data/resource-content';
 import { getProsperityTier } from '../../phaseProsperity';
 import { readTradeRouteProps, laneTraffic, isLaneTrafficEnabled } from '../../tradeRoute';
 import type { ViewContext } from '../viewContext';
+import { MONOPOLY_WORDS } from '../../../data/regional-monopoly-words';
+import { allActiveEmbargoes, embargoedLanesOf, monopolyCovering } from '../../regionalMonopoly';
+import { REGIONAL_MONOPOLY_ENABLED } from '../../../data/regional-monopoly-constants';
 import { isHexKnown } from '../knowledge';
 import {
   LENS_HOVER_MAX_LINES,
@@ -81,6 +84,50 @@ function endClause(end: PlaceEnd): LensLineSegment[] | null {
   return segs;
 }
 
+/** A faction name as a linked segment (Law 21). */
+function factionSeg(ctx: ViewContext, id: string): LensLineSegment {
+  const name = ctx.graph.getNode(id)?.name ?? id;
+  return { text: name, ref: { kind: 'faction', id, name } };
+}
+
+/** "{pre}{holder}{post}" split on the `{holder}` slot, the rest filled. */
+function holderLine(ctx: ViewContext, template: string, holderId: string, good = ''): LensLine {
+  const [pre, post] = template.replace('{good}', good).split('{holder}');
+  return {
+    segments: [
+      ...(pre ? [{ text: pre, ref: null }] : []),
+      factionSeg(ctx, holderId),
+      ...(post ? [{ text: post, ref: null }] : []),
+    ],
+  };
+}
+
+/** Lane id → its embargo's holder and good, derived from the holders' records (Law 56). */
+function embargoByLane(ctx: ViewContext): Map<string, { holderId: string; resourceId: string }> {
+  const out = new Map<string, { holderId: string; resourceId: string }>();
+  if (!REGIONAL_MONOPOLY_ENABLED) return out;
+  for (const { holderId, record } of allActiveEmbargoes(ctx.graph)) {
+    for (const lane of embargoedLanesOf(ctx.graph, record)) {
+      if (!out.has(lane.id)) out.set(lane.id, { holderId, resourceId: record.resourceId });
+    }
+  }
+  return out;
+}
+
+/** The first faction (by id) holding a good this road carries in the region of `end`. */
+function monopolyHere(ctx: ViewContext, goods: readonly string[], end: PlaceEnd): { holderId: string; resourceId: string } | null {
+  if (!REGIONAL_MONOPOLY_ENABLED || goods.length === 0) return null;
+  const factions = ctx.graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'faction' && Array.isArray(n.properties.regionalMonopolies))
+    .map(n => n.id).sort();
+  for (const rid of [...goods].sort()) {
+    for (const fid of factions) {
+      if (monopolyCovering(ctx.graph, fid, rid, { col: end.col, row: end.row })) return { holderId: fid, resourceId: rid };
+    }
+  }
+  return null;
+}
+
 export function buildTradeLens(ctx: ViewContext): HexLensVM {
   const legend = { head: TRADE_LENS_WORDS.legendHead, lines: [...TRADE_LENS_WORDS.legend] };
   const known = (key: string) => isHexKnown(ctx.state, key);
@@ -96,6 +143,7 @@ export function buildTradeLens(ctx: ViewContext): HexLensVM {
   };
 
   const edges = [...ctx.graph.getEdgesByType('trades_with')].sort((a, b) => a.id.localeCompare(b.id));
+  const embargoes = embargoByLane(ctx);
   for (const edge of edges) {
     const a = endOf(ctx, edge.source);
     const b = endOf(ctx, edge.target);
@@ -104,6 +152,9 @@ export function buildTradeLens(ctx: ViewContext): HexLensVM {
 
     const props = readTradeRouteProps(edge.properties);
     const threatened = edge.properties.threatened === true;
+    const embargo = embargoes.get(edge.id) ?? null;
+    const tollHolder = typeof edge.properties.controlledBy === 'string' && ctx.graph.getNode(edge.properties.controlledBy)
+      ? edge.properties.controlledBy : null;
     const traffic = trafficOn ? laneTraffic(ctx.graph, edge, ctx.tick) : 'carrying';
 
     for (const h of hexLine({ col: a.col, row: a.row }, { col: b.col, row: b.row }, { includeEnds: true })) {
@@ -114,7 +165,7 @@ export function buildTradeLens(ctx: ViewContext): HexLensVM {
       kind: 'road',
       hexKey: a.key,
       toHexKey: b.key,
-      tone: threatened ? 'threat' : 'caravan',
+      tone: embargo ? 'embargoed' : threatened ? 'threat' : 'caravan',
       weight: props.volume,
       ...(placeRef(b) ? { ref: placeRef(b)! } : {}),
     });
@@ -140,8 +191,14 @@ export function buildTradeLens(ctx: ViewContext): HexLensVM {
           { text: tail, ref: null },
         ],
       };
+      // THR-1955 pile-up order: the route words, Embargoed, Tolled, the monopoly line,
+      // then the two ends' line — capped below by LENS_HOVER_MAX_LINES.
       const lines = [roadLine];
       if (threatened) lines.push(plainLine(TRADE_LENS_WORDS.threatened));
+      if (embargo) lines.push(holderLine(ctx, MONOPOLY_WORDS.embargoed, embargo.holderId, goodWord(embargo.resourceId)));
+      if (tollHolder) lines.push(holderLine(ctx, MONOPOLY_WORDS.tolled, tollHolder));
+      const held = monopolyHere(ctx, props.manifest.goods, here);
+      if (held) lines.push(holderLine(ctx, MONOPOLY_WORDS.holds, held.holderId, goodWord(held.resourceId)));
       if (endLine) lines.push(endLine);
       addLines(here.key, edge.id, lines);
     }

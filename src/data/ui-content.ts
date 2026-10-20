@@ -238,6 +238,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Trade road',
     desc: 'Goods travel this road between two places. The badge marks its middle.',
   },
+  // THR-1955 — war aims S2 (THR-1870's words, narrowed to the one good an embargo cuts).
+  'ui.lens.mark.embargoed': {
+    label: 'Embargoed road',
+    desc: 'A road a faction has shut to its enemies. None of the embargoed good moves on it until the embargo ends.',
+  },
+  'ui.econ.monopoly': {
+    label: 'Holds the region',
+    desc: 'This faction holds most of this good within a few days\' ride. It earns more for it, and can shut the roads to its enemies.',
+  },
   'ui.lens.mark.roadThreatened': {
     label: 'Threatened road',
     desc: 'Something endangers this road: raiders, a blockade or a war nearby. Its goods may stop.',

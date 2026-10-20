@@ -298,6 +298,8 @@ export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
     legend: [
       { word: 'Trade road', tooltipId: 'ui.lens.mark.road', tone: 'caravan' },
       { word: 'Threatened road', tooltipId: 'ui.lens.mark.roadThreatened', tone: 'threat' },
+      // THR-1955 — red and dashed; only drawn while an embargo stands (Law 56).
+      { word: 'Embargoed road', tooltipId: 'ui.lens.mark.embargoed', tone: 'embargoed' },
     ],
     legendIn: ['trade'],
     labelObstacle: 'never',

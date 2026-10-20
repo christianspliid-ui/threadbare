@@ -23,6 +23,8 @@ export const LENS_TONE_COLORS: Readonly<Record<LensMarkTone, string>> = {
   /** The road's own colours (TradeRouteMesh), so the legend and the road agree. */
   caravan: TRADE_ROUTE_COLOR,
   threat: TRADE_ROUTE_THREATENED_COLOR,
+  /** THR-1955 — the threat red, drawn dashed (HexLensLayer's road). */
+  embargoed: TRADE_ROUTE_THREATENED_COLOR,
 };
 
 /** The ink a mark without a known tone falls back to (Law 58's plain fallback). */

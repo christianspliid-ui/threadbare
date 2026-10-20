@@ -36,7 +36,7 @@ import {
   embargoedLanesOf,
   type ActiveEmbargo,
 } from './regionalMonopoly';
-import { traceEmbargo, regionTownName, resourceWord } from './phases/regionalMonopolies';
+import { traceEmbargo, regionTownName, resourceWord, capitalised } from './phases/regionalMonopolies';
 import { pickTargetAgent } from './phases/routeEvents';
 import { resolveEconomicChronicle, chronicleSeed } from './economicChronicle';
 import { TICKS_PER_DAY } from '../data/attention-constants';
@@ -119,7 +119,7 @@ export function executeEmbargo(
   const target = graph.getNode(plan.targetFactionId);
   const town = regionTownName(graph, plan.anchorLocationId);
   const chronicle: ChronicleEntry[] = [];
-  const line = resolveEconomicChronicle(
+  const line = capitalised(resolveEconomicChronicle(
     'embargo_laid',
     {
       actor: holder.name, actorId: holder.id,
@@ -128,7 +128,7 @@ export function executeEmbargo(
     },
     state.tick,
     chronicleSeed(state.seed, `${holder.id}_embargo_${plan.untilTick}`),
-  );
+  ));
   if (line) {
     chronicle.push({
       id: line.chronicleChapter.id,

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 195 |
+| 🟢 LIVE | 197 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 87 |
-| **Total** | **290** |
+| **Total** | **292** |
 
 ## Contracts by producing subsystem
 
@@ -281,6 +281,7 @@ remediation ticket or the build fails.
 | `crown-outline-to-political-map` | The realm projection carries crownOf (sworn realm → its Crown), derived from sworn_to on every rebuild; the fingerprint includes the sworn_to pairs so an oath made or broken without a structural bump is traced. BorderMesh draws one outer line, in the Crown's ink, around the union of a Crown's hexes and its sworn realms' (a guild-only Crown draws none), and the Held-by line adds "which owes fealty to <liege>, a Crown". | module-export: `buildCrownOf`, `crownHexes`, `outlinedCrowns` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `crown-protected-holdings-to-war-aims` | What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper: an enemy army marching on any of these within 8 hexes of a liege's army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45). | module-export: `protectedHoldingsOf`, `vassalsOf`, `liegeOf` | War, Armies & Battles | 🟢 LIVE | — |
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `faction-embargo-starves-region` | The embargo faction action (THR-1955, war aims S2): a regional monopoly holder writes one activeEmbargo record ({ targetFactionId, resourceId, anchorLocationId, untilTick }) on itself, against the enemy (isEnemyFaction) whose settlements in the region carry most of the good, for EMBARGO_DAYS. Nothing is written on towns or lanes: embargoedTownsOf / embargoedLanesOf derive them. phaseResourceStockTiers subtracts EMBARGO_BALANCE_CUT from each embargoed town's balance on the good (embargoCutsByLocation → deriveLocationStockTiers balanceCuts); the Trade lens draws the derived lanes red and dashed with the "Embargoed by …" hover line; one encounter_route_embargo seed goes on the busiest lane. phaseEconomicPower lifts it on expiry or when the monopoly is lost, chronicling embargo_lifted. | node-prop: `activeEmbargo`, `embargoedTownsOf`, `embargoedLanesOf`, `embargoCutsByLocation` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `faction-relations-to-army-war-aims` | An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. THR-1933 (war aims S1) moves the field-battle start (areHostile) onto isEnemyFaction too, and enemyArm adds a monster arm and an alliance override of the sentiment arm, both behind WAR_AIMS_ENABLED. | module-export: `isEnemyFaction`, `enemyArm`, `factionKeepsHallAt`, `mayBesiege` | War, Armies & Battles | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `guild-social-templates-reach-shared-members` | Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there. | function: `getSharedFactionSocialTemplates`, `socialTemplateIds` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -319,6 +320,7 @@ remediation ticket or the build fails.
 | `mortal-means-steers-board` | A poor or greedy mortal leans toward work that pays: the decision board multiplies an encounter whose outcome table pays its actor, and an earning undertaking cell, by the mortal's Means want; a Wealthy mortal who is not greedy turns away from it. | node-prop: `wealth`, `axiologicalProfile`, `meansMultiplier`, `meansWant` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `prosperity-on-trade-lens` | Trade roads and what they carry are a lens, not plain-map clutter (THR-1898 Lenses II, plan D4). The route producers write `trades_with` edges (volume, manifest, threatened); the Trade lens (`views/lenses/tradeLens.ts`) lights every explored hex on the cube line between a known route's ends (`hexLine`), draws the road in caravan gold or threat red with a mid-road badge, and tells the road words that left the plain hex tooltip, then each end's prosperity tier (`getProsperityTier`, `phaseProsperity`) and scarce goods (`stockTier`) as words, never a number. | node-prop: `prosperity`, `stockTier` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
 | `recovered-town-keeps-faith` | A town that recovers keeps faith (THR-1935 S1). An answered prayer whose town loses the restless chip within PRAYER_RECOVERY_WINDOW_DAYS 30 becomes a faithfulCommunity essence source (the god's primary by bought points, sanctity 0.5) with the god's controls edge, written through the extracted consecrate helper; at most FAITHFUL_COMMUNITY_MAX 4 per god, one bag per host. computeSourceIncome pays it, chargeSourceUpkeep charges it, the Covenants list shows its faith line. | node-prop: `essenceSource`, `faithfulCommunity` | Essence & Divine Economy | 🟢 LIVE | — |
+| `regional-monopoly-pays-rent` | A faction holds a regional monopoly on a good when, around an anchor place it holds, at least MONOPOLY_REGION_MIN_PLACES place-tier bearing places lie within MONOPOLY_REGION_RADIUS_HEXES and it holds MONOPOLY_CONTROL_FRACTION of them (THR-1955, war aims S2). phaseEconomicPower writes faction.regionalMonopolies ({ resourceId, anchorLocationId, share, placeIds, sinceTick }) and keeps faction.monopolies (resource ids) daily, chronicling "holds most of" lines de-duplicated by MONOPOLY_MIN_HOLD_DAYS. Readers: the purse's place yield pays MONOPOLY_SCARCITY_RENT on the held good (scarcityRentFor), the war-aim score's break/complete bonuses (monopolyAimFor), the embargo prerequisite, resource_acquisition's met flag, the Purse panel chip and the Trade lens monopoly line. | node-prop: `regionalMonopolies`, `monopolies`, `scarcityRentFor`, `monopolyAimFor` | Factions & Succession | 🟢 LIVE | — |
 | `restless-moves-people` | A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent. | node-prop: `relocationIntent`, `population` | Movement & Colocation | 🟢 LIVE | — |
 | `rising-founds-rebel` | A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising. | edge: `controls`, `hostile_to`, `member_of` | Factions & Succession | 🟢 LIVE | — |
 | `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -1691,6 +1693,17 @@ exit
 - **Other hits:** `src/data/faction-action-constants.ts`, `src/engine/ambitionShape.ts`, `src/engine/debugWorldSpawnTools.ts`, `src/engine/effects/conditionProxyEvents.ts`, `src/engine/encounterFilterPipeline.ts` +6 more
 - **Verdict:** Verified 2026-07-23: FactionSheet.activeAmbition renders; faction phases consume. Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
+### `faction-embargo-starves-region` — 🟢 LIVE
+
+- **Intent:** The embargo faction action (THR-1955, war aims S2): a regional monopoly holder writes one activeEmbargo record ({ targetFactionId, resourceId, anchorLocationId, untilTick }) on itself, against the enemy (isEnemyFaction) whose settlements in the region carry most of the good, for EMBARGO_DAYS. Nothing is written on towns or lanes: embargoedTownsOf / embargoedLanesOf derive them. phaseResourceStockTiers subtracts EMBARGO_BALANCE_CUT from each embargoed town's balance on the good (embargoCutsByLocation → deriveLocationStockTiers balanceCuts); the Trade lens draws the derived lanes red and dashed with the "Embargoed by …" hover line; one encounter_route_embargo seed goes on the busiest lane. phaseEconomicPower lifts it on expiry or when the monopoly is lost, chronicling embargo_lifted.
+- **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
+- **UL terms:** *Faction*, *Settlement*
+- **Production hits:** 7 total — 2 write, 3 read, 2 unclassified
+- **Write sites:** `src/engine/embargo.ts`, `src/engine/phases/regionalMonopolies.ts`
+- **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phases/resourceStockTiers.ts`, `src/engine/views/lenses/tradeLens.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/regionalMonopoly.ts`
+- **Verdict:** Verified 2026-10-20: THR-1955. regionalMonopoly.test.ts: plan targets the enemy in the region, one record with derived towns and lanes and nothing on the town, the cut lowers the balance by EMBARGO_BALANCE_CUT, lifted on expiry (chronicle) and on monopoly loss (trace). npm run measure:monopolies: every embargo on seeds 42/99/7 left an embargo_laid line and a stock change in the target region (5 of 5 in 132-tick runs; 8 of 8 over 60 days on seed 42).
+
 ### `faction-purse-pays-armies` — 🟢 LIVE
 
 - **Intent:** A faction pays each army's upkeep from its purse every day, in army id order, whole armies only and never into debt; an army paid today carries armyState.paidThroughTick = today. Army attrition reads that: an army the purse has not paid for more than one pay day is underfunded, loses UNDERFUNDED_ATTRITION_PENALTY cohesion per tick and, at 0, deserts through the existing disband path. Raising an army from an ambition or agenda costs ARMY_CREATION_GOLD_COST, and the raise gate requires the cost plus a first day in hand.
@@ -1721,10 +1734,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → War, Armies & Battles
 - **UL terms:** *Faction*, *Settlement*
 - **Module:** `src/engine/warAims/townValue.ts`
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/warAims/townValue.ts`
 - **Read sites:** `src/engine/warAims/score.ts`
-- **Other hits:** `src/engine/warAims.ts`
+- **Other hits:** `src/engine/warAims/resourceAim.ts`, `src/engine/warAims.ts`
 - **Verdict:** Verified 2026-10-17: THR-1933. src/engine/warAims/__tests__/warAims.test.ts (16): townValueFor ranks a prosperous town above a poor one; pickWarAim marches on the richer farther enemy town over the nearer poor one, never a non-enemy holder, leaves out a town no march path reaches, and carries feeds_staple when the town bears a staple scarce in the attacker's towns. npm run measure:war-aims, seeds 42/99/7, 600 ticks: 12 picks, 0 on a non-enemy; 19 sieges, 0 on a non-enemy or own-hall town.
 
 ### `faction-purse-schism-strain` — 🟢 LIVE
@@ -1745,10 +1758,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → War, Armies & Battles
 - **UL terms:** *Faction*
 - **Module:** `src/engine/warAims/enemy.ts`
-- **Production hits:** 9 total — 1 write, 5 read, 3 unclassified
+- **Production hits:** 11 total — 1 write, 5 read, 5 unclassified
 - **Write sites:** `src/engine/warAims/enemy.ts`
 - **Read sites:** `src/engine/armySpawning.ts`, `src/engine/battleResolution.ts`, `src/engine/notableAgendas.ts`, `src/engine/warAims/defence.ts`, `src/engine/warAims/score.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/unrestPressure/defection.ts`, `src/engine/warAims.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/embargo.ts`, `src/engine/unrestPressure/defection.ts`, `src/engine/warAims/townValue.ts`, `src/engine/warAims.ts`
 - **Verdict:** Verified 2026-10-17: THR-1922. src/engine/warAims/__tests__/enemy.test.ts (13): the predicate on each edge arm; selectArmyObjective skips a no-quarrel holder and the own-hall town and marches on the rival; no enemy town holds at muster; siege start refuses the own-hall town and a no-quarrel holder, besieges an enemy and an objective town. Seed 42 medium, 600 ticks: 30 siege-ticks, 0 on an own-hall town, 0 on a non-enemy holder (baseline 397, of which 200 own-hall).
 
 ### `faction-sphere-aggregate-reaches-battle-aftermath` — 🟢 LIVE
@@ -2805,6 +2818,17 @@ exit
 - **Other hits:** `src/components/Game/debug/EssenceSourcesDebugTab.tsx`, `src/data/essence-sources.ts`, `src/data/prayer-constants.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts` +9 more
 - **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: an answered town that loses Restless hosts a faithfulCommunity source of mind at 0.5 with the controls edge, and selectCovenantRows titles it "Millbrook keeps faith with you."; a fifth town forms none.
 
+### `regional-monopoly-pays-rent` — 🟢 LIVE
+
+- **Intent:** A faction holds a regional monopoly on a good when, around an anchor place it holds, at least MONOPOLY_REGION_MIN_PLACES place-tier bearing places lie within MONOPOLY_REGION_RADIUS_HEXES and it holds MONOPOLY_CONTROL_FRACTION of them (THR-1955, war aims S2). phaseEconomicPower writes faction.regionalMonopolies ({ resourceId, anchorLocationId, share, placeIds, sinceTick }) and keeps faction.monopolies (resource ids) daily, chronicling "holds most of" lines de-duplicated by MONOPOLY_MIN_HOLD_DAYS. Readers: the purse's place yield pays MONOPOLY_SCARCITY_RENT on the held good (scarcityRentFor), the war-aim score's break/complete bonuses (monopolyAimFor), the embargo prerequisite, resource_acquisition's met flag, the Purse panel chip and the Trade lens monopoly line.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
+- **UL terms:** *Faction*, *Settlement*
+- **Production hits:** 16 total — 1 write, 5 read, 10 unclassified
+- **Write sites:** `src/engine/phases/regionalMonopolies.ts`
+- **Read sites:** `src/components/Game/FactionPursePanel.tsx`, `src/engine/embargo.ts`, `src/engine/factionPurse/income.ts`, `src/engine/views/lenses/tradeLens.ts`, `src/engine/warAims/townValue.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/data/economic-chronicle-content.ts`, `src/data/regional-monopoly-constants.ts`, `src/data/regional-monopoly-words.ts`, `src/data/war-aims-constants.ts` +5 more
+- **Verdict:** Verified 2026-10-20: THR-1955. src/engine/__tests__/regionalMonopoly.test.ts (11): a 3-of-4 region holds at 0.75, a far place is another market, the record clears the day the share drops, a loss inside the hold window is traced not chronicled, rent multiplies the held good, the break and complete bonuses fire. npm run measure:monopolies, seeds 42/99/7: 4 / 8 / 9 regional monopolies at day 10.
+
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
 
 - **Intent:** An ending that says someone left actually sends them — and the leaving is a journey the player can watch, not a body appearing elsewhere.
@@ -2925,10 +2949,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 257 total — 2 write, 2 read, 253 unclassified
+- **Production hits:** 259 total — 2 write, 2 read, 255 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +248 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +250 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -3165,10 +3189,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 422 total — 1 write, 1 read, 420 unclassified
+- **Production hits:** 424 total — 1 write, 1 read, 422 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +415 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +417 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `shared-step-resolution-two-callers` — 🟢 LIVE
@@ -3440,10 +3464,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 252 total — 2 write, 2 read, 248 unclassified
+- **Production hits:** 254 total — 2 write, 2 read, 250 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +243 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +245 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
@@ -3632,10 +3656,10 @@ exit
 - **Intent:** A territorial_expansion or revenge ambition takes its army's conquer target as its targetNodeId (THR-1933 S1), written at the raise (aimNewArmy) and on every daily re-aim that changes it (reaimArmies). The existing abandon check in phaseFactionAmbitions reads it. A revenge army scores the towns of the faction it holds its grievance against ×WAR_AIM_REVENGE_FOCUS. Campaign ambitions (compositionId) keep their declared target.
 - **Producer → Consumer:** War, Armies & Battles → Factions & Succession
 - **UL terms:** *Faction*
-- **Production hits:** 75 total — 1 write, 1 read, 73 unclassified
+- **Production hits:** 76 total — 1 write, 1 read, 74 unclassified
 - **Write sites:** `src/engine/warAims.ts`
 - **Read sites:** `src/engine/factionAmbitions.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/data/army-words.ts`, `src/data/detailPageTemplates.ts` +68 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/data/army-words.ts`, `src/data/detailPageTemplates.ts` +69 more
 - **Verdict:** Verified 2026-10-17: THR-1933. warAims.test.ts: aimNewArmy writes the conquer target onto a territorial_expansion ambition the army pursues; grievanceFactionOf picks the enemy with the worst relates_to sentiment.
 
 ### `war-news-reaches-chronicle` — 🟢 LIVE
@@ -3749,10 +3773,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 297 total — 2 write, 6 read, 289 unclassified
+- **Production hits:** 298 total — 2 write, 6 read, 290 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +284 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +285 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
@@ -3772,9 +3796,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 131 total — 2 write, 3 read, 126 unclassified
+- **Production hits:** 132 total — 2 write, 3 read, 127 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +121 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +122 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 
