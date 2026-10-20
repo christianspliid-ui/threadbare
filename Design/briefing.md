@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 12:56 local (10:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-20 13:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,7 +30,7 @@ From [the design lane tonight, run a](https://github.com/christianspliid-ui/thre
 
 - [Ordinary scenes still hand The First a trade she never had](https://linear.app/threadbare/issue/THR-1983/ordinary-scenes-still-hand-the-first-a-trade-she-never-had-guild): of 28 everyday scenes that assume her trade, **six now wait for a mortal of the right trade**. **Twenty-one stay open to anyone** and stop saying she already works it (a healer may still try the smiths' iron test, as a healer). *Veto:* "a mortal should only be offered work in her own trade".
 
-From [the hiring-a-free-company plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md) ([THR-1974](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays)), decided by [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-19a.md):
+From [the hiring-a-free-company plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md) ([THR-1974](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays)), decided by [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-19a.md) (veto day ends about 22:00 tonight):
 
 - **A hired company fights its paymaster's wars, not its own.** *Veto:* "a hired company should still fight its own enemies too".
 - **A lord keeps two days of its own soldiers' pay before it pays anyone else's.** *Veto:* "a lord should spend its last coin on its sworn swords".
@@ -43,14 +43,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 32 ready, 1 in progress.** The builder is working on [the Stage, slice 4 — journey moments, undertaking moments, premonitions and the ruin emergence on the Stage](https://linear.app/threadbare/issue/THR-1897/the-stage-slice-4-journey-moments-undertaking-moments-premonitions-and) right now (run started 10:31 UTC, active).
+**Backed up: 31 ready, 1 in progress.** The builder is working on [the minimap — the whole world in small, open at 1440p and folded at 1080p](https://linear.app/threadbare/issue/THR-1901/the-minimap-the-whole-world-in-small-open-at-1440p-and-folded-at-1080p) right now (run started 11:51 UTC, active).
 
-- [News that leaves "Needs you" now lives on in the Chronicle](https://linear.app/threadbare/issue/THR-1896/news-that-leaves-needs-you-should-live-on-in-the-chronicle-mandate) merged ([PR #2499](https://github.com/christianspliid-ui/threadbare/pull/2499)) and is live.
+- [The Stage, slice 4 — journey moments, undertaking moments, premonitions and the ruin emergence play on the Stage](https://linear.app/threadbare/issue/THR-1897/the-stage-slice-4-journey-moments-undertaking-moments-premonitions-and) merged ([PR #2501](https://github.com/christianspliid-ui/threadbare/pull/2501)) and is live.
 - Next up: [cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (c85132cb). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
-- The engine runs at 119 ms a tick, 11% below its week's median (134).
-- The tidy-up job reports 570 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
+- All green. The live site is current (43d1cb29). Main's checks are green, no pull request is waiting, and all 13 scheduled lanes are on time.
+- The engine runs at 117 ms a tick, 12% below its week's median (133).
+- The tidy-up job reports 569 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
