@@ -27,6 +27,7 @@ export const REGIONAL_MONOPOLY_ENABLED = true;
 export const MONOPOLY_REGION_RADIUS_HEXES = 8;
 
 /** Bearing places a region needs (within the radius of its anchor) before it can be held. */
+// TODO(THR-2001): one realm holds 75% of regions on seed 42 by day 60 (kill criterion) — tune concentration.
 export const MONOPOLY_REGION_MIN_PLACES = 3;
 
 /** A monopolised resource's place yield counts this many times in its holder's purse. */
