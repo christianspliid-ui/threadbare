@@ -1,8 +1,10 @@
 /**
  * WarmStartOverlay — "The world moves on" (THR-1744).
  *
- * Shown only while a `?warm=<ticks>` warm-up runs (`useWarmStart`). A full-viewport
- * scrim with no controls: it cannot be dismissed early and closes itself. It is an
+ * Shown only while a `?warm=<ticks>` warm-up runs (`useWarmStart`). A heavy
+ * `Overlay` cover with no controls: it cannot be dismissed early (no Escape layer,
+ * no backdrop close) and closes itself. Its card takes the S tier through
+ * `dialogSizeStyle('s')` (THR-1880), never a free width. It is an
  * interrupt surface (`warmStartRunning` in `interruptRegistry.ts`), so everything
  * else yields to it while it is up.
  *
@@ -13,6 +15,10 @@
 
 import { resolveTooltip } from '../../engine/tooltipResolver';
 import { formatWarmSeason, type WarmStartProgress } from './hooks/useWarmStart';
+import { Overlay } from '../shared/Overlay';
+import { dialogSizeStyle } from '../shared/dialogSize';
+
+const noop = () => {};
 
 export interface WarmStartOverlayProps {
   progress: WarmStartProgress;
@@ -37,33 +43,36 @@ export function WarmStartOverlay({ progress, ticksPerSeason, firstName }: WarmSt
     ?? 'Anything that needs your choice has waited for you.';
 
   return (
-    <div
-      data-testid="warm-start-overlay"
-      role="status"
-      aria-live="polite"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 anim-fade-enter"
+    <Overlay
+      open
+      onClose={noop}
+      label={title}
+      band="focused"
+      backdrop="heavy"
+      placement="center"
+      closeOnEscape={false}
+      closeOnBackdrop={false}
+      animation="fade"
+      surfaceClassName="rounded-xl p-8 text-center border"
+      surfaceStyle={{ ...dialogSizeStyle('s'), backgroundColor: 'var(--bg-abyss)', borderColor: 'var(--accent-gold-dim)' }}
+      surfaceProps={{ 'data-testid': 'warm-start-overlay', 'data-dialog-size': 's', role: 'status', 'aria-live': 'polite' }}
     >
-      <div
-        className="max-w-xl w-full mx-4 rounded-xl p-8 text-center border"
-        style={{ backgroundColor: 'var(--bg-abyss)', borderColor: 'var(--accent-gold-dim)' }}
+      <h2
+        className="text-2xl tracking-wide mb-4"
+        style={{ color: 'var(--accent-gold)', fontFamily: 'var(--font-display)' }}
       >
-        <h2
-          className="text-2xl tracking-wide mb-4"
-          style={{ color: 'var(--accent-gold)', fontFamily: 'var(--font-display)' }}
-        >
-          {title}
-        </h2>
-        <p className="text-sm mb-3 leading-relaxed" style={{ color: 'var(--text-primary)' }}>{wait}</p>
-        <p className="text-sm italic mb-3" style={{ color: 'var(--text-muted)' }} data-testid="warm-start-progress">
-          {progressLine}
-        </p>
-        {firstLine && (
-          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{firstLine}</p>
-        )}
-        <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--text-muted)' }} data-testid="warm-start-held">
-          {heldLine}
-        </p>
-      </div>
-    </div>
+        {title}
+      </h2>
+      <p className="text-sm mb-3 leading-relaxed" style={{ color: 'var(--text-primary)' }}>{wait}</p>
+      <p className="text-sm italic mb-3" style={{ color: 'var(--text-muted)' }} data-testid="warm-start-progress">
+        {progressLine}
+      </p>
+      {firstLine && (
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{firstLine}</p>
+      )}
+      <p className="text-xs leading-relaxed mt-1" style={{ color: 'var(--text-muted)' }} data-testid="warm-start-held">
+        {heldLine}
+      </p>
+    </Overlay>
   );
 }

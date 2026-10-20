@@ -115,7 +115,8 @@ describe('GameView debug panel integration', () => {
   it('opens settings panel on gear icon click', () => {
     render(<GameView {...defaultProps} />);
     fireEvent.click(screen.getByTestId('settings-toggle'));
-    expect(screen.getByRole('menu', { name: 'Settings' })).toBeTruthy();
+    // THR-1880: Settings is an M dialog now, not a flyout menu.
+    expect(screen.getByRole('dialog', { name: 'Settings' })).toBeTruthy();
   });
 
   it('hides right sidebar when debug panel is open', () => {

@@ -95,7 +95,8 @@ export interface DialogSizeSurface {
 /**
  * Every surface that keeps a dialog home, with the tiers it may take (THR-1820 § 7
  * table A). `dialogSize.test.ts` reads each non-pending file and checks it passes a
- * `size` from its registered tiers and no `maxWidth`. Slice 2 (THR-1880) clears the
+ * `size` from its registered tiers and no `maxWidth` (an owner-drawn panel on an
+ * `Overlay` calls `dialogSizeStyle` with a registered tier instead). Slice 2 (THR-1880) clears the
  * `pending` rows; THR-1827 / THR-1829 retire the free-width surfaces not listed here.
  */
 export const DIALOG_SIZE_SURFACES: ReadonlyArray<DialogSizeSurface> = [
@@ -112,10 +113,11 @@ export const DIALOG_SIZE_SURFACES: ReadonlyArray<DialogSizeSurface> = [
   { surface: 'SettingsModal', file: 'StartPage/SettingsModal.tsx', sizes: ['s'] },
   { surface: 'CreditsModal', file: 'StartPage/CreditsModal.tsx', sizes: ['s'] },
   { surface: 'HomedSurfaceFallback', file: 'Game/hosts/HomedSurfaceFallback.tsx', sizes: ['s'] },
-  // Slice 2 — hand-built today; THR-1880 moves each onto its tier.
-  { surface: 'WarmStartOverlay', file: 'Game/WarmStartOverlay.tsx', sizes: ['s'], pending: 'THR-1880' },
-  { surface: 'ChoiceSetModal', file: 'Game/ChoiceSetModal.tsx', sizes: ['s'], pending: 'THR-1880' },
-  { surface: 'ScryOverlay', file: 'Game/ScryOverlay.tsx', sizes: ['l'], pending: 'THR-1880' },
-  { surface: 'SettingsPanel', file: 'Game/SettingsPanel.tsx', sizes: ['m'], pending: 'THR-1880' },
-  { surface: 'Codex', file: 'Game/GameView.tsx', sizes: ['xl'], pending: 'THR-1880' },
+  // Slice 2 (THR-1880) — the hand-built dialogs, each on its tier. The warm-start card
+  // is an owner-drawn panel on an `Overlay` (its cover stays heavy), sized by `dialogSizeStyle`.
+  { surface: 'WarmStartOverlay', file: 'Game/WarmStartOverlay.tsx', sizes: ['s'] },
+  { surface: 'ChoiceSetModal', file: 'Game/ChoiceSetModal.tsx', sizes: ['s'] },
+  { surface: 'ScryOverlay', file: 'Game/ScryOverlay.tsx', sizes: ['l'] },
+  { surface: 'SettingsPanel', file: 'Game/SettingsPanel.tsx', sizes: ['m'] },
+  { surface: 'Codex', file: 'Game/hosts/DialogHost.tsx', sizes: ['xl'] },
 ];

@@ -4,7 +4,8 @@
  * 1. `DIALOG_SIZE_FALLBACK` equals the `:root` values in `index.css`, so a panel
  *    drawn without the stylesheet lays out at the same widths (fail-soft).
  * 2. Every `DIALOG_SIZE_SURFACES` entry's file passes a `size` from its registered
- *    tiers and no `maxWidth` on its `<Modal` / `<RevealCard` tags.
+ *    tiers and no `maxWidth` on its `<Modal` / `<RevealCard` tags (an owner-drawn
+ *    panel on an `Overlay` calls `dialogSizeStyle` with a registered tier instead).
  * 3. `dialogSizeStyle` clamps to the viewport and gives XL a fixed height.
  * 4. The ratchet's `modal-maxwidth` detector counts multi-line tags and skips sub-components.
  */
@@ -97,6 +98,14 @@ describe('dialogSize — DIALOG_SIZE_SURFACES agrees with the source', () => {
     it(`${entry.surface} (${entry.file}) passes a registered size and no maxWidth`, () => {
       const source = readFileSync(resolve(componentsDir, entry.file), 'utf8');
       const tags = dialogTags(source);
+      // An owner-drawn panel on an `Overlay` (the warm-start card, THR-1880) has no
+      // dialog tag; it sizes its panel with `dialogSizeStyle(<registered tier>)`.
+      const ownerDrawn = [...source.matchAll(/\bdialogSizeStyle\('([a-z]+)'\)/g)].map((m) => m[1]);
+      if (tags.length === 0 && ownerDrawn.length > 0) {
+        for (const tier of ownerDrawn) expect(entry.sizes).toContain(tier);
+        expect(source, 'no free width on an owner-drawn panel').not.toMatch(/\bmax-w-(xs|sm|md|lg|xl|\dxl)\b/);
+        return;
+      }
       expect(tags.length, 'a dialog tag').toBeGreaterThan(0);
       for (const tag of tags) {
         expect(tag, 'no free width').not.toMatch(/\bmaxWidth=/);

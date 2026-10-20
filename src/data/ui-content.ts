@@ -46,6 +46,9 @@ export const OPENING_REVEAL_TOAST_MS = 7000;
 export const OPENING_REVEAL_SHOW_ALL_LABEL = 'Show every panel';
 export const OPENING_REVEAL_SHOW_ALL_HELP = 'Skip the slow reveal and put every panel on screen now.';
 
+/** THR-1880 — the Divine Court picker views' one way back to the seats (Escape does the same). */
+export const SCRY_BACK_TO_COURT_LABEL = 'Back to the court';
+
 /** "a", "a and b", "a, b and c" — the reveal toast's label list. */
 export function joinRevealLabels(labels: readonly string[]): string {
   if (labels.length <= 1) return labels[0] ?? '';
