@@ -54,6 +54,7 @@ import {
 import { TICKS_PER_DAY } from '../../data/attention-constants';
 import { REGIONAL_MONOPOLY_ENABLED } from '../../data/regional-monopoly-constants';
 import { resolveRegionalMonopolies, type ChroniclePush } from './regionalMonopolies';
+import { realmBorderMap } from '../realmBorderMap';
 import { UNREST_PRESSURE_ENABLED, GRANARY_RIOT_TEMPLATE_ID } from '../../data/unrest-pressure-constants';
 import type { PendingEncounterSeed } from '../../types/unifiedAction';
 
@@ -120,7 +121,7 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
   let monopoliesHeld = 0;
   if (REGIONAL_MONOPOLY_ENABLED) {
     // THR-1955 — the regional rule (war aims S2 § Engine 6) and embargo upkeep (§ 9).
-    const r = resolveRegionalMonopolies(state, pushChronicle);
+    const r = resolveRegionalMonopolies(state, pushChronicle, realmBorderMap(ctx.runtime, graph, state.tiles, tick));
     monopoliesHeld = r.held;
     established = r.established;
     broken = r.broken;

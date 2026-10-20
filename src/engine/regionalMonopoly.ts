@@ -19,12 +19,11 @@
  *
  * **One holder rule.** Every question this subsystem asks about who holds a place — the
  * bearing index's controller, the embargo's target towns, the war-aim break and complete
- * bonuses — goes through `controllerOfPlace` / `taxHolderOf` without the realm-border
- * tie-break, so counting, embargo and bonuses agree with each other. The tie-break is left
- * out on purpose: it needs the realm projection, which the Trade lens and the stock pass do
- * not hold, and it only differs on a place with two controllers. The purse's scarcity rent
- * is paid on yield the purse holder actually collects, from a place inside a region that
- * holder holds.
+ * bonuses — goes through `taxHolderOf` with the realm projection's `hexRealmId` (callers get
+ * it from `realmBorderMap`), the same rule the purse and the war aims use. A guild-plus-realm
+ * town is the border realm's for every reader, so counting, embargo, rent and bonuses agree.
+ * Every helper takes the map as an optional last argument; without it (tests, no runtime)
+ * `taxHolderOf` falls back to the strongest controller.
  *
  * Pure helpers only — every caller passes the graph; nothing here is cached (the graph is
  * mutated in place, CLAUDE.md load-bearing decisions).
@@ -97,15 +96,15 @@ function num(v: unknown): number | null {
  * The one faction that holds a bearing place: its tax holder (the `controls` edge with
  * the highest influence), else an action-written `monopolyControlledBy`.
  */
-export function controllerOfPlace(graph: WorldGraph, place: GraphNode): string | null {
-  const holder = taxHolderOf(graph, place.id, NO_REALM_MAP);
+export function controllerOfPlace(graph: WorldGraph, place: GraphNode, hexRealmId: ReadonlyMap<string, string> = NO_REALM_MAP): string | null {
+  const holder = taxHolderOf(graph, place.id, hexRealmId);
   if (holder) return holder;
   const by = place.properties.monopolyControlledBy;
   return typeof by === 'string' && isFactionNode(graph.getNode(by)) ? by : null;
 }
 
 /** Every resource's place-tier bearing places, with hex and holder. */
-export function buildBearingIndex(graph: WorldGraph): BearingIndex {
+export function buildBearingIndex(graph: WorldGraph, hexRealmId: ReadonlyMap<string, string> = NO_REALM_MAP): BearingIndex {
   const index: BearingIndex = new Map();
   for (const loc of getLocationNodes(graph)) {
     const hex = hexOfLocation(graph, loc);
@@ -114,7 +113,7 @@ export function buildBearingIndex(graph: WorldGraph): BearingIndex {
     let place: BearingPlace | null = null;
     for (const [rid, r] of Object.entries(bag)) {
       if ((num((r as { quantity?: unknown }).quantity) ?? 0) <= 0) continue;
-      place ??= { id: loc.id, hex, controllerId: controllerOfPlace(graph, loc) };
+      place ??= { id: loc.id, hex, controllerId: controllerOfPlace(graph, loc, hexRealmId) };
       const list = index.get(rid);
       if (list) list.push(place); else index.set(rid, [place]);
     }
@@ -260,7 +259,7 @@ export function allRegionalMonopolies(graph: WorldGraph): { factionId: string; m
 // ─── Embargo derivation ──────────────────────────────────────────────────────
 
 /** The target's settlements inside the embargo's region, id-sorted. */
-export function embargoedTownsOf(graph: WorldGraph, record: ActiveEmbargo): GraphNode[] {
+export function embargoedTownsOf(graph: WorldGraph, record: ActiveEmbargo, hexRealmId: ReadonlyMap<string, string> = NO_REALM_MAP): GraphNode[] {
   const anchor = hexOfLocationId(graph, record.anchorLocationId);
   if (!anchor) return [];
   const out: GraphNode[] = [];
@@ -268,17 +267,17 @@ export function embargoedTownsOf(graph: WorldGraph, record: ActiveEmbargo): Grap
     if (!isSettlement(loc)) continue;
     const hex = hexOfLocation(graph, loc);
     if (!hex || hexDistance(hex, anchor) > MONOPOLY_REGION_RADIUS_HEXES) continue;
-    if (taxHolderOf(graph, loc.id, NO_REALM_MAP) !== record.targetFactionId) continue;
+    if (taxHolderOf(graph, loc.id, hexRealmId) !== record.targetFactionId) continue;
     out.push(loc);
   }
   return out.sort(byId);
 }
 
 /** The `trades_with` lanes between an embargoed town and another place in the region. */
-export function embargoedLanesOf(graph: WorldGraph, record: ActiveEmbargo): GraphEdge[] {
+export function embargoedLanesOf(graph: WorldGraph, record: ActiveEmbargo, hexRealmId: ReadonlyMap<string, string> = NO_REALM_MAP): GraphEdge[] {
   const anchor = hexOfLocationId(graph, record.anchorLocationId);
   if (!anchor) return [];
-  const towns = new Set(embargoedTownsOf(graph, record).map(t => t.id));
+  const towns = new Set(embargoedTownsOf(graph, record, hexRealmId).map(t => t.id));
   if (towns.size === 0) return [];
   const out: GraphEdge[] = [];
   for (const e of graph.getEdgesByType('trades_with')) {
@@ -304,10 +303,10 @@ export function allActiveEmbargoes(graph: WorldGraph): { holderId: string; recor
 }
 
 /** Location id → the resource ids an embargo cuts there (the stock pass's balance term). */
-export function embargoCutsByLocation(graph: WorldGraph): Map<string, Set<string>> {
+export function embargoCutsByLocation(graph: WorldGraph, hexRealmId: ReadonlyMap<string, string> = NO_REALM_MAP): Map<string, Set<string>> {
   const out = new Map<string, Set<string>>();
   for (const { record } of allActiveEmbargoes(graph)) {
-    for (const town of embargoedTownsOf(graph, record)) {
+    for (const town of embargoedTownsOf(graph, record, hexRealmId)) {
       const set = out.get(town.id) ?? new Set<string>();
       set.add(record.resourceId);
       out.set(town.id, set);

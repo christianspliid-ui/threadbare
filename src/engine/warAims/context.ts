@@ -41,6 +41,8 @@ export interface WarAimContext {
   fields: WarField[];
   /** THR-1955 — resource → bearing places, built on first use by the monopoly bonuses. */
   bearing?: BearingIndex;
+  /** THR-1955 — the projection's hex → realm map the towns' holders were resolved with. */
+  hexRealmId?: ReadonlyMap<string, string>;
 }
 
 function num(v: unknown): number | null {
@@ -113,5 +115,5 @@ export function buildWarAimContext(
   }
   for (const list of townPlaces.values()) list.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   fields.sort((a, b) => (a.node.id < b.node.id ? -1 : a.node.id > b.node.id ? 1 : 0));
-  return { graph, towns, townPlaces, fields };
+  return { graph, towns, townPlaces, fields, hexRealmId };
 }

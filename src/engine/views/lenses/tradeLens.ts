@@ -24,6 +24,7 @@ import type { ViewContext } from '../viewContext';
 import { MONOPOLY_WORDS } from '../../../data/regional-monopoly-words';
 import { allActiveEmbargoes, embargoedLanesOf, monopolyCovering } from '../../regionalMonopoly';
 import { REGIONAL_MONOPOLY_ENABLED } from '../../../data/regional-monopoly-constants';
+import { realmBorderMap } from '../../realmBorderMap';
 import { isHexKnown } from '../knowledge';
 import {
   LENS_HOVER_MAX_LINES,
@@ -106,8 +107,9 @@ function holderLine(ctx: ViewContext, template: string, holderId: string, good =
 function embargoByLane(ctx: ViewContext): Map<string, { holderId: string; resourceId: string }> {
   const out = new Map<string, { holderId: string; resourceId: string }>();
   if (!REGIONAL_MONOPOLY_ENABLED) return out;
+  const realms = realmBorderMap(ctx.runtime, ctx.graph, ctx.tiles, ctx.tick);
   for (const { holderId, record } of allActiveEmbargoes(ctx.graph)) {
-    for (const lane of embargoedLanesOf(ctx.graph, record)) {
+    for (const lane of embargoedLanesOf(ctx.graph, record, realms)) {
       if (!out.has(lane.id)) out.set(lane.id, { holderId, resourceId: record.resourceId });
     }
   }

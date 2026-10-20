@@ -33,6 +33,7 @@ import { resolveEconomicChronicle } from '../economicChronicle';
 import type { EconomicChronicleTrigger } from '../../data/economic-chronicle-content';
 import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
 import { embargoCutsByLocation } from '../regionalMonopoly';
+import { realmBorderMap } from '../realmBorderMap';
 import { REGIONAL_MONOPOLY_ENABLED, EMBARGO_BALANCE_CUT } from '../../data/regional-monopoly-constants';
 import { THREAD_TUG_LINGER } from '../../data/attention-constants';
 import {
@@ -91,7 +92,9 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
 
   // THR-1955 — embargoed towns lose `EMBARGO_BALANCE_CUT` on the embargoed good. Derived
   // from the holders' `activeEmbargo` records once per pass; nothing is stored on towns.
-  const embargoCuts = REGIONAL_MONOPOLY_ENABLED ? embargoCutsByLocation(graph) : new Map<string, Set<string>>();
+  const embargoCuts = REGIONAL_MONOPOLY_ENABLED
+    ? embargoCutsByLocation(graph, realmBorderMap(ctx.runtime, graph, state.tiles, tick))
+    : new Map<string, Set<string>>();
 
   const newEvents: TickEvent[] = [];
   const newChronicleEntries: ChronicleEntry[] = [];

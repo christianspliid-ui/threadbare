@@ -128,8 +128,9 @@ function traceTransition(
 export function traceEmbargo(
   graph: WorldGraph, tick: number, holder: GraphNode, record: ActiveEmbargo,
   category: 'faction.embargo.laid' | 'faction.embargo.lifted', why?: 'expired' | 'monopoly_lost',
+  hexRealmId?: ReadonlyMap<string, string>,
 ): void {
-  const towns = embargoedTownsOf(graph, record);
+  const towns = embargoedTownsOf(graph, record, hexRealmId);
   emitTrace({
     category,
     tick,
@@ -139,7 +140,7 @@ export function traceEmbargo(
     resourceId: record.resourceId,
     anchorLocationId: record.anchorLocationId,
     townIds: towns.map(t => t.id),
-    roads: embargoedLanesOf(graph, record).length,
+    roads: embargoedLanesOf(graph, record, hexRealmId).length,
     untilTick: record.untilTick,
     ...(why ? { why } : {}),
   });
@@ -152,9 +153,10 @@ export function traceEmbargo(
 export function resolveRegionalMonopolies(
   state: GameState,
   push: ChroniclePush,
+  hexRealmId?: ReadonlyMap<string, string>,
 ): { held: number; established: number; broken: number; changed: boolean } {
   const { graph, tick } = state;
-  const today = computeRegionalMonopolies(buildBearingIndex(graph), tick);
+  const today = computeRegionalMonopolies(buildBearingIndex(graph, hexRealmId), tick);
   let held = 0;
   let established = 0;
   let broken = 0;
@@ -249,7 +251,7 @@ export function resolveRegionalMonopolies(
       tick,
       chronicleSeed(state.seed, `${faction.id}_embargo_${record.untilTick}_lifted`),
     )), town);
-    traceEmbargo(graph, tick, faction, record, 'faction.embargo.lifted', expired ? 'expired' : 'monopoly_lost');
+    traceEmbargo(graph, tick, faction, record, 'faction.embargo.lifted', expired ? 'expired' : 'monopoly_lost', hexRealmId);
     (faction.properties as Record<string, unknown>).activeEmbargo = null;
   }
 

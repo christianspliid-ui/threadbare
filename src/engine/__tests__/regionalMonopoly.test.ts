@@ -100,6 +100,20 @@ describe('regional monopolies (THR-1955 § 6)', () => {
     expect(out.has('E')).toBe(false); // e1 is 1 of 4 here; "far" stands alone (< 3 places)
   });
 
+  it('a guild-plus-realm town belongs to the border realm, as the purse names it, when the realm map is passed', () => {
+    const g = region();
+    addFaction(g, 'G', 'The Guild');
+    g.addEdge({ id: 'c_G_e1', source: 'G', target: 'e1', type: 'controls', properties: { influence: 0.9 } });
+    g.getEdge('c_E_e1')!.properties.influence = 0.3;
+    const border = new Map([['3,0', 'E']]);
+    const withBorder = buildBearingIndex(g, border).get('grain')!.find(p => p.id === 'e1');
+    const without = buildBearingIndex(g).get('grain')!.find(p => p.id === 'e1');
+    expect(withBorder?.controllerId).toBe('E');
+    expect(without?.controllerId).toBe('G');
+    const rec = { targetFactionId: 'E', resourceId: 'grain', anchorLocationId: 'h1', untilTick: 99 };
+    expect(embargoedTownsOf(g, rec, border).map(t => t.id)).toEqual(['e1']);
+  });
+
   it('a place beyond the radius is another market', () => {
     const g = region();
     addTown(g, 'h4', MONOPOLY_REGION_RADIUS_HEXES + 30, { resources: grain() });

@@ -115,7 +115,7 @@ export interface MonopolyAim {
 }
 
 function bearingIndexOf(ctx: WarAimContext): BearingIndex {
-  ctx.bearing ??= buildBearingIndex(ctx.graph);
+  ctx.bearing ??= buildBearingIndex(ctx.graph, ctx.hexRealmId);
   return ctx.bearing;
 }
 

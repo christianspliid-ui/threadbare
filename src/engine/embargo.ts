@@ -54,7 +54,7 @@ import {
 const NO_REALM_MAP: ReadonlyMap<string, string> = new Map();
 
 /** Today's best embargo for `holderId`, or null when it has none to lay. */
-export function planEmbargo(state: GameState, holderId: string): ActiveEmbargo | null {
+export function planEmbargo(state: GameState, holderId: string, hexRealmId: ReadonlyMap<string, string> = NO_REALM_MAP): ActiveEmbargo | null {
   if (!REGIONAL_MONOPOLY_ENABLED) return null;
   const graph = state.graph;
   const holder = graph.getNode(holderId);
@@ -66,7 +66,7 @@ export function planEmbargo(state: GameState, holderId: string): ActiveEmbargo |
   if (monopolies.length === 0) return null;
 
   const settlements = getLocationNodes(graph).filter(isSettlement)
-    .map(node => ({ node, hex: hexOfLocation(graph, node), holder: taxHolderOf(graph, node.id, NO_REALM_MAP) }))
+    .map(node => ({ node, hex: hexOfLocation(graph, node), holder: taxHolderOf(graph, node.id, hexRealmId) }))
     .filter((t): t is { node: GraphNode; hex: NonNullable<typeof t.hex>; holder: string | null } => t.hex !== null);
 
   let best: { record: ActiveEmbargo; count: number } | null = null;
@@ -110,8 +110,9 @@ export function executeEmbargo(
   state: GameState,
   holder: GraphNode,
   pendingSeeds: readonly PendingEncounterSeed[] = [],
+  hexRealmId: ReadonlyMap<string, string> = NO_REALM_MAP,
 ): EmbargoResult | null {
-  const plan = planEmbargo(state, holder.id);
+  const plan = planEmbargo(state, holder.id, hexRealmId);
   if (!plan) return null;
   const graph = state.graph;
   (holder.properties as Record<string, unknown>).activeEmbargo = plan;
@@ -142,7 +143,7 @@ export function executeEmbargo(
 
   // The scene: one route-embargo seed on the busiest embargoed lane (volume, then id).
   const seeds: PendingEncounterSeed[] = [];
-  const lanes = embargoedLanesOf(graph, plan)
+  const lanes = embargoedLanesOf(graph, plan, hexRealmId)
     .map(e => ({ e, volume: readTradeRouteProps(e.properties as Record<string, unknown>).volume }))
     .sort((a, b) => b.volume - a.volume || (a.e.id < b.e.id ? -1 : a.e.id > b.e.id ? 1 : 0));
   const lane = lanes[0]?.e;
@@ -165,7 +166,7 @@ export function executeEmbargo(
     }
   }
 
-  traceEmbargo(graph, state.tick, holder, plan, 'faction.embargo.laid');
+  traceEmbargo(graph, state.tick, holder, plan, 'faction.embargo.laid', undefined, hexRealmId);
 
   return {
     record: {
@@ -178,7 +179,7 @@ export function executeEmbargo(
         resourceId: plan.resourceId,
         anchorLocationId: plan.anchorLocationId,
         untilTick: plan.untilTick,
-        towns: embargoedTownsOf(graph, plan).map(t => t.id),
+        towns: embargoedTownsOf(graph, plan, hexRealmId).map(t => t.id),
         seededLaneId: seeds.length > 0 ? lane?.id : undefined,
       },
     },

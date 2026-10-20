@@ -2656,13 +2656,15 @@ if (import.meta.env.DEV) {
       const state = _gameStateProvider?.();
       if (!state) return { monopolies: [], embargoes: [] };
       const m = await import('./engine/regionalMonopoly');
+      const { realmBorderMap } = await import('./engine/realmBorderMap');
+      const realms = realmBorderMap(_runtimeProvider?.(), state.graph, state.tiles, state.tick);
       return {
         monopolies: m.allRegionalMonopolies(state.graph).map(({ factionId, monopoly }) => ({ factionId, ...monopoly })),
         embargoes: m.allActiveEmbargoes(state.graph).map(({ holderId, record }) => ({
           holderId,
           ...record,
-          townIds: m.embargoedTownsOf(state.graph, record).map(t => t.id),
-          laneIds: m.embargoedLanesOf(state.graph, record).map(e => e.id),
+          townIds: m.embargoedTownsOf(state.graph, record, realms).map(t => t.id),
+          laneIds: m.embargoedLanesOf(state.graph, record, realms).map(e => e.id),
         })),
       };
     },

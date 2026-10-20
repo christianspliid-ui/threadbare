@@ -69,6 +69,7 @@ import { canCourt, crownActive, executeSeekFealty } from './crown';
 import { buildCrownWorld, type CrownWorld } from './crown/eligibility';
 import { SEEK_FEALTY_WEIGHT, SEEK_FEALTY_COOLDOWN_TICKS } from '../data/crown-constants';
 import { planEmbargo, executeEmbargo } from './embargo';
+import { realmBorderMap } from './realmBorderMap';
 import { EMBARGO_WEIGHT, EMBARGO_COOLDOWN_TICKS } from '../data/regional-monopoly-constants';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 
@@ -205,6 +206,11 @@ function crownWorldFor(state: GameState, sweep: CrownSweep | undefined): CrownWo
   return sweep.world;
 }
 
+/** THR-1955 — the realm border map the embargo's holder questions use (cached per session). */
+function embargoRealmMap(state: GameState, sweep: CrownSweep | undefined): ReadonlyMap<string, string> {
+  return realmBorderMap(sweep?.runtime, state.graph, state.tiles, state.tick);
+}
+
 // ─── Leader Personality Bias ──────────────────────────────────────────────────
 
 /**
@@ -333,7 +339,7 @@ function checkPrerequisite(
       return excommunicationCauses(state, factionId).length > 0;
     }
     case 'holds_regional_monopoly': {
-      return planEmbargo(state, factionId) !== null;
+      return planEmbargo(state, factionId, embargoRealmMap(state, sweep)) !== null;
     }
   }
 }
@@ -1198,7 +1204,7 @@ function processFaction(state: GameState, faction: GraphNode, sweep?: CrownSweep
       break;
     }
     case 'embargo': {
-      const result = executeEmbargo(state, faction, [...(state.pendingEncounterSeeds ?? []), ...(sweep?.seeds ?? [])]);
+      const result = executeEmbargo(state, faction, [...(state.pendingEncounterSeeds ?? []), ...(sweep?.seeds ?? [])], embargoRealmMap(state, sweep));
       if (!result) break;
       record = result.record;
       sweep?.chronicle.push(...result.chronicle);
