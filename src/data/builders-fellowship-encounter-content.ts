@@ -570,7 +570,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
     ],
     narrativeTemplates: {
       initiation:
-        '{name} survey{s} a prospective building site in {location}. ' +
+        '{name} survey{s} a building site in {location} for the Fellowship. ' +
         'The lot is already purchased; the question is what it will take to build on.',
       success:
         'Survey complete. The plans reveal what the lot actually is, not what the deed says it is.',
@@ -733,7 +733,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
     ],
     narrativeTemplates: {
       initiation:
-        '{name} takes a decorative ironwork commission in {location}. ' +
+        '{name} takes a decorative ironwork commission the Fellowship passed down in {location}. ' +
         'The client has specific expectations and a timeline {name} has to decide whether to accept.',
       success:
         'The commission delivered. The merchant has their ironwork; {name} has their name on it.',

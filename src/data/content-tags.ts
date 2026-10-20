@@ -296,9 +296,11 @@ const encounterFamilyTags: readonly ContentTagDef[] = [
   // The thirteen faction quest families — the body that sets the errand, in its word.
   T('#guild_errand', 'family', 'Work set by the Adventurers\' Guild — a posting taken off the board.', ['encounter_template']),
   T('#circle_errand', 'family', 'Work set by the Arcane Circle — study, survey, and the reagents study needs.', ['encounter_template']),
-  T('#fellowship_errand', 'family', 'Work set by the Builders\' Fellowship — stone cut, walls held, bridges thrown.', ['encounter_template']),
+  // THR-1941 — widened from "stone cut, walls held, bridges thrown": the Fellowship's
+  // postings also forge its tools, survey its sites and fill commissions it takes in.
+  T('#fellowship_errand', 'family', 'Work set by the Builders\' Fellowship — stone cut, walls held, tools forged, sites surveyed, commissions filled.', ['encounter_template']),
   T('#watch_errand', 'family', 'Work set by the Civic Guard — the patrol, the gate, the crime nobody has solved.', ['encounter_template']),
-  T('#dawn_errand', 'family', 'Work set by the Holy Order of the Dawn — rites kept and the unclean turned back.', ['encounter_template']),
+  T('#dawn_errand', 'family', 'Work set by the Holy Order of the Dawn — rites kept, heresy judged, and the unclean turned back.', ['encounter_template']),
   T('#covenant_errand', 'family', 'Work set by the Lorekeepers\' Covenant — what is written down, and keeping it.', ['encounter_template']),
   T('#company_errand', 'family', 'Work set by a Mercenary Company — the contract, the escort, the bounty.', ['encounter_template']),
   T('#consortium_errand', 'family', 'Work set by the Merchant Consortium — cargo, routes, and the terms they travel under.', ['encounter_template']),

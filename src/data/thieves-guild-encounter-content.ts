@@ -349,7 +349,7 @@ export const THIEVES_GUILD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         onSuccess: [],
         onFailure: [],
         narrativeTemplate:
-          'A wealthy merchant needs watching. {name} takes up a position across from {their} premises ' +
+          'The Guild wants a wealthy merchant watched, and wants no one to know who asked. {name} takes up a position across from {their} premises ' +
           'in {location} — unremarkable, patient, a figure that could be anyone waiting for anyone. ' +
           '{?has_ally}{ally:strongest} could cover the east approach while {name} watches the front, ' +
           'but {name} doesn\'t ask. Fewer witnesses means cleaner intelligence.{/has_ally}' +

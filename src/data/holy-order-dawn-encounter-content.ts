@@ -1105,7 +1105,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     ],
     narrativeTemplates: {
       initiation:
-        'A charge is brought to the order at {location}. {name} is sent to hear it, ' +
+        'A charge of heresy is brought to the Order of the Dawn at {location}. {name} is sent to hear it, ' +
         'investigate it, and speak what the order must speak. The rite of judgment is not given to those who cannot bear it.',
       success:
         'Judgment spoken. The accused knows what they have done. The faithful know the order held its word.',
