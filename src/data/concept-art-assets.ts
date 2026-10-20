@@ -150,7 +150,8 @@ function scoreEntry(
   if (locations.length > 0) {
     const subtypes = new Set(
       locations
-        .map((loc) => loc.properties?.subtype as LocationSubtype | undefined)
+        // Location nodes carry `locationSubtype` (THR-1916); `subtype` is the older key.
+        .map((loc) => (loc.properties?.locationSubtype ?? loc.properties?.subtype) as LocationSubtype | undefined)
         .filter(Boolean),
     );
     for (const subtype of subtypes) {

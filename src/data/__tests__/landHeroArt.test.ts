@@ -10,6 +10,7 @@ import { getLocationConceptArtUrl, getOwnLocationConceptArtUrl } from '../locati
 import { landHeroArt } from '../../engine/views/subjects/subjectPage';
 import type { GameState } from '../../types/gameState';
 import type { GraphNode } from '../../types/graph';
+import type { TerrainType } from '../../types';
 
 const PUBLIC = join(__dirname, '..', '..', '..', 'public');
 
@@ -21,6 +22,17 @@ describe('THR-1916 land hero art', () => {
   it('the plateau has its own landscape, no longer the green hills', () => {
     expect(pickConceptArt('plateau', [], null)).toBe('/concept-art/plateau.png');
     expect(pickConceptArt('hills', [], null)).toBe('/concept-art/hills.png');
+  });
+
+  it('the location boost reads the live `locationSubtype` key, and terrain still wins', () => {
+    const fort = { id: 'f', type: 'location', properties: { locationSubtype: 'fort' } } as unknown as GraphNode;
+    const tower = { id: 't', type: 'location', properties: { locationSubtype: 'tower' } } as unknown as GraphNode;
+    // An unmatched terrain leaves only the location boost: fort + tower score the plateau
+    // entry 4, hills and mountains 2. Read off the wrong key, every entry scores 0.
+    expect(pickConceptArt('no_such_terrain' as TerrainType, [fort, tower], null)).toBe('/concept-art/plateau.png');
+    // A terrain match (10) outweighs any location boost.
+    expect(pickConceptArt('steppe', [fort, tower], null)).toBe('/concept-art/grassland.png');
+    expect(pickConceptArt('swamp', [fort, tower], null)).toBe('/concept-art/swamp.png');
   });
 
   it('a lair has its own art, no longer the camp', () => {
