@@ -255,6 +255,12 @@ const FORECAST_TIER_UPPER_BOUNDS: readonly number[] = [
   FORECAST_TIER_FAVORABLE_MAX,
 ];
 
+/**
+ * Float slack on the near-next margin: odds are quantised to hundredths, so an
+ * exact-margin distance (0.2 − 0.15) must read the same going up and down.
+ */
+const FORECAST_NEAR_EPSILON = 1e-9;
+
 export interface ForecastMoveDetail {
   direction: 'up' | 'down';
   /** The tier the move stayed inside; absent when the tier changed. */
@@ -279,11 +285,11 @@ export function forecastMoveDetail(
   const heldTier = FORECAST_TIER_LADDER[rung];
   const p = to.probability;
   if (direction === 'up' && rung < FORECAST_TIER_UPPER_BOUNDS.length) {
-    if (FORECAST_TIER_UPPER_BOUNDS[rung] - p <= FORECAST_NEAR_NEXT_TIER_MARGIN) {
+    if (FORECAST_TIER_UPPER_BOUNDS[rung] - p <= FORECAST_NEAR_NEXT_TIER_MARGIN + FORECAST_NEAR_EPSILON) {
       return { direction, heldTier, nearNext: FORECAST_TIER_LADDER[rung + 1] };
     }
   } else if (direction === 'down' && rung > 0) {
-    if (p - FORECAST_TIER_UPPER_BOUNDS[rung - 1] <= FORECAST_NEAR_NEXT_TIER_MARGIN) {
+    if (p - FORECAST_TIER_UPPER_BOUNDS[rung - 1] <= FORECAST_NEAR_NEXT_TIER_MARGIN + FORECAST_NEAR_EPSILON) {
       return { direction, heldTier, nearNext: FORECAST_TIER_LADDER[rung - 1] };
     }
   }

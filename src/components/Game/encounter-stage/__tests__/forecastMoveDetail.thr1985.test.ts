@@ -36,6 +36,13 @@ describe('forecastMoveDetail', () => {
     expect(d).toEqual({ direction: 'down', heldTier: 'perilous', nearNext: 'doomed' });
   });
 
+  it('an exact-margin distance reads the same both ways (hundredths are not exact floats)', () => {
+    expect(forecastMoveDetail(f('doomed', 0.05), f('doomed', 0.15)).nearNext).toBe('perilous');
+    expect(forecastMoveDetail(f('uncertain', 0.55), f('uncertain', 0.45)).nearNext).toBe('perilous');
+    expect(forecastMoveDetail(f('favorable', 0.7), f('favorable', 0.75)).nearNext).toBe('fated');
+    expect(forecastMoveDetail(f('doomed', 0.05), f('doomed', 0.14)).nearNext).toBeUndefined();
+  });
+
   it('changed: a tier change carries no held word (the pill already says it)', () => {
     const d = forecastMoveDetail(f('doomed', 0.15), f('perilous', 0.3));
     expect(d).toEqual({ direction: 'up' });
