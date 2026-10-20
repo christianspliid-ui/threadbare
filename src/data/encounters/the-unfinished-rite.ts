@@ -110,7 +110,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     lost: 'could not follow the working, and the paid answer stood',
     lostBadly: 'got lost in the working and had to be carried out',
   },
-  tags: ['#delve'],
+  // THR-1941 — no `#delve`: the scene is a reading at a temple, a working-house or a
+  // village, never a descent into somewhere closed, so the Wanderer's `#delve`
+  // catalyst (wilderness targets) must not draw it. The id keeps its prefix.
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Unfinished Rite',

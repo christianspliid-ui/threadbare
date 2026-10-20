@@ -111,7 +111,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     narrativeTemplates: {
-      initiation: '{name} investigates unusual mineral striations on a hillside at {location}.',
+      initiation: '{name} investigates a gem vein on a hillside at {location}: cold in the sun, ringing when struck, and laid by no fault in that grey rock.',
       success: 'The vein opens. Gems that have been dark for centuries see light for the first time.',
       failure: 'The rock yields nothing. The vein is there â€” {name} could feel it â€” but the stone won\'t cooperate today.',
     },
@@ -410,7 +410,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     narrativeTemplates: {
-      initiation: '{name} investigates an amber-barked grove at {location} that smells of honey and old wood.',
+      initiation: '{name} investigates an amber-barked grove at {location} whose sap runs warm and never hardens. No tree should bleed like that.',
       success: 'The grove gave what it could afford. The sap is warm and the vessels are full.',
       failure: 'The grove closed against {name}. Whatever the trees measure, today\'s approach didn\'t meet it.',
     },
@@ -852,7 +852,7 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       },
     ],
     narrativeTemplates: {
-      initiation: '{name} locates the sunken outline of an ancient treasury beneath the waters near {location}.',
+      initiation: '{name} locates the sunken outline of an ancient treasury near {location}, in water that runs warm against the season and is watched by something under it.',
       success: '{name} came up with the hoard. The treasury is closed now, for good.',
       failure: 'The treasury gave up nothing. {name} came up with water and the knowledge of where it is.',
     },
