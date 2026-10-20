@@ -749,10 +749,10 @@ exit
 - **Intent:** Encounters grant rewards, which become possessions — by random draw from the pool, or as an authored consequence naming one template.
 - **Producer → Consumer:** Encounters & Dilemmas → Attachments, Items & Possessions
 - **Module:** `src/engine/rewardPool.ts`
-- **Production hits:** 15 total — 3 write, 2 read, 10 unclassified
+- **Production hits:** 16 total — 3 write, 2 read, 11 unclassified
 - **Write sites:** `src/engine/itemGenerator/rewardMinting.ts`, `src/engine/rewardPool.ts`, `src/types/attachments.ts`
 - **Read sites:** `src/engine/encounterAftermath.ts`, `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/attachmentTemplateDetail.ts`, `src/engine/contentQuery.ts`, `src/engine/debugWorldSpawnTools.ts` +5 more
+- **Other hits:** `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agreementShape.ts`, `src/engine/attachmentTemplateDetail.ts`, `src/engine/contentQuery.ts` +6 more
 - **Verdict:** Verified 2026-08-14: possesses edges grow 7→82 over 120 ticks (seed 42, medium). Authored arm (THR-1110): the crossroads accept path writes one agreement edge binding the actor to the materialized stranger, 132-tick term (seed 42, medium, CLI). Docs/plans/2026-07-23-system-interface-map.md § Audit findings (manual audit + independent cold-context review, both grep-verified)
 
 ### `attachment-grants-trait-while-held` — 🟢 LIVE
@@ -1792,10 +1792,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight*, *Condition*
 - **Module:** `src/engine/effects/conditionApplier.ts`
-- **Production hits:** 135 total — 1 write, 1 read, 133 unclassified
+- **Production hits:** 136 total — 1 write, 1 read, 134 unclassified
 - **Write sites:** `src/engine/effects/conditionApplier.ts`
 - **Read sites:** `src/engine/conditionDecay.ts`
-- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AttachmentRow.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/useDebugOpenModal.ts` +128 more
+- **Other hits:** `src/components/Codex/codexRegistry.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/AttachmentRow.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/useDebugOpenModal.ts` +129 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-complications-scoped` — 🔵 UNVERIFIED-OK
@@ -3440,10 +3440,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 251 total — 2 write, 2 read, 247 unclassified
+- **Production hits:** 252 total — 2 write, 2 read, 248 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +242 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +243 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
@@ -3760,10 +3760,10 @@ exit
 - **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 88 total — 1 write, 3 read, 84 unclassified
+- **Production hits:** 89 total — 1 write, 3 read, 85 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +79 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +80 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE
