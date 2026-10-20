@@ -110,9 +110,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     lost: 'could not follow the working, and the paid answer stood',
     lostBadly: 'got lost in the working and had to be carried out',
   },
-  // THR-1941 — no `#delve`: the scene is a reading at a temple, a working-house or a
-  // village, never a descent into somewhere closed, so the Wanderer's `#delve`
-  // catalyst (wilderness targets) must not draw it. The id keeps its prefix.
+  // THR-1941 — the tag stays (the `encounter.delve` alias row must not narrow, see
+  // encounterSeedLiveness.test.ts); step 0 now earns it by taking the reader down
+  // into the sealed room where the working is kept.
+  tags: ['#delve'],
   rarityTier: 1,
   intrinsicTier: 'background',
   name: 'The Unfinished Rite',
@@ -140,7 +141,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       failBehavior: 'fail_action',
-      narrativeTemplate: 'There {they} find a working half-finished. {cast:keeper} and five others began a rite to end '
+      narrativeTemplate: 'The makers lead {them} down into a sealed room beneath, and there {they} find a working '
+        + 'half-finished. {cast:keeper} and five others began a rite to end '
         + 'their own deaths, and two of them are already dead.\n\n'
         + 'They have asked {name} to read the working and say whether it will hold. Another reader, '
         + '{cast:rival}, is already here, and has been paid to say that it will.',
