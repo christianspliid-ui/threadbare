@@ -116,7 +116,7 @@ import { useInterventionAudio } from './hooks/useInterventionAudio';
 import { useCastOnTarget } from './inspector/useCastOnTarget';
 import { useCardArming } from './inspector/useCardArming';
 import { FindBox } from './find/FindBox';
-import type { FindCodexSeed } from '../../engine/views/find';
+import { rememberFindRecent, type FindCodexSeed } from '../../engine/views/find';
 import { refForMapNode } from '../../engine/views/armedTargets';
 import { useArmedDebugBridge } from './inspector/useArmedDebugBridge';
 import { ArmedBanner, ArmedCardProvider, isCardDrag } from './inspector/ArmedCard';
@@ -4114,10 +4114,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // A world result flies the camera there and opens through the router (never around it);
   // the router's card arm reaches the Inspector at the row's `opensAt` (factions wide) and
   // replaces a pinned subject, because a search is a deliberate ask (§ D3).
-  const findRecentKeys = useMemo(
-    () => inspectorState.history.slice(0, inspectorState.index + 1).map(h => h.key).reverse(),
-    [inspectorState.history, inspectorState.index],
-  );
+  // Recent is kept apart from the Inspector's history: closing the Inspector resets that.
+  const [findRecentKeys, setFindRecentKeys] = useState<string[]>([]);
+  const currentInspectorKey = currentEntry(inspectorState)?.key ?? null;
+  useEffect(() => {
+    if (currentInspectorKey) setFindRecentKeys(prev => rememberFindRecent(prev, currentInspectorKey));
+  }, [currentInspectorKey]);
   const findFlyTo = useCallback((hexKey: string | null) => {
     const hex = hexKey ? parseHexRefId(hexKey) : undefined;
     if (hex) hexMapRef.current?.focusOn(hex);

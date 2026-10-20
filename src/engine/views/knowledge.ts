@@ -146,7 +146,9 @@ export function createSeenFloor(state: GameState, opts: SeenFloorOptions = {}): 
 
   const knownHex = (key: string | null) => key !== null && isHexKnown(state, key);
   const visibleHex = (key: string | null) => key !== null && isHexVisibleNow(state, key);
-  const isHidden = (n: GraphNode | undefined) => n?.properties.hidden === true;
+  // `discovered: false` marks an undiscovered elder ruin; every naming surface refuses it
+  // (landName, stageView, connections), so the floor does too.
+  const isHidden = (n: GraphNode | undefined) => n?.properties.hidden === true || n?.properties.discovered === false;
 
   const location = (id: string): boolean => {
     const n = graph.getNode(id);

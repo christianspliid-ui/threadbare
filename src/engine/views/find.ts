@@ -28,7 +28,7 @@ import { HOLDING_ATTACHMENT_CATEGORY } from '../holdings';
 import { isGodCard } from './godRail';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { FIND_FACT_WORDS, FIND_GROUP_LABELS, FIND_WORDS } from '../../data/view-content';
-import { FIND_MIN_QUERY_CHARS, FIND_RECENT_COUNT, FIND_RESULTS_PER_GROUP } from './viewConstants';
+import { FIND_MIN_QUERY_CHARS, FIND_RECENT_COUNT, FIND_RECENT_MEMORY, FIND_RESULTS_PER_GROUP } from './viewConstants';
 
 // ─── Groups ─────────────────────────────────────────────────────────────────
 
@@ -240,7 +240,7 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
   const atFact = (id: string): string => {
     const e = graph.getOutgoingEdges(id, 'located_at')[0];
     const place = e ? graph.getNode(e.target) : undefined;
-    if (!place?.name) return '';
+    if (!place?.name || place.properties.discovered === false) return '';
     const kind = place.properties.parentLocationId ? 'sublocation' : 'location';
     return named({ kind, id: place.id }) ? FIND_FACT_WORDS.at.replace('{place}', place.name) : '';
   };
@@ -252,8 +252,9 @@ export function buildFindIndex(ctx: ViewContext, args: FindIndexArgs = {}): Find
     const hexKnown = isHexKnown(floorState, hex.hexKey);
     const hexOrNull = hexKnown ? hex.hexKey : null;
     for (const row of hex.locations) {
-      if (!named(row.ref)) continue;
       const n = graph.getNode(row.ref.id);
+      // An undiscovered ruin is never named, fog or no fog (as landName and connections).
+      if (n?.properties.discovered === false || !named(row.ref)) continue;
       const fact = floor.staleFact(row.ref) ?? (n ? subtypeWord(n) : FIND_KIND_LABELS.location);
       push(entry({ kind: 'location', id: row.ref.id, name: row.name }, 'location', row.name, fact, hex.hexKey, false));
     }
@@ -348,6 +349,15 @@ function groupVM(id: FindListId, rows: FindEntryVM[], limit: number): FindGroupV
     rows: rows.slice(0, limit),
     showAll: rows.length > limit ? FIND_WORDS.showAll.replace('{n}', String(rows.length)) : null,
   };
+}
+
+/**
+ * Remember an opened Inspector subject for Find's Recent list, newest first. Kept apart
+ * from the Inspector's history, which a close resets, so Recent survives the close.
+ */
+export function rememberFindRecent(prev: readonly string[], key: string): string[] {
+  if (prev[0] === key) return prev as string[];
+  return [key, ...prev.filter(k => k !== key)].slice(0, FIND_RECENT_MEMORY);
 }
 
 /**

@@ -12,12 +12,12 @@ import { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile } from '../../../types';
 import { buildViewContext } from '../viewContext';
-import { buildFindIndex, findIndexStamp, matchFind, foldForSearch, matchScore, FIND_GROUPS, FIND_KIND_GROUP, findIndexSelector, type FindIndexVM, type FindEntryVM } from '../find';
+import { buildFindIndex, findIndexStamp, matchFind, rememberFindRecent, foldForSearch, matchScore, FIND_GROUPS, FIND_KIND_GROUP, findIndexSelector, type FindIndexVM, type FindEntryVM } from '../find';
 import { createSeenFloor, KNOWLEDGE_SURFACES } from '../knowledge';
 import { getViewSelector } from '../selectors';
 import { WORLD_REF_KINDS } from '../../../types/worldRef';
 import { FIND_WORDS } from '../../../data/view-content';
-import { FIND_RESULTS_PER_GROUP } from '../viewConstants';
+import { FIND_RECENT_MEMORY, FIND_RESULTS_PER_GROUP } from '../viewConstants';
 
 const ASC = 'asc';
 
@@ -163,6 +163,30 @@ describe('the leak test (THR-1822 § D10)', () => {
     s.graph.addNode({ id: 'face', type: 'artifact', name: 'Temple Quarter', properties: { attachmentCategory: 'holding' } });
     s.graph.addEdge({ id: 'p1', source: 'eloise', target: 'face', type: 'possesses', properties: {} });
     expect(indexOf(s).entries.some(e => e.ref.id === 'face')).toBe(false);
+  });
+
+  it('an undiscovered elder ruin on a seen hex is never named, fog or no fog', () => {
+    for (const fogOff of [false, true]) {
+      const s = world();
+      s.graph.addNode({ id: 'ruin', type: 'location', name: 'Vault Ruin', properties: { ruinMagnitude: 2, discovered: false, hexCol: 3, hexRow: 4 } });
+      s.graph.addNode({ id: 'relic', type: 'artifact', name: 'Ruin Relic', properties: {} });
+      s.graph.addEdge({ id: 'rl', source: 'relic', target: 'ruin', type: 'located_at', properties: {} });
+      const ids = indexOf(s, fogOff).entries.map(e => e.ref.id);
+      expect(ids).not.toContain('ruin');
+      if (!fogOff) {
+        expect(createSeenFloor(s).canName({ kind: 'location', id: 'ruin' })).toBe(false);
+        expect(ids).not.toContain('relic');
+      }
+    }
+  });
+
+  it('Recent remembers opened subjects newest first, deduplicated and capped', () => {
+    let r: string[] = [];
+    for (const k of ['a', 'b', 'a', 'c']) r = rememberFindRecent(r, k);
+    expect(r).toEqual(['c', 'a', 'b']);
+    expect(rememberFindRecent(r, 'c')).toBe(r);
+    for (let i = 0; i < FIND_RECENT_MEMORY + 5; i++) r = rememberFindRecent(r, `k${i}`);
+    expect(r.length).toBe(FIND_RECENT_MEMORY);
   });
 
   it('the registered selector holds no unseen ref', () => {

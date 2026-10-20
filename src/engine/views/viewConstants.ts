@@ -67,5 +67,7 @@ export const ARMED_LOCKED_LIT = 0.5;
  */
 export const FIND_RESULTS_PER_GROUP = 6;
 export const FIND_RECENT_COUNT = 5;
+/** How many opened subjects Find remembers for Recent (survives an Inspector close). */
+export const FIND_RECENT_MEMORY = 30;
 export const FIND_MIN_QUERY_CHARS = 1;
 export const FIND_BOX_MAX_VH = 60;
