@@ -15,8 +15,7 @@
  */
 import type { WorldGraph } from '../engine/graph';
 import { getProsperityTier } from '../engine/phaseProsperity';
-import { isRestlessPlace, isLawlessPlace, placeHasTrait } from '../engine/unrestPressure/bands';
-import { taxHolderOf } from '../engine/factionPurse/income';
+import { isRestlessPlace, isLawlessPlace, placeHasTrait, judgedHolderOf } from '../engine/unrestPressure/bands';
 import { LOCATION_TRAIT_IDS } from './location-trait-constants';
 import { readUnrestInputs, largestInput, isPressureSettlement, UNREST_TARGET_PROP, type UnrestInputKey } from '../engine/unrestPressure/inputs';
 
@@ -39,8 +38,6 @@ export const FORTUNES_BAND_TAIL: Readonly<Record<FortunesBand, string>> = {
   on_the_edge_held: ', and it is on the edge of turning from {holder}',
   on_the_edge_unheld: ', and its people are on the edge of leaving',
 };
-
-const NO_REALM_MAP: ReadonlyMap<string, string> = new Map();
 
 export interface FortunesSentence {
   /** "Millbrook is " */
@@ -68,7 +65,7 @@ export function fortunesSentence(graph: WorldGraph, settlementId: string): Fortu
   if (typeof prosperity !== 'number' || !Number.isFinite(prosperity)) return null;
 
   const holderId = placeHasTrait(graph, settlementId, LOCATION_TRAIT_IDS.onTheEdge)
-    ? taxHolderOf(graph, settlementId, NO_REALM_MAP) : undefined;
+    ? judgedHolderOf(graph, settlementId) : undefined;
   const band: FortunesBand = holderId ? 'on_the_edge_held'
     : holderId === null ? 'on_the_edge_unheld'
     : isLawlessPlace(graph, settlementId) ? 'lawless'

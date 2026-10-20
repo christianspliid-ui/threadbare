@@ -191,6 +191,26 @@ describe('defection (Done when S2: the fixture defects on the next daily pass)',
     expect(getTraces().some(t => t.category === 'unrest.defect')).toBe(true);
   });
 
+  it('a standing army that pursued the holder\'s old ambition is re-pointed at the revenge (review round 2)', () => {
+    const { graph } = defectionWorld();
+    graph.addNode({ id: 'amb_old', type: 'ambition', name: 'old', properties: { ambitionType: 'defensive_consolidation', targetNodeId: null } });
+    graph.addEdge({ id: 'p_fac', source: 'ashfold', target: 'amb_old', type: 'pursues', properties: {} });
+    graph.addNode({ id: 'army_h', type: 'actor', name: 'Host', properties: { actorType: 'group' } });
+    graph.addEdge({ id: 'p_army', source: 'army_h', target: 'amb_old', type: 'pursues', properties: {} });
+    phaseUnrest(state(graph, DAY), { pressure: true });
+    expect(graph.getNode('amb_old')).toBeUndefined();
+    const armyAmb = graph.getNode(graph.getOutgoingEdges('army_h', 'pursues')[0].target)!;
+    expect(armyAmb.properties).toMatchObject({ ambitionType: 'revenge', grievanceSourceId: 'saltmarch', targetNodeId: 'ferris' });
+  });
+
+  it('the page names the holder the turn pass judged, not the influence ranking (review round 2)', () => {
+    const { graph, ferris } = defectionWorld({ holderBroke: false, hall: false });
+    ferris.properties.unrestHolderId = 'saltmarch';
+    expect(fortunesSentence(graph, 'ferris')!.holder?.id).toBe('saltmarch');
+    ferris.properties.unrestHolderId = null;
+    expect(fortunesSentence(graph, 'ferris')!.band).toBe('on_the_edge_unheld');
+  });
+
   it('a defection bumps the structural cache through the onStructure hook (THR-1155)', () => {
     const { graph } = defectionWorld();
     let bumps = 0;

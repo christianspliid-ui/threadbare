@@ -55,6 +55,12 @@ import { applyRising } from './rising';
 
 /** Settlement flag: the town bore `on_the_edge` at the last daily pass (to see the day it enters). */
 export const WAS_ON_THE_EDGE_PROP = 'unrestWasOnTheEdge';
+/**
+ * Settlement property: the holder the turn pass judged today (the realm-border
+ * tie-break included). The Fortunes row and the Trouble lens read it, so the lord they
+ * name is the one whose `controls` would move (Law 56). Null for an unheld town.
+ */
+export const JUDGED_HOLDER_PROP = 'unrestHolderId';
 /** Settlement flag: the `town_empties` line was written (once per town). */
 export const EMPTIED_PROP = 'unrestEmptied';
 
@@ -214,6 +220,7 @@ export function runTownTurns(
       const wasEdge = town.properties[WAS_ON_THE_EDGE_PROP] === true;
       if (edge !== wasEdge) town.properties[WAS_ON_THE_EDGE_PROP] = edge;
       const holderId = holders.get(town.id) ?? null;
+      town.properties[JUDGED_HOLDER_PROP] = holderId;
 
       // 1. The day it enters On the edge.
       if (edge && !wasEdge) {
@@ -253,6 +260,7 @@ export function runTownTurns(
           hooks.onStructure?.();
           world = null;
           holders.set(town.id, r.newFactionId);
+          town.properties[JUDGED_HOLDER_PROP] = r.newFactionId;
           const c = chronicle(state, 'town_rises', town, r.newFactionId, holderId);
           if (c) {
             if (full.has(town.id)) { out.chronicleEntries.push(c.entry); out.events.push(c.event); }
@@ -286,6 +294,7 @@ export function runTownTurns(
         hooks.onStructure?.();
         world = null;
         holders.set(town.id, choice.factionId);
+        town.properties[JUDGED_HOLDER_PROP] = choice.factionId;
         if (full.has(town.id)) {
           const c = chronicle(state, 'town_defects', town, choice.factionId, holderId);
           if (c) { out.chronicleEntries.push(c.entry); out.events.push(c.event); }

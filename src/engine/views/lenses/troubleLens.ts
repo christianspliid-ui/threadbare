@@ -34,7 +34,7 @@ import { LOCATION_TRAIT_IDS } from '../../../data/location-trait-constants';
 import { EMITTED_OMEN_LOCAL_DEFAULT_RADIUS } from '../../../data/game-config';
 import type { MoodBucket } from '../../../data/survey-prose-tables';
 import { getLocationNodes } from '../../sublocationShape';
-import { taxHolderOf } from '../../factionPurse/income';
+import { judgedHolderOf } from '../../unrestPressure/bands';
 import { isPressureSettlement, HUNGER_DAYS_PROP } from '../../unrestPressure/inputs';
 import { deriveMoodBucket } from '../../surveyProseComposer';
 import { deriveLocationActivities } from '../../deriveLocationActivities';
@@ -114,8 +114,6 @@ function isOnTheEdge(ctx: ViewContext, locId: string): boolean {
   return ctx.graph.getOutgoingEdges(locId, 'has_trait').some(e => e.target === LOCATION_TRAIT_IDS.onTheEdge);
 }
 
-const NO_REALM_MAP: ReadonlyMap<string, string> = new Map();
-
 function visibleHexKeys(ctx: ViewContext): ReadonlySet<string> {
   const map = ctx.state.visibilityMap;
   if (!map || typeof map.get !== 'function' || map.size === 0) {
@@ -166,7 +164,7 @@ export function buildTroubleLens(ctx: ViewContext): HexLensVM {
     const placeRef: LensLineSegment['ref'] = { kind: 'location', id: loc.id, name: place };
     let line: LensLine;
     if (edge) {
-      const holderId = taxHolderOf(ctx.graph, loc.id, NO_REALM_MAP);
+      const holderId = judgedHolderOf(ctx.graph, loc.id);
       const holder = holderId ? (ctx.graph.getNode(holderId)?.name || '') : '';
       line = holderId && holder
         ? fillLine(TROUBLE_LENS_WORDS.unrestOnTheEdgeHeld, { place, holder }, { place: placeRef, holder: { kind: 'faction', id: holderId, name: holder } })
