@@ -9,6 +9,13 @@
  *   - every `unrest.leave`: destination within 6 hexes, not hungry and not Restless at the time;
  *   - whether any `scarcity_arc_phase` transition moved unrest in the tick it fired (0).
  *
+ * THR-1957 S2 adds (run with `--ticks 1200` for the plan's 100 days):
+ *   - towns that ever bore On the edge (≥ 1 per seed);
+ *   - every `unrest.defect` / `unrest.rising`: it moved the town's `controls` and left a
+ *     chronicle line (`A Town Turns` / `A Town Rises`) for a full-detail town;
+ *   - the most times one town defected (kill criterion: > 2 raises the margin);
+ *   - towns at unrest ≥ 70 whose only non-zero input was the death site (0).
+ *
  * `--dump <tick>` instead writes each settlement's unrest at that tick to stdout as
  * JSON, for the rollback comparison (flag off on this branch vs main).
  *
@@ -39,6 +46,7 @@ const DUMP_AT = argValue('--dump') !== undefined ? Number(argValue('--dump')) : 
 
 const RESTLESS = 'trait.condition.location.restless';
 const LAWLESS = 'trait.condition.location.lawless';
+const ON_THE_EDGE = 'trait.condition.location.on_the_edge';
 const SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
 
 function hasTrait(g: { getOutgoingEdges: (id: string, t: string) => Array<{ target: string }> }, id: string, t: string): boolean {
@@ -67,6 +75,20 @@ function runSeed(seed: number) {
   let arcJumps = 0;
   let riotSeeds = 0;
   let maxUnrest = 0;
+  // S2
+  const everOnTheEdge = new Set<string>();
+  const deathOnlyAt70 = new Set<string>();
+  let defections = 0;
+  let considered = 0;
+  const risings: Record<string, number> = {};
+  let risingNoOne = 0;
+  let turnsWithoutControlsMove = 0;
+  const defectsPerTown = new Map<string, number>();
+  let chronicleTurns = 0;
+  let chronicleRises = 0;
+  let chronicleEdge = 0;
+  let popups = 0;
+  let seenChronicle = state.chronicleEntries?.length ?? 0;
 
   for (let i = 0; i < TICKS; i++) {
     const before = new Map<string, number>();
@@ -109,6 +131,18 @@ function runSeed(seed: number) {
         if (tr.fleeMinted) fleeMinted++;
       } else if (t.category === 'unrest.leave.none') leaveNone++;
       else if (t.category === 'unrest.riot_seed' && tr.seeded) riotSeeds++;
+      else if (t.category === 'unrest.defect.considered') considered++;
+      else if (t.category === 'unrest.defect' || t.category === 'unrest.rising') {
+        const id = tr.locationId as string;
+        const holder = tr.holderId as string;
+        if (g.getIncomingEdges(id, 'controls').some(e => e.source === holder)) turnsWithoutControlsMove++;
+        if (t.category === 'unrest.defect') {
+          defections++;
+          defectsPerTown.set(id, (defectsPerTown.get(id) ?? 0) + 1);
+        } else {
+          risings[tr.path as string] = (risings[tr.path as string] ?? 0) + 1;
+        }
+      } else if (t.category === 'unrest.rising.no_one') risingNoOne++;
       else if (t.category === 'scarcity_arc_phase') {
         // The unrest phase also moves the number each tick; the arc runs before it on
         // the same tick, so compare against the drift bound: a jump is > 1 in one tick.
@@ -119,6 +153,14 @@ function runSeed(seed: number) {
     }
     clearTraces();
     void hungryBefore;
+    const entries = state.chronicleEntries ?? [];
+    for (const e of entries.slice(seenChronicle)) {
+      if (e.title === 'A Town Turns') chronicleTurns++;
+      else if (e.title === 'A Town Rises') chronicleRises++;
+      else if (e.title === 'A Town on the Edge') chronicleEdge++;
+    }
+    seenChronicle = entries.length;
+    popups += (state.tickEvents ?? []).filter(e => e.notification?.channel === 'popup' && e.id.startsWith('evt_unrest_')).length;
 
     if (state.tick % TICKS_PER_DAY !== 0) continue;
     const towns = getLocationNodes(g).filter(n => SUBTYPES.has(n.properties.locationSubtype as string));
@@ -127,12 +169,14 @@ function runSeed(seed: number) {
       const u = (n.properties.unrest as number) ?? 0;
       maxUnrest = Math.max(maxUnrest, u);
       if (hasTrait(g, n.id, RESTLESS)) everRestless.add(n.id);
+      if (hasTrait(g, n.id, ON_THE_EDGE)) everOnTheEdge.add(n.id);
       const lawless = hasTrait(g, n.id, LAWLESS);
       if (lawless) { everLawless.add(n.id); lawlessToday++; }
       const inp = n.properties.unrestInputs as Record<string, number> | undefined;
       if (inp && u >= 50) {
         const raising = ['hunger', 'poverty', 'siege', 'sickness', 'deathSite'].filter(k => (inp[k] ?? 0) > 0);
         if (raising.length === 1 && raising[0] === 'deathSite') deathOnlyAt50.add(n.id);
+        if (u >= 70 && raising.length === 1 && raising[0] === 'deathSite') deathOnlyAt70.add(n.id);
       }
       if (inp && lawless) {
         const keys = ['hunger', 'poverty', 'siege', 'sickness', 'deathSite'];
@@ -155,6 +199,14 @@ function runSeed(seed: number) {
     deathOnlyAt50: deathOnlyAt50.size,
     povertyLedLawless: [...povertyLedLawless],
     leaves, leaveViolations, leaveNone, leaningMortals, fleeMinted, riotSeeds, arcJumps,
+    s2: {
+      everOnTheEdge: everOnTheEdge.size,
+      considered, defections, risings, risingNoOne,
+      turnsWithoutControlsMove,
+      maxDefectsOneTown: Math.max(0, ...defectsPerTown.values()),
+      chronicleEdge, chronicleTurns, chronicleRises, popups,
+      deathOnlyAt70: deathOnlyAt70.size,
+    },
   };
 }
 

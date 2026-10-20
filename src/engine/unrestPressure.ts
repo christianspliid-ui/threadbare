@@ -18,6 +18,11 @@
  *   riot is seeded for a resident (at most once per `RIOT_SEED_COOLDOWN_DAYS`). The
  *   tax half lives in `factionPurse/income.ts` (`townTaxOf`).
  *
+ * **S2 (THR-1957)** — after every settlement's daily pass, `runTownTurns`
+ * (`unrestPressure/turns.ts`): a held town **On the edge** may turn to a better lord
+ * (`defection.ts`), a held town at the rising line rises (`rising.ts`), and an unheld
+ * one empties (people leave `EMPTYING_LEAVE_MULTIPLIER` times faster, below).
+ *
  * `phaseUnrest` calls in when `UNREST_PRESSURE_ENABLED`; off keeps the flat decay.
  *
  * NFP: #1 every number in `src/data/unrest-pressure-constants.ts`; #2 flat
@@ -27,7 +32,8 @@
  *
  * Plan: Docs/plans/2026-10-16-thr-1934-hunger-and-unrest.md.
  */
-import type { GameState } from '../types/gameState';
+import type { GameState, TickEvent } from '../types/gameState';
+import type { ChronicleEntry } from '../types/narrative';
 import type { GraphNode } from '../types/graph';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import type { RelocationIntent } from '../types/movement';
@@ -46,6 +52,8 @@ import {
   RESTLESS_LEAVE_DAYS,
   RIOT_SEED_COOLDOWN_DAYS,
   GRANARY_RIOT_TEMPLATE_ID,
+  RISING_THRESHOLD,
+  EMPTYING_LEAVE_MULTIPLIER,
 } from '../data/unrest-pressure-constants';
 import {
   computeUnrestInputs,
@@ -64,6 +72,9 @@ import {
 import { isHungryToday } from './unrestPressure/hunger';
 import { unrestBand, isRestlessPlace, isLawlessPlace } from './unrestPressure/bands';
 import { pickLeaveDestination, pickLeaningMortal } from './unrestPressure/leave';
+import { taxHolderOf } from './factionPurse/income';
+import { SIEGED_BY_PROP } from './unrestPressure/defection';
+import { runTownTurns, fullDetailIds, noteEmptied, type TurnHooks, type TurnOutput } from './unrestPressure/turns';
 
 export { homeIsRestless } from './unrestPressure/bands';
 
@@ -82,35 +93,62 @@ function num(v: unknown): number | undefined {
   return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
 }
 
-/** Settlement ids a siege actor names this tick. */
-function besiegedSettlementIds(state: GameState): Set<string> {
-  const out = new Set<string>();
-  for (const actor of state.graph.getNodesByType('actor')) {
-    const bs = actor.properties?.battleState as { battleType?: string; settlementId?: string } | undefined;
-    if (bs && bs.battleType === 'siege' && typeof bs.settlementId === 'string') out.add(bs.settlementId);
+/**
+ * Settlement ids a siege actor names this tick, each with the factions besieging it.
+ * A siege node (`createSiegeNode`) carries no faction of its own: the besieger is the
+ * faction of its `battleState.attackerArmyId` (that army's `member_of`). S2's standing
+ * term reads who laid a siege (`SIEGED_BY_PROP`).
+ */
+function besiegedSettlements(state: GameState): Map<string, Set<string>> {
+  const out = new Map<string, Set<string>>();
+  const graph = state.graph;
+  for (const actor of graph.getNodesByType('actor')) {
+    const bs = actor.properties?.battleState as { battleType?: string; settlementId?: string; attackerArmyId?: string } | undefined;
+    if (!bs || bs.battleType !== 'siege' || typeof bs.settlementId !== 'string') continue;
+    const set = out.get(bs.settlementId) ?? new Set<string>();
+    if (typeof bs.attackerArmyId === 'string') {
+      for (const e of graph.getOutgoingEdges(bs.attackerArmyId, 'member_of')) set.add(e.target);
+    }
+    out.set(bs.settlementId, set);
   }
   return out;
 }
 
+const NO_REALM_MAP: ReadonlyMap<string, string> = new Map();
+
 export interface UnrestPressureResult {
   readonly seeds: PendingEncounterSeed[];
+  /** S2: chronicle lines for towns on the edge, turning, rising and emptying. */
+  readonly chronicleEntries: ChronicleEntry[];
+  /** S2: the chronicle lines' tick events and the gated popups. */
+  readonly events: TickEvent[];
 }
 
 /** One settlement's daily pass: the counters, the target, Restless leaving and the Lawless riot. */
 function dailyPass(
   state: GameState,
   town: GraphNode,
-  besieged: ReadonlySet<string>,
+  besieged: ReadonlyMap<string, ReadonlySet<string>>,
   pendingSeedIds: ReadonlySet<string>,
   seeds: PendingEncounterSeed[],
+  turns: TurnOutput,
+  fullDetail: ReadonlySet<string>,
 ): void {
   const graph = state.graph;
   const tick = state.tick;
   const props = town.properties;
 
   // Siege memory, then hunger.
-  const besiegedNow = besieged.has(town.id);
-  if (besiegedNow) props[LAST_SIEGE_SEEN_PROP] = tick;
+  const besiegers = besieged.get(town.id);
+  const besiegedNow = besiegers !== undefined;
+  if (besiegedNow) {
+    props[LAST_SIEGE_SEEN_PROP] = tick;
+    if (besiegers.size > 0) {
+      const by = { ...((props[SIEGED_BY_PROP] as Record<string, number> | undefined) ?? {}) };
+      for (const f of besiegers) by[f] = tick;
+      props[SIEGED_BY_PROP] = by;
+    }
+  }
   const hunger = isHungryToday(town);
   const hungerDays = hunger.hungry ? (num(props[HUNGER_DAYS_PROP]) ?? 0) + 1 : 0;
   props[HUNGER_DAYS_PROP] = hungerDays;
@@ -142,7 +180,14 @@ function dailyPass(
   if (isRestlessPlace(graph, town.id)) {
     const restlessDays = (num(props[RESTLESS_DAYS_PROP]) ?? 0) + 1;
     props[RESTLESS_DAYS_PROP] = restlessDays;
-    if (restlessDays % RESTLESS_LEAVE_DAYS === 0) leave(state, town, inputs);
+    // S2: an unheld town at the rising line empties — people leave faster.
+    const emptying = unrest >= RISING_THRESHOLD && taxHolderOf(graph, town.id, NO_REALM_MAP) === null;
+    const cadence = emptying ? Math.max(1, Math.round(RESTLESS_LEAVE_DAYS / EMPTYING_LEAVE_MULTIPLIER)) : RESTLESS_LEAVE_DAYS;
+    if (restlessDays % cadence === 0) {
+      leave(state, town, inputs);
+      const pop = num(props.population);
+      if (emptying && pop !== undefined && pop <= 1) noteEmptied(state, town, fullDetail.has(town.id), turns);
+    }
   } else if (props[RESTLESS_DAYS_PROP] !== undefined) {
     props[RESTLESS_DAYS_PROP] = 0;
   }
@@ -257,28 +302,45 @@ function leave(state: GameState, town: GraphNode, inputs: UnrestInputs): void {
  * Run the pressure model for one tick: the daily pass where due, then the drift.
  * Mutates settlement properties in place; returns any riot seeds to plant.
  */
-export function runUnrestPressure(state: GameState): UnrestPressureResult {
+export function runUnrestPressure(state: GameState, hooks: TurnHooks = {}): UnrestPressureResult {
   const graph = state.graph;
   const tick = state.tick;
   const seeds: PendingEncounterSeed[] = [];
+  const turns: TurnOutput = { chronicleEntries: [], events: [] };
   const settlements = getLocationNodes(graph)
     .filter(isPressureSettlement)
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const isDay = tick % TICKS_PER_DAY === UNREST_TARGET_TICK_OFFSET;
-  let besieged: Set<string> | null = null;
+  let besieged: Map<string, Set<string>> | null = null;
   let pendingSeedIds: Set<string> | null = null;
+  let fullDetail: Set<string> | null = null;
 
+  // The daily pass for every settlement first, so S2's `fed` term reads today's hunger everywhere.
   for (const town of settlements) {
     if (isDay || num(town.properties[UNREST_TARGET_PROP]) === undefined) {
-      besieged ??= besiegedSettlementIds(state);
+      besieged ??= besiegedSettlements(state);
       pendingSeedIds ??= new Set((state.pendingEncounterSeeds ?? []).map(s => s.seedId));
+      fullDetail ??= fullDetailIds(settlements);
       try {
-        dailyPass(state, town, besieged, pendingSeedIds, seeds);
+        dailyPass(state, town, besieged, pendingSeedIds, seeds, turns, fullDetail);
       } catch (err) {
         console.warn(`[unrest] daily pass failed at ${town.id}; drift still runs`, err);
       }
     }
+  }
 
+  // S2 — towns on the edge turn, towns at the rising line rise (once a day).
+  if (isDay) {
+    try {
+      const t = runTownTurns(state, settlements, hooks);
+      turns.chronicleEntries.push(...t.chronicleEntries);
+      turns.events.push(...t.events);
+    } catch (err) {
+      console.warn('[unrest] town turn pass failed; drift still runs', err);
+    }
+  }
+
+  for (const town of settlements) {
     // The drift — every tick, clamped (graph-op writes are unclamped).
     const target = num(town.properties[UNREST_TARGET_PROP]) ?? 0;
     const prev = num(town.properties.unrest) ?? 0;
@@ -304,5 +366,5 @@ export function runUnrestPressure(state: GameState): UnrestPressureResult {
     });
   }
 
-  return { seeds };
+  return { seeds, chronicleEntries: turns.chronicleEntries, events: turns.events };
 }

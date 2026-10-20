@@ -12,6 +12,7 @@
 
 import type { GameState } from '../types/gameState';
 import type { FactionAmbitionType } from '../types/faction';
+import { requiresMilitaryForce } from '../types/faction';
 import { getFactionDefinition } from '../data/faction-definition-lookup';
 import { isEligibleForArmySpawn, selectCommander, spawnArmy } from './armySpawning';
 import { deriveFactionProsperity } from './factionNetwork';
@@ -167,6 +168,103 @@ function maybeSpawnArmy(
 }
 
 // ─── Phase ──────────────────────────────────────────────────────────────
+
+export type AdoptRevengeResult = 'adopted' | 'kept_military' | 'no_faction';
+
+/**
+ * A faction that lost a town to another lord takes up revenge against it (THR-1957,
+ * hunger and unrest S2). The first writer of the ambition's declared
+ * `grievanceSourceId` / `targetNodeId`: who wronged it and the town it wants back.
+ * The relationship itself rides the `relates_to` edge the caller writes; these ids
+ * only say what the ambition is about.
+ *
+ * A faction already pursuing a military ambition keeps it (`kept_military`). Any other
+ * active ambition gives way to the grudge, and every army that pursued it (a standing
+ * army's `pursues` edge, written once at spawn) is re-pointed at the revenge — at the
+ * army cap no new host spawns, so without the move the faction's one army would pursue
+ * nothing and war aims would never read the grudge. Shape, priority and decay are the ones the
+ * evaluation pass writes for a revenge it picks itself, and the army spawn is tried the
+ * same way.
+ */
+export function adoptRevengeAmbition(
+  state: GameState,
+  factionId: string,
+  grievanceSourceId: string,
+  targetNodeId: string,
+  reason: string,
+): AdoptRevengeResult {
+  const graph = state.graph;
+  const faction = graph.getNode(factionId);
+  if (!faction || faction.properties.actorType !== 'faction') return 'no_faction';
+  for (const e of graph.getOutgoingEdges(factionId, 'pursues')) {
+    const amb = graph.getNode(e.target);
+    if (!amb) continue;
+    const type = amb.properties.ambitionType as FactionAmbitionType | undefined;
+    if (type && requiresMilitaryForce(type)) return 'kept_military';
+  }
+  const followers: string[] = [];
+  for (const e of [...graph.getOutgoingEdges(factionId, 'pursues')]) {
+    const amb = graph.getNode(e.target);
+    if (!amb) continue;
+    for (const inc of graph.getIncomingEdges(amb.id, 'pursues')) {
+      if (inc.source !== factionId && !followers.includes(inc.source)) followers.push(inc.source);
+    }
+    emitTrace({
+      tick: state.tick,
+      category: 'faction_ambition',
+      summary: `Faction ${faction.name} set aside ${String(amb.properties.ambitionType)} for revenge — ${reason}`,
+      factionId,
+      locationId: targetNodeId,
+      result: 'superseded_by_revenge',
+    });
+    graph.removeNode(amb.id);
+  }
+
+  const ambitionId = `amb_${factionId}_${state.tick}_revenge`;
+  graph.addNode({
+    id: ambitionId,
+    type: 'ambition',
+    name: `${faction.name} — revenge`,
+    properties: {
+      [AMBITION_KIND_KEY]: AMBITION_KIND_FACTION,
+      ambitionType: 'revenge',
+      priority: 0.8,
+      targetNodeId,
+      grievanceSourceId,
+      grievanceDecay: REVENGE_GRIEVANCE_DECAY,
+      createdTick: state.tick,
+    },
+  });
+  graph.addEdge({
+    id: `e_pursues_${factionId}_${ambitionId}`,
+    source: factionId,
+    target: ambitionId,
+    type: 'pursues',
+    properties: { priority: 0.8, status: 'active', milestones: [] },
+  });
+  for (const armyId of followers) {
+    if (!graph.getNode(armyId)) continue;
+    try {
+      graph.addEdge({
+        id: `e_pursues_${armyId}_${ambitionId}`,
+        source: armyId,
+        target: ambitionId,
+        type: 'pursues',
+        properties: { priority: 0.8, status: 'active', milestones: [] },
+      });
+    } catch { /* fail-soft: duplicate id */ }
+  }
+  emitTrace({
+    tick: state.tick,
+    category: 'faction_ambition',
+    summary: `Faction ${faction.name} adopted ambition: revenge on ${graph.getNode(grievanceSourceId)?.name ?? grievanceSourceId} — ${reason}`,
+    factionId,
+    locationId: targetNodeId,
+    result: 'revenge_adopted',
+  });
+  maybeSpawnArmy(state, factionId, 'revenge', ambitionId);
+  return 'adopted';
+}
 
 /**
  * Evaluate and update faction ambitions.

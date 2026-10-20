@@ -1049,10 +1049,28 @@ export interface DebugBridge {
     inputs: { hunger: number; poverty: number; siege: number; sickness: number; deathSite: number; contentment: number } | null;
     hungerDays: number;
     band: 'calm' | 'restless' | 'lawless' | 'on_the_edge' | 'rising';
-    chips: { restless: boolean; lawless: boolean };
+    chips: { restless: boolean; lawless: boolean; onTheEdge: boolean };
+    /** THR-1957: the tick the town last turned (defection or rising), or null. */
+    lastTurnTick: number | null;
     restlessDays: number;
     leaveTo: string | null;
     fortunes: string | null;
+  } | null>;
+
+  /**
+   * THR-1957 — how a town sees its holder and every lord near it (factions holding a
+   * settlement within 8 hexes). Each view is the four parts — `protection` (the
+   * crown's term over this town), `standing` (−1 a recent siege, +1 a hall or a
+   * resident member), `fed` (share of the lord's towns not hungry), `solvent` — and
+   * their weighted sum. A town On the edge turns when the best beats the holder by 0.4 (DEFECTION_MARGIN).
+   * `holder` is null for an unheld town. Null when nothing matches. Always `await` it.
+   */
+  getTownView: (locationIdOrName: string) => Promise<{
+    townId: string;
+    townName: string;
+    holder: string | null;
+    holderView: { factionId: string; protection: number; standing: number; fed: number; solvent: number; view: number } | null;
+    candidates: Array<{ factionId: string; protection: number; standing: number; fed: number; solvent: number; view: number }>;
   } | null>;
 
   /**
@@ -1077,7 +1095,7 @@ export interface DebugBridge {
     since: number | null;
     source: string | null;
     ticksRemaining: number | null;
-    sustain: Record<'welcoming' | 'restless' | 'lawless' | 'veilThin' | 'haunted' | 'bloodSoaked', number>;
+    sustain: Record<'welcoming' | 'restless' | 'lawless' | 'onTheEdge' | 'veilThin' | 'haunted' | 'bloodSoaked', number>;
     /**
      * THR-1528: the place's bloodshed this tick — the weighted count of battle records
      * inside the Blood-soaked window — or null when the place never saw a battle.

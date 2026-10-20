@@ -251,6 +251,13 @@ export const LOCATION_LAWLESS_GOLD_PENALTY = -0.05;
 export const LOCATION_RESTLESS_HEART_PENALTY = -0.03;
 
 /**
+ * Iron penalty on steps resolved in a place *On the edge* (THR-1957) — a town ready to
+ * turn on its lord bristles at anyone giving orders, so force and command go worse
+ * there. Lawless's band: the town that shows this chip also shows Lawless.
+ */
+export const LOCATION_ON_THE_EDGE_IRON_PENALTY = -0.05;
+
+/**
  * Veil bonus on steps resolved where the veil is thin — the rite takes more easily.
  * The tended shrine's magnitude, on the same axis.
  */
@@ -633,6 +640,26 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+  // THR-1957 — hunger and unrest S2. The chip's words are the plan's (§ Player-facing
+  // text): it enters above Lawless and releases above Restless.
+  {
+    id: 'trait.condition.location.on_the_edge',
+    type: 'trait',
+    name: 'On the edge',
+    properties: {
+      subcategory: 'condition',
+      description: 'Its people have had enough. If another lord nearby can protect and feed them better, the town will turn to it; left like this, it may rise.',
+      importance: 0.85,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are the daily defection and
+      // rising pass (`unrestPressure/defection.ts`, `rising.ts`) and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#negative'],
+      flavorText: 'Somebody has painted over the lord\'s mark on the gate. Nobody saw who.',
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
   {
     id: 'trait.condition.location.lawless',
     type: 'trait',
@@ -848,6 +875,7 @@ export const LOCATION_CONDITION_STEP_MODIFIER: Record<
   // is the road (above) and the pool, not the roll.
   'trait.condition.location.restless': { heart: LOCATION_RESTLESS_HEART_PENALTY }, // THR-1934
   'trait.condition.location.lawless': { gold: LOCATION_LAWLESS_GOLD_PENALTY },
+  'trait.condition.location.on_the_edge': { iron: LOCATION_ON_THE_EDGE_IRON_PENALTY }, // THR-1957
   'trait.condition.location.veil_thin': { veil: LOCATION_VEIL_THIN_VEIL_BONUS },
   'trait.condition.location.haunted': { heart: LOCATION_HAUNTED_HEART_PENALTY },
 };

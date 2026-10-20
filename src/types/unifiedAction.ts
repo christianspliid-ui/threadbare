@@ -418,7 +418,9 @@ export type FactionMemberSelection =
   | { readonly kind: 'by_reputation_below'; readonly threshold: number }
   | { readonly kind: 'by_reputation_above'; readonly threshold: number }
   | { readonly kind: 'explicit_ids'; readonly agentIds: readonly string[] }
-  | { readonly kind: 'random_sample'; readonly fraction: number };
+  | { readonly kind: 'random_sample'; readonly fraction: number }
+  /** THR-1957 — members whose observed residence resolves to this place-tier Location. */
+  | { readonly kind: 'resident_of'; readonly locationId: string };
 
 /**
  * Resolved target for a multi-target aftermath effect.

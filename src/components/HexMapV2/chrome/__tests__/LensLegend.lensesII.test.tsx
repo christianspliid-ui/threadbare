@@ -13,7 +13,7 @@ import { mapLensById } from '../../../../data/map-lenses';
 import { TROUBLE_LENS_WORDS, TRADE_LENS_WORDS } from '../../../../data/view-content';
 
 describe('LensLegend — Lenses II', () => {
-  it('Trouble: "Trouble · Doom: Signs", its line, and the eight marks with their carved shapes', () => {
+  it('Trouble: "Trouble · Doom: Signs", its line, and the nine marks with their carved shapes', () => {
     const { container } = render(
       <LensLegend
         lens={mapLensById('trouble')!}
@@ -31,7 +31,7 @@ describe('LensLegend — Lenses II', () => {
     expect(screen.getByText('Lit ground is where something is going wrong.')).toBeTruthy();
     const marks = [...container.querySelectorAll('[data-legend-mark]')];
     expect(marks.map(m => m.getAttribute('data-legend-mark')))
-      .toEqual(['Battle', 'Siege', 'Unrest', 'Strife', 'Scheme', 'Drain', 'Omen', 'Lair']);
+      .toEqual(['Battle', 'Siege', 'Unrest', 'Hunger', 'Strife', 'Scheme', 'Drain', 'Omen', 'Lair']);
     // Every Trouble mark has a carved shape, so each shows an svg, never a plain dot.
     for (const m of marks) expect(m.querySelector('svg'), m.getAttribute('data-legend-mark') ?? '').not.toBeNull();
   });

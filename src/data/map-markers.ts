@@ -73,6 +73,7 @@ export type MapMarkerKind =
   | 'medallion'
   | 'destination'
   | 'unrest'
+  | 'hunger'
   | 'strife'
   | 'scheme'
   | 'drain'
@@ -211,6 +212,20 @@ export const MAP_MARKERS: Record<MapMarkerKind, MapMarkerDef> = {
     icon: 'unrest',
     ink: 'trouble',
     legend: [{ word: 'Unrest', tooltipId: 'ui.lens.mark.unrest' }],
+    legendIn: ['trouble'],
+    labelObstacle: 'never',
+  },
+  /**
+   * Trouble (THR-1957, hunger and unrest S2): a settlement here is hungry today —
+   * its fields cannot feed its people. One badge, the staple shape, in the doom ink.
+   */
+  hunger: {
+    lens: 'trouble',
+    draw: 'badge',
+    sizePx: TROUBLE_BADGE_SIZES,
+    icon: 'staple',
+    ink: 'trouble',
+    legend: [{ word: 'Hunger', tooltipId: 'ui.lens.mark.hunger' }],
     legendIn: ['trouble'],
     labelObstacle: 'never',
   },

@@ -222,6 +222,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Omen',
     desc: 'An omen hangs over the land inside the dotted ring. Mortals there act on it.',
   },
+  // THR-1957 — the Trouble lens Hunger mark.
+  'ui.lens.mark.hunger': {
+    label: 'Hunger',
+    desc: 'A town here cannot feed its people. Hungry towns grow restless, then lawless, and may turn to another lord.',
+  },
   'ui.lens.mark.lair': {
     label: 'Lair',
     desc: 'Something dangerous dens here, and it may grow.',
@@ -1261,6 +1266,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.econ.prosperity': {
     label: 'Prosperity',
     desc: 'How well a place lives: destitute, struggling, modest, prosperous or flourishing. Good harvests, trade and peace raise it; hunger, war and sickness wear it down.',
+  },
+  // THR-1957 — the On the edge chip (hunger and unrest S2), the plan's words.
+  'ui.econ.on_the_edge': {
+    label: 'On the edge',
+    desc: 'Its people have had enough. If another lord nearby can protect and feed them better, the town will turn to it; left like this, it may rise.',
   },
   // THR-1935 — prayers and the faithful. Both outcomes named before the choice (Law 16).
   'ui.prayer': {

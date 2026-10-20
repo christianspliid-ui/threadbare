@@ -17,6 +17,9 @@ import {
 } from '../../data/unrest-pressure-constants';
 import { RESIDENCE_POSITION_PROP } from '../agentResidence';
 import { resolveToParentLocation } from '../sublocationShape';
+import { taxHolderOf } from '../factionPurse/income';
+
+const NO_REALM_MAP: ReadonlyMap<string, string> = new Map();
 
 export type UnrestBand = 'calm' | 'restless' | 'lawless' | 'on_the_edge' | 'rising';
 
@@ -54,4 +57,17 @@ export function homeIsRestless(state: Pick<GameState, 'graph'>, agentId: string)
   const home = resolveToParentLocation(graph, graph.getNode(residenceId));
   if (!home) return false;
   return isRestlessPlace(graph, home.id) || isLawlessPlace(graph, home.id);
+}
+
+/**
+ * The holder a town on the edge would turn from: the one the daily turn pass judged
+ * (`unrestHolderId`, realm-border tie-break included), else the controller ranking.
+ * The Fortunes row and the Trouble lens both ask here, so they name the lord whose
+ * `controls` would move (THR-1957, Law 56).
+ */
+export function judgedHolderOf(graph: WorldGraph, settlementId: string): string | null {
+  const judged = graph.getNode(settlementId)?.properties?.unrestHolderId;
+  if (judged === null) return null;
+  if (typeof judged === 'string' && graph.getNode(judged)) return judged;
+  return taxHolderOf(graph, settlementId, NO_REALM_MAP);
 }

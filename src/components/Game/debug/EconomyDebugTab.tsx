@@ -149,19 +149,19 @@ function UnrestTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
   return (
     <div data-testid="economy-unrest" style={{ marginBottom: '12px' }}>
       <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>
-        Unrest — {rows.length} settlements, {rows.filter(r => r.chips.restless).length} restless, {rows.filter(r => r.chips.lawless).length} lawless
+        Unrest — {rows.length} settlements, {rows.filter(r => r.chips.restless).length} restless, {rows.filter(r => r.chips.lawless).length} lawless, {rows.filter(r => r.chips.onTheEdge).length} on the edge
       </div>
       <table style={{ borderCollapse: 'collapse', width: '100%' }}>
         <thead>
           <tr style={{ color: 'var(--text-tertiary)' }}>
             <th style={{ ...cell, textAlign: 'left' }}>settlement</th><th style={cell}>unrest</th><th style={cell}>target</th>
             <th style={cell}>hunger</th><th style={cell}>poverty</th><th style={cell}>siege</th><th style={cell}>sick</th><th style={cell}>dead</th><th style={cell}>content</th>
-            <th style={cell}>hungry d</th><th style={{ ...cell, textAlign: 'left' }}>band</th><th style={cell}>restless d</th><th style={{ ...cell, textAlign: 'left' }}>last leave to</th>
+            <th style={cell}>hungry d</th><th style={{ ...cell, textAlign: 'left' }}>band</th><th style={cell}>restless d</th><th style={{ ...cell, textAlign: 'left' }}>last leave to</th><th style={cell}>turned t</th>
           </tr>
         </thead>
         <tbody>
           {rows.map(r => (
-            <tr key={r.locationId} title={r.fortunes ?? ''} style={{ color: r.chips.lawless ? '#e06c5a' : r.chips.restless ? '#d4a24a' : 'var(--text-secondary)' }}>
+            <tr key={r.locationId} title={r.fortunes ?? ''} style={{ color: r.chips.onTheEdge ? '#c0392b' : r.chips.lawless ? '#e06c5a' : r.chips.restless ? '#d4a24a' : 'var(--text-secondary)' }}>
               <td style={{ ...cell, textAlign: 'left' }} title={r.locationId}>{r.locationName}</td>
               <td style={cell}>{f(r.unrest)}</td>
               <td style={cell}>{r.target === null ? '—' : f(r.target)}</td>
@@ -175,6 +175,7 @@ function UnrestTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
               <td style={{ ...cell, textAlign: 'left' }}>{r.band}</td>
               <td style={cell}>{r.restlessDays}</td>
               <td style={{ ...cell, textAlign: 'left' }}>{r.leaveTo ?? '—'}</td>
+              <td style={cell}>{r.lastTurnTick ?? '—'}</td>
             </tr>
           ))}
         </tbody>

@@ -1,6 +1,7 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import { grantHolding } from './holdings';
 import { getFactionMembershipEdges } from './graphQueries';
+import { splinterFaction, residesIn } from './factionSplinter';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type {
@@ -84,7 +85,6 @@ import {
   COMPULSION_DEFAULT_DURATION_TICKS,
   COMPULSION_MAX_ACTIVE,
   FACTION_SPLINTER_DEFAULT_REPUTATION_SHARE,
-  FACTION_SPLINTER_INITIAL_SENTIMENT_TO_PARENT,
   FACTION_PEACE_DEFAULT_SENTIMENT_BOOST,
   FACTION_PEACE_SENTIMENT_FLOOR,
   FACTION_WAR_SENTIMENT_FLOOR,
@@ -610,6 +610,8 @@ function selectFactionMembers(
         const traitEdges = state.graph.getOutgoingEdges(m.id, 'has_trait');
         return traitEdges.some(e => e.target === selection.traitId);
       });
+    case 'resident_of':
+      return allMembers.filter(m => residesIn(state.graph, m.id, selection.locationId));
     case 'random_sample': {
       const salt = `${encounterId}_${reactionId}_${effectIndex}`;
       let seed = state.seed;
@@ -3398,56 +3400,15 @@ export function applyEncounterAftermathReaction(
         let selectedMembers = selectFactionMembers(allMembers, effect.memberSelection, state, tick, encounterId, reaction.id, i);
 
         const newFactionId = `faction_splinter_${encounterId}_${reaction.id}_${i}_${tick}`;
-        state.graph.addNode({
-          id: newFactionId,
-          type: 'actor',
-          name: effect.newFactionName,
-          properties: {
-            actorType: 'faction',
-            actorStatus: 'active',
-            sourceEncounterId: encounterId,
-            foundedTick: tick,
-          },
-        });
-
         const repShare = effect.inheritReputationShare ?? FACTION_SPLINTER_DEFAULT_REPUTATION_SHARE;
-        for (const member of selectedMembers) {
-          // Remove old member_of edge
-          const oldEdges = getFactionMembershipEdges(state.graph, member.id)
-            .filter(e => e.target === effect.sourceFactionId);
-          for (const e of oldEdges) state.graph.removeEdge(e.id);
-
-          // Add new member_of edge to splinter
-          state.graph.addEdge({
-            id: `member_of_${member.id}_${newFactionId}`,
-            source: member.id,
-            target: newFactionId,
-            type: 'member_of',
-            properties: { reputation: clamp01(member.reputation * repShare), joinedTick: tick },
-          });
-        }
-
-        // Copy relates_to edges from source to new faction (marked inherited)
-        const srcRelations = state.graph.getOutgoingEdges(effect.sourceFactionId, 'relates_to');
-        for (const rel of srcRelations) {
-          if (rel.target !== newFactionId) {
-            state.graph.addEdge({
-              id: `relates_to_${newFactionId}_${rel.target}_inherited`,
-              source: newFactionId,
-              target: rel.target,
-              type: 'relates_to',
-              properties: { ...rel.properties, inherited: true },
-            });
-          }
-        }
-
-        // Splinter starts resentful toward parent
-        state.graph.addEdge({
-          id: `relates_to_${newFactionId}_${effect.sourceFactionId}`,
-          source: newFactionId,
-          target: effect.sourceFactionId,
-          type: 'relates_to',
-          properties: { sentiment: FACTION_SPLINTER_INITIAL_SENTIMENT_TO_PARENT, strength: 0.8, basis: 'splinter' },
+        splinterFaction(state.graph, {
+          sourceFactionId: effect.sourceFactionId,
+          newFactionId,
+          newFactionName: effect.newFactionName,
+          members: selectedMembers,
+          reputationShare: repShare,
+          tick,
+          extraProperties: { sourceEncounterId: encounterId },
         });
 
         mutationSummary.touchedWorld = true;

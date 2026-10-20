@@ -84,3 +84,47 @@ export const RIOT_SEED_COOLDOWN_DAYS = 10;
  * (`SCARCITY_ARC_SEED_DELAY_TICKS`, `SCARCITY_ARC_SEED_PRIORITY`), so both read alike.
  */
 export const GRANARY_RIOT_TEMPLATE_ID = 'encounter.town.granary_riot';
+
+// ─── S2 (THR-1957) — On the edge: a town turns to a better lord ──────────────
+//
+// The chip's enter / release live with the other place traits
+// (`ON_THE_EDGE_ENTER` / `ON_THE_EDGE_RELEASE`, `location-trait-constants.ts`).
+
+/** Hex radius within which a lord's own towns make it a candidate for a town on the edge. */
+export const DEFECTION_RADIUS_HEXES = 8;
+/** How much better a lord's view must be than the holder's before the town turns. Plan default 0.25; raised to 0.4 by the plan's kill criterion (THR-1957 measure: one seed-99 town turned 3 times in 100 days at 0.25). */
+export const DEFECTION_MARGIN = 0.4;
+/** The town's view of a lord: weight of the protection term (the crown's, over this one town). */
+export const DEFECT_W_PROTECTION = 1.0;
+/** Weight of standing: +1 a hall or a resident member here, −1 a recent siege of the town. */
+export const DEFECT_W_STANDING = 0.3;
+/** Weight of fed: the share of the lord's own towns that are not hungry. */
+export const DEFECT_W_FED = 0.8;
+/** Weight of solvent: 1 unless the lord's purse reads Destitute. */
+export const DEFECT_W_SOLVENT = 0.5;
+/** A siege of the town this recent counts against the lord who laid it (days). */
+export const DEFECTION_MEMORY_DAYS = 30;
+/** The old holder's sentiment toward the lord its town turned to — past war aims' −0.3 enemy line. */
+export const DEFECTION_GRUDGE_SENTIMENT = -0.35;
+/** One-off push on the town after it turns to a new lord. */
+export const DEFECTION_RELIEF = -15;
+
+// ─── S2 — Rising ──────────────────────────────────────────────────────────────
+
+/** Unrest at which a town rises against its holder (or, unheld, empties). */
+export const RISING_THRESHOLD = 90;
+/** One-off push on the town after it rises. */
+export const RISING_RELIEF = -30;
+/** An unheld Rising town loses people this many times faster than a Restless one. */
+export const EMPTYING_LEAVE_MULTIPLIER = 2;
+/** No second turn (defection or rising) sooner than this after the last (days). */
+export const TOWN_TURN_COOLDOWN_DAYS = 20;
+/** Share of the old faction's reputation a resident member carries into the risen town. */
+export const RISING_REPUTATION_SHARE = 0.5;
+/** Name of the faction a rising splits off from its holder. `{town}` is the town's name. */
+export const RISEN_FACTION_NAME = 'The Free Folk of {town}';
+/** Name of the free town a resident founds when no member of the holder lives there. */
+export const FREE_TOWN_FACTION_NAME = 'The Free Town of {town}';
+/** Reputation and rank the founder of a free town holds in it (`member_of`, 0–1). */
+export const FREE_TOWN_FOUNDER_REPUTATION = 0.8;
+export const FREE_TOWN_FOUNDER_RANK = 1;
