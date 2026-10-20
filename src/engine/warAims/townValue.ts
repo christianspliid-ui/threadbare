@@ -28,13 +28,14 @@ import {
   buildBearingIndex,
   allRegionalMonopolies,
   hexOfLocationId,
-  regionShare,
-  isMonopolyShare,
+  computeRegionalMonopolies,
   type BearingIndex,
   type BearingPlace,
 } from '../regionalMonopoly';
+import type { HexCoord } from '../../types';
 import {
   REGIONAL_MONOPOLY_ENABLED,
+  MONOPOLY_REGION_RADIUS_HEXES,
   WAR_AIM_BONUS_BREAKS_MONOPOLY,
   WAR_AIM_BONUS_COMPLETES_MONOPOLY,
 } from '../../data/regional-monopoly-constants';
@@ -119,22 +120,41 @@ function bearingIndexOf(ctx: WarAimContext): BearingIndex {
   return ctx.bearing;
 }
 
+/** Anchor hexes of the regions `factionId` holds on `rid` among `places`, by the phase's rule. */
+function regionAnchorsHeld(rid: string, places: readonly BearingPlace[], factionId: string): HexCoord[] {
+  const hexOf = new Map(places.map(p => [p.id, p.hex] as const));
+  const held = computeRegionalMonopolies(new Map([[rid, [...places]]]), 0).get(factionId) ?? [];
+  return held.map(m => hexOf.get(m.anchorLocationId)).filter((h): h is HexCoord => !!h);
+}
+
+/** The phase's same-region test (`sameRegion` in phases/regionalMonopolies.ts), by anchor hex. */
+function inSameRegion(a: HexCoord, b: HexCoord): boolean {
+  return hexDistance(a, b) <= MONOPOLY_REGION_RADIUS_HEXES;
+}
+
 /**
  * The monopoly bonuses for taking `townId`, recomputed from the bearing index (no cache
  * beyond the pass's context):
  *
  * - **breaks** (`WAR_AIM_BONUS_BREAKS_MONOPOLY`): the town is one of an *enemy's*
- *   regional monopoly places, and without it that holder falls below the control share
- *   around the monopoly's anchor;
- * - **completes** (`WAR_AIM_BONUS_COMPLETES_MONOPOLY`): around some bearing place of a
- *   good the town bears, the attacker does not hold a monopoly today and would with it.
+ *   regional monopoly places, and once the attacker holds it the regional rule finds no
+ *   region of that holder's on the good in the same region as the monopoly's anchor;
+ * - **completes** (`WAR_AIM_BONUS_COMPLETES_MONOPOLY`): once the attacker holds the town,
+ *   the regional rule finds a region of the attacker's on a good the town bears that is
+ *   not the same region as any it holds today.
  *
- * Ties between goods break by resource id. Off (`REGIONAL_MONOPOLY_ENABLED`) = no bonus.
+ * Both run the phase's own rule (`computeRegionalMonopolies`) on the good's places with
+ * the town's holder swapped, and match regions as the phase does (anchors within
+ * `MONOPOLY_REGION_RADIUS_HEXES`), so a bonus is paid only for a capture the next scan
+ * would record as a break or a new hold. Ties between goods break by resource id.
+ * Off (`REGIONAL_MONOPOLY_ENABLED`) = no bonus.
  */
 export function monopolyAimFor(ctx: WarAimContext, attackerId: string, townId: string): MonopolyAim {
   const none: MonopolyAim = { bonus: 0, reason: null };
   if (!REGIONAL_MONOPOLY_ENABLED) return none;
   const index = bearingIndexOf(ctx);
+  const taken = (places: readonly BearingPlace[]): BearingPlace[] =>
+    places.map(p => (p.id === townId ? { ...p, controllerId: attackerId } : p));
 
   let breaks: { resourceId: string; holderId: string } | null = null;
   for (const { factionId, monopoly } of allRegionalMonopolies(ctx.graph)) {
@@ -143,8 +163,8 @@ export function monopolyAimFor(ctx: WarAimContext, attackerId: string, townId: s
     const anchor = hexOfLocationId(ctx.graph, monopoly.anchorLocationId);
     const places = index.get(monopoly.resourceId);
     if (!anchor || !places) continue;
-    const r = regionShare(places, anchor, p => p.controllerId === factionId && p.id !== townId);
-    if (isMonopolyShare(r.held.length, r.total)) continue;
+    const after = regionAnchorsHeld(monopoly.resourceId, taken(places), factionId);
+    if (after.some(h => inSameRegion(h, anchor))) continue;
     if (!breaks || monopoly.resourceId < breaks.resourceId) breaks = { resourceId: monopoly.resourceId, holderId: factionId };
   }
 
@@ -152,17 +172,9 @@ export function monopolyAimFor(ctx: WarAimContext, attackerId: string, townId: s
   for (const rid of [...index.keys()].sort()) {
     const places = index.get(rid)!;
     if (!places.some(p => p.id === townId)) continue;
-    const withTown = (p: BearingPlace) => p.controllerId === attackerId || p.id === townId;
-    for (const anchor of places) {
-      if (!withTown(anchor)) continue;
-      const after = regionShare(places, anchor.hex, withTown);
-      if (!isMonopolyShare(after.held.length, after.total)) continue;
-      const before = regionShare(places, anchor.hex, p => p.controllerId === attackerId);
-      if (isMonopolyShare(before.held.length, before.total)) continue;
-      completes = rid;
-      break;
-    }
-    if (completes) break;
+    const before = regionAnchorsHeld(rid, places, attackerId);
+    const after = regionAnchorsHeld(rid, taken(places), attackerId);
+    if (after.some(a => !before.some(b => inSameRegion(a, b)))) { completes = rid; break; }
   }
 
   const bonus = (breaks ? WAR_AIM_BONUS_BREAKS_MONOPOLY : 0) + (completes ? WAR_AIM_BONUS_COMPLETES_MONOPOLY : 0);

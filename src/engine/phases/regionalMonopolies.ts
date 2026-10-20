@@ -194,6 +194,12 @@ export function resolveRegionalMonopolies(
       }
       changed = true;
       established++;
+      // A good the old world-wide ledger already held carries over quietly: the faction
+      // is not newly taking a market it held before the save was loaded.
+      if (legacy.includes(n.resourceId)) {
+        traceTransition(tick, faction, n, 'established', false);
+        continue;
+      }
       const recentLoss = losses.some(l => sameRegion(graph, l, n));
       if (!recentLoss) {
         const town = regionTownName(graph, n.anchorLocationId);

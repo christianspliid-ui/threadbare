@@ -256,4 +256,47 @@ describe('monopoly war-aim bonuses (THR-1955 § 8)', () => {
     expect(aim.reason).toBe('completes_monopoly');
     expect(aim.bonus).toBeGreaterThanOrEqual(WAR_AIM_BONUS_COMPLETES_MONOPOLY);
   });
+
+  it('no break bonus when another anchor in the same region still qualifies after the capture', () => {
+    // H holds A, t, B, C, D; O holds x, y. Anchor B is 5 of 7. Without t, B is 4 of 7, but
+    // anchor C (B, C, D of 4) still qualifies and lies within the radius of B: no break.
+    const g = new WorldGraph();
+    addFaction(g, 'H', 'House Varr');
+    addFaction(g, 'O', 'Other');
+    addFaction(g, 'E', 'Ashfold');
+    rivals(g, 'H', 'E');
+    for (const [id, col] of [['x', 0], ['y', 1], ['A', 6], ['t', 7], ['B', 8], ['C', 15], ['D', 16]] as const) addTown(g, id, col, { resources: grain() });
+    for (const id of ['A', 't', 'B', 'C', 'D']) control(g, 'H', id);
+    control(g, 'O', 'x'); control(g, 'O', 'y');
+    phaseEconomicPower(makeState(SCAN, g), ctx);
+    expect(readRegionalMonopolies(g.getNode('H')!.properties).map(m => m.anchorLocationId)).toEqual(['B']);
+    const aim = monopolyAimFor(buildWarAimContext(g, new Map()), 'E', 't');
+    expect(aim.reason).toBeNull();
+    expect(aim.bonus).toBe(0);
+  });
+
+  it('no complete bonus when the attacker already holds the region through a nearby anchor', () => {
+    // G holds K3, K2, K, M (anchor K holds 4 of 6 today); F holds town, w, v. Anchor M goes
+    // from 4 of 7 to 5 of 7 with the town, but it is the same region as K: no new hold.
+    const g = new WorldGraph();
+    addFaction(g, 'G', 'Attacker');
+    addFaction(g, 'F', 'Defender');
+    rivals(g, 'G', 'F');
+    for (const [id, col] of [['K3', 0], ['K2', 1], ['K', 2], ['M', 8], ['town', 9], ['w', 10], ['v', 16]] as const) addTown(g, id, col, { resources: grain() });
+    for (const id of ['K3', 'K2', 'K', 'M']) control(g, 'G', id);
+    for (const id of ['town', 'w', 'v']) control(g, 'F', id);
+    const aim = monopolyAimFor(buildWarAimContext(g, new Map()), 'G', 'town');
+    expect(aim.reason).toBeNull();
+    expect(aim.bonus).toBe(0);
+  });
+});
+
+describe('legacy world-wide ledger (THR-1955)', () => {
+  it('a good the old `monopolies` ledger held and the regional rule still finds is carried over without a chronicle line', () => {
+    const g = region();
+    g.getNode('H')!.properties.monopolies = ['grain'];
+    const r = phaseEconomicPower(makeState(SCAN, g), ctx);
+    expect(readRegionalMonopolies(g.getNode('H')!.properties)).toHaveLength(1);
+    expect((r.chronicleEntries ?? []).filter(e => /grain/i.test(e.prose ?? ''))).toEqual([]);
+  });
 });

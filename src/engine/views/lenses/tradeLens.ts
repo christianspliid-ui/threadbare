@@ -25,6 +25,7 @@ import { MONOPOLY_WORDS } from '../../../data/regional-monopoly-words';
 import { allActiveEmbargoes, embargoedLanesOf, monopolyCovering } from '../../regionalMonopoly';
 import { REGIONAL_MONOPOLY_ENABLED } from '../../../data/regional-monopoly-constants';
 import { realmBorderMap } from '../../realmBorderMap';
+import { isFactionNode } from '../../factionPurse/income';
 import { isHexKnown } from '../knowledge';
 import {
   LENS_HOVER_MAX_LINES,
@@ -85,10 +86,14 @@ function endClause(end: PlaceEnd): LensLineSegment[] | null {
   return segs;
 }
 
-/** A faction name as a linked segment (Law 21). */
-function factionSeg(ctx: ViewContext, id: string): LensLineSegment {
-  const name = ctx.graph.getNode(id)?.name ?? id;
-  return { text: name, ref: { kind: 'faction', id, name } };
+/**
+ * A holder's name as a linked segment (Law 21). A lane toll (`controlledBy`) can be held by
+ * an individual agent (the Tax Trade Route action's actor), so the ref follows the node kind.
+ */
+function holderSeg(ctx: ViewContext, id: string): LensLineSegment {
+  const node = ctx.graph.getNode(id);
+  const name = node?.name ?? id;
+  return { text: name, ref: { kind: isFactionNode(node) ? 'faction' : 'agent', id, name } };
 }
 
 /** "{pre}{holder}{post}" split on the `{holder}` slot, the rest filled. */
@@ -97,7 +102,7 @@ function holderLine(ctx: ViewContext, template: string, holderId: string, good =
   return {
     segments: [
       ...(pre ? [{ text: pre, ref: null }] : []),
-      factionSeg(ctx, holderId),
+      holderSeg(ctx, holderId),
       ...(post ? [{ text: post, ref: null }] : []),
     ],
   };
