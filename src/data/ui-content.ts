@@ -255,6 +255,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   'ui.map.zoom_out': { label: 'Zoom out', desc: 'See more of the land. Key Page Down.' },
   'ui.map.centre_first': { label: 'Centre on my First', desc: 'Bring your First to the middle of the map. Key Home.' },
   'ui.map.show_known_land': { label: 'Show known land', desc: 'Fit all the land you know into view. Key F.' },
+  // THR-1901 — the minimap and its fold button (plan THR-1878 D10).
+  'ui.map.minimap': {
+    label: 'Minimap',
+    desc: 'The whole world in small: the land you know, the uncharted rest, your First, and the part you are looking at. Click to look there. Key V.',
+  },
   // THR-1847 — the words behind the map's siege ring and crossed swords (Laws 1, 17).
   'ui.siege': {
     label: 'Under siege',

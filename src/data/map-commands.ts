@@ -9,7 +9,7 @@
  *
  * Keys (THR-1828 keeps `+` / `=` / `-` for speed and `W` for widen, so THR-1831's zoom keys
  * and WASD moved): PageUp / PageDown zoom, arrows pan, Home centres on the First, F shows
- * known land. Lens keys `1`–`5` stay in `MAP_LENSES`. Escape is never bound here (Law 23).
+ * known land, V shows or hides the minimap (THR-1901). Lens keys `1`–`5` stay in `MAP_LENSES`. Escape is never bound here (Law 23).
  *
  * Zoom in and out draw a typographic "+" and "−" (THR-1879: no carved period object reads
  * as plus or minus); the other buttons draw carved icons from the registry.
@@ -21,6 +21,7 @@ export type MapCommandId =
   | 'zoom_out'
   | 'centre_first'
   | 'show_known_land'
+  | 'toggle_minimap'
   | 'pan_up'
   | 'pan_down'
   | 'pan_left'
@@ -65,6 +66,12 @@ export const MAP_COMMANDS: readonly MapCommandDef[] = [
     keys: ['f', 'F'],
     button: { icon: 'show-known-land', tooltipId: 'ui.map.show_known_land', ariaLabel: 'Show known land' },
   },
+  // THR-1901 (D10) — the minimap's fold: the fifth button, pressed while the minimap is open.
+  {
+    id: 'toggle_minimap',
+    keys: ['v', 'V'],
+    button: { icon: 'minimap', tooltipId: 'ui.map.minimap', ariaLabel: 'Show the minimap' },
+  },
   { id: 'pan_up', keys: ['ArrowUp'], button: null },
   { id: 'pan_down', keys: ['ArrowDown'], button: null },
   { id: 'pan_left', keys: ['ArrowLeft'], button: null },
@@ -85,6 +92,9 @@ export const MAP_CONTROL_DISABLED_REASONS = {
   widest: 'Widest view',
   noFocus: 'No one to centre on yet',
 } as const;
+
+/** The minimap button's name in each state (Law 25: a toggle says what pressing it does). */
+export const MINIMAP_TOGGLE_LABELS = { show: 'Show the minimap', hide: 'Hide the minimap' } as const;
 
 /** The command a key runs, or undefined. */
 export function mapCommandForKey(key: string): MapCommandDef | undefined {

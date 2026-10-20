@@ -13,6 +13,9 @@
  * running `MAP_COMMANDS` through one `runMapCommand`; the First and the seat are passed to
  * HexMapV2 for the opening view.
  *
+ * THR-1901 (D10): the minimap sits in the same corner, above the cluster — open by default
+ * on a wide canvas, else folded into the cluster's fifth button; it hides with the corner.
+ *
  * THR-1878 (Lenses I): the lens that is on comes from GameScreenState; a Dominion lens
  * reaches HexMapV2 as `dominionLens`, every other lens as one `hexLens` view model drawn
  * by the generic hex layer. The hex click passes through unchanged (D11).
@@ -33,6 +36,11 @@ import type { HexMapV2Handle, HexMapV2Props } from '../../HexMapV2/HexMapV2';
 import { CAMERA_CONSTANTS } from '../../HexMapV2/camera/D3ZoomCamera';
 import { MapControls } from '../../HexMapV2/chrome/MapControls';
 import { MapCornerChrome } from '../../HexMapV2/chrome/MapCornerChrome';
+import { Minimap } from '../../HexMapV2/chrome/Minimap';
+import { useMinimapOpen } from '../../HexMapV2/chrome/minimapState';
+import { mapMinimapSelector } from '../../../engine/views/map/minimap';
+import { readView } from '../../../engine/views/readView';
+import { hexKey } from '../../../lib/hexKey';
 import { MAP_PAN_DIRECTIONS, type MapCommandId } from '../../../data/map-commands';
 import { resolveFirstHex, resolveSeatHex } from '../../../engine/views/map/focusTargets';
 import { useMapHotkeys } from './useMapHotkeys';
@@ -178,8 +186,17 @@ export function GameMap({
     [gameState.graph, gameState.ascendantId, gameState.tick],
   );
 
+  // THR-1901 — the minimap: open or folded (the player's choice kept), and its world in small.
+  const { open: minimapOpen, toggle: toggleMinimap } = useMinimapOpen(hexMapRef);
+  const firstHexKey = firstHex ? hexKey(firstHex.col, firstHex.row) : null;
+  const minimapVM = readView(runtime, gameState, mapMinimapSelector, { fogOff: fogDisabled, firstHex: firstHexKey }, tiles);
+
   // THR-1900 — one runner for every map command, so a button and its key cannot disagree.
   const runMapCommand = useCallback((id: MapCommandId) => {
+    if (id === 'toggle_minimap') {
+      toggleMinimap();
+      return;
+    }
     const map = hexMapRef.current;
     if (!map) return;
     const pan = MAP_PAN_DIRECTIONS[id];
@@ -202,7 +219,7 @@ export function GameMap({
         map.showKnownLand();
         break;
     }
-  }, [hexMapRef, firstHex, seatHex]);
+  }, [hexMapRef, firstHex, seatHex, toggleMinimap]);
 
   // THR-1892 — the Stage drives the map through GameScreenState; the Stage holds no handle.
   const { state: screen, setStage } = useGameScreenState();
@@ -263,13 +280,15 @@ export function GameMap({
         tick={gameState.tick}
       />
 
-      {/* THR-1900 — the bottom-right corner: the control cluster (the minimap joins it, THR-1901) */}
+      {/* THR-1900 / THR-1901 — the bottom-right corner: the minimap above the control cluster */}
       {!stageOpen && (
         <MapCornerChrome>
+          {minimapOpen && <Minimap vm={minimapVM} hexMapRef={hexMapRef} />}
           <MapControls
             hexMapRef={hexMapRef}
             hasFocusTarget={firstHex !== null || seatHex !== null}
             onCommand={runMapCommand}
+            minimapOpen={minimapOpen}
           />
         </MapCornerChrome>
       )}

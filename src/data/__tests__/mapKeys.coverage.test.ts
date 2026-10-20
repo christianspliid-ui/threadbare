@@ -62,9 +62,10 @@ describe('map key lists (MAP_COMMANDS, MAP_LENSES, TOP_BAR_KEYS)', () => {
     }
   });
 
-  it('the cluster is Zoom in, Zoom out, Centre on my First, Show known land, in that order', () => {
+  it('the cluster is Zoom in, Zoom out, Centre on my First, Show known land, the minimap, in that order', () => {
     expect(MAP_COMMANDS.filter(c => c.button).map(c => c.id))
-      .toEqual(['zoom_in', 'zoom_out', 'centre_first', 'show_known_land']);
+      .toEqual(['zoom_in', 'zoom_out', 'centre_first', 'show_known_land', 'toggle_minimap']);
+    expect(mapCommandForKey('v')?.id).toBe('toggle_minimap');
     expect(mapCommandForKey('PageUp')?.id).toBe('zoom_in');
     expect(mapCommandForKey('Home')?.id).toBe('centre_first');
     expect(mapCommandForKey('F')?.id).toBe('show_known_land');
@@ -85,6 +86,7 @@ describe('mapControlStates (Law 25: disabled with a reason)', () => {
       zoom_out: 'Widest view',
       centre_first: 'No one to centre on yet',
       show_known_land: null,
+      toggle_minimap: null,
     });
   });
 });
