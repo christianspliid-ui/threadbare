@@ -30,6 +30,8 @@ import { ICON_FOR_WORLD_REF_KIND } from '../../../data/icons/conceptIcons';
 import type { IconName } from '../../../data/icons/iconRegistry';
 import { Icon } from '../../shared/Icon';
 import { Panel } from '../../shared/Panel';
+import { Button } from '../../shared/Button';
+import { IconButton } from '../../shared/IconButton';
 import { useEscapeLayer } from '../../shared/useEscapeLayer';
 import { Z_BAND } from '../../shared/zBands';
 import { TOPBAR_INERT_OPACITY, TOPBAR_LIVE_HEIGHT_VAR } from '../GameView/GameViewTopBar';
@@ -172,7 +174,7 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
         className="focus-within-ring"
         style={{
           display: 'flex', alignItems: 'center', gap: 'var(--space-2)', width: '100%', maxWidth: 'var(--find-box-w)',
-          height: '2rem', padding: '0 var(--space-2)', borderRadius: 'var(--radius-sm, 4px)',
+          height: '2rem', padding: '0 var(--space-2)', borderRadius: 'var(--radius-control)',
           border: '1px solid var(--border-subtle)', background: 'var(--bg-hover)', color: 'var(--text-secondary)',
           opacity: disabled ? TOPBAR_INERT_OPACITY : undefined,
         }}
@@ -198,7 +200,7 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
           onFocus={() => setOpen(true)}
           onKeyDown={onInputKey}
           style={{
-            flex: '1 1 auto', minWidth: 0, background: 'transparent', border: 'none', outline: 'none',
+            flex: '1 1 auto', minWidth: 0, background: 'transparent', border: 'none',
             color: 'var(--text-primary)', fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)',
           }}
         />
@@ -241,7 +243,7 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
                         onMouseEnter={() => setActive(flat.indexOf(row))}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-1) var(--space-2)',
-                          borderRadius: 'var(--radius-sm, 4px)', cursor: 'pointer', minWidth: 0,
+                          borderRadius: 'var(--radius-control)', cursor: 'pointer', minWidth: 0,
                           background: isActive ? 'var(--bg-hover)' : 'transparent',
                         }}
                       >
@@ -249,37 +251,33 @@ export function FindBox({ gameState, runtime, fogOff, recentKeys, codex, onPickW
                         <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: 'var(--text-sm)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: '0 1 auto', minWidth: 0 }}>{row.name}</span>
                         <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: '1 1 auto', minWidth: 0 }}>{row.fact}</span>
                         {row.mapLocated && row.hexKey && (
-                          <button
-                            type="button"
-                            className="focus-ring"
+                          <IconButton
+                            size="sm"
                             data-testid="find-eye"
                             aria-label={FIND_WORDS.showOnMap.replace('{name}', row.name)}
                             title={FIND_WORDS.showOnMap.replace('{name}', row.name)}
                             tabIndex={-1}
+                            icon={<Icon name="reveal" size="chip" decorative />}
                             onMouseDown={e => e.preventDefault()}
                             onClick={e => {
                               e.stopPropagation();
                               onShowOnMap(row.hexKey!);
                             }}
-                            style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}
-                          >
-                            <Icon name="reveal" size="chip" decorative />
-                          </button>
+                          />
                         )}
                       </div>
                     );
                   })}
                   {g.showAll && (
-                    <button
-                      type="button"
-                      className="focus-ring"
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       data-testid="find-show-all"
                       onMouseDown={e => e.preventDefault()}
                       onClick={() => setExpanded(g.id)}
-                      style={{ background: 'transparent', border: 'none', padding: 'var(--space-1) var(--space-2)', cursor: 'pointer', color: 'var(--text-link, var(--text-secondary))', fontSize: 'var(--text-xs)' }}
                     >
                       {g.showAll}
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}

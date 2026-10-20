@@ -69,7 +69,6 @@ function indexOf(state: GameState, fogOff = false): FindIndexVM {
   return buildFindIndex(buildViewContext(null, state), { fogOff });
 }
 
-const keys = (i: FindIndexVM) => i.entries.map(e => e.key).sort();
 
 describe('the seen floor', () => {
   it('Find is a named knowledge surface', () => {
