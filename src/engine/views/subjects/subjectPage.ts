@@ -47,6 +47,7 @@ import { attachmentDetailFromNode } from '../../attachmentTemplateDetail';
 import { humanizeKeySegment } from '../../aftermathWords';
 import { ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
 import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../../data/realm-content';
+import { avatarGodTitleLine } from '../../../data/avatar-framing';
 import type {
   ContentCardVM,
   GenericSubjectPageVM,
@@ -73,6 +74,7 @@ function header(partial: Partial<SubjectHeaderVM> & Pick<SubjectHeaderVM, 'name'
   return {
     ref: null,
     epithet: null,
+    mortalShape: null,
     whereLine: [],
     standing: [],
     doingLine: null,
@@ -212,6 +214,14 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
     standing.push(...dominionChip(state, node.id));
     // The trade word first (THR-1982), so the header and the sheet's trade row agree.
     const role = displayTradeLabel(node);
+    // The player's own avatar reads as their mortal shape (THR-1990). The archetype title
+    // lives on GameView; an identity-derived one repeats the divine name, so the hunger
+    // stands in exactly as it did on the retired sheet.
+    const isAvatar = graph.getIncomingEdges(state.ascendantId, 'avatar_of').some(e => e.source === node.id);
+    const identity = state.ascendantIdentity;
+    const mortalShape = isAvatar
+      ? { godTitleLine: avatarGodTitleLine(identity?.divineName, undefined, identity?.hungerName) }
+      : null;
     return {
       ...base,
       pageKind: 'person',
@@ -219,6 +229,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
       header: {
         ...base.header,
         kindLabel: role || sentenceCase(subtitleForNode(node, 'actor')),
+        mortalShape,
         visual: { kind: ref.kind, id: node.id, portraitGate: level === 'stranger' ? 'silhouette' : 'shown' },
         standing,
         follow: true,

@@ -36,6 +36,7 @@ const PERSON_FIELDS: Record<string, Home> = {
   'header: portrait': { header: 'visual' },
   'header: name + rarity': { header: 'name' },
   'header: archetype epithet': { header: 'epithet' },
+  'header: your mortal shape + god title line (avatar only)': { header: 'mortalShape' },
   'header: knowledge level': { header: 'standing' },
   'header: is at': { header: 'whereLine' },
   'header: attuned sphere': { header: 'standing' },
@@ -234,6 +235,14 @@ describe('sheet parity — person (THR-1909, plan § D7.11)', () => {
       if ('retired' in home && !home.why) missing.push(`${field} → retired without a why`);
     }
     expect(missing).toEqual([]);
+  });
+
+  it('the avatar\'s header frames it as the player\'s mortal shape; another mortal\'s does not (THR-1990)', () => {
+    const state = world();
+    expect(buildSubjectPage(state, { kind: 'agent', id: 'kael', name: 'Kael' }).header.mortalShape)
+      .toEqual({ godTitleLine: 'You are Vara, the Witness' });
+    state.graph.removeEdge('av1');
+    expect(buildSubjectPage(state, { kind: 'agent', id: 'kael', name: 'Kael' }).header.mortalShape).toBeNull();
   });
 
   it('notable_capabilities is retired from the table', () => {
