@@ -134,7 +134,15 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
 });
 
 describe('THR-1964 — the price row', () => {
-  const base = { actorId: 'agent_kael', actorName: 'Kael', drewComplication: false } as const;
+  const base = { actorId: 'agent_kael', actorName: 'Kael', drewComplication: false, paidAtCostStep: true } as const;
+
+  it('is absent when no step landed at a cost — nothing was charged', () => {
+    expect(priceRowFor({ ...base, outcome: 'success_at_cost', changes: [], paidAtCostStep: false })).toBeNull();
+  });
+
+  it('is absent when a mixed row already draws as a cost', () => {
+    expect(priceRowFor({ ...base, outcome: 'success_at_cost', changes: [{ polarity: 'mixed' }] })).toBeNull();
+  });
 
   it('is present on success_at_cost with no loss row and no complication', () => {
     const row = priceRowFor({ ...base, outcome: 'success_at_cost', changes: [{ polarity: 'gain' }] });

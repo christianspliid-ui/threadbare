@@ -3507,6 +3507,7 @@ function withResolvedAftermathSummary(
       actorName: currentActorName,
       changes: summaryChanges,
       drewComplication: (finalAction.stepComplications ?? []).some(slot => slot != null),
+      paidAtCostStep: finalAction.stepOutcomes.includes('success_at_cost'),
     });
     const finalSummary: EncounterAftermathSummary = {
       encounterId: action.templateId,

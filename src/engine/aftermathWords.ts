@@ -1125,8 +1125,8 @@ export const PRICE_ROW_TITLE = 'The price';
 /**
  * THR-1964 — the price a `success_at_cost` ending always pays, named.
  *
- * Every such ending costs quintessence and half the growth
- * (`outcomeConsequences.ts`); only the visible scar is chance. When no scar drew
+ * A step that lands `success_at_cost` costs quintessence and half the growth
+ * (`outcomeConsequences.ts`, charged per step); only the visible scar is chance. When no scar drew
  * and the change set states no loss, the price would otherwise go unnamed, so
  * this one derived row names it — in words, never the amount (Law IV). When a
  * loss row or a complication already names a price this returns null, which
@@ -1138,6 +1138,13 @@ export function priceRowFor(args: {
   readonly actorName: string;
   readonly changes: readonly { readonly polarity: string }[];
   readonly drewComplication: boolean;
+  /**
+   * A resolved step landed `success_at_cost` — the band that actually charges
+   * the price (`computeOutcomeConsequence` runs per step). An at-cost ending
+   * reached any other way (a fight broken off with no roll, a weakened-continue
+   * failure) paid nothing, so it names nothing.
+   */
+  readonly paidAtCostStep: boolean;
 }): {
   readonly id: string;
   readonly kind: 'growth';
@@ -1147,8 +1154,10 @@ export function priceRowFor(args: {
   readonly actorName: string;
 } & DerivedChange | null {
   if (args.outcome !== 'success_at_cost') return null;
+  if (!args.paidAtCostStep) return null;
   if (args.drewComplication) return null;
-  if (args.changes.some(change => change.polarity === 'loss')) return null;
+  // `mixed` draws as a cost chip too (`isCost`, buildAftermathConsequences.ts).
+  if (args.changes.some(change => change.polarity === 'loss' || change.polarity === 'mixed')) return null;
   const noun: EncounterAftermathConceptRef = {
     text: args.actorName,
     entityId: args.actorId,
