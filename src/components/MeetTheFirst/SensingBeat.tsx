@@ -191,7 +191,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
         className="absolute left-0 right-0 text-center transition-opacity duration-700"
         style={{
           top: 'calc(7vh + 2.4rem)',
-          color: 'rgba(200,190,170,0.8)',
+          color: 'rgb(var(--meeting-caption-rgb) / 0.8)',
           fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-sm)',
           letterSpacing: '0.04em',
@@ -314,14 +314,13 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
                   marginTop: '0.5rem',
                   fontFamily: 'var(--font-body)',
                   fontSize: 'var(--text-xs)',
-                  color: 'rgba(200,190,170,0.9)',
-                  textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+                  color: 'rgb(var(--meeting-caption-rgb) / 0.9)',
                 }}
               >
                 {candidate.name && (
                   <span
                     data-testid={`sensing-rest-name-${idx}`}
-                    style={{ fontSize: '1rem', letterSpacing: '0.04em', color: 'rgba(222,206,172,0.95)' }}
+                    style={{ fontSize: 'var(--text-sm)', letterSpacing: '0.04em', color: 'rgb(var(--meeting-name-rgb) / 0.95)' }}
                   >
                     {candidate.name}
                   </span>
