@@ -34,6 +34,7 @@ import { getAvatarHexPosition } from '../../visibility';
 import { AGENT_INTERVENTION_TEMPLATES, UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 import { actionBlockedReason } from '../../../data/action-card-display';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
+import { outcomeBandWord } from '../../../data/outcome-band-content';
 import type { ActOnCardVM, ActOnVM } from './subjectTypes';
 import { godSpheres } from './pageResolvers';
 import { tileAt } from './pageResolvers';
@@ -168,7 +169,30 @@ export function buildActOn(state: GameState, target: ActOnTarget, name: string, 
   if (!read) return empty();
   const cards = cardsOf(read.slots);
   if (cards.length === 0) return empty();
-  return { heading, cards, emptyLine: null };
+  return { heading, cards: withFates(state, target, read.slots, cards), emptyLine: null };
+}
+
+/**
+ * THR-1992 (Law 37) — the fate word on each card cast on this subject: the latest receipt
+ * whose template and target match (the retired drawer's `resolvedBands`, narrowed to the
+ * subject the row is for). Acknowledged receipts count: dismissing the toast does not
+ * un-happen the ending. A bare hex has no node id a receipt names, so it wears none.
+ */
+function withFates(state: GameState, target: ActOnTarget, slots: readonly WheelSlot[], cards: ActOnCardVM[]): ActOnCardVM[] {
+  if (target.kind === 'hex') return cards;
+  const latest = new Map<string, { band: string; tick: number }>();
+  for (const r of state.playerActionReceipts ?? []) {
+    if (r.targetId !== target.id) continue;
+    const prev = latest.get(r.templateId);
+    if (!prev || r.resolvedTick >= prev.tick) latest.set(r.templateId, { band: r.outcomeBand, tick: r.resolvedTick });
+  }
+  if (latest.size === 0) return cards;
+  const templateOf = new Map(slots.map(s => [s.id, s.templateId ?? s.id]));
+  return cards.map(c => {
+    const templateId = templateOf.get(c.actionId);
+    const hit = templateId ? latest.get(templateId) : undefined;
+    return hit ? { ...c, fate: { band: hit.band, word: outcomeBandWord(hit.band) } } : c;
+  });
 }
 
 /** The Act row's cards from a target's slots: the castable kinds, in slot order. */

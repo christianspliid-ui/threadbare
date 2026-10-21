@@ -45,6 +45,9 @@ import {
 } from '../../../data/subject-sheet-words';
 import { proseMarkupToHtml } from './pageResolvers';
 import { linkedProseSection, type ProsePart } from './linkedProse';
+import { pilgrimWayParts } from './placeRows';
+import { selectPilgrimWays } from '../../pilgrimWays';
+import { PILGRIM_WAY_LINES } from '../../../data/subject-sheet-words';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -247,10 +250,23 @@ const recentActions: SectionResolver = (ctx) => {
   return section;
 };
 
+/**
+ * Where this congregation's pilgrims go (THR-1992): the towns its ways lead to, each a
+ * link — `PilgrimWayLine`'s congregation line, restored. No way → no row (Law 25).
+ */
+const pilgrimWays: SectionResolver = (ctx) => {
+  const f = factionOf(ctx);
+  if (!f) return null;
+  const ids = selectPilgrimWays(f.graph).filter(w => w.congregationId === f.node.id).map(w => w.siteId);
+  const parts = pilgrimWayParts(f.graph, ids, 'location', PILGRIM_WAY_LINES.congregationLead);
+  return linkedProseSection('pilgrim_ways', SUBJECT_ROW_LABELS.pilgrimWays, parts, 'selectPilgrimWays', { labelTooltipId: 'ui.pilgrim_way' });
+};
+
 /** The faction rows, by `typeId`. */
 export const FACTION_ROW_RESOLVERS = {
   description,
   venerates,
+  pilgrim_ways: pilgrimWays,
   agenda,
   conclave,
   means,

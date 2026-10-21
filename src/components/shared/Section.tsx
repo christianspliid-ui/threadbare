@@ -20,6 +20,8 @@ import {
   type OpenByRef,
 } from '../../contexts/DetailPageOpenerContext';
 import { Tooltip } from './Tooltip';
+import { StepDots } from './StepDots';
+import { FIGHT_CLOCK_PIP_SIZE, FIGHT_TOOLTIP_IDS } from '../../data/fight-screen-content';
 
 function SectionLabel({ label, gold, tier, tooltipId }: { label: string; gold: boolean; tier?: string; tooltipId?: string }) {
   // THR-1909: a label that names a concept explains itself on hover (Law 17).
@@ -397,6 +399,16 @@ export function LinkRows({ rows }: { rows: LinksSection['rows'] }) {
   );
 }
 
+/** "{lead} {name}" with the name a link (Law 21) — inline after a clock word ("slain by Vara"). */
+function TileByLine({ byLine }: { byLine: NonNullable<CardsSection['tiles'][number]['byLine']> }) {
+  return (
+    <span data-tile-by="" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
+      <span>{byLine.lead}</span>
+      <Chip role="identity" size="sm" target={byLine.ref} label={byLine.name} />
+    </span>
+  );
+}
+
 /** Cards — small tiles for conditions, works and powers (THR-1876 § D6). */
 function CardsSectionRenderer({ section }: { section: CardsSection }) {
   return (
@@ -415,6 +427,20 @@ function CardsSectionRenderer({ section }: { section: CardsSection }) {
             {tile.lines.map((line, li) => (
               <div key={li} style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)', lineHeight: 1.5 }}>{line}</div>
             ))}
+            {tile.clock && (
+              <div data-tile-clock="" style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                <Tooltip id={FIGHT_TOOLTIP_IDS.clock.tooltipId}>
+                  <span style={{ display: 'inline-flex' }}>
+                    <StepDots variant="magnitude" shape="square" totalSteps={tile.clock.size} currentStepIndex={tile.clock.filled} size={FIGHT_CLOCK_PIP_SIZE} ariaLabel={tile.clock.ariaLabel} />
+                  </span>
+                </Tooltip>
+                <span style={{ fontStyle: 'italic', fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
+                  {tile.clock.wordTooltipId ? <Tooltip id={tile.clock.wordTooltipId}><span>{tile.clock.word}</span></Tooltip> : tile.clock.word}
+                </span>
+                {tile.byLine && <TileByLine byLine={tile.byLine} />}
+              </div>
+            )}
+            {tile.byLine && !tile.clock && <div><TileByLine byLine={tile.byLine} /></div>}
             {tile.durationWord && <div style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>{tile.durationWord}</div>}
             {tile.meter != null && Number.isFinite(tile.meter) && (
               <div aria-hidden="true" data-meter="" style={{ marginTop: '4px', height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', overflow: 'hidden' }}>

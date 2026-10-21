@@ -32,6 +32,8 @@ export const PERSON_ROW_LABELS = {
   knows: 'Knows',
   inactive: 'Inactive',
   disposition: 'Disposition',
+  // THR-1992 — BondsTab's Blood section, moved word for word.
+  blood: 'Blood',
   theWork: 'The work',
   designs: 'Designs',
   ambitions: 'Ambitions',
@@ -44,6 +46,9 @@ export const PERSON_ROW_LABELS = {
   intelligence: 'Intelligence',
   chapters: 'Chapters',
 } as const;
+
+/** THR-1992 — one Blood line per grudge, BondsTab's words: "There is blood between them and {name} — {cause}." */
+export const BLOOD_LINE = { lead: 'There is blood between them and ', joiner: ' — ', tail: '.' } as const;
 
 /** Facts-row left words (the `panel` shape's `left`). */
 export const PERSON_FACT_WORDS = {

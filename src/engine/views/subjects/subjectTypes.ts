@@ -71,6 +71,12 @@ export interface ActOnCardVM {
   available: boolean;
   /** Why it is locked, in the card face's own words; null when available. */
   reason: string | null;
+  /**
+   * THR-1992 (Law 37): how this card's last cast on this subject landed — the band's
+   * plain word ("a setback"), read from `playerActionReceipts`, the queue that is the sole
+   * authority. Absent when the card was never cast here.
+   */
+  fate?: { band: string; word: string };
 }
 
 /** The Act row (§ D9 way 1): what is castable on the subject; S3 (THR-1911) casts from it. */

@@ -40,7 +40,8 @@ const PLACE_FIELDS: Record<string, Home> = {
   'profile: rarity · kind · archetype': { header: 'kindLabel' },
   'profile: place prose (archetypeProseFlavor)': { retired: 'duplicate-of-kept-row', why: 'PC-6: one place prose, place_prose' },
   'profile: held by': { connections: 'belongsTo' },
-  'profile: pilgrim ways': { connections: 'belongsTo' },
+  // THR-1992: PilgrimWayLine's site line is a row again.
+  'profile: pilgrim ways': { row: 'pilgrim_way' },
   'profile: your reputation here': { row: 'standing' },
   'profile: conditions': { row: 'conditions_here' },
   // LocationView (the city view)
@@ -72,7 +73,9 @@ const PLACE_FIELDS: Record<string, Home> = {
   'sidebar: culture / controls': { land: true },
   'sidebar: counts': { retired: 'raw-number-or-key', why: 'counts belong on group headers' },
   'sidebar: location links': { land: true },
-  'sidebar: monster lair card': { land: true },
+  // THR-1992: the card is a row on the lair's own page, and its monster sits in the land page's Lair row.
+  'sidebar: monster lair card': { row: 'lair_monster' },
+  'sidebar: monster lair card (land page Lair row)': { land: true },
   // Registry
   'registry: place_painting (hover)': { row: 'place_painting' },
   'registry: what_this_place_wants (hover)': { row: 'what_this_place_wants' },
@@ -89,7 +92,8 @@ const FACTION_FIELDS: Record<string, Home> = {
   'sheet: governs N seats': { connections: 'holdsKnows' },
   'sheet: ascendant actions': { retired: 'duplicate-of-kept-row', why: 'the Act row (S3)' },
   'sheet: venerates': { row: 'venerates' },
-  'sheet: pilgrim ways': { connections: 'holdsKnows' },
+  // THR-1992: PilgrimWayLine's congregation line is a row again.
+  'sheet: pilgrim ways': { row: 'pilgrim_ways' },
   'sheet: stat grid': { retired: 'raw-number-or-key', why: 'Law 13: counts sit on the group headers' },
   'sheet: woven successor': { connections: 'who' },
   'sheet: network diagram': { retired: 'relation-in-connections', why: 'its nodes are the Connections groups' },
@@ -175,10 +179,13 @@ const S2B_ROWS: Partial<Record<PageLayoutKind, Record<string, { tab?: InspectorT
     area_facts: { tab: 'overview', at: DWF },
     guild_postings: { tab: 'here_now', at: DWF },
     encounters_here: { tab: 'here_now', at: DWF },
+    lair_monster: { tab: 'overview', at: DWF },
+    pilgrim_way: { tab: 'overview', at: DWF },
   },
   faction: {
     description: { tab: 'overview', at: DWF },
     venerates: { tab: 'overview', at: DWF },
+    pilgrim_ways: { tab: 'overview', at: DWF },
     agenda: { tab: 'overview', at: DWF },
     conclave: { tab: 'overview', at: DWF },
     means: { tab: 'overview', at: DWF },

@@ -304,6 +304,13 @@ export interface CardTile {
   /** A 0–1 proportion drawn as a bar (same rule as `PanelRow.meter`). */
   meter?: number;
   durationWord?: string;
+  /**
+   * THR-1992 (additive): a fight clock — square magnitude pips beside the clock-state
+   * word (Law 13: never a digit). The lair's monster card is the only writer.
+   */
+  clock?: { size: number; filled: number; word: string; wordTooltipId?: string; ariaLabel: string };
+  /** THR-1992 (additive): a closing "{lead}{name}" whose name links (Law 21) — "slain by Vara". */
+  byLine?: { lead: string; name: string; ref: WorldRef };
 }
 
 /** A row of small cards — conditions, works, powers (THR-1876 § D6, new shape). */

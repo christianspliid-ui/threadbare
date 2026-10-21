@@ -27,6 +27,9 @@ export const SUBJECT_ROW_LABELS = {
   areaFacts: 'The area',
   guildPostings: 'Guild postings',
   encountersHere: 'Encounters here',
+  // THR-1992 — the lair's monster card and the pilgrim way, restored from the retired sheets.
+  lairMonster: 'What lairs here',
+  pilgrimWays: 'Pilgrim ways',
   // Faction (§ D7.4)
   description: 'Who they are',
   venerates: 'Venerates',
@@ -82,6 +85,15 @@ export const SOURCE_DRAIN_LINES = {
 /** `WallsLine`'s two sentences (THR-628), word for word. */
 /** THR-1937 — the founded-town line: "Founded by {founder}." The name is a link (Law 21). */
 export const FOUNDED_BY_LINE = { lead: 'Founded by ', tail: '.' } as const;
+
+/**
+ * THR-1992 — `PilgrimWayLine`'s words, copied word for word: a town names the
+ * congregations whose pilgrims come there, a congregation names the towns its ways lead to.
+ */
+export const PILGRIM_WAY_LINES = { siteLead: 'Pilgrims come here — a way of ', congregationLead: 'Pilgrim ways to ', joiner: ', ', tail: '.' } as const;
+
+/** THR-1992 — the lair card's kind word, and the "by" that follows "slain" when the killer is known (LairMonsterCard's "slain by {name}"). */
+export const LAIR_MONSTER_WORDS = { kindLiving: 'Holds this lair', kindSlain: 'Held this lair', slainByLead: 'by' } as const;
 
 export const WALLS_LINES = {
   breached: '**Breached** — the walls are broken, and the advantage they carried went with them.',

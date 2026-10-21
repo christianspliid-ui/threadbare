@@ -1933,7 +1933,8 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/agentDetail.ts',
-      // THR-1912: BondsTab's Blood line retired; no person-page row reads card.grudges yet (THR-1992).
+      // THR-1992: the person page's Blood row (Bonds) — BondsTab's line, restored.
+      'src/engine/views/subjects/personRows.ts',
       'src/debug-bridge.ts',
       'scripts/cli.ts',
     ],
@@ -2079,12 +2080,13 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',
     intent:
-      'A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast\'s fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed.',
-    mechanism: { kind: 'node-prop', symbols: ['playerActionReceipts', 'resolvedBands'] },
+      'A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader so the card a cast was made from wears that cast\'s fate word (Law 37); since THR-1992 that card is the Inspector\'s Act row (`buildActOn` → `ActOnCardVM.fate`, the latest receipt whose template and target match the subject). The row never computes a band — the queue stays the sole authority on how a cast landed.',
+    mechanism: { kind: 'node-prop', symbols: ['playerActionReceipts', 'withFates'] },
     writeSites: ['src/engine/playerReceipts.ts'],
     readSites: [
       'src/components/Game/GameView.tsx',
-      // THR-1912: the ActionDrawer's resolved-band chip retired; the record page reads receipts (THR-1992 for the chip).
+      // THR-1992: the Act row card wears the fate word of its last cast on the subject (Law 37).
+      'src/engine/views/subjects/actOn.ts',
       'src/engine/views/subjects/pageResolvers.ts',
       'src/debug-bridge.ts',
       // THR-1875: an unacknowledged toast-tier receipt is a Needs-you Waiting row.
@@ -5437,7 +5439,9 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/engine/views/stage/buildLairMonsterCardModel.ts',
       'src/components/Game/lair/LairMonsterCard.tsx',
-      // THR-1912: HexSidebar, the card's only mount, retired; no Inspector row reads it yet (THR-1992).
+      // THR-1992: the lair's place page (lair_monster) and the land page's Lair row.
+      'src/engine/views/subjects/placeRows.ts',
+      'src/engine/views/landIndex.ts',
     ],
     verifiedLive: {
       date: '2026-09-25',
@@ -6133,8 +6137,8 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/pilgrimWays.ts',
     },
     writeSites: ['src/engine/worldSeed.ts', 'src/data/undertaking-objects.ts'],
-    // THR-1912: the place and faction sheets that drew PilgrimWayLine retired; no Inspector row reads it yet (THR-1992).
-    readSites: ['src/debug-bridge.ts'],
+    // THR-1992: the place page's pilgrim_way row and the faction page's pilgrim_ways row.
+    readSites: ['src/debug-bridge.ts', 'src/engine/views/subjects/placeRows.ts', 'src/engine/views/subjects/factionRows.ts'],
     verifiedLive: {
       date: '2026-10-03',
       evidence:
