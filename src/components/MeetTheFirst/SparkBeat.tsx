@@ -258,7 +258,7 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
                   fontSize: 'var(--text-lg)',
                   letterSpacing: '0.06em',
                   color: 'rgb(var(--meeting-name-rgb) / 0.95)',
-                  textShadow: '0 1px 6px rgba(0,0,0,0.9)',
+                  textShadow: 'var(--meeting-title-shadow)',
                 }}
               >
                 {vision.title}

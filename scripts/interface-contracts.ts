@@ -6758,6 +6758,22 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/attentionCadence.ts', 'src/engine/orchestrator.ts'],
     readSites: ['src/engine/attentionCadence.ts', 'src/engine/encounterFilterPipeline.ts', 'src/debug-bridge.ts'],
   },
+  // ── The chosen path comes back (THR-1988) ─────────────────────────────────
+  {
+    id: 'first-path-recall-pins-first-chapter',
+    producerSystem: NARRATIVE,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The path chosen on "What will they become?" comes back in The First\'s first chapter after the bond. The tick path pins that one chapter on her thread once; the encounter stage only reads the pin, so a re-render never repeats the line and a later chapter never gets it.',
+    ulTerms: ['Chapter'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['firstPathRecalledActionId', 'noteFirstPathRecall', 'firstPathRecallFor'],
+      module: 'src/engine/firstPath.ts',
+    },
+    writeSites: ['src/engine/firstPath.ts', 'src/engine/orchestrator.ts'],
+    readSites: ['src/engine/views/stage/buildUnifiedEncounterStageModel.ts', 'src/engine/views/subjects/personRows.ts', 'src/debug-bridge.ts'],
+  },
   // ── A minimised moment waits (THR-1730) ───────────────────────────────────
   {
     id: 'minimised-step-hold',
