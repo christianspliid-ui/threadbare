@@ -246,6 +246,9 @@
     --premonition-compulsion-bg: linear-gradient(180deg, #201518 0%, #302028 100%);
     --premonition-whisper-text-rgb: 200 184 216;
     --premonition-compulsion-text-rgb: 216 192 200;
+    /* THR-1987 — the mortal picker's caption text (epithet, hint) and name. */
+    --meeting-caption-rgb: 200 190 170;
+    --meeting-name-rgb: 222 206 172;
     /* Secondary tone — agent name, option footers, dismiss. Information, so AA. */
     --premonition-text-dim-alpha: 0.75;
     /* Header and rule accents. */

@@ -192,12 +192,12 @@ const PICKS = [
 ] as unknown as NarrativeCandidate[];
 
 describe('THR-1815 — the picker names the person', () => {
-  it('every candidate carries an aria-label; a name shows only on focus', () => {
+  it('every candidate carries an aria-label; the focused title shows only on focus', () => {
     render(<SensingBeat candidates={PICKS} openingProse="You sense them." onSelect={vi.fn()} />);
     expect(screen.getByTestId('sensing-candidate-0').getAttribute('aria-label'))
       .toBe("Elara, merchant's daughter, sharp-tongued, restless");
     expect(screen.getByTestId('sensing-candidate-1').getAttribute('aria-label')).toBe('Bram, ferryman, patient');
-    // Resting cluster: no names.
+    // Resting cluster: no focused title (THR-1987 names it at rest by a separate line).
     expect(screen.queryByTestId('sensing-candidate-name-0')).toBeNull();
 
     fireEvent.click(screen.getByTestId('sensing-candidate-0'));

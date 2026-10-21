@@ -38,7 +38,12 @@ export const SENSING_OPENING_FALLBACK = 'You look for the one worth your attenti
 
 /** Beat 1 focus prompt. */
 export const SENSING_FOCUS_PROMPT = 'Click again to choose. Or look at another.';
-export const SENSING_REST_PROMPT = 'Three lives are open to you. Which one do you watch?';
+/**
+ * THR-1987 — the resting picker's one instruction: the first click looks closer,
+ * the second chooses (UI Law 48). Gives way to the focused line on focus.
+ */
+export const SENSING_CHOOSE_HINT = 'Look closer at one, then choose.';
+export const SENSING_REST_PROMPT ='Three lives are open to you. Which one do you watch?';
 
 /** Beat 2 transition prose. */
 export const TESTING_TRANSITION_IN = 'You keep your attention on them. A moment arrives that will settle part of who they become.';
