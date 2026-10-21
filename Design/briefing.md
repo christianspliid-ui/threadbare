@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 15:56 local (13:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 16:58 local (14:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,10 +19,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 **Backed up: 28 ready, 2 in progress.**
 
-- [Undertakings in the economy S3: a trade run pays the trader](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the) is built: [PR #2515](https://github.com/christianspliid-ui/threadbare/pull/2515) passed the review gate and is set to merge itself once its checks finish.
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, about 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it; the builder is free to take it now that THR-1967 is waiting on checks.
+- [God's stake S2: every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy) merged as [PR #2516](https://github.com/christianspliid-ui/threadbare/pull/2516) at the top of the hour. The ticket closes itself when the auto-close finishes, and the site publishes it within 20 minutes.
+- [Undertakings in the economy S3: a trade run pays the trader](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the) merged via [PR #2515](https://github.com/christianspliid-ui/threadbare/pull/2515) and is live.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it, and the builder is now free to take it.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-All green. The live site serves the latest main (f466a9ed), main's checks and the three background jobs are healthy, the one open pull request will merge on green, and all 13 scheduled lanes are on time. The engine is back to normal speed (125 ms per tick, below the week's median of 142), so last hour's slowdown was the builder loading the machine.
+All green. Main's checks and the three background jobs are healthy, no pull request is waiting, and all 13 scheduled lanes are on time. The live site still serves the previous main (7b6405ba); the newest merge (5601fa82) is less than 20 minutes old and still publishing. Engine speed is normal: 124 ms per tick, 12% under the week's median of 142. The overnight quiet from 22:22 Tuesday to 08:01 Wednesday is normal.
