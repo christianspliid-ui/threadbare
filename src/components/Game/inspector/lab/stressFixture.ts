@@ -51,6 +51,7 @@ export function buildStressPage(): LandPageVM {
       name,
       kindLabel: 'Land',
       epithet: null,
+      mortalShape: null,
       whereLine: [],
       visual: { kind: 'land', id: 'stress', portraitGate: 'shown' },
       standing: [{ label: 'Uneasy country', tooltipId: 'ui.land.danger' }, { label: 'Held by no one', tooltipId: 'ui.land.holder' }],

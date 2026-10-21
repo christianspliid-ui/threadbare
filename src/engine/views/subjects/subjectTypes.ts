@@ -37,6 +37,11 @@ export interface SubjectHeaderVM {
   /** Worded: "Temple quarter", "Priest", "Faction". Never a raw key. */
   kindLabel: string;
   epithet: string | null;
+  /**
+   * The player's own avatar (THR-1990, THR-1609): the header reads "{name} — your mortal
+   * shape" with the god's title line under it. Null on every other page.
+   */
+  mortalShape: { godTitleLine: string } | null;
   /** Containment, innermost first: Temple Quarter → The Bone Coast. */
   whereLine: RefRow[];
   /**

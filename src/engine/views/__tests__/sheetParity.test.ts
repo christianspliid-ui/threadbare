@@ -36,6 +36,7 @@ const PERSON_FIELDS: Record<string, Home> = {
   'header: portrait': { header: 'visual' },
   'header: name + rarity': { header: 'name' },
   'header: archetype epithet': { header: 'epithet' },
+  'header: your mortal shape + god title line (avatar only)': { header: 'mortalShape' },
   'header: knowledge level': { header: 'standing' },
   'header: is at': { header: 'whereLine' },
   'header: attuned sphere': { header: 'standing' },
@@ -234,6 +235,19 @@ describe('sheet parity — person (THR-1909, plan § D7.11)', () => {
       if ('retired' in home && !home.why) missing.push(`${field} → retired without a why`);
     }
     expect(missing).toEqual([]);
+  });
+
+  it('the avatar\'s header frames it as the player\'s mortal shape; another mortal\'s does not (THR-1990)', () => {
+    const state = world();
+    const avatar = buildSubjectPage(state, { kind: 'agent', id: 'kael', name: 'Kael' }).header;
+    expect(avatar.mortalShape).toEqual({ godTitleLine: 'You are Vara, the Witness' });
+    // The god knows its own shape whole: no knowledge chip, no silhouette.
+    expect(avatar.standing.some(c => c.tooltipId?.startsWith('knowledge.'))).toBe(false);
+    expect(avatar.visual.portraitGate).toBe('shown');
+    state.graph.removeEdge('av1');
+    const mortal = buildSubjectPage(state, { kind: 'agent', id: 'kael', name: 'Kael' }).header;
+    expect(mortal.mortalShape).toBeNull();
+    expect(mortal.standing.some(c => c.tooltipId === 'knowledge.stranger')).toBe(true);
   });
 
   it('notable_capabilities is retired from the table', () => {

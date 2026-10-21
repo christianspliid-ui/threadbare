@@ -8,6 +8,7 @@ import type { EntityVisualKind } from '../../shared/entityVisualResolver';
 import { EntityVisual } from '../../shared/EntityVisual';
 import { Chip } from '../../shared/Chip';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
+import { AVATAR_SHEET_SUFFIX } from '../../../data/avatar-framing';
 
 /** The header's image kind for each subject visual kind. */
 const VISUAL_KIND: Record<SubjectHeaderVM['visual']['kind'], EntityVisualKind | undefined> = {
@@ -54,7 +55,20 @@ export function SubjectHeader({ header, graph, compact }: { header: SubjectHeade
           style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', color: 'var(--text-primary)', lineHeight: 1.15, overflowWrap: 'anywhere' }}
         >
           {header.name}
+          {header.mortalShape && (
+            <span data-inspector-mortal-shape="" style={{ color: 'var(--text-secondary)', fontWeight: 400 }}>
+              {' — '}{AVATAR_SHEET_SUFFIX}
+            </span>
+          )}
         </h2>
+        {header.mortalShape && (
+          <p
+            data-inspector-god-title=""
+            style={{ margin: '2px 0 0', fontStyle: 'italic', fontSize: 'var(--text-base)', color: 'var(--accent-gold)' }}
+          >
+            {header.mortalShape.godTitleLine}
+          </p>
+        )}
         {header.epithet && <div style={{ fontStyle: 'italic', color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>{header.epithet}</div>}
         {header.whereLine.length > 0 && (
           <div data-inspector-where="" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', marginTop: '4px', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
