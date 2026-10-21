@@ -7017,7 +7017,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: AMBITIONS,
     consumerSystem: ECONOMY,
     intent:
-      'A trade run — the use × route undertaking (THR-1967, undertakings S3) — trades on the lane its Route names (conductTradeOnLane: volume + 1, lastTraded; never a lane picked from where the trader stands, which found no route whenever the trader was away from the lane\'s ends) and pays the trader on that lane: min(TRADE_RUN_PAY_MAX, TRADE_RUN_PAY_BASE + TRADE_RUN_PAY_PER_UNIT × carriedPerDay) Means through applyMeansShift → bankWealth with reason trade_success, at most once per trader per TRADE_RUN_PAY_COOLDOWN_TICKS (the trader\'s lastTradeRunPaidTick). The person sheet\'s Means tooltip reads the reason; the want (MEANS_EARNING_CELLS) already counts the cell as paying work.',
+      'A trade run — the use × route undertaking (THR-1967, undertakings S3) — trades on the lane its Route names (conductTradeOnLane: volume + 1, lastTraded; never a lane picked from where the trader stands, which found no route whenever the trader was away from the lane\'s ends) and pays the trader on that lane: min(TRADE_RUN_PAY_MAX, TRADE_RUN_PAY_BASE + TRADE_RUN_PAY_PER_UNIT × carriedPerDay) Means (carriedPerDay is the settlement economy's per-lane figure, THR-1923; nothing writes it yet, so every run pays the base until that build lands) through applyMeansShift → bankWealth with reason trade_success, at most once per trader per TRADE_RUN_PAY_COOLDOWN_TICKS (the trader\'s lastTradeRunPaidTick). The person sheet\'s Means tooltip reads the reason; the want (MEANS_EARNING_CELLS) already counts the cell as paying work.',
     ulTerms: ['Means', 'Route'],
     mechanism: {
       kind: 'node-prop',
@@ -7027,7 +7027,7 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/agentDetail.ts', 'src/engine/mortalMeans.ts'],
     verifiedLive: {
       date: '2026-10-21',
-      evidence: 'THR-1967. undertakingEconomyS3.test.ts: a run pays the base, a second run inside the day pays nothing, the next day pays again (reason trade_success); a trader standing away from both ends still trades the named lane and is paid; pay follows carriedPerDay. measure:founding-starvation seed 42: one paid run in 600 ticks where every run failed "no route at anchor" before.',
+      evidence: 'THR-1967. undertakingEconomyS3.test.ts: a run pays the base, a second run inside the day pays nothing, the next day pays again (reason trade_success); a trader standing away from both ends still trades the named lane and is paid; the per-unit term is unit-tested against a hand-set carriedPerDay only (no writer before THR-1923). measure:founding-starvation seed 42: one paid run in 600 ticks where every run failed "no route at anchor" before.',
     },
   },
   {
