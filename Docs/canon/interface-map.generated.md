@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 88 |
-| **Total** | **299** |
+| 🔵 UNVERIFIED-OK | 89 |
+| **Total** | **300** |
 
 ## Contracts by producing subsystem
 
@@ -231,6 +231,7 @@ remediation ticket or the build fails.
 | `location-condition-taxes-movement-and-gates-templates` | A place can be in a state — a pass shut for the season, a town under a plague scare — and that state is something other systems act on, not scenery. | function: `isLocationCarrier`, `LOCATION_CONDITION_MOVEMENT_TAX`, `buildLocationTargetContext`, `LocationProfileModal`, `conditionEffectLine`, `LOCATION_CONDITION_STEP_MODIFIER`, `collectLocationConditionContributions`, `phaseLocationTraits` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `meeting-bond-writes-the-first` | Meeting The First ends in a bond: the chosen mortal gets a `thread` edge at court position `the_first`, and from then on the game treats them as the player's First — the meeting stops offering itself, and their encounters are raised to shaping attention. Since THR-1644 the Agent Thread card writes the same position when the god holds no First, so the meeting is the first route to a First, not the only one. | edge-prop: `the_first` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `meeting-trait-seeds-land-as-narrative-descriptors` | The choices you made while meeting your First stay visible in who they are — the descriptors the meeting authored read back on their character sheet and in their backstory, instead of every First being described in the same default words. | node-prop: `narrativeDescriptors` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `meeting-writes-first-trade` | The bond writes the trade the player read onto The First — `npcRole` for every role reader (role affinity, Means at birth, caster tradition, the binder census, the job-cast chapter filter) and `tradeWord` for what the sheet, the land index and the header print. Written before Means is born, so a healer First is born with a healer's Means. | node-prop: `npcRole`, `tradeWord`, `writeFirstTrade` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `membership-change-writes-rank-and-faction-rank-gate-reads-it` | An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them. | function: `joinFaction`, `leaveFaction`, `adjustMemberRank`, `resolveFactionNodeId`, `buildPredicateContext`, `FACTION_RANK_MAX` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `missed-appointment-breaks-agreement` | A missed appointment breaks the promise it was made of (THR-1479). The planter writes an `owes_favor` edge carrying `properties.appointment` — a favour of a particular shape, a member of the world-object Agreement kind's `favor` class, no new type. When the window closes without the mortal on the place's hex, `evaluateEncounterSeeds` rewrites the seed into its missed branch, marks the edge `broken` (and `brokenTick`), writes an `appointment_missed` Event node with the reason (`absent`, `unreachable`, `chose_to_miss`, `place_lost`), and the missed sequel fires wherever the mortal stands. The sheet's Bonds row reads the broken favour ("They owe … a meeting at … — broken") until the reckoning's aftermath retires it; the favour expiry sweep skips appointment favours because their lifecycle is the seed's. Kept, the edge is removed — redeemed. Registered LEAKED-with-ticket at filing for the same reason as its sibling: the seeded-run census (slice 2, THR-1518) is what proves a miss happens in a real world. | function: `breakAppointmentFavour`, `redeemAppointmentFavour`, `isAppointmentFavour`, `writeAppointmentEvent`, `plantAppointmentPromise` | Secrets & Favors | 🟢 LIVE | — |
 | `nudge-card-cost-channels-detection-and-doom` | A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency. | function: `collectNudgeCostChannels`, `applyRawDetectionDelta`, `accelerateDoomClock` | Spheres & Quintessence | 🔴 LEAKED | THR-883 |
@@ -2524,6 +2525,18 @@ exit
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/profileGenerator.ts`
 - **Verdict:** Verified 2026-07-31: src/engine/__tests__/meetingTraitSeedLanding.test.ts enumerates the authored population from all four catalogs (each asserted non-empty individually, so the sweep cannot pass vacuously), lands it through createAgentFromMeeting, and asserts zero unconsumed values. Reader pinned on both sides: getAgentInfoCard(…, "intimate").allTraits contains the humanized descriptor, and generateBackstory fills the {trait} slot from it instead of the hardcoded "resolute" fallback that previously covered every freshly-created First.
 
+### `meeting-writes-first-trade` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The bond writes the trade the player read onto The First — `npcRole` for every role reader (role affinity, Means at birth, caster tradition, the binder census, the job-cast chapter filter) and `tradeWord` for what the sheet, the land index and the header print. Written before Means is born, so a healer First is born with a healer's Means.
+- **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
+- **UL terms:** *The First*
+- **Module:** `src/engine/firstTrade.ts`
+- **Production hits:** 36 total — 2 write, 3 read, 31 unclassified
+- **Write sites:** `src/engine/gameInit.ts`, `src/engine/meetingEncounter.ts`
+- **Read sites:** `src/engine/encounterFilterPipeline.ts`, `src/engine/mortalMeans.ts`, `src/engine/views/subjects/personRows.ts`
+- **Other hits:** `src/components/Game/chronicle/SoulCard.tsx`, `src/data/binder-constants.ts`, `src/data/candidate-vignettes.ts`, `src/data/item-generator-tables.ts`, `src/data/npc-action-templates.ts` +26 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `membership-change-writes-rank-and-faction-rank-gate-reads-it` — 🔵 UNVERIFIED-OK
 
 - **Intent:** An ending can make someone a member of a faction, or move them up inside it — and a later scene can require the rank it gave them.
@@ -3254,10 +3267,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 117 total — 1 write, 1 read, 115 unclassified
+- **Production hits:** 118 total — 1 write, 1 read, 116 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +110 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +111 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
