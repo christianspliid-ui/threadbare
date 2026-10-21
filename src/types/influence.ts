@@ -136,6 +136,12 @@ export interface ThreadEdgeProperties {
   ordealOutcome?: OrdealOutcome;
   /** Record of choices made during the meeting encounter (Phase 1+). */
   meetingChoiceRecord?: MeetingChoiceRecord;
+  /**
+   * THR-1988 — The First's first chapter after the bond, pinned once on the tick
+   * path (`noteFirstPathRecall`). That chapter opens by recalling the chosen path.
+   * Absent = not pinned yet.
+   */
+  firstPathRecalledActionId?: string;
   /** History of journey beat outcomes (Phase 2+). */
   beatHistory?: BeatOutcome[];
 

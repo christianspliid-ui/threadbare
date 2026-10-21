@@ -42,6 +42,7 @@ import { canReadIntention, describeIntentionRead, knowledgeAtLeast, readIntentio
 import { createHoldReader } from '../../holdStanding';
 import type { RealmProjection } from '../../realmProjection';
 import { composeThreadStory } from '../../threadDigest';
+import { getFirstPathFor } from '../../firstPath';
 import { getAgentArc } from '../../agentArc';
 import { buildIntelligenceDisplay, INTEL_PANEL_FOG_MIN_TIER } from '../../intelligence';
 import { getAgentStrategicHistory, getAgentStrategicSummary } from '../../strategicPresentation';
@@ -406,6 +407,9 @@ const whoTheyAre: SectionResolver = (ctx) => {
   if (atLeast(s, 'recognised') && card.calling) rows.push({ left: PERSON_FACT_WORDS.calling, right: card.calling.title, tooltipId: 'ui.calling' });
   if (card.wealth != null) rows.push({ left: PERSON_FACT_WORDS.means, right: getWealthTier(card.wealth) });
   if (card.godMark) rows.push({ left: PERSON_FACT_WORDS.godMark, right: `${card.godMark.name} — ${card.godMark.line}` });
+  // THR-1988: the path the god chose at the bond, beside the mark it set. Ungated like the mark.
+  const path = getFirstPathFor(s.state.graph, s.state.ascendantId, ctx.nodeId);
+  if (path) rows.push({ left: PERSON_FACT_WORDS.path, right: path.title, tooltipId: `ui.first.path.${path.reach}` });
   if (card.riteLine) rows.push({ left: PERSON_FACT_WORDS.rite, right: card.riteLine });
   for (const place of card.knownPlaces ?? []) {
     // A skill, not a relation (brainstorm § Field inventories): a facts row with the place

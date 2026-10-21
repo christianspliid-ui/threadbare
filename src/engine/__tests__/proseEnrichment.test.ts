@@ -6,11 +6,9 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   gatherNarrativeContext,
   enrichProse,
-  generateMeetingCallback,
   ENRICHMENT_ARTIFACT_MIN_TIER,
   ENRICHMENT_ALLY_MIN_TRUST,
   ENRICHMENT_MAX_NAMED_ALLIES,
-  CALLBACK_PROSE_PROBABILITY,
   CAST_CONTEXT_MAX_MEMBERS,
   resolveSceneCastContext,
 } from '../proseEnrichment';
@@ -161,8 +159,6 @@ describe('Enrichment constants', () => {
     expect(ENRICHMENT_ARTIFACT_MIN_TIER).toBe('storied');
     expect(ENRICHMENT_ALLY_MIN_TRUST).toBe(0.5);
     expect(ENRICHMENT_MAX_NAMED_ALLIES).toBe(2);
-    expect(CALLBACK_PROSE_PROBABILITY).toBeGreaterThan(0);
-    expect(CALLBACK_PROSE_PROBABILITY).toBeLessThanOrEqual(1);
   });
 });
 
@@ -618,63 +614,6 @@ describe('enrichProse — intelligence placeholders', () => {
   it('strips malformed age token acquiredYearsAgo instead of leaking raw braces', () => {
     const ctx = ctxWithIntel();
     expect(enrichProse('old: {intel:shrine_location.acquiredYearsAgo}', ctx)).toBe('old: ');
-  });
-});
-
-// ─── generateMeetingCallback ──────────────────────────────────────
-
-describe('generateMeetingCallback', () => {
-  it('returns null without meeting record', () => {
-    const ctx = createMinimalContext({ meetingChoiceRecord: undefined });
-    expect(generateMeetingCallback(ctx, () => 0.5)).toBeNull();
-  });
-
-  it('returns null when rng exceeds probability', () => {
-    const record: MeetingChoiceRecord = {
-      chosenCandidateId: 'agent_1',
-      dilemmaChosen: 'test',
-      dilemmaOutcome: 'cooperate',
-      intentPrimaryReach: 'iron',
-      archetypeId: 'rebel',
-      foundingGateTags: [],
-    };
-    const ctx = createMinimalContext({ meetingChoiceRecord: record });
-    // rng returns > CALLBACK_PROSE_PROBABILITY
-    expect(generateMeetingCallback(ctx, () => 0.99)).toBeNull();
-  });
-
-  it('returns iron callback prose with {name} resolved', () => {
-    const record: MeetingChoiceRecord = {
-      chosenCandidateId: 'agent_1',
-      dilemmaChosen: 'test',
-      dilemmaOutcome: 'cooperate',
-      intentPrimaryReach: 'iron',
-      archetypeId: 'rebel',
-      foundingGateTags: [],
-    };
-    const ctx = createMinimalContext({ meetingChoiceRecord: record });
-    // rng returns 0.1 (below CALLBACK_PROSE_PROBABILITY)
-    const result = generateMeetingCallback(ctx, () => 0.1);
-    expect(result).not.toBeNull();
-    expect(result).toContain('Kira');
-  });
-
-  it('returns callback for each reach domain', () => {
-    const reaches = ['iron', 'heart', 'eye', 'shadow', 'veil', 'stone', 'star', 'gold', 'gold'] as const;
-
-    for (const reach of reaches) {
-      const record: MeetingChoiceRecord = {
-        chosenCandidateId: 'agent_1',
-        dilemmaChosen: 'test',
-        dilemmaOutcome: 'cooperate',
-        intentPrimaryReach: reach,
-        archetypeId: 'rebel',
-        foundingGateTags: [],
-      };
-      const ctx = createMinimalContext({ meetingChoiceRecord: record });
-      const result = generateMeetingCallback(ctx, () => 0.1);
-      expect(result, `callback should exist for reach: ${reach}`).not.toBeNull();
-    }
   });
 });
 

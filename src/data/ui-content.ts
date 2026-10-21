@@ -1359,7 +1359,30 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // Card keyword chips — derived from the library's type table so a new type
   // cannot ship without its hover (THR-1713 D4, Law 12).
   ...buildCardKeywordTooltips(),
+
+  // THR-1988 — The First's Path row: one id per Reach the path can strengthen.
+  ...buildFirstPathTooltips(),
 };
+
+/**
+ * THR-1988 — `ui.first.path` (no Reach known) and `ui.first.path.<reach>` for the
+ * row on The First's sheet: what the path she was shown at the bond gave her.
+ */
+function buildFirstPathTooltips(): Record<string, TooltipContent> {
+  const out: Record<string, TooltipContent> = {
+    'ui.first.path': {
+      label: 'Path',
+      desc: 'The path you chose for The First at the bond. It strengthened one of their Reaches and set the mark they carry from you.',
+    },
+  };
+  for (const [reach, copy] of Object.entries(REACH_COPY)) {
+    out[`ui.first.path.${reach}`] = {
+      label: 'Path',
+      desc: `The path you chose for The First at the bond. It strengthened their ${copy.label} and set the mark they carry from you.`,
+    };
+  }
+  return out;
+}
 
 /**
  * `ui.card.keyword.<typeId>` for every nudge-card type, from the library's own

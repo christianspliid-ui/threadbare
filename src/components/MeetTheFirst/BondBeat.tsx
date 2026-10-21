@@ -8,6 +8,7 @@ import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetin
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
 import { resolveBondTest } from '../../engine/meetingEncounter';
 import { selectBondFateLine } from '../../engine/meetingFateLine';
+import { formatFirstPathBondLine } from '../../engine/firstPath';
 import { toHungerId } from '../../types/hunger';
 import type { StoredHungerId } from '../../types/hunger';
 import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants';
@@ -354,6 +355,22 @@ export function BondBeat({
         >
           {candidate.epithet}
         </p>
+        {/* THR-1988 — the bond names the path the god chose, once. */}
+        {vision.title && (
+          <p
+            data-testid="bond-path-line"
+            style={{
+              fontFamily: FONT_PROSE,
+              fontStyle: 'italic',
+              fontSize: 'var(--text-sm)',
+              color: 'rgb(var(--meeting-caption-rgb) / 0.9)',
+              letterSpacing: '0.04em',
+              marginTop: '1.5vh',
+            }}
+          >
+            {formatFirstPathBondLine(name || candidate.name, vision.title)}
+          </p>
+        )}
       </div>
 
       {/* Release button */}

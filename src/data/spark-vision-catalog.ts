@@ -4,6 +4,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Iron primary visions ───
   {
     id: 'vision.iron.warlord',
+    title: 'Warlord of the loyal',
     prose: 'A figure in battered armor stands atop a hill of broken shields. Behind them, an army that was scattered yesterday marches as one. They did not conquer this loyalty — they earned it, scar by scar.',
     portraitAssetPath: '/assets/meeting/visions/iron-warlord.jpg',
     sceneAssetPath: '/assets/meeting/scenes/battlefield-dawn.jpg',
@@ -16,6 +17,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.iron.duelist',
+    title: 'Blade without equal',
     prose: 'A lone blade in a moonlit courtyard. They have refused every offer of command, every title, every alliance. What they want is simpler and more dangerous — to be the best, and to know it, and to carry that knowledge like a weapon no one else can lift.',
     portraitAssetPath: '/assets/meeting/visions/iron-duelist.jpg',
     sceneAssetPath: '/assets/meeting/scenes/moonlit-courtyard.jpg',
@@ -28,6 +30,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.iron.bulwark',
+    title: 'Wall before the gate',
     prose: 'A wall of flesh and iron stands between the village and the thing that came from the dark. They do not advance. They do not retreat. They become the ground itself — immovable, unbreaking, a promise made in blood and stone.',
     portraitAssetPath: '/assets/meeting/visions/iron-bulwark.jpg',
     sceneAssetPath: '/assets/meeting/scenes/village-gate-night.jpg',
@@ -41,6 +44,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Gold primary visions ───
   {
     id: 'vision.gold.explorer',
+    title: 'Trader of far coasts',
     prose: 'A figure standing at the prow of a ship, manifest in hand, eyes fixed on a coast no trader has reached. Their ledger is now a catalog of wonders — and every wonder has a price they intend to be the first to name.',
     portraitAssetPath: '/assets/meeting/visions/gold-explorer.jpg',
     sceneAssetPath: '/assets/meeting/scenes/ship-horizon.jpg',
@@ -53,6 +57,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.gold.powerbroker',
+    title: 'Banker of kings',
     prose: 'A spider at the center of a web of debts and favors, where every thread leads back to one counting house. Kings borrow there. Wars end when the ledgers are called in. They have never held a sword — they have never needed to.',
     portraitAssetPath: '/assets/meeting/visions/gold-powerbroker.jpg',
     sceneAssetPath: '/assets/meeting/scenes/throne-room-shadows.jpg',
@@ -65,6 +70,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.gold.benefactor',
+    title: 'Giver of bread',
     prose: 'A weathered traveler distributing bread from a cart, their ledger listing not profits but names of the hungry. They learned that the greatest profit is a full belly and a grateful name — and that this kind of wealth compounds in ways gold never could.',
     portraitAssetPath: '/assets/meeting/visions/gold-benefactor.jpg',
     sceneAssetPath: '/assets/meeting/scenes/market-square-dawn.jpg',
@@ -78,6 +84,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Shadow primary visions ───
   {
     id: 'vision.shadow.spymaster',
+    title: 'Reader of secrets',
     prose: 'A room full of letters, each in a different hand, each carrying a secret that could topple a throne. They sit at the center and read them all, and the picture they assemble is one that no single person was ever meant to see.',
     portraitAssetPath: '/assets/meeting/visions/shadow-spymaster.jpg',
     sceneAssetPath: '/assets/meeting/scenes/candlelit-study.jpg',
@@ -90,6 +97,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.shadow.assassin',
+    title: 'Unseen blade',
     prose: 'A single candle extinguished between two fingers. The target never saw them. No one ever does. They are not cruel — they are precise, and there is a difference, and the difference is the only thing that lets them sleep.',
     portraitAssetPath: '/assets/meeting/visions/shadow-assassin.jpg',
     sceneAssetPath: '/assets/meeting/scenes/dark-corridor.jpg',
@@ -102,6 +110,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.shadow.puppetmaster',
+    title: 'Voice behind the general',
     prose: 'They whisper in the ear of a general who thinks the strategy is his own. Three kingdoms have fallen to plans that were never written down, spoken by a voice that was never raised above a murmur.',
     portraitAssetPath: '/assets/meeting/visions/shadow-puppetmaster.jpg',
     sceneAssetPath: '/assets/meeting/scenes/war-tent.jpg',
@@ -115,6 +124,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Veil primary visions ───
   {
     id: 'vision.veil.archmage',
+    title: 'Mage of three planes',
     prose: 'The tower they built exists in three planes at once. The spells they write are not incantations — they are conversations with the fabric of reality, and reality is beginning to listen.',
     portraitAssetPath: '/assets/meeting/visions/veil-archmage.jpg',
     sceneAssetPath: '/assets/meeting/scenes/tower-planes.jpg',
@@ -127,6 +137,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.veil.wardsmith',
+    title: 'Warden of the walls',
     prose: 'Every stone in the city wall hums with a ward they placed by hand. Nothing enters that they have not permitted. Nothing leaves that they have not blessed. The city sleeps soundly, and does not know why.',
     portraitAssetPath: '/assets/meeting/visions/veil-wardsmith.jpg',
     sceneAssetPath: '/assets/meeting/scenes/warded-city-walls.jpg',
@@ -139,6 +150,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.veil.spiritcaller',
+    title: 'Voice of the dead',
     prose: 'The dead speak to them. Not with words — with memories, impressions, the residue of lives that ended too soon. They carry these whispers like a second heartbeat, and the living come to them when they need to hear what the departed left unsaid.',
     portraitAssetPath: '/assets/meeting/visions/veil-spiritcaller.jpg',
     sceneAssetPath: '/assets/meeting/scenes/misty-graveyard.jpg',
@@ -152,6 +164,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Heart primary visions ───
   {
     id: 'vision.heart.revolutionary',
+    title: 'Torch of the uprising',
     prose: 'The old order is burning. They lit the match, but the fuel was there long before them — injustice, hunger, the slow grinding of lives into dust. They do not know if what comes next will be better. They only know that what was could not stand.',
     portraitAssetPath: '/assets/meeting/visions/heart-revolutionary.jpg',
     sceneAssetPath: '/assets/meeting/scenes/burning-palace.jpg',
@@ -164,6 +177,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.heart.unifier',
+    title: 'Uniter of the clans',
     prose: 'Seven clans that have warred for a generation sit at the same table. They did not bring peace — they brought a shared enemy, and then, slowly, turned that alliance into something that no longer needs an enemy to hold it together.',
     portraitAssetPath: '/assets/meeting/visions/heart-unifier.jpg',
     sceneAssetPath: '/assets/meeting/scenes/great-hall-feast.jpg',
@@ -176,6 +190,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.heart.saint',
+    title: 'Healer of the many',
     prose: 'They have healed so many that the sick travel for days just to stand in their shadow. They ask for nothing. They give everything. And in the quiet moments, alone, they wonder if the cost of all this grace is the person they used to be.',
     portraitAssetPath: '/assets/meeting/visions/heart-saint.jpg',
     sceneAssetPath: '/assets/meeting/scenes/healing-tent.jpg',
@@ -189,6 +204,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Eye primary visions ───
   {
     id: 'vision.eye.truthfinder',
+    title: 'Finder of lies',
     prose: 'Every lie told in this city passes through their hands eventually. Not because they seek them — because lies have a texture, a weight, and they can feel each one like a stone in still water. The powerful fear them. The innocent seek them out.',
     portraitAssetPath: '/assets/meeting/visions/eye-truthfinder.jpg',
     sceneAssetPath: '/assets/meeting/scenes/justice-hall.jpg',
@@ -201,6 +217,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.eye.pathfinder',
+    title: 'Walker of hidden roads',
     prose: 'The map they carry has no edges. Every road leads to another road, and they have walked them all and found the places between — the shortcuts, the hidden passes, the forgotten bridges that connect what others thought was separate.',
     portraitAssetPath: '/assets/meeting/visions/eye-pathfinder.jpg',
     sceneAssetPath: '/assets/meeting/scenes/mountain-pass.jpg',
@@ -213,6 +230,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.eye.shadowseer',
+    title: 'Seer of what comes',
     prose: 'They see what is hidden — not just secrets, but the shapes of things that have not happened yet. The future is not fixed, they know this. But it has currents, and they can read them, and the reading is both gift and curse.',
     portraitAssetPath: '/assets/meeting/visions/eye-shadowseer.jpg',
     sceneAssetPath: '/assets/meeting/scenes/starlit-tower.jpg',
@@ -226,6 +244,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Stone primary visions ───
   {
     id: 'vision.stone.architect',
+    title: 'Builder of the city',
     prose: 'The city they designed will house ten thousand souls. Every street follows the contour of the land, every wall uses the stone that was already there. They did not impose a plan — they listened to what the earth wanted to become, and built it.',
     portraitAssetPath: '/assets/meeting/visions/stone-architect.jpg',
     sceneAssetPath: '/assets/meeting/scenes/city-blueprint.jpg',
@@ -238,6 +257,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.stone.wardkeeper',
+    title: 'Keeper of the boundary',
     prose: 'The boundary they maintain is not a wall but a promise — carved into the bedrock, renewed each equinox, holding back something that the world has agreed to forget. They do not sleep well. They do not need to.',
     portraitAssetPath: '/assets/meeting/visions/stone-wardkeeper.jpg',
     sceneAssetPath: '/assets/meeting/scenes/ancient-boundary.jpg',
@@ -250,6 +270,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.stone.monolith',
+    title: 'Unmoving stone',
     prose: 'They have not moved from this spot in seven years. Empires have risen and fallen around them. They are the fixed point — the one thing that does not change, does not bend, does not break. And in a world of chaos, that is the rarest kind of power.',
     portraitAssetPath: '/assets/meeting/visions/stone-monolith.jpg',
     sceneAssetPath: '/assets/meeting/scenes/stone-throne.jpg',
@@ -263,6 +284,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   // ─── Star primary visions ───
   {
     id: 'vision.star.prophet',
+    title: 'Voice in the wilderness',
     prose: 'A voice in the wilderness that the world is only now beginning to hear. They spoke of justice before it was fashionable, of mercy before it was safe. The faithful follow them. The powerful fear them. They fear nothing at all.',
     portraitAssetPath: '/assets/meeting/visions/star-prophet.jpg',
     sceneAssetPath: '/assets/meeting/scenes/desert-sermon.jpg',
@@ -275,6 +297,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.star.inquisitor',
+    title: 'Bearer of the lantern',
     prose: 'They carry a lantern that burns with no oil. Every shadow it touches reveals the truth underneath — the comfortable lies, the convenient forgettings, the small corruptions that rot a soul from the inside. They do not enjoy this work. They do it anyway.',
     portraitAssetPath: '/assets/meeting/visions/star-inquisitor.jpg',
     sceneAssetPath: '/assets/meeting/scenes/lantern-vigil.jpg',
@@ -287,6 +310,7 @@ export const SPARK_VISION_CATALOG: readonly SparkVision[] = [
   },
   {
     id: 'vision.star.anchorite',
+    title: 'Hermit of the cliff',
     prose: 'They withdrew from the world and the world followed them. The hermitage on the cliff is now a pilgrimage site. They asked for silence and received devotion. In the stillness, they found something that words cannot carry — and others travel a thousand miles to sit in that silence with them.',
     portraitAssetPath: '/assets/meeting/visions/star-anchorite.jpg',
     sceneAssetPath: '/assets/meeting/scenes/cliff-hermitage.jpg',

@@ -271,6 +271,13 @@ export interface NarrativeCandidate {
 export interface SparkVision {
   /** Unique vision ID (e.g. 'vision.gold_eye.explorer'). */
   id: string;
+  /**
+   * THR-1988 — the path's name, two to four words in sentence case
+   * ("Warden of the walls"). Shown under the card at rest, named at the bond,
+   * on The First's sheet and in her first chapter. Every catalog vision carries
+   * one (completeness test); optional so a fixture without it falls back to no line.
+   */
+  title?: string;
   /** Player-facing narrative prose. */
   prose: string;
   /** Path to 4:3 future portrait. */
