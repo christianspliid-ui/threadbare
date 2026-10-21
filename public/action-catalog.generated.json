@@ -13,11 +13,11 @@
     },
     "byReach": {
       "iron": 12,
-      "gold": 20,
+      "gold": 21,
       "shadow": 22,
       "veil": 23,
       "heart": 29,
-      "eye": 29,
+      "eye": 28,
       "stone": 10,
       "star": 34,
       "life": 1
@@ -4403,6 +4403,42 @@
       "effectSource": "template-ops"
     },
     {
+      "id": "loc.guide_caravan",
+      "name": "Guide the Caravan",
+      "spellName": "The Kind Mile",
+      "category": "location",
+      "reach": "gold",
+      "sphereAffinity": "order",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 5,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Walks unseen alongside the wagons of a settlement. Fords run shallow, axles hold, and the watchers in the rocks find reasons to be elsewhere. Every road that feeds this place runs fuller and safer for a season — and no drover will ever know why the miles were kind.",
+      "technicalEffect": "On success, every trades_with route touching the location gains LOC_GUIDE_CARAVAN_VOLUME_DELTA volume (clamped at the route max), sheds its `threatened` mark, and counts as freshly traded (lastTraded = now) — protecting it from decay and banditry re-rolls.",
+      "effectSource": "template-ops"
+    },
+    {
       "id": "loc.open_markets",
       "name": "Open the Markets",
       "spellName": "Awning Unfurled",
@@ -4834,42 +4870,6 @@
       "bucketDeclared": true,
       "description": "Casts your attention across a stretch of the world and marks where power lies latent in the land — the springs and hollows and old stones that could be made to feed you, if you claimed them.",
       "technicalEffect": "Reveals nearby latent essence sources (hidden until found). Once revealed, a source can be Claimed. Reveals nothing if there is no undiscovered source in range.",
-      "effectSource": "template-ops"
-    },
-    {
-      "id": "loc.guide_caravan",
-      "name": "Guide the Caravan",
-      "spellName": "The Kind Mile",
-      "category": "location",
-      "reach": "eye",
-      "sphereAffinity": "order",
-      "crudType": "update",
-      "scale": "local",
-      "rarityTier": 2,
-      "rarityName": "Storied",
-      "intrinsicTier": "background",
-      "apCost": 1,
-      "essenceCost": 5,
-      "durationMode": "instant",
-      "hasControlSpec": false,
-      "aftermathReactionCount": 0,
-      "targetCategories": [
-        "location"
-      ],
-      "targetSubtypes": [
-        "settlement",
-        "hamlet",
-        "town",
-        "city",
-        "capital"
-      ],
-      "requiresReach": null,
-      "starter": false,
-      "beatGranted": true,
-      "bucket": "unlockable-generic",
-      "bucketDeclared": true,
-      "description": "Walks unseen alongside the wagons of a settlement. Fords run shallow, axles hold, and the watchers in the rocks find reasons to be elsewhere. Every road that feeds this place runs fuller and safer for a season — and no drover will ever know why the miles were kind.",
-      "technicalEffect": "On success, every trades_with route touching the location gains LOC_GUIDE_CARAVAN_VOLUME_DELTA volume (clamped at the route max), sheds its `threatened` mark, and counts as freshly traded (lastTraded = now) — protecting it from decay and banditry re-rolls.",
       "effectSource": "template-ops"
     },
     {

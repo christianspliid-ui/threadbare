@@ -145,7 +145,21 @@ describe('THR-1968 — the economy receipt', () => {
   });
 
   describe('the other quantities', () => {
-    it('an unrest chip crossing is said once, in the economy row\'s words', () => {
+    it('Open the Markets that drops a Lawless town below the release line reads as a crossing', () => {
+      // Unrest 35 wears Restless and Lawless; the cast's −10 takes it to 25, under
+      // Lawless's release (30) and over Restless's (15). The trait pass drops the chip
+      // later; the receipt says it now, and the dialog opens.
+      addTown({ prosperity: 50, unrest: 35 });
+      for (const [id, name] of [[LOCATION_TRAIT_IDS.restless, 'Restless'], [LOCATION_TRAIT_IDS.lawless, 'Lawless']]) {
+        graph.addNode({ id, type: 'trait', name, properties: {} });
+        graph.addEdge({ id: `tr-${name}`, type: 'has_trait', source: TOWN, target: id, properties: {} });
+      }
+      const rows = economyRows(castAndDiff('loc.open_markets'));
+      expect(rows[0]).toMatchObject({ economyQuantity: 'unrest', crossed: true, detail: 'Millbrook is no longer lawless.' });
+      expect(runReceipt('loc.open_markets', rows).presentation).toBe('modal');
+    });
+
+    it('a chip change is said once, in the economy row\'s words', () => {
       addTown({ prosperity: 50, unrest: 60 });
       graph.addNode({ id: LOCATION_TRAIT_IDS.lawless, type: 'trait', name: 'Lawless', properties: {} });
       graph.addEdge({ id: 'tr-1', type: 'has_trait', source: TOWN, target: LOCATION_TRAIT_IDS.lawless, properties: {} });
@@ -154,8 +168,18 @@ describe('THR-1968 — the economy receipt', () => {
       const changes = snapshotTargetChanges(before, snapshotCastTarget(graph, TOWN), {
         graph, idStem: 'act-1:step:0', targetName: 'Millbrook',
       });
+      // No "trait lost" row beside the economy row.
       expect(changes.map((c) => [c.kind, c.detail])).toEqual([['economy', 'Millbrook is no longer lawless.']]);
-      expect(changes[0].crossed).toBe(true);
+    });
+
+    it('raising unrest past a chip\'s enter line stays inside the band (minting takes days)', () => {
+      addTown({ prosperity: 50, unrest: 25 });
+      const before = snapshotCastEconomy(graph, TOWN);
+      graph.getNode(TOWN)!.properties.unrest = 40;
+      const [row] = diffCastEconomy(before, snapshotCastEconomy(graph, TOWN), {
+        idStem: 'x', targetId: TOWN, targetName: 'Millbrook',
+      });
+      expect(row).toMatchObject({ crossed: false, detail: "Its people's anger rises.", polarity: 'loss' });
     });
 
     it('a staple crossing out of scarcity names the good', () => {

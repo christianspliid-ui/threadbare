@@ -36,7 +36,12 @@ import { getSublocationsAt } from './graphQueries';
 import { deriveLocationStockTiers, readResources } from './resourceEconomy';
 import { getResourceClass } from '../data/resource-classes';
 import { RESOURCE_DEFINITIONS } from '../data/resource-content';
-import { LOCATION_TRAIT_IDS } from '../data/location-trait-constants';
+import {
+  LOCATION_TRAIT_IDS,
+  LOCATION_TRAIT_LAWLESS_RELEASE,
+  LOCATION_TRAIT_RESTLESS_RELEASE,
+  ON_THE_EDGE_RELEASE,
+} from '../data/location-trait-constants';
 import { getWealthTier, readWealth, type WealthTier } from './wealth';
 import { meansChangeSentence, MEANS_CHANGE_TOOLTIP_ID } from './mortalMeans';
 import {
@@ -91,12 +96,29 @@ function finite(v: unknown): number | undefined {
   return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
 }
 
-function worstUnrestBand(graph: WorldGraph, locationId: string): EconomyUnrestBand | null {
+/** The number below which the location-trait phase releases each unrest chip. */
+const UNREST_BAND_RELEASE: Record<EconomyUnrestBand, number> = {
+  restless: LOCATION_TRAIT_RESTLESS_RELEASE,
+  lawless: LOCATION_TRAIT_LAWLESS_RELEASE,
+  on_the_edge: ON_THE_EDGE_RELEASE,
+};
+
+/**
+ * The worst unrest chip the town wears **that its number still holds**. The chips are
+ * minted and released by the daily location-trait phase, after the cast, so a cast that
+ * drops unrest below a chip's release line would otherwise read as no crossing at all.
+ * A chip whose release line the number has fallen below counts as gone: the next trait
+ * pass removes it. A chip is never counted before it is minted — minting needs days of
+ * sustained unrest, so a cast that raises unrest reads as a move inside the band.
+ */
+function worstUnrestBand(graph: WorldGraph, locationId: string, unrest: number | undefined): EconomyUnrestBand | null {
   const traits = new Set(graph.getOutgoingEdges(locationId, 'has_trait').map(e => e.target));
   let worst: EconomyUnrestBand | null = null;
   for (const band of ECONOMY_UNREST_BAND_ORDER) {
     const traitId = band === 'on_the_edge' ? LOCATION_TRAIT_IDS.onTheEdge : LOCATION_TRAIT_IDS[band];
-    if (traits.has(traitId)) worst = band;
+    if (!traits.has(traitId)) continue;
+    if (unrest !== undefined && unrest < UNREST_BAND_RELEASE[band]) continue;
+    worst = band;
   }
   return worst;
 }
@@ -148,7 +170,7 @@ export function snapshotCastEconomy(graph: WorldGraph, targetId: string): CastEc
       settlementName: place.name,
       ...(prosperity !== undefined ? { prosperity, prosperityTier: getProsperityTier(prosperity) } : {}),
       ...(unrest !== undefined ? { unrest } : {}),
-      unrestBand: worstUnrestBand(graph, place.id),
+      unrestBand: worstUnrestBand(graph, place.id, unrest),
       staples: readStaples(graph, place.id, props),
       lanes: readLanes(graph, place.id),
     };
