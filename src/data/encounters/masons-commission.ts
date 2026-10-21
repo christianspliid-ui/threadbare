@@ -91,6 +91,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   rarityTier: 2,
   intrinsicTier: 'background',
+  // THR-1993 — the rival bid is a contest inside the trade; a mortal whose trade is
+  // outside this list does not draw it (a roleless mortal still does).
+  protagonistRoles: ['mason'],
   name: 'The Mason\'s Commission',
   reach: 'stone',
   crudType: 'create',

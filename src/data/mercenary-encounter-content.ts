@@ -1527,7 +1527,7 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
     {
       id: 'mc.join.1',
       name: 'Present Yourself',
-      narrativeTemplate: "{name} presents to the Company's recruiter at {location}. The recruiter checks hands first — callused or not. Then asks one question about the last contract.",
+      narrativeTemplate: "{name} presents to the Company's recruiter at {location}. The recruiter checks hands first — callused or not. Then asks what {name} did before{?has_trade} — {trade}, it turns out{/has_trade}.",
       reach: 'iron',
       difficulty: MC_JOIN_DIFFICULTY / 100,
       duration: { min: 1, max: 2 },
@@ -1572,7 +1572,7 @@ export const MC_JOIN_TEMPLATE: UnifiedActionTemplate = {
         {
           id: 'mc_join_signed',
           label: 'Callused hands and one honest answer.',
-          intent: 'The recruiter checks hands first and asks one question about the last contract. Both checked out.',
+          intent: 'The recruiter checks hands first and asks what {name} did before. Both answers checked out.',
           effects: [
             // THR-1144 — the signing now *signs*. Until this landed, this ending's
             // "Signed to the Company" chip claimed a membership nothing wrote:

@@ -70,7 +70,7 @@
  * Heavy Hand      none. No card grants. No libraryCardId bound on any special.
  * 
  * ─── The narrator's 12 questions, answered ───────────────────────────
- * 1. P1 arrival with graph names — {actor}, {location}, the abbey, and why they came (sent for as master builder). Yes.
+ * 1. P1 arrival with graph names — {actor}, {location}, the abbey, and why they came (sent for because the master builder is dead). Yes.
  * 2. P2 events with costs — the vault finished, the frame still in, the rains next week, the risk stated.
  * 3. P3 one stake — Opportunity (open the church by winter, at the risk of the vault), with the agent as target ("answers for the vault").
  * 4. ≤80 words — 75.
@@ -128,8 +128,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   motivations: ['courage_prudence'],
   settings: ['rural', 'urban'],
   openings: {
-    rural: '{actor} arrives at the abbey outside {location}, sent for as master builder.',
-    urban: '{actor} arrives at the abbey in {location}, sent for as master builder.',
+    rural: '{actor} arrives at the abbey outside {location}, sent for because the master builder is dead and the vault will not wait.',
+    urban: '{actor} arrives at the abbey in {location}, sent for because the master builder is dead and the vault will not wait.',
   },
   steps: [
     {

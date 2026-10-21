@@ -132,7 +132,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       narrativeTemplate: 'Her house has had no luck since her husband was buried. Her fire smokes, and she dreams of him '
         + 'each night. She offers a keepsake of his to whoever finds the cause. {cast:rival}, a rival '
         + 'reader, says the dead man is restless and sells a charm to calm him. Whoever reads it wrong in '
-        + 'front of the fair loses trade in {location}.',
+        + 'front of the fair loses face in {location}.',
       criticalSuccessAfterimage: 'They said the dead man was pointing up his own chimney before the widow had finished telling the '
         + 'dream.',
       successAfterimage: 'They read the dream as the dead man pointing up at his own chimney.',

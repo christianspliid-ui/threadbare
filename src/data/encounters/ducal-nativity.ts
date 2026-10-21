@@ -519,7 +519,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A reader who saw a hard star at the duke\'s heir\'s birth must decide whether to tell the duke.',
+    initiation: 'Someone who saw a hard star rise at the duke\'s heir\'s birth must decide whether to tell the duke.',
     success: 'The reader\'s reading of the heir\'s hard first year was heard.',
     failure: 'The reader\'s reading of the heir\'s stars was not believed, and the town took it for plague.',
   },

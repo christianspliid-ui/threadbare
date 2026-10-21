@@ -117,8 +117,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   tags: ['#build'],
   settings: ['rural', 'urban'],
   openings: {
-    rural: '{actor} comes into {location} to sink a new well for the village.',
-    urban: '{actor} arrives in {location} to sink a new well for one of its streets.',
+    rural: '{actor} comes into {location}, hired by the reeve to sink a new well for the village.',
+    urban: '{actor} arrives in {location}, hired by the reeve to sink a new well for one of its streets.',
   },
   steps: [
     {

@@ -15,7 +15,7 @@
  * - scale local - intrinsicTier shaping.
  * 
  * --- The narrator's 12 questions, answered ---
- *   1 P1 arrival?      {actor} arrives in {location} as marshal of the town's tourney.
+ *   1 P1 arrival?      {actor} arrives in {location}, where the town has asked {actor} to marshal its tourney.
  *   2 P2 events?       A knightly order has called a grudge bout that its doctrine says ends only at a
  *                      yield, and the young noble will not yield.
  *   3 P3 one stake?    Threat: hold the lists before the bout becomes a killing.
@@ -88,7 +88,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   motivations: ['mercy_ruthlessness', 'courage_prudence'],
   settings: ['urban'],
   openings: {
-    urban: '{actor} arrives in {location} as marshal of the town\'s tourney.',
+    urban: '{actor} arrives in {location}, where the town has asked {actor} to marshal its tourney.',
   },
   steps: [
     {

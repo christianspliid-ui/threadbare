@@ -114,7 +114,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         + 'all follow, a bleeding at the wrong hour of the moon kills. The senior physician, '
         + '{cast:physician}, says the fever cannot wait for the stars.\n\n'
         + 'The household asks {actor} to cast the figure for the bleeding: the moon\'s sign and the safe '
-        + 'hour, from the tables in their almanac.',
+        + 'hour, from the tables in the household\'s almanac.',
       criticalSuccessAfterimage: 'They cast the figure to the quarter hour. The moon leaves the sign that rules the heart at dawn, '
         + 'and dawn is the hour to bleed.',
       successAfterimage: 'The figure gives dawn tomorrow, when the moon leaves the sign that rules the heart.',
