@@ -36,7 +36,7 @@ describe('THR-1989 — opening captions meet Law 45 at rest', () => {
   });
 
   it('the "What echoes?" and "You remember..." lines on the Origin screen', () => {
-    expect(contrast('rgba(196,182,214,0.82)')).toBeGreaterThanOrEqual(AA);
+    expect(contrast('rgba(200,184,216,0.82)') /* --premonition-whisper-text-rgb */).toBeGreaterThanOrEqual(AA);
     expect(contrast('rgba(155,196,169,0.82)')).toBeGreaterThanOrEqual(AA);
   });
 });

@@ -24,6 +24,9 @@ interface OriginBeatProps {
 /** THR-1989: how strongly the stirring backdrop shows behind the origin row. */
 const ORIGIN_BACKDROP_OPACITY = 0.3;
 
+/** Lifts the screen's words off the picture behind them. */
+const PROMPT_SHADOW = '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)';
+
 export function OriginBeat({ fragments, onSelect, backdrop, notice }: OriginBeatProps) {
   const opensFlow = backdrop !== undefined;
   const [mortalName, setMortalName] = useState('');
@@ -79,12 +82,12 @@ export function OriginBeat({ fragments, onSelect, backdrop, notice }: OriginBeat
            data-testid="origin-stirring-prompt"
            style={{
              top: '5vh',
-             color: 'rgba(196,182,214,0.82)',
+             color: 'rgb(var(--premonition-whisper-text-rgb) / 0.82)',
              fontStyle: 'italic',
              fontFamily: 'var(--font-prose)',
-             fontSize: '1.5rem',
+             fontSize: 'var(--text-xl)',
              letterSpacing: '0.06em',
-             textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
+             textShadow: PROMPT_SHADOW,
              opacity: selectedFragment ? 0 : 1,
              transition: 'opacity 0.7s ease',
              zIndex: 20,
@@ -108,7 +111,7 @@ export function OriginBeat({ fragments, onSelect, backdrop, notice }: OriginBeat
            fontStyle: 'italic',
            fontSize: '1.5rem',
            color: 'rgba(155,196,169,0.82)',
-           textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
+           textShadow: PROMPT_SHADOW,
            letterSpacing: '0.06em',
            opacity: textVisible && !selectedFragment ? 1 : 0,
            transform: textVisible ? 'translateY(0)' : 'translateY(12px)',
@@ -179,7 +182,7 @@ export function OriginBeat({ fragments, onSelect, backdrop, notice }: OriginBeat
               fontSize: '1.5rem',
               lineHeight: '1.85',
               color: 'rgba(212,196,158,0.88)',
-              textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
+              textShadow: PROMPT_SHADOW,
               maxWidth: '780px',
               textAlign: 'center',
               marginBottom: '16px',
@@ -209,7 +212,7 @@ export function OriginBeat({ fragments, onSelect, backdrop, notice }: OriginBeat
              fontStyle: 'italic',
              fontSize: '1.1rem',
              color: 'rgba(155,180,160,0.58)',
-             textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
+             textShadow: PROMPT_SHADOW,
              letterSpacing: '0.05em',
            }}>
           You had a name once.
