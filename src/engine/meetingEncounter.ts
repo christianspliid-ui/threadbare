@@ -1633,8 +1633,6 @@ export function buildMeetingResult(
     foundingGateTags: gateTags,
     traitSeeds,
     flavorChoices: state.flavorChoices,
-    ...(candidate.trade ? { trade: { ...candidate.trade } } : {}),
-    ...(candidate.vignetteId ? { vignetteId: candidate.vignetteId } : {}),
     appearanceSeed: candidate.appearanceSeed,
     meetingChoiceRecord,
     locationId: state.locationId,
