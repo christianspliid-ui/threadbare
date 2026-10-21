@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 14:00 local (12:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 14:56 local (12:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,12 +27,12 @@ Say 'veto <title>' to reverse any of these.
 
 **Backed up: 28 ready, 2 in progress.**
 
-- [Notables and Doom say why](https://linear.app/threadbare/issue/THR-1965/notables-and-doom-say-why-a-fade-line-under-finished-agendas-the) is built as [PR #2514](https://github.com/christianspliid-ui/threadbare/pull/2514), parked unarmed after two review rounds. The pickup run that started at 13:51 is on it now; the next fresh review arms it.
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, about 19 hours. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it; it is the highest-priority ticket waiting for the builder.
-- The orchestrator promoted [the reward-kind draw](https://linear.app/threadbare/issue/THR-1997/a-rewards-kind-comes-up-at-the-recipes-share-the-draw-rolls-the-rarity) to ready at 13:30.
+- [Notables and Doom say why](https://linear.app/threadbare/issue/THR-1965/notables-and-doom-say-why-a-fade-line-under-finished-agendas-the) is merged ([PR #2514](https://github.com/christianspliid-ui/threadbare/pull/2514)) and live.
+- [Undertakings in the economy S3: a trade run pays the trader](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the) is being built now: the pickup run that started at 14:31 is active, with a checkpoint commit at 14:40 on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1967-undertakings-economy-s3).
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, about 20 hours. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it; it waits only for the builder to finish THR-1967.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The engine measured slower this run: "tick cost 189 ms/tick steady, 33% above the 7-day median (142, 112 rows since eb7799bb); top phase agent_decision, 622 agents. Name the merges between eb7799bb and 25dac4c1: git log --oneline --merges eb7799bb..25dac4c1". Last hour measured 141 at the same commit, and a pickup run was building on this machine during the measurement, so this is probably load, not a regression. Next hour's measurement will tell. The executor's job if it holds.
-- Everything else green: the live site serves the latest main (25dac4c1), main's checks and the three background jobs are healthy, and all 13 scheduled lanes are on time.
+- The engine measured slower again: "tick cost 201 ms/tick steady, 41% above the 7-day median (142, 112 rows since e8355f6f); top phase agent_decision, 622 agents. Name the merges between e8355f6f and f466a9ed: git log --oneline --merges e8355f6f..f466a9ed". Second slow hour in a row (189 last hour, 141 the hour before). A pickup run was building on this machine during both slow measurements, so load is still the likely cause. The executor's job if it holds once the machine is quiet.
+- Everything else green: the live site serves the latest main (f466a9ed), main's checks and the three background jobs are healthy, no pull requests are waiting, and all 13 scheduled lanes are on time.
