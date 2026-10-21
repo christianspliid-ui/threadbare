@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { HungerDefinition, RemembranceFragment } from '../../types/remembrance';
 import { selectHungerProse } from '../../engine/remembrance';
 import { getSphereColor } from '../../data/sphereIcons';
@@ -10,6 +10,7 @@ import {
   TRANSFORMATION_COURT_REVEAL_MS,
 } from './remembranceChoice';
 import { SpheresStep } from './SpheresStep';
+import { FRAGMENT_CAPTION_REST_COLOR } from './FragmentCard';
 import { describeSpherePour } from './sphereBuy';
 import { REMEMBRANCE_SPHERE_BUY_ENABLED } from '../../data/sphere-points-content';
 import { deriveAlignmentFromPoints, presetFromAlignment, type SpherePoints } from '../../engine/spherePoints';
@@ -22,6 +23,9 @@ interface TransformationBeatProps {
 }
 
 type TransformationStep = 'hunger' | 'court' | 'spheres' | 'sphere-reveal';
+
+/** How long the sphere reveal holds before moving on by itself; a click or key moves on at once (THR-1989). */
+export const SPHERE_REVEAL_HOLD_MS = 2500;
 
 export function TransformationBeat({ hungers, driveFragment, onSelect }: TransformationBeatProps) {
   const [step, setStep] = useState<TransformationStep>('hunger');
@@ -70,16 +74,43 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
     setSelectedCourt(null);
   }, [selectedHunger, step]);
 
+  // THR-1989: the reveal finishes once — on its timer, or earlier on a click or key.
+  const revealFinish = useRef<(() => void) | null>(null);
+  const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const finishReveal = useCallback(() => {
+    const finish = revealFinish.current;
+    revealFinish.current = null;
+    if (revealTimer.current) clearTimeout(revealTimer.current);
+    revealTimer.current = null;
+    finish?.();
+  }, []);
+
+  useEffect(() => () => {
+    if (revealTimer.current) clearTimeout(revealTimer.current);
+  }, []);
+
   const reveal = useCallback((bought: SpherePoints) => {
     setPoints(bought);
     setStep('sphere-reveal');
     setRevealing(true);
-    setTimeout(() => {
+    revealFinish.current = () => {
       if (selectedHunger && selectedCourt) {
         onSelect(selectedHunger, selectedCourt, bought);
       }
-    }, 2500);
-  }, [selectedHunger, selectedCourt, onSelect]);
+    };
+    revealTimer.current = setTimeout(finishReveal, SPHERE_REVEAL_HOLD_MS);
+  }, [selectedHunger, selectedCourt, onSelect, finishReveal]);
+
+  useEffect(() => {
+    if (step !== 'sphere-reveal') return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      finishReveal();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [step, finishReveal]);
 
   const preset = useMemo(
     () => (selectedHunger ? presetFromAlignment(selectedHunger.sphereAlignment) : {}),
@@ -117,7 +148,9 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
 
   return (
     <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center"
-         style={{ background: '#0a0a0f' }}>
+         onClick={step === 'sphere-reveal' ? finishReveal : undefined}
+         data-testid={step === 'sphere-reveal' ? 'sphere-reveal' : undefined}
+         style={{ background: '#0a0a0f', cursor: step === 'sphere-reveal' ? 'pointer' : undefined }}>
 
       {/* ── Hunger selection ── */}
       {step === 'hunger' && (
@@ -183,9 +216,6 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                       background: 'transparent',
                       border: 'none',
                       padding: 0,
-                      opacity: isHovered ? 1 : 0.5,
-                      filter: isHovered ? 'brightness(1.1)' : 'brightness(0.7)',
-                      transition: 'opacity 0.5s ease, filter 0.5s ease',
                     }}
                   >
                     <div
@@ -197,12 +227,16 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
                         backgroundPosition: 'center',
                         maskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
                         WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 35%, transparent 100%)',
+                        // THR-1989: only the picture dims at rest; the words stay readable.
+                        opacity: isHovered ? 1 : 0.5,
+                        filter: isHovered ? 'brightness(1.1)' : 'brightness(0.7)',
+                        transition: 'opacity 0.5s ease, filter 0.5s ease',
                       }}
                     />
                     <div className="px-2 pt-5 pb-2">
                       <p style={{
                         font: 'var(--type-flavor)',
-                        color: isHovered ? 'rgba(212,196,138,0.8)' : 'rgba(180,170,140,0.35)',
+                        color: isHovered ? 'rgba(222,206,148,0.95)' : FRAGMENT_CAPTION_REST_COLOR,
                         transition: 'color 0.5s ease',
                       }}>
                         {prose}

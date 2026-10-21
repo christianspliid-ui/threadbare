@@ -13,7 +13,8 @@ import {
   generateDivineName,
   buildPersonalitySeed,
 } from '../../engine/remembrance';
-import { STIRRING_IMAGES } from '../../data/stirring-images';
+import { STIRRING_IMAGES, REMEMBRANCE_STIRRING_PICK_ENABLED } from '../../data/stirring-images';
+import { drawStirringBackdrop } from './stirringBackdrop';
 import { ORIGIN_FRAGMENTS, DRIVE_FRAGMENTS } from '../../data/remembrance-fragments';
 import { HUNGER_CATALOG } from '../../data/hunger-catalog';
 import { toStoredHungerId } from '../../types/hunger';
@@ -29,13 +30,24 @@ interface RemembranceFlowProps {
   onComplete: (identity: AscendantIdentity) => void;
   /** THR-1813 — a line for the first step (the account could not be read on this device). */
   accountNotice?: string;
+  /** THR-1989 — defaults to REMEMBRANCE_STIRRING_PICK_ENABLED; a prop so tests can flip it. */
+  stirringPickEnabled?: boolean;
 }
 
-export function RemembranceFlow({ seed, onComplete, accountNotice }: RemembranceFlowProps) {
-  const [beat, setBeat] = useState<RemembranceBeat>('stirring');
+export function RemembranceFlow({
+  seed,
+  onComplete,
+  accountNotice,
+  stirringPickEnabled = REMEMBRANCE_STIRRING_PICK_ENABLED,
+}: RemembranceFlowProps) {
+  // THR-1989: with the pick off, the flow opens on Origin and the stirring image
+  // is drawn from the seed — it still feeds filterOriginFragments as the pick did.
+  const [beat, setBeat] = useState<RemembranceBeat>(stirringPickEnabled ? 'stirring' : 'origin');
 
   // Accumulated state
-  const [stirringImage, setStirringImage] = useState<StirringImage | null>(null);
+  const [stirringImage, setStirringImage] = useState<StirringImage | null>(
+    () => (stirringPickEnabled ? null : drawStirringBackdrop(STIRRING_IMAGES, seed)),
+  );
   const [originFragment, setOriginFragment] = useState<RemembranceFragment | null>(null);
   const [mortalName, setMortalName] = useState<string | null>(null);
   const [driveFragment, setDriveFragment] = useState<RemembranceFragment | null>(null);
@@ -120,7 +132,16 @@ export function RemembranceFlow({ seed, onComplete, accountNotice }: Remembrance
     case 'stirring':
       return <StirringBeat images={STIRRING_IMAGES} onSelect={handleStirringSelect} notice={accountNotice} />;
     case 'origin':
-      return <OriginBeat fragments={originFragments} onSelect={handleOriginSelect} />;
+      return stirringPickEnabled ? (
+        <OriginBeat fragments={originFragments} onSelect={handleOriginSelect} />
+      ) : (
+        <OriginBeat
+          fragments={originFragments}
+          onSelect={handleOriginSelect}
+          backdrop={stirringImage}
+          notice={accountNotice}
+        />
+      );
     case 'drive':
       return <DriveBeat fragments={driveFragments} onSelect={handleDriveSelect} />;
     case 'transformation':

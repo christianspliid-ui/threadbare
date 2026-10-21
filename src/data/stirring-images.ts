@@ -1,5 +1,15 @@
 import type { StirringImage } from '../types/remembrance';
 
+/**
+ * THR-1989: whether the opening "What echoes?" screen asks for a pick. Off, the
+ * flow opens on Origin and the stirring image is drawn from the run seed and
+ * shown as Origin's backdrop. Set true to restore the four-picture choice.
+ */
+export const REMEMBRANCE_STIRRING_PICK_ENABLED = false;
+
+/** THR-1989: the opening line, shown on whichever screen opens the flow. */
+export const STIRRING_PROMPT = 'Something stirs in the void. What echoes?';
+
 /** Placeholder gradients used when image assets haven't been generated yet */
 export const STIRRING_PLACEHOLDERS: Record<string, { gradient: string; label: string }> = {
   'stirring.tangled-light':       { gradient: 'linear-gradient(135deg, #2a1f0a, #1a3a1a, #3a2a0a)', label: 'Tangled Light' },

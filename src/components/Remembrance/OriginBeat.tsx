@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { RemembranceFragment } from '../../types/remembrance';
+import type { RemembranceFragment, StirringImage } from '../../types/remembrance';
+import { STIRRING_PROMPT } from '../../data/stirring-images';
 import { FragmentCard } from './FragmentCard';
 import {
   useRemembranceChoice,
@@ -11,9 +12,20 @@ import {
 interface OriginBeatProps {
   fragments: RemembranceFragment[];
   onSelect: (fragment: RemembranceFragment, mortalName: string) => void;
+  /**
+   * THR-1989 — when Origin opens the flow: the seeded stirring image, drawn as a
+   * dimmed backdrop under the "What echoes?" line. Absent, the screen is as before.
+   */
+  backdrop?: StirringImage | null;
+  /** THR-1813 — the account notice, shown here when Origin is the first screen. */
+  notice?: string;
 }
 
-export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
+/** THR-1989: how strongly the stirring backdrop shows behind the origin row. */
+const ORIGIN_BACKDROP_OPACITY = 0.3;
+
+export function OriginBeat({ fragments, onSelect, backdrop, notice }: OriginBeatProps) {
+  const opensFlow = backdrop !== undefined;
   const [mortalName, setMortalName] = useState('');
   const [textVisible, setTextVisible] = useState(false);
   const [cardsVisible, setCardsVisible] = useState(false);
@@ -43,14 +55,59 @@ export function OriginBeat({ fragments, onSelect }: OriginBeatProps) {
     <div className="h-screen relative overflow-hidden"
          style={{ background: '#0a0a0f' }}>
 
+      {/* THR-1989: the stirring image, no longer picked, is the backdrop */}
+      {backdrop && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          data-testid={`origin-backdrop-${backdrop.id}`}
+          style={{
+            backgroundImage: `url(${backdrop.imageAssetPath})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: selectedFragment ? 0 : ORIGIN_BACKDROP_OPACITY,
+            filter: 'brightness(0.6)',
+            maskImage: 'radial-gradient(ellipse 100% 100% at center, black 30%, transparent 90%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at center, black 30%, transparent 90%)',
+            transition: 'opacity 1s ease',
+          }}
+        />
+      )}
+
+      {/* THR-1989: the opening line, moved here from the retired stirring pick */}
+      {opensFlow && (
+        <p className="absolute left-0 right-0 text-center"
+           data-testid="origin-stirring-prompt"
+           style={{
+             top: '5vh',
+             color: 'rgba(196,182,214,0.82)',
+             fontStyle: 'italic',
+             fontFamily: 'var(--font-prose)',
+             fontSize: '1.5rem',
+             letterSpacing: '0.06em',
+             textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
+             opacity: selectedFragment ? 0 : 1,
+             transition: 'opacity 0.7s ease',
+             zIndex: 20,
+             pointerEvents: 'none',
+           }}>
+          {STIRRING_PROMPT}
+          {notice && (
+            <span role="status" data-testid="stirring-account-notice"
+                  style={{ display: 'block', marginTop: '0.75rem', fontSize: 'var(--text-sm)', fontStyle: 'normal', letterSpacing: 0, color: 'var(--text-secondary)' }}>
+              {notice}
+            </span>
+          )}
+        </p>
+      )}
+
       {/* Prompt */}
       <p className="absolute left-0 right-0 text-center"
          style={{
-           top: '5vh',
+           top: opensFlow ? (notice ? 'calc(5vh + 5.5rem)' : 'calc(5vh + 3rem)') : '5vh',
            fontFamily: 'var(--font-prose)',
            fontStyle: 'italic',
            fontSize: '1.5rem',
-           color: 'rgba(155,196,169,0.58)',
+           color: 'rgba(155,196,169,0.82)',
            textShadow: '0 1px 8px rgba(0,0,0,0.7), 0 0 30px rgba(0,0,0,0.4)',
            letterSpacing: '0.06em',
            opacity: textVisible && !selectedFragment ? 1 : 0,

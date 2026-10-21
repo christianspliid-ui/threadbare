@@ -1,6 +1,13 @@
 import { useCallback, useState } from 'react';
 import { CHOICE_ATTR } from './remembranceChoice';
 
+/**
+ * THR-1989: the card's words at rest. The picture dims until hover; the words do
+ * not, so every choice reads before the pointer finds it (UI Law 45, 4.5:1 on the
+ * #0a0a0f ground).
+ */
+export const FRAGMENT_CAPTION_REST_COLOR = 'rgba(206,196,182,0.86)';
+
 interface FragmentCardProps {
   prose: string;
   imageAssetPath: string;
@@ -38,10 +45,6 @@ export function FragmentCard({
         background: 'transparent',
         border: 'none',
         padding: 0,
-        opacity: selected ? 1 : hovered ? 0.9 : 0.55,
-        filter: selected ? 'brightness(1.15)' : hovered ? 'brightness(1.05)' : 'brightness(0.75)',
-        // THR-1716: narrowed from `transition-all` (Law 41).
-        transition: 'opacity 0.5s ease, filter 0.5s ease',
       }}
     >
       {/* Image with dissolved edges — no borders, no corners */}
@@ -56,6 +59,11 @@ export function FragmentCard({
           maskComposite: 'intersect',
           WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           WebkitMaskComposite: 'source-in',
+          // THR-1989: only the picture dims at rest (was the whole card, words too).
+          opacity: selected ? 1 : hovered ? 0.9 : 0.55,
+          filter: selected ? 'brightness(1.15)' : hovered ? 'brightness(1.05)' : 'brightness(0.75)',
+          // THR-1716: narrowed from `transition-all` (Law 41).
+          transition: 'opacity 0.5s ease, filter 0.5s ease',
         }}
       />
 
@@ -65,7 +73,7 @@ export function FragmentCard({
           className="leading-relaxed transition-colors duration-500"
           style={{
             font: 'var(--type-flavor)',
-            color: isActive ? `${accentColor}cc` : 'rgba(180,170,160,0.5)',
+            color: isActive ? `${accentColor}ee` : FRAGMENT_CAPTION_REST_COLOR,
           }}
         >
           {prose}
