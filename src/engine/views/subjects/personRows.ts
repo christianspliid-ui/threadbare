@@ -401,6 +401,8 @@ const whoTheyAre: SectionResolver = (ctx) => {
   if (atLeast(s, 'recognised') && card.archetypeLabel) {
     rows.push({ left: PERSON_FACT_WORDS.archetype, right: card.archetypeLabel, ...(card.archetypeId ? { tooltipId: `archetype.${card.archetypeId}` } : {}) });
   }
+  // THR-1982: the trade the god met them in — between the archetype and the calling.
+  if (atLeast(s, 'recognised') && card.tradeWord) rows.push({ left: PERSON_FACT_WORDS.trade, right: card.tradeWord, tooltipId: 'ui.trade' });
   if (atLeast(s, 'recognised') && card.calling) rows.push({ left: PERSON_FACT_WORDS.calling, right: card.calling.title, tooltipId: 'ui.calling' });
   if (card.wealth != null) rows.push({ left: PERSON_FACT_WORDS.means, right: getWealthTier(card.wealth) });
   if (card.godMark) rows.push({ left: PERSON_FACT_WORDS.godMark, right: `${card.godMark.name} — ${card.godMark.line}` });

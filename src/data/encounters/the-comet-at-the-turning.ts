@@ -451,6 +451,9 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
   },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
+  // THR-1982 — the premise casts a fixed job; a mortal whose trade is outside
+  // this list does not draw it (a roleless mortal still does).
+  protagonistRoles: ['oracle', 'priest', 'acolyte', 'pilgrim', 'hermit', 'herald', 'chaplain', 'warrior_priest'],
   name: 'The Comet at the Turning',
   reach: 'star',
   crudType: 'update',

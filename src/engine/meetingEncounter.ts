@@ -89,6 +89,7 @@ import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
 import { mulberry32 } from '../lib/prng';
 import { giveBirthMeans } from './mortalMeans';
+import { writeFirstTrade } from './firstTrade';
 import { pickCulturalName, pickGenderedName } from '../data/culture-name-pools';
 
 // ─── Per-tick Meeting Counter ─────────────────────────────────────
@@ -1088,6 +1089,10 @@ export function createAgentFromMeeting(
 
   emitMeetingResolutionTraces(result, agentId, tick);
 
+  // THR-1982 — the trade the player read lands before Means is born, so a healer
+  // First is born with a healer's Means (`giveBirthMeans` reads `npcRole`).
+  writeFirstTrade(graph, agentId, result.trade, result.vignetteId ?? null, tick);
+
   // THR-1936 — The First is minted after world creation's birth pass, so it is born
   // with Means here, like every other decider.
   giveBirthMeans(graph, agentId, tick);
@@ -1248,6 +1253,8 @@ export function generateNarrativeCandidates(
       imageAssetPath: vignette.imageAssetPath,
       placeholderGradient: vignette.placeholderGradient,
       gender: vignette.gender,
+      trade: { ...vignette.trade },
+      vignetteId: vignette.id,
       axiologicalSeed,
       reachCapabilities,
       cooperationStrategy,
@@ -1403,6 +1410,8 @@ export function buildNarrativeResult(input: NarrativeResultInput): MeetingEncoun
     traitSeeds,
     portraitAssetPath: candidate.imageAssetPath,
     ...(candidate.gender ? { gender: candidate.gender } : {}),
+    ...(candidate.trade ? { trade: { ...candidate.trade } } : {}),
+    ...(candidate.vignetteId ? { vignetteId: candidate.vignetteId } : {}),
     appearanceSeed: candidate.appearanceSeed,
     meetingChoiceRecord,
     locationId,

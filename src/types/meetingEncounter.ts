@@ -13,6 +13,7 @@
  */
 
 import type { ReachDomain } from './traits';
+import type { NpcRole } from './npc';
 import type { SphereName } from './index';
 import type { ValuePair, AxiologicalProfile } from './agent';
 import type { CooperationStrategy } from './disposition';
@@ -251,6 +252,11 @@ export interface NarrativeCandidate {
    * Optional for saved meetings that predate it.
    */
   gender?: MeetingCandidateGender;
+  /** What this person did before the god found them, copied from the vignette (THR-1982).
+   *  Optional for saved meetings and fixtures that predate it. */
+  trade?: { role: NpcRole; word: string };
+  /** The vignette this candidate was drawn from (THR-1982). */
+  vignetteId?: string;
   /** Hidden axiological profile. */
   axiologicalSeed: AxiologicalProfile;
   /** Hidden reach capabilities (0-1 range). */
@@ -554,6 +560,11 @@ export interface MeetingEncounterResult {
   portraitAssetPath?: string;
   /** Who the First is drawn as — lands on the node as `gender` (THR-1712). */
   gender?: MeetingCandidateGender;
+  /** What this person did before the god found them, copied from the chosen candidate (THR-1982).
+   *  Optional for saved meetings and fixtures that predate it. */
+  trade?: { role: NpcRole; word: string };
+  /** The vignette this candidate was drawn from (THR-1982). */
+  vignetteId?: string;
   /** Appearance PRNG seed */
   appearanceSeed: number;
   /** The full meeting choice record (persisted on thread edge) */

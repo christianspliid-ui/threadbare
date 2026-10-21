@@ -434,6 +434,9 @@ export type TraceCategory =
   // Meet The First resolutions — first emitted by THR-1714 (declared THR-868)
   | 'meeting.test_resolved'
   | 'meeting.bond_resolved'
+  // The First keeps her trade (THR-1982)
+  | 'first.trade.written'
+  | 'encounter.filter.role_fit'
   // The threading rite — one writer; The First is the first (THR-1644 S1)
   | 'thread.court_position_resolved'
   | 'rite.queued'
@@ -1069,6 +1072,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Meet The First resolutions (THR-1714)
   'meeting.test_resolved',
   'meeting.bond_resolved',
+  // The First keeps her trade (THR-1982)
+  'first.trade.written',
+  'encounter.filter.role_fit',
   // The threading rite (THR-1644 S1)
   'thread.court_position_resolved',
   'rite.queued',
@@ -5473,6 +5479,8 @@ export type TraceEntry =
   // Nudge Model — WS6 Meet The First conversion (THR-868)
   | MeetingTestResolvedTrace
   | MeetingBondResolvedTrace
+  | FirstTradeWrittenTrace
+  | RoleFitRejectTrace
   // The threading rite (THR-1644 S1)
   | ThreadCourtPositionResolvedTrace
   | RiteQueuedTrace
@@ -5771,6 +5779,28 @@ export interface MeetingBondResolvedTrace extends TraceBase {
    * `.noforecast` suffixed when the outcome predates the forecast fields.
    */
   fateLineKey: string;
+}
+
+/**
+ * Trace: the bond (or the dev seed) wrote The First's trade (THR-1982). Once per
+ * First. `vignetteId` is null for the dev seed.
+ */
+export interface FirstTradeWrittenTrace extends TraceBase {
+  category: 'first.trade.written';
+  vignetteId: string | null;
+  role: import('./npc').NpcRole;
+  word: string;
+}
+
+/**
+ * Trace: `protagonist_role_fit` dropped a job-cast template for an actor whose
+ * trade is outside its `protagonistRoles` (THR-1982). One per rejected template.
+ */
+export interface RoleFitRejectTrace extends TraceBase {
+  category: 'encounter.filter.role_fit';
+  templateId: string;
+  actorRole: string;
+  allowedRoles: string[];
 }
 
 /**

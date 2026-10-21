@@ -6400,6 +6400,25 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/meetingEncounter.ts', 'src/engine/threadingRite.ts'],
     readSites: ['src/engine/attentionTier.ts'],
   },
+  // -- The First keeps her trade (THR-1982 / THR-1984) ---------------------
+  // The failure this exists to prevent: the meeting showed a healer and saved none
+  // of it, so every role reader treated The First as roleless and five job-cast
+  // chapters recast her as an archivist, a prophet, a magistrate.
+  {
+    id: 'meeting-writes-first-trade',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ECONOMY,
+    intent:
+      'The bond writes the trade the player read onto The First — `npcRole` for every role reader (role affinity, Means at birth, caster tradition, the binder census, the job-cast chapter filter) and `tradeWord` for what the sheet, the land index and the header print. Written before Means is born, so a healer First is born with a healer\x27s Means.',
+    ulTerms: ['The First'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['npcRole', 'tradeWord', 'writeFirstTrade'],
+      module: 'src/engine/firstTrade.ts',
+    },
+    writeSites: ['src/engine/meetingEncounter.ts', 'src/engine/gameInit.ts'],
+    readSites: ['src/engine/mortalMeans.ts', 'src/engine/encounterFilterPipeline.ts', 'src/engine/views/subjects/personRows.ts'],
+  },
   // -- The threading rite S1: one writer, The First is the first (THR-1644) ---
   // The failure these exist to prevent: "The First" and "the first mortal the god
   // threads" were two unconnected mechanisms — a player who threaded someone before

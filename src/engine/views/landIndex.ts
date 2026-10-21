@@ -7,6 +7,7 @@
  * `Covenants` render only when present. Never folded by count (THR-1820).
  * Rows pass `knowledgeFilterFor(ctx, 'landIndex')` — OPEN today (THR-1822 § D5).
  */
+import { displayTradeLabel } from '../firstTrade';
 import type { GameState } from '../../types/gameState';
 import type { WorldGraph } from '../graph';
 import { getLocationHolder } from '../realmHolder';
@@ -29,11 +30,9 @@ function linkRow(row: RefRow, hexKey: string, fact = ''): LinkRowVM {
   return { ref: row.ref, name: row.name, fact, mapLocated: true, hexKey, staleFact: null };
 }
 
+/** The work a person does, as the player reads it — the trade word first (THR-1982). */
 function roleOf(graph: WorldGraph, id: string): string {
-  const raw = (graph.getNode(id)?.properties.npcRole ?? graph.getNode(id)?.properties.role) as string | undefined;
-  if (!raw) return '';
-  const w = raw.replace(/[-_]+/g, ' ').trim();
-  return w.charAt(0).toUpperCase() + w.slice(1);
+  return displayTradeLabel(graph.getNode(id));
 }
 
 /** The rows of each kind, before the always / when-present rule. */

@@ -389,6 +389,9 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
+  // THR-1982 — the premise casts a fixed job; a mortal whose trade is outside
+  // this list does not draw it (a roleless mortal still does).
+  protagonistRoles: ['mason', 'smith', 'noble', 'steward', 'quartermaster', 'commander'],
   name: 'The Wall of the Mason-Lord',
   reach: 'stone',
   crudType: 'create',

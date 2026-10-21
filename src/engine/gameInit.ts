@@ -71,6 +71,7 @@ import { godBoughtScoreSum } from './dominion';
 import { recordSeededScores } from './phaseDominion';
 import { getSpherePoints } from './spherePoints';
 import { ensureDeciderMeans, giveBirthMeans } from './mortalMeans';
+import { writeFirstTrade, type FirstTrade } from './firstTrade';
 import { getAvatarsOf } from './graphQueries';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
@@ -737,6 +738,9 @@ export function devPlaceAvatarAtSettlement(state: GameState): string | null {
   return settlement.id;
 }
 
+/** The dev First's trade (THR-1982). */
+export const DEV_FIRST_TRADE: FirstTrade = { role: 'priest', word: 'Shrine-keeper' };
+
 export function devSeedTheFirst(state: GameState): string {
   const { graph, ascendantId, tick } = state;
 
@@ -976,6 +980,11 @@ export function devSeedTheFirst(state: GameState): string {
       properties: { level: 1, acquiredTick: 0, source: 'Divine gift' },
     });
   }
+
+  // THR-1982 — the dev First keeps a trade too, so `?seeded` agrees with the bond:
+  // Kael is a shrine-keeper (priest sits in two of the five job-cast chapter lists).
+  // Written before Means is born, which reads `npcRole`.
+  writeFirstTrade(graph, agentId, DEV_FIRST_TRADE, null, tick);
 
   // THR-1936 — the dev First is minted after world creation's birth pass, so it is
   // born with Means here.

@@ -22,11 +22,15 @@
  *   {ruin.empire}       → the dead empire an elder ruin belonged to, or "a people long gone"
  *   {ruin.fall}         → the past war the place fell in — strips when the engine holds
  *                         none; guard with {?has_ruin_fall}...{/has_ruin_fall}
+ *   {trade}             → the actor's trade word, lower-cased (THR-1982), or "person";
+ *                         guard with {?has_trade}...{/has_trade}
  *   {?has_X}...{/has_X} → conditional block (rendered if condition true)
  *   {?no_X}...{/no_X}   → inverse conditional block
  */
 
 import { substituteFactionName } from './factionNameSubstitution';
+import { displayTradeWord } from './firstTrade';
+import { TRADE_TOKEN_FALLBACK_WORD } from '../data/npc-role-words';
 import type { WorldGraph } from './graph';
 import type { CampbellianPhase } from '../types/influence';
 import type { MeetingChoiceRecord } from '../types/meetingEncounter';
@@ -320,6 +324,11 @@ export interface NarrativeContext {
    * together with `socialApproach`. Derived at context build via
    * {@link resolveActorSphere}; absent when the node carries neither → the token strips. */
   actorSphere?: SphereName;
+
+  /** The actor's trade word, lower-cased (THR-1982) — `tradeWord`, else the word for
+   * its `npcRole`. Absent when it has neither: `{trade}` renders the fallback word and
+   * `{?has_trade}` blocks drop. */
+  trade?: string;
 
   /** The social approach the rendering template speaks in (THR-1516) — looked up from
    * `SOCIAL_SCENE_APPROACHES` by the template id the caller threads (`opts.templateId`,
@@ -633,6 +642,8 @@ export function gatherNarrativeContext(
     // sphere is read off the actor node this builder already fetched; the approach is
     // a content-side map keyed by the template id every encounter-path caller threads.
     actorSphere: resolveActorSphere(graph, agentId),
+    // The trade (THR-1982) — `{trade}` names the actor's work instead of inventing one.
+    trade: displayTradeWord(graph.getNode(agentId))?.toLowerCase(),
     socialApproach: getSocialApproachForTemplate(opts?.templateId ?? opts?.contextFragmentTemplateId),
     // Opening coloration (THR-1635) — only the encounter path threads a reach, and only
     // that path renders the reserved slot, so the edge walks are skipped everywhere else.
@@ -971,6 +982,10 @@ export function enrichProse(
   result = result.replace(/{ruin.empire}/g, ctx.placePast?.ruinEmpire ?? 'a people long gone');
   result = result.replace(/{ruin.fall}/g, ctx.placePast?.ruinFall ?? '');
 
+  // The actor's trade (THR-1982). Falls back to a plain noun so a sentence built on it
+  // still reads; prose that must not claim a trade guards with `{?has_trade}`.
+  result = result.replace(/{trade}/g, ctx.trade ?? TRADE_TOKEN_FALLBACK_WORD);
+
   result = result.replace(/{doom_verb}/g, ctx.doomVerb ?? '');
   result = result.replace(/{doom_adj}/g, ctx.doomAdj ?? '');
   result = result.replace(/{doom_atmosphere}/g, ctx.doomAtmosphere ?? '');
@@ -1098,6 +1113,9 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     // THR-1656: whether the scene place fell in a past war the engine holds.
     has_ruin_fall: ctx.placePast?.ruinFall != null,
     no_ruin_fall: ctx.placePast?.ruinFall == null,
+    // THR-1982: whether `{trade}` names a real trade.
+    has_trade: ctx.trade != null,
+    no_trade: ctx.trade == null,
   };
 
   // Intelligence conditionals (THR-113) — {?knows_<category>} / {?no_<category>}.

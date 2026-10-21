@@ -3113,6 +3113,12 @@ export interface DebugBridge {
    * **Async** (`await` it).
    */
   getFirstUseCaptions: () => Promise<{ visible: string[]; dismissed: string[]; queued: string[] }>;
+  /**
+   * THR-1982 — The First's trade, as the bond (or the dev seed) wrote it: the role
+   * every role reader sees and the word the player reads. `null` before the bond,
+   * or for a First from a save that predates the trade. **Async** (`await` it).
+   */
+  getFirstTrade: () => Promise<{ role: import('./types/npc').NpcRole; word: string } | null>;
   /** THR-1986 — forget every caption dismissal, for repeat captures. **Async**. */
   resetFirstUseCaptions: () => Promise<void>;
 

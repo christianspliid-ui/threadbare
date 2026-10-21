@@ -407,6 +407,9 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
   },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
+  // THR-1982 — the premise casts a fixed job; a mortal whose trade is outside
+  // this list does not draw it (a roleless mortal still does).
+  protagonistRoles: ['noble', 'elder', 'steward', 'sage', 'commander', 'guard_captain', 'marshal', 'faction_rep'],
   name: 'The Verdict That Burns',
   reach: 'eye',
   crudType: 'read',

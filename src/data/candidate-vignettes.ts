@@ -1,6 +1,7 @@
 import type { ReachDomain } from '../types/traits';
 import type { StoredHungerId } from '../types/hunger';
 import type { MeetingCandidateGender } from '../types/meetingEncounter';
+import type { NpcRole } from '../types/npc';
 
 export interface CandidateVignette {
   /** Unique ID (e.g. 'vignette.iron.sentinel'). */
@@ -13,6 +14,10 @@ export interface CandidateVignette {
   secondaryReach: ReachDomain;
   /** Narrative epithet (e.g. "blacksmith's son, broad-shouldered, stubborn"). */
   epithet: string;
+  /** What this person did before the god found them (THR-1982). `role` feeds every
+   *  system that reads npcRole; `word` is what the player reads on the sheet.
+   *  Authored per vignette, never derived from the reach pair. */
+  trade: { role: NpcRole; word: string };
   /**
    * The scene the god glimpses. Register (THR-868 WS6): plain and descriptive —
    * what the mortal is doing, and why they are doing it. Two or three sentences,
@@ -48,6 +53,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'iron',
     secondaryReach: 'stone',
     epithet: "wall-watcher, scarred hands, unflinching",
+    trade: { role: 'guard', word: 'Wall-watcher' },
     prose: "She stands the third night watch alone. The others went in to warm their hands an hour ago; she stayed because on each of the last two nights she heard movement below the wall and no one believed her. She is still listening.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/iron-sentinel.jpg',
@@ -61,6 +67,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'iron',
     secondaryReach: 'heart',
     epithet: "pit fighter, loyal to a fault, always carrying another's stake",
+    trade: { role: 'mercenary', word: 'Pit fighter' },
     prose: "The crowd is shouting his name and he is not listening to it. He is watching the woman in the third row, who put up everything she owned on him tonight. His ribs are cracked and he raises his fists again.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/iron-champion.jpg',
@@ -74,6 +81,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'iron',
     secondaryReach: 'eye',
     epithet: "young officer, cold eyes, three steps ahead",
+    trade: { role: 'commander', word: 'Officer' },
     prose: "She has fought tomorrow's battle six times on the sand table and won all six. Her commander calls it a game and laughs. She has counted the men who will die at each gate, written the number beside it, and she has not changed her plan.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/iron-tactician.jpg',
@@ -88,6 +96,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'gold',
     secondaryReach: 'eye',
     epithet: "merchant's daughter, ink-stained fingers, sharp-tongued",
+    trade: { role: 'merchant', word: 'Merchant' },
     prose: "She is a dozen years younger than every trader at the table and she has read all of their ledgers. Hers stays in a locked case and she checks it twice a day. Two of them have stopped trying to short her on the count.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/gold-merchant.jpg',
@@ -101,6 +110,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'gold',
     secondaryReach: 'heart',
     epithet: "aging benefactor, weary smile, pockets lighter than his conscience",
+    trade: { role: 'noble', word: 'Benefactor' },
     prose: "He has given away three fortunes and built four orphanages and he still does not sleep. Tonight he is walking the lower district, counting the children asleep on the steps. He hands over his cloak before he reaches the end of the street.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/gold-patron.jpg',
@@ -114,6 +124,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'gold',
     secondaryReach: 'shadow',
     epithet: "river rat, quick hands, debts on both sides of the border",
+    trade: { role: 'trader', word: 'Smuggler' },
     prose: "The barrels are labelled salt. They hold fever medicine for thirty people on the far side of the checkpoint. He has run this crossing seventeen times, been caught twice, and been told there will be no trial for a third.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/gold-smuggler.jpg',
@@ -128,6 +139,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'shadow',
     secondaryReach: 'eye',
     epithet: "nobody's friend, everybody's confidant, a face for every room",
+    trade: { role: 'spy', word: 'Spy' },
     prose: "Tonight she is a servant in a lord's house. Tomorrow she will be a priestess at the gate. She has used so many names that she keeps her own written on a scrap in her boot, and she has never once wanted it back.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/shadow-infiltrator.jpg',
@@ -141,6 +153,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'shadow',
     secondaryReach: 'iron',
     epithet: "quiet hands, a grudge that burns cold, patient",
+    trade: { role: 'burglar', word: 'Saboteur' },
     prose: "He loosens the third bolt on the gate mechanism and puts it in his pocket. No one will find it missing until the siege engines arrive, and by then he will be two towns east, drinking with the men who paid him. He has never once thought about the people behind this wall.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/shadow-saboteur.jpg',
@@ -154,6 +167,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'shadow',
     secondaryReach: 'heart',
     epithet: "the one who listens, the one who remembers, the one you should not have trusted",
+    trade: { role: 'broker', word: 'Go-between' },
     prose: "She remembers every secret anyone has told her, and she never set out to. She keeps them sorted by who would pay to bury them and who would kill to, and that sorted list is the only reason she sleeps.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/shadow-manipulator.jpg',
@@ -168,6 +182,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'veil',
     secondaryReach: 'eye',
     epithet: "touched since birth, feared by her village, always right",
+    trade: { role: 'hermit', word: 'Diviner' },
     prose: "She told the village the river would rise and they left the grain in the low barn. She told them the child would come wrong and they drove her out the same week. She sits at the crossroads now and answers only when paid, and she is still right.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/veil-diviner.jpg',
@@ -181,6 +196,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'veil',
     secondaryReach: 'stone',
     epithet: "mountain-born, ink under her nails, speaks to the rock",
+    trade: { role: 'scribe', word: 'Rune-carver' },
     prose: "The symbols she cuts into the stone are older than any language spoken in this valley. Her grandmother taught her forty of them; she has worked out eleven more on her own. When she finishes the last line the rock goes warm under her palm.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/veil-runecaster.jpg',
@@ -194,6 +210,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'veil',
     secondaryReach: 'heart',
     epithet: "healer who feels too much, cracked hands, kind eyes",
+    trade: { role: 'healer', word: 'Healer' },
     prose: "She puts her hands on the fevered child and takes the sickness into her own blood. It passes in a day or two; it always has so far. She has done this nine times this month and she has not turned anyone away at the door.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/veil-empath.jpg',
@@ -208,6 +225,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'heart',
     secondaryReach: 'gold',
     epithet: "born poor, speaks fire, the crowd hangs on every word",
+    trade: { role: 'herald', word: 'Street orator' },
     prose: "He owns his voice and a pair of boots. When he stands on the crate in the market square and talks about bread and dignity, the guards stop to listen instead of moving him along. He knows they will move him along tomorrow.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/heart-demagogue.jpg',
@@ -221,6 +239,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'heart',
     secondaryReach: 'eye',
     epithet: "quiet authority, the one they come to after midnight",
+    trade: { role: 'sage', word: 'Counsellor' },
     prose: "She does not give advice. She asks questions, and people leave her rooms having reversed a decision they walked in certain of. The king's other counselors want her gone; the king will not sit a council without her.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/heart-counselor.jpg',
@@ -234,6 +253,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'heart',
     secondaryReach: 'star',
     epithet: "the one who stays, the one who burns, the one they'll remember",
+    trade: { role: 'priest', word: 'Shrine-keeper' },
     prose: "They told her to run and she heard them clearly. There were still voices calling from the upper floor. She went back in through the doorway she had just come out of, and this is the third time she has done it.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/heart-martyr.jpg',
@@ -248,6 +268,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'eye',
     secondaryReach: 'stone',
     epithet: "map-maker, restless feet, sees what others walk past",
+    trade: { role: 'scout', word: 'Mapmaker' },
     prose: "He measures the country in paces and marks it on hide with a charcoal stub worn down to his fingers. His map is more accurate than the king's and he knows it. He is saving coin for a season's walk into the four blank corners of it.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/eye-cartographer.jpg',
@@ -261,6 +282,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'eye',
     secondaryReach: 'veil',
     epithet: "sees too far, speaks in riddles, trusted by no one and consulted by all",
+    trade: { role: 'oracle', word: 'Oracle' },
     prose: "The visions arrive whether she wants them or not. Last night, a city burning; the night before, a child who will be crowned. She writes each one down in a cipher no one else reads, dates it, and sets the page aside.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/eye-oracle.jpg',
@@ -274,6 +296,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'eye',
     secondaryReach: 'shadow',
     epithet: "light-footed, sharp-eyed, always the first to know and last to be seen",
+    trade: { role: 'scout', word: 'Scout' },
     prose: "She has watched the warband from the ridgeline for three days. She knows their number, their watch rotation, and which two drink through it. When the general asks how she knows, she shrugs; she lay still for longer than anyone else would.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/eye-scout.jpg',
@@ -288,6 +311,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'stone',
     secondaryReach: 'gold',
     epithet: "builds to outlast himself, calloused hands, stubborn as the rock he shapes",
+    trade: { role: 'mason', word: 'Mason' },
     prose: "The wall he is laying will stand a hundred years. He knows because his grandfather's wall is still standing and he learned the trade watching those stones settle. He lays four courses a day and refuses to lay a fifth.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/stone-mason.jpg',
@@ -301,6 +325,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'stone',
     secondaryReach: 'heart',
     epithet: "village anchor, remembers what was agreed, voice like settling earth",
+    trade: { role: 'elder', word: 'Village elder' },
     prose: "She has buried three husbands and raised seven children and she is not finished. When the young ones fight over the well rights they come to her bench. She settles it by naming who dug the well, and why, and what they asked in return.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/stone-elder.jpg',
@@ -314,6 +339,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'stone',
     secondaryReach: 'eye',
     epithet: "reads the bones of the earth, quiet, knows where the water runs",
+    trade: { role: 'wanderer', word: 'Dowser' },
     prose: "He presses his palm to the ground and listens. He can place the aquifer thirty feet down, the fault line a mile east, and the old temple's footings carrying a load they were never cut for. He has told the priests twice and they have not sent for a mason.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/stone-geomancer.jpg',
@@ -328,6 +354,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'star',
     secondaryReach: 'iron',
     epithet: "faith made flesh, armored in conviction, eyes like burning scripture",
+    trade: { role: 'paladin', word: 'Templar' },
     prose: "He kneels in the mud at the ruined shrine and prays to a god who has never answered him. The bandits will reach the treeline by dawn. His sword is laid across his knees and he intends to be standing on this ground when they arrive.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/star-templar.jpg',
@@ -341,6 +368,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'star',
     secondaryReach: 'eye',
     epithet: "reads the stars, speaks softly, carries what she knows too early",
+    trade: { role: 'oracle', word: 'Star-reader' },
     prose: "She has given the village three predictions and two have already come true. The third was about the harvest, and since then no one has asked her to dinner. She keeps reading the stars and she keeps saying aloud what she reads.",
     gender: 'female',
     imageAssetPath: '/assets/meeting/candidates/star-seer.jpg',
@@ -354,6 +382,7 @@ export const CANDIDATE_VIGNETTES: readonly CandidateVignette[] = [
     primaryReach: 'star',
     secondaryReach: 'heart',
     epithet: "wandering preacher, open hands, believes ahead of the evidence",
+    trade: { role: 'pilgrim', word: 'Wandering preacher' },
     prose: "He walked into the plague village while the last carts were still leaving it. He brought no medicine and no training, only the conviction that no one should die alone in a room. Three weeks on, half the village is dead and the other half will not let him leave.",
     gender: 'male',
     imageAssetPath: '/assets/meeting/candidates/star-apostle.jpg',
