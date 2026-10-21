@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-20 21:57 local (19:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 08:00 local (06:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -7,7 +7,7 @@
 
 ## Also waiting (6)
 
-- **The builder is not allowed to edit the checks it was asked to loosen.** [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) has been parked since 16:55 UTC. The safety layer refused the gate and Definition-of-Done edits as needing a person. **Either run it with me in a session you are watching, or let the unattended builder edit the gate and CI files.** [Run the review gate only on large changes](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) will hit the same wall.
+- **The builder is not allowed to edit the checks it was asked to loosen.** [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) has been parked since 16:55 UTC yesterday. **Either run it with me in a session you are watching, or let the unattended builder edit the gate and CI files.** [Run the review gate only on large changes](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) will hit the same wall.
 - **Sunday evening to Monday evening (18–19 Oct):** "The scheduled lanes went silent for 23.3h (2026-10-18T18:26:51.000Z → 2026-10-19T17:42:15.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
@@ -18,44 +18,26 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-From [the design lane this afternoon, run d](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20d.md):
+From [the design lane yesterday afternoon, run d](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20d.md) (veto day ends about 15:25 today):
 
 - [A beast cannot be a bound scene actor](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor): the game gets **no separate creature type**. A beast a mortal can fight and meet again is **a lair's monster**, which already works. Any other animal (the bear in the granary, a wolf pack) stays **scenery**, in the story text and the wounds it leaves. When a scene needs someone to work against, a person speaks for the danger, like the drover who tracks the pack. Nothing changes in play. The canon note is [PR #2504](https://github.com/christianspliid-ui/threadbare/pull/2504), merged. *Veto:* "animals should live in the world".
 
-From [the design lane this morning, run c](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20c.md):
+From [the design lane yesterday midday, run c](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20c.md) (veto day ends about 12:30 today):
 
 - [Reward category shares still fold into item weights](https://linear.app/threadbare/issue/THR-1890/reward-category-shares-still-fold-into-item-weights-decide-whether): a reward draw rolls its **rarity first, exactly as today**. Then it picks **the kind of reward the scene asked for** (a thing, a condition or a power) by the scene's own shares, and only then the item. Rarity and Legendaries do not change. On scenes that offer several kinds, **permanent powers come up about twice as often** (8% → 16% of those prizes), because that is what the scenes were written to give. *Veto:* "keep today's mix of rewards".
-
-From [the design lane last night, run b](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20b.md):
-
-- [Warm brief v2 — the next mid-game playtest round](https://linear.app/threadbare/issue/THR-1861/warm-brief-v2-trigger-fired-round-2-had-3-coverage-failures-on-v1-03) tells returning testers they are curious **"which factions have risen while you were away"**, as agreed after round 2 if it failed again (0 of 3 reached the mid-game). The pass bar stays at 2 of 3. *Veto:* "keep the old brief".
-- Same ticket: the round's "did they reach the mid-game" check now looks for the new Inspector's pages, since the faction sheet and Journey tab it looked for were deleted on 18 October. Harness repair ([PR #2493](https://github.com/christianspliid-ui/threadbare/pull/2493)).
-
-From [the design lane last night, run a](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20a.md):
-
-- [Ordinary scenes still hand The First a trade she never had](https://linear.app/threadbare/issue/THR-1983/ordinary-scenes-still-hand-the-first-a-trade-she-never-had-guild): of 28 everyday scenes that assume her trade, **six now wait for a mortal of the right trade**. **Twenty-one stay open to anyone** and stop saying she already works it (a healer may still try the smiths' iron test, as a healer). *Veto:* "a mortal should only be offered work in her own trade".
-
-From [the hiring-a-free-company plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md) ([THR-1974](https://linear.app/threadbare/issue/THR-1974/plan-doc-hiring-a-free-company-a-realm-buys-a-companys-oath-then-pays)), decided by [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-19a.md) (**veto day ends about 22:10 tonight**, minutes from now):
-
-- **A hired company fights its paymaster's wars, not its own.** *Veto:* "a hired company should still fight its own enemies too".
-- **A lord keeps two days of its own soldiers' pay before it pays anyone else's.** *Veto:* "a lord should spend its last coin on its sworn swords".
-- **A company is priced on the soldiers it keeps.** *Veto:* "price companies on what they earn, like everyone else".
-- **A company that swears for protection, with no army left, gets no help to raise one.** *Veto:* "a lord should pay to raise its vassal's army at once".
-- **Two hired companies still make a realm a Crown.** *Veto:* "hired companies should not count toward a Crown".
-- **The player reads "pays its soldiers", never a sum, and never *mercenary*, *contract* or *hire*.** *Veto:* "call them mercenaries on screen".
 
 Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 29 ready, 2 in progress (both parked).**
+**Backed up: 29 ready, 1 in progress (parked).**
 
-- [War aims S2: regional monopolies pay rent and can embargo an enemy's towns](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys) is **built** ([PR #2508](https://github.com/christianspliid-ui/threadbare/pull/2508), not yet armed). The review found two faults; both are fixed, but the review has to run once more on the new code before it can merge. The builder's current run (started 19:34 UTC, still active) picks that up. Builder's job, not yours.
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, about three hours. No file was changed. It waits on the ask above.
-- No ticket has sat in the queue for more than a week without being touched.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, about 13 hours. No branch, no pull request, and no named local worktree holds work for it (checked this run). It waits on the ask above.
+- [War aims S2: regional monopolies pay rent and can embargo an enemy's towns](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys) merged last night ([PR #2508](https://github.com/christianspliid-ui/threadbare/pull/2508)) and is live.
+- The builder started a fresh run at 05:53 UTC. No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site is current (413b19ca). Main's checks are green, and all 13 scheduled lanes are on time.
-- Engine speed: "tick cost 183 ms/tick steady, 34% above the 7-day median (137, 120 rows since 7756da78); top phase agent_decision, 625 agents. Name the merges between 7756da78 and 413b19ca: git log --oneline --merges 7756da78..413b19ca". Third hour in a row on the same commit, each time measured while a builder run was busy on this machine, so part of this may be the machine sharing load. It is the builder's to chase; not yours.
-- The tidy-up job reports 570 old worktrees, with 5 items waiting for a decision. That is builder housekeeping. You sent no new Discord messages.
+- The live site is current (2a755058). Main's checks and the three background jobs are green, no PRs are waiting to merge, and all 13 scheduled lanes are on time.
+- Overnight quiet: no lane ran from about 22:20 last night until 07:53 this morning. Overnight gaps are normal by your ruling, so this is not an ask.
+- Engine speed: "tick cost 181 ms/tick steady, 28% above the 7-day median (141, 113 rows since 667869d2); top phase agent_decision, 621 agents. Name the merges between 667869d2 and 2a755058: git log --oneline --merges 667869d2..2a755058". Measured again while a builder run was starting on this machine. It is the builder's to chase, not yours.

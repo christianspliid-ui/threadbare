@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-20 21:57 local (19:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-21 08:00 local (06:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-20: war aims S2 — regional monopolies pay rent and can embargo an enemy's towns** ([THR-1955](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys)). Merged via [#2508](https://github.com/christianspliid-ui/threadbare/pull/2508) and live.
 - **2026-10-20: nine encounters lose a family tag their story did not earn** ([THR-1941](https://linear.app/threadbare/issue/THR-1941/nine-encounters-wear-a-family-tag-their-prose-does-not-earn-anomaly)). Merged via [#2507](https://github.com/christianspliid-ui/threadbare/pull/2507) and live.
 - **2026-10-20: encounter debts now count — a mortal granted a debt becomes debt-laden** ([THR-1920](https://linear.app/threadbare/issue/THR-1920/encounter-debts-never-count-reward-agreements-write-agreement-true-but)). Merged via [#2506](https://github.com/christianspliid-ui/threadbare/pull/2506) and live.
 - **2026-10-20: realms no longer lose most of their members by tick 600 — a mortal is cast out only for a cause** ([THR-1918](https://linear.app/threadbare/issue/THR-1918/realms-lose-most-of-their-members-by-tick-600-264-excommunications)). Merged via [#2505](https://github.com/christianspliid-ui/threadbare/pull/2505) and live.
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-20: news that leaves "Needs you" lives on in the Chronicle** ([THR-1896](https://linear.app/threadbare/issue/THR-1896/news-that-leaves-needs-you-should-live-on-in-the-chronicle-mandate)). Merged via [#2499](https://github.com/christianspliid-ui/threadbare/pull/2499) and live.
 - **2026-10-20: the hand-built dialogs move onto the size tiers — Settings, the choice sets, the Divine Court, the Codex and the warm-start card** ([THR-1880](https://linear.app/threadbare/issue/THR-1880/move-the-six-hand-built-dialogs-onto-the-size-tiers-settings-effect)). Merged via [#2498](https://github.com/christianspliid-ui/threadbare/pull/2498) and live.
 - **2026-10-20: words that wait for their moment — first-use captions, Attention at the first chapter, Dominion and Elder powers when they matter, threaded-only Chronicle growth in words, "Go on"** ([THR-1986](https://linear.app/threadbare/issue/THR-1986/words-that-wait-for-their-moment-first-use-captions-attention-at-the)). Merged via [#2497](https://github.com/christianspliid-ui/threadbare/pull/2497) and live.
-- **2026-10-20: hunger and unrest S2 — a town on the edge turns to a better lord, and a town that rises throws off its holder** ([THR-1957](https://linear.app/threadbare/issue/THR-1957/hunger-and-unrest-s2-a-town-on-the-edge-turns-to-a-better-lord-and-a)). Merged via [#2496](https://github.com/christianspliid-ui/threadbare/pull/2496) and live.
 
 ---
 
