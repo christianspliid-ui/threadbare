@@ -24,6 +24,7 @@ import { resolveToParentLocation } from './sublocationShape';
 import { getAgentLocationId } from './graphQueries';
 import { bankWealth, getWealthTier, readWealth, type WealthTier } from './wealth';
 import { emitTrace } from './traceBuffer';
+import { TRADE_RUN_LAST_PAID_PROPERTY } from '../data/undertaking-economy-constants';
 import type { StrategicActionTemplate } from '../types/strategicAction';
 import {
   MEANS_BIRTH_HOME_SHIFT,
@@ -385,13 +386,16 @@ export function readMortalMeans(
   graph: WorldGraph,
   agentId: string,
   profile?: Partial<Record<string, number>>,
-): { wealth: number; band: WealthTier; lastReason: string | null; want: MeansWantBreakdown | null } | null {
+): { wealth: number; band: WealthTier; lastReason: string | null; want: MeansWantBreakdown | null; lastTradeRunPaidTick: number | null } | null {
   const node = graph.getNode(agentId);
   if (!node || node.type !== 'actor') return null;
   const props = node.properties as Record<string, unknown>;
   const wealth = readWealth(props);
   const lastReason = typeof props.lastWealthReason === 'string' ? props.lastWealthReason : null;
-  return { wealth, band: getWealthTier(wealth), lastReason, want: readMeansWant(graph, agentId, profile) };
+  // THR-1967 — the trade-run cooldown's one number (null: never paid for a trade run).
+  const lastPaid = props[TRADE_RUN_LAST_PAID_PROPERTY];
+  const lastTradeRunPaidTick = typeof lastPaid === 'number' ? lastPaid : null;
+  return { wealth, band: getWealthTier(wealth), lastReason, want: readMeansWant(graph, agentId, profile), lastTradeRunPaidTick };
 }
 
 /** One row of the Economy debug tab's Means table (S2). */

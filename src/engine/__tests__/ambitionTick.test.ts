@@ -132,11 +132,11 @@ describe('phaseAmbitionProgress', () => {
   });
 
   it('detects ambition completion when enough milestones are met', () => {
-    // ambition_dominate_trade requires 2 of 3 milestones
-    // Give the agent gold share >= 0.875 (trade_gold_mastery) and pre-complete trade_bonds
+    // ambition_dominate_trade requires 3 of 5 milestones (THR-1967)
+    // Give the agent gold share >= 0.875 (trade_gold_mastery) and pre-complete two others
     addActor(graph, 'actor_1', 'Kael', { gold: 36, eye: 20 });
     addActiveAmbition(graph, 'actor_1', 'ambition_dominate_trade', {
-      completedMilestones: ['trade_bonds'], // already completed one
+      completedMilestones: ['trade_bonds', 'trade_lanes'], // already completed two
     });
 
     const state = makeState(graph, MILESTONE_CHECK_INTERVAL);

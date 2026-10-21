@@ -3,6 +3,7 @@ import type { ReachDomain } from './traits';
 import type { SphereName } from './index';
 import type { AmbitionStrategicProfile } from './strategicAction';
 import type { ValuePair } from './agent';
+import type { WealthTier } from '../engine/wealth';
 
 // ─── Ambition Categories ─────────────────────────────────────────
 export type AmbitionCategory =
@@ -19,7 +20,28 @@ export type GraphCondition =
   | { type: 'agent_reach_above'; reach: ReachDomain; threshold: number }
   | { type: 'agent_reach_below'; reach: ReachDomain; threshold: number }
   | { type: 'agent_has_bonds'; minCount: number; basis: string }
-  | { type: 'agent_controls_location'; locationType: string }
+  /**
+   * The agent holds (`owns` or `controls`) a Location or Place of this type. THR-1967
+   * widened it additively: `locationType` may be a list (any one matches), and
+   * `foundedBySelf` requires the held place to carry a `constructed_by` edge to the agent.
+   */
+  | { type: 'agent_controls_location'; locationType: string | readonly string[]; foundedBySelf?: boolean }
+  /**
+   * The agent's Means are at least this word (THR-1967): `getWealthTier(readWealth)`
+   * at or above `tier` on the sheet's ladder. A missing agent reads `false`.
+   */
+  | { type: 'agent_means_at_least'; tier: WealthTier }
+  /**
+   * The agent holds at least `minCount` standing lanes (THR-1967): a `trades_with` edge
+   * they toll (`controlledBy`), or whose Route they founded (`constructed_by` from the
+   * identity node) or hold (`owns` on the identity node). Each lane counts once.
+   */
+  | { type: 'agent_holds_lanes'; minCount: number }
+  /**
+   * The agent's home settlement (residence origin, else last position, climbed to its
+   * Location) contains a Place of this type (THR-1967). `false` with no home.
+   */
+  | { type: 'agent_home_has_place'; placeType: string }
   | { type: 'agent_has_trait'; trait: string }
   | { type: 'agent_lacks_trait'; trait: string }
   /**

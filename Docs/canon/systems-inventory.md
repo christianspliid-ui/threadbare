@@ -320,7 +320,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `essence` (7) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSourceWrite.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-1935`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
 | `exploration` (1) | `explorationHooks.ts` | `THR-1621` |
-| `faction` (17) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSplinter.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-1957`, `THR-400`, `THR-430`, `THR-711`, `THR-810`, `THR-814` |
+| `faction` (17) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSplinter.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-1957`, `THR-400`, `THR-430`, `THR-810`, `THR-814` |
 | `factionpurse` (4) | `factionPurse/income.ts`, `factionPurse/means.ts`, `factionPurse/purseSentences.ts`, `factionPurse/upkeep.ts` | `THR-1867`, `THR-1931`, `THR-1932` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
@@ -333,7 +333,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `fragment` (1) | `fragmentResolution.ts` | `THR-1635`, `THR-475`, `THR-573` |
 | `game` (1) | `gameInit.ts` | — |
 | `god` (2) | `godCardProgressionCheck.ts`, `godProgression.ts` | `THR-1765`, `THR-1794`, `THR-1811` |
-| `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-1566`, `THR-1631`, `THR-786`, `THR-822` |
+| `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-1566`, `THR-1631`, `THR-1967`, `THR-786`, `THR-822` |
 | `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-1437`, `THR-731` |
 | `group` (1) | `groupShape.ts` | `THR-1297` |
 | `groups` (16) | `groups/bandOpposition.ts`, `groups/bandSpawner.ts`, `groups/groupCohesion.ts`, `groups/groupCommand.ts`, `groups/groupDissolution.ts`, `groups/groupEligibility.ts`, `groups/groupFormation.ts`, `groups/groupFray.ts`, `groups/groupMovement.ts`, `groups/groupNames.ts`, `groups/groupParting.ts`, `groups/groupQueries.ts`, `groups/groupResolution.ts`, `groups/groupReunion.ts`, `groups/groupSeeking.ts`, `groups/phaseGroups.ts` | `TB-044`, `THR-1174`, `THR-1297`, `THR-1438`, `THR-731`, `THR-732`, `THR-74` |
@@ -456,7 +456,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `traits` (1) | `traits.ts` | `THR-786` |
 | `treasure` (1) | `treasureMapConsumption.ts` | — |
 | `trust` (1) | `trustMechanics.ts` | — |
-| `undertaking` (10) | `undertakingCapabilityGrowth.ts`, `undertakingCatalystAnchor.ts`, `undertakingCheckpoints.ts`, `undertakingDeed.ts`, `undertakingEconomy.ts`, `undertakingMoments.ts`, `undertakingMotive.ts`, `undertakingProse.ts`, `undertakingResolver.ts`, `undertakingReviewLevers.ts` | `THR-1281`, `THR-1292`, `THR-1297`, `THR-1299`, `THR-1300`, `THR-1392`, `THR-1397`, `THR-1434`, `THR-1440`, `THR-1511`, `THR-1937` |
+| `undertaking` (10) | `undertakingCapabilityGrowth.ts`, `undertakingCatalystAnchor.ts`, `undertakingCheckpoints.ts`, `undertakingDeed.ts`, `undertakingEconomy.ts`, `undertakingMoments.ts`, `undertakingMotive.ts`, `undertakingProse.ts`, `undertakingResolver.ts`, `undertakingReviewLevers.ts` | `THR-1281`, `THR-1292`, `THR-1297`, `THR-1299`, `THR-1300`, `THR-1392`, `THR-1397`, `THR-1434`, `THR-1440`, `THR-1511`, `THR-1937`, `THR-1967` |
 | `unified` (4) | `unifiedActionLifecycle.ts`, `unifiedActionPhases.ts`, `unifiedActionResolution.ts`, `unifiedCandidates.ts` | `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 6`, `Phase 7` |
 | `unrest` (1) | `unrestPressure.ts` | `THR-1934`, `THR-1957` |
 | `unrestpressure` (8) | `unrestPressure/bands.ts`, `unrestPressure/defection.ts`, `unrestPressure/describe.ts`, `unrestPressure/hunger.ts`, `unrestPressure/inputs.ts`, `unrestPressure/leave.ts`, `unrestPressure/rising.ts`, `unrestPressure/turns.ts` | `THR-1923`, `THR-1934`, `THR-1957` |

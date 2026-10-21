@@ -1653,6 +1653,8 @@ export interface DebugBridge {
       want: number;
       multiplier: number;
     } | null;
+    /** THR-1967 — the tick of this mortal's last paid trade run (one a day); null when never paid. */
+    lastTradeRunPaidTick: number | null;
   } | null>;
   getFactionPurse: (factionId: string) => Promise<{
     tick?: number;

@@ -97,7 +97,7 @@ Five economic verbs are yours: **Bless the Harvest** (Gold / Life) swells staple
 
 Every **mortal who makes choices is born with Means** (their walk of life, their home town's fortune), and a **money encounter pays or costs it by how the dice fall** — the stakes name the risk first, and the poor lose half as much (THR-1936). A **poor or greedy mortal leans toward work that pays**; a rich one who is not greedy turns away from it — the lean weighs what they choose, never their odds (THR-1952).
 
-A **town a mortal founds** stands on open ground, is **ruled** by the founder's highest-ranking town-holding faction (or the founder alone) and taxed by it, and the founder keeps a **freehold** there; whoever **opens a road tolls it**; a **founded guild** takes its calling from its founder's strongest Reach (THR-1937).
+A **town a mortal founds** stands on open ground, is **ruled** by the founder's highest-ranking town-holding faction (or the founder alone) and taxed by it, and the founder keeps a **freehold** there; whoever **opens a road tolls it**; a **founded guild** takes its calling from its founder's strongest Reach (THR-1937). A **trade run** pays its trader once a day; the trade, founding, rebuilding and home-guarding ambitions are met by those works, and a regional monopoly meets a faction's resource acquisition (THR-1967).
 
 Every **faction keeps a purse**: the towns, places, borders, tolls and guild work it holds pay it daily, and its armies cost upkeep. Raising an army costs coin; an army its purse cannot pay deserts. The faction sheet's **Purse** shows its Means in words.
 

@@ -18,6 +18,8 @@ import { isEligibleForArmySpawn, selectCommander, spawnArmy } from './armySpawni
 import { deriveFactionProsperity } from './factionNetwork';
 import { emitTrace } from './traceBuffer';
 import { AMBITION_KIND_FACTION, AMBITION_KIND_KEY } from './ambitionShape';
+import { factionMonopolyResourceIds, isFactionAmbitionMet } from './undertakingEconomy';
+import type { FactionAmbitionMetTrace } from '../types/trace';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -292,12 +294,39 @@ export function phaseFactionAmbitions(state: GameState): void {
       ? state.graph.getNode(pursuesEdges[0].target)
       : null;
 
+    // THR-1967: a met ambition hands the next pick to this type, skipping the draw.
+    let forcedNext: FactionAmbitionType | null = null;
+
     if (activeAmbition) {
       let ambitionStillActive = true;
 
       // Check if target is still valid
       const targetId = activeAmbition.properties.targetNodeId as string | null;
-      if (targetId && !state.graph.getNode(targetId)) {
+      if (isFactionAmbitionMet(state.graph, faction.id, activeAmbition.properties.ambitionType)) {
+        // THR-1967 (undertakings S3): a regional monopoly meets `resource_acquisition`.
+        // Closed the way an abandonment is (the node and its `pursues` edges go), and the
+        // next pick is `defensive_consolidation`, so the holder guards what it won.
+        const monopolyResourceIds = factionMonopolyResourceIds(state.graph, faction.id);
+        state.graph.removeNode(activeAmbition.id);
+        emitTrace({
+          tick: state.tick,
+          category: 'faction_ambition',
+          summary: `Faction ${faction.name} achieved resource acquisition — holds a regional monopoly`,
+          factionId: faction.id,
+          result: 'achieved',
+        });
+        emitTrace({
+          tick: state.tick,
+          category: 'undertaking.economy.ambition_met',
+          factionId: faction.id,
+          ambition: 'resource_acquisition',
+          monopolyResourceIds,
+          next: 'defensive_consolidation',
+          summary: `${faction.name} holds a regional monopoly (${monopolyResourceIds.join(', ')}) — turns to guarding it`,
+        } as FactionAmbitionMetTrace);
+        forcedNext = 'defensive_consolidation';
+        ambitionStillActive = false;
+      } else if (targetId && !state.graph.getNode(targetId)) {
         // Target destroyed — abandon ambition
         state.graph.removeNode(activeAmbition.id);
         emitTrace({
@@ -349,7 +378,7 @@ export function phaseFactionAmbitions(state: GameState): void {
     // Create new ambition
     const rng = mulberry32(state.seed + state.tick * 47 + hashString(faction.id));
     const candidates = scoreEligibleAmbitions(state, faction.id, definitionId);
-    const ambitionType = selectAmbitionType(candidates, rng);
+    const ambitionType = forcedNext ?? selectAmbitionType(candidates, rng);
 
     const ambitionId = `amb_${faction.id}_${state.tick}`;
     state.graph.addNode({
@@ -388,7 +417,7 @@ export function phaseFactionAmbitions(state: GameState): void {
       factionId: faction.id,
       ambitionType,
       event: 'created',
-      reason: candidates.length === 0 ? 'default_fallback' : 'weighted_selection',
+      reason: forcedNext ? 'ambition_met' : candidates.length === 0 ? 'default_fallback' : 'weighted_selection',
     });
 
     // ── Army spawning (TB-073 M2-02) ──

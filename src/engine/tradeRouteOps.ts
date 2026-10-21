@@ -292,6 +292,32 @@ export function tollTradeRouteEdge(
   return { op, success: true, createdId: edge.id };
 }
 
+/**
+ * Trade along one named lane (THR-1967) — the same writes as `executeConductTrade`
+ * (volume + 1, `lastTraded`), on the lane the caller names. `executeConductTrade` picks
+ * a lane from where the trader *stands*, so a trader working their own lane from
+ * anywhere but its ends found "no route at anchor" every time: on seed 42 every
+ * `use × route` run in 600 ticks failed that way. The THR-1883 fix, for trading.
+ */
+export function conductTradeOnLane(
+  graph: WorldGraph,
+  op: GraphOp,
+  edgeId: string,
+  tick: number | undefined,
+): GraphOpResult {
+  const edge = graph.getEdge(edgeId);
+  if (!edge || edge.type !== 'trades_with') return { op, success: false, error: 'conduct_trade: no such route edge' };
+  const props = readTradeRouteProps(edge.properties as Record<string, unknown>);
+  graph.updateEdge(edge.id, {
+    properties: {
+      ...edge.properties,
+      volume: Math.min(TRADE_ROUTE_MAX_VOLUME, props.volume + 1),
+      lastTraded: tick ?? props.lastTraded,
+    },
+  });
+  return { op, success: true, createdId: edge.id };
+}
+
 /** Stamp `controlledBy` and `taxRate`, the two fields the toll readers look for on a `trades_with` edge. */
 function stampToll(graph: WorldGraph, edge: GraphEdge, controllerId: string): void {
   graph.updateEdge(edge.id, {

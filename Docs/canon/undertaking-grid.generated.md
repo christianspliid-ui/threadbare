@@ -152,6 +152,7 @@
   - _the op_ `create_location` (Create × location) — `foundingSite.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `transfer_holding` (Seize × location) — `holdings.ts`, `undertakingEconomy.ts`
   - _the op_ `create_trade_route` (Create × route) — `strategicGraphOps.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
+  - _the op_ `conduct_trade` (Use × route) — `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `plot_death` (Destroy × mortal) — `agentLifecycle.ts`, `allegiance.ts`, `monsters/isMonster.ts`, `strategicGraphOps.ts`, `undertakingMotive.ts`
   - _the op_ `found_faction` (Create × faction) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `seal_power` (Destroy × power) — `undertakingMotive.ts`

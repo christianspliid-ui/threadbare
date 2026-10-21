@@ -7013,6 +7013,57 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'trade-run-pays-means',
+    producerSystem: AMBITIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A trade run — the use × route undertaking (THR-1967, undertakings S3) — trades on the lane its Route names (conductTradeOnLane: volume + 1, lastTraded; never a lane picked from where the trader stands, which found no route whenever the trader was away from the lane\'s ends) and pays the trader on that lane: min(TRADE_RUN_PAY_MAX, TRADE_RUN_PAY_BASE + TRADE_RUN_PAY_PER_UNIT × carriedPerDay) Means (carriedPerDay is the per-lane figure of the settlement economy, THR-1923; nothing writes it yet, so every run pays the base until that build lands) through applyMeansShift → bankWealth with reason trade_success, at most once per trader per TRADE_RUN_PAY_COOLDOWN_TICKS (the trader\'s lastTradeRunPaidTick). The person sheet\'s Means tooltip reads the reason; the want (MEANS_EARNING_CELLS) already counts the cell as paying work.',
+    ulTerms: ['Means', 'Route'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'lastWealthReason', 'lastTradeRunPaidTick', 'payTradeRun', 'conductTradeOnLane'],
+    },
+    writeSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingEconomy.ts', 'src/engine/tradeRouteOps.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/engine/mortalMeans.ts'],
+    verifiedLive: {
+      date: '2026-10-21',
+      evidence: 'THR-1967. undertakingEconomyS3.test.ts: a run pays the base, a second run inside the day pays nothing, the next day pays again (reason trade_success); a trader standing away from both ends still trades the named lane and is paid; the per-unit term is unit-tested against a hand-set carriedPerDay only (no writer before THR-1923). measure:founding-starvation seed 42: one paid run in 600 ticks where every run failed "no route at anchor" before.',
+    },
+  },
+  {
+    id: 'ambitions-read-means-lanes-buildings',
+    producerSystem: ECONOMY,
+    consumerSystem: AMBITIONS,
+    intent:
+      'Four ambitions are met by the undertakings that serve them (THR-1967): Dominate Regional Trade adds agent_holds_lanes (DOMINATE_TRADE_LANES_MIN lanes tolled via controlledBy, founded via the Route node\'s constructed_by, or held via owns on the Route node; a decayed edge no longer counts) and agent_means_at_least (DOMINATE_TRADE_MEANS_TIER) and completes on DOMINATE_TRADE_COMPLETION (3 of 5); Found Something New asks for a settlement-tier town with a constructed_by edge back to the holder (agent_controls_location, foundedBySelf); Rebuild from Ashes for a settlement-tier town of any size; Protect the Home for city-walls in the home settlement (agent_home_has_place: residence origin, else position, climbed to a settlement).',
+    ulTerms: ['Ambition', 'Means', 'Route', 'Freehold'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['agent_holds_lanes', 'agent_means_at_least', 'agent_home_has_place', 'agent_controls_location', 'heldLaneIds', 'constructed_by', 'owns', 'controlledBy'],
+    },
+    writeSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingEconomy.ts'],
+    readSites: ['src/engine/graphConditions.ts', 'src/data/ambition-templates.ts'],
+    verifiedLive: {
+      date: '2026-10-21',
+      evidence: 'THR-1967. undertakingEconomyS3.test.ts: a mortal who founds a town meets found_seat while a merely held town does not (it still meets rebuild_ground); two opened lanes plus Wealthy meet trade_lanes and trade_means; walls in another town do not meet protect_ward, walls at home do; the estate, camp and castle shapes are gone.',
+    },
+  },
+  {
+    id: 'regional-monopoly-meets-resource-acquisition',
+    producerSystem: ECONOMY,
+    consumerSystem: FACTIONS,
+    intent:
+      'A faction whose active ambition is resource_acquisition and that holds any regionalMonopolies entry (war aims S2\'s record) has met it (isFactionAmbitionMet, THR-1967). phaseFactionAmbitions closes it the way an abandonment does (the ambition node and its pursues edges go, trace undertaking.economy.ambition_met) and the next pick is defensive_consolidation, skipping the weighted draw, so the holder guards what it won.',
+    ulTerms: ['Faction'],
+    mechanism: { kind: 'node-prop', symbols: ['regionalMonopolies', 'ambitionType', 'isFactionAmbitionMet'] },
+    writeSites: ['src/engine/phases/regionalMonopolies.ts'],
+    readSites: ['src/engine/factionAmbitions.ts', 'src/engine/undertakingEconomy.ts'],
+    verifiedLive: {
+      date: '2026-10-21',
+      evidence: 'THR-1967. undertakingEconomyS3.test.ts: a resource_acquisition faction with a regional monopoly switches to defensive_consolidation on its next review; without one it keeps pursuing; no other ambition type reads as met.',
+    },
+  },
+  {
     id: 'war-aim-targets-faction-ambitions',
     producerSystem: 'War, Armies & Battles',
     consumerSystem: FACTIONS,
