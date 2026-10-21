@@ -259,6 +259,15 @@ export function settleFoundedLane(
       properties: { tick },
     });
   }
+  // The founder holds the Route as well as tolling it — the shape a seize leaves behind —
+  // so the lane does not read as unowned to `control:claim` or the owner-gated route cells.
+  // Fail-soft: a refused holding leaves the toll standing.
+  if (identityNodeId && graph.getNode(identityNodeId)) {
+    const held = grantHolding(graph, founderId, identityNodeId, { tick }, 'creation');
+    if (!held.success) {
+      console.warn(`[undertakingEconomy] founder holding refused on lane ${identityNodeId}: ${held.error ?? 'unknown'}`);
+    }
+  }
   emitTrace({
     category: 'undertaking.economy.open_lane',
     tick,

@@ -231,6 +231,19 @@ describe('THR-1937 — whoever opens a lane tolls it', () => {
     expect(readLaneHolders(graph, edge.id)).toEqual({ controlledBy: FOUNDER, founderId: FOUNDER });
   });
 
+  it('gives the founder the Route\'s holding, so nobody else can claim the lane', () => {
+    const { graph, identityId } = openLane();
+    expect(graph.getIncomingEdges(identityId, 'owns').map(e => e.source)).toEqual([FOUNDER]);
+    graph.addNode({ id: 'rival', type: 'actor', name: 'Rival', properties: { actorType: 'individual' } });
+    const claim = getUndertakingObjectType('route')!.verbs['control:claim'] as ObjectVerbSemantic;
+    const result = claim({
+      state: asState(graph), graph, actorId: 'rival', tick: 11, projectId: 'proj_2',
+      handle: { kind: 'node', nodeId: identityId },
+    } as unknown as ObjectVerbContext) as GraphOpResult;
+    expect(result.success).toBe(false);
+    expect(graph.getIncomingEdges(identityId, 'owns').map(e => e.source)).toEqual([FOUNDER]);
+  });
+
   it('pays the founder\'s toll on the next pay day the lane carries', () => {
     const { graph } = openLane();
     const toll = collectHoldingPayments(graph).filter(p => p.reason === 'route_control');
