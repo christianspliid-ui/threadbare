@@ -102,6 +102,9 @@ export const MEANS_CELL_COST: Readonly<Record<string, number>> = {
   'create×faction': MEANS_CELL_COST_GUILD,
 };
 
+/** PROTO (THR-2006): a founding the mortal cannot pay is paid by their faction (the patron). */
+export const FOUNDING_PATRON_PROTO = false;
+
 /** Extra want while the mortal's most-wanted cell is one they cannot afford (costs on only). */
 export const MEANS_UNAFFORDED_WANT = 0.3;
 

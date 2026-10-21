@@ -7,6 +7,9 @@
 // NFP #4 (Fail-soft): Invalid targets → failure trace, no crash.
 
 import type { GameState } from '../types/gameState';
+import { chargeFoundingPatron } from './foundingPatron';
+import { FOUNDING_PATRON_PROTO } from '../data/mortal-means-constants';
+import { readWealth as readWealthProto } from './wealth';
 import type { WorldGraph } from './graph';
 import type {
   StrategicActionCandidate,
@@ -478,6 +481,10 @@ function chargeFoundingCost(graph: WorldGraph, candidate: StrategicActionCandida
   if (cost <= 0) return;
   const actor = graph.getNode(candidate.actorId);
   if (!actor || actor.type !== 'actor' || actor.properties.actorType !== 'individual') return;
+  if (FOUNDING_PATRON_PROTO && readWealthProto(actor.properties as Record<string, unknown>) < cost) {
+    const patronId = chargeFoundingPatron(graph, actor.id, cost);
+    if (patronId) { emitTrace({ tick, category: 'economy.founding.patron', agentId: actor.id, patronId, cost, templateId: candidate.templateId, summary: `patron ${patronId} pays ${cost}` } as never); return; }
+  }
   const shift = applyMeansShift(actor.properties as Record<string, unknown>, -cost, 'founding');
   if (!shift) return;
   emitTrace({

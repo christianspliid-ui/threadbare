@@ -140,6 +140,8 @@ import {
   type MeansWantBreakdown,
 } from './mortalMeans';
 import { readWealth } from './wealth';
+import { findFoundingPatron } from './foundingPatron';
+import { FOUNDING_PATRON_PROTO } from '../data/mortal-means-constants';
 import { MEANS_CELL_COST_ENABLED } from '../data/mortal-means-constants';
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -586,7 +588,8 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       const template = getStrategicTemplate(candidate.templateId);
       if (!template?.cellVariant) continue;
       const cost = meansCellCost(template);
-      const unaffordable = cost > 0 && deciderWealth < cost;
+      const unaffordable = cost > 0 && deciderWealth < cost
+        && (!FOUNDING_PATRON_PROTO || findFoundingPatron(graph, agentId, cost) === null);
       if (unaffordable) {
         droppedIdx.add(index);
         meansDropped.push(candidate.templateId);
