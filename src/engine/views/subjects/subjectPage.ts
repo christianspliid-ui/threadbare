@@ -48,6 +48,7 @@ import { humanizeKeySegment } from '../../aftermathWords';
 import { ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
 import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../../data/realm-content';
 import { avatarGodTitleLine } from '../../../data/avatar-framing';
+import { getOriginPortraitUrl } from '../../../data/avatar-portrait-assets';
 import type {
   ContentCardVM,
   GenericSubjectPageVM,
@@ -208,20 +209,21 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
     const fam = state.familiarityMap;
     const level = getKnowledgeLevel(fam && typeof fam.get === 'function' ? getFamiliarity(fam, node.id) : 0);
     const thread = graph.getOutgoingEdges(state.ascendantId, 'thread').find(e => e.target === node.id);
-    const standing: StateChipVM[] = [];
-    if (thread?.properties.courtPosition === 'the_first') standing.push({ label: INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your') });
-    standing.push({ label: sentenceCase(level), tooltipId: `knowledge.${level}` });
-    standing.push(...dominionChip(state, node.id));
-    // The trade word first (THR-1982), so the header and the sheet's trade row agree.
-    const role = displayTradeLabel(node);
-    // The player's own avatar reads as their mortal shape (THR-1990). The archetype title
-    // lives on GameView; an identity-derived one repeats the divine name, so the hunger
-    // stands in exactly as it did on the retired sheet.
+    // The player's own avatar reads as their mortal shape (THR-1990), as the retired sheet
+    // did (THR-1609): the god knows it whole, so no knowledge chip and no silhouette, and
+    // it wears the origin portrait. The archetype title lives on GameView; an
+    // identity-derived one repeats the divine name, so the hunger stands in.
     const isAvatar = graph.getIncomingEdges(state.ascendantId, 'avatar_of').some(e => e.source === node.id);
     const identity = state.ascendantIdentity;
     const mortalShape = isAvatar
       ? { godTitleLine: avatarGodTitleLine(identity?.divineName, undefined, identity?.hungerName) }
       : null;
+    const standing: StateChipVM[] = [];
+    if (thread?.properties.courtPosition === 'the_first') standing.push({ label: INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your') });
+    if (!isAvatar) standing.push({ label: sentenceCase(level), tooltipId: `knowledge.${level}` });
+    standing.push(...dominionChip(state, node.id));
+    // The trade word first (THR-1982), so the header and the sheet's trade row agree.
+    const role = displayTradeLabel(node);
     return {
       ...base,
       pageKind: 'person',
@@ -230,7 +232,9 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
         ...base.header,
         kindLabel: role || sentenceCase(subtitleForNode(node, 'actor')),
         mortalShape,
-        visual: { kind: ref.kind, id: node.id, portraitGate: level === 'stranger' ? 'silhouette' : 'shown' },
+        visual: isAvatar
+          ? { kind: ref.kind, id: node.id, portraitGate: 'shown', src: identity?.originFragmentId ? getOriginPortraitUrl(identity.originFragmentId) : null }
+          : { kind: ref.kind, id: node.id, portraitGate: level === 'stranger' ? 'silhouette' : 'shown' },
         standing,
         follow: true,
       },

@@ -64,7 +64,7 @@ export function SubjectHeader({ header, graph, compact }: { header: SubjectHeade
         {header.mortalShape && (
           <p
             data-inspector-god-title=""
-            style={{ margin: '2px 0 0', fontFamily: 'var(--font-display)', fontStyle: 'italic', fontSize: 'var(--text-base)', color: 'var(--accent-gold)' }}
+            style={{ margin: '2px 0 0', fontStyle: 'italic', fontSize: 'var(--text-base)', color: 'var(--accent-gold)' }}
           >
             {header.mortalShape.godTitleLine}
           </p>
