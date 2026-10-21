@@ -107,6 +107,13 @@ describe('the three {trade} rows read both ways', () => {
       expect(plain).not.toContain(' a person');
     }
   });
+  it('a trade that starts with a vowel never reads "a oracle" (no article before the token)', () => {
+    const oracle = ctxFor({ npcRole: 'oracle', tradeWord: 'Oracle' });
+    for (const l of LINES) {
+      expect(l).not.toMatch(/\ba \{trade\}/);
+      expect(enrichProse(l!, oracle)).not.toMatch(/\ba oracle\b/i);
+    }
+  });
 });
 
 describe('a priest First (the dev seed)', () => {

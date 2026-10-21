@@ -6372,7 +6372,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'A wealthy patron offers a commission every craftsman in {location} has turned down. {actor}{?has_trade}, a {trade} by training,{/has_trade} reads the drawing twice and finds the reason: it calls for a joint that should not hold.',
+        narrative: 'A wealthy patron offers a commission every craftsman in {location} has turned down. {actor} reads the drawing twice{?has_trade} with {their} {trade}\'s eye{/has_trade} and finds the reason: it calls for a joint that should not hold.',
         onSuccess: {
           narrative: 'The joint will hold if it is cut in the wrong order. {actor} starts cutting.',
           reputationDelta: 0.06,

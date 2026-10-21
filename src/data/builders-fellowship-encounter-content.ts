@@ -1995,7 +1995,7 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
       narrativeTemplate:
         'The Fellowship\'s craft test is not theatrical — a table, raw stock, two journeymen ' +
         'observers, and however long the candidate needs. {name} is given iron stock' +
-        '{?has_trade}, whatever {their} hands learned as a {trade},{/has_trade} and asked ' +
+        '{?has_trade}, whatever {their} {trade}\'s hands already know,{/has_trade} and asked ' +
         'to produce a functional fitting of {their} choice. ' +
         '{?has_artifact}Some candidates bring their own tools; {name}\'s are noted without ' +
         'comment. The Fellowship is assessing the work, not the kit.{/has_artifact}' +
