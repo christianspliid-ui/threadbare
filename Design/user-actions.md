@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-21 10:53 local (08:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-21 11:59 local (09:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-21: undertakings in the economy, slice 1 — founded towns get a ruler and pay their founder, founded roads are tolled, founded guilds get a calling** ([THR-1937](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open)). Merged via [#2510](https://github.com/christianspliid-ui/threadbare/pull/2510) and live.
 - **2026-10-21: the builder may edit the gate and CI files.** You said: *"of course you can edit the gate and ci files"*. [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) and [THR-1949](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) go back to the unattended builder.
 - **2026-10-21: the map stops naming hidden elder ruins and undiscovered anomalies** ([THR-1960](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every)). Merged via [#2509](https://github.com/christianspliid-ui/threadbare/pull/2509) and live.
 - **2026-10-20: war aims S2 — regional monopolies pay rent and can embargo an enemy's towns** ([THR-1955](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys)). Merged via [#2508](https://github.com/christianspliid-ui/threadbare/pull/2508) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-20: land-page art for the plateau and the lair** ([THR-1916](https://linear.app/threadbare/issue/THR-1916/land-page-hero-art-plateau-and-lair-have-no-art-of-their-own)). Merged via [#2503](https://github.com/christianspliid-ui/threadbare/pull/2503) and live.
 - **2026-10-20: the minimap — the whole world in small, open at 1440p and folded at 1080p** ([THR-1901](https://linear.app/threadbare/issue/THR-1901/the-minimap-the-whole-world-in-small-open-at-1440p-and-folded-at-1080p)). Merged via [#2502](https://github.com/christianspliid-ui/threadbare/pull/2502) and live.
 - **2026-10-20: the Stage, slice 4 — journey moments, undertaking moments, premonitions and the ruin emergence play on the Stage** ([THR-1897](https://linear.app/threadbare/issue/THR-1897/the-stage-slice-4-journey-moments-undertaking-moments-premonitions-and)). Merged via [#2501](https://github.com/christianspliid-ui/threadbare/pull/2501) and live.
-- **2026-10-20: news that leaves "Needs you" lives on in the Chronicle** ([THR-1896](https://linear.app/threadbare/issue/THR-1896/news-that-leaves-needs-you-should-live-on-in-the-chronicle-mandate)). Merged via [#2499](https://github.com/christianspliid-ui/threadbare/pull/2499) and live.
 
 ---
 

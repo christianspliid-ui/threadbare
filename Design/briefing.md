@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 10:53 local (08:53 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 11:59 local (09:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,20 +27,14 @@ From [the design lane yesterday midday, run c](https://github.com/christiansplii
 
 Say 'veto <title>' to reverse any of these.
 
-## From Christian
-
-- **08:17 UTC:** *"of course you can edit the gate and ci files"*. That answers the THR-1947 ask: the unattended builder may edit the gate, CI and Definition-of-Done files. **For the builder:** un-park [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) (High) and run it, then [Run the review gate only on large changes](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine). Record *"human gate satisfied via chat review 2026-10-21"* on both. The earlier refusal came from the harness's permission layer, so the builder may need a permission rule for those paths (a harness change, shipped directly). The [backlog-grooming ask](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-21.md) about the same thing is answered by this and dropped.
-
 ## Queue
 
-**Backed up: 28 ready, 2 in progress (both unassigned between runs).**
+**Backed up: 29 ready, 2 in progress.**
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, about 16 hours. No branch, no pull request, and no local worktree holds work for it (checked this run). Christian's go-ahead above unblocks it.
-- [Undertakings in the economy, slice 1](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open) is open as [PR #2510](https://github.com/christianspliid-ui/threadbare/pull/2510), not armed. The review gate's second pass left one finding open after its two-round cap; the builder holds the merge until it is settled. That is builder work. The PR branch is pushed, so nothing is stranded.
+- [Pickup runs must background the long engine gate](https://linear.app/threadbare/issue/THR-2003/an-engine-diff-gate-now-runs-past-the-600-s-command-cap-so-pickup-runs) (High, new this morning) is built and open as [PR #2512](https://github.com/christianspliid-ui/threadbare/pull/2512), set to merge itself once its checks pass. The builder waits for it before claiming anything else, which is why the 11:50 run claimed nothing.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked, unassigned, about 17 hours. No branch, no pull request, and no local worktree holds work for it (checked this run). Your go-ahead this morning unblocks it; the builder takes it once #2512 merges.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site is current (1bd908f0). Main's checks and the three background jobs are green, and all 13 scheduled lanes are on time.
-- Engine speed reading: "tick cost 189 ms/tick steady, 33% above the 7-day median (142, 113 rows since aff531dc); top phase agent_decision, 621 agents. Name the merges between aff531dc and 1bd908f0: git log --oneline --merges aff531dc..1bd908f0". The same commit measured 144 an hour ago, and the cold playtest lane started on this machine during the measurement, so this is probably machine load. Next hour's reading will tell.
-- Overnight quiet: no lane ran from about 22:20 last night until 08:01 this morning. Overnight gaps are normal by your ruling, so this is not an ask.
+- All green. The live site is current (4fda6cc6, which includes [undertakings in the economy, slice 1](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open)). Main's checks, the three background jobs and all 13 scheduled lanes are on time. Last hour's slow engine reading was machine load: this hour measured 143 ms/tick, in line with the week.
