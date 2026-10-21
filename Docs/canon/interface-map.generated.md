@@ -240,7 +240,7 @@ remediation ticket or the build fails.
 | `pending-rite-opens-surface` | Every mortal the god threads with the Agent Thread card gets a rite on screen with their real face, shaped by how many the god has threaded, and it waits until nothing else is open. | function: `drainThreadingRites`, `closeThreadingRite`, `planThreadingRite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `planner-forecast-equals-roll` | A mortal chooses what to attempt by forecasting its odds, and the forecast is the number the dice use. The planner (`estimateStepProbability`, `forecastStepProbabilities`) forecasts every cache-entry step through `forecastActionAtScale` / `scaledStepProbability` at the template's `scale` — the same scale offset, difficulty cap and post-roll floor `resolveStepCore` applies — and the cache stores authored difficulty, since the roll never applies the late-game or danger multipliers (`PLANNER_DIFFICULTY_MULTIPLIERS_ENABLED = false`). Only what a mortal cannot foresee (a god's nudges, a company assist, push/resist) sits outside it. Standing modifiers (items, conditions, the effect family, terrain, place conditions, sphere alignment) sit on both sides since THR-1535: the roll adds `computeStandingModifierTotal`, and the planner adds the same per-reach total through a `createStandingModifierReader` built once per decision pass. | function: `forecastActionAtScale`, `scaledStepProbability`, `applyScaleDifficultyAdjust` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `player-action-aftermath-read` | The aftermath a player action already produces finally reaches the player — the receipt phase reads the summary that was built and discarded for player casts. THR-1002 extended the read to the toast tier: the first sentence of that overview is now the toast message, where the toast previously discarded it and said `Your <internal template name> <band>.` — the payload check this row recorded as unverified, on ~93% of casts. | function: `processPlayerReceipts`, `aftermathSummary`, `receiptToastSentence` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
-| `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast's fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed. | node-prop: `playerActionReceipts`, `resolvedBands` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `player-action-receipts-queue` | A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader so the card a cast was made from wears that cast's fate word (Law 37); since THR-1992 that card is the Inspector's Act row (`buildActOn` → `ActOnCardVM.fate`, the latest receipt whose template and target match the subject). The row never computes a band — the queue stays the sole authority on how a cast landed. | node-prop: `playerActionReceipts`, `withFates` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `player-cast-lands-in-target-story` | The mortal's story remembers your hand (THR-1606). A resolved player cast whose capture found a target-side change files a notable digest entry under the target's id carrying `castLine` (`castDigestEntry`); `composeThreadStory` tells that line verbatim, and one such beat is enough to tell a story, so the Story So Far on the thread detail says "Your hand reached into their sleep…". Before this, player casts were never digested at all. | node-prop: `digestBuffer`, `castLine`, `castDigestEntry`, `composeThreadStory` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `raw-entry-deal-reaches-template` | A deal declared on a legacy encounter entry arrives on the shipped step, so the everyday encounters the player meets most can offer the god's own hand, not only the handful of direct-authored templates. | function: `toUnifiedTemplate`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `receipt-event-band-toast` | A receipt toast carries its outcome band so the toast accent matches how the cast landed. | event: `band` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -521,9 +521,9 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Agent*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 106 total — 2 write, 2 read, 102 unclassified
+- **Production hits:** 107 total — 2 write, 3 read, 102 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
-- **Read sites:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
 - **Other hits:** `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +97 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
@@ -1183,10 +1183,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
 - **UL terms:** *Route*, *Congregation*, *Undertaking*, *Encounter*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 15 total — 2 write, 1 read, 12 unclassified
+- **Production hits:** 16 total — 2 write, 1 read, 13 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/encounterCache.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts`, `src/engine/pilgrimWays.ts` +7 more
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts`, `src/engine/pilgrimWays.ts` +8 more
 - **Verdict:** Verified 2026-10-03: THR-1660. `src/engine/__tests__/pilgrimWay.test.ts` takes the board's own `cell.create.pilgrim_way` candidate for a non-member zealot, completes it through `executeStrategicAction`, and asserts one `sacred_route` congregation → town with `origin: 'undertaking'` and the `projectId`, the town in `poolInvalidatedLocationIds`, and `encounter.pilgrimage_trial` pooled there by a full `EncounterCacheManager` build (absent before). Refusals `already_a_pilgrim_destination` / `no_congregation_here` are asserted on the board and at completion.
 
 ### `content-objects-registry` — 🟢 LIVE
@@ -2625,9 +2625,9 @@ exit
 - **Producer → Consumer:** Ruins, Clues & Delves → Attention, Chronicle & Narrative
 - **UL terms:** *Opponent Card*, *Fight Clock*, *Temper*
 - **Module:** `src/engine/views/stage/buildLairMonsterCardModel.ts`
-- **Production hits:** 36 total — 2 write, 2 read, 32 unclassified
+- **Production hits:** 38 total — 2 write, 4 read, 32 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/monsters/monsterCard.ts`
-- **Read sites:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/engine/views/stage/buildLairMonsterCardModel.ts`
+- **Read sites:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/engine/views/landIndex.ts`, `src/engine/views/stage/buildLairMonsterCardModel.ts`, `src/engine/views/subjects/placeRows.ts`
 - **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/components/Game/lair/buildLairMonsterCardModel.ts`, `src/data/fight-constants.ts`, `src/data/monster-families.ts`, `src/data/portrait-assets.ts` +27 more
 - **Verdict:** Verified 2026-09-25: THR-1552 F4. Review route `?view=game&seeded&size=medium&nofog`, `tick(60)`: lair_0's card reads "Ryx — A walking rot that spreads where it goes. Fearsome to face, a fair match." with 4 square pips at 14px and "untouched"; stored clock 2/4 reads "half-broken"; `spawnFight('Ryx', { clockFilled: 3, outcome: 'critical_success' })` played through the veil fells Ryx, lair_0 becomes a cleared lair, and the Cleared Lair Section reads "slain by Vara". At tick 100, `spawnFight('elite_lair_10_50', …)` fells Druja at the legendary lair_10, whose `namedEliteId` is then gone: the lair block finds her by reverse lookup on `lairId` and reads "slain by Vara" (`Docs/evidence/thr-1552/`). `getLairMonsterCard` matched `listMonsters` on every field it shares. Non-vacuous by `src/components/Game/lair/__tests__/lairMonsterF4.test.tsx`: the temper clause is absent before a fight and present after one; "slain by" renders when `getAgentInfoCard(...).death.by` is set and not when it is absent.
 
@@ -2636,10 +2636,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 59 total — 5 write, 3 read, 51 unclassified
+- **Production hits:** 60 total — 5 write, 3 read, 52 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts` +46 more
+- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts` +47 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -2767,10 +2767,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Attention, Chronicle & Narrative
 - **UL terms:** *Route*, *Congregation*, *Location*
 - **Module:** `src/engine/pilgrimWays.ts`
-- **Production hits:** 16 total — 2 write, 1 read, 13 unclassified
+- **Production hits:** 19 total — 2 write, 3 read, 14 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/worldSeed.ts`
-- **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/components/Game/PilgrimWayLine.tsx`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/world-objects.ts`, `src/engine/encounterCache.ts` +8 more
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/views/subjects/factionRows.ts`, `src/engine/views/subjects/placeRows.ts`
+- **Other hits:** `src/components/Game/PilgrimWayLine.tsx`, `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/subject-sheet-words.ts`, `src/data/world-objects.ts` +9 more
 - **Verdict:** Verified 2026-10-03: THR-1660. `src/components/Game/__tests__/PilgrimWayLine.test.tsx` renders both sheets over a graph with a seeded and a consecrated way and asserts the lines' words, links and the absence of any line on a town no way reaches; browser-verified on the seeded medium world via `window.__DEBUG.getPilgrimWays()` and the opened sheets.
 
 ### `place-sphere-reaches-encounter-opening` — 🟢 LIVE
@@ -2811,12 +2811,12 @@ exit
 
 ### `player-action-receipts-queue` — 🔵 UNVERIFIED-OK
 
-- **Intent:** A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader: `GameView` folds the queue into `resolvedBands` keyed by template id and hands it to the ActionDrawer, so the card a cast was made from wears that cast's fate word (Law 37). The drawer never computes a band — the queue stays the sole authority on how a cast landed.
+- **Intent:** A resolved player cast queues a Divine Receipt the UI surfaces as a toast or a receipt dialogue. THR-1002 added a second reader so the card a cast was made from wears that cast's fate word (Law 37); since THR-1992 that card is the Inspector's Act row (`buildActOn` → `ActOnCardVM.fate`, the latest receipt whose template and target match the subject). The row never computes a band — the queue stays the sole authority on how a cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 11 total — 1 write, 3 read, 7 unclassified
+- **Production hits:** 13 total — 1 write, 4 read, 8 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
-- **Read sites:** `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`, `src/engine/views/subjects/pageResolvers.ts`
-- **Other hits:** `src/components/Game/inspector/lab/labSubjects.ts`, `src/data/ia-manifest.ts`, `src/data/world-objects.ts`, `src/engine/castTargetChanges.ts`, `src/engine/incidentBundle.ts` +2 more
+- **Read sites:** `src/components/Game/GameView.tsx`, `src/debug-bridge.ts`, `src/engine/views/subjects/actOn.ts`, `src/engine/views/subjects/pageResolvers.ts`
+- **Other hits:** `src/components/Game/inspector/lab/labSubjects.ts`, `src/data/ia-manifest.ts`, `src/data/world-objects.ts`, `src/engine/castTargetChanges.ts`, `src/engine/incidentBundle.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `player-acts-pace-spine-gifts` — 🔵 UNVERIFIED-OK
@@ -2892,10 +2892,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 450 total — 1 write, 1 read, 448 unclassified
+- **Production hits:** 452 total — 1 write, 1 read, 450 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +443 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +445 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3211,10 +3211,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **UL terms:** *Location*
 - **Module:** `src/engine/worldPast.ts`
-- **Production hits:** 52 total — 1 write, 4 read, 47 unclassified
+- **Production hits:** 53 total — 1 write, 4 read, 48 unclassified
 - **Write sites:** `src/engine/worldPast.ts`
 - **Read sites:** `src/engine/graphQueries.ts`, `src/engine/hexActorIndex.ts`, `src/engine/hexZoom.ts`, `src/engine/phases/routeEvents.ts`
-- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts` +42 more
+- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts` +43 more
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
 
 ### `seeded-notable-holds-a-local-agenda` — 🟢 LIVE
@@ -3257,10 +3257,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Encounters & Dilemmas
 - **UL terms:** *Congregation*, *Location*, *Encounter*
 - **Module:** `src/engine/encounterCache.ts`
-- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
+- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
 - **Write sites:** `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/encounterCache.ts`
-- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/undertaking-objects.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts` +7 more
+- **Other hits:** `src/data/strategic-action-constants.ts`, `src/data/strategic-packs/zealotStrategicPack.ts`, `src/data/undertaking-objects.ts`, `src/data/world-objects.ts`, `src/engine/phaseStrategicProjects.ts` +8 more
 - **Verdict:** Verified 2026-09-28: THR-1632 S1. On GENERATED worlds, never a fixture: `src/engine/__tests__/worldScenario.test.ts` builds a small seed-42 world, asserts one `sacred_route` per congregation to its seat capital, then builds a full `EncounterCacheManager` over the graph and finds `encounter.pilgrimage_trial` pooled at every seat. The census reader (`Docs/audits/2026-09-25-living-world-data/readers/faith.ts`) reports on medium seeds 42 and 99: 3 routes each, 3 of 3 capitals pooling the pilgrimage (0 of 3 with the block at its all-"today" setting).
 
 ### `seeded-spell-holders` — 🟢 LIVE

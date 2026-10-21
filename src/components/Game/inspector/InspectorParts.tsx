@@ -86,7 +86,7 @@ export function ActOnRow({ actOn, targetName, onCast, compact = false }: {
                   style={isArmed ? { outline: '2px solid var(--border-gold)', outlineOffset: '2px' } : undefined}
                 />
                 {card.fate && (
-                  <span data-act-fate={card.fate.word} style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-display)', color: bandAccentColor(card.fate.band, 'var(--accent-gold)') }}>
+                  <span data-act-fate={card.fate.word} style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: bandAccentColor(card.fate.band, 'var(--accent-gold)') }}>
                     {card.fate.word}
                   </span>
                 )}
