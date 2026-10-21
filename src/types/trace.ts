@@ -131,6 +131,7 @@ export type TraceCategory =
   | 'player_receipt'
   | 'aftermath_reaction_refused' // THR-1777: a player's aftermath pick did not land
   | 'receipt.target_changes' | 'beat.gift_placed' // THR-1606: what your hand did
+  | 'receipt.economy' // THR-1968: what an economic card changed on its target
   | 'beat.spine_deferred' // THR-1647: a due spine gift waits for the player
   | 'beat.arrival_offer' // THR-1716: the opening beat offered at arrival, before any tick
   | 'beat.settled_as_played' // THR-1786: Beat 0 settled silently for an already-bonded First
@@ -1097,6 +1098,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // A player's aftermath pick refused by the resolver (THR-1777)
   'aftermath_reaction_refused',
   'receipt.target_changes', 'beat.gift_placed',
+  // What an economic card changed on its target (THR-1968)
+  'receipt.economy',
   // Spine gifts wait for the player (THR-1647)
   'beat.spine_deferred',
   // The arrival hands the player into the first beat (THR-1716)
@@ -5448,6 +5451,7 @@ export type TraceEntry =
   | PlayerReceiptTrace
   | AftermathReactionRefusedTrace
   | ReceiptTargetChangesTrace
+  | ReceiptEconomyTrace
   | BeatGiftPlacedTrace
   | SpineDeferredTrace
   | BeatArrivalOfferTrace
@@ -5846,6 +5850,19 @@ export interface ReceiptTargetChangesTrace extends TraceBase {
   templateId: string;
   targetId: string;
   changeKinds: string[];
+}
+
+/**
+ * Trace: what an economic card changed on its target (THR-1968, god's stake S2) —
+ * one row per `economy` change, whether it crossed a band, and how the receipt was
+ * shown. Words, not amounts: the amounts are on the graph.
+ */
+export interface ReceiptEconomyTrace extends TraceBase {
+  category: 'receipt.economy';
+  actionId: string;
+  targetId: string;
+  changes: Array<{ quantity: string; title: string; crossed: boolean }>;
+  presentation: 'modal' | 'toast';
 }
 
 /**

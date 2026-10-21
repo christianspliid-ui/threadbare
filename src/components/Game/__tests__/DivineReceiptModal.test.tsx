@@ -126,4 +126,29 @@ describe('DivineReceiptModal', () => {
     expect(screen.queryByTestId('divine-receipt-changes')).toBeNull();
     expect(screen.getByTestId('divine-receipt-acknowledge')).toBeTruthy();
   });
+
+  it('THR-1968: a crossed economy band on the target reads its words, with no number', () => {
+    render(
+      <DivineReceiptModal
+        open
+        receipt={makeReceipt({
+          templateId: 'loc.bless_harvest',
+          templateName: 'Bless the Harvest',
+          targetId: 'loc-millbrook',
+          targetName: 'Millbrook',
+          changes: [{
+            id: 'e1', kind: 'economy', title: 'Fortunes lift',
+            detail: 'Millbrook is no longer struggling: it is modest again.',
+            polarity: 'gain', subjectId: 'loc-millbrook', economyQuantity: 'prosperity', crossed: true,
+            stateNoun: { text: 'Prosperity', tooltipId: 'ui.econ.prosperity' },
+          }],
+        })}
+        onAcknowledge={() => {}}
+      />,
+    );
+    const rows = screen.getByTestId('divine-receipt-changes').textContent ?? '';
+    expect(rows).toContain('Fortunes lift');
+    expect(rows).toContain('Millbrook is no longer struggling: it is modest again.');
+    expect(rows).not.toMatch(/\d/);
+  });
 });
