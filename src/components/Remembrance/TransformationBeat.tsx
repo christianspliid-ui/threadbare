@@ -26,6 +26,8 @@ type TransformationStep = 'hunger' | 'court' | 'spheres' | 'sphere-reveal';
 
 /** How long the sphere reveal holds before moving on by itself; a click or key moves on at once (THR-1989). */
 export const SPHERE_REVEAL_HOLD_MS = 2500;
+/** A click or key in the reveal's first moments is the tail of the confirm (a double-click), not a skip. */
+export const SPHERE_REVEAL_SKIP_AFTER_MS = 400;
 
 export function TransformationBeat({ hungers, driveFragment, onSelect }: TransformationBeatProps) {
   const [step, setStep] = useState<TransformationStep>('hunger');
@@ -77,6 +79,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
   // THR-1989: the reveal finishes once — on its timer, or earlier on a click or key.
   const revealFinish = useRef<(() => void) | null>(null);
   const revealTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const revealStartedAt = useRef(0);
 
   const finishReveal = useCallback(() => {
     const finish = revealFinish.current;
@@ -99,18 +102,24 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
         onSelect(selectedHunger, selectedCourt, bought);
       }
     };
+    revealStartedAt.current = Date.now();
     revealTimer.current = setTimeout(finishReveal, SPHERE_REVEAL_HOLD_MS);
   }, [selectedHunger, selectedCourt, onSelect, finishReveal]);
+
+  const skipReveal = useCallback(() => {
+    if (Date.now() - revealStartedAt.current < SPHERE_REVEAL_SKIP_AFTER_MS) return;
+    finishReveal();
+  }, [finishReveal]);
 
   useEffect(() => {
     if (step !== 'sphere-reveal') return;
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
-      finishReveal();
+      skipReveal();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [step, finishReveal]);
+  }, [step, skipReveal]);
 
   const preset = useMemo(
     () => (selectedHunger ? presetFromAlignment(selectedHunger.sphereAlignment) : {}),
@@ -148,7 +157,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
 
   return (
     <div className="h-screen relative overflow-hidden flex flex-col items-center justify-center"
-         onClick={step === 'sphere-reveal' ? finishReveal : undefined}
+         onClick={step === 'sphere-reveal' ? skipReveal : undefined}
          data-testid={step === 'sphere-reveal' ? 'sphere-reveal' : undefined}
          style={{ background: '#0a0a0f', cursor: step === 'sphere-reveal' ? 'pointer' : undefined }}>
 

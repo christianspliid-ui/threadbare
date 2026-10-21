@@ -12,7 +12,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { StirringBeat } from '../StirringBeat';
 import { DriveBeat } from '../DriveBeat';
 import { OriginBeat } from '../OriginBeat';
-import { TransformationBeat, SPHERE_REVEAL_HOLD_MS } from '../TransformationBeat';
+import { TransformationBeat, SPHERE_REVEAL_HOLD_MS, SPHERE_REVEAL_SKIP_AFTER_MS } from '../TransformationBeat';
 import {
   STIRRING_CHOSEN_HOLD_MS,
   DRIVE_CHOSEN_HOLD_MS,
@@ -175,6 +175,10 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
     fireEvent.click(screen.getByTestId('court-confirm'));
     fireEvent.click(screen.getByTestId('spheres-confirm'));
     expect(onSelect).not.toHaveBeenCalled();
+    // A double-click on the confirm lands its second click here: ignored.
+    fireEvent.click(screen.getByTestId('sphere-reveal'));
+    expect(onSelect).not.toHaveBeenCalled();
+    act(() => { vi.advanceTimersByTime(SPHERE_REVEAL_SKIP_AFTER_MS); });
     fireEvent.click(screen.getByTestId('sphere-reveal'));
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.calls[0][0]).toBe(hungers[0]);
@@ -191,6 +195,7 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
     act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
     fireEvent.click(screen.getByTestId('court-confirm'));
     fireEvent.click(screen.getByTestId('spheres-confirm'));
+    act(() => { vi.advanceTimersByTime(SPHERE_REVEAL_SKIP_AFTER_MS); });
     fireEvent.keyDown(window, { key: ' ' });
     expect(onKey).toHaveBeenCalledTimes(1);
     unmount();
