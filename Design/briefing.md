@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 21:59 local (19:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 22:58 local (20:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,14 +25,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, 2 in progress.**
+**Backed up: 20 ready, 2 in progress.**
 
-- [Your avatar's page says "— your mortal shape" again](https://linear.app/threadbare/issue/THR-1990/the-avatars-page-lost-its-your-mortal-shape-framing-when-the-character) merged as [PR #2523](https://github.com/christianspliid-ui/threadbare/pull/2523).
-- The builder has finished [four things the retired sheets showed that no Inspector page shows](https://linear.app/threadbare/issue/THR-1992/four-things-the-retired-sheets-showed-that-no-inspector-page-shows-the). [PR #2525](https://github.com/christianspliid-ui/threadbare/pull/2525) merges itself when its checks pass.
+- [Four things the retired sheets showed are Inspector rows again](https://linear.app/threadbare/issue/THR-1992/four-things-the-retired-sheets-showed-that-no-inspector-page-shows-the) — the Blood line, the pilgrim way, the lair's monster card and the fate word. Merged as [PR #2525](https://github.com/christianspliid-ui/threadbare/pull/2525) and live.
+- The builder has finished [ordinary scenes stop recasting The First](https://linear.app/threadbare/issue/THR-1993/ordinary-scenes-stop-recasting-the-first-six-scenes-wait-for-a-mortal) (six scenes now wait for a mortal of the right trade; 21 lines stop calling her a trade she never had). [PR #2526](https://github.com/christianspliid-ui/threadbare/pull/2526) merges itself when its checks pass.
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked and unassigned, 6 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch and no local worktree for it (checked this run).
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- Last hour's engine-speed jump was machine load, not a slowdown: tick cost is back to 162 ms/tick, +15% vs the 7-day median (141), inside the normal range.
-- Everything else is green: main's checks and the three background jobs are healthy, one pull request is waiting on its checks, all 13 scheduled lanes are on time, and the live site is current.
+All green: main's checks and the three background jobs are healthy, one pull request is waiting on its checks, all 13 scheduled lanes are on time, the live site is current, and the engine runs at 147 ms/tick (+4% vs the 7-day median).
