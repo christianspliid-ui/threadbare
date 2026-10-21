@@ -25,6 +25,7 @@ import { REALM_FACTION_CLASS } from '../../data/realm-content';
 import { FOUNDED_GUILD_TYPE_BY_REACH, FOUNDED_TOWN_RULER_INFLUENCE } from '../../data/undertaking-economy-constants';
 import { REACH_DOMAINS } from '../../types/traits';
 import { GUILD_PLACE_AFFINITY } from '../../data/faction-purse-constants';
+import { GUILD_IDENTITY_PROSE } from '../../data/prose-layer-content';
 import type { GameState } from '../../types/gameState';
 import type { GraphOpResult } from '../strategicGraphOps';
 import { PLACE_ROW_RESOLVERS } from '../views/subjects/placeRows';
@@ -273,6 +274,8 @@ describe('THR-1937 — a founded guild has a calling', () => {
       expect(reach in FOUNDED_GUILD_TYPE_BY_REACH).toBe(true);
       const type = FOUNDED_GUILD_TYPE_BY_REACH[reach];
       if (type !== null) expect(GUILD_PLACE_AFFINITY[type]).toBeDefined();
+      // Its identity prose too — a calling without a row reads as merchants (review gate).
+      if (type !== null) expect(GUILD_IDENTITY_PROSE[type]?.length ?? 0).toBeGreaterThan(0);
     }
   });
 
@@ -345,5 +348,18 @@ describe('THR-1937 — a faction-ruled founding moves the realm projection', () 
     const before2 = runtime2.structuralCacheVersion;
     runCell(alone, 'location', { runtime: runtime2 } as Partial<ObjectVerbContext>);
     expect(runtime2.structuralCacheVersion).toBe(before2);
+  });
+});
+
+describe('THR-1937 — a founder who rules alone tithes once the town grows (review gate)', () => {
+  it('the founding controls edge carries the key the mortal tithe reads', () => {
+    const graph = world();
+    const townId = runCell(graph, 'location').createdId!;
+    expect(collectHoldingPayments(graph).some(p => p.reason === 'location_tithe' && p.sourceId === townId)).toBe(false);
+    const town = graph.getNode(townId)!;
+    graph.updateNode(townId, { properties: { ...town.properties, prosperity: 60 } });
+    const tithe = collectHoldingPayments(graph).filter(p => p.reason === 'location_tithe' && p.sourceId === townId);
+    expect(tithe).toHaveLength(1);
+    expect(tithe[0].holderId).toBe(FOUNDER);
   });
 });

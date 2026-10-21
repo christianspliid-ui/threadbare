@@ -129,6 +129,8 @@ export function settleFoundedTown(input: FoundTownEconomyInput): FoundedTownRule
       type: 'controls',
       properties: {
         role: 'strategic',
+        // The key the mortal tithe reads (holdingIncome.ts): a founder who rules alone tithes once the town grows.
+        controlType: 'strategic',
         influence: FOUNDED_TOWN_RULER_INFLUENCE,
         establishedTick: tick,
         via: FOUNDED_CONTROLS_VIA,
