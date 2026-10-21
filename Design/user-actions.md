@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-21 20:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-21 21:59 local (19:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -9,6 +9,12 @@
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
 Recent gaps: 12–13 Oct overnight (03:57–13:57), Thursday 15 Oct (14:50–20:44), Friday 16 into Saturday 17 Oct (18:31–11:34, 21 jobs ready), and **Sunday 18 into Monday 19 Oct (20:26 Sunday – about 19:42 Monday, 25 jobs ready)**.
+
+### The process cuts THR-1947 and THR-1949: run them with you present, or let the builder edit the gate files? (15 Oct)
+
+You approved both on 15 Oct. The unattended builder claimed [THR-1947](https://linear.app/threadbare/issue/THR-1947) (one status line per PR instead of three ledgers), but it is not allowed to edit the gate, CI and Definition-of-Done files, so nothing changed ([the park note](https://linear.app/threadbare/issue/THR-1947)). [THR-1949](https://linear.app/threadbare/issue/THR-1949) edits the same files and will hit the same wall. [THR-1951](https://linear.app/threadbare/issue/THR-1951) waits on 1947.
+
+**Run 1947, then 1949, in one session with you present** (recommended, the smaller trust change), **or allow the unattended builder to edit those files.** *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-21.md)*
 
 ### Sunday 18 – Monday 19 Oct: was the app closed, or was this a pause? (new 19 Oct)
 
@@ -34,6 +40,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-21: your avatar's page says "— your mortal shape" again** ([THR-1990](https://linear.app/threadbare/issue/THR-1990/the-avatars-page-lost-its-your-mortal-shape-framing-when-the-character)). Merged via [#2523](https://github.com/christianspliid-ui/threadbare/pull/2523).
 - **2026-10-21: a shorter road to the first mortal** ([THR-1989](https://linear.app/threadbare/issue/THR-1989)). Merged via [#2522](https://github.com/christianspliid-ui/threadbare/pull/2522) and live.
 - **2026-10-21: the path you chose comes back** ([THR-1988](https://linear.app/threadbare/issue/THR-1988/the-path-you-chose-comes-back-each-what-will-they-become-path-gets-a)). Merged via [#2521](https://github.com/christianspliid-ui/threadbare/pull/2521) and live.
 - **2026-10-21: the mortal picker names all three mortals before the first click** ([THR-1987](https://linear.app/threadbare/issue/THR-1987/name-the-three-mortals-before-the-first-click-name-and-epithet-on)). Merged via [#2520](https://github.com/christianspliid-ui/threadbare/pull/2520) and live.
@@ -43,7 +50,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-21: undertakings in the economy, slice 3 — a trade run pays the trader** ([THR-1967](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the)). Merged via [#2515](https://github.com/christianspliid-ui/threadbare/pull/2515) and live.
 - **2026-10-21: Notables and Doom say why — a fade line under finished agendas, and the doom clock explains its pace** ([THR-1965](https://linear.app/threadbare/issue/THR-1965/notables-and-doom-say-why-a-fade-line-under-finished-agendas-the)). Merged via [#2514](https://github.com/christianspliid-ui/threadbare/pull/2514) and live.
 - **2026-10-21: the aftermath opens with what decided it — one cause line first, "won, at a price" everywhere, and the price always named** ([THR-1964](https://linear.app/threadbare/issue/THR-1964/the-aftermath-opens-with-what-decided-it-one-cause-line-first-won-at-a)). Merged via [#2513](https://github.com/christianspliid-ui/threadbare/pull/2513).
-- **2026-10-21: pickup runs no longer run the long heavy tests inside the gate, so an engine change fits the time limit** ([THR-2003](https://linear.app/threadbare/issue/THR-2003/an-engine-diff-gate-now-runs-past-the-600-s-command-cap-so-pickup-runs)). Merged via [#2512](https://github.com/christianspliid-ui/threadbare/pull/2512) and live.
 
 ---
 
