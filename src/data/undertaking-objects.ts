@@ -86,7 +86,7 @@ import {
 import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
 import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
-import { resolveDurableActorLocation, executeConductTrade, tollTradeRouteEdge, mintRouteIdentity } from '../engine/tradeRouteOps';
+import { resolveDurableActorLocation, executeConductTrade, conductTradeOnLane, tollTradeRouteEdge, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
 import { getGroupMemberEdges, getGroupPosition, getGroupCohesion, getCohesionState, isAgentGone } from '../engine/groups/groupQueries';
 import { setCommander } from '../engine/groups/groupCommand';
@@ -1462,7 +1462,13 @@ const ROUTE: UndertakingObjectType = {
       const anchor = str(node?.properties, 'routeSourceId');
       if (!node || !anchor) return fail('conduct_trade', 'no_endpoint');
       const op = { op: 'conduct_trade' } as unknown as GraphOp;
-      const r = executeConductTrade(ctx.graph, op, { actorId: ctx.actorId, targetId: node.id, locationId: anchor, tick: ctx.tick });
+      // THR-1967: the named lane itself, never a lane picked from where the trader stands
+      // (that found no route at all whenever the trader was away from the lane's ends).
+      // A legacy Route with no standing edge falls back to the anchored pick.
+      const laneId = str(node.properties, 'routeEdgeId');
+      const r = laneId && ctx.graph.getEdge(laneId)?.type === 'trades_with'
+        ? conductTradeOnLane(ctx.graph, op, laneId, ctx.tick)
+        : executeConductTrade(ctx.graph, op, { actorId: ctx.actorId, targetId: node.id, locationId: anchor, tick: ctx.tick });
       if (!r.success) return fail('conduct_trade', r.error ?? 'refused');
       // THR-1967: the run pays its trader on the lane it actually traded, once a day.
       if (r.createdId) payTradeRun(ctx.graph, ctx.actorId, r.createdId, ctx.tick);

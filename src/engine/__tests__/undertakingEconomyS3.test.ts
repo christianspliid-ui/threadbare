@@ -115,6 +115,20 @@ describe('THR-1967 — a trade run pays the trader', () => {
     expect(graph.getNode(FOUNDER)!.properties.lastWealthReason).toBe('trade_success');
   });
 
+  it('trades on the named lane even when the trader stands away from its ends', () => {
+    const graph = world();
+    const route = openLane(graph, 'loc_wolfton');
+    // The trader walks to Brindle, which no lane touches.
+    graph.removeEdge(`loc_${FOUNDER}`);
+    graph.addEdge({ id: `loc_${FOUNDER}_b`, source: FOUNDER, target: 'loc_brindle', type: 'located_at', properties: {} });
+    const edge = graph.getEdgesByType('trades_with')[0];
+    const volume = edge.properties.volume as number;
+    const before = wealthOf(graph);
+    expect(tradeRun(graph, route, 20).success).toBe(true);
+    expect(graph.getEdge(edge.id)!.properties).toMatchObject({ volume: volume + 1, lastTraded: 20 });
+    expect(wealthOf(graph)).toBe(before + TRADE_RUN_PAY_BASE);
+  });
+
   it('pays on the lane the run actually traded, by what it carried', () => {
     const graph = world();
     const route = openLane(graph, 'loc_wolfton');
