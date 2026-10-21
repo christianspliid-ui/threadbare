@@ -103,6 +103,7 @@ complete. (These phases still appear in the full wiring table below; they just l
 | `2a.15` | Threading rite drain | `THR-1644` |
 | `2a.99` | Story breath anchors | `THR-1715` |
 | `2b.1` | Stakes context | `THR-1727` |
+| `2b.1a` | The chosen path | `THR-1988` |
 | `3b` | Notable Agendas | `THR-630` |
 | `6.15` | Dominion | `THR-1748` |
 | `6.6295` | The crown | `THR-1932` |
@@ -143,6 +144,7 @@ registry. The wiring ground truth: if it is on the tick path, it is here.
 | `2a.99` | Story breath anchors | `THR-1715` | orchestrator |
 | `2b` | Agent Decision — unified encounter-driven decision pipeline | — | orchestrator |
 | `2b.1` | Stakes context | `THR-1727` | orchestrator |
+| `2b.1a` | The chosen path | `THR-1988` | orchestrator |
 | `2b.2` | Encounter Visibility, pause-mode pass | `THR-1715` | orchestrator |
 | `2.34` | Companies | `THR-74` | orchestrator |
 | `2.35` | Agent Movement | — | orchestrator |
@@ -325,7 +327,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `fights` (16) | `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightRecord.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1528`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1574`, `THR-1581`, `THR-1628` |
-| `first` (2) | `firstMark.ts`, `firstTrade.ts` | `THR-1644`, `THR-1755`, `THR-1982` |
+| `first` (3) | `firstMark.ts`, `firstPath.ts`, `firstTrade.ts` | `THR-1644`, `THR-1755`, `THR-1982`, `THR-1988` |
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-1857`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
@@ -475,4 +477,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 111 tick phases · 235 engine domains · 782 modules._
+_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 235 engine domains · 783 modules._
