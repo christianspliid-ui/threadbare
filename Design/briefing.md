@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 17:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 18:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,15 +15,21 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+- [Founding costs starve founding on their own](https://linear.app/threadbare/issue/THR-2006/founding-costs-starve-founding-on-their-own-with-costs-on-seeds-427): when founding costs one day switch on, a mortal who cannot afford to found a town or a guild **has it paid by their faction**, which becomes the founding's backer. A mortal who can pay still pays. Measured, this brings foundings back from 3 to 14 across three test worlds, the same as with no costs. Founding costs stay **off** for now, so nothing changes in play today. *Veto:* "a founding should be the mortal's own; no patrons". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-21a.md)*
+
+Say "veto <title>" to reverse any of these.
+
 ## Queue
 
 **Backed up: 25 ready, 2 in progress.**
 
-- [Five round-4 playtest faults](https://linear.app/threadbare/issue/THR-1979) (spell names on the rail, icons after a rebuild, the restraint stance, the plague scene) merged at the top of the hour as [PR #2517](https://github.com/christianspliid-ui/threadbare/pull/2517). The site publishes it within 20 minutes.
-- [The First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read) is being built right now by the builder's current run (13 files changed in its worktree, active a few minutes ago).
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it, so the builder is free to take it.
+- [Name the three mortals before the first click](https://linear.app/threadbare/issue/THR-1987/name-the-three-mortals-before-the-first-click-name-and-epithet-on) is built. [PR #2520](https://github.com/christianspliid-ui/threadbare/pull/2520) is waiting on its checks and will merge itself when they pass.
+- [The First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read) merged as [PR #2518](https://github.com/christianspliid-ui/threadbare/pull/2518) and is live.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). The builder is free to take it.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-All green. Main's checks and the three background jobs are healthy, no pull request is waiting, and all 13 scheduled lanes are on time. The live site still serves the previous main; the newest merge (9b73a4cf) is less than 20 minutes old and still publishing. Engine speed is normal: 138 ms per tick, 3% under the week's median of 142.
+All green. Main's checks and the three background jobs are healthy, one pull request is waiting on checks, and all 13 scheduled lanes are on time. The live site is current. Engine speed is normal: 138 ms per tick, 3% under the week's median of 142.

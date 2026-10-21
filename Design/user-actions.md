@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-21 17:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-21 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,7 +34,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-10-21: five round-4 playtest faults fixed — spell names on the rail, icons after a rebuild, the restraint stance, the plague scene** ([THR-1979](https://linear.app/threadbare/issue/THR-1979)). Merged via [#2517](https://github.com/christianspliid-ui/threadbare/pull/2517), publishing now.
+- **2026-10-21: The First keeps her trade — the meeting writes the trade the player read** ([THR-1984](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read)). Merged via [#2518](https://github.com/christianspliid-ui/threadbare/pull/2518) and live.
+- **2026-10-21: five round-4 playtest faults fixed — spell names on the rail, icons after a rebuild, the restraint stance, the plague scene** ([THR-1979](https://linear.app/threadbare/issue/THR-1979)). Merged via [#2517](https://github.com/christianspliid-ui/threadbare/pull/2517) and live.
 - **2026-10-21: every economic card says what it changed on a town or mortal** ([THR-1968](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy)). Merged via [#2516](https://github.com/christianspliid-ui/threadbare/pull/2516).
 - **2026-10-21: undertakings in the economy, slice 3 — a trade run pays the trader** ([THR-1967](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the)). Merged via [#2515](https://github.com/christianspliid-ui/threadbare/pull/2515) and live.
 - **2026-10-21: Notables and Doom say why — a fade line under finished agendas, and the doom clock explains its pace** ([THR-1965](https://linear.app/threadbare/issue/THR-1965/notables-and-doom-say-why-a-fade-line-under-finished-agendas-the)). Merged via [#2514](https://github.com/christianspliid-ui/threadbare/pull/2514) and live.
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-21: undertakings in the economy, slice 1 — founded towns get a ruler and pay their founder, founded roads are tolled, founded guilds get a calling** ([THR-1937](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open)). Merged via [#2510](https://github.com/christianspliid-ui/threadbare/pull/2510) and live.
 - **2026-10-21: the builder may edit the gate and CI files.** You said: *"of course you can edit the gate and ci files"*. [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) and [THR-1949](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) go back to the unattended builder.
 - **2026-10-21: the map stops naming hidden elder ruins and undiscovered anomalies** ([THR-1960](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every)). Merged via [#2509](https://github.com/christianspliid-ui/threadbare/pull/2509) and live.
-- **2026-10-20: war aims S2 — regional monopolies pay rent and can embargo an enemy's towns** ([THR-1955](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys)). Merged via [#2508](https://github.com/christianspliid-ui/threadbare/pull/2508) and live.
 
 ---
 
