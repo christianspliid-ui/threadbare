@@ -65,6 +65,7 @@ describe('THR-1987 — the keyboard looks closer, then chooses', () => {
 
   it('Tab focus shows the vignette; Enter (a click on the focused button) chooses', () => {
     const onSelect = renderBeat();
+    fireEvent.keyDown(window, { key: 'Tab' });
     act(() => { screen.getByTestId('sensing-candidate-1').focus(); });
     expect(screen.getByTestId('sensing-candidate-name-1').textContent).toBe('Bram');
     expect(onSelect).not.toHaveBeenCalled();
@@ -74,8 +75,17 @@ describe('THR-1987 — the keyboard looks closer, then chooses', () => {
     expect(onSelect).toHaveBeenCalledWith(PICKS[1], 1);
   });
 
+  it('focus without a Tab (the shell focusing the first portrait on mount) does not look closer', () => {
+    renderBeat();
+    act(() => { screen.getByTestId('sensing-candidate-0').focus(); });
+    expect(screen.queryByTestId('sensing-candidate-name-0')).toBeNull();
+    expect(screen.getByTestId('sensing-choose-hint').style.opacity).toBe('1');
+  });
+
   it('a mouse press that focuses the button still takes a second click to choose (Law 48)', () => {
     const onSelect = renderBeat();
+    // Even after an earlier Tab, the press clears the keyboard intent.
+    fireEvent.keyDown(window, { key: 'Tab' });
     const btn = screen.getByTestId('sensing-candidate-0');
     // Browser order: pointerdown → focus → click.
     fireEvent.pointerDown(btn);

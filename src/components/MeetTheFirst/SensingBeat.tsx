@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import type { NarrativeCandidate } from '../../types/meetingEncounter';
 import { SENSING_CHOOSE_HINT } from '../../data/meeting-narrative-prose';
 
@@ -68,10 +68,22 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
   const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
   const [confirmedIdx, setConfirmedIdx] = useState<number | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  // THR-1987 — a mouse press focuses the button before its click fires. Without
-  // this flag, onFocus would look closer and the same click would then choose:
-  // one click, not two (Law 48). Keyboard focus never sets it.
-  const pointerFocusRef = useRef(false);
+  // THR-1987 — only a Tab moves the look. Focus alone is not intent: a mouse press
+  // focuses the button before its click fires (onFocus would look closer and the
+  // same click would then choose — one click, not two, Law 48), and the shell
+  // focuses the first portrait on mount. A Tab press sets this; a pointer press
+  // clears it.
+  const tabIntentRef = useRef(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Tab') tabIntentRef.current = true; };
+    const onPointer = () => { tabIntentRef.current = false; };
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('pointerdown', onPointer, true);
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('pointerdown', onPointer, true);
+    };
+  }, []);
 
   const handleClick = useCallback((idx: number) => {
     if (confirmedIdx !== null) return;
@@ -88,9 +100,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
 
   /** THR-1987 — Tab looks closer, the same as a first click; Enter/Space then chooses. */
   const handleFocus = useCallback((idx: number) => {
-    // Cleared by the click that follows the press (or by any key), not here: a
-    // press on B blurs A and focuses B before B's click lands.
-    if (pointerFocusRef.current || confirmedIdx !== null) return;
+    if (!tabIntentRef.current || confirmedIdx !== null) return;
     setFocusedIdx(idx);
   }, [confirmedIdx]);
 
@@ -153,11 +163,7 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
   };
 
   return (
-    <div
-      className="h-screen relative overflow-hidden"
-      style={{ background: SCENE_BG }}
-      onKeyDown={() => { pointerFocusRef.current = false; }}
-    >
+    <div className="h-screen relative overflow-hidden" style={{ background: SCENE_BG }}>
       {/* Opening prose */}
       <p
         className="absolute left-0 right-0 text-center transition-all duration-700"
@@ -207,9 +213,8 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
           <div key={candidate.tempId}>
           <button
             type="button"
-            onPointerDown={() => { pointerFocusRef.current = true; }}
             onFocus={() => handleFocus(idx)}
-            onClick={() => { pointerFocusRef.current = false; handleClick(idx); }}
+            onClick={() => handleClick(idx)}
             onMouseEnter={() => setHoveredIdx(idx)}
             onMouseLeave={() => setHoveredIdx(null)}
             data-testid={`sensing-candidate-${idx}`}
