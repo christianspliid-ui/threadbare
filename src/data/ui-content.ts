@@ -127,8 +127,9 @@ export const AGENT_CARD_NEW_TIER_MARK = 'new tier';
 
 export const TOPBAR_LOCKED_SUFFIX = 'Opens when this chapter closes.';
 
-/** THR-1965 — the Notables panel footer while it lists a finished agenda (they leave after a retention window). */
-export const NOTABLES_FINISHED_FADE_LINE = 'Finished agendas fade from this list some days after they end.';
+/** THR-1965 — the Notables panel footer while it lists a finished agenda (they leave after a retention window).
+ *  Promises no span: a failed agenda's window runs from when it began, not when it failed (phaseComposition GC). */
+export const NOTABLES_FINISHED_FADE_LINE = 'Finished agendas fade from this list in time.';
 
 /**
  * THR-1814 — the `ui.clock_held` hover when the clock was already paused before the
