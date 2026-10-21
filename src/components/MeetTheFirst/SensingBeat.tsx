@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import type { NarrativeCandidate } from '../../types/meetingEncounter';
+import { SENSING_CHOOSE_HINT } from '../../data/meeting-narrative-prose';
 
 interface SensingBeatProps {
   candidates: NarrativeCandidate[];
@@ -7,12 +8,20 @@ interface SensingBeatProps {
   onSelect: (candidate: NarrativeCandidate, index: number) => void;
 }
 
-/** Spatial rest positions for 3 candidates. */
-const REST_POSITIONS = [
+/**
+ * Spatial rest positions for 3 candidates.
+ *
+ * THR-1987 — the third sat at y 18vh, its foot at ~1057px on a 1080px viewport,
+ * leaving no room for the resting name line beneath it (Law 33). At 11vh its foot
+ * is ~982px (hovered ~1004px) and the name line ends well above the fold.
+ */
+export const REST_POSITIONS = [
   { x: -28, y: -8, scale: 0.85, rotate: -1.5 },
   { x: 26,  y: -4, scale: 0.80, rotate: 1.2 },
-  { x: -2,  y: 18, scale: 0.88, rotate: 0.6 },
+  { x: -2,  y: 11, scale: 0.88, rotate: 0.6 },
 ];
+/** Resting hover lifts a portrait's scale by this much. */
+const HOVER_SCALE_LIFT = 0.06;
 
 /** Peripheral positions when one candidate is focused. */
 const PERIPHERAL_POSITIONS = [
@@ -24,8 +33,7 @@ const PERIPHERAL_POSITIONS = [
 /**
  * THR-1836 — was 1.1, which put the vignette's bottom edge at 1085.9px on a
  * 1080px viewport (Law 33). The vignette block sits inside the scaled button, so
- * the scale moves the block and the portrait together: the name line keeps its
- * place against the title painted into the art. See `focusedVignetteBottomPx`.
+ * the scale moves the block and the portrait together. See `focusedVignetteBottomPx`.
  */
 export const FOCUS_SCALE = 1.05;
 const CONFIRM_SCALE = 1.8;
@@ -60,8 +68,10 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
   const [focusedIdx, setFocusedIdx] = useState<number | null>(null);
   const [confirmedIdx, setConfirmedIdx] = useState<number | null>(null);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-
-  // Build index map for stable slot lookups
+  // THR-1987 — a mouse press focuses the button before its click fires. Without
+  // this flag, onFocus would look closer and the same click would then choose:
+  // one click, not two (Law 48). Keyboard focus never sets it.
+  const pointerFocusRef = useRef(false);
 
   const handleClick = useCallback((idx: number) => {
     if (confirmedIdx !== null) return;
@@ -76,6 +86,14 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
     }
   }, [focusedIdx, confirmedIdx, onSelect, candidates]);
 
+  /** THR-1987 — Tab looks closer, the same as a first click; Enter/Space then chooses. */
+  const handleFocus = useCallback((idx: number) => {
+    // Cleared by the click that follows the press (or by any key), not here: a
+    // press on B blurs A and focuses B before B's click lands.
+    if (pointerFocusRef.current || confirmedIdx !== null) return;
+    setFocusedIdx(idx);
+  }, [confirmedIdx]);
+
   const handleNav = useCallback((direction: -1 | 1) => {
     if (confirmedIdx !== null || focusedIdx === null) return;
     const next = (focusedIdx + direction + candidates.length) % candidates.length;
@@ -83,6 +101,13 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
   }, [confirmedIdx, focusedIdx, candidates.length]);
 
   const isBrowsing = useMemo(() => focusedIdx !== null && confirmedIdx === null, [focusedIdx, confirmedIdx]);
+
+  /** The resting transform — shared by the portrait and its name line so the two move as one. */
+  const restTransform = (idx: number): string => {
+    const r = REST_POSITIONS[idx] ?? REST_POSITIONS[0];
+    const scale = hoveredIdx === idx ? r.scale + HOVER_SCALE_LIFT : r.scale;
+    return `translate(calc(-50% + ${r.x}vw), calc(-50% + ${r.y}vh)) scale(${scale}) rotate(${r.rotate}deg)`;
+  };
 
   const getStyle = (idx: number): React.CSSProperties => {
     const isFocused = focusedIdx === idx;
@@ -119,10 +144,8 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
     }
 
     // Rest state
-    const r = REST_POSITIONS[idx] ?? REST_POSITIONS[0];
-    const hoverScale = isHovered ? r.scale + 0.06 : r.scale;
     return {
-      transform: `translate(calc(-50% + ${r.x}vw), calc(-50% + ${r.y}vh)) scale(${hoverScale}) rotate(${r.rotate}deg)`,
+      transform: restTransform(idx),
       opacity: isHovered ? 0.95 : 0.55,
       filter: isHovered ? 'brightness(1.15)' : 'brightness(0.65)',
       zIndex: isHovered ? 3 : 2,
@@ -130,7 +153,11 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
   };
 
   return (
-    <div className="h-screen relative overflow-hidden" style={{ background: SCENE_BG }}>
+    <div
+      className="h-screen relative overflow-hidden"
+      style={{ background: SCENE_BG }}
+      onKeyDown={() => { pointerFocusRef.current = false; }}
+    >
       {/* Opening prose */}
       <p
         className="absolute left-0 right-0 text-center transition-all duration-700"
@@ -150,17 +177,39 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
           ? 'Click again to choose. Or reach for another.'
           : openingProse}
       </p>
+      {/* THR-1987 — the hint. It sits under the opening line, not under the cluster:
+          the cluster's foot is near the fold at 1080px (Law 33). On focus it gives
+          way to the focused line above, which takes its place. */}
+      <p
+        data-testid="sensing-choose-hint"
+        className="absolute left-0 right-0 text-center transition-opacity duration-700"
+        style={{
+          top: 'calc(7vh + 2.4rem)',
+          color: 'rgba(200,190,170,0.8)',
+          fontFamily: 'var(--font-body)',
+          fontSize: 'var(--text-sm)',
+          letterSpacing: '0.04em',
+          opacity: focusedIdx === null && confirmedIdx === null ? 1 : 0,
+          zIndex: 20,
+          pointerEvents: 'none',
+        }}
+      >
+        {SENSING_CHOOSE_HINT}
+      </p>
 
       {/* Floating candidate images */}
       {candidates.map((candidate, idx) => {
         const isFocused = focusedIdx === idx;
         const style = getStyle(idx);
+        const atRest = focusedIdx === null && confirmedIdx === null;
 
         return (
+          <div key={candidate.tempId}>
           <button
-            key={candidate.tempId}
             type="button"
-            onClick={() => handleClick(idx)}
+            onPointerDown={() => { pointerFocusRef.current = true; }}
+            onFocus={() => handleFocus(idx)}
+            onClick={() => { pointerFocusRef.current = false; handleClick(idx); }}
             onMouseEnter={() => setHoveredIdx(idx)}
             onMouseLeave={() => setHoveredIdx(null)}
             data-testid={`sensing-candidate-${idx}`}
@@ -191,8 +240,9 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
                 WebkitMaskImage: 'radial-gradient(ellipse 90% 85% at center, black 30%, transparent 95%)',
               }}
             />
-            {/* Name, epithet, then the vignette — only when focused (THR-1815: the
-                resting cluster stays a first look; a name arrives with focus). */}
+            {/* Name, epithet, then the vignette — when focused. At rest the name
+                line is drawn outside the button (below), so the dimmed portrait
+                does not dim it too. */}
             <div
               className="absolute left-0 right-0 text-center px-8 transition-opacity duration-700"
               style={{
@@ -201,8 +251,9 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
                 pointerEvents: 'none',
               }}
             >
-              {/* One line, not two: the portrait art paints its own title near its
-                  foot, and a taller block would climb over it. */}
+              {/* One line, not two: a taller block would climb over the portrait's
+                  foot, and 2 of the 24 portraits (eye-scout, heart-counselor) paint
+                  a title there. The rest carry only a painter's signature. */}
               {isFocused && (candidate.name || candidate.epithet) && (
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-xs)', color: 'rgba(200,190,170,0.85)', margin: '0 0 6px' }}>
                   {candidate.name && (
@@ -231,6 +282,53 @@ export function SensingBeat({ candidates, openingProse, onSelect }: SensingBeatP
               </p>
             </div>
           </button>
+          {/* THR-1987 — the resting name line. A twin of the portrait's box with the
+              same transform but none of its dimming, so the line sits under the
+              image at full contrast (Law 45) and moves with it on hover. */}
+          {(candidate.name || candidate.epithet) && (
+            <div
+              aria-hidden="true"
+              className="absolute"
+              style={{
+                top: '50%',
+                left: '50%',
+                width: `min(${PORTRAIT_MAX_WIDTH_PX}px, ${PORTRAIT_WIDTH_VW}vw)`,
+                aspectRatio: '3/4',
+                transform: restTransform(idx),
+                opacity: atRest ? 1 : 0,
+                pointerEvents: 'none',
+                zIndex: 4,
+                transition: 'transform 1s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.6s ease',
+              }}
+            >
+              <p
+                data-testid={`sensing-rest-label-${idx}`}
+                className="absolute left-0 right-0 text-center px-6"
+                style={{
+                  top: '100%',
+                  marginTop: '0.5rem',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-xs)',
+                  color: 'rgba(200,190,170,0.9)',
+                  textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+                }}
+              >
+                {candidate.name && (
+                  <span
+                    data-testid={`sensing-rest-name-${idx}`}
+                    style={{ fontSize: '1rem', letterSpacing: '0.04em', color: 'rgba(222,206,172,0.95)' }}
+                  >
+                    {candidate.name}
+                  </span>
+                )}
+                {candidate.name && candidate.epithet && ' · '}
+                {candidate.epithet && (
+                  <span data-testid={`sensing-rest-epithet-${idx}`}>{candidate.epithet}</span>
+                )}
+              </p>
+            </div>
+          )}
+          </div>
         );
       })}
 
