@@ -199,6 +199,7 @@ import {
 } from './chapterArchive';
 import { pruneResolvedActions } from './resolvedActionRetention';
 import { recordStoryChapterEnd } from './attentionCadence';
+import { noteFirstPathRecall } from './firstPath';
 import { stampStakesContexts } from './encounters/stakesLine';
 import { getUnifiedTemplateById as getStakesTemplateById } from '../data/unified-action-templates';
 import type { ChapterRecord } from '../types/chapterRecord';
@@ -3452,6 +3453,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     phaseEventCounts['stakes_context'] = r.eventDelta;
   }
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2b.1a: The chosen path (THR-1988) — pin The First's first chapter after
+  // the bond, so it opens by recalling the path. Once per bond; a graph-edge write.
+  noteFirstPathRecall(s);
 
   // Phase 2b.2: Encounter Visibility, pause-mode pass (THR-1715) — a pause-mode
   // mortal's encounter created by agent decision this tick gets its step-0

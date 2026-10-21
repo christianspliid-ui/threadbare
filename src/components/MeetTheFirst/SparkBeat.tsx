@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { SparkVision } from '../../types/meetingEncounter';
 import { getSphereColor } from '../../data/sphereIcons';
 import { SPARK_TRANSITION_IN } from '../../data/meeting-narrative-prose';
@@ -10,7 +10,7 @@ interface SparkBeatProps {
   onSelect: (vision: SparkVision, index: number) => void;
 }
 
-const REST_POSITIONS = [
+export const REST_POSITIONS = [
   { x: -28, y: -8, scale: 0.85, rotate: -1.5 },
   { x: 26,  y: -4, scale: 0.80, rotate: 1.2 },
   { x: -2,  y: 18, scale: 0.88, rotate: 0.6 },
@@ -22,6 +22,9 @@ const PERIPHERAL_POSITIONS = [
   { x: -38, y: 14,  scale: 0.44, rotate: 1.8 },
 ];
 
+/** Resting hover lifts a card's scale by this much. */
+const HOVER_SCALE_LIFT = 0.06;
+const CARD_WIDTH = 'min(900px, 55vw)';
 const FOCUS_SCALE = 1.1;
 const CONFIRM_SCALE = 1.8;
 const CONFIRM_DELAY_MS = 1200;
@@ -34,6 +37,20 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   const sphereColor = getSphereColor(primarySphere);
+  // THR-1988 — only a Tab moves the look, as on the mortal picker (THR-1987): a
+  // mouse press focuses the button before its click fires, so focus alone would
+  // look closer and the same click would then choose.
+  const tabIntentRef = useRef(false);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Tab') tabIntentRef.current = true; };
+    const onPointer = () => { tabIntentRef.current = false; };
+    window.addEventListener('keydown', onKey, true);
+    window.addEventListener('pointerdown', onPointer, true);
+    return () => {
+      window.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('pointerdown', onPointer, true);
+    };
+  }, []);
 
   // Transition in — show prose, then reveal visions
   useEffect(() => {
@@ -52,6 +69,12 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
     }
   }, [focusedIdx, confirmedIdx, phase, onSelect, visions]);
 
+  /** THR-1988 — Tab looks closer, the same as a first click; Enter/Space then chooses. */
+  const handleFocus = useCallback((idx: number) => {
+    if (!tabIntentRef.current || confirmedIdx !== null || phase !== 'choosing') return;
+    setFocusedIdx(idx);
+  }, [confirmedIdx, phase]);
+
   const handleNav = useCallback((direction: -1 | 1) => {
     if (confirmedIdx !== null || focusedIdx === null) return;
     const next = (focusedIdx + direction + visions.length) % visions.length;
@@ -59,6 +82,13 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
   }, [confirmedIdx, focusedIdx, visions.length]);
 
   const isBrowsing = useMemo(() => focusedIdx !== null && confirmedIdx === null && phase === 'choosing', [focusedIdx, confirmedIdx, phase]);
+
+  /** The resting transform — shared by the card and its title so the two move as one. */
+  const restTransform = (idx: number): string => {
+    const r = REST_POSITIONS[idx] ?? REST_POSITIONS[0];
+    const scale = hoveredIdx === idx ? r.scale + HOVER_SCALE_LIFT : r.scale;
+    return `translate(calc(-50% + ${r.x}vw), calc(-50% + ${r.y}vh)) scale(${scale}) rotate(${r.rotate}deg)`;
+  };
 
   const getStyle = (idx: number): React.CSSProperties => {
     const isFocused = focusedIdx === idx;
@@ -91,10 +121,8 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
         zIndex: 1,
       };
     }
-    const r = REST_POSITIONS[idx] ?? REST_POSITIONS[0];
-    const hoverScale = isHovered ? r.scale + 0.06 : r.scale;
     return {
-      transform: `translate(calc(-50% + ${r.x}vw), calc(-50% + ${r.y}vh)) scale(${hoverScale}) rotate(${r.rotate}deg)`,
+      transform: restTransform(idx),
       opacity: isHovered ? 0.95 : 0.55,
       filter: isHovered ? `brightness(1.15) drop-shadow(0 0 10px ${sphereColor}15)` : 'brightness(0.65)',
       zIndex: isHovered ? 3 : 2,
@@ -129,11 +157,14 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
       {phase === 'choosing' && visions.map((vision, idx) => {
         const isFocused = focusedIdx === idx;
         const style = getStyle(idx);
+        const atRest = focusedIdx === null && confirmedIdx === null;
 
         return (
+          <div key={vision.id}>
           <button
-            key={vision.id}
             type="button"
+            onFocus={() => handleFocus(idx)}
+            aria-label={vision.title}
             onClick={() => handleClick(idx)}
             onMouseEnter={() => setHoveredIdx(idx)}
             onMouseLeave={() => setHoveredIdx(null)}
@@ -142,7 +173,7 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
             style={{
               top: '50%',
               left: '50%',
-              width: 'min(900px, 55vw)',
+              width: CARD_WIDTH,
               aspectRatio: '16/9',
               background: 'transparent',
               border: 'none',
@@ -198,6 +229,43 @@ export function SparkBeat({ visions, primarySphere, onSelect }: SparkBeatProps) 
               </p>
             </div>
           </button>
+          {/* THR-1988 — the path's name at rest. A twin of the card's box with the same
+              transform but none of its dimming, so the title reads at full contrast
+              (Law 45) and moves with the card on hover. It sits on the card's masked
+              lower edge, so the third card's title stays above the 1080px fold (Law 33). */}
+          {vision.title && (
+            <div
+              aria-hidden="true"
+              className="absolute"
+              style={{
+                top: '50%',
+                left: '50%',
+                width: CARD_WIDTH,
+                aspectRatio: '16/9',
+                transform: restTransform(idx),
+                opacity: atRest ? 1 : 0,
+                pointerEvents: 'none',
+                zIndex: 4,
+                transition: 'transform 1s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.6s ease',
+              }}
+            >
+              <p
+                data-testid={`spark-rest-title-${idx}`}
+                className="absolute left-0 right-0 text-center"
+                style={{
+                  bottom: '1.5rem',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'var(--text-lg)',
+                  letterSpacing: '0.06em',
+                  color: 'rgb(var(--meeting-name-rgb) / 0.95)',
+                  textShadow: 'var(--meeting-title-shadow)',
+                }}
+              >
+                {vision.title}
+              </p>
+            </div>
+          )}
+          </div>
         );
       })}
 

@@ -249,6 +249,8 @@
     /* THR-1987 — the mortal picker's caption text (epithet, hint) and name. */
     --meeting-caption-rgb: 200 190 170;
     --meeting-name-rgb: 222 206 172;
+    /* THR-1988 — lifts a path title off the spark card it sits on. */
+    --meeting-title-shadow: 0 1px 6px rgb(0 0 0 / 0.9);
     /* Secondary tone — agent name, option footers, dismiss. Information, so AA. */
     --premonition-text-dim-alpha: 0.75;
     /* Header and rule accents. */

@@ -6,7 +6,7 @@
  * tonal adjective pools and god-voice style that color the vignette.
  *
  * Usage: enrichProse applies these overlays via {tone_adj} and {tone_verb}
- * placeholders, and generateMeetingCallback uses the god-voice style.
+ * placeholders.
  */
 
 import type { ReachDomain } from '../types/traits';

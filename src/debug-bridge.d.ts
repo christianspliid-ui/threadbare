@@ -3119,6 +3119,13 @@ export interface DebugBridge {
    * or for a First from a save that predates the trade. **Async** (`await` it).
    */
   getFirstTrade: () => Promise<{ role: import('./types/npc').NpcRole; word: string } | null>;
+  /**
+   * THR-1988 — the path the god chose for The First on "What will they become?": the
+   * spark vision's id, its title ("Warden of the walls") and the Reach it strengthened.
+   * `null` before the bond, or for a First with no meeting record (the `?seeded` dev
+   * route). **Async** (`await` it).
+   */
+  getFirstPath: () => Promise<import('./engine/firstPath').FirstPath | null>;
   /** THR-1986 — forget every caption dismissal, for repeat captures. **Async**. */
   resetFirstUseCaptions: () => Promise<void>;
 

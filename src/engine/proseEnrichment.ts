@@ -105,9 +105,6 @@ export const ENRICHMENT_ALLY_MIN_TRUST = 0.5;
 /** Maximum named allies per vignette */
 export const ENRICHMENT_MAX_NAMED_ALLIES = 2;
 
-/** Probability that journey vignette includes meeting callback */
-export const CALLBACK_PROSE_PROBABILITY = 0.7;
-
 /** Maximum cast entries injected into NarrativeContext (THR-696 — enrichment perf) */
 export const CAST_CONTEXT_MAX_MEMBERS = 6;
 
@@ -1154,74 +1151,6 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
 function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
-// ─── Meeting Callback Prose ────────────────────────────────────────
-
-/**
- * Generate a callback reference to the meeting encounter.
- * Returns a prose snippet that echoes a meeting choice in the current context.
- */
-export function generateMeetingCallback(
-  ctx: NarrativeContext,
-  rng: () => number,
-): string | null {
-  if (!ctx.meetingChoiceRecord) return null;
-  if (rng() > CALLBACK_PROSE_PROBABILITY) return null;
-
-  const record = ctx.meetingChoiceRecord;
-  const callbacks = MEETING_CALLBACKS[record.intentPrimaryReach];
-  if (!callbacks || callbacks.length === 0) return null;
-
-  const index = Math.floor(rng() * callbacks.length);
-  return callbacks[index].replace(/{name}/g, ctx.agentName);
-}
-
-/**
- * Meeting callback templates by primary reach.
- * Short echoes of the founding moment, used in journey vignettes.
- */
-const MEETING_CALLBACKS: Partial<Record<ReachDomain, string[]>> = {
-  iron: [
-    '{name} grips the hilt the way they gripped that first weapon — tight, certain, like it was always meant to be there.',
-    'The same fire that burned in them at the beginning burns now, only bigger.',
-    'You remember the blade-smith\'s forge where it all began. {name} has become the blade.',
-  ],
-  heart: [
-    'The same voice that first moved a crowd now commands armies — or whispers to one.',
-    '{name} speaks, and you remember the first time those words changed someone\'s mind.',
-    'That gift for connection, visible from the very first day, has only deepened.',
-  ],
-  eye: [
-    '{name}\'s gaze is sharper now than when you first opened their eyes to the hidden world.',
-    'You remember what they couldn\'t see, once. Now they see everything.',
-    'The perception you seeded has grown into something almost frightening in its clarity.',
-  ],
-  shadow: [
-    '{name} moves through the world like a ghost — just as you intended when you first found them.',
-    'The subtlety was always there. You just... refined it.',
-    'They vanish into shadows the way they vanished from their old life — completely.',
-  ],
-  veil: [
-    'The magic comes easily now, as natural as breathing. You remember when it was a spark.',
-    '{name} reaches for power the way they reached for it the first time — but now, it answers.',
-    'The hidden world that once terrified them is now their domain.',
-  ],
-  stone: [
-    '{name}\'s hands still bear the calluses from that first act of creation.',
-    'You shaped them. They shape the world. The symmetry pleases you.',
-    'From raw material to master builder — the transformation is complete.',
-  ],
-  star: [
-    'The divine spark you planted burns brighter than ever.',
-    '{name} reaches toward the heavens, and you remember being the first heaven they touched.',
-    'Faith became power. Power became purpose. Purpose became destiny.',
-  ],
-  gold: [
-    'The wealth flows like a river now, but you remember the first coin.',
-    '{name} counts allies the way they once counted coppers — with careful precision.',
-    'From nothing to empire. The golden thread you wove did its work.',
-  ],
-};
 
 // ─── Helpers ───────────────────────────────────────────────────────
 

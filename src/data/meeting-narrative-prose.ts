@@ -84,6 +84,18 @@ export const BOND_PROSE_FALLBACK = 'The bond holds. They are the first.';
 /** Beat 4 release button text. */
 export const BOND_RELEASE_TEXT = 'Let them walk.';
 
+// ─── The chosen path (THR-1988) ───────────────────────────────────
+//
+// The "What will they become?" pick names a path (`SparkVision.title`). It comes
+// back at the bond, on The First's sheet and in her first chapter. `{path}` is the
+// title in a sentence: "the warden of the walls" (`firstPathInLine`).
+
+/** The bond's closing line. `{name}` is the name the player settled on. */
+export const FIRST_PATH_BOND_LINE = '{name} will become {path}.';
+
+/** The first line of The First's first chapter after the bond (game prose, Law 42). */
+export const FIRST_PATH_RECALL_LINE = '{name} has not forgotten the path you showed at the bond: {path}.';
+
 // ─── Fate line (THR-1714) ─────────────────────────────────────────
 //
 // Every meeting reveal opens with one fate line: what the hand made the odds,

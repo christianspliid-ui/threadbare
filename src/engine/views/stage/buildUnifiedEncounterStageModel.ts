@@ -33,6 +33,7 @@ import { stakesContextFor, stakesLineForAction } from '../../encounters/stakesLi
 import { resolveFightStepInputs } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../unifiedActionLifecycle';
+import { firstPathRecallFor } from '../../firstPath';
 import {
   getAgentPortraitUrlFromProperties,
   getPortraitUrl,
@@ -337,6 +338,10 @@ function buildNarrative(
       autoLinkNarrative('para-0', enrichProse(resolveInitiationProse(template, currentStep), ctx), linkEntries),
     );
   }
+
+  // THR-1988 — The First's first chapter after the bond opens by recalling the path.
+  const recall = firstPathRecallFor(graph, args.gameState?.ascendantId, activeAction);
+  if (recall) paragraphs.unshift(autoLinkNarrative('para-first-path', recall, linkEntries));
 
   return {
     paragraphs,

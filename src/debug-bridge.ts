@@ -3424,6 +3424,14 @@ if (import.meta.env.DEV) {
       return firstId ? readTrade(state.graph.getNode(firstId)) : null;
     },
 
+    /** THR-1988 — see `debug-bridge.d.ts`. */
+    getFirstPath: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getFirstPath } = await import('./engine/firstPath');
+      return getFirstPath(state);
+    },
+
     resetFirstUseCaptions: async () => {
       const { resetFirstUseCaptions } = await import('./components/shared/firstUseCaptionStore');
       resetFirstUseCaptions();

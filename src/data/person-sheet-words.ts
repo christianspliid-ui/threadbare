@@ -52,6 +52,8 @@ export const PERSON_FACT_WORDS = {
   calling: 'Calling',
   means: 'Means',
   godMark: "The god's mark",
+  /** THR-1988 — the path the god chose for The First at the bond. */
+  path: 'Path',
   rite: 'Rite',
   knowsTheWayTo: 'Knows the way to',
   keeps: 'Keeps',

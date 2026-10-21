@@ -117,6 +117,7 @@ export type TraceCategory =
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'attention.story_breath_start' | 'attention.routine_suppressed' // THR-1715
+  | 'first_path_recalled' // THR-1988
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
@@ -739,6 +740,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'attention.story_breath_start', 'attention.routine_suppressed',
+  'first_path_recalled',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
   'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
@@ -2504,6 +2506,17 @@ export interface StoryBreathStartTrace extends TraceBase {
   templateId: string;
   /** tick + PAUSED_STORY_BREATH_TICKS */
   breathUntilTick: number;
+}
+
+/** Trace: The First's first chapter after the bond opens by recalling the path the god chose (THR-1988). */
+export interface FirstPathRecalledTrace extends TraceBase {
+  category: 'first_path_recalled';
+  agentId: string;
+  /** The chosen spark vision. */
+  visionId: string;
+  /** The chapter that carries the recall line. */
+  actionId: string;
+  templateId: string;
 }
 
 /**
@@ -5115,6 +5128,7 @@ export type TraceEntry =
   | BinderMintTrace
   | FilterPipelineTrace
   | StoryBreathStartTrace
+  | FirstPathRecalledTrace
   | RoutineSuppressedTrace
   | ScoringTrace
   | MovementTrace
