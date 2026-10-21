@@ -574,10 +574,13 @@ export const COMPLICATION_TEMPLATES: ComplicationTemplate[] = [
       { type: 'sphere_pressure', sphere: 'veil', magnitude: 0.1 },
     ],
     proseTemplates: [
-      'The failure ripples outward, and something in the deep dark answers. The doom clock didn\'t accelerate dramatically — it just... moved. {name} felt it, though they couldn\'t say how.',
-      'The convergence is not indifferent. {name}\'s failure was exactly the kind of signal it was waiting for: a weak moment, an opening. The pressure increases.',
-      '{omen_atmosphere} intensified in the moment of failure. {name} felt the texture of the world change — briefly, specifically, in a direction they didn\'t choose.',
-      'Doom doesn\'t need dramatic moments. It builds through accumulation. Today\'s failure added its weight to the accumulation.',
+      // THR-1965 — each line names the stake and the player's answer to it. Mandates do not
+      // slow the clock: a checkpoint kept well banks counter-omens, which soften the next
+      // stage's blow (phaseMandate.ts → computeEscalationSeverity), so the lines promise that.
+      '{name}\'s failure fed the doom, and it crept a little closer. Mandates kept well blunt its next blow.',
+      'The doom waits for small failures like this one, and it took the opening. A mandate well kept softens what it brings.',
+      '{omen_atmosphere} thickened as {name} failed, and the doom gained ground. Your mandates, kept well, can blunt its next blow.',
+      'One more failure for the doom to feed on. It grows by such moments; mandates kept well soften its coming.',
     ],
     significanceBoost: 0.2,
   },

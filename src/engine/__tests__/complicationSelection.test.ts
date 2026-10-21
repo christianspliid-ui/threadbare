@@ -15,6 +15,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   selectComplication,
+  fillProse,
   determineSeverity,
 } from '../complicationSelection';
 import { applyComplicationEffects } from '../complicationEffects';
@@ -405,5 +406,30 @@ describe('trust_decay doom amplifier (THR-122)', () => {
     );
     const edge = state.graph.getOutgoingEdges('actor-1', 'relates_to').find((e: any) => e.target === 'witness-1');
     expect(edge?.properties?.trust).toBe(0);
+  });
+});
+
+// THR-1965: the doom-echo lines name the stake and the way to slow it.
+describe('doom-echo prose (THR-1965)', () => {
+  const doomEcho = COMPLICATION_TEMPLATES.find(t => t.id === 'complication.worsening_convergence.doom_echo')!;
+
+  it('every line points at the mandates and resolves every token', () => {
+    expect(doomEcho.proseTemplates).toHaveLength(4);
+    for (const line of doomEcho.proseTemplates) {
+      expect(line).toMatch(/mandate/i);
+      // Mandates soften the next stage's blow (counter-omens); they never slow the clock.
+      expect(line).not.toMatch(/slows? it|push(es)? it back|hold(s)? it back/i);
+      const filled = fillProse(line, makeContext({ activeOmenCategory: 'doom_echo' }), () => 0);
+      expect(filled).not.toMatch(/\{[a-z_]+\}/);
+      expect(filled).not.toMatch(/\d/);
+      expect(filled.charAt(0)).toBe(filled.charAt(0).toUpperCase());
+    }
+  });
+
+  it('a line that opens with the omen phrase starts with a capital', () => {
+    const filled = fillProse('{omen_atmosphere} thickened. {omen_atmosphere} again', makeContext({ activeOmenCategory: 'doom_echo' }), () => 0);
+    expect(filled).toBe('The weight of approaching doom thickened. The weight of approaching doom again');
+    const mid = fillProse('Under {omen_atmosphere}.', makeContext({ activeOmenCategory: null }), () => 0);
+    expect(mid).toBe('Under unseen forces.');
   });
 });
