@@ -84,7 +84,6 @@ import {
   foundedGuildReachProfile, settleFoundedGuild,
 } from '../engine/undertakingEconomy';
 import { findUnclaimedSite } from '../engine/foundingSite';
-import { hexDistance } from '../lib/hexMath';
 import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, tollTradeRouteEdge, mintRouteIdentity } from '../engine/tradeRouteOps';
@@ -1271,7 +1270,7 @@ const LOCATION: UndertakingObjectType = {
       // A ruler who taxes it and a freehold for the founder.
       const ruler = settleFoundedTown({
         graph: ctx.graph, founderId: ctx.actorId, townId: founded.createdId, siteId: siteId!,
-        hexOffset: hexDistance({ col, row }, ground), tick: ctx.tick, projectId: ctx.projectId,
+        hexOffset: hexDistance({ col, row }, ground), tick: ctx.tick, projectId: ctx.projectId, runtime: ctx.runtime,
       });
       return ruler && ruler.reason !== 'founder'
         ? { ...founded, completionLine: 'ruled', proseObjectId: founded.createdId, proseOwnerId: ruler.rulerId }

@@ -29,6 +29,7 @@ import { isRealmFaction } from './crown/crownView';
 import { isFactionNode, isSettlement } from './factionPurse/income';
 import { grantHolding } from './holdings';
 import { applyTreasuryDelta } from './wealth';
+import { touchStructure, type SimulationRuntime } from './simulationRuntime';
 import {
   FOUNDED_GUILD_REACH_COUNT,
   FOUNDED_GUILD_TYPE_BY_REACH,
@@ -101,6 +102,11 @@ export interface FoundTownEconomyInput {
   hexOffset: number;
   tick: number;
   projectId?: string;
+  /**
+   * The session's runtime. A faction-sourced `controls` edge moves the realm
+   * projection, so the write bumps the structural cache (THR-1155 participation).
+   */
+  runtime?: SimulationRuntime;
 }
 
 /**
@@ -129,6 +135,7 @@ export function settleFoundedTown(input: FoundTownEconomyInput): FoundedTownRule
         rulerReason: ruler.reason,
       },
     });
+    if (ruler.reason !== 'founder' && input.runtime) touchStructure(input.runtime);
   }
 
   const freehold = grantHolding(graph, founderId, townId, { tick, projectId: input.projectId });

@@ -130,6 +130,10 @@ const INVENTORY: Record<string, { disposition: Disposition; why: string }> = {
     disposition: 'not-faction-sourced',
     why: 'claimControl / releaseControl ride controlType: strategic from an individual — isAutonomousDecisionActor gates the only live caller to actorType individual, and THR-1448 owns that edge',
   },
+  'undertakingEconomy.ts': {
+    disposition: 'bumps',
+    why: "THR-1937: settleFoundedTown writes the ruler's controls edge to a town a mortal founds — faction-sourced when the founder's town-holding faction rules — and calls touchStructure on the runtime the create × location cell passes",
+  },
   'worldSeed.ts': {
     disposition: 'worldgen',
     why: 'mints every Realm\'s territory at seeding',

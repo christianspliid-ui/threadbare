@@ -6949,6 +6949,70 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'founded-town-has-ruler-and-founder',
+    producerSystem: AMBITIONS,
+    consumerSystem: FACTIONS,
+    intent:
+      'A town a mortal founds through the create × location undertaking (THR-1937 S1) stands on free ground (findUnclaimedSite from the cell\'s site; none → nothing founded, the no_ground completion line) and gets a ruler and a founder: settleFoundedTown writes a controls edge (role strategic, influence FOUNDED_TOWN_RULER_INFLUENCE, via founded, rulerReason) from the founder\'s town-holding faction with the highest getDerivedMembershipRank (ties to a realm, then the lower id; none → the founder) and grants the founder the town as a freehold through grantHolding. Readers: the faction purse taxes the town through controls (taxHolderOf), holding income pays the freehold, the place page\'s Founded by line reads the constructed_by edge, __DEBUG.getFoundingRecord reads both.',
+    ulTerms: ['Settlement', 'Freehold', 'Faction'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['controls', 'owns', 'constructed_by', 'settleFoundedTown', 'pickFoundedTownRuler', 'readFoundingRecord'],
+      module: 'src/engine/undertakingEconomy.ts',
+    },
+    writeSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingEconomy.ts'],
+    readSites: [
+      'src/engine/factionPurse/income.ts',
+      'src/engine/holdingIncome.ts',
+      'src/engine/views/subjects/placeRows.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-21',
+      evidence: 'THR-1937. src/engine/__tests__/undertakingEconomy.test.ts: the founded hamlet never shares a hex with its site and nothing is founded when the neighbourhood is full; the higher-rank town-holding faction rules, a tie goes to the realm then the lower id, a lone founder rules; the ruler\'s controls and the founder\'s owns are written and computePurseIncome lists the town under the ruler\'s taxHolderOf; the place row reads Founded by with the founder linked.',
+    },
+  },
+  {
+    id: 'founded-lane-tolled-by-founder',
+    producerSystem: AMBITIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A lane a mortal opens through the create × route undertaking (THR-1937 S1) is tolled by its founder: settleFoundedLane stamps controlledBy and taxRate (TRADE_ROUTE_DEFAULT_TAX_RATE) on the trades_with edge; who founded it is the constructed_by edge from the lane\'s identity node (written by mintRouteIdentity, or here when absent). Holding income pays a mortal toll holder through controlledBy; the economic chronicle finds identity nodes minted this tick whose lane its founder tolls (foundedLanesThisTick) and writes trade_route_established with both ends named, goods falling back to "goods"; __DEBUG.getLaneHolders and the Economy tab\'s held-lanes table read both.',
+    ulTerms: ['Route', 'Freehold'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['trades_with', 'controlledBy', 'constructed_by', 'settleFoundedLane', 'foundedLanesThisTick', 'readLaneHolders'],
+      module: 'src/engine/undertakingEconomy.ts',
+    },
+    writeSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingEconomy.ts'],
+    readSites: [
+      'src/engine/holdingIncome.ts',
+      'src/engine/phaseEconomicChronicle.ts',
+      'src/components/Game/debug/EconomyDebugTab.tsx',
+    ],
+    verifiedLive: {
+      date: '2026-10-21',
+      evidence: 'THR-1937. undertakingEconomy.test.ts: after create × route the edge carries controlledBy = founder and taxRate 0.1, the identity node has constructed_by → founder, collectHoldingPayments pays the founder a route_control toll, phaseEconomicChronicle writes a trade_route_established line naming both towns, and the line drops when either end is unnamed.',
+    },
+  },
+  {
+    id: 'founded-guild-earns-guild-work',
+    producerSystem: AMBITIONS,
+    consumerSystem: FACTIONS,
+    intent:
+      'A guild a mortal founds through the create × faction undertaking (THR-1937 S1) leans the way its founder does: the cell passes foundedGuildReachProfile (the founder\'s FOUNDED_GUILD_REACH_COUNT leading Reaches, domainCapabilities / 100) into foundFaction, and settleFoundedGuild writes guildType from FOUNDED_GUILD_TYPE_BY_REACH (leading Reach, else the second, else none) and opens the purse with what the founding cost through applyTreasuryDelta (0 while MEANS_CELL_COST has no create×faction row or costs are off). The faction purse\'s guild work reads guildType (affinityOf) and pays a founded guild like any town guild.',
+    ulTerms: ['Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['guildType', 'reachProfile', 'wealth', 'settleFoundedGuild', 'FOUNDED_GUILD_TYPE_BY_REACH'],
+    },
+    writeSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingEconomy.ts'],
+    readSites: ['src/engine/factionPurse/income.ts'],
+    verifiedLive: {
+      date: '2026-10-21',
+      evidence: 'THR-1937. undertakingEconomy.test.ts: every Reach has a FOUNDED_GUILD_TYPE_BY_REACH row and every calling is a GUILD_PLACE_AFFINITY row; a gold-led founder\'s guild is merchants with a gold/stone reach profile, opens at 0, and computePurseIncome pays it guild work in a town with a market district.',
+    },
+  },
+  {
     id: 'war-aim-targets-faction-ambitions',
     producerSystem: 'War, Armies & Battles',
     consumerSystem: FACTIONS,

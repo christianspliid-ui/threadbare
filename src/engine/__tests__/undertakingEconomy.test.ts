@@ -29,6 +29,7 @@ import type { GameState } from '../../types/gameState';
 import type { GraphOpResult } from '../strategicGraphOps';
 import { PLACE_ROW_RESOLVERS } from '../views/subjects/placeRows';
 import type { SectionResolverContext } from '../detailPageResolvers';
+import { createSimulationRuntime } from '../simulationRuntime';
 
 const FOUNDER = 'kael';
 const SITE = 'loc_ashford';
@@ -326,5 +327,23 @@ describe('THR-1937 — the place page names who founded the town', () => {
   it('is omitted for a town nobody founded (Law 14)', () => {
     const graph = world();
     expect(row(graph, SITE)).toBeNull();
+  });
+});
+
+describe('THR-1937 — a faction-ruled founding moves the realm projection', () => {
+  it('bumps the structural cache when a faction rules, not when the founder does', () => {
+    const ruled = world();
+    faction(ruled, 'f_saltmarch', { realm: true, holds: 'loc_wolfton' });
+    member(ruled, 'f_saltmarch', 0.6);
+    const runtime = createSimulationRuntime();
+    const before = runtime.structuralCacheVersion;
+    runCell(ruled, 'location', { runtime } as Partial<ObjectVerbContext>);
+    expect(runtime.structuralCacheVersion).toBe(before + 1);
+
+    const alone = world();
+    const runtime2 = createSimulationRuntime();
+    const before2 = runtime2.structuralCacheVersion;
+    runCell(alone, 'location', { runtime: runtime2 } as Partial<ObjectVerbContext>);
+    expect(runtime2.structuralCacheVersion).toBe(before2);
   });
 });

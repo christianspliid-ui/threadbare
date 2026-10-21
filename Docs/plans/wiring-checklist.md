@@ -3172,6 +3172,19 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 
 **Wired and asserted:** `mortalMeansWant.test.ts` (17 tests) — the want's shape at each line, the Generous/Greedy leans, the rich damp, the 0.82…1.9 range, earning cells, costs off, the paying-work memo, and the board term lifting a paying entry by exactly `1 + MEANS_WANT_WEIGHT × want` without moving the forecast or the fit. `outcomeEffects.test.ts` adds the cast-binding rule (a `$cast:` target must be a materializing actor spec) and pins ≥ 40 Means rows. `npm run measure:means` measures the S2 Done-when on a seeded world.
 
+## Undertakings in the economy (THR-1937 S1)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/undertakingEconomy.ts` (`settleFoundedTown`, `pickFoundedTownRuler`) | undertaking completion (`create × location`) | place page "Founded by" row (`placeRows.ts` `founded_by`, tooltip `ui.place.founded`) | graph: `controls` (`via: 'founded'`), `owns` | `undertaking.economy.found_town` / `found_town_refused` | `__DEBUG.getFoundingRecord` |
+| `engine/foundingSite.ts` (`findUnclaimedSite`, moved from the lifecycle) | `create × location` cell and the legacy hint path | — | — | via the cell | — |
+| `engine/undertakingEconomy.ts` (`settleFoundedLane`) | undertaking completion (`create × route`) | lane hover "Tolled by" (existing words) | `trades_with.controlledBy`, `taxRate`; identity `constructed_by` | `undertaking.economy.open_lane` | `__DEBUG.getLaneHolders`, Economy tab held-lanes table |
+| `engine/phaseEconomicChronicle.ts` (`foundedLanesThisTick`) | `economic_chronicle` (6.66) | chronicle | `chronicleEntries` | existing | chronicle |
+| `engine/undertakingEconomy.ts` (`settleFoundedGuild`) | undertaking completion (`create × faction`) | faction sheet purse (unchanged) | faction `guildType`, `wealth` | `undertaking.economy.found_guild` | trace viewer |
+| `engine/undertakingProse.ts` (`cellCompletionProse` outcome) ← op `completionLine` | undertaking completion | moment card | — | — | `undertakingEconomy.test.ts` |
+
+**Wired and asserted:** `undertakingEconomy.test.ts` (22 tests) — free ground and the no-ground refusal, the ruler rule (rank, realm tie, id tie, founder), controls + freehold written and the purse's `taxHolderOf` listing the town, the outcome lines and their Law 14 fallback, the lane toll and its holding-income payment, the chronicle line with both ends and its drop, the guild calling table's completeness, guild work in a market town, and the place row.
+
 ## God's stake — prayers and the faithful (THR-1935 S1)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
