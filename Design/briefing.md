@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 08:57 local (06:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 09:57 local (07:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,14 +30,15 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 28 ready, 3 in progress (1 parked).**
+**Backed up: 28 ready, 2 in progress (both unassigned between runs).**
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, about 14 hours. No branch, no pull request, and no named local worktree holds work for it (checked this run). It waits on the ask above.
-- In progress: [the map names undiscovered elder ruins](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every) (builder, touched 06:50 UTC) and the plan doc for [undertakings in the economy](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open) (design lane).
-- The builder is running now (started 06:49 UTC). No ticket has sat in the queue for more than a week without being touched.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, about 15 hours. No branch, no pull request, and no named local worktree holds work for it (checked this run). It waits on the ask above.
+- [Undertakings in the economy, slice 1](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open) is built and open as [PR #2510](https://github.com/christianspliid-ui/threadbare/pull/2510): founded towns get a ruler and pay their founder, founded trade roads pay a toll, founded guilds get a calling. It is held back from merging on purpose until the builder reviews its last three fixes. Its worktree is clean, so nothing is stranded. The builder is running now (started 07:24 UTC) and is expected to do that review.
+- Shipped since the last brief: [the map stops naming hidden elder ruins and undiscovered anomalies](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every), live.
+- No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is current (2a755058). Main's checks and the three background jobs are green, no PRs are waiting to merge, and the builder is running.
+- All green. The live site is current (1bd908f0). Main's checks and the three background jobs are green, all 13 scheduled lanes are on time, and the one open PR is the THR-1937 hold above.
 - Overnight quiet: no lane ran from about 22:20 last night until 08:01 this morning. Overnight gaps are normal by your ruling, so this is not an ask.
-- Engine speed is back to normal: 115 ms per tick, below the week's typical 142. Last hour's high reading was taken while a builder run was starting.
+- Engine speed is normal: 144 ms per tick, 2% above the week's typical 141.
