@@ -159,7 +159,7 @@ describe('divine interventions via unified pipeline', () => {
     // Should have generated a completion event — naming the spell the card shows
     // ("Oneiric Sending"), not the template's plain name (THR-1708).
     const events = result.tickEvents!;
-    expect(events.some(e => e.message.includes('completed') && e.message.includes('Oneiric Sending'))).toBe(true);
+    expect(events.some(e => e.message.includes(' won ') && e.message.includes('Oneiric Sending'))).toBe(true);
   });
 
   it('divine action applies influence GraphOp on success', () => {

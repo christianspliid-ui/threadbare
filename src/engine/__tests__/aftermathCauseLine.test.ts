@@ -10,6 +10,7 @@ import {
   PRICE_ROW_TITLE,
   PRICE_WORDS,
   buildAftermathCauseLine,
+  causeBandAgrees,
   containsNumeral,
   decidingStepIndex,
   outcomeSentence,
@@ -84,7 +85,15 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
               ? [decider]
               : [{ band, reach: 'iron', godTouched: !godTouched }, decider];
             const text = line(outcome, steps);
-            expect(text.startsWith(outcomeSentence('Kael', 'Bridge Toll', outcome))).toBe(true);
+            const lead = outcomeSentence('Kael', 'Bridge Toll', outcome);
+            expect(text.startsWith(lead)).toBe(true);
+            expect(text).not.toMatch(/[{}_]/);
+            expect(containsNumeral(text)).toBe(false);
+            // A band that contradicts the ending is never named as its cause.
+            if (!causeBandAgrees(outcome, band)) {
+              expect(text).toBe(lead);
+              continue;
+            }
             expect(text).toContain(`The work on Gold ${CAUSE_STEP_VERBS[band]}`);
             if (!godTouched) expect(text).toContain('Kael faced it alone.');
             else if (LOST.has(outcome)) expect(text).toContain('your cards could not save it.');
@@ -109,6 +118,13 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
   it('a step with its own title is named by it', () => {
     expect(line('success', [{ band: 'success', reach: 'iron', title: 'First exchange', godTouched: false }]))
       .toBe('Kael won Bridge Toll. First exchange on Iron went well, and Kael faced it alone.');
+  });
+
+  it('a deciding step that contradicts the ending is not named', () => {
+    expect(line('success_at_cost', [{ band: 'success', reach: 'heart', godTouched: false }]))
+      .toBe('Kael won Bridge Toll, at a price.');
+    expect(line('failure', [{ band: 'success_at_cost', reach: 'iron', godTouched: false }]))
+      .toBe('Kael lost Bridge Toll.');
   });
 
   it('fail-soft: no steps, or no title and no reach, gives the outcome sentence alone', () => {

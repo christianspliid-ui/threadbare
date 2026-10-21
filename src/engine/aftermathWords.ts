@@ -1048,6 +1048,20 @@ export interface CauseLineStep {
   readonly godTouched: boolean;
 }
 
+/**
+ * Does a step's band agree with the ending it would be named as deciding? A
+ * loss needs a step that missed (`near_miss` or worse); an at-cost win a step
+ * that cost (`success_at_cost` or worse); a win a step that held
+ * (`success_at_cost` or better).
+ */
+export function causeBandAgrees(outcome: UnifiedActionOutcome, band: StepOutcome): boolean {
+  const rank = STEP_OUTCOMES.indexOf(band);
+  if (rank < 0) return false;
+  if (CAUSE_LOST_OUTCOMES.has(outcome)) return rank >= STEP_OUTCOMES.indexOf('near_miss');
+  if (CAUSE_READS_WORST.has(outcome)) return rank >= STEP_OUTCOMES.indexOf('success_at_cost');
+  return rank <= STEP_OUTCOMES.indexOf('success_at_cost');
+}
+
 /** Index of the deciding step: the last step holding the worst (or best) band. */
 export function decidingStepIndex(
   outcome: UnifiedActionOutcome,
@@ -1089,6 +1103,10 @@ export function buildAftermathCauseLine(args: {
   const index = decidingStepIndex(args.outcome, args.steps);
   if (index < 0) return lead;
   const step = args.steps[index];
+  // A deciding step whose band contradicts the ending ("won, at a price" over a
+  // step that went well — the price came from elsewhere, a fight broken off)
+  // cannot be what decided it, so the line says only what is known.
+  if (!causeBandAgrees(args.outcome, step.band)) return lead;
   const noun = step.title
     ? (step.reach ? `${step.title} on ${reachDisplayName(step.reach)}` : step.title)
     : (step.reach ? CAUSE_UNTITLED_STEP(reachDisplayName(step.reach)) : undefined);
