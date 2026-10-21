@@ -207,6 +207,7 @@ import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/con
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { appendDigestEntry } from './digestBuffer';
 import { snapshotCastTarget, snapshotTargetChanges, targetSideChanges, castDigestEntry } from './castTargetChanges';
+import { realmBorderMap } from './realmBorderMap';
 import { resolvePrayerCast } from './prayers';
 import { isNotableEntry } from './attentionTier';
 import type { DigestEntry } from '../types/attention';
@@ -1850,7 +1851,10 @@ export function executeStepResult(
   // THR-1606: a player cast writes to its target, not its actor — read the target
   // before this step's ops so the diff below can name what changed on them.
   const castTargetId = playerCastTargetId(action);
-  const beforeTargetSnapshot = castTargetId ? snapshotCastTarget(state.graph, castTargetId) : undefined;
+  // THR-1968: the realm map the stock-tier phase reads, so the economy rows' staple
+  // tiers take the same embargo cut.
+  const castRealmMap = castTargetId ? realmBorderMap(runtime, state.graph, state.tiles, tick) : undefined;
+  const beforeTargetSnapshot = castTargetId ? snapshotCastTarget(state.graph, castTargetId, castRealmMap) : undefined;
   const clearanceGateResult = applyClearanceGateStepOutcome(
     state.clearanceGateStates,
     action,
@@ -3038,7 +3042,7 @@ export function executeStepResult(
       const targetNode = state.graph.getNode(beforeTargetSnapshot.targetId);
       aftermathChanges.push(...snapshotTargetChanges(
         beforeTargetSnapshot,
-        snapshotCastTarget(state.graph, beforeTargetSnapshot.targetId),
+        snapshotCastTarget(state.graph, beforeTargetSnapshot.targetId, castRealmMap),
         {
           graph: state.graph,
           idStem: `${action.actionId}:step:${action.currentStep}`,

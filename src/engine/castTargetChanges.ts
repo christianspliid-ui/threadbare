@@ -110,7 +110,12 @@ const ECONOMY_REPORTED_TRAIT_IDS: ReadonlySet<string> = new Set([
   LOCATION_TRAIT_IDS.onTheEdge,
 ]);
 
-export function snapshotCastTarget(graph: WorldGraph, targetId: string): CastTargetSnapshot {
+export function snapshotCastTarget(
+  graph: WorldGraph,
+  targetId: string,
+  /** THR-1968 — the realm border map, so staple tiers take the embargo cut the stock-tier phase takes. */
+  realmMap?: ReadonlyMap<string, string>,
+): CastTargetSnapshot {
   const node = graph.getNode(targetId);
   const influences = (node?.properties?.divineInfluences ?? []) as DivineInfluenceEntry[];
   const traits = new Map<string, string>();
@@ -120,7 +125,7 @@ export function snapshotCastTarget(graph: WorldGraph, targetId: string): CastTar
       traits.set(edge.target, trait?.name ?? edge.target);
     }
   }
-  const economy = node ? snapshotCastEconomy(graph, targetId) : undefined;
+  const economy = node ? snapshotCastEconomy(graph, targetId, realmMap) : undefined;
   return {
     targetId,
     influenceIds: new Set(influences.map((e) => e.id)),

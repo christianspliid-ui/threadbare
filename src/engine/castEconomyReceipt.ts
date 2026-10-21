@@ -22,8 +22,8 @@
  * **Staple tiers are derived here, not read from the stored `stockTier`.** The stored
  * tier is refreshed by the stock-tier phase, after the cast; reading it would make a
  * Bless the Harvest that filled a granary say nothing. Both snapshots use the same
- * derivation (`deriveLocationStockTiers`, with the embargo cut as far as the graph alone
- * can see it). A row is written only when the cast changed the good's quantity, and only
+ * derivation (`deriveLocationStockTiers`, with the embargo cut read through the realm
+ * map the stock-tier phase reads). A row is written only when the cast changed the good's quantity, and only
  * when the derivation before the cast agrees with the stored tier the page shows, so the
  * receipt never reports a tier the cast did not move or the page would contradict.
  */
@@ -128,13 +128,18 @@ function worstUnrestBand(graph: WorldGraph, locationId: string, unrest: number |
   return worst;
 }
 
-function readStaples(graph: WorldGraph, locationId: string, props: Record<string, unknown>): Map<string, EconomyStapleSnapshot> {
+function readStaples(
+  graph: WorldGraph,
+  locationId: string,
+  props: Record<string, unknown>,
+  realmMap: ReadonlyMap<string, string> | undefined,
+): Map<string, EconomyStapleSnapshot> {
   const staples = new Map<string, EconomyStapleSnapshot>();
   const resources = readResources(props);
   if (Object.keys(resources).length === 0) return staples;
-  // The embargo cut the stock-tier phase applies, as far as the graph alone can say
-  // (no realm map here). `storedTier` guards the rest: see `stapleChanges`.
-  const cutSet = REGIONAL_MONOPOLY_ENABLED ? embargoCutsByLocation(graph).get(locationId) : undefined;
+  // The embargo cut the stock-tier phase applies, read through the same realm map it
+  // reads (`realmBorderMap`), so both agree on which towns an embargo touches.
+  const cutSet = REGIONAL_MONOPOLY_ENABLED ? embargoCutsByLocation(graph, realmMap).get(locationId) : undefined;
   const cuts = cutSet ? new Map([...cutSet].map(rid => [rid, EMBARGO_BALANCE_CUT] as const)) : undefined;
   const derivation = deriveLocationStockTiers(props, getSublocationsAt(graph, locationId).length, cuts);
   for (const [resourceId, instance] of Object.entries(resources)) {
@@ -167,7 +172,12 @@ function readLanes(graph: WorldGraph, locationId: string): Map<string, EconomyLa
  * Read the economy part of a cast target. Undefined when receipts are switched off or
  * the target is neither a place nor a mortal with Means.
  */
-export function snapshotCastEconomy(graph: WorldGraph, targetId: string): CastEconomySnapshot | undefined {
+export function snapshotCastEconomy(
+  graph: WorldGraph,
+  targetId: string,
+  /** The realm border map the stock-tier phase reads (`realmBorderMap`); absent reads none. */
+  realmMap?: ReadonlyMap<string, string>,
+): CastEconomySnapshot | undefined {
   if (!ECONOMY_RECEIPTS_ENABLED) return undefined;
   const node = graph.getNode(targetId);
   if (!node) return undefined;
@@ -184,7 +194,7 @@ export function snapshotCastEconomy(graph: WorldGraph, targetId: string): CastEc
       ...(prosperity !== undefined ? { prosperity, prosperityTier: getProsperityTier(prosperity) } : {}),
       ...(unrest !== undefined ? { unrest } : {}),
       unrestBand: worstUnrestBand(graph, place.id, unrest),
-      staples: readStaples(graph, place.id, props),
+      staples: readStaples(graph, place.id, props, realmMap),
       lanes: readLanes(graph, place.id),
     };
   }
