@@ -508,7 +508,7 @@ export const COMET_AT_THE_TURNING_TEMPLATE: UnifiedActionTemplate = withEncounte
           'back to sleep, mourned by no one but you.',
         targetLabel: 'The prophet',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'supportive',
+        interventionType: 'withdrawn',
       },
     ],
   },

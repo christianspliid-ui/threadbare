@@ -51,6 +51,22 @@ export function deriveDilemmaContentTags(text: string): SceneContentTag[] {
 }
 
 /**
+ * How many times the prose names each content tag (THR-1979). A dilemma about a
+ * plague that mentions one "burning" remedy names plague more often than fire, so
+ * the plague ward outscores the burning village: the dominant subject wins over an
+ * incidental verb. Tags the prose never names are absent. Pure.
+ */
+export function countDilemmaContentTags(text: string): Partial<Record<SceneContentTag, number>> {
+  const counts: Partial<Record<SceneContentTag, number>> = {};
+  if (!text) return counts;
+  for (const [tag, re] of CONTENT_PATTERNS) {
+    const n = text.match(new RegExp(re.source, 'gi'))?.length ?? 0;
+    if (n > 0) counts[tag] = n;
+  }
+  return counts;
+}
+
+/**
  * Scene assets that exist on disk but must NOT be registered below (THR-868 audit,
  * 2026-07-30).
  *
@@ -129,13 +145,15 @@ export const DILEMMA_SCENE_ART: readonly MeetingSceneAsset[] = [
  * Select a scene asset matching emotional tags from a dilemma.
  *
  * A scene carrying `contentTags` is skipped unless `contentTags` here names one
- * of them (THR-1712); a shared content tag scores {@link SCENE_CONTENT_MATCH_WEIGHT}.
+ * of them (THR-1712); a shared content tag scores {@link SCENE_CONTENT_MATCH_WEIGHT},
+ * times how often the prose names it when `contentCounts` is given (THR-1979).
  * Ties break on `seed`. Falls back to the whole library if gating empties it.
  */
 export function selectDilemmaScene(
   emotionalTags: readonly string[],
   seed: number,
   contentTags: readonly SceneContentTag[] = [],
+  contentCounts: Readonly<Partial<Record<SceneContentTag, number>>> = {},
 ): MeetingSceneAsset {
   if (DILEMMA_SCENE_ART.length === 0) {
     return { id: 'scene.fallback', path: '', placeholderGradient: 'linear-gradient(135deg, #0a0a0f, #1a1a1a)', emotionalTags: [], dilemmaCategories: [] };
@@ -146,7 +164,9 @@ export function selectDilemmaScene(
   const pool = eligible.length > 0 ? eligible : DILEMMA_SCENE_ART;
   const scored = pool.map(scene => {
     const overlap = scene.emotionalTags.filter(t => emotionalTags.includes(t)).length;
-    const content = (scene.contentTags ?? []).filter(t => contentTags.includes(t)).length;
+    const content = (scene.contentTags ?? [])
+      .filter(t => contentTags.includes(t))
+      .reduce((sum, t) => sum + (contentCounts[t] ?? 1), 0);
     return { scene, score: overlap + content * SCENE_CONTENT_MATCH_WEIGHT };
   });
   scored.sort((a, b) => b.score - a.score);
@@ -195,6 +215,7 @@ export function selectSceneForDilemma(
     dilemma.resonance?.emotionalRegister ?? [],
     (hashTemplateId(dilemma.templateId) + seed) >>> 0,
     deriveDilemmaContentTags(text),
+    countDilemmaContentTags(text),
   );
 }
 

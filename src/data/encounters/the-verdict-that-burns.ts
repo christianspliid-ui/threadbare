@@ -465,7 +465,7 @@ export const VERDICT_THAT_BURNS_TEMPLATE: UnifiedActionTemplate = withEncounterC
           'Mercy to the living through a reckoning deferred.',
         targetLabel: 'The magistrate',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'supportive',
+        interventionType: 'withdrawn',
       },
     ],
   },

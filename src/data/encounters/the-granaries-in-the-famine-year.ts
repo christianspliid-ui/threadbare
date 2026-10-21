@@ -470,7 +470,7 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
           'underwrites the deed. Letting them handle it, when handling it means the bleeding.',
         targetLabel: 'The merchant-prince',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'supportive',
+        interventionType: 'withdrawn',
       },
     ],
   },

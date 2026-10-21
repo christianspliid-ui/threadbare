@@ -184,6 +184,14 @@ describe('formative-test scene art (cause 3)', () => {
     }
   });
 
+  it('a plague story with one burning remedy draws the plague ward, whatever the seed (THR-1979)', () => {
+    const t = ENRICHED_DILEMMA_LIBRARY.find(d => d.id === 'AX-VEIL-02');
+    expect(t).toBeDefined();
+    for (let seed = 0; seed < 50; seed++) {
+      expect(selectSceneForDilemma({ ...t!, templateId: t!.id }, seed).id).toBe('scene.plague-ward');
+    }
+  });
+
   it('a scene with literal imagery is only drawn by prose that names it — across the whole library', () => {
     let withImagery = 0;
     for (const t of ENRICHED_DILEMMA_LIBRARY) {

@@ -28,6 +28,12 @@ import type { AgentSpriteGroup } from '../scene/AgentSpriteMesh';
 export interface UseZoomLayerVisibilityParams {
   zoomTier: ZoomTier;
   zoomK: number;
+  /**
+   * Bumped after every scene build (HexMapV2's `sceneEpoch`). A rebuild creates the
+   * layer groups hidden; without this the hook would not re-show them until the next
+   * zoom change, so icons vanished once the clock ran (THR-1979).
+   */
+  sceneEpoch?: number;
   groups: {
     signifiers: React.MutableRefObject<THREE.Group | null>;
     locations: React.MutableRefObject<THREE.Group | null>;
@@ -59,6 +65,7 @@ export interface UseZoomLayerVisibilityParams {
 export function useZoomLayerVisibility({
   zoomTier,
   zoomK,
+  sceneEpoch = 0,
   groups,
   agentSpriteGroup,
   trailGroup,
@@ -107,5 +114,5 @@ export function useZoomLayerVisibility({
         }
       }
     }
-  }, [zoomTier, zoomK]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [zoomTier, zoomK, sceneEpoch]); // eslint-disable-line react-hooks/exhaustive-deps
 }

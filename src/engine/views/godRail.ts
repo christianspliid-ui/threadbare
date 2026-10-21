@@ -27,6 +27,7 @@ import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import type { AscendantArchetype } from '../../types/influence';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { isActionRevealed } from '../actionUnlock';
+import { playerFacingTemplateName } from '../unifiedActionResolution';
 import { dominionScaledCost, dominionScaledEssenceCost } from '../dominion';
 import { getAttentionVisualState } from '../attentionPool';
 import { ATTENTION_BASE_CAPACITY, ATTENTION_BASE_REGEN } from '../../data/attention-constants';
@@ -204,7 +205,8 @@ export function buildHandCard(
   const parPriceLabel = essencePriceLabel(par.cost);
   return {
     id: template.id,
-    name: template.name,
+    // The gift modal and the cast drawer print the spell name; the rail must too (THR-1979).
+    name: playerFacingTemplateName(template),
     description: template.description ?? '',
     paySphere,
     paySphereWord,

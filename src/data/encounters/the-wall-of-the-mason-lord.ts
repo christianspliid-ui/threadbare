@@ -446,7 +446,7 @@ export const WALL_OF_THE_MASON_LORD_TEMPLATE: UnifiedActionTemplate = withEncoun
           'granite. Mercy through impermanence, paid for by the people who chose it.',
         targetLabel: 'The mason-lord',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'supportive',
+        interventionType: 'withdrawn',
       },
     ],
   },
