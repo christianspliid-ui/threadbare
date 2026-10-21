@@ -37,7 +37,12 @@ import {
   stepReputationParts,
 } from './reputationAftermathFold';
 import {
+  type CauseLineStep,
   type DerivedChange,
+  buildAftermathCauseLine,
+  outcomeClause,
+  outcomeSentence,
+  priceRowFor,
   factionStandingSentence,
   gateStateSentence,
   growthSentence,
@@ -48,6 +53,8 @@ import {
   traitGrantedSentence,
 } from './aftermathWords';
 import type { GraphOp } from '../types/graphOp';
+// THR-1964 — a fight step's own title ("First exchange") names it in the cause line.
+import { fightStepLabel } from './views/stage/buildOpponentHeaderModel';
 import {
   progressUnifiedAction,
   isStepComplete,
@@ -1122,12 +1129,47 @@ export function godTouchedEncounter(action: Pick<UnifiedAction, 'choiceHistory' 
   );
 }
 
+/**
+ * THR-1964 — the resolved steps as the cause line reads them: each step's band,
+ * its Reach (branch-aware), its own title where it has one (a fight step's
+ * "First exchange"), and whether the god's hand was on it — the per-step half of
+ * {@link godTouchedEncounter}.
+ */
+export function causeLineSteps(
+  action: Pick<UnifiedAction, 'stepOutcomes' | 'choiceHistory' | 'activeNudges'>,
+  template: UnifiedActionTemplate,
+): CauseLineStep[] {
+  const history = action.choiceHistory ?? [];
+  const lastIndex = action.stepOutcomes.length - 1;
+  return action.stepOutcomes.map((band, index) => {
+    let reach: string | undefined;
+    try {
+      reach = template.steps[index] ? resolveStepDefinition(template, index, history).reach : undefined;
+    } catch {
+      reach = undefined; // Fail-soft (NFP #4): the line drops to the outcome sentence.
+    }
+    const handOnStep = history.some(entry => entry.stepIndex === index && (
+      entry.interventionType === NUDGE_COMMIT_INTERVENTION_TYPE
+        || entry.essenceSpent > 0
+        || entry.handCommitted === true
+    ));
+    const liveHand = index === lastIndex && (action.activeNudges?.length ?? 0) > 0;
+    return {
+      band,
+      reach,
+      title: fightStepLabel(template, index),
+      godTouched: handOnStep || liveHand,
+    };
+  });
+}
+
 export function buildEncounterAftermathOverview(
   actorName: string,
   templateName: string,
   outcome: UnifiedAction['outcome'],
   changes: readonly EncounterAftermathChange[],
   godTouched: boolean,
+  causeLine?: string,
 ): string {
   const rewardCount = changes.filter(change => change.kind === 'item').length;
   const traitCount = changes.filter(change => change.kind === 'trait').length;
@@ -1142,15 +1184,17 @@ export function buildEncounterAftermathOverview(
     growth: growthCount,
     hooks: hookCount,
   });
-  const outcomeText = describeActionOutcome(outcome);
+  // THR-1964 — the cause line, when given, *is* the first sentence: it opens with
+  // the same outcome sentence and goes on to say what decided it.
+  const lead = causeLine ?? outcomeSentence(actorName, templateName, outcome);
   if (!highlightPhrase) {
-    return `${actorName} ${outcomeText} ${templateName}. The scene moved on quietly, but the world still bent a little around it.`;
+    return `${lead} The scene moved on quietly, but the world still bent a little around it.`;
   }
   // THR-1708 — "Your nudge" only when the god played into it. An encounter the
   // mortal resolved alone credits the mortal, or the Ledger lies about whose
   // doing it was.
   const author = godTouched ? 'Your nudge' : `${actorName}'s choices`;
-  return `${actorName} ${outcomeText} ${templateName}. ${author} left ${highlightPhrase} behind in the world.`;
+  return `${lead} ${author} left ${highlightPhrase} behind in the world.`;
 }
 
 function buildEncounterAftermathReactions(
@@ -3017,7 +3061,8 @@ export function executeStepResult(
   );
   if (finalAction.resolved) {
     // Phase 3: outcome-differentiated event messages
-    const outcomeMsg = describeActionOutcome(finalAction.outcome);
+    // THR-1964 — the same ending words the aftermath uses ("won …, at a price").
+    const endingClause = outcomeClause(currentActorName, playerFacingTemplateName(template), finalAction.outcome);
     const baseSignificance = isActionSuccess(finalAction.outcome) ? 0.6 : 0.4;
     // Phase 3: critical_success gets hardcoded 0.8; other tiers get base + consequence boost
     const significance = finalAction.outcome === 'critical_success'
@@ -3037,12 +3082,12 @@ export function executeStepResult(
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
-      message: `${currentActorName} ${outcomeMsg} ${playerFacingTemplateName(template)}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
+      message: `${endingClause}${metadataSuffix}${clearanceSuffix}${qSuffix}.`,
       significance,
       actorId: action.actorId,
       // THR-1986: the player's line drops the Q suffix; a critical success (the
       // one path to the Chronicle here) is told only for a threaded mortal.
-      playerProse: `${currentActorName} ${outcomeMsg} ${playerFacingTemplateName(template)}${metadataSuffix}${clearanceSuffix}.`,
+      playerProse: `${endingClause}${metadataSuffix}${clearanceSuffix}.`,
       ...(finalAction.outcome === 'critical_success' ? { chronicleGate: 'threaded_only' as const } : {}),
     });
   } else {
@@ -3146,7 +3191,7 @@ function executeFightNoRollEnd(
     id: `ua_${action.actionId}_resolved`,
     tick,
     type: 'agent_action_resolved',
-    message: `${actorName} ${describeActionOutcome(finalAction.outcome)} ${playerFacingTemplateName(template)}.`,
+    message: outcomeSentence(actorName, playerFacingTemplateName(template), finalAction.outcome),
     significance: isActionSuccess(finalAction.outcome) ? 0.6 : 0.4,
     actorId: action.actorId,
   });
@@ -3445,19 +3490,38 @@ function withResolvedAftermathSummary(
 
     const reactions = aftermathVariant?.reactions
       ?? buildEncounterAftermathReactions(template);
+    // THR-1964 — the first line says what decided the ending, authored or derived.
+    const causeLine = buildAftermathCauseLine({
+      actorName: currentActorName,
+      templateName: playerFacingTemplateName(template),
+      outcome: finalAction.outcome,
+      steps: causeLineSteps(finalAction, template),
+    });
+    const summaryChanges = aftermathVariant
+      ? [...changes, ...aftermathVariant.changes]
+      : changes;
+    // THR-1964 — an "at a price" ending always names its price.
+    const priceRow = priceRowFor({
+      outcome: finalAction.outcome,
+      actorId: finalAction.actorId,
+      actorName: currentActorName,
+      changes: summaryChanges,
+      drewComplication: (finalAction.stepComplications ?? []).some(slot => slot != null),
+    });
     const finalSummary: EncounterAftermathSummary = {
       encounterId: action.templateId,
       outcome: finalAction.outcome,
-      overview: aftermathVariant?.overview ?? buildEncounterAftermathOverview(
-        currentActorName,
-        playerFacingTemplateName(template),
-        finalAction.outcome,
-        changes,
-        godTouchedEncounter(finalAction),
-      ),
-      changes: aftermathVariant
-        ? [...changes, ...aftermathVariant.changes]
-        : changes,
+      overview: aftermathVariant?.overview
+        ? `${causeLine} ${aftermathVariant.overview}`
+        : buildEncounterAftermathOverview(
+          currentActorName,
+          playerFacingTemplateName(template),
+          finalAction.outcome,
+          changes,
+          godTouchedEncounter(finalAction),
+          causeLine,
+        ),
+      changes: priceRow ? [...summaryChanges, priceRow] : summaryChanges,
       narrativeTag,
       // THR-1029 §3 — these two defaults are player-facing prose and were written
       // in system register. "Consequence thread" is a schema noun, not a game noun,
@@ -3638,19 +3702,6 @@ function mapActionOutcomeToBalanceResult(outcome?: UnifiedActionOutcome): Balanc
     case 'contested_won': return 'success';
     case 'contested_lost': return 'failure';
     default: return 'failure';
-  }
-}
-
-/** Human-readable verb for action-level outcomes. */
-function describeActionOutcome(outcome?: UnifiedActionOutcome): string {
-  switch (outcome) {
-    case 'critical_success': return 'masterfully completed';
-    case 'success': return 'completed';
-    case 'success_at_cost': return 'completed at great cost';
-    case 'contested_won': return 'won contested';
-    case 'contested_lost': return 'lost contested';
-    case 'critical_failure': return 'catastrophically failed';
-    default: return 'failed';
   }
 }
 

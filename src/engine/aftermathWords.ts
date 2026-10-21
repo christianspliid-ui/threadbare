@@ -47,8 +47,10 @@ import type {
   EncounterAftermathDirection,
   EncounterAftermathMagnitude,
   EncounterAftermathStoryWeight,
+  StepOutcome,
   UnifiedActionOutcome,
 } from '../types/unifiedAction';
+import { STEP_OUTCOMES } from '../types/unifiedAction';
 
 // ─── Reach vocabulary ────────────────────────────────────────────────
 
@@ -926,10 +928,13 @@ export function overviewHighlightPhrase(counts: {
  * Typed as a total `Record` over the union on purpose: a new outcome band fails
  * the typecheck here instead of silently reaching a player surface as its key.
  */
+/** THR-1964 — the one price word, shared by the phrase table and the ending sentence. */
+export const PRICE_WORDS = 'at a price';
+
 export const OUTCOME_PHRASES: Record<UnifiedActionOutcome, string> = {
   critical_success: 'a triumph',
   success: 'it held',
-  success_at_cost: 'won, at a price',
+  success_at_cost: `won, ${PRICE_WORDS}`,
   contested_won: 'won, contested',
   contested_lost: 'lost, contested',
   failure: 'it faltered',
@@ -968,6 +973,183 @@ export function outcomePhrase(outcome?: string | null): string | null {
     }
   }
   return humanizeKeySegment(outcome);
+}
+
+// ─── The ending sentence and its cause (THR-1964) ────────────────────
+
+/**
+ * THR-1964 — the ending as a sentence: "Kael won Bridge Toll, at a price."
+ *
+ * `OUTCOME_PHRASES` is a label ("won, at a price", "it held"); a sentence needs a
+ * verb and a tail around the encounter's name, so this is the same lexicon in
+ * sentence shape rather than a second vocabulary — the price band reads the one
+ * {@link PRICE_WORDS}. It replaced `describeActionOutcome`'s "completed at great
+ * cost", which was a second word for an outcome the aftermath already called
+ * "won, at a price".
+ */
+export const OUTCOME_SENTENCE_SHAPES: Record<UnifiedActionOutcome, { readonly verb: string; readonly tail: string }> = {
+  critical_success: { verb: 'won', tail: ' outright' },
+  success: { verb: 'won', tail: '' },
+  success_at_cost: { verb: 'won', tail: `, ${PRICE_WORDS}` },
+  contested_won: { verb: 'won', tail: ', contested' },
+  contested_lost: { verb: 'lost', tail: ', contested' },
+  failure: { verb: 'lost', tail: '' },
+  critical_failure: { verb: 'lost', tail: ' badly' },
+};
+
+/** "{actor} won {encounter}, at a price" — the ending clause, without its stop, for a caller that appends. */
+export function outcomeClause(actorName: string, templateName: string, outcome?: UnifiedActionOutcome): string {
+  const shape = (outcome && OUTCOME_SENTENCE_SHAPES[outcome]) ?? OUTCOME_SENTENCE_SHAPES.failure;
+  return `${actorName} ${shape.verb} ${templateName}${shape.tail}`;
+}
+
+/** "{actor} won {encounter}, at a price." — the full ending sentence, with its stop. */
+export function outcomeSentence(actorName: string, templateName: string, outcome?: UnifiedActionOutcome): string {
+  return `${outcomeClause(actorName, templateName, outcome)}.`;
+}
+
+/** THR-1964 — the deciding step's verb, by its band. */
+export const CAUSE_STEP_VERBS: Record<StepOutcome, string> = {
+  critical_success: 'shone',
+  success: 'went well',
+  success_at_cost: 'held',
+  near_miss: 'nearly broke',
+  failure: 'failed',
+  critical_failure: 'broke badly',
+};
+
+/** The god clause when a hand was on the deciding step and the ending was won. */
+export const CAUSE_GOD_HELD = 'your cards held it';
+/** The god clause when a hand was on the deciding step and the ending was lost. */
+export const CAUSE_GOD_COULD_NOT_SAVE = 'your cards could not save it';
+/** The mortal-alone clause. `{name}` is the actor. */
+export const CAUSE_ALONE = (actorName: string): string => `${actorName} faced it alone`;
+/** The step's noun when it has no title of its own. `{reach}` is the Reach's player name. */
+export const CAUSE_UNTITLED_STEP = (reachName: string): string => `The work on ${reachName}`;
+
+/** Outcomes whose deciding step is the *worst* one — the step that cost or lost it. */
+const CAUSE_READS_WORST: ReadonlySet<UnifiedActionOutcome> = new Set<UnifiedActionOutcome>([
+  'success_at_cost', 'failure', 'critical_failure', 'contested_lost',
+]);
+
+/** Outcomes the god clause reads as lost. */
+const CAUSE_LOST_OUTCOMES: ReadonlySet<UnifiedActionOutcome> = new Set<UnifiedActionOutcome>([
+  'failure', 'critical_failure', 'contested_lost',
+]);
+
+/** One resolved step, as the cause line needs to see it. */
+export interface CauseLineStep {
+  readonly band: StepOutcome;
+  /** The step's Reach key (`gold`, `iron` …). Named by its player name. */
+  readonly reach?: string;
+  /** A player-facing title of the step's own ("First exchange"), when it has one. */
+  readonly title?: string;
+  /** A nudge hand was committed, or essence spent, on this step. */
+  readonly godTouched: boolean;
+}
+
+/** Index of the deciding step: the last step holding the worst (or best) band. */
+export function decidingStepIndex(
+  outcome: UnifiedActionOutcome,
+  steps: readonly CauseLineStep[],
+): number {
+  const readsWorst = CAUSE_READS_WORST.has(outcome);
+  let chosen = -1;
+  let chosenRank = readsWorst ? -1 : Number.POSITIVE_INFINITY;
+  steps.forEach((step, index) => {
+    const rank = STEP_OUTCOMES.indexOf(step.band);
+    if (rank < 0) return;
+    // `>=` / `<=` so a tie goes to the later step — the one the ending turned on last.
+    if (readsWorst ? rank >= chosenRank : rank <= chosenRank) {
+      chosen = index;
+      chosenRank = rank;
+    }
+  });
+  return chosen;
+}
+
+/**
+ * THR-1964 — the aftermath's first line: what decided the ending.
+ *
+ * "Kael won Bridge Toll, at a price. The work on Gold nearly broke, and your
+ * cards held it." The outcome sentence, then the deciding step — named by its
+ * own title or its Reach, given its band's verb — and whose hand was on it.
+ *
+ * Pure and deterministic (no RNG). Fail-soft: no resolved steps, or a deciding
+ * step with neither a title nor a Reach, returns the outcome sentence alone.
+ * Never a raw band or a token (Law 14).
+ */
+export function buildAftermathCauseLine(args: {
+  readonly actorName: string;
+  readonly templateName: string;
+  readonly outcome: UnifiedActionOutcome;
+  readonly steps: readonly CauseLineStep[];
+}): string {
+  const lead = outcomeSentence(args.actorName, args.templateName, args.outcome);
+  const index = decidingStepIndex(args.outcome, args.steps);
+  if (index < 0) return lead;
+  const step = args.steps[index];
+  const noun = step.title
+    ? (step.reach ? `${step.title} on ${reachDisplayName(step.reach)}` : step.title)
+    : (step.reach ? CAUSE_UNTITLED_STEP(reachDisplayName(step.reach)) : undefined);
+  if (!noun) return lead;
+  const clause = step.godTouched
+    ? (CAUSE_LOST_OUTCOMES.has(args.outcome) ? CAUSE_GOD_COULD_NOT_SAVE : CAUSE_GOD_HELD)
+    : CAUSE_ALONE(args.actorName);
+  return `${lead} ${noun} ${CAUSE_STEP_VERBS[step.band]}, and ${clause}.`;
+}
+
+/** The price row's id — stable, so a re-render never duplicates it. */
+export const PRICE_ROW_ID = 'aftermath.price';
+/** The price row's title. */
+export const PRICE_ROW_TITLE = 'The price';
+
+/**
+ * THR-1964 — the price a `success_at_cost` ending always pays, named.
+ *
+ * Every such ending costs quintessence and half the growth
+ * (`outcomeConsequences.ts`); only the visible scar is chance. When no scar drew
+ * and the change set states no loss, the price would otherwise go unnamed, so
+ * this one derived row names it — in words, never the amount (Law IV). When a
+ * loss row or a complication already names a price this returns null, which
+ * keeps THR-978's no-double-report rule (`buildAftermathConsequences.ts`).
+ */
+export function priceRowFor(args: {
+  readonly outcome?: UnifiedActionOutcome;
+  readonly actorId: string;
+  readonly actorName: string;
+  readonly changes: readonly { readonly polarity: string }[];
+  readonly drewComplication: boolean;
+}): {
+  readonly id: string;
+  readonly kind: 'growth';
+  readonly title: string;
+  readonly polarity: 'loss';
+  readonly actorId: string;
+  readonly actorName: string;
+} & DerivedChange | null {
+  if (args.outcome !== 'success_at_cost') return null;
+  if (args.drewComplication) return null;
+  if (args.changes.some(change => change.polarity === 'loss')) return null;
+  const noun: EncounterAftermathConceptRef = {
+    text: args.actorName,
+    entityId: args.actorId,
+    visualKind: 'agent',
+    visualName: args.actorName,
+  };
+  return {
+    id: PRICE_ROW_ID,
+    kind: 'growth',
+    title: PRICE_ROW_TITLE,
+    polarity: 'loss',
+    actorId: args.actorId,
+    actorName: args.actorName,
+    detail: `It took something out of ${args.actorName}, and ${args.actorName} learned less from it than a clean win teaches.`,
+    concepts: [noun],
+    stateNoun: noun,
+    direction: 'loss',
+    storyWeight: 'beat',
+  };
 }
 
 // ─── The rule, as a predicate ────────────────────────────────────────

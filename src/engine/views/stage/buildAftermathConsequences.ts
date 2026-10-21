@@ -50,6 +50,11 @@
  * that price in words. Persisting the Q event onto `UnifiedAction` would be engine
  * surface widened to serve a display that must not exist.
  *
+ * THR-1964 keeps the rule: when a `success_at_cost` change set states no loss and
+ * no scar drew, the resolver appends one derived "The price" row (`priceRowFor`,
+ * `aftermathWords.ts`) — a fixed sentence keyed on the band alone, no magnitude,
+ * and only where nothing else already names the price.
+ *
  * ## One genuine deviation from the ticket's stated sources
  *
  * **`seed` reads the resolved variant's reaction effects.** `encounter_seed`
