@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-21 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-21 19:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -34,6 +34,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-21: the mortal picker names all three mortals before the first click** ([THR-1987](https://linear.app/threadbare/issue/THR-1987/name-the-three-mortals-before-the-first-click-name-and-epithet-on)). Merged via [#2520](https://github.com/christianspliid-ui/threadbare/pull/2520) and live.
 - **2026-10-21: The First keeps her trade — the meeting writes the trade the player read** ([THR-1984](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read)). Merged via [#2518](https://github.com/christianspliid-ui/threadbare/pull/2518) and live.
 - **2026-10-21: five round-4 playtest faults fixed — spell names on the rail, icons after a rebuild, the restraint stance, the plague scene** ([THR-1979](https://linear.app/threadbare/issue/THR-1979)). Merged via [#2517](https://github.com/christianspliid-ui/threadbare/pull/2517) and live.
 - **2026-10-21: every economic card says what it changed on a town or mortal** ([THR-1968](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy)). Merged via [#2516](https://github.com/christianspliid-ui/threadbare/pull/2516).
@@ -43,7 +44,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-21: pickup runs no longer run the long heavy tests inside the gate, so an engine change fits the time limit** ([THR-2003](https://linear.app/threadbare/issue/THR-2003/an-engine-diff-gate-now-runs-past-the-600-s-command-cap-so-pickup-runs)). Merged via [#2512](https://github.com/christianspliid-ui/threadbare/pull/2512) and live.
 - **2026-10-21: undertakings in the economy, slice 1 — founded towns get a ruler and pay their founder, founded roads are tolled, founded guilds get a calling** ([THR-1937](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open)). Merged via [#2510](https://github.com/christianspliid-ui/threadbare/pull/2510) and live.
 - **2026-10-21: the builder may edit the gate and CI files.** You said: *"of course you can edit the gate and ci files"*. [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) and [THR-1949](https://linear.app/threadbare/issue/THR-1949/run-the-review-gate-and-four-part-browser-evidence-only-on-engine) go back to the unattended builder.
-- **2026-10-21: the map stops naming hidden elder ruins and undiscovered anomalies** ([THR-1960](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every)). Merged via [#2509](https://github.com/christianspliid-ui/threadbare/pull/2509) and live.
 
 ---
 

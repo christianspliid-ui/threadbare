@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 18:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 19:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -23,13 +23,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 25 ready, 2 in progress.**
+**Backed up: 24 ready, 2 in progress.**
 
-- [Name the three mortals before the first click](https://linear.app/threadbare/issue/THR-1987/name-the-three-mortals-before-the-first-click-name-and-epithet-on) is built. [PR #2520](https://github.com/christianspliid-ui/threadbare/pull/2520) is waiting on its checks and will merge itself when they pass.
-- [The First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read) merged as [PR #2518](https://github.com/christianspliid-ui/threadbare/pull/2518) and is live.
+- [The path you chose comes back](https://linear.app/threadbare/issue/THR-1988/the-path-you-chose-comes-back-each-what-will-they-become-path-gets-a) is built. [PR #2521](https://github.com/christianspliid-ui/threadbare/pull/2521) is waiting on its checks and will merge itself when they pass.
+- [Name the three mortals before the first click](https://linear.app/threadbare/issue/THR-1987/name-the-three-mortals-before-the-first-click-name-and-epithet-on) merged as [PR #2520](https://github.com/christianspliid-ui/threadbare/pull/2520) and is live.
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). The builder is free to take it.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-All green. Main's checks and the three background jobs are healthy, one pull request is waiting on checks, and all 13 scheduled lanes are on time. The live site is current. Engine speed is normal: 138 ms per tick, 3% under the week's median of 142.
+All green. Main's checks and the three background jobs are healthy, one pull request is waiting on checks, and all 13 scheduled lanes are on time. The live site is current. Engine speed is normal: 153 ms per tick, 8% over the week's median of 141.
