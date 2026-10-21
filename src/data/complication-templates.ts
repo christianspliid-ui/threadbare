@@ -574,11 +574,13 @@ export const COMPLICATION_TEMPLATES: ComplicationTemplate[] = [
       { type: 'sphere_pressure', sphere: 'veil', magnitude: 0.1 },
     ],
     proseTemplates: [
-      // THR-1965 — each line names the stake and the way to slow it.
-      '{name}\'s failure fed the doom, and it crept a little closer. Each mandate you finish slows it.',
-      'The doom waits for small failures like this one, and it took the opening. Finished mandates push it back.',
-      '{omen_atmosphere} thickened as {name} failed, and the doom gained ground. Your mandates slow it.',
-      'One more failure for the doom to feed on. It grows by such moments; mandates you complete hold it back.',
+      // THR-1965 — each line names the stake and the player's answer to it. Mandates do not
+      // slow the clock: a checkpoint kept well banks counter-omens, which soften the next
+      // stage's blow (phaseMandate.ts → computeEscalationSeverity), so the lines promise that.
+      '{name}\'s failure fed the doom, and it crept a little closer. Mandates kept well blunt its next blow.',
+      'The doom waits for small failures like this one, and it took the opening. A mandate well kept softens what it brings.',
+      '{omen_atmosphere} thickened as {name} failed, and the doom gained ground. Your mandates, kept well, can blunt its next blow.',
+      'One more failure for the doom to feed on. It grows by such moments; mandates kept well soften its coming.',
     ],
     significanceBoost: 0.2,
   },

@@ -417,6 +417,8 @@ describe('doom-echo prose (THR-1965)', () => {
     expect(doomEcho.proseTemplates).toHaveLength(4);
     for (const line of doomEcho.proseTemplates) {
       expect(line).toMatch(/mandate/i);
+      // Mandates soften the next stage's blow (counter-omens); they never slow the clock.
+      expect(line).not.toMatch(/slows? it|push(es)? it back|hold(s)? it back/i);
       const filled = fillProse(line, makeContext({ activeOmenCategory: 'doom_echo' }), () => 0);
       expect(filled).not.toMatch(/\{[a-z_]+\}/);
       expect(filled).not.toMatch(/\d/);
