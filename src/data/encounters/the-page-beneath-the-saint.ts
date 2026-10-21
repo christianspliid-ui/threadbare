@@ -513,7 +513,7 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
           'through restraint, paid for by everyone who loved the river.',
         targetLabel: 'The archivist',
         essenceCost: 0, // THR-1800 — staying your hand costs nothing
-        interventionType: 'supportive',
+        interventionType: 'withdrawn',
       },
     ],
   },

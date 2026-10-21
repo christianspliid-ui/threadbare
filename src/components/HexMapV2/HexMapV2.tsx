@@ -1845,6 +1845,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     useZoomLayerVisibility({
       zoomTier,
       zoomK,
+      sceneEpoch,
       groups: {
         signifiers: signifierGroupRef,
         locations: locationGroupRef,
@@ -1869,14 +1870,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const visible = locGroup?.visible ?? false;
       anomalyLayer.shimmerGroup.visible = visible;
       anomalyLayer.haloGroup.visible = visible;
-    }, [zoomTier]);
+    }, [zoomTier, sceneEpoch]);
 
     useEffect(() => {
       const rarityLayer = locationRaritySignifierLayerRef.current;
       const locGroup = locationGroupRef.current;
       if (!rarityLayer) return;
       rarityLayer.signifierGroup.visible = locGroup?.visible ?? false;
-    }, [zoomTier]);
+    }, [zoomTier, sceneEpoch]);
 
     // Reach-signature signifier zoom sync — same visibility tier as locations (THR-554)
     useEffect(() => {
@@ -1884,7 +1885,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const locGroup = locationGroupRef.current;
       if (!layer) return;
       layer.signifierGroup.visible = locGroup?.visible ?? false;
-    }, [zoomTier]);
+    }, [zoomTier, sceneEpoch]);
 
     // Toggle organic shore (coastline) mesh visibility
     useEffect(() => {

@@ -69,6 +69,14 @@ describe('godRail view model', () => {
     expect(buildHandCards(makeState({ unlocked: [] }), 'spirit', 'life')).toEqual([]);
   });
 
+  it('a row carries the spell name the gift modal and the drawer print (THR-1979)', () => {
+    const observe = tpl('observe_agent');
+    expect(observe.spellName).toBeDefined();
+    expect(buildHandCard(makeState(), observe, 'spirit').name).toBe(observe.spellName);
+    const plain = tpl('divine.self.focus');
+    expect(buildHandCard(makeState(), plain, 'spirit').name).toBe(plain.spellName ?? plain.name);
+  });
+
   it('a row\'s price is the par price, through the label the Codex uses', () => {
     const state = makeState();
     for (const id of ['divine.inspire', 'divine.self.focus']) {
@@ -108,7 +116,9 @@ describe('godRail view model', () => {
 
   it('sorts by paying sphere in the essence order, then by name; Focus sits with the primary sphere', () => {
     const cards = buildHandCards(makeState(), 'spirit', 'life');
-    expect(cards.map((c) => `${c.paySphere}:${c.name}`)).toEqual(['spirit:Focus', 'spirit:Stillness', 'life:Inspire']);
+    // THR-1979: "by name" is the name the row shows — the spell name.
+    expect(cards.map((c) => `${c.paySphere}:${c.id}`)).toEqual(['spirit:divine.self.stillness', 'spirit:divine.self.focus', 'life:divine.inspire']);
+    expect(cards.map((c) => c.name)).toEqual(['The Long Stillness', 'The Single Eye', 'Breath of Purpose']);
   });
 
   it('ui.hand_price opens with the Foreign band\'s words and quotes the cast clauses verbatim', () => {
