@@ -63,7 +63,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failBehavior: 'continue_weakened',
       narrativeTemplate: '{cast:oathbreaker}, a weaver, broke an oath sworn on the stone in the town shrine. Since then '
         + 'the weaver\'s workshop has burned. The shrine lamp goes out whenever the weaver walks in.\n\n'
-        + '{cast:oathbreaker} is sure of a curse and asks {actor}, a reader of oaths, whether it is real. A '
+        + '{cast:oathbreaker} is sure of a curse and asks {actor}, who has a name for reading oaths, whether it is real. A '
         + 'frightened hedge-priest has already taken the weaver\'s coin for a rite at midnight. A wrong '
         + 'answer will cost {actor} their name in town.',
       criticalSuccessAfterimage: 'They read the stone plainly. The oath was a promise to repay a neighbour\'s loan by midsummer, '

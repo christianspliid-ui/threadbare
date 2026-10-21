@@ -258,7 +258,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   ],
   narrativeTemplates: {
     initiation: 'The stones between the lord\'s land and the common in {location} have moved, and the county '
-      + 'assize has sent for a surveyor.',
+      + 'assize has sent for someone to walk and swear the bounds.',
     success: 'The true line was found, and a new stone is set at this year\'s beating of the bounds.',
     failure: 'The true line was not found.',
   },
@@ -473,8 +473,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         failure: {
-          overview: 'The lord keeps the grazing that the moved stones took from the common. {location} sent for a '
-            + 'sworn surveyor to stop exactly that.',
+          overview: 'The lord keeps the grazing that the moved stones took from the common. {location} sent for someone '
+            + 'to walk and swear the bounds, to stop exactly that.',
           changes: [
             {
               id: 'bounds.lost.the_lines_regard',
@@ -501,7 +501,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: '{location} sent for a sworn surveyor to win back its common, and is worse off than before.',
+          overview: '{location} sent for someone to walk and swear the bounds, to win back its common, and is worse off than before.',
           changes: [
             {
               id: 'bounds.broke.the_lines_regard',

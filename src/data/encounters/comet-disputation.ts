@@ -116,6 +116,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   rarityTier: 2,
   intrinsicTier: 'shaping',
+  // THR-1993 — the stake is her name as a star-reader; a mortal whose trade is
+  // outside this list does not draw it (a roleless mortal still does).
+  protagonistRoles: ['oracle', 'sage', 'scholar', 'researcher', 'hermit', 'pilgrim'],
   name: 'The Comet Disputation',
   reach: 'star',
   crudType: 'update',

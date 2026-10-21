@@ -198,6 +198,8 @@ type EncounterEntry = {
   contestNonLethal?: boolean;
   /** THR-1526 — passed through to `UnifiedActionTemplate.drawable` (the converter is an allowlist). */
   drawable?: boolean;
+  /** THR-1993 — passed through to `UnifiedActionTemplate.protagonistRoles` (the converter is an allowlist). */
+  protagonistRoles?: readonly import('../types/npc').NpcRole[];
   /**
    * THR-838 (WS5): template-level trait variants, passed through to
    * `UnifiedActionTemplate.traitVariants`. Absent for every un-migrated entry.
@@ -419,6 +421,8 @@ function toUnifiedTemplate(e: EncounterEntry): UnifiedActionTemplate {
     // threat rating is dropped here, so its one player-facing meaning (daily
     // life) must be carried as its own field.
     ...(e.threatRating === ROUTINE_THREAT_RATING ? { routine: true } : {}),
+    // THR-1993: the role-fit gate. Absent on every ungated entry.
+    ...(e.protagonistRoles ? { protagonistRoles: e.protagonistRoles } : {}),
   });
 }
 
@@ -523,6 +527,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'watched the old blade crumble at the weld',
     },
     name: 'Trial of Flame',
+    // THR-1993: a mastery trial of a forge craft.
+    protagonistRoles: ['smith', 'spellsword', 'warmage'],
     locationTypes: ['mining', 'fort', 'camp'],
     sublocationTypes: ['sublocation-type.temple-quarter', 'sublocation-type.barracks'],
     reachPrimary: 'iron',
@@ -1020,6 +1026,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'went down with the sickness they fought all month',
     },
     name: 'The Healer\'s Oath',
+    // THR-1993: the stake is her own oath as a healer.
+    protagonistRoles: ['healer', 'alchemist', 'priest', 'acolyte', 'monk', 'chaplain'],
     locationTypes: ['temple', 'shrine'],
     sublocationTypes: ['sublocation-type.temple-quarter'],
     reachPrimary: 'gold',
@@ -2558,6 +2566,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'watched the room find its reasons to stay home',
     },
     name: 'The Rally Faithful',
+    // THR-1993: the stake is her own congregation and her sermon.
+    protagonistRoles: ['priest', 'acolyte', 'chaplain', 'pilgrim', 'warrior_priest', 'paladin', 'monk', 'oracle'],
     locationTypes: ['temple', 'shrine', 'town'],
     reachPrimary: 'veil',
     reachSecondary: 'heart',
@@ -4232,7 +4242,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape, `assist` family batch.
-        narrative: 'Nine in the vigil hall, and the ones who cough are not the ones who worry {actor} most. The quiet ones have stopped shivering.',
+        narrative: 'Nine in the vigil hall, and the ones who cough are not the worst of them. The healer on duty puts {actor} to work where the worry is: the quiet ones have stopped shivering.',
         onSuccess: {
           narrative: '{actor} works out the order of it — who has days, who has hours, who only looks worse than they are. The order is the treatment.',
           reputationDelta: 0.05,
@@ -5693,7 +5703,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'The miners have downed tools. A foreman presents their list of grievances to {actor}, whose authority over the mine is now on trial.',
+        narrative: 'The miners have downed tools. A foreman presents their list of grievances to {actor}, the one the miners have agreed will hear them.',
         onSuccess: {
           narrative: '{actor} listens without flinching. The miners\' litany runs long — some of it fair, some of it embellishment. {actor} separates the two.',
           reputationDelta: 0.04,
@@ -6362,7 +6372,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: HARD_DIFFICULTY_BASE,
         duration: 2,
-        narrative: 'A wealthy patron offers a commission every other craftsman has turned down. {actor} reads the drawing twice and finds the reason: it calls for a joint that should not hold.',
+        narrative: 'A wealthy patron offers a commission every craftsman in {location} has turned down. {actor} reads the drawing twice{?has_trade} with {their} {trade}\'s eye{/has_trade} and finds the reason: it calls for a joint that should not hold.',
         onSuccess: {
           narrative: 'The joint will hold if it is cut in the wrong order. {actor} starts cutting.',
           reputationDelta: 0.06,
@@ -12527,7 +12537,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The remedy helps, and stops helping short of enough. {actor} knows the limits of hedge magic and does not pretend otherwise.',
+          narrative: 'The remedy helps, and stops helping short of enough. {actor} has found the limit of what a hedge remedy can do, and does not pretend otherwise.',
           reputationDelta: -0.08,
         },
       },

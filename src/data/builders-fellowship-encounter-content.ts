@@ -419,7 +419,7 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
     narrativeTemplates: {
       initiation:
         '{name} takes commission to forge new tools for the Fellowship at {location}. ' +
-        'The stock decides more than the smith.',
+        'The stock decides more than the hand on the hammer.',
       success:
         'Tools made to the standard the metal allowed. The Fellowship is better-equipped.',
       failure:
@@ -667,6 +667,8 @@ export const BUILDERS_FELLOWSHIP_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
       lost: 'delivered the ironwork with the center piece off true',
     },
     tags: ['#fellowship_errand'],
+    // THR-1993: a private buyer commissions a known smith's work.
+    protagonistRoles: ['smith'],
     name: 'Fulfill a Craft Commission',
     rarityTier: 2,
     intrinsicTier: 'shaping',
@@ -1992,11 +1994,11 @@ export const BF_JOIN_TEMPLATE: UnifiedActionTemplate = {
       failureMetadata: { reputationDelta: 0.0 },
       narrativeTemplate:
         'The Fellowship\'s craft test is not theatrical — a table, raw stock, two journeymen ' +
-        'observers, and however long the candidate needs. {name} is given iron stock and asked ' +
+        'observers, and however long the candidate needs. {name} is given iron stock' +
+        '{?has_trade}, whatever {their} {trade}\'s hands already know,{/has_trade} and asked ' +
         'to produce a functional fitting of {their} choice. ' +
-        '{?has_artifact}Arriving with personal tools is expected at this level of craft — the ' +
-        'Fellowship is assessing the work, not the willingness to use whatever is at hand. ' +
-        '{name}\'s tools are noted without comment.{/has_artifact}' +
+        '{?has_artifact}Some candidates bring their own tools; {name}\'s are noted without ' +
+        'comment. The Fellowship is assessing the work, not the kit.{/has_artifact}' +
         '{?no_artifact}The smithy\'s tools are available and adequate. The Fellowship has seen ' +
         'people pass this test with borrowed equipment before; it is not the tools being assessed.{/no_artifact} ' +
         '{name} work{s}. The observers do not comment.',

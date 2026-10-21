@@ -16,7 +16,7 @@
  * 
  * ─── The narrator's 12 questions, answered ───────────────────────────
  *   1 P1 arrival?      Yes: `{actor}` is in `{location}` when a merchant house's
- *                      factor comes looking for a star-reader.
+ *                      factor comes looking for anyone who can check a star table.
  *   2 P2 events?       The house steers its wagons by the stars at night; its last
  *                      two runs came in two days late; the drivers swear they held
  *                      the course; the house's pilot has refused the next run.
@@ -132,7 +132,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   motivations: ['courage_prudence'],
   settings: ['urban'],
   openings: {
-    urban: '{actor} is in {location} when a merchant house\'s factor comes looking for a star-reader.',
+    urban: '{actor} is in {location} when a merchant house\'s factor comes looking for anyone who can check a star table.',
   },
   steps: [
     {

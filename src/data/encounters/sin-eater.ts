@@ -54,10 +54,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onFailure: [],
       failBehavior: 'continue_weakened',
       narrativeTemplate: 'A rich merchant lies dead in his hall, to be buried at dawn. His eldest, {cast:eldest}, has '
-        + 'paid for a sin-eater, so the merchant goes to the grave clean. Bread and salt lie on the dead '
+        + 'paid {actor} to eat the sins, as the old custom asks of whoever will, so the merchant goes to the grave clean. Bread and salt lie on the dead '
         + 'man\'s chest.\n\n'
-        + '{actor} must eat it all before the household and take every sin whole. A sin-eater who leaves '
-        + 'a sin on the dead is not sent for again.',
+        + '{actor} must eat it all before the household and take every sin whole. Whoever leaves '
+        + 'a sin on the dead is not paid to eat again.',
       criticalSuccessAfterimage: '{actor} ate the bread and salt to the last crumb, and the household saw the merchant go clean. '
         + 'Under the bread lay a folded paper in the merchant\'s own hand.',
       successAfterimage: '{actor} ate the bread and salt and took the sins whole. Under the bread lay a folded paper in '

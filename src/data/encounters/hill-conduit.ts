@@ -83,7 +83,7 @@
  * Heavy Hand      none. No card grants. No libraryCardId bound on any special.
  * 
  * ─── The narrator's 12 questions, answered ───────────────────────────
- * 1. P1 arrival with graph names — {actor}, {location}, and why they came (sent for as master builder). Yes.
+ * 1. P1 arrival with graph names — {actor}, {location}, and why they came (the town needs a builder's eye). Yes.
  * 2. P2 events with costs — the wells foul, two children already sick, the springs above, the pasture between.
  * 3. P3 one stake — Obstruction (the guarded pasture between the springs and the town), with the survey asked first.
  * 4. ≤80 words — 75 (urban opening) / 78 (rural opening).
@@ -145,8 +145,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   motivations: ['preservation_transformation'],
   settings: ['rural', 'urban'],
   openings: {
-    rural: '{actor} comes by farm track to {location}, sent for as a master builder.',
-    urban: '{actor} arrives at {location}, sent for as a master builder.',
+    rural: '{actor} comes by farm track to {location}, sent for because the town needs a builder\'s eye on its conduit.',
+    urban: '{actor} arrives at {location}, sent for because the town needs a builder\'s eye on its conduit.',
   },
   steps: [
     {

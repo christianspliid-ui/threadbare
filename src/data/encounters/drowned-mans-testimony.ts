@@ -130,7 +130,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       failBehavior: 'fail_action',
       narrativeTemplate: 'A river trader drowned last week. He told the almshouse he had made a will, but none has been '
         + 'found. His only kin, {cast:heir}, claims the whole estate and calls dream-reading a trick. The '
-        + 'magistrate has sent for {actor}, the best dream reader in the district, to ask the dead man what '
+        + 'magistrate has sent for {actor}, who is said to read dreams truly, to ask the dead man what '
         + 'he wanted. A wrong reading in court will cost {actor} their good name in {location}.',
       criticalSuccessAfterimage: 'They said the will was under the stern seat of his boat, and the bailiff found it there within '
         + 'the hour.',

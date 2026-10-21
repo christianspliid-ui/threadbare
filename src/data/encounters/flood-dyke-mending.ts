@@ -406,7 +406,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     },
   ],
   narrativeTemplates: {
-    initiation: 'A village\'s dyke is failing as the river rises, and the reeve sends for a mason to find out '
+    initiation: 'A village\'s dyke is failing as the river rises, and the reeve sends for someone who can read stone to find out '
       + 'why.',
     success: 'The dyke was mended before the crest, and the lower fields stayed dry.',
     failure: 'The dyke was not mended in time, and the river reached the lower fields.',
@@ -671,7 +671,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           ],
         },
         critical_failure: {
-          overview: 'The reeve sent for a mason to save the dyke, and now blames {actor} for breaking it, in front of '
+          overview: 'The reeve sent for help to save the dyke, and now blames {actor} for breaking it, in front of '
             + 'everyone in {location}.',
           changes: [
             {
