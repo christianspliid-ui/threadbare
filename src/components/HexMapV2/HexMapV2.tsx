@@ -1245,6 +1245,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             hexRow: loc.hexRow,
             importance: LOCATION_IMPORTANCE_MAP[loc.locationType as keyof typeof LOCATION_IMPORTANCE_MAP] ?? 'small',
             locationType: loc.locationType,
+            // THR-1960: the icon pass draws no undiscovered anomaly, so neither does its name
+            ...(loc.isAnomalyLocation && !loc.discoveredByExploration ? { hidden: true } : {}),
           }));
           setLocationLabels(labelData);
         } else {
