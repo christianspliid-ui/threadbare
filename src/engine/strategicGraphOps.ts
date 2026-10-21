@@ -86,6 +86,16 @@ export interface GraphOpResult {
    * verb — has no gate to read one off, so the op names the mortal it acted on.
    */
   victimAgentId?: string;
+  /**
+   * An outcome line set the cell's completion speaks with instead of its own (THR-1937),
+   * keyed in `UNDERTAKING_CELL_OUTCOME_PROSE` — a founding that found no free ground, a
+   * town raised under a faction's banner. Absent: the cell's own lines, as before.
+   */
+  completionLine?: string;
+  /** The node the outcome line's `{object}` names (the town just founded), when it is not the work's handle. */
+  proseObjectId?: string;
+  /** The node the outcome line's `{owner}` names (the town's ruler). */
+  proseOwnerId?: string;
 }
 
 /**

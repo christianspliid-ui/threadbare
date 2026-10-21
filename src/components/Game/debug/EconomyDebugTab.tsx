@@ -21,6 +21,7 @@ import { describeDeciderMeans } from '../../../engine/mortalMeans';
 import { resolveAxiologicalProfile } from '../../../engine/encounterScoring';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 import { allRegionalMonopolies, allActiveEmbargoes } from '../../../engine/regionalMonopoly';
+import { readLaneHolders } from '../../../engine/undertakingEconomy';
 
 interface PurseRow {
   id: string;
@@ -308,6 +309,51 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
  * The embargoed towns and roads are left to `__DEBUG.getRegionalMonopolies()`: deriving them
  * needs the realm border map, which this tab does not hold.
  */
+/** THR-1937 — lanes with a toll holder or a founder: who tolls it, who founded it. */
+function LanesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  const rows = useMemo(() => {
+    if (!graph) return [];
+    const name = (id: string | null) => (id ? graph.getNode(id)?.name ?? id : '—');
+    const out: { id: string; from: string; to: string; volume: number; tolledBy: string; foundedBy: string }[] = [];
+    for (const e of graph.getEdgesByType('trades_with')) {
+      const holders = readLaneHolders(graph, e.id);
+      if (!holders || (!holders.controlledBy && !holders.founderId)) continue;
+      out.push({
+        id: e.id,
+        from: name(e.source),
+        to: name(e.target),
+        volume: typeof e.properties?.volume === 'number' ? e.properties.volume : 0,
+        tolledBy: name(holders.controlledBy),
+        foundedBy: name(holders.founderId),
+      });
+    }
+    return out.sort((a, b) => a.id.localeCompare(b.id));
+  }, [graph, currentTick]);
+  if (rows.length === 0) return null;
+  const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
+  const left = { ...cell, textAlign: 'left' as const };
+  return (
+    <div data-testid="economy-lanes" style={{ marginBottom: '12px' }}>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>Held lanes — {rows.length}</div>
+      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)' }}>
+            <th style={left}>from</th><th style={left}>to</th><th style={cell}>volume</th><th style={left}>tolled by</th><th style={left}>founded by</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => (
+            <tr key={r.id} style={{ color: 'var(--text-secondary)' }}>
+              <td style={left}>{r.from}</td><td style={left}>{r.to}</td><td style={cell}>{r.volume}</td>
+              <td style={left}>{r.tolledBy}</td><td style={left}>{r.foundedBy}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function MonopoliesTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
   const { monopolies, embargoes } = useMemo(() => {
     if (!graph) return { monopolies: [], embargoes: [] };
@@ -440,6 +486,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
         <MeansTable graph={graph} currentTick={currentTick} />
         <OathsTable graph={graph} currentTick={currentTick} />
         <MonopoliesTable graph={graph} currentTick={currentTick} />
+        <LanesTable graph={graph} currentTick={currentTick} />
         <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
         <div style={EMPTY_STATE_STYLE}>No locations with resources yet.</div>
@@ -453,6 +500,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
       <MeansTable graph={graph} currentTick={currentTick} />
       <OathsTable graph={graph} currentTick={currentTick} />
       <MonopoliesTable graph={graph} currentTick={currentTick} />
+      <LanesTable graph={graph} currentTick={currentTick} />
       <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
       <div style={{ marginBottom: '10px', color: 'var(--text-tertiary)' }}>

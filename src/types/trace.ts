@@ -97,6 +97,9 @@ export type TraceCategory =
   | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
   // THR-1955 — regional monopolies and embargo
   | 'faction.embargo.laid' | 'faction.embargo.lifted'
+  // THR-1937 — undertakings in the economy (S1)
+  | 'undertaking.economy.found_town' | 'undertaking.economy.found_town_refused'
+  | 'undertaking.economy.open_lane' | 'undertaking.economy.found_guild'
   // THR-1932 — the crown (fealty)
   | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
   | 'settlement_tier_change' | 'target_action_filter'
@@ -715,6 +718,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'economy.means.birth', 'economy.means.shift',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'faction.embargo.laid', 'faction.embargo.lifted',
+  'undertaking.economy.found_town', 'undertaking.economy.found_town_refused',
+  'undertaking.economy.open_lane', 'undertaking.economy.found_guild',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
@@ -1949,6 +1954,48 @@ export interface MeansShiftTrace extends TraceBase {
   bandBefore: string;
   bandAfter: string;
   reason: string;
+}
+
+/** THR-1937 — a mortal founded a town: who rules it and why. */
+export interface FoundTownTrace extends TraceBase {
+  category: 'undertaking.economy.found_town';
+  founderId: string;
+  locationId: string;
+  rulerId: string;
+  rulerReason: 'faction_rank' | 'realm_tie' | 'id_tie' | 'founder';
+  /** Town-holding factions the founder belongs to. */
+  candidateFactionIds: string[];
+  /** The location the cell's site resolved to. */
+  siteId: string;
+  /** Hexes from the site to the free hex chosen. */
+  hexOffset: number;
+}
+
+/** THR-1937 — a founding found no free ground near its site; nothing was founded. */
+export interface FoundTownRefusedTrace extends TraceBase {
+  category: 'undertaking.economy.found_town_refused';
+  founderId: string;
+  siteId: string;
+  outcome: 'no_ground';
+}
+
+/** THR-1937 — a mortal opened a lane and tolls it. */
+export interface OpenLaneTrace extends TraceBase {
+  category: 'undertaking.economy.open_lane';
+  founderId: string;
+  fromId: string;
+  toId: string;
+  taxRate: number;
+}
+
+/** THR-1937 — a mortal founded a guild: its calling and opening purse. */
+export interface FoundGuildTrace extends TraceBase {
+  category: 'undertaking.economy.found_guild';
+  founderId: string;
+  factionId: string;
+  guildType: string | null;
+  reachProfile: Record<string, number>;
+  openingPurse: number;
 }
 
 /** THR-1933 — an army took a conquer target by value (raise or re-aim). */
@@ -4984,6 +5031,10 @@ export type TraceEntry =
   | WarAimReaimTrace
   | WarAimValueFallbackTrace
   | FactionEmbargoTrace
+  | FoundTownTrace
+  | FoundTownRefusedTrace
+  | OpenLaneTrace
+  | FoundGuildTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
   | TradeRouteUpkeepTrace

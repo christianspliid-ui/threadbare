@@ -32,6 +32,8 @@ import { getAgentLocation, getAgentLocationId } from './graphQueries';
 import type { EconomicChronicleContext } from './economicChronicle';
 import type { EconomicChronicleTrigger } from '../data/economic-chronicle-content';
 import { getWealthTier, type WealthTier } from './wealth';
+import { foundedLaneChronicleWords } from './undertakingEconomy';
+import { UNDERTAKING_ECONOMY_ENABLED } from '../data/undertaking-economy-constants';
 
 // ─── Action template ID → chronicle trigger mapping ─────────────────────────
 
@@ -83,6 +85,34 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
 
     const result = resolveEconomicChronicle(trigger, context, tick, chronicleSeed(seed, event.id));
     if (result) {
+      newEvents.push(result.tickEvent);
+      newChronicleEntries.push({
+        id: result.chronicleChapter.id,
+        tier: 'chronicle',
+        title: result.chronicleChapter.title,
+        prose: result.chronicleChapter.prose,
+        promptContext: {
+          actors: result.chronicleChapter.actorIds,
+          location: '',
+          sphere: result.chronicleChapter.spheres[0] ?? 'gold',
+          mood: 'economic',
+        },
+        tick,
+      });
+    }
+  }
+
+  // ── 1b. Lanes a mortal opened this tick (THR-1937) ─────────────────────
+  // An undertaking's completion is not an `agent_action_resolved` event, so a founded
+  // lane is found on the graph instead: an identity node minted this tick whose lane its
+  // founder tolls. The line names the lane's two ends; it drops when either is unnamed.
+  if (UNDERTAKING_ECONOMY_ENABLED) {
+    for (const lane of foundedLanesThisTick(state)) {
+      const result = resolveEconomicChronicle('trade_route_established', {
+        actor: lane.from, target: lane.to, targetId: lane.toId, goodsType: lane.goodsType,
+        actorId: lane.founderId, locationId: lane.fromId,
+      }, tick, chronicleSeed(seed, `founded_lane_${lane.edgeId}`));
+      if (!result) continue;
       newEvents.push(result.tickEvent);
       newChronicleEntries.push({
         id: result.chronicleChapter.id,
@@ -190,6 +220,27 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
  * Events from action resolution typically embed the template ID in their id or message.
  * Fail-soft: returns undefined if not extractable.
  */
+/**
+ * Lanes founded this tick by a mortal who tolls them (THR-1937): a route identity node
+ * minted this tick, its `constructed_by` founder, and the founder as the lane's
+ * `controlledBy`. Worldgen lanes have no founder; a legacy lane has no toll holder.
+ */
+export function foundedLanesThisTick(state: Pick<GameState, 'graph' | 'tick'>): {
+  edgeId: string; founderId: string; from: string; fromId: string; to: string; toId: string; goodsType: string;
+}[] {
+  const { graph, tick } = state;
+  const out: { edgeId: string; founderId: string; from: string; fromId: string; to: string; toId: string; goodsType: string }[] = [];
+  for (const built of graph.getEdgesByType('constructed_by')) {
+    const identity = graph.getNode(built.source);
+    const edgeId = identity?.properties.routeEdgeId;
+    if (typeof edgeId !== 'string' || identity?.properties.createdTick !== tick) continue;
+    if (graph.getEdge(edgeId)?.properties?.controlledBy !== built.target) continue;
+    const words = foundedLaneChronicleWords(graph, edgeId);
+    if (words) out.push({ edgeId, founderId: built.target, ...words });
+  }
+  return out.sort((a, b) => (a.edgeId < b.edgeId ? -1 : a.edgeId > b.edgeId ? 1 : 0));
+}
+
 function extractActionTemplateId(event: TickEvent): string | undefined {
   // Pattern: event.id often contains the action template ID
   // e.g. "evt_action.gold.establish-trade_42" or similar

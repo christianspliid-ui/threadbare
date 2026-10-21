@@ -614,6 +614,20 @@ export const UNDERTAKING_CELL_PROSE: Readonly<Record<string, UndertakingVerbLine
 };
 
 /**
+ * Completion lines a cell speaks with when its executor reports an outcome (THR-1937),
+ * keyed by cell id then by the op's `completionLine`. Bounded like the per-cell sets: a
+ * cell or outcome with no entry speaks its ordinary completion line.
+ */
+export const UNDERTAKING_CELL_OUTCOME_PROSE: Readonly<Record<string, Readonly<Record<string, readonly string[]>>>> = {
+  'cell.create.location': {
+    // The town went up under a faction's banner; `{owner}` is the ruler.
+    ruled: ['{Actor} founds {object}, and raises the banner of {owner} over it.'],
+    // No free hex near the site: nothing was founded, and the card says why (Law 22).
+    no_ground: ['{Actor} finds no open ground near {place} to found a town.'],
+  },
+};
+
+/**
  * The line set a cell speaks with: its own if it has one, else its verb's.
  *
  * The single lookup both prose entry points go through, so an authored cell can

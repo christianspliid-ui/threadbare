@@ -13,6 +13,8 @@ export const SUBJECT_ROW_LABELS = {
   placeProse: 'This place',
   pastLine: 'Before you woke',
   fortunes: 'Fortunes',
+  // THR-1937 — who founded a mortal-founded town.
+  foundedBy: 'Founded',
   prayer: 'Prayer',
   faithful: 'Faithful',
   livelihood: 'Livelihood',
@@ -78,6 +80,9 @@ export const SOURCE_DRAIN_LINES = {
 } as const;
 
 /** `WallsLine`'s two sentences (THR-628), word for word. */
+/** THR-1937 — the founded-town line: "Founded by {founder}." The name is a link (Law 21). */
+export const FOUNDED_BY_LINE = { lead: 'Founded by ', tail: '.' } as const;
+
 export const WALLS_LINES = {
   breached: '**Breached** — the walls are broken, and the advantage they carried went with them.',
   fortified: '**Fortified** — the walls stand, and anyone who wants this place must take them first.',

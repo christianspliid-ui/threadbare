@@ -1619,6 +1619,22 @@ export interface DebugBridge {
    * it carries only `wealth` and `meansBand` from the opening purse.
    */
   /**
+   * THR-1937 — what a founding left on a location: the founder (`constructed_by` to an
+   * actor) and the ruler the founding wrote (`controls`, `via: 'founded'`) with why it
+   * was picked. `null` when the id is not a location; the fields are null for a town
+   * nobody founded.
+   */
+  getFoundingRecord: (locationId: string) => Promise<{
+    founderId: string | null;
+    rulerId: string | null;
+    rulerReason: 'faction_rank' | 'realm_tie' | 'id_tie' | 'founder' | null;
+  } | null>;
+  /**
+   * THR-1937 — a lane's toll holder (`controlledBy`) and founder (its identity node's
+   * `constructed_by`), by `trades_with` edge id. `null` when the edge is gone.
+   */
+  getLaneHolders: (edgeId: string) => Promise<{ controlledBy: string | null; founderId: string | null } | null>;
+  /**
    * THR-1936 — one mortal's Means: `wealth` (0–100), its `band` word, and the last
    * reason that moved it (`birth`, `trade_success`, …). `want` is null until S2.
    * `null` when the id is not an actor.

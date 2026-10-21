@@ -1284,6 +1284,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Prosperity',
     desc: 'How well a place lives: destitute, struggling, modest, prosperous or flourishing. Good harvests, trade and peace raise it; hunger, war and sickness wear it down.',
   },
+  // THR-1937 — the place page's "Founded by" line on a town a mortal founded.
+  'ui.place.founded': {
+    label: 'Founded',
+    desc: 'The mortal who founded this town. They keep a freehold here, and it pays them while the town lasts.',
+  },
   // THR-1957 — the On the edge chip (hunger and unrest S2), the plan's words.
   'ui.econ.on_the_edge': {
     label: 'On the edge',
