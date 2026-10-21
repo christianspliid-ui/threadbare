@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 08:00 local (06:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 08:57 local (06:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,14 +30,14 @@ Say 'veto <title>' to reverse any of these.
 
 ## Queue
 
-**Backed up: 29 ready, 1 in progress (parked).**
+**Backed up: 28 ready, 3 in progress (1 parked).**
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, about 13 hours. No branch, no pull request, and no named local worktree holds work for it (checked this run). It waits on the ask above.
-- [War aims S2: regional monopolies pay rent and can embargo an enemy's towns](https://linear.app/threadbare/issue/THR-1955/war-aims-s2-regional-monopolies-pay-rent-and-can-embargo-an-enemys) merged last night ([PR #2508](https://github.com/christianspliid-ui/threadbare/pull/2508)) and is live.
-- The builder started a fresh run at 05:53 UTC. No ticket has sat in the queue for more than a week without being touched.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked, unassigned, about 14 hours. No branch, no pull request, and no named local worktree holds work for it (checked this run). It waits on the ask above.
+- In progress: [the map names undiscovered elder ruins](https://linear.app/threadbare/issue/THR-1960/the-map-names-undiscovered-elder-ruins-place-labels-draw-for-every) (builder, touched 06:50 UTC) and the plan doc for [undertakings in the economy](https://linear.app/threadbare/issue/THR-1937/plan-doc-undertakings-in-the-economy-what-mortals-found-build-and-open) (design lane).
+- The builder is running now (started 06:49 UTC). No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The live site is current (2a755058). Main's checks and the three background jobs are green, no PRs are waiting to merge, and all 13 scheduled lanes are on time.
-- Overnight quiet: no lane ran from about 22:20 last night until 07:53 this morning. Overnight gaps are normal by your ruling, so this is not an ask.
-- Engine speed: "tick cost 181 ms/tick steady, 28% above the 7-day median (141, 113 rows since 667869d2); top phase agent_decision, 621 agents. Name the merges between 667869d2 and 2a755058: git log --oneline --merges 667869d2..2a755058". Measured again while a builder run was starting on this machine. It is the builder's to chase, not yours.
+- All green. The live site is current (2a755058). Main's checks and the three background jobs are green, no PRs are waiting to merge, and the builder is running.
+- Overnight quiet: no lane ran from about 22:20 last night until 08:01 this morning. Overnight gaps are normal by your ruling, so this is not an ask.
+- Engine speed is back to normal: 115 ms per tick, below the week's typical 142. Last hour's high reading was taken while a builder run was starting.
