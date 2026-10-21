@@ -30,6 +30,8 @@ import type { ValuePair } from '../types/agent';
 import type { DigestEntry } from '../types/attention';
 import type { ReachDomain } from '../types/traits';
 import { valuePoleWord } from './castInfluenceDrift';
+import { snapshotCastEconomy, diffCastEconomy, type CastEconomySnapshot } from './castEconomyReceipt';
+import { LOCATION_TRAIT_IDS } from '../data/location-trait-constants';
 import {
   INFLUENCE_CHIP_NOUNS,
   INFLUENCE_CHIP_HOVER,
@@ -91,9 +93,29 @@ export interface CastTargetSnapshot {
   readonly influenceIds: ReadonlySet<string>;
   /** `has_trait` targets (trait / condition node id → display name). */
   readonly traits: ReadonlyMap<string, string>;
+  /**
+   * THR-1968 — the economy part: a settlement's prosperity, unrest band, staples and
+   * lanes, or a mortal's Means. Absent when the target has none or receipts are off.
+   */
+  readonly economy?: CastEconomySnapshot;
 }
 
-export function snapshotCastTarget(graph: WorldGraph, targetId: string): CastTargetSnapshot {
+/**
+ * The unrest chips the economy rows already report (THR-1968). When a place target has
+ * an economy part, a change in one of these is said once, in the economy row's words.
+ */
+const ECONOMY_REPORTED_TRAIT_IDS: ReadonlySet<string> = new Set([
+  LOCATION_TRAIT_IDS.restless,
+  LOCATION_TRAIT_IDS.lawless,
+  LOCATION_TRAIT_IDS.onTheEdge,
+]);
+
+export function snapshotCastTarget(
+  graph: WorldGraph,
+  targetId: string,
+  /** THR-1968 — the realm border map, so staple tiers take the embargo cut the stock-tier phase takes. */
+  realmMap?: ReadonlyMap<string, string>,
+): CastTargetSnapshot {
   const node = graph.getNode(targetId);
   const influences = (node?.properties?.divineInfluences ?? []) as DivineInfluenceEntry[];
   const traits = new Map<string, string>();
@@ -103,10 +125,12 @@ export function snapshotCastTarget(graph: WorldGraph, targetId: string): CastTar
       traits.set(edge.target, trait?.name ?? edge.target);
     }
   }
+  const economy = node ? snapshotCastEconomy(graph, targetId, realmMap) : undefined;
   return {
     targetId,
     influenceIds: new Set(influences.map((e) => e.id)),
     traits,
+    ...(economy ? { economy } : {}),
   };
 }
 
@@ -156,8 +180,10 @@ export function snapshotTargetChanges(
     });
   }
 
+  const economySaysUnrest = !!after.economy?.settlementId;
   for (const [traitId, name] of after.traits) {
     if (before.traits.has(traitId)) continue;
+    if (economySaysUnrest && ECONOMY_REPORTED_TRAIT_IDS.has(traitId)) continue;
     out.push({
       id: `${ctx.idStem}:target:${targetId}:trait_gained:${traitId}`,
       kind: 'trait',
@@ -173,6 +199,7 @@ export function snapshotTargetChanges(
   }
   for (const [traitId, name] of before.traits) {
     if (after.traits.has(traitId)) continue;
+    if (economySaysUnrest && ECONOMY_REPORTED_TRAIT_IDS.has(traitId)) continue;
     out.push({
       id: `${ctx.idStem}:target:${targetId}:trait_lost:${traitId}`,
       kind: 'trait',
@@ -186,6 +213,13 @@ export function snapshotTargetChanges(
       subjectId: targetId,
     });
   }
+
+  // THR-1968 — what an economic card changed on the place or mortal.
+  out.push(...diffCastEconomy(before.economy, after.economy, {
+    idStem: ctx.idStem,
+    targetId,
+    targetName: ctx.targetName,
+  }));
 
   return out;
 }

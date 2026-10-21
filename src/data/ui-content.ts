@@ -1289,6 +1289,19 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Prosperity',
     desc: 'How well a place lives: destitute, struggling, modest, prosperous or flourishing. Good harvests, trade and peace raise it; hunger, war and sickness wear it down.',
   },
+  // THR-1968 — the economy receipt's rows (god's stake S2). Words only; never an amount.
+  'ui.econ.unrest': {
+    label: 'Unrest',
+    desc: 'How angry a place\'s people are: calm, restless, lawless, or on the edge of turning to another lord. Hunger, crowding and harsh rule raise it; bread and order cool it.',
+  },
+  'ui.econ.stores': {
+    label: 'Stores',
+    desc: 'Whether a place has enough of a staple to feed itself: short, enough, or some to spare. A place short of bread grows hungry and restless.',
+  },
+  'ui.econ.roads': {
+    label: 'Roads',
+    desc: 'The trade roads that run from a place. A threatened road carries less, and trade that picks up feeds both ends.',
+  },
   // THR-1937 — the place page's "Founded by" line on a town a mortal founded.
   'ui.place.founded': {
     label: 'Founded',

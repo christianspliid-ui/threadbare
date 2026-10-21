@@ -1968,6 +1968,17 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/playerReceipts.ts', 'src/engine/notificationRouter.ts', 'src/debug-bridge.ts'],
   },
   {
+    id: 'economy-receipt-from-cast-snapshot',
+    producerSystem: ECONOMY,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Every economic card says what it changed (THR-1968, god\'s stake S2; extends `cast-target-changes-reach-receipt`). The cast snapshot gains an economy part (`snapshotCastEconomy`): a settlement\'s prosperity word, the unrest chip it wears, each staple\'s stock tier and the `trades_with` lanes touching it, or a mortal\'s Means band. `diffCastEconomy` turns each real move into one `economy` aftermath change with `subjectId` and `crossed` — a crossed band names the new word, a move inside a band only the direction — in the words of `economy-receipt-content.ts` (Means keeps mortal wealth\'s `meansChangeSentence`, one kind). `decidePresentation` opens the receipt dialog on a crossed target-side `economy` change; otherwise the row rides the toast. The prosperity word is `getProsperityTier`\'s, the same the Fortunes row prints, so the two cannot disagree.',
+    ulTerms: ['Aftermath', 'Prosperity'],
+    mechanism: { kind: 'function', symbols: ['snapshotCastEconomy', 'diffCastEconomy', 'isCrossedTargetEconomyChange', 'ECONOMY_RECEIPT_LINES'], module: 'src/engine/castEconomyReceipt.ts' },
+    writeSites: ['src/engine/castTargetChanges.ts', 'src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/playerReceipts.ts', 'src/components/Game/DivineReceiptModal.tsx'],
+  },
+  {
     id: 'player-cast-lands-in-target-story',
     producerSystem: ENCOUNTERS,
     consumerSystem: NARRATIVE,

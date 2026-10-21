@@ -2036,7 +2036,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     rarityTier: 2,
     intrinsicTier: 'background',
     description: 'Walks unseen alongside the wagons of a settlement. Fords run shallow, axles hold, and the watchers in the rocks find reasons to be elsewhere. Every road that feeds this place runs fuller and safer for a season — and no drover will ever know why the miles were kind.',
-    reach: 'eye',
+    // THR-1968: the card's Reach is the Reach its step rolls (it was 'eye').
+    reach: 'gold',
     crudType: 'update',
     scale: 'local',
     steps: [{

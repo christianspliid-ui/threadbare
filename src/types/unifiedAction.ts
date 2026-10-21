@@ -405,6 +405,18 @@ export interface EncounterAftermathChange {
    * receipt to its modal tier: the change rides the toast with a chip.
    */
   readonly subjectId?: string;
+  /**
+   * THR-1968 — on an `economy` change only: the quantity that moved (`means` for a
+   * mortal's purse; `prosperity`, `unrest`, `staple` or `lane` for a place).
+   * Absent on every other kind (NFP #6).
+   */
+  readonly economyQuantity?: 'means' | 'prosperity' | 'unrest' | 'staple' | 'lane';
+  /**
+   * THR-1968 — on an `economy` change only: true when the move crossed a band (the
+   * detail names the new word), false when it stayed inside one (the detail names
+   * only the direction). A crossed target-side change opens the receipt dialog.
+   */
+  readonly crossed?: boolean;
 }
 
 // ─── World-shaping aftermath supporting types (THR-115) ─────────────────────

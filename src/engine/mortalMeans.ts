@@ -262,6 +262,8 @@ export function buildMeansChange(
     category: words.polarity === 'gain' ? 'boon' : 'scar',
     direction: words.polarity,
     stateNoun: { text: 'Means', tooltipId: MEANS_CHANGE_TOOLTIP_ID },
+    economyQuantity: 'means',
+    crossed: shift.bandAfter !== shift.bandBefore,
     // Law 21: the mortal's name routes to their sheet.
     ...(who ? { concepts: [{ text: who, entityId: agentId, visualKind: 'agent' as const }] } : {}),
     ...(actorId && actorId !== agentId ? { subjectId: agentId } : {}),

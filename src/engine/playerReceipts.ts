@@ -73,6 +73,7 @@ import {
 import { resolveCastValueDrift, valuePoleWord, findValueDriftInfluence } from './castInfluenceDrift';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { targetSideChanges } from './castTargetChanges';
+import { isCrossedTargetEconomyChange } from './castEconomyReceipt';
 
 // ─── Receipt type ────────────────────────────────────────────────────────────────
 
@@ -158,6 +159,9 @@ function decidePresentation(
   // THR-1606: a change on the cast's *target* rides the toast with a chip; only
   // the actor-side world-shifting kinds promote the receipt to its dialogue.
   if (changes.some((c) => c.subjectId === undefined && RECEIPT_MODAL_CHANGE_KINDS.includes(c.kind))) return 'modal';
+  // THR-1968: a crossed band on the target (a lane freed of threat is one) opens the
+  // dialog; an economy move inside a band rides the toast.
+  if (changes.some(isCrossedTargetEconomyChange)) return 'modal';
   if (reactionCount > 0) return 'modal';
   return 'toast';
 }
@@ -445,6 +449,24 @@ export function processPlayerReceipts(state: GameState, _ctx: PhaseContext): Pha
         targetId: action.targetId,
         changeKinds: targetChanges.map((c) => c.kind),
         summary: `receipt: ${template.name} changed ${targetName} (${targetChanges.length} change${targetChanges.length === 1 ? '' : 's'})`,
+      });
+    }
+
+    // THR-1968: what an economic card changed, and whether it opened the dialog.
+    const economyChanges = changes.filter((c) => c.kind === 'economy' && c.subjectId !== undefined);
+    if (economyChanges.length > 0) {
+      emitTrace({
+        tick: state.tick,
+        category: 'receipt.economy',
+        actionId: action.actionId,
+        targetId: action.targetId,
+        changes: economyChanges.map((c) => ({
+          quantity: c.economyQuantity ?? 'unknown',
+          title: c.title,
+          crossed: c.crossed === true,
+        })),
+        presentation,
+        summary: `receipt: ${template.name} moved ${economyChanges.length} economy row(s) on ${targetName} (${presentation})`,
       });
     }
 
