@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 16:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 17:58 local (15:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,13 +17,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Backed up: 28 ready, 2 in progress.**
+**Backed up: 25 ready, 2 in progress.**
 
-- [God's stake S2: every economic card says what it changed](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy) merged as [PR #2516](https://github.com/christianspliid-ui/threadbare/pull/2516) at the top of the hour. The ticket closes itself when the auto-close finishes, and the site publishes it within 20 minutes.
-- [Undertakings in the economy S3: a trade run pays the trader](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the) merged via [PR #2515](https://github.com/christianspliid-ui/threadbare/pull/2515) and is live.
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it, and the builder is now free to take it.
+- [Five round-4 playtest faults](https://linear.app/threadbare/issue/THR-1979) (spell names on the rail, icons after a rebuild, the restraint stance, the plague scene) merged at the top of the hour as [PR #2517](https://github.com/christianspliid-ui/threadbare/pull/2517). The site publishes it within 20 minutes.
+- [The First keeps her trade](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read) is being built right now by the builder's current run (13 files changed in its worktree, active a few minutes ago).
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it, so the builder is free to take it.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-All green. Main's checks and the three background jobs are healthy, no pull request is waiting, and all 13 scheduled lanes are on time. The live site still serves the previous main (7b6405ba); the newest merge (5601fa82) is less than 20 minutes old and still publishing. Engine speed is normal: 124 ms per tick, 12% under the week's median of 142. The overnight quiet from 22:22 Tuesday to 08:01 Wednesday is normal.
+All green. Main's checks and the three background jobs are healthy, no pull request is waiting, and all 13 scheduled lanes are on time. The live site still serves the previous main; the newest merge (9b73a4cf) is less than 20 minutes old and still publishing. Engine speed is normal: 138 ms per tick, 3% under the week's median of 142.
