@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 12:58 local (10:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 14:00 local (12:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,11 +27,12 @@ Say 'veto <title>' to reverse any of these.
 
 **Backed up: 28 ready, 2 in progress.**
 
-- [The aftermath opens with what decided it](https://linear.app/threadbare/issue/THR-1964/the-aftermath-opens-with-what-decided-it-one-cause-line-first-won-at-a) merged via [PR #2513](https://github.com/christianspliid-ui/threadbare/pull/2513) at about 12:48. The ticket closes itself, and the live site picks it up within minutes.
-- [Pickup runs background the long engine gate](https://linear.app/threadbare/issue/THR-2003/an-engine-diff-gate-now-runs-past-the-600-s-command-cap-so-pickup-runs) merged via [PR #2512](https://github.com/christianspliid-ui/threadbare/pull/2512), so the builder is free to claim again.
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked, unassigned, about 18 hours. No branch, no pull request, and no local worktree holds work for it (checked this run). Your go-ahead this morning cleared it for the builder; it is the highest-priority ticket waiting.
+- [Notables and Doom say why](https://linear.app/threadbare/issue/THR-1965/notables-and-doom-say-why-a-fade-line-under-finished-agendas-the) is built as [PR #2514](https://github.com/christianspliid-ui/threadbare/pull/2514), parked unarmed after two review rounds. The pickup run that started at 13:51 is on it now; the next fresh review arms it.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, about 19 hours. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it; it is the highest-priority ticket waiting for the builder.
+- The orchestrator promoted [the reward-kind draw](https://linear.app/threadbare/issue/THR-1997/a-rewards-kind-comes-up-at-the-recipes-share-the-draw-rolls-the-rarity) to ready at 13:30.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- All green. The live site is one merge behind (the aftermath change above, pushed under 20 minutes ago). Main's checks, the three background jobs and all 13 scheduled lanes are on time. The engine measured 141 ms/tick, in line with the week.
+- The engine measured slower this run: "tick cost 189 ms/tick steady, 33% above the 7-day median (142, 112 rows since eb7799bb); top phase agent_decision, 622 agents. Name the merges between eb7799bb and 25dac4c1: git log --oneline --merges eb7799bb..25dac4c1". Last hour measured 141 at the same commit, and a pickup run was building on this machine during the measurement, so this is probably load, not a regression. Next hour's measurement will tell. The executor's job if it holds.
+- Everything else green: the live site serves the latest main (25dac4c1), main's checks and the three background jobs are healthy, and all 13 scheduled lanes are on time.
