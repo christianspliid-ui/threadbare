@@ -6976,11 +6976,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: AMBITIONS,
     consumerSystem: ECONOMY,
     intent:
-      'A lane a mortal opens through the create × route undertaking (THR-1937 S1) is tolled by its founder: settleFoundedLane stamps controlledBy and taxRate (TRADE_ROUTE_DEFAULT_TAX_RATE) on the trades_with edge; who founded it is the constructed_by edge from the lane\'s identity node (written by mintRouteIdentity, or here when absent). Holding income pays a mortal toll holder through controlledBy; the economic chronicle finds identity nodes minted this tick whose lane its founder tolls (foundedLanesThisTick) and writes trade_route_established with both ends named, goods falling back to "goods"; __DEBUG.getLaneHolders and the Economy tab\'s held-lanes table read both.',
+      'A lane a mortal opens through the create × route undertaking (THR-1937 S1) is tolled by its founder: settleFoundedLane stamps controlledBy and taxRate (TRADE_ROUTE_DEFAULT_TAX_RATE) on the trades_with edge; who founded it is the constructed_by edge from the lane\'s identity node (written by mintRouteIdentity, or here when absent), and the founder holds the Route through grantHolding (an owns edge to the identity node, the shape a seize leaves), so control:claim refuses a rival. Holding income pays a mortal toll holder through controlledBy; the economic chronicle finds identity nodes minted this tick whose lane its founder tolls (foundedLanesThisTick) and writes trade_route_established with both ends named, goods falling back to "goods"; __DEBUG.getLaneHolders and the Economy tab\'s held-lanes table read both.',
     ulTerms: ['Route', 'Freehold'],
     mechanism: {
       kind: 'edge',
-      symbols: ['trades_with', 'controlledBy', 'constructed_by', 'settleFoundedLane', 'foundedLanesThisTick', 'readLaneHolders'],
+      symbols: ['trades_with', 'controlledBy', 'constructed_by', 'owns', 'settleFoundedLane', 'foundedLanesThisTick', 'readLaneHolders'],
       module: 'src/engine/undertakingEconomy.ts',
     },
     writeSites: ['src/data/undertaking-objects.ts', 'src/engine/undertakingEconomy.ts'],
@@ -6991,7 +6991,7 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     verifiedLive: {
       date: '2026-10-21',
-      evidence: 'THR-1937. undertakingEconomy.test.ts: after create × route the edge carries controlledBy = founder and taxRate 0.1, the identity node has constructed_by → founder, collectHoldingPayments pays the founder a route_control toll, phaseEconomicChronicle writes a trade_route_established line naming both towns, and the line drops when either end is unnamed.',
+      evidence: 'THR-1937. undertakingEconomy.test.ts: after create × route the edge carries controlledBy = founder and taxRate 0.1, the identity node has constructed_by → founder and owns ← founder (a rival\'s control:claim is refused), collectHoldingPayments pays the founder a route_control toll, phaseEconomicChronicle writes a trade_route_established line naming both towns, and the line drops when either end is unnamed.',
     },
   },
   {

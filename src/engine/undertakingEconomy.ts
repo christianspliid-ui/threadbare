@@ -10,7 +10,8 @@
  *   faction the founder rules.
  * - **Open a lane:** the founder tolls it (`controlledBy` + `taxRate` on the
  *   `trades_with` edge). Who founded it is the `constructed_by` edge the lane's identity
- *   node already carries (`mintRouteIdentity` → `createLocation`).
+ *   node already carries (`mintRouteIdentity` → `createLocation`). The founder also
+ *   holds the Route (`owns`, through `grantHolding`), so nobody else can claim it.
  * - **Found a guild:** a reach profile from the founder's two leading Reaches, a calling
  *   from the leading one, and a purse that opens with what the founding cost.
  *
@@ -88,7 +89,8 @@ export function pickFoundedTownRuler(graph: WorldGraph, founderId: string): Foun
   if (top.length === 1) return { rulerId: top[0].id, reason: 'faction_rank', candidateFactionIds };
   const realms = top.filter(c => c.realm);
   if (realms.length > 0) {
-    // A realm among the tied wins; two tied realms fall to the lower id, still a realm tie.
+    // A realm among the tied wins (`realm_tie`); when every tied faction is a realm, being a
+    // realm decided nothing and the lower id picks, so the reason reads `id_tie`.
     return { rulerId: realms[0].id, reason: realms.length === top.length ? 'id_tie' : 'realm_tie', candidateFactionIds };
   }
   return { rulerId: top[0].id, reason: 'id_tie', candidateFactionIds };
