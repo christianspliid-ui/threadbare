@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-21 14:56 local (12:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-21 15:56 local (13:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -15,24 +15,14 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-## Decided for you
-
-From [the design lane yesterday afternoon, run d](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-20d.md) (veto day ends about 15:25 today):
-
-- [A beast cannot be a bound scene actor](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor): the game gets **no separate creature type**. A beast a mortal can fight and meet again is **a lair's monster**, which already works. Any other animal (the bear in the granary, a wolf pack) stays **scenery**, in the story text and the wounds it leaves. When a scene needs someone to work against, a person speaks for the danger, like the drover who tracks the pack. Nothing changes in play. *Veto:* "animals should live in the world".
-
-Say 'veto <title>' to reverse any of these.
-
 ## Queue
 
 **Backed up: 28 ready, 2 in progress.**
 
-- [Notables and Doom say why](https://linear.app/threadbare/issue/THR-1965/notables-and-doom-say-why-a-fade-line-under-finished-agendas-the) is merged ([PR #2514](https://github.com/christianspliid-ui/threadbare/pull/2514)) and live.
-- [Undertakings in the economy S3: a trade run pays the trader](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the) is being built now: the pickup run that started at 14:31 is active, with a checkpoint commit at 14:40 on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1967-undertakings-economy-s3).
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, about 20 hours. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it; it waits only for the builder to finish THR-1967.
+- [Undertakings in the economy S3: a trade run pays the trader](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the) is built: [PR #2515](https://github.com/christianspliid-ui/threadbare/pull/2515) passed the review gate and is set to merge itself once its checks finish.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is still parked and unassigned, about 6 days since it was first claimed. No pushed branch and no local worktree for it (checked this run). Your go-ahead this morning cleared it; the builder is free to take it now that THR-1967 is waiting on checks.
 - No ticket has sat in the queue for more than a week without being touched.
 
 ## Health
 
-- The engine measured slower again: "tick cost 201 ms/tick steady, 41% above the 7-day median (142, 112 rows since e8355f6f); top phase agent_decision, 622 agents. Name the merges between e8355f6f and f466a9ed: git log --oneline --merges e8355f6f..f466a9ed". Second slow hour in a row (189 last hour, 141 the hour before). A pickup run was building on this machine during both slow measurements, so load is still the likely cause. The executor's job if it holds once the machine is quiet.
-- Everything else green: the live site serves the latest main (f466a9ed), main's checks and the three background jobs are healthy, no pull requests are waiting, and all 13 scheduled lanes are on time.
+All green. The live site serves the latest main (f466a9ed), main's checks and the three background jobs are healthy, the one open pull request will merge on green, and all 13 scheduled lanes are on time. The engine is back to normal speed (125 ms per tick, below the week's median of 142), so last hour's slowdown was the builder loading the machine.
