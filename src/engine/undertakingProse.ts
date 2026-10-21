@@ -23,7 +23,7 @@ import type {
   StrategicActionCandidate,
 } from '../types/strategicAction';
 import { getUndertakingObjectType, objectPlaceNodeId, resolveObjectOwners } from '../data/undertaking-objects';
-import { cellLineSet } from '../data/undertaking-verb-prose';
+import { cellLineSet, UNDERTAKING_CELL_OUTCOME_PROSE } from '../data/undertaking-verb-prose';
 import { hashSeed } from './naming/workNames';
 import { mulberry32 } from '../lib/prng';
 import { resolveToParentLocation } from './sublocationShape';
@@ -228,12 +228,43 @@ export function cellActivityProse(
   });
 }
 
+/**
+ * What a cell executor reported about its completion (THR-1937): an outcome line key in
+ * `UNDERTAKING_CELL_OUTCOME_PROSE`, and the nodes its `{object}` / `{owner}` name when
+ * they are not the work's own handle and victim.
+ */
+export interface CellCompletionOutcome {
+  readonly line?: string;
+  readonly objectId?: string;
+  readonly ownerId?: string;
+}
+
 /** The completion line for a finished cell undertaking, resolved. */
 export function cellCompletionProse(
   graph: WorldGraph,
   project: Pick<StrategicProjectRuntime, 'projectId' | 'actorId' | 'objectHandle' | 'objectTypeId' | 'targetNodeId' | 'victimAgentId'>,
   variant: UndertakingVerbVariant,
+  outcome?: CellCompletionOutcome,
 ): UndertakingProseResult {
+  // THR-1937: an executor that reports an outcome speaks that outcome's line. The slots
+  // it names must resolve — a line with a hole drops to the cell's own line (Law 14).
+  const outcomeLines = outcome?.line && project.objectTypeId
+    ? UNDERTAKING_CELL_OUTCOME_PROSE[`cell.${variant.replace(':', '_')}.${project.objectTypeId}`]?.[outcome.line]
+    : undefined;
+  if (outcomeLines && outcomeLines.length > 0) {
+    const outcomeLine = pickUndertakingLine(outcomeLines, `${project.projectId}:completion`) ?? '';
+    const needsObject = /\{object\}/i.test(outcomeLine);
+    const needsOwner = /\{owner\}/i.test(outcomeLine);
+    const objectOk = !needsObject || !outcome?.objectId || !!graph.getNode(outcome.objectId)?.name;
+    const ownerOk = !needsOwner || (!!outcome?.ownerId && !!graph.getNode(outcome.ownerId)?.name);
+    if (objectOk && ownerOk) {
+      return resolveUndertakingProse(outcomeLine, {
+        graph, actorId: project.actorId, objectTypeId: project.objectTypeId,
+        handle: outcome?.objectId ? { kind: 'node', nodeId: outcome.objectId } : project.objectHandle,
+        targetNodeId: project.targetNodeId, ownerId: outcome?.ownerId ?? project.victimAgentId,
+      });
+    }
+  }
   // THR-1429: a cell may speak with its own voice — `cellLineSet` falls back to the
   // verb's lines for the eleven object types that read the same way.
   const line = pickUndertakingLine(cellLineSet(variant, project.objectTypeId).completion, `${project.projectId}:completion`) ?? '';

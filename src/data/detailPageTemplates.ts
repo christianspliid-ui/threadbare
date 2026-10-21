@@ -349,6 +349,7 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     visibleAt: HOVER,
   },
   sheetRow('past_line', PLACE_ROW_RESOLVERS.past_line, 15, 'overview', DWF),
+  sheetRow('founded_by', PLACE_ROW_RESOLVERS.founded_by, 16, 'overview', DWF),
   sheetRow('fortunes', PLACE_ROW_RESOLVERS.fortunes, 17, 'overview', DWF),
   sheetRow('prayer', PLACE_ROW_RESOLVERS.prayer, 18, 'overview', DWF),
   sheetRow('livelihood', PLACE_ROW_RESOLVERS.livelihood, 20, 'overview', DWF),

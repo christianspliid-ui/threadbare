@@ -1073,6 +1073,26 @@ export const GUILD_IDENTITY_PROSE: Record<string, string[]> = {
     'The guild master attends every council meeting uninvited and leaves having shaped every decision.',
     'Merchant influence is the water table of the settlement — invisible, pervasive, and the first thing you notice when it drops.',
   ],
+  // THR-1937 — the callings a founded guild can take from its founder's Reach
+  // (FOUNDED_GUILD_TYPE_BY_REACH); without a row they read as merchants.
+  builders: [
+    'The Builders\' hall is half scaffold itself. Something in it is always being raised, or propped, or argued over with a plumb line.',
+    'They judge a town by its foundations and a person by whether their walls stand straight. Both judgements are slow and rarely kind.',
+    'Stone dust and wet lime cling to every sleeve. The guild keeps its plans rolled tight, and its promises tighter.',
+    'A builder will tell you what a wall will bear before you ask what it costs. The cost comes after, and it is always more.',
+  ],
+  thieves: [
+    'Nobody admits the hall is there. Everybody in town knows which door not to knock on after dark.',
+    'They keep their own count of every purse in the street, and they keep it better than the purses do.',
+    'The guild has rules, and the rules are older than the watch. Break one and the watch is the least of it.',
+    'What goes missing in this town goes missing through them, or not at all. They take a cut of both.',
+  ],
+  temples: [
+    'The order keeps its doors open and its accounts closed. Pilgrims bring coin in, and very little of it walks out again.',
+    'They tend the shrines, bury the dead and remember who gave what at every feast. Faith here has a ledger.',
+    'Incense and candle smoke have darkened the hall\'s rafters. The keepers move through it quietly, counting.',
+    'The temple feeds the hungry in a bad winter, and the hungry remember who fed them when they choose whom to follow.',
+  ],
 };
 
 // ─── Region Etymology Prose ─────────────────────────────────────────────────

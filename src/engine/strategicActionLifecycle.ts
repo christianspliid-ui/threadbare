@@ -43,7 +43,6 @@ import {
   ENCOUNTER_POOL_INVALIDATING_EDGE_TYPES,
   WARBAND_RECRUIT_CAST_KEY,
   FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
-  FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
   MOMENT_INTERRUPT_SIGNIFICANCE,
   MOMENT_COMPLETION_SIGNIFICANCE,
   HARM_ON_AFFLICT,
@@ -91,8 +90,7 @@ import { getUndertakingObjectType } from '../data/undertaking-objects';
 import { OBJECT_TYPE_NOUNS, OBJECT_TYPE_NAMING_KIND } from '../data/work-name-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { getAgentLocationId } from './graphQueries';
-import { getLocationNodes, isPlaceNode, resolveToParentLocation } from './sublocationShape';
-import { hexDistance } from '../lib/hexMath';
+import { isPlaceNode, resolveToParentLocation } from './sublocationShape';
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { createUndertakingOutcomeNode } from './grievance/undertakingOutcomeNode';
 import { describeDeed } from './undertakingDeed';
@@ -173,55 +171,10 @@ export function renderNameTemplate(
     .trim();
 }
 
-/**
- * An unclaimed hex to found a place-tier location on (THR-1308).
- *
- * Starts at `origin` and, if something already stands there, spirals outward through
- * whole rings up to `FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS`. Returns `null` when the
- * whole neighbourhood is built up — a refusal, not a fallback: founding a settlement
- * on top of one that exists is not founding anything, and the *right* answer when
- * there is no room is that the undertaking fails.
- *
- * Only **place-tier** locations occupy a hex. Sublocations sit inside a parent and
- * share its hex by construction, so counting them would make every settled hex look
- * doubly occupied and change nothing but the arithmetic (`sublocationShape.ts`,
- * THR-1183).
- *
- * NFP #3 (Determinism): candidates are ordered by ring distance, then by column, then
- * by row — no PRNG, so the same world founds on the same hex.
- */
-export function findUnclaimedSite(
-  graph: WorldGraph,
-  origin: { col: number; row: number },
-  radius: number = FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
-): { col: number; row: number } | null {
-  const occupied = new Set<string>();
-  for (const node of getLocationNodes(graph)) {
-    const col = node.properties.hexCol;
-    const row = node.properties.hexRow;
-    if (typeof col === 'number' && typeof row === 'number') occupied.add(`${col},${row}`);
-  }
-
-  const candidates: { col: number; row: number }[] = [];
-  for (let col = origin.col - radius; col <= origin.col + radius; col++) {
-    for (let row = origin.row - radius; row <= origin.row + radius; row++) {
-      const hex = { col, row };
-      if (hexDistance(origin, hex) > radius) continue;
-      if (occupied.has(`${col},${row}`)) continue;
-      candidates.push(hex);
-    }
-  }
-
-  candidates.sort((a, b) => {
-    const da = hexDistance(origin, a);
-    const db = hexDistance(origin, b);
-    if (da !== db) return da - db;
-    if (a.col !== b.col) return a.col - b.col;
-    return a.row - b.row;
-  });
-
-  return candidates[0] ?? null;
-}
+// Moved to `foundingSite.ts` (THR-1937) so the `create × location` cell can call it
+// without importing the lifecycle; re-exported for the callers that import it from here.
+export { findUnclaimedSite } from './foundingSite';
+import { findUnclaimedSite } from './foundingSite';
 
 /**
  * The founder's leading reach, read off the *template's* reach profile rather than
@@ -1068,7 +1021,7 @@ export function advanceStrategicProjects(
       // The band this work actually landed on — the readers a cell owes are graded by
       // it (THR-1428). It is already resolved on the checkpoint record, so no second
       // resolution is needed to grade a survey.
-      const mutation = executeInstantMutation(state, graph, candidate, tick, checked.lastCheckpoint?.band);
+      const mutation = executeInstantMutation(state, graph, candidate, tick, checked.lastCheckpoint?.band, runtime);
       const ops = mutation.ops;
       completedOps.push(...ops);
       poolInvalidatedLocationIds.push(...mutation.poolInvalidatedLocationIds);
@@ -1228,8 +1181,12 @@ export function advanceStrategicProjects(
       // A cell's completion line is composed from the world — the object's name, its
       // holder, the place — never the template's display name (THR-1392 slice 2).
       const completedCell = getStrategicTemplate(project.templateId);
+      // THR-1937: the op may say how the work came out (no free ground; a ruler's banner).
+      const outcomeOp = ops.find(o => o.completionLine);
       const completionMessage = completedCell?.cellVariant && project.objectTypeId
-        ? cellCompletionProse(graph, project, completedCell.cellVariant).text
+        ? cellCompletionProse(graph, project, completedCell.cellVariant, outcomeOp && {
+          line: outcomeOp.completionLine, objectId: outcomeOp.proseObjectId, ownerId: outcomeOp.proseOwnerId,
+        }).text
         : `${actorNode?.name ?? project.actorId} completes: ${finishedName}`;
       if (completionMoment) {
         moments.push({ ...completionMoment, label: completionMessage, undertakingName: finishedName });
@@ -1812,6 +1769,12 @@ function executeInstantMutation(
    * a terminal nothing could miss, and readers correctly take their failure arm.
    */
   outcome?: string,
+  /**
+   * The session runtime, when the caller owns one (THR-1937): a cell that moves a
+   * faction's `controls` edge bumps the structural cache through it. The instant
+   * path has none; the realm projection's fingerprint belt covers that one.
+   */
+  runtime?: SimulationRuntime,
 ): InstantMutationResult {
   const ops: GraphOpResult[] = [];
   const poolInvalidatedLocationIds: string[] = [];
@@ -1841,6 +1804,7 @@ function executeInstantMutation(
       originLocationId: candidate.originLocationId,
       targetNodeId: candidate.targetNodeId,
       outcome,
+      runtime,
     });
     ops.push(...resolution.ops);
     const succeeded = resolution.ops.some(o => o.success);

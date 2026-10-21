@@ -59,11 +59,15 @@ import {
   SUBJECT_FACT_WORDS,
   SUBJECT_ROW_LABELS,
   WALLS_LINES,
+  FOUNDED_BY_LINE,
   postingDistanceWord,
   sphereStrengthWord,
 } from '../../../data/subject-sheet-words';
 import { proseMarkupToHtml } from './pageResolvers';
 import { linkedProseSection, type ProsePart } from './linkedProse';
+import { founderOf } from '../../undertakingEconomy';
+import { isSettlement } from '../../factionPurse/income';
+import { isPlaceNode } from '../../sublocationShape';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -128,6 +132,24 @@ const fortunes: SectionResolver = (ctx) => {
     return linkedProseSection('fortunes', SUBJECT_ROW_LABELS.fortunes, parts, 'fortunesSentence', { labelTooltipId: 'ui.econ.prosperity' });
   }
   return prose('fortunes', SUBJECT_ROW_LABELS.fortunes, `${s.lead}${s.prosperityWord}${s.tail}`, 'fortunesSentence', { labelTooltipId: 'ui.econ.prosperity' });
+};
+
+/**
+ * Who founded a town a mortal founded (THR-1937) — its `constructed_by` edge to a person.
+ * Worldgen towns have none, and the line is omitted (Law 14). The name routes (Law 21);
+ * the label's tooltip names the freehold the founder keeps (`ui.place.founded`).
+ */
+const foundedBy: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p || isPlaceNode(p.node) || !isSettlement(p.node)) return null;
+  const founderId = founderOf(ctx.graph, p.node.id);
+  const founder = founderId ? ctx.graph.getNode(founderId) : undefined;
+  if (!founder?.name || founder.properties.actorType !== 'individual') return null;
+  return linkedProseSection('founded_by', SUBJECT_ROW_LABELS.foundedBy, [
+    FOUNDED_BY_LINE.lead,
+    { text: founder.name, ref: { kind: 'agent', id: founder.id } },
+    FOUNDED_BY_LINE.tail,
+  ], 'founderOf', { labelTooltipId: 'ui.place.founded' });
 };
 
 /** An open prayer to the god, or the faith the town keeps (THR-1935). The god's name links. */
@@ -378,6 +400,7 @@ export const PLACE_ROW_RESOLVERS = {
   place_prose: placeProse,
   past_line: pastLine,
   fortunes,
+  founded_by: foundedBy,
   prayer,
   livelihood,
   contested,

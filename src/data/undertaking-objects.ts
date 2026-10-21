@@ -78,6 +78,13 @@ import type {
 } from '../types/trace';
 import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
+// Undertakings in the economy (THR-1937, S1): what founding leaves behind.
+import {
+  settleFoundedTown, traceFoundTownRefused, settleFoundedLane,
+  foundedGuildReachProfile, settleFoundedGuild, endLoneFounderRule, foundTownSiteRefusal,
+} from '../engine/undertakingEconomy';
+import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
+import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, tollTradeRouteEdge, mintRouteIdentity } from '../engine/tradeRouteOps';
 import { getGroupKind } from '../engine/groupShape';
@@ -1229,6 +1236,15 @@ const LOCATION: UndertakingObjectType = {
       if (last === null) return null;
       return tick - last < YIELD_DRAW_COOLDOWN_TICKS ? 'drawn_recently' : null;
     },
+    // THR-1937: a founding with no free ground near its site is refused at proposal,
+    // not after the work — a completion that founds nothing still grows the Reach.
+    create: (graph, _actorId, handle, tick) => {
+      if (!UNDERTAKING_ECONOMY_ENABLED) return null;
+      const node = nodeOf(graph, handle);
+      if (!node || node.type !== 'location') return null;
+      const site = isPlaceNode(node) ? resolveToParentLocation(graph, node) : node;
+      return site ? foundTownSiteRefusal(graph, site.id, tick) : null;
+    },
   },
   verbs: {
     create: (ctx) => {
@@ -1243,9 +1259,32 @@ const LOCATION: UndertakingObjectType = {
       if (!LOCATION_CLASSES.settlement.includes(subtype)) return fail('create_location', `not_a_settlement_subtype:${subtype}`);
       const name = typeof ctx.params?.name === 'string'
         ? ctx.params.name : `${ctx.graph.getNode(ctx.actorId)?.name ?? 'New'} ${subtype}`;
-      return createLocation(ctx.graph, { col, row }, ctx.actorId, name, subtype, ctx.tick, {
+      if (!UNDERTAKING_ECONOMY_ENABLED) {
+        return createLocation(ctx.graph, { col, row }, ctx.actorId, name, subtype, ctx.tick, {
+          prosperity: FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
+        });
+      }
+      // THR-1937: on free ground. The site is a town that already stands, so the new
+      // one goes on the nearest unclaimed hex — or, with none, nothing is founded and
+      // the card says why.
+      // On the map and on land: never at sea, never off the edge (review gate).
+      const ground = findUnclaimedSite(ctx.graph, { col, row }, undefined, landHexPredicate(ctx.state?.tiles));
+      if (!ground) {
+        traceFoundTownRefused(ctx.actorId, siteId!, ctx.tick, ctx.graph);
+        return { ...fail('create_location', 'no_free_ground'), completionLine: 'no_ground' };
+      }
+      const founded = createLocation(ctx.graph, ground, ctx.actorId, name, subtype, ctx.tick, {
         prosperity: FOUNDED_SETTLEMENT_INITIAL_PROSPERITY,
       });
+      if (!founded.success || !founded.createdId) return founded;
+      // A ruler who taxes it and a freehold for the founder.
+      const ruler = settleFoundedTown({
+        graph: ctx.graph, founderId: ctx.actorId, townId: founded.createdId, siteId: siteId!,
+        hexOffset: hexDistance({ col, row }, ground), tick: ctx.tick, projectId: ctx.projectId, runtime: ctx.runtime,
+      });
+      return ruler && ruler.reason !== 'founder'
+        ? { ...founded, completionLine: 'ruled', proseObjectId: founded.createdId, proseOwnerId: ruler.rulerId }
+        : founded;
     },
     'change:raise': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
@@ -1280,7 +1319,11 @@ const LOCATION: UndertakingObjectType = {
     'control:claim': { mode: 'claim_control' },
     'control:seize': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
-      return nodeId ? transferHolding(ctx.graph, nodeId, ctx.actorId, holdingCtx(ctx)) : fail('transfer_holding', 'no_node');
+      if (!nodeId) return fail('transfer_holding', 'no_node');
+      const result = transferHolding(ctx.graph, nodeId, ctx.actorId, holdingCtx(ctx));
+      // THR-1937: a lone founder's rule goes with the freehold.
+      if (result.success) endLoneFounderRule(ctx.graph, nodeId, ctx.actorId);
+      return result;
     },
     // Ruin: the prosperity floor plus the `ruins` subtype the battle aftermath already
     // reads — not a deletion, and not a new flag. Settlements and strongholds only.
@@ -1400,6 +1443,10 @@ const ROUTE: UndertakingObjectType = {
       // is what every route cell enumerates, so it is what this cell reports. Fail-soft:
       // an unminted identity leaves the edge and reports it, as the lifecycle arm does.
       const identity = mintRouteIdentity(ctx.graph, near, far, routed.createdId, ctx.actorId, ctx.tick);
+      // THR-1937: whoever opens a lane tolls it.
+      if (UNDERTAKING_ECONOMY_ENABLED && routed.createdId) {
+        settleFoundedLane(ctx.graph, ctx.actorId, routed.createdId, identity.success ? identity.createdId : undefined, ctx.tick);
+      }
       return identity.success ? identity : routed;
     },
     // A blockade lowers a route: suspended, not deleted — the trade phases already honour it.
@@ -1715,8 +1762,15 @@ const FACTION: UndertakingObjectType = {
       const name = typeof ctx.params?.name === 'string'
         ? ctx.params.name
         : seed.nameTemplate.replace('{actor}', actor?.name ?? 'The Founder').replace('{location}', site?.name ?? 'the hold');
-      const reach = (ctx.params?.reachProfile ?? {}) as Parameters<typeof foundFaction>[4];
-      return foundFaction(ctx.state, ctx.actorId, siteId, seed, reach, name, ctx.tick);
+      // THR-1937: a founded guild leans the way its founder does, unless the work named a profile.
+      const reach = (ctx.params?.reachProfile
+        ?? (UNDERTAKING_ECONOMY_ENABLED ? foundedGuildReachProfile(actor) : {})) as Parameters<typeof foundFaction>[4];
+      const founded = foundFaction(ctx.state, ctx.actorId, siteId, seed, reach, name, ctx.tick);
+      // A calling the purse's guild work pays, and a purse that opens with what it cost.
+      if (UNDERTAKING_ECONOMY_ENABLED && founded.success && founded.createdId) {
+        settleFoundedGuild(ctx.graph, ctx.actorId, founded.createdId, reach, ctx.tick);
+      }
+      return founded;
     },
     // Undoing a faction is the schism the world already resolves in its own phase.
     destroy: (ctx) => {

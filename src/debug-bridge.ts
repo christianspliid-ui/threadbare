@@ -2617,6 +2617,20 @@ if (import.meta.env.DEV) {
       const profile = resolveAxiologicalProfile(state.graph, agentId, state.tick, state.worldSoul?.fundament);
       return readMortalMeans(state.graph, agentId, profile as Partial<Record<string, number>>);
     },
+    /** THR-1937 — who founded a location and who rules it because of the founding. */
+    getFoundingRecord: async (locationId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { readFoundingRecord } = await import('./engine/undertakingEconomy');
+      return readFoundingRecord(state.graph, locationId);
+    },
+    /** THR-1937 — a lane's toll holder and founder, by its `trades_with` edge id. */
+    getLaneHolders: async (edgeId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { readLaneHolders } = await import('./engine/undertakingEconomy');
+      return readLaneHolders(state.graph, edgeId);
+    },
     /** THR-1931 — every faction's last pay day, keyed by faction id. */
     getPurseLedger: async () => {
       const state = _gameStateProvider?.();
