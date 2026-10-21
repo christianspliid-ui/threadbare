@@ -81,7 +81,7 @@ import { applyPlantSchism } from '../engine/schismPlant';
 // Undertakings in the economy (THR-1937, S1): what founding leaves behind.
 import {
   settleFoundedTown, traceFoundTownRefused, settleFoundedLane,
-  foundedGuildReachProfile, settleFoundedGuild,
+  foundedGuildReachProfile, settleFoundedGuild, endLoneFounderRule,
 } from '../engine/undertakingEconomy';
 import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
 import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
@@ -1310,7 +1310,11 @@ const LOCATION: UndertakingObjectType = {
     'control:claim': { mode: 'claim_control' },
     'control:seize': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
-      return nodeId ? transferHolding(ctx.graph, nodeId, ctx.actorId, holdingCtx(ctx)) : fail('transfer_holding', 'no_node');
+      if (!nodeId) return fail('transfer_holding', 'no_node');
+      const result = transferHolding(ctx.graph, nodeId, ctx.actorId, holdingCtx(ctx));
+      // THR-1937: a lone founder's rule goes with the freehold.
+      if (result.success) endLoneFounderRule(ctx.graph, nodeId, ctx.actorId);
+      return result;
     },
     // Ruin: the prosperity floor plus the `ruins` subtype the battle aftermath already
     // reads — not a deletion, and not a new flag. Settlements and strongholds only.

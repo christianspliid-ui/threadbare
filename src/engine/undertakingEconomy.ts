@@ -161,6 +161,25 @@ export function settleFoundedTown(input: FoundTownEconomyInput): FoundedTownRule
   return ruler;
 }
 
+/**
+ * A seize of a founded town's freehold ends a lone founder's rule. The founder's
+ * `controls` edge has no stance behind it, so neither the seize retirement nor the
+ * conquest aftermath would ever remove it — the founder would tithe the town forever
+ * after losing it. A faction ruler stays: seizing a freehold does not depose a realm.
+ * The seizer gets only the freehold; ruling it is a `control:claim` stance like any
+ * other mortal hold. Returns the removed edge ids (the seize's own trace records the
+ * transfer).
+ */
+export function endLoneFounderRule(graph: WorldGraph, townId: string, seizerId: string): string[] {
+  const removed: string[] = [];
+  for (const edge of graph.getIncomingEdges(townId, 'controls')) {
+    if (edge.properties?.via !== FOUNDED_CONTROLS_VIA || edge.source === seizerId) continue;
+    if (isFactionNode(graph.getNode(edge.source))) continue;
+    try { graph.removeEdge(edge.id); removed.push(edge.id); } catch { /* already gone */ }
+  }
+  return removed;
+}
+
 /** The no-free-ground refusal, traced (the cell completes with nothing founded). */
 export function traceFoundTownRefused(founderId: string, siteId: string, tick: number): void {
   emitTrace({

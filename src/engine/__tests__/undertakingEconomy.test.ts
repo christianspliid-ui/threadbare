@@ -362,6 +362,39 @@ describe('THR-1937 — a founder who rules alone tithes once the town grows (rev
     expect(tithe).toHaveLength(1);
     expect(tithe[0].holderId).toBe(FOUNDER);
   });
+
+  function seize(graph: WorldGraph, townId: string, actorId: string): GraphOpResult {
+    const semantic = getUndertakingObjectType('location' as never)!.verbs['control:seize'] as ObjectVerbSemantic;
+    return semantic({
+      state: asState(graph, 20), graph, actorId, tick: 20, projectId: 'proj_2',
+      targetNodeId: townId, handle: { kind: 'node', nodeId: townId },
+    } as unknown as ObjectVerbContext) as GraphOpResult;
+  }
+
+  it('a seize of the freehold ends a lone founder\'s rule and tithe (review gate cycle 2)', () => {
+    const graph = world();
+    graph.addNode({ id: 'vessa', type: 'actor', name: 'Vessa', properties: { actorType: 'individual' } });
+    const townId = runCell(graph, 'location').createdId!;
+    const town = graph.getNode(townId)!;
+    graph.updateNode(townId, { properties: { ...town.properties, prosperity: 60 } });
+
+    expect(seize(graph, townId, 'vessa').success).toBe(true);
+    expect(graph.getOutgoingEdges('vessa', 'owns').some(e => e.target === townId)).toBe(true);
+    expect(graph.getIncomingEdges(townId, 'controls')).toHaveLength(0);
+    expect(readFoundingRecord(graph, townId)).toEqual({ founderId: FOUNDER, rulerId: null, rulerReason: null });
+    expect(collectHoldingPayments(graph).some(p => p.reason === 'location_tithe' && p.sourceId === townId)).toBe(false);
+  });
+
+  it('a seize of the freehold leaves a faction ruler standing', () => {
+    const graph = world();
+    faction(graph, 'f_saltmarch', { holds: 'loc_wolfton' });
+    member(graph, 'f_saltmarch', 0.6);
+    graph.addNode({ id: 'vessa', type: 'actor', name: 'Vessa', properties: { actorType: 'individual' } });
+    const townId = runCell(graph, 'location').createdId!;
+
+    expect(seize(graph, townId, 'vessa').success).toBe(true);
+    expect(graph.getIncomingEdges(townId, 'controls').map(e => e.source)).toEqual(['f_saltmarch']);
+  });
 });
 
 describe('THR-1937 — a founded town stands on land, on the map (review gate round 2)', () => {
