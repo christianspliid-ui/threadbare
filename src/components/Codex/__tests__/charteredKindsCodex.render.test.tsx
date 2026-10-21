@@ -142,8 +142,8 @@ describe('codex surface — a chartered card opens a page that reads as words', 
     expect(page).toContain('They set their eyes on the trade roads');
     expect(page, 'no pronoun token reaches the Codex').not.toMatch(/\{(they|them|their|theirs|themselves|is|s|They|Their)\}/);
     expect(page).toContain('What finishes it');
-    // The completion rule as a sentence, never `2 of 3`.
-    expect(page).toContain('Two of its three marks');
+    // The completion rule as a sentence, never `3 of 5` (THR-1967 widened it from 2 of 3).
+    expect(page).toContain('Three of its five marks');
   });
 });
 

@@ -313,9 +313,7 @@ export function phaseFactionAmbitions(state: GameState): void {
           category: 'faction_ambition',
           summary: `Faction ${faction.name} achieved resource acquisition — holds a regional monopoly`,
           factionId: faction.id,
-          ambitionType: 'resource_acquisition',
-          event: 'achieved',
-          reason: 'regional_monopoly',
+          result: 'achieved',
         });
         emitTrace({
           tick: state.tick,
