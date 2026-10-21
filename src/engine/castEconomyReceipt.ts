@@ -22,9 +22,10 @@
  * **Staple tiers are derived here, not read from the stored `stockTier`.** The stored
  * tier is refreshed by the stock-tier phase, after the cast; reading it would make a
  * Bless the Harvest that filled a granary say nothing. Both snapshots use the same
- * derivation (`deriveLocationStockTiers`, without the embargo cut, which needs the
- * realm map), and a row is written only when the cast changed the good's quantity, so
- * the receipt never reports a tier the cast did not move.
+ * derivation (`deriveLocationStockTiers`, with the embargo cut as far as the graph alone
+ * can see it). A row is written only when the cast changed the good's quantity, and only
+ * when the derivation before the cast agrees with the stored tier the page shows, so the
+ * receipt never reports a tier the cast did not move or the page would contradict.
  */
 
 import type { WorldGraph } from './graph';
@@ -35,6 +36,8 @@ import { resolveToParentLocation } from './sublocationShape';
 import { getSublocationsAt } from './graphQueries';
 import { deriveLocationStockTiers, readResources } from './resourceEconomy';
 import { getResourceClass } from '../data/resource-classes';
+import { embargoCutsByLocation } from './regionalMonopoly';
+import { REGIONAL_MONOPOLY_ENABLED, EMBARGO_BALANCE_CUT } from '../data/regional-monopoly-constants';
 import { RESOURCE_DEFINITIONS } from '../data/resource-content';
 import {
   LOCATION_TRAIT_IDS,
@@ -71,6 +74,8 @@ export interface EconomyLaneSnapshot {
 export interface EconomyStapleSnapshot {
   readonly tier: StockTier;
   readonly quantity: number;
+  /** The tier the stock-tier phase last stored (what the town page shows), when one is. */
+  readonly storedTier?: StockTier;
 }
 
 /** The economy part of a cast snapshot. Every field is optional (a field it cannot read is left out). */
@@ -127,12 +132,20 @@ function readStaples(graph: WorldGraph, locationId: string, props: Record<string
   const staples = new Map<string, EconomyStapleSnapshot>();
   const resources = readResources(props);
   if (Object.keys(resources).length === 0) return staples;
-  const derivation = deriveLocationStockTiers(props, getSublocationsAt(graph, locationId).length);
+  // The embargo cut the stock-tier phase applies, as far as the graph alone can say
+  // (no realm map here). `storedTier` guards the rest: see `stapleChanges`.
+  const cutSet = REGIONAL_MONOPOLY_ENABLED ? embargoCutsByLocation(graph).get(locationId) : undefined;
+  const cuts = cutSet ? new Map([...cutSet].map(rid => [rid, EMBARGO_BALANCE_CUT] as const)) : undefined;
+  const derivation = deriveLocationStockTiers(props, getSublocationsAt(graph, locationId).length, cuts);
   for (const [resourceId, instance] of Object.entries(resources)) {
     if (getResourceClass(resourceId).category !== 'staple') continue;
     const derived = derivation.perResource[resourceId];
     if (!derived || typeof instance?.quantity !== 'number') continue;
-    staples.set(resourceId, { tier: derived.tier, quantity: instance.quantity });
+    staples.set(resourceId, {
+      tier: derived.tier,
+      quantity: instance.quantity,
+      ...(instance.stockTier ? { storedTier: instance.stockTier } : {}),
+    });
   }
   return staples;
 }
@@ -291,6 +304,10 @@ function stapleChanges(
     const was = before.staples.get(resourceId);
     const now = after.staples.get(resourceId)!;
     if (!was || was.quantity === now.quantity || was.tier === now.tier) continue;
+    // The derivation before the cast must agree with the tier the page shows. When it
+    // does not (an embargo cut the graph alone cannot see, or a stale tier), the row is
+    // left out rather than naming a tier the page will contradict (Law 56).
+    if (was.storedTier !== undefined && was.storedTier !== was.tier) continue;
     const direction: EconomyReceiptDirection =
       ECONOMY_STOCK_ORDER.indexOf(now.tier) > ECONOMY_STOCK_ORDER.indexOf(was.tier) ? 'up' : 'down';
     const touchesScarce = was.tier === 'scarce' || now.tier === 'scarce';

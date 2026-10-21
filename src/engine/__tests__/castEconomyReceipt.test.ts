@@ -195,6 +195,16 @@ describe('THR-1968 — the economy receipt', () => {
       expect(rows[0].crossed).toBe(true);
     });
 
+    it('a staple whose page tier disagrees with the derivation writes no row', () => {
+      // The page says adequate (an embargo cut, say); the cut-free derivation says scarce.
+      addTown({ prosperity: 50, resources: { grain: { quantity: 0, renewable: true, renewalRate: 0.1, stockTier: 'adequate' } } });
+      const before = snapshotCastEconomy(graph, TOWN);
+      (graph.getNode(TOWN)!.properties.resources as Record<string, { quantity: number }>).grain.quantity = 100;
+      expect(diffCastEconomy(before, snapshotCastEconomy(graph, TOWN), {
+        idStem: 'x', targetId: TOWN, targetName: 'Millbrook',
+      })).toEqual([]);
+    });
+
     it('a mortal\'s Means reads mortal wealth\'s words, on the one economy kind', () => {
       graph.addNode({ id: MORTAL, type: 'actor', name: 'Kael', properties: { actorType: 'individual', wealth: 30 } });
       const before = snapshotCastEconomy(graph, MORTAL);
