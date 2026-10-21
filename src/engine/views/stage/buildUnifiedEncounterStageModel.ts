@@ -719,7 +719,13 @@ function buildAftermath(
   const displayChanges = authoredVariant
     ? mergeAftermathChanges(summary.changes, authoredVariant.changes)
     : summary.changes;
-  const rawOverview = authoredVariant?.overview ?? summary.overview;
+  // THR-1964 — the resolver stores the authored overview behind its cause line
+  // ("Kael won …, at a price. The work on Gold nearly broke …"). Prefer that
+  // stored line whenever it carries this variant's overview, so the cause line
+  // reaches the screen; a variant the stored summary does not carry still wins.
+  const rawOverview = authoredVariant?.overview && !summary.overview.endsWith(authoredVariant.overview)
+    ? authoredVariant.overview
+    : summary.overview;
   const displayOverview = enrichProse(rawOverview, ctx);
 
   // Build actor name → support binding lookup from support bundle

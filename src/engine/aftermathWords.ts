@@ -1111,8 +1111,11 @@ export function buildAftermathCauseLine(args: {
     ? (step.reach ? `${step.title} on ${reachDisplayName(step.reach)}` : step.title)
     : (step.reach ? CAUSE_UNTITLED_STEP(reachDisplayName(step.reach)) : undefined);
   if (!noun) return lead;
+  // A step that failed outright was not held by anyone's cards, even on an
+  // ending that was won at a price; a near miss was (the ticket's example).
+  const stepFailed = STEP_OUTCOMES.indexOf(step.band) >= STEP_OUTCOMES.indexOf('failure');
   const clause = step.godTouched
-    ? (CAUSE_LOST_OUTCOMES.has(args.outcome) ? CAUSE_GOD_COULD_NOT_SAVE : CAUSE_GOD_HELD)
+    ? (CAUSE_LOST_OUTCOMES.has(args.outcome) || stepFailed ? CAUSE_GOD_COULD_NOT_SAVE : CAUSE_GOD_HELD)
     : CAUSE_ALONE(args.actorName);
   return `${lead} ${noun} ${CAUSE_STEP_VERBS[step.band]}, and ${clause}.`;
 }

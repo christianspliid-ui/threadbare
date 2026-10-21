@@ -96,7 +96,9 @@ describe('THR-1964 — the cause line, every band × god-touched / alone × one-
             }
             expect(text).toContain(`The work on Gold ${CAUSE_STEP_VERBS[band]}`);
             if (!godTouched) expect(text).toContain('Kael faced it alone.');
-            else if (LOST.has(outcome)) expect(text).toContain('your cards could not save it.');
+            else if (LOST.has(outcome) || band === 'failure' || band === 'critical_failure') {
+              expect(text).toContain('your cards could not save it.');
+            }
             else expect(text).toContain('your cards held it.');
             expect(text).not.toMatch(/[{}_]/);
             expect(containsNumeral(text)).toBe(false);

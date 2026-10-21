@@ -401,6 +401,36 @@ describe('buildUnifiedEncounterStageModel', () => {
         const plain = buildBandedModel('success');
         expect(plain.aftermath!.overview).toContain('behind them either way');
       });
+
+      // THR-1964 — the resolver stores the authored overview behind its cause line;
+      // the stage must show the stored line, not re-read the bare variant.
+      it('keeps the cause line the resolver put in front of the authored overview', () => {
+        const cause = 'Kael won Test, outright. The work on Iron shone, and Kael faced it alone.';
+        const base = buildBandedModel('critical_success');
+        const model = buildUnifiedEncounterStageModel({
+          template: BANDED_TEMPLATE,
+          activeAction: {
+            ...buildLinearAction(),
+            resolved: true,
+            outcome: 'critical_success',
+            stepOutcomes: ['success', 'success'],
+            aftermathSummary: {
+              encounterId: BANDED_TEMPLATE.id,
+              outcome: 'critical_success',
+              overview: `${cause} Not a plank complained; the far bank came up dry.`,
+              changes: [],
+            },
+          },
+          notification: buildNotification(),
+          agentName: 'Kael the Scout',
+          threadTier: 'strong',
+          graph: buildGraph(),
+          essence: 10,
+        });
+        expect(model.aftermath!.overview).toContain('The work on Iron shone');
+        expect(model.aftermath!.overview).toContain('Not a plank complained');
+        expect(base.aftermath!.overview).not.toContain('The work on Iron');
+      });
     });
 
     // THR-1042: an authored variant overrides the PROSE, never erases the FACTS.
