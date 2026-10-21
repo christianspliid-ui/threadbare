@@ -23,6 +23,14 @@ export const UNDERTAKING_ECONOMY_ENABLED = true;
 export const FOUNDED_TOWN_RULER_INFLUENCE = 0.5;
 
 /**
+ * How long a site where a founding found no free ground stays off the board for
+ * `create × location`. The board can see a built-up neighbourhood but not water (its
+ * eligibility hook has no tiles), so the first refusal marks the site and this keeps
+ * the same doomed founding from being offered again until the world may have moved.
+ */
+export const FOUNDING_NO_GROUND_COOLDOWN_TICKS = 180;
+
+/**
  * A founded guild's calling, by its founder's leading Reach (Law 58: one entry per
  * Reach; `null` is an entry). The value is a row of `GUILD_PLACE_AFFINITY`, so the
  * purse's guild work pays a founded guild like any town guild.

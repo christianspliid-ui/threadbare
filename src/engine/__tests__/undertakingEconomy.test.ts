@@ -5,7 +5,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { getUndertakingObjectType } from '../../data/undertaking-objects';
+import { getUndertakingObjectType, eligibilityRefusal } from '../../data/undertaking-objects';
 import type { ObjectVerbContext, ObjectVerbSemantic } from '../../data/undertaking-objects';
 import {
   pickFoundedTownRuler,
@@ -22,7 +22,7 @@ import { computePurseIncome, isSettlement } from '../factionPurse/income';
 import { foundedLanesThisTick, phaseEconomicChronicle } from '../phaseEconomicChronicle';
 import { cellCompletionProse } from '../undertakingProse';
 import { REALM_FACTION_CLASS } from '../../data/realm-content';
-import { FOUNDED_GUILD_TYPE_BY_REACH, FOUNDED_TOWN_RULER_INFLUENCE } from '../../data/undertaking-economy-constants';
+import { FOUNDED_GUILD_TYPE_BY_REACH, FOUNDED_TOWN_RULER_INFLUENCE, FOUNDING_NO_GROUND_COOLDOWN_TICKS } from '../../data/undertaking-economy-constants';
 import { REACH_DOMAINS } from '../../types/traits';
 import { GUILD_PLACE_AFFINITY } from '../../data/faction-purse-constants';
 import { GUILD_IDENTITY_PROSE } from '../../data/prose-layer-content';
@@ -443,5 +443,26 @@ describe('THR-1937 — a founded town stands on land, on the map (review gate ro
     const result = runWithTiles(graph, tilesAround((c, r) => !(c === 10 && r === 10)));
     expect(result.success).toBe(false);
     expect(result.completionLine).toBe('no_ground');
+  });
+
+  it('keeps a site whose founding found only water off the board for the cooldown', () => {
+    const graph = world();
+    const location = getUndertakingObjectType('location')!;
+    const site = { kind: 'node', nodeId: SITE } as const;
+    expect(eligibilityRefusal(graph, location, 'create', FOUNDER, site, 10)).toBeNull();
+    runWithTiles(graph, tilesAround((c, r) => !(c === 10 && r === 10)));
+    expect(eligibilityRefusal(graph, location, 'create', FOUNDER, site, 11)).toBe('no_free_ground');
+    expect(eligibilityRefusal(graph, location, 'create', FOUNDER, site, 10 + FOUNDING_NO_GROUND_COOLDOWN_TICKS)).toBeNull();
+  });
+});
+
+describe('THR-1937 — a founding with no free ground is refused at proposal', () => {
+  it('refuses create × location on a built-up neighbourhood before any work', () => {
+    const graph = world();
+    for (let c = 5; c <= 15; c++) for (let r = 5; r <= 15; r++) {
+      if (!(c === 10 && r === 10)) town(graph, `fill_${c}_${r}`, `F${c}${r}`, c, r, 'hamlet');
+    }
+    const location = getUndertakingObjectType('location')!;
+    expect(eligibilityRefusal(graph, location, 'create', FOUNDER, { kind: 'node', nodeId: SITE }, 10)).toBe('no_free_ground');
   });
 });

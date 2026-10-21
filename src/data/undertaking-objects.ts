@@ -81,7 +81,7 @@ import { applyPlantSchism } from '../engine/schismPlant';
 // Undertakings in the economy (THR-1937, S1): what founding leaves behind.
 import {
   settleFoundedTown, traceFoundTownRefused, settleFoundedLane,
-  foundedGuildReachProfile, settleFoundedGuild, endLoneFounderRule,
+  foundedGuildReachProfile, settleFoundedGuild, endLoneFounderRule, foundTownSiteRefusal,
 } from '../engine/undertakingEconomy';
 import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
 import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
@@ -1236,6 +1236,15 @@ const LOCATION: UndertakingObjectType = {
       if (last === null) return null;
       return tick - last < YIELD_DRAW_COOLDOWN_TICKS ? 'drawn_recently' : null;
     },
+    // THR-1937: a founding with no free ground near its site is refused at proposal,
+    // not after the work — a completion that founds nothing still grows the Reach.
+    create: (graph, _actorId, handle, tick) => {
+      if (!UNDERTAKING_ECONOMY_ENABLED) return null;
+      const node = nodeOf(graph, handle);
+      if (!node || node.type !== 'location') return null;
+      const site = isPlaceNode(node) ? resolveToParentLocation(graph, node) : node;
+      return site ? foundTownSiteRefusal(graph, site.id, tick) : null;
+    },
   },
   verbs: {
     create: (ctx) => {
@@ -1261,7 +1270,7 @@ const LOCATION: UndertakingObjectType = {
       // On the map and on land: never at sea, never off the edge (review gate).
       const ground = findUnclaimedSite(ctx.graph, { col, row }, undefined, landHexPredicate(ctx.state?.tiles));
       if (!ground) {
-        traceFoundTownRefused(ctx.actorId, siteId!, ctx.tick);
+        traceFoundTownRefused(ctx.actorId, siteId!, ctx.tick, ctx.graph);
         return { ...fail('create_location', 'no_free_ground'), completionLine: 'no_ground' };
       }
       const founded = createLocation(ctx.graph, ground, ctx.actorId, name, subtype, ctx.tick, {

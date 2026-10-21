@@ -36,7 +36,9 @@ import {
   FOUNDED_GUILD_TYPE_BY_REACH,
   FOUNDED_LANE_GOODS_FALLBACK,
   FOUNDED_TOWN_RULER_INFLUENCE,
+  FOUNDING_NO_GROUND_COOLDOWN_TICKS,
 } from '../data/undertaking-economy-constants';
+import { findUnclaimedSite } from './foundingSite';
 import { MEANS_CELL_COST, MEANS_CELL_COST_ENABLED } from '../data/mortal-means-constants';
 import { TRADE_ROUTE_DEFAULT_TAX_RATE } from './tradeRoute';
 import { ROUTE_IDENTITY_SUBTYPE } from '../data/strategic-action-constants';
@@ -182,8 +184,30 @@ export function endLoneFounderRule(graph: WorldGraph, townId: string, seizerId: 
   return removed;
 }
 
-/** The no-free-ground refusal, traced (the cell completes with nothing founded). */
-export function traceFoundTownRefused(founderId: string, siteId: string, tick: number): void {
+/** The site property a no-free-ground refusal stamps with its tick. */
+export const NO_GROUND_TICK_PROPERTY = 'foundingNoGroundTick';
+
+/**
+ * Why a town cannot be founded from this site, or `null` (the `create × location`
+ * eligibility hook, at proposal). A built-up neighbourhood is seen directly; water is
+ * not (no tiles here), so a site whose last founding found no ground is refused for
+ * `FOUNDING_NO_GROUND_COOLDOWN_TICKS` after it.
+ */
+export function foundTownSiteRefusal(graph: WorldGraph, siteId: string, tick: number): string | null {
+  const site = graph.getNode(siteId);
+  if (!site) return null;
+  const last = site.properties[NO_GROUND_TICK_PROPERTY];
+  if (typeof last === 'number' && tick - last < FOUNDING_NO_GROUND_COOLDOWN_TICKS) return 'no_free_ground';
+  const col = site.properties.hexCol;
+  const row = site.properties.hexRow;
+  if (typeof col !== 'number' || typeof row !== 'number') return null;
+  return findUnclaimedSite(graph, { col, row }) ? null : 'no_free_ground';
+}
+
+/** The no-free-ground refusal, traced (the cell completes with nothing founded), and the site marked. */
+export function traceFoundTownRefused(founderId: string, siteId: string, tick: number, graph?: WorldGraph): void {
+  const site = graph?.getNode(siteId);
+  if (site) site.properties[NO_GROUND_TICK_PROPERTY] = tick;
   emitTrace({
     category: 'undertaking.economy.found_town_refused',
     tick,
