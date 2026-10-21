@@ -28,6 +28,7 @@ import {
   LOCATION_ICON_REGISTRY,
   LOCATION_SIZE_SCALE,
   CENTERED_SIZE_CLASSES,
+  resolvePlaceIconDef,
 } from '../locations/locationIconRegistry';
 import {
   SLOT_RING_RADIUS,
@@ -159,6 +160,44 @@ export interface LocationLabelData {
   importance: LocationImportance;
   /** Raw location type — needed to compute icon position (centered vs ring) */
   locationType: string;
+  /** THR-1960: an undiscovered anomaly. It keeps its ring slot (the icon pass gives it
+   *  one and draws nothing there), but its name is not shown. */
+  hidden?: boolean;
+}
+
+/** One hex's labels, split the way LocationIconMesh lays out its icons. */
+export interface HexLabelPartition {
+  centered: LocationLabelData[];
+  /** Ring slot order: index i takes slot i of `ringSlotCount`. */
+  ring: LocationLabelData[];
+  ringSlotCount: number;
+}
+
+/**
+ * Partition one hex's places into centered and ring labels, mirroring the icon pass
+ * (THR-1960): a type the map leaves off on purpose (`UNDRAWN_PLACE_TYPES`, e.g. a hidden
+ * elder ruin) gets no slot and no label; a `hidden` place keeps its slot but no label.
+ */
+export function partitionHexLabels(hexLocs: readonly LocationLabelData[]): HexLabelPartition {
+  const centered: LocationLabelData[] = [];
+  const ringEligible: LocationLabelData[] = [];
+  for (const loc of hexLocs) {
+    if (resolvePlaceIconDef(loc.locationType).status === 'undrawn') continue;
+    const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+    if (iconDef && CENTERED_SIZE_CLASSES.has(iconDef.sizeClass)) {
+      centered.push(loc);
+    } else {
+      ringEligible.push(loc);
+    }
+  }
+  // Sort ring-eligible by name for deterministic slot assignment (NFP #3)
+  ringEligible.sort((a, b) => a.name.localeCompare(b.name));
+  const ringSlots = ringEligible.slice(0, MAX_RING_LOCATIONS);
+  return {
+    centered: centered.filter(loc => !loc.hidden),
+    ring: ringSlots,
+    ringSlotCount: ringSlots.length,
+  };
 }
 
 interface LocationLabelOverlayProps {
@@ -336,19 +375,7 @@ export function LocationLabelOverlay({
 
       for (const hexLocs of hexGroups.values()) {
         // Partition centered vs ring — same logic as LocationIconMesh
-        const centered: LocationLabelData[] = [];
-        const ringEligible: LocationLabelData[] = [];
-        for (const loc of hexLocs) {
-          const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
-          if (iconDef && CENTERED_SIZE_CLASSES.has(iconDef.sizeClass)) {
-            centered.push(loc);
-          } else {
-            ringEligible.push(loc);
-          }
-        }
-        // Sort ring-eligible by name for deterministic slot assignment (NFP #3)
-        ringEligible.sort((a, b) => a.name.localeCompare(b.name));
-        const ringVisible = ringEligible.slice(0, MAX_RING_LOCATIONS);
+        const { centered, ring: ringVisible, ringSlotCount } = partitionHexLabels(hexLocs);
 
         // Process centered locations (icon at hex center)
         for (const loc of centered) {
@@ -362,7 +389,8 @@ export function LocationLabelOverlay({
         // Process ring locations (icon at ring offset)
         for (let i = 0; i < ringVisible.length; i++) {
           const loc = ringVisible[i];
-          const offset = getFixedSlotOffset(i, ringVisible.length, VERTEX_ANGLES_DEG, SLOT_RING_RADIUS);
+          if (loc.hidden) continue;
+          const offset = getFixedSlotOffset(i, ringSlotCount, VERTEX_ANGLES_DEG, SLOT_RING_RADIUS);
           const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
           const iconHalfSize = iconDef
             ? HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] * LOCATION_RING_SCALE_FACTOR / 2
