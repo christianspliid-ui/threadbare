@@ -25,6 +25,8 @@ import type { HexContentsVM } from './hexContents';
 import type { RefRow } from './types';
 import type { LandIndexRowVM, LandIndexVM, LinkRowVM } from './subjects/subjectTypes';
 import { selectCovenantRows } from './subjects/godSheet';
+import { buildLairMonsterCardModel } from './stage/buildLairMonsterCardModel';
+import { LAIR_MONSTER_WORDS } from '../../data/subject-sheet-words';
 
 function linkRow(row: RefRow, hexKey: string, fact = ''): LinkRowVM {
   return { ref: row.ref, name: row.name, fact, mapLocated: true, hexKey, staleFact: null };
@@ -33,6 +35,24 @@ function linkRow(row: RefRow, hexKey: string, fact = ''): LinkRowVM {
 /** The work a person does, as the player reads it — the trade word first (THR-1982). */
 function roleOf(graph: WorldGraph, id: string): string {
   return displayTradeLabel(graph.getNode(id));
+}
+
+/**
+ * The lair's monster as a row under its lair (THR-1992): the monster's name links, and its
+ * fact is the lair card's clock word — "untouched", "half-broken", "slain by Vara". The
+ * same `buildLairMonsterCardModel` the lair's place page reads. No monster → no row.
+ */
+function lairMonsterRow(state: GameState, lairId: string, hexKey: string): LinkRowVM | null {
+  let model: ReturnType<typeof buildLairMonsterCardModel> = null;
+  try {
+    model = buildLairMonsterCardModel(state.graph, lairId, state.tick, state.ascendantId ?? '');
+  } catch {
+    return null;
+  }
+  const m = model?.monster;
+  if (!m) return null;
+  const fact = m.slainBy ? `${m.clock.word} ${LAIR_MONSTER_WORDS.slainByLead} ${m.slainBy}` : m.clock.word;
+  return linkRow({ ref: { kind: 'agent', id: m.id, name: m.name }, name: m.name }, hexKey, fact);
 }
 
 /** The rows of each kind, before the always / when-present rule. */
@@ -54,7 +74,10 @@ function rowsFor(id: LandIndexRowId, contents: HexContentsVM, state: GameState):
       return out;
     }
     case 'lair':
-      return contents.lairs.map(l => linkRow(l, key));
+      return contents.lairs.flatMap(l => {
+        const monster = lairMonsterRow(state, l.ref.id, key);
+        return monster ? [linkRow(l, key), monster] : [linkRow(l, key)];
+      });
     case 'ruins':
       return contents.ruins.map(r => linkRow(r, key));
     case 'halls':

@@ -60,6 +60,8 @@ import {
   SUBJECT_ROW_LABELS,
   WALLS_LINES,
   FOUNDED_BY_LINE,
+  LAIR_MONSTER_WORDS,
+  PILGRIM_WAY_LINES,
   postingDistanceWord,
   sphereStrengthWord,
 } from '../../../data/subject-sheet-words';
@@ -68,6 +70,8 @@ import { linkedProseSection, type ProsePart } from './linkedProse';
 import { founderOf } from '../../undertakingEconomy';
 import { isSettlement } from '../../factionPurse/income';
 import { isPlaceNode } from '../../sublocationShape';
+import { selectPilgrimWays } from '../../pilgrimWays';
+import { buildLairMonsterCardModel } from '../stage/buildLairMonsterCardModel';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -395,6 +399,82 @@ const encountersHere: SectionResolver = (ctx) => {
   return section;
 };
 
+/**
+ * Names joined as linked parts, `PilgrimWayLine`'s order: one entry per distinct far end,
+ * id-sorted (NFP #3); a dangling end is skipped.
+ */
+export function pilgrimWayParts(
+  graph: SectionResolverContext['graph'],
+  ids: readonly string[],
+  refKind: 'faction' | 'location',
+  lead: string,
+): ProsePart[] {
+  const named = [...new Set(ids)].sort()
+    .map(id => graph.getNode(id))
+    .filter((n): n is GraphNode => n !== undefined && typeof n.name === 'string' && n.name.length > 0);
+  if (named.length === 0) return [];
+  const parts: ProsePart[] = [lead];
+  named.forEach((n, i) => {
+    if (i > 0) parts.push(PILGRIM_WAY_LINES.joiner);
+    parts.push({ text: n.name, ref: { kind: refKind, id: n.id } });
+  });
+  parts.push(PILGRIM_WAY_LINES.tail);
+  return parts;
+}
+
+/**
+ * The pilgrim way to this town (THR-1992): the congregations whose pilgrims come here,
+ * each a link — `PilgrimWayLine`'s site line, restored. The line is the `sacred_route`
+ * edges (Law 56); a town no way reaches has no row (Law 25). Never a count.
+ */
+const pilgrimWay: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p) return null;
+  const ids = selectPilgrimWays(ctx.graph).filter(w => w.siteId === p.node.id).map(w => w.congregationId);
+  const parts = pilgrimWayParts(ctx.graph, ids, 'faction', PILGRIM_WAY_LINES.siteLead);
+  return linkedProseSection('pilgrim_way', SUBJECT_ROW_LABELS.pilgrimWays, parts, 'selectPilgrimWays', { labelTooltipId: 'ui.pilgrim_way' });
+};
+
+const LAIR_SUBTYPES: ReadonlySet<string> = new Set(['lair', 'cleared_lair']);
+
+/**
+ * The lair's monster card (THR-1992): `LairMonsterCard`'s name, Dread/Might sentence,
+ * square clock pips and word, and "slain by {name}" — restored from the retired hex
+ * sidebar. Read through `buildLairMonsterCardModel`, the one model, so this row and
+ * `window.__DEBUG.getLairMonsterCard` agree. No monster resolves → no row.
+ */
+const lairMonster: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p || !LAIR_SUBTYPES.has(String(p.node.properties.locationSubtype))) return null;
+  let model: ReturnType<typeof buildLairMonsterCardModel> = null;
+  try {
+    model = buildLairMonsterCardModel(ctx.graph, p.node.id, ctx.tick, p.state.ascendantId ?? '');
+  } catch {
+    return null;
+  }
+  const m = model?.monster;
+  if (!m) return null;
+  const tile: CardTile = {
+    ref: { kind: 'agent', id: m.id, name: m.name },
+    title: m.name,
+    kindWord: m.deceased ? LAIR_MONSTER_WORDS.kindSlain : LAIR_MONSTER_WORDS.kindLiving,
+    lines: [m.sentenceText],
+    // A killer with no node left to open reads inline as plain words: "slain by Tam Rook".
+    clock: {
+      size: m.clock.size,
+      filled: m.clock.filled,
+      word: m.slainBy && !m.slainById ? `${m.clock.word} ${LAIR_MONSTER_WORDS.slainByLead} ${m.slainBy}` : m.clock.word,
+      wordTooltipId: m.clock.wordTooltipId,
+      ariaLabel: m.clock.ariaLabel,
+    },
+    ...(m.slainBy && m.slainById
+      ? { byLine: { lead: LAIR_MONSTER_WORDS.slainByLead, name: m.slainBy, ref: { kind: 'agent' as const, id: m.slainById, name: m.slainBy } } }
+      : {}),
+  };
+  const section: CardsSection = { kind: 'cards', typeId: 'lair_monster', label: SUBJECT_ROW_LABELS.lairMonster, gold: false, tier: 'routine', source: 'buildLairMonsterCardModel', tiles: [tile], labelTooltipId: 'ui.lair_monster' };
+  return section;
+};
+
 /** The place rows, by `typeId` (the registry's `placeRow` reads this). */
 export const PLACE_ROW_RESOLVERS = {
   place_prose: placeProse,
@@ -411,4 +491,6 @@ export const PLACE_ROW_RESOLVERS = {
   area_facts: areaFacts,
   guild_postings: guildPostings,
   encounters_here: encountersHere,
+  pilgrim_way: pilgrimWay,
+  lair_monster: lairMonster,
 } satisfies Record<string, SectionResolver>;

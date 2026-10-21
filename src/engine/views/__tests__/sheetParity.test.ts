@@ -85,7 +85,8 @@ const PERSON_FIELDS: Record<string, Home> = {
   'bonds: faction + rank + standing': { retired: 'duplicate-of-kept-row', why: 'PC-6: Connections belongs-to and the allegiance row' },
   'bonds: relationships': { connections: 'friendsAndFoes' },
   'bonds: getTrustDescriptor(0.5, …)': { retired: 'dead-source', why: 'a hard-coded input; the row uses the bond\'s own strength word' },
-  'bonds: blood': { connections: 'friendsAndFoes' },
+  // THR-1992: the Blood line is a row again — Connections lists the foe, not the cause.
+  'bonds: blood': { row: 'blood' },
   'bonds: agreements': { connections: 'holdsKnows' },
   'bonds: disposition': { row: 'disposition' },
   'bonds: what she is to him': { row: 'what_she_is_to_him' },
@@ -150,6 +151,7 @@ const S2A_ROWS: Record<string, { tab: InspectorTabId; at: readonly PageSurface[]
   knows: { tab: 'attachments', at: DWF },
   inactive: { tab: 'attachments', at: WF },
   disposition: { tab: 'bonds', at: DWF },
+  blood: { tab: 'bonds', at: DWF },
   the_work: { tab: 'journey', at: DWF },
   designs: { tab: 'journey', at: DWF },
   ambitions: { tab: 'journey', at: DWF },

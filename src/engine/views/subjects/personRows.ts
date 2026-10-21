@@ -66,7 +66,9 @@ import {
 } from '../../../types/agentKnowledge';
 import { CORE_CONTINUA, CORE_NEUTRAL } from '../../../types/coreRegistry';
 import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry';
+import { linkedProseSection, type ProsePart } from './linkedProse';
 import {
+  BLOOD_LINE,
   CHAPTER_UNDER_WAY,
   COHESION_SENTENCE,
   DESIGN_OUTCOME_WORD,
@@ -661,6 +663,23 @@ const disposition: SectionResolver = (ctx) => {
   return panel('disposition', PERSON_ROW_LABELS.disposition, rows);
 };
 
+/**
+ * Blood (THR-1992): BondsTab's Blood section, restored — one line per standing grudge,
+ * the other party's name a link (Law 21). `card.grudges` is set only when blood exists,
+ * so a mortal who has wronged nobody gets no row at all (Law 25).
+ */
+const blood: SectionResolver = (ctx) => {
+  const s = sheetOf(ctx);
+  const grudges = s?.card.grudges ?? [];
+  if (grudges.length === 0) return null;
+  const parts: ProsePart[] = [];
+  grudges.forEach((g, i) => {
+    if (i > 0) parts.push('\n\n');
+    parts.push(BLOOD_LINE.lead, { text: g.targetName, ref: { kind: 'agent', id: g.targetId } }, `${BLOOD_LINE.joiner}${g.causeClause}${BLOOD_LINE.tail}`);
+  });
+  return linkedProseSection('blood', PERSON_ROW_LABELS.blood, parts, 'personRows.blood');
+};
+
 // ─── Journey ──────────────────────────────────────────────────────────────────
 
 const theWork: SectionResolver = (ctx) => {
@@ -842,6 +861,7 @@ export const PERSON_RESOLVERS = {
   knows,
   inactive,
   disposition,
+  blood,
   the_work: theWork,
   designs,
   ambitions,

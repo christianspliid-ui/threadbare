@@ -9,6 +9,7 @@ import { Chip } from '../../shared/Chip';
 import { Button } from '../../shared/Button';
 import { LinkRows, SectionLabel } from '../../shared/Section';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
+import { bandAccentColor } from '../outcomeBandAccent';
 
 const blockStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: '6px', minWidth: 0 };
 
@@ -84,6 +85,11 @@ export function ActOnRow({ actOn, targetName, onCast, compact = false }: {
                   onOpen={onCast ? () => press(card.actionId, card.available, card.reason) : undefined}
                   style={isArmed ? { outline: '2px solid var(--border-gold)', outlineOffset: '2px' } : undefined}
                 />
+                {card.fate && (
+                  <span data-act-fate={card.fate.word} style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: bandAccentColor(card.fate.band, 'var(--accent-gold)') }}>
+                    {card.fate.word}
+                  </span>
+                )}
                 {isArmed && (
                   <Button variant="primary" size="sm" onClick={() => press(card.actionId, true, null)} data-act-cast={card.actionId}>
                     {INSPECTOR_WORDS.castOn.replace('{name}', name)}

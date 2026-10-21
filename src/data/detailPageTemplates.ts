@@ -147,6 +147,7 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
   personRow('knows', 210, 'attachments', DWF),
   personRow('inactive', 220, 'attachments', WF),
   personRow('disposition', 320, 'bonds', DWF),
+  personRow('blood', 330, 'bonds', DWF),
   personRow('the_work', 400, 'journey', DWF),
   personRow('designs', 410, 'journey', DWF),
   personRow('ambitions', 420, 'journey', DWF),
@@ -275,6 +276,7 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
   },
   sheetRow('description', FACTION_ROW_RESOLVERS.description, 15, 'overview', DWF),
   sheetRow('venerates', FACTION_ROW_RESOLVERS.venerates, 20, 'overview', DWF),
+  sheetRow('pilgrim_ways', FACTION_ROW_RESOLVERS.pilgrim_ways, 22, 'overview', DWF),
   {
     typeId: 'dominion',
     order: 25,
@@ -351,7 +353,9 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
   sheetRow('past_line', PLACE_ROW_RESOLVERS.past_line, 15, 'overview', DWF),
   sheetRow('founded_by', PLACE_ROW_RESOLVERS.founded_by, 16, 'overview', DWF),
   sheetRow('fortunes', PLACE_ROW_RESOLVERS.fortunes, 17, 'overview', DWF),
+  sheetRow('lair_monster', PLACE_ROW_RESOLVERS.lair_monster, 12, 'overview', DWF),
   sheetRow('prayer', PLACE_ROW_RESOLVERS.prayer, 18, 'overview', DWF),
+  sheetRow('pilgrim_way', PLACE_ROW_RESOLVERS.pilgrim_way, 19, 'overview', DWF),
   sheetRow('livelihood', PLACE_ROW_RESOLVERS.livelihood, 20, 'overview', DWF),
   {
     typeId: 'dominion',
