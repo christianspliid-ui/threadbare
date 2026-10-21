@@ -6,6 +6,7 @@
 
 import type { ProsperityTier } from '../engine/phaseProsperity';
 import { WEALTH_TIER_COMFORTABLE, WEALTH_TIER_GETTING_BY, WEALTH_TIER_WEALTHY } from '../engine/wealth';
+import { MEANS_CELL_COST_GUILD } from './undertaking-economy-constants';
 
 /**
  * Master switch and rollback lever. Off: the birth pass does nothing, outcome tables are
@@ -97,6 +98,8 @@ export const MEANS_CELL_COST: Readonly<Record<string, number>> = {
   'create×place': 25,
   'create×route': 20,
   'change:raise×route': 10,
+  // THR-1967 (undertakings S3): founding a guild; the guild's purse opens with it.
+  'create×faction': MEANS_CELL_COST_GUILD,
 };
 
 /** Extra want while the mortal's most-wanted cell is one they cannot afford (costs on only). */

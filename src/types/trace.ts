@@ -100,6 +100,8 @@ export type TraceCategory =
   // THR-1937 — undertakings in the economy (S1)
   | 'undertaking.economy.found_town' | 'undertaking.economy.found_town_refused'
   | 'undertaking.economy.open_lane' | 'undertaking.economy.found_guild'
+  // THR-1967 — undertakings in the economy (S3)
+  | 'undertaking.economy.trade_pay' | 'undertaking.economy.ambition_met'
   // THR-1932 — the crown (fealty)
   | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
   | 'settlement_tier_change' | 'target_action_filter'
@@ -720,6 +722,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'faction.embargo.laid', 'faction.embargo.lifted',
   'undertaking.economy.found_town', 'undertaking.economy.found_town_refused',
   'undertaking.economy.open_lane', 'undertaking.economy.found_guild',
+  'undertaking.economy.trade_pay', 'undertaking.economy.ambition_met',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
@@ -1996,6 +1999,27 @@ export interface FoundGuildTrace extends TraceBase {
   guildType: string | null;
   reachProfile: Record<string, number>;
   openingPurse: number;
+}
+
+/** THR-1967 — a trade run paid its trader (or did not: once a day). */
+export interface TradePayTrace extends TraceBase {
+  category: 'undertaking.economy.trade_pay';
+  traderId: string;
+  /** The `trades_with` edge the run actually traded. */
+  edgeKey: string;
+  carriedPerDay: number;
+  /** Means banked; 0 inside the cooldown. */
+  paid: number;
+  skipped: 'cooldown' | null;
+}
+
+/** THR-1967 — a faction's resource_acquisition was met by a regional monopoly. */
+export interface FactionAmbitionMetTrace extends TraceBase {
+  category: 'undertaking.economy.ambition_met';
+  factionId: string;
+  ambition: 'resource_acquisition';
+  monopolyResourceIds: string[];
+  next: 'defensive_consolidation';
 }
 
 /** THR-1933 — an army took a conquer target by value (raise or re-aim). */
@@ -5035,6 +5059,8 @@ export type TraceEntry =
   | FoundTownRefusedTrace
   | OpenLaneTrace
   | FoundGuildTrace
+  | TradePayTrace
+  | FactionAmbitionMetTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
   | TradeRouteUpkeepTrace

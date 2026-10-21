@@ -80,7 +80,7 @@ import { grantHolding, transferHolding, razeHolding } from '../engine/holdings';
 import { applyPlantSchism } from '../engine/schismPlant';
 // Undertakings in the economy (THR-1937, S1): what founding leaves behind.
 import {
-  settleFoundedTown, traceFoundTownRefused, settleFoundedLane,
+  settleFoundedTown, traceFoundTownRefused, settleFoundedLane, payTradeRun,
   foundedGuildReachProfile, settleFoundedGuild, endLoneFounderRule, foundTownSiteRefusal,
 } from '../engine/undertakingEconomy';
 import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
@@ -1463,7 +1463,10 @@ const ROUTE: UndertakingObjectType = {
       if (!node || !anchor) return fail('conduct_trade', 'no_endpoint');
       const op = { op: 'conduct_trade' } as unknown as GraphOp;
       const r = executeConductTrade(ctx.graph, op, { actorId: ctx.actorId, targetId: node.id, locationId: anchor, tick: ctx.tick });
-      return r.success ? { success: true, op: 'conduct_trade' } : fail('conduct_trade', r.error ?? 'refused');
+      if (!r.success) return fail('conduct_trade', r.error ?? 'refused');
+      // THR-1967: the run pays its trader on the lane it actually traded, once a day.
+      if (r.createdId) payTradeRun(ctx.graph, ctx.actorId, r.createdId, ctx.tick);
+      return { success: true, op: 'conduct_trade' };
     },
     'control:claim': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);

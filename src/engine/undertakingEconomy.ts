@@ -14,6 +14,8 @@
  *   holds the Route (`owns`, through `grantHolding`), so nobody else can claim it.
  * - **Found a guild:** a reach profile from the founder's two leading Reaches, a calling
  *   from the leading one, and a purse that opens with what the founding cost.
+ * - **Trade run (S3, THR-1967):** pays the trader on the lane traded, once a day.
+ * - **Faction ambition met (S3):** a regional monopoly meets `resource_acquisition`.
  *
  * Every writer here goes through the existing funnels (`grantHolding`, the toll stamp,
  * `applyTreasuryDelta`); nothing mints a new edge type. Pure readers are exported for
@@ -37,7 +39,15 @@ import {
   FOUNDED_LANE_GOODS_FALLBACK,
   FOUNDED_TOWN_RULER_INFLUENCE,
   FOUNDING_NO_GROUND_COOLDOWN_TICKS,
+  TRADE_RUN_LAST_PAID_PROPERTY,
+  TRADE_RUN_PAY_BASE,
+  TRADE_RUN_PAY_COOLDOWN_TICKS,
+  TRADE_RUN_PAY_MAX,
+  TRADE_RUN_PAY_PER_UNIT,
+  UNDERTAKING_ECONOMY_ENABLED,
 } from '../data/undertaking-economy-constants';
+import { applyMeansShift } from './mortalMeans';
+import { readRegionalMonopolies } from './regionalMonopoly';
 import { findUnclaimedSite } from './foundingSite';
 import { MEANS_CELL_COST, MEANS_CELL_COST_ENABLED } from '../data/mortal-means-constants';
 import { TRADE_ROUTE_DEFAULT_TAX_RATE } from './tradeRoute';
@@ -47,6 +57,7 @@ import type {
   FoundTownRefusedTrace,
   FoundTownTrace,
   OpenLaneTrace,
+  TradePayTrace,
 } from '../types/trace';
 
 // ─── Found a town: the ruler ─────────────────────────────────────────────────
@@ -413,4 +424,90 @@ export function settleFoundedGuild(
     openingPurse,
     summary: `${faction.name ?? factionId} founded by ${graph.getNode(founderId)?.name ?? founderId} — calling ${guildType ?? 'none'}`,
   } as FoundGuildTrace);
+}
+
+// ─── A trade run pays (S3, THR-1967) ─────────────────────────────────────────
+
+/** What one trade run pays on a lane that carried `carriedPerDay` yesterday, before the cooldown. */
+export function tradeRunPay(carriedPerDay: number): number {
+  const carried = Number.isFinite(carriedPerDay) && carriedPerDay > 0 ? carriedPerDay : 0;
+  return Math.min(TRADE_RUN_PAY_MAX, TRADE_RUN_PAY_BASE + TRADE_RUN_PAY_PER_UNIT * carried);
+}
+
+/** The lane's per-day carried figure (the settlement economy's); 0 while nothing writes it. */
+export function laneCarriedPerDay(edge: GraphEdge | undefined): number {
+  const carried = edge?.properties?.carriedPerDay;
+  return typeof carried === 'number' && Number.isFinite(carried) && carried > 0 ? carried : 0;
+}
+
+/** Is the trader inside their one-paid-run-a-day window? A missing stamp means never paid. */
+export function tradeRunOnCooldown(trader: GraphNode | undefined, tick: number): boolean {
+  const last = trader?.properties[TRADE_RUN_LAST_PAID_PROPERTY];
+  return typeof last === 'number' && Number.isFinite(last) && tick - last < TRADE_RUN_PAY_COOLDOWN_TICKS;
+}
+
+/**
+ * Pay a mortal for a trade run on the lane the run actually traded (`edgeId`, the one
+ * `executeConductTrade` wrote — pay follows the trade, not the cell's label). Means move
+ * through the one funnel (`applyMeansShift` → `bankWealth`, reason `trade_success`), at
+ * most once per trader per day. Returns what was paid (0 inside the cooldown, for a
+ * non-mortal, with the switch off, or at the Means ceiling).
+ */
+export function payTradeRun(graph: WorldGraph, traderId: string, edgeId: string, tick: number): number {
+  if (!UNDERTAKING_ECONOMY_ENABLED) return 0;
+  const trader = graph.getNode(traderId);
+  if (!trader || trader.type !== 'actor' || trader.properties.actorType !== 'individual') return 0;
+  const edge = graph.getEdge(edgeId);
+  const carriedPerDay = laneCarriedPerDay(edge);
+  const traderName = trader.name ?? traderId;
+  if (tradeRunOnCooldown(trader, tick)) {
+    emitTrace({
+      category: 'undertaking.economy.trade_pay',
+      tick, traderId, edgeKey: edgeId, carriedPerDay, paid: 0, skipped: 'cooldown',
+      summary: `${traderName} trades again today — no pay`,
+    } as TradePayTrace);
+    return 0;
+  }
+  const shift = applyMeansShift(trader.properties as Record<string, unknown>, tradeRunPay(carriedPerDay), 'trade_success');
+  if (shift) trader.properties[TRADE_RUN_LAST_PAID_PROPERTY] = tick;
+  const paid = shift?.amount ?? 0;
+  emitTrace({
+    category: 'undertaking.economy.trade_pay',
+    tick, traderId, edgeKey: edgeId, carriedPerDay, paid, skipped: null,
+    summary: `${traderName}'s trade run pays ${paid}`,
+  } as TradePayTrace);
+  if (shift) {
+    emitTrace({
+      tick,
+      category: 'economy.means.shift',
+      agentId: traderId,
+      sourceTemplateId: null,
+      band: null,
+      amount: shift.amount,
+      wealthBefore: shift.wealthBefore,
+      wealthAfter: shift.wealthAfter,
+      bandBefore: shift.bandBefore,
+      bandAfter: shift.bandAfter,
+      reason: shift.reason,
+      summary: `${traderName}'s Means ${shift.wealthBefore} → ${shift.wealthAfter} (trade run)`,
+    });
+  }
+  return paid;
+}
+
+// ─── A faction's resource_acquisition is met (S3, THR-1967) ──────────────────
+
+/**
+ * Is a faction's active ambition met? Only `resource_acquisition` has a met rule: the
+ * faction holds a regional monopoly (war aims S2's `regionalMonopolies`). Pure; a
+ * missing faction or record reads as not met.
+ */
+export function isFactionAmbitionMet(graph: WorldGraph, factionId: string, ambitionType: unknown): boolean {
+  if (!UNDERTAKING_ECONOMY_ENABLED || ambitionType !== 'resource_acquisition') return false;
+  return readRegionalMonopolies(graph.getNode(factionId)?.properties).length > 0;
+}
+
+/** The resource ids of the faction's regional monopolies (the met trace's evidence). */
+export function factionMonopolyResourceIds(graph: WorldGraph, factionId: string): string[] {
+  return [...new Set(readRegionalMonopolies(graph.getNode(factionId)?.properties).map(m => m.resourceId))].sort();
 }

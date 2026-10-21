@@ -3,11 +3,12 @@
  * undertakings leave behind. Plan: `Docs/plans/2026-10-17-thr-1937-undertakings-in-the-economy.md`
  * § Constants table.
  *
- * S1 (this file's first slice): a founded town gets a ruler and a founder's freehold, a
- * founded lane is tolled by its founder, a founded guild gets a calling. S2 and S3 add
- * the building map and the trade-run pay.
+ * S1: a founded town gets a ruler and a founder's freehold, a founded lane is tolled by
+ * its founder, a founded guild gets a calling. S3 (THR-1967): a trade run pays the
+ * trader, the guild's founding cost, and the ambition milestones those works can meet.
  */
 import type { ReachDomain } from '../types/traits';
+import { TICKS_PER_DAY } from './attention-constants';
 
 /**
  * Master switch and rollback lever. Off: founding writes only the town, a founded lane
@@ -51,3 +52,47 @@ export const FOUNDED_GUILD_REACH_COUNT = 2;
 
 /** The fallback a lane's chronicle line reads when the lane carries no named good. */
 export const FOUNDED_LANE_GOODS_FALLBACK = 'goods';
+
+// ─── S3 — trade pay, the guild's cost, ambitions met by their own work (THR-1967) ──
+
+/**
+ * What founding a guild costs, on the 0–100 Means scale: the `create×faction` row of
+ * mortal wealth's cost table (`MEANS_CELL_COST`). Charged only while founding costs are
+ * on (`MEANS_CELL_COST_ENABLED`); the guild's purse opens with it.
+ */
+export const MEANS_CELL_COST_GUILD = 30;
+
+/** Means a trade run pays on a lane that carried nothing yesterday. */
+export const TRADE_RUN_PAY_BASE = 2;
+
+/** Means a trade run pays per unit the lane carried yesterday (`carriedPerDay`). */
+export const TRADE_RUN_PAY_PER_UNIT = 1;
+
+/** Cap on one trade run's pay — one `MEANS_STEP`. */
+export const TRADE_RUN_PAY_MAX = 6;
+
+/**
+ * One paid trade run per trader per day. An instant cell cannot fail, so a cell that
+ * paid every time would be a farm (THR-1440); a second run inside this window pays
+ * nothing, on any lane.
+ */
+export const TRADE_RUN_PAY_COOLDOWN_TICKS = TICKS_PER_DAY;
+
+/** The trader's one number: the tick of their last paid trade run. */
+export const TRADE_RUN_LAST_PAID_PROPERTY = 'lastTradeRunPaidTick';
+
+/** Lanes held for Dominate Regional Trade's lanes milestone. */
+export const DOMINATE_TRADE_LANES_MIN = 2;
+
+/** Dominate Regional Trade's completion rule. The kill criterion's lever: 4 of 5. */
+export const DOMINATE_TRADE_COMPLETION = { requires: 3, of: 5 } as const;
+
+/** Means for Dominate Regional Trade's Means milestone. */
+export const DOMINATE_TRADE_MEANS_TIER = 'Wealthy' as const;
+
+/**
+ * The S3 kill line: with trade pay on and founding costs on, foundings over 600 ticks
+ * must stay at least this share of foundings with costs off
+ * (`npm run measure:undertaking-economy -- --s3`).
+ */
+export const FOUNDING_STARVATION_FLOOR = 0.5;

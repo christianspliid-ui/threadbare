@@ -101,6 +101,12 @@
 import type { AmbitionTemplate } from '../types/ambition';
 import type { AmbitionStrategicProfile } from '../types/strategicAction';
 import { SETTLED_DWELL_TICKS, EXILE_ACCEPTED_DWELL_TICKS } from '../engine/agentResidence';
+import { SETTLEMENT_TIER_SUBTYPES } from './faction-purse-constants';
+import {
+  DOMINATE_TRADE_COMPLETION,
+  DOMINATE_TRADE_LANES_MIN,
+  DOMINATE_TRADE_MEANS_TIER,
+} from './undertaking-economy-constants';
 
 // ─── Standard Ambition Templates ─────────────────────────────────────────────
 
@@ -161,7 +167,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'trade_location',
-        condition: { type: 'agent_controls_location', locationType: 'market' },
+        condition: { type: 'agent_controls_location', locationType: ['market', 'market-district'] },
         prose: ['A market answers to one voice now.'],
       },
       {
@@ -169,8 +175,20 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.875 },
         prose: ['Coin flows where {they} will{s} it.'],
       },
+      // THR-1967 (undertakings S3): met by the work itself — lanes opened, claimed or
+      // seized, and the Means trade runs and tolls pay.
+      {
+        id: 'trade_lanes',
+        condition: { type: 'agent_holds_lanes', minCount: DOMINATE_TRADE_LANES_MIN },
+        prose: ['Two roads answer to one name now.'],
+      },
+      {
+        id: 'trade_means',
+        condition: { type: 'agent_means_at_least', tier: DOMINATE_TRADE_MEANS_TIER },
+        prose: ['The strongbox no longer closes.'],
+      },
     ],
-    completion: { requires: 2, of: 3 },
+    completion: DOMINATE_TRADE_COMPLETION,
     abandonmentTriggers: [
       {
         condition: { type: 'agent_reach_below', reach: 'gold', threshold: 0.2 },
@@ -186,6 +204,8 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       trade_bonds: ['New partners. New leverage.'],
       trade_location: ['The market square bears a single seal.'],
       trade_gold_mastery: ['Gold answers to gold, and {theirs} answers loudest.'],
+      trade_lanes: ['Two roads answer to one name now.'],
+      trade_means: ['The strongbox no longer closes.'],
     },
     completionProse: [
       'The region trades by {their} leave. Caravans know no other route.',
@@ -1624,9 +1644,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         prose: ['Enough hands willing to stand the wall beside them.'],
       },
       {
+        // THR-1967: walls in their own home town, where a castle no undertaking makes was.
         id: 'protect_ward',
-        condition: { type: 'agent_controls_location', locationType: 'castle' },
-        prose: ['Somewhere with walls now. Somewhere that can be held.'],
+        condition: { type: 'agent_home_has_place', placeType: 'city-walls' },
+        prose: ['Stone stands between home and the world.'],
       },
       {
         id: 'protect_iron',
@@ -1748,9 +1769,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         prose: ['Hands enough now. Grief turned to the work of clearing rubble.'],
       },
       {
+        // THR-1967: a town of any size, where a camp no undertaking makes was.
         id: 'rebuild_ground',
-        condition: { type: 'agent_controls_location', locationType: 'camp' },
-        prose: ['The ground is staked again. Foundations where ash had settled.'],
+        condition: { type: 'agent_controls_location', locationType: SETTLEMENT_TIER_SUBTYPES },
+        prose: ['A roof again, and a door that is {their} own.'],
       },
       {
         id: 'rebuild_craft',
@@ -1807,9 +1829,10 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         prose: ['Others bind their hope to the same unmarked horizon.'],
       },
       {
+        // THR-1967: a town they founded themselves, where an estate no undertaking makes was.
         id: 'found_seat',
-        condition: { type: 'agent_controls_location', locationType: 'estate' },
-        prose: ['A first hearth in new country. A place to gather around.'],
+        condition: { type: 'agent_controls_location', locationType: SETTLEMENT_TIER_SUBTYPES, foundedBySelf: true },
+        prose: ['There is a place on the map that was not there before.'],
       },
     ],
     completion: { requires: 2, of: 2 },

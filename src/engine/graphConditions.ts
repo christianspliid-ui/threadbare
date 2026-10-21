@@ -10,6 +10,11 @@ import type { ReachDomain } from '../types/traits';
 import { rawToReachShare } from '../data/reach-share-constants';
 import { isAtAncestralRuin, tookAncestralGround, isOffAncestralLand } from './descent';
 import { OLD_BANNER_RUIN_REACH_HEXES } from '../data/descent-constants';
+import { getWealthTier, readWealth, type WealthTier } from './wealth';
+import { LOCATION_CLASSES } from '../data/world-objects';
+
+/** Location subtypes that count as a home settlement — the `settlement` class (THR-1967). */
+const SETTLEMENT_LOCATION_SUBTYPES: ReadonlySet<string> = new Set(LOCATION_CLASSES.settlement ?? []);
 
 /**
  * Minimal graph interface — keeps this module testable without the full WorldGraph.
@@ -53,6 +58,63 @@ export interface ConditionGraph {
    * reads that condition as `false`.
    */
   getNodesByType?(type: string): ReadonlyArray<{ id: string; properties: Record<string, unknown> }>;
+  /**
+   * Optional and additive (THR-1967): `agent_holds_lanes` reads lanes by edge id. A view
+   * that omits them counts no tolled lane and no standing Route, so the condition reads
+   * `false` rather than guessing.
+   */
+  getEdge?(id: string): { id: string; type: string; properties: Record<string, unknown> } | undefined;
+  getEdgesByType?(type: string): ReadonlyArray<{ id: string; properties: Record<string, unknown> }>;
+}
+
+/** Wealth words, poorest first — the order `agent_means_at_least` compares on (THR-1967). */
+const MEANS_TIER_ORDER: readonly WealthTier[] = ['Destitute', 'Getting by', 'Comfortable', 'Wealthy', 'Magnate'];
+
+/**
+ * The standing lanes an agent holds (THR-1967): tolled (`controlledBy` on the
+ * `trades_with` edge), founded (`constructed_by` from the lane's Route node) or held
+ * (`owns` on the Route node). A Route whose edge has decayed away no longer counts.
+ */
+export function heldLaneIds(graph: ConditionGraph, agentId: string): Set<string> {
+  const lanes = new Set<string>();
+  for (const e of graph.getEdgesByType?.('trades_with') ?? []) {
+    if (e.properties.controlledBy === agentId) lanes.add(e.id);
+  }
+  const routeNodeIds = [
+    ...graph.getOutgoingEdges(agentId, 'owns').map(e => e.target),
+    ...graph.getIncomingEdges(agentId, 'constructed_by').map(e => e.source),
+  ];
+  for (const id of routeNodeIds) {
+    const edgeId = graph.getNode(id)?.properties.routeEdgeId;
+    if (typeof edgeId === 'string' && graph.getEdge?.(edgeId)?.type === 'trades_with') lanes.add(edgeId);
+  }
+  return lanes;
+}
+
+/**
+ * The agent's home settlement id (THR-1967): its residence origin, else its last
+ * observed position, each climbed from a Place to its Location and kept only when that
+ * Location is a settlement. The same rule as `fighterHomeSettlement`, on the condition view.
+ */
+function homeSettlementId(graph: ConditionGraph, agentId: string): string | undefined {
+  const residence = readResidence(graph, agentId);
+  for (const id of [residence.originLocationId, residence.positionId]) {
+    if (!id) continue;
+    let node = graph.getNode(id);
+    const parentId = node?.properties.parentLocationId;
+    if (typeof parentId === 'string' && parentId.length > 0) node = graph.getNode(parentId);
+    if (node && node.type === 'location' && SETTLEMENT_LOCATION_SUBTYPES.has(node.properties.locationSubtype as string)) {
+      return node.id;
+    }
+  }
+  return undefined;
+}
+
+/** A Place's type with the `sublocation-type.` prefix stripped, or undefined. */
+function placeTypeOf(properties: Record<string, unknown>): string | undefined {
+  return typeof properties.sublocationTypeId === 'string'
+    ? properties.sublocationTypeId.replace(/^sublocation-type\./, '')
+    : undefined;
 }
 
 /**
@@ -322,8 +384,37 @@ export function evaluateGraphCondition(
         if (!locNode) return false;
         const p = locNode.properties;
         const typeId = typeof p.sublocationTypeId === 'string' ? p.sublocationTypeId.replace(/^sublocation-type./, '') : undefined;
-        return p.locationSubtype === condition.locationType || p.locationType === condition.locationType || typeId === condition.locationType;
+        // THR-1967: a list matches any of its types; `foundedBySelf` asks for the
+        // `constructed_by` edge back to the agent (a town they founded, not one they took).
+        const wanted: readonly string[] = typeof condition.locationType === 'string' ? [condition.locationType] : condition.locationType;
+        const typed = wanted.some(t => p.locationSubtype === t || p.locationType === t || typeId === t);
+        if (!typed) return false;
+        return !condition.foundedBySelf
+          || graph.getOutgoingEdges(locNode.id, 'constructed_by').some(c => c.target === agentId);
       });
+    }
+
+    // ── Economic undertakings' measures (THR-1967) ──
+    case 'agent_means_at_least': {
+      const agent = graph.getNode(agentId);
+      if (!agent) return false;
+      const have = MEANS_TIER_ORDER.indexOf(getWealthTier(readWealth(agent.properties)));
+      const want = MEANS_TIER_ORDER.indexOf(condition.tier);
+      return want >= 0 && have >= want;
+    }
+
+    case 'agent_holds_lanes':
+      return heldLaneIds(graph, agentId).size >= condition.minCount;
+
+    case 'agent_home_has_place': {
+      const homeId = homeSettlementId(graph, agentId);
+      if (!homeId) return false;
+      if (graph.getOutgoingEdges(homeId, 'contains').some(e => {
+        const place = graph.getNode(e.target);
+        return place !== undefined && placeTypeOf(place.properties) === condition.placeType;
+      })) return true;
+      return (graph.getNodesByType?.('location') ?? []).some(n =>
+        n.properties.parentLocationId === homeId && placeTypeOf(n.properties) === condition.placeType);
     }
 
     // ── Region conditions (THR-841) ──
