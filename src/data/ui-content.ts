@@ -127,6 +127,9 @@ export const AGENT_CARD_NEW_TIER_MARK = 'new tier';
 
 export const TOPBAR_LOCKED_SUFFIX = 'Opens when this chapter closes.';
 
+/** THR-1965 — the Notables panel footer while it lists a finished agenda (they leave after a retention window). */
+export const NOTABLES_FINISHED_FADE_LINE = 'Finished agendas fade from this list some days after they end.';
+
 /**
  * THR-1814 — the `ui.clock_held` hover when the clock was already paused before the
  * hold: the registry copy says it runs again, which is only true on the other branch.
@@ -141,7 +144,8 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // it is the link text other entries chain to ("slow the {{ui.doom_bar}}").
   'ui.doom_bar': {
     label: 'Doom Clock',
-    desc: 'A slow clock toward the world\'s unmaking, in five stages. It wakes when you bond The First and cannot end the world early. Open it to see what it is building toward.',
+    // THR-1965 — the pacing sentence says why The First's road sits in the Doom box (≤200 chars: tooltipValidation).
+    desc: 'A slow five-stage clock to the world\'s unmaking. It wakes when you bond The First and cannot end the world early. The First\'s road follows this clock: each stage opens the next part of their story.',
   },
   // THR-1814 — the three top-bar readings that bypassed the registry (Law 17).
   'ui.omen': {

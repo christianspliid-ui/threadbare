@@ -12,6 +12,7 @@ import { RefRouterProvider } from '../../../contexts/RefRouterContext';
 import type { RefRouter } from '../../../hooks/useRefRouter';
 import { agendaFlags } from '../../../engine/notableAgendas';
 import type { GameState, ActiveComposition } from '../../../types/gameState';
+import { NOTABLES_FINISHED_FADE_LINE } from '../../../data/ui-content';
 
 function makeState(overrides: Partial<GameState> = {}): GameState {
   const graph = new WorldGraph();
@@ -178,3 +179,17 @@ describe('NotablesPanel (THR-630)', () => {
   });
 });
 
+
+// ── THR-1965: say why the list shrinks ──
+describe('NotablesPanel fade line (THR-1965)', () => {
+  it('shows the fade line while a finished agenda is listed', () => {
+    const state = makeState({ activeCompositions: [agendaComp({ status: 'completed' })] });
+    render(<NotablesPanel gameState={state} />);
+    expect(screen.getByTestId('notables-fade-line').textContent).toBe(NOTABLES_FINISHED_FADE_LINE);
+  });
+
+  it('hides it when every listed agenda is still live', () => {
+    render(<NotablesPanel gameState={makeState({ activeCompositions: [agendaComp()] })} />);
+    expect(screen.queryByTestId('notables-fade-line')).toBeNull();
+  });
+});

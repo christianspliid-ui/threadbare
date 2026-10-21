@@ -174,7 +174,7 @@ function scoreCandidate(
 
 // ─── Prose placeholder filler ─────────────────────────────────────────────────
 
-function fillProse(
+export function fillProse(
   template: string,
   ctx: ComplicationContext,
   rng: () => number,
@@ -224,6 +224,11 @@ function fillProse(
     .replace(/\{possessive\}/g, possessive)
     .replace(/\{location\}/g, locationName)
     .replace(/\{witness\}/g, witnessName)
+    // THR-1965 — the phrase is lowercase; a sentence that opens with it gets a capital.
+    .replace(/(^|[.!?]\s+)\{omen_atmosphere\}/g, (_m, lead: string) => {
+      const phrase = omenAtmosphere || 'unseen forces';
+      return lead + phrase.charAt(0).toUpperCase() + phrase.slice(1);
+    })
     .replace(/\{omen_atmosphere\}/g, omenAtmosphere || 'unseen forces');
 }
 

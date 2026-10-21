@@ -23,6 +23,7 @@ import {
 import { getNotableAgendaFamily } from '../../data/notable-agendas';
 import { agendaFlags } from '../../engine/notableAgendas';
 import { worldRefKindOf } from '../../engine/undertakingDeed';
+import { NOTABLES_FINISHED_FADE_LINE } from '../../data/ui-content';
 
 /** THR-1655: the panel scrolls inside the dropdown past this height, so it never leaves the viewport. */
 const NOTABLES_PANEL_MAX_HEIGHT = '70vh';
@@ -160,6 +161,8 @@ export const NotablesPanel = React.memo(function NotablesPanel({ gameState }: No
     { key: 'rulers', title: 'Rulers', entries: entries.filter((e) => !e.local) },
     { key: 'local', title: 'Local', entries: entries.filter((e) => e.local) },
   ].filter((g) => g.entries.length > 0);
+  // THR-1965: finished agendas leave after a retention window; say so while one is listed.
+  const listsFinished = entries.some((e) => e.agendas.some((a) => a.status !== 'active'));
 
   // The dropdown has no scroll of its own; a busy world's rows ran past the fold (Law 33).
   return (
@@ -170,6 +173,14 @@ export const NotablesPanel = React.memo(function NotablesPanel({ gameState }: No
           <NotableList entries={group.entries} label={group.title} />
         </section>
       ))}
+      {listsFinished && (
+        <p
+          data-testid="notables-fade-line"
+          style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}
+        >
+          {NOTABLES_FINISHED_FADE_LINE}
+        </p>
+      )}
     </div>
   );
 });
