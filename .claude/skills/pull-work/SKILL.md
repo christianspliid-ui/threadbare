@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-17
+last_validated_against: 2026-10-21
 ---
 
 # Pull Work
@@ -833,7 +833,7 @@ On refusal: leave the issue unclaimed when possible, post a concise bounce note,
 
 ## Mid-run — WIP push before the verify phase (THR-1529)
 
-**Once the implementation is written and before the long gate run starts, commit it and push the branch.** "Before the gate run" means before `npm test`, `npm run test:heavy`, the typecheck ratchet, `vite build`, the engine smoke and any Playwright capture. Order it after the home-tree cleanliness gate and `npm run classify:diff`, which are both cheap and both want to see the change first:
+**Once the implementation is written and before the long gate run starts, commit it and push the branch.** "Before the gate run" means before `npm test`, an opted-in `npm run test:heavy`, the typecheck ratchet, `vite build`, the engine smoke and any Playwright capture. Order it after the home-tree cleanliness gate and `npm run classify:diff`, which are both cheap and both want to see the change first:
 
 ```bash
 git add -A
@@ -855,7 +855,7 @@ git push -u origin HEAD
 
 ## Verify — one command (THR-1717)
 
-**Run the gates with `npm run gate`, not one by one.** It classifies the diff and runs the owed track of [`Docs/canon/verification-gates.md`](../../Docs/canon/verification-gates.md) in parallel (code: test ∥ ratchet ∥ build ∥ encounter gate, ∥ CLI smoke on an engine diff, then `test:heavy` alone; docs: impediment ids ∥ predicate copies ∥ plan-doc lint; the CLI smoke is judged on its output, since a crashed tick still exits 0), logs each gate to `.cache/gate/`, and prints one `PASS`/`FAIL` line per gate plus the log tail of a failure. Paste the verdict block as evidence. After the closeout edits, `npm run gate -- --final` runs the impediment-id check and the two tree-diffing gates as the last action before `git push`. Read a full log only to diagnose a `FAIL` — the point is to keep 1,400 lines of vitest out of the session's context.
+**Run the gates with `npm run gate`, not one by one.** It classifies the diff and runs the owed track of [`Docs/canon/verification-gates.md`](../../Docs/canon/verification-gates.md) in parallel (code: test ∥ ratchet ∥ build ∥ encounter gate, ∥ CLI smoke on an engine diff; `test:heavy` only with `--heavy`, then alone — CI runs it after merge, THR-2003; docs: impediment ids ∥ predicate copies ∥ plan-doc lint; the CLI smoke is judged on its output, since a crashed tick still exits 0), logs each gate to `.cache/gate/`, and prints one `PASS`/`FAIL` line per gate plus the log tail of a failure. Paste the verdict block as evidence. After the closeout edits, `npm run gate -- --final` runs the impediment-id check and the two tree-diffing gates as the last action before `git push`. Read a full log only to diagnose a `FAIL` — the point is to keep 1,400 lines of vitest out of the session's context.
 
 ## Closeout — home-tree cleanliness gate (run before `git commit`)
 
