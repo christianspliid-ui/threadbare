@@ -165,17 +165,21 @@ export const NotablesPanel = React.memo(function NotablesPanel({ gameState }: No
   const listsFinished = entries.some((e) => e.agendas.some((a) => a.status !== 'active'));
 
   // The dropdown has no scroll of its own; a busy world's rows ran past the fold (Law 33).
+  // The fade line sits below the scrolling rows, so it stays on screen however long the list.
   return (
-    <div className="space-y-3 overflow-y-auto overflow-x-hidden pr-1" style={{ maxHeight: NOTABLES_PANEL_MAX_HEIGHT }}>
-      {groups.map((group) => (
-        <section key={group.key} className="space-y-2" data-testid={`notables-group-${group.key}`}>
-          <SectionHeading as="h2" count={group.entries.length}>{group.title}</SectionHeading>
-          <NotableList entries={group.entries} label={group.title} />
-        </section>
-      ))}
+    <div className="flex flex-col gap-2" style={{ maxHeight: NOTABLES_PANEL_MAX_HEIGHT }}>
+      <div className="space-y-3 overflow-y-auto overflow-x-hidden pr-1 min-h-0 flex-1">
+        {groups.map((group) => (
+          <section key={group.key} className="space-y-2" data-testid={`notables-group-${group.key}`}>
+            <SectionHeading as="h2" count={group.entries.length}>{group.title}</SectionHeading>
+            <NotableList entries={group.entries} label={group.title} />
+          </section>
+        ))}
+      </div>
       {listsFinished && (
         <p
           data-testid="notables-fade-line"
+          className="shrink-0"
           style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}
         >
           {NOTABLES_FINISHED_FADE_LINE}
