@@ -12,8 +12,9 @@
  *    (`docs-only-predicate.ts` — imported, never copied; `check:predicate-copies`
  *    guards prose copies, and this file deliberately makes none);
  * 2. runs that track's gates concurrently, each logging to `.cache/gate/<name>.log` —
- *    except that two vitest suites never share the machine: an engine diff runs
- *    test ∥ typecheck ∥ build ∥ cli-smoke, THEN test:heavy alone (see GatePlan.stages);
+ *    an engine diff adds cli-smoke to that stage. `test:heavy` is opt-in (`--heavy`,
+ *    THR-2003) and then runs alone after it, because two vitest suites never share the
+ *    machine (see GatePlan.stages); by default CI's post-merge heavy-tests.yml owns it;
  * 3. prints one verdict line per gate, and the log tail of a failure only.
  *
  * The closeout-sensitive gates (`check:impediment-ids`, `check:generated-freshness`,
@@ -27,7 +28,7 @@
  *   npm run gate                 # classify, run the track's gates in parallel
  *   npm run gate -- --final      # only the tree-diffing gates (last, before push)
  *   npm run gate -- --all        # track gates, then the final phase
- *   npm run gate -- --heavy      # add test:heavy + CLI smoke even off the engine paths
+ *   npm run gate -- --heavy      # add test:heavy (opt-in, THR-2003) + CLI smoke on any code diff
  *   npm run gate -- --code       # force the code track (or --docs)
  *
  * CI is unchanged and stays authoritative: the required `Test · Typecheck · Build`
@@ -50,8 +51,9 @@ export const GATE_FAIL_TAIL_LINES = 40;
 export const GATE_LOG_DIR = ".cache/gate";
 
 /**
- * Paths that owe `test:heavy` and the 30-tick CLI smoke — CLAUDE.md § Testing and
- * `Docs/canon/verification-gates.md`: "when engine files are touched".
+ * Paths that owe the 30-tick CLI smoke — CLAUDE.md § Gates and
+ * `Docs/canon/verification-gates.md`: "when engine files are touched". (`test:heavy`
+ * on these paths runs on CI after merge; locally only with `--heavy`, THR-2003.)
  */
 export const ENGINE_PATH_PATTERNS: readonly RegExp[] = [
   /^src\/engine\//,
@@ -213,8 +215,12 @@ export function planGates(files: readonly string[], options: GateOptions): GateP
       });
     }
     stages.push(first);
-    // The heavy suite gets the machine to itself — see GatePlan.stages.
-    if (engine) stages.push([{ name: "test-heavy", command: "npm run test:heavy" }]);
+    // THR-2003: test:heavy is opt-in. Alone it took 578–648 s, past the 600 s cap on a
+    // foreground command, so an engine-diff gate (669–942 s) could only run backgrounded
+    // and a backgrounded run looks finished to the next pickup run. CI's post-merge
+    // heavy-tests.yml owns the heavy suite (THR-1384). Gets the machine to itself — see
+    // GatePlan.stages.
+    if (engine && options.heavy) stages.push([{ name: "test-heavy", command: "npm run test:heavy" }]);
   } else {
     // `check:predicate-copies` is a required `Docs gates` step that nothing on the
     // docs track would otherwise run (`npm test` is code-track only).

@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-17
+last_validated_against: 2026-10-21
 ---
 
 # Pull Work
@@ -332,7 +332,7 @@ Reached from Step 1.5's single-in-flight branch, from Step 0.8's unstick predica
 
 **Ask the app instead of guessing.** The scheduler does not start a `tb-opus-pickup` run while the previous one is alive. A run that outlasts its slot pushes the next start to seconds after it ends: on 2026-10-14, runs ended at 15:39:41Z and 17:07:53Z, and the next ones started at 15:40:03Z and 17:08:04Z. The overlaps that do happen come from runs started outside that rule. When the app is killed and restarted, it fires a missed run off-slot *and* the killed run can be resumed ("Try again"). On 2026-10-14 the 01:31Z and 03:31Z runs both overlapped a run started off-slot at 01:46Z and 06:45Z. The app lists every run with its state:
 
-**The run list is only true if no run ends its turn early.** A turn that ends while a `run_in_background` command is still running is marked `succeeded`, and the scheduler starts the next run while the first one is still alive, waiting for the background task's notification. So a pickup run runs every command in the foreground (Bash `timeout` 600000): a gate run takes 1.7 min median and 5.8 min at most. On 2026-10-17 the 13:31Z run backgrounded its gate and ended its turn at 13:45:06Z. At 13:45:14Z the next run saw one active row, committed the live worktree as "stranded" work, and built THR-1919 a second time. The overlapped run in each of the four overlaps the CI/CD review saw (10-14 20:11Z and 23:31Z, 10-17 12:11Z and 13:31Z) had backgrounded commands and was resumed by their notifications.
+**The run list is only true if no run ends its turn early.** A turn that ends while a `run_in_background` command is still running is marked `succeeded`, and the scheduler starts the next run while the first one is still alive, waiting for the background task's notification. So a pickup run runs every command in the foreground (Bash `timeout` 600000): a gate run takes 1.7 min median, and an engine-diff gate measured 104 s wall on 2026-10-21 once `test:heavy` became opt-in (THR-2003; with it the gate ran 669–942 s, past the cap, which is what forced runs to background it). A pickup run never opts back in: `npm run gate -- --heavy` (stage one, then `test:heavy`) runs about 680–750 s, and even a bare `npm run test:heavy` (578–648 s) sits at the cap. CI's post-merge heavy workflow owns the heavy suite; the opt-in is for attended sessions only. On 2026-10-17 the 13:31Z run backgrounded its gate and ended its turn at 13:45:06Z. At 13:45:14Z the next run saw one active row, committed the live worktree as "stranded" work, and built THR-1919 a second time. The overlapped run in each of the four overlaps the CI/CD review saw (10-14 20:11Z and 23:31Z, 10-17 12:11Z and 13:31Z) had backgrounded commands and was resumed by their notifications.
 
 ```
 mcp__scheduled-tasks__list_task_runs(taskId: "tb-opus-pickup", limit: 50)
@@ -833,7 +833,7 @@ On refusal: leave the issue unclaimed when possible, post a concise bounce note,
 
 ## Mid-run — WIP push before the verify phase (THR-1529)
 
-**Once the implementation is written and before the long gate run starts, commit it and push the branch.** "Before the gate run" means before `npm test`, `npm run test:heavy`, the typecheck ratchet, `vite build`, the engine smoke and any Playwright capture. Order it after the home-tree cleanliness gate and `npm run classify:diff`, which are both cheap and both want to see the change first:
+**Once the implementation is written and before the long gate run starts, commit it and push the branch.** "Before the gate run" means before `npm test`, an opted-in `npm run test:heavy`, the typecheck ratchet, `vite build`, the engine smoke and any Playwright capture. Order it after the home-tree cleanliness gate and `npm run classify:diff`, which are both cheap and both want to see the change first:
 
 ```bash
 git add -A
@@ -855,7 +855,7 @@ git push -u origin HEAD
 
 ## Verify — one command (THR-1717)
 
-**Run the gates with `npm run gate`, not one by one.** It classifies the diff and runs the owed track of [`Docs/canon/verification-gates.md`](../../Docs/canon/verification-gates.md) in parallel (code: test ∥ ratchet ∥ build ∥ encounter gate, ∥ CLI smoke on an engine diff, then `test:heavy` alone; docs: impediment ids ∥ predicate copies ∥ plan-doc lint; the CLI smoke is judged on its output, since a crashed tick still exits 0), logs each gate to `.cache/gate/`, and prints one `PASS`/`FAIL` line per gate plus the log tail of a failure. Paste the verdict block as evidence. After the closeout edits, `npm run gate -- --final` runs the impediment-id check and the two tree-diffing gates as the last action before `git push`. Read a full log only to diagnose a `FAIL` — the point is to keep 1,400 lines of vitest out of the session's context.
+**Run the gates with `npm run gate`, not one by one.** It classifies the diff and runs the owed track of [`Docs/canon/verification-gates.md`](../../Docs/canon/verification-gates.md) in parallel (code: test ∥ ratchet ∥ build ∥ encounter gate, ∥ CLI smoke on an engine diff; `test:heavy` only with `--heavy`, then alone — CI runs it after merge, THR-2003; docs: impediment ids ∥ predicate copies ∥ plan-doc lint; the CLI smoke is judged on its output, since a crashed tick still exits 0), logs each gate to `.cache/gate/`, and prints one `PASS`/`FAIL` line per gate plus the log tail of a failure. Paste the verdict block as evidence. After the closeout edits, `npm run gate -- --final` runs the impediment-id check and the two tree-diffing gates as the last action before `git push`. Read a full log only to diagnose a `FAIL` — the point is to keep 1,400 lines of vitest out of the session's context.
 
 ## Closeout — home-tree cleanliness gate (run before `git commit`)
 
