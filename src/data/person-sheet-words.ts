@@ -48,6 +48,7 @@ export const PERSON_ROW_LABELS = {
 /** Facts-row left words (the `panel` shape's `left`). */
 export const PERSON_FACT_WORDS = {
   archetype: 'Archetype',
+  trade: 'Trade',
   calling: 'Calling',
   means: 'Means',
   godMark: "The god's mark",

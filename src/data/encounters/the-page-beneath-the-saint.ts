@@ -455,6 +455,9 @@ export const PAGE_BENEATH_THE_SAINT_TEMPLATE: UnifiedActionTemplate = withEncoun
   },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
+  // THR-1982 — the premise casts a fixed job; a mortal whose trade is outside
+  // this list does not draw it (a roleless mortal still does).
+  protagonistRoles: ['scribe', 'librarian', 'scholar', 'researcher', 'sage', 'clerk', 'acolyte', 'priest'],
   name: 'The Page Beneath the Saint',
   reach: 'veil',
   crudType: 'read',

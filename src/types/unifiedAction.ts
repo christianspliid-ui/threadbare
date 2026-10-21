@@ -9,6 +9,7 @@ import type { TargetCategory } from './targetContext';
 import type { ControlSpec } from './controlEffect';
 import type { RarityTier } from './rarity';
 import type { AttentionTier } from './attention';
+import type { NpcRole } from './npc';
 import type { RewardPoolRecipe } from './attachments';
 import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBundle, EncounterType } from './encounter';
 import type { ClearanceGateConfig } from './contentShells';
@@ -2503,6 +2504,13 @@ export interface UnifiedActionTemplate {
    * `isRoutineTemplate` (`engine/attentionCadence.ts`).
    */
   readonly routine?: boolean;
+  /**
+   * THR-1982 — the protagonist roles this template's premise casts. When set, an actor
+   * whose `npcRole` is outside the list does not draw it; an actor with no `npcRole`
+   * passes (fail-open). Read by the `protagonist_role_fit` filter stage
+   * (`encounterFilterPipeline.ts`). An empty list is treated as unset.
+   */
+  readonly protagonistRoles?: readonly NpcRole[];
   readonly name: string;
   readonly reach: ReachDomain;
   readonly crudType: 'create' | 'read' | 'update' | 'delete';

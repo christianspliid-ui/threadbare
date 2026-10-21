@@ -12,6 +12,7 @@
  * Rows pass `knowledgeFilterFor(ctx, 'connections')` — OPEN until gating lands
  * (THR-1822 § D5), so the filter is a no-op today and is not yet a module of its own.
  */
+import { displayTradeLabel } from '../firstTrade';
 import type { EdgeType, GraphEdge, GraphNode } from '../../types/graph';
 import type { WorldRef } from '../../types/worldRef';
 import type { GameState } from '../../types/gameState';
@@ -202,11 +203,9 @@ function hexOf(graph: WorldGraph, n: GraphNode): HexKey | null {
   return col != null && row != null ? toHexKey(col, row) : null;
 }
 
+/** The work a person does, as the player reads it — the trade word first (THR-1982). */
 function wordedRole(n: GraphNode): string {
-  const raw = (n.properties.npcRole ?? n.properties.role) as string | undefined;
-  if (!raw) return '';
-  const w = raw.replace(/[-_]+/g, ' ').trim();
-  return w.charAt(0).toUpperCase() + w.slice(1);
+  return displayTradeLabel(n);
 }
 
 function sentimentWord(edge: GraphEdge): string {

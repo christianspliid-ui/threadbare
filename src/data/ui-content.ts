@@ -1001,6 +1001,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Died before you woke',
     desc: 'Someone who died before you woke. The living still remember them.',
   },
+  // THR-1982: the trade — fixed at the meeting, distinct from the calling, which moves.
+  'ui.trade': {
+    label: 'The trade',
+    desc: 'What this mortal did for a living before your thread found them. The world still knows the trade, whatever the calling becomes.',
+  },
   'ui.calling': {
     label: 'The calling',
     desc: 'What the world calls this mortal for what they do — read from their strongest reaches, the ambition they pursue and their temperament. It changes only when their life does.',

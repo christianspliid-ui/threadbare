@@ -10,6 +10,8 @@
  *      the lair-monster hunt's `requiresLiveMonster`)
  *   3b. Story breath (THR-1715) — a pause-mode mortal inside her breath starts
  *      daily life only (`PAUSED_STORY_BREATH_TICKS`); pass-through for all others
+ *   3c. Protagonist role fit (THR-1982) — a job-cast template (`protagonistRoles`)
+ *      waits for a mortal whose `npcRole` fits; roleless actors pass
  *   4. Threat — courage/capability vs threat-rating tolerance check
  *   5. Performance Cap — cap at MAX_SCORED_CANDIDATES with diversity floor
  *
@@ -103,6 +105,8 @@ import {
 } from '../data/agent-behavior-constants';
 import { hashString } from './factionAmbitions';
 import { isRoutineTemplate, storyBreathRemaining } from './attentionCadence';
+import { emitTrace } from './traceBuffer';
+import { PROTAGONIST_ROLE_FIT_ENABLED } from '../data/npc-role-words';
 
 /** Ordered threat tiers for index-based comparison */
 const THREAT_ORDER: ThreatRating[] = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];
@@ -654,6 +658,47 @@ export function filterByStoryBreath(
     || isRoutineTemplate(entry.templateId));
 }
 
+// ─── Stage 3c: Protagonist role fit (THR-1982) ─────────────────
+
+/**
+ * A template whose premise casts a fixed job (`protagonistRoles`) is drawn only by a
+ * mortal whose `npcRole` is in the list. Fail-open both ways: a template with no
+ * (or an empty) list passes, and an actor with no `npcRole` passes, so no roleless
+ * worldgen mortal loses a draw. Each rejection is traced.
+ *
+ * Pass-through (same array) for a roleless actor or with the switch off.
+ */
+export function filterByProtagonistRole(
+  entries: EncounterCacheEntry[],
+  agentId: string,
+  graph: WorldGraph,
+  tick: number,
+): EncounterCacheEntry[] {
+  if (!PROTAGONIST_ROLE_FIT_ENABLED) return entries;
+  const role = graph.getNode(agentId)?.properties.npcRole;
+  if (typeof role !== 'string' || !role) return entries;
+  const rejected = new Set<string>();
+  const kept = entries.filter(entry => {
+    const allowed = getUnifiedTemplateById(entry.templateId)?.protagonistRoles;
+    if (!allowed || allowed.length === 0) return true;
+    if ((allowed as readonly string[]).includes(role)) return true;
+    if (!rejected.has(entry.templateId)) {
+      rejected.add(entry.templateId);
+      emitTrace({
+        category: 'encounter.filter.role_fit',
+        tick,
+        agentId,
+        templateId: entry.templateId,
+        actorRole: role,
+        allowedRoles: [...allowed],
+        summary: `${entry.templateId} waits for another trade: ${role} is not one of ${allowed.join(', ')}`,
+      });
+    }
+    return false;
+  });
+  return rejected.size === 0 ? entries : kept;
+}
+
 // ─── Stage 4: Threat tolerance ──────────────────────────────────
 
 /**
@@ -1148,6 +1193,13 @@ export function runFilterPipeline(
     // Keep previous stage's output
   }
   if (journeyGoalLost(beforeStoryBreath, current)) journeyGoalCutBy = 'story_breath';
+
+  // Stage 3c: Protagonist role fit (THR-1982). Same funnel bucket as story breath.
+  try {
+    current = filterByProtagonistRole(current, agentId, graph, tick);
+  } catch {
+    // Keep previous stage's output
+  }
   const afterStoryBreath = current.length;
   const s3 = (funnel && s0) ? templateIdSet(current) : null;
 

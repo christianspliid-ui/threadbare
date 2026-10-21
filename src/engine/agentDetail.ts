@@ -8,6 +8,7 @@
  * - getAgentFullProfile: Tier 3 UI (detailed profile, knowledge level filtered)
  */
 
+import { readTrade } from './firstTrade';
 import { buildDeadPastLine, type PastLine } from './worldPastWords';
 import type { WorldGraph } from './graph';
 import { resolveAmbitionProseFor } from './ambitionProse';
@@ -576,6 +577,12 @@ export interface AgentInfoCardData {
    * `recognised`+, because a name the world uses is the same class of fact.
    */
   calling?: { title: string; titleKey: string; sinceTick: number };
+  /**
+   * The trade (THR-1982) — what this mortal did before the thread, in the word the
+   * meeting used (`tradeWord`). Only The First carries one today. Fixed, unlike the
+   * calling. Same `recognised`+ gate as the archetype label.
+   */
+  tradeWord?: string;
   /** Portrait URL — only present if knowledge >= recognised */
   portraitUrl?: string;
   /** Active divine effects on this agent (always visible — player's own actions) */
@@ -1965,6 +1972,8 @@ export function getAgentInfoCard(
   if (knowledgeLevel !== 'stranger') {
     const stored = readStoredCalling(agentNode);
     if (stored) card.calling = { title: stored.title, titleKey: stored.titleKey, sinceTick: stored.sinceTick };
+    const trade = readTrade(agentNode);
+    if (trade) card.tradeWord = trade.word;
   }
 
   return card;

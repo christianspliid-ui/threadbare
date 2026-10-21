@@ -3414,6 +3414,16 @@ if (import.meta.env.DEV) {
       return { visible: [...snap.visible], dismissed: [...snap.dismissed], queued: [...snap.queued] };
     },
 
+    /** THR-1982 — see `debug-bridge.d.ts`. */
+    getFirstTrade: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const { getFirstId } = await import('./engine/meetingEncounter');
+      const { readTrade } = await import('./engine/firstTrade');
+      const firstId = getFirstId(state.graph, state.ascendantId);
+      return firstId ? readTrade(state.graph.getNode(firstId)) : null;
+    },
+
     resetFirstUseCaptions: async () => {
       const { resetFirstUseCaptions } = await import('./components/shared/firstUseCaptionStore');
       resetFirstUseCaptions();

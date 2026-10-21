@@ -413,6 +413,9 @@ export const GRANARIES_IN_THE_FAMINE_YEAR_TEMPLATE: UnifiedActionTemplate = with
   },
   rarityTier: 4,
   intrinsicTier: 'story_beat',
+  // THR-1982 — the premise casts a fixed job; a mortal whose trade is outside
+  // this list does not draw it (a roleless mortal still does).
+  protagonistRoles: ['merchant', 'trader', 'broker', 'noble', 'quartermaster', 'appraiser'],
   name: 'The Granaries in the Famine Year',
   reach: 'gold',
   crudType: 'update',

@@ -10,6 +10,7 @@
  * The body carries each row's `visibleAt` and `tab`; this selector never drops a section by
  * width — the Inspector filters by its size.
  */
+import { displayTradeLabel } from '../../firstTrade';
 import type { AnyRef, ContentRef } from '../../../types/contentRef';
 import { isContentRef } from '../../../types/contentRef';
 import type { WorldRef, WorldRefKind } from '../../../types/worldRef';
@@ -209,14 +210,15 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
     if (thread?.properties.courtPosition === 'the_first') standing.push({ label: INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your') });
     standing.push({ label: sentenceCase(level), tooltipId: `knowledge.${level}` });
     standing.push(...dominionChip(state, node.id));
-    const role = (node.properties.npcRole ?? node.properties.role) as string | undefined;
+    // The trade word first (THR-1982), so the header and the sheet's trade row agree.
+    const role = displayTradeLabel(node);
     return {
       ...base,
       pageKind: 'person',
       layoutKind: 'actor',
       header: {
         ...base.header,
-        kindLabel: role ? sentenceCase(role.replace(/[-_]+/g, ' ')) : sentenceCase(subtitleForNode(node, 'actor')),
+        kindLabel: role || sentenceCase(subtitleForNode(node, 'actor')),
         visual: { kind: ref.kind, id: node.id, portraitGate: level === 'stranger' ? 'silhouette' : 'shown' },
         standing,
         follow: true,
