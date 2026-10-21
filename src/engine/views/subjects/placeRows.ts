@@ -459,11 +459,16 @@ const lairMonster: SectionResolver = (ctx) => {
     title: m.name,
     kindWord: m.deceased ? LAIR_MONSTER_WORDS.kindSlain : LAIR_MONSTER_WORDS.kindLiving,
     lines: [m.sentenceText],
-    clock: { size: m.clock.size, filled: m.clock.filled, word: m.clock.word, wordTooltipId: m.clock.wordTooltipId, ariaLabel: m.clock.ariaLabel },
-    ...(m.slainBy
-      ? m.slainById
-        ? { byLine: { lead: LAIR_MONSTER_WORDS.slainByLead, name: m.slainBy, ref: { kind: 'agent' as const, id: m.slainById, name: m.slainBy } } }
-        : { lines: [m.sentenceText, `${LAIR_MONSTER_WORDS.slainByLead} ${m.slainBy}`] }
+    // A killer with no node left to open reads inline as plain words: "slain by Tam Rook".
+    clock: {
+      size: m.clock.size,
+      filled: m.clock.filled,
+      word: m.slainBy && !m.slainById ? `${m.clock.word} ${LAIR_MONSTER_WORDS.slainByLead} ${m.slainBy}` : m.clock.word,
+      wordTooltipId: m.clock.wordTooltipId,
+      ariaLabel: m.clock.ariaLabel,
+    },
+    ...(m.slainBy && m.slainById
+      ? { byLine: { lead: LAIR_MONSTER_WORDS.slainByLead, name: m.slainBy, ref: { kind: 'agent' as const, id: m.slainById, name: m.slainBy } } }
       : {}),
   };
   const section: CardsSection = { kind: 'cards', typeId: 'lair_monster', label: SUBJECT_ROW_LABELS.lairMonster, gold: false, tier: 'routine', source: 'buildLairMonsterCardModel', tiles: [tile], labelTooltipId: 'ui.lair_monster' };
