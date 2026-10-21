@@ -83,7 +83,7 @@ import {
   settleFoundedTown, traceFoundTownRefused, settleFoundedLane,
   foundedGuildReachProfile, settleFoundedGuild,
 } from '../engine/undertakingEconomy';
-import { findUnclaimedSite } from '../engine/foundingSite';
+import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
 import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
 import { resolveDurableActorLocation, executeConductTrade, tollTradeRouteEdge, mintRouteIdentity } from '../engine/tradeRouteOps';
@@ -1258,7 +1258,8 @@ const LOCATION: UndertakingObjectType = {
       // THR-1937: on free ground. The site is a town that already stands, so the new
       // one goes on the nearest unclaimed hex — or, with none, nothing is founded and
       // the card says why.
-      const ground = findUnclaimedSite(ctx.graph, { col, row });
+      // On the map and on land: never at sea, never off the edge (review gate).
+      const ground = findUnclaimedSite(ctx.graph, { col, row }, undefined, landHexPredicate(ctx.state?.tiles));
       if (!ground) {
         traceFoundTownRefused(ctx.actorId, siteId!, ctx.tick);
         return { ...fail('create_location', 'no_free_ground'), completionLine: 'no_ground' };

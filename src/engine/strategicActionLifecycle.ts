@@ -1021,7 +1021,7 @@ export function advanceStrategicProjects(
       // The band this work actually landed on — the readers a cell owes are graded by
       // it (THR-1428). It is already resolved on the checkpoint record, so no second
       // resolution is needed to grade a survey.
-      const mutation = executeInstantMutation(state, graph, candidate, tick, checked.lastCheckpoint?.band);
+      const mutation = executeInstantMutation(state, graph, candidate, tick, checked.lastCheckpoint?.band, runtime);
       const ops = mutation.ops;
       completedOps.push(...ops);
       poolInvalidatedLocationIds.push(...mutation.poolInvalidatedLocationIds);
@@ -1769,6 +1769,12 @@ function executeInstantMutation(
    * a terminal nothing could miss, and readers correctly take their failure arm.
    */
   outcome?: string,
+  /**
+   * The session runtime, when the caller owns one (THR-1937): a cell that moves a
+   * faction's `controls` edge bumps the structural cache through it. The instant
+   * path has none; the realm projection's fingerprint belt covers that one.
+   */
+  runtime?: SimulationRuntime,
 ): InstantMutationResult {
   const ops: GraphOpResult[] = [];
   const poolInvalidatedLocationIds: string[] = [];
@@ -1798,6 +1804,7 @@ function executeInstantMutation(
       originLocationId: candidate.originLocationId,
       targetNodeId: candidate.targetNodeId,
       outcome,
+      runtime,
     });
     ops.push(...resolution.ops);
     const succeeded = resolution.ops.some(o => o.success);

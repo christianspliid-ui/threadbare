@@ -6,6 +6,19 @@ import type { WorldGraph } from './graph';
 import { getLocationNodes } from './sublocationShape';
 import { hexDistance } from '../lib/hexMath';
 import { FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS } from '../data/strategic-action-constants';
+import { isWaterTerrain } from './coastline';
+import type { HexTile } from '../types';
+
+/**
+ * The foundable-ground predicate over the world's tiles: a hex that exists on the map
+ * and is not water. With no tiles at all (a graph-only fixture) every hex qualifies.
+ */
+export function landHexPredicate(tiles: readonly HexTile[] | undefined): ((hex: { col: number; row: number }) => boolean) | undefined {
+  if (!tiles || tiles.length === 0) return undefined;
+  const land = new Set<string>();
+  for (const t of tiles) if (!isWaterTerrain(t.terrain)) land.add(`${t.coord.col},${t.coord.row}`);
+  return hex => land.has(`${hex.col},${hex.row}`);
+}
 
 /**
  * An unclaimed hex to found a place-tier location on (THR-1308).
@@ -28,6 +41,11 @@ export function findUnclaimedSite(
   graph: WorldGraph,
   origin: { col: number; row: number },
   radius: number = FOUNDED_SETTLEMENT_SITE_SEARCH_RADIUS,
+  /**
+   * Whether a hex can carry a town at all (THR-1937): on the map, and land. Absent,
+   * every hex qualifies (the legacy hint path and graph-only fixtures).
+   */
+  isFoundable?: (hex: { col: number; row: number }) => boolean,
 ): { col: number; row: number } | null {
   const occupied = new Set<string>();
   for (const node of getLocationNodes(graph)) {
@@ -42,6 +60,7 @@ export function findUnclaimedSite(
       const hex = { col, row };
       if (hexDistance(origin, hex) > radius) continue;
       if (occupied.has(`${col},${row}`)) continue;
+      if (isFoundable && !isFoundable(hex)) continue;
       candidates.push(hex);
     }
   }

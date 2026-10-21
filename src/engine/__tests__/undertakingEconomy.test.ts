@@ -363,3 +363,39 @@ describe('THR-1937 — a founder who rules alone tithes once the town grows (rev
     expect(tithe[0].holderId).toBe(FOUNDER);
   });
 });
+
+describe('THR-1937 — a founded town stands on land, on the map (review gate round 2)', () => {
+  const tile = (col: number, row: number, terrain: string) => ({ coord: { col, row }, terrain, geoParams: {} });
+  const tilesAround = (water: (c: number, r: number) => boolean) => {
+    const out = [];
+    for (let c = 0; c <= 14; c++) for (let r = 0; r <= 14; r++) out.push(tile(c, r, water(c, r) ? 'ocean' : 'grassland'));
+    return out;
+  };
+  const runWithTiles = (graph: WorldGraph, tiles: unknown[]) => runCell(graph, 'location', {
+    state: { ...asState(graph), tiles } as unknown as GameState,
+  } as Partial<ObjectVerbContext>);
+
+  it('skips water: a coastal site with sea to the west founds inland', () => {
+    const graph = world();
+    const result = runWithTiles(graph, tilesAround(c => c < 10));
+    const town = graph.getNode(result.createdId!)!;
+    expect(town.properties.hexCol as number).toBeGreaterThanOrEqual(10);
+  });
+
+  it('skips hexes off the map: a site on the edge founds inside it', () => {
+    const graph = new WorldGraph();
+    town(graph, SITE, 'Ashford', 0, 0);
+    graph.addNode({ id: FOUNDER, type: 'actor', name: 'Kael Thornweaver', properties: { actorType: 'individual' } });
+    const result = runWithTiles(graph, tilesAround(() => false));
+    const t = graph.getNode(result.createdId!)!;
+    expect(t.properties.hexCol as number).toBeGreaterThanOrEqual(0);
+    expect(t.properties.hexRow as number).toBeGreaterThanOrEqual(0);
+  });
+
+  it('founds nothing when every nearby hex is water', () => {
+    const graph = world();
+    const result = runWithTiles(graph, tilesAround((c, r) => !(c === 10 && r === 10)));
+    expect(result.success).toBe(false);
+    expect(result.completionLine).toBe('no_ground');
+  });
+});
