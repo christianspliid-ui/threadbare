@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { StirringImage } from '../../types/remembrance';
-import { STIRRING_PLACEHOLDERS } from '../../data/stirring-images';
+import { STIRRING_PLACEHOLDERS, STIRRING_PROMPT } from '../../data/stirring-images';
 import {
   useRemembranceChoice,
   handleChoiceRowKeyDown,
@@ -46,7 +46,7 @@ export function StirringBeat({ images, onSelect, notice }: StirringBeatProps) {
            zIndex: 20,
            pointerEvents: 'none',
          }}>
-        Something stirs in the void. What echoes?
+        {STIRRING_PROMPT}
         {notice && (
           <span role="status" data-testid="stirring-account-notice"
                 style={{ display: 'block', marginTop: '0.75rem', fontSize: 'var(--text-sm)', fontStyle: 'normal', letterSpacing: 0, color: 'var(--text-secondary)' }}>

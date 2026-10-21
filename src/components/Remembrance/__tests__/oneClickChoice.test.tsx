@@ -12,7 +12,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { StirringBeat } from '../StirringBeat';
 import { DriveBeat } from '../DriveBeat';
 import { OriginBeat } from '../OriginBeat';
-import { TransformationBeat } from '../TransformationBeat';
+import { TransformationBeat, SPHERE_REVEAL_HOLD_MS, SPHERE_REVEAL_SKIP_AFTER_MS } from '../TransformationBeat';
 import {
   STIRRING_CHOSEN_HOLD_MS,
   DRIVE_CHOSEN_HOLD_MS,
@@ -164,6 +164,53 @@ describe('TransformationBeat — one click, Continue still needed (THR-1716)', (
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect.mock.calls[0][0]).toBe(hungers[0]);
     expect(onSelect.mock.calls[0][2]).toEqual({ [hungers[0].sphereAlignment.primary]: 3, [hungers[0].sphereAlignment.secondary]: 2 });
+  });
+
+  it('THR-1989: a click during the sphere reveal moves on at once, and only once', () => {
+    const onSelect = vi.fn();
+    render(<TransformationBeat hungers={[...hungers]} driveFragment={drive} onSelect={onSelect} />);
+    revealCards();
+    fireEvent.click(screen.getByTestId(`hunger-${hungers[0].id}`));
+    act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
+    fireEvent.click(screen.getByTestId('court-confirm'));
+    fireEvent.click(screen.getByTestId('spheres-confirm'));
+    expect(onSelect).not.toHaveBeenCalled();
+    // A double-click on the confirm lands its second click here: ignored.
+    fireEvent.click(screen.getByTestId('sphere-reveal'));
+    expect(onSelect).not.toHaveBeenCalled();
+    act(() => { vi.advanceTimersByTime(SPHERE_REVEAL_SKIP_AFTER_MS); });
+    fireEvent.click(screen.getByTestId('sphere-reveal'));
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect.mock.calls[0][0]).toBe(hungers[0]);
+    // The auto-advance timer was cancelled: nothing fires a second time.
+    act(() => { vi.advanceTimersByTime(SPHERE_REVEAL_HOLD_MS + 500); });
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('THR-1989: a key during the sphere reveal moves on at once; untouched, it still moves on by itself', () => {
+    const onKey = vi.fn();
+    const { unmount } = render(<TransformationBeat hungers={[...hungers]} driveFragment={drive} onSelect={onKey} />);
+    revealCards();
+    fireEvent.click(screen.getByTestId(`hunger-${hungers[0].id}`));
+    act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
+    fireEvent.click(screen.getByTestId('court-confirm'));
+    fireEvent.click(screen.getByTestId('spheres-confirm'));
+    act(() => { vi.advanceTimersByTime(SPHERE_REVEAL_SKIP_AFTER_MS); });
+    fireEvent.keyDown(window, { key: ' ' });
+    expect(onKey).toHaveBeenCalledTimes(1);
+    unmount();
+
+    const onWait = vi.fn();
+    render(<TransformationBeat hungers={[...hungers]} driveFragment={drive} onSelect={onWait} />);
+    revealCards();
+    fireEvent.click(screen.getByTestId(`hunger-${hungers[0].id}`));
+    act(() => { vi.advanceTimersByTime(TRANSFORMATION_COURT_REVEAL_MS); });
+    fireEvent.click(screen.getByTestId('court-confirm'));
+    fireEvent.click(screen.getByTestId('spheres-confirm'));
+    act(() => { vi.advanceTimersByTime(SPHERE_REVEAL_HOLD_MS - 100); });
+    expect(onWait).not.toHaveBeenCalled();
+    act(() => { vi.advanceTimersByTime(200); });
+    expect(onWait).toHaveBeenCalledTimes(1);
   });
 
   it('"Choose again" on the court step returns to the hunger row', () => {
