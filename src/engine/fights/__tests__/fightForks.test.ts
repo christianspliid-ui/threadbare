@@ -199,7 +199,8 @@ describe('concession after a wounding clash', () => {
     expect(a.fightState!.forks).toEqual([
       { stepIndex: 1, kind: 'concession', side: 'fighter', choice: 'yield', decidedBy: 'conviction' },
     ]);
-    expect(a.aftermathSummary?.overview).toBe('They yielded.');
+    // THR-1964 — the authored overview now follows the cause line.
+    expect(a.aftermathSummary?.overview?.endsWith('They yielded.')).toBe(true);
   });
 
   it('a courageous profile fights on: the fork is recorded and the fight continues', () => {
@@ -285,7 +286,8 @@ describe('the temper checkpoint at half clock', () => {
     expect(a.fightState!.forks).toEqual([
       { stepIndex: 1, kind: 'temper', side: 'opponent', choice: 'fled', decidedBy: 'temper' },
     ]);
-    expect(a.aftermathSummary?.overview).toBe('It fled.');
+    // THR-1964 — the authored overview now follows the cause line.
+    expect(a.aftermathSummary?.overview?.endsWith('It fled.')).toBe(true);
   });
 
   it('berserk: turns berserk — the next clash is harder by FIGHT_BERSERK_MIGHT_DELTA', () => {
@@ -394,7 +396,8 @@ describe('precedence within one clash: overcome, then temper, then concession', 
     );
     expect(a.fightState!.result).toBe('overcome');
     expect(a.choiceHistory!.find((m) => m.stepIndex === fightResultIndex(tpl.steps))?.choiceId).toBe('fight:overcome');
-    expect(a.aftermathSummary?.overview).toBe('The beast is down.');
+    // THR-1964 — the authored overview now follows the cause line.
+    expect(a.aftermathSummary?.overview?.endsWith('The beast is down.')).toBe(true);
   });
 });
 

@@ -397,7 +397,8 @@ describe('no-roll ends: no_opponent, opponent_gone and separated', () => {
       a = runNoRoll(state, a, tpl);
 
       expect(a.fightState).toMatchObject({ result: 'broke_off', endReason: c.reason });
-      expect(a.aftermathSummary?.overview).toBe('The fight broke off.');
+      // THR-1964 — the authored overview now follows the cause line.
+      expect(a.aftermathSummary?.overview?.endsWith('The fight broke off.')).toBe(true);
       const ends = tracesOf('fight.end');
       expect(ends).toHaveLength(1);
       expect(ends[0]).toMatchObject({ result: 'broke_off', endReason: c.reason, rolled: false });
@@ -452,7 +453,8 @@ describe('the action-trigger ladder is fed the fight result', () => {
     const ids = fired();
     expect(ids.has('item.success')).toBe(false);
     expect(ids.has('item.failure')).toBe(true);
-    expect(a.aftermathSummary?.overview).toBe('They yielded.');
+    // THR-1964 — the authored overview now follows the cause line.
+    expect(a.aftermathSummary?.overview?.endsWith('They yielded.')).toBe(true);
   });
 
   it('control: the same at-cost band on an ordinary last step fires encounter_success', () => {
@@ -526,7 +528,8 @@ describe('the result memory sits at fightResultIndex — no step owns it', () =>
     const a = runBands(state, tpl, ['success', 'success', 'success']);
     const memory = a.choiceHistory!.find((m) => m.stepIndex === fightResultIndex(tpl.steps));
     expect(memory).toMatchObject({ stepIndex: 3, stepId: 'fight', choiceId: 'fight:overcome', interventionType: 'fight' });
-    expect(a.aftermathSummary?.overview).toBe('The beast is down.');
+    // THR-1964 — the authored overview now follows the cause line.
+    expect(a.aftermathSummary?.overview?.endsWith('The beast is down.')).toBe(true);
   });
 
   it('step-index safety: a branchOnStep fixture on a step index is untouched by the result memory', () => {
@@ -538,7 +541,8 @@ describe('the result memory sits at fightResultIndex — no step owns it', () =>
     } as UnifiedActionTemplate;
     let a = recordUnifiedActionNudgeMemory(action(tpl.id), 0, 's0', ['card_a'], 'Card A', TICK, 1);
     a = runBands(state, tpl, ['success', 'success', 'success'], a);
-    expect(a.aftermathSummary?.overview).toBe('Card A.');
+    // THR-1964 — the authored overview now follows the cause line.
+    expect(a.aftermathSummary?.overview?.endsWith('Card A.')).toBe(true);
     expect(a.choiceHistory!.map((m) => m.stepIndex)).toEqual([0, 3]);
   });
 
@@ -556,7 +560,8 @@ describe('the result memory sits at fightResultIndex — no step owns it', () =>
     expect(records.find((r) => r.index === 0)?.choiceId).toBe('steady_hand');
     expect(records.find((r) => r.index === 1)?.choiceId).toBe('press_on');
     expect(a.choiceHistory!.map((m) => m.choiceId)).toEqual(['steady_hand', 'press_on', 'fight:overcome']);
-    expect(a.aftermathSummary?.overview).toBe('The beast is down.');
+    // THR-1964 — the authored overview now follows the cause line.
+    expect(a.aftermathSummary?.overview?.endsWith('The beast is down.')).toBe(true);
   });
 });
 

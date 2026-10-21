@@ -651,7 +651,7 @@ describe('unifiedActionResolution', () => {
       expect(updatedAction.outcome).toBe('success');
       expect(events).toHaveLength(1);
       expect(events[0].type).toBe('agent_action_resolved');
-      expect(events[0].message).toContain('completed');
+      expect(events[0].message).toContain('Alice won');
 
       // Verify GraphOp was applied
       const locNode = state.graph.getNode('loc-1');
@@ -726,7 +726,7 @@ describe('unifiedActionResolution', () => {
       expect(updatedAction.outcome).toBe('failure');
       // Find the action resolution event — complication events may precede it (THR-20)
       const resolvedEvent = events.find(e => e.type === 'agent_action_resolved');
-      expect(resolvedEvent?.message).toContain('failed');
+      expect(resolvedEvent?.message).toContain('lost');
     });
 
     it('instantiates encounter rewards from success metadata on final resolution', () => {
