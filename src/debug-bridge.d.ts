@@ -872,6 +872,18 @@ export interface DebugBridge {
     breathTicks: number;
     routineActive: number;
     storyActive: number;
+    /** THR-1218 — tick her latest story chapter started (drought anchor), or null. */
+    lastStoryChapterStartTick: number | null;
+    /** THR-1218 — ticks since her latest story chapter started; 0 if not a paused mortal. */
+    storyDroughtTicks: number;
+    /** THR-1218 — attempts per story (non-routine) template; empty if not a paused mortal. */
+    storyTellings: Record<string, number>;
+    /** THR-1218 — PAUSED_STORY_MAX_TELLINGS. */
+    maxTellings: number;
+    /** THR-1218 — true while the drought has relaxed the tellings cap. */
+    tellingsCapRelaxed: boolean;
+    /** THR-1218 — the restless road (S2, THR-1959); null until it ships. */
+    lastRestlessRoadTick: number | null;
     tick: number;
   } | { error: string }>;
   /**

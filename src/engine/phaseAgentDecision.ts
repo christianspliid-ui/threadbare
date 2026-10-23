@@ -45,11 +45,12 @@ import { computeEdgeCost } from './movementCost';
 import { emitTrace, emitPhaseTiming, isProfilingEnabled, isTracingEnabled } from './traceBuffer';
 import { countConsecutiveFailures, isFailedOutcome, computeSetbackShift } from './engagementWindow';
 import { isEncounterAction } from './chapterArchive';
+import { isPausedThreadActor, applyStoryTellingsCap, recordStoryChapterStart } from './attentionCadence';
 import { FAILED_TEMPLATE_COOLDOWN_MULT, ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH, ENGAGE_PERSONALITY_SHIFT } from '../data/agent-behavior-constants';
 import { META_VALUE_PAIR } from '../types/agent';
 import type { EngagementDecisionTrace } from '../types/trace';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, FIRST_CHAPTER_REPEAT_FLOOR_TICKS, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, PAUSED_STORY_REPEAT_FLOOR_TICKS, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import {
   REROUTE_SCORE_MULTIPLIER,
   ARRIVAL_GOAL_COMMITMENT_MULTIPLIER,
@@ -174,7 +175,7 @@ function getEffectiveCooldown(baseCooldown: number, availableTemplateCount: numb
  * The archive is appended in resolution order, so the scan walks back from its tail
  * and stops at the first record older than the failed window.
  *
- * THR-1804: `repeatFloorTicks` (the bonded First's FIRST_CHAPTER_REPEAT_FLOOR_TICKS)
+ * THR-1804: `repeatFloorTicks` (a paused mortal's PAUSED_STORY_REPEAT_FLOOR_TICKS, THR-1218)
  * lifts the completed and failed cooldowns to at least that many ticks, whatever the
  * pool size. It is fail-soft: if the floor would empty the candidate list, the
  * call falls back to the scaled cooldowns alone.
@@ -1013,19 +1014,30 @@ export function phaseAgentDecision(
         const completions = familiarityRecord.attemptCount[c.templateId] ?? 0;
         return completions < MAX_COMPLETIONS_PER_TEMPLATE;
       });
+      // THR-1218 E3 — a paused mortal tells one story at most PAUSED_STORY_MAX_TELLINGS
+      // times while another is within reach. After retirement, before cooldown, so the
+      // repeat floor's fallback judges the pool she can actually draw from.
+      const cappedCandidates = applyStoryTellingsCap(
+        graph,
+        agentId,
+        state.tick,
+        unretiredCandidates,
+        familiarityRecord.attemptCount,
+      );
 
       // Filter out encounters on cooldown (abandoned/completed recently)
       // Pool size for dynamic cooldown = raw candidates after filter pipeline
       const candidates = filterByCooldown(
-        unretiredCandidates,
+        cappedCandidates,
         agentId,
         state.encounterProgress,
         state.unifiedActions,
         state.tick,
         rawCandidates.length,
         state.chapterArchive,
-        // THR-1804 — the bonded First does not restart a chapter minutes after it ends.
-        isBondedFirstActor(graph, agentId) ? FIRST_CHAPTER_REPEAT_FLOOR_TICKS : 0,
+        // THR-1804 — a paused mortal does not restart a chapter minutes after it ends.
+        // THR-1218 D4: every paused mortal, not only the bonded First.
+        isPausedThreadActor(graph, agentId) ? PAUSED_STORY_REPEAT_FLOOR_TICKS : 0,
       );
 
       // Combine doom identity + omen encounter biases (additive; each capped at ±IDENTITY_ENCOUNTER_BIAS_CAP)
@@ -2061,6 +2073,8 @@ export function phaseAgentDecision(
                   },
                 };
                 freshForFamiliarity.properties.consecutiveIdleTicks = 0;
+                // THR-1218 E4 — a paused mortal's story chapter starts: anchor her drought clock.
+                recordStoryChapterStart(graph, agentId, sel.entry.templateId, state.tick);
 
                 // THR-453: Track per-agent novelty — which surfaces this agent recently selected. (Re-keyed to surfaceKey, THR-475.)
                 const existingAgentNovelty = (freshForFamiliarity.properties?.agentNoveltyLastSelected as Record<string, number> | undefined) ?? {};

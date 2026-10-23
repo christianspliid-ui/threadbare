@@ -128,6 +128,13 @@ export interface ThreadEdgeProperties {
    * write. Absent = no breath.
    */
   lastStoryChapterEndTick?: number;
+  /**
+   * THR-1218 E4 — tick a pause-mode mortal's latest story chapter (a non-routine
+   * encounter) was started. Anchors her story drought (`storyDroughtTicks`),
+   * which relaxes the tellings cap. Written at action creation in agent
+   * decision. Absent = count from `establishedTick`.
+   */
+  lastStoryChapterStartTick?: number;
 
   // ── Journey state (Phase 2+, only for The First) ───────────
   /** Current Campbellian journey phase. */

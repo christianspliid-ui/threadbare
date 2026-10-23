@@ -759,8 +759,36 @@ export const COOLDOWN_MINIMUM = 2;
  * the First only, a completed (or failed) template stays out for at least this
  * long — fail-soft: when the floor would leave no candidate at all, the scaled
  * cooldowns apply instead, so the First is never starved into idleness by it.
+ * THR-1218 D4: the floor now covers every paused mortal (a pause-mode thread),
+ * not only the First — see PAUSED_STORY_REPEAT_FLOOR_TICKS.
  * @range 20–180 */
-export const FIRST_CHAPTER_REPEAT_FLOOR_TICKS = 60;
+export const PAUSED_STORY_REPEAT_FLOOR_TICKS = 60;
+
+/** @deprecated THR-1218 — renamed to PAUSED_STORY_REPEAT_FLOOR_TICKS (same value, wider scope). */
+export const FIRST_CHAPTER_REPEAT_FLOOR_TICKS = PAUSED_STORY_REPEAT_FLOOR_TICKS;
+
+/**
+ * THR-1218 D5 — times a paused mortal may tell one story template per run while
+ * another story is within reach. Story chapters only (a routine template — a
+ * chore — is never capped). Counts attempts, so a failed telling counts. Tighter
+ * than MAX_COMPLETIONS_PER_TEMPLATE, which still holds for every mortal.
+ * Two, not one: a local pool of 6–7 stories with one telling each droughts
+ * within two weeks (natural-firing baseline, 2026-10-16).
+ * @range 1–5 */
+export const PAUSED_STORY_MAX_TELLINGS = 2;
+
+/**
+ * THR-1218 D6 — ticks with no story chapter after which a paused mortal takes
+ * the restless road (S2, THR-1959). 72 = six days. Read by the debug bridge in S1.
+ * @range 24–240 */
+export const STORY_DROUGHT_TICKS = 72;
+
+/**
+ * THR-1218 D5 — ticks with no story chapter after which the tellings cap
+ * relaxes for that mortal, until her next story chapter starts. 144 = twelve
+ * days. The cap never starves her for longer than this.
+ * @range 48–480 */
+export const STORY_DROUGHT_RELAX_TICKS = 144;
 
 // ═══════════════════════════════════════════════════════════════════
 // WORLD POPULATION — Agent count by map size (worldSeed.ts)
