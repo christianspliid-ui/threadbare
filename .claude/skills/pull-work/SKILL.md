@@ -1,7 +1,7 @@
 ---
 name: pull-work
 description: Canonical Claude Code pickup workflow for claiming Linear work safely from Ready for Dev.
-last_validated_against: 2026-10-21
+last_validated_against: 2026-10-23
 ---
 
 # Pull Work
@@ -339,6 +339,8 @@ mcp__scheduled-tasks__list_task_runs(taskId: "tb-opus-pickup", limit: 50)
 ```
 
 Count the rows with `status: "running"` whose `last_activity_at` is within `PREDECESSOR_SILENT_MINUTES` of now. Your own run is always one of them.
+
+**A `succeeded` row can still be alive: read its tail.** A subagent always runs in the background, so a run that hands its diff to the review gate's reviewers ends its turn while it waits. Its row turns `succeeded`, the scheduler starts the next run, and the reviewer's hand-back resumes the first run. Foreground Bash cannot prevent this. For every other row with `status: "succeeded"` whose `last_activity_at` is within `PREDECESSOR_SILENT_MINUTES`, call `mcp__ccd_session_mgmt__list_events(session_id, limit: 3)`. A finished run's tail holds its `mcp__ccd_turn__wrap_up` call. A tail without one belongs to a run that is waiting for a background child: count that row as active. If `list_events` errors, count the row as active (fail closed). The CI/CD review on 2026-10-23 counted 14 overlapping pairs in 50 runs on 2026-10-21, against 2 in 49 the week before. Ten came after THR-2003 had made every gate fit the foreground, so backgrounded Bash no longer explains them. The 19:31Z run, for example, ended its turn while its round-2 reviewer worked on THR-1992, the 19:47Z run started off-slot, and the reviewer's hand-back resumed the 19:31Z run to push and arm PR #2525. All ten second runs stood down, but only on a guess, such as "the previous run looks like it is still running its review" (16:14Z). Earlier that morning the same blind spot, then fed by a backgrounded gate, let the 06:49Z run claim THR-1960 while the 05:53Z run still held THR-1937 `In Dev` (WIP 2).
 
 - **Exactly one** (you): every other pickup run has ended. The predecessor is dead, so continue at once, however recently its branch was pushed.
 - **Two or more**: two pickup runs are active at the same time. Stand down. You do not need to work out which row is yours. In a race both runs stand down, and the next slot, with one run alive, goes ahead.
