@@ -33,14 +33,17 @@ const RELABELLED: Record<string, readonly [string, readonly (string | undefined)
   'encounter.slice.riders_behind_caravan': ['shadow', ['eye', 'shadow']],
   'encounter.slice.snow_on_the_pass': ['star', ['star', 'stone']],
   'encounter.slice.unsafe_bridge': ['star', ['star']],
-  'encounter.town.easter_reckoning': ['eye', ['eye', 'eye']],
+  // Held at Star (THR-2010): on the everyday settlement board it is one of the
+  // three master-band Star templates, so Eye would put Star under its master
+  // floor (`EVERYDAY_FLOOR_BY_BAND.master`). Its sequel follows it. TODO(THR-2014)
+  'encounter.town.easter_reckoning': ['star', ['star', 'star']],
   'encounter.trial_of_flame': ['stone', ['iron', 'stone', 'stone']],
   'hod.senior.inquisition': ['iron', ['eye', 'iron']],
   'hunt.trail_cold': ['star', ['star']],
   'mct.social.guild_feast': ['gold', ['gold']],
   'mct.social.wine_tasting': ['gold', ['gold']],
   'tavern.drinking_contest': ['stone', ['stone', 'stone']],
-  'town.easter_reckoning_heard': ['eye', ['eye']],
+  'town.easter_reckoning_heard': ['star', ['star']],
   'ts.elite.found_cathedral': ['veil', ['veil', 'veil', 'veil']],
   'ts.quest.consecrate_ground': ['veil', ['veil', 'veil']],
   'ts.quest.tend_shrine': ['veil', ['veil', 'veil']],

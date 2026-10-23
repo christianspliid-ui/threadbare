@@ -26,19 +26,14 @@
  *                   has sent for {actor} to reckon the true day and prove it before the canons.
  *   Whose problem?  The agent's: their reckoning, their proof, their name as the master the bishop
  *                   sent for. Scene-local; no prior tie to the cathedral asserted (rule 7).
- *   Reach = theme?  Eye throughout since THR-2010 (the mislabel audit: calendar arithmetic proved
- *                   against old books is reckoning, not fate or travel). Authored as Star: Step 0 (0.74) reads the full moon and the equinox from the sky.
+ *   Reach = theme?  Star throughout. Step 0 (0.74) reads the full moon and the equinox from the sky.
  *                   Step 1 (0.82) proves a reckoning of the sky against two hundred years of
  *                   copied tables. Mean 0.78, window fit 0.92 (master). Words: severe, severe.
  *   Shape           Appointment (Seeded Sequel, placed/timed, THR-1479) on a linear two-step.
  *                   Step 0 continue_weakened; step 1 fail_action. Step 1 carries
  *                   carryoverFactorLines keyed on step 0 (no critical_failure row: a step-0
  *                   critical failure ends the action).
- *   Consequence hand (binding, THR-1145): re-drawn on Eye (THR-2010) as knowledge + place; swap
- *                   `place` → `drive` (see `consequenceSwap`). The Star hand was drive + omen; the
- *                   omen stays wired as dressing.
- *     knowledge     intelligence cultural_knowledge "The true day of the spring feast" on $actor,
- *                   step 1 success.
+ *   Consequence hand (binding, THR-1145): drive + omen — no swap.
  *     drive         assign_ambition ambition_spread_faith on $actor, step 1 success. PATH chip.
  *     omen          emit_omen cultural/global on step 1 success (time) and step 1 failure (entropy).
  *                   Unchipped: an omen is dressing and has no anchor kind (the restless-ossuary
@@ -101,14 +96,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   rarityTier: 2,
   intrinsicTier: 'shaping',
   name: 'The Wrong Feast Day',
-  reach: 'eye',
-  consequenceSwap: {
-    from: 'place',
-    to: 'drive',
-    reason: 'The reckoning moves a day in a calendar, not a stone of the cathedral: no place is changed '
-      + 'when the feast is proved a week late. What the proof changes is the master, who comes out of '
-      + 'the chapter house meaning every parish to keep the true day.',
-  },
+  reach: 'star',
   crudType: 'update',
   scale: 'local',
   apCost: 1,
@@ -121,7 +109,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
   },
   steps: [
     {
-      reach: 'eye',
+      reach: 'star',
       duration: {
         min: 1,
         max: 2,
@@ -193,7 +181,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       ],
     },
     {
-      reach: 'eye',
+      reach: 'star',
       duration: {
         min: 1,
         max: 2,
@@ -250,14 +238,6 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             kind: 'reputation_with',
             targetLocationId: '$here',
             delta: 0.06,
-          },
-          {
-            kind: 'intelligence',
-            category: 'cultural_knowledge',
-            label: 'The true day of the spring feast',
-            detail: 'The cathedral\'s tables run a week late; the moon and the equinox put the feast a week sooner.',
-            reliability: 0.9,
-            targetAgentId: '$actor',
           },
           {
             kind: 'assign_ambition',
@@ -647,7 +627,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     + 'word against them. Someone has to reckon the true day from the moon and the equinox, and prove '
     + 'it before the canons and their dean.',
   locationSubtypes: expandSettings(['urban']),
-  consequenceDraw: ['knowledge', 'drive'],
+  consequenceDraw: ['drive', 'omen'],
 };
 
 export const EASTER_RECKONING_TEMPLATE: UnifiedActionTemplate = compileOpeningEnvelope(TEMPLATE_BASE);

@@ -50,7 +50,7 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
   description: '{name} is in the chapter house on synod day, where the synod hears the reckoning of the spring feast.',
   rarityTier: 2,
   intrinsicTier: 'background',
-  reach: 'eye',
+  reach: 'star',
   crudType: 'update',
   scale: 'local',
   apCost: 1,
@@ -58,7 +58,7 @@ export const EASTER_RECKONING_HEARD: UnifiedActionTemplate = {
   motivations: ['tradition_novelty'],
   steps: [
     {
-      reach: 'eye',
+      reach: 'star',
       duration: { min: 1, max: 1 },
       difficulty: EASTER_RECKONING_HEARD_DIFFICULTY,
       failBehavior: 'fail_action',
