@@ -114,6 +114,50 @@ describe('drawTierFirst — inside a tier and forcing', () => {
   });
 });
 
+describe('drawTierFirst — the kind comes up at the recipe\'s share (THR-1997, Law 2)', () => {
+  // As the assembler builds it: every entry weighs its kind's share times the tier weight.
+  const TIER_WEIGHT = TIER_CURVE_SUCCESS[1];
+  function twoKinds(): PoolEntry[] {
+    const out: PoolEntry[] = [];
+    for (let i = 0; i < 9; i++) out.push({ nodeId: `item_${i}`, weight: 0.2 * TIER_WEIGHT, tier: 1, category: 'possession' });
+    out.push({ nodeId: 'cond_0', weight: 0.8 * TIER_WEIGHT, tier: 1, category: 'condition' });
+    return out;
+  }
+
+  it('9 items against 1 at shares 0.2 / 0.8 give 20% / 80%', () => {
+    const entries = twoKinds();
+    let cond = 0;
+    for (let i = 0; i < STEPS; i++) if (drawTierFirst(entries, TIER_CURVE_SUCCESS, (i + 0.5) / STEPS)?.nodeId === 'cond_0') cond++;
+    expect(Math.abs(cond / STEPS - 0.8)).toBeLessThanOrEqual(0.005);
+  });
+
+  it('picks the item by weight inside the kind', () => {
+    const entries: PoolEntry[] = [
+      { nodeId: 'a', weight: 3, tier: 1, category: 'possession' },
+      { nodeId: 'b', weight: 1, tier: 1, category: 'possession' },
+    ];
+    let a = 0;
+    for (let i = 0; i < STEPS; i++) if (drawTierFirst(entries, TIER_CURVE_SUCCESS, (i + 0.5) / STEPS)?.nodeId === 'a') a++;
+    expect(a / STEPS).toBeCloseTo(0.75, 2);
+  });
+
+  it('leaves the tier mix alone — the kind roll spends no extra value', () => {
+    const tagged = pool({ 1: 6, 2: 3, 3: 2, 4: 1 }).map((e, i) => ({ ...e, category: i % 2 ? 'condition' : 'possession' }));
+    const shares = tierShares(tagged, TIER_CURVE_SUCCESS);
+    for (const t of [1, 2, 3, 4] as AttachmentTier[]) expect(shares[t]).toBeCloseTo(TIER_CURVE_SUCCESS[t], 3);
+  });
+
+  it('switch off reproduces today\'s pick for every roll', () => {
+    const tagged = [...twoKinds(), ...pool({ 2: 4, 3: 2, 4: 1 }).map(e => ({ ...e, category: 'possession' }))];
+    const untagged = tagged.map(({ category: _c, ...rest }) => rest);
+    for (let i = 0; i < STEPS; i++) {
+      const roll = (i + 0.5) / STEPS;
+      expect(drawTierFirst(tagged, TIER_CURVE_SUCCESS, roll, undefined, false))
+        .toEqual(drawTierFirst(untagged, TIER_CURVE_SUCCESS, roll));
+    }
+  });
+});
+
 // ─── The hidden Legendary deadline through the one draw path ────────────
 
 function luckWorld(threadFrom: string | null): WorldGraph {
