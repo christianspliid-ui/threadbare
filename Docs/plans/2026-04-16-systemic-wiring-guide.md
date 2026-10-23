@@ -58,6 +58,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{name}` | Agent name. A verb after a `{name}` subject always takes the suffix — `{name} work{s}` reads "works" whatever the pronouns (THR-1857) | "Kael Thornweaver" |
 | `{they}/{them}/{their}/{s}/{es}/{is}/{are}` | Gendered pronouns; `{es}` is `{s}` for a sibilant stem (THR-1945); `{is}`/`{are}` are one copula token agreeing with `{they}` (THR-1810) | "{they} watch{es}" → "she watches" / "they watch" |
 | `{They}/{Them}/{Their}` | Capitalized pronouns | "They watch..." |
+| `{trade}` | The actor's trade word, lower-cased (`tradeWord`, else its `npcRole` word), or "person" when it has none (THR-1982). Prose that must not claim a trade guards with `{?has_trade}…{/has_trade}` | "the {trade} counts the coins" → "the cooper counts the coins" |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
 | `{faction}` | Agent's faction name | "The Weavers' Circle" |
@@ -4974,3 +4975,19 @@ What this means for authors:
 - **Encounter content can ask for it.** `has_trait:power.innate.<family>` is an ordinary predicate, and a spell or card can take the power away with a `trait` removal like any other Power.
 
 Inspect: `__DEBUG.getSpellHolders()` (elites list with `source: 'innate'`); trace `power.innate_stamped`.
+
+## Capability 38: A mortal's Means — `economy_shift` (THR-1936)
+
+A mortal has **Means** (0–100, bands 20 wide). An encounter outcome moves them with one aftermath kind:
+
+```typescript
+{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }             // the actor gains a third of a band
+{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL, targetAgentId: '$cast:mark' }
+```
+
+What this means for authors:
+
+- **Use the named steps, never a raw number.** `MEANS_STEP_SMALL` / `MEANS_STEP` / `MEANS_STEP_BIG` live in `src/data/mortal-means-constants.ts`.
+- **`targetAgentId`** takes a literal id, `'$actor'`, `'$target'` or `'$cast:<key>'`, and defaults to the actor. `reason` is the source-phrase key the sheet's Means tooltip reads.
+- **The change renders as an `economy` aftermath change** on the sheet. `quantity` is only `'means'` today; S3 widens it to world quantities.
+- **`MORTAL_MEANS_ENABLED`** is the master switch. Off, the kind writes nothing and returns no change.
