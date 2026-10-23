@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-10-21 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-10-23 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 1eda2cd30df7d4ee8b5901c6187a987a5503b613)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: d120b807b2f8db86f80c208fec76726b939e410c)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: aa88a60fc3cbc554497f62d8faa9a09bd5f3e580)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 636abd2bb126e15b1b9fcb29c291c2e5496f5811)
 >   - Docs/canon/undertakings.md (sha1: 8cefacdc4074c17a13a25c1eec34c6e67f35e682)
@@ -62,8 +62,8 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | Placeholder | Resolves To | Example |
 |---|---|---|
 | `{name}` | Agent name. A verb after a `{name}` subject always takes the suffix — `{name} work{s}` reads "works" whatever the pronouns (THR-1857) | "Kael Thornweaver" |
-| `{they}/{them}/{their}/{s}/{es}/{is}/{are}` | Gendered pronouns; `{es}` is `{s}` for a sibilant stem (THR-1945); `{is}`/`{are}` are one copula token agreeing with `{they}` (THR-1810) | "{they} watch{es}" → "she watches" / "they watch" |
-| `{They}/{Them}/{Their}` | Capitalized pronouns | "They watch..." |
+| `{they}/{them}/{their}/{s}/{es}/{is}/{are}` | Gendered pronouns; `{es}` is `{s}` for a sibilant stem (THR-1945); `{is}`/`{are}` are one copula token agreeing with `{they}` (THR-1810); `{They}/{Them}/{Their}` are the capitalized forms | "{they} watch{es}" → "she watches" / "they watch" |
+| `{trade}` | The actor's trade word, lower-cased (`tradeWord`, else its `npcRole` word), or "person" when it has none (THR-1982). Prose that must not claim a trade guards with `{?has_trade}…{/has_trade}` | "the {trade} counts the coins" → "the cooper counts the coins" |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
 | `{faction}` | Agent's faction name | "The Weavers' Circle" |
