@@ -150,6 +150,16 @@ describe('the story tellings cap (E3 / D5)', () => {
     expect(applyStoryTellingsCap(auto, AGENT, 110, list, told)).toBe(list);
   });
 
+  it('spares the journey goal and the compelled target, as the story breath does', () => {
+    const g = makeGraph({ attentionMode: 'pause', extra: { lastStoryChapterStartTick: 100 } });
+    const list = [
+      { templateId: STORY, locationId: 'loc_1', journeyGoal: true },
+      { templateId: STORY, locationId: 'loc_2', compelledTarget: true },
+      { templateId: STORY, locationId: 'loc_3' },
+    ] as EncounterCacheEntry[];
+    expect(applyStoryTellingsCap(g, AGENT, 110, list, told).map(c => c.locationId)).toEqual(['loc_1', 'loc_2']);
+  });
+
   it('missing familiarity counts as zero tellings', () => {
     const g = makeGraph({ attentionMode: 'pause' });
     expect(idsOf(applyStoryTellingsCap(g, AGENT, 20, entries(STORY), {}))).toEqual([STORY]);

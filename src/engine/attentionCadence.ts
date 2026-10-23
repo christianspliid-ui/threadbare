@@ -110,10 +110,11 @@ export function isTellingsCapRelaxed(graph: WorldGraph, agentId: string, tick: n
  * `attemptCount`, so a failed telling counts). Chores are never touched, so the
  * cap never empties a list on its own unless it held only retellings — then
  * she lives her daily life, and after STORY_DROUGHT_RELAX_TICKS without a story
- * the cap relaxes. Pass-through for every agent who is not a paused mortal.
+ * the cap relaxes. Pass-through for every agent who is not a paused mortal, and
+ * for an entry flagged `journeyGoal` or `compelledTarget` (as the story breath).
  * Emits `encounter.tellings_capped` when it drops anything.
  */
-export function applyStoryTellingsCap<T extends { templateId: string }>(
+export function applyStoryTellingsCap<T extends { templateId: string; journeyGoal?: boolean; compelledTarget?: boolean }>(
   graph: WorldGraph,
   agentId: string,
   tick: number,
@@ -126,6 +127,9 @@ export function applyStoryTellingsCap<T extends { templateId: string }>(
   const dropped = new Set<string>();
   const kept = candidates.filter(c => {
     if (isRoutineTemplate(c.templateId)) return true;
+    // The encounter she walked to, and the one the god paid to steer her toward,
+    // survive the cap — the same exemption the story breath makes (filterByStoryBreath).
+    if (c.journeyGoal === true || c.compelledTarget === true) return true;
     if ((attemptCount[c.templateId] ?? 0) < PAUSED_STORY_MAX_TELLINGS) return true;
     dropped.add(c.templateId);
     return false;

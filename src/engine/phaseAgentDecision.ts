@@ -1036,8 +1036,8 @@ export function phaseAgentDecision(
         rawCandidates.length,
         state.chapterArchive,
         // THR-1804 — a paused mortal does not restart a chapter minutes after it ends.
-        // THR-1218 D4: every paused mortal, not only the bonded First.
-        isPausedThreadActor(graph, agentId) ? PAUSED_STORY_REPEAT_FLOOR_TICKS : 0,
+        // THR-1218 D4: every paused mortal, and the bonded First in either mode.
+        isPausedThreadActor(graph, agentId) || isBondedFirstActor(graph, agentId) ? PAUSED_STORY_REPEAT_FLOOR_TICKS : 0,
       );
 
       // Combine doom identity + omen encounter biases (additive; each capped at ±IDENTITY_ENCOUNTER_BIAS_CAP)
