@@ -779,7 +779,9 @@ export const PAUSED_STORY_MAX_TELLINGS = 2;
 
 /**
  * THR-1218 D6 — ticks with no story chapter after which a paused mortal takes
- * the restless road (S2, THR-1959). 72 = six days. Read by the debug bridge in S1.
+ * the restless road (S2, THR-1959). 72 = six days. INERT until S2 wires its
+ * reader (no engine module reads it yet, and it is not in the CMS list); S1
+ * defines it only so STORY_DROUGHT_RELAX_TICKS can be pinned above it.
  * @range 24–240 */
 export const STORY_DROUGHT_TICKS = 72;
 
