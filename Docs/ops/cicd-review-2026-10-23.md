@@ -72,7 +72,7 @@ Neither points at a lever: catch-up is at 6.7 %.
 
 ## What shipped
 
-- PR_URL: CI drops the advisory `Process lint` step (freeze-compatible: a removal). The diff is classified code (`ci.yml`). `npm run gate` PASS (101 s), the review gate ran two rounds (receipt on the PR), `npm run gate -- --final` PASS before push, auto-merge armed.
+- [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529): CI drops the advisory `Process lint` step (freeze-compatible: a removal). The diff is classified code (`ci.yml`). `npm run gate` PASS (101 s), the review gate ran two rounds (receipt on the PR), `npm run gate -- --final` PASS before push, auto-merge armed.
 - Withdrawn before push: the Step 1.6 tail-read (see *The finding*).
 
 ## Handoffs to the Friday retro
