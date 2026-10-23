@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-23 23:16 local (21:16 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 00:00 local (22:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -18,7 +18,7 @@ The silence check says: "No scheduled Claude Code lane has written to origin/mai
 
 You approved both on 15 Oct. The unattended builder claimed [THR-1947](https://linear.app/threadbare/issue/THR-1947) (one status line per PR instead of three ledgers), but it is not allowed to edit the gate, CI and Definition-of-Done files, so nothing changed ([the park note](https://linear.app/threadbare/issue/THR-1947)). [THR-1949](https://linear.app/threadbare/issue/THR-1949) edits the same files and will hit the same wall. [THR-1951](https://linear.app/threadbare/issue/THR-1951) waits on 1947.
 
-**Run 1947, then 1949, in one session with you present** (recommended, the smaller trust change), **or allow the unattended builder to edit those files.** *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-21.md)*
+**Run 1947, then 1949, in one session with you present** (recommended, the smaller trust change), **or allow the unattended builder to edit those files.** *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-23.md)*
 
 ### Sunday 18 – Monday 19 Oct: was the app closed, or was this a pause? (new 19 Oct)
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-23: the reward draw rolls the rarity, then the kind, then the thing** ([THR-1997](https://linear.app/threadbare/issue/THR-1997)). Merged via [#2528](https://github.com/christianspliid-ui/threadbare/pull/2528) and live.
 - **2026-10-21: ordinary scenes stop recasting The First** ([THR-1993](https://linear.app/threadbare/issue/THR-1993/ordinary-scenes-stop-recasting-the-first-six-scenes-wait-for-a-mortal)). Merged via [#2526](https://github.com/christianspliid-ui/threadbare/pull/2526) and live.
 - **2026-10-21: four things the retired sheets showed are Inspector rows again** ([THR-1992](https://linear.app/threadbare/issue/THR-1992/four-things-the-retired-sheets-showed-that-no-inspector-page-shows-the)). Merged via [#2525](https://github.com/christianspliid-ui/threadbare/pull/2525) and live.
 - **2026-10-21: your avatar's page says "— your mortal shape" again** ([THR-1990](https://linear.app/threadbare/issue/THR-1990/the-avatars-page-lost-its-your-mortal-shape-framing-when-the-character)). Merged via [#2523](https://github.com/christianspliid-ui/threadbare/pull/2523).
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-21: The First keeps her trade — the meeting writes the trade the player read** ([THR-1984](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read)). Merged via [#2518](https://github.com/christianspliid-ui/threadbare/pull/2518) and live.
 - **2026-10-21: five round-4 playtest faults fixed — spell names on the rail, icons after a rebuild, the restraint stance, the plague scene** ([THR-1979](https://linear.app/threadbare/issue/THR-1979)). Merged via [#2517](https://github.com/christianspliid-ui/threadbare/pull/2517) and live.
 - **2026-10-21: every economic card says what it changed on a town or mortal** ([THR-1968](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy)). Merged via [#2516](https://github.com/christianspliid-ui/threadbare/pull/2516).
-- **2026-10-21: undertakings in the economy, slice 3 — a trade run pays the trader** ([THR-1967](https://linear.app/threadbare/issue/THR-1967/undertakings-in-the-economy-s3-a-trade-run-pays-the-trader-and-the)). Merged via [#2515](https://github.com/christianspliid-ui/threadbare/pull/2515) and live.
 
 ---
 

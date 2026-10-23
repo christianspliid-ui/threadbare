@@ -1,14 +1,14 @@
 # Briefing
-**Generated:** 2026-10-23 23:16 local (21:16 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 00:00 local (22:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Set the Claude app to open when Windows starts.** It happened again, and this was the longest gap so far: no lane ran from about 23:07 Wednesday 21 Oct until 23:11 tonight (Friday). That is two whole days, with 20 jobs ready for the builder. The lanes came back on their own tonight, all in the same second, which is what it looks like when the app reopens. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
+**Set the Claude app to open when Windows starts.** The longest gap so far just ended: no lane ran from about 23:07 Wednesday 21 Oct until 23:11 Friday 23 Oct. That is two whole days, with 20 jobs ready for the builder. The lanes all came back in the same second, which is what it looks like when the app reopens. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
 ## Also waiting (7)
 
-- **Wednesday night to Friday night (21–23 Oct):** "No scheduled Claude Code lane has written to origin/main or origin/ops since 2026-10-21T21:07:01.000Z — 48.1h of fleet-wide silence, past the 6h threshold, and no pause marker is set. Either the lanes are broken, or this is a deliberate pause that was never declared." Was the app closed or the computer off, or was this a pause?
-- **The two process cuts you approved on 15 Oct are stuck.** The builder is not allowed to edit the gate and CI files that [THR-1947](https://linear.app/threadbare/issue/THR-1947) (one status line per PR) changes, and [THR-1949](https://linear.app/threadbare/issue/THR-1949) changes the same files. Either run them in one session with you present, or allow the builder to edit those files. Recommended: one session with you present. *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-21.md)*
+- **Wednesday night to Friday night (21–23 Oct):** "The scheduled lanes went silent for 48.1h (2026-10-21T21:07:01.000Z → 2026-10-23T21:15:17.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed or the computer off, or was this a pause?
+- **The two process cuts you approved on 15 Oct are stuck.** The unattended builder may not edit the gate and CI files that [THR-1947](https://linear.app/threadbare/issue/THR-1947) and [THR-1949](https://linear.app/threadbare/issue/THR-1949) change. Recommended: ship both in one session with you present, rather than widening the builder's permissions. *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-23.md)*
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours with no pause recorded. Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
@@ -19,13 +19,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Backed up: 20 ready, 1 in progress (parked).** The builder restarted at 23:11 tonight and is running now.
+**Backed up: 20 ready, 2 in progress.** The builder is working again: it shipped [THR-1997](https://linear.app/threadbare/issue/THR-1997) (live) and is now on [the Reach relabels from the mislabel audit](https://linear.app/threadbare/issue/THR-2010), claimed 23:21 tonight.
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) is parked and unassigned, 8 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch, pull request or named local worktree for it (checked this run).
-- Three ready tickets have not been touched for over a week: [encounter firing pruning pass](https://linear.app/threadbare/issue/THR-1218/encounter-firing-pruning-pass-select-down-from-everything-fires-once), [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888/the-design-lane-closes-design-tickets-that-are-not-wayfinder-tickets) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961/crown-courtship-rate-sits-at-68-73percent-of-days-under-the-plans). Most of that week is the two silences above.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 8 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch or named local worktree for it (checked this run).
+- Three ready tickets have not been touched for over a week: [encounter firing pruning pass](https://linear.app/threadbare/issue/THR-1218), [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961). Most of that week is the silences above.
 
 ## Health
 
-- **Lanes:** the scheduled-task check flags the orchestrator, the design lane, backlog grooming and the cold playtest as "stalled". That is the known misreading after the computer wakes: the builder, this brief and the weekly retro all restarted in the same second tonight, and each flagged lane has its next slot within hours. The real cause is the two-day silence above.
-- **Worktree reaper:** last ran 22:40 Wednesday 21 Oct; it stopped with everything else. It has 5 items needing a decision, which the builder handles.
-- Everything else is green: main's checks and the three background jobs are healthy, no pull request is waiting, the live site is current ([0e14a188](https://github.com/christianspliid-ui/threadbare/commit/0e14a1887712418d9c2fda40b5f7cc86dc817303)), and the engine runs at 159 ms/tick (+11% vs the 7-day median).
+- **PR stuck:** [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) (the CI/CD review's own tweak, opened 23:43 tonight) has a merge conflict, and GitHub has scheduled no checks on it. The builder's unstick duty owns it.
+- **Engine speed:** tick cost 181 ms/tick steady, 26% above the 7-day median (143, 75 rows since dcaadbe9); top phase agent_decision, 624 agents. Name the merges between dcaadbe9 and af56cd6e: `git log --oneline --merges dcaadbe9..af56cd6e`. Executor work, not an ask.
+- Everything else is green: every lane is on schedule, main's checks and the three background jobs are healthy, the worktree reaper ran at 23:40, and the live site is current ([af56cd6e](https://github.com/christianspliid-ui/threadbare/commit/af56cd6e)).
