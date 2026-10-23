@@ -19,6 +19,12 @@
  * A tier with nothing eligible falls one tier down, so the rarest tier's chance is
  * never inflated by an empty tier below it.
  *
+ * Inside the rolled tier the draw picks the reward kind (possession, condition,
+ * power…) by the recipe's own share among the kinds present there, and only then
+ * the item (THR-1997). Before, the share was multiplied into every item's weight,
+ * so the kind with the most items won: 25.8% of multi-kind prize draws landed off
+ * the recipe's shares.
+ *
  * The player's own mortals also carry a hidden Legendary deadline (`luck.ts`), so a
  * Legendary cannot stay away forever.
  */
@@ -65,6 +71,13 @@ export interface PoolEntry {
    * tier reads as 1, exactly as an undeclared tier did before.
    */
   tier?: number;
+  /**
+   * The reward kind the entry was drawn in for — the recipe's `categoryWeights` key
+   * (THR-1997). {@link drawTierFirst} picks the kind inside the rolled tier before
+   * the item. Optional: an entry without one is a kind of its own, so a hand-built
+   * pool draws exactly as it did before.
+   */
+  category?: string;
   /** For agreement entries: the agreement template ID (nodeId will be the template ID). */
   isAgreement?: boolean;
   /** For companion entries: the companion template ID (THR-1096; registry-backed, not a graph node). */
@@ -325,7 +338,7 @@ export function assembleRewardPoolDetailed(
         const tierWeight = recipe.tierCurve[template.tier as AttachmentTier] ?? 0;
         const weight = categoryWeight * tierWeight;
         if (weight > 0) {
-          pool.push({ nodeId: template.id, weight, tier: template.tier, isCompanion: true });
+          pool.push({ nodeId: template.id, weight, tier: template.tier, category, isCompanion: true });
         }
       }
       continue;
@@ -338,7 +351,7 @@ export function assembleRewardPoolDetailed(
         const tierWeight = recipe.tierCurve[template.tier as AttachmentTier] ?? 0;
         const weight = categoryWeight * tierWeight;
         if (weight > 0) {
-          pool.push({ nodeId: template.id, weight, tier: template.tier, isAgreement: true });
+          pool.push({ nodeId: template.id, weight, tier: template.tier, category, isAgreement: true });
         }
       }
       continue;
@@ -357,7 +370,7 @@ export function assembleRewardPoolDetailed(
       const tierWeight = recipe.tierCurve[candidate.tier as AttachmentTier] ?? 0;
       const weight = categoryWeight * tierWeight;
       if (weight > 0) {
-        pool.push({ nodeId: candidate.id, weight, tier: candidate.tier });
+        pool.push({ nodeId: candidate.id, weight, tier: candidate.tier, category });
       }
     }
   }
@@ -405,6 +418,14 @@ export function drawFromPool(
 
 const REWARD_TIERS: readonly AttachmentTier[] = [1, 2, 3, 4];
 
+/**
+ * Master switch for the kind roll inside the rolled tier (THR-1997, Game Design
+ * Law 2). On: the draw picks the reward kind by the recipe's share among the kinds
+ * present at the tier, then the item. Off: the kinds compete item by item, so a kind
+ * with more items wins — byte for byte the draw before THR-1997.
+ */
+export const REWARD_KIND_ROLL_ENABLED = true;
+
 /** What {@link drawTierFirst} picked: the entry and the tier it was drawn from. */
 export interface TierFirstPick {
   readonly nodeId: string;
@@ -430,9 +451,13 @@ function entryTier(entry: PoolEntry): AttachmentTier {
  * - **`forceTier`** (the Legendary deadline) is honoured only when that tier has an
  *   entry; otherwise the roll decides as usual.
  *
- * Within a tier every entry's `weight` is its category weight times the same tier
- * weight, so the pick inside the tier is proportional to the category weight —
- * exactly what the flat draw did once the tier was fixed.
+ * - **Then the kind, then the item** (THR-1997). Inside the tier the entries group
+ *   by `category`; a kind weighs what one of its entries weighs (its recipe share
+ *   times the tier's weight, the same for every entry of the kind), so the kinds
+ *   compete on their shares, not on how many items each holds. The in-tier position
+ *   is re-scaled once more to pick the item inside the kind — still the one roll.
+ *   A kind with nothing at the rolled tier yields to the kinds that have one. An
+ *   entry with no `category` is a kind of its own.
  *
  * Fail-soft (NFP #4): an empty pool returns null; a curve with no positive weight
  * falls back to the lowest tier present.
@@ -442,6 +467,7 @@ export function drawTierFirst(
   tierCurve: Readonly<Record<AttachmentTier, number>>,
   roll: number,
   forceTier?: AttachmentTier,
+  kindRoll: boolean = REWARD_KIND_ROLL_ENABLED,
 ): TierFirstPick | null {
   if (pool.length === 0) return null;
 
@@ -496,9 +522,69 @@ export function drawTierFirst(
     tier = (below ?? above) as AttachmentTier;
   }
 
-  const entries = byTier.get(tier)!;
-  const tierTotal = entries.reduce((sum, e) => sum + e.weight, 0);
-  const pick = position * tierTotal;
+  const tierEntries = byTier.get(tier)!;
+  let entries: readonly PoolEntry[] = tierEntries;
+  if (kindRoll) {
+    const kinds = groupByKind(tierEntries);
+    if (kinds.length > 1) {
+      const kindTotal = kinds.reduce((sum, k) => sum + k.weight, 0);
+      const scaled = position * kindTotal;
+      let lo = 0;
+      let chosen = kinds[kinds.length - 1];
+      let landed = false;
+      for (const k of kinds) {
+        if (scaled < lo + k.weight) {
+          chosen = k;
+          position = (scaled - lo) / k.weight;
+          landed = true;
+          break;
+        }
+        lo += k.weight;
+      }
+      if (!landed) position = 1 - Number.EPSILON;
+      entries = chosen.entries;
+    }
+  }
+  return pickByWeight(entries, position, tier);
+}
+
+interface KindGroup {
+  readonly weight: number;
+  readonly entries: PoolEntry[];
+}
+
+/**
+ * The tier's entries grouped by reward kind, in first-seen order (deterministic for a
+ * deterministic pool). A kind's weight is the mean of its entries' weights — one entry's
+ * share-times-tier weight, since the assembler gives every entry of a kind at a tier the
+ * same weight. An untagged entry is its own group at its own weight.
+ */
+function groupByKind(entries: readonly PoolEntry[]): KindGroup[] {
+  const groups: Array<{ entries: PoolEntry[] }> = [];
+  const byKind = new Map<string, { entries: PoolEntry[] }>();
+  for (const entry of entries) {
+    if (entry.category === undefined) {
+      groups.push({ entries: [entry] });
+      continue;
+    }
+    const g = byKind.get(entry.category);
+    if (g) g.entries.push(entry);
+    else {
+      const fresh = { entries: [entry] };
+      byKind.set(entry.category, fresh);
+      groups.push(fresh);
+    }
+  }
+  return groups.map(g => ({
+    entries: g.entries,
+    weight: g.entries.reduce((sum, e) => sum + e.weight, 0) / g.entries.length,
+  }));
+}
+
+/** The entry a `[0, 1)` position lands on, each entry spanning its share of the weight. */
+function pickByWeight(entries: readonly PoolEntry[], position: number, tier: AttachmentTier): TierFirstPick {
+  const total = entries.reduce((sum, e) => sum + e.weight, 0);
+  const pick = position * total;
   let cumulative = 0;
   for (const entry of entries) {
     cumulative += entry.weight;
