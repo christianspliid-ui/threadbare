@@ -1521,7 +1521,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Wine Tasting Evening',
     rarityTier: 1,
     intrinsicTier: 'background',
-    reach: 'heart',
+    reach: 'gold',
     crudType: 'update',
     scale: 'local',
     locationSubtypes: ['city', 'capital'],
@@ -1530,7 +1530,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
-        reach: 'heart',
+        reach: 'gold',
         duration: { min: 1, max: 1 },
         difficulty: (MCT_DIFFICULTY_BASE - 5) / 100,
         failBehavior: 'continue_weakened',
@@ -1737,7 +1737,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Consortium Feast',
     rarityTier: 1,
     intrinsicTier: 'background',
-    reach: 'heart',
+    reach: 'gold',
     crudType: 'update',
     scale: 'local',
     locationSubtypes: ['city', 'capital'],
@@ -1746,7 +1746,7 @@ export const MERCHANT_CONSORTIUM_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
-        reach: 'heart',
+        reach: 'gold',
         duration: { min: 1, max: 1 },
         difficulty: (MCT_DIFFICULTY_BASE - 5) / 100,
         failBehavior: 'continue_weakened',

@@ -108,7 +108,7 @@ const step1CarryOut: ActionStep = {
 };
 
 const step1WarnTheCondemned: ActionStep = {
-  reach: 'iron',
+  reach: 'shadow',
   duration: { min: 2, max: 3 },
   difficulty: 0.25,
   difficultyContext: 'intel_sensitive',

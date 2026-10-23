@@ -42,7 +42,7 @@ describe('buildEncounterPackage — identity and envelope', () => {
     const pkg = buildEncounterPackage(bridge());
     expect(pkg.templateId).toBe(BRIDGE_ID);
     expect(pkg.family).toBe('encounter');
-    expect(pkg.reach).toBe('stone');
+    expect(pkg.reach).toBe('star'); // THR-2010: the bridge is a road choice, Star
     expect(pkg.settings).toContain('wayside');
     // One opening per declared class is the envelope contract (THR-884).
     expect(pkg.openings.map(o => o.settingClass)).toEqual(pkg.settings.slice());

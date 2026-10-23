@@ -103,14 +103,15 @@ describe('THR-1467 — repeated growth in one reach folds to one change', () => 
     resetUnifiedActionCounter();
   });
 
-  it('is the shipped shape: both Snow on the Pass steps are the same reach', () => {
-    // The premise this whole ticket rests on, asserted rather than assumed —
-    // if the template is ever re-authored onto two different reaches, the
-    // motivating case is gone and this file should be re-read, not re-run green.
+  it('is no longer the shipped shape: Snow on the Pass now rolls two reaches', () => {
+    // The motivating case was Snow on the Pass growing Stone on both steps.
+    // THR-2010 moved its climb to Star (a race over a pass), so the template
+    // no longer repeats a reach. Re-read: the fold below is proved on
+    // synthetic two-step templates (`makeTemplate`) and does not need it.
     const reaches = SLICE_SNOW_ON_THE_PASS.steps
       .filter(s => !isActionStepBranch(s))
       .map(s => (s as { reach: string }).reach);
-    expect(reaches).toEqual(['stone', 'stone']);
+    expect(reaches).toEqual(['star', 'stone']);
   });
 
   it('draws one chip for a reach that grew twice, carrying the summed amount', () => {

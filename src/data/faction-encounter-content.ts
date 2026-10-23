@@ -485,7 +485,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
         },
       },
     ],
-    reachPrimary: 'eye',
+    reachPrimary: 'iron',
     reachSecondary: 'shadow',
     encounterType: 'acquire',
     reputationPolarity: 'positive', // heroic recovery of an artifact for institutional preservation (2a)
