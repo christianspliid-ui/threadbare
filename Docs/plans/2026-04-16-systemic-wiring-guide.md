@@ -56,8 +56,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | Placeholder | Resolves To | Example |
 |---|---|---|
 | `{name}` | Agent name. A verb after a `{name}` subject always takes the suffix — `{name} work{s}` reads "works" whatever the pronouns (THR-1857) | "Kael Thornweaver" |
-| `{they}/{them}/{their}/{s}/{es}/{is}/{are}` | Gendered pronouns; `{es}` is `{s}` for a sibilant stem (THR-1945); `{is}`/`{are}` are one copula token agreeing with `{they}` (THR-1810) | "{they} watch{es}" → "she watches" / "they watch" |
-| `{They}/{Them}/{Their}` | Capitalized pronouns | "They watch..." |
+| `{they}/{them}/{their}/{s}/{es}/{is}/{are}` | Gendered pronouns; `{es}` is `{s}` for a sibilant stem (THR-1945); `{is}`/`{are}` are one copula token agreeing with `{they}` (THR-1810); `{They}/{Them}/{Their}` are the capitalized forms | "{they} watch{es}" → "she watches" / "they watch" |
 | `{trade}` | The actor's trade word, lower-cased (`tradeWord`, else its `npcRole` word), or "person" when it has none (THR-1982). Prose that must not claim a trade guards with `{?has_trade}…{/has_trade}` | "the {trade} counts the coins" → "the cooper counts the coins" |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
