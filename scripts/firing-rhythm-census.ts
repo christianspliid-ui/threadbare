@@ -39,8 +39,15 @@ import { UNIFIED_ACTION_TEMPLATES, LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from
 import { getAgentLocationId, getThreadTo } from '../src/engine/graphQueries';
 import { PAUSED_STORY_MAX_TELLINGS, STORY_DROUGHT_RELAX_TICKS } from '../src/data/agent-behavior-constants';
 
-/** Own-draw story chapters of The First per seed, 600 ticks, medium, at 617802fb (baseline § 3). */
-const BASELINE_OWN_DRAW_STORY: Record<number, number> = { 42: 18, 7: 10, 1234: 13 };
+/**
+ * Own-draw story chapters of The First per seed, 600 ticks, medium, on main
+ * `cf6fb7de` *without* the THR-1218 S1 rules (this script run on that tree).
+ * Re-anchored from the design-time baseline at `617802fb` (18 / 10 / 13, audit § 3):
+ * main moved between the two, and seed 42 fell to 6 with no S1 code present, so
+ * the old numbers no longer measured what the cap costs. Re-anchor again when a
+ * content or decision change moves these without touching the cap.
+ */
+const BASELINE_OWN_DRAW_STORY: Record<number, number> = { 42: 6, 7: 19, 1234: 12 };
 /** Slack on the baseline predicate: "not fewer than the baseline minus one". */
 const BASELINE_SLACK = 1;
 /** D3's tripwire: a story chapter following its own family in more than this share of pairs. */
@@ -75,6 +82,10 @@ interface Chapter {
   resolvedTick: number | null;
   halted: boolean;
   aftermath: boolean;
+  /** A compulsion was pending for her on some tick the chapter was live (the visibility phase skips her then). */
+  compulsionPending: boolean;
+  /** Another of her chapters held an unanswered pause notification while this one was live. */
+  otherVeilOpen: boolean;
 }
 
 function runSeed(seed: number) {
@@ -115,6 +126,8 @@ function runSeed(seed: number) {
         resolvedTick: a.resolved ? state.tick : null,
         halted: false,
         aftermath: false,
+        compulsionPending: false,
+        otherVeilOpen: false,
       };
       chapters.push(ch);
       byAction.set(a.actionId, ch);
@@ -127,6 +140,20 @@ function runSeed(seed: number) {
       if (n.kind === 'aftermath') r.aftermath = true;
       else if (n.autoResolveTick === null) r.halted = true;
       notif.set(key, r);
+    }
+    // Why a chapter never halts headless: flag what was in the way while it was live.
+    const compulsion = (state.premonitionQueue ?? []).some(
+      p => p.type === 'compulsion' && p.agentId === firstId && p.eligibleUntilTick > state.tick,
+    );
+    const openVeils = new Set(
+      (state.encounterNotifications ?? [])
+        .filter(n => !n.resolved && n.kind !== 'aftermath' && n.autoResolveTick === null && n.actionId)
+        .map(n => n.actionId as string),
+    );
+    for (const ch of chapters) {
+      if (ch.resolvedTick !== null) continue;
+      if (compulsion) ch.compulsionPending = true;
+      for (const id of openVeils) if (id !== ch.actionId) ch.otherVeilOpen = true;
     }
   };
 
@@ -197,6 +224,8 @@ function report(r: SeedResult) {
   const life = (c: Chapter) => (c.resolvedTick === null ? 'unresolved' : c.resolvedTick === c.tick ? 'same-tick' : `${c.resolvedTick - c.tick}t`);
   console.log(`  halted         — tier: ${tally(halted, c => c.effectiveTier)}; source: ${tally(halted, c => c.source)}; life: ${tally(halted, life)}`);
   console.log(`  aftermath-only — tier: ${tally(aftermathOnly, c => c.effectiveTier)}; source: ${tally(aftermathOnly, c => c.source)}; life: ${tally(aftermathOnly, life)}`);
+  const blockers = (c: Chapter) => [c.compulsionPending ? 'compulsion' : '', c.otherVeilOpen ? 'other-veil-open' : ''].filter(Boolean).join('+') || 'none';
+  console.log(`  blockers while live — halted: ${tally(halted, blockers)}; aftermath-only: ${tally(aftermathOnly, blockers)}`);
 
   console.log('story sources by location (own draws: chapters / distinct templates):');
   const byLoc = new Map<string, Set<string> & { n?: number }>();

@@ -785,10 +785,14 @@ export const STORY_DROUGHT_TICKS = 72;
 
 /**
  * THR-1218 D5 — ticks with no story chapter after which the tellings cap
- * relaxes for that mortal, until her next story chapter starts. 144 = twelve
- * days. The cap never starves her for longer than this.
+ * relaxes for that mortal, until her next story chapter starts. 96 = eight
+ * days. The cap never starves her for longer than this. Tuned down from the
+ * plan's 144 by its kill criterion ("lower STORY_DROUGHT_RELAX_TICKS first"):
+ * at 144, seed 7 fell from 19 own-draw story chapters (main without the cap) to
+ * 11; at 96 it holds 18, seeds 42 / 1234 at 10 / 12 (main 6 / 12). 72 measured
+ * the same, so 96 keeps the relax after S2's restless road (STORY_DROUGHT_TICKS).
  * @range 48–480 */
-export const STORY_DROUGHT_RELAX_TICKS = 144;
+export const STORY_DROUGHT_RELAX_TICKS = 96;
 
 // ═══════════════════════════════════════════════════════════════════
 // WORLD POPULATION — Agent count by map size (worldSeed.ts)

@@ -30,7 +30,10 @@
     tugs -> a "missed" digest entry; demoted (curated-out) candidates -> a digest entry
     with wasCuratedOut=true. THREAD_TUG_LINGER 3, MAX_CONCURRENT_TUGS 3. Pacing governor
     (pacingGovernor.ts) fires/queues story_beat encounters — STORY_BEAT_COOLDOWN 12,
-    STORY_BEAT_QUEUE_MAX 3, overflow demotes the ejected beat back to 'shaping'.
+    STORY_BEAT_QUEUE_MAX 3, overflow demotes the ejected beat back to 'shaping'
+    (STORY_BEAT_COOLDOWN is one global cooldown, not per thread; the demote is gated by
+    STORY_BEAT_QUEUE_OVERFLOW_DEMOTE at the phaseAttention demote site, THR-1218 D7; the
+    curator weights are named CURATOR_W_* in attention-constants.ts; ATTEND_COOLDOWN is unused).
   - THE load-bearing honest call for this page: the DIGEST BUFFER is APPENDED but NOT
     PRUNED at runtime. appendDigestEntry is wired (orchestrator.ts:1190 + phaseAttention),
     but pruneDigestBuffer and DIGEST_BUFFER_RETENTION (48) have NO production caller —
