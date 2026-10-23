@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 00:00 local (22:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 00:57 local (22:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-23: encounters take the Reach their test asks — 39 of the mislabel audit's 41 relabelled** ([THR-2010](https://linear.app/threadbare/issue/THR-2010)). Merged via [#2530](https://github.com/christianspliid-ui/threadbare/pull/2530) and live.
 - **2026-10-23: the reward draw rolls the rarity, then the kind, then the thing** ([THR-1997](https://linear.app/threadbare/issue/THR-1997)). Merged via [#2528](https://github.com/christianspliid-ui/threadbare/pull/2528) and live.
 - **2026-10-21: ordinary scenes stop recasting The First** ([THR-1993](https://linear.app/threadbare/issue/THR-1993/ordinary-scenes-stop-recasting-the-first-six-scenes-wait-for-a-mortal)). Merged via [#2526](https://github.com/christianspliid-ui/threadbare/pull/2526) and live.
 - **2026-10-21: four things the retired sheets showed are Inspector rows again** ([THR-1992](https://linear.app/threadbare/issue/THR-1992/four-things-the-retired-sheets-showed-that-no-inspector-page-shows-the)). Merged via [#2525](https://github.com/christianspliid-ui/threadbare/pull/2525) and live.
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-21: the mortal picker names all three mortals before the first click** ([THR-1987](https://linear.app/threadbare/issue/THR-1987/name-the-three-mortals-before-the-first-click-name-and-epithet-on)). Merged via [#2520](https://github.com/christianspliid-ui/threadbare/pull/2520) and live.
 - **2026-10-21: The First keeps her trade — the meeting writes the trade the player read** ([THR-1984](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read)). Merged via [#2518](https://github.com/christianspliid-ui/threadbare/pull/2518) and live.
 - **2026-10-21: five round-4 playtest faults fixed — spell names on the rail, icons after a rebuild, the restraint stance, the plague scene** ([THR-1979](https://linear.app/threadbare/issue/THR-1979)). Merged via [#2517](https://github.com/christianspliid-ui/threadbare/pull/2517) and live.
-- **2026-10-21: every economic card says what it changed on a town or mortal** ([THR-1968](https://linear.app/threadbare/issue/THR-1968/gods-stake-s2-every-economic-card-says-what-it-changed-the-economy)). Merged via [#2516](https://github.com/christianspliid-ui/threadbare/pull/2516).
 
 ---
 

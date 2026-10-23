@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 00:00 local (22:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 00:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,13 +19,14 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Backed up: 20 ready, 2 in progress.** The builder is working again: it shipped [THR-1997](https://linear.app/threadbare/issue/THR-1997) (live) and is now on [the Reach relabels from the mislabel audit](https://linear.app/threadbare/issue/THR-2010), claimed 23:21 tonight.
+**Backed up: 20 ready, 2 in progress.** The builder shipped [the Reach relabels from the mislabel audit](https://linear.app/threadbare/issue/THR-2010) ([#2530](https://github.com/christianspliid-ui/threadbare/pull/2530), live), and is now building [the encounter firing pruning pass](https://linear.app/threadbare/issue/THR-1218) (branch `claude/thr-1218-firing-rhythm-s1`, run started 22:31 UTC).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 8 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch or named local worktree for it (checked this run).
-- Three ready tickets have not been touched for over a week: [encounter firing pruning pass](https://linear.app/threadbare/issue/THR-1218), [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961). Most of that week is the silences above.
+- Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961). Most of that week is the silences above.
 
 ## Health
 
-- **PR stuck:** [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) (the CI/CD review's own tweak, opened 23:43 tonight) has a merge conflict, and GitHub has scheduled no checks on it. The builder's unstick duty owns it.
-- **Engine speed:** tick cost 181 ms/tick steady, 26% above the 7-day median (143, 75 rows since dcaadbe9); top phase agent_decision, 624 agents. Name the merges between dcaadbe9 and af56cd6e: `git log --oneline --merges dcaadbe9..af56cd6e`. Executor work, not an ask.
-- Everything else is green: every lane is on schedule, main's checks and the three background jobs are healthy, the worktree reaper ran at 23:40, and the live site is current ([af56cd6e](https://github.com/christianspliid-ui/threadbare/commit/af56cd6e)).
+- **Heavy tests red on main since 21:40 UTC** (one appointment test lost its target after the reward-draw merge); ticket [THR-2015](https://linear.app/threadbare/issue/THR-2015) filed for the builder. A run on the newest main commit is still in progress.
+- **PR stuck:** [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) (the CI/CD review's own tweak, 71 min old) has a merge conflict, and GitHub has scheduled no checks on it. The builder's unstick duty owns it.
+- **Engine speed:** tick cost 194 ms/tick steady, 35% above the 7-day median (143, 76 rows since dcaadbe9); top phase agent_decision, 618 agents. Name the merges between dcaadbe9 and cf6fb7de: `git log --oneline --merges dcaadbe9..cf6fb7de`. Executor work, not an ask.
+- Everything else is green: every lane is on schedule, main's CI and the three scheduled background jobs are healthy, and the live site is current ([cf6fb7de](https://github.com/christianspliid-ui/threadbare/commit/cf6fb7de)).
