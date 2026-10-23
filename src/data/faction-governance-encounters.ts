@@ -46,7 +46,7 @@ export const FACTION_DISSENT_SURFACES_TEMPLATE: UnifiedActionTemplate = {
   },
   steps: [
     {
-      reach: 'shadow',
+      reach: 'heart',
       duration: { min: 1, max: 2 },
       difficulty: 0.30,
       failBehavior: 'continue_weakened',
@@ -62,7 +62,7 @@ export const FACTION_DISSENT_SURFACES_TEMPLATE: UnifiedActionTemplate = {
       failureAfterimage: 'The moment passes. {name} swallows it.',
     },
     {
-      reach: 'shadow',
+      reach: 'heart',
       duration: { min: 1, max: 2 },
       difficulty: 0.40,
       failBehavior: 'fail_action',
@@ -176,7 +176,7 @@ export const FACTION_DOCTRINE_SURFACES_TEMPLATE: UnifiedActionTemplate = {
   },
   steps: [
     {
-      reach: 'star',
+      reach: 'heart',
       duration: { min: 1, max: 2 },
       difficulty: 0.30,
       failBehavior: 'continue_weakened',
@@ -191,7 +191,7 @@ export const FACTION_DOCTRINE_SURFACES_TEMPLATE: UnifiedActionTemplate = {
       failureAfterimage: 'The room rejects it before {name} can finish.',
     },
     {
-      reach: 'star',
+      reach: 'heart',
       duration: { min: 1, max: 2 },
       difficulty: 0.45,
       failBehavior: 'fail_action',
@@ -256,7 +256,7 @@ export const FACTION_DOUBTER_CHOOSES_TEMPLATE: UnifiedActionTemplate = {
       failureAfterimage: 'The seeing has happened. {name} does not move.',
     },
     {
-      reach: 'eye',
+      reach: 'heart',
       duration: { min: 1, max: 2 },
       difficulty: 0.45,
       failBehavior: 'fail_action',

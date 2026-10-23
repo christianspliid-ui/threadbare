@@ -28,13 +28,13 @@ export const FATE_CARD_TRIAL_TEMPLATE: UnifiedActionTemplate = {
   name: 'Trial of the Fate Card',
   description: 'An ordeal whose ending is sealed in a fate card and turned over only at the close.',
   sphere: 'mind',
-  reach: 'resolve',
+  reach: 'stone',
   scale: 'personal',
   source: 'agent',
   actorAffinities: ['individual'],
   steps: [
     {
-      reach: 'resolve',
+      reach: 'stone',
       difficulty: 0.5,
       duration: { min: 2, max: 4 },
       onSuccess: [],
@@ -42,7 +42,7 @@ export const FATE_CARD_TRIAL_TEMPLATE: UnifiedActionTemplate = {
       narrativeTemplate: 'The first trial: steeling oneself for what lies beneath the card.',
     },
     {
-      reach: 'resolve',
+      reach: 'stone',
       difficulty: 0.6,
       duration: { min: 3, max: 5 },
       onSuccess: [],
@@ -92,14 +92,14 @@ export const RECKLESS_WAGER_TEMPLATE: UnifiedActionTemplate = {
   },
   name: 'The Reckless Wager',
   description: 'One bold gamble, decided the moment the dice leave the hand.',
-  sphere: 'fortune',
-  reach: 'resolve',
+  sphere: 'chaos',
+  reach: 'star',
   scale: 'personal',
   source: 'agent',
   actorAffinities: ['individual'],
   steps: [
     {
-      reach: 'resolve',
+      reach: 'star',
       difficulty: 0.55,
       duration: { min: 1, max: 2 },
       onSuccess: [],
@@ -153,13 +153,13 @@ export const TIERED_PROVING_TEMPLATE: UnifiedActionTemplate = {
   name: 'Tiered Proving Ground',
   description: 'A proving that pays out by how decisively it is won.',
   sphere: 'force',
-  reach: 'combat',
+  reach: 'iron',
   scale: 'personal',
   source: 'agent',
   actorAffinities: ['individual'],
   steps: [
     {
-      reach: 'combat',
+      reach: 'iron',
       difficulty: 0.5,
       duration: { min: 3, max: 6 },
       onSuccess: [],

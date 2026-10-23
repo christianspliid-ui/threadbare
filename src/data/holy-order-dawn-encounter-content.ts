@@ -1872,7 +1872,7 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Conduct Inquisition',
     rarityTier: 2,
     intrinsicTier: 'shaping',
-    reach: 'star',
+    reach: 'iron',
     crudType: 'read',
     scale: 'local',
     locationSubtypes: ['temple', 'city', 'capital'],
