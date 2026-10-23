@@ -8106,7 +8106,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         spawnName: 'The One Who Asked',
       },
     ],
-    consequenceDraw: ['secret', 'condition'],
+    consequenceDraw: ['possession', 'condition'],
     consequenceSwap: {
       from: 'place',
       to: 'condition',
@@ -8117,7 +8117,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         + 'so `$target` is an agent and the binder\'s location-kind check rejects it — '
         + 'the effect would no-op silently, which is the vacuous wiring the gate exists '
         + 'to prevent. `spawn_unique_location`, the family\'s only sentinel-free kind, '
-        + 'mints a place for honing a knife. Traded to `condition` (weight 8 in iron, the '
+        + 'mints a place for honing a knife. Traded to `condition` (weight 4 in stone since THR-2010; 8 in iron, the '
         + 'reach\'s own signature and the corpus\'s thinnest channel at 1 user).',
     },
     aftermathConfig: {
@@ -8417,6 +8417,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         onSuccess: {
           narrative: 'The edge catches the fire like a thread of silver. Sharp enough. {actor} sheathes it and rolls {their} shoulder out.',
           reputationDelta: 0.03,
+          // THR-2010: on Stone the draw is `possession` + `condition` — the edge is
+          // paid for in kind. On Iron it was `secret`, wired by the favour creations.
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#stone'],
+          },
         },
         onFailure: {
           narrative: 'The stone slips, the angle goes. {actor} gets an edge that will cut rope and would embarrass {them} against mail.',
