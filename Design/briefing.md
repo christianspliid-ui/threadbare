@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 16:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 17:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,13 +27,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 17 ready (16 plus the new test fix below), 2 in progress.** The builder run that started at 13:51 UTC is still working on [hiring a free company](https://linear.app/threadbare/issue/THR-1974) (plan doc). It has been active for about an hour.
+**Backed up: 16 ready, 2 in progress.** [Hiring a free company](https://linear.app/threadbare/issue/THR-1974) merged at 15:41 UTC ([#2544](https://github.com/christianspliid-ui/threadbare/pull/2544)) and is live. The builder run that started at 15:42 UTC has taken the heavy-tests fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019)) and is active.
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
-- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) have not been touched for a week. The agents decide these terms; most of that week is the silences above.
+- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-- Heavy tests have been red on main since 13:18 UTC, after the war-aims merge ([#2542](https://github.com/christianspliid-ui/threadbare/pull/2542)). One test, "masters attempt harder content than experts", misses by 0.001 on one seed. Ticket [THR-2019](https://linear.app/threadbare/issue/THR-2019) is filed for the builder. The live game is not affected.
-- Engine speed: "tick cost 189 ms/tick steady, 31% above the 7-day median (144, 80 rows since 85852c0f); top phase agent_decision, 602 agents." The builder was running on the same machine during the measurement, as it was during last hour's high reading. Treat this as likely load until a quiet-hour reading repeats it.
-- Everything else is green: main's CI, the three scheduled background jobs, every lane on schedule, no PR waiting to merge, the worktree reaper ran at 16:40, and the live site is current ([5b4aa2f3](https://github.com/christianspliid-ui/threadbare/commit/5b4aa2f3)).
+- Heavy tests have been red on main since 13:18 UTC, after the war-aims merge ([#2542](https://github.com/christianspliid-ui/threadbare/pull/2542)). Ticket [THR-2019](https://linear.app/threadbare/issue/THR-2019) is filed, and the builder is on it now. The live game is not affected.
+- Everything else is green: main's CI, the three scheduled background jobs, no PR waiting to merge, engine speed back inside its normal range (168 ms/tick, +17% on the week's median), the worktree reaper ran at 17:40, and the live site is current ([82d6e70b](https://github.com/christianspliid-ui/threadbare/commit/82d6e70b)).
