@@ -1257,7 +1257,10 @@ export const CONTRACTS: readonly Contract[] = [
     // THR-1672: a teaching book teaches its new holder on the way in (`onItemAcquired`,
     // after the `possesses` write), and a spell-definition template routes to `grantSpell`
     // instead of being cloned; the reward line reads `taughtSpellName` back.
-    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts', 'src/engine/spellGrant.ts'],
+    // THR-1999: an agreement edge `instantiateAgreementReward` writes is removed by
+    // `expireAgreements` (orchestrator phase 6.625c) once `acquiredTick + ticksRemaining`
+    // is reached — the reward path's term now ends on the graph, not only at read time.
+    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts', 'src/engine/spellGrant.ts', 'src/engine/agreementExpiry.ts'],
     readSites: [
       'src/engine/orchestrator.ts',
       'src/engine/unifiedActionResolution.ts',
