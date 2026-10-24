@@ -1,7 +1,7 @@
 ---
 name: design-lane
 description: The unattended design lane (tb-design-lane, four runs a day). Progresses agreed design work without Christian present — decides a wayfinder map's frontier ticket under the 2026-09-11 delegation with outputs attached and a veto invited, closes a cleared map with its carve-up, or authors, gates and hands off one plan doc for agreed-but-undesigned work. Never charts a map, never picks direction, never touches a ticket reserved for Christian. Christian's ruling 2026-09-25 (THR-1611).
-last_validated_against: 2026-10-11
+last_validated_against: 2026-10-24
 ---
 
 # Design lane
@@ -66,6 +66,14 @@ Everything else is decided **as made, with an invitation to veto**, never as a b
 - **Never claim executor work, never set `In Dev`, never write a close keyword** (`Fixes`/`Closes`/`Resolves`)
   before any issue id. Wayfinder tickets close with `save_issue(state:"Done")` under the wayfinder carve-out;
   plan-doc tickets move to `Ready for Dev` at handoff exactly as `design-session` Step 5 does.
+- **Design-request carve-out (THR-1888).** A design-request ticket (not executor work, no merge gate) whose
+  Done-when names only **filed tickets** or a **recorded decision** is closed by the lane that met it —
+  `save_issue(state:"Done")`, verify — when its closing comment quotes the Done-when and links every output
+  (each filed ticket, the decision comment). No `Fixes`/`Closes`/`Resolves` keyword is involved. Do **not**
+  leave it `Todo` "for a one-click close": THR-1785 waited ~17.5 h that way and held warm playtest round 2's
+  gate shut, while THR-1782, THR-1784 and THR-1805–1807 were closed by this lane in the same week. A ticket
+  whose Done-when is a plan doc still moves to `Ready for Dev` at handoff; one whose Done-when is a merge is
+  executor work and never closes here.
 - **Measure every substrate claim before writing it.** The intent judge caught false grep claims in *both*
   first drafts of the 2026-09-07 driver run. A decision or plan doc that asserts what the code does quotes the
   command and its output.
