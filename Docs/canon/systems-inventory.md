@@ -481,4 +481,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 238 engine domains · 786 modules._
+_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 239 engine domains · 787 modules._
