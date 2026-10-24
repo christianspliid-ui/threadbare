@@ -6068,9 +6068,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.black_market_deal',
     stakes: {
       goal: 'pay the broker\'s price for the goods and carry them out',
-      risk: 'pay in full and lose the goods to a watcher',
+      risk: 'lose the goods and land on a watcher\'s list',
       won: 'paid the broker\'s price and carried the goods out',
-      lost: 'paid in full and lost the goods to a watcher',
+      lost: 'lost the goods and landed on a watcher\'s list',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
     outcomeEffects: {
