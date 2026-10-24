@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 00:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 01:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,11 +32,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 ready, 2 in progress.** The builder is still working on [a liege paying for its vassal's army](https://linear.app/threadbare/issue/THR-2020) (sworn free companies field an army on only 12–33% of their sworn days); its branch is pushed and the run was active a few minutes ago. Back on the shelf: [the encounter checker's second version](https://linear.app/threadbare/issue/THR-2012), which will see each encounter's stakes and judge the real test. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-24f.md)* The design lane closed two tickets whose calls you saw on 20–21 Oct ([warm brief v2](https://linear.app/threadbare/issue/THR-1861), [founding costs](https://linear.app/threadbare/issue/THR-2006)); nothing was vetoed.
+**Healthy: 10 ready, 2 in progress.** The builder is still working on [a liege paying for its vassal's army](https://linear.app/threadbare/issue/THR-2020) (sworn free companies field an army on only 12–33% of their sworn days); its branch is pushed and the run, started at 23:36 local, was active a few minutes ago. Back on the shelf: [the encounter checker's second version](https://linear.app/threadbare/issue/THR-2012), which will see each encounter's stakes and judge the real test. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-24f.md)* The design lane closed two tickets whose calls you saw on 20–21 Oct ([warm brief v2](https://linear.app/threadbare/issue/THR-1861), [founding costs](https://linear.app/threadbare/issue/THR-2006)); nothing was vetoed.
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, the PR queue (empty), all 12 scheduled lanes, and the builder (busy, not stalled). The live site serves the latest commit ([8ad288e1](https://github.com/christianspliid-ui/threadbare/commit/8ad288e1)). The worktree reaper ran at 00:51 local. Engine speed holds at 144 ms/tick, level with the 7-day median.
+All green. Main's CI, the three scheduled background jobs, the PR queue (empty), all 12 scheduled lanes, and the builder (busy, not stalled). The live site serves the latest commit ([8ad288e1](https://github.com/christianspliid-ui/threadbare/commit/8ad288e1)). The worktree reaper ran at 01:40 local. Engine speed is 130 ms/tick, 10% faster than the 7-day median (144).
