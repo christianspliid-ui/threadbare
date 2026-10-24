@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 14:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 15:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-24: the design lane closes a design request itself once its outputs are filed or a decision is recorded** ([THR-1888](https://linear.app/threadbare/issue/THR-1888)). Merged via [#2543](https://github.com/christianspliid-ui/threadbare/pull/2543).
+- **2026-10-24: war aims pick the nearest enemy town, with a distance discount a richer target can beat** ([THR-1970](https://linear.app/threadbare/issue/THR-1970)). Merged via [#2542](https://github.com/christianspliid-ui/threadbare/pull/2542) and live.
 - **2026-10-24: crown courtship — a realm courts a crown once per calendar day, on 84–97% of days** ([THR-1961](https://linear.app/threadbare/issue/THR-1961)). Merged via [#2540](https://github.com/christianspliid-ui/threadbare/pull/2540) and live.
 - **2026-10-24: the restless road — a followed mortal with no story nearby for six days sets out for one** ([THR-1959](https://linear.app/threadbare/issue/THR-1959)). Merged via [#2538](https://github.com/christianspliid-ui/threadbare/pull/2538) and live.
 - **2026-10-24: mortal wealth S3 — money encounters change prosperity, unrest, stocks, purses and debts** ([THR-1953](https://linear.app/threadbare/issue/THR-1953)). Merged via [#2537](https://github.com/christianspliid-ui/threadbare/pull/2537) and live.
@@ -52,8 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-24: stories come in a rhythm — the first slice of the encounter firing pass** ([THR-1218](https://linear.app/threadbare/issue/THR-1218)). Merged via [#2531](https://github.com/christianspliid-ui/threadbare/pull/2531) and live.
 - **2026-10-23: encounters take the Reach their test asks — 39 of the mislabel audit's 41 relabelled** ([THR-2010](https://linear.app/threadbare/issue/THR-2010)). Merged via [#2530](https://github.com/christianspliid-ui/threadbare/pull/2530) and live.
 - **2026-10-23: the reward draw rolls the rarity, then the kind, then the thing** ([THR-1997](https://linear.app/threadbare/issue/THR-1997)). Merged via [#2528](https://github.com/christianspliid-ui/threadbare/pull/2528) and live.
-- **2026-10-21: ordinary scenes stop recasting The First** ([THR-1993](https://linear.app/threadbare/issue/THR-1993/ordinary-scenes-stop-recasting-the-first-six-scenes-wait-for-a-mortal)). Merged via [#2526](https://github.com/christianspliid-ui/threadbare/pull/2526) and live.
-- **2026-10-21: four things the retired sheets showed are Inspector rows again** ([THR-1992](https://linear.app/threadbare/issue/THR-1992/four-things-the-retired-sheets-showed-that-no-inspector-page-shows-the)). Merged via [#2525](https://github.com/christianspliid-ui/threadbare/pull/2525) and live.
 
 ---
 

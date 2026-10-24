@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 14:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 15:58 local (13:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,12 +27,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 18 ready, 2 in progress.** The builder run that started at 11:58 UTC is still working, and has [war aims picking the nearest enemy town](https://linear.app/threadbare/issue/THR-1970) in progress (tuning the distance discount so a richer target can win).
+**Backed up: 16 ready, 2 in progress.** Since last hour, [war aims picking the nearest enemy town](https://linear.app/threadbare/issue/THR-1970) merged ([#2542](https://github.com/christianspliid-ui/threadbare/pull/2542)) and is live, and [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) merged ([#2543](https://github.com/christianspliid-ui/threadbare/pull/2543)). The builder run that started at 13:51 UTC is working on [hiring a free company](https://linear.app/threadbare/issue/THR-1974) (plan doc).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 9 days since it was first claimed. It waits on your answer above, not on the builder.
-- Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [the settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924). Most of that week is the silences above.
+- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) have not been touched for over a week. Most of that week is the silences above.
 
 ## Health
 
-- Engine speed: "tick cost 212 ms/tick steady, 48% above the 7-day median (144, 80 rows since e1a4e85e); top phase agent_decision, 602 agents. Name the merges between e1a4e85e and a992aee9: git log --oneline --merges e1a4e85e..a992aee9". The only merge since last hour's 179 ms reading is a notes-only change ([#2541](https://github.com/christianspliid-ui/threadbare/pull/2541)), and the builder was running on the same machine, so this reading may be load, not code. A job for the builder, not for you.
-- Everything else is green: main's CI and the three scheduled background jobs, every lane on schedule, no PR waiting to merge, the worktree reaper ran at 14:40, and the live site is current ([6cd08f61](https://github.com/christianspliid-ui/threadbare/commit/6cd08f61)).
+- Engine speed is back to normal: 160 ms per tick, 11% above the week's median. Last hour's 48% reading was load from the builder running on the same machine, not code.
+- Everything else is green: main's CI and the three scheduled background jobs, every lane on schedule, no PR waiting to merge, the worktree reaper ran at 15:40, and the live site is current ([5b4aa2f3](https://github.com/christianspliid-ui/threadbare/commit/5b4aa2f3)).
