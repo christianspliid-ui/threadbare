@@ -125,13 +125,33 @@ export function ageEnding(state: GameState, fallbacks: string[] = []): AgeEnding
   };
 }
 
-/** The First and their fate (Decided 4), or undefined when no First was bonded or their node is gone. */
+/**
+ * The First the god remembers after a death swept its `thread` edge
+ * (`markMortalDead` writes it on the god's node). Null when nothing was noted.
+ */
+function rememberedFirst(state: GameState): { id: string; name: string } | null {
+  const raw = state.graph.getNode(state.ascendantId)?.properties?.firstRemembered as { id?: unknown; name?: unknown } | undefined;
+  return raw && typeof raw.id === 'string' ? { id: raw.id, name: typeof raw.name === 'string' && raw.name.trim() ? raw.name : 'Your First' } : null;
+}
+
+/** The First and their fate (Decided 4), or undefined when no First was bonded. */
 export function firstFate(state: GameState): TwilightFirst | undefined {
   const graph = state.graph;
   const id = getFirstId(graph, state.ascendantId);
-  if (!id) return undefined;
-  const node = graph.getNode(id);
-  if (!node) return undefined;
+  if (!id || !graph.getNode(id)) {
+    // The thread is gone: a death swept it. An Aspect stays an Aspect (its echo keeps
+    // `aspect_of`); anyone else died before the age ended.
+    const remembered = rememberedFirst(state);
+    if (!remembered) return undefined;
+    const fate: FirstFate = graph.getNode(remembered.id) && isAspect(graph, remembered.id) ? 'aspect' : 'died';
+    return {
+      id: remembered.id,
+      name: remembered.name,
+      fate,
+      line: fate === 'aspect' ? TWILIGHT_WORDS.firstAspect(remembered.name) : TWILIGHT_WORDS.firstDied(remembered.name),
+    };
+  }
+  const node = graph.getNode(id)!;
   const name = node.name?.trim() || 'Your First';
   const fate: FirstFate = isAspect(graph, id)
     ? 'aspect'

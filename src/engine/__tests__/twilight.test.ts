@@ -17,6 +17,7 @@ import type { HarvestResult } from '../cycleEnd';
 import { concludeRun, emptyAccount } from '../accountRecord';
 import { phaseDoomExpiry, phaseMandate, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { getFirstId } from '../meetingEncounter';
+import { markMortalDead } from '../agentLifecycle';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
 import { buildTwilightBeats, captureAgeMemories, openTwilight } from '../twilight';
 import { ARCHETYPE_STAGE_NAMES } from '../../data/doom-content';
@@ -173,6 +174,23 @@ describe('THR-1381 E1 — the beats', () => {
 
     const unbonded = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, 42, undefined, 'small').state;
     expect(buildTwilightBeats(unbonded, harvestWith(unbonded, []), 1).first).toBeUndefined();
+  });
+
+  it('remembers a First whose death swept the thread: removed → died, an Aspect echo → Aspect', () => {
+    const removed = newWorld();
+    const id = getFirstId(removed.graph, removed.ascendantId)!;
+    const name = removed.graph.getNode(id)!.name;
+    markMortalDead(removed.graph, id, 50, { cause: 'test', mode: 'remove' } as never);
+    expect(removed.graph.getNode(id)).toBeUndefined();
+    const gone = buildTwilightBeats(removed, harvestWith(removed, []), 1).first;
+    expect(gone).toMatchObject({ id, fate: 'died', line: `${name}, your First, died before the age ended.` });
+
+    const aspect = newWorld();
+    const aid = getFirstId(aspect.graph, aspect.ascendantId)!;
+    aspect.graph.addEdge({ id: 'aspect_echo_test', source: aspect.ascendantId, target: aid, type: 'aspect_of', properties: { attainedTick: 1 } });
+    markMortalDead(aspect.graph, aid, 60, { cause: 'test', mode: 'retain' } as never);
+    expect(getFirstId(aspect.graph, aspect.ascendantId)).toBeNull();
+    expect(buildTwilightBeats(aspect, harvestWith(aspect, []), 1).first?.fate).toBe('aspect');
   });
 
   it('captures the memories in order — ending, leaning, mark — with the exact lines', () => {
