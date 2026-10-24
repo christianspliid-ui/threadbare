@@ -6,6 +6,10 @@
  *     non-enemy's town or a town the besieger keeps a hall in (both must be 0);
  *   - not just the nearest: of picks scoring ≥ 2 candidates, the share that chose a town
  *     other than the nearest (≥ 50%);
+ *   - value wins (THR-1970): of those picks where some in-reach town is worth more than the
+ *     nearest before the distance discount (`richerThanNearest`), the share that chose a
+ *     town other than the nearest (≥ 50%) — the raw share above also counts picks where the
+ *     nearest is the richest, which no distance discount should overturn;
  *   - in reach: picks whose town resolves no supply line, counted only while
  *     WAR_AIM_REQUIRE_SUPPLY_REACH is on (off since the kill criterion fired);
  *   - holds speak: armies with no objective (outside a battle) and no hold reason (must be 0);
@@ -13,7 +17,7 @@
  *     from their conquer target (must be 0);
  *   - defence turns and re-aims by why, armies seen, and the cost of one re-aim pass.
  *
- * Usage: npm run measure:war-aims [-- --seeds 42,99,7 --ticks 600 --map medium]
+ * Usage: npm run measure:war-aims [-- --seeds 42,99,7 --ticks 600 --map medium --verbose]
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -41,6 +45,8 @@ function argValue(flag: string): string | undefined {
 const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
 const TICKS = Number(argValue('--ticks') ?? 600);
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
+/** THR-1970 — print every contested pick's top candidates (`*` marks the nearest). */
+const VERBOSE = process.argv.includes('--verbose');
 
 interface SeedReport {
   seed: number;
@@ -50,6 +56,8 @@ interface SeedReport {
   picksOutOfReach: number;
   multiCandidatePicks: number;
   notNearest: number;
+  richerAvailable: number;
+  valueWins: number;
   holds: number;
   defends: number;
   reaims: Record<string, number>;
@@ -73,7 +81,7 @@ function runSeed(seed: number): SeedReport {
 
   const r: SeedReport = {
     seed, armiesSeen: 0, picks: 0, picksNonEnemy: 0, picksOutOfReach: 0, multiCandidatePicks: 0,
-    notNearest: 0, holds: 0, defends: 0, reaims: {}, battlesSeen: 0, siegesSeen: 0, siegesNonEnemy: 0, siegesOwnHall: 0,
+    notNearest: 0, richerAvailable: 0, valueWins: 0, holds: 0, defends: 0, reaims: {}, battlesSeen: 0, siegesSeen: 0, siegesNonEnemy: 0, siegesOwnHall: 0,
     silentHolds: 0, ambitionMismatch: 0, reaimPassMs: [],
   };
   const armies = new Set<string>();
@@ -96,6 +104,16 @@ function runSeed(seed: number): SeedReport {
         if (Number(t.candidates) >= 2) {
           r.multiCandidatePicks++;
           if (t.townId !== t.nearestEnemyTownId) r.notNearest++;
+          if (t.richerThanNearest === true) {
+            r.richerAvailable++;
+            if (t.townId !== t.nearestEnemyTownId) r.valueWins++;
+          }
+          if (VERBOSE) {
+            const as = g.getNode(String(t.armyId))?.properties.armyState as ArmyState | undefined;
+            const cands = (as?.warAimCandidates ?? [])
+              .map(c => `${c.townId}${c.townId === t.nearestEnemyTownId ? '*' : ''} v${c.value.toFixed(1)} b${c.bonuses.toFixed(2)} h${c.hexes} s${c.score.toFixed(2)}`);
+            console.log(`  seed ${seed} t${state.tick} ${t.armyId} → ${t.townId} (${t.reason}) of ${t.candidates}: ${cands.join(' | ')}`);
+          }
         }
       } else if (t.category === 'war.aim.hold') r.holds++;
       else if (t.category === 'war.aim.defend') r.defends++;
@@ -151,14 +169,20 @@ function runSeed(seed: number): SeedReport {
   return r;
 }
 
+const total = { contested: 0, notNearest: 0, richerAvailable: 0, valueWins: 0 };
 for (const seed of SEEDS) {
   const r = runSeed(seed);
+  total.contested += r.multiCandidatePicks;
+  total.notNearest += r.notNearest;
+  total.richerAvailable += r.richerAvailable;
+  total.valueWins += r.valueWins;
   const ms = [...r.reaimPassMs].sort((a, b) => a - b);
   const median = ms.length ? ms[Math.floor(ms.length / 2)] : 0;
   const max = ms.length ? ms[ms.length - 1] : 0;
   console.log(`seed ${r.seed}: armies ${r.armiesSeen} · picks ${r.picks} (non-enemy ${r.picksNonEnemy}, out of reach ${r.picksOutOfReach})`
-    + ` · not nearest ${r.notNearest}/${r.multiCandidatePicks} · holds ${r.holds} · defends ${r.defends}`
+    + ` · not nearest ${r.notNearest}/${r.multiCandidatePicks} · value wins ${r.valueWins}/${r.richerAvailable} · holds ${r.holds} · defends ${r.defends}`
     + ` · field battles ${r.battlesSeen} · sieges ${r.siegesSeen} (non-enemy ${r.siegesNonEnemy}, own hall ${r.siegesOwnHall})`
     + ` · silent holds ${r.silentHolds} · ambition mismatch ${r.ambitionMismatch}`
     + ` · re-aims ${JSON.stringify(r.reaims)} · pass ms median ${median.toFixed(2)} max ${max.toFixed(2)}`);
 }
+console.log(`all seeds: not nearest ${total.notNearest}/${total.contested} · value wins ${total.valueWins}/${total.richerAvailable}`);

@@ -30,10 +30,10 @@ import type { RealmProjection } from './realmProjection';
 import { buildRealmProjection } from './realmProjection';
 import { emitTrace } from './traceBuffer';
 import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
-import { WAR_AIMS_ENABLED, WAR_AIM_REAIM_INTERVAL_TICKS } from '../data/war-aims-constants';
+import { WAR_AIMS_ENABLED, WAR_AIM_REAIM_INTERVAL_TICKS, WAR_AIM_HALF_VALUE_HEXES } from '../data/war-aims-constants';
 import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
-import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick } from './warAims/score';
+import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick, type ScoredTown } from './warAims/score';
 import { findThreatToDefend, type DefenceTarget } from './warAims/defence';
 import { campaignTargetOf, isEnemyFaction } from './warAims/enemy';
 
@@ -111,9 +111,21 @@ function writeAmbitionTarget(graph: WorldGraph, armyId: string, objective: ArmyO
   graph.updateNode(amb.id, { properties: { targetNodeId: objective.targetNodeId } });
 }
 
+/** THR-1970 — relative margin a town's worth must clear to read richer than the nearest's. */
+const RICHER_WORTH_TOLERANCE = 1e-9;
+
 function tracePicked(state: GameState, armyId: string, factionId: string, pick: WarAimPick): void {
   const best = pick.scored[0];
   if (pick.objective && best) {
+    // THR-1970 — whether value could beat distance on this pick: some in-reach town is
+    // worth more than the nearest before the distance discount. Undoing the discount on
+    // the score keeps every multiplier the pick used (bonuses and the revenge focus).
+    const worth = (s: ScoredTown) => s.score * (1 + s.hexes / WAR_AIM_HALF_VALUE_HEXES);
+    const nearest = pick.scored.find(s => s.townId === pick.nearestEnemyTownId);
+    // The round trip through the discount leaves float noise; equal worths must not read as richer.
+    const richerThanNearest = nearest
+      ? pick.scored.some(s => worth(s) > worth(nearest) * (1 + RICHER_WORTH_TOLERANCE))
+      : false;
     emitTrace({
       tick: state.tick,
       category: 'war.aim.picked',
@@ -128,6 +140,7 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
       score: best.score,
       candidates: pick.scored.length,
       nearestEnemyTownId: pick.nearestEnemyTownId,
+      richerThanNearest,
     });
   } else {
     emitTrace({
