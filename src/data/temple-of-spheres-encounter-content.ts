@@ -1854,7 +1854,7 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
     stakes: {
       goal: 'argue what the spheres foretell for the year ahead',
       risk: 'be told their reading of the omens is lopsided',
-      won: 'argued the omens well and moved the room toward their reading',
+      won: 'argued the omens well and won the room to their reading',
       lost: 'read the omens through one sphere only and were corrected',
     },
     name: 'Theological Debate',

@@ -1074,7 +1074,7 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
     stakes: {
       goal: 'learn the mark\'s bolt-holes without tipping them off',
       risk: 'watch the plan dissolve into argument',
-      won: 'learned the mark\'s bolt-holes and planned the hunt with a guildmate',
+      won: 'learned the mark\'s bolt-holes and planned the hunt',
       lost: 'watched the plan dissolve into argument',
     },
     name: 'Plan a Guild Bounty',
