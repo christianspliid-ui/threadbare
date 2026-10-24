@@ -52,7 +52,7 @@ interface SeedReport {
   seed: number;
   firstCrownDay: number | null;
   crownInWindow: boolean;
-  oathShareAtDay60: { crown: string; share: number }[];
+  oathShareAtDay60: { crown: string; share: number; vassals: number; ageDays: number }[];
   sworn: Record<string, number>;
   broken: Record<string, number>;
   independentShareDay90: number | null;
@@ -74,6 +74,9 @@ function runSeed(seed: number): SeedReport {
     independentShareDay90: null, oneLayerViolations: 0, courtshipRate: [], negativeWealth: 0,
   };
   const seen = new Map<string, string>(); // edge id → kind
+  // THR-2017 — the day each realm became a Crown (reset when it falls below), so the
+  // day-60 share can be read against how long the Crown has stood.
+  const crownSince = new Map<string, number>();
   // THR-1961 — courtship counts calendar days (day = floor(tick / TICKS_PER_DAY)), the
   // same days the window rule keys on. The old count read a rolling 12-tick window ending
   // at each day's first tick, which straddles two calendar days and missed every day
@@ -119,6 +122,8 @@ function runSeed(seed: number): SeedReport {
 
     for (const f of factions) {
       if (typeof f.properties.wealth === 'number' && f.properties.wealth < 0) report.negativeWealth++;
+      if (!isCrown(g, f.id)) crownSince.delete(f.id);
+      else if (!crownSince.has(f.id)) crownSince.set(f.id, day);
       if (isCrown(g, f.id)) {
         if (report.firstCrownDay === null) report.firstCrownDay = day;
         if (day >= 15 && day <= 45) report.crownInWindow = true;
@@ -131,7 +136,10 @@ function runSeed(seed: number): SeedReport {
         const pd = readPurseDay(f);
         const own = pd ? totalIncome(pd.income) : 0;
         const oath = pd?.fealtyIn ?? 0;
-        report.oathShareAtDay60.push({ crown: f.name ?? f.id, share: own + oath > 0 ? oath / (own + oath) : 0 });
+        report.oathShareAtDay60.push({
+          crown: f.name ?? f.id, share: own + oath > 0 ? oath / (own + oath) : 0,
+          vassals: vassalsOf(g, f.id).length, ageDays: day - (crownSince.get(f.id) ?? day),
+        });
       }
     }
     if (day === 90) {
@@ -190,7 +198,7 @@ for (const seed of SEEDS) {
   const r = runSeed(seed);
   console.log(`\n== seed ${seed} (${((Date.now() - t0) / 1000).toFixed(0)}s) ==`);
   console.log(`first crown day: ${r.firstCrownDay ?? 'none'} · crown in day 15–45: ${r.crownInWindow}`);
-  console.log(`oath share at day 60: ${r.oathShareAtDay60.map(o => `${o.crown} ${(o.share * 100).toFixed(0)}%`).join(', ') || 'no crown'}`);
+  console.log(`oath share at day 60: ${r.oathShareAtDay60.map(o => `${o.crown} ${(o.share * 100).toFixed(0)}% (${o.vassals} vassals, crowned ${o.ageDays}d)`).join(', ') || 'no crown'}`);
   console.log(`sworn ${JSON.stringify(r.sworn)} · broken ${JSON.stringify(r.broken)}`);
   console.log(`independent at day 90: ${r.independentShareDay90 === null ? 'n/a' : `${(r.independentShareDay90 * 100).toFixed(0)}%`}`);
   console.log(`one-layer violations: ${r.oneLayerViolations} · negative wealth readings: ${r.negativeWealth}`);
