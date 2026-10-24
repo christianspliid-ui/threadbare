@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-10-24 01:57 local (23:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 08:08 local (06:08 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Set the Claude app to open when Windows starts.** The longest gap so far just ended: no lane ran from about 23:07 Wednesday 21 Oct until 23:11 Friday 23 Oct. That is two whole days, with 20 jobs ready for the builder. The lanes all came back in the same second, which is what it looks like when the app reopens. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
+**Set the Claude app to open when Windows starts.** The longest gap so far ended last night: no lane ran from about 23:07 Wednesday 21 Oct until 23:11 Friday 23 Oct. That is two whole days, with 20 jobs ready for the builder. The lanes all came back in the same second, which is what it looks like when the app reopens. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
 ## Also waiting (7)
 
@@ -19,13 +19,14 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Queue
 
-**Backed up: 22 ready, 2 in progress.** The builder is still building [the encounter firing pruning pass](https://linear.app/threadbare/issue/THR-1218) (run started 22:31 UTC, active a minute before this brief). New on the shelf since last hour: [the god's stake S3 — Fortune's Favour, Ruin and Bless the Holding in the omen market](https://linear.app/threadbare/issue/THR-1969), promoted by the orchestrator.
+**Backed up: 22 ready, 1 in progress (parked).** Overnight, [the first slice of the encounter firing pass](https://linear.app/threadbare/issue/THR-1218) merged ([#2531](https://github.com/christianspliid-ui/threadbare/pull/2531)) and is live. The builder started a new run at 06:04 UTC and is choosing its next job. The lanes were quiet from about 02:04 to 08:04 local; that is overnight, so it is not an ask.
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 8 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch or named local worktree for it (checked this run).
 - Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961). Most of that week is the silences above.
 
 ## Health
 
-- **Heavy tests red on main since 21:40 UTC** (one appointment test lost its target after the reward-draw merge); ticket [THR-2015](https://linear.app/threadbare/issue/THR-2015) is on the builder's shelf.
-- **PR stuck:** [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) (the CI/CD review's own tweak, about 2 h old) has a merge conflict, and GitHub has scheduled no checks on it. The builder's unstick duty owns it.
-- Everything else is green: every lane is on schedule, main's CI and the three scheduled background jobs are healthy, engine speed is back inside its normal band, and the live site is current ([cf6fb7de](https://github.com/christianspliid-ui/threadbare/commit/cf6fb7de)).
+- **Heavy tests are green on main again** (passed on the [THR-1218 merge](https://github.com/christianspliid-ui/threadbare/commit/c5acdb59)). The fix ticket [THR-2015](https://linear.app/threadbare/issue/THR-2015) is still on the shelf; the builder should confirm the test passes and close it, or find that it only passes by chance.
+- **PR stuck:** [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) (the CI/CD review's own tweak, about 8 h old) has a merge conflict, and GitHub has scheduled no checks on it. The builder's unstick duty owns it.
+- **The worktree cleaner last ran at 01:40 local**, more than 6 hours ago. That matches the overnight quiet (it runs on the same computer). If it has not run by the next brief, that is a fault.
+- Everything else is green: every lane is on schedule, main's CI and the three scheduled background jobs are healthy, engine speed is normal (117 ms per tick, below the week's median), and the live site is current ([c5acdb59](https://github.com/christianspliid-ui/threadbare/commit/c5acdb59)).
