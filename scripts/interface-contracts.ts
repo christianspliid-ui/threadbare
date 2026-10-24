@@ -1988,7 +1988,7 @@ export const CONTRACTS: readonly Contract[] = [
     ulTerms: ['Aftermath'],
     mechanism: { kind: 'node-prop', symbols: ['digestBuffer', 'castLine', 'castDigestEntry', 'composeThreadStory'] },
     writeSites: ['src/engine/unifiedActionResolution.ts'],
-    readSites: ['src/engine/threadDigest.ts', 'src/components/Game/hooks/useThreadStorySoFar.ts', 'src/debug-bridge.ts'],
+    readSites: ['src/engine/threadDigest.ts', 'src/engine/views/subjects/personRows.ts', 'src/debug-bridge.ts'],
   },
   {
     id: 'active-influences-render-on-sheet',
@@ -5518,7 +5518,6 @@ export const CONTRACTS: readonly Contract[] = [
     ],
     readSites: [
       'src/engine/views/stage/buildLairMonsterCardModel.ts',
-      'src/components/Game/lair/LairMonsterCard.tsx',
       // THR-1992: the lair's place page (lair_monster) and the land page's Lair row.
       'src/engine/views/subjects/placeRows.ts',
       'src/engine/views/landIndex.ts',
@@ -6950,7 +6949,7 @@ export const CONTRACTS: readonly Contract[] = [
     // THR-1974: and armiesPaidByLiege / wagesFromLiege / wagesToVassals; the next pay day's
     // Means band counts the liege's wagesToVassals as upkeep.
     writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts', 'src/engine/phaseFactionActions.ts', 'src/engine/crown.ts'],
-    readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/engine/views/subjects/factionRows.ts', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/components/Game/debug/EconomyDebugTab.tsx'],
+    readSites: ['src/engine/views/subjects/factionRows.ts', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/components/Game/debug/EconomyDebugTab.tsx'],
     verifiedLive: {
       date: '2026-10-16',
       evidence:
@@ -6997,8 +6996,6 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: [
       'src/engine/crown/crownView.ts',
       'src/engine/crown/fealtySentences.ts',
-      'src/components/Game/FactionFealty.tsx',
-      'src/components/Game/FactionPursePanel.tsx',
       'src/components/Game/debug/EconomyDebugTab.tsx',
       'src/debug-bridge.ts',
     ],
@@ -7056,8 +7053,6 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/crown/eligibility.ts',
       'src/engine/crown/fealtySentences.ts',
       'src/engine/warAims/sheetView.ts',
-      'src/components/Game/FactionFealty.tsx',
-      'src/components/Game/FactionPursePanel.tsx',
       'src/components/Game/debug/EconomyDebugTab.tsx',
       'src/components/Game/debug/ArmiesTabContent.tsx',
       'src/debug-bridge.ts',
@@ -7123,7 +7118,6 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/factionPurse/income.ts',
       'src/engine/warAims/townValue.ts',
       'src/engine/embargo.ts',
-      'src/components/Game/FactionPursePanel.tsx',
       'src/engine/views/lenses/tradeLens.ts',
     ],
     verifiedLive: {

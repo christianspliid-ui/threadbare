@@ -8,10 +8,9 @@ import {
   getLineOfSight,
   getLocationConnections,
 } from '../hexZoom';
-import { getPolygonVertices } from '../../lib/polygonLayout';
 
 describe('Hex Zoom integration', () => {
-  it('full hex zoom flow: locations → agents → layout → connections → sight', () => {
+  it('full hex zoom flow: locations → agents → connections → sight', () => {
     const graph = new WorldGraph();
 
     // Create 3 locations in hex (5, 3)
@@ -47,23 +46,14 @@ describe('Hex Zoom integration', () => {
     const agentsA = getAgentsAtLocation(graph, 'loc.a');
     expect(agentsA).toHaveLength(2); // Agent1 + Avatar
 
-    // 3. Compute polygon layout
-    const vertices = getPolygonVertices(locs.length, 300, 300, 170);
-    expect(vertices).toHaveLength(3);
-    // Triangle: all points equidistant from center
-    for (const v of vertices) {
-      const dist = Math.sqrt((v.x - 300) ** 2 + (v.y - 300) ** 2);
-      expect(dist).toBeCloseTo(170);
-    }
-
-    // 4. Get connections
+    // 3. Get connections
     const connections = getLocationConnections(graph, locIds);
     expect(connections).toHaveLength(2); // a→b and b→c
 
-    // 5. Check line of sight
+    // 4. Check line of sight
     expect(getLineOfSight(graph, 'asc.1', { col: 5, row: 3 })).toBe('full');
 
-    // 6. Sphere influence
+    // 5. Sphere influence
     const influence = getHexSphereInfluence(graph, 5, 3);
     expect(influence.mind).toBeCloseTo(0.3); // 3 locations × 0.1
   });

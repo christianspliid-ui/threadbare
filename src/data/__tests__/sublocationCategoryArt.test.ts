@@ -41,7 +41,6 @@ import {
   getSublocationCategoryArtUrl,
   getSublocationArtUrl,
 } from '../sublocation-category-art';
-import { SUBLOCATION_CONCEPT_ART } from '../sublocation-concept-art';
 
 /** Seed shared with the CLI smoke path, so a failure here reproduces there. */
 const TEST_SEED = 42;
@@ -227,18 +226,5 @@ describe('sublocation category art — coverage against a seeded world', () => {
       return Array.isArray(tags) && tags.some(t => t in SUBLOCATION_CATEGORY_ART);
     });
     expect(withUsableTags.length).toBeLessThan(sublocationNodes.length);
-  });
-
-  it('reaches more of the population than the legacy gradient table did', () => {
-    // The concrete win, stated as an assertion rather than a comment: the
-    // 12-entry `sublocation-concept-art.ts` table matches a minority of live
-    // nodes (its `tavern` entry matches none at all — the genome seeds `inn`).
-    const legacyKeys = new Set(Object.keys(SUBLOCATION_CONCEPT_ART));
-    const legacyCovered = sublocationNodes.filter(n =>
-      legacyKeys.has(n.properties.sublocationTypeId as string),
-    ).length;
-
-    expect(legacyCovered).toBeLessThan(sublocationNodes.length / 2);
-    expect(sublocationNodes.length).toBeGreaterThan(legacyCovered * 2);
   });
 });
