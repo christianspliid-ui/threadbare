@@ -11,6 +11,8 @@
  *   - no faction's wealth below 0.
  *
  * Usage: npm run measure:crown [-- --seeds 42,99,7 --ticks 1080 --map medium]
+ *        npm run measure:crown -- --seeds 42 --ticks 240 --trace   (THR-1961: one realm's
+ *        `can_court` verdicts and `faction_action` traces, sweep by sweep)
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -23,8 +25,15 @@ import { isCrown, vassalsOf, readOath } from '../src/engine/crown/crownView';
 import { isSwearableKind, mayCourt } from '../src/engine/crown/eligibility';
 import { readPurseDay } from '../src/engine/factionPurse';
 import { totalIncome } from '../src/engine/factionPurse/income';
-import type { FactionActionRecord } from '../src/types/factionAction';
+import { FACTION_ACTION_INTERVAL } from '../src/types/factionAction';
+import type { FactionActionRecord, FactionActionTrace } from '../src/types/factionAction';
+import type { GameState } from '../src/types/gameState';
 import { TICKS_PER_DAY } from '../src/data/attention-constants';
+import { canCourt } from '../src/engine/crown';
+import { buildCrownWorld } from '../src/engine/crown/eligibility';
+import { buildRealmProjection } from '../src/engine/realmProjection';
+import { seekFealtyWindowOpen } from '../src/engine/phaseFactionActions';
+import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
 
 function argValue(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -34,6 +43,10 @@ function argValue(flag: string): string | undefined {
 const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
 const TICKS = Number(argValue('--ticks') ?? 1080);
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
+/** `--trace`: print the first court-eligible realm's sweeps for the first TRACE_TICKS ticks. */
+const TRACE = process.argv.includes('--trace');
+const TRACE_TICKS = Number(argValue('--trace-ticks') ?? 240);
+if (TRACE) enableTracing();
 
 interface SeedReport {
   seed: number;
@@ -61,11 +74,30 @@ function runSeed(seed: number): SeedReport {
     independentShareDay90: null, oneLayerViolations: 0, courtshipRate: [], negativeWealth: 0,
   };
   const seen = new Map<string, string>(); // edge id → kind
-  const courtDays = new Map<string, { days: number; courted: number }>();
+  // THR-1961 — courtship counts calendar days (day = floor(tick / TICKS_PER_DAY)), the
+  // same days the window rule keys on. The old count read a rolling 12-tick window ending
+  // at each day's first tick, which straddles two calendar days and missed every day
+  // whose only sweep was blocked by a courtship on the previous calendar day's first tick.
+  const eligibleDays = new Map<string, Set<number>>();
+  const courtedDays = new Map<string, Set<number>>();
+  const traceRealm = TRACE ? { id: null as string | null } : null;
 
   for (let i = 0; i < TICKS; i++) {
+    if (traceRealm && state.tick + 1 <= TRACE_TICKS) tracePreTick(state, traceRealm);
     state = runTick(state, [], runtime);
     const g = state.graph;
+    const dayOfTick = Math.floor(state.tick / TICKS_PER_DAY);
+    for (const f of g.getNodesByType('actor')) {
+      if (f.properties.actorType !== 'faction' || !mayCourt(g, f)) continue;
+      if (!eligibleDays.has(f.id)) eligibleDays.set(f.id, new Set());
+      eligibleDays.get(f.id)!.add(dayOfTick);
+      const hist = (f.properties.factionActionHistory as FactionActionRecord[] | undefined) ?? [];
+      if (hist.some(r => r.actionType === 'seek_fealty' && r.executedTick === state.tick)) {
+        if (!courtedDays.has(f.id)) courtedDays.set(f.id, new Set());
+        courtedDays.get(f.id)!.add(dayOfTick);
+      }
+    }
+    if (traceRealm && state.tick <= TRACE_TICKS) tracePostTick(state, traceRealm);
 
     // One layer, every tick.
     for (const e of g.getEdgesByType('sworn_to')) {
@@ -91,14 +123,6 @@ function runSeed(seed: number): SeedReport {
         if (report.firstCrownDay === null) report.firstCrownDay = day;
         if (day >= 15 && day <= 45) report.crownInWindow = true;
       }
-      // Courtship: did a court-eligible realm run seek_fealty today?
-      if (mayCourt(g, f)) {
-        const c = courtDays.get(f.id) ?? { days: 0, courted: 0 };
-        c.days++;
-        const hist = (f.properties.factionActionHistory as FactionActionRecord[] | undefined) ?? [];
-        if (hist.some(r => r.actionType === 'seek_fealty' && r.executedTick > state.tick - TICKS_PER_DAY)) c.courted++;
-        courtDays.set(f.id, c);
-      }
     }
 
     if (day === 60) {
@@ -116,8 +140,49 @@ function runSeed(seed: number): SeedReport {
       report.independentShareDay90 = eligible.length > 0 ? independent.length / eligible.length : null;
     }
   }
-  report.courtshipRate = [...courtDays].map(([realm, c]) => ({ realm, ...c }));
+  // Only whole days count: the run's last, partial day is dropped.
+  const lastWholeDay = Math.floor(state.tick / TICKS_PER_DAY) - (state.tick % TICKS_PER_DAY === TICKS_PER_DAY - 1 ? 0 : 1);
+  report.courtshipRate = [...eligibleDays].map(([realm, days]) => {
+    const whole = [...days].filter(d => d <= lastWholeDay);
+    const courted = courtedDays.get(realm) ?? new Set<number>();
+    return { realm, days: whole.length, courted: whole.filter(d => courted.has(d)).length };
+  });
   return report;
+}
+
+// ─── --trace: one realm's sweeps, verdict by verdict (THR-1961) ─────────────────
+
+/** Before each faction sweep: the realm's `can_court` verdict as the sweep will see it. */
+function tracePreTick(state: GameState, t: { id: string | null }): void {
+  const tick = state.tick + 1;
+  if (tick % FACTION_ACTION_INTERVAL !== 0) return;
+  const g = state.graph;
+  if (!t.id) {
+    const realm = g.getNodesByType('actor').find(f => f.properties.actorType === 'faction' && mayCourt(g, f));
+    if (!realm) return;
+    t.id = realm.id;
+    console.log(`\n-- trace: ${realm.name ?? realm.id} (${realm.id}), sweeps every ${FACTION_ACTION_INTERVAL} ticks, day = ${TICKS_PER_DAY} ticks --`);
+  }
+  const realm = g.getNode(t.id);
+  if (!realm) return;
+  const world = buildCrownWorld(g, tick, buildRealmProjection(g, state.tiles ?? []));
+  const hist = (realm.properties.factionActionHistory as FactionActionRecord[] | undefined) ?? [];
+  const window = seekFealtyWindowOpen(hist, tick);
+  console.log(`tick ${String(tick).padStart(3)} day ${String(Math.floor(tick / TICKS_PER_DAY)).padStart(2)}`
+    + ` · can_court ${canCourt(world, t.id) && window ? 'yes' : 'no'}`
+    + ` (candidates ${canCourt(world, t.id) ? 'yes' : 'no'}, window ${window ? 'open' : 'closed'})`);
+}
+
+/** After the tick: the realm's `faction_action` trace, if it acted. */
+function tracePostTick(state: GameState, t: { id: string | null }): void {
+  if (!t.id || state.tick % FACTION_ACTION_INTERVAL !== 0) return;
+  for (const tr of getTraces()) {
+    if (tr.tick !== state.tick || tr.category !== 'faction_action') continue;
+    const fa = tr as FactionActionTrace;
+    if (fa.factionId !== t.id) continue;
+    console.log(`         faction_action ${fa.outcome} ${fa.actionType}${fa.targetName ? ` → ${fa.targetName}` : ''}`);
+  }
+  clearTraces();
 }
 
 for (const seed of SEEDS) {

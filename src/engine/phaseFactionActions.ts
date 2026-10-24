@@ -67,7 +67,7 @@ import { ensureRealmProjection, touchStructure } from './simulationRuntime';
 import { buildRealmProjection } from './realmProjection';
 import { canCourt, crownActive, executeSeekFealty } from './crown';
 import { buildCrownWorld, type CrownWorld } from './crown/eligibility';
-import { SEEK_FEALTY_WEIGHT, SEEK_FEALTY_COOLDOWN_TICKS } from '../data/crown-constants';
+import { SEEK_FEALTY_WEIGHT, SEEK_FEALTY_WINDOW_TICKS } from '../data/crown-constants';
 import { planEmbargo, executeEmbargo } from './embargo';
 import { realmBorderMap } from './realmBorderMap';
 import { EMBARGO_WEIGHT, EMBARGO_COOLDOWN_TICKS } from '../data/regional-monopoly-constants';
@@ -154,7 +154,9 @@ export const FACTION_ACTION_TEMPLATES: ReadonlyMap<FactionActionType, FactionAct
     type: 'seek_fealty',
     name: 'Seek Fealty',
     treasuryCost: 0,
-    cooldownTicks: SEEK_FEALTY_COOLDOWN_TICKS,
+    // THR-1961 — no rolling cooldown: the `can_court` prerequisite holds the realm to
+    // one courtship per calendar day (SEEK_FEALTY_WINDOW_TICKS).
+    cooldownTicks: 0,
     // Realms lose members (THR-1918); a realm with none still courts.
     minMembers: 0,
     ambitionAffinity: ['territorial_expansion', 'defensive_consolidation'],
@@ -298,6 +300,16 @@ function ticksSinceActionType(
   return last === null ? Infinity : currentTick - last;
 }
 
+/**
+ * THR-1961 — true when the realm has not run `seek_fealty` in the calendar window that
+ * holds `tick` (window = floor(tick / SEEK_FEALTY_WINDOW_TICKS), one day).
+ */
+export function seekFealtyWindowOpen(history: readonly FactionActionRecord[], tick: number): boolean {
+  const window = Math.floor(tick / SEEK_FEALTY_WINDOW_TICKS);
+  return !history.some(r => r.actionType === 'seek_fealty'
+    && Math.floor(r.executedTick / SEEK_FEALTY_WINDOW_TICKS) === window);
+}
+
 /** Check a faction action prerequisite. Returns true if the action is eligible. */
 function checkPrerequisite(
   state: GameState,
@@ -311,6 +323,8 @@ function checkPrerequisite(
       if (!crownActive()) return false;
       const node = state.graph.getNode(factionId);
       if (node?.properties.factionClass !== 'realm') return false;
+      const history = (node.properties.factionActionHistory as FactionActionRecord[] | undefined) ?? [];
+      if (!seekFealtyWindowOpen(history, state.tick)) return false;
       return canCourt(crownWorldFor(state, sweep), factionId);
     }
     case 'no_active_conclave': {
