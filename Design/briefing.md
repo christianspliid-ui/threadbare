@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 18:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 19:57 local (17:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,12 +27,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 15 ready, 2 in progress.** Three merges this hour: the heavy-tests fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019), [#2545](https://github.com/christianspliid-ui/threadbare/pull/2545)), the dead-module sweep ([THR-1991](https://linear.app/threadbare/issue/THR-1991), [#2546](https://github.com/christianspliid-ui/threadbare/pull/2546)), and own land-page pictures for volcano, glacier, lake/river and dead forest ([THR-1998](https://linear.app/threadbare/issue/THR-1998), [#2547](https://github.com/christianspliid-ui/threadbare/pull/2547), merged 16:55 UTC; the board closes it on its own). A new tuning job joined the shelf: [a liege pays to raise its hired company's army](https://linear.app/threadbare/issue/THR-2020).
+**Healthy: 14 ready, 2 in progress.** One merge this hour: encounter debts now end when their term does, and the sheet shows the time left ([THR-1999](https://linear.app/threadbare/issue/THR-1999), [#2548](https://github.com/christianspliid-ui/threadbare/pull/2548), merged 19:36 local and live). The builder is working again now. A small content fix joined the shelf: [a lake's land page still reads like a desert](https://linear.app/threadbare/issue/THR-2021).
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. No work is sitting unsaved anywhere for it. It waits on your answer above, not on the builder.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-- Heavy tests still show red on main from the 13:18 UTC run. The fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019)) merged at 16:02 UTC; the checks on the two merges right after it were cancelled by newer merges, and the check on [1977121f](https://github.com/christianspliid-ui/threadbare/commit/1977121f) is running now. No new ticket: the failure is already fixed. The live game is not affected.
-- Everything else is green: main's CI, the three scheduled background jobs, all 13 scheduled lanes on time, no PR stuck, engine speed normal (141 ms/tick, −2% on the week's median), the worktree reaper ran at 18:40 local, and the live site was current at [1977121f](https://github.com/christianspliid-ui/threadbare/commit/1977121f) (the 16:55 merge is still deploying).
+- Heavy tests have not passed on main since the 13:18 UTC red run. The fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019)) merged at 16:02 UTC, the next two runs were cancelled by newer merges, and the run on [9f95acf2](https://github.com/christianspliid-ui/threadbare/commit/9f95acf2) is in progress now. No new ticket: the failure is already fixed. The live game is not affected.
+- Everything else is green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the PR queue are all fine (no PR waiting). Engine speed is normal: 153 ms/tick, +6% on the week's median. The worktree reaper ran at 19:40 local. The live site is serving the newest commit on main ([9f95acf2](https://github.com/christianspliid-ui/threadbare/commit/9f95acf2)).

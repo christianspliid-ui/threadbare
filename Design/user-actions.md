@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 19:57 local (17:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-24: encounter debts end when their term does, and the sheet shows the time left** ([THR-1999](https://linear.app/threadbare/issue/THR-1999)). Merged via [#2548](https://github.com/christianspliid-ui/threadbare/pull/2548) and live.
 - **2026-10-24: volcano, glacier, lake/river and dead forest get land-page pictures of their own** ([THR-1998](https://linear.app/threadbare/issue/THR-1998)). Merged via [#2547](https://github.com/christianspliid-ui/threadbare/pull/2547).
 - **2026-10-24: the settlement's notable is a place-page row again; modules nothing used are deleted** ([THR-1991](https://linear.app/threadbare/issue/THR-1991)). Merged via [#2546](https://github.com/christianspliid-ui/threadbare/pull/2546).
 - **2026-10-24: heavy tests fixed after the war-aims merge** ([THR-2019](https://linear.app/threadbare/issue/THR-2019)). Merged via [#2545](https://github.com/christianspliid-ui/threadbare/pull/2545).
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-24: crown courtship — a realm courts a crown once per calendar day, on 84–97% of days** ([THR-1961](https://linear.app/threadbare/issue/THR-1961)). Merged via [#2540](https://github.com/christianspliid-ui/threadbare/pull/2540) and live.
 - **2026-10-24: the restless road — a followed mortal with no story nearby for six days sets out for one** ([THR-1959](https://linear.app/threadbare/issue/THR-1959)). Merged via [#2538](https://github.com/christianspliid-ui/threadbare/pull/2538) and live.
 - **2026-10-24: mortal wealth S3 — money encounters change prosperity, unrest, stocks, purses and debts** ([THR-1953](https://linear.app/threadbare/issue/THR-1953)). Merged via [#2537](https://github.com/christianspliid-ui/threadbare/pull/2537) and live.
-- **2026-10-24: the end of the age — the Twilight ceremony and the Mandate ending the age** ([THR-1381](https://linear.app/threadbare/issue/THR-1381)). Merged via [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533) and live.
 
 ---
 
