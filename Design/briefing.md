@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 17:56 local (15:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 18:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,12 +27,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 16 ready, 2 in progress.** [Hiring a free company](https://linear.app/threadbare/issue/THR-1974) merged at 15:41 UTC ([#2544](https://github.com/christianspliid-ui/threadbare/pull/2544)) and is live. The builder run that started at 15:42 UTC has taken the heavy-tests fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019)) and is active.
+**Healthy: 15 ready, 2 in progress.** Three merges this hour: the heavy-tests fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019), [#2545](https://github.com/christianspliid-ui/threadbare/pull/2545)), the dead-module sweep ([THR-1991](https://linear.app/threadbare/issue/THR-1991), [#2546](https://github.com/christianspliid-ui/threadbare/pull/2546)), and own land-page pictures for volcano, glacier, lake/river and dead forest ([THR-1998](https://linear.app/threadbare/issue/THR-1998), [#2547](https://github.com/christianspliid-ui/threadbare/pull/2547), merged 16:55 UTC; the board closes it on its own). A new tuning job joined the shelf: [a liege pays to raise its hired company's army](https://linear.app/threadbare/issue/THR-2020).
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. No work is sitting unsaved anywhere for it. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-- Heavy tests have been red on main since 13:18 UTC, after the war-aims merge ([#2542](https://github.com/christianspliid-ui/threadbare/pull/2542)). Ticket [THR-2019](https://linear.app/threadbare/issue/THR-2019) is filed, and the builder is on it now. The live game is not affected.
-- Everything else is green: main's CI, the three scheduled background jobs, no PR waiting to merge, engine speed back inside its normal range (168 ms/tick, +17% on the week's median), the worktree reaper ran at 17:40, and the live site is current ([82d6e70b](https://github.com/christianspliid-ui/threadbare/commit/82d6e70b)).
+- Heavy tests still show red on main from the 13:18 UTC run. The fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019)) merged at 16:02 UTC; the checks on the two merges right after it were cancelled by newer merges, and the check on [1977121f](https://github.com/christianspliid-ui/threadbare/commit/1977121f) is running now. No new ticket: the failure is already fixed. The live game is not affected.
+- Everything else is green: main's CI, the three scheduled background jobs, all 13 scheduled lanes on time, no PR stuck, engine speed normal (141 ms/tick, −2% on the week's median), the worktree reaper ran at 18:40 local, and the live site was current at [1977121f](https://github.com/christianspliid-ui/threadbare/commit/1977121f) (the 16:55 merge is still deploying).

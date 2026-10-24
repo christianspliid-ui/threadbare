@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 17:56 local (15:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 18:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,9 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-24: volcano, glacier, lake/river and dead forest get land-page pictures of their own** ([THR-1998](https://linear.app/threadbare/issue/THR-1998)). Merged via [#2547](https://github.com/christianspliid-ui/threadbare/pull/2547).
+- **2026-10-24: the settlement's notable is a place-page row again; modules nothing used are deleted** ([THR-1991](https://linear.app/threadbare/issue/THR-1991)). Merged via [#2546](https://github.com/christianspliid-ui/threadbare/pull/2546).
+- **2026-10-24: heavy tests fixed after the war-aims merge** ([THR-2019](https://linear.app/threadbare/issue/THR-2019)). Merged via [#2545](https://github.com/christianspliid-ui/threadbare/pull/2545).
 - **2026-10-24: hiring a free company — a liege pays, feeds and commands the soldiers it pays** ([THR-1974](https://linear.app/threadbare/issue/THR-1974)). Merged via [#2544](https://github.com/christianspliid-ui/threadbare/pull/2544) and live.
 - **2026-10-24: the design lane closes a design request itself once its outputs are filed or a decision is recorded** ([THR-1888](https://linear.app/threadbare/issue/THR-1888)). Merged via [#2543](https://github.com/christianspliid-ui/threadbare/pull/2543).
 - **2026-10-24: war aims pick the nearest enemy town, with a distance discount a richer target can beat** ([THR-1970](https://linear.app/threadbare/issue/THR-1970)). Merged via [#2542](https://github.com/christianspliid-ui/threadbare/pull/2542) and live.
@@ -51,9 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-24: the restless road — a followed mortal with no story nearby for six days sets out for one** ([THR-1959](https://linear.app/threadbare/issue/THR-1959)). Merged via [#2538](https://github.com/christianspliid-ui/threadbare/pull/2538) and live.
 - **2026-10-24: mortal wealth S3 — money encounters change prosperity, unrest, stocks, purses and debts** ([THR-1953](https://linear.app/threadbare/issue/THR-1953)). Merged via [#2537](https://github.com/christianspliid-ui/threadbare/pull/2537) and live.
 - **2026-10-24: the end of the age — the Twilight ceremony and the Mandate ending the age** ([THR-1381](https://linear.app/threadbare/issue/THR-1381)). Merged via [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533) and live.
-- **2026-10-24: God's stake S3 — the omen market's Fortune's Favour, Ruin and Bless the Holding** ([THR-1969](https://linear.app/threadbare/issue/THR-1969)). Merged via [#2532](https://github.com/christianspliid-ui/threadbare/pull/2532) and live.
-- **2026-10-24: stories come in a rhythm — the first slice of the encounter firing pass** ([THR-1218](https://linear.app/threadbare/issue/THR-1218)). Merged via [#2531](https://github.com/christianspliid-ui/threadbare/pull/2531) and live.
-- **2026-10-23: encounters take the Reach their test asks — 39 of the mislabel audit's 41 relabelled** ([THR-2010](https://linear.app/threadbare/issue/THR-2010)). Merged via [#2530](https://github.com/christianspliid-ui/threadbare/pull/2530) and live.
 
 ---
 
