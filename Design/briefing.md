@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 21:58 local (19:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 22:58 local (20:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,12 +32,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 12 ready, 2 in progress.** Merged this hour: a faction now pays for a member's founding they can't afford ([THR-2008](https://linear.app/threadbare/issue/THR-2008), [#2550](https://github.com/christianspliid-ui/threadbare/pull/2550), live), and the debts plan above ([#2552](https://github.com/christianspliid-ui/threadbare/pull/2552)). In progress: [the prose fixes from the mislabel audit](https://linear.app/threadbare/issue/THR-2011).
+**Healthy: 11 ready, 2 in progress.** Merged this hour, both live: 35 encounters' words now describe the test their Reach actually rolls ([THR-2011](https://linear.app/threadbare/issue/THR-2011), [#2553](https://github.com/christianspliid-ui/threadbare/pull/2553)), and a gift's card line toasts once, not twice ([THR-2013](https://linear.app/threadbare/issue/THR-2013), [#2554](https://github.com/christianspliid-ui/threadbare/pull/2554)). In progress: [a 400-line cap on single-slice plan docs](https://linear.app/threadbare/issue/THR-1948), built and waiting on checks as [#2555](https://github.com/christianspliid-ui/threadbare/pull/2555).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-- **Engine speed:** tick cost 194 ms/tick steady, 34% above the 7-day median (144, 82 rows since c71c5117); top phase agent_decision, 602 agents. Name the merges between c71c5117 and 1fb6dafd: `git log --oneline --merges c71c5117..1fb6dafd`. Last hour read 112 ms on nearly the same code (only THR-2008 and docs merged since), and a builder run was working on this machine during the measurement, so this may be load, not a slowdown. The next hour's reading will tell. Engine speed is the builder's job, not yours.
-- Everything else is green: main's CI, the three scheduled background jobs, all 13 scheduled lanes, the PR queue (none waiting) and the builder (busy, not stalled). The live site is up to date ([064e42d3](https://github.com/christianspliid-ui/threadbare/commit/064e42d3); later commits are docs only). The worktree reaper ran at 21:40 local.
+All green. Main's CI, the three scheduled background jobs, the PR queue (one waiting on checks, set to merge on green) and the builder (busy, not stalled). The live site serves the latest commit ([7b2f48dc](https://github.com/christianspliid-ui/threadbare/commit/7b2f48dc)). The worktree reaper ran at 22:40 local. Engine speed is back to 113 ms/tick, 22% under the 7-day median, so last hour's 194 ms reading was machine load, not a slowdown.
