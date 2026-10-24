@@ -3,7 +3,7 @@
  *
  * Plan: `Docs/plans/2026-10-15-thr-1933-war-aims.md` § Constants. Decisions: THR-1868
  * (enemies only; defence first within 8 hexes; else the richest enemy town in reach,
- * score = value × (1 + bonuses) ÷ (1 + hexes / 6)).
+ * score = value × (1 + bonuses) ÷ (1 + hexes / 6)). THR-1970 retuned the half-value distance to 10.
  *
  * | Constant                         | Purpose                                                        |
  * |----------------------------------|----------------------------------------------------------------|
@@ -27,9 +27,14 @@ export const WAR_AIMS_ENABLED = true;
 /** A protected holding under threat within this many hexes of the army is defended first. */
 export const WAR_AIM_DEFENCE_RADIUS_HEXES = 8;
 
-/** Distance discount: a town this many hexes away scores half its value. */
-// TODO(THR-1970): measured 1 of 6 contested picks not the nearest (plan wants ≥ half) — tune after S2.
-export const WAR_AIM_HALF_VALUE_HEXES = 6;
+/**
+ * Distance discount: a town this many hexes away scores half its value.
+ * THR-1970 (2026-10-24, `npm run measure:war-aims`, seeds 42/99/7/13/2026, 600 ticks, medium,
+ * S2 monopoly bonuses live): of the picks where a town richer than the nearest was in reach,
+ * value won 2 of 10 at 6, 3 of 9 at 8, 6 of 9 at 10 and 12. 10 is the smallest that clears
+ * half; every other S1 predicate held at each value.
+ */
+export const WAR_AIM_HALF_VALUE_HEXES = 10;
 
 /** Hard reach backstop on top of the supply walk, in hexes from the army. */
 export const WAR_AIM_MAX_REACH_HEXES = 16;

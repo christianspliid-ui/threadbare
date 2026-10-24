@@ -7050,7 +7050,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ECONOMY,
     consumerSystem: 'War, Armies & Battles',
     intent:
-      'An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse\'s own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / 6) over enemy towns the army has a march path to within WAR_AIM_MAX_REACH_HEXES (a supply line from the town is also required only while WAR_AIM_REQUIRE_SUPPLY_REACH is on — off since the plan kill criterion fired). With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced.',
+      'An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse\'s own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / WAR_AIM_HALF_VALUE_HEXES 10) over enemy towns the army has a march path to within WAR_AIM_MAX_REACH_HEXES (a supply line from the town is also required only while WAR_AIM_REQUIRE_SUPPLY_REACH is on — off since the plan kill criterion fired). With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced.',
     ulTerms: ['Faction', 'Settlement'],
     mechanism: {
       kind: 'module-export',
