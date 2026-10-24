@@ -2090,7 +2090,8 @@ export interface WarAimPickedTrace extends TraceBase {
   nearestEnemyTownId: string | null;
   /**
    * THR-1970 — some in-reach town is worth more than the nearest before the distance
-   * discount (value × (1 + bonuses)): the picks where value could beat distance.
+   * discount (value × (1 + bonuses), × the revenge focus where it applies): the picks where
+   * value could beat distance.
    */
   richerThanNearest: boolean;
 }

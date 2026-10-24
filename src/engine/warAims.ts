@@ -30,7 +30,7 @@ import type { RealmProjection } from './realmProjection';
 import { buildRealmProjection } from './realmProjection';
 import { emitTrace } from './traceBuffer';
 import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
-import { WAR_AIMS_ENABLED, WAR_AIM_REAIM_INTERVAL_TICKS } from '../data/war-aims-constants';
+import { WAR_AIMS_ENABLED, WAR_AIM_REAIM_INTERVAL_TICKS, WAR_AIM_HALF_VALUE_HEXES } from '../data/war-aims-constants';
 import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
 import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick, type ScoredTown } from './warAims/score';
@@ -115,8 +115,9 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
   const best = pick.scored[0];
   if (pick.objective && best) {
     // THR-1970 — whether value could beat distance on this pick: some in-reach town is
-    // worth more than the nearest before the distance discount (value × (1 + bonuses)).
-    const worth = (s: ScoredTown) => s.value * (1 + s.bonuses);
+    // worth more than the nearest before the distance discount. Undoing the discount on
+    // the score keeps every multiplier the pick used (bonuses and the revenge focus).
+    const worth = (s: ScoredTown) => s.score * (1 + s.hexes / WAR_AIM_HALF_VALUE_HEXES);
     const nearest = pick.scored.find(s => s.townId === pick.nearestEnemyTownId);
     const richerThanNearest = nearest ? pick.scored.some(s => worth(s) > worth(nearest)) : false;
     emitTrace({
