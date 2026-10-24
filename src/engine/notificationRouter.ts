@@ -138,6 +138,25 @@ const PERMANENT_TOAST_EXPIRY = Infinity;
 // ─── Router ────────────────────────────────────────────────────
 
 /**
+ * THR-2013 — the events in `next` that a routing pass over `previous` has not seen.
+ *
+ * `tickEvents` is reset each tick, but a write between ticks (a gift resolving, a mark
+ * revealing) appends to the current array, so the new array still carries every event
+ * already routed. Routing all of it again toasted the gift's card line twice under one
+ * id — a doubled toast and a React duplicate-key error. Compared by object identity:
+ * the spread keeps the same event objects, and a fresh tick's events are new objects
+ * even when an id repeats. Pure; exported for tests.
+ */
+export function selectUnroutedEvents(
+  previous: readonly TickEvent[],
+  next: readonly TickEvent[],
+): TickEvent[] {
+  if (previous.length === 0) return [...next];
+  const routed = new Set(previous);
+  return next.filter(event => !routed.has(event));
+}
+
+/**
  * @param gate THR-666 threading gate. When omitted, every event routes globally —
  *   the pre-gate behaviour, kept so callers without a world graph (tests, the
  *   headless CLI) work unchanged.

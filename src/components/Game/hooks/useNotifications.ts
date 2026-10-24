@@ -3,7 +3,7 @@ import type { TickEvent } from '../../../types/gameState';
 import type { NotificationState, PopupItem, NotificationPreferences, ToastItem } from '../../../types/notification';
 import type { VisibilityMap } from '../../../types/visibility';
 import type { WorldGraph } from '../../../engine/graph';
-import { routeNotifications } from '../../../engine/notificationRouter';
+import { routeNotifications, selectUnroutedEvents } from '../../../engine/notificationRouter';
 import { filterEventsByVisibility } from '../../../engine/notificationVisibilityFilter';
 import { buildThreadingGate } from '../../../engine/notificationThreadingGate';
 
@@ -103,9 +103,12 @@ export function useNotifications({
       prevTickEventsRef.current = tickEvents;
       return;
     }
+    // THR-2013: a between-tick append re-delivers the events already routed.
+    const unrouted = selectUnroutedEvents(prevTickEventsRef.current, tickEvents);
     prevTickEventsRef.current = tickEvents;
+    if (unrouted.length === 0) return;
     const now = Date.now();
-    const filtered = filterEventsByVisibility(tickEvents, visibilityMap);
+    const filtered = filterEventsByVisibility(unrouted, visibilityMap);
     const currentGraph = graphRef.current;
     const currentAscendantId = ascendantIdRef.current;
     const gate = currentGraph && currentAscendantId
