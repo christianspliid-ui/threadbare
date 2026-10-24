@@ -4,6 +4,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ChronicleEntryCard } from '../ChronicleEntryCard';
 import { ChroniclePanel } from '../ChroniclePanel';
 import type { ChronicleEntry } from '../../../types/narrative';
+import { RefRouterProvider } from '../../../contexts/RefRouterContext';
+import type { RefRouter } from '../../../hooks/useRefRouter';
 
 // ── Fixtures ──────────────────────────────────────────────────────
 
@@ -134,5 +136,53 @@ describe('ChroniclePanel', () => {
     expect(screen.getByText(dualVoiceEntry.poetProse!)).toBeDefined();
     // legacy prose rendered as witness bullet
     expect(screen.getByText(legacyEntry.prose)).toBeDefined();
+  });
+});
+
+// ── THR-1959: a line whose producer declared its names ───────────
+
+const linkedEntry: ChronicleEntry = {
+  id: 'restless_road_agent_1_90',
+  tier: 'chronicle',
+  title: 'Thessa grows restless and takes the road to Greyw',
+  prose: 'Thessa grows restless and takes the road to Greywater.',
+  witnessFacts: ['Thessa grows restless and takes the road to Greywater.'],
+  promptContext: { actors: ['Thessa'], location: 'Hearth', sphere: 'force', mood: 'dramatic' },
+  tick: 90,
+  segments: [
+    { text: 'Thessa', ref: { kind: 'agent', id: 'agent_1', name: 'Thessa' } },
+    { text: ' grows restless and takes the road to ' },
+    { text: 'Greywater', ref: { kind: 'location', id: 'loc_a', name: 'Greywater' } },
+    { text: '.' },
+  ],
+};
+
+describe('ChronicleEntryCard — declared names (THR-1959)', () => {
+  it('renders both names as links that open their pages through the ref router (Law 21)', () => {
+    const opened: unknown[] = [];
+    const router = {
+      open: (ref: unknown) => opened.push(ref),
+      armHover: () => {},
+      disarmHover: () => {},
+      closeHover: () => {},
+    } as unknown as RefRouter;
+    render(
+      <RefRouterProvider router={router}>
+        <ChronicleEntryCard entry={linkedEntry} voiceMode="interleaved" />
+      </RefRouterProvider>,
+    );
+    expect(screen.getByTestId('chronicle-linked-line').textContent).toBe(linkedEntry.prose);
+    fireEvent.click(screen.getByRole('button', { name: 'Thessa — open page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Greywater — open page' }));
+    expect(opened).toEqual([
+      { kind: 'agent', id: 'agent_1', name: 'Thessa' },
+      { kind: 'location', id: 'loc_a', name: 'Greywater' },
+    ]);
+  });
+
+  it('with no router in scope, the names read as plain text and the line is whole', () => {
+    render(<ChronicleEntryCard entry={linkedEntry} voiceMode="witness" />);
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByTestId('chronicle-linked-line').textContent).toBe(linkedEntry.prose);
   });
 });

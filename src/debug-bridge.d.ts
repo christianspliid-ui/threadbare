@@ -882,8 +882,10 @@ export interface DebugBridge {
     maxTellings: number;
     /** THR-1218 — true while the drought has relaxed the tellings cap. */
     tellingsCapRelaxed: boolean;
-    /** THR-1218 — the restless road (S2, THR-1959); null until it ships. */
+    /** THR-1959 — tick she last set out on the restless road; null if never. */
     lastRestlessRoadTick: number | null;
+    /** THR-1959 — tick of her last restless-road check of any outcome (starts the cooldown); null if never. */
+    restlessRoadCheckTick: number | null;
     tick: number;
   } | { error: string }>;
   /**

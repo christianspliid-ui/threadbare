@@ -154,6 +154,18 @@ export interface ChronicleEntry {
   tick: number;
   /** Quintessence delta for this entry (positive = gain, negative = loss, 0 = neutral). Absent → no annotation rendered. */
   quintessenceDelta?: number;
+  /**
+   * THR-1959 — the witness line as segments, when its producer declared its names
+   * (Law 2). `ChronicleEntryCard` renders a segment with a `ref` as a link and
+   * never looks inside the text. Absent → the plain witness bullets.
+   */
+  segments?: readonly ChronicleSegment[];
+}
+
+/** One run of a Chronicle line: plain text, or a name the producer declared (THR-1959). */
+export interface ChronicleSegment {
+  text: string;
+  ref?: import('./worldRef').WorldRef;
 }
 
 // ─── Sphere Vocabulary ───────────────────────────────────────────

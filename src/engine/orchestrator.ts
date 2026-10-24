@@ -2726,6 +2726,8 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
           previousEvents: context.historicalFragments,
         },
         tick: event.tick,
+        // THR-1959: a producer that declared its names hands them on, so the card links them.
+        ...(event.segments && event.segments.length > 0 ? { segments: event.segments } : {}),
       });
     }
   }

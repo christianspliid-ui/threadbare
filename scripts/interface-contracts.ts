@@ -6858,6 +6858,22 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/attentionCadence.ts'],
     readSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/attentionCadence.ts', 'src/debug-bridge.ts'],
   },
+  // ── The restless road (THR-1959, THR-1218 S2) ─────────────────────────────
+  {
+    id: 'restless-road-reaches-chronicle',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: NARRATIVE,
+    intent:
+      'A followed mortal six days without a story, with none she can draw where she stands, goes looking for one: agent decision sets her moving to the nearest place that holds one (forced travel\'s path, startTravelTo) and the Chronicle says so in one line whose two names are declared links. The tick event carries its segments; phaseNarrative hands them to the Chronicle entry, and ChronicleEntryCard renders each referenced segment through EntityLink (Laws 2, 21).',
+    ulTerms: ['Chapter', 'Chronicle'],
+    mechanism: {
+      kind: 'event',
+      symbols: ['buildRestlessRoadEvent', 'segments', 'lastRestlessRoadTick', 'restlessRoadCheckTick'],
+      module: 'src/engine/restlessRoad.ts',
+    },
+    writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/restlessRoad.ts'],
+    readSites: ['src/engine/orchestrator.ts', 'src/components/Game/ChronicleEntryCard.tsx', 'src/debug-bridge.ts'],
+  },
   // ── The chosen path comes back (THR-1988) ─────────────────────────────────
   {
     id: 'first-path-recall-pins-first-chapter',

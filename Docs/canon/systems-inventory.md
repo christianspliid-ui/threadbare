@@ -411,6 +411,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `resolution` (4) | `resolution.ts`, `resolutionModifiers.ts`, `resolutionScaleAdjust.ts`, `resolutionService.ts` | `Phase 2`, `THR-1581`, `THR-1627`, `THR-451`, `THR-571`, `THR-827` |
 | `resolved` (1) | `resolvedActionRetention.ts` | `THR-1777` |
 | `resource` (2) | `resourceEconomy.ts`, `resourceSeeding.ts` | `THR-615` |
+| `restless` (1) | `restlessRoad.ts` | `THR-1218`, `THR-1959` |
 | `retinue` (1) | `retinue.ts` | — |
 | `return` (1) | `returnEngine.ts` | `Phase 3`, `TB-035` |
 | `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `TB-043`, `THR-398`, `THR-853` |
@@ -480,4 +481,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 238 engine domains · 786 modules._
+_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 239 engine domains · 787 modules._

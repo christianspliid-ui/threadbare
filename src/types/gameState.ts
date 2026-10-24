@@ -173,6 +173,13 @@ export interface TickEvent {
    */
   refs?: readonly import('./worldRef').WorldRef[];
   /**
+   * THR-1959 — the Chronicle line as segments (Law 2: the producer declares which
+   * words are names). A segment with a `ref` renders as a link (Law 21). When
+   * present, `phaseNarrative` copies it onto the Chronicle entry; the joined text
+   * equals `playerProse ?? message`.
+   */
+  segments?: readonly import('./narrative').ChronicleSegment[];
+  /**
    * The line the player reads in the Chronicle, when it differs from `message`
    * (THR-1986): no tier number, no `Q`. `message` stays byte-identical for
    * traces, logs and the agent analyser; the Chronicle reads
