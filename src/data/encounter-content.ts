@@ -2668,13 +2668,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1101: authored out of the mad-lib shape (hire-family batch). The family's
         // cheapest contract and the one whose counterparty is hardest to test before the
         // money is spent — competence here is only demonstrable once it is too late to shop.
-        narrative: 'Four people at the waystation claim the route. {actor} quizzes each of them on the crossing itself: which wells hold water in a dry year, where the grass fails, which stretch takes two days rather than the one it looks like.',
+        narrative: 'Four people at the waystation claim the route. {actor} quizzes each of them on the crossing itself. Which wells hold in a dry year? Where does the grass fail?',
         onSuccess: {
-          narrative: '{actor} knows enough of the route to test them, and only one passes: the guide who names the dry well at the third camp and the long stretch after it. That one is hired.',
+          narrative: '{actor} knows enough of the route to test them. Only one passes. She names the dry well at the third camp and the long stretch after it, and she is hired.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} does not know the route well enough to catch a wrong answer, and hires the most confident of the four. The first day is flat and well-marked and tests nothing.',
+          narrative: '{actor} does not know the route well enough to catch a wrong answer. {actor} hires the most confident of the four. The first day is flat and tests nothing.',
           reputationDelta: -0.02,
         },
       },
@@ -2701,9 +2701,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'On the fourth day the route stops matching the ground under it. The season has moved the water since the last crossing. {actor} and the guide have to find the new crossing by the grass, the stars and the lie of the land.',
+        narrative: 'On the fourth day the route stops matching the ground under it. The season has moved the water. {actor} and the guide have to find the new crossing by the grass and the stars.',
         onSuccess: {
-          narrative: '{actor} takes a bearing on the stars at dusk and follows the green line of the grass to the new water. They lose half a day finding the crossing instead of two days on the wrong one. {actor} pays the bonus at the gate and asks about the return leg.',
+          narrative: '{actor} takes a bearing on the stars at dusk. The green line of the grass leads to the new water. They lose half a day instead of two. {actor} pays the bonus at the gate and asks about the return leg.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
