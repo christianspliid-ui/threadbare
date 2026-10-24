@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 22:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 23:59 local (21:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,11 +32,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 11 ready, 2 in progress.** Merged this hour, both live: 35 encounters' words now describe the test their Reach actually rolls ([THR-2011](https://linear.app/threadbare/issue/THR-2011), [#2553](https://github.com/christianspliid-ui/threadbare/pull/2553)), and a gift's card line toasts once, not twice ([THR-2013](https://linear.app/threadbare/issue/THR-2013), [#2554](https://github.com/christianspliid-ui/threadbare/pull/2554)). In progress: [a 400-line cap on single-slice plan docs](https://linear.app/threadbare/issue/THR-1948), built and waiting on checks as [#2555](https://github.com/christianspliid-ui/threadbare/pull/2555).
+**Healthy: 9 ready, 2 in progress.** Merged this hour and live: the realm check "Oaths pay" is now judged on the leading Crown, not on whichever Crown it happened to read first ([THR-2017](https://linear.app/threadbare/issue/THR-2017), [#2556](https://github.com/christianspliid-ui/threadbare/pull/2556)). The builder is now working on [a liege paying for its vassal's army](https://linear.app/threadbare/issue/THR-2020) (sworn free companies field an army on only 12–33% of their sworn days). New on the shelf: [the debts plan](https://linear.app/threadbare/issue/THR-2023) and [a lake hex's land page that reads as desert](https://linear.app/threadbare/issue/THR-2021).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, the PR queue (one waiting on checks, set to merge on green) and the builder (busy, not stalled). The live site serves the latest commit ([7b2f48dc](https://github.com/christianspliid-ui/threadbare/commit/7b2f48dc)). The worktree reaper ran at 22:40 local. Engine speed is back to 113 ms/tick, 22% under the 7-day median, so last hour's 194 ms reading was machine load, not a slowdown.
+All green. Main's CI, the three scheduled background jobs, the PR queue (empty) and the builder (busy, not stalled). The live site serves the latest commit ([8ad288e1](https://github.com/christianspliid-ui/threadbare/commit/8ad288e1)). The worktree reaper ran at 23:53 local. Engine speed holds at 112 ms/tick, 23% under the 7-day median.
