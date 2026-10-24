@@ -1131,7 +1131,7 @@ export function phaseAgentDecision(
             // the floor would hold back on arrival too — not a reason to lift it.
             const cooled = applyCooldowns(
               open, agentId, state.encounterProgress, state.unifiedActions, state.tick,
-              rawCandidates.length, state.chapterArchive, PAUSED_STORY_REPEAT_FLOOR_TICKS,
+              rawCandidates.length, state.chapterArchive ?? [], PAUSED_STORY_REPEAT_FLOOR_TICKS,
             ).filter(engages);
             if (cooled.length === 0) return cooled;
             // Then the real pipeline, as if she stood there (no runtime: the eligibility
