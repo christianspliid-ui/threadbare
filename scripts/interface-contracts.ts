@@ -6762,6 +6762,22 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/attentionCadence.ts', 'src/engine/orchestrator.ts'],
     readSites: ['src/engine/attentionCadence.ts', 'src/engine/encounterFilterPipeline.ts', 'src/debug-bridge.ts'],
   },
+  // ── The firing rhythm (THR-1218 S1) ───────────────────────────────────────
+  {
+    id: 'story-start-anchor-and-tellings-cap-pace-paused-mortals',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'A followed mortal rarely tells the same story twice. Agent decision stamps the tick a paused mortal starts a story chapter on her thread; her story drought counts from it. Her attempt counts (familiarityRecord) cap each story at PAUSED_STORY_MAX_TELLINGS while she is not in a drought of STORY_DROUGHT_RELAX_TICKS, and the five-day repeat floor covers every paused mortal, not only The First. No count cap anywhere (Law 29).',
+    ulTerms: ['Chapter', 'Daily life'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['lastStoryChapterStartTick', 'applyStoryTellingsCap', 'isPausedThreadActor'],
+      module: 'src/engine/attentionCadence.ts',
+    },
+    writeSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/attentionCadence.ts'],
+    readSites: ['src/engine/phaseAgentDecision.ts', 'src/engine/attentionCadence.ts', 'src/debug-bridge.ts'],
+  },
   // ── The chosen path comes back (THR-1988) ─────────────────────────────────
   {
     id: 'first-path-recall-pins-first-chapter',

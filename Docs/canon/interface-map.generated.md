@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 90 |
-| **Total** | **301** |
+| 🔵 UNVERIFIED-OK | 91 |
+| **Total** | **302** |
 
 ## Contracts by producing subsystem
 
@@ -257,6 +257,7 @@ remediation ticket or the build fails.
 | `seeded-opponent-survives-to-spawn` | A grudge planted against a named band is collected against that same band — or, if it died in the meantime, quietly becomes an ordinary encounter instead of pointing at a corpse. | node-prop: `opposingGroupId`, `resolveSeedOpposition` | Companies & Group Travel | 🟢 LIVE | — |
 | `shortlist-reaches-every-template` | Every template that survives the filters has a fair chance at a shortlist slot, so what a mortal considers is decided by scoring, not by the order the cache happened to register it in. What the mortal can start on its own hex is offered first, so a fair fill does not strand it away from the work where it stands. | function: `capWithDiversity`, `runFilterPipeline`, `CAP_FILL_ROTATE`, `CAP_FILL_LOCAL_SLOTS`, `capCutTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `spotlight-mortal-joins-guild` | A spotlight mortal who chooses a guild join and resolves it in a success band becomes a member of that guild — the unified-action resolution writes the `member_of` edge every faction reader counts, so the deciding mortals the player watches belong to the guilds whose content they are offered. | edge-prop: `processResolvedFactionLifecycleAction`, `getFactionMembershipEdges` | Factions & Succession | 🟢 LIVE | — |
+| `story-start-anchor-and-tellings-cap-pace-paused-mortals` | A followed mortal rarely tells the same story twice. Agent decision stamps the tick a paused mortal starts a story chapter on her thread; her story drought counts from it. Her attempt counts (familiarityRecord) cap each story at PAUSED_STORY_MAX_TELLINGS while she is not in a drought of STORY_DROUGHT_RELAX_TICKS, and the five-day repeat floor covers every paused mortal, not only The First. No count cap anywhere (Law 29). | edge-prop: `lastStoryChapterStartTick`, `applyStoryTellingsCap`, `isPausedThreadActor` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `thread-write-resolves-first` | Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change. | function: `resolveThreadWrite` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `threaded-growth-reaches-chronicle` | The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs. | property: `chronicleGate`, `playerProse` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `tier-cross-reaches-the-info-card` | When a step crosses a Reach tier, the aftermath says so; the mortal's info card must then list that domain too, even when it is not among their top three. Both growth sites write `lastTierCross = { domain, tick }` on the agent; `getAgentInfoCard` appends that domain, marked "new tier", while it is within `RECENT_TIER_CROSS_WINDOW_TICKS` (48). | node-prop: `lastTierCross`, `recordTierCross`, `readRecentTierCross` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -2168,10 +2169,10 @@ exit
 - **Intent:** What the god pays for in God's Will changes what the mortal does next, and the player is told how it went (THR-1781). A whisper's `whisper_*` influence is read by `applyWhisperPull` into `whisperPull` on the live board; a compulsion is held on the mortal (`compulsionTargetTemplateId` / `compulsionTargetLocationId`) until its next full decision, where `resolveCompulsion` takes it or lapses it with a reason, and a `divine_premonition` toast event reports the ending. Before, whispers were written and never read, and a compulsion lapsed three ticks after the click while The First was mid-chapter.
 - **Producer → Consumer:** Essence & Divine Economy → Encounters & Dilemmas
 - **UL terms:** *Agent*, *Encounter*
-- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
+- **Production hits:** 9 total — 1 write, 3 read, 5 unclassified
 - **Write sites:** `src/engine/premonitionActions.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/engine/encounterCache.ts`, `src/engine/encounterScoring.ts`, `src/engine/premonitionSteer.ts`, `src/types/trace.ts`
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterScoring.ts`, `src/engine/premonitionSteer.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-10-09: Playwright at 1920×1080 on ?view=game&seeded&size=medium (worktree Vite): forcePremonition(The First, whisper), paid "Seek the path of Gold" → toast "Kael Thornweaver is subtly drawn toward Seek the path of Gold"; after tick(1) the decision_board_comparison trace's top three entries were all Gold encounters carrying whisperPull 1.596. premonitionSteer.integration.test.ts (seed 42, generated world): a compulsion paid mid-chapter is held past the old 3-tick window and taken at the next decision (motiveReceipt.templateId = the paid template).
 
 ### `grievance-opens-hunt-door` — 🔵 UNVERIFIED-OK
@@ -2381,10 +2382,10 @@ exit
 - **Intent:** A mortal who sets out for an encounter keeps it as the goal of the trip: the journey records the pull that chose it, a reroute has to beat that pull and carries its own target, and on arrival the encounter it came for is still on the board. The goal is the encounter *here* (THR-1674): a copy of the template in another town never carries the commitment.
 - **Producer → Consumer:** Encounters & Dilemmas → Movement & Colocation
 - **UL terms:** *Encounter*
-- **Production hits:** 14 total — 2 write, 2 read, 10 unclassified
+- **Production hits:** 15 total — 2 write, 2 read, 11 unclassified
 - **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/phaseMovement.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/encounterFilterPipeline.ts`
-- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/movement-content.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterTimeline.ts`, `src/engine/groups/groupMovement.ts` +5 more
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/movement-content.ts`, `src/engine/attentionCadence.ts`, `src/engine/encounterCache.ts`, `src/engine/encounterTimeline.ts` +6 more
 - **Verdict:** Verified 2026-09-29: THR-1674: arrival decisions (all mortals, attended medium world, 150 ticks) that re-picked the goal template at a different hex than the trip was for — 3 in 23 seeds on main (seeds 1, 14, 19; each logged journeyGoal: kept), 0 after the commitment was scoped to the copy here (seeds 1, 14, 19, 42, 99, 11, 7, 123); first-encounter-gate unchanged on 42/99/11/7/123 (gaps 24/14/16/28/23). THR-1668, readers/journeys.ts (medium, 200 ticks): arrivals that start their goal within 2 ticks, main → this change, seed 42 19.6% → 79.2%, seed 99 21.4% → 78.6%; pinned by arrivalCommitmentBoard.test.ts (heavy lane) and the decisionBoard arrivalGoal tests. THR-1639: scripts/first-encounter-gate.ts on the attended world (medium, 150 ticks) — The First's longest gap between encounters, main → this change: seed 42 50 → 25, seed 99 44 → 21, seed 11 18 → 19; first encounter t18 · t9 · t19, all ≤ 30. Before the fix the three losses were each measured: the unset pull lost every journey at its first re-check; recording the candidate finalScore instead (the plan's first draft) left seed 11 ping-ponging between two towns for its last 77 ticks, because the reroute scan scores alternatives by questPriority (1–9) and finalScore sits ~10× lower, so the pull is recorded on the questPriority axis; and on seed 42 the 40-slot cap cut the arrival goal on 14 of 41 arrivals in 60 ticks. Pinned by journeyKeepsGoal.test.ts (heavy lane, seed 42) and the capWithDiversity journey-goal tests.
 
 ### `knowledge-floor-gates-find` — 🔵 UNVERIFIED-OK
@@ -3443,6 +3444,18 @@ exit
 - **Module:** `src/engine/attentionCadence.ts`
 - **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/attentionCadence.ts`
+- **Read sites:** `src/debug-bridge.ts`
+- **Other hits:** `src/types/influence.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `story-start-anchor-and-tellings-cap-pace-paused-mortals` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A followed mortal rarely tells the same story twice. Agent decision stamps the tick a paused mortal starts a story chapter on her thread; her story drought counts from it. Her attempt counts (familiarityRecord) cap each story at PAUSED_STORY_MAX_TELLINGS while she is not in a drought of STORY_DROUGHT_RELAX_TICKS, and the five-day repeat floor covers every paused mortal, not only The First. No count cap anywhere (Law 29).
+- **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
+- **UL terms:** *Chapter*, *Daily life*
+- **Module:** `src/engine/attentionCadence.ts`
+- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/attentionCadence.ts`, `src/engine/phaseAgentDecision.ts`
 - **Read sites:** `src/debug-bridge.ts`
 - **Other hits:** `src/types/influence.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.

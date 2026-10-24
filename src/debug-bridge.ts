@@ -1798,11 +1798,14 @@ if (import.meta.env.DEV) {
      * turns of breath remain, and how many of the agent's live actions are daily
      * life (routine) vs story. Omit `agentId` to read the thread at court
      * position `the_first`. How a Done-when proves "The First asks" is wired.
+     * THR-1218 adds the firing-rhythm fields: the story drought, tellings per story
+     * template, whether the tellings cap is relaxed, and the restless road (S2).
      */
     getAttentionCadence: async (agentId?: string) => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'Game state not available — is the game loaded?' };
-      const { isRoutineTemplate, resolveAttentionMode, storyBreathRemaining } = await import('./engine/attentionCadence');
+      const { isRoutineTemplate, resolveAttentionMode, storyBreathRemaining, storyDroughtTicks, storyTellings, isTellingsCapRelaxed } = await import('./engine/attentionCadence');
+      const { PAUSED_STORY_MAX_TELLINGS } = await import('./data/agent-behavior-constants');
       const { PAUSED_STORY_BREATH_TICKS } = await import('./types/encounterVisibility');
       const { graph, ascendantId, tick } = state;
       const thread = agentId
@@ -1824,6 +1827,17 @@ if (import.meta.env.DEV) {
         breathTicks: PAUSED_STORY_BREATH_TICKS,
         routineActive: live.filter(a => isRoutineTemplate(a.templateId)).length,
         storyActive: live.filter(a => !isRoutineTemplate(a.templateId)).length,
+        lastStoryChapterStartTick: props.lastStoryChapterStartTick ?? null,
+        storyDroughtTicks: storyDroughtTicks(graph, thread.target, tick),
+        storyTellings: storyTellings(
+          graph,
+          thread.target,
+          (graph.getNode(thread.target)?.properties?.familiarityRecord as { attemptCount?: Record<string, number> } | undefined)?.attemptCount,
+        ),
+        maxTellings: PAUSED_STORY_MAX_TELLINGS,
+        tellingsCapRelaxed: isTellingsCapRelaxed(graph, thread.target, tick),
+        // THR-1959 (S2) writes it; null until the restless road ships.
+        lastRestlessRoadTick: null as number | null,
         tick,
       };
     },

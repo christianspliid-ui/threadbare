@@ -5,9 +5,9 @@
  * Enforces a cooldown between beats, caps queue depth, and demotes overflow.
  *
  * Constants:
- *   STORY_BEAT_COOLDOWN      = 12  (ticks between beats)
+ *   STORY_BEAT_COOLDOWN      = 12  (ticks between beats — one global cooldown, not per thread)
  *   STORY_BEAT_QUEUE_MAX     = 3   (max queued beats)
- *   STORY_BEAT_QUEUE_OVERFLOW_DEMOTE = true (demote vs. drop)
+ *   STORY_BEAT_QUEUE_OVERFLOW_DEMOTE = true (demote vs. drop; read in phaseAttention)
  */
 
 import {

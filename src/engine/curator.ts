@@ -9,6 +9,13 @@ import {
   MAX_CONCURRENT_TUGS,
   FOMO_OVERFLOW_RATIO,
   TICKS_PER_DAY,
+  CURATOR_W_COURT,
+  CURATOR_W_THREAT,
+  CURATOR_W_CHAIN,
+  CURATOR_W_RECENCY,
+  CURATOR_W_REACH,
+  CURATOR_W_FACTION,
+  CURATOR_W_AMBITION,
 } from '../data/attention-constants';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -38,21 +45,15 @@ export interface CurationResult {
 }
 
 // ── Scoring weights ───────────────────────────────────────────────────────────
+// Named in attention-constants.ts (THR-1218 D7); local short names for the formula.
 
-/** Weight: court position contribution to score */
-const W_COURT = 0.3;
-/** Weight: threat severity contribution to score */
-const W_THREAT = 0.15;
-/** Weight: chain progress contribution to score */
-const W_CHAIN = 0.2;
-/** Weight: agent recency penalty (negative = more recent hurts more) */
-const W_RECENCY = -0.15;
-/** Weight: reach variety bonus/penalty */
-const W_REACH = 0.1;
-/** Weight: faction relevance contribution */
-const W_FACTION = 0.1;
-/** Weight: ambition alignment contribution */
-const W_AMBITION = 0.1;
+const W_COURT = CURATOR_W_COURT;
+const W_THREAT = CURATOR_W_THREAT;
+const W_CHAIN = CURATOR_W_CHAIN;
+const W_RECENCY = CURATOR_W_RECENCY;
+const W_REACH = CURATOR_W_REACH;
+const W_FACTION = CURATOR_W_FACTION;
+const W_AMBITION = CURATOR_W_AMBITION;
 
 /** Denominator for faction relevance normalisation */
 const FACTION_THREAD_SATURATION = 5;
