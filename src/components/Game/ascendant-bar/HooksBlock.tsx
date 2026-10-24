@@ -53,7 +53,7 @@
 import React from 'react';
 import type { GameState } from '../../../types/gameState';
 import { attachmentDetailFromNode } from '../../../engine/attachmentTemplateDetail';
-import { readAgreement } from '../../../engine/agreementShape';
+import { readAgreement, agreementTermEnded } from '../../../engine/agreementShape';
 import { Tooltip } from '../../shared/Tooltip';
 import {
   HOOK_LABEL_FALLBACK,
@@ -317,6 +317,9 @@ export function extractChips(gameState: GameState): {
     // Both the flat reward shape and the nested fixture shape (THR-1920).
     const agreement = readAgreement(edgeProps);
     if (!agreement) continue;
+    // THR-1999: a debt whose term has run out is no longer a vow. The expiry pass removes
+    // the edge each tick; this covers the gap before it runs.
+    if (agreementTermEnded(agreement, gameState.tick)) continue;
 
     const counterpartyId = edge.source === ascendantId ? edge.target : edge.source;
     const counterpartyName = graph.getNode(counterpartyId)?.name;

@@ -31,20 +31,41 @@ export interface ReadAgreement extends Partial<AgreementProperties> {
 }
 
 /**
- * Has this agreement stopped binding at `tick`?
+ * Has this agreement's term run out at `tick`? Term only — `active` is not consulted.
  *
- * Nothing on the graph counts an agreement edge's `ticksRemaining` down or removes the edge when
- * its term ends, so the flat reward shape's term is read here instead: the writer stamps
- * `acquiredTick` and the full term, and the agreement lapses once `tick` reaches their sum.
- * A null term never lapses. The nested shape carries no acquisition tick, so only `active`
- * can lapse it — its behaviour is unchanged.
+ * The flat reward shape stamps `acquiredTick` and the full term, and the term ends once `tick`
+ * reaches their sum. A null term never ends. The nested shape carries no acquisition tick, so
+ * its term never ends here. `expireAgreements` (THR-1999) removes the edges this reads true for.
  */
-export function agreementLapsed(agreement: ReadAgreement, tick: number): boolean {
-  if (!agreement.active) return true;
+export function agreementTermEnded(agreement: ReadAgreement, tick: number): boolean {
   if (agreement.shape !== 'flat') return false;
   const term = agreement.ticksRemaining;
   if (term == null || agreement.acquiredTick == null) return false;
   return tick >= agreement.acquiredTick + term;
+}
+
+/**
+ * Has this agreement stopped binding at `tick`? It has when the edge reads `active: false` or
+ * its term has run out (`agreementTermEnded`). Since THR-1999 the expiry pass removes
+ * term-ended edges every tick; this read-time check still covers the window before the pass
+ * runs and a graph that has not been ticked since loading.
+ */
+export function agreementLapsed(agreement: ReadAgreement, tick: number): boolean {
+  if (!agreement.active) return true;
+  return agreementTermEnded(agreement, tick);
+}
+
+/**
+ * Ticks left on the agreement's term at `tick` — what the sheet shows (THR-1999). The flat
+ * shape's `ticksRemaining` is the full term from `acquiredTick`, so it is counted down here,
+ * floored at 0. Without a tick, or on the nested shape, the stored value is returned as-is.
+ * `null` means the agreement has no term.
+ */
+export function agreementTermRemaining(agreement: ReadAgreement, tick?: number): number | null {
+  const term = agreement.ticksRemaining ?? null;
+  if (term == null || tick === undefined) return term;
+  if (agreement.shape !== 'flat' || agreement.acquiredTick == null) return term;
+  return Math.max(0, agreement.acquiredTick + term - tick);
 }
 
 /**
