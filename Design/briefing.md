@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 13:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 14:58 local (12:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,11 +27,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 19 ready, 1 parked in progress.** [Crown courtship](https://linear.app/threadbare/issue/THR-1961) (a realm now courts a crown once per calendar day, on 84–97% of days across three test worlds) merged ([#2540](https://github.com/christianspliid-ui/threadbare/pull/2540)) and is live. Its follow-up, [the crown oath share drift](https://linear.app/threadbare/issue/THR-2017) (a younger second Crown takes 11% of its income from oaths, an older one 36%, target 15–35%), is on the shelf. A new builder run started at 11:05 UTC and is still working; it has not put a ticket in progress on the board yet.
+**Backed up: 18 ready, 2 in progress.** The builder run that started at 11:58 UTC is still working, and has [war aims picking the nearest enemy town](https://linear.app/threadbare/issue/THR-1970) in progress (tuning the distance discount so a richer target can win).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 9 days since it was first claimed. It waits on your answer above, not on the builder.
 - Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [the settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924). Most of that week is the silences above.
 
 ## Health
 
-All green. Main's CI and the three scheduled background jobs are healthy, every lane is on schedule, no PR is waiting to merge, the worktree reaper ran at 13:40, and the live site is current ([6cd08f61](https://github.com/christianspliid-ui/threadbare/commit/6cd08f61)). Engine speed read 179 ms/tick, right at the line (+25% on the 7-day median of 144) but not over it.
+- Engine speed: "tick cost 212 ms/tick steady, 48% above the 7-day median (144, 80 rows since e1a4e85e); top phase agent_decision, 602 agents. Name the merges between e1a4e85e and a992aee9: git log --oneline --merges e1a4e85e..a992aee9". The only merge since last hour's 179 ms reading is a notes-only change ([#2541](https://github.com/christianspliid-ui/threadbare/pull/2541)), and the builder was running on the same machine, so this reading may be load, not code. A job for the builder, not for you.
+- Everything else is green: main's CI and the three scheduled background jobs, every lane on schedule, no PR waiting to merge, the worktree reaper ran at 14:40, and the live site is current ([6cd08f61](https://github.com/christianspliid-ui/threadbare/commit/6cd08f61)).
