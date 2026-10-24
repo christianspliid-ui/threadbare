@@ -55,6 +55,12 @@ import type { OathKind } from '../engine/crown/types';
 export const CROWN_ENABLED = true;
 
 export const CROWN_MIN_OATHS = 2;
+/**
+ * The plan's "Oaths pay" band (15–35% of full income from oaths at day 60) is judged on
+ * each seed's leading Crown: 30% / 28% / 33% on seeds 42 / 99 / 7 (2026-10-24). A Crown
+ * with 2–3 vassals reads 11–19%. This share scales every Crown's odds alike, so it cannot
+ * close that gap (THR-2017).
+ */
 export const FEALTY_TAX_SHARE = 0.3;
 
 // ── Offer score ──
