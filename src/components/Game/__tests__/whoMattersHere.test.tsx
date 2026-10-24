@@ -7,39 +7,13 @@
 
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { NotableLine } from '../NotableLine';
 import { NotablesPanel } from '../NotablesPanel';
 import { WorldGraph } from '../../../engine/graph';
 import { agendaFlags } from '../../../engine/notableAgendas';
-import type { SettlementNotable } from '../../../engine/settlementNotable';
 import type { GameState, ActiveComposition } from '../../../types/gameState';
 
-describe('NotableLine — the settlement page (THR-1655)', () => {
-  const notable: SettlementNotable = {
-    notableId: 'a.maren',
-    notableName: 'Maren Dusk',
-    secretWithheld: false,
-    clauses: [
-      { kind: 'holds', targetId: 'loc.yard', targetName: "the Tanner's Yard", targetKind: 'sublocation' },
-      { kind: 'at_odds_with', targetId: 'a.kael', targetName: 'Kael Thornweaver', targetKind: 'agent' },
-      { kind: 'knows_secret_of', targetId: 'a.ysolde', targetName: 'Ysolde Vane', targetKind: 'agent' },
-    ],
-  };
-
-  it('renders the chip, the name, and one sentence built from the clauses', () => {
-    render(<NotableLine notable={notable} />);
-    expect(screen.getByTestId('notable-chip').textContent).toBe('Notable');
-    expect(screen.getByTestId('settlement-notable-sentence').textContent).toBe(
-      "Holds the Tanner's Yard. At odds with Kael Thornweaver. Knows something about Ysolde Vane.",
-    );
-  });
-
-  it('omits the sentence when every clause is gone, and carries no numeral', () => {
-    render(<NotableLine notable={{ ...notable, clauses: [] }} />);
-    expect(screen.queryByTestId('settlement-notable-sentence')).toBeNull();
-    expect(screen.getByTestId('settlement-notable').textContent).not.toMatch(/\d/);
-  });
-});
+// The settlement page's NotableLine retired with the sheets (THR-1991); the place page's
+// notable row is covered by the Inspector row tests.
 
 describe('NotablesPanel — Rulers and Local (THR-1655)', () => {
   function state(compositions: ActiveComposition[], flags: Record<string, unknown>): GameState {

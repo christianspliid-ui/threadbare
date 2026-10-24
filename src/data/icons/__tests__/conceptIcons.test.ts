@@ -18,13 +18,11 @@ import {
   getFallbacksDrawn,
   iconForKey,
   iconForSublocation,
-  normaliseSublocationType,
   resetConceptIconWarningsForTest,
   type IconClass,
 } from '../conceptIcons';
 import { ICON_REGISTRY } from '../iconRegistry';
 import { isIconName } from '../../../components/shared/iconShape';
-import { SUBLOCATION_CONCEPT_ART } from '../../sublocation-concept-art';
 import { SUBCATEGORY_GLYPHS } from '../../../components/Game/attachmentGlyphs';
 import { LOCATION_ICON_REGISTRY } from '../../../components/HexMapV2/locations/locationIconRegistry';
 import { CARD_SUBCATEGORY_IDS, LEGENDARY_SUBCATEGORY_ID } from '../../../components/Codex/charteredKindsCodex';
@@ -60,11 +58,8 @@ describe('every class value names a registry entry', () => {
 });
 
 describe('string-keyed sources have an entry for every live key', () => {
-  it('every sublocation type with art of its own has an icon', () => {
-    const live = Object.keys(SUBLOCATION_CONCEPT_ART).map(normaliseSublocationType);
-    expect(missingKeys(ICON_CLASSES['sublocation-type'], live)).toEqual([]);
-    expect(Object.keys(ICON_FOR_SUBLOCATION_TYPE).sort()).toEqual([...live].sort());
-  });
+  // The sublocation-type arm compared against the legacy `sublocation-concept-art.ts` table,
+  // which retired with the sheets (THR-1991); `ICON_FOR_SUBLOCATION_TYPE` is now its own source.
 
   it('every attachment subcategory the glyph table names has an icon', () => {
     expect(missingKeys(ICON_CLASSES['attachment-subcategory'], Object.keys(SUBCATEGORY_GLYPHS))).toEqual([]);

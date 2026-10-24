@@ -50,7 +50,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { elapsedLabel } from '../../../engine/aftermathWords';
 import { TICKS_PER_DAY } from '../../../data/attention-constants';
 import { sustainFlowSpheres, sustainFlowWord } from '../../../data/sustained-control-status-prose';
@@ -61,7 +61,6 @@ import { AttentionPoolIndicator } from '../AttentionPoolIndicator';
 import { SimulationControls } from '../SimulationControls';
 
 import type { MandateDefinition, MandateState } from '../../../types/mandate';
-import type { DigestEntry } from '../../../types/attention';
 
 /** Four days at `TICKS_PER_DAY` (12) — above the floor, inside the spelled-count ladder. */
 const FOUR_DAYS_IN_TICKS = 48;
@@ -181,35 +180,7 @@ describe('THR-1426 — tick timestamps and per-tick rates', () => {
     });
   });
 
-  // ── Shape 1: RecentActivityLog rows read as elapsed spans ────────────────
-
-  describe('RecentActivityLog (Shape 1)', () => {
-    const entries = [
-      {
-        encounterId: 'enc.1',
-        tick: 10,
-        reachPrimary: 'iron',
-        success: true,
-        capabilityChanges: {},
-        wasCuratedOut: false,
-      },
-    ] as unknown as DigestEntry[];
-
-    it('reads each row as an elapsed span, never a tick index', () => {
-      render(<RecentActivityLog entries={entries} lastViewedTick={0} currentTick={10 + FOUR_DAYS_IN_TICKS} />);
-      const row = screen.getByText(/ ago$/);
-      expect(row.textContent).toBe(`${FOUR_DAYS} ago`);
-      expectWordsNotTicks(row.textContent);
-    });
-
-    it('degrades to the floor rather than throwing when no current tick is supplied (NFP #4)', () => {
-      // The prop is optional because both call sites predate it. A missing clock must still
-      // render English — and must NOT render `t10`.
-      const { container } = render(<RecentActivityLog entries={entries} lastViewedTick={0} />);
-      expect(container.textContent).toContain('less than a day ago');
-      expect(container.textContent).not.toMatch(/\bt10\b/);
-    });
-  });
+  // RecentActivityLog's Shape 1 arms retired with the component (THR-1991).
 
   // ── Shape 1: MandateDetail — one row converted, one row dropped ──────────
 
