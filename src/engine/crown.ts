@@ -47,7 +47,10 @@ import { isFactionInAttention, readPurseDay, PURSE_LAST_DAY_PROP } from './facti
 import { buildCrownWorld, maySwear, mayCourt, onReswearCooldown, type CrownWorld } from './crown/eligibility';
 import { offerScore, affordableGift, giftCost } from './crown/offer';
 import { isRealmFaction, readOath, vassalsOf } from './crown/crownView';
-import { crownWagesActive } from './crown/wages';
+import { crownWagesActive, payingLiegeOf } from './crown/wages';
+import { isEnemyFaction } from './warAims/enemy';
+import { aimNewArmy } from './warAims';
+import { WAR_AIMS_ENABLED } from '../data/war-aims-constants';
 import { upkeepOf, upkeepPerDayOf } from './factionPurse/upkeep';
 import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS } from '../data/faction-purse-constants';
 import { OATH_SWORN_LINES, OATH_BROKEN_LINES } from '../data/crown-chronicle-content';
@@ -508,7 +511,9 @@ function payWages(
         }
         paid += -setWealth(graph, liegeId, -cost);
         covered.push(armyId);
+        const takenUp = payingLiegeOf(graph, armyId, tick) !== liegeId;
         armyNode.properties.armyState = { ...as, paidThroughTick: tick, liegePaidTick: tick };
+        if (takenUp) reaimOnTakeUp(state, armyId, liegeId);
       }
 
       const coveredToday = covered.length > 0;
@@ -561,14 +566,35 @@ function payWages(
 }
 
 /**
+ * THR-2020 — an army newly in its liege's pay that is still marching on a town held by
+ * someone its liege is not at war with (an aim it picked under its own banner) is re-aimed
+ * as the liege's army at once, not at the next daily re-aim: it never marches on its
+ * paymaster or a fellow vassal. Fail-soft: the objective is kept.
+ */
+function reaimOnTakeUp(state: GameState, armyId: string, liegeId: string): void {
+  if (!WAR_AIMS_ENABLED) return;
+  try {
+    const graph = state.graph;
+    const objective = (graph.getNode(armyId)?.properties.armyState as ArmyState | undefined)?.objective;
+    if (objective?.type !== 'conquer') return;
+    const holder = graph.getIncomingEdges(objective.targetNodeId, 'controls')[0]?.source;
+    if (!holder || isEnemyFaction(graph, liegeId, holder)) return;
+    aimNewArmy(state, armyId);
+  } catch (err) {
+    console.warn(`[crown] re-aim of ${armyId} on wage take-up skipped`, err);
+  }
+}
+
+/**
  * THR-2020 — the liege pays for a raise its vassal cannot. Over the surviving oaths in
  * edge-id order, after the wages: a vassal that keeps a standing army
- * (`keepsStandingArmy`), fields none, and is refused a raise by its purse alone
- * (`armyRefusal` = 'purse') gets one, when the liege's purse above
- * LIEGE_WAGE_RESERVE_DAYS of its own upkeep covers `ARMY_CREATION_GOLD_COST` plus the
- * first day's upkeep. At most one per vassal per LIEGE_RAISE_MIN_GAP_DAYS. The liege
- * pays, so the new army is stamped `liegePaidTick` like a wage day; the vassal's purse
- * is never touched. Returns how many raises were paid.
+ * (`keepsStandingArmy`), is not a realm (kill criterion 3), fields none, and is refused
+ * a raise by its purse alone (`armyRefusal` = 'purse') gets one, when the liege's purse
+ * above LIEGE_WAGE_RESERVE_DAYS of its own upkeep covers `ARMY_CREATION_GOLD_COST` plus
+ * the first day's upkeep; like a self-raise, only the raise is charged. At most one per
+ * vassal per LIEGE_RAISE_MIN_GAP_DAYS. The liege pays, so the new army is stamped
+ * `liegePaidTick` like a wage day; the vassal's purse is never touched. Returns how many
+ * raises were paid.
  */
 function fundRaises(state: GameState, surviving: readonly GraphEdge[]): number {
   if (!LIEGE_RAISE_ENABLED || !crownWagesActive()) return 0;
@@ -590,9 +616,11 @@ function fundRaises(state: GameState, surviving: readonly GraphEdge[]): number {
       if (typeof last === 'number' && tick - last < gap) continue;
       // Fields an army already, or is refused for anything but coin: not the liege's to buy.
       if (armyRefusal(state, vassalId) !== 'purse') continue;
-      const cost = ARMY_CREATION_GOLD_COST + upkeepOf(wouldRaiseSize(graph, vassalId));
+      // As a self-raise (`canAffordArmy` / `spawnArmy` charge): the raise plus a first day
+      // in hand, the raise itself charged. The next pay days run through the wages.
+      const cost = ARMY_CREATION_GOLD_COST;
       const spareBefore = Math.max(0, readWealth(liege.properties) - LIEGE_WAGE_RESERVE_DAYS * upkeepPerDayOf(graph, liegeId));
-      if (spareBefore + 1e-9 < cost) continue;
+      if (spareBefore + 1e-9 < cost + upkeepOf(wouldRaiseSize(graph, vassalId))) continue;
       const commander = selectCommander(state, vassalId);
       const ambitionId = graph.getOutgoingEdges(vassalId, 'pursues')[0]?.target;
       if (!commander || !ambitionId) continue;

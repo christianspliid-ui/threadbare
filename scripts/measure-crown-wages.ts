@@ -96,11 +96,11 @@ function runSeed(seed: number): SeedReport {
       const friendly = (holder: string | undefined) => !!holder && (holder === commander
         || (g.getOutgoingEdges(holder, 'sworn_to')[0]?.target === commander && !isEnemyFaction(g, commander, holder)));
       const target = as.objective?.type === 'conquer' ? as.objective.targetNodeId : undefined;
-      if (target && friendly(g.getIncomingEdges(target, 'controls')[0]?.source)) report.paymasterMarches++;
+      if (target && friendly(g.getIncomingEdges(target, 'controls')[0]?.source)) { report.paymasterMarches++; if (DEBUG_COMPANIES) console.error(`march tick ${state.tick} ${n.name} own ${own} commander ${commander} liegePaid ${as.liegePaidTick ?? '-'} raised ${as.raisedTick} obj ${as.objective?.type}:${as.objective?.targetNodeId ?? '-'}`); }
       for (const e of g.getOutgoingEdges(n.id, 'participates_in')) {
         const bs = g.getNode(e.target)?.properties.battleState as BattleState | undefined;
         if (bs?.battleType === 'siege' && bs.attackerArmyId === n.id && bs.settlementId
-          && friendly(g.getIncomingEdges(bs.settlementId, 'controls')[0]?.source)) report.paymasterMarches++;
+          && friendly(g.getIncomingEdges(bs.settlementId, 'controls')[0]?.source)) { report.paymasterMarches++; if (DEBUG_COMPANIES) console.error(`march tick ${state.tick} ${n.name} own ${own} commander ${commander} liegePaid ${as.liegePaidTick ?? '-'} raised ${as.raisedTick} obj ${as.objective?.type}:${as.objective?.targetNodeId ?? '-'}`); }
       }
     }
 

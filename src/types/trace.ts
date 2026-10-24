@@ -1944,7 +1944,7 @@ export interface OathRaiseFundedTrace extends TraceBase {
   vassalId: string;
   liegeId: string;
   armyId: string;
-  /** ARMY_CREATION_GOLD_COST plus the first day's upkeep. */
+  /** What the liege paid: ARMY_CREATION_GOLD_COST (it must also hold the first day's upkeep). */
   cost: number;
   /** wealth(liege) − its reserve, before the raise. */
   liegeSpareBefore: number;

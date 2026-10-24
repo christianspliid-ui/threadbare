@@ -17,6 +17,7 @@ import { readOath, oathOf } from '../crown/crownView';
 import { armyRefusal, wouldRaiseSize } from '../armySpawning';
 import { armiesOf, upkeepOf } from '../factionPurse/upkeep';
 import { commanderFactionOf } from '../warAims/enemy';
+import { PURSE_LAST_DAY_PROP } from '../factionPurse';
 import { clearTraces, getTraces, enableTracing } from '../traceBuffer';
 import { LIEGE_RAISE_MIN_GAP_DAYS, LIEGE_WAGE_RESERVE_DAYS } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS, ARMY_UPKEEP_PER_DAY } from '../../data/faction-purse-constants';
@@ -82,9 +83,9 @@ describe('the liege pays for a raise its vassal cannot', () => {
     expect(as.paidThroughTick).toBe(s.tick);
     // Stamped before it aims: the army is the liege's from its first objective.
     expect(commanderFactionOf(g, armies[0].id, s.tick)).toBe(R);
-    // The vassal's purse is untouched; the liege paid the raise and its first day (plus any tax in).
+    // The vassal's purse is untouched; the liege paid the raise, as a self-raise would.
     expect(wealth(g, CO)).toBe(0);
-    const cost = raiseCost(as.size);
+    const cost = ARMY_CREATION_GOLD_COST;
     expect(before - wealth(g, R)).toBeCloseTo(cost, 6);
     expect(readOath(oathOf(g, CO)!).liegeRaisedTick).toBe(s.tick);
     const trace = getTraces().find(t => t.category === 'oath_raise_funded') as unknown as { cost: number; armyId: string };
@@ -139,6 +140,26 @@ describe('the liege pays for a raise its vassal cannot', () => {
     expect(armyRefusal(s, CO)).toBe('purse');
     expect(runCrownPhase(s).raisesFunded).toBe(0);
     expect(armiesOf(g, CO)).toHaveLength(0);
+  });
+
+  it('an army newly in its liege\'s pay drops a march on its liege\'s town at once', () => {
+    const { g, s } = sworn(1000);
+    g.addNode({
+      id: 'army_co', type: 'actor', name: 'army_co host',
+      properties: { actorType: 'group', groupKind: 'army', armyState: { size: 'host', headcount: 300, objective: { type: 'conquer', targetNodeId: TOWN }, cohesion: 60, cohesionMax: 60, raisedTick: 0, maintenanceCost: 5, thresholdsFired: [], paidThroughTick: 0 } },
+    });
+    g.addEdge({ id: 'e_mo_army_co', source: 'army_co', target: CO, type: 'member_of', properties: { role: 'army', rank: 0 } });
+    g.addEdge({ id: 'e_at_army_co', source: 'army_co', target: CAMP, type: 'located_at', properties: {} });
+    g.getNode(CO)!.properties[PURSE_LAST_DAY_PROP] = {
+      tick: s.tick,
+      income: { townTax: 0, placeYield: 0, landRent: 0, tolls: 0, guildWork: 0, guildTaxIn: 0, guildTaxOut: 0 },
+      topSources: [], paysTo: null, upkeepOwed: 0, upkeepPaid: 0, armiesPaid: [], armiesUnpaid: ['army_co'],
+      brokeSinceTick: null, taxHolderOf: [], paidBy: [],
+    };
+    expect(runCrownPhase(s).wagesPaid).toBeGreaterThan(0);
+    const as = g.getNode('army_co')!.properties.armyState as ArmyState;
+    expect(as.liegePaidTick).toBe(s.tick);
+    expect(as.objective?.targetNodeId).not.toBe(TOWN);
   });
 
   it('a company that can pay its own raise is left to raise it itself', () => {
