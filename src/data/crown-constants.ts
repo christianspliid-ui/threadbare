@@ -40,6 +40,11 @@
  * | OATH_REFUSAL_SENTIMENT_FLOOR    | refusals alone never cross the rivalry threshold (−0.3)        |
  * | OATH_BREAK_REASON_WINDOW_DAYS   | days of loyalty losses kept on the edge to name a break        |
  * | FEALTY_LIST_FOLD                | vassals listed on the sheet before "and N more"                |
+ * | CROWN_WAGES_ENABLED             | THR-1974 switch: the liege pays, feeds and commands its vassal's soldiers |
+ * | LIEGE_WAGE_RESERVE_DAYS         | days of its own upkeep a liege keeps back before paying wages  |
+ * | LIEGE_COMMAND_WINDOW_TICKS      | how long a wage makes the army fight for and eat from the liege |
+ * | OATH_PRICE_READS_UPKEEP         | a gift is priced on what a faction costs to keep, not only its income |
+ * | WAGES_CHRONICLE_MIN_GAP_DAYS    | days between two wage chronicle lines for one pair             |
  */
 
 import type { OathKind } from '../engine/crown/types';

@@ -1715,6 +1715,11 @@ export interface DebugBridge {
    * paying liege while `liegePaidTick` is fresh (one pay day), else its own faction;
    * `supplyFactionIds` is its own faction plus that liege. `null` when the id is not an army.
    */
+  /**
+   * THR-1974 — verification lever: set a faction's purse (clamped to the treasury cap).
+   * Returns the wealth written, or null when the id is not a faction.
+   */
+  setFactionWealth: (factionId: string, amount: number) => Promise<number | null>;
   getArmyPaymaster: (armyId: string) => Promise<{
     ownFactionId: string | null;
     commanderFactionId: string | null;

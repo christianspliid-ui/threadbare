@@ -25,6 +25,7 @@ import { supplyFactionsOf, resolveSupplyLine, isSupplyHost } from '../armySupply
 import { armyAimView } from '../warAims/sheetView';
 import { runFactionPurse, readPurseDay, PURSE_LAST_DAY_PROP, MEANS_BAND_PROP } from '../factionPurse';
 import { upkeepOf } from '../factionPurse/upkeep';
+import { spendingSentence, PURSE_BROKE_LINE, PURSE_LIEGE_COVERS_LINE } from '../factionPurse/purseSentences';
 import { clearTraces, getTraces, enableTracing } from '../traceBuffer';
 import { LIEGE_WAGE_RESERVE_DAYS, LIEGE_COMMAND_WINDOW_TICKS, OATH_GIFT_DAYS, WAGES_CHRONICLE_MIN_GAP_DAYS } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS, ARMY_UPKEEP_PER_DAY } from '../../data/faction-purse-constants';
@@ -301,6 +302,13 @@ describe('the words', () => {
     expect(sentence[1]).toEqual({ text: 'Scarlet Company', ref: { kind: 'faction', id: CO } });
     expect(sentence[2]).toBe('.');
     expect(wagesPurseSentence(g, ENEMY)).toBeNull();
+  });
+
+  it('the vassal\'s own Purse sentence never says its soldiers slip away when its liege paid them', () => {
+    const { g, s } = hired();
+    expect(spendingSentence(g, readPurseDay(g.getNode(CO)), 0)).toBe(PURSE_BROKE_LINE);
+    runCrownPhase(s);
+    expect(spendingSentence(g, readPurseDay(g.getNode(CO)), 0)).toBe(PURSE_LIEGE_COVERS_LINE);
   });
 
   it('no banned word on any wage surface', () => {

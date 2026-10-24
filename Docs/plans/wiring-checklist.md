@@ -3147,6 +3147,18 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 
 **Wired and asserted:** `crown.test.ts` (23 tests) and `BorderMesh.crown.test.ts` (2 tests) — who may swear and court, one layer, the bought oath and its gift coin, refusal cooling floored above the rivalry line, coercion by a two-day siege and by a town taken within five days, the fealty tax after the vassal's day with no debt, the break (grudge, cooldown, chronicle line naming the reason), rebellion, one-layer drift repair, the derived Crown and `protectedHoldingsOf`, the projection's `crownOf` and fingerprint, and the sheet's words (no numerals, never *sworn*). The 90-day predicates are measured by `npm run measure:crown`.
 
+### Liege wages (THR-1974)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/crown.ts` (`payWages`, inside `runCrownPhase` between loyalty and the tax) | inline `crown`, daily | Fealty section clause (`fealtyView().vassal.wages`); liege Purse sentence (`wagesPurseSentence`) | army `armyState.paidThroughTick` / `liegePaidTick`; `purseLastDay.armiesPaidByLiege` / `wagesFromLiege` / `wagesToVassals`; `sworn_to.wagesCoveredLastDay` / `wagesPaidToday` / `wagesChronicledTick`; liege `wealth`; `chronicleEntries` (`wages_taken_up` / `wages_stopped`) | `oath_wages` | Economy tab → Oaths (wages today, armies covered / uncovered); `__DEBUG.getOaths` |
+| `engine/crown/wages.ts` (`payingLiegeOf`, `crownWagesActive`) → `warAims/enemy.ts` (`commanderFactionOf`, `commandBarsAttack`) | raise objective, re-aim, defence, siege start, battle start | army sheet war-aim line (`armyAimView(graph, id, tick)` `{liege}` slot, tooltip `ui.army.paidBy`) | — | `war.aim.picked` / `war.aim.hold` `commanderFactionId`; siege established / battle started `*CommanderFactionId` | Armies tab "Fights for"; `__DEBUG.getArmyPaymaster` |
+| `engine/armySupply.ts` (`supplyFactionsOf`, `isSupplyHost` list) | `army_supply` scan | — | `armyState.supplyHostId` | `army_supply_scan` `hostFactionId` | Armies tab "Fed by" |
+| `engine/crown/eligibility.ts` (`oathValueOf`) → `crown/offer.ts` | `seek_fealty` | — | — | `oath_sworn` / `oath_refused` `oathValue` | Oaths table |
+| `engine/factionPurse.ts` (Means counts yesterday's `wagesToVassals`) | `faction_purse` | Means word | `meansBand` | `economy.purse.day` `wagesToVassals` | Purse debug |
+
+**Wired and asserted:** `crownWages.test.ts` (19 tests) and `crownWages.rollback.test.ts` (1) — the price is never free; the liege pays whole armies above its reserve; the stamp commands and feeds for one pay day and a broken oath ends it at once; own wars kept; no march on the paymaster or the own hall town; a hired host lasts 30 days on an empty purse; the Means term; the words; the chronicle gap. Seeds 42/99/7: `npm run measure:crown-wages`.
+
 ## Mortal Means (THR-1936)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |

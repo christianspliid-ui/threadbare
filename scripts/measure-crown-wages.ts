@@ -23,22 +23,19 @@ import type { MapSizePreset } from '../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../src/engine/orchestrator';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
-import { createSimulationRuntime } from '../src/engine/simulationRuntime';
+import { createSimulationRuntime, ensureRealmProjection } from '../src/engine/simulationRuntime';
 import { buildCrownWorld, oathValueOf } from '../src/engine/crown/eligibility';
 import { isRealmFaction } from '../src/engine/crown/crownView';
 import { readPurseDay, readMeansBand } from '../src/engine/factionPurse';
 import { totalIncome } from '../src/engine/factionPurse/income';
 import { armiesOf, upkeepPerDayOf } from '../src/engine/factionPurse/upkeep';
 import { meansBand } from '../src/engine/factionPurse/means';
-import { buildRealmProjection } from '../src/engine/realmProjection';
 import { commanderFactionOf, isEnemyFaction } from '../src/engine/warAims/enemy';
 import { ownFactionOf } from '../src/engine/crown/wages';
-import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
 import { TICKS_PER_DAY } from '../src/data/attention-constants';
 import { LIEGE_WAGE_RESERVE_DAYS } from '../src/data/crown-constants';
 import type { ArmyState } from '../src/types/army';
 import type { BattleState } from '../src/types/battle';
-import type { OathWagesTrace } from '../src/types/trace';
 
 function argValue(flag: string): string | undefined {
   const i = process.argv.indexOf(flag);
@@ -49,6 +46,8 @@ const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
 const TICKS = Number(argValue('--ticks') ?? 1080);
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
 const KILL_WINDOW_DAYS = 10;
+const PROGRESS = process.argv.includes('--progress');
+const DEBUG_COMPANIES = process.argv.includes('--debug-companies');
 const VASSAL_COMMAND_KILL_SHARE = 0.25;
 
 interface SeedReport {
@@ -65,11 +64,10 @@ interface SeedReport {
 
 function runSeed(seed: number): SeedReport {
   resetEventCounter();
-  enableTracing();
-  clearTraces();
   const runtime = createSimulationRuntime();
   const archetype = generateArchetypes(4, seed)[0];
   const preset = MAP_SIZE_PRESETS[MAP];
+  const started = Date.now();
   let { state } = initializeGameState(archetype, 'WageMeasure', createBalancedCosmology(), seed, preset.cols, preset.rows);
 
   const report: SeedReport = {
@@ -83,6 +81,7 @@ function runSeed(seed: number): SeedReport {
 
   for (let i = 0; i < TICKS; i++) {
     state = runTick(state, [], runtime);
+    if (PROGRESS && state.tick % 120 === 0) console.error(`seed ${seed} tick ${state.tick} ${((Date.now() - started) / 1000).toFixed(0)}s`);
     const g = state.graph;
 
     // No march on the paymaster, every tick: an army fighting for its liege never aims at
@@ -106,7 +105,7 @@ function runSeed(seed: number): SeedReport {
 
     if (state.tick % TICKS_PER_DAY !== 0) continue;
     const factions = g.getNodesByType('actor').filter(n => n.properties.actorType === 'faction');
-    const world = buildCrownWorld(g, state.tick, buildRealmProjection(g, state.tiles ?? []));
+    const world = buildCrownWorld(g, state.tick, ensureRealmProjection(runtime, g, state.tiles, state.tick));
 
     // Free companies: price, reach, sworn days, armed sworn days.
     for (const f of factions) {
@@ -117,6 +116,13 @@ function runSeed(seed: number): SeedReport {
       const pd = readPurseDay(f);
       if (oathValueOf(g, f.id, pd ? totalIncome(pd.income) : 0) <= 0) row.zeroPriceDays++;
       if (world.courtRealms.some(r => (world.reach.get(r) ?? []).includes(f.id))) row.reachedDays++;
+      if (DEBUG_COMPANIES) {
+        const liege = g.getOutgoingEdges(f.id, 'sworn_to')[0]?.target;
+        const ln = liege ? g.getNode(liege) : undefined;
+        console.error(`day ${state.tick / TICKS_PER_DAY} ${f.name}: wealth ${Number(f.properties.wealth ?? 0).toFixed(1)}`
+          + ` armies ${armiesOf(g, f.id).map(a => a.id).join(',') || '-'} unpaid ${pd?.armiesUnpaid.join(',') || '-'} paidByLiege ${pd?.armiesPaidByLiege?.join(',') || '-'}`
+          + (ln ? ` · liege ${ln.name} wealth ${Number(ln.properties.wealth ?? 0).toFixed(1)} own upkeep ${upkeepPerDayOf(g, ln.id)}` : ' · free'));
+      }
       if (g.getOutgoingEdges(f.id, 'sworn_to').length > 0) {
         row.swornDays++;
         if (armiesOf(g, f.id).length > 0) row.armedSwornDays++;
@@ -124,13 +130,12 @@ function runSeed(seed: number): SeedReport {
     }
 
     // Wages paid today, by liege; the reserve invariant; kill criterion 1.
+    // Read off the purse days the crown phase wrote today (no trace buffer: it is slow at this length).
     const paidToday = new Map<string, number>();
-    for (const t of getTraces()) {
-      if (t.category !== 'oath_wages' || t.tick !== state.tick) continue;
-      const w = t as unknown as OathWagesTrace;
-      if (w.paid > 0) paidToday.set(w.liegeId, (paidToday.get(w.liegeId) ?? 0) + w.paid);
+    for (const f of factions) {
+      const pd = readPurseDay(f);
+      if (pd && pd.tick === state.tick && (pd.wagesToVassals ?? 0) > 0) paidToday.set(f.id, pd.wagesToVassals!);
     }
-    clearTraces();
     if (paidToday.size > 0) report.wagePayDays++;
     for (const f of factions) {
       const list = recentWages.get(f.id) ?? [];

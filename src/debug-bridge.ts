@@ -2722,6 +2722,19 @@ if (import.meta.env.DEV) {
         supplyFactionIds: supplyFactionsOf(state.graph, armyId, state.tick),
       };
     },
+    /**
+     * THR-1974 — verification lever: set a faction's purse (clamped through
+     * `applyTreasuryDelta`), so a vassal's next pay day can leave its army unpaid and the
+     * real wage step pay it. Returns the wealth written, or null when the id is not a faction.
+     */
+    setFactionWealth: async (factionId: string, amount: number) => {
+      const state = _gameStateProvider?.();
+      const node = state?.graph.getNode(factionId);
+      if (!state || !node || node.properties.actorType !== 'faction' || !Number.isFinite(amount)) return null;
+      const { applyTreasuryDelta } = await import('./engine/wealth');
+      node.properties.wealth = applyTreasuryDelta(0, Math.max(0, amount));
+      return node.properties.wealth as number;
+    },
     /** THR-1932 — every live oath, vassal → liege, with the edge's properties. */
     getOaths: async () => {
       const state = _gameStateProvider?.();
