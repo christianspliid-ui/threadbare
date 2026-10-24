@@ -111,6 +111,9 @@ function writeAmbitionTarget(graph: WorldGraph, armyId: string, objective: ArmyO
   graph.updateNode(amb.id, { properties: { targetNodeId: objective.targetNodeId } });
 }
 
+/** THR-1970 — relative margin a town's worth must clear to read richer than the nearest's. */
+const RICHER_WORTH_TOLERANCE = 1e-9;
+
 function tracePicked(state: GameState, armyId: string, factionId: string, pick: WarAimPick): void {
   const best = pick.scored[0];
   if (pick.objective && best) {
@@ -119,7 +122,10 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
     // the score keeps every multiplier the pick used (bonuses and the revenge focus).
     const worth = (s: ScoredTown) => s.score * (1 + s.hexes / WAR_AIM_HALF_VALUE_HEXES);
     const nearest = pick.scored.find(s => s.townId === pick.nearestEnemyTownId);
-    const richerThanNearest = nearest ? pick.scored.some(s => worth(s) > worth(nearest)) : false;
+    // The round trip through the discount leaves float noise; equal worths must not read as richer.
+    const richerThanNearest = nearest
+      ? pick.scored.some(s => worth(s) > worth(nearest) * (1 + RICHER_WORTH_TOLERANCE))
+      : false;
     emitTrace({
       tick: state.tick,
       category: 'war.aim.picked',

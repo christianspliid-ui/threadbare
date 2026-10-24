@@ -216,6 +216,10 @@ describe('the richest enemy town in reach (§ Engine 3)', () => {
     const rich = warWorld();
     rich.getNode('t3')!.properties.prosperity = 99;
     expect(pickedTrace(rich)).toMatchObject({ townId: 't3', nearestEnemyTownId: 't3', richerThanNearest: false });
+    // Equal worths at different distances: round-off from undoing the discount is not "richer".
+    const even = warWorld();
+    even.getNode('t3')!.properties.prosperity = 95;
+    expect(pickedTrace(even)).toMatchObject({ townId: 't3', nearestEnemyTownId: 't3', richerThanNearest: false });
     clearTraces();
   });
 
