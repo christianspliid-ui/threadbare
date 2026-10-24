@@ -93,8 +93,9 @@ export const MEANS_EARNING_CELLS: ReadonlySet<string> = new Set([
  *   2. the founding-starvation floor — `npm run measure:founding-starvation`, patron arm:
  *      on every gate seed (`FOUNDING_GATE_SEEDS`), foundings with costs and the patron on
  *      are at least `FOUNDING_STARVATION_FLOOR` × foundings with costs off.
- * Stays off: comfort pace measured 514 ticks against 120 (THR-1952), and seed 42 fails
- * the floor even with the patron (1 against 2.5, THR-2006).
+ * Stays off: comfort pace measured 514 ticks against 120 (THR-1952). The floor passes
+ * with the patron (THR-2008, 2026-10-24, 600 ticks: seeds 7/42/99 founded 2/4/4 with
+ * costs and the patron on against 2/5/3 with costs off; 1/2/0 with costs alone).
  */
 export const MEANS_CELL_COST_ENABLED = false;
 
