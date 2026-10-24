@@ -135,6 +135,19 @@ export interface ThreadEdgeProperties {
    * decision. Absent = count from `establishedTick`.
    */
   lastStoryChapterStartTick?: number;
+  /**
+   * THR-1959 — tick a paused mortal last set out on the restless road (a story
+   * drought sent her toward a place that holds one). Gates the next road by
+   * RESTLESS_ROAD_COOLDOWN_TICKS. Absent = never.
+   */
+  lastRestlessRoadTick?: number;
+  /**
+   * THR-1959 — tick of her last restless-road check of any outcome (set out,
+   * story at home, no destination). The next check waits
+   * RESTLESS_ROAD_COOLDOWN_TICKS, so a drought the road cannot end costs one
+   * cache scan per four days, not one per decision. Absent = never checked.
+   */
+  restlessRoadCheckTick?: number;
 
   // ── Journey state (Phase 2+, only for The First) ───────────
   /** Current Campbellian journey phase. */

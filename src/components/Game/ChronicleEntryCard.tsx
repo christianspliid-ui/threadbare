@@ -1,5 +1,6 @@
 import type { ChronicleEntry } from '../../types/narrative';
 import { elapsedLabel } from '../../engine/aftermathWords';
+import { EntityLink } from '../shared/EntityLink';
 
 export type ChronicleVoiceMode = 'interleaved' | 'poet' | 'witness';
 
@@ -74,7 +75,15 @@ export function ChronicleEntryCard({ entry, voiceMode, currentTick }: ChronicleE
           }}
         >
           {witnessBullets.map((fact, i) => (
-            <li key={i}>{fact}</li>
+            // THR-1959: the producer's segments are the first witness line with its names
+            // declared (Law 2); a segment with a ref is a link (Law 21).
+            <li key={i} data-testid={i === 0 && entry.segments ? 'chronicle-linked-line' : undefined}>
+              {i === 0 && entry.segments
+                ? entry.segments.map((seg, j) => (seg.ref
+                  ? <EntityLink key={j} id={seg.ref.id} name={seg.text} entityRef={seg.ref} />
+                  : <span key={j}>{seg.text}</span>))
+                : fact}
+            </li>
           ))}
         </ul>
       )}

@@ -45,12 +45,13 @@ import { computeEdgeCost } from './movementCost';
 import { emitTrace, emitPhaseTiming, isProfilingEnabled, isTracingEnabled } from './traceBuffer';
 import { countConsecutiveFailures, isFailedOutcome, computeSetbackShift } from './engagementWindow';
 import { isEncounterAction } from './chapterArchive';
-import { isPausedThreadActor, applyStoryTellingsCap, recordStoryChapterStart } from './attentionCadence';
+import { isPausedThreadActor, applyStoryTellingsCap, recordStoryChapterStart, isRoutineTemplate, isTellingsCapRelaxed } from './attentionCadence';
+import { restlessRoadDue, findRestlessRoadDestination, recordRestlessRoad, emitRestlessRoadTrace, buildRestlessRoadEvent } from './restlessRoad';
 import { FAILED_TEMPLATE_COOLDOWN_MULT, ENGAGE_WINDOW_LOW, ENGAGE_WINDOW_HIGH, ENGAGE_PERSONALITY_SHIFT } from '../data/agent-behavior-constants';
 import { META_VALUE_PAIR } from '../types/agent';
 import type { EngagementDecisionTrace } from '../types/trace';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, PAUSED_STORY_REPEAT_FLOOR_TICKS, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, PAUSED_STORY_REPEAT_FLOOR_TICKS, PAUSED_STORY_MAX_TELLINGS, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD, NOVELTY_EMA_DECAY } from '../data/agent-behavior-constants';
 import {
   REROUTE_SCORE_MULTIPLIER,
   ARRIVAL_GOAL_COMMITMENT_MULTIPLIER,
@@ -408,6 +409,61 @@ function buildEncounterPoolSnapshot(
       selected: isSelectedPoolCandidate(candidate, selected),
     };
   });
+}
+
+// ─── Travel (THR-1959) ──────────────────────────────────────────────────────
+
+/**
+ * Set a mortal moving to `destId` — forced travel's path, extracted so the
+ * restless road (THR-1959) shares it: road-aware graph path first, hex A*
+ * fallback, through `initMovementState` (the one movement writer, THR-1142).
+ * Resets `consecutiveIdleTicks`. `false` when neither path finds a way.
+ */
+function startTravelTo(
+  graph: WorldGraph,
+  agentId: string,
+  actor: GraphNode,
+  fromLocationId: string,
+  destId: string,
+  tiles: Parameters<typeof buildHexMovementPath>[3],
+  tick: number,
+): boolean {
+  // Try graph-based pathfinding first (uses roads), fall back to hex A* (raw terrain)
+  const graphPath = findShortestPath(graph, agentId, fromLocationId, destId);
+  if (graphPath && graphPath.path.length > 0) {
+    const firstSeg = graphPath.roadSegments?.find(
+      seg => (seg.fromId === fromLocationId && seg.toId === graphPath.path[0]) ||
+             (seg.toId === fromLocationId && seg.fromId === graphPath.path[0]),
+    );
+    const firstEdgeCost = firstSeg
+      ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length - 1)
+      : computeEdgeCost(graph, agentId, fromLocationId, graphPath.path[0]).totalCost;
+    const movState = initMovementState(
+      destId,
+      graphPath.path,
+      firstEdgeCost,
+      tick,
+      graphPath.roadSegments ?? undefined,
+      fromLocationId,
+    );
+    graph.updateNode(agentId, {
+      properties: { ...actor.properties, movementState: movState, consecutiveIdleTicks: 0 },
+    });
+    return true;
+  }
+  // Graph pathfinding failed (no adjacent edges) — fall back to hex-based A*
+  const hexPath = buildHexMovementPath(graph, fromLocationId, destId, tiles);
+  if (!hexPath) return false;
+  const movState = initMovementState(
+    hexPath.destinationId,
+    hexPath.locationIds,
+    hexPath.firstEdgeCost,
+    tick,
+  );
+  graph.updateNode(agentId, {
+    properties: { ...actor.properties, movementState: movState, consecutiveIdleTicks: 0 },
+  });
+  return true;
 }
 
 // ─── Appointments (THR-1479) ────────────────────────────────────────────────
@@ -1039,6 +1095,50 @@ export function phaseAgentDecision(
         // THR-1218 D4: every paused mortal, and the bonded First in either mode.
         isPausedThreadActor(graph, agentId) || isBondedFirstActor(graph, agentId) ? PAUSED_STORY_REPEAT_FLOOR_TICKS : 0,
       );
+
+      // THR-1959 (THR-1218 D6 / E5) — the restless road. A paused mortal six days
+      // without a story, with no story among the candidates she can actually draw,
+      // sets out for the nearest place that holds one. Runs on the real candidate
+      // list (after the tellings cap and cooldown), so "no story in reach" is the
+      // decision's own verdict. A mortal with an appointment keeps it (THR-1479).
+      const roadDrought = appointmentCtx ? null : restlessRoadDue(graph, agentId, state.tick);
+      if (roadDrought !== null) {
+        if (candidates.some(c => !isRoutineTemplate(c.templateId))) {
+          recordRestlessRoad(graph, agentId, state.tick, 'story_at_home');
+          emitRestlessRoadTrace(state.tick, agentId, roadDrought, 'story_at_home', locationId, null);
+        } else {
+          const relaxed = isTellingsCapRelaxed(graph, agentId, state.tick);
+          const mayStillDraw = (storyEntries: EncounterCacheEntry[]): EncounterCacheEntry[] => {
+            const open = storyEntries.filter(e => {
+              const told = familiarityRecord.attemptCount[e.templateId] ?? 0;
+              return told < MAX_COMPLETIONS_PER_TEMPLATE && (relaxed || told < PAUSED_STORY_MAX_TELLINGS);
+            });
+            return filterByCooldown(
+              open, agentId, state.encounterProgress, state.unifiedActions, state.tick,
+              rawCandidates.length, state.chapterArchive, PAUSED_STORY_REPEAT_FLOOR_TICKS,
+            );
+          };
+          const dest = findRestlessRoadDestination(graph, locationId, encounterCache.getAllEntries(), mayStillDraw);
+          const setOut = dest !== null
+            && startTravelTo(graph, agentId, graph.getNode(agentId) ?? actor, locationId, dest.locationId, state.tiles, state.tick);
+          const outcome = setOut ? 'set_out' : 'no_destination';
+          recordRestlessRoad(graph, agentId, state.tick, outcome);
+          emitRestlessRoadTrace(state.tick, agentId, roadDrought, outcome, locationId, setOut ? dest : null);
+          if (setOut && dest) {
+            // Law 45: the line lands only once the move is set.
+            newEvents.push(buildRestlessRoadEvent(graph, agentId, dest.locationId, state.tick));
+            appendEvent(agentId, {
+              phase: 'IDLE',
+              tick: state.tick,
+              reason: 'restless_road',
+              idleAction: 'restless_road',
+              driftTarget: graph.getNode(dest.locationId)?.name ?? dest.locationId,
+            });
+            if (runtime) touchWorld(runtime);
+            continue;
+          }
+        }
+      }
 
       // Combine doom identity + omen encounter biases (additive; each capped at ±IDENTITY_ENCOUNTER_BIAS_CAP)
       const identityBias = state.doomIdentityMatrix?.encounterPoolBias ?? {};
@@ -2494,45 +2594,7 @@ export function phaseAgentDecision(
           }
 
           if (nearestContentLocId && !heldAtAppointment(nearestContentLocId, 'forced_travel')) {
-            // Try graph-based pathfinding first (uses roads), fall back to hex A* (raw terrain)
-            const graphPath = findShortestPath(graph, agentId, locationId, nearestContentLocId);
-            let didMove = false;
-            if (graphPath && graphPath.path.length > 0) {
-              const firstSeg = graphPath.roadSegments?.find(
-                seg => (seg.fromId === locationId && seg.toId === graphPath.path[0]) ||
-                       (seg.toId === locationId && seg.fromId === graphPath.path[0]),
-              );
-              const firstEdgeCost = firstSeg
-                ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length - 1)
-                : computeEdgeCost(graph, agentId, locationId, graphPath.path[0]).totalCost;
-              const forcedMovState = initMovementState(
-                nearestContentLocId,
-                graphPath.path,
-                firstEdgeCost,
-                state.tick,
-                graphPath.roadSegments ?? undefined,
-                locationId,
-              );
-              graph.updateNode(agentId, {
-                properties: { ...actor.properties, movementState: forcedMovState, consecutiveIdleTicks: 0 },
-              });
-              didMove = true;
-            } else {
-              // Graph pathfinding failed (no adjacent edges) — fall back to hex-based A*
-              const hexPath = buildHexMovementPath(graph, locationId, nearestContentLocId, state.tiles);
-              if (hexPath) {
-                const forcedMovState = initMovementState(
-                  hexPath.destinationId,
-                  hexPath.locationIds,
-                  hexPath.firstEdgeCost,
-                  state.tick,
-                );
-                graph.updateNode(agentId, {
-                  properties: { ...actor.properties, movementState: forcedMovState, consecutiveIdleTicks: 0 },
-                });
-                didMove = true;
-              }
-            }
+            const didMove = startTravelTo(graph, agentId, actor, locationId, nearestContentLocId, state.tiles, state.tick);
 
             if (didMove) {
               const destNode = graph.getNode(nearestContentLocId);

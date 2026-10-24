@@ -779,11 +779,24 @@ export const PAUSED_STORY_MAX_TELLINGS = 2;
 
 /**
  * THR-1218 D6 — ticks with no story chapter after which a paused mortal takes
- * the restless road (S2, THR-1959). 72 = six days. INERT until S2 wires its
- * reader (no engine module reads it yet, and it is not in the CMS list); S1
- * defines it only so STORY_DROUGHT_RELAX_TICKS can be pinned above it.
+ * the restless road (THR-1959, `restlessRoad.ts`): with no story she may still
+ * draw in reach, she sets out for the nearest place whose encounters hold one.
+ * 72 = six days.
  * @range 24–240 */
 export const STORY_DROUGHT_TICKS = 72;
+
+/**
+ * THR-1959 — at most one restless road per this many ticks for one mortal
+ * (48 = four days), so a drought that a journey does not end cannot send her
+ * on the road every decision.
+ * @range 12–240 */
+export const RESTLESS_ROAD_COOLDOWN_TICKS = 48;
+
+/**
+ * THR-1959 — farthest destination, in hexes, the restless road searches. Beyond
+ * it she stays home and the tellings cap relaxes later (STORY_DROUGHT_RELAX_TICKS).
+ * @range 3–40 */
+export const RESTLESS_ROAD_MAX_HEXES = 12;
 
 /**
  * THR-1218 D5 — ticks with no story chapter after which the tellings cap

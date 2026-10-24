@@ -21,7 +21,13 @@
  *   - PASS when own-draw story chapters per seed are not fewer than the baseline's
  *     (BASELINE_OWN_DRAW_STORY at 617802fb) minus one;
  *   - WARN when a story chapter follows its own family in more than
- *     FAMILY_REPEAT_WARN_RATIO of consecutive pairs (D3's tripwire).
+ *     FAMILY_REPEAT_WARN_RATIO of consecutive pairs (D3's tripwire);
+ *   - PASS when every drought window (her drought anchor unchanged) that ran
+ *     RESTLESS_ROAD_COOLDOWN_TICKS past STORY_DROUGHT_TICKS holds at least one
+ *     `agent.restless_road` check (THR-1959 S2). The check runs at her next free
+ *     decision past the threshold, so a window with none means the trigger never
+ *     fired. Each window's outcomes and the first check's delay are listed;
+ *     `no_destination` is listed, not failed (the relax window covers it).
  *
  * Usage:
  *   npm run census:rhythm                                        # seeds 42,7,1234 × 600 ticks, medium
@@ -37,7 +43,9 @@ import { createSimulationRuntime, touchStructure } from '../src/engine/simulatio
 import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
 import { UNIFIED_ACTION_TEMPLATES, LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../src/data/unified-action-templates';
 import { getAgentLocationId, getThreadTo } from '../src/engine/graphQueries';
-import { PAUSED_STORY_MAX_TELLINGS, STORY_DROUGHT_RELAX_TICKS } from '../src/data/agent-behavior-constants';
+import { PAUSED_STORY_MAX_TELLINGS, STORY_DROUGHT_RELAX_TICKS, STORY_DROUGHT_TICKS, RESTLESS_ROAD_COOLDOWN_TICKS } from '../src/data/agent-behavior-constants';
+import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
+import type { RestlessRoadTrace } from '../src/types/trace';
 
 /**
  * Own-draw story chapters of The First per seed, 600 ticks, medium, on main
@@ -98,6 +106,14 @@ function runSeed(seed: number) {
   const firstId = devSeedTheFirst(state);
   touchStructure(runtime);
   const established = (getThreadTo(state.graph, firstId)?.properties?.establishedTick as number | undefined) ?? 0;
+  enableTracing();
+  clearTraces();
+  /** THR-1959 — drought windows: one per drought anchor, with the restless-road checks inside it. */
+  const windows: Array<{ anchor: number; endTick: number; roads: RestlessRoadTrace[]; openedBy: string }> = [];
+  const anchorNow = () => {
+    const a = getThreadTo(state.graph, firstId)?.properties?.lastStoryChapterStartTick;
+    return typeof a === 'number' ? a : established;
+  };
 
   const seen = new Set<string>();
   const seenNotif = new Set<string>();
@@ -132,6 +148,20 @@ function runSeed(seed: number) {
       chapters.push(ch);
       byAction.set(a.actionId, ch);
     }
+    const anchor = anchorNow();
+    const cur = windows[windows.length - 1];
+    if (!cur || cur.anchor !== anchor) {
+      // What started the story that moved her anchor — any non-routine template counts.
+      const opener = (state.unifiedActions ?? []).find(a => a.actorId === firstId && a.startTick === anchor);
+      windows.push({ anchor, endTick: state.tick, roads: [], openedBy: opener?.templateId ?? '(start)' });
+    } else cur.endTick = state.tick;
+    for (const t of getTraces()) {
+      if (t.category !== 'agent.restless_road' || t.agentId !== firstId) continue;
+      const road = t as unknown as RestlessRoadTrace;
+      const w = windows.find(x => x.anchor === road.tick - road.droughtTicks) ?? windows[windows.length - 1];
+      w.roads.push(road);
+    }
+    clearTraces();
     for (const n of state.encounterNotifications ?? []) {
       if (seenNotif.has(n.id)) continue;
       seenNotif.add(n.id);
@@ -167,7 +197,7 @@ function runSeed(seed: number) {
     ch.halted = r?.halted ?? false;
     ch.aftermath = r?.aftermath ?? false;
   }
-  return { seed, firstId, established, chapters, endTick: state.tick };
+  return { seed, firstId, established, chapters, endTick: state.tick, windows };
 }
 
 type SeedResult = ReturnType<typeof runSeed>;
@@ -239,7 +269,31 @@ function report(r: SeedResult) {
     console.log(`  ${String(counts.get(loc)).padStart(2)} / ${set.size}  ${loc}`);
   }
 
-  return { own: own.length, violations, familyRatio };
+  // THR-1959 — the restless road: every drought window that reached the threshold.
+  const roadMisses: string[] = [];
+  let setOuts = 0;
+  console.log(`restless road (drought windows reaching ${STORY_DROUGHT_TICKS} ticks):`);
+  for (const w of r.windows) {
+    const threshold = w.anchor + STORY_DROUGHT_TICKS;
+    if (w.endTick < threshold) continue;
+    setOuts += w.roads.filter(x => x.outcome === 'set_out').length;
+    const first = w.roads[0];
+    const outcomes = w.roads.map(x => `t${x.tick} ${x.outcome}${x.toLocationId ? ` → ${x.toLocationId} (${x.hexDistance} hex)` : ''}`).join('; ') || 'none';
+    console.log(`  anchor t${w.anchor}, threshold t${threshold}, window ends t${w.endTick}: first check ${first ? `+${first.tick - threshold}t` : '-'} — ${outcomes}`);
+    if (!first && w.endTick - threshold >= RESTLESS_ROAD_COOLDOWN_TICKS) {
+      roadMisses.push(`anchor t${w.anchor}: no restless-road check in ${w.endTick - threshold} ticks past the threshold`);
+    }
+  }
+  if (!r.windows.some(w => w.endTick >= w.anchor + STORY_DROUGHT_TICKS)) console.log('  (no drought reached the threshold)');
+  const longest = r.windows.reduce((m, w) => Math.max(m, w.endTick - w.anchor), 0);
+  const openers = new Map<string, number>();
+  for (const w of r.windows) {
+    const key = w.openedBy.split('.').slice(0, 2).join('.');
+    openers.set(key, (openers.get(key) ?? 0) + 1);
+  }
+  console.log(`  longest drought window: ${longest} ticks; drought anchors set by (template prefix): ${[...openers.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => `${k}×${n}`).join(', ')}`);
+
+  return { own: own.length, violations, familyRatio, roadMisses, setOuts };
 }
 
 let failed = false;
@@ -267,6 +321,10 @@ for (const seed of seeds) {
   verdicts.push(v.familyRatio > FAMILY_REPEAT_WARN_RATIO
     ? `WARN seed ${seed}: family repeats ${(v.familyRatio * 100).toFixed(1)}% > ${FAMILY_REPEAT_WARN_RATIO * 100}% (revisit D3)`
     : `PASS seed ${seed}: family repeats ${(v.familyRatio * 100).toFixed(1)}% ≤ ${FAMILY_REPEAT_WARN_RATIO * 100}%`);
+  verdicts.push(v.roadMisses.length === 0
+    ? `PASS seed ${seed}: every drought past the threshold was checked by the restless road (${v.setOuts} set out)`
+    : `FAIL seed ${seed}: restless road never fired — ${v.roadMisses.join('; ')}`);
+  if (v.roadMisses.length > 0) failed = true;
 }
 console.log('\n## verdict');
 for (const line of verdicts) console.log(line);

@@ -1803,7 +1803,7 @@ if (import.meta.env.DEV) {
      * life (routine) vs story. Omit `agentId` to read the thread at court
      * position `the_first`. How a Done-when proves "The First asks" is wired.
      * THR-1218 adds the firing-rhythm fields: the story drought, tellings per story
-     * template, whether the tellings cap is relaxed, and the restless road (S2).
+     * template, whether the tellings cap is relaxed, and the restless road (THR-1959).
      */
     getAttentionCadence: async (agentId?: string) => {
       const state = _gameStateProvider?.();
@@ -1840,8 +1840,9 @@ if (import.meta.env.DEV) {
         ),
         maxTellings: PAUSED_STORY_MAX_TELLINGS,
         tellingsCapRelaxed: isTellingsCapRelaxed(graph, thread.target, tick),
-        // THR-1959 (S2) writes it; null until the restless road ships.
-        lastRestlessRoadTick: null as number | null,
+        // THR-1959 — the tick she last set out on the restless road, or null.
+        lastRestlessRoadTick: props.lastRestlessRoadTick ?? null,
+        restlessRoadCheckTick: props.restlessRoadCheckTick ?? null,
         tick,
       };
     },

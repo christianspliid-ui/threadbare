@@ -120,6 +120,7 @@ export type TraceCategory =
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'attention.story_breath_start' | 'attention.routine_suppressed' // THR-1715
   | 'encounter.tellings_capped' // THR-1218
+  | 'agent.restless_road' // THR-1959
   | 'first_path_recalled' // THR-1988
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
@@ -751,6 +752,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'attention.story_breath_start', 'attention.routine_suppressed',
   'encounter.tellings_capped',
+  'agent.restless_road',
   'first_path_recalled',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
@@ -2550,6 +2552,25 @@ export interface TellingsCappedTrace extends TraceBase {
   /** Story candidates left after the cap. */
   remainingStoryCandidates: number;
   relaxed: false;
+}
+
+/**
+ * Trace: the restless road (THR-1959, THR-1218 D6). Emitted each time a paused
+ * mortal's story drought reaches STORY_DROUGHT_TICKS (cooldown permitting):
+ * `set_out` when she took the road, `story_at_home` when a story is already
+ * among her candidates, `no_destination` when no place in reach holds one she
+ * may still draw (or no path leads there).
+ */
+export interface RestlessRoadTrace extends TraceBase {
+  category: 'agent.restless_road';
+  agentId: string;
+  droughtTicks: number;
+  outcome: 'set_out' | 'story_at_home' | 'no_destination';
+  fromLocationId: string;
+  toLocationId: string | null;
+  hexDistance: number | null;
+  /** The drawable story templates at the destination (empty unless one was found). */
+  storyTemplateIds: string[];
 }
 
 /** Trace: The First's first chapter after the bond opens by recalling the path the god chose (THR-1988). */
@@ -5175,6 +5196,7 @@ export type TraceEntry =
   | FilterPipelineTrace
   | StoryBreathStartTrace
   | TellingsCappedTrace
+  | RestlessRoadTrace
   | FirstPathRecalledTrace
   | RoutineSuppressedTrace
   | ScoringTrace

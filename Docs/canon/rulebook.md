@@ -233,6 +233,8 @@ An encounter is not a flat success/fail roll. It is a **framed chapter** — a c
 
 **A followed mortal rarely tells the same story twice** [IMPL — THR-1218: `PAUSED_STORY_MAX_TELLINGS` (2) and `PAUSED_STORY_REPEAT_FLOOR_TICKS` (five days) in [src/data/agent-behavior-constants.ts](../../src/data/agent-behavior-constants.ts), applied by `applyStoryTellingsCap` in [src/engine/attentionCadence.ts](../../src/engine/attentionCadence.ts)]. A mortal whose thread asks you (pause mode) tells one story at most twice while another is within reach, and never restarts a story she just told within five days. With no other story near her she lives her daily life instead of retelling. After eight days with no story at all the limit lifts until her next one begins. Chores are never limited, and nothing caps how many chapters come.
 
+**A mortal with no story nearby goes looking for one** [IMPL — THR-1959: `STORY_DROUGHT_TICKS` (six days), `RESTLESS_ROAD_COOLDOWN_TICKS` (four days) and `RESTLESS_ROAD_MAX_HEXES` (12) in [src/data/agent-behavior-constants.ts](../../src/data/agent-behavior-constants.ts), applied in [src/engine/restlessRoad.ts](../../src/engine/restlessRoad.ts)]. A mortal whose thread asks you (pause mode) who has gone six days without a story, and has none she can take up where she stands, sets out for the nearest place within twelve hexes that holds one she has not told out. It is her own restlessness, not your command, and the Chronicle says so: *"Thessa grows restless and takes the road to Greywater."* She goes looking at most once every four days. If no such place is near, she stays, and after eight days the limit on retelling lifts instead.
+
 **Encounter awareness is hex-granular** [IMPL — `encounterAwareness.ts`]. If you can see a hex, you see everything on it — every location, sublocation, and encounter. Cross-hex visibility is computed as hex coordinate distance vs. per-reach awareness hops. The distance matrix between locations is *not* used for encounter awareness; we resolve to the hex level [IMPL — rejected approach: location-hop awareness, see [CLAUDE.md](../../CLAUDE.md) Rejected Approaches].
 
 **Resolution is unified: sigmoid → d100** [IMPL — `src/engine/resolution.ts`]. Domain Capability scores feed a sigmoid that produces a probability; a seeded d100 roll resolves against it. A step's difficulty is the proficiency it demands: a mortal exactly as able as the step demands faces roughly an even gamble (*uncertain*), and every point of difference moves the odds [IMPL — THR-1581, `computeResolutionThreshold`: 0.40 at par, 1.25 points of chance per point of capability gap; the scale floors retired]. No alternative dice systems, no special-case resolution. The same curve governs a peasant attempting to overthrow a kingdom and an Ascendant attempting to bind an entropy well [IMPL — load-bearing decision in [CLAUDE.md](../../CLAUDE.md)].
@@ -674,6 +676,8 @@ When the next quarterly architecture-assessment runs, the deferred items (4, 5) 
 ---
 
 ## Last-reviewed
+
+2026-10-24 by Claude Code (THR-1959 — the restless road. §7 gains **A mortal with no story nearby goes looking for one** `[IMPL]`: the six-day drought, the four-day patience between searches, and the twelve-hex reach.)
 
 2026-10-23 by Claude Code (THR-1218 S1 — the firing rhythm. §7 gains **A followed mortal rarely tells the same story twice** `[IMPL]`: the tellings cap, the repeat floor for every paused mortal, and the eight-day relax.)
 
