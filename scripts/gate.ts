@@ -145,7 +145,8 @@ export interface GateResult {
  * `lint:plan-doc` is advisory (verification-gates.md step 5) and exits 0 without
  * `--strict` however many errors it prints, so its exit code says nothing. Its
  * `[ERROR]` lines become a WARN verdict rather than a FAIL — the gate must not
- * make blocking what the policy keeps advisory, nor hide it.
+ * make blocking what the policy keeps advisory, nor hide it. The one exception is
+ * the plan-size cap (THR-1948), which exits 1 on its own and so FAILs here.
  */
 export function warnPlanDocLint(output: string): string | null {
   const errors = output.split(/\r?\n/).filter((line) => /^\[ERROR\]/.test(line.trim())).length;

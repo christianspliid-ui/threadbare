@@ -2,7 +2,7 @@
 name: encounter-pipeline
 description: Automated encounter pipeline v3 — the Encounter Factory line. Runs brief → draft → bounded critic loop → machine gates → live proof → batch report for composition-complete encounter delivery, one encounter or a batch of six. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", "encounter batch", "run a batch", or "/encounter-pipeline".
 model: opus
-last_validated_against: 2026-10-15
+last_validated_against: 2026-10-24
 validated_doctrine: prose@2
 ---
 
@@ -43,7 +43,7 @@ renders the fallback forever, a seed on an unreached band never plants. Both sta
 needed and neither substitutes for the other.
 
 **Park, don't kill (ruling 4).** Two failed critic loops ends the loop, not the
-encounter: the draft is committed to `Docs/plans/encounters/<slug>-parked.md` with the
+encounter: the draft is written to `Docs/plans/encounters/<slug>-parked.md` (published to `ops`, not main — § What reaches main) with the
 critic's outstanding fix-list, and the batch report carries it as parked. An encounter
 that survived two critics is worth salvaging by a human; the previous behaviour
 (escalate and redraft) threw away the work and re-spent the tokens.
@@ -181,6 +181,22 @@ Derive a kebab-case slug from the premise:
 - "tax collector's dilemma" → `tax-collector-dilemma`
 
 All output files go to `Docs/plans/encounters/<slug>-<pass>.md`.
+
+### What reaches main (THR-1948)
+
+Only four kinds of file under `Docs/plans/encounters/` are committed: the batch brief
+(`<slug>-brief.md`, Stage 0 — `check:authoring-brief` reads it), `<slug>.package.json`,
+`<slug>-final.md` and `batch-report-<date>.md`. The intermediates — `-draft`,
+`-editorial`, `-revised`, `-systems`, `-package.md` and `-parked` — are written to the
+worktree for the next pass to read and stay there; `.gitignore` keeps them out of
+`git add -A`. The batch report carries the Package-critic verdict verbatim, so
+`-package.md` has done its job once Stage 5 has run. A parked encounter's file is the one
+intermediate a later session needs: publish it with
+`bash scripts/ops-publish.sh -m "park <slug>" Docs/plans/encounters/<slug>-parked.md`
+and name the `ops` path in the batch report. Why: 18 encounters committed 113 files
+(~33,500 lines) — six documents per encounter that nobody reads twice, in every agent's
+search space. Intermediates already on main from earlier batches stay where they are
+(encounter files' header comments link them).
 
 ---
 
@@ -476,7 +492,7 @@ Agent runs: `npm test`, `npm run check:typecheck`, `npx vite build`
 > unconditionally no matter how broken the code is, and citing that exit 0 as evidence is
 > gate theater (THR-686). `npm run check:typecheck` is the identical ratchet CI runs.
 
-**On completion:** commit and push. Report to user.
+**On completion:** commit and push — only the files § What reaches main lists. Report to user.
 
 ### Step 5: Batch review
 
@@ -704,6 +720,6 @@ Commit + Push → Vercel auto-deploys → Christian samples 2 in chat
 ```
 
 **Parked encounters** leave the line at Step 2b and land at
-`Docs/plans/encounters/<slug>-parked.md`, carrying both critics' outstanding fix-lists.
+`Docs/plans/encounters/<slug>-parked.md` on the `ops` branch, carrying both critics' outstanding fix-lists.
 They stay in the batch report, marked parked — a parked encounter is work awaiting a
 human, not work discarded.

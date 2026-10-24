@@ -16,6 +16,8 @@ type Finding = {
   message: string;
   file: string;
   line?: number;
+  /** Fails the run with or without `--strict` (THR-1948: the plan-size cap). */
+  blocking?: boolean;
 };
 
 type CandidateMode = 'paths' | 'staged' | 'all';
@@ -126,6 +128,25 @@ const PLAN_DOC_EXEMPT_PATTERN = /^>\s*\*\*lint_plan_doc:\*\*\s*exempt\b/mu;
 // Only the head of the file is scanned for the marker, so a mention of the opt-out
 // in prose further down (e.g. this rule being documented) cannot silently exempt.
 const PLAN_DOC_EXEMPT_SCAN_LINES = 15;
+// THR-1948 — plan-doc size cap. A plan for one ticket or slice states the goal, the
+// three pillars, the files touched and the Done-when; it does not restate canon or
+// survey options after the decision. Above WARN a finding nags; above FAIL the run
+// exits 1 (pre-commit hook and `npm run gate` both block) unless the doc carries a
+// `Plan-size-exempt: <reason>` line — multi-slice programme docs, audits.
+// Tunable (NFP #1).
+const PLAN_SIZE_WARN_LINES = 250;
+const PLAN_SIZE_FAIL_LINES = 400;
+// Docs whose filename date is before this only warn above the fail line, so an edit
+// to an existing long doc (a handoff note on a 1,800-line programme plan) is not
+// blocked. The lint already runs on changed docs only; this keeps that grandfather
+// true when an old doc is touched again.
+const PLAN_SIZE_ENFORCED_FROM = '2026-10-25';
+const PLAN_SIZE_EXEMPT_PATTERN = /^[>\s*-]*\**Plan-size-exempt:\**\s*\S/mu;
+const PLAN_SIZE_EXEMPT_SCAN_LINES = 30;
+// The cap binds only dated plan docs directly under Docs/plans/. Pipeline packets in
+// subdirectories (attachments/, encounters/) and undated reference docs are a
+// different document type and are never size-capped.
+const PLAN_DOC_DATE_PATTERN = /^Docs\/plans\/(\d{4}-\d{2}-\d{2})-[^/]*\.md$/u;
 
 function normalizeRepoPath(value: string): string {
   return value.trim().replaceAll('\\', '/');
@@ -626,6 +647,40 @@ function checkInterfaceImpactConditional(
   });
 }
 
+function checkPlanSize(file: string, lines: string[], findings: Finding[]): void {
+  // A trailing newline yields one empty last element; it is not a line of the doc.
+  const lineCount = lines.length > 0 && lines[lines.length - 1] === '' ? lines.length - 1 : lines.length;
+  if (lineCount <= PLAN_SIZE_WARN_LINES) return;
+  const docDate = PLAN_DOC_DATE_PATTERN.exec(file)?.[1];
+  if (docDate === undefined) return;
+  if (PLAN_SIZE_EXEMPT_PATTERN.test(lines.slice(0, PLAN_SIZE_EXEMPT_SCAN_LINES).join('\n'))) return;
+
+  const grandfathered = docDate < PLAN_SIZE_ENFORCED_FROM;
+  if (lineCount > PLAN_SIZE_FAIL_LINES && !grandfathered) {
+    addFinding(findings, {
+      check: 'plan-size',
+      severity: 'error',
+      blocking: true,
+      file,
+      line: 1,
+      message:
+        `Plan doc is ${lineCount} lines (cap ${PLAN_SIZE_FAIL_LINES}). A slice plan states goal, the three pillars, ` +
+        'files touched and Done-when — cut restated canon and post-decision option surveys, split the slice, or add ' +
+        `\`Plan-size-exempt: <reason>\` in the first ${PLAN_SIZE_EXEMPT_SCAN_LINES} lines for a multi-slice programme doc.`,
+    });
+    return;
+  }
+  addFinding(findings, {
+    check: 'plan-size',
+    severity: 'warn',
+    file,
+    line: 1,
+    message:
+      `Plan doc is ${lineCount} lines (aim for ≤${PLAN_SIZE_WARN_LINES}` +
+      `${grandfathered ? '; dated before the cap, so not blocking' : `; blocking above ${PLAN_SIZE_FAIL_LINES}`}).`,
+  });
+}
+
 function lintFile(repoPath: string, templateHeadings: Set<string>, findings: Finding[]): void {
   const absPath = toAbsolutePath(repoPath);
   let text: string;
@@ -654,6 +709,7 @@ function lintFile(repoPath: string, templateHeadings: Set<string>, findings: Fin
   }
 
   const lines = text.split(/\r?\n/u);
+  checkPlanSize(repoPath, lines, findings);
   checkFrontmatter(repoPath, text, lines, findings);
   const sections = checkRequiredHeadings(repoPath, lines, findings, templateHeadings);
   checkPillarSections(repoPath, sections, findings);
@@ -753,6 +809,7 @@ function printFindings(findings: Finding[], strict: boolean): number {
   }
 
   console.log(`lint:plan-doc completed for ${findings.length} finding(s) across ${errors.length} error(s) and ${warns.length} warning(s).`);
+  if (findings.some((finding) => finding.blocking)) return 1;
   return strict && errors.length > 0 ? 1 : 0;
 }
 

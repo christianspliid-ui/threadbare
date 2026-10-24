@@ -201,3 +201,18 @@ Design/retros/retro-*-draft.md
 
 # THR-1691 — review-gate receipts are per-tree evidence; the PR comment is the durable record
 .claude/review-receipts/
+
+# THR-1948 — encounter / attachment pipeline intermediates stay in the worktree. Only
+# `<id>.package.json`, `<id>-final.md`, the batch brief and the batch report reach main;
+# a parked draft goes to the `ops` branch (scripts/ops-publish.sh ignores .gitignore).
+# Files already tracked before this rule stay tracked (git history keeps the rest).
+Docs/plans/encounters/*-draft.md
+Docs/plans/encounters/*-editorial.md
+Docs/plans/encounters/*-revised.md
+Docs/plans/encounters/*-systems.md
+Docs/plans/encounters/*-package.md
+Docs/plans/encounters/*-parked.md
+Docs/plans/attachments/*-draft.md
+Docs/plans/attachments/*-editorial.md
+Docs/plans/attachments/*-revised.md
+Docs/plans/attachments/*-systems.md
