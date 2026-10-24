@@ -2573,10 +2573,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *The First*
 - **Module:** `src/engine/meetingEncounter.ts`
-- **Production hits:** 48 total — 2 write, 1 read, 45 unclassified
+- **Production hits:** 49 total — 2 write, 1 read, 46 unclassified
 - **Write sites:** `src/engine/meetingEncounter.ts`, `src/engine/threadingRite.ts`
 - **Read sites:** `src/engine/attentionTier.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +40 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/encounterBadgeModel.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts` +41 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `meeting-trait-seeds-land-as-narrative-descriptors` — 🟢 LIVE

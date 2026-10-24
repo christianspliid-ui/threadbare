@@ -19,16 +19,17 @@
   - Per-tick global sphere aggregate is IMPL & wired: phaseSphereAggregation
     (orchestrator.ts:3024) writes worldSoul.aggregate {totalBySphere, dominantSphere,
     entityCount} each tick. This is the ONLY live part of GameState.worldSoul.
-  - Twilight (the Unmaking) entry is IMPL but doom-expiry-only: phaseDoomExpiry
-    (orchestrator.ts:2338) — when doomClock.expired && phase==='playing', sets
-    phase:'twilight' with the "The Unmaking begins" popup. The other two designed
-    triggers (mandate_complete, player_concession, in worldSoul.ts UnmakingTrigger)
-    are NOT wired as entry points.
-  - Twilight play is a plain countdown: runTwilightTick (cycleEnd.ts) counts
-    TWILIGHT_TICKS (game-config.ts = 7) then → phase 'harvest'. The designed
-    "weakened play" successPenalty (worldSoul.ts TRIGGER_PENALTY 0.4/0.3/0.2) has NO
-    wired consumer — grep successPenalty finds no non-test caller. So twilight applies
-    NO action-success penalty today. Flag weakened play DESIGN.
+  - THR-1381 (2026-10-24): the Twilight is entered by the Mandate completing OR doom
+    expiring — phaseDoomExpiry checks mandateState.completed first (no floor), then
+    the doom branch (floor kept); both trace age.ended. The doom popup is now an
+    alert (Chronicle) line "<final stage>: the Unmaking begins.". player_concession
+    is still NOT an entry point.
+  - Twilight play is a ceremony, not ticks: AgeTwilightScreen (homed surface
+    'age-twilight', stops time) shows three beats built once by twilight.ts
+    buildTwilightBeats — how the age ended, the First's fate, the memories — and its
+    button calls completeTwilight (cycleEnd.ts) → phase 'harvest'. The old countdown
+    and its constant are deleted. The designed "weakened play" successPenalty has NO
+    wired consumer and no turns to apply to. Flag weakened play DESIGN.
   - Harvest is IMPL: computeHarvest (cycleEnd.ts) scores individual actors + locations
     + artifacts by computeSignificanceScore(edgeCount, eventCount, nodeType); harvest
     type triumphant (mandateState.completed) / somber (doomClock.progress > 0.9) /
@@ -52,14 +53,16 @@
   - The new cycle gets a fresh Doom clock (THR-1642): createDoomClockState with the
     same archetype and DEFAULT_DOOM_TICKS, identity milestones un-fired. Before, the
     expired clock carried over and cycle 2 re-entered twilight on its first tick.
-  - worldSoul.ts Fundament (sphereWeights coefficient ledger) + Resonance (curated
-    ResonanceMemory fragments) are defined + unit-tested but UNWIRED at cycle
-    transition: blendFundaments / captureMemory / applyFundamentShift /
-    executeCycleTransition / buildHarvestOutcome / initiateTwilight have NO non-test
-    callers. GameState.worldSoul.fundament/resonance exist but are never shifted by
-    play nor blended at harvest. DESIGN.
+  - Resonance is IMPL since THR-1381: concludeRun (accountRecord.ts) fades carried
+    memories by RESONANCE_DEGRADE_PER_RUN 0.15, prunes the gone, and captureMemory's
+    up to three of this age's (twilight.ts captureAgeMemories: the ending, the
+    dominant sphere, the god's first divine echo) into AccountRecord.resonance.
+    Fundament blending is IMPL since THR-1813 (blendFundaments in concludeRun).
+    applyFundamentShift / executeCycleTransition / buildHarvestOutcome /
+    initiateTwilight still have no non-test callers — DESIGN.
   - Echo constants: ECHO_DEGRADATION_RATE 0.15, ECHO_FADE_THRESHOLD 0.9 (types/echo.ts).
-    TWILIGHT_TICKS 7 (game-config.ts). COSMIC_ECHO_CANDIDATES 10 (cycleEnd.ts).
+    RESONANCE_* significances 0.9/0.85/0.8/0.7, TWILIGHT_MEMORIES_SHOWN 3 (game-config.ts).
+    COSMIC_ECHO_CANDIDATES 10 (cycleEnd.ts).
   - NO UL shard covers World-Soul / Twilight / Unmaking / Harvest / Echo / Fundament /
     Resonance. The only UL mention of "World-Soul" is incidental (Agents.md Rival def:
     rivals are generated from the World-Soul). Terminology authority is the design docs
@@ -236,12 +239,12 @@
   <!-- ══════════════════ HOW IT PLAYS ══════════════════ -->
 
   <section class="section">
-    <h2>How a run ends — you witness, you do not act<span class="lead">When the Doom clock runs out, the world enters its last chapter: the Unmaking. Your part changes. You stop shaping and start watching the ending you have been steering toward all along.</span></h2>
-    <p>A run does not end with a defeat screen. It ends with the <span class="term">Unmaking</span> — a twilight the world passes through before it is gone. When your <span class="term">Doom clock</span> reaches its end, the world tips into this closing phase: a short stretch of quiet, waning turns that carry the story to its close. The mood is the game's — cosmic melancholy, not failure. You were never the protagonist who could be beaten; you were the god who watched a world live and now watches it end.</p>
-    <p>In these last turns your hand lightens. The Unmaking is a passage, not a battle: the world lives out its final turns and then falls still, and you look on. It is the deliberate opposite of the frantic finale most games reach for — an ending you inhabit rather than one you scramble against.</p>
+    <h2>How a run ends — you witness, you do not act<span class="lead">When the Doom clock runs out, or you fulfil the Mandate, the world enters its last chapter. Your part changes. You stop shaping and start watching the ending you have been steering toward all along.</span></h2>
+    <p>A run does not end with a defeat screen. It ends with the <span class="term">Unmaking</span> — a twilight the world passes through before it is gone. When your <span class="term">Doom clock</span> reaches its end — or when you fulfil the <span class="term">Mandate</span>, and the age ends in triumph — time stops and the game shows you the ending in three short beats: how the age ended, what became of your First, and what the World-Soul will remember of it. Then you open the harvest. The mood is the game's — cosmic melancholy, not failure. You were never the protagonist who could be beaten; you were the god who watched a world live and now watches it end.</p>
+    <p>Your hand is gone here. The ending is a passage, not a battle: you read it, and you look on. It is the deliberate opposite of the frantic finale most games reach for — an ending you inhabit rather than one you scramble against.</p>
     <div class="callout purple">
       <div class="callout-title">Planned — the world at its weakest</div>
-      <p>The design intent is for these closing turns to be <em>weakened</em> ones, where the god's touch no longer lands as surely — a felt loss of grip as the world unravels. Today the twilight is a plain countdown; the harder-to-act penalty is planned, not yet in play. The Designer Notes below say exactly what runs and what is still on the drawing board.</p>
+      <p>The design intent is for these closing turns to be <em>weakened</em> ones, where the god's touch no longer lands as surely — a felt loss of grip as the world unravels. Today the ending is a ceremony you watch with time stopped, so there are no closing turns to weaken; the harder-to-act penalty is planned, not yet in play. The Designer Notes below say exactly what runs and what is still on the drawing board.</p>
     </div>
   </section>
 
@@ -306,10 +309,10 @@
         <li>Before the global sum, the same phase writes each faction&rsquo;s <code>sphereAggregate</code> (rounded mean of its individual members&rsquo; scores, written only on change; THR-1768). The global sum still reads each faction&rsquo;s <em>own</em> bag, so members are not counted twice.</li>
       </ul>
 
-      <h3>Twilight — the Unmaking <span class="flag impl">IMPL</span> (entry + countdown) · <span class="flag design">DESIGN</span> (weakened play, other triggers)</h3>
+      <h3>Twilight — the Unmaking <span class="flag impl">IMPL</span> (entry + ceremony) · <span class="flag design">DESIGN</span> (weakened play, other triggers)</h3>
       <ul>
-        <li><strong>Entry is doom-expiry-only.</strong> <code>phaseDoomExpiry</code> (<code>orchestrator.ts:2338</code>): when <code>doomClock.expired &amp;&amp; phase==='playing'</code> <em>and</em> the floor has passed (<code>tick ≥ wokeAtTick + DOOM_MIN_RUN_TICKS_AFTER_BOND</code>, 720; the clock wakes at the bond with The First, THR-1646), it sets <code>phase:'twilight'</code> and fires the <em>"The Unmaking begins. The world trembles."</em> popup. The two other designed triggers in <code>worldSoul.ts</code>'s <code>UnmakingTrigger</code> — <code>mandate_complete</code> and <code>player_concession</code> — are <strong>not wired as entry points</strong> (<span class="flag design">DESIGN</span>).</li>
-        <li><strong>Twilight is a plain countdown.</strong> <code>runTwilightTick</code> (<code>cycleEnd.ts</code>) increments a counter each tick until <code>TWILIGHT_TICKS</code> (<code>game-config.ts</code> = <code>7</code>), then sets <code>phase:'harvest'</code>; <code>useSimulation.ts</code> drives this (<code>doTick</code>'s <code>twilight</code> branch). The designed <strong>weakened play</strong> — a per-action success penalty during the Unmaking (<code>worldSoul.ts</code> <code>TRIGGER_PENALTY</code> <code>0.4/0.3/0.2</code>, via <code>initiateTwilight</code>'s <code>successPenalty</code>) — has <strong>no wired consumer</strong>; grep <code>successPenalty</code> finds no non-test caller. Today the twilight applies no penalty (<span class="flag design">DESIGN</span>).</li>
+        <li><strong>Entry: the Mandate, then doom</strong> <span class="flag impl">IMPL</span> (THR-1381). <code>phaseDoomExpiry</code> first starts the Twilight when <code>mandateState.completed</code> (no floor; trace <code>age.ended { by: 'mandate' }</code>). Otherwise, when <code>doomClock.expired &amp;&amp; phase==='playing'</code> <em>and</em> the floor has passed (<code>tick ≥ wokeAtTick + DOOM_MIN_RUN_TICKS_AFTER_BOND</code>, 720; the clock wakes at the bond with The First, THR-1646), it sets <code>phase:'twilight'</code> and raises the alert (Chronicle) line <em>"The Breach: the Unmaking begins."</em> (the final stage name), tracing <code>age.ended { by: 'doom' }</code>. <code>player_concession</code> is still <strong>not an entry point</strong> (<span class="flag design">DESIGN</span>).</li>
+        <li><strong>Twilight is a ceremony, not ticks</strong> <span class="flag impl">IMPL</span> (THR-1381). <code>useSimulation</code> builds the beats once when the phase becomes <code>'twilight'</code> (<code>openTwilight</code> → <code>buildTwilightBeats</code>, <code>twilight.ts</code>) and opens <code>AgeTwilightScreen</code> (<em>The age ends</em>, homed surface <code>age-twilight</code>, time stopped): the ending's title and line (the doom kind's last stage name, or the Mandate's), the First's fate (Aspect / lived / died, from state), and up to three memory lines. Its one button, <em>See what the age leaves</em>, calls <code>completeTwilight</code> → <code>phase:'harvest'</code>. A throw building the beats, or a ceremony that cannot mount, goes straight to the harvest (<code>twilight.fallback</code>). The old seven-tick countdown is deleted. The designed <strong>weakened play</strong> (<code>worldSoul.ts</code> <code>TRIGGER_PENALTY</code>) has no turns to apply to and stays <span class="flag design">DESIGN</span>.</li>
       </ul>
 
       <h3>Harvest — significance-scored echoes <span class="flag impl">IMPL</span></h3>
@@ -332,10 +335,10 @@
         <li><strong>No fresh cosmos.</strong> The function does <em>not</em> re-run worldgen — the same graph continues into the next cycle. A regenerated world seeded by the last one's echoes is <span class="flag design">DESIGN</span> (and blocks on the unwired <code>collectInjections</code>, see the red callout).</li>
       </ul>
 
-      <h3>The World-Soul ledger — Fundament &amp; Resonance <span class="flag design">DESIGN</span></h3>
+      <h3>The World-Soul ledger — Fundament &amp; Resonance <span class="flag impl">IMPL</span> (carry) · <span class="flag design">DESIGN</span> (the rest)</h3>
       <ul>
         <li><code>worldSoul.ts</code> defines a full persistence model: <strong>Fundament</strong> (a 12-sphere <code>sphereWeights</code> coefficient ledger + <code>cycleCount</code>) and <strong>Resonance</strong> (up to <code>MAX_RESONANCE_MEMORIES 10</code> curated <code>ResonanceMemory</code> fragments, each degrading per cycle). It ships helpers — <code>applyFundamentShift</code>, <code>blendFundaments</code>, <code>captureMemory</code>, <code>degradeMemories</code>, <code>initiateTwilight</code>, <code>buildHarvestOutcome</code>, <code>executeCycleTransition</code> — all pure and unit-tested.</li>
-        <li><strong>None of it is wired.</strong> Every one of those functions has <em>no non-test caller</em>. <code>GameState.worldSoul.fundament</code> / <code>resonance</code> exist on the type but are never shifted by play nor blended at harvest in the running game — the wired cross-cycle memory is the echo/chronicle path above, not this ledger. Treat the entire Fundament/Resonance layer as designed-but-dormant.</li>
+        <li><strong>Resonance is written</strong> <span class="flag impl">IMPL</span> (THR-1381). At the harvest <code>concludeRun</code> fades every carried memory by <code>RESONANCE_DEGRADE_PER_RUN</code> (0.15, gone after seven ages), prunes the gone, then <code>captureMemory</code>s up to three of this age's (<code>captureAgeMemories</code>): how it ended (<code>doom_scar</code> 0.9 / <code>mandate_triumph</code> 0.85), the sphere the world leaned to most (<code>sphere_dominance</code> 0.7), and the god's first divine echo (<code>divine_intervention</code> 0.8). Each stores its rendered line. Traces <code>resonance.memory_captured</code> / <code>resonance.memory_evicted</code>. The fundament blends at the same moment (THR-1813). Showing carried memories in the next world is <a href="https://linear.app/threadbare/issue/THR-1971">THR-1971</a> (<span class="flag design">DESIGN</span>). <code>applyFundamentShift</code>, <code>executeCycleTransition</code>, <code>buildHarvestOutcome</code> and <code>initiateTwilight</code> still have no non-test caller.</li>
       </ul>
 
       <h3>Where it runs</h3>
@@ -347,15 +350,16 @@
       <table class="tunables">
         <thead><tr><th>Constant</th><th>Value</th><th>Purpose · file</th></tr></thead>
         <tbody>
-          <tr><td>TWILIGHT_TICKS</td><td>7</td><td>Length of the Unmaking countdown (wired) · <code>game-config.ts</code></td></tr>
+          <tr><td>RESONANCE_DEGRADE_PER_RUN</td><td>0.15</td><td>How much each World-Soul memory fades per age (wired, THR-1381) · <code>game-config.ts</code></td></tr>
+          <tr><td>TWILIGHT_MEMORIES_SHOWN</td><td>3</td><td>Memory lines the end-of-age ceremony shows (wired, THR-1381) · <code>game-config.ts</code></td></tr>
           <tr><td>COSMIC_ECHO_CANDIDATES</td><td>10</td><td>Top nodes considered for cosmic echoes · <code>cycleEnd.ts</code></td></tr>
           <tr><td>Cosmic echo count (triumphant / bittersweet / somber)</td><td>5 / 4 / 3</td><td>Echoes preserved by harvest type · <code>cycleEnd.ts</code></td></tr>
           <tr><td>Divine echo slots (triumphant / bittersweet / somber)</td><td>3 / 2 / 1</td><td>Filled by rule, Monument → Legacy → Relic (THR-1813) · <code>cycleEnd.ts</code></td></tr>
           <tr><td>Harvest-type doom threshold</td><td>0.9</td><td><code>doomClock.progress &gt; 0.9</code> → somber · <code>cycleEnd.ts</code></td></tr>
           <tr><td>ECHO_DEGRADATION_RATE</td><td>0.15</td><td>Echo fade added per cycle · <code>types/echo.ts</code></td></tr>
           <tr><td>ECHO_FADE_THRESHOLD</td><td>0.9</td><td>Degradation at which an echo is released · <code>types/echo.ts</code></td></tr>
-          <tr><td>MAX_RESONANCE_MEMORIES</td><td>10</td><td>Resonance fragment cap (DESIGN — unwired) · <code>worldSoul.ts</code></td></tr>
-          <tr><td>TWILIGHT_TICK_RANGE</td><td>{5, 10}</td><td>Designed twilight length range (DESIGN — the wired value is TWILIGHT_TICKS) · <code>worldSoul.ts</code></td></tr>
+          <tr><td>MAX_RESONANCE_MEMORIES</td><td>10</td><td>Resonance fragment cap (wired since THR-1381) · <code>worldSoul.ts</code></td></tr>
+          <tr><td>TWILIGHT_TICK_RANGE</td><td>{5, 10}</td><td>Designed twilight length range (DESIGN — the Twilight is a ceremony with time stopped, THR-1381) · <code>worldSoul.ts</code></td></tr>
           <tr><td>TRIGGER_PENALTY (doom / concession / mandate)</td><td>0.4 / 0.3 / 0.2</td><td>Weakened-play penalty by trigger (DESIGN — unwired) · <code>worldSoul.ts</code></td></tr>
         </tbody>
       </table>
@@ -377,7 +381,7 @@
   </details>
 
   <div class="foot">
-    Game Manual Wiki · W17 (THR-602). Player layer describes current shipped behaviour — the Unmaking begins on Doom expiry, twilight runs as a countdown, and the harvest preserves significance-scored Legacy / Monument / Relic echoes that carry across cycles, degrade, and bind into the chronicle (all <span class="flag impl">IMPL</span>). Since THR-1813 the god's divine echoes are picked by rule and each run wakes in a new world, tilted by the last (IMPL). Weakened twilight play, echoes standing on the new map (THR-1843), and the entire Fundament/Resonance ledger are <span class="flag design">DESIGN</span> and flagged as such. Every world ends — and what mattered in it becomes an ingredient of what comes next.
+    Game Manual Wiki · W17 (THR-602). Player layer describes current shipped behaviour — the age ends on Doom expiry or a fulfilled Mandate, the player watches a three-beat ceremony (THR-1381), and the harvest preserves significance-scored Legacy / Monument / Relic echoes that carry across cycles, degrade, and bind into the chronicle (all <span class="flag impl">IMPL</span>). Since THR-1813 the god's divine echoes are picked by rule and each run wakes in a new world, tilted by the last (IMPL). Weakened twilight play, echoes standing on the new map (THR-1843), and the unused parts of the Fundament/Resonance ledger are <span class="flag design">DESIGN</span> and flagged as such. Every world ends — and what mattered in it becomes an ingredient of what comes next.
   </div>
 
 </div>

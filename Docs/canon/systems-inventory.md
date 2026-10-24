@@ -459,6 +459,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `traits` (1) | `traits.ts` | `THR-786` |
 | `treasure` (1) | `treasureMapConsumption.ts` | — |
 | `trust` (1) | `trustMechanics.ts` | — |
+| `twilight` (1) | `twilight.ts` | `THR-1381` |
 | `undertaking` (10) | `undertakingCapabilityGrowth.ts`, `undertakingCatalystAnchor.ts`, `undertakingCheckpoints.ts`, `undertakingDeed.ts`, `undertakingEconomy.ts`, `undertakingMoments.ts`, `undertakingMotive.ts`, `undertakingProse.ts`, `undertakingResolver.ts`, `undertakingReviewLevers.ts` | `THR-1281`, `THR-1292`, `THR-1297`, `THR-1299`, `THR-1300`, `THR-1392`, `THR-1397`, `THR-1434`, `THR-1440`, `THR-1511`, `THR-1937`, `THR-1967` |
 | `unified` (4) | `unifiedActionLifecycle.ts`, `unifiedActionPhases.ts`, `unifiedActionResolution.ts`, `unifiedCandidates.ts` | `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `Phase 6`, `Phase 7` |
 | `unrest` (1) | `unrestPressure.ts` | `THR-1934`, `THR-1957` |
@@ -478,4 +479,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 236 engine domains · 784 modules._
+_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 237 engine domains · 785 modules._
