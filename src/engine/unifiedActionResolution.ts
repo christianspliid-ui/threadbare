@@ -209,6 +209,7 @@ import { appendDigestEntry } from './digestBuffer';
 import { snapshotCastTarget, snapshotTargetChanges, targetSideChanges, castDigestEntry } from './castTargetChanges';
 import { realmBorderMap } from './realmBorderMap';
 import { resolvePrayerCast } from './prayers';
+import { holdingBlessingReceipt } from './godsStake';
 import { isNotableEntry } from './attentionTier';
 import type { DigestEntry } from '../types/attention';
 import {
@@ -4329,6 +4330,15 @@ export function phaseUnifiedActionProgress(
       }, template);
       if (prayer.pressures.length > 0) spherePressures.push(...prayer.pressures);
       if (prayer.change) updatedAction = appendAftermathChanges(updatedAction, [prayer.change]);
+    }
+
+    // THR-1969 — Bless the Holding's receipt line: read off the edge its op just wrote,
+    // so an unheld place (refused, nothing written) says nothing.
+    if (updatedAction.resolved && isActionSuccess(updatedAction.outcome) && completing_action.actorId === state.ascendantId) {
+      const blessed = holdingBlessingReceipt(
+        state.graph, completing_action.actorId, completing_action.targetId, state.tick, completing_action.actionId,
+      );
+      if (blessed) updatedAction = appendAftermathChanges(updatedAction, [blessed]);
     }
 
     // Sphere pressure: push pressure on action's target entity on resolution.

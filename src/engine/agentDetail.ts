@@ -1027,6 +1027,9 @@ function describeWealthSource(reason: string | undefined): string | undefined {
     case 'venture_loss': return 'a venture that cost them';
     // THR-1952 — founding costs (switched off until the pace predicate holds).
     case 'founding': return 'what it cost to found something';
+    // THR-1969 — the god's hand on a mortal's purse (Fortune's Favour, Ruin).
+    case 'divine_favour': return 'a turn of fortune no one could explain';
+    case 'divine_ruin': return 'a run of ruin no one could explain';
     default: return undefined;
   }
 }

@@ -104,12 +104,13 @@ describe('THR-1811 — the data on the cards', () => {
       signature: new Set(Object.values(REACH_SIGNATURE_ID_BY_REACH) as string[]),
     });
     expect(report.failures).toEqual([]);
-    // The THR-1794 first-pass table, copied onto the templates.
-    expect(report.cardCount).toBe(143);
-    expect(report.counts.market).toBe(93);
+    // The THR-1794 first-pass table, copied onto the templates, plus THR-1969's three
+    // tier-2 market rows (Fortune's Favour, Ruin, Bless the Holding).
+    expect(report.cardCount).toBe(146);
+    expect(report.counts.market).toBe(96);
     expect(report.counts.gift).toBe(50);
     expect(report.counts.generic).toBe(32);
-    expect(report.counts.byTier).toEqual({ 1: 44, 2: 60, 3: 28, 4: 11 });
+    expect(report.counts.byTier).toEqual({ 1: 44, 2: 63, 3: 28, 4: 11 });
   });
 
   describe('the gate fails on each kind of drift', () => {

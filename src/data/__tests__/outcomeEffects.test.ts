@@ -143,7 +143,10 @@ describe('THR-1936 — outcome tables', () => {
       for (const { where, table } of tablesOf(t)) {
         for (const [band, effects] of Object.entries(table)) {
           for (const e of meansShifts(effects)) {
-            if (!MEANS_NAMED_STEPS.includes(Math.abs(e.amount))) bad.push(`${where} ${band}: amount ${e.amount}`);
+            // THR-1969 — a band step (Fortune's Favour, Ruin) authors `amount: 0`; the write computes it.
+            if (e.bandStep !== undefined) {
+              if (e.amount !== 0) bad.push(`${where} ${band}: bandStep with amount ${e.amount}`);
+            } else if (!MEANS_NAMED_STEPS.includes(Math.abs(e.amount))) bad.push(`${where} ${band}: amount ${e.amount}`);
             const target = e.targetAgentId;
             if (target === undefined || target === '$actor' || target === '$target') continue;
             if (target.startsWith('$cast:')) {

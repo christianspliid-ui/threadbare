@@ -24,11 +24,11 @@ Settled at the attended sitting of 2026-08-17 ([THR-1161](https://linear.app/thr
 
 | Class | Effect kinds | GraphOps | Total |
 |---|---:|---:|---:|
-| ✅ acted-on | 45 | 45 | 90 |
+| ✅ acted-on | 45 | 47 | 92 |
 | 📒 bookkeeping | 1 | 0 | 1 |
 | 🌱 dormant-hook | 1 | 1 | 2 |
 | 🕳️ write-without-consumer | 0 | 0 | 0 |
-| **Total** | **47** | **46** | **93** |
+| **Total** | **47** | **48** | **95** |
 
 ## Aftermath effect kinds
 
@@ -95,7 +95,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 
 ## GraphOp ops
 
-Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 46 members.
+Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 48 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
@@ -137,6 +137,8 @@ Membership derived from `export type GraphOpType` in `src/types/graphOp.ts` — 
 | `plant_trap` | 🌱 dormant-hook | a seeded trap encounter staged against a co-located victim | `src/engine/encounterSeeding.ts` → `evaluateEncounterSeeds` (spawns) |
 | `bless_harvest` | ✅ acted-on | raised staple resource quantities at the target location | `src/engine/essenceEconomyBridge.ts` → `quantity` (acts) |
 | `blight_harvest` | ✅ acted-on | lowered staple resource quantities at the target location | `src/engine/essenceEconomyBridge.ts` → `quantity` (acts) |
+| `bless_holding` | ✅ acted-on | the god's `blessed` edge (kind holding_yield, untilTick, mult) on a held place | `src/engine/factionPurse/income.ts` → `holdingBlessingMult` (acts)<br/>`src/engine/holdingIncome.ts` → `holdingBlessingMult` (acts) |
+| `mark_markets_opened` | ✅ acted-on | `marketsOpenedTick` on the target settlement | `src/engine/decisionBoard.ts` → `thievesGuildOfferWant` (acts) |
 | `reveal_vein` | ✅ acted-on | a surfaced or boosted non-staple deposit at the target location | `src/engine/essenceEconomyBridge.ts` → `quantity` (acts) |
 | `guide_caravan` | ✅ acted-on | boosted and protected trade routes touching the settlement | `src/engine/armySupply.ts` → `trades_with` (acts) |
 | `sour_mine` | ✅ acted-on | drained non-staple deposits at the target location | `src/engine/essenceEconomyBridge.ts` → `quantity` (acts) |

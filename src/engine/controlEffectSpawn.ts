@@ -15,6 +15,7 @@
  *      without a graph.
  */
 
+import { claimedGoodAt } from './godsStake';
 import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
 import type { ControlEffect, ControlSpec, MintUpkeepRelicSpec } from '../types/controlEffect';
 import type { TickEvent } from '../types/gameState';
@@ -211,6 +212,12 @@ export function spawnControlEffect(
       ? mintUpkeepRelicArtifact(graph, spec.mintUpkeepRelic, action.actorId, targetNodeId, col, row, tick)
       : undefined;
 
+  // THR-1969 — a Claim that pays from what it claims binds its good now; the pay is
+  // resolved each tick from that good's stock tier (`claimedGoodIncome`).
+  const claimedGood = spec.incomeFrom === 'claimed_good' && graph
+    ? claimedGoodAt(graph, col, row, targetNodeId)
+    : null;
+
   const effect: ControlEffect = {
     effectId,
     templateId: action.templateId,
@@ -227,6 +234,10 @@ export function spawnControlEffect(
     perTickCost: resolvePerTickCost(spec, graph, action.actorId),
     perTickIncome: spec.perTickIncome,
     sustainThreshold: spec.sustainThreshold,
+    ...(spec.incomeFrom ? { incomeFrom: spec.incomeFrom } : {}),
+    ...(claimedGood
+      ? { claimedGoodId: claimedGood.resourceId, claimedGoodLocationId: claimedGood.locationId }
+      : {}),
 
     // Ongoing effects
     perTickMutations: spec.perTickMutations ?? [],

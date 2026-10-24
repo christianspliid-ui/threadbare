@@ -58,6 +58,10 @@ type Disposition =
   | 'reads-only';
 
 const INVENTORY: Record<string, { disposition: Disposition; why: string }> = {
+  'godsStake.ts': {
+    disposition: 'reads-only',
+    why: "THR-1969: reads who `controls` a place to name its holder for Bless the Holding; the edges it adds and removes are the god's `blessed` edges, never `controls`",
+  },
   'worldPast.ts': {
     disposition: 'reads-only',
     why: 'THR-1631 worldgen past: reads which settlements each Realm holds (seats, neighbour pairs, wonder holders); its addEdge writes participated_in / occurred_at / located_at / member_of / constructed_by / belongs_to, never controls',

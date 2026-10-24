@@ -38,6 +38,7 @@ import {
   SOURCE_DISCOVERY_RANGE_HOPS,
 } from '../data/essence-sources';
 import { readResources } from './resourceEconomy';
+import { blessHolding, markMarketsOpened } from './godsStake';
 import { getResourceClass } from '../data/resource-classes';
 import type { ResourceInstance } from '../types/resource';
 import {
@@ -297,6 +298,12 @@ function executeSingleOp(
 
       case 'blight_harvest':
         return executeBlightHarvest(graph, op, ctx);
+
+      case 'bless_holding':
+        return executeBlessHolding(graph, op, ctx);
+
+      case 'mark_markets_opened':
+        return executeMarkMarketsOpened(graph, op, ctx);
 
       case 'bless_company':
         return executeBlessCompany(graph, op, ctx);
@@ -1794,6 +1801,34 @@ function executeBlessHarvest(
   ctx: GraphOpContext,
 ): GraphOpResult {
   return adjustStapleQuantities(graph, op, ctx, LOC_BLESS_HARVEST_STOCK_DELTA);
+}
+
+// ─── THR-1969: bless_holding / mark_markets_opened ───────────────────────────
+//
+// Graph-only, routed like bless_harvest. Bless the Holding writes the god's `blessed`
+// edge on a held place; Open the Markets stamps the tick it opened a town. The
+// readers are `holdingBlessingMult` and `thievesGuildOfferWant` (`godsStake.ts`).
+
+/**
+ * Bless the Holding: the actor's `blessed` edge (kind holding_yield) on the target, its
+ * holders' tax or holding income ×`BLESS_HOLDING_YIELD_MULT` for a year. A recast
+ * extends; a place no one holds is refused and nothing is written (fail-soft).
+ */
+function executeBlessHolding(graph: WorldGraph, op: GraphOp, ctx: GraphOpContext): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  const tick = ctx.tick ?? 0;
+  const result = blessHolding(graph, ctx.actorId, targetId, tick);
+  if ('refused' in result) return { op, success: false, error: `bless_holding: ${result.refused} (${targetId})` };
+  return { op, success: true };
+}
+
+/** Open the Markets: stamp `marketsOpenedTick` on the target settlement. */
+function executeMarkMarketsOpened(graph: WorldGraph, op: GraphOp, ctx: GraphOpContext): GraphOpResult {
+  const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+  if (!markMarketsOpened(graph, targetId, ctx.tick ?? 0)) {
+    return { op, success: false, error: `mark_markets_opened: location ${targetId} not found` };
+  }
+  return { op, success: true };
 }
 
 /**

@@ -14,6 +14,7 @@
 import type { DominionBand } from './dominion-content';
 import { DOMINION_CHRONICLE_SIGNIFICANCE } from './dominion-content';
 import { ECON_SANCTITY_NURTURE_CEILING } from './essence-sources';
+import type { StockTier } from '../types/resource';
 
 /** Master switch for S1 and the rollback lever: false → no prayers, no faithful towns, no slights. */
 export const PRAYER_ENABLED = true;
@@ -84,3 +85,39 @@ export const PRAYER_NON_ANSWERING: ReadonlyArray<{ readonly templateId: string; 
 
 /** The card flag (`progression.flags`) that marks a card as answering a prayer. */
 export const ANSWERS_PRAYER_FLAG = 'answers_prayer';
+
+// ─── S3 — the market cards and the two promises (THR-1969) ─────────────────
+
+/** Bless the Holding: the blessed place's tax or holding income is multiplied by this (the decision). */
+export const BLESS_HOLDING_YIELD_MULT = 1.5;
+
+/** Bless the Holding lasts this many days: one game year (the decision; choice 7). */
+export const BLESS_HOLDING_DAYS = 30;
+
+/** The `blessed` edge's `kind` for a holding blessing; other blessings are not this. */
+export const HOLDING_BLESSING_KIND = 'holding_yield';
+
+/** Claim Resource pays in the claimed good's sphere (false → today's static `{ matter: 0.5 }`). */
+export const CLAIM_RESOURCE_PAYS_GOOD = true;
+
+/** Claim Resource's base income a tick, today's number, kept. */
+export const CLAIM_RESOURCE_BASE_INCOME = 0.5;
+
+/** Claim Resource's income by the claimed good's stock tier (the decision). */
+export const CLAIM_RESOURCE_TIER_MULT: Readonly<Record<StockTier, number>> = {
+  scarce: 0.5,
+  adequate: 1,
+  surplus: 1.5,
+};
+
+/** Days the thieves' guild boost lasts after Open the Markets' delay has passed. */
+export const THIEVES_GUILD_OFFER_DAYS = 10;
+
+/** Board multiplier on `create × faction` for a Shadow-led resident of a market-opened town. */
+export const THIEVES_GUILD_OFFER_WANT = 1.5;
+
+/** The cell the thieves' guild boost leans on. */
+export const THIEVES_GUILD_OFFER_CELL_ID = 'cell.create.faction';
+
+/** The property Open the Markets stamps on the town it opens. */
+export const MARKETS_OPENED_TICK_PROP = 'marketsOpenedTick';

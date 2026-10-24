@@ -48,14 +48,18 @@ export const LOC_OPEN_MARKETS_PROSPERITY_DELTA = 6;
 /** Unrest delta on a successful Open the Markets (negative = cooling). */
 export const LOC_OPEN_MARKETS_UNREST_DELTA = -10;
 
-/** Settlement unrest threshold at or above which the thieves' guild encounter seeds. */
+/**
+ * Settlement prosperity at or above which, after Open the Markets, a Shadow-led
+ * resident is drawn to found a guild — a thieves' guild (THR-1969; read by
+ * `thievesGuildOfferWant`, `godsStake.ts`).
+ */
 export const LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD = 75;
 
-/** Tick delay before the thieves' guild encounter is eligible to fire. */
+/** Ticks after Open the Markets before the thieves' guild boost opens (THR-1969). */
 export const LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS = 8;
 
-/** Max hex distance for the auto-spawned `trades_with` partner search. */
-export const LOC_OPEN_MARKETS_TRADE_RANGE_HEXES = 4;
+// LOC_OPEN_MARKETS_TRADE_RANGE_HEXES (4) was deleted by THR-1969: no reader ever
+// searched for a trade partner, and the god's-stake plan gives it none.
 
 // ─── Sanctify the Square ───────────────────────────────────────────────────
 
