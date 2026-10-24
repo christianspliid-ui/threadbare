@@ -56,7 +56,6 @@ import { TICKS_PER_DAY } from '../../../data/attention-constants';
 import { sustainFlowSpheres, sustainFlowWord } from '../../../data/sustained-control-status-prose';
 
 import { MandateDetail } from '../MandateDetail';
-import { RecentActivityLog } from '../RecentActivityLog';
 import { AttentionPoolIndicator } from '../AttentionPoolIndicator';
 import { SimulationControls } from '../SimulationControls';
 
