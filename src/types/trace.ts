@@ -93,6 +93,8 @@ export type TraceCategory =
   | 'economy.purse.day' | 'economy.purse.band_change' | 'economy.purse.army_raised'
   // THR-1936 — a mortal's Means
   | 'economy.means.birth' | 'economy.means.shift'
+  // THR-1953 — money encounters change the world
+  | 'economy.world.shift'
   // THR-1933 — war aims
   | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
   // THR-1955 — regional monopolies and embargo
@@ -732,7 +734,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'prosperity_tick', 'wealth_delta', 'econ_shock_seeded',
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
-  'economy.means.birth', 'economy.means.shift',
+  'economy.means.birth', 'economy.means.shift', 'economy.world.shift',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'faction.embargo.laid', 'faction.embargo.lifted',
   'undertaking.economy.found_town', 'undertaking.economy.found_town_refused',
@@ -1987,6 +1989,25 @@ export interface MeansShiftTrace extends TraceBase {
   bandBefore: string;
   bandAfter: string;
   reason: string;
+}
+
+/**
+ * THR-1953 — an `economy_shift` on a world quantity moved it: a settlement's prosperity,
+ * unrest or stock, the lane volume at it, or a faction's purse.
+ */
+export interface WorldEconomyShiftTrace extends TraceBase {
+  category: 'economy.world.shift';
+  quantity: 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse';
+  /** The settlement, the lane's edge id, or the faction the write landed on. */
+  nodeId: string;
+  /** The goods a stock write moved (resource ids); absent for the other quantities. */
+  goods?: readonly string[];
+  sourceTemplateId: string | null;
+  band: string | null;
+  /** The signed amount actually applied after the clamp (summed across goods for stock). */
+  amount: number;
+  before: number;
+  after: number;
 }
 
 /** THR-1937 — a mortal founded a town: who rules it and why. */
@@ -4967,14 +4988,17 @@ export interface AftermathTargetInvalidTrace extends TraceBase {
   reactionId: string;
   effectIndex: number;
   effectKind: string;
-  attemptedTargetKind?: 'agent' | 'faction' | 'sublocation';
+  attemptedTargetKind?: 'agent' | 'faction' | 'sublocation' | 'location';
   attemptedTargetId?: string;
   reason: 'target_node_missing' | 'target_kind_not_supported' | 'condition_template_missing' | 'no_actor_id' | 'participant_unresolved' | 'multiple_targets_specified'
     // THR-1206 — a `reputation_with` that named nobody to have standing with. The
     // target resolver falls back to the actor when no counterparty field is set, and
     // standing with yourself is not a thing, so the arm refuses loudly rather than
     // minting a self-edge no consumer can read.
-    | 'no_counterparty';
+    | 'no_counterparty'
+    // THR-1953 — a world `economy_shift` whose target exists but nothing moved: a clamp at
+    // 0 or 100, a lane already full, no lane at the town, a switched-off or excluded purse.
+    | 'no_move';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5138,6 +5162,7 @@ export type TraceEntry =
   | PurseArmyRaisedTrace
   | MeansBirthTrace
   | MeansShiftTrace
+  | WorldEconomyShiftTrace
   | WarAimPickedTrace
   | WarAimDefendTrace
   | WarAimHoldTrace

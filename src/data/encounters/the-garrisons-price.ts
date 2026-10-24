@@ -93,6 +93,7 @@ import type { ActionStep, StepNudge, TraitVariant, UnifiedActionTemplate } from 
 import type { EncounterSupportActorSpec, EncounterSupportBundle } from '../../types/encounter';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 import { MEANS_STEP } from '../mortal-means-constants';
+import { W_PURSE } from '../economy-shift-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -540,9 +541,10 @@ export const THE_GARRISONS_PRICE_TEMPLATE: UnifiedActionTemplate = compileOpenin
     lostBadly: 'lost the whole day to the ledger and got nothing',
   },
   // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
   outcomeEffects: {
-    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
-    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }, { kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: 'mercenary_company' }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }, { kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: 'mercenary_company' }],
   },
   rarityTier: 2,
   intrinsicTier: 'background',

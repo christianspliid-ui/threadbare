@@ -14,6 +14,7 @@ import { compileOpeningEnvelope, expandSettings, type SettingClass } from './set
 import { compileOpeningColoration } from '../engine/fragmentResolution';
 import { DEAL_DEFAULT_COUNT } from './nudge-constants';
 import { MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from './mortal-means-constants';
+import { W_LANE, W_PROSPERITY, W_PURSE, W_STOCK, W_UNREST, harvestStockAmount } from './economy-shift-constants';
 import {
   ENCOUNTER_TONE_ADJECTIVES,
   encounterToneTierForThreat,
@@ -1409,6 +1410,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.harvest_bounty',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'stock', amount: harvestStockAmount('critical_success'), good: 'staple' }, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }],
+      success: [{ kind: 'economy_shift', quantity: 'stock', amount: harvestStockAmount('success'), good: 'staple' }, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.small }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'stock', amount: harvestStockAmount('success_at_cost'), good: 'staple' }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'stock', amount: harvestStockAmount('critical_failure'), good: 'staple' }],
+    },
     stakes: {
       goal: 'bring in the heavy harvest and dry it right',
       risk: 'see the grain store go to mould by midwinter',
@@ -1719,9 +1727,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'lost a third of the load and came away poorer',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
     outcomeEffects: {
-      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
-      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'deposit' }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'deposit' }],
       failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
@@ -2341,9 +2350,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'paid the band and kept it eleven days before it walked',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
     outcomeEffects: {
-      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
-      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: 'mercenary_company' }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: 'mercenary_company' }],
       failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
@@ -3640,9 +3650,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'lost the cargo to a disputed weighing and came away poorer',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
     outcomeEffects: {
-      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
-      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
       failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
@@ -3972,7 +3983,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'spent their coin and ran out of grain a day and a half short',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
     outcomeEffects: {
+      success: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }],
       failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
@@ -4128,6 +4141,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ────────────────────────────────────────────────────────────────────
   {
     id: 'encounter.aid_refugees',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: -W_UNREST.step }],
+      success: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: -W_UNREST.small }],
+      failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.step }],
+    },
     stakes: {
       goal: 'feed and shelter the forty refugees',
       risk: 'see a fight break out over the last sack',
@@ -4448,6 +4468,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.guild_aid',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.big, targetFactionId: 'merchant_consortium' }],
+      success: [{ kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: 'merchant_consortium' }],
+      failure: [{ kind: 'economy_shift', quantity: 'purse', amount: -W_PURSE.step, targetFactionId: 'merchant_consortium' }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'purse', amount: -W_PURSE.big, targetFactionId: 'merchant_consortium' }],
+    },
     stakes: {
       goal: 'save the failing guild from its creditors',
       risk: 'be left holding the ledger when the creditors come',
@@ -4685,6 +4712,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.bridge_engineering',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.big }],
+      success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+    },
     stakes: {
       goal: 'build a bridge that carries the stone carts',
       risk: 'see the deck crack and the bridge closed',
@@ -4823,6 +4855,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.harbor_construction',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }, { kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+      success: [{ kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }, { kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+      failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }],
+    },
     stakes: {
       goal: 'build a harbor that works at every tide',
       risk: 'set the wharves a foot too high for easy unloading',
@@ -5040,9 +5079,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'held too long, left a wagon half full and came away poorer',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
     outcomeEffects: {
-      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
-      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
       failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
@@ -5542,6 +5582,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.market_day_festival',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }],
+      success: [{ kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.small }],
+    },
     stakes: {
       goal: 'turn a festival stranger into a contact',
       risk: 'press too hard and lose the stranger',
@@ -5566,7 +5611,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: 'The whole settlement floods the market square. Banners fly, prices drop, and strangers share tables. {actor} moves through the crowd, coin and conversation flowing freely.',
         onSuccess: {
-          narrative: '{actor} works the festival steadily — a word here, a purchase there. By dusk, new faces have become familiar ones.',
+          narrative: '{actor} works the festival steadily — a word here, a purchase there. By dusk, new faces have become familiar ones, and the stalls have taken more coin than on any market day this year.',
           reputationDelta: 0.05,
         },
         onFailure: {
@@ -5603,6 +5648,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Mine (2) ────────────────────────────────────────────────────
   {
     id: 'encounter.the_rich_vein',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.big, good: 'deposit' }, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }],
+      success: [{ kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.big, good: 'deposit' }, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.step, good: 'deposit' }],
+    },
     stakes: {
       goal: 'bring out the rich ore before the shaft gives',
       risk: 'be caught when the shaft comes down',
@@ -5681,6 +5732,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.labor_dispute',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.step }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'deposit' }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.big }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'deposit' }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.step }],
+    },
     stakes: {
       goal: 'get the striking miners back to work',
       risk: 'send the miners down carrying a grudge',
@@ -5802,6 +5858,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.pirate_raid',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.step }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.big }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.step, good: 'staple' }],
+    },
     stakes: {
       goal: 'drive the pirate raiders off the quay',
       risk: 'see the harbor stripped back to the stone',
@@ -6142,6 +6203,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   // ── Caravan Rest (2) ──────────────────────────────────────────
   {
     id: 'encounter.toll_bridge',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }],
+    },
     stakes: {
       goal: 'set a toll the merchants will pay at the bridge',
       risk: 'watch the merchants find other roads',
@@ -6484,6 +6550,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.trade_caravan_escort',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+      success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+    },
     stakes: {
       goal: 'bring the caravan through the treeline ambush',
       risk: 'lose the lead wagon and two guards to the ambush',
@@ -7489,6 +7560,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
 
   {
     id: 'encounter.mineral_vein_discovery',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.step, good: 'deposit' }],
+      success: [{ kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.step, good: 'deposit' }],
+    },
     stakes: {
       goal: 'follow the seam and measure what it is worth',
       risk: 'find the vein a third of what was promised',
@@ -14138,6 +14214,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   },
   {
     id: 'encounter.shore_up_the_mine',
+    // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+    outcomeEffects: {
+      failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'deposit' }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'deposit' }],
+    },
     stakes: {
       goal: 'shore up the mine\'s rotten timbers',
       risk: 'see a timber crack and the section closed',

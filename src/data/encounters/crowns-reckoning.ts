@@ -60,6 +60,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { W_STOCK } from '../economy-shift-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -69,6 +70,10 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.realm.crowns_reckoning',
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+  outcomeEffects: {
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.step, good: 'staple' }],
+  },
   stakes: {
     goal: 'man the wall and answer the marshal for the granary',
     risk: 'lose the keeping of the town to the crown',

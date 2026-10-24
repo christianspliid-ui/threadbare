@@ -18,6 +18,14 @@
  * - no template writes Means in both its table and a reaction (a double charge);
  * - a table that costs the actor Means on a failure band carries `stakes` whose `risk`
  *   and `lost` name the loss, so the player is told before the roll (PC-2).
+ *
+ * THR-1953 (S3) adds the world rows:
+ * - a world amount is one of its quantity's named steps (`ECONOMY_SHIFT_STEPS`, or a
+ *   band-scaled staple amount from `harvestStockAmount`);
+ * - a world row lands where the scene is (`$here` / `$target` / unset) — never a
+ *   literal place a template cannot know; a stock row names a real good, `staple` or
+ *   `deposit`; a purse row names its faction (`$realm`, a cast key, or a definition id);
+ * - no template writes the same world quantity in both its table and a reaction.
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -26,6 +34,9 @@ import {
   UNIFIED_ACTION_TEMPLATES,
 } from '../unified-action-templates';
 import { MEANS_NAMED_STEPS } from '../mortal-means-constants';
+import { economyShiftNamedSteps, STOCK_GOOD_DEPOSIT, STOCK_GOOD_STAPLE, type WorldEconomyQuantity } from '../economy-shift-constants';
+import { RESOURCE_DEFINITIONS } from '../resource-content';
+import { FACTION_DEFINITIONS } from '../faction-definitions';
 import {
   runnableStepSites,
   type AftermathVariant,
@@ -92,6 +103,13 @@ function meansShifts(effects: readonly EncounterAftermathReactionEffect[] | unde
   return (effects ?? []).filter(
     (e): e is Extract<EncounterAftermathReactionEffect, { kind: 'economy_shift' }> =>
       e.kind === 'economy_shift' && e.quantity === 'means',
+  );
+}
+
+function worldShifts(effects: readonly EncounterAftermathReactionEffect[] | undefined) {
+  return (effects ?? []).filter(
+    (e): e is Extract<EncounterAftermathReactionEffect, { kind: 'economy_shift' }> =>
+      e.kind === 'economy_shift' && e.quantity !== 'means',
   );
 }
 
@@ -193,6 +211,68 @@ describe('THR-1936 — outcome tables', () => {
       if (!t.stakes) { bad.push(`${t.id}: no stakes`); continue; }
       if (!LOSS_WORDS.test(t.stakes.risk)) bad.push(`${t.id}: risk "${t.stakes.risk}"`);
       if (!LOSS_WORDS.test(t.stakes.lost)) bad.push(`${t.id}: lost "${t.stakes.lost}"`);
+    }
+    expect(bad).toEqual([]);
+  });
+});
+
+describe('THR-1953 — the world rows', () => {
+  const templates = allTemplates();
+  const goods = new Set<string>([...Object.keys(RESOURCE_DEFINITIONS), STOCK_GOOD_STAPLE, STOCK_GOOD_DEPOSIT]);
+  const factionDefs = new Set<string>(FACTION_DEFINITIONS.keys());
+
+  it('carries the S3 world, purse and debt rows of the outcome research table', () => {
+    const has = (pred: (e: EncounterAftermathReactionEffect) => boolean) => templates.filter(t =>
+      tablesOf(t).some(({ table }) => Object.values(table).some(effects => (effects ?? []).some(pred)))).map(t => t.id);
+    const world = has(e => e.kind === 'economy_shift' && e.quantity !== 'means' && e.quantity !== 'purse');
+    const purse = has(e => e.kind === 'economy_shift' && e.quantity === 'purse');
+    const debts = has(e => e.kind === 'attachment_grant' && e.templateId.startsWith('agreement.debt'));
+    expect(world.length).toBeGreaterThanOrEqual(20);
+    expect(purse.length).toBeGreaterThanOrEqual(7);
+    for (const id of ['encounter.harvest_bounty', 'encounter.town.granary_riot', 'encounter.caravan_deal', 'encounter.the_rich_vein']) {
+      expect(world, id).toContain(id);
+    }
+    expect(purse).toContain('encounter.realm.border_levy');
+    expect(debts).toEqual(expect.arrayContaining(['encounter.realm.tithe_demanded', 'encounter.town.tithe_barn_raid']));
+  });
+
+  it('puts every world amount on a named step of its quantity and lands it where the scene is', () => {
+    const bad: string[] = [];
+    for (const t of templates) {
+      const specs = new Map((t.supportBundle ?? []).map(spec => [spec.key, spec]));
+      for (const { where, table } of tablesOf(t)) {
+        for (const [band, effects] of Object.entries(table)) {
+          for (const e of worldShifts(effects)) {
+            const q = e.quantity as WorldEconomyQuantity;
+            if (!economyShiftNamedSteps(q).includes(Math.abs(e.amount))) bad.push(`${where} ${band}: ${q} amount ${e.amount}`);
+            if (e.targetLocationId !== undefined && e.targetLocationId !== '$here' && e.targetLocationId !== '$target') {
+              bad.push(`${where} ${band}: ${q} lands on ${e.targetLocationId}`);
+            }
+            if (q === 'stock' && !goods.has(e.good ?? '')) bad.push(`${where} ${band}: stock good ${e.good}`);
+            if (q === 'purse') {
+              const f = e.targetFactionId ?? '';
+              if (f.startsWith('$cast:')) {
+                if (!specs.has(f.slice('$cast:'.length))) bad.push(`${where} ${band}: purse ${f} not cast`);
+              } else if (f !== '$realm' && !factionDefs.has(f)) bad.push(`${where} ${band}: purse faction ${f}`);
+            }
+          }
+        }
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  it('never writes a world quantity in both the table and a reaction', () => {
+    const bad: string[] = [];
+    for (const t of templates) {
+      for (const v of variantsOf(t)) {
+        const table = v.outcomeEffects ?? t.outcomeEffects;
+        if (!table) continue;
+        const inTable = new Set(Object.values(table).flatMap(effects => worldShifts(effects).map(e => e.quantity)));
+        for (const r of v.reactions ?? []) {
+          for (const e of worldShifts(r.effects)) if (inTable.has(e.quantity)) bad.push(`${t.id} reaction ${r.id}: ${e.quantity}`);
+        }
+      }
     }
     expect(bad).toEqual([]);
   });

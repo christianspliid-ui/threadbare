@@ -22,6 +22,7 @@ import type {
 } from '../../types/encounter-contract';
 import { MORAL_AXIS_POLES_BY_REACH, QUINTESSENCE_POLES } from '../../types/encounter-contract';
 import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
+import { W_PROSPERITY } from '../economy-shift-constants';
 
 // ─── Support Bundle ──────────────────────────────────────────────
 
@@ -274,6 +275,8 @@ const ACCEPT_AFTERMATH = {
           message: 'The warlord\'s gold finds its way to the settlement\'s common stores. The {title} gives what they were given.',
           significance: 0.55,
         },
+        // THR-1953 (S3): the common stores the line names now fill (THR-1872 defect 11).
+        { kind: 'economy_shift' as const, quantity: 'prosperity' as const, amount: W_PROSPERITY.step },
       ],
     },
   ],

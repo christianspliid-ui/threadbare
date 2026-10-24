@@ -21,6 +21,7 @@ import type {
   AftermathVariant,
   EncounterAftermathChange,
   EncounterAftermathReaction,
+  EncounterAftermathReactionEffect,
   EncounterAftermathSummary,
   UnifiedAction,
   UnifiedActionOutcome,
@@ -30,6 +31,9 @@ import type {
 import type { ActionStep, ActionStepOutcomeMetadata, StepCastRecord } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import { buildMeansChange, selectOutcomeEffects, type MeansShiftResult } from './mortalMeans';
+import { resolveShiftSettlement } from './economyShift';
+import { snapshotCastEconomy, diffCastEconomy } from './castEconomyReceipt';
+import { resolveSceneHere } from './sceneHere';
 import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
 import {
   foldActorReputation,
@@ -3316,6 +3320,11 @@ function applyOutcomeEffectsTable(
     actionOutcome: finalAction.outcome,
   };
   const shifts: { agentId: string; shift: MeansShiftResult }[] = [];
+  // THR-1953 — the town a world row moves is read before and after, and the diff gives
+  // the aftermath its `economy` changes in the town page's own words (the cast receipt's
+  // reader, `castEconomyReceipt.ts`), so the two can never disagree.
+  const worldTowns = outcomeTableSettlements(state, finalAction, effects);
+  const townsBefore = worldTowns.map(id => snapshotCastEconomy(state.graph, id));
   try {
     const { state: next, mutationSummary } = applyEncounterAftermathReaction(
       state, applied, reaction, tick, runtime, {
@@ -3341,7 +3350,38 @@ function applyOutcomeEffectsTable(
       finalAction.actorId,
     ));
   });
+  worldTowns.forEach((townId, index) => {
+    const town = state.graph.getNode(townId);
+    aftermathChanges.push(...diffCastEconomy(townsBefore[index], snapshotCastEconomy(state.graph, townId), {
+      idStem: `${finalAction.actionId}:outcome:${finalAction.outcome}`,
+      targetId: townId,
+      targetName: town?.name ?? '',
+    }));
+  });
   return applied;
+}
+
+/**
+ * THR-1953 — the settlements an outcome table's world rows land on: a literal or
+ * `$target` location, else where the actor stands (`$here`, the default). Purse and
+ * Means rows name no town. Deduplicated, in first-seen order.
+ */
+function outcomeTableSettlements(
+  state: GameState,
+  action: UnifiedAction,
+  effects: readonly EncounterAftermathReactionEffect[],
+): string[] {
+  const out: string[] = [];
+  for (const e of effects) {
+    if (e.kind !== 'economy_shift' || e.quantity === 'means' || e.quantity === 'purse') continue;
+    const raw = e.targetLocationId;
+    const located = raw === undefined || raw === '$here'
+      ? resolveSceneHere(state.graph, action.actorId, 'location') ?? undefined
+      : (raw === '$target' ? action.targetId : raw);
+    const town = resolveShiftSettlement(state.graph, located);
+    if (town && !out.includes(town.id)) out.push(town.id);
+  }
+  return out;
 }
 
 /**

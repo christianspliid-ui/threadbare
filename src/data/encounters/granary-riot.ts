@@ -71,6 +71,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { W_PROSPERITY, W_STOCK, W_UNREST } from '../economy-shift-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -80,6 +81,14 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.granary_riot',
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: -W_UNREST.step }],
+    success: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: -W_UNREST.small }],
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.step, good: 'staple' }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.small }],
+    failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.step, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.step }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.small }],
+    critical_failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.big, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.big }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.step }],
+  },
   stakes: {
     goal: 'settle the granary riot before the gate gives',
     risk: 'see the crowd break into the abbey granary',
