@@ -46,7 +46,7 @@ function buildGraph(): WorldGraph {
     id: 'town-1', type: 'location', name: 'Ashford',
     properties: {
       locationSubtype: 'town', prosperity: 50, unrest: 10,
-      resources: { grain: { resourceId: 'grain', quantity: 40 }, ore: { resourceId: 'ore', quantity: 30 } },
+      resources: { grain: { resourceId: 'grain', quantity: 40 }, ore: { resourceId: 'ore', quantity: 30 }, medicinal_herb: { resourceId: 'medicinal_herb', quantity: 20 } },
     },
   });
   graph.addNode({ id: 'square-1', type: 'location', name: 'Ashford Market', properties: { parentLocationId: 'town-1' } });
@@ -108,6 +108,8 @@ describe('THR-1953 — applyWorldEconomyShift', () => {
     expect(res().ore.quantity).toBe(30);
     applyWorldEconomyShift(graph, { quantity: 'stock', amount: -W_STOCK.step, good: 'deposit', settlementId: 'town-1' }, TICK);
     expect(res().ore.quantity).toBe(30 - W_STOCK.step);
+    // A deposit is what a mine holds: the herb garden is not touched.
+    expect(res().medicinal_herb.quantity).toBe(20);
     // A gain brings a good the town lacks; a loss on one it lacks writes nothing.
     expect(applyWorldEconomyShift(graph, { quantity: 'stock', amount: -W_STOCK.small, good: 'timber', settlementId: 'town-1' }, TICK)).toBeNull();
     applyWorldEconomyShift(graph, { quantity: 'stock', amount: W_STOCK.small, good: 'timber', settlementId: 'town-1' }, TICK);

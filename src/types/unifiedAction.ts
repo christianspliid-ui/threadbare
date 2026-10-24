@@ -567,7 +567,7 @@ export type EncounterAftermathReactionEffect =
      *   (default: the settlement the actor stands in, `$here`).
      * - `stock` — the quantities of `good` at that settlement (0–100 abundance): a
      *   resource id, `'staple'` (every staple, as the harvest verbs do) or `'deposit'`
-     *   (every non-staple). Staple amounts come from `harvestStockAmount(band)`.
+     *   (the mined goods, `STOCK_DEPOSIT_GOODS`). Staple amounts come from `harvestStockAmount(band)`.
      * - `lane_volume` — the busiest `trades_with` lane at that settlement (the anchor
      *   lane, as a toll or a sabotage reads it). An encounter never severs a lane.
      * - `purse` — a faction's treasury, through `applyTreasuryDelta`; `targetFactionId`

@@ -4974,7 +4974,10 @@ export interface AftermathTargetInvalidTrace extends TraceBase {
     // target resolver falls back to the actor when no counterparty field is set, and
     // standing with yourself is not a thing, so the arm refuses loudly rather than
     // minting a self-edge no consumer can read.
-    | 'no_counterparty';
+    | 'no_counterparty'
+    // THR-1953 — a world `economy_shift` whose target exists but nothing moved: a clamp at
+    // 0 or 100, a lane already full, no lane at the town, a switched-off or excluded purse.
+    | 'no_move';
 }
 
 // ═══════════════════════════════════════════════════════════════════

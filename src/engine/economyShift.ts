@@ -6,7 +6,8 @@
  * quantities, so a money encounter's outcome table can move the town it happened in:
  *
  * - `prosperity` / `unrest` — the settlement's 0–100 scalar, clamped;
- * - `stock` — the quantities of the named goods at the settlement (0–100 abundance);
+ * - `stock` — the quantities of the named goods at the settlement (0–100 abundance;
+ *   `deposit` is the mined goods, `STOCK_DEPOSIT_GOODS`);
  *   a gain on a good the town lacks brings it in (the smuggled salt), a loss on an absent
  *   good writes nothing;
  * - `lane_volume` — the settlement's busiest lane, never thinned below
@@ -31,6 +32,7 @@ import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
 import { isPurseFaction } from './factionPurse/income';
 import {
   ENCOUNTER_LANE_VOLUME_FLOOR,
+  STOCK_DEPOSIT_GOODS,
   STOCK_GOOD_DEPOSIT,
   STOCK_GOOD_STAPLE,
   type WorldEconomyQuantity,
@@ -76,11 +78,11 @@ function shiftScalar(
 
 /** The resource ids a `good` names at this settlement. */
 function goodsFor(resources: Record<string, ResourceInstance>, good: string, amount: number): string[] {
-  if (good === STOCK_GOOD_STAPLE || good === STOCK_GOOD_DEPOSIT) {
-    const wantStaple = good === STOCK_GOOD_STAPLE;
-    return Object.keys(resources)
-      .filter(id => (getResourceClass(id).category === 'staple') === wantStaple)
-      .sort();
+  if (good === STOCK_GOOD_STAPLE) {
+    return Object.keys(resources).filter(id => getResourceClass(id).category === 'staple').sort();
+  }
+  if (good === STOCK_GOOD_DEPOSIT) {
+    return Object.keys(resources).filter(id => STOCK_DEPOSIT_GOODS.has(id)).sort();
   }
   // A named good: a gain brings it in even where the town lacks it; a loss needs it there.
   return resources[good] || amount > 0 ? [good] : [];

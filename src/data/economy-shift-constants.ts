@@ -25,7 +25,7 @@ export interface EconomyShiftSteps {
  *   holder's yield draw (`YIELD_DRAW_PROSPERITY_COST` 4) — so one scene nudges a town and
  *   a run of them moves its word.
  * - **unrest** (0–100 push, the drift pulls it back): the Means steps; a riot is `++`.
- * - **stock** (0–100 abundance per good): a deposit found or worked out. Staple rows use
+ * - **stock** (0–100 abundance per good): a deposit (`STOCK_DEPOSIT_GOODS`) found or worked out. Staple rows use
  *   `harvestStockAmount(band)` instead (below).
  * - **lane_volume** (0–`TRADE_ROUTE_MAX_VOLUME` 10): `+` is one caravan run (`conduct_trade`
  *   adds 1), `++` an expansion (`ROUTE_RAISE_VOLUME_DELTA` 2). Whole numbers only: the daily
@@ -96,6 +96,13 @@ const HARVEST_STOCK_AMOUNTS: readonly number[] = [
 /** `stock`'s `good` keywords besides a resource id. */
 export const STOCK_GOOD_STAPLE = 'staple';
 export const STOCK_GOOD_DEPOSIT = 'deposit';
+
+/**
+ * What `deposit` names: the goods a mine or a vein holds — stone, ore, gemstones and star
+ * metal. Not every non-staple: a rich ore vein must not fill a town's herb garden or its
+ * pearl beds (review gate, THR-1953).
+ */
+export const STOCK_DEPOSIT_GOODS: ReadonlySet<string> = new Set(['stone', 'ore', 'gemstones', 'star_metal']);
 
 /**
  * A lane an encounter thins never drops below this volume. Severing a lane, or marking it

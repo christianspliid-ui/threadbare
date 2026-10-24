@@ -15,7 +15,7 @@ import type {
 } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
 import { applyMeansShift, defaultMeansReason, meansBandStepAmount, type MeansShiftResult } from './mortalMeans';
-import { applyWorldEconomyShift } from './economyShift';
+import { applyWorldEconomyShift, resolveShiftSettlement } from './economyShift';
 import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
 import { readWealth } from './wealth';
 import { applyReputationWithDelta } from './reputation';
@@ -1902,7 +1902,11 @@ export function applyEncounterAftermathReaction(
               effectKind: 'economy_shift',
               attemptedTargetId: (effect.quantity === 'purse' ? effect.targetFactionId : settlementId) ?? '',
               attemptedTargetKind: effect.quantity === 'purse' ? 'faction' : 'location',
-              reason: 'target_node_missing',
+              // The target can exist and still not move (a clamp, a full lane, no lane, an
+              // excluded purse): say which, so the trace answers 'why did it not move?'.
+              reason: (effect.quantity === 'purse'
+                ? !!(effect.targetFactionId && state.graph.getNode(effect.targetFactionId))
+                : !!resolveShiftSettlement(state.graph, settlementId)) ? 'no_move' : 'target_node_missing',
               summary: `economy_shift[${i}] ${effect.quantity}: nothing moved (${(effect.quantity === 'purse' ? effect.targetFactionId : settlementId) ?? 'no target'})`,
             });
             break;
