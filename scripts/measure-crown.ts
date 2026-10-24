@@ -3,7 +3,8 @@
  *
  * Runs each seed for 1080 ticks (90 days) with the purse live and reports, per seed:
  *   - the first day a realm is a Crown, and whether one stands between day 15 and day 45;
- *   - each Crown's oath income as a share of its full income at day 60 (15–35%);
+ *   - each Crown's oath income as a share of its full income at day 60, judged on the
+ *     leading Crown, the one holding the most oaths (15–35%; THR-2017 re-rule);
  *   - oaths sworn and broken by kind (force should break first);
  *   - the share of swear-eligible factions still independent at day 90 (≥ 25%);
  *   - the one-layer invariant on every tick (no vassal is a liege, none has two lieges);
@@ -199,6 +200,8 @@ for (const seed of SEEDS) {
   console.log(`\n== seed ${seed} (${((Date.now() - t0) / 1000).toFixed(0)}s) ==`);
   console.log(`first crown day: ${r.firstCrownDay ?? 'none'} · crown in day 15–45: ${r.crownInWindow}`);
   console.log(`oath share at day 60: ${r.oathShareAtDay60.map(o => `${o.crown} ${(o.share * 100).toFixed(0)}% (${o.vassals} vassals, crowned ${o.ageDays}d)`).join(', ') || 'no crown'}`);
+  const leading = [...r.oathShareAtDay60].sort((a, b) => b.vassals - a.vassals)[0];
+  console.log(`leading crown at day 60: ${leading ? `${leading.crown} ${(leading.share * 100).toFixed(0)}% · in 15–35%: ${leading.share >= 0.15 && leading.share <= 0.35}` : 'no crown'}`);
   console.log(`sworn ${JSON.stringify(r.sworn)} · broken ${JSON.stringify(r.broken)}`);
   console.log(`independent at day 90: ${r.independentShareDay90 === null ? 'n/a' : `${(r.independentShareDay90 * 100).toFixed(0)}%`}`);
   console.log(`one-layer violations: ${r.oneLayerViolations} · negative wealth readings: ${r.negativeWealth}`);
