@@ -50,6 +50,12 @@ export interface ActiveComposition {
   phaseActivationTicks: Record<string, number>;
   resolvedNodes: Record<string, string>;
   status: 'active' | 'completed' | 'failed';
+  /**
+   * Tick the composition was marked `failed` (THR-2005). Anchors failed-retention GC
+   * so a long-running agenda that fails late stays visible after it fails. Absent on
+   * records written before THR-2005 — GC then falls back to the earliest activation.
+   */
+  failedAtTick?: number;
   lastEvaluationTick: number;
   /**
    * Inline phase list. The phase runner (phaseComposition) reads phases from

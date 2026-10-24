@@ -496,11 +496,12 @@ export function phaseComposition(state: GameState): Partial<GameState> {
 
     const phaseTicks = Object.values(c.phaseActivationTicks ?? {});
     // Completed: reference tick = max activation (all phases fired, so max == completion tick).
-    // Failed:    reference tick = earliest of fired/phase-activation (matches v1 behaviour).
+    // Failed:    reference tick = the tick it failed (THR-2005); records without
+    //            failedAtTick fall back to earliest of fired/phase-activation (v1).
     const referenceTick =
       c.status === 'completed'
         ? (phaseTicks.length > 0 ? Math.max(...phaseTicks) : c.firedAtTick)
-        : Math.min(...phaseTicks.concat([c.firedAtTick]));
+        : (c.failedAtTick ?? Math.min(...phaseTicks.concat([c.firedAtTick])));
 
     const retention =
       c.status === 'completed'

@@ -345,6 +345,8 @@ describe('notableAgendas (THR-630 seam A)', () => {
       result = phaseNotableAgendas(state);
     }
     expect(result.activeCompositions?.[0].status).toBe('failed');
+    // THR-2005: the failure tick is recorded so retention runs from it.
+    expect(result.activeCompositions?.[0].failedAtTick).toBe(state.tick);
     const countered = (getTraces() as unknown as Array<Record<string, unknown>>).filter(
       (t) => t.category === 'notable.agenda_countered',
     );

@@ -918,7 +918,9 @@ export function phaseNotableAgendas(state: GameState): Partial<GameState> {
       worldFlags[agendaFlags.counters(compId)] = counters;
       if (counters >= NOTABLE_AGENDA_COUNTERS_TO_FAIL) {
         activeCompositions = activeCompositions.map((c) =>
-          c.compositionId === compId ? { ...c, status: 'failed' as const } : c,
+          c.compositionId === compId
+            ? { ...c, status: 'failed' as const, failedAtTick: state.tick }
+            : c,
         );
         for (const edgeId of [
           `edge_sponsors_scheme_${notableId}_${compId}`,
