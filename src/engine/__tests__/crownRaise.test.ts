@@ -16,6 +16,7 @@ import { runCrownPhase, swearOathForDebug } from '../crown';
 import { readOath, oathOf } from '../crown/crownView';
 import { armyRefusal, wouldRaiseSize } from '../armySpawning';
 import { armiesOf, upkeepOf } from '../factionPurse/upkeep';
+import { commanderFactionOf } from '../warAims/enemy';
 import { clearTraces, getTraces, enableTracing } from '../traceBuffer';
 import { LIEGE_RAISE_MIN_GAP_DAYS, LIEGE_WAGE_RESERVE_DAYS } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS, ARMY_UPKEEP_PER_DAY } from '../../data/faction-purse-constants';
@@ -79,6 +80,8 @@ describe('the liege pays for a raise its vassal cannot', () => {
     const as = g.getNode(armies[0].id)!.properties.armyState as ArmyState;
     expect(as.liegePaidTick).toBe(s.tick);
     expect(as.paidThroughTick).toBe(s.tick);
+    // Stamped before it aims: the army is the liege's from its first objective.
+    expect(commanderFactionOf(g, armies[0].id, s.tick)).toBe(R);
     // The vassal's purse is untouched; the liege paid the raise and its first day (plus any tax in).
     expect(wealth(g, CO)).toBe(0);
     const cost = raiseCost(as.size);

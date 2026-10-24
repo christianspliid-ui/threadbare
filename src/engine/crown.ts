@@ -593,13 +593,11 @@ function fundRaises(state: GameState, surviving: readonly GraphEdge[]): number {
       const commander = selectCommander(state, vassalId);
       const ambitionId = graph.getOutgoingEdges(vassalId, 'pursues')[0]?.target;
       if (!commander || !ambitionId) continue;
-      // Uncharged spawn: the vassal pays nothing; the liege's coin moves only once the army exists.
-      const armyId = spawnArmy(state, vassalId, commander, ambitionId);
+      // Uncharged spawn: the vassal pays nothing; the liege's coin moves only once the army
+      // exists. Stamped liege-paid at spawn, so it aims as the liege's army.
+      const armyId = spawnArmy(state, vassalId, commander, ambitionId, { liegePaid: true });
       if (!armyId) continue;
       setWealth(graph, liegeId, -cost);
-      const armyNode = graph.getNode(armyId);
-      const as = armyNode?.properties.armyState as ArmyState | undefined;
-      if (armyNode && as) armyNode.properties.armyState = { ...as, paidThroughTick: tick, liegePaidTick: tick };
       graph.updateEdge(edge.id, { properties: { liegeRaisedTick: tick } });
       raised++;
       emitTrace({
