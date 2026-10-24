@@ -22,11 +22,11 @@
  *     (BASELINE_OWN_DRAW_STORY at 617802fb) minus one;
  *   - WARN when a story chapter follows its own family in more than
  *     FAMILY_REPEAT_WARN_RATIO of consecutive pairs (D3's tripwire);
- *   - PASS when every drought window (her drought anchor unchanged) that ran
- *     RESTLESS_ROAD_COOLDOWN_TICKS past STORY_DROUGHT_TICKS holds at least one
- *     `agent.restless_road` check (THR-1959 S2). The check runs at her next free
- *     decision past the threshold, so a window with none means the trigger never
- *     fired. Each window's outcomes and the first check's delay are listed;
+ *   - PASS when every drought window (her drought anchor unchanged) holding
+ *     RESTLESS_ROAD_COOLDOWN_TICKS ticks on which she was due and free (no
+ *     appointment, journey, action or encounter in hand) holds at least one
+ *     `agent.restless_road` check (THR-1959 S2). The engine skips the check by
+ *     design while she is not free, so only free, due ticks count toward a miss. Each window's outcomes and the first check's delay are listed;
  *     `no_destination` is listed, not failed (the relax window covers it).
  *
  * Usage:
@@ -46,6 +46,8 @@ import { getAgentLocationId, getThreadTo } from '../src/engine/graphQueries';
 import { PAUSED_STORY_MAX_TELLINGS, STORY_DROUGHT_RELAX_TICKS, STORY_DROUGHT_TICKS, RESTLESS_ROAD_COOLDOWN_TICKS } from '../src/data/agent-behavior-constants';
 import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer';
 import type { RestlessRoadTrace } from '../src/types/trace';
+import { restlessRoadDue } from '../src/engine/restlessRoad';
+import { agentAppointmentSeeds } from '../src/engine/appointments';
 
 /**
  * Own-draw story chapters of The First per seed, 600 ticks, medium, on main
@@ -109,7 +111,7 @@ function runSeed(seed: number) {
   enableTracing();
   clearTraces();
   /** THR-1959 — drought windows: one per drought anchor, with the restless-road checks inside it. */
-  const windows: Array<{ anchor: number; endTick: number; roads: RestlessRoadTrace[]; openedBy: string }> = [];
+  const windows: Array<{ anchor: number; endTick: number; roads: RestlessRoadTrace[]; openedBy: string; freeDueTicks: number }> = [];
   const anchorNow = () => {
     const a = getThreadTo(state.graph, firstId)?.properties?.lastStoryChapterStartTick;
     return typeof a === 'number' ? a : established;
@@ -153,8 +155,18 @@ function runSeed(seed: number) {
     if (!cur || cur.anchor !== anchor) {
       // What started the story that moved her anchor — any non-routine template counts.
       const opener = (state.unifiedActions ?? []).find(a => a.actorId === firstId && a.startTick === anchor);
-      windows.push({ anchor, endTick: state.tick, roads: [], openedBy: opener?.templateId ?? '(start)' });
+      windows.push({ anchor, endTick: state.tick, roads: [], openedBy: opener?.templateId ?? '(start)', freeDueTicks: 0 });
     } else cur.endTick = state.tick;
+    // A tick she ended still due (the check did not run) while free to decide: no
+    // appointment, no journey, no action or encounter in hand. Only these count
+    // toward a miss — the engine skips the check by design in every other state.
+    const node = state.graph.getNode(firstId);
+    const queue = (node?.properties?.movementState as { movementQueue?: unknown[] } | undefined)?.movementQueue;
+    const free = agentAppointmentSeeds(state, firstId).length === 0
+      && !(queue && queue.length > 0)
+      && !(state.unifiedActions ?? []).some(a => a.actorId === firstId && !a.resolved)
+      && !(state.encounterProgress ?? []).some(ep => ep.actorId === firstId && ep.status === 'active');
+    if (free && restlessRoadDue(state.graph, firstId, state.tick) !== null) windows[windows.length - 1].freeDueTicks++;
     for (const t of getTraces()) {
       if (t.category !== 'agent.restless_road' || t.agentId !== firstId) continue;
       const road = t as unknown as RestlessRoadTrace;
@@ -280,8 +292,8 @@ function report(r: SeedResult) {
     const first = w.roads[0];
     const outcomes = w.roads.map(x => `t${x.tick} ${x.outcome}${x.toLocationId ? ` → ${x.toLocationId} (${x.hexDistance} hex)` : ''}`).join('; ') || 'none';
     console.log(`  anchor t${w.anchor}, threshold t${threshold}, window ends t${w.endTick}: first check ${first ? `+${first.tick - threshold}t` : '-'} — ${outcomes}`);
-    if (!first && w.endTick - threshold >= RESTLESS_ROAD_COOLDOWN_TICKS) {
-      roadMisses.push(`anchor t${w.anchor}: no restless-road check in ${w.endTick - threshold} ticks past the threshold`);
+    if (!first && w.freeDueTicks >= RESTLESS_ROAD_COOLDOWN_TICKS) {
+      roadMisses.push(`anchor t${w.anchor}: no restless-road check in ${w.freeDueTicks} free, due ticks past the threshold`);
     }
   }
   if (!r.windows.some(w => w.endTick >= w.anchor + STORY_DROUGHT_TICKS)) console.log('  (no drought reached the threshold)');
