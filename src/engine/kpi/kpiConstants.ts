@@ -109,6 +109,15 @@ export const KPI_BAND_SUCCESS_MIN = 0.50;
 export const KPI_BAND_SUCCESS_MAX = 0.65;
 /** Sampling slack on the level-success invariant. */
 export const KPI_BAND_TOLERANCE = 0.05;
+/**
+ * Per-seed sampling slack on the expert→master rung of the attempted-difficulty rise
+ * (THR-2019). A band of ~70 master engagements moves its mean by a few hundredths when
+ * an unrelated system shifts the seed's draws: THR-1961's daily courtship took seed 42
+ * from master 0.386 / expert 0.314 to 0.319 / 0.320, while masters still out-attempted
+ * experts on 8 of 9 seeds (pooled 0.387 vs 0.294). The rung also asserts a strict pooled
+ * rise across its seeds, so this slack forgives one seed's wobble, never a flat band.
+ */
+export const KPI_BAND_RISE_TOLERANCE = 0.02;
 /** A band is asserted only with this many resolved free-choice engagements; below it is a coverage gap. */
 export const KPI_BAND_MIN_ENGAGEMENTS = 30;
 /** Look-ahead (ticks after a failure resolves) for the retry-after-failure KPI. */
