@@ -157,6 +157,16 @@ export const INSPECTOR_LAB_EXTRA: readonly LabPick[] = [
     fallback: 'No plateau in this world',
   },
   {
+    // THR-1998: the volcano, glacier, lake/river and dead forest got their own hero art.
+    label: 'Land — a volcano, glacier, lake, river or dead forest',
+    pick: s => {
+      const order = ['volcano', 'glacier', 'dead_forest', 'lake', 'river'];
+      const t = order.map(k => s.tiles.find(x => x.terrain === k)).find(Boolean);
+      return t ? { kind: 'hex', id: `${t.coord.col},${t.coord.row}` } : null;
+    },
+    fallback: 'No volcano, glacier, lake, river or dead forest in this world',
+  },
+  {
     // THR-1916: a lair's hex shows the lair's own hero art.
     label: "Land — a lair's",
     pick: s => {

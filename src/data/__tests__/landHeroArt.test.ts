@@ -24,6 +24,21 @@ describe('THR-1916 land hero art', () => {
     expect(pickConceptArt('hills', [], null)).toBe('/concept-art/hills.png');
   });
 
+  it('THR-1998: volcano, glacier, lake, river and dead forest no longer borrow a neighbour', () => {
+    expect(pickConceptArt('volcano', [], null)).toBe('/concept-art/volcano.png');
+    expect(pickConceptArt('glacier', [], null)).toBe('/concept-art/glacier.png');
+    expect(pickConceptArt('lake', [], null)).toBe('/concept-art/lake.png');
+    expect(pickConceptArt('river', [], null)).toBe('/concept-art/lake.png');
+    expect(pickConceptArt('dead_forest', [], null)).toBe('/concept-art/dead-forest.png');
+    // The neighbours they borrowed from keep their own terrains.
+    expect(pickConceptArt('mountains', [], null)).toBe('/concept-art/mountains.png');
+    expect(pickConceptArt('swamp', [], null)).toBe('/concept-art/swamp.png');
+    expect(pickConceptArt('dense_forest', [], null)).toBe('/concept-art/dense-forest.png');
+    // No terrain is claimed by two entries.
+    const claimed = CONCEPT_ART_REGISTRY.flatMap((e) => e.terrains);
+    expect(new Set(claimed).size).toBe(claimed.length);
+  });
+
   it('the location boost reads the live `locationSubtype` key, and terrain still wins', () => {
     const fort = { id: 'f', type: 'location', properties: { locationSubtype: 'fort' } } as unknown as GraphNode;
     const tower = { id: 't', type: 'location', properties: { locationSubtype: 'tower' } } as unknown as GraphNode;
