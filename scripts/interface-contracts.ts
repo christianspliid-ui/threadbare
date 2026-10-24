@@ -6947,6 +6947,8 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/factionPurse.ts',
     },
     // THR-1932: the crown phase adds fealtyOut / fealtyIn to purseLastDay after the pay day.
+    // THR-1974: and armiesPaidByLiege / wagesFromLiege / wagesToVassals; the next pay day's
+    // Means band counts the liege's wagesToVassals as upkeep.
     writeSites: ['src/engine/factionPurse.ts', 'src/engine/armySpawning.ts', 'src/engine/phaseFactionActions.ts', 'src/engine/crown.ts'],
     readSites: ['src/components/Game/FactionPursePanel.tsx', 'src/engine/views/subjects/factionRows.ts', 'src/engine/factionTopology.ts', 'src/debug-bridge.ts', 'src/components/Game/debug/EconomyDebugTab.tsx'],
     verifiedLive: {
@@ -6984,7 +6986,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: FACTIONS,
     consumerSystem: ECONOMY,
     intent:
-      'A realm wins another faction\'s fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then moves FEALTY_TAX_SHARE of the vassal\'s day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived).',
+      'A realm wins another faction\'s fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then (THR-1974) pays the soldiers the vassal could not (crown-liege-pays-vassal-wages), then moves FEALTY_TAX_SHARE of the vassal\'s day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived).',
     ulTerms: ['Realm', 'Faction', 'Means'],
     mechanism: {
       kind: 'edge',
@@ -7011,7 +7013,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: FACTIONS,
     consumerSystem: 'War, Armies & Battles',
     intent:
-      'What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims\' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper: an enemy army marching on any of these within 8 hexes of a liege\'s army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45).',
+      'What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims\' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper, for the army\'s commander (THR-1974: its paying liege while the wage is fresh, so a liege-paid company defends its liege\'s and fellow vassals\' towns): an enemy army marching on any of these within 8 hexes of a liege\'s army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45).',
     ulTerms: ['Realm'],
     mechanism: {
       kind: 'module-export',
@@ -7023,6 +7025,47 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-10-16',
       evidence: 'THR-1932. crown.test.ts: with a guild and a realm sworn to faction_0, protectedHoldingsOf(faction_0) is its own town plus the sworn realm\'s town.',
+    },
+  },
+  // THR-1974 — hiring a free company is the crown's bought oath; four general rules make an
+  // oath carry an army. THR-1974 also extends the purse's PurseDay and the defence read: an
+  // army its liege pays defends the liege's protected holdings (commanderFactionOf).
+  {
+    id: 'crown-liege-pays-vassal-wages',
+    producerSystem: FACTIONS,
+    consumerSystem: 'War, Armies & Battles',
+    intent:
+      'On pay day, after loyalty and before the fealty tax, the crown phase pays the upkeep of each vassal army the vassal\'s own purse left unpaid (its purseLastDay.armiesUnpaid), in id order, whole armies only, from the liege\'s purse above LIEGE_WAGE_RESERVE_DAYS of its own upkeep. A covered army is stamped paidThroughTick and liegePaidTick; the wage is written beside the purse verdict (armiesPaidByLiege, wagesFromLiege on the vassal, wagesToVassals on the liege), never over it. While the stamp is fresh (LIEGE_COMMAND_WINDOW_TICKS) commanderFactionOf answers the liege for every army-level enemy question (objective, re-aim, defence, siege and battle start) and supplyFactionsOf adds the liege\'s towns; the liege is always read from the live sworn_to edge. A gift is priced on oathValueOf (max of income and the upkeep fielded, or would raise), so a free company is never free. The liege\'s Means counts yesterday\'s wages. All behind CROWN_WAGES_ENABLED.',
+    ulTerms: ['Realm', 'Faction', 'Means'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['liegePaidTick', 'payingLiegeOf', 'commanderFactionOf', 'supplyFactionsOf', 'oathValueOf', 'wagesToVassals', 'armiesPaidByLiege'],
+      module: 'src/engine/crown/wages.ts',
+    },
+    writeSites: ['src/engine/crown.ts'],
+    readSites: [
+      'src/engine/warAims/enemy.ts',
+      'src/engine/warAims.ts',
+      'src/engine/warAims/defence.ts',
+      'src/engine/battleResolution.ts',
+      'src/engine/siegeResolution.ts',
+      'src/engine/armySpawning.ts',
+      'src/engine/armySupply.ts',
+      'src/engine/phases/armySupply.ts',
+      'src/engine/factionPurse.ts',
+      'src/engine/crown/eligibility.ts',
+      'src/engine/crown/fealtySentences.ts',
+      'src/engine/warAims/sheetView.ts',
+      'src/components/Game/FactionFealty.tsx',
+      'src/components/Game/FactionPursePanel.tsx',
+      'src/components/Game/debug/EconomyDebugTab.tsx',
+      'src/components/Game/debug/ArmiesTabContent.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-24',
+      evidence:
+        'THR-1974. crownWages.test.ts drives the real runCrownPhase and runFactionPurse: a free company with an empty purse sworn to a realm keeps its host paid every day for 30 days, commanded by and fed from the liege; the reserve holds; whole armies in id order; the stamp lapses after one pay day and a broken oath ends the command at once; a realm vassal paying its own army keeps its own wars; the paid army never besieges its liege or its own hall town. crownWages.rollback.test.ts: switched off, the price is income and no wage is paid.',
     },
   },
   {

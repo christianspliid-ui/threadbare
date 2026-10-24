@@ -28,6 +28,8 @@ export interface PurseDayWords {
   paysTo: string | null;
   armiesPaid: string[];
   armiesUnpaid: string[];
+  /** THR-1974 — the unpaid armies its liege paid today (`crown` wage step). */
+  armiesPaidByLiege?: string[];
   taxHolderOf?: string[];
   paidBy?: string[];
 }
@@ -126,11 +128,24 @@ export function durationWords(days: number): string {
 }
 
 export const PURSE_BROKE_LINE = 'Its purse cannot pay its soldiers. They go unpaid and begin to slip away.';
+/**
+ * THR-1974 — every army its purse could not pay, its liege paid: true, and not the broke
+ * line. Who pays them is the Fealty section's sentence (one fact, one sentence per page).
+ */
+export const PURSE_LIEGE_COVERS_LINE = 'Its own purse cannot pay its soldiers.';
+
+/** THR-1974 — the armies still unpaid today once its liege's wages are counted. */
+export function stillUnpaid(day: PurseDayWords | null): string[] {
+  if (!day) return [];
+  const byLiege = new Set(day.armiesPaidByLiege ?? []);
+  return day.armiesUnpaid.filter(id => !byLiege.has(id));
+}
 
 /** "It pays for one warband, and has coin to spare for a month of it." · "It keeps no soldiers." · the broke line. */
 export function spendingSentence(graph: WorldGraph, day: PurseDayWords | null, wealth: number): string {
   if (!day) return 'It keeps no soldiers.';
-  if (day.armiesUnpaid.length > 0) return PURSE_BROKE_LINE;
+  if (stillUnpaid(day).length > 0) return PURSE_BROKE_LINE;
+  if (day.armiesUnpaid.length > 0 && day.armiesPaid.length === 0) return PURSE_LIEGE_COVERS_LINE;
   const sizes = day.armiesPaid
     .map(id => (graph.getNode(id)?.properties.armyState as { size?: ArmySizeCategory } | undefined)?.size)
     .filter((s): s is ArmySizeCategory => typeof s === 'string');
@@ -178,7 +193,7 @@ export function factionPurseView(
   const wealth = typeof node.properties.wealth === 'number' ? node.properties.wealth : 0;
   return {
     band,
-    broke: (day?.armiesUnpaid.length ?? 0) > 0,
+    broke: stillUnpaid(day).length > 0,
     income: incomeSentence(graph, day),
     spending: spendingSentence(graph, day, wealth),
     monopolies: [...new Set(readRegionalMonopolies(node.properties).map(m => m.resourceId))].sort()

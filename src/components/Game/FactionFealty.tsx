@@ -100,6 +100,8 @@ export function FealtySection({ factionId, graph, renderSection }: {
                 </Tooltip>
                 {vassal.standing.oneStepFromBreaking ? ', one step from breaking' : ''} — {vassal.standing.rest}
               </span>
+              {/* THR-1974 — its liege pays its soldiers (today's purse day only, Law 45). */}
+              {vassal.wages && <span data-testid="faction-fealty-wages">{vassal.wages}</span>}
             </>
           )}
           {liege && (

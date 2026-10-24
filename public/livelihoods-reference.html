@@ -313,6 +313,7 @@
       <h3>Chronicle — Famine &amp; Glut <span class="flag impl">IMPL</span></h3>
       <ul>
         <li>Two triggers were added to <code>economicChronicle.ts</code> / <code>economic-chronicle-content.ts</code>: <code>resource_scarcity</code> ("A Scarcity Bites", significance 0.7) and <code>resource_glut</code> ("A Glut Descends", 0.5), each with four baseline-register templates using the existing <code>{settlement}</code>/<code>{resource}</code> placeholders. The phase resolves an entry only on a genuine crossing of a <em>staple or strategic</em> resource with <code>baseValue ≥ CHRONICLE_MIN_BASE_VALUE 0.6</code> — keeping luxury noise out of the Great Chronicle.</li>
+        <li><strong>IMPL — wage lines (THR-1974, 2026-10-24):</strong> two more triggers, <code>wages_taken_up</code> ("Soldiers in Pay") and <code>wages_stopped</code> ("The Pay Stops"), significance 0.6, three variants each in <code>crown-chronicle-content.ts</code>: told inside attention only, at most one per vassal–liege pair per <code>WAGES_CHRONICLE_MIN_GAP_DAYS 5</code> and one per liege per pay day. The Economy debug tab's Oaths table gains <em>wages today</em> and <em>armies covered / uncovered</em>.</li>
       </ul>
 
       <h3>Chronicle — a freehold pays <span class="flag impl">IMPL</span></h3>

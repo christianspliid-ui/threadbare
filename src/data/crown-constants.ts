@@ -40,6 +40,11 @@
  * | OATH_REFUSAL_SENTIMENT_FLOOR    | refusals alone never cross the rivalry threshold (−0.3)        |
  * | OATH_BREAK_REASON_WINDOW_DAYS   | days of loyalty losses kept on the edge to name a break        |
  * | FEALTY_LIST_FOLD                | vassals listed on the sheet before "and N more"                |
+ * | CROWN_WAGES_ENABLED             | THR-1974 switch: the liege pays, feeds and commands its vassal's soldiers |
+ * | LIEGE_WAGE_RESERVE_DAYS         | days of its own upkeep a liege keeps back before paying wages  |
+ * | LIEGE_COMMAND_WINDOW_TICKS      | how long a wage makes the army fight for and eat from the liege |
+ * | OATH_PRICE_READS_UPKEEP         | a gift is priced on what a faction costs to keep, not only its income |
+ * | WAGES_CHRONICLE_MIN_GAP_DAYS    | days between two wage chronicle lines for one pair             |
  */
 
 import type { OathKind } from '../engine/crown/types';
@@ -122,3 +127,20 @@ export const OATH_BREAK_REASON_WINDOW_DAYS = 10;
 
 // ── UI ──
 export const FEALTY_LIST_FOLD = 8;
+
+// ── Wages: a liege pays, feeds and commands its vassal's soldiers (THR-1974) ──
+/**
+ * Master switch for the four hire rules (plan `Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md`):
+ * the price reads upkeep, the liege pays the soldiers its vassal cannot, an army it paid
+ * eats from its towns and fights its enemies. Read through `crownWagesActive()`, which is
+ * false whenever the crown is off.
+ */
+export const CROWN_WAGES_ENABLED = true;
+/** Days of its own armies' upkeep a liege keeps back before it pays any vassal's wages. */
+export const LIEGE_WAGE_RESERVE_DAYS = 2;
+/** How long a wage stamp makes an army fight for, and eat from, its liege (one pay day = PURSE_CYCLE_TICKS). */
+export const LIEGE_COMMAND_WINDOW_TICKS = 12;
+/** Rule 1's upkeep half. Off → a gift is priced on the candidate's income alone (the pre-THR-1974 rule). */
+export const OATH_PRICE_READS_UPKEEP = true;
+/** Days between two wage chronicle lines for one vassal–liege pair. */
+export const WAGES_CHRONICLE_MIN_GAP_DAYS = 5;

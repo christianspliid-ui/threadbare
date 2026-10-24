@@ -168,6 +168,7 @@
     "measure:undertaking-economy": "esbuild scripts/measure-undertaking-economy.ts --bundle --platform=node --format=esm --outfile=.cache/measure-undertaking-economy.mjs --external:fs --external:path && node .cache/measure-undertaking-economy.mjs",
     "measure:founding-starvation": "node scripts/measure-founding-starvation.build.mjs",
     "measure:crown": "esbuild scripts/measure-crown.ts --bundle --platform=node --format=esm --outfile=.cache/measure-crown.mjs --external:fs --external:path && node .cache/measure-crown.mjs",
+    "measure:crown-wages": "esbuild scripts/measure-crown-wages.ts --bundle --platform=node --format=esm --outfile=.cache/measure-crown-wages.mjs --external:fs --external:path && node .cache/measure-crown-wages.mjs",
     "measure:war-aims": "esbuild scripts/measure-war-aims.ts --bundle --platform=node --format=esm --outfile=.cache/measure-war-aims.mjs --external:fs --external:path && node .cache/measure-war-aims.mjs",
     "measure:army-census": "esbuild scripts/measure-army-census.ts --bundle --platform=node --format=esm --outfile=.cache/measure-army-census.mjs --external:fs --external:path && node .cache/measure-army-census.mjs",
     "measure:army-scales": "esbuild scripts/measure-army-scales.ts --bundle --platform=node --format=esm --outfile=.cache/measure-army-scales.mjs --external:fs --external:path && node .cache/measure-army-scales.mjs",

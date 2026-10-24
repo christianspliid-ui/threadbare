@@ -30,7 +30,7 @@ import { getReputationWord } from '../../../data/domain-words';
 import { getWealthTier } from '../../wealth';
 import { readMeansBand, readPurseDay } from '../../factionPurse';
 import { factionPurseView } from '../../factionPurse/purseSentences';
-import { fealtyPurseSentence, fealtyView } from '../../crown/fealtySentences';
+import { fealtyPurseSentence, wagesPurseSentence, fealtyView } from '../../crown/fealtySentences';
 import { composeCultureMores } from '../../cultureMores';
 import { durationLabel, elapsedLabel, humanizeKeySegment, reachDisplayName } from '../../aftermathWords';
 import {
@@ -156,6 +156,9 @@ const purse: SectionResolver = (ctx) => {
   if (view.income.length > 0) parts.push(...view.income, ' ');
   const fealty = fealtyPurseSentence(f.graph, readPurseDay(f.node));
   if (fealty) parts.push(...fealty, ' ');
+  // THR-1974 — a liege that paid its vassals' soldiers today says whose.
+  const wages = wagesPurseSentence(f.graph, f.node.id);
+  if (wages) parts.push(...wages, ' ');
   parts.push(view.spending);
   return linkedProseSection('purse', SUBJECT_ROW_LABELS.purse, parts, 'factionPurseView');
 };
@@ -183,6 +186,8 @@ const fealty: SectionResolver = (ctx) => {
     ...v.oath,
     '\n\n',
     `${FACTION_LINES.standingLead}${v.standing.word}${v.standing.oneStepFromBreaking ? FACTION_LINES.oneStepFromBreaking : ''} — ${v.standing.rest}`,
+    // THR-1974 — its liege pays its soldiers (today's purse day only).
+    ...(v.wages ? [' ', v.wages] : []),
   ];
   return linkedProseSection('fealty', SUBJECT_ROW_LABELS.fealty, parts, 'fealtyView', { labelTooltipId: 'ui.crown.standing' });
 };

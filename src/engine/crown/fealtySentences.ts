@@ -17,6 +17,8 @@ import { getReputationWord } from '../../data/domain-words';
 import { FEALTY_LIST_FOLD } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS } from '../../data/faction-purse-constants';
 import { crownRulerOf, isCrown, oathOf, oathsTo, readOath } from './crownView';
+import { readPurseDay } from '../factionPurse';
+import { FEALTY_WAGE_LINES } from '../../data/army-words';
 
 /** A run of sentence text, or a name the UI renders as a link (a faction or the ruler). */
 export type FealtyPart =
@@ -85,6 +87,11 @@ export interface VassalView {
   /** "Owes fealty to <liege> for a fortnight, bought with silver." */
   oath: FealtyPart[];
   standing: { word: string; oneStepFromBreaking: boolean; rest: string };
+  /**
+   * THR-1974 — "Its liege pays its soldiers." (or the partial line), from today's purse
+   * day; null when its liege paid none of its soldiers today (Laws 45, 56).
+   */
+  wages: string | null;
 }
 
 export interface LiegeView {
@@ -130,6 +137,7 @@ export function fealtyView(graph: WorldGraph, factionId: string): FealtyView {
       liegeId: mine.target,
       oath: ['Owes fealty to ', factionPart(graph, mine.target), ` for ${durationWords(days)}, ${kindPhrase(p.kind, p.forcedBy)}.`],
       standing: { ...s, rest: `${kindClause(p.kind, p.forcedBy)}, ${trendClause(p)}.` },
+      wages: vassalWagesLine(readPurseDay(graph.getNode(factionId))),
     };
   }
 
@@ -149,4 +157,40 @@ export function fealtyPurseSentence(graph: WorldGraph, day: { fealtyOut?: number
   if (!day || !(typeof day.fealtyOut === 'number' && day.fealtyOut > 0) || !day.fealtyTo) return null;
   if (!graph.getNode(day.fealtyTo)) return null;
   return ['It pays a share of all it earns to ', factionPart(graph, day.fealtyTo), '.'];
+}
+
+/**
+ * THR-1974 — the vassal's wage clause: its liege paid some or all of the soldiers it
+ * could not pay today. Null when it paid none (nothing renders empty, Law 56).
+ */
+export function vassalWagesLine(
+  day: { wagesFromLiege?: number; armiesUnpaid?: string[]; armiesPaidByLiege?: string[] } | null,
+): string | null {
+  if (!day || !(typeof day.wagesFromLiege === 'number' && day.wagesFromLiege > 0)) return null;
+  const paid = new Set(day.armiesPaidByLiege ?? []);
+  const rest = (day.armiesUnpaid ?? []).filter(id => !paid.has(id));
+  return rest.length > 0 ? FEALTY_WAGE_LINES.partial : FEALTY_WAGE_LINES.all;
+}
+
+/**
+ * THR-1974 — the liege's Purse sentence: "It pays the soldiers of <vassal>." (" and one
+ * other" past the first, counts spelled out). Read from the vassals' purse days, so it
+ * says only what was paid today; null when this faction paid no wages. An unnamed vassal
+ * is never named: the sentence is omitted rather than rendered with a blank (PC-3).
+ */
+export function wagesPurseSentence(graph: WorldGraph, factionId: string): PursePart[] | null {
+  const day = readPurseDay(graph.getNode(factionId));
+  if (!day || !(typeof day.wagesToVassals === 'number' && day.wagesToVassals > 0)) return null;
+  const paid = oathsTo(graph, factionId)
+    .map(e => e.source)
+    .filter(id => {
+      const d = readPurseDay(graph.getNode(id));
+      return !!d && d.tick === day.tick && typeof d.wagesFromLiege === 'number' && d.wagesFromLiege > 0;
+    })
+    .sort();
+  const first = paid.find(id => typeof graph.getNode(id)?.name === 'string');
+  if (!first) return null;
+  const others = paid.length - 1;
+  const tail = others > 0 ? ` and ${countWords(others)} other${others === 1 ? '' : 's'}.` : '.';
+  return [FEALTY_WAGE_LINES.purseLead, factionPart(graph, first), tail];
 }

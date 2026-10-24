@@ -52,6 +52,12 @@ export interface ArmyState {
    * reads it; an army unpaid past one pay day loses cohesion and, at 0, deserts.
    */
   paidThroughTick?: number;
+  /**
+   * THR-1974 — the last pay day this army's faction's liege paid its upkeep (the `crown`
+   * phase wage step). A tick, never an id: the liege is read from the live `sworn_to`
+   * edge. Fresh for `LIEGE_COMMAND_WINDOW_TICKS`, the army fights for and eats from the liege.
+   */
+  liegePaidTick?: number;
   /** Attrition thresholds already fired (prevents re-firing) */
   thresholdsFired: string[];
   /**

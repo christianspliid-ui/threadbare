@@ -54,7 +54,7 @@ export const SUBSYSTEMS: readonly Subsystem[] = [
     activityKeywords: ['faction', 'schism'],
     domains: ['faction', 'chosenfactionpowers', 'schism'],
     phaseMatch: /\b(faction|schism|succession)\b/i,
-    note: 'Faction actions, ambitions, reputation, rank changes, succession, schism resolution.',
+    note: 'Faction actions, ambitions, reputation, rank changes, succession, schism resolution. The crown (THR-1932): oaths of fealty and tax; a liege pays, feeds and commands the armies of vassals it pays (THR-1974, crown/wages.ts).',
   },
   {
     name: 'Rival Gods & Schemes',

@@ -34,7 +34,21 @@ export const CROWN_CHRONICLE_TEMPLATES = {
     '{actor} has risen against its liege, {target}.',
     'Grown too great to kneel, {actor} rebels against {target}.',
   ],
+  // THR-1974 — a liege pays its vassal's soldiers. `{actor}` liege, `{target}` vassal.
+  wages_taken_up: [
+    '{actor} now pays the soldiers of {target}, and they march where {actor} commands.',
+    'Silver from {actor} keeps the soldiers of {target} in the field.',
+    '{actor} has taken the soldiers of {target} into its pay.',
+  ],
+  wages_stopped: [
+    '{actor} could not pay the soldiers of {target} today, and they grumble in camp.',
+    'No silver came from {actor}; the soldiers of {target} go unpaid.',
+    '{actor} has stopped paying the soldiers of {target}.',
+  ],
 } as const;
+
+/** THR-1974 — the weight of both wage lines. */
+export const WAGES_CHRONICLE_SIGNIFICANCE = 0.6;
 
 export const CROWN_CHRONICLE_SIGNIFICANCE = {
   crown_formed: 0.85,
@@ -42,6 +56,8 @@ export const CROWN_CHRONICLE_SIGNIFICANCE = {
   rebellion: 0.85,
   oath_broken: 0.7,
   oath_sworn: 0.6,
+  wages_taken_up: WAGES_CHRONICLE_SIGNIFICANCE,
+  wages_stopped: WAGES_CHRONICLE_SIGNIFICANCE,
 } as const;
 
 export const CROWN_CHRONICLE_TITLES = {
@@ -50,6 +66,8 @@ export const CROWN_CHRONICLE_TITLES = {
   oath_sworn: 'An Oath of Fealty',
   oath_broken: 'An Oath Broken',
   rebellion: 'Rebellion',
+  wages_taken_up: 'Soldiers in Pay',
+  wages_stopped: 'The Pay Stops',
 } as const;
 
 /** `oath_sworn` by how the oath was won. `{actor}` vassal, `{target}` liege. */

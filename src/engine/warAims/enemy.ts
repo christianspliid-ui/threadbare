@@ -23,6 +23,35 @@
 import type { WorldGraph } from '../graph';
 import { RIVALRY_SENTIMENT_THRESHOLD } from '../../types/factionAction';
 import { WAR_AIMS_ENABLED } from '../../data/war-aims-constants';
+import { ownFactionOf, payingLiegeOf } from '../crown/wages';
+
+/**
+ * THR-1974 — the faction an army fights for: its paying liege while the wage is fresh
+ * (`crown/wages.ts`), else its own. Every army-level enemy question asks this, not
+ * `member_of`: objective, re-aim and pick, defence, siege start and battle start.
+ * Faction-level reads (`grievanceFactionOf`, the crown's own `isEnemy`) do not.
+ */
+export function commanderFactionOf(graph: WorldGraph, armyId: string, tick: number): string | undefined {
+  return payingLiegeOf(graph, armyId, tick) ?? ownFactionOf(graph, armyId);
+}
+
+/**
+ * THR-1974 — the attack veto for an army fighting for `commanderId` while belonging to
+ * `ownId`: the commander's own-hall bar, and, when it fights for another, its own faction's
+ * hall bar and its own faction's towns (a hired company never besieges a town it keeps
+ * its own hall in, nor its own).
+ */
+export function commandBarsAttack(
+  graph: WorldGraph,
+  commanderId: string,
+  ownId: string | undefined,
+  locationId: string,
+): boolean {
+  if (hallBarsAttack(graph, commanderId, locationId)) return true;
+  if (!ownId || ownId === commanderId) return false;
+  if (graph.getIncomingEdges(locationId, 'controls').some(e => e.source === ownId)) return true;
+  return hallBarsAttack(graph, ownId, locationId);
+}
 
 /** True when `a` and `b` are distinct factions with a quarrel an army may act on. */
 export function isEnemyFaction(
@@ -122,8 +151,10 @@ export function mayBesiege(
   holderId: string | undefined,
   settlementId: string,
   campaignTargetId?: string,
+  /** THR-1974 — the army's own faction when `armyFactionId` is its paying liege. */
+  ownFactionId?: string,
 ): boolean {
   if (!armyFactionId || !holderId || armyFactionId === holderId) return false;
-  if (hallBarsAttack(graph, armyFactionId, settlementId)) return false;
+  if (commandBarsAttack(graph, armyFactionId, ownFactionId, settlementId)) return false;
   return isEnemyFaction(graph, armyFactionId, holderId) || campaignTargetId === settlementId;
 }
