@@ -7439,7 +7439,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: 'Essence & Divine Economy',
     consumerSystem: ECONOMY,
     intent:
-      'Bless the Holding funds what a place holds (THR-1969, THR-1935 S3). Its bless_holding op writes the god\'s blessed edge (kind holding_yield, untilTick = cast + BLESS_HOLDING_DAYS days, mult BLESS_HOLDING_YIELD_MULT 1.5) on a place a faction controls or a mortal owns; a recast extends, never stacks; an unheld place is refused. While it lives the faction purse\'s town tax and holding income\'s freehold and tithe on that place pay ×1.5; the purse day sweeps it at untilTick.',
+      'Bless the Holding funds what a place holds (THR-1969, THR-1935 S3). Its bless_holding op writes the god\'s blessed edge (kind holding_yield, untilTick = cast + BLESS_HOLDING_DAYS days, mult BLESS_HOLDING_YIELD_MULT 1.5) on a place a faction controls or a mortal owns; a recast extends, never stacks; an unheld place is refused. While it lives the faction purse\'s town tax and place yield and holding income\'s freehold and tithe on that place pay ×1.5; the purse day sweeps it at untilTick.',
     ulTerms: ['Settlement', 'Freehold'],
     mechanism: { kind: 'function', symbols: ['holdingBlessingMult', 'blessHolding', 'sweepExpiredHoldingBlessings'], module: 'src/engine/godsStake.ts' },
     writeSites: ['src/engine/graphOpExecutor.ts', 'src/engine/godsStake.ts', 'src/engine/factionPurse.ts'],

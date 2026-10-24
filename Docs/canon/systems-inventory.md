@@ -335,6 +335,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `fragment` (1) | `fragmentResolution.ts` | `THR-1635`, `THR-475`, `THR-573` |
 | `game` (1) | `gameInit.ts` | — |
 | `god` (2) | `godCardProgressionCheck.ts`, `godProgression.ts` | `THR-1765`, `THR-1794`, `THR-1811` |
+| `gods` (1) | `godsStake.ts` | `THR-1969` |
 | `graph` (5) | `graph.ts`, `graphConditions.ts`, `graphOpExecutor.ts`, `graphQueries.ts`, `graphUtils.ts` | `THR-1296`, `THR-1297`, `THR-1566`, `THR-1631`, `THR-1967`, `THR-786`, `THR-822` |
 | `grievance` (4) | `grievance/covetRivalry.ts`, `grievance/grievanceLifecycle.ts`, `grievance/grudgeEdge.ts`, `grievance/undertakingOutcomeNode.ts` | `THR-1298`, `THR-1348`, `THR-1388`, `THR-1437`, `THR-731` |
 | `group` (1) | `groupShape.ts` | `THR-1297` |
@@ -477,4 +478,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 235 engine domains · 783 modules._
+_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 236 engine domains · 784 modules._
