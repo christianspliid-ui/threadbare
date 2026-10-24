@@ -75,4 +75,4 @@ When any design decision changes:
 1. Update the relevant file in this folder
 2. Update `src/index.css` if it's a token change
 3. If a shared primitive changed visibly, verify its `?view=styleguide` entry still holds (Law 29)
-4. Add a row to `Docs/changelog.md`
+4. Add a row in a new `Docs/changelog/YYYY-MM-DD-<slug>.md` file (`Docs/changelog.md` is a frozen archive since 2026-10-24)

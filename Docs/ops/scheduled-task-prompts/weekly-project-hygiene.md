@@ -89,8 +89,8 @@ Enforce `Docs/canon/session-protocol.md` § Skill Tree Layout. **`.claude/skills
 ### 4. Documentation staleness scan
 
 - `Docs/project-status.md` — **generated and untracked** since THR-1016; do not hand-edit it and do not move entries out of it to hold the cap. The generator renders only the newest `Docs/status/` fragments that fit the ≤60-line budget, so overflow is normal and self-correcting. What is worth checking instead: every recent Linear Done issue has a `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment.
-- `Docs/project-history.md` — append-only. Spot-check recent `✅` entries against recent Linear Done issues.
-- `Docs/changelog.md` — spot-check recent rows for completeness (`| date | where | what changed | why |`).
+- `Docs/history/` — one `✅` file per shipped ticket since 2026-10-24 (`Docs/project-history.md` is the frozen archive before that). Spot-check recent files against recent Linear Done issues, and flag any new line appended to the frozen archive.
+- `Docs/changelog/` — one file of rows per change since 2026-10-24 (`Docs/changelog.md` is the frozen archive). Spot-check recent files for completeness (`| date | where | what changed | why |`), and flag any new row appended to the frozen archive.
 - `Docs/plans/` — plan docs older than 60 days, not referenced from an open Linear issue, whose topic has shipped: flag as archival candidates. **Do not delete.**
 - `Docs/documentation-ownership.md` — any rule it asserts that has been superseded?
 - **Orphan root-level markdown — enumerate, do not recall.** Run `ls -1 *.md` at the repo root (PowerShell: `Get-ChildItem -Filter *.md -File`) and diff the actual output against the allowlist below. Asserting "no orphan root-level markdown" without running the command is how this check reported a false PASS on 2026-07-22 while 16 orphans sat there since March (THR-793). Anything present but not on the list is a finding; anything on the list but missing is also a finding.
@@ -145,7 +145,7 @@ Missing sections → a `## Findings` entry naming the plan and the missing secti
 Spot-check 3–5 recently Done issues:
 
 - Was there a real landing commit carrying `Fixes THR-XX`? **An issue auto-closed with no landing commit is the THR-540 false-close pattern** — a bare `close|fix|resolve THR-XX` substring, a `thr-XXX-*` branch name, or the ID in a PR title all trigger it. Flag any you find.
-- Is the work reflected in `Docs/project-status.md` / `Docs/project-history.md` / `Docs/changelog.md`?
+- Is the work reflected in its `Docs/status/`, `Docs/history/` and `Docs/changelog/` files?
 - Documentation debt? (E.g. a new content-facing engine capability shipped without updating `Docs/plans/2026-04-16-systemic-wiring-guide.md`, or a core-system change without its `public/wiki-manifest.json` manual page.)
 
 ### 10. Wiki freshness escape-net (THR-730)

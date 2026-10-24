@@ -137,7 +137,9 @@ export const DEDUPE_SIMILARITY_THRESHOLD = 0.85;
 export const CROSS_REFERENCE_SCAN_PATHS = [
   "CLAUDE.md",
   "Docs/changelog.md",
+  "Docs/changelog",
   "Docs/project-history.md",
+  "Docs/history",
   "Docs/impediments.md",
   "Docs/canon",
   "Docs/plans",

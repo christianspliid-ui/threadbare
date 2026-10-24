@@ -1,5 +1,6 @@
 /**
- * WIP-until-merged gate — no new claim while a ticket PR is still unmerged (2026-10-09).
+ * WIP-until-merged gate — no new claim while a ticket PR is still unmerged (2026-10-09),
+ * except beside one armed PR that is only waiting on checks (pipelining, 2026-10-24).
  *
  * ## The problem this closes
  *
@@ -31,7 +32,7 @@
  * PreToolUse hook on the Linear MCP `save_issue` tool (matcher `mcp__.*__save_issue`).
  * When the call is a **claim** (moves an issue to In Dev *and* sets an assignee — a move with
  * `assignee: null` is the THR-1283 park-restore and is never gated), list the open PRs. If any **blocking** PR
- * exists, deny (exit 2, reason on stderr). A blocking PR is open, not a draft, carries a
+ * exists, deny (exit 2, reason on stderr) — unless the pipelining rule below allows it. A blocking PR is open, not a draft, carries a
  * line-anchored close line (`Fixes|Closes|Resolves THR-N`, the same predicate as
  * `linear-autoclose.yml`, THR-738) for a ticket other than the one being claimed, has no
  * `Hold:` line, and was updated within {@link STALE_PR_IGNORE_HOURS}.
@@ -45,6 +46,29 @@
  *   Step 0.8 unstick duty owns it.
  * - **Fail-soft.** If `gh` errors or the payload can't be parsed, allow with a stderr
  *   warning. A gate that bricks the lane on a GitHub blip costs more than one race.
+ *
+ * ## Pipelining (2026-10-24): build the next ticket while the last one is on CI
+ *
+ * The 2026-10-24 run-history review measured the cost of "until it merges": on 10-21 a
+ * ticket cycle took 50 min median, of which only ~24 min was building. ~16 min was the
+ * previous PR's CI and ~9 min the wait for the next `*\/20` slot, so the lane idled half
+ * of every cycle. Two things changed together:
+ *
+ * - **The ledgers stopped being shared writes.** `Docs/changelog.md` (written by 18 of 21
+ *   consecutive ticket PRs) and `Docs/project-history.md` (17 of 21) are frozen archives.
+ *   Each ticket now writes its own `Docs/changelog/…` and `Docs/history/…` file, as
+ *   `Docs/status/` has since THR-1016. Those two files were the by-construction conflict.
+ * - **The conflict check moved from the claim to the PR.** The run builds beside the
+ *   armed predecessor, then waits for it to merge, merges `origin/main` into its own
+ *   branch and regenerates before it opens its PR (pull-work § "Closeout — sync with main
+ *   before the PR"). Generated artifacts and the odd shared source file still collide
+ *   sometimes, and that merge settles them locally, where `merge=union` works and the
+ *   generators can run. On GitHub, two open ticket PRs still never coexist.
+ *
+ * So a claim beside open ticket PRs is allowed when every one of them is **waiting**
+ * (armed and not `DIRTY`) and there are at most {@link PIPELINE_MAX_WAITING_PRS}. An
+ * unarmed PR (a review-gate park), a `DIRTY` one, or a second waiting PR still denies,
+ * because none of those merges by itself while this run builds.
  *
  * Every decision is appended to `.claude/logs/wip-gate.log` in the **home** tree (resolved
  * through `git rev-parse --git-common-dir`, so worktree runs log to one place). The
@@ -67,6 +91,15 @@ export const IN_DEV_STATE_ID = "8d662f3d-8c8f-4e3b-b7d9-8c3de7f42f19";
 export const STALE_PR_IGNORE_HOURS = 24;
 /** `gh pr list --limit`. The board rarely holds more than ten open PRs. */
 export const OPEN_PR_LIST_LIMIT = 100;
+/**
+ * How many armed ticket PRs may still be waiting on checks when a new claim is made
+ * (see "Pipelining" in the module doc). One: the run builds while exactly one
+ * predecessor is on CI. Raising it lets PRs stack, and the PR-time sync then merges
+ * several predecessors at once.
+ */
+export const PIPELINE_MAX_WAITING_PRS = 1;
+/** Merge states in which an armed PR cannot merge without a session's help. */
+export const STUCK_MERGE_STATES: ReadonlySet<string> = new Set(["DIRTY"]);
 export const LOG_RELATIVE_PATH = ".claude/logs/wip-gate.log";
 
 export type OpenPr = {
@@ -84,6 +117,8 @@ export type WipDecision = {
   reason: string;
   claimedId: string | null;
   blocking: number[];
+  /** PRs an allowed claim was pipelined beside (armed, waiting on checks). */
+  pipelinedBeside?: number[];
 };
 
 const CLOSE_LINE = /^(?:Fixes|Closes|Resolves) (THR-\d+)\s*$/gim;
@@ -131,6 +166,12 @@ export function blockingPrs(prs: readonly OpenPr[], claimedId: string | null, no
   });
 }
 
+/** True when an open PR will merge with no session's help: armed, and not conflicted. */
+export function isWaitingOnChecks(pr: OpenPr): boolean {
+  if (!pr.autoMergeRequest) return false;
+  return !STUCK_MERGE_STATES.has((pr.mergeStateStatus ?? "").toUpperCase());
+}
+
 export function renderDenial(claimedId: string | null, blocking: readonly OpenPr[]): string {
   const list = blocking
     .map((pr) => {
@@ -140,14 +181,14 @@ export function renderDenial(claimedId: string | null, blocking: readonly OpenPr
     })
     .join("\n");
   return [
-    `wip-gate: claim of ${claimedId ?? "this issue"} refused. A ticket PR is still open and unmerged:`,
+    `wip-gate: claim of ${claimedId ?? "this issue"} refused. A ticket PR is open and cannot merge by itself:`,
     list,
     "",
-    "One ticket is in flight until its PR MERGES (not merely armed). A branch cut now would",
-    "conflict with it: every ticket PR appends the same ledgers and regenerates the same",
-    "artifacts, and GitHub ignores the union merge driver. Do this instead:",
+    `A new ticket may be built while at most ${PIPELINE_MAX_WAITING_PRS} armed, non-DIRTY ticket PR waits on`,
+    "checks (pipelining, 2026-10-24). An unarmed, DIRTY or extra PR will not merge while you",
+    "build, so the sync before your own PR would wait on it forever. Do this instead:",
     "  - DIRTY, red, or an unarmed review-gate park: unstick it now (pull-work Step 0.8), then stop.",
-    "  - Armed and waiting on checks: end the run cleanly. The next run claims after it merges.",
+    "  - Two or more armed PRs waiting on checks: end the run cleanly. The next run claims after one merges.",
     "  - Resuming the ticket that PR closes is allowed; claim that id instead.",
     `Drafts, PRs with a \`Hold:\` line, and PRs idle > ${STALE_PR_IGNORE_HOURS} h never block.`,
   ].join("\n");
@@ -168,6 +209,16 @@ export function decideWipGate(
   if (ownPr) return { verdict: "allow", reason: `resume of ${claimedId} (its PR #${ownPr.number} is open)`, claimedId, blocking: [] };
   const blocking = blockingPrs(prs, claimedId, now);
   if (blocking.length === 0) return { verdict: "allow", reason: "no unmerged ticket PR", claimedId, blocking: [] };
+  if (blocking.length <= PIPELINE_MAX_WAITING_PRS && blocking.every(isWaitingOnChecks)) {
+    const numbers = blocking.map((p) => `#${p.number}`).join(", ");
+    return {
+      verdict: "allow",
+      reason: `pipelined beside ${numbers} (armed, waiting on checks): build now, and open your PR only after it merges`,
+      claimedId,
+      blocking: [],
+      pipelinedBeside: blocking.map((p) => p.number),
+    };
+  }
   return { verdict: "deny", reason: renderDenial(claimedId, blocking), claimedId, blocking: blocking.map((p) => p.number) };
 }
 
@@ -234,7 +285,14 @@ function runHook(): number {
   }
 
   const decision = decideWipGate(input, prs, new Date());
-  log(cwd, { verdict: decision.verdict, tool: payload.tool_name, id: decision.claimedId, blocking: decision.blocking, open: prs.length });
+  log(cwd, {
+    verdict: decision.verdict,
+    tool: payload.tool_name,
+    id: decision.claimedId,
+    blocking: decision.blocking,
+    ...(decision.pipelinedBeside ? { pipelinedBeside: decision.pipelinedBeside } : {}),
+    open: prs.length,
+  });
   if (decision.verdict === "deny") {
     process.stderr.write(decision.reason + "\n");
     return 2;

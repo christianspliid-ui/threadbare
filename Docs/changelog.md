@@ -1,6 +1,6 @@
 # Change Audit Trail
 
-Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
+**Archive, frozen 2026-10-24 — never add a row here.** Every new change gets its own file in `Docs/changelog/` (`YYYY-MM-DD-thr-XXXX.md`, same four columns; see `Docs/changelog/README.md`). This file keeps every row written before the cut-over.
 
 ### Recent Changes
 

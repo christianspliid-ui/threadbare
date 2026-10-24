@@ -602,7 +602,7 @@ Minimum verification for a serious encounter pass:
   - are multiple options defensible?
   - does the choice reveal divine posture or only tactical preference?
 - If a second agent is available, use it for the editorial review and capture the important findings.
-- Update `Docs/changelog.md` when this checklist itself changes.
+- Add a `Docs/changelog/YYYY-MM-DD-<slug>.md` file when this checklist itself changes.
 
 ## Working Rule
 

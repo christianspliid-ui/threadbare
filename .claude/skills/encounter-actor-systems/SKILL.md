@@ -10,7 +10,7 @@ description: >
   an agent is idle, stuck, choosing wrong encounters, or failing resolution unexpectedly.
   Also use when updating encounters-agents-reference.html or tick-cycle-reference.html.
 validated_doctrine: rules-of-play@1
-last_validated_against: 2026-08-28
+last_validated_against: 2026-10-24
 ---
 
 # Encounter & Actor Systems — Analysis, Debugging & Iteration
@@ -409,7 +409,7 @@ Update these files whenever:
 2. Identify which `CHAPTERS` entry (encounters ref) or `ACTS` entry (tick cycle ref) needs updating
 3. Edit the JavaScript data inline — the rendering code is generic and doesn't need changes
 4. Verify the page renders correctly by loading it in the browser
-5. Note the update in `Docs/changelog.md`
+5. Note the update in a new `Docs/changelog/YYYY-MM-DD-<slug>.md` file (`Docs/changelog.md` is a frozen archive since 2026-10-24)
 
 ---
 

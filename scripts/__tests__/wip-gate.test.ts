@@ -12,10 +12,12 @@ import { afterAll, describe, expect, it } from "vitest";
 import { SUBPROCESS_TEST_TIMEOUT_MS } from "../../src/testing/testTimeouts";
 import {
   IN_DEV_STATE_ID,
+  PIPELINE_MAX_WAITING_PRS,
   STALE_PR_IGNORE_HOURS,
   blockingPrs,
   closedIds,
   decideWipGate,
+  isWaitingOnChecks,
   movesToInDev,
   type OpenPr,
 } from "../wip-gate";
@@ -98,6 +100,52 @@ describe("decideWipGate", () => {
   });
 });
 
+describe("pipelining (2026-10-24): build beside one armed PR that is only waiting on checks", () => {
+  const claim = { id: "THR-2020", state: "In Dev", assignee: "me" };
+  const waiting = (number: number, mergeStateStatus?: string) =>
+    pr({ number, body: `Fixes THR-${number}`, autoMergeRequest: { enabledAt: recent }, mergeStateStatus });
+
+  it("isWaitingOnChecks: armed and not DIRTY, whatever else GitHub has computed", () => {
+    expect(isWaitingOnChecks(waiting(1, "BLOCKED"))).toBe(true);
+    expect(isWaitingOnChecks(waiting(1, "CLEAN"))).toBe(true);
+    expect(isWaitingOnChecks(waiting(1, "UNKNOWN"))).toBe(true);
+    expect(isWaitingOnChecks(waiting(1))).toBe(true);
+    expect(isWaitingOnChecks(waiting(1, "DIRTY"))).toBe(false);
+    expect(isWaitingOnChecks(waiting(1, "dirty"))).toBe(false);
+    expect(isWaitingOnChecks(pr({ number: 1, body: "Fixes THR-1" }))).toBe(false);
+  });
+
+  it("allows the claim beside one waiting PR and records which", () => {
+    const d = decideWipGate(claim, [waiting(2532, "BLOCKED")], NOW);
+    expect(d.verdict).toBe("allow");
+    expect(d.pipelinedBeside).toEqual([2532]);
+    expect(d.reason).toContain("#2532");
+  });
+
+  it("still denies beside an unarmed PR: a review-gate park never merges by itself", () => {
+    const d = decideWipGate(claim, [pr({ number: 2514, body: "Fixes THR-1965", mergeStateStatus: "CLEAN" })], NOW);
+    expect(d.verdict).toBe("deny");
+    expect(d.blocking).toEqual([2514]);
+  });
+
+  it("still denies beside an armed DIRTY PR", () => {
+    expect(decideWipGate(claim, [waiting(2529, "DIRTY")], NOW).verdict).toBe("deny");
+  });
+
+  it(`denies beside more than ${PIPELINE_MAX_WAITING_PRS} waiting PR, and names them all`, () => {
+    const prs = Array.from({ length: PIPELINE_MAX_WAITING_PRS + 1 }, (_, i) => waiting(100 + i, "BLOCKED"));
+    const d = decideWipGate(claim, prs, NOW);
+    expect(d.verdict).toBe("deny");
+    expect(d.blocking).toEqual(prs.map((p) => p.number));
+  });
+
+  it("one waiting PR beside a stuck one still denies, naming both", () => {
+    const d = decideWipGate(claim, [waiting(10, "BLOCKED"), pr({ number: 11, body: "Fixes THR-11" })], NOW);
+    expect(d.verdict).toBe("deny");
+    expect(d.blocking).toEqual([10, 11]);
+  });
+});
+
 describe("hook entry (real script, stdin → exit code)", () => {
   const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../wip-gate.ts");
   const dir = mkdtempSync(path.join(tmpdir(), "wip-gate-"));
@@ -119,6 +167,10 @@ describe("hook entry (real script, stdin → exit code)", () => {
     const r = run({ id: "THR-9", state: "In Dev", assignee: "me" }, [pr({ number: 7, body: "Fixes THR-8", updatedAt: fresh })]);
     expect(r.status).toBe(2);
     expect(r.stderr).toContain("PR #7");
+  });
+  it("exits 0 for a claim pipelined beside one armed PR waiting on checks", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
+    const armed = pr({ number: 7, body: "Fixes THR-8", updatedAt: fresh, autoMergeRequest: {}, mergeStateStatus: "BLOCKED" });
+    expect(run({ id: "THR-9", state: "In Dev", assignee: "me" }, [armed]).status).toBe(0);
   });
   it("exits 0 for a resume of the PR's own ticket", { timeout: SUBPROCESS_TEST_TIMEOUT_MS }, () => {
     expect(run({ id: "THR-8", state: "In Dev", assignee: "me" }, [pr({ number: 7, body: "Fixes THR-8", updatedAt: fresh })]).status).toBe(0);

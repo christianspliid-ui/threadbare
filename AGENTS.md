@@ -230,7 +230,7 @@ Settled. Do not revisit.
 When modifying Obsidian vault notes:
 
 - **In the document:** Dated inline note near the change (date, what, why — one line).
-- **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
+- **In the changelog:** Add a new file `Docs/changelog/YYYY-MM-DD-<slug>.md` (format: `| date | where | what changed | why |`; `Docs/changelog.md` is a frozen archive since 2026-10-24).
 
 ## Definition of Done
 
@@ -239,12 +239,12 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 - [ ] **Commit** all changes — the closing commit's message body **must** include `Fixes THR-XX` (or `Closes`/`Resolves`) so the Linear auto-close workflow fires on push to `main`. Branch protection is active on `main` (THR-282 shipped 2026-04-30) — direct push is rejected; open a PR.
 - [ ] **Push** the feature branch and open a PR via `gh pr create`; merge after CI is green (`Test · Typecheck · Build` is the required check).
 - [ ] **Deploy** — Vercel auto-deploys from GitHub on push to `main`. Just ensure the merge succeeded.
-- [ ] **Update docs** — `Docs/project-status.md` (≤60 lines, move old entries to `project-history.md`), `Docs/project-history.md` (one-line `✅` entry), `Docs/changelog.md` (append rows). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword auto-closes it; the human-readable comment is still expected).
+- [ ] **Update docs** — three new per-ticket files: `Docs/status/YYYY-MM-DD-thr-XXXX.md`, `Docs/history/YYYY-MM-DD-thr-XXXX.md` (one-line `✅` entry), `Docs/changelog/YYYY-MM-DD-thr-XXXX.md` (rows). `Docs/project-status.md` is generated; `Docs/project-history.md` and `Docs/changelog.md` are frozen archives (2026-10-24). Add a completion comment to the Linear issue (the `Fixes THR-XX` keyword auto-closes it; the human-readable comment is still expected).
 - [ ] **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Engine modules called from orchestrator, modals rendered in GameView JSX, GameState fields consumed by UI, traces emitted, player controls connected. Update the checklist if new surfaces added.
 - [ ] **Log impediments** — Any blockers or workarounds → `Docs/impediments.md`. Load `impediment-reporter` skill for format. Mandatory — unlogged friction is invisible.
 - [ ] **Close out** — The Linear state transition IS the closeout. Cowork hands off by moving to "Ready for Dev"/"Ready for Codex" with the coordination-block comment; executors land work with `Fixes THR-XX` and let the auto-close fire. No out-of-band notification of any kind.
 
-**Where to find completed work history:** Linear issues in "Done" state (current), `.planning/BACKLOG_HISTORY.md` (pre-Linear history), and `Docs/project-history.md` (one-line entries).
+**Where to find completed work history:** Linear issues in "Done" state (current), `.planning/BACKLOG_HISTORY.md` (pre-Linear history), `Docs/history/` (one-line entries, one file per ticket) and the frozen `Docs/project-history.md` (entries before 2026-10-24).
 
 ## Session Workflow
 
