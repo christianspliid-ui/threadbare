@@ -8,7 +8,7 @@ description: >
   Triggers on "attachment pipeline", "author attachments", "create attachments",
   "new items", "new possessions", "new conditions", "new bestowed powers".
 model: opus
-last_validated_against: 2026-10-04
+last_validated_against: 2026-10-24
 validated_doctrine: prose@2
 ---
 
@@ -28,6 +28,8 @@ This file is the orchestrator. It runs a 4-pass pipeline — draft → editorial
 | 4. Implementation | `agents/implementation-prompt.md` | sonnet | data entries + registration + tests |
 
 Dispatch each pass with the prompt file's `{{CATEGORY}}` / `{{PREMISE}}` / `{{CONSTRAINTS}}` / `{{SLUG}}` / `{{TITLE}}` / `{{DATE}}` placeholders filled from the invocation. Stop-points mirror encounter-pipeline: `draft` runs Pass 1 only; `design` runs Passes 1–3; default runs all four. Each pass reads only its declared inputs — the final packet is the implementation contract, so Pass 4 should never need to reopen the draft.
+
+**What reaches main (THR-1948).** Commit `<slug>-final.md` and Pass 4's data entries, registration and tests. The `-draft`, `-editorial`, `-revised` and `-systems` files stay in the worktree for the next pass to read; `.gitignore` keeps them out of `git add -A`. Same rule as encounter-pipeline § What reaches main; files already tracked from earlier runs stay.
 
 ## The machine gate (THR-1486)
 

@@ -1,7 +1,7 @@
 ---
 name: design-session
 description: Use when running a Claude Code session that designs or plans rather than implements — authoring a plan doc, running the design-governance checklist, moving a Linear issue toward Ready for Dev, or writing a handoff for the executor lane. (Replaced the Cowork design role, retired 2026-07-21, THR-654.) For efforts too big for one session, see the scale gate — suggest a wayfinder map (THR-900).
-last_validated_against: 2026-10-16
+last_validated_against: 2026-10-24
 ---
 
 # design-session
@@ -172,6 +172,13 @@ the spine:
 
 Copy `Docs/plans/_template.md`; name it `Docs/plans/YYYY-MM-DD-<topic>.md`. Required inline sections (not an
 appendix), per `Docs/canon/design-governance.md` § Per-system required sections:
+
+**Size cap (THR-1948).** A plan for one ticket or slice states the goal, the three pillars, the files touched
+and the Done-when — no restated canon (link it), no option survey after the decision (one line naming what was
+rejected and why), and none of the template's guidance comments left in. `lint:plan-doc` warns above 250
+lines and **fails above 400** (pre-commit hook and `npm run gate` both block). A multi-slice programme doc or
+an audit carries `Plan-size-exempt: <reason>` in its first 30 lines; a slice plan that will not fit is two
+slices. Why: UI plan docs ran 700–1,900 lines for slices that shipped ~150 lines of code.
 
 | Section | Content |
 |---|---|

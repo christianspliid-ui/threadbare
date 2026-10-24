@@ -182,6 +182,9 @@ block after `check:plan-doc-liveness` says `LIVE`. Two lane-specific rules:
   `## Needs Christian`) and release the ticket — do not hand off over it.
 - **Link the decisions inline** where each is used (wayfinder § plan docs link their primary sources), and
   state in the plan doc which of them the lane decided under delegation.
+- **One slice, ≤250 lines (THR-1948).** Goal, three pillars, files touched, Done-when — link canon rather
+  than restating it, and drop the option survey once the decision is made. `lint:plan-doc` fails a plan doc
+  above 400 lines without `Plan-size-exempt: <reason>` (design-session § Step 2); split the slice instead.
 
 Handoff moves the ticket to `Ready for Dev`, unassigned, with the coordination block as the latest comment.
 **If any decision the plan doc builds on is still inside its veto window, the handoff writes
