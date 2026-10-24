@@ -1101,8 +1101,10 @@ export function phaseAgentDecision(
       // without a story, with no story among the candidates she can actually draw,
       // sets out for the nearest place that holds one. Runs on the real candidate
       // list (after the tellings cap and cooldown), so "no story in reach" is the
-      // decision's own verdict. A mortal with an appointment keeps it (THR-1479).
-      const roadDrought = appointmentCtx ? null : restlessRoadDue(graph, agentId, state.tick);
+      // decision's own verdict. A mortal with an appointment keeps it (THR-1479), and
+      // one holding a god's compulsion waits for it: the road's `continue` would skip
+      // the override below and let the steer the player paid for lapse (THR-1781).
+      const roadDrought = appointmentCtx || compelledId ? null : restlessRoadDue(graph, agentId, state.tick);
       if (roadDrought !== null) {
         // A story she would refuse (forecast under the engagement window's refuse
         // edge, fit 0 in scoring) is not a story she can draw — at home or there.
