@@ -130,6 +130,10 @@ describe('THR-1953 — applyWorldEconomyShift', () => {
     expect(graph.getEdge('lane-busy')!.properties.volume).toBe(TRADE_ROUTE_MAX_VOLUME);
     applyWorldEconomyShift(graph, { quantity: 'lane_volume', amount: -100, settlementId: 'town-1' }, TICK);
     expect(graph.getEdge('lane-busy')!.properties.volume).toBe(ENCOUNTER_LANE_VOLUME_FLOOR);
+    // Whole volumes only: the daily traffic settle steps by 1 toward an integer level.
+    expect(Number.isInteger(W_LANE.small) && Number.isInteger(W_LANE.step) && Number.isInteger(W_LANE.big)).toBe(true);
+    applyWorldEconomyShift(graph, { quantity: 'lane_volume', amount: 2.4, settlementId: 'town-1' }, TICK);
+    expect(Number.isInteger(graph.getEdge('lane-busy')!.properties.volume)).toBe(true);
     // A town with no lane: nothing to write.
     expect(applyWorldEconomyShift(graph, { quantity: 'lane_volume', amount: 1, settlementId: 'town-2' }, TICK)).not.toBeNull();
     graph.removeEdge('lane-busy');

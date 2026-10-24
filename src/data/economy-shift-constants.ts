@@ -28,7 +28,10 @@ export interface EconomyShiftSteps {
  * - **stock** (0–100 abundance per good): a deposit found or worked out. Staple rows use
  *   `harvestStockAmount(band)` instead (below).
  * - **lane_volume** (0–`TRADE_ROUTE_MAX_VOLUME` 10): `+` is one caravan run (`conduct_trade`
- *   adds 1), `++` an expansion (`ROUTE_RAISE_VOLUME_DELTA` 2).
+ *   adds 1), `++` an expansion (`ROUTE_RAISE_VOLUME_DELTA` 2). Whole numbers only: the daily
+ *   lane-traffic settle (`phaseTradeRouteDecay`) steps volume by 1 toward an integer level,
+ *   so a half-step would swing round its level every day and could sink below the floor.
+ *   `small` is therefore one run, like `step`.
  * - **purse** (faction treasury, 0–`FACTION_TREASURY_CAP`): `+` is about two days of a
  *   regiment's upkeep (`ARMY_UPKEEP_PER_DAY.regiment` 2.5) — a levy, not a fortune.
  */
@@ -36,7 +39,7 @@ export const ECONOMY_SHIFT_STEPS: Readonly<Record<WorldEconomyQuantity, EconomyS
   prosperity: { small: 2, step: 4, big: 8 },
   unrest: { small: 3, step: 6, big: 12 },
   stock: { small: 5, step: 10, big: 20 },
-  lane_volume: { small: 0.5, step: 1, big: 2 },
+  lane_volume: { small: 1, step: 1, big: 2 },
   purse: { small: 2, step: 5, big: 10 },
 };
 

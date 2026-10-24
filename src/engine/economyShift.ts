@@ -126,7 +126,9 @@ function shiftLaneVolume(
   const props = readTradeRouteProps(lane.properties as Record<string, unknown>);
   const before = props.volume;
   const floor = Math.min(before, ENCOUNTER_LANE_VOLUME_FLOOR);
-  const after = Math.max(floor, Math.min(TRADE_ROUTE_MAX_VOLUME, before + amount));
+  // Whole volumes only: the traffic settle steps by 1 toward an integer level, and a
+  // fractional volume would oscillate round it (review gate, THR-1953).
+  const after = Math.max(floor, Math.min(TRADE_ROUTE_MAX_VOLUME, Math.round(before + amount)));
   if (after === before) return null;
   graph.updateEdge(lane.id, {
     properties: {
