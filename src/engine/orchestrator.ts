@@ -169,6 +169,7 @@ import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { decayConditions } from './conditionDecay';
 import { expireCompanions } from './companions';
+import { expireAgreements } from './agreementExpiry';
 import { getCompanionTemplate } from '../data/companion-templates';
 import { processTraitDecay } from './traits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
@@ -3877,6 +3878,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     timeInlinePhase('companion_expiry', s, () => expireCompanions(s.graph, s.tick));
   } catch {
     // fail-soft: a departing companion must never take the tick loop with them
+  }
+
+  // Phase 6.625c: Agreement expiry (THR-1999). An agreement edge whose term has run out
+  // (`acquiredTick + ticksRemaining`) is removed, so debts and pacts stop binding everywhere.
+  try {
+    timeInlinePhase('agreement_expiry', s, () => expireAgreements(s.graph, s.tick));
+  } catch {
+    // fail-soft: an ending debt must never stop the tick
   }
 
   // Phase 6.626: Mastery Trait Decay (mastery traits lose levels without reinforcement)

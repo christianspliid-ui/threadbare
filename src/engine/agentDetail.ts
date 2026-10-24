@@ -738,6 +738,8 @@ export function getAgentDetail(
   graph: WorldGraph,
   agentId: string,
   ascendantId: string,
+  /** The current tick — agreements show their remaining term with it (THR-1999). */
+  tick?: number,
 ): AgentDetail | null {
   const agentNode = graph.getNode(agentId);
   if (!agentNode) return null;
@@ -842,7 +844,7 @@ export function getAgentDetail(
   const recentInteractions = allInteractions.slice(0, 3);
 
   // ─── Attachment data ────────────────────────────────────────────
-  const attachments = getAgentAttachments(graph, agentId);
+  const attachments = getAgentAttachments(graph, agentId, tick);
 
   const toSummary = (e: AttachmentFullEntry): AttachmentSummary => ({
     id: e.id,
@@ -1506,7 +1508,7 @@ export function getAgentInfoCard(
    */
   hold: HoldStanding | null = null,
 ): AgentInfoCardData | null {
-  const detail = getAgentDetail(graph, agentId, ascendantId);
+  const detail = getAgentDetail(graph, agentId, ascendantId, tick);
   if (!detail) return null;
 
   const agentNode = graph.getNode(agentId);
@@ -1886,7 +1888,7 @@ export function getAgentInfoCard(
     card.backstoryParagraph1 = paragraphs[0];
 
     // Attachment data (intimate+)
-    const attachments = getAgentAttachments(graph, agentId);
+    const attachments = getAgentAttachments(graph, agentId, tick);
     if (attachments.possessions.length > 0) {
       card.possessions = attachments.possessions;
     }

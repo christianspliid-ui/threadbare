@@ -16,7 +16,7 @@ import type {
 } from '../types/attachments';
 import type { ActionTriggerEffect, AttachmentEffect } from '../types/effects';
 import { resolveSlotTag } from './attachmentSlotResolver';
-import { readAgreement } from './agreementShape';
+import { readAgreement, agreementTermEnded, agreementTermRemaining } from './agreementShape';
 import { isSpellSuppressedFor } from './effects/effectSuppression';
 import type { SpellTemplate } from '../types/effects';
 import { describeSpell } from './spellGenerator/describeSpell';
@@ -217,6 +217,11 @@ export interface AgentAttachments {
 export function getAgentAttachments(
   graph: WorldGraph,
   agentId: string,
+  /**
+   * The current tick (THR-1999). With it, an agreement shows the ticks left on its term and
+   * one whose term has ended is left out; without it, the stored term is shown as before.
+   */
+  tick?: number,
 ): AgentAttachments {
   const possessions: AttachmentFullEntry[] = [];
   const conditions: AttachmentFullEntry[] = [];
@@ -415,8 +420,12 @@ export function getAgentAttachments(
   for (const edge of relatesEdges) {
     const edgeProps = edge.properties as Record<string, unknown>;
     // Both the flat reward shape and the nested fixture shape (THR-1920).
-    const agreementProps: Partial<AgreementProperties> | null = readAgreement(edgeProps);
-    if (!agreementProps) continue;
+    const agreement = readAgreement(edgeProps);
+    if (!agreement) continue;
+    // THR-1999: the expiry pass removes term-ended edges each tick; this covers the gap
+    // before it runs (and an unticked load), so the sheet never shows a 0-tick debt.
+    if (tick !== undefined && agreementTermEnded(agreement, tick)) continue;
+    const agreementProps: Partial<AgreementProperties> = agreement;
 
     // Determine counterparty
     const counterpartyId = edge.source === agentId ? edge.target : edge.source;
@@ -432,8 +441,9 @@ export function getAgentAttachments(
       subcategory,
       tier: (agreementProps.tier ?? 1) as AttachmentTier,
       mechanicalSummary: agreementProps.terms ?? '',
-      ticksRemaining: agreementProps.ticksRemaining ?? null,
-      totalTicks: undefined,
+      // The remaining term, not the full one (THR-1999); the full term is the bar's denominator.
+      ticksRemaining: agreementTermRemaining(agreement, tick),
+      totalTicks: agreement.ticksRemaining ?? undefined,
       tags: agreementProps.tags ?? [],
       agreementType: agreementProps.type,
       grantedBy: counterpartyName,
