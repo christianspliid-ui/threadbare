@@ -16,7 +16,7 @@ description: >
   "rider", "essence cost", "price", "economy", "upkeep", "Dominion", "doom",
   "mandate", "god power", "divine action", "new mechanic", "rule of play".
   Sibling of frontend-ui, which loads the UI Laws.
-last_validated_against: 2026-10-14
+last_validated_against: 2026-10-24
 ---
 
 # Game Design Laws
@@ -59,7 +59,7 @@ How a conforming design is built is the agent's call (CLAUDE.md, THR-608). Break
 - **Shape.** One checkable statement in bold, a short *Why* when it is not obvious, and *Source:* with the date and ticket. Plain words; match the existing chapters.
 - **Numbers are permanent.** A new law takes the next free number, in its chapter or in a new chapter at the end. A retired law keeps its number, struck through, with the date and the reason. Never renumber: code comments and the rulebook cite the numbers.
 - **Ratification.** Christian ratifies or vetoes [P] laws in chat. On a yes, change the mark to **[E]** and add *Ratified by Christian in chat YYYY-MM-DD (THR-XXX)*.
-- **Record it.** One row in `Docs/changelog.md` naming the law number(s) and why. If the rule of play changes too, update the rulebook rule that cites the law in the same PR. If a machine can check the law, add the check in that PR and list it under Enforcement.
+- **Record it.** One row in the PR's new `Docs/changelog/YYYY-MM-DD-thr-XXXX.md` file naming the law number(s) and why (`Docs/changelog.md` is a frozen archive since 2026-10-24). If the rule of play changes too, update the rulebook rule that cites the law in the same PR. If a machine can check the law, add the check in that PR and list it under Enforcement.
 - **Never as a side effect.** An [E] law changes only with Christian's yes, never inside an unrelated ticket.
 
 ## Related

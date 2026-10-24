@@ -33,7 +33,7 @@
 - **What to build next** → Linear (Threadbare team) only. Issues sorted by priority within projects.
 - **Active milestone tracking** → Linear Projects (lifecycle: Idea → Next → Research → Discovery → Now → Done).
 - **Legacy milestone overview** → `.planning/ROADMAP.md`. Phase-level history.
-- **Project status** → one `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment per shipped ticket (`Docs/project-status.md` is **generated and untracked** since THR-1016 — assembled from the newest fragments under a ≤60-line cap; never hand-edit it) + `Docs/project-history.md` (append-only archive).
+- **Project status** → one `Docs/status/YYYY-MM-DD-thr-XXXX.md` fragment per shipped ticket (`Docs/project-status.md` is **generated and untracked** since THR-1016 — assembled from the newest fragments under a ≤60-line cap; never hand-edit it) + one `Docs/history/YYYY-MM-DD-thr-XXXX.md` line per shipped ticket (`Docs/project-history.md` is the frozen archive before 2026-10-24).
 - **System definitions** (e.g. "what is the Doom Clock") → Obsidian only. Other surfaces link to it.
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
 - **Visual style** → `STYLE.md` (art direction) + `Docs/design-system/` (UI) + `?view=styleguide` (living component reference). Hex asset registry: `src/data/hex-tile-assets.ts`.
@@ -71,8 +71,8 @@
 
 ### Repo — `Docs/` (top level)
 - `status/` — one fragment per shipped ticket (`project-status.md` is generated from the newest of these and untracked, THR-1016 — never hand-edit)
-- `project-history.md` — append-only completed milestone archive (troubleshooting reference)
-- `changelog.md` — append-only log of changes (date | where | what | why)
+- `history/` — one `✅` line per shipped ticket, one file each (2026-10-24); `project-history.md` is the frozen archive of earlier entries (troubleshooting reference)
+- `changelog/` — one file of change rows (date | where | what | why) per change (2026-10-24); `changelog.md` is the frozen archive of earlier rows
 - `ubiquitous-language/` — canonical terminology (UL wins on disagreements)
 - `canon/` — per-domain Canon pages (agent Step 0 for authoring tasks); schema in `canon/README.md`
 - `ai-index/` — live runtime contracts for engine work (graph-contract, tick-phases, invariants-and-footguns); routed to by `canon/engine.md`
@@ -158,7 +158,7 @@ Some facts change so frequently they must not be documented statically:
 
 When any documentation surface is updated:
 - Add a dated inline note near the change (date, what, why — one line)
-- Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`)
+- Add a new file `Docs/changelog/YYYY-MM-DD-<slug>.md` (format: `| date | where | what changed | why |`; `Docs/changelog.md` is frozen since 2026-10-24)
 
 ---
 
@@ -221,7 +221,7 @@ Design docs live in `Docs/plans/` (named `YYYY-MM-DD-topic.md`). New plans copy 
 When modifying Obsidian vault notes:
 
 - **In the document:** Dated inline note near the change (date, what, why — one line).
-- **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
+- **In the changelog:** Add a new file `Docs/changelog/YYYY-MM-DD-<slug>.md` (format: `| date | where | what changed | why |`; `Docs/changelog.md` is frozen since 2026-10-24).
 - **In the vault log:** Append to `log.md` via the `vault-log` skill — a filesystem write to `OBSIDIAN_VAULT_PATH` (format: `- **<type>** | <description>`).
 
 

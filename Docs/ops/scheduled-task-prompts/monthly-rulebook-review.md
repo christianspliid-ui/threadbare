@@ -21,7 +21,7 @@ You review and file; you do not rewrite the rulebook in this run. Never claim an
 1. **[OPEN] questions >60 days old.** For each `[OPEN]` marker, find when it was introduced (`git log -S` on the marker text). Anything older than 60 days is a finding: it should either be answered (name who can answer it — design decision → Christian via the briefing; technical → an executor ticket) or demoted to a tracked Linear issue and removed from the rulebook.
 2. **[DESIGN] markers that shipped.** A rule tagged `[DESIGN]` whose implementation has since landed (grep the named system in `src/` + `Docs/canon/systems-inventory.md`) should read `[IMPL]` — stale tags are drift. List them with evidence.
 3. **Quick-reference sync.** Every rule of play stated in the quick-reference must appear (and agree) in the full rulebook. Divergences are findings.
-4. **Recent rules-of-play changes without rulebook rows.** Skim the last month of `Docs/changelog.md` for entries touching turn structure, action verbs, prerequisites, resources, encounters, clocks, or win/loss; confirm each has its rulebook update (the Definition-of-Done requires same-PR updates — a miss is a process finding, not just a content one).
+4. **Recent rules-of-play changes without rulebook rows.** Skim the last month of `Docs/changelog/` files (and `Docs/changelog.md`, the archive frozen 2026-10-24, for anything older) for entries touching turn structure, action verbs, prerequisites, resources, encounters, clocks, or win/loss; confirm each has its rulebook update (the Definition-of-Done requires same-PR updates — a miss is a process finding, not just a content one).
 
 ## Output
 

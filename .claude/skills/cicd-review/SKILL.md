@@ -1,7 +1,7 @@
 ---
 name: cicd-review
 description: Weekly CI/CD flow review (tb-cicd-review lane, Thursdays). Measures the last week of git flow with `npm run cicd:metrics` plus the pickup lane's run history, appends the row to the metrics series on `ops`, judges every recent harness tweak against its own hypothesis, and ships at most two small, reversible harness tweaks (hooks, routine prompts, skills' procedure text, gate scripts, CI config) with a hypothesis each. Never touches product code. Triggers on "cicd review", "/cicd-review", "review the git flow", "did the routine change help", "CI/CD performance".
-last_validated_against: 2026-10-17
+last_validated_against: 2026-10-24
 ---
 
 # CI/CD review — weekly
@@ -102,7 +102,7 @@ Ship both tweaks in **one** PR, `claude/cicd-review-<date>`:
 - `npm run gate` for the owed track, then `npm run gate -- --final` as the last action before push.
 - Run the `review-gate` skill if the diff is classified code.
 - `gh pr merge --auto --merge`. Line-anchored `Fixes` lines aren't needed; there is no ticket.
-- A status fragment `Docs/status/<date>-cicd-review.md`, plus a changelog row.
+- A status fragment `Docs/status/<date>-cicd-review.md`, plus a changelog file `Docs/changelog/<date>-cicd-review.md` (`Docs/changelog.md` is a frozen archive since 2026-10-24).
 - A live scheduled-task prompt changes in the same run as its mirror (`Docs/ops/scheduled-task-prompts/<id>.md`). Keep a backup `SKILL.md.bak-<date>` beside the live file.
 - A cron change follows `Docs/ops/scheduled-tasks-registry.md`: update the row and re-list.
 
