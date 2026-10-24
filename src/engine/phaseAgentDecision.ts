@@ -43,7 +43,8 @@ import { buildHexMovementPath } from './hexMovementPath';
 import { findShortestPath } from './pathfinding';
 import { computeEdgeCost } from './movementCost';
 import { emitTrace, emitPhaseTiming, isProfilingEnabled, isTracingEnabled } from './traceBuffer';
-import { countConsecutiveFailures, isFailedOutcome, computeSetbackShift } from './engagementWindow';
+import { countConsecutiveFailures, isFailedOutcome, computeSetbackShift, computeEngagementFit } from './engagementWindow';
+import { createStandingModifierReader, forecastEncounterExpectedUtility } from './plannerForecast';
 import { isEncounterAction } from './chapterArchive';
 import { isPausedThreadActor, applyStoryTellingsCap, recordStoryChapterStart, isRoutineTemplate, isTellingsCapRelaxed } from './attentionCadence';
 import { restlessRoadDue, findRestlessRoadDestination, recordRestlessRoad, emitRestlessRoadTrace, buildRestlessRoadEvent } from './restlessRoad';
@@ -1103,7 +1104,16 @@ export function phaseAgentDecision(
       // decision's own verdict. A mortal with an appointment keeps it (THR-1479).
       const roadDrought = appointmentCtx ? null : restlessRoadDue(graph, agentId, state.tick);
       if (roadDrought !== null) {
-        const homeStories = candidates.filter(c => !isRoutineTemplate(c.templateId)).map(c => c.templateId);
+        // A story she would refuse (forecast under the engagement window's refuse
+        // edge, fit 0 in scoring) is not a story she can draw — at home or there.
+        // Same reader scoreAndSelect builds below (no effect states), so the verdict
+        // matches the forecast the board will use.
+        const roadStanding = createStandingModifierReader(graph, agentId);
+        const engages = (e: EncounterCacheEntry): boolean => computeEngagementFit(
+          forecastEncounterExpectedUtility(e, agentId, graph, undefined, roadStanding).engagementForecast,
+          0, 0,
+        ).fit > 0;
+        const homeStories = candidates.filter(c => !isRoutineTemplate(c.templateId) && engages(c)).map(c => c.templateId);
         if (homeStories.length > 0) {
           recordRestlessRoad(graph, agentId, state.tick, 'story_at_home');
           emitRestlessRoadTrace(state.tick, agentId, roadDrought, 'story_at_home', locationId, null, homeStories);
@@ -1116,10 +1126,13 @@ export function phaseAgentDecision(
               const told = familiarityRecord.attemptCount[e.templateId] ?? 0;
               return told < MAX_COMPLETIONS_PER_TEMPLATE && (relaxed || told < PAUSED_STORY_MAX_TELLINGS);
             });
-            const cooled = filterByCooldown(
+            // The floor without filterByCooldown's fail-soft drop: this list holds
+            // stories only, so an empty floored list means every story here is one
+            // the floor would hold back on arrival too — not a reason to lift it.
+            const cooled = applyCooldowns(
               open, agentId, state.encounterProgress, state.unifiedActions, state.tick,
               rawCandidates.length, state.chapterArchive, PAUSED_STORY_REPEAT_FLOOR_TICKS,
-            );
+            ).filter(engages);
             if (cooled.length === 0) return cooled;
             // Then the real pipeline, as if she stood there (no runtime: the eligibility
             // funnel counts her actual decisions only). A story her own pipeline already
