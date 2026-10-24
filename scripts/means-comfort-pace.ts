@@ -30,6 +30,7 @@ import { getAvatarsOf } from '../src/engine/graphQueries';
 import { getWealthTier, readWealth, WEALTH_TIER_COMFORTABLE, WEALTH_TIER_GETTING_BY } from '../src/engine/wealth';
 import type { WorldGraph } from '../src/engine/graph';
 import { existsSync, readFileSync } from 'fs';
+import { execFileSync } from 'child_process';
 import {
   MEANS_CELL_COST_ENABLED,
   MEANS_COMFORT_PACE_TARGET_TICKS,
@@ -49,9 +50,13 @@ function foundingFloorVerdict(): boolean | null {
   const path = '.cache/founding-starvation-verdict.json';
   try {
     if (!existsSync(path)) return null;
-    const v = JSON.parse(readFileSync(path, 'utf8')) as { pass?: unknown; gateConfig?: unknown };
+    const v = JSON.parse(readFileSync(path, 'utf8')) as { pass?: unknown; gateConfig?: unknown; head?: unknown; dirty?: unknown };
     // Only a 600-tick medium-map verdict counts: a short run passes the floor trivially.
     if (v.gateConfig !== true) return null;
+    // Only a verdict measured on this commit, with src/ and scripts/ clean then and now.
+    const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+    const dirtyNow = execFileSync('git', ['status', '--porcelain', '--', 'src', 'scripts'], { encoding: 'utf8' }).trim() !== '';
+    if (v.head !== head || v.dirty !== false || dirtyNow) return null;
     return typeof v.pass === 'boolean' ? v.pass : null;
   } catch {
     return null;
@@ -148,7 +153,7 @@ for (const seed of SEEDS) {
     `  median decider Means at t${TICKS}: ${medianEnd?.toFixed(1) ?? '—'} (${medianEnd === null ? '—' : getWealthTier(medianEnd)}; want Getting by … Comfortable) ${medianEnd !== null && medianEnd >= WEALTH_TIER_GETTING_BY && medianEnd < 60 ? 'PASS' : 'FAIL'}`,
     `  mean forecast of free-choice engagements: ${meanForecast === null ? '—' : (100 * meanForecast).toFixed(2)} over ${forecasts.length} (compare against main: within 2 points)`,
     `  comfort pace: ${reachedComfort.size} of ${gettingBy.length} Getting-by deciders reached Comfortable; median ${pace ?? '—'} ticks (target ≤ ${MEANS_COMFORT_PACE_TARGET_TICKS}) ${paceOk ? 'PASS' : 'FAIL'}`,
-    `  founding-starvation floor (patron on, gate seeds): ${floorOk === null ? 'not measured — run npm run measure:founding-starvation' : floorOk ? 'PASS' : 'FAIL'}`,
+    `  founding-starvation floor (patron on, gate seeds): ${floorOk === null ? 'not measured on this commit — run npm run measure:founding-starvation' : floorOk ? 'PASS' : 'FAIL'}`,
     `  → founding costs ${paceOk && floorOk === true ? 'MAY switch on' : 'stay off'} (both predicates required; MEANS_CELL_COST_ENABLED = ${MEANS_CELL_COST_ENABLED})`,
   ];
   console.log(lines.join('\n'));

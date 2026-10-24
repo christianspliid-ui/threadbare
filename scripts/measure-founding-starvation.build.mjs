@@ -63,8 +63,9 @@ if (process.argv.includes('--build-only')) process.exit(0);
 const argv = process.argv.slice(2);
 const flag = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : undefined; };
 const seeds = (flag('--seeds') ?? GATE_SEEDS.join(',')).split(',').map(Number);
-const arms = (flag('--arms') ?? 'off,on,patron').split(',');
-const passThrough = argv.filter((x, i) => !['--seeds', '--arms', '--no-build', '--build-only'].includes(x) && !['--seeds', '--arms'].includes(argv[i - 1]));
+// `--report-only` runs nothing and reports (and re-stamps the verdict) from the cache.
+const arms = argv.includes('--report-only') ? [] : (flag('--arms') ?? 'off,on,patron').split(',');
+const passThrough = argv.filter((x, i) => !['--seeds', '--arms', '--no-build', '--build-only', '--report-only'].includes(x) && !['--seeds', '--arms'].includes(argv[i - 1]));
 // The switch gate is measured at 600 ticks on the medium map only: a shorter run founds
 // nothing, so its floor (0.5 × 0) passes trivially and must never reach `measure:means`.
 const ticks = flag('--ticks') ?? '600';
@@ -117,7 +118,12 @@ const gateRows = GATE_SEEDS.map(s => rows.find(r => r.seed === s));
 const covered = gateRows.every(r => r?.complete);
 const pass = gateConfig && covered && gateRows.every(r => r.pass);
 console.log(`founding-starvation floor (patron arm) on every gate seed (${GATE_SEEDS.join(', ')}): ${!gateConfig ? 'not the gate config (600 ticks, medium) — no verdict' : covered ? (pass ? 'PASS' : 'FAIL') : 'not every gate seed measured yet'}`);
-// Only the gate config writes the verdict `measure:means` reads.
-if (gateConfig) await writeFile('.cache/founding-starvation-verdict.json', JSON.stringify({ pass, gateConfig, floor: FLOOR, gateSeeds: GATE_SEEDS, runKey, rows }, null, 2));
+// Only the gate config writes the verdict `measure:means` reads. It names the commit it
+// was measured on; `measure:means` accepts it only on that commit with a clean src/ and
+// scripts/, so a code change after the measurement voids it.
+const git = (...a) => { try { return execFileSync('git', a, { encoding: 'utf8' }).trim(); } catch { return null; } };
+const head = git('rev-parse', 'HEAD');
+const dirty = git('status', '--porcelain', '--', 'src', 'scripts') !== '';
+if (gateConfig) await writeFile('.cache/founding-starvation-verdict.json', JSON.stringify({ pass, gateConfig, head, dirty, floor: FLOOR, gateSeeds: GATE_SEEDS, runKey, rows }, null, 2));
 const requested = rows.filter(r => seeds.includes(r.seed) && r.complete);
 process.exitCode = requested.every(r => r.pass) ? 0 : 1;
