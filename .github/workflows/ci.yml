@@ -316,95 +316,99 @@ jobs:
       # diff-matching gate structurally could not see anyway. Do not re-add a step here
       # without re-reading that evidence.
 
-  check:
-    name: Test · Typecheck · Build
+  # ── The code gate, fanned out (CI/CD tweak 2026-10-24) ──────────────────────
+  # `Test · Typecheck · Build` used to be ONE job running every step in series:
+  # median 14 min per PR run, of which `npm test` was ~7.3, generated freshness
+  # ~2.4 and typecheck ~1.1 (cicd-review 2026-10-23). Under WIP-until-merged the
+  # next pickup waits on that number. The work now runs as parallel worker jobs
+  # — `npm test` sharded four ways, freshness on its own, the content gates and
+  # the build together — and the job carrying the REQUIRED NAME is a thin
+  # aggregator that needs all of them (`check`, below the workers). Ruleset
+  # 15479914 is unchanged: it still requires `Test · Typecheck · Build`, and the
+  # worker names are deliberately NOT required, so adding or rebalancing a shard
+  # never touches branch protection.
+  #
+  # Workers gate on a stricter predicate than the aggregator: they also need
+  # `detect` to have SUCCEEDED. When it did not, they skip and the aggregator's
+  # guard step fails the required check — the THR-768 contract, kept in one
+  # place. Runners are free (public repo, `ubuntu-latest`), so the price of the
+  # fan-out is the repeated checkout + `npm ci` (~1 min per worker) and six
+  # concurrent jobs per run against the account's 20-job ceiling.
+  test:
+    name: Tests (shard ${{ matrix.shard }}/4)
     needs: detect
-    # Three-way gate, not two (THR-768). The old condition was
-    # `needs.detect.outputs.code == 'true'`, which conflated "nothing to check"
-    # with "could not tell" — when `detect` died at startup the output was empty,
-    # this job recorded as `skipped`, and **a skipped required check satisfies
-    # branch protection**. The rule read as enforced and was void simultaneously;
-    # measured end to end on PR #853 (2026-07-25) and PR #1022 (2026-07-28, which
-    # carried engine + content changes).
-    #
-    #   event is push to main             → skip               (THR-939, see below)
-    #   detect succeeded, code == 'true'  → run the suite      (unchanged)
-    #   detect succeeded, code == 'false' → skip               (unchanged: docs-only PRs stay fast)
-    #   detect did NOT succeed            → run, and FAIL loudly via the guard step below
-    #   event is workflow_dispatch        → run unconditionally (THR-842 retro-verification)
-    #
-    # The condition needed NO change for merge queues (THR-946) and that is worth
-    # stating rather than leaving to be re-derived: `merge_group` is not `push`,
-    # so the THR-939 exclusion does not catch it, and `detect` now classifies the
-    # group from `base_sha`, so the three `detect`-based rows above apply to a
-    # merge group exactly as they do to a PR. A docs-only group skips this job and
-    # reports `skipped`, which branch protection accepts — the same rule that made
-    # THR-768 dangerous is the rule that keeps docs merges fast here, and it is
-    # safe in this direction only because `detect` cannot silently answer "false"
-    # for a change it failed to classify.
-    #
-    # `!cancelled()` rather than `always()` deliberately: a run superseded by
-    # `cancel-in-progress` must stay cancelled, not be reported as a failure.
-    #
-    # The `push` exclusion (THR-939). Branch protection runs in **strict mode** —
-    # a branch must be up to date with `main` before it can merge — so the tree
-    # that lands on `main` is byte-identical to the tree this job already
-    # validated on the `pull_request` event minutes earlier. The post-merge run
-    # re-derives a known answer.
-    #
-    # The reason to cut it is THROUGHPUT, not money. An earlier framing costed
-    # these runs as ~22% of the CI bill; that premise is void — the repository is
-    # public and every job here runs on `ubuntu-latest`, a standard runner, which
-    # GitHub bills at $0 (audit: `Docs/audits/2026-08-01-ci-cost-and-wall-time.md`).
-    # What the redundant run actually costs is a ~10-minute occupancy of the
-    # Actions queue immediately after every merge, which delays the NEXT PR's
-    # feedback. Under strict protection the merge ceiling is already one PR per
-    # advance of `main`'s tip (THR-920), so anything lengthening the post-merge
-    # window slows the lane directly.
-    #
-    # This does NOT touch the merge gate: the required `Test · Typecheck · Build`
-    # status branch protection consumes is produced by the `pull_request` run on
-    # the PR's head SHA. Nothing downstream reads a push-event conclusion.
-    #
-    # The clause is ANDed OUTSIDE the parenthesised group deliberately, so it also
-    # suppresses the `detect.result != 'success'` guard path on push. That guard
-    # exists to refuse a merge it cannot vouch for; on push the merge has already
-    # happened and no gate is listening, so firing there would be an unactionable
-    # red on `main` rather than a protection. On `pull_request` — where it is
-    # load-bearing — it is untouched.
-    #
-    # `workflow_dispatch` is unaffected and becomes MORE load-bearing: it is now
-    # the only way to execute the full suite against a `main` commit, which is
-    # exactly the retro-verification path THR-842 added it for.
-    if: ${{ !cancelled() && github.event_name != 'push' && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
+    if: ${{ !cancelled() && github.event_name != 'push' && needs.detect.result == 'success' && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.code == 'true') }}
     runs-on: ubuntu-latest
-    # Budget dated 2026-08-29 (THR-1361 / impediment #948): the suite alone measured
-    # 16m48s on a hosted runner (1135 files / 19037 tests) and the freshness step
-    # (which runs a full 120-tick headless world via generate-systems-inventory)
-    # follows it, so the previous 20-minute budget cancelled every code PR at
-    # exactly 20m15s mid-freshness — PR #1738 hit it twice in a row. Measured
-    # end-to-end need: ~19-22 min; 35 gives the same ~1.6x headroom the original
-    # budget had when it was sized. Re-measure before changing (see impediments
-    # #941/#948 — undated budgets decay in silence).
-    timeout-minutes: 35
+    # The unsharded suite measured 16m48s at worst on a hosted runner (THR-1361 /
+    # impediment #948) and ~7.3 min typically by 2026-10-23. A quarter of the
+    # worst case plus setup is ~6 min; 20 leaves >3x headroom for a lopsided
+    # shard (vitest balances by file count, not duration). Re-measure before
+    # changing (impediments #941/#948 — undated budgets decay in silence).
+    timeout-minutes: 20
+    strategy:
+      # Every shard reports, so one red run lists every failing file instead of
+      # cancelling the other shards at the first failure.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
 
     steps:
-      # The vacuous-gate guard. If change detection did not succeed, this required
-      # check has no idea whether the change is safe — and must say so in the only
-      # way branch protection understands, which is a failing conclusion. Costs
-      # ~10s on the (rare) path where it fires, and nothing at all otherwise.
-      #
-      # Note this guard is belt-and-braces during an Actions outage: when the
-      # account budget is exhausted, THIS job also fails to start, which already
-      # produces a `failure` conclusion. The guard is what covers every *other*
-      # way `detect` can die — a paths-filter API error, a runner fault, a bad
-      # token — none of which should ever be able to wave a change through.
-      - name: Guard — change detection health
-        if: needs.detect.result != 'success'
-        run: |
-          echo "::error::Change detection did not succeed (result='${{ needs.detect.result }}'). Refusing to report a pass — this required check cannot vouch for a change it never inspected. See THR-768."
-          exit 1
+      # fetch-depth: 0 — several script tests read git history (origin/main,
+      # merge-base, git log); the single job always had it, so the shards keep it.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Vitest splits the files of all three fast projects into four slices; the
+      # union of the shards is exactly `npm test`.
+      - name: Run tests
+        run: npm test -- --shard=${{ matrix.shard }}/4
+
+  freshness:
+    name: Generated artifact freshness
+    needs: detect
+    if: ${{ !cancelled() && github.event_name != 'push' && needs.detect.result == 'success' && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.code == 'true') }}
+    runs-on: ubuntu-latest
+    # ~2.4 min measured 2026-10-23 (a full 120-tick headless world via
+    # generate-systems-inventory is most of it).
+    timeout-minutes: 15
+
+    steps:
+      # Shallow is enough: the gate reads `git show HEAD:<path>`, `ls-files` and
+      # `status`, never history.
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Generated artifacts (action catalog, UL dashboard, impediment dashboard)
+      # are consumed at runtime but are NOT rebuilt by `vite build` — only by the
+      # npm `prebuild` lifecycle hook, which `npx vite build` bypasses. A stale
+      # one therefore ships with no test failure and no build error; it nearly
+      # leaked in two consecutive runs (THR-616, THR-663). This step regenerates
+      # and fails if the commit's copies differ.
+      - name: Generated artifact freshness
+        run: npm run check:generated-freshness
+
+  static:
+    name: Content gates · Typecheck · Build
+    needs: detect
+    if: ${{ !cancelled() && github.event_name != 'push' && needs.detect.result == 'success' && (github.event_name == 'workflow_dispatch' || needs.detect.outputs.code == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
       # fetch-depth: 0 gives the wiki-freshness gate (below) the history it needs
       # to diff against origin/main and to scan commit bodies for the exemption
       # token. The detect job stays shallow — it reads changed files via the API.
@@ -418,9 +422,6 @@ jobs:
           cache: npm
 
       - run: npm ci
-
-      - name: Run tests
-        run: npm test
 
       - name: Lint encounter content
         run: npm run lint:encounter-content
@@ -493,19 +494,10 @@ jobs:
       - name: Typecheck (ratchet)
         run: npm run check:typecheck
 
-      # Generated artifacts (action catalog, UL dashboard, impediment dashboard)
-      # are consumed at runtime but are NOT rebuilt by `vite build` — only by the
-      # npm `prebuild` lifecycle hook, which `npx vite build` below bypasses. A
-      # stale one therefore ships with no test failure and no build error; it
-      # nearly leaked in two consecutive runs (THR-616, THR-663). This step
-      # regenerates and fails if the commit's copies differ. Adds a few seconds.
-      - name: Generated artifact freshness
-        run: npm run check:generated-freshness
-
       # `Docs/impediments.md` is `merge=union` (THR-691) so concurrent appends from
       # different lanes merge without conflict — and union keeps BOTH sides of a
       # conflicting hunk, which is right for the rows and wrong for their hand-assigned
-      # numbers. The freshness gate above only proves the dashboard matches its source,
+      # numbers. The freshness gate only proves the dashboard matches its source,
       # never that the source's keys are distinct, so a duplicate regenerates cleanly
       # and ships green; 15 had accumulated undetected (THR-881). This step is what
       # stops the second lane's PR from landing a number `main` already uses.
@@ -515,9 +507,8 @@ jobs:
       # Blocking wiki-freshness gate (THR-730, user verdict 2026-07-23). Fails the
       # required check if a PR changes a file matched by a wiki page's `sources`
       # without updating that page/payload — unless a commit body carries
-      # `Wiki-freshness-exempt: <reason>`. On a push-to-main event the diff base
-      # equals HEAD, so the diff is empty and the step is inert. `git fetch` is a
-      # cheap idempotent guard on top of the checkout's fetch-depth: 0.
+      # `Wiki-freshness-exempt: <reason>`. `git fetch` is a cheap idempotent guard
+      # on top of the checkout's fetch-depth: 0.
       - name: Wiki freshness (blocking)
         run: |
           git fetch origin main
@@ -528,3 +519,109 @@ jobs:
 
       - name: Production build
         run: npx vite build
+
+  # The REQUIRED check. Since the 2026-10-24 fan-out it runs no gate itself: it
+  # needs every worker above and fails unless each one succeeded. Its `if` is the
+  # original three-way predicate, unchanged, so a docs-only PR still records it
+  # as `skipped` (fast path) and a dead `detect` still fails it via the guard.
+  check:
+    name: Test · Typecheck · Build
+    needs: [detect, test, freshness, static]
+    # Three-way gate, not two (THR-768). The old condition was
+    # `needs.detect.outputs.code == 'true'`, which conflated "nothing to check"
+    # with "could not tell" — when `detect` died at startup the output was empty,
+    # this job recorded as `skipped`, and **a skipped required check satisfies
+    # branch protection**. The rule read as enforced and was void simultaneously;
+    # measured end to end on PR #853 (2026-07-25) and PR #1022 (2026-07-28, which
+    # carried engine + content changes).
+    #
+    #   event is push to main             → skip               (THR-939, see below)
+    #   detect succeeded, code == 'true'  → run the suite      (unchanged)
+    #   detect succeeded, code == 'false' → skip               (unchanged: docs-only PRs stay fast)
+    #   detect did NOT succeed            → run, and FAIL loudly via the guard step below
+    #   event is workflow_dispatch        → run unconditionally (THR-842 retro-verification)
+    #
+    # The condition needed NO change for merge queues (THR-946) and that is worth
+    # stating rather than leaving to be re-derived: `merge_group` is not `push`,
+    # so the THR-939 exclusion does not catch it, and `detect` now classifies the
+    # group from `base_sha`, so the three `detect`-based rows above apply to a
+    # merge group exactly as they do to a PR. A docs-only group skips this job and
+    # reports `skipped`, which branch protection accepts — the same rule that made
+    # THR-768 dangerous is the rule that keeps docs merges fast here, and it is
+    # safe in this direction only because `detect` cannot silently answer "false"
+    # for a change it failed to classify.
+    #
+    # `!cancelled()` rather than `always()` deliberately: a run superseded by
+    # `cancel-in-progress` must stay cancelled, not be reported as a failure.
+    #
+    # The `push` exclusion (THR-939). Branch protection runs in **strict mode** —
+    # a branch must be up to date with `main` before it can merge — so the tree
+    # that lands on `main` is byte-identical to the tree this job already
+    # validated on the `pull_request` event minutes earlier. The post-merge run
+    # re-derives a known answer.
+    #
+    # The reason to cut it is THROUGHPUT, not money. An earlier framing costed
+    # these runs as ~22% of the CI bill; that premise is void — the repository is
+    # public and every job here runs on `ubuntu-latest`, a standard runner, which
+    # GitHub bills at $0 (audit: `Docs/audits/2026-08-01-ci-cost-and-wall-time.md`).
+    # What the redundant run actually costs is a ~10-minute occupancy of the
+    # Actions queue immediately after every merge, which delays the NEXT PR's
+    # feedback. Under strict protection the merge ceiling is already one PR per
+    # advance of `main`'s tip (THR-920), so anything lengthening the post-merge
+    # window slows the lane directly.
+    #
+    # This does NOT touch the merge gate: the required `Test · Typecheck · Build`
+    # status branch protection consumes is produced by the `pull_request` run on
+    # the PR's head SHA. Nothing downstream reads a push-event conclusion.
+    #
+    # The clause is ANDed OUTSIDE the parenthesised group deliberately, so it also
+    # suppresses the `detect.result != 'success'` guard path on push. That guard
+    # exists to refuse a merge it cannot vouch for; on push the merge has already
+    # happened and no gate is listening, so firing there would be an unactionable
+    # red on `main` rather than a protection. On `pull_request` — where it is
+    # load-bearing — it is untouched.
+    #
+    # `workflow_dispatch` is unaffected and becomes MORE load-bearing: it is now
+    # the only way to execute the full suite against a `main` commit, which is
+    # exactly the retro-verification path THR-842 added it for.
+    if: ${{ !cancelled() && github.event_name != 'push' && (github.event_name == 'workflow_dispatch' || needs.detect.result != 'success' || needs.detect.outputs.code == 'true') }}
+    runs-on: ubuntu-latest
+    # It only reads `needs` — no checkout, no install. The workers carry their own
+    # budgets; the old 35-minute single-job budget (THR-1361) is split among them.
+    timeout-minutes: 5
+
+    steps:
+      # The vacuous-gate guard. If change detection did not succeed, this required
+      # check has no idea whether the change is safe — and must say so in the only
+      # way branch protection understands, which is a failing conclusion. Costs
+      # ~10s on the (rare) path where it fires, and nothing at all otherwise.
+      #
+      # Note this guard is belt-and-braces during an Actions outage: when the
+      # account budget is exhausted, THIS job also fails to start, which already
+      # produces a `failure` conclusion. The guard is what covers every *other*
+      # way `detect` can die — a paths-filter API error, a runner fault, a bad
+      # token — none of which should ever be able to wave a change through.
+      - name: Guard — change detection health
+        if: needs.detect.result != 'success'
+        run: |
+          echo "::error::Change detection did not succeed (result='${{ needs.detect.result }}'). Refusing to report a pass — this required check cannot vouch for a change it never inspected. See THR-768."
+          exit 1
+
+      # Anything but `success` from a worker fails the required check — including
+      # `skipped` and `cancelled`. A skipped worker can only mean the gate never
+      # ran, and THR-768 is exactly the bug where a skip read as a pass. `test` is
+      # the matrix as a whole: one red shard makes it `failure`.
+      - name: Every gate job passed
+        env:
+          TESTS: ${{ needs.test.result }}
+          FRESHNESS: ${{ needs.freshness.result }}
+          STATIC: ${{ needs.static.result }}
+        run: |
+          echo "Tests (all shards):               $TESTS"
+          echo "Generated artifact freshness:     $FRESHNESS"
+          echo "Content gates · Typecheck · Build: $STATIC"
+          if [ "$TESTS" != success ] || [ "$FRESHNESS" != success ] || [ "$STATIC" != success ]; then
+            echo "::error::A gate job did not succeed — open the failing worker job above for its log."
+            exit 1
+          fi
+
