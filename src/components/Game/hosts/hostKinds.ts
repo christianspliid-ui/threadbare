@@ -30,6 +30,7 @@ export const DIALOG_HOST_KINDS: readonly DialogHomedKind[] = [
 ];
 
 export const CEREMONY_HOST_KINDS: readonly CeremonyHomedKind[] = [
+  'age-twilight',
   'cycle-harvest',
   'meet-the-first',
   'threading-rite',

@@ -11,10 +11,13 @@ import type { GameState } from '../types/gameState';
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { EchoDefinition, EchoState } from '../types/echo';
-import type { FundamentState } from '../types/worldSoul';
+import type { FundamentState, ResonanceState } from '../types/worldSoul';
 import type { HarvestResult } from './cycleEnd';
 import { createEchoState, degradeAllEchoes } from './echo';
-import { blendFundaments, createDefaultFundament, createResonanceState } from './worldSoul';
+import { blendFundaments, captureMemory, createDefaultFundament, createResonanceState, degradeMemories, pruneMemories } from './worldSoul';
+import { captureAgeMemories, memoryCaptureReason } from './twilight';
+import { emitTrace } from './traceBuffer';
+import { RESONANCE_DEGRADE_PER_RUN } from '../data/game-config';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
 import type { SpherePoints } from './spherePoints';
 import { HUNGER_CATALOG } from '../data/hunger-catalog';
@@ -243,14 +246,55 @@ export function concludeRun(account: AccountRecord, state: GameState, harvest: H
     echoDefinitions: [...carriedDefs, ...freshUnique],
     echoStates: [...degraded, ...freshUnique.map(d => createEchoState(d.id))],
     fundament,
-    // TODO(THR-1381): nothing writes resonance memories in play yet (`captureMemory` has no
-    // production caller), so this carry is empty until Twilight authorship writes them.
-    resonance: {
-      memories: state.worldSoul.resonance.memories.map(m => ({ ...m })),
-      maxMemories: state.worldSoul.resonance.maxMemories,
-    },
+    resonance: concludeResonance(state, harvest, cycleCount),
     ...(lastRun ? { lastRun } : {}),
   };
+}
+
+/**
+ * THR-1381 E5 — the World-Soul's memories at the end of the age. Every carried memory
+ * fades by `RESONANCE_DEGRADE_PER_RUN` and the gone ones drop; then this age's (up to
+ * three, `captureAgeMemories`) join, `captureMemory` evicting the weakest when full.
+ */
+function concludeResonance(state: GameState, harvest: HarvestResult, cycleCount: number): ResonanceState {
+  const held = state.worldSoul?.resonance ?? createResonanceState();
+  const degraded = degradeMemories(held.memories, RESONANCE_DEGRADE_PER_RUN);
+  const carried = pruneMemories(degraded);
+  if (carried.length < degraded.length) {
+    const kept = new Set(carried.map(m => m.id));
+    for (const m of degraded) {
+      if (kept.has(m.id)) continue;
+      emitTrace({ tick: state.tick, category: 'resonance.memory_evicted', memoryId: m.id, cause: 'faded', summary: `resonance: "${m.summary}" faded from the World-Soul` });
+    }
+  }
+  let resonance: ResonanceState = { memories: carried, maxMemories: held.maxMemories };
+  let fresh: ReturnType<typeof captureAgeMemories> = [];
+  try {
+    fresh = captureAgeMemories(state, harvest, cycleCount);
+  } catch {
+    // Fail-soft: an unreadable world keeps its carried memories and adds none.
+  }
+  for (const m of fresh) {
+    const before = new Set(resonance.memories.map(x => x.id));
+    const next = captureMemory(resonance, m);
+    if (next === resonance) continue; // weaker than everything held: not kept
+    for (const id of before) {
+      if (!next.memories.some(x => x.id === id)) {
+        emitTrace({ tick: state.tick, category: 'resonance.memory_evicted', memoryId: id, cause: 'full', summary: `resonance: ${id} dropped for a stronger memory` });
+      }
+    }
+    resonance = next;
+    emitTrace({
+      tick: state.tick,
+      category: 'resonance.memory_captured',
+      memoryId: m.id,
+      memoryType: m.memoryType,
+      significance: m.significance,
+      reason: memoryCaptureReason(m),
+      summary: `resonance: the World-Soul keeps "${m.summary}"`,
+    });
+  }
+  return { memories: resonance.memories.map(m => ({ ...m })), maxMemories: resonance.maxMemories };
 }
 
 /** Decided 11 — the player wakes one of the stirring hungers; the other sleeps again. */

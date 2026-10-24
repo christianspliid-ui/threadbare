@@ -92,7 +92,8 @@ describe('notification integration', () => {
     expect(notifState.popupQueue[0].title).toBe('Cracks Appear');
   });
 
-  it('doom expiry produces popup notification', () => {
+  // THR-1381 Decided 6: the age-end popup retired into the ceremony; the fact stays a Chronicle line.
+  it('doom expiry produces an alert (Chronicle) notification naming the final stage', () => {
     const graph = new WorldGraph();
     const state = {
       graph,
@@ -130,8 +131,8 @@ describe('notification integration', () => {
     expect(phaseEvents.length).toBeGreaterThanOrEqual(1);
     const notif = phaseEvents[0].notification;
     expect(notif).toBeDefined();
-    expect(notif?.channel).toBe('popup');
-    expect(notif?.popup?.title).toBe('The Unmaking');
+    expect(notif?.channel).toBe('alert');
+    expect(phaseEvents[0].message).toBe('The Breach: the Unmaking begins.');
   });
 
   it('mandate fulfillment produces alert notification', () => {

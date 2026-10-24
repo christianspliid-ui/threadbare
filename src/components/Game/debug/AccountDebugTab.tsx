@@ -3,8 +3,9 @@
  *
  * The same fields `window.__DEBUG.getAccountRecord()` returns: the runs carried,
  * the next world's seed, the hungers awake and stirring, the live echoes with
- * their memory, and the World-Soul's tilt. Raw numbers are correct here: this is
- * the designer view (Law 13 bans them on player surfaces only).
+ * their memory, the World-Soul's tilt, and its memories of each age (THR-1381).
+ * Raw numbers are correct here: this is the designer view (Law 13 bans them on
+ * player surfaces only).
  */
 import React from 'react';
 import type { AccountRecord } from '../../../types/account';
@@ -41,6 +42,14 @@ export function AccountDebugTab({ account }: { account?: AccountRecord | null })
         <div key={def.id} style={{ ...ROW, paddingLeft: 12 }}>
           <span style={KEY}>{def.echoType} · {def.source}</span>
           <span>{echoDisplayName(def)} — {memoryWord(state.degradation) ?? 'faded'} ({state.degradation.toFixed(2)}) · {def.sphereAffinities.join('/')}</span>
+        </div>
+      ))}
+      {/* THR-1381 — the World-Soul's memories, one line per age remembered. */}
+      <div style={{ ...ROW, marginTop: 6 }}><span style={KEY}>memories</span><span>{account.resonance.memories.length}</span></div>
+      {account.resonance.memories.map(m => (
+        <div key={m.id} style={{ ...ROW, paddingLeft: 12 }} data-testid="debug-account-memory">
+          <span style={KEY}>{m.memoryType} · age {m.cycleOrigin}</span>
+          <span>{m.summary} — {memoryWord(m.degradation) ?? 'faded'} ({m.degradation.toFixed(2)})</span>
         </div>
       ))}
     </div>

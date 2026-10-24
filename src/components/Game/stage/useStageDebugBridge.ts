@@ -251,6 +251,7 @@ export function useStageDebugBridge(args: {
       'divine-court': later('divine-court', 'open it from the god rail'),
       'undertaking-moment': undertakingMoment,
       'event-popup': later('event-popup', 'it opens on a doom stage or the Mandate'),
+      'age-twilight': later('age-twilight', 'use __DEBUG.beginTwilight()'),
       'cycle-harvest': later('cycle-harvest', 'it opens at the end of the age'),
     };
 

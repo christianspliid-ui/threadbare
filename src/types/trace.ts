@@ -32,7 +32,7 @@ import type {
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
-import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace } from './traces/account-traces';
+import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace } from './traces/account-traces';
 import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { LuckBagRollTrace, LuckLegendaryCycleTrace } from './traces/luck-traces';
@@ -689,6 +689,12 @@ export type TraceCategory =
   | 'account.unreadable'
   | 'account.world_shaped'
   | 'harvest.divine_echo_picked'
+  // The end of the age — Twilight beats and World-Soul memories (THR-1381). Interfaces in `src/types/traces/account-traces.ts`.
+  | 'age.ended'
+  | 'twilight.beats_built'
+  | 'twilight.fallback'
+  | 'resonance.memory_captured'
+  | 'resonance.memory_evicted'
   // Item generator — a generated item minted, or the generator gave up (THR-1570).
   // Interfaces in `src/types/traces/item-generator-traces.ts`.
   | 'item.generated'
@@ -1041,6 +1047,12 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'account.unreadable',
   'account.world_shaped',
   'harvest.divine_echo_picked',
+  // The end of the age (THR-1381)
+  'age.ended',
+  'twilight.beats_built',
+  'twilight.fallback',
+  'resonance.memory_captured',
+  'resonance.memory_evicted',
   // Item generator — minted / fell back (THR-1570)
   'item.generated',
   'item.generate_fallback',
@@ -5447,6 +5459,12 @@ export type TraceEntry =
   | AccountUnreadableTrace
   | AccountWorldShapedTrace
   | HarvestDivineEchoPickedTrace
+  // The end of the age (THR-1381)
+  | AgeEndedTrace
+  | TwilightBeatsBuiltTrace
+  | TwilightFallbackTrace
+  | ResonanceMemoryCapturedTrace
+  | ResonanceMemoryEvictedTrace
   // Grudges boil over — the grudge source of `fight.trigger` (THR-1558)
   | FightTriggerGrudgeTrace
   // Story-so-far digest (THR-455)

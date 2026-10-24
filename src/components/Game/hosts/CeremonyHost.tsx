@@ -13,7 +13,7 @@
  * interrupt resolution names its kind in `rendering`; ceremonies and Stage moments share
  * one foreground, so a ceremony never draws over an open moment, or under one.
  */
-import { Fragment, type ReactNode } from 'react';
+import { Component, Fragment, type ReactNode } from 'react';
 import type { CeremonyHomedKind, HomedSurfaceKind } from '../../../data/homed-surfaces';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
@@ -29,12 +29,21 @@ import { ThreadingRite } from '../../ThreadingRite/ThreadingRite';
 import type { NudgeSpendRequest } from '../encounter-stage/nudgeCommit';
 import { unplacedHomedKinds, type InterruptResolution } from '../interruptRegistry';
 import { HarvestScreen } from '../HarvestScreen';
+import { AgeTwilightScreen } from '../AgeTwilightScreen';
+import type { TwilightBeats } from '../../../engine/twilight';
 import { HomedSurfaceFallback } from './HomedSurfaceFallback';
 import { CEREMONY_HOST_KINDS } from './hostKinds';
 
 export interface CeremonyHostProps {
   gameState: GameState;
   archetype: AscendantArchetype;
+  // The end of the age (THR-1381)
+  /** The closing beats, built once when the Twilight opens; null outside it. */
+  twilightBeats?: TwilightBeats | null;
+  /** *See what the age leaves* — completes the Twilight, and the harvest opens. */
+  handleCompleteTwilight?: () => void;
+  /** False when this world's memory will not be kept (the beats' third subline says so). */
+  twilightRemembered?: boolean;
   // Harvest
   harvestResult: HarvestResult | null;
   /** THR-1813 — *Wake in a new world*. */
@@ -62,6 +71,9 @@ export interface CeremonyHostProps {
 export function CeremonyHost({
   gameState,
   archetype,
+  twilightBeats = null,
+  handleCompleteTwilight,
+  twilightRemembered = true,
   harvestResult,
   handleWakeNewWorld,
   accountSaved,
@@ -83,6 +95,25 @@ export function CeremonyHost({
   const renders = new Set<HomedSurfaceKind>(interruptResolution.rendering);
   const renderCeremony = (kind: CeremonyHomedKind): ReactNode => {
     switch (kind) {
+    // The end of the age (THR-1381): the closing beats, before the harvest.
+    // A render error shows the plain fallback, whose Continue completes the Twilight
+    // (GameView maps both callbacks for this kind), so the harvest is always reached.
+    case 'age-twilight': return renders.has(kind) && twilightBeats && handleCompleteTwilight && (
+        <CeremonyMountBoundary
+          fallback={onHomedSurfaceSkip
+            ? <HomedSurfaceFallback kind={kind} onContinue={onHomedSurfaceSkip} onFallback={onHomedSurfaceFallback} />
+            : null}
+        >
+          <AgeTwilightScreen
+            beats={twilightBeats}
+            gameState={gameState}
+            primarySphere={archetype.sphereAlignment.primary}
+            remembered={twilightRemembered}
+            onContinue={handleCompleteTwilight}
+          />
+        </CeremonyMountBoundary>
+      );
+
     // Harvest overlay. Always mounted: `AnimateMount` plays its own exit.
     case 'cycle-harvest': return (
       <AnimateMount show={harvestResult !== null && renders.has(kind)} animation="anim-fade">
@@ -148,4 +179,24 @@ export function CeremonyHost({
       ))}
     </>
   );
+}
+
+/**
+ * THR-1381 — a ceremony that throws while rendering shows `fallback` instead of taking
+ * the game screen down. Used by the end of the age, whose fallback leads to the harvest.
+ */
+class CeremonyMountBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  componentDidCatch(error: unknown): void {
+    console.warn('[CeremonyHost] a ceremony failed to render — showing its fallback.', error);
+  }
+
+  render(): ReactNode {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
 }

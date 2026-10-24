@@ -140,14 +140,25 @@ export const DOOM_ARCHETYPES: DoomClockArchetype[] = [
 
 // ─── Twilight Phase ─────────────────────────────────────────────
 
+// THR-1381 retired the Twilight's tick count (seven silent wind-down ticks):
+// the Twilight is now a ceremony the player watches with time stopped, and the
+// ceremony's button (`completeTwilight`) is the only way out of it.
+
+/** THR-1381 — how strongly the World-Soul remembers an age that doom ended (`doom_scar`). */
+export const RESONANCE_SIGNIFICANCE_DOOM = 0.9;
+/** THR-1381 — the same for an age that ended with the Mandate fulfilled (`mandate_triumph`). */
+export const RESONANCE_SIGNIFICANCE_MANDATE = 0.85;
+/** THR-1381 — the god's greatest mark, its first harvested echo (`divine_intervention`). */
+export const RESONANCE_SIGNIFICANCE_DIVINE = 0.8;
+/** THR-1381 — the sphere the world leaned to most when the age ended (`sphere_dominance`). */
+export const RESONANCE_SIGNIFICANCE_DOMINANCE = 0.7;
 /**
- * Number of wind-down ticks after doom expires (the Twilight phase).
- * During Twilight the world is collapsing — free Influence Essence,
- * reduced success rates, last-chance actions.
- *
- * Obsidian spec: 5–10 playable ticks.
+ * THR-1381 — how much every carried memory fades each age. At 0.15 a memory is
+ * gone after seven ages (`pruneMemories` drops degradation ≥ 1).
  */
-export const TWILIGHT_TICKS = 7;
+export const RESONANCE_DEGRADE_PER_RUN = 0.15;
+/** THR-1381 — memory lines the end-of-age ceremony shows. */
+export const TWILIGHT_MEMORIES_SHOWN = 3;
 
 // Retired by THR-1198 with their only consumer, `generateMandate`:
 // MANDATE_PRIMARY_WEIGHT, MANDATE_SECONDARY_WEIGHT, MANDATE_BASE_WEIGHT,

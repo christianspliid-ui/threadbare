@@ -133,7 +133,7 @@ A heavy enough harm may take a full mortal's **secondary** want — the vendetta
 
 Two clocks pressure the run. **Doom** (7 archetypes × 5 stages: Whispers, Signs, Tremors, Crisis, Culmination) ticks toward an Unmaking. It sleeps until you bond The First, and it cannot end the world before a floor of time after the bond [IMPL — THR-1646, the opening plan S2]. **Victory Mandate** (3 stages, graph-state win) runs in parallel. They pressure each other — essence spent on one is essence not spent on the other.
 
-Either clock ending triggers the **Twilight Phase**: the run's closing chapter, harvested into Echoes (Legacy / Monument / Relic) that feed the **World-Soul** and shape the next cycle. When an age ends a new world wakes — a new map carrying your god's marks and leaning toward its spheres; your next god starts as strong as your first (THR-1813).
+Either clock ending triggers the **Twilight Phase**: the run's closing chapter — you watch, not act: how the age ended, what became of your First, what the World-Soul will remember [IMPL — THR-1381] — harvested into Echoes (Legacy / Monument / Relic) that feed the **World-Soul** and shape the next cycle. When an age ends a new world wakes — a new map carrying your god's marks and leaning toward its spheres; your next god starts as strong as your first (THR-1813).
 
 The game is not, structurally, about winning. It is about what kind of being you chose to be toward a world you could not save unconditionally.
 

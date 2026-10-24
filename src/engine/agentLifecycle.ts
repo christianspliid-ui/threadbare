@@ -261,6 +261,15 @@ export function markMortalDead(
     return { outcome: 'warded', hexCoords };
   }
 
+  // (1b) THR-1381 — the god remembers its First past the death. Both the Aspect echo
+  // and the 'remove' mode sweep the `thread` edge that names the First, so the end of
+  // the age could no longer say what became of them. One small note on the god's node.
+  for (const e of graph.getIncomingEdges(mortalId, 'thread')) {
+    if ((e.properties as { courtPosition?: string }).courtPosition !== 'the_first') continue;
+    const god = graph.getNode(e.source);
+    if (god) god.properties.firstRemembered = { id: mortalId, name: node.name, diedTick: tick };
+  }
+
   // (2) The Aspect echo. The conduit closes, the bond endures; the node is retained
   // regardless of the caller's mode, because an Aspect is never unmade.
   const echo = markAspectEchoOnDeath(graph, mortalId, tick);

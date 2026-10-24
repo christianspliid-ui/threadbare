@@ -39,6 +39,8 @@ import { readEssenceSource } from './essenceSources';
 import { phaseNotableAgendas } from './notableAgendas';
 import { buildTierUpProse, eventSkipsChronicle, shouldSkipForChronicle } from './chronicleGrowth';
 import { phaseAlertChronicle } from './alertChronicle';
+import { ARCHETYPE_STAGE_NAMES } from '../data/doom-content';
+import { DOOM_ENDING_FALLBACK_TITLE, MANDATE_FALLBACK_NAME, TWILIGHT_WORDS } from '../data/twilight-content';
 import type { RivalSchemeSummary, RivalDefinition, RivalState } from '../types/rival';
 import {
   RIVAL_SCHEME_PHASE_INVEST_TICKS,
@@ -2895,6 +2897,20 @@ export function phaseInfluenceTierPromotion(
 // ─── Phase 8: Doom Expiry Check ───────────────────────────────────
 
 export function phaseDoomExpiry(state: GameState): Partial<GameState> {
+  // THR-1381 E3 — finishing the Mandate ends the age (rulebook §8, Law 32). Checked
+  // before doom, so a run where both are true ends in triumph. No floor: Law 31
+  // limits doom, and the Mandate cannot complete before its own stages anyway.
+  // The completion line is already in the Chronicle (phaseMandate's alert).
+  if (state.mandateState?.completed && state.phase === 'playing') {
+    const mandateName = state.mandateDefinition?.name?.trim() || MANDATE_FALLBACK_NAME;
+    emitTrace({
+      category: 'age.ended',
+      tick: state.tick,
+      by: 'mandate',
+      summary: `age.ended: the Mandate "${mandateName}" is fulfilled — the Twilight begins`,
+    });
+    return { phase: 'twilight' as const };
+  }
   if (state.doomClock.expired && state.phase === 'playing') {
     // THR-1646 (opening plan S2): no world ends before its First has had a life.
     // The floor counts from the bond (`wokeAtTick`), so it holds against every
@@ -2915,20 +2931,29 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
       });
       return { doomClock: { ...state.doomClock, expiryHeldTraced: true } };
     }
+    const archetype = state.doomDefinition?.archetype;
+    const finalStage = (archetype && ARCHETYPE_STAGE_NAMES[archetype]?.[4]) || DOOM_ENDING_FALLBACK_TITLE;
+    emitTrace({
+      category: 'age.ended',
+      tick: state.tick,
+      by: 'doom',
+      ...(archetype ? { archetype } : {}),
+      summary: `age.ended: ${finalStage} — doom ended the age; the Twilight begins`,
+    });
+    // THR-1381 Decided 6: the age-end popup retired into the ceremony's opening, which
+    // says the same thing in full a moment later. The fact stays as a Chronicle line.
     return {
       phase: 'twilight' as const,
       tickEvents: [...state.tickEvents, {
         id: nextEventId(),
         tick: state.tick,
+        // alert-chronicle: phase_change
         type: 'phase_change',
-        message: 'The Unmaking begins. The world trembles.',
+        message: TWILIGHT_WORDS.chronicleDoom(finalStage),
         significance: 1.0,
         notification: {
-          channel: 'popup',
-          popup: {
-            title: 'The Unmaking',
-            body: 'The Unmaking begins. The world trembles.',
-          },
+          channel: 'alert',
+          icon: 'doom',
         },
       }],
     };

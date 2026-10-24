@@ -191,6 +191,8 @@ if (import.meta.env.DEV) {
     get: () => import('./types/account').AccountRecord | null;
     previewRunEnd: () => import('./types/account').AccountRecord | null;
     endAge: () => boolean;
+    beginTwilight?: () => boolean;
+    getTwilightBeats?: () => import('./engine/twilight').TwilightBeats | null;
   } | null = null;
   // THR-1902 — the map chrome (fog today), registered by HexMapV2.
   let _mapChrome: { get: () => import('./debug-bridge.d').DebugMapChromeResult } | null = null;
@@ -1185,6 +1187,8 @@ if (import.meta.env.DEV) {
     getAccountRecord: async () => _accountBridge?.get() ?? null,
     previewRunEnd: async () => _accountBridge?.previewRunEnd() ?? null,
     endAge: async () => _accountBridge?.endAge() ?? false,
+    beginTwilight: async () => _accountBridge?.beginTwilight?.() ?? false,
+    getTwilightBeats: async () => _accountBridge?.getTwilightBeats?.() ?? null,
     _registerAccountBridge: (bridge) => { _accountBridge = bridge as typeof _accountBridge; },
     /** THR-1750 — one hex's projected band, the place that lent it, and whether it sits on the frontier. */
     getDominionHex: async (col: number, row: number) => _dominionLens?.hex(col, row) ?? null,

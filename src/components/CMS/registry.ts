@@ -1186,10 +1186,11 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     id: 'game-config',
     label: 'Game Configuration',
     category: 'Configuration',
-    description: 'Core game constants — doom ticks, mandate weights, twilight duration.',
+    description: 'Core game constants — doom ticks, how the World-Soul remembers each age.',
     data: constants(
       ['DEFAULT_DOOM_TICKS', gameConfig.DEFAULT_DOOM_TICKS, 'Total ticks for a standard game length'],
-      ['TWILIGHT_TICKS', gameConfig.TWILIGHT_TICKS, 'Ticks of twilight phase before game end'],
+      // The Twilight tick count retired with the silent Twilight ticks (THR-1381).
+      ['RESONANCE_DEGRADE_PER_RUN', gameConfig.RESONANCE_DEGRADE_PER_RUN, 'How much every World-Soul memory fades each age'],
       // The four MANDATE_*_WEIGHT / _MULTIPLIER rows were retired with
       // `generateMandate` (THR-1198) — they weighted template selection, and
       // nothing selects a template mandate any more.

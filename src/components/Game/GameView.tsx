@@ -387,6 +387,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     gameState, setGameState, tiles, riverPaths, lakeIds, areaProjection, realmProjection,
     running, speed, harvestResult, doTick, runTicksSync, getLiveState, handleWakeNewWorld,
     concludedRun, baseAccount, endAgeNow, previewRunEnd,
+    twilightBeats, completeTwilightNow, beginTwilightNow,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
     runtime, clockEverRan, arrivalBeatOffered, noteClockRunSource,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize, ascendantIdentity, seedFirst, seedTestPackage, placeAvatarForMeeting, doomArchetype, account, shapeWorldFromAccount, persistAccount, accountSaveFailed, onWakeNewWorld });
@@ -398,8 +399,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       get: () => concludedRun?.account ?? baseAccount,
       previewRunEnd,
       endAge: endAgeNow,
+      beginTwilight: beginTwilightNow,
+      getTwilightBeats: () => twilightBeats,
     });
-  }, [concludedRun, baseAccount, previewRunEnd, endAgeNow]);
+  }, [concludedRun, baseAccount, previewRunEnd, endAgeNow, beginTwilightNow, twilightBeats]);
 
   // THR-1711 (6): the interrupt auto-pause is declared far below (it reads the
   // interrupt registry), but the play toggle and the arrival pause are wired
@@ -3564,6 +3567,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     recentInput: arrivalRecentInput,
     alreadyShown: shownInterruptsRef.current,
     cycleHarvestPending: harvestResult !== null,
+    twilightPending: twilightBeats !== null,
     foregroundIncumbent: foregroundIncumbentRef.current,
     skippedKinds: skippedHomedKinds,
   });
@@ -3589,8 +3593,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     });
   }, [wishedHomedKey]);
   const handleHomedSurfaceSkip = useCallback((kind: HomedSurfaceKind) => {
+    // THR-1381 — the end of the age cannot be set down: its fallback's Continue leads to
+    // the harvest, so a ceremony that cannot show never holds the run.
+    if (kind === 'age-twilight') { completeTwilightNow('mount_failed'); return; }
     setSkippedHomedKinds(prev => (prev.includes(kind) ? prev : [...prev, kind]));
-  }, []);
+  }, [completeTwilightNow]);
   const handleHomedSurfaceFallback = useCallback((kind: HomedSurfaceKind) => {
     emitTrace({
       tick: gameState.tick,
@@ -4599,6 +4606,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
         onHomedSurfaceSkip={handleHomedSurfaceSkip}
         onHomedSurfaceFallback={handleHomedSurfaceFallback}
         archetype={archetype}
+        twilightBeats={twilightBeats}
+        handleCompleteTwilight={completeTwilightNow}
+        twilightRemembered={carriesRun && !accountSaveFailed}
         harvestResult={harvestResult}
         handleWakeNewWorld={handleWakeNewWorld}
         accountSaved={concludedRun ? concludedRun.saved : null}
