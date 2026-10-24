@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 10:53 local (08:53 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 11:54 local (09:54 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-24: mortal wealth S3 — money encounters change prosperity, unrest, stocks, purses and debts** ([THR-1953](https://linear.app/threadbare/issue/THR-1953)). Merged via [#2537](https://github.com/christianspliid-ui/threadbare/pull/2537) and live.
 - **2026-10-24: the end of the age — the Twilight ceremony and the Mandate ending the age** ([THR-1381](https://linear.app/threadbare/issue/THR-1381)). Merged via [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533) and live.
 - **2026-10-24: God's stake S3 — the omen market's Fortune's Favour, Ruin and Bless the Holding** ([THR-1969](https://linear.app/threadbare/issue/THR-1969)). Merged via [#2532](https://github.com/christianspliid-ui/threadbare/pull/2532) and live.
 - **2026-10-24: stories come in a rhythm — the first slice of the encounter firing pass** ([THR-1218](https://linear.app/threadbare/issue/THR-1218)). Merged via [#2531](https://github.com/christianspliid-ui/threadbare/pull/2531) and live.
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-21: four things the retired sheets showed are Inspector rows again** ([THR-1992](https://linear.app/threadbare/issue/THR-1992/four-things-the-retired-sheets-showed-that-no-inspector-page-shows-the)). Merged via [#2525](https://github.com/christianspliid-ui/threadbare/pull/2525) and live.
 - **2026-10-21: your avatar's page says "— your mortal shape" again** ([THR-1990](https://linear.app/threadbare/issue/THR-1990/the-avatars-page-lost-its-your-mortal-shape-framing-when-the-character)). Merged via [#2523](https://github.com/christianspliid-ui/threadbare/pull/2523).
 - **2026-10-21: a shorter road to the first mortal** ([THR-1989](https://linear.app/threadbare/issue/THR-1989)). Merged via [#2522](https://github.com/christianspliid-ui/threadbare/pull/2522) and live.
-- **2026-10-21: the path you chose comes back** ([THR-1988](https://linear.app/threadbare/issue/THR-1988/the-path-you-chose-comes-back-each-what-will-they-become-path-gets-a)). Merged via [#2521](https://github.com/christianspliid-ui/threadbare/pull/2521) and live.
 
 ---
 
