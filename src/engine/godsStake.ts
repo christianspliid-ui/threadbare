@@ -59,12 +59,15 @@ function num(v: unknown): number | undefined {
 
 // ─── Bless the Holding ───────────────────────────────────────────────────────
 
-/** Who holds a place: factions that `control` it and mortals that `own` it, by id. */
+/** Who holds a place: factions that `control` it, mortals that control it strategically or `own` it, by id. */
 export function holdersOf(graph: WorldGraph, placeId: string): GraphNode[] {
   const out = new Map<string, GraphNode>();
   for (const e of graph.getIncomingEdges(placeId, 'controls')) {
     const n = graph.getNode(e.source);
-    if (n?.type === 'actor' && n.properties.actorType === 'faction') out.set(n.id, n);
+    if (n?.type !== 'actor') continue;
+    // A faction's control pays town tax; a mortal's strategic control pays the tithe
+    // (`collectHoldingPayments`). Both are holdings the blessing multiplies.
+    if (n.properties.actorType === 'faction' || e.properties?.controlType === 'strategic') out.set(n.id, n);
   }
   for (const e of graph.getIncomingEdges(placeId, 'owns')) {
     const n = graph.getNode(e.source);

@@ -234,6 +234,16 @@ describe('THR-1969 — Bless the Holding', () => {
     expect(after.amount).toBeCloseTo(WEALTH_SUBLOCATION_INCOME);
     expect(sweepExpiredHoldingBlessings(g, 10 + BLESS_HOLDING_DAYS * TICKS_PER_DAY)).toBe(1);
   });
+
+  it("blesses a place a mortal holds by strategic control, and multiplies their tithe", () => {
+    const g = heldWorld();
+    g.addNode({ id: 'lord', type: 'actor', name: 'Ser Odo', properties: { actorType: 'individual', wealth: 30 } });
+    g.addEdge({ id: 'lord_ctl', source: 'lord', target: 'loc_wild', type: 'controls', properties: { controlType: 'strategic' } });
+    const plain = collectHoldingPayments(g, 20).find(p => p.reason === 'location_tithe')!;
+    expect('untilTick' in blessHolding(g, GOD, 'loc_wild', 10)).toBe(true);
+    const blessed = collectHoldingPayments(g, 20).find(p => p.reason === 'location_tithe')!;
+    expect(blessed.amount).toBeCloseTo(plain.amount * BLESS_HOLDING_YIELD_MULT);
+  });
 });
 
 // ─── Claim Resource ──────────────────────────────────────────────────────────
