@@ -110,6 +110,7 @@ export type TraceCategory =
   | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
   // THR-1974 — a liege pays its vassal's soldiers
   | 'oath_wages'
+  | 'oath_raise_funded'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
@@ -748,6 +749,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking.economy.trade_pay', 'undertaking.economy.ambition_met',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'oath_wages',
+  'oath_raise_funded',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
   'journey.choice_applied',
@@ -1934,6 +1936,18 @@ export interface OathWagesTrace extends TraceBase {
   started: boolean;
   /** First day uncovered after a day covered (drives wages_stopped). */
   stopped: boolean;
+}
+
+/** THR-2020 — a liege paid for the raise of a standing-army vassal that fielded none. */
+export interface OathRaiseFundedTrace extends TraceBase {
+  category: 'oath_raise_funded';
+  vassalId: string;
+  liegeId: string;
+  armyId: string;
+  /** ARMY_CREATION_GOLD_COST plus the first day's upkeep. */
+  cost: number;
+  /** wealth(liege) − its reserve, before the raise. */
+  liegeSpareBefore: number;
 }
 
 /** THR-1932 — an oath broke: loyalty fell to Distrusted, or one end is gone. */
@@ -5210,6 +5224,7 @@ export type TraceEntry =
   | PurseDayTrace
   | OathSwornTrace
   | OathWagesTrace
+  | OathRaiseFundedTrace
   | OathRefusedTrace
   | OathBrokenTrace
   | RebellionTrace

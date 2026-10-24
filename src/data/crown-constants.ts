@@ -45,6 +45,8 @@
  * | LIEGE_COMMAND_WINDOW_TICKS      | how long a wage makes the army fight for and eat from the liege |
  * | OATH_PRICE_READS_UPKEEP         | a gift is priced on what a faction costs to keep, not only its income |
  * | WAGES_CHRONICLE_MIN_GAP_DAYS    | days between two wage chronicle lines for one pair             |
+ * | LIEGE_RAISE_ENABLED             | THR-2020: a liege pays the raise of a standing-army vassal that fields none |
+ * | LIEGE_RAISE_MIN_GAP_DAYS        | days between two liege-paid raises for one vassal               |
  */
 
 import type { OathKind } from '../engine/crown/types';
@@ -144,3 +146,12 @@ export const LIEGE_COMMAND_WINDOW_TICKS = 12;
 export const OATH_PRICE_READS_UPKEEP = true;
 /** Days between two wage chronicle lines for one vassal–liege pair. */
 export const WAGES_CHRONICLE_MIN_GAP_DAYS = 5;
+/**
+ * THR-2020 — the liege pays for a raise its vassal cannot: a sworn vassal that keeps a
+ * standing army (`keepsStandingArmy`), fields none, and is refused a raise only by its
+ * purse gets one paid from the liege's purse above LIEGE_WAGE_RESERVE_DAYS. Read only
+ * while `crownWagesActive()`.
+ */
+export const LIEGE_RAISE_ENABLED = true;
+/** Days between two liege-paid raises for one vassal (a host lost at once is not re-bought daily). */
+export const LIEGE_RAISE_MIN_GAP_DAYS = 5;

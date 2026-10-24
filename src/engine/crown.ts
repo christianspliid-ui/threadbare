@@ -30,8 +30,10 @@ import type { GameState } from '../types/gameState';
 import type { GraphEdge, GraphNode } from '../types/graph';
 import type { ChronicleEntry } from '../types/narrative';
 import type { FactionActionRecord } from '../types/factionAction';
-import type { OathSwornTrace, OathRefusedTrace, OathBrokenTrace, RebellionTrace, OathWagesTrace } from '../types/trace';
+import type { OathSwornTrace, OathRefusedTrace, OathBrokenTrace, RebellionTrace, OathWagesTrace, OathRaiseFundedTrace } from '../types/trace';
 import type { ArmyState } from '../types/army';
+import { ARMY_CREATION_GOLD_COST } from '../types/army';
+import { armyRefusal, keepsStandingArmy, selectCommander, spawnArmy, wouldRaiseSize } from './armySpawning';
 import type { WorldGraph } from './graph';
 import type { RealmProjection } from './realmProjection';
 import type { EconomicChronicleTrigger } from '../data/economic-chronicle-content';
@@ -73,6 +75,8 @@ import {
   OATH_BREAK_REASON_WINDOW_DAYS,
   LIEGE_WAGE_RESERVE_DAYS,
   WAGES_CHRONICLE_MIN_GAP_DAYS,
+  LIEGE_RAISE_ENABLED,
+  LIEGE_RAISE_MIN_GAP_DAYS,
 } from '../data/crown-constants';
 
 // ─── Switch ───────────────────────────────────────────────────────────────
@@ -435,6 +439,8 @@ export interface CrownPhaseResult {
   taxMoved: number;
   /** THR-1974 — wages lieges paid their vassals' soldiers today. */
   wagesPaid: number;
+  /** THR-2020 — raises lieges paid for vassals that fielded no army today. */
+  raisesFunded: number;
 }
 
 /** THR-1974 — one oath's wage day, kept for the purse-day write-back. */
@@ -552,6 +558,66 @@ function payWages(
     graph.updateEdge(edge.id, { properties: { wagesChronicledTick: tick } });
   }
   return records;
+}
+
+/**
+ * THR-2020 — the liege pays for a raise its vassal cannot. Over the surviving oaths in
+ * edge-id order, after the wages: a vassal that keeps a standing army
+ * (`keepsStandingArmy`), fields none, and is refused a raise by its purse alone
+ * (`armyRefusal` = 'purse') gets one, when the liege's purse above
+ * LIEGE_WAGE_RESERVE_DAYS of its own upkeep covers `ARMY_CREATION_GOLD_COST` plus the
+ * first day's upkeep. At most one per vassal per LIEGE_RAISE_MIN_GAP_DAYS. The liege
+ * pays, so the new army is stamped `liegePaidTick` like a wage day; the vassal's purse
+ * is never touched. Returns how many raises were paid.
+ */
+function fundRaises(state: GameState, surviving: readonly GraphEdge[]): number {
+  if (!LIEGE_RAISE_ENABLED || !crownWagesActive()) return 0;
+  const graph = state.graph;
+  const tick = state.tick;
+  const gap = LIEGE_RAISE_MIN_GAP_DAYS * PURSE_CYCLE_TICKS;
+  let raised = 0;
+  for (const edge of surviving) {
+    try {
+      const vassalId = edge.source;
+      const liegeId = edge.target;
+      const liege = graph.getNode(liegeId);
+      if (!liege || !keepsStandingArmy(graph, vassalId)) continue;
+      const props = readOath(edge);
+      const last = props.liegeRaisedTick;
+      if (typeof last === 'number' && tick - last < gap) continue;
+      // Fields an army already, or is refused for anything but coin: not the liege's to buy.
+      if (armyRefusal(state, vassalId) !== 'purse') continue;
+      const cost = ARMY_CREATION_GOLD_COST + upkeepOf(wouldRaiseSize(graph, vassalId));
+      const spareBefore = Math.max(0, readWealth(liege.properties) - LIEGE_WAGE_RESERVE_DAYS * upkeepPerDayOf(graph, liegeId));
+      if (spareBefore + 1e-9 < cost) continue;
+      const commander = selectCommander(state, vassalId);
+      const ambitionId = graph.getOutgoingEdges(vassalId, 'pursues')[0]?.target;
+      if (!commander || !ambitionId) continue;
+      // Uncharged spawn: the vassal pays nothing; the liege's coin moves only once the army exists.
+      const armyId = spawnArmy(state, vassalId, commander, ambitionId);
+      if (!armyId) continue;
+      setWealth(graph, liegeId, -cost);
+      const armyNode = graph.getNode(armyId);
+      const as = armyNode?.properties.armyState as ArmyState | undefined;
+      if (armyNode && as) armyNode.properties.armyState = { ...as, paidThroughTick: tick, liegePaidTick: tick };
+      graph.updateEdge(edge.id, { properties: { liegeRaisedTick: tick } });
+      raised++;
+      emitTrace({
+        category: 'oath_raise_funded',
+        tick,
+        vassalId,
+        liegeId,
+        armyId,
+        cost,
+        liegeSpareBefore: spareBefore,
+        summary: `${nameOf(graph, liegeId)} pays ${cost.toFixed(1)} to raise an army for ${nameOf(graph, vassalId)}`,
+      } as OathRaiseFundedTrace);
+    } catch (err) {
+      // Fail-soft: no raise for this oath today (NFP #4).
+      console.warn(`[crown] liege raise on ${edge.id} skipped today`, err);
+    }
+  }
+  return raised;
 }
 
 function breakReason(props: SwornToEdgeProperties): { reason: LoyaltyReason; losses: Partial<Record<LoyaltyReason, number>> } {
@@ -738,10 +804,10 @@ function sanitizeOaths(state: GameState, hooks: CrownHooks, out: ChronicleEntry[
 /**
  * Run the crown's day. No-op off the pay-day boundary or with the crown off. Loyalty
  * first (an oath that breaks today pays no wage and no tax today), then the wages
- * (THR-1974), then the tax.
+ * (THR-1974), then the liege-paid raises (THR-2020), then the tax.
  */
 export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPhaseResult {
-  const result: CrownPhaseResult = { chronicleEntries: [], broken: 0, taxMoved: 0, wagesPaid: 0 };
+  const result: CrownPhaseResult = { chronicleEntries: [], broken: 0, taxMoved: 0, wagesPaid: 0, raisesFunded: 0 };
   const tick = state.tick;
   if (!crownActive() || tick <= 0 || tick % PURSE_CYCLE_TICKS !== 0) return result;
   const graph = state.graph;
@@ -801,6 +867,9 @@ export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPh
     const day = readPurseDay(node);
     if (node && day) node.properties[PURSE_LAST_DAY_PROP] = { ...day, wagesToVassals: amount };
   }
+
+  // ── A liege-paid raise (THR-2020): after the wages, from what the wages left ──
+  result.raisesFunded = fundRaises(state, surviving);
 
   // ── The fealty tax ──
   const fealtyIn = new Map<string, number>();

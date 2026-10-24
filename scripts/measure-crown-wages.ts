@@ -32,6 +32,7 @@ import { armiesOf, upkeepPerDayOf } from '../src/engine/factionPurse/upkeep';
 import { meansBand } from '../src/engine/factionPurse/means';
 import { commanderFactionOf, isEnemyFaction } from '../src/engine/warAims/enemy';
 import { ownFactionOf } from '../src/engine/crown/wages';
+import { armyRefusal } from '../src/engine/armySpawning';
 import { TICKS_PER_DAY } from '../src/data/attention-constants';
 import { LIEGE_WAGE_RESERVE_DAYS } from '../src/data/crown-constants';
 import type { ArmyState } from '../src/types/army';
@@ -121,6 +122,7 @@ function runSeed(seed: number): SeedReport {
         const ln = liege ? g.getNode(liege) : undefined;
         console.error(`day ${state.tick / TICKS_PER_DAY} ${f.name}: wealth ${Number(f.properties.wealth ?? 0).toFixed(1)}`
           + ` armies ${armiesOf(g, f.id).map(a => a.id).join(',') || '-'} unpaid ${pd?.armiesUnpaid.join(',') || '-'} paidByLiege ${pd?.armiesPaidByLiege?.join(',') || '-'}`
+          + ` refusal ${armyRefusal(state, f.id) ?? '-'}`
           + (ln ? ` · liege ${ln.name} wealth ${Number(ln.properties.wealth ?? 0).toFixed(1)} own upkeep ${upkeepPerDayOf(g, ln.id)}` : ' · free'));
       }
       if (g.getOutgoingEdges(f.id, 'sworn_to').length > 0) {
