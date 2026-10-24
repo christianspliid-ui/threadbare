@@ -12,7 +12,7 @@ import {
   resetEventCounter,
 } from '../orchestrator';
 import { phaseReputationDecay } from '../phaseReputationDecay';
-import { startTwilight, runTwilightTick, computeHarvest, transitionToNewCycle } from '../cycleEnd';
+import { startTwilight, completeTwilight, computeHarvest, transitionToNewCycle } from '../cycleEnd';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
 import { generateRivals, createRivalState } from '../rival';
@@ -553,13 +553,8 @@ describe('Full game loop integration', () => {
     expect(state.recentEvents.length).toBeGreaterThan(0);
 
     // ── Twilight phase ──
-    state = startTwilight(state);
-    let twilightComplete = false;
-    while (!twilightComplete) {
-      const result = runTwilightTick(state);
-      state = result.state;
-      twilightComplete = result.complete;
-    }
+    // THR-1381: the Twilight is a ceremony; its button completes it with no tick.
+    state = completeTwilight(startTwilight(state));
     expect(state.phase).toBe('harvest');
 
     // ── Harvest ──

@@ -78,16 +78,18 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
   {
     id: 'game-pacing',
     label: 'Game Pacing',
-    description: 'Core game-loop timing: doom clock, twilight phase, mandate scoring weights.',
+    description: 'Core game-loop timing: doom clock, World-Soul memory fade, map size.',
     constants: [
       n('DEFAULT_DOOM_TICKS', gameConfig.DEFAULT_DOOM_TICKS,
         'Total ticks for a standard game length. Higher = longer games.',
         'src/data/game-config.ts', [100, 500000],
         'gameInit → doomClock countdown'),
-      n('TWILIGHT_TICKS', gameConfig.TWILIGHT_TICKS,
-        'Ticks of twilight phase before game end. Events intensify during twilight.',
-        'src/data/game-config.ts', [1, 50],
-        'cycleEnd → twilight detection'),
+      // The Twilight tick count retired with the silent Twilight ticks (THR-1381): the
+      // Twilight is a ceremony with time stopped, so no tick count times it.
+      n('RESONANCE_DEGRADE_PER_RUN', gameConfig.RESONANCE_DEGRADE_PER_RUN,
+        'How much every World-Soul memory fades each age. Higher = memories are forgotten sooner.',
+        'src/data/game-config.ts', [0.01, 1],
+        'concludeRun → resonance carry'),
       // MANDATE_PRIMARY_WEIGHT / _SECONDARY_WEIGHT / _BASE_WEIGHT /
       // _ACHIEVABLE_MULTIPLIER were listed here until THR-1198. They weighted
       // `generateMandate`'s template selection; with that retired they tuned

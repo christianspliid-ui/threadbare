@@ -87,7 +87,8 @@ describe('transitionToNewCycle resets the doom clock (THR-1642)', () => {
 
     expect(after.phase).toBe('playing');
     expect(after.doomClock.expired).toBe(false);
-    expect(after.tickEvents.some(e => e.message === 'The Unmaking begins. The world trembles.'))
+    // THR-1381: the age-end line is now "<final stage>: the Unmaking begins.".
+    expect(after.tickEvents.some(e => e.type === 'phase_change' && e.message.endsWith('the Unmaking begins.')))
       .toBe(false);
   });
 });

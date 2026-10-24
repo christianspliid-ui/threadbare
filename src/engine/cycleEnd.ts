@@ -46,44 +46,31 @@ function mulberry32(seed: number): () => number {
 
 // ─── Constants ────────────────────────────────────────────────────
 
-/**
- * Twilight phase ticks — sourced from the central config file.
- * Content managers: edit src/data/game-config.ts to change twilight length.
- */
-import { TWILIGHT_TICKS } from '../data/game-config';
-export { TWILIGHT_TICKS };
-
 /** How many top nodes to consider for cosmic echoes */
 export const COSMIC_ECHO_CANDIDATES = 10;
 
 // ─── Twilight Phase ───────────────────────────────────────────────
 
-export interface TwilightTickResult {
-  state: GameState;
-  complete: boolean;
-}
-
-let twilightCounter = 0;
+// THR-1381: the Twilight is a ceremony the player watches with time stopped, not
+// seven silent ticks. The per-tick Twilight step, its module-level counter (a singleton
+// the per-session cache rule forbids) and its tick-count constant went with the ticks.
 
 export function startTwilight(state: GameState): GameState {
-  twilightCounter = 0;
   return {
     ...state,
     phase: 'twilight',
   };
 }
 
-export function runTwilightTick(state: GameState): TwilightTickResult {
-  twilightCounter++;
-  const complete = twilightCounter >= TWILIGHT_TICKS;
-
-  const newState: GameState = {
+/**
+ * THR-1381 E2 — the one way out of the Twilight: the ceremony's button, the
+ * fail-soft fallbacks and the debug `endAge` lever all call it. No tick passes.
+ */
+export function completeTwilight(state: GameState): GameState {
+  return {
     ...state,
-    tick: state.tick + 1,
-    phase: complete ? 'harvest' : 'twilight',
+    phase: 'harvest',
   };
-
-  return { state: newState, complete };
 }
 
 // ─── Harvest ──────────────────────────────────────────────────────
@@ -382,7 +369,7 @@ export function transitionToNewCycle(
 
   // THR-1642 — the new cycle gets its own doom clock. Spreading `...state` alone
   // carried the expired clock across, so the first `playing` tick re-fired
-  // `phaseDoomExpiry` and cycle 2 harvested TWILIGHT_TICKS later. The next cycle
+  // `phaseDoomExpiry` and cycle 2 harvested at once. The next cycle
   // keeps the same doom archetype and stage definitions (a World-Soul redraw is
   // future design); only the clock and its fired-milestone bookkeeping reset.
   // THR-1646: the new cycle's clock wakes at cycle start (tick 0 below), not at a

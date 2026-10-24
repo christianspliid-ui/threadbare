@@ -89,6 +89,11 @@ export interface InterruptSnapshot {
    */
   cycleHarvestPending?: boolean;
   /**
+   * THR-1381 — the age has ended and its closing beats wait (`twilightBeats !== null`).
+   * Stops the clock; only the ceremony's button leaves it. Optional: absent = false.
+   */
+  twilightPending?: boolean;
+  /**
    * THR-1853 — a surface the player opened is on screen and is not itself in this
    * registry (Rivals, Notables, Doom, a sheet, the drawer...). Holds arrivals.
    * Optional: absent = false.
@@ -142,6 +147,7 @@ export const HOMED_SURFACE_OPEN_WHEN: Record<HomedSurfaceKind, (s: InterruptSnap
   'divine-court': s => s.courtOpen,
   'undertaking-moment': s => s.momentPending,
   'event-popup': s => s.popupQueued && !s.interruptsSuppressed,
+  'age-twilight': s => s.twilightPending === true,
   'cycle-harvest': s => s.cycleHarvestPending === true,
 };
 

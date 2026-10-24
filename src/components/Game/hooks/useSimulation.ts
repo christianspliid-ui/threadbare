@@ -12,9 +12,10 @@ import { createSimulationRuntime, resetRuntimeCaches, ensureAreaProjection, ensu
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import {
   startTwilight,
-  runTwilightTick,
+  completeTwilight,
   computeHarvest,
 } from '../../../engine/cycleEnd';
+import { ageEnding, failTwilight, openTwilight, type TwilightBeats } from '../../../engine/twilight';
 import type { AccountRecord } from '../../../types/account';
 import { concludeRun, emptyAccount } from '../../../engine/accountRecord';
 import { saveAccount } from '../../../engine/accountStore';
@@ -82,9 +83,6 @@ export interface ConcludedRun {
   account: AccountRecord;
   saved: boolean;
 }
-
-/** Upper bound on the debug end-of-age loop: the twilight completes well inside it. */
-const TWILIGHT_TICKS_GUARD = 1000;
 
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
 
@@ -177,6 +175,12 @@ export function useSimulation({
   }, []);
   const [speed, setSpeed] = useState(1);
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
+  /**
+   * THR-1381 — the end-of-age ceremony's beats, built once when the Twilight opens;
+   * null outside it. Non-null is the `age-twilight` surface's open flag.
+   */
+  const [twilightBeats, setTwilightBeats] = useState<TwilightBeats | null>(null);
+  const twilightBeatsRef = useRef<TwilightBeats | null>(null);
 
   // TB-087: Per-session runtime owns caches and version counters
   const runtimeRef = useRef<SimulationRuntime>(createSimulationRuntime());
@@ -200,17 +204,9 @@ export function useSimulation({
       const targets = getScryTargetHexes(scryStateRef.current, prev.graph);
       const next = runTick(prev, targets, runtimeRef.current);
       setGameState(next);
-    } else if (prev.phase === 'twilight') {
-      const result = runTwilightTick(prev);
-      setGameState(result.state);
-      if (result.complete) {
-        const harvest = computeHarvest(result.state);
-        setTimeout(() => {
-          setHarvestResult(harvest);
-          setRunning(false);
-        }, 0);
-      }
     }
+    // THR-1381: in the Twilight time is stopped — the ceremony is open and runs no tick;
+    // its button (`completeTwilightNow`) is the only way out.
   }, [markClockRan]);
 
   // ── Debug: synchronous tick batch (THR-689) ──
@@ -244,12 +240,44 @@ export function useSimulation({
 
   const getLiveState = useCallback(() => gameStateRef.current, []);
 
-  // Watch for phase transition to twilight (doom expired)
-  useEffect(() => {
-    if (gameState.phase === 'twilight' && !harvestResult) {
-      setGameState(startTwilight(gameStateRef.current));
+  // ── The end of the age (THR-1381) ──
+  /**
+   * Leave the Twilight for the harvest — the ceremony's button, both fallbacks and
+   * `endAgeNow` all come here. A `cause` marks a fallback (`twilight.fallback`).
+   */
+  const completeTwilightNow = useCallback((cause?: 'beats_threw' | 'mount_failed'): boolean => {
+    const live = gameStateRef.current;
+    if (live.phase !== 'twilight') return false;
+    const next = cause ? failTwilight(live, cause) : completeTwilight(live);
+    gameStateRef.current = next;
+    setGameState(next);
+    twilightBeatsRef.current = null;
+    setTwilightBeats(null);
+    setRunning(false);
+    setHarvestResult(computeHarvest(next));
+    return true;
+  }, []);
+
+  /** Build the beats once for a state in the Twilight; a throw goes straight to the harvest. */
+  const openTwilightNow = useCallback((live: GameState) => {
+    if (twilightBeatsRef.current || live.phase !== 'twilight') return;
+    setRunning(false);
+    const opened = openTwilight(live);
+    if (opened.ok) {
+      twilightBeatsRef.current = opened.beats;
+      setTwilightBeats(opened.beats);
+      return;
     }
-  }, [gameState.phase, harvestResult]);
+    gameStateRef.current = opened.state;
+    setGameState(opened.state);
+    setHarvestResult(computeHarvest(opened.state));
+  }, []);
+
+  // The age-end check moved the phase to the Twilight (doom or the Mandate). Runs on
+  // mount too, so a session loaded mid-ceremony reopens it (fail-soft table).
+  useEffect(() => {
+    if (gameState.phase === 'twilight' && !harvestResult) openTwilightNow(gameStateRef.current);
+  }, [gameState.phase, harvestResult, openTwilightNow]);
 
   // ── First clock run (THR-1716 U3) ──
   useEffect(() => {
@@ -307,22 +335,41 @@ export function useSimulation({
       : emptyAccount(concludedRun.account.nextWorldSeed), concludedRun.saved);
   }, [concludedRun, onWakeNewWorld]);
 
-  /** THR-1813 debug lever: end the age now — run the twilight through and open the harvest. */
+  /** THR-1813 debug lever: end the age now — straight to the harvest, past the ceremony. */
   const endAgeNow = useCallback((): boolean => {
     const live = gameStateRef.current;
     if (harvestResult || live.phase === 'harvest') return false;
     setRunning(false);
-    let next = startTwilight(live);
-    for (let i = 0; i <= TWILIGHT_TICKS_GUARD; i++) {
-      const r = runTwilightTick(next);
-      next = r.state;
-      if (r.complete) break;
-    }
+    const next = completeTwilight(live.phase === 'twilight' ? live : startTwilight(live));
     gameStateRef.current = next;
     setGameState(next);
+    twilightBeatsRef.current = null;
+    setTwilightBeats(null);
     setHarvestResult(computeHarvest(next));
     return true;
   }, [harvestResult]);
+
+  /**
+   * THR-1381 debug lever: end the age now by the normal path (the Mandate if it is
+   * fulfilled, else doom) and open the ceremony. False when the age has already ended.
+   */
+  const beginTwilightNow = useCallback((): boolean => {
+    const live = gameStateRef.current;
+    if (harvestResult || live.phase !== 'playing') return false;
+    const next = startTwilight(live);
+    const ending = ageEnding(next);
+    emitTrace({
+      tick: next.tick,
+      category: 'age.ended',
+      by: ending.kind,
+      ...(ending.kind === 'doom' && ending.archetype ? { archetype: ending.archetype } : {}),
+      summary: `age.ended: ${ending.title} (debug lever) — the Twilight begins`,
+    });
+    gameStateRef.current = next;
+    setGameState(next);
+    openTwilightNow(next);
+    return true;
+  }, [harvestResult, openTwilightNow]);
 
   /** THR-1813 debug read: the record `concludeRun` would write now, without saving. */
   const previewRunEnd = useCallback((): AccountRecord => {
@@ -380,6 +427,11 @@ export function useSimulation({
     speed,
     setSpeed,
     harvestResult,
+    /** THR-1381: the end-of-age ceremony's beats (null outside the Twilight). */
+    twilightBeats,
+    /** THR-1381: *See what the age leaves* — and the fallbacks, with a cause. */
+    completeTwilightNow,
+    beginTwilightNow,
     doTick,
     /** THR-689: advance n ticks synchronously, bypassing the document.hidden-throttled interval. */
     runTicksSync,

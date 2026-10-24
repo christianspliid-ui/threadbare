@@ -75,6 +75,8 @@ export const ALERT_CHRONICLE_POLICY: Readonly<Record<string, AlertChroniclePolic
   complication: CHRONICLE,
   // prayers — a town prays to the god (the one prayer line on the alert channel).
   narrative: CHRONICLE,
+  // orchestrator phaseDoomExpiry — doom ended the age (THR-1381: was a popup).
+  phase_change: CHRONICLE,
 };
 
 export interface AlertChronicleResult {

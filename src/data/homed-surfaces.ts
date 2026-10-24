@@ -78,6 +78,9 @@ export const HOMED_SURFACES = [
   { kind: 'divine-court', surfaceId: 'ScryOverlay', home: 'dialog', stopsTime: true, holderName: 'your court' },
   { kind: 'undertaking-moment', surfaceId: 'MomentCard', home: 'stage', stopsTime: true, waitsTurn: 'dialogs', arrival: true, palette: 'gain', holderName: 'a moment', heldLine: "News of {subject}'s work" },
   { kind: 'event-popup', surfaceId: 'EventPopup', home: 'dialog', stopsTime: true, waitsTurn: 'everything', arrival: true, holderName: 'a message', heldLine: 'A message: {title}' },
+  // THR-1381 — the age ends: three closing beats the player watches before the harvest.
+  // Time is stopped (the Twilight runs no tick), and only its button leaves it.
+  { kind: 'age-twilight', surfaceId: 'AgeTwilightScreen', home: 'ceremony', stopsTime: true, holderName: 'the end of the age', heldLine: 'The age is ending' },
   // The age has ended: the harvest does not stop the clock (unchanged), but it takes
   // part in the foreground, so it never draws over an open moment.
   { kind: 'cycle-harvest', surfaceId: 'HarvestScreen', home: 'ceremony', stopsTime: false, heldLine: 'The end of the age' },

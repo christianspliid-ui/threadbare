@@ -1,10 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   startTwilight,
-  runTwilightTick,
+  completeTwilight,
   computeHarvest,
   transitionToNewCycle,
-  TWILIGHT_TICKS,
 } from '../cycleEnd';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
@@ -134,20 +133,11 @@ describe('Cycle End Flow', () => {
     expect(result.phase).toBe('twilight');
   });
 
-  it('runTwilightTick advances ticks until complete', () => {
-    let state = startTwilight(createTestGameState());
-    let complete = false;
-    let tickCount = 0;
-
-    while (!complete) {
-      const result = runTwilightTick(state);
-      state = result.state;
-      complete = result.complete;
-      tickCount++;
-    }
-
-    expect(tickCount).toBe(TWILIGHT_TICKS);
+  it('completeTwilight moves the Twilight to the harvest with no tick passing (THR-1381)', () => {
+    const twilight = startTwilight(createTestGameState());
+    const state = completeTwilight(twilight);
     expect(state.phase).toBe('harvest');
+    expect(state.tick).toBe(twilight.tick);
   });
 
   it('computeHarvest returns candidates and harvest type', () => {

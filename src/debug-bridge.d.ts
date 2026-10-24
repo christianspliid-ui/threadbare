@@ -2860,17 +2860,27 @@ export interface DebugBridge {
   /** THR-1813 — the record `concludeRun` would write now, without saving. Null before a game. */
   previewRunEnd: () => Promise<import('./types/account').AccountRecord | null>;
   /**
-   * THR-1813 — end the age now: the twilight runs through and the harvest opens
+   * THR-1813 — end the age now: straight to the harvest, past the ceremony
    * (the record is concluded as the harvest screen mounts — and saved only off the
    * `?view=game` dev routes and `?account=` overrides, which conclude in memory).
    * False when the harvest is already open or no game is running.
    */
   endAge: () => Promise<boolean>;
+  /**
+   * THR-1381 — end the age now by the normal path (the Mandate if it is fulfilled,
+   * else doom) and open the ceremony *The age ends*. Unlike `endAge`, the harvest
+   * opens only from the ceremony's button. False when the age has already ended.
+   */
+  beginTwilight: () => Promise<boolean>;
+  /** THR-1381 — the beats the end-of-age ceremony shows; null outside the Twilight. */
+  getTwilightBeats: () => Promise<import('./engine/twilight').TwilightBeats | null>;
   /** @internal GameView registers the account bridge here (THR-1813). */
   _registerAccountBridge: (bridge: {
     get: () => import('./types/account').AccountRecord | null;
     previewRunEnd: () => import('./types/account').AccountRecord | null;
     endAge: () => boolean;
+    beginTwilight?: () => boolean;
+    getTwilightBeats?: () => import('./engine/twilight').TwilightBeats | null;
   }) => void;
   /** @internal GameView registers the Dominion lens bridge here (THR-1750). */
   _registerDominionLensBridge: (bridge: {

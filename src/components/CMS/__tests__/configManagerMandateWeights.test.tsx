@@ -59,8 +59,8 @@ describe('CMS — retired mandate selection weights (THR-1198)', () => {
     render(<ConfigManager groups={TUNABLE_GROUPS} searchQuery="DEFAULT_DOOM_TICKS" />);
     expect(screen.getByText('DEFAULT_DOOM_TICKS')).toBeTruthy();
 
-    render(<ConfigManager groups={TUNABLE_GROUPS} searchQuery="TWILIGHT_TICKS" />);
-    expect(screen.getByText('TWILIGHT_TICKS')).toBeTruthy();
+    render(<ConfigManager groups={TUNABLE_GROUPS} searchQuery="RESONANCE_DEGRADE_PER_RUN" />);
+    expect(screen.getByText('RESONANCE_DEGRADE_PER_RUN')).toBeTruthy();
   });
 
   it('drops the rows from the content-browser constants dataset too', () => {

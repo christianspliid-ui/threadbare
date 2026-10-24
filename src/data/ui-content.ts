@@ -557,6 +557,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Wake in a new world',
     desc: 'This world ends. A new one wakes, and it will not remember this one.',
   },
+  // THR-1381 — the end of the age (the ceremony before the harvest)
+  'ui.twilight_memory': {
+    label: 'What the world will remember',
+    desc: 'The World-Soul is the memory under every world. It keeps a few lines from each age, and older ones fade.',
+  },
+  'ui.twilight_continue': {
+    label: 'See what the age leaves',
+    desc: 'Open the harvest: what this age leaves for the next world.',
+  },
   'ui.harvest_cycle': {
     label: 'Cycle',
     desc: 'One complete arc of world-simulation — from first tick to harvest. Each cycle builds on echoes from the last.',

@@ -16,6 +16,7 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { MANDATE_PRESSURE_MILESTONE, MANDATE_PRESSURE_COMPLETION } from '../types/sphereAffinity';
 import { evaluateMandate, advanceMandateStage } from './mandate';
 import { emitTrace } from './traceBuffer';
+import { TWILIGHT_WORDS } from '../data/twilight-content';
 import {
   MANDATE_COUNTER_OMEN_MARGIN,
   MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
@@ -362,7 +363,8 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
         state,
         definition,
         'completed',
-        `Victory! Mandate "${definition.name}" fulfilled before the final doom closes.`,
+        // THR-1381 Decided 6 — the age ends on this line; the ceremony says the rest.
+        TWILIGHT_WORDS.chronicleMandate(definition.name),
         1.0,
         // alert-chronicle: mandate_progress
         { channel: 'alert', icon: 'mandate' },
@@ -488,7 +490,7 @@ function evaluateLegacyMandate(state: GameState): Partial<GameState> {
         state,
         state.mandateDefinition,
         'completed',
-        `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
+        TWILIGHT_WORDS.chronicleMandate(state.mandateDefinition.name),
         1.0,
         // alert-chronicle: mandate_progress
         { channel: 'alert', icon: 'mandate' },

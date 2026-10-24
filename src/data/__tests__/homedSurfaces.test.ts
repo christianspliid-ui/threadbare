@@ -75,12 +75,12 @@ const OPENING_FLAGS: Record<Exclude<keyof InterruptSnapshot, HoldKey>, true> = {
 };
 
 describe(`the home list — ${LIST}`, () => {
-  it('holds the sixteen surfaces of plan D1, in render-priority order', () => {
+  it('holds the sixteen surfaces of plan D1 plus the end of the age (THR-1381), in render-priority order', () => {
     expect(entries.map(e => e.kind), `the order of ${LIST} changed`).toEqual([
       'warm-start', 'meet-the-first', 'threading-rite', 'encounter', 'premonition',
       'journey-vignette', 'story-beat', 'ascendant-beat', 'choice-set', 'emergence-dilemma',
       'divine-receipt', 'chapter-ledger', 'divine-court', 'undertaking-moment', 'event-popup',
-      'cycle-harvest',
+      'age-twilight', 'cycle-harvest',
     ]);
   });
 
@@ -137,7 +137,7 @@ describe(`the home list — ${LIST}`, () => {
       .toEqual(Object.fromEntries(entries.filter(e => e.holderName).map(e => [e.surfaceId, e.holderName])));
     expect(DIALOG_CONTEXT_SURFACES.map(s => [s.surface, s.context, s.ownsPalette]), `DIALOG_CONTEXT_SURFACES drifted from ${LIST}`)
       .toEqual(entries.filter(e => e.palette).map(e => [e.surfaceId, e.palette, e.palette === 'encounter' || e.palette === 'divine']));
-    expect(CEREMONY_HOMED_KINDS, `the ceremonies drifted from ${LIST}`).toEqual(['meet-the-first', 'threading-rite', 'cycle-harvest']);
+    expect(CEREMONY_HOMED_KINDS, `the ceremonies drifted from ${LIST}`).toEqual(['meet-the-first', 'threading-rite', 'age-twilight', 'cycle-harvest']);
   });
 
   // 6

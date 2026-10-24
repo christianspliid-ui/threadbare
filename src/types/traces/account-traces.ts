@@ -49,3 +49,43 @@ export interface AccountWorldShapedTrace extends TraceBase {
   tilt: Partial<Record<SphereName, number>>;
   echoesLoaded: number;
 }
+
+// ─── The end of the age (THR-1381, plan `Docs/plans/2026-10-17-thr-1381-the-end-of-the-age.md` § Tracing) ───
+
+/** The age-end check started the Twilight. */
+export interface AgeEndedTrace extends TraceBase {
+  category: 'age.ended';
+  by: 'mandate' | 'doom';
+  archetype?: string;
+}
+
+/** The ceremony's contents, once per Twilight. */
+export interface TwilightBeatsBuiltTrace extends TraceBase {
+  category: 'twilight.beats_built';
+  ending: 'mandate' | 'doom';
+  firstFate: 'aspect' | 'lived' | 'died' | 'none';
+  memoryTypes: string[];
+  fallbacks?: string[];
+}
+
+/** The ceremony could not show; the age went straight to the harvest. */
+export interface TwilightFallbackTrace extends TraceBase {
+  category: 'twilight.fallback';
+  cause: 'beats_threw' | 'mount_failed';
+}
+
+/** One per memory written into the account at run end. */
+export interface ResonanceMemoryCapturedTrace extends TraceBase {
+  category: 'resonance.memory_captured';
+  memoryId: string;
+  memoryType: string;
+  significance: number;
+  reason: string;
+}
+
+/** A memory left the World-Soul: dropped for a stronger one, or faded out. */
+export interface ResonanceMemoryEvictedTrace extends TraceBase {
+  category: 'resonance.memory_evicted';
+  memoryId: string;
+  cause: 'full' | 'faded';
+}

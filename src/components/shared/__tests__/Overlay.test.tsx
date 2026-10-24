@@ -144,7 +144,7 @@ describe('the Escape stack (Law 23, THR-1884)', () => {
 
 describe('surface homes (Law 58)', () => {
   it('derives the ceremony list from the one home list', () => {
-    expect([...CEREMONY_SURFACES]).toEqual(['meet-the-first', 'threading-rite', 'cycle-harvest']);
+    expect([...CEREMONY_SURFACES]).toEqual(['meet-the-first', 'threading-rite', 'age-twilight', 'cycle-harvest']);
   });
 
   it('mounts a ceremony on the focused band over the void, filling the viewport', () => {
