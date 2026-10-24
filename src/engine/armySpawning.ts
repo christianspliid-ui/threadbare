@@ -43,7 +43,8 @@ import { readWealth, applyTreasuryDelta } from './wealth';
 import { upkeepOf } from './factionPurse/upkeep';
 import { isPurseFaction } from './factionPurse/income';
 import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
-import { isEnemyFaction, hallBarsAttack } from './warAims/enemy';
+import { isEnemyFaction, commandBarsAttack, commanderFactionOf } from './warAims/enemy';
+import { ownFactionOf } from './crown/wages';
 import { aimNewArmy } from './warAims';
 import { WAR_AIMS_ENABLED } from '../data/war-aims-constants';
 
@@ -130,6 +131,22 @@ export function armyRefusal(state: GameState, factionId: string): ArmyRefusal | 
   if (!canAffordArmy(graph, factionId, determineSizeCategory(goldTier))) return 'purse';
 
   return null;
+}
+
+/**
+ * THR-1974 — the size of army a faction would raise now: its Gold tier's size
+ * (`determineSizeCategory`). `spawnArmy` and the oath price (`crown/eligibility.ts`)
+ * both read it, so the price of a company that fields nothing and the host it raises
+ * cannot drift. Fail-soft: bad data reads as a warband, the cheapest, so a price never
+ * inflates on it.
+ */
+export function wouldRaiseSize(graph: WorldGraph, factionId: string): ArmySizeCategory {
+  try {
+    const tier = armyReachTier(graph, factionId, 'gold');
+    return Number.isFinite(tier) ? determineSizeCategory(tier) : 'warband';
+  } catch {
+    return 'warband';
+  }
 }
 
 /**
@@ -230,7 +247,7 @@ export function selectArmyObjective(
     // THR-1922 — only an enemy's town, and never one this faction keeps a hall in
     // (unless the enemy took it from this faction).
     if (!isEnemyFaction(graph, factionId, controller)) continue;
-    if (hallBarsAttack(graph, factionId, loc.id)) continue;
+    if (commandBarsAttack(graph, factionId, ownFactionOf(graph, armyId), loc.id)) continue;
 
     if (loc.id === startId) {
       // Already garrisoned atop a hostile settlement — besiege in place (0 hops).
@@ -270,9 +287,8 @@ export function spawnArmy(
 ): string | null {
   const graph = state.graph;
 
-  // Determine size from faction Gold tier
-  const goldTier = armyReachTier(graph, factionId, 'gold');
-  const size: ArmySizeCategory = determineSizeCategory(goldTier);
+  // Determine size from faction Gold tier (THR-1974: the one rule the oath price reads too)
+  const size: ArmySizeCategory = wouldRaiseSize(graph, factionId);
 
   // Get faction and commander info
   const factionNode = graph.getNode(factionId);
@@ -366,7 +382,7 @@ export function spawnArmy(
     // the THR-1922 nearest enemy settlement.
     const objective = WAR_AIMS_ENABLED
       ? aimNewArmy(state, armyId)
-      : selectArmyObjective(state, armyId, factionId);
+      : selectArmyObjective(state, armyId, commanderFactionOf(graph, armyId, state.tick) ?? factionId);
     if (objective && !WAR_AIMS_ENABLED) {
       const armyNode = graph.getNode(armyId);
       const armyState = armyNode?.properties.armyState as ArmyState | undefined;

@@ -46,6 +46,7 @@ import {
   type PurseSourceKind,
 } from './factionPurse/income';
 import { armiesOf, settleUpkeep, upkeepPerDayOf } from './factionPurse/upkeep';
+import { crownWagesActive } from './crown/wages';
 import { meansBand, meansRank, daysInHand, isMeansBand } from './factionPurse/means';
 import {
   FACTION_PURSE_ENABLED,
@@ -85,6 +86,15 @@ export interface PurseDay {
   fealtyIn?: number;
   /** THR-1932 — the liege this faction paid fealty to today, for the sheet's sentence. */
   fealtyTo?: string | null;
+  /**
+   * THR-1974 — the vassal armies its liege paid today (the `crown` phase's wage step),
+   * beside `armiesUnpaid`, which keeps the purse's own verdict. Absent reads as none.
+   */
+  armiesPaidByLiege?: string[];
+  /** THR-1974 — what its liege paid its soldiers today. Absent reads as 0. */
+  wagesFromLiege?: number;
+  /** THR-1974 — what this faction paid its vassals' soldiers today. Absent reads as 0. */
+  wagesToVassals?: number;
 }
 
 /** A desertion `checkUnderfunded`'s disband left for the next pay day's chronicle. */
@@ -212,11 +222,13 @@ export function runFactionPurse(state: GameState, getProjection?: RealmProjectio
         if (armyNode && as) armyNode.properties.armyState = { ...as, paidThroughTick: tick };
       }
 
-      const upkeepPerDay = armies.reduce((s, a) => s + a.upkeep, 0);
+      const prevDay = readPurseDay(faction);
+      // THR-1974 — a liege's Means counts the wages it paid its vassals' soldiers yesterday.
+      const wagesYesterday = crownWagesActive() ? Math.max(0, prevDay?.wagesToVassals ?? 0) : 0;
+      const upkeepPerDay = armies.reduce((s, a) => s + a.upkeep, 0) + wagesYesterday;
       const anyUnpaid = settlement.unpaid.length > 0;
       const band = meansBand(wealthAfter, upkeepPerDay, anyUnpaid);
       const prevBand = readMeansBand(faction);
-      const prevDay = readPurseDay(faction);
       const brokeSinceTick = band === 'Destitute'
         ? (prevBand === 'Destitute' && prevDay?.brokeSinceTick != null ? prevDay.brokeSinceTick : tick)
         : null;
@@ -256,6 +268,7 @@ export function runFactionPurse(state: GameState, getProjection?: RealmProjectio
         upkeepPaid: settlement.upkeepPaid,
         armiesUnpaid: settlement.unpaid,
         taxHolderOf: day.taxHolderOf,
+        ...(wagesYesterday > 0 ? { wagesToVassals: wagesYesterday } : {}),
         summary: `${faction.name ?? faction.id} purse ${wealthBefore.toFixed(1)}→${wealthAfter.toFixed(1)} (+${earned.toFixed(2)} −${settlement.upkeepPaid.toFixed(2)}) ${band}`
           + (anyUnpaid ? ` · ${settlement.unpaid.length} army unpaid` : ''),
       } as PurseDayTrace);

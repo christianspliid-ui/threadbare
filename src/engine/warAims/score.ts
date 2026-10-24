@@ -29,7 +29,7 @@ import {
   WAR_AIM_TOP_CANDIDATES,
   WAR_AIM_REQUIRE_SUPPLY_REACH,
 } from '../../data/war-aims-constants';
-import { isEnemyFaction, hallBarsAttack, mayBesiege } from './enemy';
+import { isEnemyFaction, commandBarsAttack, mayBesiege } from './enemy';
 import { townValueFor, feedsLackingStaple, scarceStaplesOf, monopolyAimFor } from './townValue';
 import { placeTierLocationOf, type WarAimContext } from './context';
 
@@ -76,22 +76,27 @@ export function marchableFrom(ctx: WarAimContext, armyId: string): ReadonlySet<s
 export interface PickOptions {
   /** Revenge: towns held by this faction score ×`WAR_AIM_REVENGE_FOCUS`. */
   grievanceFactionId?: string | null;
+  /** THR-1974 — the army's own faction when `factionId` is the liege paying it (its hall bar holds too). */
+  ownFactionId?: string;
 }
 
 function isRuin(prosperity: unknown): boolean {
   return typeof prosperity === 'number' && prosperity <= RUINED_SETTLEMENT_PROSPERITY_FLOOR;
 }
 
-/** Whether `townId` is a valid conquer target for `factionId` right now (re-aim keep test). */
-export function stillEnemyTarget(ctx: WarAimContext, factionId: string, townId: string): boolean {
+/**
+ * Whether `townId` is a valid conquer target for `factionId` right now (re-aim keep test).
+ * `ownFactionId` (THR-1974): the army's own faction when `factionId` is its paying liege.
+ */
+export function stillEnemyTarget(ctx: WarAimContext, factionId: string, townId: string, ownFactionId?: string): boolean {
   const town = ctx.towns.get(townId);
   if (!town || !town.holderId) return false;
   if (!isEnemyFaction(ctx.graph, factionId, town.holderId)) return false;
-  if (hallBarsAttack(ctx.graph, factionId, townId)) return false;
+  if (commandBarsAttack(ctx.graph, factionId, ownFactionId, townId)) return false;
   // The siege start names the holder by the first `controls` edge, which can differ from
   // the tax holder; a town the army could reach but never besiege is no target.
   const siegeHolder = ctx.graph.getIncomingEdges(townId, 'controls')[0]?.source;
-  if (!mayBesiege(ctx.graph, factionId, siegeHolder, townId)) return false;
+  if (!mayBesiege(ctx.graph, factionId, siegeHolder, townId, undefined, ownFactionId)) return false;
   return !isRuin(town.node.properties.prosperity);
 }
 
@@ -134,7 +139,7 @@ export function pickWarAim(
   let outOfReach = 0;
 
   for (const town of ctx.towns.values()) {
-    if (!town.holderId || !stillEnemyTarget(ctx, factionId, town.node.id)) continue;
+    if (!town.holderId || !stillEnemyTarget(ctx, factionId, town.node.id, opts.ownFactionId)) continue;
     enemies.add(town.holderId);
     if (!inReach(state, ctx, factionId, armyHex, town.node.id, marchable)) { outOfReach++; continue; }
 

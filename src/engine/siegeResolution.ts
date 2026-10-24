@@ -13,6 +13,7 @@
  */
 
 import type { GameState } from '../types/gameState';
+import { commanderFactionOf } from './warAims/enemy';
 import { getFactionMembershipEdges } from './graphQueries';
 import type { BattleState } from '../types/battle';
 import type { ArmyState } from '../types/army';
@@ -291,6 +292,8 @@ export function createSiegeNode(
       fortification,
       momentum: initialMomentum,
       phase: 'opening',
+      // THR-1974 — the faction the besieger fights for (its paying liege, else its own).
+      commanderFactionId: commanderFactionOf(state.graph, attackerArmyId, state.tick) ?? null,
     });
 
     // War news (THR-1564): a siege laid, reported at the site.

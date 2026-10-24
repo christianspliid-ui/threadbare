@@ -106,6 +106,8 @@ export type TraceCategory =
   | 'undertaking.economy.trade_pay' | 'undertaking.economy.ambition_met'
   // THR-1932 — the crown (fealty)
   | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
+  // THR-1974 — a liege pays its vassal's soldiers
+  | 'oath_wages'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
@@ -741,6 +743,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking.economy.open_lane', 'undertaking.economy.found_guild',
   'undertaking.economy.trade_pay', 'undertaking.economy.ambition_met',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
+  'oath_wages',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
   'journey.choice_applied',
@@ -1897,6 +1900,8 @@ export interface OathSwornTrace extends TraceBase {
   parts: OathOfferParts;
   giftPaid: number;
   coercedBy?: { siegeBattleId?: string; townTakenId?: string };
+  /** THR-1974 — what the vassal costs to keep (the gift's daily base). */
+  oathValue?: number;
 }
 
 /** THR-1932 — a courted faction refused (the best-scoring candidate only). */
@@ -1906,6 +1911,24 @@ export interface OathRefusedTrace extends TraceBase {
   liegeId: string;
   parts: OathOfferParts;
   affordableGift: number;
+  /** THR-1974 — what the candidate costs to keep (the gift's daily base). */
+  oathValue?: number;
+}
+
+/** THR-1974 — a liege paid (or could not pay) the soldiers its vassal could not. */
+export interface OathWagesTrace extends TraceBase {
+  category: 'oath_wages';
+  vassalId: string;
+  liegeId: string;
+  armiesCovered: string[];
+  armiesUncovered: string[];
+  paid: number;
+  /** wealth(liege) − its reserve, before this oath's wages. */
+  liegeSpareBefore: number;
+  /** First day covered after a day not covered (drives wages_taken_up). */
+  started: boolean;
+  /** First day uncovered after a day covered (drives wages_stopped). */
+  stopped: boolean;
 }
 
 /** THR-1932 — an oath broke: loyalty fell to Distrusted, or one end is gone. */
@@ -1945,6 +1968,8 @@ export interface PurseDayTrace extends TraceBase {
   armiesUnpaid: string[];
   /** Settlement ids this faction collected town tax from. */
   taxHolderOf: string[];
+  /** THR-1974 — wages this faction paid its vassals yesterday (counted in its Means band). */
+  wagesToVassals?: number;
 }
 
 /** THR-1931 — a faction's Means band moved. */
@@ -2088,6 +2113,8 @@ export interface WarAimPickedTrace extends TraceBase {
   candidates: number;
   /** The fewest-hex in-reach candidate (the "not just the nearest" predicate). */
   nearestEnemyTownId: string | null;
+  /** THR-1974 — the faction the army fought for on this pick (its paying liege, else its own). */
+  commanderFactionId?: string;
   /**
    * THR-1970 — some in-reach town is worth more than the nearest before the distance
    * discount (value × (1 + bonuses), × the revenge focus where it applies): the picks where
@@ -2114,6 +2141,8 @@ export interface WarAimHoldTrace extends TraceBase {
   factionId: string;
   enemiesKnown: number;
   outOfReach: number;
+  /** THR-1974 — the faction the army fought for (its paying liege, else its own). */
+  commanderFactionId?: string;
 }
 
 /** THR-1933 — the daily re-aim changed an army's objective. */
@@ -5161,6 +5190,7 @@ export type TraceEntry =
   | WealthDeltaTrace
   | PurseDayTrace
   | OathSwornTrace
+  | OathWagesTrace
   | OathRefusedTrace
   | OathBrokenTrace
   | RebellionTrace
@@ -7104,6 +7134,8 @@ export interface ArmySupplyScanTrace extends TraceBase {
     supplyBefore: number;
     supplyAfter: number;
     tier: 'supplied' | 'strained' | 'starving';
+    /** THR-1974 — the faction whose town feeds the army (own or its paying liege); null when cut off. */
+    hostFactionId?: string | null;
   }>;
 }
 

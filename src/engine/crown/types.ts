@@ -50,6 +50,12 @@ export interface SwornToEdgeProperties {
   lastPassTick: number;
   /** A coerced oath: what forced it, for the sheet's words. Absent on other kinds. */
   forcedBy?: 'siege' | 'conquest';
+  /** THR-1974 — the liege covered at least one of the vassal's armies on the last pay day. */
+  wagesCoveredLastDay?: boolean;
+  /** THR-1974 — wages the liege paid this vassal's soldiers on the last pay day. */
+  wagesPaidToday?: number;
+  /** THR-1974 — tick of the pair's last wage chronicle line (WAGES_CHRONICLE_MIN_GAP_DAYS). */
+  wagesChronicledTick?: number;
 }
 
 /** One offer's four inputs and its score (the trace and the debug tab read these). */

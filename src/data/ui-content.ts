@@ -1353,6 +1353,11 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Standing with its liege',
     desc: 'How loyal this faction is to its liege, on the same words as any standing: Revered, Respected, Accepted, Unknown. One step below Unknown, at Distrusted, the oath breaks.',
   },
+  // THR-1974 — a liege pays its vassal's soldiers. Words only; never a wage amount.
+  'ui.army.paidBy': {
+    label: 'Who pays its soldiers',
+    desc: 'This army fights for whoever pays its soldiers. When the pay stops, it fights under its own banner again.',
+  },
   'ui.home_seat': {
     label: 'Seat',
     desc: 'The settlement you have taken as your home in the world. It feeds your essence every day you hold it. Click the name to find it on the map.',

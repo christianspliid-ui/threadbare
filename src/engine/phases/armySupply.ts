@@ -36,6 +36,8 @@ import { emitTrace } from '../traceBuffer';
 import { mulberry32 } from '../../lib/prng';
 import {
   resolveSupplyLine,
+  supplyFactionsOf,
+  hostFactionOf,
   deriveSupplyTier,
   nextSupplyLevel,
   supplyConsumptionFor,
@@ -112,9 +114,10 @@ export function phaseArmySupply(state: GameState, _ctx: PhaseContext): PhaseResu
       if (!armyState) continue;
 
       const locationId = graph.getOutgoingEdges(armyNode.id, 'located_at')[0]?.target;
-      const factionId = graph.getOutgoingEdges(armyNode.id, 'member_of')[0]?.target;
+      // THR-1974 — own towns, plus the paying liege's while the wage is fresh.
+      const feeders = supplyFactionsOf(graph, armyNode.id, tick);
 
-      const line = resolveSupplyLine(state, locationId, factionId);
+      const line = resolveSupplyLine(state, locationId, feeders);
       const supplyMax = readArmySupplyMax(armyState);
       const supplyBefore = readArmySupply(armyState);
       const supplyAfter = nextSupplyLevel(
@@ -152,6 +155,7 @@ export function phaseArmySupply(state: GameState, _ctx: PhaseContext): PhaseResu
         supplyBefore,
         supplyAfter,
         tier,
+        hostFactionId: hostFactionOf(graph, line.hostId, feeders),
       });
 
       // ── Anomaly materialization ──────────────────────────────────────────

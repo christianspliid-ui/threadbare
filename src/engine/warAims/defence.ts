@@ -15,7 +15,7 @@ import type { HexCoord } from '../../types';
 import { hexDistance } from '../../lib/hexMath';
 import { protectedHoldingsOf } from '../crown/crownView';
 import { WAR_AIM_DEFENCE_RADIUS_HEXES } from '../../data/war-aims-constants';
-import { isEnemyFaction } from './enemy';
+import { isEnemyFaction, commanderFactionOf } from './enemy';
 import { hexOfLocation } from './context';
 
 export interface DefenceTarget {
@@ -23,10 +23,6 @@ export interface DefenceTarget {
   /** The holding belongs to a sworn vassal, not the faction itself. */
   sworn: boolean;
   hexes: number;
-}
-
-function factionOf(graph: WorldGraph, actorId: string): string | undefined {
-  return graph.getOutgoingEdges(actorId, 'member_of')[0]?.target;
 }
 
 /** Protected holdings of `factionId`: own and sworn settlements (the crown's view). */
@@ -44,6 +40,8 @@ export function findThreatToDefend(
   armyId: string,
   factionId: string,
   armyHex: HexCoord,
+  /** THR-1974 — the tick the other armies' commanders are read at (their own faction when omitted). */
+  tick?: number,
 ): DefenceTarget | null {
   const holdings = new Set(holdingsToDefend(graph, factionId));
   if (holdings.size === 0) return null;
@@ -56,7 +54,10 @@ export function findThreatToDefend(
   for (const other of armies) {
     const target = (other.properties.armyState as ArmyState).objective?.targetNodeId;
     if (!target || !holdings.has(target) || threats.has(target)) continue;
-    if (!isEnemyFaction(graph, factionId, factionOf(graph, other.id))) continue;
+    const otherFaction = tick === undefined
+      ? graph.getOutgoingEdges(other.id, 'member_of')[0]?.target
+      : commanderFactionOf(graph, other.id, tick);
+    if (!isEnemyFaction(graph, factionId, otherFaction)) continue;
     threats.set(target, other.id);
   }
 

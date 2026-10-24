@@ -35,7 +35,8 @@ import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
 import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick, type ScoredTown } from './warAims/score';
 import { findThreatToDefend, type DefenceTarget } from './warAims/defence';
-import { campaignTargetOf, isEnemyFaction } from './warAims/enemy';
+import { campaignTargetOf, commanderFactionOf, isEnemyFaction } from './warAims/enemy';
+import { ownFactionOf } from './crown/wages';
 
 export type RealmProjectionSource = () => RealmProjection;
 
@@ -44,8 +45,12 @@ export type ReaimWhy = 'threat' | 'target_no_longer_enemy' | 'target_out_of_reac
 /** Ambition types whose army's conquer target becomes the ambition's own target. */
 const TARGETED_AMBITIONS: ReadonlySet<string> = new Set(['territorial_expansion', 'revenge']);
 
-function factionOf(graph: WorldGraph, armyId: string): string | undefined {
-  return graph.getOutgoingEdges(armyId, 'member_of')[0]?.target;
+/**
+ * The faction an army acts for (THR-1974): its paying liege while the wage is fresh, else
+ * its own. Traces keep `factionId` as the army's own faction and add `commanderFactionId`.
+ */
+function sidesOf(graph: WorldGraph, armyId: string, tick: number): { own: string | undefined; commander: string | undefined } {
+  return { own: ownFactionOf(graph, armyId), commander: commanderFactionOf(graph, armyId, tick) };
 }
 
 /** The faction ambition an army pursues (not a campaign composition), or undefined. */
@@ -114,7 +119,7 @@ function writeAmbitionTarget(graph: WorldGraph, armyId: string, objective: ArmyO
 /** THR-1970 — relative margin a town's worth must clear to read richer than the nearest's. */
 const RICHER_WORTH_TOLERANCE = 1e-9;
 
-function tracePicked(state: GameState, armyId: string, factionId: string, pick: WarAimPick): void {
+function tracePicked(state: GameState, armyId: string, factionId: string, pick: WarAimPick, commanderFactionId: string = factionId): void {
   const best = pick.scored[0];
   if (pick.objective && best) {
     // THR-1970 — whether value could beat distance on this pick: some in-reach town is
@@ -141,6 +146,7 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
       candidates: pick.scored.length,
       nearestEnemyTownId: pick.nearestEnemyTownId,
       richerThanNearest,
+      commanderFactionId,
     });
   } else {
     emitTrace({
@@ -151,12 +157,13 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
       factionId,
       enemiesKnown: pick.enemiesKnown,
       outOfReach: pick.outOfReach,
+      commanderFactionId,
     });
   }
 }
 
 /** Pick by value for one army; the revenge focus reads the army's ambition. */
-function pickFor(state: GameState, ctx: WarAimContext, armyId: string, factionId: string, armyHex: HexCoord): WarAimPick {
+function pickFor(state: GameState, ctx: WarAimContext, armyId: string, factionId: string, armyHex: HexCoord, ownFactionId?: string): WarAimPick {
   const amb = ambitionOf(state.graph, armyId);
   // THR-1957: a revenge the ambition names (a town that defected) aims at that lord
   // while it is still an enemy; otherwise the worst-sentiment enemy, as before.
@@ -166,7 +173,7 @@ function pickFor(state: GameState, ctx: WarAimContext, armyId: string, factionId
       ? named
       : grievanceFactionOf(state.graph, factionId))
     : null;
-  return pickWarAim(state, ctx, factionId, armyHex, { grievanceFactionId }, marchableFrom(ctx, armyId));
+  return pickWarAim(state, ctx, factionId, armyHex, { grievanceFactionId, ownFactionId }, marchableFrom(ctx, armyId));
 }
 
 function contextFor(state: GameState, getProjection?: RealmProjectionSource): WarAimContext {
@@ -185,20 +192,20 @@ function contextFor(state: GameState, getProjection?: RealmProjectionSource): Wa
  */
 export function aimNewArmy(state: GameState, armyId: string, getProjection?: RealmProjectionSource): ArmyObjective | null {
   const graph = state.graph;
-  const factionId = factionOf(graph, armyId);
+  const { own, commander: factionId } = sidesOf(graph, armyId, state.tick);
   const armyHex = hexOfActor(graph, armyId);
   if (!factionId || !armyHex) return null;
-  const defence = findThreatToDefend(graph, armyId, factionId, armyHex);
+  const defence = findThreatToDefend(graph, armyId, factionId, armyHex, state.tick);
   if (defence) {
     writeAim(graph, armyId, defence.objective, null);
-    traceDefend(state, armyId, factionId, defence);
+    traceDefend(state, armyId, own ?? factionId, defence);
     return defence.objective;
   }
   const ctx = contextFor(state, getProjection);
-  const pick = pickFor(state, ctx, armyId, factionId, armyHex);
+  const pick = pickFor(state, ctx, armyId, factionId, armyHex, own);
   writeAim(graph, armyId, pick.objective, pick);
   writeAmbitionTarget(graph, armyId, pick.objective);
-  tracePicked(state, armyId, factionId, pick);
+  tracePicked(state, armyId, own ?? factionId, pick, factionId);
   return pick.objective;
 }
 
@@ -259,16 +266,16 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
     try {
       const armyState = army.properties.armyState as ArmyState;
       if (skipsReaim(graph, army.id, armyState)) continue;
-      const factionId = factionOf(graph, army.id);
+      const { own, commander: factionId } = sidesOf(graph, army.id, state.tick);
       const armyHex = hexOfActor(graph, army.id);
       if (!factionId || !armyHex) continue; // fail-soft: keep the objective as it was
       const current = armyState.objective;
 
-      const defence = findThreatToDefend(graph, army.id, factionId, armyHex);
+      const defence = findThreatToDefend(graph, army.id, factionId, armyHex, state.tick);
       if (defence) {
         if (writeAim(graph, army.id, defence.objective, null)) {
           traceReaim(state, army.id, current, defence.objective, 'threat');
-          traceDefend(state, army.id, factionId, defence);
+          traceDefend(state, army.id, own ?? factionId, defence);
         }
         continue;
       }
@@ -278,16 +285,16 @@ export function reaimArmies(state: GameState, getProjection?: RealmProjectionSou
       if (current?.type === 'conquer') {
         const here = placeTierLocationOf(graph, army.id);
         if (!ctx.towns.has(current.targetNodeId)) why = 'target_taken';
-        else if (!stillEnemyTarget(ctx, factionId, current.targetNodeId)) why = 'target_no_longer_enemy';
+        else if (!stillEnemyTarget(ctx, factionId, current.targetNodeId, own)) why = 'target_no_longer_enemy';
         else if (!inReach(state, ctx, factionId, armyHex, current.targetNodeId, marchableFrom(ctx, army.id))) why = 'target_out_of_reach';
         else if (here !== current.targetNodeId) continue; // still valid, still marching: keep it
         else why = 'target_taken';
       }
 
-      const pick = pickFor(state, ctx, army.id, factionId, armyHex);
+      const pick = pickFor(state, ctx, army.id, factionId, armyHex, own);
       if (writeAim(graph, army.id, pick.objective, pick)) {
         traceReaim(state, army.id, current, pick.objective, why);
-        tracePicked(state, army.id, factionId, pick);
+        tracePicked(state, army.id, own ?? factionId, pick, factionId);
       }
       writeAmbitionTarget(graph, army.id, pick.objective);
     } catch (err) {

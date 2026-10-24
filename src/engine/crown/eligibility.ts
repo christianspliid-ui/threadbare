@@ -28,6 +28,10 @@ import {
 } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS } from '../../data/faction-purse-constants';
 import { isRealmFaction } from './crownView';
+import { upkeepOf, upkeepPerDayOf } from '../factionPurse/upkeep';
+import { keepsStandingArmy, wouldRaiseSize } from '../armySpawning';
+import { crownWagesActive } from './wages';
+import { OATH_PRICE_READS_UPKEEP } from '../../data/crown-constants';
 
 export interface ArmySnapshot {
   id: string;
@@ -45,6 +49,11 @@ export interface CrownWorld {
   income: Map<string, number>;
   /** Own income plus the fealty taken in on the last pay day. */
   fullIncome: Map<string, number>;
+  /**
+   * THR-1974 — what a faction costs to keep, the gift's daily base (`oathValueOf`):
+   * the larger of its income and the upkeep it fields, or would raise if it fields nothing.
+   */
+  oathValue: Map<string, number>;
   wealth: Map<string, number>;
   means: Map<string, MeansBand | null>;
   armies: ArmySnapshot[];
@@ -135,6 +144,27 @@ export function armyStrength(as: ArmyState | undefined): number {
 }
 
 /**
+ * THR-1974 rule 1 — what a faction costs to keep:
+ *
+ *   oathValueOf(C) = max(income(C), standingUpkeep(C))
+ *   standingUpkeep(C) = upkeep it fields, any faction; or, fielding nothing, the upkeep of
+ *                       the army it would raise (`wouldRaiseSize`) when it keeps a standing army
+ *
+ * So a free company is never free. With the wage rules or OATH_PRICE_READS_UPKEEP off it
+ * is `income(C)` (the pre-THR-1974 price). Pride keeps reading income: pride is what a
+ * faction earns, not what it costs.
+ */
+export function oathValueOf(graph: WorldGraph, factionId: string, income: number): number {
+  const own = Math.max(0, Number.isFinite(income) ? income : 0);
+  if (!OATH_PRICE_READS_UPKEEP || !crownWagesActive()) return own;
+  const fielded = upkeepPerDayOf(graph, factionId);
+  const standing = fielded > 0
+    ? fielded
+    : (keepsStandingArmy(graph, factionId) ? upkeepOf(wouldRaiseSize(graph, factionId)) : 0);
+  return Math.max(own, standing);
+}
+
+/**
  * Read the day's world once. `projection` may be null (fail-soft: candidates come from
  * the realm's own towns only, and no realm counts a neighbour).
  */
@@ -152,6 +182,8 @@ export function buildCrownWorld(graph: WorldGraph, tick: number, projection: Rea
     wealth.set(f.id, readWealth(f.properties));
     means.set(f.id, readMeansBand(f));
   }
+  const oathValue = new Map<string, number>();
+  for (const f of factions) oathValue.set(f.id, oathValueOf(graph, f.id, income.get(f.id) ?? 0));
   // Full income = own + the fealty its live oaths carry today (taxShare × the vassal's
   // own income). Read off the edges, not yesterday's purse day, so an offer and the
   // loyalty pass see the same figure on the day an oath is sworn.
@@ -247,7 +279,7 @@ export function buildCrownWorld(graph: WorldGraph, tick: number, projection: Rea
   }
 
   return {
-    graph, tick, factions, income, fullIncome, wealth, means, armies, strength,
+    graph, tick, factions, income, fullIncome, oathValue, wealth, means, armies, strength,
     presence, holdHexes, held, realmHexKeys, hexRealmId, courtRealms, candidates, reach,
   };
 }

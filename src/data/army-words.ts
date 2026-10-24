@@ -194,3 +194,38 @@ export function scarceClauseOf(resourceId: string, scarceProse: string): string 
   const first = scarceProse.split(/[.,;:]/)[0]?.trim() ?? '';
   return first ? first.charAt(0).toLowerCase() + first.slice(1) : 'the stores are low';
 }
+
+// ─── Who pays the soldiers (THR-1974) ──────────────────────────────────────
+//
+// Plan `Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md` § Player-facing text.
+// One verb phrase on every surface: *pays its soldiers*. Never *mercenary*, *contract*,
+// *hire*, *king*, *queen*, *kingdom* or *sworn*. No amount anywhere (Laws 13/14). The
+// clauses render only from a fresh wage stamp or today's purse day (Law 45).
+
+/** The army-sheet clause; `{liege}` is a slot the sheet fills with a link (Law 21). */
+export const ARMY_PAID_BY_CLAUSE = 'for {liege}, which pays its soldiers';
+
+/** The hold line of an army its liege pays. */
+export const ARMY_HOLD_PAID_COPY = `Holding where it stands ${ARMY_PAID_BY_CLAUSE}: no enemy within reach.`;
+
+/** The Fealty section's clause on a vassal, and the liege's Purse sentence lead. */
+export const FEALTY_WAGE_LINES = {
+  all: 'Its liege pays its soldiers.',
+  partial: 'Its liege pays some of its soldiers; the rest go unpaid.',
+  purseLead: 'It pays the soldiers of ',
+} as const;
+
+/**
+ * The war-aim line of an army its liege pays: the march or the defence, then the
+ * paymaster clause. A conquer line drops its reason (the liege chose the war); a defend
+ * line keeps its enemy. Null for an objective `armyAimTemplate` does not phrase.
+ */
+export function armyAimPaidTemplate(input: ArmyAimInput): string | null {
+  const { objectiveType, reason } = input;
+  if (objectiveType === 'defend' && reason === 'defence') {
+    const base = armyAimTemplate(input);
+    return base ? `${base.replace(/\.$/, '')}, ${ARMY_PAID_BY_CLAUSE}.` : null;
+  }
+  if (objectiveType !== 'conquer' || !armyAimTemplate(input)) return null;
+  return `${ARMY_OBJECTIVE_VERBS.conquer} {town} ${ARMY_PAID_BY_CLAUSE}.`;
+}
