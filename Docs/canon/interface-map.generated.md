@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 207 |
+| 🟢 LIVE | 208 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 96 |
-| **Total** | **311** |
+| **Total** | **312** |
 
 ## Contracts by producing subsystem
 
@@ -298,6 +298,7 @@ remediation ticket or the build fails.
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `faction-embargo-starves-region` | The embargo faction action (THR-1955, war aims S2): a regional monopoly holder writes one activeEmbargo record ({ targetFactionId, resourceId, anchorLocationId, untilTick }) on itself, against the enemy (isEnemyFaction) whose settlements in the region carry most of the good, for EMBARGO_DAYS. Nothing is written on towns or lanes: embargoedTownsOf / embargoedLanesOf derive them. phaseResourceStockTiers subtracts EMBARGO_BALANCE_CUT from each embargoed town's balance on the good (embargoCutsByLocation → deriveLocationStockTiers balanceCuts); the Trade lens draws the derived lanes red and dashed with the "Embargoed by …" hover line; one encounter_route_embargo seed goes on the busiest lane. phaseEconomicPower lifts it on expiry or when the monopoly is lost, chronicling embargo_lifted. | node-prop: `activeEmbargo`, `embargoedTownsOf`, `embargoedLanesOf`, `embargoCutsByLocation` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `faction-relations-to-army-war-aims` | An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. THR-1933 (war aims S1) moves the field-battle start (areHostile) onto isEnemyFaction too, and enemyArm adds a monster arm and an alliance override of the sentiment arm, both behind WAR_AIMS_ENABLED. | module-export: `isEnemyFaction`, `enemyArm`, `factionKeepsHallAt`, `mayBesiege` | War, Armies & Battles | 🟢 LIVE | — |
+| `founding-patron-pays-from-faction-purse` | A founding the mortal cannot pay for is paid by their faction (THR-2008, decided on THR-2006) — read only while founding costs are on (MEANS_CELL_COST_ENABLED, off today) and FOUNDING_PATRON_ENABLED. The patron is the founder's highest-ranked purse faction (getDerivedMembershipRank over member_of, tie by faction id) whose treasury (wealth) covers the cost. The decision board keeps a costed cell the founder cannot afford when a patron exists (isFoundingUnaffordable); chargeFoundingCost charges the patron's treasury the whole cost through applyTreasuryDelta and the founder nothing, tracing economy.founding.patron. No patron at charge time charges nobody (fail-soft). | node-prop: `wealth`, `findFoundingPatron`, `isFoundingUnaffordable`, `chargeFoundingPatron`, `FOUNDING_PATRON_ENABLED` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `guild-social-templates-reach-shared-members` | Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there. | function: `getSharedFactionSocialTemplates`, `socialTemplateIds` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `realm-holdings-to-political-map` | The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth. | module-export: `buildRealmProjection`, `ensureRealmProjection`, `fingerprintFactionControls`, `stampRealmSeat` | World Generation, Terrain & Places | 🟢 LIVE | — |
@@ -1370,10 +1371,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 88 total — 1 write, 3 read, 84 unclassified
+- **Production hits:** 89 total — 1 write, 3 read, 85 unclassified
 - **Write sites:** `src/engine/mortalMeans.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +79 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +80 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
@@ -1641,10 +1642,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Means*
 - **Module:** `src/engine/economyShift.ts`
-- **Production hits:** 88 total — 2 write, 2 read, 84 unclassified
+- **Production hits:** 89 total — 2 write, 2 read, 85 unclassified
 - **Write sites:** `src/engine/economyShift.ts`, `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/factionPurse.ts`, `src/engine/views/subjects/factionRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +79 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +80 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-move-the-town` — 🔵 UNVERIFIED-OK
@@ -1665,10 +1666,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 88 total — 3 write, 2 read, 83 unclassified
+- **Production hits:** 89 total — 3 write, 2 read, 84 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +78 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +79 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
@@ -1835,10 +1836,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Means*, *Prosperity*
 - **Module:** `src/engine/factionPurse.ts`
-- **Production hits:** 14 total — 4 write, 4 read, 6 unclassified
+- **Production hits:** 15 total — 4 write, 4 read, 7 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/debug-bridge.ts`, `src/engine/factionTopology.ts`, `src/engine/views/subjects/factionRows.ts`
-- **Other hits:** `src/engine/crown/eligibility.ts`, `src/engine/crown/fealtySentences.ts`, `src/engine/economyShift.ts`, `src/engine/undertakingEconomy.ts`, `src/engine/wealth.ts` +1 more
+- **Other hits:** `src/engine/crown/eligibility.ts`, `src/engine/crown/fealtySentences.ts`, `src/engine/economyShift.ts`, `src/engine/foundingPatron.ts`, `src/engine/undertakingEconomy.ts` +2 more
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts drives the real runFactionPurse against a graph: a realm holding two towns earns town tax at the pivot, rent per border hex and a held place's yield, and a miners' guild in its town hands it LANDHOLDER_TAX_RATE of its work; with a rival also controlling the town, only the border realm collects (the rival's townTax is 0 — nothing pays twice). A seed-42 medium headless run shows faction_0 at 121 coin by day 10 and every guild above its opening purse.
 
 ### `faction-purse-prices-war-aims` — 🟢 LIVE
@@ -2168,10 +2169,10 @@ exit
 - **Intent:** A guild a mortal founds through the create × faction undertaking (THR-1937 S1) leans the way its founder does: the cell passes foundedGuildReachProfile (the founder's FOUNDED_GUILD_REACH_COUNT leading Reaches, domainCapabilities / 100) into foundFaction, and settleFoundedGuild writes guildType from FOUNDED_GUILD_TYPE_BY_REACH (leading Reach, else the second, else none) and opens the purse with what the founding cost through applyTreasuryDelta (0 while MEANS_CELL_COST has no create×faction row or costs are off). The faction purse's guild work reads guildType (affinityOf) and pays a founded guild like any town guild.
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **UL terms:** *Faction*
-- **Production hits:** 109 total — 2 write, 1 read, 106 unclassified
+- **Production hits:** 110 total — 2 write, 1 read, 107 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/factionPurse/income.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts` +101 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts` +102 more
 - **Verdict:** Verified 2026-10-21: THR-1937. undertakingEconomy.test.ts: every Reach has a FOUNDED_GUILD_TYPE_BY_REACH row and every calling is a GUILD_PLACE_AFFINITY row; a gold-led founder's guild is merchants with a gold/stone reach profile, opens at 0, and computePurseIncome pays it guild work in a town with a market district.
 
 ### `founded-lane-tolled-by-founder` — 🟢 LIVE
@@ -2198,16 +2199,27 @@ exit
 - **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +296 more
 - **Verdict:** Verified 2026-10-21: THR-1937. src/engine/__tests__/undertakingEconomy.test.ts: the founded hamlet never shares a hex with its site and nothing is founded when the neighbourhood is full; the higher-rank town-holding faction rules, a tie goes to the realm then the lower id, a lone founder rules; the ruler's controls and the founder's owns are written and computePurseIncome lists the town under the ruler's taxHolderOf; the place row reads Founded by with the founder linked.
 
+### `founding-patron-pays-from-faction-purse` — 🟢 LIVE
+
+- **Intent:** A founding the mortal cannot pay for is paid by their faction (THR-2008, decided on THR-2006) — read only while founding costs are on (MEANS_CELL_COST_ENABLED, off today) and FOUNDING_PATRON_ENABLED. The patron is the founder's highest-ranked purse faction (getDerivedMembershipRank over member_of, tie by faction id) whose treasury (wealth) covers the cost. The decision board keeps a costed cell the founder cannot afford when a patron exists (isFoundingUnaffordable); chargeFoundingCost charges the patron's treasury the whole cost through applyTreasuryDelta and the founder nothing, tracing economy.founding.patron. No patron at charge time charges nobody (fail-soft).
+- **Producer → Consumer:** Factions & Succession → Ambitions & Undertakings
+- **UL terms:** *Faction*
+- **Production hits:** 89 total — 2 write, 1 read, 86 unclassified
+- **Write sites:** `src/engine/foundingPatron.ts`, `src/engine/strategicActionLifecycle.ts`
+- **Read sites:** `src/engine/decisionBoard.ts`
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +81 more
+- **Verdict:** Verified 2026-10-24: THR-2008. foundingPatron.test.ts (costs mocked on): the pick takes the higher rank, skips a treasury below cost, ties by id; the board keeps the cell with a patron and drops it without one or with the rule off; the charge moves the cost from the patron's treasury, never the founder's, and emits economy.founding.patron; no patron charges nobody. npm run measure:founding-starvation measures the patron arm on seeds 42, 7 and 99.
+
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
 
 - **Intent:** What a mortal holds yields to them: a seized route tolls, a freehold pays, a controlled Location tithes — so taking something that produces is worth taking, and the wealth it moves is visible to the player as a word.
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 88 total — 2 write, 3 read, 83 unclassified
+- **Production hits:** 89 total — 2 write, 3 read, 84 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/factionRows.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +78 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +79 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -2764,10 +2776,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 138 total — 2 write, 2 read, 134 unclassified
+- **Production hits:** 139 total — 2 write, 2 read, 135 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/content/ruins/archetypes.ts` +129 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/content/ruins/archetypes.ts` +130 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -3166,10 +3178,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 261 total — 2 write, 2 read, 257 unclassified
+- **Production hits:** 262 total — 2 write, 2 read, 258 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +252 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +253 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -3715,10 +3727,10 @@ exit
 - **Intent:** A trade run — the use × route undertaking (THR-1967, undertakings S3) — trades on the lane its Route names (conductTradeOnLane: volume + 1, lastTraded; never a lane picked from where the trader stands, which found no route whenever the trader was away from the lane's ends) and pays the trader on that lane: min(TRADE_RUN_PAY_MAX, TRADE_RUN_PAY_BASE + TRADE_RUN_PAY_PER_UNIT × carriedPerDay) Means (carriedPerDay is the per-lane figure of the settlement economy, THR-1923; nothing writes it yet, so every run pays the base until that build lands) through applyMeansShift → bankWealth with reason trade_success, at most once per trader per TRADE_RUN_PAY_COOLDOWN_TICKS (the trader's lastTradeRunPaidTick). The person sheet's Means tooltip reads the reason; the want (MEANS_EARNING_CELLS) already counts the cell as paying work.
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Means*, *Route*
-- **Production hits:** 90 total — 3 write, 2 read, 85 unclassified
+- **Production hits:** 91 total — 3 write, 2 read, 86 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/mortalMeans.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +80 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +81 more
 - **Verdict:** Verified 2026-10-21: THR-1967. undertakingEconomyS3.test.ts: a run pays the base, a second run inside the day pays nothing, the next day pays again (reason trade_success); a trader standing away from both ends still trades the named lane and is paid; the per-unit term is unit-tested against a hand-set carriedPerDay only (no writer before THR-1923). measure:founding-starvation seed 42: one paid run in 600 ticks where every run failed "no route at anchor" before.
 
 ### `trait-predicate-resolution` — 🟢 LIVE
@@ -4036,9 +4048,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 139 total — 2 write, 3 read, 134 unclassified
+- **Production hits:** 140 total — 2 write, 3 read, 135 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +129 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +130 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 

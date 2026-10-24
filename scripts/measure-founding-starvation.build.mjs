@@ -8,10 +8,10 @@
 // The floor holds when, per seed, foundings(patron) >= FOUNDING_STARVATION_FLOOR × foundings(off).
 // It is the second of the two predicates `MEANS_CELL_COST_ENABLED` needs (THR-2008); the
 // verdict is written to .cache/founding-starvation-verdict.json for `npm run measure:means`.
-// Extra args (`--seeds`, `--ticks`, `--map`) pass through to every run. Default seeds are
-// the gate seeds (`FOUNDING_GATE_SEEDS`).
+// Default seeds are the gate seeds (`FOUNDING_GATE_SEEDS`); see the args note below.
 import { build } from 'esbuild';
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, writeFile, mkdir, readdir } from 'fs/promises';
+import { createHash } from 'crypto';
 import { execFileSync } from 'child_process';
 
 const FLOOR_SRC = await readFile('src/data/undertaking-economy-constants.ts', 'utf8');
@@ -46,41 +46,64 @@ const common = {
   bundle: true, platform: 'node', format: 'esm', logLevel: 'warning',
   external: ['fs', 'path'],
 };
-await build({ ...common, outfile: '.cache/founding-starvation-off.mjs' });
-await build({ ...common, outfile: '.cache/founding-starvation-on.mjs', plugins: [patchPlugin('costs-on', false)] });
-await build({ ...common, outfile: '.cache/founding-starvation-patron.mjs', plugins: [patchPlugin('costs-and-patron-on', true)] });
+// `--no-build` reuses the bundles of an earlier run: parallel commands must not rewrite a bundle
+// another one is about to execute. `--build-only` builds and exits.
+if (!process.argv.includes('--no-build')) {
+  await build({ ...common, outfile: '.cache/founding-starvation-off.mjs' });
+  await build({ ...common, outfile: '.cache/founding-starvation-on.mjs', plugins: [patchPlugin('costs-on', false)] });
+  await build({ ...common, outfile: '.cache/founding-starvation-patron.mjs', plugins: [patchPlugin('costs-and-patron-on', true)] });
+}
+if (process.argv.includes('--build-only')) process.exit(0);
 
-const args = process.argv.slice(2);
-if (!args.includes('--seeds')) args.push('--seeds', GATE_SEEDS.join(','));
-const seeds = args[args.indexOf('--seeds') + 1].split(',').map(Number);
-// One seed per process: three arms on several seeds in one process exceed the command cap.
-const run = (file) => seeds.flatMap(seed => {
-  const perSeed = [...args];
-  perSeed[perSeed.indexOf('--seeds') + 1] = String(seed);
-  return execFileSync('node', [file, ...perSeed], { encoding: 'utf8', maxBuffer: 1 << 26 })
-    .split('\n').filter(l => l.startsWith('{')).map(l => JSON.parse(l));
-});
-const off = run('.cache/founding-starvation-off.mjs');
-const on = run('.cache/founding-starvation-on.mjs');
-const patron = run('.cache/founding-starvation-patron.mjs');
+// Args: `--seeds 42,7` (default: the gate seeds), `--arms off,on,patron` (default: all
+// three); `--ticks` / `--map` pass through. Each arm × seed runs in its own process and
+// its result is cached under .cache/founding-starvation/, keyed by the run's ticks and
+// map, so the gate can be measured one arm or one seed per command: three arms on one
+// seed already exceed the 600 s command cap. Every report reads the whole cache.
+const argv = process.argv.slice(2);
+const flag = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 1] : undefined; };
+const seeds = (flag('--seeds') ?? GATE_SEEDS.join(',')).split(',').map(Number);
+const arms = (flag('--arms') ?? 'off,on,patron').split(',');
+const passThrough = argv.filter((x, i) => !['--seeds', '--arms', '--no-build', '--build-only'].includes(x) && !['--seeds', '--arms'].includes(argv[i - 1]));
+const runKey = JSON.stringify(passThrough);
+const ARM_FILE = { off: '.cache/founding-starvation-off.mjs', on: '.cache/founding-starvation-on.mjs', patron: '.cache/founding-starvation-patron.mjs' };
+for (const arm of arms) if (!ARM_FILE[arm]) throw new Error(`unknown arm "${arm}" (want off, on, patron)`);
 
-let pass = true;
-const rows = [];
-for (const a of off) {
-  const b = on.find(r => r.seed === a.seed);
-  const c = patron.find(r => r.seed === a.seed);
-  const floor = FLOOR * a.foundings;
-  const ok = !!c && c.foundings >= floor;
-  if (!ok) pass = false;
-  rows.push({ seed: a.seed, off: a.foundings, on: b?.foundings ?? null, patron: c?.foundings ?? null, floor, pass: ok });
-  console.log(`seed ${a.seed} t${a.ticks}: foundings costs-off ${a.foundings} · costs-on ${b?.foundings} · costs-on + patron ${c?.foundings} (floor ${FLOOR} × ${a.foundings} = ${floor.toFixed(1)}) → ${ok ? 'PASS' : 'FAIL'}`);
-  for (const [label, r] of [['off', a], ['on', b], ['patron', c]]) {
-    if (!r) continue;
-    console.log(`  ${label}: trade runs paid ${r.tradeRuns} (${r.tradePaid} Means, ${r.tradeSkipped} inside the day), Dominate Regional Trade completed ${r.dominateCompleted}, deciders holding ≥2 lanes ${r.lanesHeld2}${r.patronPaid !== undefined ? `, foundings a patron paid ${r.patronPaid}` : ''}`);
+// One file per arm × seed, so separate commands may run arms in parallel.
+const CACHE_DIR = `.cache/founding-starvation/${createHash('sha1').update(runKey).digest('hex').slice(0, 10)}`;
+await mkdir(CACHE_DIR, { recursive: true });
+for (const arm of arms) {
+  for (const seed of seeds) {
+    const out = execFileSync('node', [ARM_FILE[arm], ...passThrough, '--seeds', String(seed)], { encoding: 'utf8', maxBuffer: 1 << 26 });
+    const row = out.split('\n').filter(l => l.startsWith('{')).map(l => JSON.parse(l))[0];
+    if (row) await writeFile(`${CACHE_DIR}/${arm}-${seed}.json`, JSON.stringify(row));
   }
 }
-const gateSeedsCovered = GATE_SEEDS.every(s => rows.some(r => r.seed === s));
-console.log(`founding-starvation (patron arm): ${pass ? 'PASS' : 'FAIL'}${gateSeedsCovered ? '' : ` — not every gate seed (${GATE_SEEDS.join(', ')}) was measured`}`);
-await mkdir('.cache', { recursive: true });
-await writeFile('.cache/founding-starvation-verdict.json', JSON.stringify({ pass: pass && gateSeedsCovered, floor: FLOOR, gateSeeds: GATE_SEEDS, rows, args }, null, 2));
-process.exitCode = pass ? 0 : 1;
+const results = {};
+for (const f of await readdir(CACHE_DIR)) {
+  const m = /^(off|on|patron)-(\d+)\.json$/.exec(f);
+  if (m) results[`${m[1]}:${m[2]}`] = JSON.parse(await readFile(`${CACHE_DIR}/${f}`, 'utf8'));
+}
+
+const measuredSeeds = [...new Set(Object.keys(results).map(k => Number(k.split(':')[1])))].sort((a, b) => a - b);
+const rows = [];
+for (const seed of measuredSeeds) {
+  const a = results[`off:${seed}`];
+  const b = results[`on:${seed}`];
+  const c = results[`patron:${seed}`];
+  const floor = a ? FLOOR * a.foundings : null;
+  const ok = !!a && !!c && c.foundings >= floor;
+  rows.push({ seed, off: a?.foundings ?? null, on: b?.foundings ?? null, patron: c?.foundings ?? null, floor, pass: ok, complete: !!a && !!c });
+  console.log(`seed ${seed}: foundings costs-off ${a?.foundings ?? '—'} · costs-on ${b?.foundings ?? '—'} · costs-on + patron ${c?.foundings ?? '—'} (floor ${FLOOR} × ${a?.foundings ?? '—'} = ${floor === null ? '—' : floor.toFixed(1)}) → ${!a || !c ? 'not measured yet' : ok ? 'PASS' : 'FAIL'}`);
+  for (const [label, r] of [['off', a], ['on', b], ['patron', c]]) {
+    if (!r) continue;
+    console.log(`  ${label}: trade runs paid ${r.tradeRuns} (${r.tradePaid} Means, ${r.tradeSkipped} inside the day), Dominate Regional Trade completed ${r.dominateCompleted}, deciders holding ≥2 lanes ${r.lanesHeld2}, foundings a patron paid ${r.patronPaid ?? 0}`);
+  }
+}
+const gateRows = GATE_SEEDS.map(s => rows.find(r => r.seed === s));
+const covered = gateRows.every(r => r?.complete);
+const pass = covered && gateRows.every(r => r.pass);
+console.log(`founding-starvation floor (patron arm) on every gate seed (${GATE_SEEDS.join(', ')}): ${covered ? (pass ? 'PASS' : 'FAIL') : 'not every gate seed measured yet'}`);
+await writeFile('.cache/founding-starvation-verdict.json', JSON.stringify({ pass, floor: FLOOR, gateSeeds: GATE_SEEDS, runKey, rows }, null, 2));
+const requested = rows.filter(r => seeds.includes(r.seed) && r.complete);
+process.exitCode = requested.every(r => r.pass) ? 0 : 1;
