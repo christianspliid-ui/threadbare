@@ -326,7 +326,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successAfterimage:
           '{name} keeps the vigil unbroken through the night. The cold sits beneath the foundation stone, and the dawn is coming for it.',
         failureAfterimage:
-          '{name} breaks the vigil before midnight. The shrine stays cold, and the dawn will find no one ready for it.',
+          '{name}\'s vigil falters before midnight. The cold beneath the foundation stone has not loosened, and the dawn prayer will have to do more of the work.',
       },
       {
         reach: 'star',

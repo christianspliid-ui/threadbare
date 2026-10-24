@@ -585,7 +585,7 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
       {
         id: 'ag.senior.bounty_hunt.2',
         name: 'Corner the Quarry',
-        narrative: 'You wait in the dark of the alley until the mark walks past. Then you come out of cover with the blade drawn.',
+        narrative: 'However the trail ran, the hunt comes down to one dark street. You come at the mark from cover with the blade drawn.',
         reach: 'iron',
         difficulty: FACTION_SENIOR_BASE + FACTION_DIFFICULTY_STEP * 2,
         duration: 4,
@@ -999,7 +999,7 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
         duration: 1,
         onSuccess: {
-          narrative: 'She leans in and tells you the lead she has kept from the rest of the room: a location, a weakness, a name.',
+          narrative: 'Among the tall tales a real lead surfaces, and you catch it: a location, a weakness, a name.',
           reputationDelta: 0.04,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
