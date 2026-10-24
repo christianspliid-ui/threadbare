@@ -587,10 +587,20 @@ async function main(): Promise<void> {
     printFindingsAndExit();
   }
 
-  execFileSync(NPM_EXECUTABLE, [NPM_RUNNER, "run", "lint:plan-doc", "--", "--staged"], {
-    cwd: repoRoot,
-    stdio: "inherit",
-  });
+  try {
+    execFileSync(NPM_EXECUTABLE, [NPM_RUNNER, "run", "lint:plan-doc", "--", "--staged"], {
+      cwd: repoRoot,
+      stdio: "inherit",
+    });
+  } catch {
+    // lint:plan-doc exits non-zero only on a blocking finding (THR-1948: the plan-size
+    // cap). Report it as this check's own error so the summary still prints.
+    addFinding({
+      check: "lint-plan-doc",
+      severity: "error",
+      message: "lint:plan-doc reported a blocking finding (see its output above).",
+    });
+  }
   printFindingsAndExit();
 }
 
