@@ -115,6 +115,14 @@ describe("pipelining (2026-10-24): build beside one armed PR that is only waitin
     expect(isWaitingOnChecks(pr({ number: 1, body: "Fixes THR-1" }))).toBe(false);
   });
 
+  it("isWaitingOnChecks: an armed PR whose required check is already red is stuck, though it reads BLOCKED", () => {
+    const red = { ...waiting(1, "BLOCKED"), statusCheckRollup: [{ name: "Test · Typecheck · Build", status: "COMPLETED", conclusion: "FAILURE" }] };
+    const running = { ...waiting(1, "BLOCKED"), statusCheckRollup: [{ name: "Test · Typecheck · Build", status: "IN_PROGRESS", conclusion: "" }] };
+    expect(isWaitingOnChecks(red)).toBe(false);
+    expect(isWaitingOnChecks(running)).toBe(true);
+    expect(decideWipGate(claim, [red], NOW).verdict).toBe("deny");
+  });
+
   it("allows the claim beside one waiting PR and records which", () => {
     const d = decideWipGate(claim, [waiting(2532, "BLOCKED")], NOW);
     expect(d.verdict).toBe("allow");

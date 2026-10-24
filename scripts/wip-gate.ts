@@ -66,8 +66,9 @@
  *   generators can run. On GitHub, two open ticket PRs still never coexist.
  *
  * So a claim beside open ticket PRs is allowed when every one of them is **waiting**
- * (armed and not `DIRTY`) and there are at most {@link PIPELINE_MAX_WAITING_PRS}. An
- * unarmed PR (a review-gate park), a `DIRTY` one, or a second waiting PR still denies,
+ * (armed, not `DIRTY`, no required check red) and there are at most
+ * {@link PIPELINE_MAX_WAITING_PRS}. An unarmed PR (a review-gate park), a `DIRTY` or red
+ * one, or a second waiting PR still denies,
  * because none of those merges by itself while this run builds.
  *
  * Every decision is appended to `.claude/logs/wip-gate.log` in the **home** tree (resolved
@@ -83,7 +84,7 @@ import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 // The canonical hold predicate, shared with Step 0.8's probe. A PR that probe calls
 // `held` must never block claims here, or the lane waits on a PR nobody will touch.
-import { parseHoldMarker } from "./check-armed-prs.ts";
+import { parseHoldMarker, summarizeRequiredChecks, type RollupCheckNode } from "./check-armed-prs.ts";
 
 /** Linear's `In Dev` workflow state on the Threadbare team. */
 export const IN_DEV_STATE_ID = "8d662f3d-8c8f-4e3b-b7d9-8c3de7f42f19";
@@ -110,6 +111,7 @@ export type OpenPr = {
   updatedAt: string;
   mergeStateStatus?: string;
   autoMergeRequest?: unknown;
+  statusCheckRollup?: RollupCheckNode[] | null;
 };
 
 export type WipDecision = {
@@ -166,10 +168,16 @@ export function blockingPrs(prs: readonly OpenPr[], claimedId: string | null, no
   });
 }
 
-/** True when an open PR will merge with no session's help: armed, and not conflicted. */
+/**
+ * True when an open PR will merge with no session's help: armed, not conflicted, and no
+ * required check already red. A red required check reads `BLOCKED`, exactly like one
+ * still running, so the merge state alone cannot tell them apart (THR-1020); the rollup
+ * can. An unreadable rollup counts as not red, matching `summarizeRequiredChecks`.
+ */
 export function isWaitingOnChecks(pr: OpenPr): boolean {
   if (!pr.autoMergeRequest) return false;
-  return !STUCK_MERGE_STATES.has((pr.mergeStateStatus ?? "").toUpperCase());
+  if (STUCK_MERGE_STATES.has((pr.mergeStateStatus ?? "").toUpperCase())) return false;
+  return summarizeRequiredChecks(pr.statusCheckRollup) !== "failing";
 }
 
 export function renderDenial(claimedId: string | null, blocking: readonly OpenPr[]): string {
@@ -255,7 +263,7 @@ function listOpenPrs(cwd: string): OpenPr[] {
     "gh",
     [
       "pr", "list", "--state", "open", "--limit", String(OPEN_PR_LIST_LIMIT),
-      "--json", "number,title,body,isDraft,updatedAt,mergeStateStatus,autoMergeRequest",
+      "--json", "number,title,body,isDraft,updatedAt,mergeStateStatus,autoMergeRequest,statusCheckRollup",
     ],
     { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], windowsHide: true, timeout: 20_000 },
   );
