@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 08:08 local (06:08 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 08:57 local (06:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,16 +17,20 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+- [Three player texts promise that mandates slow the doom clock](https://linear.app/threadbare/issue/THR-2004/three-player-texts-promise-that-mandates-slow-the-doom-clock-they-only) — the words change, not the rules: four tooltips and The Seat beat will stop saying a finished mandate slows the doom or gives essence. A well-kept mandate checkpoint softens the doom's next blow instead. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24a.md)*
+
+Say "veto <title>" to reverse any of these.
+
 ## Queue
 
-**Backed up: 22 ready, 1 in progress (parked).** Overnight, [the first slice of the encounter firing pass](https://linear.app/threadbare/issue/THR-1218) merged ([#2531](https://github.com/christianspliid-ui/threadbare/pull/2531)) and is live. The builder started a new run at 06:04 UTC and is choosing its next job. The lanes were quiet from about 02:04 to 08:04 local; that is overnight, so it is not an ask.
+**Backed up: 22 ready, 3 in progress (1 building, 2 parked).** The builder is on [God's stake S3](https://linear.app/threadbare/issue/THR-1969) (the omen market's Fortune's Favour, Ruin and Bless the Holding). Its PR [#2532](https://github.com/christianspliid-ui/threadbare/pull/2532) had a merge conflict, the builder fixed it at 08:53, and it will merge itself when checks pass. The orchestrator put [the restless road](https://linear.app/threadbare/issue/THR-1959) on the shelf: a followed mortal with no story nearby for six days sets out to find one.
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 8 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch or named local worktree for it (checked this run).
-- Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961). Most of that week is the silences above.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 8 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch for it (checked this run).
+- [The heavy-tests fix ticket](https://linear.app/threadbare/issue/THR-2015) is parked and unassigned. Heavy tests are green on main again, so the builder should confirm and close it. No pushed branch for it.
+- Three ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888), [crown courtship rate](https://linear.app/threadbare/issue/THR-1961) and [twilight authorship](https://linear.app/threadbare/issue/THR-1381). Most of that week is the silences above.
 
 ## Health
 
-- **Heavy tests are green on main again** (passed on the [THR-1218 merge](https://github.com/christianspliid-ui/threadbare/commit/c5acdb59)). The fix ticket [THR-2015](https://linear.app/threadbare/issue/THR-2015) is still on the shelf; the builder should confirm the test passes and close it, or find that it only passes by chance.
-- **PR stuck:** [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) (the CI/CD review's own tweak, about 8 h old) has a merge conflict, and GitHub has scheduled no checks on it. The builder's unstick duty owns it.
-- **The worktree cleaner last ran at 01:40 local**, more than 6 hours ago. That matches the overnight quiet (it runs on the same computer). If it has not run by the next brief, that is a fault.
-- Everything else is green: every lane is on schedule, main's CI and the three scheduled background jobs are healthy, engine speed is normal (117 ms per tick, below the week's median), and the live site is current ([c5acdb59](https://github.com/christianspliid-ui/threadbare/commit/c5acdb59)).
+All green. The CI/CD review's tweak [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) is merged, the worktree cleaner ran at 08:40, main's CI and the three scheduled background jobs are healthy, every lane is on schedule, engine speed is normal (126 ms per tick, 13% under the week's median), and the live site is current ([c5acdb59](https://github.com/christianspliid-ui/threadbare/commit/c5acdb59)).
