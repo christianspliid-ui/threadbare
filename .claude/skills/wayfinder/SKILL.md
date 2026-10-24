@@ -7,7 +7,7 @@ description: >
   Explicitly invoked (/wayfinder); design sessions may SUGGEST charting a map but
   never auto-chart. Adapted for Threadbare from mattpocock/skills `wayfinder`
   (THR-900). Plans, never builds — cleared maps hand off to design-session plan docs.
-last_validated_against: 2026-09-25
+last_validated_against: 2026-10-24
 ---
 
 # Wayfinder
@@ -56,8 +56,9 @@ is the signal you've reached the edge of the map — hand off to design-session 
 - **Done carve-out:** the "never `save_issue(state:"Done")`" rule protects
   merge-gated executor work. A wayfinder ticket has no merge gate — the resolving
   session closes it with `save_issue(state:"Done")` after posting the resolution
-  comment. This carve-out is scoped to issues carrying a `wayfinder:*` label, nothing
-  else.
+  comment. This carve-out is scoped to issues carrying a `wayfinder:*` label. The one
+  other carve-out — design requests whose Done-when is filed tickets or a recorded
+  decision — lives in `design-lane/SKILL.md` § The boundary (THR-1888).
 - **Never write `Fixes` / `Closes` / `Resolves` before any issue id** in map bodies,
   ticket bodies, or resolution comments — bare `THR-XXX` only (THR-738 hazard class).
 - **HITL means a judgement call with a veto owner, not a live conversation** (amended
