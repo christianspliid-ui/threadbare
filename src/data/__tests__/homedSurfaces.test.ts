@@ -71,6 +71,7 @@ const OPENING_FLAGS: Record<Exclude<keyof InterruptSnapshot, HoldKey>, true> = {
   courtOpen: true,
   popupQueued: true,
   warmStartRunning: true,
+  twilightPending: true,
   cycleHarvestPending: true,
 };
 

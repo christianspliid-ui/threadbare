@@ -28,7 +28,11 @@ import { surfaceHomeProps } from '../shared/surfaceHomes';
 /** The ceremony answers no implicit close: only its button leaves it. */
 const STAY_OPEN = () => {};
 
-const NEUTRAL_TINT = '#a78bfa';
+/** A god with no readable sphere tints the panel gold, the ceremony's neutral. */
+const NEUTRAL_TINT = 'var(--accent-gold)';
+
+/** The tint at a fraction of its strength — works for a hex and a token alike. */
+const faint = (tint: string, pct: number) => `color-mix(in srgb, ${tint} ${pct}%, transparent)`;
 
 interface AgeTwilightScreenProps {
   beats: TwilightBeats;
@@ -52,7 +56,7 @@ function tintOf(sphere: SphereName | undefined): string {
 export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered, onContinue }: AgeTwilightScreenProps) {
   const tint = tintOf(primarySphere);
   const { ending, first, memories } = beats;
-  const sectionStyle: CSSProperties = { borderTop: `1px solid ${tint}33` };
+  const sectionStyle: CSSProperties = { borderTop: `1px solid ${faint(tint, 20)}` };
 
   // The First's line opens with their name; the name is a link to their sheet (Law 21).
   const firstRest = first && first.line.startsWith(first.name) ? first.line.slice(first.name.length) : null;
@@ -69,8 +73,8 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
       surfaceClassName="flex items-center justify-center"
     >
       <div
-        className="max-w-2xl w-full mx-4 bg-gradient-to-b to-stone-900 border rounded-xl p-8"
-        style={{ borderColor: `${tint}55`, backgroundColor: 'rgb(28 25 23 / 0.96)' }}
+        className="max-w-2xl w-full mx-4 bg-gradient-to-b to-stone-900 border rounded-panel p-8"
+        style={{ borderColor: faint(tint, 33), backgroundColor: 'var(--bg-surface)' }}
         data-testid="age-twilight"
         data-ending={ending.kind}
       >
@@ -148,7 +152,7 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
               size="lg"
               // Called bare: the click event must never reach a handler that reads an argument.
               onClick={() => onContinue()}
-              style={{ backgroundColor: tint, color: '#1c1917', fontFamily: 'var(--font-body)' }}
+              style={{ backgroundColor: tint, color: 'var(--bg-abyss)', fontFamily: 'var(--font-body)' }}
               data-testid="age-twilight-continue"
             >
               {TWILIGHT_WORDS.continueButton}

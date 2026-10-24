@@ -119,8 +119,9 @@ describe('THR-1381 Decided 6 — the age-end popups are chronicle lines', () => 
 
 describe('THR-1381 E1 — the beats', () => {
   it('opens each doom kind with its last stage name and its line', () => {
+    const world = newWorld();
     for (const archetype of DOOM_CLOCK_ARCHETYPES) {
-      const state = withDoom(newWorld(), archetype);
+      const state = withDoom(world, archetype);
       const beats = buildTwilightBeats(state, harvestWith(state, []), 1);
       expect(beats.ending.kind).toBe('doom');
       expect(beats.ending.title).toBe(ARCHETYPE_STAGE_NAMES[archetype][4]);
