@@ -193,6 +193,25 @@ describe('THR-1969 — Bless the Holding', () => {
     expect(g.getEdge(holdingBlessingEdgeId(GOD, TOWN))).toBeUndefined();
   });
 
+  it("multiplies a faction-held mine's yield, not only a town's tax", () => {
+    const g = heldWorld();
+    g.addNode({ id: 'loc_mine', name: 'The Deep Cut', type: 'location', properties: {
+      sublocationTypeId: 'sublocation-type.mine', parentLocationId: TOWN,
+      resources: { salt: { quantity: 100, renewable: false, renewalRate: 0, stockTier: 'adequate' } },
+    } });
+    g.addEdge({ id: 'e_ctl_mine', source: REALM, target: 'loc_mine', type: 'controls', properties: {} });
+    const yieldOf = (tick: number) => {
+      clearTraces();
+      runFactionPurse({ graph: g, tick, seed: 42, chronicleEntries: [], tiles: TILES, ascendantId: GOD } as unknown as GameState, () => projection());
+      const day = getTraces().find(t => t.category === 'economy.purse.day' && (t as { factionId?: string }).factionId === REALM) as { income: { placeYield: number } };
+      return day.income.placeYield;
+    };
+    const before = yieldOf(PURSE_CYCLE_TICKS * 2);
+    expect(before).toBeGreaterThan(0);
+    blessHolding(g, GOD, 'loc_mine', PURSE_CYCLE_TICKS * 2 + 1);
+    expect(yieldOf(PURSE_CYCLE_TICKS * 3)).toBeCloseTo(before * BLESS_HOLDING_YIELD_MULT);
+  });
+
   it('a recast extends the year and never stacks', () => {
     const g = heldWorld();
     blessHolding(g, GOD, TOWN, 100);

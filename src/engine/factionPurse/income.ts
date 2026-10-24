@@ -346,14 +346,15 @@ export function computePurseIncome(
     if (!holder) continue;
     const day = out.get(holder);
     if (!day) continue;
-    // THR-1969 — Bless the Holding multiplies this place's tax term while it lasts.
-    const tax = townTaxOf(place, graph) * holdingBlessingMult(graph, placeId, ctx.tick);
+    // THR-1969 — Bless the Holding multiplies this place's tax and yield terms while it lasts.
+    const blessing = holdingBlessingMult(graph, placeId, ctx.tick);
+    const tax = townTaxOf(place, graph) * blessing;
     if (tax > 0) {
       day.income.townTax += tax;
       day.taxHolderOf.push(placeId);
       add(holder, 'town', placeId, tax);
     }
-    const yieldAmount = placeYieldOf(place, scarcityRentFor(graph, holder, place));
+    const yieldAmount = placeYieldOf(place, scarcityRentFor(graph, holder, place)) * blessing;
     if (yieldAmount > 0) {
       day.income.placeYield += yieldAmount;
       add(holder, isSettlement(place) ? 'town' : 'place', placeId, yieldAmount);
