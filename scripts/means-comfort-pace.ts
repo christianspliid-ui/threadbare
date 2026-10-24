@@ -9,7 +9,10 @@
  *   - the mean forecast of free-choice engagements (compare against main: within 2 points);
  *   - the comfort pace: median ticks for a decider who starts Getting by to reach
  *     Comfortable. `MEANS_CELL_COST_ENABLED` may be switched on only when this median
- *     is at most `MEANS_COMFORT_PACE_TARGET_TICKS` (120).
+ *     is at most `MEANS_COMFORT_PACE_TARGET_TICKS` (120) **and** the founding-starvation
+ *     floor holds on every gate seed with the patron on (THR-2008): this script reads the
+ *     last `npm run measure:founding-starvation` verdict from
+ *     .cache/founding-starvation-verdict.json, and a missing verdict counts as not met.
  *
  * Usage: npm run measure:means [-- --seeds 42 --ticks 600 --map medium]
  */
@@ -26,6 +29,7 @@ import { isAutonomousDecisionActor } from '../src/engine/decisionTier';
 import { getAvatarsOf } from '../src/engine/graphQueries';
 import { getWealthTier, readWealth, WEALTH_TIER_COMFORTABLE, WEALTH_TIER_GETTING_BY } from '../src/engine/wealth';
 import type { WorldGraph } from '../src/engine/graph';
+import { existsSync, readFileSync } from 'fs';
 import {
   MEANS_CELL_COST_ENABLED,
   MEANS_COMFORT_PACE_TARGET_TICKS,
@@ -39,6 +43,18 @@ function argValue(flag: string): string | undefined {
 const SEEDS = (argValue('--seeds') ?? '42').split(',').map(Number);
 const TICKS = Number(argValue('--ticks') ?? 600);
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
+
+/** THR-2008 — the second predicate: the last founding-starvation verdict, or null when none was measured. */
+function foundingFloorVerdict(): boolean | null {
+  const path = '.cache/founding-starvation-verdict.json';
+  try {
+    if (!existsSync(path)) return null;
+    const v = JSON.parse(readFileSync(path, 'utf8')) as { pass?: unknown };
+    return typeof v.pass === 'boolean' ? v.pass : null;
+  } catch {
+    return null;
+  }
+}
 
 function median(xs: number[]): number | null {
   if (xs.length === 0) return null;
@@ -119,6 +135,8 @@ for (const seed of SEEDS) {
   const pace = median([...reachedComfort.values()]);
 
   const payingShare = poorWins > 0 ? poorPaying / poorWins : 0;
+  const paceOk = pace !== null && pace <= MEANS_COMFORT_PACE_TARGET_TICKS;
+  const floorOk = foundingFloorVerdict();
   const drift = destituteEnd - destituteT0;
   const lines = [
     `seed ${seed} · ${MAP} · ${TICKS} ticks · deciders ${start.size} → ${end.size}`,
@@ -127,7 +145,9 @@ for (const seed of SEEDS) {
     `  Destitute share: t0 ${pct(destituteT0)} → t${TICKS} ${pct(destituteEnd)}  (drift ${(100 * drift).toFixed(1)} pts, want ≤ 10) ${drift <= 0.10 ? 'PASS' : 'FAIL'}`,
     `  median decider Means at t${TICKS}: ${medianEnd?.toFixed(1) ?? '—'} (${medianEnd === null ? '—' : getWealthTier(medianEnd)}; want Getting by … Comfortable) ${medianEnd !== null && medianEnd >= WEALTH_TIER_GETTING_BY && medianEnd < 60 ? 'PASS' : 'FAIL'}`,
     `  mean forecast of free-choice engagements: ${meanForecast === null ? '—' : (100 * meanForecast).toFixed(2)} over ${forecasts.length} (compare against main: within 2 points)`,
-    `  comfort pace: ${reachedComfort.size} of ${gettingBy.length} Getting-by deciders reached Comfortable; median ${pace ?? '—'} ticks (target ≤ ${MEANS_COMFORT_PACE_TARGET_TICKS}) → founding costs ${pace !== null && pace <= MEANS_COMFORT_PACE_TARGET_TICKS ? 'MAY switch on' : 'stay off'} (MEANS_CELL_COST_ENABLED = ${MEANS_CELL_COST_ENABLED})`,
+    `  comfort pace: ${reachedComfort.size} of ${gettingBy.length} Getting-by deciders reached Comfortable; median ${pace ?? '—'} ticks (target ≤ ${MEANS_COMFORT_PACE_TARGET_TICKS}) ${paceOk ? 'PASS' : 'FAIL'}`,
+    `  founding-starvation floor (patron on, gate seeds): ${floorOk === null ? 'not measured — run npm run measure:founding-starvation' : floorOk ? 'PASS' : 'FAIL'}`,
+    `  → founding costs ${paceOk && floorOk === true ? 'MAY switch on' : 'stay off'} (both predicates required; MEANS_CELL_COST_ENABLED = ${MEANS_CELL_COST_ENABLED})`,
   ];
   console.log(lines.join('\n'));
 }

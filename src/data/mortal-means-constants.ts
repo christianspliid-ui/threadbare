@@ -87,10 +87,27 @@ export const MEANS_EARNING_CELLS: ReadonlySet<string> = new Set([
  * the cost is banked (`reason: 'founding'`) when the work starts, and an unaffordable
  * most-wanted cell adds `MEANS_UNAFFORDED_WANT`. Off: none of that runs.
  *
- * Stays off (THR-1952): `scripts/means-comfort-pace.ts` measured the median ticks for a
- * Getting-by decider to reach Comfortable above `MEANS_COMFORT_PACE_TARGET_TICKS`.
+ * May switch on only when **both** measured predicates hold (THR-2006 / THR-2008):
+ *   1. comfort pace — `npm run measure:means`: the median ticks for a Getting-by decider
+ *      to reach Comfortable is at most `MEANS_COMFORT_PACE_TARGET_TICKS`;
+ *   2. the founding-starvation floor — `npm run measure:founding-starvation`, patron arm:
+ *      on every gate seed (`FOUNDING_GATE_SEEDS`), foundings with costs and the patron on
+ *      are at least `FOUNDING_STARVATION_FLOOR` × foundings with costs off.
+ * Stays off: comfort pace measured 514 ticks against 120 (THR-1952), and seed 42 fails
+ * the floor even with the patron (1 against 2.5, THR-2006).
  */
 export const MEANS_CELL_COST_ENABLED = false;
+
+/**
+ * THR-2008 — the founding patron. While founding costs are on, a mortal who cannot pay
+ * a costed cell can still take it when their highest-ranked purse faction's treasury
+ * covers the cost; that faction pays the whole cost (`foundingPatron.ts`). Read only
+ * while `MEANS_CELL_COST_ENABLED`.
+ */
+export const FOUNDING_PATRON_ENABLED = true;
+
+/** The seeds the founding-starvation floor is measured on before the cost switch may flip. */
+export const FOUNDING_GATE_SEEDS: readonly number[] = [42, 7, 99];
 
 /** What founding costs, keyed like `MEANS_EARNING_CELLS`, on the 0–100 Means scale. */
 export const MEANS_CELL_COST: Readonly<Record<string, number>> = {

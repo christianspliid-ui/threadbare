@@ -91,8 +91,14 @@ export const DOMINATE_TRADE_COMPLETION = { requires: 3, of: 5 } as const;
 export const DOMINATE_TRADE_MEANS_TIER = 'Wealthy' as const;
 
 /**
- * The S3 kill line: with trade pay on and founding costs on, foundings over 600 ticks
- * must stay at least this share of foundings with costs off
- * (`npm run measure:undertaking-economy -- --s3`).
+ * The founding-starvation floor: with trade pay on, founding costs on and the founding
+ * patron on (THR-2008), foundings over 600 ticks must stay at least this share of
+ * foundings with costs off, on every gate seed (`npm run measure:founding-starvation`).
+ * It is the second predicate `MEANS_CELL_COST_ENABLED` needs, beside comfort pace.
+ *
+ * The S3 kill line's old lever, lowering `TRADE_RUN_PAY_MAX`, is retired (THR-2006:
+ * trade pay does not move founding). If a gate seed still fails with the patron on,
+ * the next lever is the town row of `MEANS_CELL_COST` (`create×location`), measured
+ * against the same three arms.
  */
 export const FOUNDING_STARVATION_FLOOR = 0.5;

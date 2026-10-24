@@ -124,6 +124,9 @@ import {
 } from './mentorshipUndertaking';
 import { emitTrace } from './traceBuffer';
 import { applyMeansShift, meansCellCost } from './mortalMeans';
+import { chargeFoundingPatron } from './foundingPatron';
+import { readWealth } from './wealth';
+import { FOUNDING_PATRON_ENABLED } from '../data/mortal-means-constants';
 import type { TraceEntry } from '../types/trace';
 import { possessive, generateWorkName, generateFailureScarName } from './naming/workNames';
 import { getUndertakingKindForTemplate } from '../data/undertaking-kinds';
@@ -472,12 +475,33 @@ interface InstantMutationResult {
  * through the one funnel (`applyMeansShift` → `bankWealth`, `reason: 'founding'`). A
  * no-op while `MEANS_CELL_COST_ENABLED` is off, for a free cell, and for a non-mortal.
  * Fail-soft: a missing actor writes nothing.
+ *
+ * THR-2008 — a founder who cannot pay is charged nothing: their patron (the faction
+ * the board found for them) pays the whole cost from its treasury, traced as
+ * `economy.founding.patron`. No patron by now (the purse emptied since the board) →
+ * nobody pays.
  */
-function chargeFoundingCost(graph: WorldGraph, candidate: StrategicActionCandidate, tick: number): void {
+export function chargeFoundingCost(graph: WorldGraph, candidate: StrategicActionCandidate, tick: number): void {
   const cost = meansCellCost(getStrategicTemplate(candidate.templateId));
   if (cost <= 0) return;
   const actor = graph.getNode(candidate.actorId);
   if (!actor || actor.type !== 'actor' || actor.properties.actorType !== 'individual') return;
+  if (FOUNDING_PATRON_ENABLED && readWealth(actor.properties as Record<string, unknown>) < cost) {
+    const paid = chargeFoundingPatron(graph, actor.id, cost);
+    if (!paid) return;
+    emitTrace({
+      tick,
+      category: 'economy.founding.patron',
+      agentId: actor.id,
+      patronId: paid.patronId,
+      cost: paid.cost,
+      templateId: candidate.templateId,
+      treasuryBefore: paid.treasuryBefore,
+      treasuryAfter: paid.treasuryAfter,
+      summary: `${graph.getNode(paid.patronId)?.name ?? paid.patronId} pays ${paid.cost} for ${actor.name}'s founding (${candidate.templateId})`,
+    });
+    return;
+  }
   const shift = applyMeansShift(actor.properties as Record<string, unknown>, -cost, 'founding');
   if (!shift) return;
   emitTrace({
