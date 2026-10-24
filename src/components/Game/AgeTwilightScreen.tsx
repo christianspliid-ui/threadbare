@@ -68,7 +68,7 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
 
   // The First's line opens with their name; the name is a link to their sheet (Law 21).
   // A First whose body is gone (a death that removed the node) is named, not linked.
-  const firstRest = first && gameState.graph.getNode(first.id) && first.line.startsWith(first.name)
+  const firstRest = first && first.present && first.line.startsWith(first.name)
     ? first.line.slice(first.name.length)
     : null;
 

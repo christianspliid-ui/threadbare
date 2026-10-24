@@ -52,6 +52,8 @@ export interface TwilightFirst {
   calling?: string;
   /** The rendered beat-2 line. */
   line: string;
+  /** False when the First's node is gone (a death removed it): name them, link nothing. */
+  present: boolean;
 }
 
 export interface TwilightBeats {
@@ -149,6 +151,7 @@ export function firstFate(state: GameState): TwilightFirst | undefined {
       name: remembered.name,
       fate,
       line: fate === 'aspect' ? TWILIGHT_WORDS.firstAspect(remembered.name) : TWILIGHT_WORDS.firstDied(remembered.name),
+      present: !!graph.getNode(remembered.id),
     };
   }
   const node = graph.getNode(id)!;
@@ -163,7 +166,7 @@ export function firstFate(state: GameState): TwilightFirst | undefined {
     : fate === 'died'
     ? TWILIGHT_WORDS.firstDied(name)
     : TWILIGHT_WORDS.firstLived(name, calling);
-  return { id, name, fate, ...(calling ? { calling } : {}), line };
+  return { id, name, fate, ...(calling ? { calling } : {}), line, present: true };
 }
 
 function capitalize(s: string): string {
