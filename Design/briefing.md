@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 12:56 local (10:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 13:58 local (11:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,12 +27,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 18 ready, 2 in progress (1 building, 1 parked).** [The restless road](https://linear.app/threadbare/issue/THR-1959) (a followed mortal with no story nearby for six days sets out for one) merged ([#2538](https://github.com/christianspliid-ui/threadbare/pull/2538)) and is live. The builder is now on [crown courtship rate](https://linear.app/threadbare/issue/THR-1961) (realms court a crown on slightly fewer days than the plan asks; it is tracing why).
+**Backed up: 19 ready, 1 parked in progress.** [Crown courtship](https://linear.app/threadbare/issue/THR-1961) (a realm now courts a crown once per calendar day, on 84–97% of days across three test worlds) merged ([#2540](https://github.com/christianspliid-ui/threadbare/pull/2540)) and is live. Its follow-up, [the crown oath share drift](https://linear.app/threadbare/issue/THR-2017) (a younger second Crown takes 11% of its income from oaths, an older one 36%, target 15–35%), is on the shelf. A new builder run started at 11:05 UTC and is still working; it has not put a ticket in progress on the board yet.
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 9 days since it was first claimed. It waits on your answer above, not on the builder.
 - Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [the settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924). Most of that week is the silences above.
 
 ## Health
 
-- Engine speed (builder's job, not yours): tick cost 188 ms/tick steady, 31% above the 7-day median (143, 80 rows since b3582873); top phase agent_decision, 618 agents. Name the merges between b3582873 and 8ebf63bc: git log --oneline --merges b3582873..8ebf63bc. *(Measured while a pickup run was building on the same machine, so part of this may be load. Last hour read 157 ms.)*
-- Everything else is green. Main's CI and the three scheduled background jobs are healthy, every lane is on schedule, no PR is waiting to merge, and the live site is current ([656afb3b](https://github.com/christianspliid-ui/threadbare/commit/656afb3b)).
+All green. Main's CI and the three scheduled background jobs are healthy, every lane is on schedule, no PR is waiting to merge, the worktree reaper ran at 13:40, and the live site is current ([6cd08f61](https://github.com/christianspliid-ui/threadbare/commit/6cd08f61)). Engine speed read 179 ms/tick, right at the line (+25% on the 7-day median of 144) but not over it.

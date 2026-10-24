@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 12:56 local (10:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 13:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-24: crown courtship — a realm courts a crown once per calendar day, on 84–97% of days** ([THR-1961](https://linear.app/threadbare/issue/THR-1961)). Merged via [#2540](https://github.com/christianspliid-ui/threadbare/pull/2540) and live.
 - **2026-10-24: the restless road — a followed mortal with no story nearby for six days sets out for one** ([THR-1959](https://linear.app/threadbare/issue/THR-1959)). Merged via [#2538](https://github.com/christianspliid-ui/threadbare/pull/2538) and live.
 - **2026-10-24: mortal wealth S3 — money encounters change prosperity, unrest, stocks, purses and debts** ([THR-1953](https://linear.app/threadbare/issue/THR-1953)). Merged via [#2537](https://github.com/christianspliid-ui/threadbare/pull/2537) and live.
 - **2026-10-24: the end of the age — the Twilight ceremony and the Mandate ending the age** ([THR-1381](https://linear.app/threadbare/issue/THR-1381)). Merged via [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533) and live.
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-23: the reward draw rolls the rarity, then the kind, then the thing** ([THR-1997](https://linear.app/threadbare/issue/THR-1997)). Merged via [#2528](https://github.com/christianspliid-ui/threadbare/pull/2528) and live.
 - **2026-10-21: ordinary scenes stop recasting The First** ([THR-1993](https://linear.app/threadbare/issue/THR-1993/ordinary-scenes-stop-recasting-the-first-six-scenes-wait-for-a-mortal)). Merged via [#2526](https://github.com/christianspliid-ui/threadbare/pull/2526) and live.
 - **2026-10-21: four things the retired sheets showed are Inspector rows again** ([THR-1992](https://linear.app/threadbare/issue/THR-1992/four-things-the-retired-sheets-showed-that-no-inspector-page-shows-the)). Merged via [#2525](https://github.com/christianspliid-ui/threadbare/pull/2525) and live.
-- **2026-10-21: your avatar's page says "— your mortal shape" again** ([THR-1990](https://linear.app/threadbare/issue/THR-1990/the-avatars-page-lost-its-your-mortal-shape-framing-when-the-character)). Merged via [#2523](https://github.com/christianspliid-ui/threadbare/pull/2523).
 
 ---
 
