@@ -143,6 +143,7 @@ import {
 } from './mortalMeans';
 import { readWealth } from './wealth';
 import { MEANS_CELL_COST_ENABLED } from '../data/mortal-means-constants';
+import { isFoundingUnaffordable } from './foundingPatron';
 
 // ─── Contract ───────────────────────────────────────────────────
 
@@ -593,7 +594,8 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       const template = getStrategicTemplate(candidate.templateId);
       if (!template?.cellVariant) continue;
       const cost = meansCellCost(template);
-      const unaffordable = cost > 0 && deciderWealth < cost;
+      // THR-2008 — a founding the mortal cannot pay stays on when their faction can (the patron).
+      const unaffordable = isFoundingUnaffordable(graph, agentId, deciderWealth, cost);
       if (unaffordable) {
         droppedIdx.add(index);
         meansDropped.push(candidate.templateId);

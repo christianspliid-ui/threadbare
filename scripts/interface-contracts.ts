@@ -7215,6 +7215,24 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'founding-patron-pays-from-faction-purse',
+    producerSystem: FACTIONS,
+    consumerSystem: AMBITIONS,
+    intent:
+      'A founding the mortal cannot pay for is paid by their faction (THR-2008, decided on THR-2006) — read only while founding costs are on (MEANS_CELL_COST_ENABLED, off today) and FOUNDING_PATRON_ENABLED. The patron is the founder\'s highest-ranked purse faction (getDerivedMembershipRank over member_of, tie by faction id) whose treasury (wealth) covers the cost. The decision board keeps a costed cell the founder cannot afford when a patron exists (isFoundingUnaffordable); chargeFoundingCost charges the patron\'s treasury the whole cost through applyTreasuryDelta and the founder nothing, tracing economy.founding.patron. No patron at charge time charges nobody (fail-soft).',
+    ulTerms: ['Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'findFoundingPatron', 'isFoundingUnaffordable', 'chargeFoundingPatron', 'FOUNDING_PATRON_ENABLED'],
+    },
+    writeSites: ['src/engine/foundingPatron.ts', 'src/engine/strategicActionLifecycle.ts'],
+    readSites: ['src/engine/decisionBoard.ts', 'src/engine/foundingPatron.ts'],
+    verifiedLive: {
+      date: '2026-10-24',
+      evidence: 'THR-2008. foundingPatron.test.ts (costs mocked on): the pick takes the higher rank, skips a treasury below cost, ties by id; the board keeps the cell with a patron and drops it without one or with the rule off; the charge moves the cost from the patron\'s treasury, never the founder\'s, and emits economy.founding.patron; no patron charges nobody. npm run measure:founding-starvation measures the patron arm on seeds 42, 7 and 99.',
+    },
+  },
+  {
     id: 'trade-run-pays-means',
     producerSystem: AMBITIONS,
     consumerSystem: ECONOMY,

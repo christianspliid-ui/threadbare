@@ -93,6 +93,8 @@ export type TraceCategory =
   | 'economy.purse.day' | 'economy.purse.band_change' | 'economy.purse.army_raised'
   // THR-1936 — a mortal's Means
   | 'economy.means.birth' | 'economy.means.shift'
+  // THR-2008 — a faction pays for a member's founding (the founding patron)
+  | 'economy.founding.patron'
   // THR-1953 — money encounters change the world
   | 'economy.world.shift'
   // THR-1933 — war aims
@@ -738,6 +740,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
   'economy.means.birth', 'economy.means.shift', 'economy.world.shift',
+  'economy.founding.patron',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'faction.embargo.laid', 'faction.embargo.lifted',
   'undertaking.economy.found_town', 'undertaking.economy.found_town_refused',
@@ -2016,6 +2019,20 @@ export interface MeansShiftTrace extends TraceBase {
   bandBefore: string;
   bandAfter: string;
   reason: string;
+}
+
+/**
+ * THR-2008 — a founding the mortal could not pay for was paid by their faction (the
+ * founding patron): the patron's treasury paid the whole cost, the founder paid nothing.
+ */
+export interface FoundingPatronTrace extends TraceBase {
+  category: 'economy.founding.patron';
+  agentId: string;
+  patronId: string;
+  cost: number;
+  templateId: string;
+  treasuryBefore: number;
+  treasuryAfter: number;
 }
 
 /**
@@ -5200,6 +5217,7 @@ export type TraceEntry =
   | PurseArmyRaisedTrace
   | MeansBirthTrace
   | MeansShiftTrace
+  | FoundingPatronTrace
   | WorldEconomyShiftTrace
   | WarAimPickedTrace
   | WarAimDefendTrace

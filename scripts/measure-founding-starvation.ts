@@ -3,13 +3,14 @@
  * seeded worlds. Plan: Docs/plans/2026-10-17-thr-1937-undertakings-in-the-economy.md
  * § Kill criteria / § Done when S3.
  *
- * One arm per bundle: `measure-founding-starvation.build.mjs` builds this file twice —
- * as shipped (founding costs off) and with `MEANS_CELL_COST_ENABLED` patched on — and
- * compares. Each run prints one JSON line per seed:
+ * One arm per bundle: `measure-founding-starvation.build.mjs` builds this file three
+ * times — as shipped (founding costs off), with `MEANS_CELL_COST_ENABLED` patched on and
+ * the founding patron off, and with both on (THR-2008) — and compares. Each run prints one JSON line per seed:
  *   - foundings: settlements standing at the end that did not exist at t0;
  *   - tradePaid / tradeRuns: Means paid by trade runs, and runs paid;
  *   - dominateCompleted: Dominate Regional Trade completions;
- *   - lanesHeld2: deciders holding at least two lanes at the end.
+ *   - lanesHeld2: deciders holding at least two lanes at the end;
+ *   - patronPaid: foundings a faction paid for its member (THR-2008, patron arm only).
  *
  * Usage: npm run measure:founding-starvation [-- --seeds 42 --ticks 600 --map medium]
  */
@@ -48,10 +49,12 @@ function runSeed(seed: number) {
   let tradePaid = 0;
   let tradeRuns = 0;
   let tradeSkipped = 0;
+  let patronPaid = 0;
   for (let i = 0; i < TICKS; i++) {
     state = runTick(state, [], runtime);
     // Drain each tick so the ring buffer never drops a pay row.
     for (const t of getTraces()) {
+      if (t.category === 'economy.founding.patron') { patronPaid++; continue; }
       if (t.category !== 'undertaking.economy.trade_pay') continue;
       const row = t as unknown as { paid: number; skipped: string | null };
       if (row.skipped) tradeSkipped++;
@@ -68,7 +71,7 @@ function runSeed(seed: number) {
   }
   const lanesHeld2 = g.getNodesByType('actor')
     .filter(n => n.properties.actorType === 'individual' && heldLaneIds(g, n.id).size >= 2).length;
-  return { seed, ticks: state.tick, costsOn: MEANS_CELL_COST_ENABLED, foundings, tradePaid, tradeRuns, tradeSkipped, dominateCompleted, lanesHeld2 };
+  return { seed, ticks: state.tick, costsOn: MEANS_CELL_COST_ENABLED, foundings, tradePaid, tradeRuns, tradeSkipped, dominateCompleted, lanesHeld2, patronPaid };
 }
 
 for (const seed of SEEDS) console.log(JSON.stringify(runSeed(seed)));
