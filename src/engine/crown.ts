@@ -49,7 +49,6 @@ import { offerScore, affordableGift, giftCost } from './crown/offer';
 import { isRealmFaction, readOath, vassalsOf } from './crown/crownView';
 import { crownWagesActive } from './crown/wages';
 import { upkeepOf, upkeepPerDayOf } from './factionPurse/upkeep';
-import { isSettlement } from './factionPurse/income';
 import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS } from '../data/faction-purse-constants';
 import { OATH_SWORN_LINES, OATH_BROKEN_LINES } from '../data/crown-chronicle-content';
 import {
@@ -583,9 +582,9 @@ function fundRaises(state: GameState, surviving: readonly GraphEdge[]): number {
       const liegeId = edge.target;
       const liege = graph.getNode(liegeId);
       if (!liege || !keepsStandingArmy(graph, vassalId)) continue;
-      // A vassal holding a town raises from its own land (THR-1974 kill criterion 3:
-      // a liege never buys a realm vassal's armies wholesale). Free companies hold none.
-      if (graph.getOutgoingEdges(vassalId, 'controls').some(e => isSettlement(graph.getNode(e.target)))) continue;
+      // A realm vassal raises from its own land (THR-1974 kill criterion 3: a liege never
+      // buys a realm vassal's armies wholesale). A free company's hall town does not count.
+      if (isRealmFaction(graph.getNode(vassalId))) continue;
       const props = readOath(edge);
       const last = props.liegeRaisedTick;
       if (typeof last === 'number' && tick - last < gap) continue;
