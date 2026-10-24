@@ -89,22 +89,17 @@ const step1DeliverVerdict: ActionStep = {
   ],
   failBehavior: 'continue_weakened',
   narrativeTemplate:
-    'The god settled a current of rough legitimacy through the agent — not the ' +
-    'legitimacy of the high seats, but the legitimacy of someone who has been ' +
-    'disavowed by those seats and therefore has nothing left to protect by ' +
-    'ruling in their favor. The {title} walked to the center of the circle ' +
-    'and ruled against the accused.\n\n' +
-    'The circle\'s justice was what it was: collective, rough, without appeal. ' +
-    'The accused needed someone to validate what the circle had already decided, ' +
-    'and they needed the validation to come from a name that had been broken by ' +
-    'the same kind of official weight they were trying to escape. The ruling was ' +
-    'given in the roofless grange, with the overcast sky as its only witness, ' +
-    'and the circle received it with the specific gravity of people who had ' +
-    'been waiting a long time for a verdict to mean something.',
+    'The {title} walked to the center of the circle and ruled against the accused. ' +
+    'Then the {title} had to stand there and hold the ruling.\n\n' +
+    'The accused begged. Their families shouted from the broken doorway. One of ' +
+    'the circle stood up and asked whether the judge was sure, and two more stood ' +
+    'with her. A ruling in a circle like this has no appeal and no guard behind ' +
+    'it: it stands only as long as the judge does. The {title} stood in the flat ' +
+    'light and repeated the verdict, word for word, until the circle sat down again.',
   successMetadata: { reputationDelta: 0.05 },
   failureMetadata: { reputationDelta: 0.00 },
-  successAfterimage: 'The ruling given. The circle received it. The accused were quiet.',
-  failureAfterimage: 'The ruling was delivered but something in its weight didn\'t land as the circle had hoped.',
+  successAfterimage: 'The ruling held. The circle sat back down. The accused were quiet.',
+  failureAfterimage: 'The {title} gave ground under the shouting, and the ruling came out softer the second time. The circle noticed.',
 };
 
 const step1RuleAgainstCircle: ActionStep = {
@@ -125,16 +120,15 @@ const step1RuleAgainstCircle: ActionStep = {
     'the records of what had been sold, the testimony of the accused themselves — ' +
     'and found the circle\'s case weaker than its grief. The ruling went the ' +
     'other direction.\n\n' +
-    'The circle did not forgive it. They had not called for a judge whose name was ' +
-    'broken in order to receive the same verdict they\'d have gotten from the high ' +
-    'seats. They had called for one because they expected the brokenness to vote ' +
-    'with them. The {title} had disappointed that expectation in exactly the way the ' +
-    'law had disappointed the circle — which meant the circle now had a specific ' +
-    'object for feelings that had previously been diffuse.',
+    'The circle rose against it. They had called for a broken name because they ' +
+    'expected it to vote with them, and now all eight of them stood and told the ' +
+    '{title} so, one after another. The {title} had to hold the ruling under the ' +
+    'whole circle\'s anger, with no guard and no record behind it, and not take ' +
+    'back a word.',
   successMetadata: { reputationDelta: 0.05 },
   failureMetadata: { reputationDelta: 0.00 },
   successAfterimage: 'The circle expected solidarity. The ruling gave them the evidence instead.',
-  failureAfterimage: 'The ruling was attempted but it felt incomplete — the circle wasn\'t certain they\'d been heard.',
+  failureAfterimage: 'The {title} wavered under the circle\'s anger, and the ruling trailed off unfinished. The circle wasn\'t certain they\'d been heard.',
 };
 
 const step1Branch: ActionStepBranch = {

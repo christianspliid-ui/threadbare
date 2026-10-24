@@ -2668,13 +2668,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1101: authored out of the mad-lib shape (hire-family batch). The family's
         // cheapest contract and the one whose counterparty is hardest to test before the
         // money is spent — competence here is only demonstrable once it is too late to shop.
-        narrative: 'Four people at the waystation claim the route, and three of them claim it confidently. {actor} listens for the one who mentions the dull parts — which water is reliable, which stretch takes two days rather than the one it looks like.',
+        narrative: 'Four people at the waystation claim the route. {actor} quizzes each of them on the crossing itself. Which wells hold in a dry year? Where does the grass fail?',
         onSuccess: {
-          narrative: 'The guide {actor} settles on is the one who talked about grass: where it fails in a dry year, and what that does to the timing. It is knowledge a person only gets by having been out there in one.',
+          narrative: '{actor} knows enough of the route to test them. Only one passes. She names the dry well at the third camp and the long stretch after it, and she is hired.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} hires the confident one. The confidence survives the first day, which is flat and well-marked and contains no test at all.',
+          narrative: '{actor} does not know the route well enough to catch a wrong answer. {actor} hires the most confident of the four. The first day is flat and tests nothing.',
           reputationDelta: -0.02,
         },
       },
@@ -2701,9 +2701,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'On the fourth day the route stops matching the ground under it. {actor} has to judge whether the guide is wrong or the season has moved the water since the last crossing — and the guide is the only source of either answer.',
+        narrative: 'On the fourth day the route stops matching the ground under it. The season has moved the water. {actor} and the guide have to find the new crossing by the grass and the stars.',
         onSuccess: {
-          narrative: 'The guide admits to being uncertain before the uncertainty gets expensive. They lose half a day locating the crossing instead of two days committing to the wrong one. {actor} pays the bonus at the gate and asks about the return leg.',
+          narrative: '{actor} takes a bearing on the stars at dusk. The green line of the grass leads to the new water. They lose half a day instead of two. {actor} pays the bonus at the gate and asks about the return leg.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
         },
@@ -4170,18 +4170,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape, `assist` family batch.
-        narrative: 'Forty of them at the edge of the fields, carrying what they could hold. They have not asked for aid yet. That silence is its own kind of asking.',
+        narrative: 'Forty of them wait at the edge of the fields, carrying what they could hold. They have not asked for aid, and they do not trust the town that turned them back once already. {actor} has to win them over before they will take anything.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} counts every one of them, but the count takes until dark, and the first night passes without food. The children cry through it.',
-        criticalSuccessAfterimage: '{actor} counts them and learns their names. One of the elders was a miller, and he knows where the town keeps its spare grain.',
-        criticalFailureAfterimage: '{actor} promises rations before counting and promises too many. When the food comes up short that night, the crowd shouts {actor} down at the cart, and the adults eat nothing.',
+        successAtCostAfterimage: '{actor} wins their trust, but it takes until dark, and the first night passes without food. The children cry through it.',
+        criticalSuccessAfterimage: '{actor} sits with the elders and learns their names. One of them was a miller. He trusts {actor} enough to say where the town keeps its spare grain.',
+        criticalFailureAfterimage: '{actor} promises rations to win them over and promises too many. When the food comes up short that night, the crowd shouts {actor} down at the cart, and the adults eat nothing.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
-          narrative: '{actor} counts them properly — the children, the elders, the two who cannot walk — before promising a single ration. The counting is what says where to start.',
+          narrative: '{actor} sits down with the elders first and asks before offering. By dusk the refugees have agreed to follow {actor} into town, the two who cannot walk carried between them.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} sees a crowd instead of the people in it, and plans for the crowd. The two who cannot walk are still at the field\'s edge at dusk.',
+          narrative: '{actor} talks at the crowd instead of to the people in it. They stay where they are. The two who cannot walk are still at the field\'s edge at dusk.',
           reputationDelta: -0.02,
         },
       },
@@ -5966,9 +5966,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Across the ledger, a choice. {actor} can extend a loan to a desperate borrower — terms to be set, risk to be weighed. No sword needed. Only judgment.',
+        narrative: 'A desperate borrower sits across the ledger and asks for forty silver. {actor} sets the rate, the schedule and the surety, and the house\'s coin rides on every number.',
         onSuccess: {
-          narrative: '{actor} draws up the terms: fair interest, a schedule the borrower can actually meet, and a clause that protects both parties. The borrower considers.',
+          narrative: '{actor} names a fair rate, a schedule the borrower can actually meet, and a surety that protects the house. The borrower haggles one point down and agrees to the rest.',
           reputationDelta: 0.04,
         },
         onFailure: {
@@ -6067,9 +6067,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.black_market_deal',
     stakes: {
-      goal: 'buy the goods and get out unseen',
+      goal: 'pay the broker\'s price for the goods and carry them out',
       risk: 'lose the goods and land on a watcher\'s list',
-      won: 'bought the goods and walked out unseen',
+      won: 'paid the broker\'s price and carried the goods out',
       lost: 'lost the goods and landed on a watcher\'s list',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
@@ -6307,14 +6307,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'Three days on the road. On the second, riders hold the ridge line for an hour without closing. {actor} has to place the guards and decide whether that is a count being taken or a herd being moved.',
+        narrative: 'Three days on the road. On the second, riders hold the ridge line for an hour without closing. {actor} has to face them down with six swords before they pick a wagon.',
         onSuccess: {
-          narrative: '{actor} puts two swords forward where they can be counted and keeps four out of sight. The riders take the count, find the sum unwelcome, and are gone by dusk. Nobody draws.',
+          narrative: '{actor} rides out to the foot of the ridge with four swords at {their} back and draws steel in plain view. The riders weigh the fight, decide it is not worth the cargo, and are gone by dusk.',
           reputationDelta: 0.10,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: '{actor} reads the riders as drovers and keeps the guard bunched at the front. They come in at the third wagon from the ditch side and are away with the bolt-cloth inside two minutes. The merchant does not shout, which is worse than shouting.',
+          narrative: '{actor} keeps the guard bunched at the front and does not ride out. The riders come in at the third wagon from the ditch side and are away with the bolt-cloth inside two minutes. The merchant does not shout, which is worse than shouting.',
           reputationDelta: -0.08,
         },
       },
@@ -6324,9 +6324,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
-        narrative: 'The last stretch is the one the guards have already been paid for and the one they are most tempted to hurry. Word comes up the road of a second party waiting at the ford. {actor} has to keep six tired swords moving at the pace that keeps them useful.',
+        narrative: 'The last stretch is the one the guards have already been paid for and the one they are most tempted to hurry. Word comes up the road of a second party waiting at the ford. {actor} has to take six tired swords through it and keep the wagons moving.',
         onSuccess: {
-          narrative: '{actor} holds the pace and takes the long route around the ford, which costs half a day and no cargo at all. The bonus is paid at the gate, and the merchant asks for {actor} by name on the next run.',
+          narrative: '{actor} sends two swords across the ford first and leads the rest in behind the wagons. The waiting party fights for a minute, loses a man, and breaks. The bonus is paid at the gate, and the merchant asks for {actor} by name on the next run.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
         },
@@ -6884,14 +6884,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'The prisoner is holding one fact worth the whole afternoon. {actor} has to work it free without breaking the man who is carrying it.',
+        narrative: 'The prisoner is holding one fact worth the whole afternoon. {actor} has to trick it out of him with a bluff he believes.',
         onSuccess: {
-          narrative: '{actor} finds the crack in the prisoner\'s story — a name given twice with two different dates — and works it open.',
+          narrative: '{actor} leans in and says the partner talked an hour ago. It is a lie. The prisoner believes it, curses the partner by name, and gives up the fact to save his own neck.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The prisoner holds his secrets tight. {actor} leaves with sore knuckles and an afternoon spent for a name that was already known.',
+          narrative: 'The prisoner sees through the bluff and holds his secrets tight. {actor} leaves with sore knuckles and an afternoon spent for a name that was already known.',
           reputationDelta: -0.07,
         },
       },
@@ -7603,9 +7603,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: HARD_DIFFICULTY_BASE + HARD_DIFFICULTY_STEP,
         duration: 3,
-        narrative: 'The vein is real. What it is worth depends on how far it runs, and the only honest answer comes from measuring it rather than hoping at it.',
+        narrative: 'The vein is real. Now it has to be sold. {actor} files the claim at the assay office, pays the fee, and puts the first cartload in front of the ore buyers to set a price.',
         onSuccess: {
-          narrative: '{actor} maps it end to end and checks the figures twice before saying the number out loud. No one has taken this much out of this mountain in forty years.',
+          narrative: '{actor} plays the three buyers against each other and gets a price per load no one has paid for this mountain\'s ore in forty years. The claim pays for itself inside a season.',
           reputationDelta: 0.16,
           tierPromotionEligible: true,
           rewardPool: {
@@ -7614,7 +7614,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Measured properly, the vein is a third of what it looked like from the face. Worth digging. Not worth what {actor} has already told people it was worth.',
+          narrative: 'The buyers assay the cartload and offer a third of what {actor} asked. The claim is still worth digging. It is not worth what {actor} has already told people it was worth.',
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
@@ -8668,14 +8668,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Darkness settles. {actor} takes the watch, eyes adjusting to the shapes that move beyond the firelight and the ones that only appear to.',
+        narrative: 'Darkness settles. {actor} takes the watch and moves out past the firelight, where a watcher can see the camp and the road without being seen.',
         // THR-1667 S3: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} stays awake all night by standing in the wind. Nothing gets past the line, and by dawn {actor} cannot stop shaking.',
+        successAtCostAfterimage: '{actor} stays hidden all night by lying still in the wet grass. Nothing gets past the line, and by dawn {actor} cannot stop shaking.',
         criticalSuccessAfterimage: 'Near midnight {actor} hears two voices on the road, low, counting the tents. They move off without seeing {actor}, and {actor} marks which way they went.',
         criticalFailureAfterimage: '{actor} falls asleep by the fire. Before dawn someone walks through the camp and takes a pack from beside the sleepers, and nobody wakes.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['shadow', 'peril'] },
         onSuccess: {
-          narrative: '{actor} reads the night like a language — every sound placed, every shadow accounted for. What moves out there stays out there.',
+          narrative: '{actor} sits in the dark under a thorn bush beyond the firelight, unseen from the road, and stays there until dawn. Nothing reaches the camp without passing {actor} first.',
           reputationDelta: 0.02,
         },
         onFailure: {
@@ -9981,7 +9981,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           { text: 'The words are old, and {they} learned them before {they} could read.', polarity: 'for' },
           { text: 'The road is loud and has no reason to stop.', polarity: 'against' },
         ],
-        narrative: '{actor} goes down on one knee in the dirt at the road\'s edge, hands flat on {their} thighs, and lets the cart-noise and the birds and {their} own breathing come apart into separate sounds.',
+        narrative: '{actor} goes down on one knee in the dirt at the road\'s edge and asks the road for a sign: which way to walk tomorrow, and what to walk there for.',
         successAtCostAfterimage: 'The road went quiet for {them}, and {they} knelt long enough that the cart {they} had been walking beside went on without {them}.',
         criticalSuccessAfterimage: 'The noise came apart between one breath and the next, and what was left had room in it for the whole prayer.',
         criticalFailureAfterimage: 'They knelt in the dirt a long while and got up having said the words out loud to no one, with a carter watching.',
@@ -10065,11 +10065,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         ],
         onSuccess: {
-          narrative: 'The road falls back. {actor} speaks — to the sky, to the dirt, to whoever keeps the ledger — and the words come without being hunted for.',
+          narrative: '{actor} says the whole prayer and asks the road which way. The words come without being hunted for, and {actor} waits for the answer.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The road will not fall back. {actor} kneels, waits, and gets up with the prayer still folded in {their} mouth.',
+          narrative: 'The road is too loud for asking. {actor} kneels, waits, and gets up without having asked for the sign at all.',
           reputationDelta: -0.01,
         },
       },
@@ -10402,11 +10402,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.rest_and_reflect',
     stakes: {
-      goal: 'count the month back to the turn it hangs on',
+      goal: 'make peace with the month before the road starts again',
       risk: 'have the whole month crash in at once',
-      won: 'found the turn the whole month hangs on',
+      won: 'made peace with the month and slept',
       lost: 'gave up on the month and watched the fire',
-      lostBadly: 'lost the order of the days and rested not at all',
+      lostBadly: 'fought the month all night and rested not at all',
     },
     // THR-1526: a seed target (it re-seeds itself) whose opening stands alone.
     drawable: true,
@@ -10807,9 +10807,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
   {
     id: 'encounter.local_gossip',
     stakes: {
-      goal: 'find the one account nobody bent',
+      goal: 'earn the account the talkers keep from strangers',
       risk: 'believe an account made up to fool them',
-      won: 'found the one account nobody bent',
+      won: 'was trusted with the account the talkers keep to themselves',
       lost: 'heard only what the place prefers to believe',
       lostBadly: 'believed an account made up to fool them',
     },
@@ -10851,14 +10851,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Half of it is wishful, a quarter is spite, and the rest has been improved in the retelling. {actor} works out which parts nobody had a motive to alter.',
+        narrative: 'Half of it is wishful, a quarter is spite, and the rest has been improved in the retelling. The true account is the one the talkers keep from strangers, and {actor} has to be trusted enough to hear it.',
         // THR-1667 S3: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} finds the true account, but tests it by repeating it to the wrong listener. By evening the story is going round with {actor}\'s name on it.',
         criticalSuccessAfterimage: 'The detail nobody bothered to alter points somewhere nobody has looked: an old quarrel between two families that neither will speak of.',
         criticalFailureAfterimage: '{actor} trusts the account that flatters nobody. It was made up by the one talker who wanted {actor} to believe it.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'shadow'] },
         onSuccess: {
-          narrative: 'One account carries a detail that flatters none of the people repeating it. {actor} takes that one and leaves the rest where it lies.',
+          narrative: 'Late in the evening one of the talkers lowers her voice and tells {actor} the version they do not tell outsiders. It flatters none of them. {actor} takes that one and leaves the rest where it lies.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -10866,7 +10866,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Every account agrees, which is the trouble with them. {actor} leaves knowing what this place would prefer to be the case.',
+          narrative: 'Nobody trusts {actor} with the version they keep for themselves. Every account {actor} hears agrees, and {actor} leaves knowing only what this place would prefer to be the case.',
           reputationDelta: -0.01,
         },
       },

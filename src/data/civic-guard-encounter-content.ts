@@ -661,16 +661,15 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: { reputationDelta: 0.04 },
         failureMetadata: { reputationDelta: -0.01 },
         narrativeTemplate:
-          'Two stories, neither of them true. {name} listen{s} to both in the way that is less about ' +
-          'comprehension and more about noticing what each person avoids saying. ' +
-          'The instigator has allies in the crowd — not involved, just watching, ' +
-          'which is its own kind of involvement. ' +
+          'Two stories, neither of them true. The crowd saw who threw the first chair, and the ' +
+          'instigator has friends in it. {name} has to press the onlookers until one of them ' +
+          'is willing to name the starter in front of the rest. ' +
           '{?has_ally}If {ally:strongest} were here, {they} could manage the crowd while {name} took ' +
           'the statements. Without that, the audience is a variable.{/has_ally}' +
           '{?no_ally}{name} work{s} the statements and the crowd simultaneously, ' +
           'which is one thing too many.{/no_ally}',
         successAfterimage:
-          '{name} read{s} the truth in who looked away first. Fine levied. Order restored, if not justice.',
+          '{name} works the crowd one face at a time until the potboy names the starter out loud. Fine levied. Order restored, if not justice.',
         failureAfterimage:
           'Both sides close ranks. The street knows who started it and is not saying.',
       },
@@ -1049,10 +1048,9 @@ export const CIVIC_GUARD_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     description:
-      'Intelligence on a smugglers\' den in {location} is three days old — ' +
-      'enough time for the situation to have shifted. {name} must plan the entry, ' +
-      'read the intelligence honestly, and decide how much trust to put in information ' +
-      'that someone had a reason to provide.',
+      '{name} leads three guards through the door of a smugglers\' den in {location}, ' +
+      'takes the building room by room, and seizes the contraband before it can be moved. ' +
+      'The informant\'s word is three days old, so the entry has to be planned first.',
     steps: [
       {
         reach: 'eye',
@@ -2243,29 +2241,26 @@ export const CG_PROMOTION_TEMPLATE: UnifiedActionTemplate = {
       successMetadata: { reputationDelta: 0.0 },
       failureMetadata: { reputationDelta: 0.0 },
       narrativeTemplate:
-        'Three senior officers in a room, a candle burning down, {name}\'s service record ' +
-        'on the table between them. The review board asks questions mostly about things that ' +
-        'already happened — which is a reasonable way to predict things that have not — ' +
-        'and makes observations about the record that {name} will need to acknowledge or explain. ' +
-        'The officers have decided who they want to promote before this meeting; ' +
-        'the meeting is the process by which they confirm or revise that decision in front of a witness. ' +
-        '{name} is the witness. ' +
-        '{?has_faction}The middle officer handled {name}\'s initial assignment. ' +
-        'That history is either an advantage or a complication.{/has_faction}' +
-        '{?no_faction}None of the three have specific context for {name}\'s background ' +
-        'to incline them toward or against. The record is the record.{/no_faction}',
+        'Three senior officers sit the review board, with {name}\'s service record on the table. ' +
+        'The record gets {name} into the room. The drill yard decides the rank: {name} leads a ' +
+        'file of six guards through the shield drill, then holds the line alone against two ' +
+        'sergeants with practice staves while the board watches. ' +
+        '{?has_faction}The middle officer handled {name}\'s initial assignment and has seen ' +
+        '{name} fight before.{/has_faction}' +
+        '{?no_faction}None of the three has seen {name} fight. The yard is the whole ' +
+        'case.{/no_faction}',
       successAfterimage:
-        'Promoted. New rank, new responsibilities, and the particular weight of being ' +
-        'one of the people others look to when the situation is ambiguous.',
+        'Promoted. {name} held the line against both sergeants, and the board signed the ' +
+        'new rank before the staves were racked.',
       failureAfterimage:
-        'The board defers. The language used is \'additional service\' rather than ' +
-        '\'deficient performance,\' which is a distinction the guard keeps carefully ambiguous.',
+        'The line broke on the second sergeant. The board defers, and the language used is ' +
+        '\'additional service\' rather than \'deficient performance.\'',
     },
   ],
   narrativeTemplates: {
     initiation:
       '{name}\'s service record goes before the review board of the Civic Guard of {location}. ' +
-      'Three officers. One decision.',
+      'Three officers watch {name} lead the shield drill in the yard. One decision.',
     success:
       'Promoted. The responsibility is not different in kind, only in degree.',
     failure:

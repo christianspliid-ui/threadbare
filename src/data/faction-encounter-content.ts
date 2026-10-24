@@ -575,17 +575,17 @@ const LEGACY_FACTION_QUEST_TEMPLATES: FactionEntry[] = [
       {
         id: 'ag.senior.bounty_hunt.1',
         name: 'Study the Mark',
-        narrative: 'A dangerous fugitive has evaded lesser hunters. The guild calls on its sergeants.',
+        narrative: 'A dangerous fugitive has evaded lesser hunters. The guild calls on its sergeants to follow the mark unseen and take them where they least expect it.',
         reach: 'shadow',
         difficulty: FACTION_SENIOR_BASE,
         duration: 2,
-        onSuccess: { narrative: 'You piece together the mark\'s pattern. A trap forms in your mind.' },
-        onFailure: { narrative: 'The mark is clever. Their trail is full of false leads.' },
+        onSuccess: { narrative: 'You shadow the mark for two nights without being seen and learn where they sleep. You pick the alley where you will wait.' },
+        onFailure: { narrative: 'The mark spots you on the second night and changes lodgings. The trail goes cold.' },
       },
       {
         id: 'ag.senior.bounty_hunt.2',
         name: 'Corner the Quarry',
-        narrative: 'The hunt reaches its climax. No more running.',
+        narrative: 'However the trail ran, the hunt comes down to one dark street. You come at the mark from cover with the blade drawn.',
         reach: 'iron',
         difficulty: FACTION_SENIOR_BASE + FACTION_DIFFICULTY_STEP * 2,
         duration: 4,
@@ -984,12 +984,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
       {
         id: 'ag.social.tavern_tales.1',
         name: 'Buy a Round',
-        narrative: 'The guild common room is warm and loud. A fellow adventurer waves you over.',
+        narrative: 'The guild common room is warm and loud. A fellow adventurer waves you over. She has a lead worth having, and she will only share it with someone she trusts.',
         reach: 'heart',
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE - 10,
         duration: 1,
-        onSuccess: { narrative: 'Drinks flow and tongues loosen. Stories of the road emerge.', reputationDelta: 0.03 },
-        onFailure: { narrative: 'The conversation falters. Your companion seems preoccupied.', reputationDelta: -0.01 },
+        onSuccess: { narrative: 'You buy the round, listen to her story, and tell her one of your own that is true. By the third drink she counts you a friend.', reputationDelta: 0.03 },
+        onFailure: { narrative: 'You talk too much about yourself. She stays polite and keeps her lead to herself.', reputationDelta: -0.01 },
       },
       {
         id: 'ag.social.tavern_tales.2',
@@ -999,7 +999,7 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
         duration: 1,
         onSuccess: {
-          narrative: 'A nugget of genuine intelligence surfaces — a location, a weakness, a name.',
+          narrative: 'Among the tall tales a real lead surfaces, and you catch it: a location, a weakness, a name.',
           reputationDelta: 0.04,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -1072,9 +1072,9 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
   {
     id: 'ag.social.bounty_plan',
     stakes: {
-      goal: 'work out a bounty plan with a guildmate',
+      goal: 'learn the mark\'s bolt-holes without tipping them off',
       risk: 'watch the plan dissolve into argument',
-      won: 'worked out a bounty plan with a guildmate',
+      won: 'learned the mark\'s bolt-holes and planned the hunt',
       lost: 'watched the plan dissolve into argument',
     },
     name: 'Plan a Guild Bounty',
@@ -1090,12 +1090,12 @@ export const FACTION_SOCIAL_TEMPLATES: FactionEntry[] = [
       {
         id: 'ag.social.bounty_plan.1',
         name: 'Study the Board',
-        narrative: 'The bounty board is thick with postings. A fellow guild member leans in to compare notes.',
+        narrative: 'A fellow guild member has picked a posting off the board. Before anyone moves, someone has to learn where the mark goes to ground, quietly, without the mark hearing of it.',
         reach: 'shadow',
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
         duration: 1,
-        onSuccess: { narrative: 'Together you piece together a pattern the board alone doesn\'t show.', reputationDelta: 0.03 },
-        onFailure: { narrative: 'The postings are contradictory. No clear plan emerges.', reputationDelta: -0.01 },
+        onSuccess: { narrative: 'You follow the mark\'s runner for a day without being seen. By nightfall you know three bolt-holes and the back door of each.', reputationDelta: 0.03 },
+        onFailure: { narrative: 'The runner notices you on the second street and leads you in circles. No bolt-holes, and the mark will hear of it.', reputationDelta: -0.01 },
       },
       {
         id: 'ag.social.bounty_plan.2',

@@ -498,17 +498,17 @@ export const MERCHANT_CONSORTIUM_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = 
         narrativeTemplate:
           'Two merchants at {location} each hold a copy of the same bill of lading, each signed, ' +
           'each with witnesses. That is not supposed to happen and it did. {name} sits them ' +
-          'opposite each other in a room with one door, pour{s} tea {they} do not drink, and ' +
-          'let{s} them talk for a quarter-hour before {they} ask{s} a question. ' +
+          'opposite each other in a room with one door and has to get each man to give some ' +
+          'ground before either will hear the other out. ' +
           '{?has_faction}The consortium\'s file on the shipment names a third party — a clerk at ' +
           'the harbor office — who would have had both manifests across his desk the same morning. ' +
           'Neither merchant is lying. Both are wrong, and {cast:ledger_clerk} is why.{/has_faction}',
         successAfterimage:
-          'The shape of it becomes visible around the second cup of tea. Both merchants were ' +
-          'handed a document that said what they wanted it to say. The clerk took from both.',
+          'By the second cup of tea each man has conceded that the other may have been cheated too. ' +
+          'Once they stop shouting, the cause is plain: the clerk took from both.',
         failureAfterimage:
           'Neither man will give ground. The dispute is older than the shipment; it is about a ' +
-          'wedding twenty years ago. {name} did not find it in time.',
+          'wedding twenty years ago, and {name} cannot talk either of them past it.',
       },
       {
         reach: 'gold',

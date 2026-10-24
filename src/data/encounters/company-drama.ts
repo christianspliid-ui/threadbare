@@ -762,13 +762,12 @@ const DISPUTE_STEP: ActionStep = {
   onFailure: [],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'The map is weighted down on a flat stone, a knife on one corner and somebody\'s cup on ' +
-    'the other, and the tea in the cup has gone cold. {actor} has named the river road. The ' +
-    'other one named the ridge, named it first, and has not moved off it since. The rest of ' +
-    'the company has stopped pretending to be busy and stands in a loose ring around the ' +
-    'stone, and the light has about an hour left in it.',
+    'The map is weighted down on a flat stone. {actor} has named the river road. The other ' +
+    'one named the ridge first and has not moved off it since. {actor} holds the company ' +
+    'purse, and the river road passes the market where the next wages get paid. Whoever ' +
+    'pays the company names the road, if {actor} can make that count before the light goes.',
   successAfterimage:
-    'The company took one road, and took it together.',
+    'The purse settled it. The company took the river road, and took it together.',
   failureAfterimage:
     'The company camped where it stood, and the road was still unnamed in the morning.',
   successAtCostAfterimage:

@@ -318,14 +318,15 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         onSuccess: [],
         onFailure: [],
         narrativeTemplate:
-          'A roadside shrine near {location} reads wrong to those who know how to read shrines. ' +
-          '{name} crouches at the base of it and lays one hand flat on the stone. ' +
-          '{?has_artifact}The weight of {artifact:any} shifts against {their} hip — the old things know each other.{/has_artifact}' +
-          '{?no_artifact}There is only {their} hand and what the stone gives back, which is not warmth.{/no_artifact}',
+          'A roadside shrine near {location} has gone cold. The Order cleanses a cold shrine with the dawn vigil: ' +
+          'one of its sworn kneels before the stone from dusk and keeps faith through the night, ' +
+          'so that the first light finds someone waiting for it. {name} takes the vigil. ' +
+          '{?has_artifact}{name} sets {artifact:any} on the step beside {them} as the vigil asks.{/has_artifact}' +
+          '{?no_artifact}{name} has nothing to set on the step but {their} own hands.{/no_artifact}',
         successAfterimage:
-          'The corruption is found. It sits beneath the foundation stone, patient and cold.',
+          '{name} keeps the vigil unbroken through the night. The cold sits beneath the foundation stone, and the dawn is coming for it.',
         failureAfterimage:
-          'The source is not where the rite says it should be. The shrine remains wrong.',
+          '{name}\'s vigil falters before midnight. The cold beneath the foundation stone has not loosened, and the dawn prayer will have to do more of the work.',
       },
       {
         reach: 'star',
@@ -344,19 +345,19 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         },
         failureMetadata: { reputationDelta: -0.02 },
         narrativeTemplate:
-          '{name} speaks the rite of cleansing. The words are old — older than the order itself — and they ' +
-          'carry weight when spoken true. {?has_rival}Word of what was found here will reach {rival:strongest}. ' +
+          'The first light reaches the shrine. {name} rises and speaks the Order\'s dawn prayer into it, ' +
+          'the prayer that asks the morning to take back what the night kept. {?has_rival}Word of what was found here will reach {rival:strongest}. ' +
           'Let it.{/has_rival}' +
           '{?no_rival}No one else stands at this shrine. The light comes or it does not.{/no_rival}',
         successAfterimage:
           'Light returns to the stone. The shadow beneath the shrine burns off without ash.',
         failureAfterimage:
-          'The rite holds but the corruption does not move. More is needed here than one voice.',
+          'The dawn comes and the cold does not leave with the night. More is needed here than one vigil.',
       },
     ],
     narrativeTemplates: {
       initiation:
-        'A shrine in the shadow of {location} has grown cold. {name} carries the rite of cleansing and the Dawn\'s authority to use it.',
+        'A shrine in the shadow of {location} has grown cold. {name} goes to keep the Order\'s dawn vigil before it.',
       success:
         'The shrine is whole. The pilgrim road past {location} is clean again.',
       failure:
@@ -1042,9 +1043,9 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   withEncounterContract({
     id: 'hod.quest.deliver_judgment',
     stakes: {
-      goal: 'investigate the heresy charge and speak judgment',
+      goal: 'speak the judgment that binds the accused\'s fate',
       risk: 'see the verdict questioned in open assembly',
-      won: 'spoke a clear judgment on the heresy charge',
+      won: 'spoke a judgment that bound the accused\'s fate',
       lost: 'saw the verdict questioned in open assembly',
     },
     tags: ['#dawn_errand'],
@@ -1092,12 +1093,12 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         },
         failureMetadata: { reputationDelta: -0.04 },
         narrativeTemplate:
-          '{name} stands before the assembled. The verdict is not a verdict until spoken aloud in the order\'s words. ' +
-          'The words are old and they carry weight. {?has_rival}One of the witnesses is known to {rival:strongest}. ' +
+          '{name} stands before the assembled. A verdict spoken in the order\'s words binds the accused\'s fate: ' +
+          'once said, the penance, the exile or the pardon is the road the accused must walk. {?has_rival}One of the witnesses is known to {rival:strongest}. ' +
           'That will be remembered.{/has_rival}' +
           '{?no_rival}The silence before the verdict is the longest silence {name} has known in this work.{/no_rival}',
         successAfterimage:
-          'Justice is spoken. The faithful are not satisfied — justice never satisfies — but they are reassured.',
+          'The verdict is spoken and it binds. The accused bows and accepts the road named for them, and the faithful are reassured.',
         failureAfterimage:
           'The verdict is questioned before it is complete. Doubt spreads through the assembled. ' +
           'The order will revisit this.',
@@ -1106,7 +1107,7 @@ export const HOLY_ORDER_DAWN_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     narrativeTemplates: {
       initiation:
         'A charge of heresy is brought to the Order of the Dawn at {location}. {name} is sent to hear it, ' +
-        'investigate it, and speak what the order must speak. The rite of judgment is not given to those who cannot bear it.',
+        'investigate it, and speak the judgment that will bind the accused\'s fate.',
       success:
         'Judgment spoken. The accused knows what they have done. The faithful know the order held its word.',
       failure:
@@ -1379,16 +1380,16 @@ export const HOLY_ORDER_DAWN_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
           rewardPool: { categoryWeights: { condition: 1.0 }, tagFilters: ['#wound'] },
         },
         narrativeTemplate:
-          '{name} speaks the rite of purging from the root of the corruption. The words require the full voice — ' +
-          'not the careful voice the order uses in temples, but the full voice that the founders used when the order ' +
-          'was new and the world had not yet learned to be patient. ' +
+          'The root of the corruption is a nest of black growth in the lowest cellar, and it fights back. ' +
+          '{name} goes at it with blade and fire: cutting the growth from the walls, piling it, and burning it ' +
+          'while the things that fed on it come out of the dark. ' +
           '{?has_rival}The corruption smells like something {rival:strongest} has touched. ' +
           'That is noted.{/has_rival}' +
           '{?no_rival}There is no name to put to what made this. There is only the ending of it.{/no_rival}',
         successAfterimage:
-          'Light fills the underground. {name} climbs out and does not look back.',
+          'The last of the growth burns down to ash. {name} climbs out bloodied and does not look back.',
         failureAfterimage:
-          'The evil endures. {name} retreats to plan anew — which is not failure, but feels like it.',
+          'The fire will not take, and the things in the dark drive {name} back up the stair. The corruption endures.',
       },
     ],
     narrativeTemplates: {

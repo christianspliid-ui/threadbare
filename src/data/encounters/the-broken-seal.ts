@@ -367,9 +367,10 @@ const step1CarryItBackUp: ActionStep = {
   onFailure: [],
   failBehavior: 'fail_action',
   narrativeTemplate:
-    'Below the broken stair the ceiling comes down to a crawl. The keeper who did not come back is in ' +
-    'the crawl. At the end of it there is a sealed coffer, heavy enough to need both arms. Getting it ' +
-    'up is the hard part. The keepers are still at the top, and the light is nearly gone.',
+    'At the end of the crawl below the broken stair there is a sealed coffer, heavy enough to need both ' +
+    'arms. The keeper who did not come back is in the crawl. The coffer has to be hauled back through ' +
+    'it and carried up the broken stair a step at a time, with the keepers waiting at the top and ' +
+    'the light nearly gone.',
   carryoverFactorLines: {
     critical_success: {
       text: 'They know the short line back up and still have light.',
