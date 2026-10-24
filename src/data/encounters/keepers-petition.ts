@@ -66,6 +66,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { W_PURSE, W_UNREST } from '../economy-shift-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -75,6 +76,12 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.realm.keepers_petition',
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.big, targetFactionId: '$realm' }],
+    success: [{ kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: '$realm' }],
+    critical_failure: [{ kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.step }],
+  },
   stakes: {
     goal: 'settle the crown\'s levy between two households',
     risk: 'send the reeve to court with neither household paying',

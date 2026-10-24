@@ -15,6 +15,8 @@ import type {
 } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
 import { applyMeansShift, defaultMeansReason, meansBandStepAmount, type MeansShiftResult } from './mortalMeans';
+import { applyWorldEconomyShift } from './economyShift';
+import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
 import { readWealth } from './wealth';
 import { applyReputationWithDelta } from './reputation';
 import { grantAspect } from './aspects';
@@ -1045,6 +1047,8 @@ const FACTION_ID_FIELDS_BY_KIND: Readonly<Record<string, readonly string[]>> = {
   faction_declare_war: ['factionA', 'factionB'],
   faction_force_peace: ['factionA', 'factionB'],
   faction_splinter: ['sourceFactionId'],
+  // THR-1953 — a money encounter's purse row names the faction by its definition id.
+  economy_shift: ['targetFactionId'],
 };
 
 /**
@@ -1873,7 +1877,53 @@ export function applyEncounterAftermathReaction(
         // THR-1936 — a mortal's Means, through the one funnel (`bankWealth`). The
         // poor-loss scale and the no-move rule live in `applyMeansShift`, so an
         // outcome table and a reaction can never disagree about the arithmetic.
-        if (effect.quantity !== 'means') break;
+        if (effect.quantity !== 'means') {
+          // THR-1953 — the world halves: a settlement's prosperity, unrest, stock or lane,
+          // or a faction's purse. The settlement defaults to where the actor stands.
+          if (!MORTAL_MEANS_ENABLED) break;
+          const settlementId = effect.quantity === 'purse'
+            ? undefined
+            : (effect.targetLocationId && !effect.targetLocationId.startsWith('$')
+              ? effect.targetLocationId
+              : (effect.targetLocationId === undefined
+                ? resolveSceneHere(state.graph, actorAgentId, 'location') ?? undefined
+                : undefined));
+          const world = applyWorldEconomyShift(state.graph, {
+            quantity: effect.quantity,
+            amount: effect.amount,
+            good: effect.good,
+            settlementId,
+            factionId: effect.targetFactionId,
+          }, tick);
+          if (!world) {
+            emitTrace({
+              tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+              encounterId, reactionId: reaction.id, effectIndex: i,
+              effectKind: 'economy_shift',
+              attemptedTargetId: (effect.quantity === 'purse' ? effect.targetFactionId : settlementId) ?? '',
+              attemptedTargetKind: effect.quantity === 'purse' ? 'faction' : 'location',
+              reason: 'target_node_missing',
+              summary: `economy_shift[${i}] ${effect.quantity}: nothing moved (${(effect.quantity === 'purse' ? effect.targetFactionId : settlementId) ?? 'no target'})`,
+            });
+            break;
+          }
+          mutationSummary.touchedWorld = true;
+          emitTrace({
+            tick,
+            category: 'economy.world.shift',
+            agentId: actorAgentId,
+            quantity: world.quantity,
+            nodeId: world.nodeId,
+            ...(world.goods ? { goods: world.goods } : {}),
+            sourceTemplateId: action?.templateId ?? null,
+            band: options.outcomeBand ?? null,
+            amount: world.amount,
+            before: world.before,
+            after: world.after,
+            summary: `${world.quantity} at ${world.nodeId}: ${world.before} → ${world.after}`,
+          });
+          break;
+        }
         const resolvedId = target.kind === 'agent' ? target.id : actorAgentId;
         const meansNode = resolvedId ? state.graph.getNode(resolvedId) : undefined;
         if (!resolvedId || !meansNode || meansNode.type !== 'actor') {

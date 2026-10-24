@@ -560,12 +560,29 @@ export type EncounterAftermathReactionEffect =
      * Getting by is scaled by `MEANS_POOR_LOSS_SCALE`. Never writes `wealth` through
      * `update_node`, which neither clamps nor stamps a reason.
      *
-     * S3 widens `quantity` to the world (prosperity, unrest, stock, lane volume, purse).
+     * THR-1953 (S3) widens `quantity` to the world, each on its own scale with its own
+     * named steps (`ECONOMY_SHIFT_STEPS`, `economy-shift-constants.ts`):
+     *
+     * - `prosperity` / `unrest` — a settlement's 0–100 scalar; `targetLocationId`
+     *   (default: the settlement the actor stands in, `$here`).
+     * - `stock` — the quantities of `good` at that settlement (0–100 abundance): a
+     *   resource id, `'staple'` (every staple, as the harvest verbs do) or `'deposit'`
+     *   (every non-staple). Staple amounts come from `harvestStockAmount(band)`.
+     * - `lane_volume` — the busiest `trades_with` lane at that settlement (the anchor
+     *   lane, as a toll or a sabotage reads it). An encounter never severs a lane.
+     * - `purse` — a faction's treasury, through `applyTreasuryDelta`; `targetFactionId`
+     *   required (`$realm`, `$cast:<key>`, a definition id or a node id).
      */
     readonly kind: 'economy_shift';
-    readonly quantity: 'means';
-    /** Signed, on the 0–100 Means scale; use the named steps (`MEANS_STEP` …). */
+    readonly quantity: 'means' | 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse';
+    /** Signed, on the quantity's own scale; use the named steps (`MEANS_STEP` …, `ECONOMY_SHIFT_STEPS`). */
     readonly amount: number;
+    /** THR-1953 — the settlement a world quantity lands on. Accepts `$here` / `$target`. */
+    readonly targetLocationId?: string;
+    /** THR-1953 — the faction whose purse a `purse` shift moves. Accepts `$realm` / `$cast:<key>`. */
+    readonly targetFactionId?: string;
+    /** THR-1953 — the goods a `stock` shift moves: a resource id, `'staple'` or `'deposit'`. */
+    readonly good?: string;
     /**
      * THR-1969 — move exactly one Means band instead of `amount` (author `amount: 0`).
      * `1` lands on the next band's floor; `-1` one below the current band's floor.

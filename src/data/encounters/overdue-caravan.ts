@@ -67,6 +67,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { W_LANE } from '../economy-shift-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -76,6 +77,13 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.overdue_caravan',
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+  outcomeEffects: {
+    critical_success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.big }],
+    success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+    failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
+    critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }],
+  },
   stakes: {
     goal: 'find the overdue caravan on the old road',
     risk: 'lead the search party lost into the dark',
