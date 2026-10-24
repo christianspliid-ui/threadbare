@@ -12,7 +12,7 @@
  * Mounted by `CeremonyHost` for kind `age-twilight`, on the same Overlay home as
  * `HarvestScreen`. Escape and the backdrop do nothing: the age cannot be resumed.
  */
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import type { GameState } from '../../types/gameState';
 import type { SphereName } from '../../types/index';
 import type { TwilightBeats } from '../../engine/twilight';
@@ -55,6 +55,14 @@ function tintOf(sphere: SphereName | undefined): string {
 
 export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered, onContinue }: AgeTwilightScreenProps) {
   const tint = tintOf(primarySphere);
+  // Focus starts on the one button (Law 25), not on the First's name: the Overlay
+  // focuses its first control, and a focused name link opens its hover card over the
+  // memories. A frame later, so the Overlay's own focus has already run.
+  const continueRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => continueRef.current?.focus());
+    return () => cancelAnimationFrame(id);
+  }, []);
   const { ending, first, memories } = beats;
   const sectionStyle: CSSProperties = { borderTop: `1px solid ${faint(tint, 20)}` };
 
@@ -148,6 +156,7 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
         <div className="text-center">
           <Tooltip id="ui.twilight_continue">
             <Button
+              ref={continueRef}
               variant="primary"
               size="lg"
               // Called bare: the click event must never reach a handler that reads an argument.
