@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 09:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 10:53 local (08:53 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,13 +27,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 21 ready, 2 in progress (1 building, 1 parked).** [God's stake S3](https://linear.app/threadbare/issue/THR-1969) merged ([#2532](https://github.com/christianspliid-ui/threadbare/pull/2532)) and is live. The builder is now on [the end of the age](https://linear.app/threadbare/issue/THR-1381) (the Twilight ceremony, the Mandate ending the age, World-Soul memories), with an open PR [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533). The heavy-tests fix ticket [THR-2015](https://linear.app/threadbare/issue/THR-2015) is closed.
+**Backed up: 20 ready, 2 in progress (1 building, 1 parked).** [The end of the age](https://linear.app/threadbare/issue/THR-1381) (the Twilight ceremony, the Mandate ending the age) merged ([#2533](https://github.com/christianspliid-ui/threadbare/pull/2533)) and is live. The builder is now on [mortal wealth S3](https://linear.app/threadbare/issue/THR-1953) (money encounters change prosperity, unrest, stocks, purses and debts); its PR [#2537](https://github.com/christianspliid-ui/threadbare/pull/2537) is armed and waiting on checks. The orchestrator moved [the restless road](https://linear.app/threadbare/issue/THR-1959) (a followed mortal with no story nearby for six days sets out for one) onto the build shelf.
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 9 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch for it (checked this run).
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 9 days since it was first claimed. It waits on your answer above, not on the builder.
 - Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961). Most of that week is the silences above.
 
 ## Health
 
-- PR [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533) (the end of the age) fails its required check "Test · Typecheck · Build" and is not yet armed to merge. The builder session that opened it is still running; fixing it is the builder's job.
-
-Everything else is green: main's CI and the three scheduled background jobs are healthy, every lane is on schedule, the worktree cleaner ran at 09:40, engine speed is normal (175 ms per tick, within the week's range), and the live site is current ([73f631c3](https://github.com/christianspliid-ui/threadbare/commit/73f631c3)).
+All green. Main's CI and the three scheduled background jobs are healthy, every lane is on schedule, the one open PR will merge on green, engine speed is normal (136 ms per tick, 5% under the week's median), and the live site is current ([964dd538](https://github.com/christianspliid-ui/threadbare/commit/964dd538)).
