@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-10-24 23:59 local (21:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 00:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Set the Claude app to open when Windows starts.** The longest gap so far ended last night: no lane ran from about 23:07 Wednesday 21 Oct until 23:11 Friday 23 Oct. That is two whole days, with 20 jobs ready for the builder. The lanes all came back in the same second, which is what it looks like when the app reopens. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
+**Set the Claude app to open when Windows starts.** The longest gap so far ended on Friday night: no lane ran from about 23:07 Wednesday 21 Oct until 23:11 Friday 23 Oct. That is two whole days, with 20 jobs ready for the builder. The lanes all came back in the same second, which is what it looks like when the app reopens. Only you can change that setting. Say "done" and the next silence check will confirm it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
 ## Also waiting (7)
 
@@ -32,11 +32,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 ready, 2 in progress.** Merged this hour and live: the realm check "Oaths pay" is now judged on the leading Crown, not on whichever Crown it happened to read first ([THR-2017](https://linear.app/threadbare/issue/THR-2017), [#2556](https://github.com/christianspliid-ui/threadbare/pull/2556)). The builder is now working on [a liege paying for its vassal's army](https://linear.app/threadbare/issue/THR-2020) (sworn free companies field an army on only 12–33% of their sworn days). New on the shelf: [the debts plan](https://linear.app/threadbare/issue/THR-2023) and [a lake hex's land page that reads as desert](https://linear.app/threadbare/issue/THR-2021).
+**Healthy: 10 ready, 2 in progress.** The builder is still working on [a liege paying for its vassal's army](https://linear.app/threadbare/issue/THR-2020) (sworn free companies field an army on only 12–33% of their sworn days); its branch is pushed and the run was active a few minutes ago. Back on the shelf: [the encounter checker's second version](https://linear.app/threadbare/issue/THR-2012), which will see each encounter's stakes and judge the real test. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-24f.md)* The design lane closed two tickets whose calls you saw on 20–21 Oct ([warm brief v2](https://linear.app/threadbare/issue/THR-1861), [founding costs](https://linear.app/threadbare/issue/THR-2006)); nothing was vetoed.
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, the PR queue (empty) and the builder (busy, not stalled). The live site serves the latest commit ([8ad288e1](https://github.com/christianspliid-ui/threadbare/commit/8ad288e1)). The worktree reaper ran at 23:53 local. Engine speed holds at 112 ms/tick, 23% under the 7-day median.
+All green. Main's CI, the three scheduled background jobs, the PR queue (empty), all 12 scheduled lanes, and the builder (busy, not stalled). The live site serves the latest commit ([8ad288e1](https://github.com/christianspliid-ui/threadbare/commit/8ad288e1)). The worktree reaper ran at 00:51 local. Engine speed holds at 144 ms/tick, level with the 7-day median.
