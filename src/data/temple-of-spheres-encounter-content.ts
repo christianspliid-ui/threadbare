@@ -1852,10 +1852,10 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   withEncounterContract({
     id: 'ts.social.theological_debate',
     stakes: {
-      goal: 'argue the debate from an honest footing',
-      risk: 'be told their stance is lopsided',
-      won: 'argued well and moved the room toward the open',
-      lost: 'leaned too hard on one sphere and were corrected',
+      goal: 'argue what the spheres foretell for the year ahead',
+      risk: 'be told their reading of the omens is lopsided',
+      won: 'argued the omens well and won the room to their reading',
+      lost: 'read the omens through one sphere only and were corrected',
     },
     name: 'Theological Debate',
     rarityTier: 1,
@@ -1878,21 +1878,19 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         successMetadata: { reputationDelta: 0.01 },
         failureMetadata: { reputationDelta: -0.005 },
         narrativeTemplate:
-          'The Temple\'s debates begin with each speaker naming their current ' +
-          'alignment — which sphere is loudest in them today, which is quietest. ' +
-          'This is not a weakness to confess. It is the entering weight. ' +
-          '{name} name{s} {their} alignment before the discussion begins.' +
-          '{?has_ally}{ally:strongest} is present and has named theirs already — ' +
-          '{name} adjusts the entering weight slightly to account for what {ally:strongest} ' +
-          'brought into the room.{/has_ally}',
+          'This season the Temple debates what the spheres foretell for the year ahead: ' +
+          'which sphere is rising in the sky and the omens, which is waning, and what that ' +
+          'means for the harvest and the throne. Each speaker opens by naming the sphere ' +
+          'they read as rising. {name} name{s} {their} own sphere and the omen it rests on.' +
+          '{?has_ally}{ally:strongest} is present and has named a different sphere already, ' +
+          'so {name} has to account for that omen too.{/has_ally}',
         successAfterimage:
-          '{name} name{s} the alignment honestly and precisely. The other participants ' +
-          'note it. The debate proceeds with all weights visible — which is how the ' +
-          'Temple believes argument should work.',
+          '{name} names the rising sphere and the omen behind it precisely. The other ' +
+          'participants check the omen against their own records and accept it as a ' +
+          'fair opening.',
         failureAfterimage:
-          '{name} name{s} an alignment that the other participants do not observe. ' +
-          'The Temple gently asks for a second reading — a misnamed entering weight ' +
-          'corrupts the whole argument.',
+          '{name} names a rising sphere that the omens do not support. ' +
+          'The Temple gently asks for a second reading before the debate goes on.',
       },
       {
         reach: 'star',
@@ -1907,23 +1905,18 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         },
         failureMetadata: { reputationDelta: -0.01 },
         narrativeTemplate:
-          '{?has_faction}The Temple\'s debates resolve nothing — the nine are in ' +
-          'permanent argument. The point is the quality of the argument, ' +
-          'not its conclusion.{/has_faction}' +
-          '{?no_faction}The Temple\'s view: an argument about sphere ethics that ' +
-          'resolves cleanly was not a real argument. The nine do not resolve. ' +
-          'They are held.{/no_faction} ' +
-          '{name} argue{s} from the entering weight, which means arguing ' +
-          'from what {they} actually carry{s} today.',
+          '{?has_faction}The Temple\'s debates settle nothing for certain. The point is ' +
+          'whose reading of the omens the priests carry out to the faithful.{/has_faction}' +
+          '{?no_faction}The Temple holds that no reading of the spheres is final. The ' +
+          'best one is only the one the room believes.{/no_faction} ' +
+          '{name} argue{s} what the rising sphere foretells: a hard winter, a contested ' +
+          'succession, or a good year for the fields, with the omens to back it.',
         successAfterimage:
-          'The argument is well-weighted — it favors one sphere without ' +
-          'dismissing the others, which is as much as good argument can do. ' +
-          'The debate closes with the alignment of those present shifted ' +
-          'slightly toward the open.',
+          'The reading holds. It favors one sphere without dismissing the others, and ' +
+          'the debate closes with the room leaning toward what {name} foretold.',
         failureAfterimage:
-          'The argument overweights one sphere at the expense of the others. ' +
-          'The Temple notes: that is a position, not yet a weight. A position ' +
-          'can be held. A weight must be earned.',
+          'The reading leans on one sphere and ignores the omens of the rest. ' +
+          'The Temple notes it as a position, not yet a prophecy.',
       },
     ],
     narrativeTemplates: {

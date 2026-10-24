@@ -1887,8 +1887,8 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'Rats — dozens of them, then hundreds, then weight, the way swarms become weight before they become numbers. ' +
           'Each one diseased, in its own small way.',
         successAfterimage:
-          '{name} stamps and kicks, scattering the vanguard. Individual rats are nothing. ' +
-          'The swarm is geometry, and {name} has read this geometry before.',
+          '{name} stamps and kicks, scattering the vanguard, then drives the rest back down ' +
+          'the cellar steps with a burning brand and holds the doorway.',
         failureAfterimage:
           'They are over the boots and up the trouser-legs before {name} can think the word "retreat." ' +
           '{name} flails, and flailing is bad against a swarm. {name} retreats anyway.',

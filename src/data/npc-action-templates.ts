@@ -48,8 +48,8 @@ export const NPC_ACTION_TEMPLATES: readonly UnifiedActionTemplate[] = [
     requiredNodeProperties: { npcRole: undefined },
     motivations: [],
     narrativeTemplates: {
-      initiation: 'You lean on their thoughts, parting the curtain of suspicion just enough to let questions through.',
-      success: 'Their tongue loosens. What they know, they share.',
+      initiation: 'You lean on their thoughts just enough that they talk more than they meant to, and you watch for what slips out.',
+      success: 'They talk, and a detail slips out they never meant to give. You catch it.',
       failure: 'They grow guarded — your presence pressed too hard, and now their lips are sealed.',
     },
   },

@@ -918,10 +918,10 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'encounter.anomaly.bones_old_world',
     stakes: {
-      goal: 'chisel the old bones free of the rock',
-      risk: 'shatter the fossil into rubble',
-      won: 'chiselled the old bones free intact',
-      lost: 'slipped the chisel and shattered the fossil',
+      goal: 'read where the old bones end and the rock begins',
+      risk: 'misread the boundary and shatter the fossil',
+      won: 'read the boundary true and freed the old bones intact',
+      lost: 'misread the boundary and shattered the fossil',
     },
     name: 'Bones of the Old World',
     rarityTier: 1,
@@ -975,13 +975,13 @@ export const ANOMALY_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'The fossils have been in the rock so long that the surrounding matrix has crystallised around them. ' +
           'Breaking them free isn\'t excavation â€” it\'s surgery. ' +
-          '{name} works the stone in thin flakes, following the crystal boundary, ' +
-          'aware that the resonance still running through the bones is the remnant of something that was alive ' +
-          'when the world was organised differently.',
+          'The whole job is reading the boundary: where the bone ends and the crystal begins. ' +
+          '{name} studies the grain of it under a lens before each cut, then takes the stone off in thin flakes ' +
+          'along the line {they} read.',
         successAfterimage:
-          '{name} frees a section intact: bone enclosed in amber-coloured crystal that still carries a faint warmth, an echo of what animated it.',
+          '{name} read the boundary true and frees a section intact: bone enclosed in amber-coloured crystal that still carries a faint warmth.',
         failureAfterimage:
-          'The chisel slips along the crystal boundary instead of across it. The resonance dies with a sound like a string breaking, and the fossil is rubble.',
+          '{name} misreads the boundary, and the chisel runs along the crystal instead of across it. The fossil breaks with a sound like a string snapping and is rubble.',
       },
     ],
     narrativeTemplates: {

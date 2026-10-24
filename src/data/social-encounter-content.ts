@@ -617,18 +617,16 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           },
         },
         narrativeTemplate:
-          'The patterns {name} has catalogued now have to mean something. ' +
-          '{They} sort{s} them: contacts, habits, times when the target is alone and unguarded, ' +
-          'times when they are performing. The distance between those two states is where ' +
-          'everything useful lives. {name} look{s} for what the target is protecting rather than ' +
-          'what they are doing — the thing that explains the routing and the secrecy.',
+          'The target goes back to the meeting place after dark. {name} creeps in close behind, ' +
+          'unseen, through the yard and under the shutter, near enough to hear what is said. ' +
+          'One loose board or one shadow across the lamp, and the meeting ends.',
         successAfterimage:
           '{name} depart{s} with intelligence that is specific enough to act on: a name, ' +
           'a location, a vulnerability the target is actively managing. ' +
           'The kind of knowledge that changes how the target can be approached.',
         failureAfterimage:
-          'The intelligence is thin — suggestive but not actionable. {name} has observations ' +
-          'but not conclusions. The meeting that mattered happened where {they} was{s} not positioned to see it.',
+          'The intelligence is thin, suggestive but not actionable. {name} could not get close ' +
+          'enough unseen, and the words that mattered were said out of earshot.',
         criticalSuccessAfterimage:
           '{name} depart{s} with what the target could not afford to have seen: not a name or a location, ' +
           'but the relationship between them — the weight of obligation in how they said goodbye, ' +
