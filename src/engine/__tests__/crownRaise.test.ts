@@ -127,6 +127,14 @@ describe('the liege pays for a raise its vassal cannot', () => {
     expect(armiesOf(g, CO)).toHaveLength(1);
   });
 
+  it('a vassal that holds a town raises from its own land, never from its liege (kill criterion 3)', () => {
+    const { g, s } = sworn(1000);
+    g.addEdge({ id: 'e_ctl_camp', source: CO, target: CAMP, type: 'controls', properties: { role: 'seat' } });
+    expect(armyRefusal(s, CO)).toBe('purse');
+    expect(runCrownPhase(s).raisesFunded).toBe(0);
+    expect(armiesOf(g, CO)).toHaveLength(0);
+  });
+
   it('a company that can pay its own raise is left to raise it itself', () => {
     const { g, s } = sworn(1000);
     g.getNode(CO)!.properties.wealth = 500;
