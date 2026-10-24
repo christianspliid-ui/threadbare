@@ -110,7 +110,7 @@ export const SEEK_FEALTY_WEIGHT = 6;
  * rolling window ending at each day's first tick, which straddles two calendar days.
  * A courtship at a day's first sweep (tick 24k) closes that day's second sweep (24k+8),
  * and the straddling window saw only that blocked sweep. Counted by calendar day, the
- * window rule measures 2026-10-24 in the THR-1961 status note.
+ * window rule measured 84–97% of days on seeds 42/99/7 (2026-10-24).
  */
 export const SEEK_FEALTY_WINDOW_TICKS = 12;
 
