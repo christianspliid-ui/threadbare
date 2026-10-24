@@ -14,6 +14,7 @@
  * PRNG: none. Every tie is broken by a fixed key (influence, establishedTick, id).
  */
 
+import { holdingBlessingMult } from '../godsStake';
 import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
 import type { HexCoord } from '../../types';
@@ -85,6 +86,11 @@ export interface PurseWorldContext {
   realmHexes: ReadonlyMap<string, readonly HexCoord[]>;
   /** `"col,row"` → terrain id. */
   tileTerrain: ReadonlyMap<string, string>;
+  /**
+   * THR-1969 — today's tick, so a place under the god's holding blessing pays its
+   * holder ×`BLESS_HOLDING_YIELD_MULT`. Absent → no blessing is live.
+   */
+  tick?: number;
 }
 
 export function emptyIncome(): PurseIncome {
@@ -340,7 +346,8 @@ export function computePurseIncome(
     if (!holder) continue;
     const day = out.get(holder);
     if (!day) continue;
-    const tax = townTaxOf(place, graph);
+    // THR-1969 — Bless the Holding multiplies this place's tax term while it lasts.
+    const tax = townTaxOf(place, graph) * holdingBlessingMult(graph, placeId, ctx.tick);
     if (tax > 0) {
       day.income.townTax += tax;
       day.taxHolderOf.push(placeId);

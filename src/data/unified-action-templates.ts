@@ -732,6 +732,85 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     },
   },
 
+  // ─── THR-1969 — the god's stake S3: a mortal's Means, one band at a time ──────
+  // Each moves the target's Means exactly one band through mortal wealth's
+  // `economy_shift` (`bandStep`): the amount is computed from their live wealth at the
+  // write, so the card always moves one word. The receipt is the Means change.
+  {
+    id: 'divine.fortunes_favour',
+    progression: { tier: 2, offer: 'market', generic: false },
+    name: 'Fortune\'s Favour',
+    spellName: 'The Turning Coin',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Tips the world\'s small chances toward one mortal: a debt forgiven, a buyer at the door, a purse found in the road. They rise one step in the world\'s eyes, and a mortal with more in hand wants differently.',
+    reach: 'gold',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'gold',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: 0, bandStep: 1, targetAgentId: '$target', reason: 'divine_favour' }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: 0, bandStep: 1, targetAgentId: '$target', reason: 'divine_favour' }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: 0, bandStep: 1, targetAgentId: '$target', reason: 'divine_favour' }],
+    },
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'matter',
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
+    motivations: [],
+    narrativeTemplates: {
+      initiation: 'leans on the small chances around a mortal until they tip',
+      success: 'a door opens, a debt is forgiven, and the purse is heavier than it was',
+      failure: 'the chances hold their shape; nothing falls their way today',
+    },
+  },
+  {
+    id: 'divine.ruin',
+    progression: { tier: 2, offer: 'market', generic: false },
+    name: 'Ruin',
+    spellName: 'The Empty Strongbox',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Lets misfortune find one mortal: a cargo lost, a partner fled, a strongbox opened by someone else. They fall one step, and a mortal with less in hand wants differently.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'personal',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: 0, bandStep: -1, targetAgentId: '$target', reason: 'divine_ruin' }],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: 0, bandStep: -1, targetAgentId: '$target', reason: 'divine_ruin' }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: 0, bandStep: -1, targetAgentId: '$target', reason: 'divine_ruin' }],
+    },
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'entropy',
+    targetCategories: ['actor'],
+    targetSubtypes: ['individual'],
+    motivations: [],
+    narrativeTemplates: {
+      initiation: 'turns the small chances around a mortal against them',
+      success: 'the cargo is lost, the partner gone, the strongbox empty',
+      failure: 'misfortune passes them by; their luck holds for now',
+    },
+  },
+
   {
     // THR-773 (Nudge Model WS0) — the god's restore action, and the expensive
     // exception to the rebuild road. Unlock-gated via
@@ -2120,6 +2199,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
           prosperity: `+${LOC_OPEN_MARKETS_PROSPERITY_DELTA}`,
           unrest: `${LOC_OPEN_MARKETS_UNREST_DELTA}`,
         } },
+        // THR-1969 — the card's thieves'-guild promise comes true: the stamp opens
+        // the founded-guild boost (`thievesGuildOfferWant`).
+        { op: 'mark_markets_opened', nodeId: '$target' },
       ],
       onFailure: [],
       failBehavior: 'fail_action',
@@ -2173,6 +2255,44 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'steps to the centre of the square and breathes out; the breath does not return',
       success: 'the square is no longer just a place where people meet — it is a place where they remember to mean what they say',
       failure: 'children keep playing, carts keep rolling; whatever was pressed into the stones has not yet taken root',
+    },
+  },
+
+  {
+    // THR-1969 — the god's stake S3. Writes the god's `blessed` edge (kind
+    // holding_yield) on a place a faction controls or a mortal owns: its tax or holding
+    // income is ×BLESS_HOLDING_YIELD_MULT for a year. A recast extends, never stacks;
+    // a place no one holds takes nothing.
+    id: 'loc.bless_holding',
+    progression: { tier: 2, offer: 'market', generic: false },
+    name: 'Bless the Holding',
+    spellName: 'The Full Measure',
+    rarityTier: 2,
+    intrinsicTier: 'shaping',
+    description: 'Lays a year\'s blessing on a held place. Its fields and stalls give half again what they gave, and whoever holds it, a lord\'s house or a landholder, draws the difference. The blessing fades at the year\'s end.',
+    reach: 'gold',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'gold',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'bless_holding', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'order',
+    targetCategories: ['location', 'sublocation'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'walks the bounds of a held place and lays a measure over it',
+      success: 'the harvest weighs heavier, the stalls stay full, and the holder\'s ledger swells',
+      failure: 'the bounds are walked, but the measure does not take; the year runs as it would have',
     },
   },
 
@@ -4582,7 +4702,10 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     durationMode: 'sustained',
     controlSpec: {
       perTickCost: { matter: 0.2 },
+      // THR-1969 — the fallback for a good with no class; the pay is the claimed good's
+      // sphere × CLAIM_RESOURCE_BASE_INCOME × its stock tier (`claimedGoodIncome`).
       perTickIncome: { matter: 0.5 },
+      incomeFrom: 'claimed_good',
       contestPrerequisites: {
         usurp: { reach: { domain: 'gold', minTier: 2 } },
         destroy: { reach: { domain: 'stone', minTier: 1 } },

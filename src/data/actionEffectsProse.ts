@@ -113,6 +113,11 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Reaches into a mortal\'s flesh and remakes their condition — to their good or their ruin.',
   'divine.rekindle_thread':
     'Pours your own fire back into a mortal worn past answering, and lets them rise again.',
+  // THR-1969 — the god's stake S3 (plan § Content S3, card text).
+  'divine.fortunes_favour':
+    'Fortune smiles on a mortal: they rise one step in the world\'s eyes.',
+  'divine.ruin':
+    'Ruin finds a mortal: they fall one step.',
 
   // — Relay: acting through a bonded mortal —
   'divine.relay.compose_a_clue':
@@ -179,6 +184,8 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
   // — Place: the settlement verbs —
   'loc.open_markets':
     'Draws trade through a settlement\'s square, lifting its prosperity and easing its unrest.',
+  'loc.bless_holding':
+    'For a year, whoever holds this place draws half again from it.',
   'loc.reveal_vein':
     'Draws divine sight through soil and stone until a seam worth digging answers back.',
   'loc.guide_caravan':
@@ -190,7 +197,7 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
   'hex.tap_source':
     'Draws a steady siphon of spirit from a source on the land, and it gives back more than it takes.',
   'hex.claim_resource':
-    'Binds a vein of the world\'s wealth to your will, so it feeds you matter for as long as you hold it.',
+    'Claims a good of the land: it feeds you in its own sphere while you hold it, more when the land has plenty.',
   'hex.claim_dominion':
     'Sinks a claim into the land and holds it as yours, deepening your sway there while it lasts.',
   'loc.place_of_power':

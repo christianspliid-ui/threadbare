@@ -22,7 +22,16 @@ import { DEFAULT_WEALTH, ROLE_WEALTH } from './npcGraduation';
 import { getProsperityTier, type ProsperityTier } from './phaseProsperity';
 import { resolveToParentLocation } from './sublocationShape';
 import { getAgentLocationId } from './graphQueries';
-import { bankWealth, getWealthTier, readWealth, type WealthTier } from './wealth';
+import {
+  bankWealth,
+  getWealthTier,
+  readWealth,
+  WEALTH_TIER_COMFORTABLE,
+  WEALTH_TIER_GETTING_BY,
+  WEALTH_TIER_MAGNATE,
+  WEALTH_TIER_WEALTHY,
+  type WealthTier,
+} from './wealth';
 import { emitTrace } from './traceBuffer';
 import { TRADE_RUN_LAST_PAID_PROPERTY } from '../data/undertaking-economy-constants';
 import type { StrategicActionTemplate } from '../types/strategicAction';
@@ -176,6 +185,27 @@ export function defaultMeansReason(amount: number, encounterType: string | undef
 /** A loss on a mortal below Getting by is scaled down; a gain is never scaled. */
 export function scaledMeansAmount(currentWealth: number, amount: number): number {
   return amount < 0 && currentWealth < MEANS_POOR_LINE ? amount * MEANS_POOR_LOSS_SCALE : amount;
+}
+
+// THR-1969 — Fortune's Favour / Ruin (the god's stake S3).
+/** The Means band floors, lowest first (Destitute's floor is 0). */
+const MEANS_BAND_FLOORS: readonly number[] = [
+  0, WEALTH_TIER_GETTING_BY, WEALTH_TIER_COMFORTABLE, WEALTH_TIER_WEALTHY, WEALTH_TIER_MAGNATE,
+];
+
+/**
+ * The signed amount that moves `wealth` exactly one band: up to the next band's floor,
+ * or down to one below the current band's floor. Clamped to 0–100, so a Magnate's
+ * favour lands on 100 and a Destitute mortal's ruin on 0; a 0 result writes nothing.
+ */
+export function meansBandStepAmount(wealth: number, step: 1 | -1): number {
+  const w = Math.max(0, Math.min(100, Number.isFinite(wealth) ? wealth : 0));
+  let floorIdx = 0;
+  for (let i = 0; i < MEANS_BAND_FLOORS.length; i++) if (w >= MEANS_BAND_FLOORS[i]) floorIdx = i;
+  const target = step > 0
+    ? (MEANS_BAND_FLOORS[floorIdx + 1] ?? 100)
+    : MEANS_BAND_FLOORS[floorIdx] - 1;
+  return Math.max(0, Math.min(100, target)) - w;
 }
 
 export interface MeansShiftResult {

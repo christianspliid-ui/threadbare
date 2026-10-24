@@ -33,6 +33,7 @@
  * None. Every payment is derived from the graph; there is no draw.
  */
 
+import { holdingBlessingMult } from './godsStake';
 import type { GameState } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
@@ -100,8 +101,12 @@ export function titheMultiplier(prosperity: number): number {
   return 0;
 }
 
-/** Every payment this tick owes, before any of it is banked. Pure: reads, never writes. */
-export function collectHoldingPayments(graph: WorldGraph): HoldingPayment[] {
+/**
+ * Every payment this tick owes, before any of it is banked. Pure: reads, never writes.
+ * THR-1969 — given `tick`, a freehold or tithe on a place under the god's holding
+ * blessing pays ×`BLESS_HOLDING_YIELD_MULT`; without it nothing is blessed.
+ */
+export function collectHoldingPayments(graph: WorldGraph, tick?: number): HoldingPayment[] {
   const payments: HoldingPayment[] = [];
 
   // ── Seized routes: the toll on what crosses ──
@@ -131,7 +136,7 @@ export function collectHoldingPayments(graph: WorldGraph): HoldingPayment[] {
         holderId: holder.id,
         reason: 'sublocation_income',
         sourceId: edge.target,
-        amount: WEALTH_SUBLOCATION_INCOME,
+        amount: WEALTH_SUBLOCATION_INCOME * holdingBlessingMult(graph, edge.target, tick),
       });
     }
   }
@@ -149,7 +154,8 @@ export function collectHoldingPayments(graph: WorldGraph): HoldingPayment[] {
     if (subtype === 'ruins') continue;
     const prosperity = num(location.properties, 'prosperity') ?? 0;
     if (prosperity <= RUINED_SETTLEMENT_PROSPERITY_FLOOR) continue;
-    const amount = WEALTH_CONTROLLED_LOCATION_TITHE * titheMultiplier(prosperity);
+    const amount = WEALTH_CONTROLLED_LOCATION_TITHE * titheMultiplier(prosperity)
+      * holdingBlessingMult(graph, location.id, tick);
     if (amount <= 0) continue;
     payments.push({
       holderId: holder.id,
@@ -178,7 +184,7 @@ export function payHoldingIncome(state: GameState): HoldingIncomeResult {
 
   const graph = state.graph;
   const chronicleEntries: ChronicleEntry[] = [];
-  const payments = collectHoldingPayments(graph);
+  const payments = collectHoldingPayments(graph, tick);
   if (payments.length === 0) return { payments: [], chronicleEntries: [] };
 
   // Bank per holder, so a magnate's twenty routes move wealth once and the clamp is

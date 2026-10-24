@@ -37,6 +37,7 @@ import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { CONTROL_PRESSURE_PER_TICK } from '../types/sphereAffinity';
 import { DOMINION_CLAIM_TEMPLATE_ID } from '../data/dominion-content';
 import { emitTrace } from './traceBuffer';
+import { claimedGoodIncome } from './godsStake';
 import { getUpkeepStatus, applyCoLocatedThreadAura } from './ascendantPrimitives';
 import { mulberry32 } from '../lib/prng';
 import { hashString } from './factionAmbitions';
@@ -127,6 +128,17 @@ function compareOp(a: number, op: '>=' | '<=' | '>' | '<', b: number): boolean {
 }
 
 // ─── Phase function ───────────────────────────────────────────────────────────
+
+/** Two income records name the same spheres at the same amounts. */
+function sameIncome(
+  a: Partial<Record<SphereName, number>> | undefined,
+  b: Partial<Record<SphereName, number>> | undefined,
+): boolean {
+  const ka = Object.keys(a ?? {}).sort();
+  const kb = Object.keys(b ?? {}).sort();
+  if (ka.length !== kb.length) return false;
+  return ka.every((k, i) => k === kb[i] && a![k as SphereName] === b![k as SphereName]);
+}
 
 export function phaseControlEffects(state: GameState): Partial<GameState> {
   const effects = state.controlEffects ?? [];
@@ -372,9 +384,25 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
     }
 
     // ─── Step 3e: Credit per-tick income ───
+    // THR-1969 — a Claim that pays from its good resolves today's income from the
+    // good's sphere and stock tier; every other effect keeps its static income.
+    const paidIncome = effect.incomeFrom === 'claimed_good'
+      ? claimedGoodIncome(state.graph, effect)
+      : effect.perTickIncome;
+    if (effect.incomeFrom === 'claimed_good' && !sameIncome(paidIncome, effect.perTickIncome)) {
+      const [sphere, amount] = Object.entries(paidIncome ?? {})[0] ?? [null, 0];
+      emitTrace({
+        category: 'prayer.claim_income', tick: state.tick,
+        summary: `${effect.templateId} on ${effect.claimedGoodId ?? 'no good'} pays ${amount} ${sphere ?? 'nothing'} a tick`,
+        targetId: effect.targetNodeId ?? `${effect.targetHexCol},${effect.targetHexRow}`,
+        holderId: effect.ownerId,
+        sphere: (sphere as SphereName | null) ?? null,
+        mult: amount as number,
+      });
+    }
     const generated: Partial<Record<SphereName, number>> = {};
-    if (effect.perTickIncome) {
-      for (const [sphere, income] of Object.entries(effect.perTickIncome)) {
+    if (paidIncome) {
+      for (const [sphere, income] of Object.entries(paidIncome)) {
         const s = sphere as SphereName;
         const amount = income as number;
         if (amount > 0) {
@@ -388,6 +416,8 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
     const updated: ControlEffect = {
       ...effect,
       ticksActive: effect.ticksActive + 1,
+      // THR-1969 — carry the resolved pay, so the forecast reads what is paid.
+      ...(effect.incomeFrom === 'claimed_good' ? { perTickIncome: paidIncome } : {}),
     };
     updatedEffects.push(updated);
 

@@ -113,6 +113,8 @@ export type TraceCategory =
   // THR-1935 — prayers and the faithful
   | 'prayer.opened' | 'prayer.answered' | 'prayer.unbidden' | 'prayer.closed'
   | 'prayer.faith_lapsed' | 'prayer.faith_starved' | 'prayer.slight_landed'
+  // THR-1969 — the god's stake S3: a blessed holding and Claim Resource's pay
+  | 'prayer.blessed_holding' | 'prayer.claim_income'
   | 'battle_recorded' | 'fight_recorded'
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
@@ -737,6 +739,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
   'prayer.opened', 'prayer.answered', 'prayer.unbidden', 'prayer.closed',
   'prayer.faith_lapsed', 'prayer.faith_starved', 'prayer.slight_landed',
+  'prayer.blessed_holding', 'prayer.claim_income',
   'battle_recorded', 'fight_recorded',
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
@@ -2426,6 +2429,18 @@ export interface SlightLandedTrace extends TraceBase {
   townId: string;
   rivalId: string;
   via: 'raid' | 'scheme';
+}
+
+/**
+ * THR-1969 — the god blessed a holding (its yield ×`mult` until the year's end), or
+ * Claim Resource's pay was resolved from the claimed good (logged when it changes).
+ */
+export interface DivineYieldTrace extends TraceBase {
+  category: 'prayer.blessed_holding' | 'prayer.claim_income';
+  targetId: string;
+  holderId: string | null;
+  sphere: SphereName | null;
+  mult: number;
 }
 
 /** Trace: magical saturation ticked for a location */
@@ -5356,6 +5371,7 @@ export type TraceEntry =
   | PrayerClosedTrace
   | FaithChangeTrace
   | SlightLandedTrace
+  | DivineYieldTrace
   // Company traces (THR-74)
   | GroupPhaseTrace
   | GroupFormedTrace

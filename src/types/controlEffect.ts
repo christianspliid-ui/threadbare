@@ -152,6 +152,13 @@ export interface ControlSpec {
   /** Per-tick essence income generated. Only for income-producing effects. */
   readonly perTickIncome?: Partial<Record<SphereName, number>>;
 
+  /**
+   * THR-1969 — `'claimed_good'`: the income is resolved each tick from the good the
+   * claim binds (its resource class's sphere × its stock tier), not `perTickIncome`,
+   * which stays the fallback for a good with no class.
+   */
+  readonly incomeFrom?: 'claimed_good';
+
   /** World-state condition that must remain true. Undefined = no threshold. */
   readonly sustainThreshold?: SustainThreshold;
 
@@ -247,6 +254,12 @@ export interface ControlEffect {
   readonly perTickCost: Partial<Record<SphereName, number>>;
   readonly perTickIncome?: Partial<Record<SphereName, number>>;
   readonly sustainThreshold?: SustainThreshold;
+  /** THR-1969 — copied from `ControlSpec.incomeFrom`. */
+  readonly incomeFrom?: 'claimed_good';
+  /** THR-1969 — the good a `claimed_good` effect binds, fixed at establishment. */
+  readonly claimedGoodId?: string;
+  /** THR-1969 — the place whose resource bag holds the claimed good. */
+  readonly claimedGoodLocationId?: string;
 
   // ── Ongoing effects ──
   readonly perTickMutations: readonly HexMutationSpec[];

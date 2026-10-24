@@ -134,6 +134,10 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     'Applies a divine influence (interventionType `intimidate`, Force sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.inspire':
     'Applies a divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent, biasing their decision-making until the influence decays.',
+  'divine.fortunes_favour':
+    "On success, an `economy_shift` with `bandStep: 1` moves the target mortal's Means up to the next band's floor (clamped at 100).",
+  'divine.ruin':
+    "On success, an `economy_shift` with `bandStep: -1` moves the target mortal's Means to one below its current band's floor (clamped at 0).",
   'divine.coincidence':
     'Applies a divine influence (interventionType `coincidence`, Time sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.omen':
@@ -244,7 +248,9 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'loc.sour_mine':
     "On success, drains every non-staple resource deposit at the location by LOC_SOUR_MINE_STOCK_DELTA (staples untouched) — the strategic/luxury inverse of Blight; the stock tier re-derives next tick.",
   'loc.open_markets':
-    "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*).",
+    "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*), and stamps `marketsOpenedTick`: from LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS later, for THIEVES_GUILD_OFFER_DAYS, a Shadow-led resident's `create × faction` is boosted ×THIEVES_GUILD_OFFER_WANT while prosperity holds at LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD.",
+  'loc.bless_holding':
+    "On success, writes the god's `blessed` edge (kind `holding_yield`) on a place a faction controls or a mortal owns: its town tax, freehold and tithe pay ×BLESS_HOLDING_YIELD_MULT until BLESS_HOLDING_DAYS have passed. A recast extends; a place no one holds takes nothing.",
   'loc.sanctify_square':
     "On success, raises the location's `magicalSaturation` and `divinePresence` by named deltas — establishing a minor sacred site.",
   'loc.awaken_spirit':
@@ -335,7 +341,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.cultivate':
     'Sustained: `ControlEffect` adding a small per-tick `divineInfluence` mutation at a per-tick Life cost, accelerating prosperity growth on the hex’s locations. Persists until it lapses or is destroyed (Iron ≥ t1).',
   'hex.claim_resource':
-    'Sustained: `ControlEffect` binding a discovered resource deposit — generates per-tick Matter income at a per-tick Matter cost. Persists until it lapses, is usurped (Gold ≥ t2), or destroyed (Stone ≥ t1).',
+    'Sustained: `ControlEffect` binding the most abundant deposit on the hex — generates per-tick income in that good\'s sphere (CLAIM_RESOURCE_BASE_INCOME × CLAIM_RESOURCE_TIER_MULT by its stock tier; a good with no class pays 0.5 Matter) at a per-tick Matter cost. Persists until it lapses, is usurped (Gold ≥ t2), or destroyed (Stone ≥ t1).',
   'hex.anchor_sphere':
     "Sustained: `ControlEffect` locking the hex's dominant sphere in place (blocks rival Shift Dominion) at a per-tick Spirit cost, held only while the hex's `divineInfluence` stays above its sustain threshold. Usurp Veil ≥ t3 / destroy Veil ≥ t2.",
   'hex.tap_source':

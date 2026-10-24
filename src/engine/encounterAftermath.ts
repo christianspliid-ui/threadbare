@@ -14,7 +14,8 @@ import type {
   UnifiedAction,
 } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
-import { applyMeansShift, defaultMeansReason, type MeansShiftResult } from './mortalMeans';
+import { applyMeansShift, defaultMeansReason, meansBandStepAmount, type MeansShiftResult } from './mortalMeans';
+import { readWealth } from './wealth';
 import { applyReputationWithDelta } from './reputation';
 import { grantAspect } from './aspects';
 import {
@@ -1886,10 +1887,15 @@ export function applyEncounterAftermathReaction(
           });
           break;
         }
-        const meansReason = effect.reason ?? defaultMeansReason(effect.amount, options.encounterType);
+        // THR-1969 — a band step (Fortune's Favour, Ruin) computes its amount from the
+        // mortal's live wealth, so the card always moves exactly one word.
+        const meansAmount = effect.bandStep
+          ? meansBandStepAmount(readWealth(meansNode.properties as Record<string, unknown>), effect.bandStep)
+          : effect.amount;
+        const meansReason = effect.reason ?? defaultMeansReason(meansAmount, options.encounterType);
         const shift = applyMeansShift(
           meansNode.properties as Record<string, unknown>,
-          effect.amount,
+          meansAmount,
           meansReason,
         );
         if (!shift) break;

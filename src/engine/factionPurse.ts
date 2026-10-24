@@ -24,6 +24,7 @@
  * pays no land rent.
  */
 
+import { sweepExpiredHoldingBlessings } from './godsStake';
 import type { GameState } from '../types/gameState';
 import type { GraphNode } from '../types/graph';
 import type { ArmyState } from '../types/army';
@@ -188,7 +189,9 @@ export function runFactionPurse(state: GameState, getProjection?: RealmProjectio
 
   const graph = state.graph;
   const factions = factionNodes(graph);
-  const ctx = projectionContext(graph, state.tiles, getProjection);
+  // THR-1969 — a holding blessing past its year is removed before the day is paid.
+  sweepExpiredHoldingBlessings(graph, tick);
+  const ctx = { ...projectionContext(graph, state.tiles, getProjection), tick };
   const incomes = computePurseIncome(graph, factions, ctx);
 
   for (const faction of factions) {

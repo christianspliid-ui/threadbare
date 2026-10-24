@@ -567,6 +567,13 @@ export type EncounterAftermathReactionEffect =
     /** Signed, on the 0–100 Means scale; use the named steps (`MEANS_STEP` …). */
     readonly amount: number;
     /**
+     * THR-1969 — move exactly one Means band instead of `amount` (author `amount: 0`).
+     * `1` lands on the next band's floor; `-1` one below the current band's floor.
+     * Computed at the write from the mortal's live wealth, unscaled, clamped 0–100
+     * (Fortune's Favour, Ruin).
+     */
+    readonly bandStep?: 1 | -1;
+    /**
      * Whose Means. Literal node id, `'$actor'`, `'$target'` or `'$cast:<key>'` —
      * bound by `bindAftermathSceneTargets`. Defaults to the encounter's actor.
      */

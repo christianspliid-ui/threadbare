@@ -81,6 +81,8 @@
  * nothing at all consumes the ranking except telemetry — which is the point.
  */
 
+import { thievesGuildOfferWant } from './godsStake';
+import { THIEVES_GUILD_OFFER_CELL_ID } from '../data/prayer-constants';
 import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
@@ -178,6 +180,11 @@ export interface BoardEntry {
    * vacuous.
    */
   readonly heldTownAffinity?: number;
+  /**
+   * THR-1969 — the thieves' guild boost on `create × faction` (Open the Markets'
+   * promise), already folded into `temperamentWeight`. Absent when 1.
+   */
+  readonly thievesGuildOffer?: number;
   /**
    * The ambition-centrality term inside `desireMultiplier`, for an undertaking;
    * `undefined` for an encounter, which is scored on its own path.
@@ -607,6 +614,11 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   ) ?? undefined;
   const payingMultiplier = meansWant?.multiplier ?? 1;
 
+  // THR-1969 — Open the Markets' promise: in a town it opened, while prosperity holds,
+  // a Shadow-led resident leans toward founding a guild (a thieves' guild, by the
+  // founded guild's calling). One read per board; only `create × faction` takes it.
+  const thievesWant = thievesGuildOfferWant(graph, agentId, tick);
+
   // ── Encounters: the baseline family ──
   //
   // `valuePerTick` IS the EVT — `(euRanking + pushBenefit + resistBenefit) /
@@ -717,9 +729,12 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     // THR-1952 — the Means multiplier rides the temperament weight, earning cells only.
     const cellEarning = isEarningCell(template);
     const cellMeans = cellEarning ? payingMultiplier : 1;
+    const thievesGuildOffer = thievesWant !== 1 && candidate.templateId === THIEVES_GUILD_OFFER_CELL_ID
+      ? thievesWant
+      : 1;
     const temperamentWeight = computeTemperamentWeight(
       template, reach, ambitionPrefersVerb(candidate.ambitionId, template), grievanceHeat, affinity,
-    ) * cellMeans;
+    ) * cellMeans * thievesGuildOffer;
 
     const varietyMultiplier = computeBoardVarietyMultiplier(
       candidate.scoreComponents?.varietyPenalty,
@@ -738,6 +753,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(leadPull !== undefined ? { leadPull } : {}),
       ...(cellEarning ? { meansEarning: true } : {}),
       ...(meansWant && cellEarning ? { meansMultiplier: cellMeans } : {}),
+      ...(thievesGuildOffer !== 1 ? { thievesGuildOffer } : {}),
       score: evt * desireMultiplier * temperamentWeight * varietyMultiplier * engagement.fit,
       candidateIndex: index,
       forecast: advanceProbability,
