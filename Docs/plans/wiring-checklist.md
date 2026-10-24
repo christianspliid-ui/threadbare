@@ -3172,6 +3172,18 @@ Presentation only: no orchestrator phase, no GameState field and no trace.
 
 **Wired and asserted:** `mortalMeansWant.test.ts` (17 tests) — the want's shape at each line, the Generous/Greedy leans, the rich damp, the 0.82…1.9 range, earning cells, costs off, the paying-work memo, and the board term lifting a paying entry by exactly `1 + MEANS_WANT_WEIGHT × want` without moving the forecast or the fit. `outcomeEffects.test.ts` adds the cast-binding rule (a `$cast:` target must be a materializing actor spec) and pins ≥ 40 Means rows. `npm run measure:means` measures the S2 Done-when on a seeded world.
 
+### S3 — money encounters change the world (THR-1953)
+
+| Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |
+|---|---|---|---|---|---|
+| `engine/economyShift.ts` (`applyWorldEconomyShift`) | the aftermath executor (`economy_shift` on prosperity / unrest / stock / lane_volume / purse) | — | settlement `prosperity`, `unrest`, `resources`; busiest `trades_with` `volume`; faction `wealth` (through `applyTreasuryDelta`) | `economy.world.shift` | trace viewer |
+| `engine/unifiedActionResolution.ts` (`outcomeTableSettlements` + `snapshotCastEconomy` / `diffCastEconomy`) | encounter resolution, inside `applyOutcomeEffectsTable` | aftermath veil consequence list (`economy` change in the town page's words, crossed rows first) | aftermath change kind `economy` | — | `economyShift.test.ts` |
+| `engine/encounterAftermath.ts` (`FACTION_ID_FIELDS_BY_KIND.economy_shift`) | the aftermath executor | — | — | `aftermath_target_invalid` on a no-move | trace viewer |
+| `data/economy-shift-constants.ts` (`ECONOMY_SHIFT_STEPS`, `HARVEST_BAND_SCALE`) | — | — | — | — | `outcomeEffects.test.ts` |
+| ~30 templates (`encounter-content.ts`, 12 branching files) | encounter resolution | aftermath | via `economy_shift` / `attachment_grant` | `economy.world.shift` | `outcomeEffects.test.ts` |
+
+**Wired and asserted:** `economyShift.test.ts` (9 tests) — every quantity's write and clamp, the sublocation walking up to its town, the busiest lane and the never-sever floor, the purse funnel refusing monster lairs and non-factions, the default `$here` landing through the executor with its trace, the outcome table's world row giving one crossed `economy` change with no numerals, a shipped riot row moving three quantities, and a shipped debt row counting in `countDebts`. `outcomeEffects.test.ts` adds the world-row gate (named steps per quantity, scene-bound targets, real goods, real factions, no table/reaction double write) and pins ≥ 20 world rows, ≥ 7 purse rows and the debt rows.
+
 ## Undertakings in the economy (THR-1937 S1)
 
 | Module | Orchestrator phase / call site | UI component | GameState field | Trace emitted | Debug visibility |

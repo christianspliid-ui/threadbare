@@ -164,6 +164,15 @@ function selectBusiestRoute(routes: GraphEdge[]): GraphEdge | undefined {
   return best;
 }
 
+/**
+ * THR-1953 — the anchor lane of a settlement: its busiest `trades_with` edge, ties on
+ * edge id. What a money encounter's lane-volume row writes; undefined when the town
+ * trades with no one.
+ */
+export function busiestRouteAt(graph: WorldGraph, anchorId: string): GraphEdge | undefined {
+  return selectBusiestRoute(collectRoutesAt(graph, anchorId));
+}
+
 // ─── The four ops ─────────────────────────────────────────────────────────
 
 /**

@@ -52,6 +52,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { W_PROSPERITY } from '../economy-shift-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -61,6 +62,11 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.coiners_mint',
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+  outcomeEffects: {
+    failure: [{ kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.step }],
+    critical_failure: [{ kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.big }],
+  },
   stakes: {
     goal: 'take the false dies before the assayer comes',
     risk: 'be found beside the anvil and called the coiner',

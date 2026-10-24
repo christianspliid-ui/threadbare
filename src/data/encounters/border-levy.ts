@@ -62,6 +62,7 @@
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
+import { W_PURSE } from '../economy-shift-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -79,9 +80,10 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     lostBadly: 'was dragged off the road and stripped by the levy men',
   },
   // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
   outcomeEffects: {
-    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
-    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }, { kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: '$realm' }],
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }, { kind: 'economy_shift', quantity: 'purse', amount: W_PURSE.step, targetFactionId: '$realm' }],
     failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
     critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
   },

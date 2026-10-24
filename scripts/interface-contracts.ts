@@ -5288,6 +5288,53 @@ export const CONTRACTS: readonly Contract[] = [
     ],
   },
   {
+    // THR-1953 (mortal wealth S3) — the world halves of the money-encounter outcome table.
+    id: 'encounter-outcomes-move-the-town',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ECONOMY,
+    intent:
+      "A money encounter moves the town it happened in by how the dice fell: the outcome table's `economy_shift` writes the settlement's prosperity, unrest or stock of a good, or the volume on its busiest lane, once at the roll, and the aftermath names the move in the town page's own words.",
+    ulTerms: ['Prosperity', 'Unrest'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['prosperity', 'unrest', 'resources', 'volume'],
+      module: 'src/engine/economyShift.ts',
+    },
+    writeSites: [
+      'src/engine/economyShift.ts',
+      'src/engine/encounterAftermath.ts',
+      'src/engine/unifiedActionResolution.ts',
+    ],
+    readSites: [
+      'src/engine/phaseProsperity.ts',
+      'src/engine/resourceEconomy.ts',
+      'src/engine/phaseTradeRouteDecay.ts',
+      'src/engine/castEconomyReceipt.ts',
+    ],
+  },
+  {
+    // THR-1953 (mortal wealth S3) — the purse rows: coin a mortal pays reaches a faction.
+    id: 'encounter-outcomes-fill-faction-purse',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      "The coin a mortal pays in a money encounter goes somewhere: a levy or tithe to the realm the ground belongs to, a toll or fee to the mercenary company, a failed rescue out of a guild's purse. The outcome table's `purse` row moves the faction's treasury through applyTreasuryDelta, the purse's one funnel.",
+    ulTerms: ['Means'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['wealth', 'applyTreasuryDelta'],
+      module: 'src/engine/economyShift.ts',
+    },
+    writeSites: [
+      'src/engine/economyShift.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    readSites: [
+      'src/engine/factionPurse.ts',
+      'src/engine/views/subjects/factionRows.ts',
+    ],
+  },
+  {
     // THR-1952 (mortal wealth S2) — Means becomes a want. Paying work is derived from
     // the encounters' own outcome tables (Law 42), so the content row is what makes an
     // encounter count; the multiplier weighs what is chosen, never the odds (Law 20).

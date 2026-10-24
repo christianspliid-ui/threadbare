@@ -35,6 +35,7 @@
 import type { UnifiedActionTemplate, ActionStep, ActionStepBranch } from '../../types/unifiedAction';
 import { withEncounterContract } from '../encounter-contract-builder';
 import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
+import { W_PROSPERITY, W_STOCK } from '../economy-shift-constants';
 
 // ─── Steps ───────────────────────────────────────────────────────────
 
@@ -151,10 +152,11 @@ const step1Branch: ActionStepBranch = {
 
 const GRANARIES_OPENED_AFTERMATH = {
   // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  // THR-1953 (S3): the world half — the opened granaries fill the staples and lift the town.
   outcomeEffects: {
-    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
-    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
-    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.step, good: 'staple' }, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.step, good: 'staple' }, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }],
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.small }],
   },
   overview:
     'A region fed through a famine by a hand that did not have to feed it remembers the feeding for longer ' +
@@ -274,10 +276,11 @@ const GRANARIES_OPENED_AFTERMATH = {
 
 const MARKET_CLOSED_AFTERMATH = {
   // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+  // THR-1953 (S3): the world half — a town sold its bread in a famine is poorer for it.
   outcomeEffects: {
-    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
-    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
-    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+    critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.step }],
+    success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.step }],
+    success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.small }],
   },
   overview:
     'A region fed and sold in the same winter does not starve and does not forgive. The merchant-prince came ' +

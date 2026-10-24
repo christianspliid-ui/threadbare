@@ -119,6 +119,10 @@ import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
  */
 const TEMPLATE_BASE: UnifiedActionTemplate = {
   id: 'encounter.town.tithe_barn_raid',
+  // THR-1953 (S3): the world half of the outcome research row (THR-1872).
+  outcomeEffects: {
+    success_at_cost: [{ kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$actor', counterpartyId: '$cast:reeve' }],
+  },
   stakes: {
     goal: 'clear their name of the tithe-barn theft',
     risk: 'be called the tithe thief by the whole village',
