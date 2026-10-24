@@ -23,6 +23,7 @@ import { vassalWagesLine, wagesPurseSentence, fealtyView } from '../crown/fealty
 import { commanderFactionOf, mayBesiege } from '../warAims/enemy';
 import { supplyFactionsOf, resolveSupplyLine, isSupplyHost } from '../armySupply';
 import { armyAimView } from '../warAims/sheetView';
+import { phaseBattleDetection } from '../battleResolution';
 import { runFactionPurse, readPurseDay, PURSE_LAST_DAY_PROP, MEANS_BAND_PROP } from '../factionPurse';
 import { upkeepOf } from '../factionPurse/upkeep';
 import { spendingSentence, PURSE_BROKE_LINE, PURSE_LIEGE_COVERS_LINE } from '../factionPurse/purseSentences';
@@ -246,6 +247,20 @@ describe('rules 3 and 4 — the liege feeds and commands the army it paid', () =
     // The company's own hall town, even if an enemy of the liege takes it.
     g.addEdge({ id: 'e_ctl_camp', source: ENEMY, target: CAMP, type: 'controls', properties: {} });
     expect(mayBesiege(g, commander, ENEMY, CAMP, undefined, CO)).toBe(false);
+  });
+});
+
+describe('one faction never fights itself (review gate)', () => {
+  it('two armies of one vassal sharing a hex do not battle when its liege pays one and quarrels with it', () => {
+    const { g, s } = hired();
+    g.addEdge({ id: 'e_hostile_l_co', source: R, target: CO, type: 'hostile_to', properties: {} });
+    addArmy(g, 'army_co2', CO, CAMP); // the vassal pays this one itself
+    runCrownPhase(s);
+    expect(commanderFactionOf(g, 'army_co', 25)).toBe(R);
+    expect(commanderFactionOf(g, 'army_co2', 25)).toBe(CO);
+    phaseBattleDetection(stateAt(g, 25));
+    expect(g.getOutgoingEdges('army_co', 'participates_in')).toHaveLength(0);
+    expect(g.getOutgoingEdges('army_co2', 'participates_in')).toHaveLength(0);
   });
 });
 

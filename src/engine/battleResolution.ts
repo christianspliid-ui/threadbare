@@ -665,6 +665,8 @@ function areHostile(state: GameState, armyA: string, armyB: string): boolean {
   // THR-1933 — only enemies fight: two armies that are not at war share a hex in peace.
   // Off, any two different factions fight (the pre-war-aims rule).
   if (!WAR_AIMS_ENABLED) return factionA !== factionB;
+  // Two armies of one faction never fight, whoever pays their soldiers (review gate, THR-1974).
+  if (factionA === factionB) return false;
   // THR-1974 — each side fights for whoever pays its soldiers (its liege while the wage
   // is fresh): two armies one liege pays never fight, and a paid army never fights its paymaster.
   const commanderA = commanderFactionOf(graph, armyA, state.tick) ?? factionA;
