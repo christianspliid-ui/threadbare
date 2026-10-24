@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 93 |
-| **Total** | **307** |
+| 🔵 UNVERIFIED-OK | 94 |
+| **Total** | **308** |
 
 ## Contracts by producing subsystem
 
@@ -250,6 +250,7 @@ remediation ticket or the build fails.
 | `repertoire-deals-into-encounter-hand` | A hand reads as *this god's* hand in any scene: the encounter authors only the cards it alone could offer, and the god's own Repertoire supplies the rest. Without this read, an encounter can only ever show the cards its author happened to write, and the repertoire progression the player earned stays invisible in play. | function: `dealHand`, `mintDealtNudge`, `composeDealtStep`, `composeDealtStepFromState` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `requires-hold-gates-town-keeper-content` | A template carrying `requiresHold: { ofRealm: true }` is offered only to a mortal whose hold standing names the Realm whose ground the encounter sits on (THR-1448). Read in the filter beside `requiredReputationWith` with the same fail-open convention: an unresolvable template or an absent reader passes, because a gate that can only hide content must never empty a pool on a lookup miss. | module-export: `requiresHold`, `filterByPrerequisites`, `standingFor`, `groundRealmOf` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `resolved-actions-feed-band-kpi` | Whether mortals of every skill level win their own challenges about as often as each other, and whether the harder challenges go to the more skilled — measured, so the principle that success stays level while ambition grows cannot drift again unseen. | function: `stampEngagementCommit`, `recordEngagementResolution`, `recordBoardDecision`, `recordIdleDecision`, `computeEngagementKpiReport` | Diagnostics & Incident Capture | 🟢 LIVE | — |
+| `restless-road-reaches-chronicle` | A followed mortal six days without a story, with none she can draw where she stands, goes looking for one: agent decision sets her moving to the nearest place that holds one (forced travel's path, startTravelTo) and the Chronicle says so in one line whose two names are declared links. The tick event carries its segments; phaseNarrative hands them to the Chronicle entry, and ChronicleEntryCard renders each referenced segment through EntityLink (Laws 2, 21). | event: `buildRestlessRoadEvent`, `segments`, `lastRestlessRoadTick`, `restlessRoadCheckTick` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `reward-draw-shares-one-seeded-draw-with-the-step-route` | A specific ending can hand out a random matching prize — and it draws it exactly the way the step route does, so the two can never pay out differently. | function: `drawSeededReward`, `mapActionOutcomeToRewardOutcome`, `rewardCategoryNodeQuery`, `rewardCandidateMatchesTags`, `toContentQuery` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `rite-applies-outcomes` | Every thread plays a rite, and one writer lands its outcomes on the mortal — the value pole the tests bent, the reach the spark invested, the scar, and how they took the thread — for the meeting's invented soul and for a mortal the card threaded alike. | function: `applyThreadingRite` | Personality & Emergent Traits | 🔵 UNVERIFIED-OK | — |
 | `rite-history-feeds-sheet` | A mortal's sheet remembers when and how they took the god's thread — "Bound in spring, Year 1 — took your thread in doubt." — in the same reception word the rite showed. | function: `applyThreadingRite`, `getRiteSheetLine` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -1914,10 +1915,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Narrative Event*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 15 total — 1 write, 1 read, 13 unclassified
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/uiColorPalette.ts` +8 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/uiColorPalette.ts` +9 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-endings-show-as-chips` — 🟢 LIVE
@@ -3064,6 +3065,18 @@ exit
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Codex/Codex.tsx`, `src/components/Codex/codexRegistry.ts`, `src/components/Codex/codexRunState.ts` +67 more
 - **Verdict:** Verified 2026-10-17: THR-1934. unrestPressure.test.ts: the latest arrival leans to the nearest fed, calm town (not the nearer hungry one, not the nearer Restless one, not the one past 6 hexes); with population counted the two towns move −1 / +1. measure:unrest: 0 leave-rule violations on seeds 42 / 99 / 7.
 
+### `restless-road-reaches-chronicle` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A followed mortal six days without a story, with none she can draw where she stands, goes looking for one: agent decision sets her moving to the nearest place that holds one (forced travel's path, startTravelTo) and the Chronicle says so in one line whose two names are declared links. The tick event carries its segments; phaseNarrative hands them to the Chronicle entry, and ChronicleEntryCard renders each referenced segment through EntityLink (Laws 2, 21).
+- **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
+- **UL terms:** *Chapter*, *Chronicle*
+- **Module:** `src/engine/restlessRoad.ts`
+- **Production hits:** 44 total — 2 write, 3 read, 39 unclassified
+- **Write sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/restlessRoad.ts`
+- **Read sites:** `src/components/Game/ChronicleEntryCard.tsx`, `src/debug-bridge.ts`, `src/engine/orchestrator.ts`
+- **Other hits:** `src/components/Codex/codexConcepts.ts`, `src/components/Game/encounter-stage/NarrativeSegments.tsx`, `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/PastLineText.tsx` +34 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `reunion-reads-the-edges-not-the-roster` — 🟢 LIVE
 
 - **Intent:** Who once rode with a company survives its ending — the record is the membership edges dissolution stamped, never the roster it emptied.
@@ -3159,10 +3172,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Daily life*, *Chapter Ledger*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 12 total — 1 write, 4 read, 7 unclassified
+- **Production hits:** 14 total — 1 write, 4 read, 9 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`, `src/engine/threadedChapters.ts`
-- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/openingReveal.ts`, `src/engine/phaseAttention.ts`, `src/engine/views/subjects/personRows.ts` +2 more
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/openingReveal.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseAttention.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE
@@ -3262,10 +3275,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Drawable*, *Encounter Seed*, *Appointment*
 - **Module:** `src/engine/encounterCache.ts`
-- **Production hits:** 40 total — 1 write, 3 read, 36 unclassified
+- **Production hits:** 42 total — 1 write, 3 read, 38 unclassified
 - **Write sites:** `src/data/encounters/vertical-slice.ts`
 - **Read sites:** `src/engine/deliveryBeatAdapter.ts`, `src/engine/encounterCache.ts`, `src/engine/unifiedCandidates.ts`
-- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +31 more
+- **Other hits:** `src/data/agent-behavior-constants.ts`, `src/data/ascendant-expression-constants.ts`, `src/data/companion-templates.ts`, `src/data/content-eval/packetDice.ts`, `src/data/default-support-bundles.ts` +33 more
 - **Verdict:** Verified 2026-09-24: THR-1526 — `npm run census:firings` (seeds 42 and 99, medium, 200 ticks, every new unified action harvested per tick and attributed by `spawnedFromSeedId`): the four seed-only sequels show 0 board firings on both seeds; the Swindler Found fires once per seed, seeded by the Swindled Family, which itself fired 2 and 7 times after its envelope widened to rural (0 before). `appointment-generatedWorld.test.ts` proves the Reckoning still fires from the Crossroads' missed branch on a seeded world, and the kept branch still fires the Full Moon Collection.
 
 ### `seeded-dead-stay-dead` — 🟢 LIVE
@@ -3516,10 +3529,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Chapter*, *Daily life*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 4 total — 2 write, 1 read, 1 unclassified
+- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/attentionCadence.ts`, `src/engine/phaseAgentDecision.ts`
 - **Read sites:** `src/debug-bridge.ts`
-- **Other hits:** `src/types/influence.ts`
+- **Other hits:** `src/engine/restlessRoad.ts`, `src/types/influence.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `strategic-ambition-pulls-holder-into-spotlight` — 🟢 LIVE
@@ -3575,10 +3588,10 @@ exit
 - **Intent:** The player sees where each of their people is going (THR-1878 Lenses I, plan D4). `phaseMovement` writes `movementState.destinationId` on a moving mortal; the Threads lens (`views/lenses/threadsLens.ts`, read through `hexLensViewSelector`) lights each threaded mortal at court the_first / retinue / watched, resolves the destination to its place-tier Location (`resolveToParentLocation`) and draws a dashed arrow to that hex in the court colour, with a hover line naming the place. Nothing is drawn on an unexplored hex (the seen floor hex rule, `views/knowledge.ts`). The Dominion hover line gains its pressure clause on the same pass (`dominion-band-projected-to-hex-map`, extended).
 - **Producer → Consumer:** Movement & Colocation → Intelligence, Knowledge & Familiarity
 - **UL terms:** *The First*
-- **Production hits:** 18 total — 1 write, 1 read, 16 unclassified
+- **Production hits:** 19 total — 1 write, 1 read, 17 unclassified
 - **Write sites:** `src/engine/phaseMovement.ts`
 - **Read sites:** `src/engine/views/lenses/threadsLens.ts`
-- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts`, `src/engine/appointments.ts` +11 more
+- **Other hits:** `src/data/action-technical-effects.ts`, `src/debug-bridge.ts`, `src/engine/agentActivity.ts`, `src/engine/agentValidation.ts`, `src/engine/appointments.ts` +12 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `thread-luck-protection` — 🟢 LIVE
@@ -3607,10 +3620,10 @@ exit
 - **Intent:** The Chronicle tells growth only about mortals the god follows, in words (THR-1986, plan THR-1980 E4). Each tier-up (encounter and unified-action resolution), rarity graduation and critical success declares `chronicleGate: "threaded_only"` and a `playerProse` line with no tier number and no Q; `phaseNarrative` admits it only when `isThreadedByPlayer` holds for its actor, and reads `playerProse ?? message`. Each rarity block asks the same gate before its own direct Chronicle push. A skip is traced as `chronicle.intake.skipped`; `CHRONICLE_THREADED_GROWTH_ONLY` turns the gate off. `message` is unchanged for traces and logs.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Chronicle*, *Thread*
-- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
+- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
 - **Write sites:** `src/engine/orchestrator.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/chronicleGrowth.ts`
-- **Other hits:** `src/engine/alertChronicle.ts`, `src/types/gameState.ts`
+- **Other hits:** `src/engine/alertChronicle.ts`, `src/engine/restlessRoad.ts`, `src/types/gameState.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `tick-health-to-incident-bundle` — 🟢 LIVE
@@ -3778,10 +3791,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 80 total — 3 write, 4 read, 73 unclassified
+- **Production hits:** 81 total — 3 write, 4 read, 74 unclassified
 - **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/ambition-templates.ts`, `src/data/army-encounter-content.ts` +68 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/ambition-templates.ts`, `src/data/army-encounter-content.ts` +69 more
 - **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
@@ -3856,10 +3869,10 @@ exit
 - **Producer → Consumer:** War, Armies & Battles → Attention, Chronicle & Narrative
 - **UL terms:** *Narrative Event*, *Chronicle Entry*
 - **Module:** `src/engine/armyNotifications.ts`
-- **Production hits:** 22 total — 5 write, 1 read, 16 unclassified
+- **Production hits:** 24 total — 5 write, 1 read, 18 unclassified
 - **Write sites:** `src/engine/armyAttrition.ts`, `src/engine/armySpawning.ts`, `src/engine/battleAftermath.ts`, `src/engine/battleResolution.ts`, `src/engine/siegeResolution.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts` +11 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/debug-bridge.ts` +13 more
 - **Verdict:** Verified 2026-09-24: THR-1564. `warNews.test.ts` (21) drives the real writers — `spawnArmy`, `disbandArmy`, `phaseArmyAttrition`, `createBattleNode`, `createSiegeNode`, `resolveBattle`, `applyConquestOrVacuum` — with tracing DISABLED and asserts each kind writes its line in the same tick at the loudness table’s significance; a threaded mortal’s losing army whose commander dies in the aftermath still reports threaded (seed searched, not guessed); a siege that takes its town writes the territory line and no battle line; no line carries a digit; tracing on and off write identical lines. Headless, seed 42 medium, 150 ticks, tracing OFF: 80 war lines, 11 battle and siege endings in `chronicleEntries`, 0 digits — byte-identical to the same run with tracing ON. Before this change the tracing-off run wrote 0.
 
 ### `wheel-slot-card-face` — 🟢 LIVE

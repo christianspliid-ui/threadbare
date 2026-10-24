@@ -763,7 +763,7 @@ const ACTS = [
     color: 'var(--act-narrative)',
     summary: 'Now captures ALL events — deaths, mandates, economy, everything',
     phases: [
-      { id: '5', name: 'Chronicle Generation', fn: 'phaseNarrative()', desc: 'Convert high-significance tick events (>= 0.8) into chronicle entries with narrative context and mood. Moved to end of event-generating phases so deaths, mandates, and economic events all get the full narrative treatment. THR-1986: a growth line (tier-up, rarity graduation, critical success) carries chronicleGate threaded_only and enters only for a mortal the god holds a thread to; strangers are skipped with a chronicle.intake.skipped trace. Entries read playerProse ?? message (no tier number, no Q).', reads: ['tickEvents (all phases)', 'graph (context)', 'thread edges (isThreadedByPlayer)'], writes: ['chronicleEntries'], tags: [] }
+      { id: '5', name: 'Chronicle Generation', fn: 'phaseNarrative()', desc: 'Convert high-significance tick events (>= 0.8) into chronicle entries with narrative context and mood. Moved to end of event-generating phases so deaths, mandates, and economic events all get the full narrative treatment. THR-1986: a growth line (tier-up, rarity graduation, critical success) carries chronicleGate threaded_only and enters only for a mortal the god holds a thread to; strangers are skipped with a chronicle.intake.skipped trace. Entries read playerProse ?? message (no tier number, no Q). THR-1959: an event that declares its names as segments (the restless road) hands them to the entry, so the Chronicle card renders those names as links.', reads: ['tickEvents (all phases)', 'graph (context)', 'thread edges (isThreadedByPlayer)'], writes: ['chronicleEntries'], tags: [] }
     ]
   },
   {
