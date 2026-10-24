@@ -333,7 +333,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `followed` (1) | `followedAgents.ts` | `THR-1292`, `THR-1299` |
 | `force` (1) | `forceField.ts` | — |
 | `foreshadowing` (10) | `foreshadowing/attributeRecentInterventions.ts`, `foreshadowing/composeGeneric.ts`, `foreshadowing/composeReceipt.ts`, `foreshadowing/constants.ts`, `foreshadowing/encounterForeshadowing.ts`, `foreshadowing/genericFallback.ts`, `foreshadowing/motiveReceipt.ts`, `foreshadowing/realizer.ts`, `foreshadowing/receiptRead.ts`, `foreshadowing/types.ts` | `Phase 1`, `Phase 3`, `THR-1857`, `THR-389`, `THR-631`, `THR-640`, `THR-642` |
-| `founding` (1) | `foundingSite.ts` | `THR-1308`, `THR-1937` |
+| `founding` (2) | `foundingPatron.ts`, `foundingSite.ts` | `THR-1308`, `THR-1937`, `THR-2006`, `THR-2008` |
 | `fragment` (1) | `fragmentResolution.ts` | `THR-1635`, `THR-475`, `THR-573` |
 | `game` (1) | `gameInit.ts` | — |
 | `god` (2) | `godCardProgressionCheck.ts`, `godProgression.ts` | `THR-1765`, `THR-1794`, `THR-1811` |
@@ -482,4 +482,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 113 tick phases · 238 engine domains · 788 modules._
+_Counts: 28 registered subsystems (2 dormant) · 113 tick phases · 238 engine domains · 789 modules._

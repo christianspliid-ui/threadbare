@@ -476,6 +476,7 @@
         <li><strong>Claim Resource pays in the good it claims</strong> (THR-1969). A control effect whose <code>ControlSpec.incomeFrom</code> is <code>'claimed_good'</code> binds the most abundant deposit at establishment (<code>claimedGoodId</code>, <code>claimedGoodLocationId</code>). Each tick <code>phaseControlEffects</code> credits the good's sphere × <code>CLAIM_RESOURCE_BASE_INCOME</code> (0.5) × <code>CLAIM_RESOURCE_TIER_MULT</code> (scarce 0.5, adequate 1, surplus 1.5) and carries the resolved <code>perTickIncome</code> on the effect, so the forecast reads what is paid. Grain on surplus pays 0.75 Life a tick. A good with no class pays the static 0.5 Matter. Trace <code>prayer.claim_income</code> on a change.</li>
         <li>THR-1218 added <code>lastStoryChapterStartTick</code>, the tick a pause-mode mortal last started a story chapter. It paces her story tellings, costs and grants no essence, and plays no part in Control.</li>
         <li>THR-1959 added <code>lastRestlessRoadTick</code> and <code>restlessRoadCheckTick</code>, the restless road's set-out and check ticks. They pace a followed mortal's search for a story, cost and grant no essence, and play no part in Control.</li>
+        <li>THR-2008 added the founding patron to <code>chargeFoundingCost</code>: while founding costs are on (<code>MEANS_CELL_COST_ENABLED</code>, off today), a founding the mortal cannot afford is paid in Means from their highest-ranked faction's treasury. It moves Means, not essence, and plays no part in Control.</li>
       </ul>
 
     </div>
