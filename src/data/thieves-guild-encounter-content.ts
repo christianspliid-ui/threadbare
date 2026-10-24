@@ -1574,18 +1574,18 @@ export const THIEVES_GUILD_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         narrativeTemplate:
           'A circle of guild folk throw dice in a dim alley behind {location}\'s market. ' +
           'Coin changes hands faster than any hand-count can track, which is precisely the point. ' +
-          '{name} takes a position at the ring\'s edge and reads the rhythm of the game — ' +
-          'who\'s hot, who\'s pressing, where the edges are. ' +
-          '{?has_faction}The guild doesn\'t run this game, but everyone who plays it is guild.{/has_faction}',
-        successAfterimage: 'Lucky throws. {name} walks away with heavier pockets.',
-        failureAfterimage: 'Cold dice. {name} loses the stake.',
+          '{name} has a pair of shaved dice up {their} sleeve and has to palm them into the game ' +
+          'on {their} throw, then palm the honest pair back out, with a ring of cheats watching every hand. ' +
+          '{?has_faction}The guild doesn\'t run this game, but everyone who plays it is guild, and every one of them knows the swap.{/has_faction}',
+        successAfterimage: 'The swap goes clean twice. {name} walks away with heavier pockets.',
+        failureAfterimage: 'A hand closes on {name}\'s wrist mid-swap. {name} loses the stake and the shaved dice with it.',
       },
     ],
     narrativeTemplates: {
       initiation:
         '{name} joins a dice circle in {location}\'s back alleys — guild currency, guild company, fast results.',
-      success: '{name} reads the game and plays it right. Coin flows the right direction.',
-      failure: 'The dice don\'t answer tonight.',
+      success: '{name} palms the shaved dice in and out unseen. Coin flows the right direction.',
+      failure: 'The swap is caught. The stake stays on the cobbles.',
     },
     aftermathConfig: {
       branchOnStep: 0,

@@ -1846,26 +1846,23 @@ export const ARCANE_CIRCLE_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
           reputationDelta: -0.01,
         },
         narrativeTemplate:
-          'Formula exchange sessions have the particular economy of people who know that ' +
-          'information is more fungible than objects — a good working shared is worth ' +
-          'more than one hoarded, because it generates discussion that generates refinement. ' +
-          '{name} arrives at the exchange with two formulae prepared and watches what ' +
-          'the other practitioners bring to the table. The quality varies. ' +
-          '{?has_faction}The circle\'s exchange has an informal quality filter — ' +
-          'habitual sharers of thin material stop being invited, which means ' +
-          'the average quality of what circulates here is genuinely useful.{/has_faction}' +
-          '{?no_faction}Open exchange means uneven exchange. Some of what\'s on offer today ' +
-          'is derivative work. Some is genuinely original.{/no_faction}',
-        successAfterimage: 'A formula acquired that {name} hasn\'t seen before. Worth developing.',
-        failureAfterimage: 'Nothing of value offered in return for what {name} brought.',
+          '{name} arrives at the exchange with two formulae prepared. Before trading for ' +
+          'anything, {name} casts each offered working in small, inside a chalk ring, to ' +
+          'see whether it holds. A formula that only reads well on the page fails in the ring. ' +
+          '{?has_faction}The circle stops inviting members who bring thin material, so most ' +
+          'of what is offered here holds.{/has_faction}' +
+          '{?no_faction}The exchange is open to anyone. Some of what is offered today is ' +
+          'copied work that will not hold, and some is original.{/no_faction}',
+        successAfterimage: 'A formula {name} hasn\'t seen before held in the ring. Worth developing.',
+        failureAfterimage: 'Every formula offered failed in the ring. Nothing was worth what {name} brought.',
       },
     ],
     narrativeTemplates: {
       initiation:
-        '{name} participates in a formulae exchange at {location}\'s circle. ' +
-        'Knowledge economy in its most direct form.',
-      success: 'A genuinely useful formula. The exchange was worth the session.',
-      failure: 'Nothing worth the trade. The market was thin today.',
+        '{name} brings two formulae to the exchange at {location}\'s circle ' +
+        'and tests every working offered in return by casting it.',
+      success: 'One offered formula held when cast. {name} trades for it.',
+      failure: 'Nothing offered held when cast. Nothing was worth the trade.',
     },
     aftermathConfig: {
       branchOnStep: 0,

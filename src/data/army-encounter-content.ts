@@ -105,10 +105,10 @@ export const ARMY_ENCOUNTER_META: ReadonlyMap<string, ArmyEncounterMeta> = new M
 export const ARMY_RAISE_TEMPLATE: UnifiedActionTemplate = {
   id: 'mc.army.raise',
   stakes: {
-    goal: 'muster and pay an army from the town',
-    risk: 'stand on an empty muster ground with unpaid bills',
+    goal: 'muster an army from the town and drill it into ranks',
+    risk: 'stand on an empty muster ground',
     won: 'raised an army that marches at the third bell',
-    lost: 'watched the unpaid muster scatter by the second day',
+    lost: 'watched the muster scatter by the second day',
   },
   name: 'Raise an Army',
   rarityTier: 3,

@@ -1312,10 +1312,10 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
   withEncounterContract({
     id: 'mc.social.war_stories',
     stakes: {
-      goal: 'learn which clauses the old hands watch for',
-      risk: 'drift off and miss the lesson in the stories',
-      won: 'learned which clauses the old hands watch for',
-      lost: 'drifted off and missed why the names went on the stone',
+      goal: 'hold their nerve when the old hands test it',
+      risk: 'flinch in front of the sergeants',
+      won: 'held their nerve and earned a place by the fire',
+      lost: 'flinched, and was sent to sit at the edge of the fire',
     },
     actorAffinities: ['individual'],
     name: 'War Stories by the Fire',
@@ -1332,15 +1332,15 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
       {
         id: 'mc.social.war_stories.1',
         name: 'Listen to the Sergeants',
-        narrativeTemplate: 'The sergeant describes the siege at {location} with professional accuracy. {?has_faction}The {faction} veterans add clauses to every anecdote.{/has_faction} {name} listens — that is how contracts get kept.',
+        narrativeTemplate: 'The sergeant tells the siege at {location} with professional accuracy, then stops halfway and flicks a knife into the log beside {name}\'s hand to see whether the hand moves. {?has_faction}The {faction} veterans do it to every new face.{/has_faction} A recruit who flinches does not hear the end of the story.',
         reach: 'iron',
         difficulty: MC_DIFFICULTY_BASE / 100,
         duration: { min: 1, max: 1 },
         failBehavior: 'continue_weakened',
         onSuccess: [],
         onFailure: [],
-        successAfterimage: 'Good listen. {name} learned which clauses the old hands watch for.',
-        failureAfterimage: 'Distracted. A few names in the stone came up and {name} missed why.',
+        successAfterimage: 'The hand stayed still. The sergeant finished the story, and {name} learned which clauses the old hands watch for.',
+        failureAfterimage: '{name} flinched. The sergeant laughed and told the rest of the story to someone else.',
       },
     ],
     aftermathConfig: {
@@ -1348,8 +1348,8 @@ export const MERCENARY_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
       variants: {},
       fallback: {
         overview:
-          'The sergeants described the siege with professional accuracy and the veterans added clauses to every anecdote. '
-          + 'Listening is how contracts get kept.',
+          'The sergeants told the siege with professional accuracy and tested the new face\'s nerve halfway through. '
+          + 'Whoever holds still hears the clauses the old hands watch for.',
         changes: [
           {
             id: 'mc_war_stories_standing',

@@ -1669,30 +1669,29 @@ export const BUILDERS_FELLOWSHIP_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
         },
         failureMetadata: { reputationDelta: -0.005 },
         narrativeTemplate:
-          'The master\'s workshop runs off the south lane, identifiable by the smell of oil ' +
-          'and the sound of a wheel-lathe that has been running since before {name} arrived. ' +
-          'The tour is informal: the master narrates when something is interesting and does not ' +
-          'narrate when it is not. {name} keep{s} pace and hold{s} {their} questions until the end. ' +
-          '{?has_artifact}The tools {name} carries are close enough to the work being shown that ' +
-          '{they} can ask comparative questions rather than explanatory ones — the conversation ' +
-          'moves faster, goes deeper.{/has_artifact}' +
-          '{?no_faction}The master does not know {name} yet. The tour is what it is given to ' +
-          'new visitors: complete, but not inside.{/no_faction}',
+          'The master\'s workshop runs off the south lane. The master shows the good rooms only ' +
+          'to visitors who can work, so {name} is handed a plane and a glued board at the first ' +
+          'bench and told to true the edge. The third room, where the lamination is done, ' +
+          'opens only if the edge comes out straight. ' +
+          '{?has_artifact}{name} works with {their} own tools, which are close enough to the ' +
+          'master\'s that the edge comes quicker.{/has_artifact}' +
+          '{?no_faction}The master does not know {name} yet. The bench test is the whole ' +
+          'introduction.{/no_faction}',
         successAfterimage:
-          'The lamination method in the third room is not in any published reference. ' +
-          '{name} file{s} it carefully.',
+          'The edge came out true, and the master let {name} lay up a panel in the third room. ' +
+          'The lamination method there is not in any published reference.',
         failureAfterimage:
-          'The master is occupied with a deadline. The tour is brief and the third room is skipped.',
+          'The edge came out with a belly in it. The master took the plane back, and the third room stayed shut.',
       },
     ],
     narrativeTemplates: {
       initiation:
-        '{name} visit{s} a master\'s workshop in {location}. ' +
-        'The techniques on display are worth an afternoon.',
+        '{name} visit{s} a master\'s workshop in {location} and is set to work at the first bench ' +
+        'before seeing anything else.',
       success:
-        'The tour gave {name} something specific to think about. The lamination method alone was worth the walk.',
+        '{name}\'s bench work earned the third room. The lamination method alone was worth the walk.',
       failure:
-        'The master was occupied. A brief tour; the interesting rooms were skipped.',
+        '{name}\'s bench work fell short. A brief tour; the interesting rooms were skipped.',
     },
     aftermathConfig: {
       branchOnStep: 0,
