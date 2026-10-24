@@ -61,7 +61,11 @@ export const COURT_COST_MULTIPLIER_WATCHED = 1.5;
 /** Ticks a thread tug lingers before expiring if not attended. */
 export const THREAD_TUG_LINGER = 3;
 
-/** Minimum ticks between successive attend actions on the same thread. */
+/**
+ * Minimum ticks between successive attend actions on the same thread.
+ * UNUSED (THR-1218 D7): no engine module reads it; the CMS lists it. Kept, not
+ * deleted (NFP #6) — wire it at the attend handler before tuning it.
+ */
 export const ATTEND_COOLDOWN = 1;
 
 /** Maximum thread tugs the player can have active simultaneously. */
@@ -72,17 +76,40 @@ export const FOMO_OVERFLOW_RATIO = 1.4;
 
 // ── Story Beat Pacing ────────────────────────────────────────────────────────
 
-/** Ticks between story beat triggers on the same thread. */
+/**
+ * Ticks between story beat triggers — a single global cooldown across every
+ * thread (`pacingGovernor.canFireStoryBeat` reads one `lastCompletedTick` on the
+ * ascendant), not a per-thread one (comment corrected, THR-1218 D7).
+ */
 export const STORY_BEAT_COOLDOWN = 12;
 
 /** Maximum queued story beats before overflow policy applies. */
 export const STORY_BEAT_QUEUE_MAX = 3;
 
 /**
- * When true, story beats that overflow the queue are demoted to Notable events
- * rather than dropped silently.
+ * When true, story beats that overflow the queue are demoted to the shaping
+ * tier (the curator may still raise them as a thread tug) rather than dropped
+ * silently — when false they leave the queue and keep their tier, unannounced.
+ * Read at the demote site in `phaseAttention` (wired THR-1218 D7).
  */
 export const STORY_BEAT_QUEUE_OVERFLOW_DEMOTE = true;
+
+// ── Curator weights (THR-1218 D7: named, values unchanged) ──────────────────
+
+/** Curator weight: court position contribution to a shaping encounter's score. @range 0–1 */
+export const CURATOR_W_COURT = 0.3;
+/** Curator weight: threat severity contribution. @range 0–1 */
+export const CURATOR_W_THREAT = 0.15;
+/** Curator weight: chain progress contribution. @range 0–1 */
+export const CURATOR_W_CHAIN = 0.2;
+/** Curator weight: agent recency penalty (negative = more recent hurts more). @range -1–0 */
+export const CURATOR_W_RECENCY = -0.15;
+/** Curator weight: reach variety bonus/penalty. @range 0–1 */
+export const CURATOR_W_REACH = 0.1;
+/** Curator weight: faction relevance contribution. @range 0–1 */
+export const CURATOR_W_FACTION = 0.1;
+/** Curator weight: ambition alignment contribution. @range 0–1 */
+export const CURATOR_W_AMBITION = 0.1;
 
 // ── Read the Threads ─────────────────────────────────────────────────────────
 

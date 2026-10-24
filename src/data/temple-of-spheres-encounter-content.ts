@@ -69,7 +69,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Tend the Shrine',
     rarityTier: 1,
     intrinsicTier: 'shaping',
-    reach: 'heart',
+    reach: 'veil',
     crudType: 'update',
     scale: 'local',
     locationSubtypes: ['shrine', 'temple', 'town', 'city', 'capital'],
@@ -78,7 +78,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: TS_DIFFICULTY_BASE / 100,
         failBehavior: 'continue_weakened',
@@ -101,7 +101,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'the stronger one and accepts the compromise.',
       },
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: (TS_DIFFICULTY_BASE + TS_DIFFICULTY_STEP) / 100,
         failBehavior: 'fail_action',
@@ -468,7 +468,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Consecrate the Ground',
     rarityTier: 1,
     intrinsicTier: 'shaping',
-    reach: 'heart',
+    reach: 'veil',
     crudType: 'create',
     scale: 'local',
     locationSubtypes: ['wilderness', 'ruins', 'town', 'village'],
@@ -477,7 +477,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: TS_DIFFICULTY_BASE / 100,
         failBehavior: 'continue_weakened',
@@ -505,7 +505,7 @@ export const TEMPLE_OF_SPHERES_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'not a neutral one.',
       },
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: (TS_DIFFICULTY_BASE + TS_DIFFICULTY_STEP) / 100,
         failBehavior: 'fail_action',
@@ -938,7 +938,7 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Banish the Corruption',
     rarityTier: 1,
     intrinsicTier: 'shaping',
-    reach: 'star',
+    reach: 'veil',
     crudType: 'delete',
     scale: 'local',
     locationSubtypes: ['ruins', 'dungeon', 'town', 'city'],
@@ -947,7 +947,7 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
-        reach: 'star',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: TS_SENIOR_BASE / 100,
         failBehavior: 'continue_weakened',
@@ -971,7 +971,7 @@ export const TEMPLE_OF_SPHERES_SENIOR_TEMPLATES: UnifiedActionTemplate[] = [
           '{name} proceed{s} on the more probable one and holds the other as contingency.',
       },
       {
-        reach: 'star',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: (TS_SENIOR_BASE + TS_DIFFICULTY_STEP) / 100,
         failBehavior: 'fail_action',
@@ -1447,7 +1447,7 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Found a Cathedral',
     rarityTier: 1,
     intrinsicTier: 'story_beat',
-    reach: 'heart',
+    reach: 'veil',
     crudType: 'create',
     scale: 'regional',
     locationSubtypes: ['city', 'capital', 'town'],
@@ -1456,7 +1456,7 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.build,
     steps: [
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: TS_ELITE_BASE / 100,
         failBehavior: 'continue_weakened',
@@ -1485,7 +1485,7 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
           'founding record.',
       },
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: (TS_ELITE_BASE + TS_DIFFICULTY_STEP) / 100,
         failBehavior: 'continue_weakened',
@@ -1508,7 +1508,7 @@ export const TEMPLE_OF_SPHERES_ELITE_TEMPLATES: UnifiedActionTemplate[] = [
           'eight of nine. The ninth will be reattempted at the next passage.',
       },
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: TS_ELITE_BASE / 100,
         failBehavior: 'fail_action',
@@ -1629,7 +1629,7 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Evening Prayer',
     rarityTier: 1,
     intrinsicTier: 'background',
-    reach: 'heart',
+    reach: 'veil',
     crudType: 'update',
     scale: 'personal',
     locationSubtypes: ['shrine', 'temple', 'town', 'city', 'capital'],
@@ -1638,7 +1638,7 @@ export const TEMPLE_OF_SPHERES_SOCIAL_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
     steps: [
       {
-        reach: 'heart',
+        reach: 'veil',
         duration: { min: 1, max: 1 },
         difficulty: TS_DIFFICULTY_BASE / 100,
         failBehavior: 'fail_action',

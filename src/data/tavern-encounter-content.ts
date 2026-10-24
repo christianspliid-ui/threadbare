@@ -367,7 +367,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     name: 'Drinking Contest',
     rarityTier: 1,
     intrinsicTier: 'background',
-    reach: 'iron',
+    reach: 'stone',
     crudType: 'update',
     scale: 'local',
     locationSubtypes: TAVERN_SUBLOCATION,
@@ -376,7 +376,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
     steps: [
       {
-        reach: 'iron',
+        reach: 'stone',
         duration: { min: 1, max: 1 },
         difficulty: TD_EASY,
         failBehavior: 'continue_weakened',
@@ -394,7 +394,7 @@ export const TAVERN_UNIFIED_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
           'The first cup is sharper than {name} expected. The room tilts by a handspan. The trapper already knows how this ends.',
       },
       {
-        reach: 'iron',
+        reach: 'stone',
         duration: { min: 1, max: 1 },
         difficulty: TD_MOD,
         failBehavior: 'fail_action',

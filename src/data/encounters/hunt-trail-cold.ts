@@ -39,7 +39,7 @@ export const HUNT_TRAIL_COLD: UnifiedActionTemplate = {
   description: '{name} never reached the den in time.',
   rarityTier: 1,
   intrinsicTier: 'background',
-  reach: 'iron',
+  reach: 'star',
   crudType: 'read',
   scale: 'local',
   apCost: 1,
@@ -48,7 +48,7 @@ export const HUNT_TRAIL_COLD: UnifiedActionTemplate = {
   tags: ['#hunt_trail_cold'],
   steps: [
     {
-      reach: 'iron',
+      reach: 'star',
       duration: { min: 1, max: 1 },
       difficulty: TRAIL_COLD_DIFFICULTY,
       failBehavior: 'fail_action',

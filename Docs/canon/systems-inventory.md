@@ -289,7 +289,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `crown` (6) | `crown.ts`, `crown/crownView.ts`, `crown/eligibility.ts`, `crown/fealtySentences.ts`, `crown/offer.ts`, `crown/types.ts` | `THR-1917`, `THR-1932`, `THR-1934` |
 | `cultural` (4) | `culturalGravity.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | `THR-1798` |
 | `culture` (5) | `cultureFlag.ts`, `cultureFoundationPair.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15`, `THR-1623` |
-| `curator` (1) | `curator.ts` | — |
+| `curator` (1) | `curator.ts` | `THR-1218` |
 | `cycle` (1) | `cycleEnd.ts` | — |
 | `death` (1) | `deathSiteHaunting.ts` | `THR-1528`, `THR-1574`, `THR-1925` |
 | `debug` (8) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugGeneratedRewardPin.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-1626`, `THR-689`, `THR-878` |
@@ -412,7 +412,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `retinue` (1) | `retinue.ts` | — |
 | `return` (1) | `returnEngine.ts` | `Phase 3`, `TB-035` |
 | `revelation` (3) | `revelationEmitter.ts`, `revelationHooks.ts`, `revelationResolver.ts` | `TB-043`, `THR-398`, `THR-853` |
-| `reward` (2) | `rewardHistory.ts`, `rewardPool.ts` | `THR-1096`, `THR-1241` |
+| `reward` (2) | `rewardHistory.ts`, `rewardPool.ts` | `THR-1096`, `THR-1241`, `THR-1997` |
 | `rival` (3) | `rival.ts`, `rivalInfluenceMarkers.ts`, `rivalSourceContestation.ts` | `THR-611`, `THR-621`, `THR-66`, `THR-829` |
 | `river` (1) | `riverGeneration.ts` | — |
 | `road` (1) | `roadNetwork.ts` | `THR-1394` |

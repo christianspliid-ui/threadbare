@@ -422,7 +422,7 @@ const BRIDGE_HAND: readonly StepNudge[] = [
 ];
 
 const BRIDGE_STEP: ActionStep = {
-  reach: 'stone',
+  reach: 'star',
   duration: { min: 1, max: 2 },
   difficulty: 0.4,
   purposeLine: 'Cross the bridge',
@@ -482,7 +482,7 @@ export const SLICE_UNSAFE_BRIDGE: UnifiedActionTemplate = {
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'The Unsafe Bridge',
-  reach: 'stone',
+  reach: 'star',
   crudType: 'read',
   scale: 'local',
   steps: [BRIDGE_STEP],
@@ -909,7 +909,7 @@ const PASS_NIGHT_HAND: readonly StepNudge[] = [
 ];
 
 const PASS_CLIMB_STEP: ActionStep = {
-  reach: 'stone',
+  reach: 'star',
   duration: { min: 1, max: 2 },
   difficulty: 0.42,
   purposeLine: 'Beat the snow',
@@ -987,7 +987,7 @@ export const SLICE_SNOW_ON_THE_PASS: UnifiedActionTemplate = {
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'Snow on the Pass',
-  reach: 'stone',
+  reach: 'star',
   crudType: 'read',
   scale: 'local',
   steps: [PASS_CLIMB_STEP, PASS_NIGHT_STEP],
@@ -1521,7 +1521,7 @@ export const SLICE_RIDERS_BEHIND_CARAVAN: UnifiedActionTemplate = {
   rarityTier: 2,
   intrinsicTier: 'background',
   name: 'Riders Behind the Caravan',
-  reach: 'eye',
+  reach: 'shadow',
   crudType: 'read',
   scale: 'local',
   steps: [CARAVAN_FIND_STEP, CARAVAN_SLIP_STEP],

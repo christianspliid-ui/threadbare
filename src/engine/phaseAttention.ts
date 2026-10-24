@@ -35,6 +35,7 @@ import {
   THREAD_TUG_LINGER,
   ATTENTION_BASE_CAPACITY,
   ATTENTION_BASE_REGEN,
+  STORY_BEAT_QUEUE_OVERFLOW_DEMOTE,
 } from '../data/attention-constants';
 import { emitTrace } from './traceBuffer';
 import { isRoutineTemplate } from './attentionCadence';
@@ -486,8 +487,9 @@ export function phaseAttention(
   // Try to dequeue a queued beat if the slot is open
   dequeueStoryBeat(pacingState, state.tick);
 
-  // Apply demotions: change effectiveTier to 'shaping' so curator picks them up
-  if (storyBeatDemotions.length > 0) {
+  // Apply demotions: change effectiveTier to 'shaping' so curator picks them up.
+  // THR-1218 D7: the flag decides demote vs. drop (dropped beats keep their tier).
+  if (STORY_BEAT_QUEUE_OVERFLOW_DEMOTE && storyBeatDemotions.length > 0) {
     const demotionSet = new Set(storyBeatDemotions);
     for (const ua of state.unifiedActions) {
       if (demotionSet.has(ua.actionId) && ua.effectiveTier === 'story_beat') {

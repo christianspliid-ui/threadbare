@@ -531,8 +531,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     protagonistRoles: ['smith', 'spellsword', 'warmage'],
     locationTypes: ['mining', 'fort', 'camp'],
     sublocationTypes: ['sublocation-type.temple-quarter', 'sublocation-type.barracks'],
-    reachPrimary: 'iron',
-    reachSecondary: 'stone',
+    reachPrimary: 'stone',
+    reachSecondary: 'iron',
     encounterType: 'create',
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
@@ -578,7 +578,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'trial_of_flame.transformation',
         name: 'The Transformation',
-        reach: 'iron',
+        reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
         narrative: 'The master smith arrives with a bundle of rust and a name attached to it. What is left of the weapon is more story than steel. {actor} is asked to make it a weapon again.',
@@ -1030,7 +1030,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     protagonistRoles: ['healer', 'alchemist', 'priest', 'acolyte', 'monk', 'chaplain'],
     locationTypes: ['temple', 'shrine'],
     sublocationTypes: ['sublocation-type.temple-quarter'],
-    reachPrimary: 'gold',
+    reachPrimary: 'stone',
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'moderate',
@@ -1040,7 +1040,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'healers_oath.diagnosis',
         name: 'The Diagnosis',
-        reach: 'gold',
+        reach: 'eye',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         // THR-1101: authored out of the `{adj}`/`{verb}` mad-lib shape, `assist` family batch.
@@ -1074,7 +1074,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'healers_oath.sacrifice',
         name: 'The Sacrifice',
-        reach: 'gold',
+        reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 4,
         narrative: 'The sickness has outgrown the temple and taken the lower streets. {actor} has a cough of {their} own and no hour to spare naming it.',
@@ -1417,8 +1417,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'The Harvest Bounty',
     locationTypes: ['farmland', 'hamlet', 'oasis', 'ruined_village'],
-    reachPrimary: 'gold',
-    reachSecondary: 'stone',
+    reachPrimary: 'stone',
+    reachSecondary: 'gold',
     encounterType: 'acquire',
     threatRating: 'trivial',
     intrinsicTier: 'background',
@@ -1427,7 +1427,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'harvest_bounty.gathering',
         name: 'The Gathering',
-        reach: 'gold',
+        reach: 'stone',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         narrative: 'The field came in heavy this year, and the whole crop wants cutting inside a week. {actor} starts at the near edge, where the grain has stood longest.',
@@ -1804,7 +1804,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'The Forbidden Tome',
     locationTypes: ['tower', 'ruins', 'capital'],
-    reachPrimary: 'eye',
+    reachPrimary: 'shadow',
     reachSecondary: 'veil',
     encounterType: 'acquire',
     threatRating: 'hard',
@@ -1847,7 +1847,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'forbidden_tome.claiming',
         name: 'The Claiming',
-        reach: 'eye',
+        reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 3,
         narrative: 'The book comes off the shelf harder than it should, as though the shelf holds an opinion about it. {actor} has the rest of the loud hour to be out of the house with it.',
@@ -2569,8 +2569,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     // THR-1993: the stake is her own congregation and her sermon.
     protagonistRoles: ['priest', 'acolyte', 'chaplain', 'pilgrim', 'warrior_priest', 'paladin', 'monk', 'oracle'],
     locationTypes: ['temple', 'shrine', 'town'],
-    reachPrimary: 'veil',
-    reachSecondary: 'heart',
+    reachPrimary: 'heart',
+    reachSecondary: 'veil',
     encounterType: 'hire',
     reputationPolarity: 'positive', // lawful religious community organization — communal and voluntary (2a)
     threatRating: 'moderate',
@@ -2580,7 +2580,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'rally_faithful.preaching',
         name: 'The Preaching',
-        reach: 'spirit',
+        reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         // THR-1101: authored out of the mad-lib shape (hire-family batch). The unpaid hire —
@@ -2615,7 +2615,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'rally_faithful.mission',
         name: 'The Mission',
-        reach: 'spirit',
+        reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'The ask is real now: a fortnight\'s walk, at their own cost, to a place with a reputation. {actor} puts it to them plainly rather than beautifully, because they will be a long distance from the beautiful version by the time it gets hard.',
@@ -4227,8 +4227,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'The Healing Vigil',
     locationTypes: ['shrine', 'temple', 'tower'],
-    reachPrimary: 'gold',
-    reachSecondary: 'heart',
+    reachPrimary: 'heart',
+    reachSecondary: 'gold',
     encounterType: 'assist',
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
@@ -4255,7 +4255,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'healer.treatment',
         name: 'The Treatment',
-        reach: 'gold',
+        reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 3,
         narrative: 'The medicines are old stock and half of them are past their season. {actor} works out which will still do what the label claims.',
@@ -4331,7 +4331,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'militia.coordination',
         name: 'The Coordination',
-        reach: 'gold',
+        reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 3,
         narrative: 'They will not hold a formation they do not understand. {actor} has one afternoon to teach them a shape simple enough to survive fear.',
@@ -4982,7 +4982,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'council.assembly',
         name: 'The Assembly',
-        reach: 'dominance',
+        reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
         narrative: 'The council has sat twice this month and settled neither dispute. {actor} sends the summons for a third, knowing three of the seats will go looking for a reason not to fill.',
@@ -5015,7 +5015,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'council.judgment',
         name: 'The Judgment',
-        reach: 'dominance',
+        reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
         narrative: 'A ruling has to be spoken aloud, in the room, by a person who will still be in the city next week. {actor} is that person, and the council has come to watch {them} be it.',
@@ -5257,8 +5257,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'The Library Expansion',
     locationTypes: ['tower', 'ruins', 'city'],
-    reachPrimary: 'eye',
-    reachSecondary: 'stone',
+    reachPrimary: 'stone',
+    reachSecondary: 'eye',
     encounterType: 'build',
     threatRating: 'easy',
     intrinsicTier: 'background',
@@ -6291,8 +6291,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Guild Initiation Trial',
     locationTypes: ['hamlet', 'town', 'city'],
-    reachPrimary: 'iron',
-    reachSecondary: 'heart',
+    reachPrimary: 'heart',
+    reachSecondary: 'iron',
     encounterType: 'hire',
     reputationPolarity: 'positive', // sanctioned institutional membership trial (2a)
     threatRating: 'moderate',
@@ -8051,8 +8051,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       rural: '{name} comes off the lane at {location} with the day\'s work finished and the light not yet gone.',
       stronghold: '{name} finds a bench in the yard at {location}, out of the way of the watch.',
     },
-    reachPrimary: 'iron',
-    reachSecondary: 'stone',
+    reachPrimary: 'stone',
+    reachSecondary: 'iron',
     encounterType: 'build',
     threatRating: 'trivial',
     intrinsicTier: 'background',
@@ -8106,7 +8106,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         spawnName: 'The One Who Asked',
       },
     ],
-    consequenceDraw: ['secret', 'condition'],
+    consequenceDraw: ['possession', 'condition'],
     consequenceSwap: {
       from: 'place',
       to: 'condition',
@@ -8117,7 +8117,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         + 'so `$target` is an agent and the binder\'s location-kind check rejects it — '
         + 'the effect would no-op silently, which is the vacuous wiring the gate exists '
         + 'to prevent. `spawn_unique_location`, the family\'s only sentinel-free kind, '
-        + 'mints a place for honing a knife. Traded to `condition` (weight 8 in iron, the '
+        + 'mints a place for honing a knife. Traded to `condition` (weight 4 in stone since THR-2010; 8 in iron, the '
         + 'reach\'s own signature and the corpus\'s thinnest channel at 1 user).',
     },
     aftermathConfig: {
@@ -8417,6 +8417,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         onSuccess: {
           narrative: 'The edge catches the fire like a thread of silver. Sharp enough. {actor} sheathes it and rolls {their} shoulder out.',
           reputationDelta: 0.03,
+          // THR-2010: on Stone the draw is `possession` + `condition` — the edge is
+          // paid for in kind. On Iron it was `secret`, wired by the favour creations.
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#stone'],
+          },
         },
         onFailure: {
           narrative: 'The stone slips, the angle goes. {actor} gets an edge that will cut rope and would embarrass {them} against mail.',
@@ -8635,8 +8641,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Listen for Rumors',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
-    reachPrimary: 'shadow',
-    reachSecondary: 'eye',
+    reachPrimary: 'eye',
+    reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'easy',
     intrinsicTier: 'background',
@@ -11851,8 +11857,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Rally the Locals',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
-    reachPrimary: 'star',
-    reachSecondary: 'heart',
+    reachPrimary: 'heart',
+    reachSecondary: 'star',
     encounterType: 'lead',
     threatRating: 'moderate',
     intrinsicTier: 'shaping',
@@ -11878,7 +11884,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'rally_locals.inspire',
         name: 'Inspire Action',
-        reach: 'star',
+        reach: 'heart',
         difficulty: MODERATE_DIFFICULTY_BASE + MODERATE_DIFFICULTY_STEP - 5,
         duration: 1,
         narrative: 'The crowd is assembled and waiting. {actor} stands in front of people who want a reason to hope and will recognise a manufactured one on sight.',
@@ -13461,8 +13467,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Bless the Road',
     locationTypes: ['camp', 'hamlet', 'oasis', 'farmland'],
-    reachPrimary: 'star',
-    reachSecondary: 'veil',
+    reachPrimary: 'veil',
+    reachSecondary: 'star',
     encounterType: 'create',
     threatRating: 'easy',
     intrinsicTier: 'background',
@@ -13471,7 +13477,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'bless_road.prepare',
         name: 'Prepare the Blessing',
-        reach: 'star',
+        reach: 'veil',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         // THR-1101 batch 8: `{they} carry` was the pronoun-plus-bare-verb defect batches
@@ -13507,7 +13513,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'bless_road.seal',
         name: 'Seal with Conviction',
-        reach: 'star',
+        reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'The final word is the hardest. It has to carry far enough to still be there when the next traveler comes through.',
@@ -14062,7 +14068,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Inspect the Armoury',
     locationTypes: ['castle', 'fort'],
-    reachPrimary: 'iron',
+    reachPrimary: 'eye',
     reachSecondary: 'gold',
     encounterType: 'explore',
     threatRating: 'easy',
@@ -14106,7 +14112,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'inspect_armoury.report',
         name: 'File the Report',
-        reach: 'iron',
+        reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'An inspection without a report is a walk through a shed. {actor} sits down with the slate and turns four days of counting into a page a commander will actually read.',
@@ -14361,8 +14367,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Gather Firewood',
     locationTypes: ['wilderness', 'camp', 'farmland', 'ruins'],
-    reachPrimary: 'eye',
-    reachSecondary: 'stone',
+    reachPrimary: 'stone',
+    reachSecondary: 'eye',
     encounterType: 'acquire',
     threatRating: 'trivial',
     intrinsicTier: 'background',
@@ -14654,7 +14660,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Garrison Gossip',
     locationTypes: ['castle', 'fort', 'tower'],
-    reachPrimary: 'heart',
+    reachPrimary: 'eye',
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'trivial',
@@ -14698,7 +14704,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'garrison_gossip.file',
         name: 'File It Away',
-        reach: 'heart',
+        reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'Overheard talk is not intelligence until it has been arranged. {actor} sits with it afterwards and works out which pieces contradict each other.',
@@ -14708,7 +14714,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
-            tagFilters: ['#heart'],
+            tagFilters: ['#eye'],
           },
         },
         onFailure: {
@@ -14735,7 +14741,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Mend the Fishing Nets',
     locationTypes: ['hamlet', 'oasis', 'camp'],
-    reachPrimary: 'gold',
+    reachPrimary: 'stone',
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'trivial',
@@ -14745,7 +14751,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'mend_nets.inspect',
         name: 'Find the Tears',
-        reach: 'gold',
+        reach: 'stone',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
         narrative: '{actor} spreads the nets across the dock boards and runs fingers along the mesh, feeling for gaps, for weakness, for the places where the catch escapes.',
@@ -14761,7 +14767,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'mend_nets.repair',
         name: 'Tie the Knots',
-        reach: 'heart',
+        reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
         narrative: 'Net-mending is rhythmic, patient work. {actor}\'s fingers learn the pattern: loop, pull, tighten. Repeat.',

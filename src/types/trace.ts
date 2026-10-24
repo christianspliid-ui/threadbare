@@ -117,6 +117,7 @@ export type TraceCategory =
   | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
   | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
   | 'attention.story_breath_start' | 'attention.routine_suppressed' // THR-1715
+  | 'encounter.tellings_capped' // THR-1218
   | 'first_path_recalled' // THR-1988
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
@@ -740,6 +741,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'economic_chronicle', 'encounter_awareness', 'faction_awareness',
   'encounter_cache', 'encounter_filter', 'idle_decision',
   'attention.story_breath_start', 'attention.routine_suppressed',
+  'encounter.tellings_capped',
   'first_path_recalled',
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
@@ -2506,6 +2508,21 @@ export interface StoryBreathStartTrace extends TraceBase {
   templateId: string;
   /** tick + PAUSED_STORY_BREATH_TICKS */
   breathUntilTick: number;
+}
+
+/**
+ * Trace: the tellings cap (THR-1218 D5) dropped at least one story candidate for
+ * a paused mortal — story templates she has already told PAUSED_STORY_MAX_TELLINGS
+ * times. A relaxed pass (long drought) emits nothing.
+ */
+export interface TellingsCappedTrace extends TraceBase {
+  category: 'encounter.tellings_capped';
+  agentId: string;
+  /** Story templates at the cap, dropped this decision. */
+  droppedTemplateIds: string[];
+  /** Story candidates left after the cap. */
+  remainingStoryCandidates: number;
+  relaxed: false;
 }
 
 /** Trace: The First's first chapter after the bond opens by recalling the path the god chose (THR-1988). */
@@ -5128,6 +5145,7 @@ export type TraceEntry =
   | BinderMintTrace
   | FilterPipelineTrace
   | StoryBreathStartTrace
+  | TellingsCappedTrace
   | FirstPathRecalledTrace
   | RoutineSuppressedTrace
   | ScoringTrace
