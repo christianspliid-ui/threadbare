@@ -34,7 +34,7 @@
  * | REBELLION_INCOME_RATIO          | a breaking realm earning this share of its liege's income rebels |
  * | NEVER_SWEAR_*                   | factions that never swear                                      |
  * | SEEK_FEALTY_WEIGHT              | selection weight of the courting action                        |
- * | SEEK_FEALTY_COOLDOWN_TICKS      | at most one courtship per realm per day                        |
+ * | SEEK_FEALTY_WINDOW_TICKS        | at most one courtship per realm per calendar day               |
  * | OATH_BREAK_SENTIMENT_DELTA      | a break's grudge on `relates_to`                               |
  * | OATH_REFUSAL_SENTIMENT_DELTA    | a refusal's cooling                                            |
  * | OATH_REFUSAL_SENTIMENT_FLOOR    | refusals alone never cross the rivalry threshold (−0.3)        |
@@ -99,13 +99,20 @@ export const NEVER_SWEAR_GUILD_TYPES: readonly string[] = ['thieves'];
 // ── The courting action ──
 export const SEEK_FEALTY_WEIGHT = 6;
 /**
- * At most one courtship per realm per 12 ticks. Faction actions run every
- * FACTION_ACTION_INTERVAL (8) ticks, so this rolling cooldown means a courtship at most
- * every 16 ticks: at most 75% of days. Measured 2026-10-16 (THR-1932, seeds 42/99/7, 90
- * days): 68–73% of days at weight 6; weight 10 did not raise it, and a calendar-day
- * window fell to ~50% at weights 6 and 16 for a reason not yet traced (THR-1961).
+ * At most one courtship per realm per calendar window of this many ticks (one day:
+ * window = floor(tick / SEEK_FEALTY_WINDOW_TICKS)), checked in the `can_court`
+ * prerequisite. Faction actions run every FACTION_ACTION_INTERVAL (8) ticks, so every
+ * day holds one or two sweeps and a realm may court on every day.
+ *
+ * History (THR-1961): THR-1932 shipped a rolling 12-tick cooldown, which forces 16-tick
+ * gaps (at most 75% of days; measured 68–73%). A calendar window was tried then and
+ * measured ~50% — but that was the measure, not the rule: `measure:crown` counted a
+ * rolling window ending at each day's first tick, which straddles two calendar days.
+ * A courtship at a day's first sweep (tick 24k) closes that day's second sweep (24k+8),
+ * and the straddling window saw only that blocked sweep. Counted by calendar day, the
+ * window rule measured 84–97% of days on seeds 42/99/7 (2026-10-24).
  */
-export const SEEK_FEALTY_COOLDOWN_TICKS = 12;
+export const SEEK_FEALTY_WINDOW_TICKS = 12;
 
 // ── Grudges ──
 export const OATH_BREAK_SENTIMENT_DELTA = -0.3;

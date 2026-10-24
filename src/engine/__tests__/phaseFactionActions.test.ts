@@ -7,7 +7,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { phaseFactionActions } from '../phaseFactionActions';
+import { phaseFactionActions, seekFealtyWindowOpen } from '../phaseFactionActions';
 import type { GameState } from '../../types/gameState';
 import type { FactionActionRecord } from '../../types/factionAction';
 import {
@@ -348,5 +348,27 @@ describe('phaseFactionActions', () => {
     addFaction(graph, 'faction-empty', 'Ghost Guild', 50);
     const state = makeState(graph, FACTION_ACTION_INTERVAL);
     expect(() => phaseFactionActions(state)).not.toThrow();
+  });
+});
+
+// THR-1961 — one courtship per realm per calendar day, not a rolling cooldown.
+describe('seekFealtyWindowOpen', () => {
+  const courted = (executedTick: number): FactionActionRecord => ({
+    actionType: 'seek_fealty', executedTick, outcome: 'success',
+  } as FactionActionRecord);
+
+  it('closes the rest of the calendar day after a courtship', () => {
+    // Sweeps at 24 and 32 share day 2 (ticks 24–35).
+    expect(seekFealtyWindowOpen([courted(24)], 32)).toBe(false);
+  });
+
+  it('opens again on the next calendar day, even 8 ticks later', () => {
+    // Tick 40 is day 3: a rolling 12-tick cooldown would have closed it.
+    expect(seekFealtyWindowOpen([courted(32)], 40)).toBe(true);
+  });
+
+  it('ignores other action types and an empty history', () => {
+    expect(seekFealtyWindowOpen([], 24)).toBe(true);
+    expect(seekFealtyWindowOpen([{ ...courted(24), actionType: 'issue_bounty' }], 32)).toBe(true);
   });
 });
