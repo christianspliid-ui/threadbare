@@ -267,6 +267,35 @@ describe('phaseComposition', () => {
       expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-failed-drop')).toBe(false);
     });
 
+    // THR-2005: a long agenda that fails late must outlive its failure, not its start.
+    it('keeps a composition that failed 30 ticks after it began for 10 more ticks', () => {
+      const comp: ActiveComposition & { phases: Phase[] } = {
+        ...makeActiveComposition('comp-failed-late', []),
+        status: 'failed',
+        firedAtTick: 100,
+        activatedPhaseIds: ['p1'],
+        phaseActivationTicks: { p1: 105 },
+        failedAtTick: 130,
+      };
+      const state = makeState([comp], 2, { tick: 140 });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-failed-late')).toBe(true);
+    });
+
+    it('drops a late-failed composition once retention has passed since it failed', () => {
+      const comp: ActiveComposition & { phases: Phase[] } = {
+        ...makeActiveComposition('comp-failed-late-drop', []),
+        status: 'failed',
+        firedAtTick: 100,
+        failedAtTick: 130,
+      };
+      const state = makeState([comp], 2, { tick: 130 + COMPOSITION_FAILED_RETENTION_TICKS });
+      const result = phaseComposition(state);
+
+      expect(result.activeCompositions?.some((c) => c.compositionId === 'comp-failed-late-drop')).toBe(false);
+    });
+
     it('uses firedAtTick fallback for completed compositions with empty phaseActivationTicks', () => {
       const comp: ActiveComposition & { phases: Phase[] } = {
         ...makeActiveComposition('comp-completed-fallback', []),

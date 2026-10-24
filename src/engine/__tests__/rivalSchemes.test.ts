@@ -394,7 +394,10 @@ describe('phaseRivalActions — counter-play', () => {
 
     const comp = state.activeCompositions?.find((c) => c.sponsorRivalId === 'actor_rival_1');
     // Either the failed comp is still retained (pre-GC) as 'failed', or it has been GC'd.
-    if (comp) expect(comp.status).toBe('failed');
+    if (comp) {
+      expect(comp.status).toBe('failed');
+      expect(typeof comp.failedAtTick).toBe('number'); // THR-2005
+    }
 
     // A cool-failure chronicle beat was pushed.
     expect(state.chronicleEntries.some((e) => e.title.includes('unravels'))).toBe(true);

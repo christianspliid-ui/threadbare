@@ -2489,7 +2489,9 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         worldFlags[schemeFlags.counters(compId)] = counters;
         if (counters >= RIVAL_SCHEME_COUNTERS_TO_FAIL) {
           activeCompositions = activeCompositions.map((c) =>
-            c.compositionId === compId ? { ...c, status: 'failed' as const } : c,
+            c.compositionId === compId
+              ? { ...c, status: 'failed' as const, failedAtTick: state.tick }
+              : c,
           );
           rivalState = {
             ...rivalState,
