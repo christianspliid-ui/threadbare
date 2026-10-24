@@ -57,6 +57,9 @@ export type EconomicChronicleTrigger =
   | 'oath_sworn'
   | 'oath_broken'
   | 'rebellion'
+  // A liege pays its vassal's soldiers (THR-1974) — content in crown-chronicle-content.ts
+  | 'wages_taken_up'
+  | 'wages_stopped'
   // Hunger and unrest S2 (THR-1957) — content in unrest-chronicle-content.ts
   | 'town_on_the_edge'
   | 'town_defects'
@@ -244,6 +247,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
   oath_sworn: [...CROWN_CHRONICLE_TEMPLATES.oath_sworn],
   oath_broken: [...CROWN_CHRONICLE_TEMPLATES.oath_broken],
   rebellion: [...CROWN_CHRONICLE_TEMPLATES.rebellion],
+  wages_taken_up: [...CROWN_CHRONICLE_TEMPLATES.wages_taken_up],
+  wages_stopped: [...CROWN_CHRONICLE_TEMPLATES.wages_stopped],
   town_on_the_edge: [...UNREST_CHRONICLE_TEMPLATES.town_on_the_edge],
   town_defects: [...UNREST_CHRONICLE_TEMPLATES.town_defects],
   town_rises: [...UNREST_CHRONICLE_TEMPLATES.town_rises],

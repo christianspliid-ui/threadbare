@@ -27,7 +27,7 @@ import {
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege, createSiegeNode } from './siegeResolution';
-import { mayBesiege, campaignTargetOf, isEnemyFaction } from './warAims/enemy';
+import { mayBesiege, campaignTargetOf, isEnemyFaction, commanderFactionOf } from './warAims/enemy';
 import { WAR_AIMS_ENABLED } from '../data/war-aims-constants';
 import { applyAftermath } from './battleAftermath';
 import { recordBattleFought } from './battleRecord';
@@ -260,6 +260,9 @@ export function createBattleNode(
       defenderArmyId,
       hexId,
       momentum: initialMomentum,
+      // THR-1974 — the faction each side fought for (its paying liege, else its own).
+      attackerCommanderFactionId: commanderFactionOf(graph, attackerArmyId, state.tick) ?? null,
+      defenderCommanderFactionId: commanderFactionOf(graph, defenderArmyId, state.tick) ?? null,
     });
 
     // War news (THR-1564): battle joined, reported at the site.
@@ -626,12 +629,15 @@ export function phaseBattleDetection(state: GameState): void {
           const existingBattles = graph.getOutgoingEdges(armyId, 'participates_in');
           if (existingBattles.length > 0) continue;
 
-          const armyFaction = graph.getOutgoingEdges(armyId, 'member_of')[0]?.target;
-          if (!armyFaction || armyFaction === settlementFaction) continue;
+          // THR-1974 — the army besieges for whoever pays its soldiers (its liege while the
+          // wage is fresh); its own faction's halls and towns stay barred.
+          const ownFaction = graph.getOutgoingEdges(armyId, 'member_of')[0]?.target;
+          const armyFaction = commanderFactionOf(graph, armyId, state.tick);
+          if (!armyFaction || armyFaction === settlementFaction || ownFaction === settlementFaction) continue;
           // THR-1922 — no siege of a town the army's faction keeps a hall in (unless it was
           // taken from them), nor of a holder it has no quarrel with, unless a notable's
           // campaign declared that town.
-          if (!mayBesiege(graph, armyFaction, settlementFaction, settlementId, campaignTargetOf(graph, armyId))) continue;
+          if (!mayBesiege(graph, armyFaction, settlementFaction, settlementId, campaignTargetOf(graph, armyId), ownFaction)) continue;
 
           // Skip if there's already a siege at this settlement
           const existingSieges = graph.getNodesByType('actor').filter(n => {
@@ -658,7 +664,14 @@ function areHostile(state: GameState, armyA: string, armyB: string): boolean {
   if (!factionA || !factionB) return false;
   // THR-1933 — only enemies fight: two armies that are not at war share a hex in peace.
   // Off, any two different factions fight (the pre-war-aims rule).
-  return WAR_AIMS_ENABLED ? isEnemyFaction(graph, factionA, factionB) : factionA !== factionB;
+  if (!WAR_AIMS_ENABLED) return factionA !== factionB;
+  // Two armies of one faction never fight, whoever pays their soldiers (review gate, THR-1974).
+  if (factionA === factionB) return false;
+  // THR-1974 — each side fights for whoever pays its soldiers (its liege while the wage
+  // is fresh): two armies one liege pays never fight, and a paid army never fights its paymaster.
+  const commanderA = commanderFactionOf(graph, armyA, state.tick) ?? factionA;
+  const commanderB = commanderFactionOf(graph, armyB, state.tick) ?? factionB;
+  return isEnemyFaction(graph, commanderA, commanderB);
 }
 
 // ─── Battle Tick Phase ──────────────────────────────────────────────────

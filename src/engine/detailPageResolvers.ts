@@ -1017,12 +1017,14 @@ const groupIntentResolver: SectionResolver = (ctx) => {
   const state = groupStateOf(node);
   const objective = state?.objective as { type?: unknown; targetNodeId?: unknown; targetId?: unknown } | null | undefined;
 
-  const aim = node && state ? armyAimView(ctx.graph, node.id) : null;
+  const aim = node && state ? armyAimView(ctx.graph, node.id, ctx.tick) : null;
   if (aim) {
     const section = linkedProseSection('what_they_are_doing', 'What they are doing', fillSlots(aim.template, {
       town: aim.slots.town ? { text: aim.slots.town.name, ref: { kind: aim.slots.town.kind, id: aim.slots.town.id } } : null,
       enemy: aim.slots.enemy ? { text: aim.slots.enemy.name, ref: { kind: aim.slots.enemy.kind, id: aim.slots.enemy.id } } : null,
-    }), 'armyAimView');
+      // THR-1974 — the liege paying its soldiers, a link (Law 21); its tooltip rides the label.
+      liege: aim.slots.liege ? { text: aim.slots.liege.name, ref: { kind: aim.slots.liege.kind, id: aim.slots.liege.id } } : null,
+    }), 'armyAimView', aim.slots.liege ? { labelTooltipId: 'ui.army.paidBy' } : {});
     if (section) return section;
   }
 

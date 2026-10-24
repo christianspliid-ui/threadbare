@@ -1705,7 +1705,27 @@ export interface DebugBridge {
     recentLosses: { tick: number; reason: string; amount: number }[];
     taxPaidToday?: number;
     taxPaidTotal?: number;
+    /** THR-1974 — the liege covered at least one of the vassal's armies on the last pay day. */
+    wagesCoveredLastDay?: boolean;
+    /** THR-1974 — wages the liege paid this vassal's soldiers on the last pay day. */
+    wagesPaidToday?: number;
   }>>;
+  /**
+   * THR-1974 — who an army fights for and who feeds it. `commanderFactionId` is its
+   * paying liege while `liegePaidTick` is fresh (one pay day), else its own faction;
+   * `supplyFactionIds` is its own faction plus that liege. `null` when the id is not an army.
+   */
+  /**
+   * THR-1974 — verification lever: set a faction's purse (clamped to the treasury cap).
+   * Returns the wealth written, or null when the id is not a faction.
+   */
+  setFactionWealth: (factionId: string, amount: number) => Promise<number | null>;
+  getArmyPaymaster: (armyId: string) => Promise<{
+    ownFactionId: string | null;
+    commanderFactionId: string | null;
+    liegePaidTick: number | null;
+    supplyFactionIds: string[];
+  } | null>;
   /**
    * THR-1933 — an army's war aim. `objective.reason` says why it marches
    * (`richest` / `feeds_staple` / `breaks_monopoly` / `completes_monopoly` / `defence`); `holdReason` is set while it holds for want

@@ -23,7 +23,9 @@
 import type { GameState } from '../types/gameState';
 import type { ArmyState, ArmySizeCategory } from '../types/army';
 import type { ArmySupplyTier } from '../types/army';
+import type { WorldGraph } from './graph';
 import { readLocationResourceBalance } from './resourceEconomy';
+import { ownFactionOf, payingLiegeOf } from './crown/wages';
 import {
   ARMY_SUPPLY_MAX,
   ARMY_SUPPLY_MAX_HOPS,
@@ -106,16 +108,36 @@ export function throughputForHops(hops: number, threatened: boolean): number {
 export function isSupplyHost(
   state: GameState,
   locationId: string,
-  factionId: string | undefined,
+  factionId: string | readonly string[] | undefined,
 ): boolean {
-  if (!factionId) return false;
+  // THR-1974 — a list of feeding factions (own + a paying liege): any one's town feeds.
+  const feeders = typeof factionId === 'string' ? [factionId] : (factionId ?? []);
+  if (feeders.length === 0) return false;
   const node = state.graph.getNode(locationId);
   if (!node || node.type !== 'location') return false;
   const controlled = state.graph
     .getIncomingEdges(locationId, 'controls')
-    .some((e) => e.source === factionId);
+    .some((e) => feeders.includes(e.source));
   if (!controlled) return false;
   return readLocationResourceBalance(node.properties) >= ARMY_SUPPLY_HOST_MIN_BALANCE;
+}
+
+/**
+ * THR-1974 — the factions whose towns feed an army: its own, plus its paying liege while
+ * the wage is fresh (`crown/wages.ts`). The liege's towns are added, not substituted.
+ * Empty for an army with no `member_of` (cut off, as before).
+ */
+export function supplyFactionsOf(graph: WorldGraph, armyId: string, tick: number): string[] {
+  const own = ownFactionOf(graph, armyId);
+  if (!own) return [];
+  const liege = payingLiegeOf(graph, armyId, tick);
+  return liege ? [own, liege] : [own];
+}
+
+/** The faction among `factionIds` that controls `hostId` (the supply trace's `hostFactionId`). */
+export function hostFactionOf(graph: WorldGraph, hostId: string | null, factionIds: readonly string[]): string | null {
+  if (!hostId) return null;
+  return graph.getIncomingEdges(hostId, 'controls').map(e => e.source).find(id => factionIds.includes(id)) ?? null;
 }
 
 /**
@@ -136,11 +158,11 @@ export function isSupplyHost(
 export function resolveSupplyLine(
   state: GameState,
   originId: string | undefined,
-  factionId: string | undefined,
+  factionId: string | readonly string[] | undefined,
   options: { allowSelfHost?: boolean } = {},
 ): SupplyLine {
   const { allowSelfHost = true } = options;
-  if (!originId || !factionId) return { ...CUT_OFF_SUPPLY_LINE };
+  if (!originId || !factionId || factionId.length === 0) return { ...CUT_OFF_SUPPLY_LINE };
   if (!state.graph.getNode(originId)) return { ...CUT_OFF_SUPPLY_LINE };
 
   // The army may already be standing on a host — zero hops, full throughput.

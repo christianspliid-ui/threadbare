@@ -101,7 +101,7 @@ A **town a mortal founds** stands on open ground, is **ruled** by the founder's 
 
 Every **faction keeps a purse**: the towns, places, borders, tolls and guild work it holds pay it daily, and its armies cost upkeep. Raising an army costs coin; an army its purse cannot pay deserts. The faction sheet's **Purse** shows its Means in words.
 
-A **realm courts fealty**: it forces a faction it besieged or took a town from, else persuades or buys one with protection, standing and a gift. A vassal pays its liege three tenths of its day income; its loyalty, on the reputation words, breaks at Distrusted, and a big realm breaking away rebels. A realm with two oaths is a **Crown** (THR-1932).
+A **realm courts fealty**: it forces a faction it besieged or took a town from, else persuades or buys one with protection, standing and a gift. A vassal pays its liege three tenths of its day income; its loyalty, on the reputation words, breaks at Distrusted, and a big realm breaking away rebels. A realm with two oaths is a **Crown** (THR-1932). A liege pays, feeds and commands any vassal army it pays (THR-1974).
 
 ## The World in Company
 

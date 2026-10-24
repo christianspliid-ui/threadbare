@@ -240,6 +240,14 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
         loyalty: p.loyalty ?? 0,
         deltas: (p.lastLoyaltyDay?.deltas ?? []).map(d => `${d.reason} ${d.amount > 0 ? '+' : ''}${d.amount.toFixed(3)}`).join(', ') || '—',
         tax: p.taxPaidToday ?? 0,
+        // THR-1974 — wages the liege paid today, and the vassal's armies it covered / left unpaid.
+        wages: p.wagesPaidToday ?? 0,
+        armies: (() => {
+          const d = readPurseDay(graph.getNode(e.source));
+          if (!d) return '—';
+          const covered = d.armiesPaidByLiege?.length ?? 0;
+          return `${covered} / ${Math.max(0, (d.armiesUnpaid?.length ?? 0) - covered)}`;
+        })(),
       };
     });
     const crowns = graph.getNodesByType('actor')
@@ -283,6 +291,7 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
             <tr style={{ color: 'var(--text-tertiary)' }}>
               <th style={{ ...cell, textAlign: 'left' }}>vassal</th><th style={{ ...cell, textAlign: 'left' }}>liege</th><th style={{ ...cell, textAlign: 'left' }}>kind</th>
               <th style={cell}>sworn day</th><th style={cell}>loyalty</th><th style={{ ...cell, textAlign: 'left' }}>today</th><th style={cell}>tax today</th>
+              <th style={cell}>wages today</th><th style={cell}>armies covered / uncovered</th>
             </tr>
           </thead>
           <tbody>
@@ -295,6 +304,8 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
                 <td style={cell}>{o.loyalty.toFixed(2)}</td>
                 <td style={{ ...cell, textAlign: 'left' }}>{o.deltas}</td>
                 <td style={cell}>{o.tax.toFixed(2)}</td>
+                <td style={cell}>{o.wages.toFixed(2)}</td>
+                <td style={cell}>{o.armies}</td>
               </tr>
             ))}
           </tbody>

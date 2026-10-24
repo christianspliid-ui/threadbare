@@ -68,21 +68,29 @@ export function threatTo(world: CrownWorld, c: string, r: string): number {
 }
 
 /**
+ * THR-1974 — the gift's daily base: what C costs to keep (`oathValueOf`, read once into
+ * the world). A world built without it (an old fixture) falls back to C's income.
+ */
+function giftBase(world: CrownWorld, c: string): number {
+  return Math.max(0, world.oathValue?.get(c) ?? world.income.get(c) ?? 0);
+}
+
+/**
  * The largest gift share R can pay C, keeping OATH_GIFT_RESERVE back and no more than C's
  * treasury can hold under FACTION_TREASURY_CAP — the score never counts coin that cannot
- * land. 0 when C earns nothing or is already at the cap.
+ * land. 0 when C costs nothing to keep or is already at the cap.
  */
 export function affordableGift(world: CrownWorld, c: string, r: string): number {
-  const full = OATH_GIFT_DAYS * Math.max(0, world.income.get(c) ?? 0);
+  const full = OATH_GIFT_DAYS * giftBase(world, c);
   if (full <= 0) return 0;
   const spare = Math.max(0, (world.wealth.get(r) ?? 0) - OATH_GIFT_RESERVE);
   const room = Math.max(0, FACTION_TREASURY_CAP - (world.wealth.get(c) ?? 0));
   return Math.min(1, spare / full, room / full);
 }
 
-/** Coin a gift of this share costs: giftShare × OATH_GIFT_DAYS × income(C). */
+/** Coin a gift of this share costs: giftShare × OATH_GIFT_DAYS × oathValue(C) (THR-1974; was income). */
 export function giftCost(world: CrownWorld, c: string, giftShare: number): number {
-  return giftShare * OATH_GIFT_DAYS * Math.max(0, world.income.get(c) ?? 0);
+  return giftShare * OATH_GIFT_DAYS * giftBase(world, c);
 }
 
 export function offerScore(world: CrownWorld, c: string, r: string, giftShare: number): OfferParts {

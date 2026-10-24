@@ -2701,6 +2701,40 @@ if (import.meta.env.DEV) {
         })),
       };
     },
+    /**
+     * THR-1974 — who an army fights for and who feeds it: its own faction, its commander
+     * (the paying liege while the wage stamp is fresh, else its own), the stamp, and the
+     * factions whose towns may supply it. `null` when the id is not an army.
+     */
+    getArmyPaymaster: async (armyId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      const node = state.graph.getNode(armyId);
+      const as = node?.properties.armyState as { liegePaidTick?: number } | undefined;
+      if (!node || !as) return null;
+      const { commanderFactionOf } = await import('./engine/warAims/enemy');
+      const { ownFactionOf } = await import('./engine/crown/wages');
+      const { supplyFactionsOf } = await import('./engine/armySupply');
+      return {
+        ownFactionId: ownFactionOf(state.graph, armyId) ?? null,
+        commanderFactionId: commanderFactionOf(state.graph, armyId, state.tick) ?? null,
+        liegePaidTick: typeof as.liegePaidTick === 'number' ? as.liegePaidTick : null,
+        supplyFactionIds: supplyFactionsOf(state.graph, armyId, state.tick),
+      };
+    },
+    /**
+     * THR-1974 — verification lever: set a faction's purse (clamped through
+     * `applyTreasuryDelta`), so a vassal's next pay day can leave its army unpaid and the
+     * real wage step pay it. Returns the wealth written, or null when the id is not a faction.
+     */
+    setFactionWealth: async (factionId: string, amount: number) => {
+      const state = _gameStateProvider?.();
+      const node = state?.graph.getNode(factionId);
+      if (!state || !node || node.properties.actorType !== 'faction' || !Number.isFinite(amount)) return null;
+      const { applyTreasuryDelta } = await import('./engine/wealth');
+      node.properties.wealth = applyTreasuryDelta(0, Math.max(0, amount));
+      return node.properties.wealth as number;
+    },
     /** THR-1932 — every live oath, vassal → liege, with the edge's properties. */
     getOaths: async () => {
       const state = _gameStateProvider?.();

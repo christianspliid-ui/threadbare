@@ -1,6 +1,8 @@
 import React from 'react';
 import type { WorldGraph } from '../../../engine/graph';
 import type { ArmySupplyTier } from '../../../types/army';
+import { commanderFactionOf } from '../../../engine/warAims/enemy';
+import { supplyFactionsOf } from '../../../engine/armySupply';
 import { FIELD_BATTLE_COLOR, SIEGE_COLOR } from '../../HexMapV2/scene/BattleIndicatorLayer';
 
 /**
@@ -93,6 +95,10 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
             const supplyHost = supplyHostId ? graph.getNode(supplyHostId) : null;
             const supplyHops = as.supplyHops as number | null | undefined;
             const ticksActive = currentTick - (as.raisedTick as number);
+            // THR-1974 — who it fights for (its paying liege while the wage is fresh) and who feeds it.
+            const commanderId = commanderFactionOf(graph, army.id, currentTick);
+            const fightsFor = commanderId ? graph.getNode(commanderId)?.name ?? commanderId : '—';
+            const fedBy = supplyFactionsOf(graph, army.id, currentTick).map(id => graph.getNode(id)?.name ?? id).join(' + ') || '—';
 
             return (
               <div key={army.id} className="p-2 bg-[var(--bg-raised)] rounded mb-1.5 text-[11px]">
@@ -100,6 +106,14 @@ export function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: Armie
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Faction:</span>
                   <span style={DETAIL_VALUE_STYLE}>{faction?.name ?? '—'}</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Fights for:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{fightsFor}</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Fed by:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{fedBy}</span>
                 </div>
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Commander:</span>

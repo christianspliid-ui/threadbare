@@ -30,7 +30,8 @@ import type { GameState } from '../types/gameState';
 import type { GraphEdge, GraphNode } from '../types/graph';
 import type { ChronicleEntry } from '../types/narrative';
 import type { FactionActionRecord } from '../types/factionAction';
-import type { OathSwornTrace, OathRefusedTrace, OathBrokenTrace, RebellionTrace } from '../types/trace';
+import type { OathSwornTrace, OathRefusedTrace, OathBrokenTrace, RebellionTrace, OathWagesTrace } from '../types/trace';
+import type { ArmyState } from '../types/army';
 import type { WorldGraph } from './graph';
 import type { RealmProjection } from './realmProjection';
 import type { EconomicChronicleTrigger } from '../data/economic-chronicle-content';
@@ -44,6 +45,8 @@ import { isFactionInAttention, readPurseDay, PURSE_LAST_DAY_PROP } from './facti
 import { buildCrownWorld, maySwear, mayCourt, onReswearCooldown, type CrownWorld } from './crown/eligibility';
 import { offerScore, affordableGift, giftCost } from './crown/offer';
 import { isRealmFaction, readOath, vassalsOf } from './crown/crownView';
+import { crownWagesActive } from './crown/wages';
+import { upkeepOf, upkeepPerDayOf } from './factionPurse/upkeep';
 import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS } from '../data/faction-purse-constants';
 import { OATH_SWORN_LINES, OATH_BROKEN_LINES } from '../data/crown-chronicle-content';
 import {
@@ -68,6 +71,8 @@ import {
   OATH_REFUSAL_SENTIMENT_DELTA,
   OATH_REFUSAL_SENTIMENT_FLOOR,
   OATH_BREAK_REASON_WINDOW_DAYS,
+  LIEGE_WAGE_RESERVE_DAYS,
+  WAGES_CHRONICLE_MIN_GAP_DAYS,
 } from '../data/crown-constants';
 
 // ─── Switch ───────────────────────────────────────────────────────────────
@@ -318,6 +323,7 @@ export function executeSeekFealty(
       parts,
       giftPaid,
       coercedBy: coercedBy ? { siegeBattleId: coercedBy.siegeBattleId, townTakenId: coercedBy.townTakenId } : undefined,
+      oathValue: world.oathValue.get(vassalId) ?? 0,
       summary: `${nameOf(graph, vassalId)} swears fealty to ${realm.name ?? R} (${kind}`
         + `${giftPaid > 0 ? `, gift ${giftPaid.toFixed(1)}` : ''}) — score ${parts.score.toFixed(2)}`,
     } as OathSwornTrace);
@@ -404,6 +410,7 @@ export function executeSeekFealty(
     liegeId: R,
     parts: bestRefused.parts,
     affordableGift: bestRefused.gift,
+    oathValue: world.oathValue.get(bestRefused.id) ?? 0,
     summary: `${nameOf(graph, bestRefused.id)} refuses fealty to ${realm.name ?? R} — score ${bestRefused.parts.score.toFixed(2)}`,
   } as OathRefusedTrace);
   return {
@@ -426,6 +433,125 @@ export interface CrownPhaseResult {
   chronicleEntries: ChronicleEntry[];
   broken: number;
   taxMoved: number;
+  /** THR-1974 — wages lieges paid their vassals' soldiers today. */
+  wagesPaid: number;
+}
+
+/** THR-1974 — one oath's wage day, kept for the purse-day write-back. */
+interface WageRecord {
+  vassalId: string;
+  liegeId: string;
+  covered: string[];
+  paid: number;
+}
+
+/**
+ * THR-1974 rule 2 — the liege pays the soldiers its vassal could not. Over the surviving
+ * oaths in edge-id order: the vassal's `armiesUnpaid` (today's purse verdict), in army id
+ * order, whole armies only, from the liege's purse above LIEGE_WAGE_RESERVE_DAYS of its
+ * own upkeep. The first army it cannot cover and every one after stay unpaid. A covered
+ * army is stamped `paidThroughTick` and `liegePaidTick`; the vassal's own purse and its
+ * `armiesUnpaid` are never rewritten (the purse's broke line compares them day to day).
+ */
+function payWages(
+  state: GameState,
+  surviving: readonly GraphEdge[],
+  out: ChronicleEntry[],
+): WageRecord[] {
+  const records: WageRecord[] = [];
+  if (!crownWagesActive()) return records;
+  const graph = state.graph;
+  const tick = state.tick;
+  const reserve = new Map<string, number>();
+  const reserveOf = (liegeId: string): number => {
+    let r = reserve.get(liegeId);
+    if (r === undefined) {
+      r = LIEGE_WAGE_RESERVE_DAYS * upkeepPerDayOf(graph, liegeId);
+      reserve.set(liegeId, r);
+    }
+    return r;
+  };
+  // liege → the pair to chronicle today: one line per liege per pay day, the oldest oath.
+  const lines = new Map<string, { edge: GraphEdge; trigger: EconomicChronicleTrigger; swornTick: number }>();
+
+  for (const edge of surviving) {
+    try {
+      const vassalId = edge.source;
+      const liegeId = edge.target;
+      const vassal = graph.getNode(vassalId);
+      const liege = graph.getNode(liegeId);
+      const day = readPurseDay(vassal);
+      // No purse day today: no wage; the armies follow the purse's own verdict.
+      if (!vassal || !liege || !day || day.tick !== tick) continue;
+      const props = readOath(edge);
+
+      const covered: string[] = [];
+      const uncovered: string[] = [];
+      const spareBefore = Math.max(0, readWealth(liege.properties) - reserveOf(liegeId));
+      let paid = 0;
+      for (const armyId of day.armiesUnpaid ?? []) {
+        const armyNode = graph.getNode(armyId);
+        const as = armyNode?.properties.armyState as ArmyState | undefined;
+        // An id that is no longer an army of this vassal is skipped.
+        if (!armyNode || !as || !graph.getOutgoingEdges(armyId, 'member_of').some(e => e.target === vassalId)) continue;
+        const cost = upkeepOf(as.size);
+        const spare = Math.max(0, readWealth(liege.properties) - reserveOf(liegeId));
+        if (uncovered.length > 0 || spare + 1e-9 < cost) {
+          uncovered.push(armyId);
+          continue;
+        }
+        paid += -setWealth(graph, liegeId, -cost);
+        covered.push(armyId);
+        armyNode.properties.armyState = { ...as, paidThroughTick: tick, liegePaidTick: tick };
+      }
+
+      const coveredToday = covered.length > 0;
+      const prev = props.wagesCoveredLastDay === true;
+      const started = coveredToday && !prev;
+      const stopped = !coveredToday && prev && uncovered.length > 0;
+      graph.updateEdge(edge.id, { properties: { wagesCoveredLastDay: coveredToday, wagesPaidToday: paid } });
+      if (coveredToday) records.push({ vassalId, liegeId, covered, paid });
+
+      if (coveredToday || uncovered.length > 0) {
+        emitTrace({
+          category: 'oath_wages',
+          tick,
+          vassalId,
+          liegeId,
+          armiesCovered: covered,
+          armiesUncovered: uncovered,
+          paid,
+          liegeSpareBefore: spareBefore,
+          started,
+          stopped,
+          summary: `${nameOf(graph, liegeId)} pays ${covered.length} of ${covered.length + uncovered.length} unpaid armies of ${nameOf(graph, vassalId)} (${paid.toFixed(1)})`
+            + (started ? ' — pay taken up' : stopped ? ' — pay stopped' : ''),
+        } as OathWagesTrace);
+      }
+
+      if ((started || stopped) && inAttention(state, vassalId, liegeId)) {
+        const last = props.wagesChronicledTick;
+        const gapOk = typeof last !== 'number' || tick - last >= WAGES_CHRONICLE_MIN_GAP_DAYS * PURSE_CYCLE_TICKS;
+        const swornTick = props.swornTick ?? 0;
+        const held = lines.get(liegeId);
+        if (gapOk && (!held || swornTick < held.swornTick)) {
+          lines.set(liegeId, { edge, trigger: started ? 'wages_taken_up' : 'wages_stopped', swornTick });
+        }
+      }
+    } catch (err) {
+      // Fail-soft: this oath's armies follow the purse's verdict today (NFP #4).
+      console.warn(`[crown] wages on ${edge.id} skipped today`, err);
+    }
+  }
+
+  for (const liegeId of [...lines.keys()].sort()) {
+    const { edge, trigger } = lines.get(liegeId)!;
+    const e = chronicleEntry(state, trigger, liegeId, edge.source);
+    if (!e) continue;
+    out.push(e);
+    graph.updateEdge(edge.id, { properties: { wagesChronicledTick: tick } });
+  }
+  return records;
 }
 
 function breakReason(props: SwornToEdgeProperties): { reason: LoyaltyReason; losses: Partial<Record<LoyaltyReason, number>> } {
@@ -611,10 +737,11 @@ function sanitizeOaths(state: GameState, hooks: CrownHooks, out: ChronicleEntry[
 
 /**
  * Run the crown's day. No-op off the pay-day boundary or with the crown off. Loyalty
- * first (an oath that breaks today pays no tax today), then the tax.
+ * first (an oath that breaks today pays no wage and no tax today), then the wages
+ * (THR-1974), then the tax.
  */
 export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPhaseResult {
-  const result: CrownPhaseResult = { chronicleEntries: [], broken: 0, taxMoved: 0 };
+  const result: CrownPhaseResult = { chronicleEntries: [], broken: 0, taxMoved: 0, wagesPaid: 0 };
   const tick = state.tick;
   if (!crownActive() || tick <= 0 || tick % PURSE_CYCLE_TICKS !== 0) return result;
   const graph = state.graph;
@@ -657,6 +784,22 @@ export function runCrownPhase(state: GameState, hooks: CrownHooks = {}): CrownPh
       // Fail-soft: this oath is skipped today (NFP #4).
       console.warn(`[crown] oath ${edge.id} skipped today`, err);
     }
+  }
+
+  // ── Wages (THR-1974): the liege pays what its vassal could not, before the tax ──
+  const wages = payWages(state, surviving, result.chronicleEntries);
+  const wagesTo = new Map<string, number>();
+  for (const w of wages) {
+    result.wagesPaid += w.paid;
+    wagesTo.set(w.liegeId, (wagesTo.get(w.liegeId) ?? 0) + w.paid);
+    const node = graph.getNode(w.vassalId);
+    const day = readPurseDay(node);
+    if (node && day) node.properties[PURSE_LAST_DAY_PROP] = { ...day, armiesPaidByLiege: w.covered, wagesFromLiege: w.paid };
+  }
+  for (const [id, amount] of wagesTo) {
+    const node = graph.getNode(id);
+    const day = readPurseDay(node);
+    if (node && day) node.properties[PURSE_LAST_DAY_PROP] = { ...day, wagesToVassals: amount };
   }
 
   // ── The fealty tax ──
