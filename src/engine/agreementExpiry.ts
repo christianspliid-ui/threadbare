@@ -14,11 +14,14 @@
  * expire here. An `active: false` edge is not removed for being inactive — only its term ends it.
  *
  * Runs in the condition-expiry beat (orchestrator Phase 6.625c). Pure over graph state;
- * returns what it removed for tracing. Fail-soft: a malformed edge is skipped, never thrown on.
+ * emits an `agreement_expired` trace per removal (the causal record of why a debt left the
+ * sheet) and returns what it removed. Fail-soft: a malformed edge is skipped, never thrown on.
  */
 
 import type { WorldGraph } from './graph';
 import { readAgreement, agreementTermEnded } from './agreementShape';
+import { emitTrace } from './traceBuffer';
+import type { TraceEntry } from '../types/trace';
 
 export interface ExpiredAgreement {
   edgeId: string;
@@ -48,6 +51,19 @@ export function expireAgreements(graph: WorldGraph, tick: number): ExpiredAgreem
       tick,
     });
     graph.removeEdge(edge.id);
+
+    const removed = expired[expired.length - 1];
+    emitTrace({
+      tick,
+      category: 'agreement_expired',
+      edgeId: edge.id,
+      sourceId: edge.source,
+      targetId: edge.target,
+      agreementType: removed.agreementType,
+      acquiredTick: agreement.acquiredTick,
+      term: agreement.ticksRemaining,
+      summary: `${removed.agreementName ?? removed.agreementType ?? 'agreement'} between ${edge.source} and ${edge.target} ended (term ran out)`,
+    } as unknown as TraceEntry);
   }
 
   return expired;
