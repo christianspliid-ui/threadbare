@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 91 |
-| **Total** | **305** |
+| 🔵 UNVERIFIED-OK | 93 |
+| **Total** | **307** |
 
 ## Contracts by producing subsystem
 
@@ -84,6 +84,7 @@ remediation ticket or the build fails.
 | `a-mortal-is-taught-a-spell-by-a-god-or-a-book` | A god can teach a mortal a spell, and some books teach whoever comes to hold them (THR-1231 acquisition channels 1 and 4). Every channel writes through one seam, grantSpell, which records where the spell came from on the knows_spell edge (source divine + grantedBy, or tome + viaItemId); the sheet reads that edge to say who or what taught it, and the cast resolver reads it to make a god-taught transgression echo back to the god. | edge: `knows_spell`, `grantSpell`, `applyTeachSpell`, `onItemAcquired`, `spell_grant` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `delivery-beat-plays-its-encounter` | A vision you witness is a scene you see. A delivery beat ("A Vision — …") wraps a branching encounter; pressing Witness mints that encounter on The First, where The First stands, and opens it in the encounter veil — so its own aftermath runs against the mortal the scene is about (THR-1650). The Director offers only a vision that can bind The First (one is bonded, stands somewhere, and stands at the kind of place the encounter is set in); one that cannot is withheld and traced `beat.delivery_skipped`, never shown and then failed. **Retired:** `resolvePendingBeat` no longer runs a delivery template's fallback reactions — it used to run them against the god, writing a mortal scene's consequences on the wrong actor (the THR-1526 untrue-scene class). | function: `prepareDeliveryEncounter`, `bindDeliverySubject` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `hunger-resonance-weighs-the-meeting-deal` | The Hunger you chose in remembrance decides which formative tests your First is put through — the god you said you were shows up in what the world asks of them, instead of only in how the prose is framed. | function: `buildLensFromIdentity`, `scoreDilemmaResonance`, `selectDilemmasScored` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `mandate-completion-ends-age` | Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway. | state-field: `mandateState` | Doom Clock & Journey | 🔵 UNVERIFIED-OK | — |
 | `milestone-grants-unlock-repertoire-cards` | Earning something as a god changes what you can play as a god — a milestone hands you a new way to use a power you already had, not a bigger number on the one you have. | function: `buildRepertoire`, `isMemberUnlocked`, `memberAccess` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `offering-take-up-unlocks-card` | The world offers three cards each day; the card the god takes up is in its hand. `resolvePendingBeat` (offering branch) adds the chosen card to `unlockedActionIds` — the one list the drawer reads through `isActionRevealed` — and pays the price into `offeringSpentBySphere`, never the earned counter (THR-1811). A choice not offered, or no longer affordable, resolves as passed and moves nothing. | function: `unlockedActionIds` | Essence & Divine Economy | 🟢 LIVE | — |
 | `player-acts-pace-spine-gifts` | The god's gifts arrive between the player's own acts: after one opening gift resolves, the next waits until the player has cast, moved the avatar or followed a mortal — or until an idle fallback has run — so the opening never stacks popups before the player has acted. | state-field: `playerActCount` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
@@ -117,6 +118,7 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `account-carries-echoes-to-the-next-world` | When an age ends the world remembers it: the places the god held, the mortals it raised and the relics its chosen carried are kept, and the next world wakes with them in its memory. | function: `concludeRun`, `liveEchoes` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
+| `age-end-writes-resonance-memories` | When an age ends the World-Soul keeps a few lines about it — how it ended, what the world leaned to, the god's greatest mark — and older ones fade. | function: `captureAgeMemories`, `buildTwilightBeats`, `openTwilight` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `alert-channel-to-chronicle` | Every alert-channel tick event that reaches News also writes one Witness-voice Chronicle line in its own words (`playerProse ?? message`), so news that lapses out of Needs you can be reread. `phaseAlertChronicle` runs last among the tick's event phases (after the post-narrative slot, where mandate alerts are raised) and skips an id the Chronicle already holds, a type `ALERT_CHRONICLE_POLICY` exempts, and an alert the threading gate suppresses. Each alert site carries an `// alert-chronicle: <type>` marker; `alertChronicle.test.ts` fails on an unclassified one. Traced as `chronicle.intake.alert`. | property: `chronicleEntries` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `alert-channel-to-needs-you` | Alert-level tick events reach the player as Needs-you News rows. The router keeps every alert it routes (only a repeated `sourceEventId` drops), lapses them after `NEEDS_YOU_NEWS_KEEP_DAYS` × `TICKS_PER_DAY` ticks and counts any trimmed at `ALERT_SAFETY_CAP` on `alertsTrimmedAtCap`; `buildNeedsYou` applies the same window and turns a same-kind burst in one tick into one row "· and N more like it". The interrupt registry’s `held` list feeds the Held group, so a moment waiting behind the one on screen is named. | function: `routeNotifications`, `trimAlerts`, `buildNeedsYou`, `NEEDS_YOU_PRODUCERS`, `resolveInterrupts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `content-ref-opens-codex-overlay` | Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card's sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491). | function: `SURFACE_BY_CONTENT_KIND`, `generateContentPage`, `resolveContentEntry` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -491,10 +493,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Attention, Chronicle & Narrative → World Generation, Terrain & Places
 - **UL terms:** *Run*, *Echo*, *Account Record*
 - **Module:** `src/engine/accountRecord.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
 - **Write sites:** `src/components/Game/hooks/useSimulation.ts`
 - **Read sites:** `src/engine/gameInit.ts`
-- **Other hits:** `src/components/Game/debug/AccountDebugTab.tsx`, `src/engine/accountRecord.ts`, `src/engine/accountStore.ts`, `src/types/traces/account-traces.ts`
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/engine/accountRecord.ts`, `src/engine/accountStore.ts`, `src/engine/twilight.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `active-influences-render-on-sheet` — 🔵 UNVERIFIED-OK
@@ -518,6 +520,18 @@ remediation ticket or the build fails.
 - **Read sites:** `src/components/Game/hooks/useIncidentCapture.ts`, `src/debug-bridge.ts`, `src/engine/incidentBundle.ts`
 - **Other hits:** `src/components/Game/giftDelivery.ts`, `src/components/Game/hooks/useGameDebugLevers.ts`
 - **Verdict:** Verified 2026-09-10: THR-1134. The composer already sat outside the `import.meta.env.DEV` guard — only its bridge *registration* is dev-gated — so the production capture path passes the very same callback the bridge registers, rather than a second composer that would drift. `incidentBundle`'s `ui` section stores it and `focus` reads its three selection ids to choose the neighbourhood to dump. Non-vacuous by `incidentBundle.test.ts`: the focus arm asserts the selected actor's neighbours resolve through `getAllEdgesForNode`, and a separate arm asserts a selection id that resolves to no node is marked `missing: true` rather than dropped — a row silently omitted is the failure this section exists to make visible.
+
+### `age-end-writes-resonance-memories` — 🔵 UNVERIFIED-OK
+
+- **Intent:** When an age ends the World-Soul keeps a few lines about it — how it ended, what the world leaned to, the god's greatest mark — and older ones fade.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → World Generation, Terrain & Places
+- **UL terms:** *World-Soul*, *Account Record*, *Run*
+- **Module:** `src/engine/twilight.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/accountRecord.ts`
+- **Read sites:** `src/components/Game/hooks/useSimulation.ts`
+- **Other hits:** `src/engine/twilight.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `agent-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
 
@@ -1012,10 +1026,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 95 total — 4 write, 5 read, 86 unclassified
+- **Production hits:** 97 total — 4 write, 5 read, 88 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentDetail.ts`, `src/engine/strategicPresentation.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +81 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +83 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
@@ -1059,10 +1073,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 32 total — 1 write, 2 read, 29 unclassified
+- **Production hits:** 34 total — 1 write, 2 read, 31 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicPresentation.ts`, `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +24 more
+- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +26 more
 - **Verdict:** Verified 2026-09-10: THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
@@ -1465,10 +1479,10 @@ exit
 - **Producer → Consumer:** Doom Clock & Journey → Doom Clock & Journey
 - **UL terms:** *Doom Clock*, *The First*
 - **Module:** `src/engine/journeyEngine.ts`
-- **Production hits:** 52 total — 1 write, 1 read, 50 unclassified
+- **Production hits:** 54 total — 1 write, 1 read, 52 unclassified
 - **Write sites:** `src/engine/phaseDoom.ts`
 - **Read sites:** `src/engine/journeyEngine.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +45 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/DoomBar.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView/openingReveal.ts` +47 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `draw-together-carries-caster-sphere-to-the-name` — 🟢 LIVE
@@ -2530,6 +2544,17 @@ exit
 - **Other hits:** `src/data/condition-trait-content.ts`, `src/data/location-trait-constants.ts`, `src/data/prose-layer-content.ts`, `src/engine/battleRecord.ts`, `src/engine/deathSiteHaunting.ts` +4 more
 - **Verdict:** Verified 2026-09-22: THR-790. Unit (src/engine/__tests__/phaseLocationTraits.test.ts, 15 arms): each rule mints after LOCATION_TRAIT_SUSTAIN_TICKS at or above enter and not one tick sooner; releases below release and holds inside the dead band; the mid-band holds the counter and a dip below release resets it; Haunted needs the dead and supersedes Veil-thin with a `superseded` record; a 0-1 prosperity reads Destitute; a missing definition is counted and held, never thrown; touchWorld bumps on a mint only; a Place is never minted on. Pool term (src/engine/__tests__/locationTraitBonus.test.ts): scoreAndSelect's finalScore at a Welcoming town rises by exactly computeLocationTraitBonus for a #gold template and by 0 for an off-row template; every table key is a seated content tag and every row names a tag the shipped corpus carries. Carve (src/engine/__tests__/contentQuery-bearerKind.test.ts): the frozen pre-fix predicate returned all ten location ids to an untagged condition_template query (the arm), the resolver now returns none, classes:['location'] returns exactly them, and no shipped condition recipe resolves a location id. Census: npm run census:location-traits on seeds 42/99 x 150 ticks — verdicts recorded on Docs/status/2026-09-22-thr-790.md.
 
+### `mandate-completion-ends-age` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.
+- **Producer → Consumer:** Ascendant Beats & Progression → Doom Clock & Journey
+- **UL terms:** *Mandate*, *Doom Clock*, *Run*
+- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
+- **Write sites:** `src/engine/phaseMandate.ts`
+- **Read sites:** `src/engine/orchestrator.ts`
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/engine/cycleEnd.ts`, `src/engine/gameInit.ts` +7 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
 
 - **Intent:** The campaign spine narrates its own turns — a mandate stage advance, completion or failure reads in the authored voice of that mandate, not a generated stub.
@@ -2663,10 +2688,10 @@ exit
 - **Intent:** Every mortal leaves the world through one function, so every death owes the same guards and every reader sees the same shape. `markMortalDead` carries, in order: the `death_prevented` ward (THR-1241 — the ward wins and the caller resolves as *survived*, never as an error), the Aspect echo (THR-479 — an Aspect of the god is never unmade), and then the write in the caller's `mode`. `retain` leaves the node carrying `deceased`, `deceasedTick`, `deathCause` and `slainBy` so the chronicle can still name the dead and the grievance lane can still avenge them; `remove` sweeps the edges and deletes, which is what the lifecycle's own low-reputation death has always done. Callers today: the lifecycle (`remove`), band opposition, the plot, and the god's commissioned killing (`retain`), and all four ask the ward. THR-1534 closed the two that did not: band opposition's `applyCasualty` now builds the override context, and `GraphOpContext.overrideCtx` carries it to `mark_mortal_dead` from every builder that holds `GameState`. Behaviour is preserved for every death that existed before the extraction; whether *every* death should retain is deliberately left open, because it would change every node-absence reader at once. The Physical Conflict fight framework (THR-1258) is the next caller — it calls this, it does not extract its own (THR-1430).
 - **Producer → Consumer:** Agent Lifecycle → Ambitions & Undertakings
 - **Module:** `src/engine/agentLifecycle.ts`
-- **Production hits:** 60 total — 5 write, 3 read, 52 unclassified
+- **Production hits:** 61 total — 5 write, 3 read, 53 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/agentLifecycle.ts`, `src/engine/battleAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/groups/bandOpposition.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/factionNetwork.ts`, `src/engine/groups/groupQueries.ts`
-- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts` +47 more
+- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/debug-bridge.ts`, `src/engine/aspects.ts`, `src/engine/battleRecord.ts` +48 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-inflicts-a-condition` — 🟢 LIVE
@@ -3249,10 +3274,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **UL terms:** *Location*
 - **Module:** `src/engine/worldPast.ts`
-- **Production hits:** 53 total — 1 write, 4 read, 48 unclassified
+- **Production hits:** 54 total — 1 write, 4 read, 49 unclassified
 - **Write sites:** `src/engine/worldPast.ts`
 - **Read sites:** `src/engine/graphQueries.ts`, `src/engine/hexActorIndex.ts`, `src/engine/hexZoom.ts`, `src/engine/phases/routeEvents.ts`
-- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts` +43 more
+- **Other hits:** `src/components/Game/lair/LairMonsterCard.tsx`, `src/data/fight-screen-content.ts`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/agentDetail.ts` +44 more
 - **Verdict:** Verified 2026-09-28: THR-1631 S1. The first 200-tick census on seed 99 found a seeded founder drawn as the actor of `mct.quest.settle_dispute` and `cg.quest.investigate_disturbance` from tick 27 (`routeEvents.pickTargetAgent` walked `located_at` without a death check). That reader was fixed, not the dead, and so were the three location readers that counted the dead as residents: `graphQueries.getAgentsAtLocation` (birth density, rumour hearers, mentorship and strategic pools), `hexZoom.getAgentsAtLocation` and `buildHexActorIndex`. The run-time dead had the same leak. After the fix, `readers/past.ts` over 200 ticks on seeds 42 and 99 (medium) found 0 seeded dead alive, deciding or acting. The heavy test `worldPast-generatedWorld.test.ts` repeats the check every tick for 200 ticks on a small world, including resident counts and the hex actor index.
 
 ### `seeded-notable-holds-a-local-agenda` — 🟢 LIVE
@@ -3444,10 +3469,10 @@ exit
 - **Intent:** The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree.
 - **Producer → Consumer:** World Generation, Terrain & Places → Essence & Divine Economy
 - **UL terms:** *Essence*, *Sphere*
-- **Production hits:** 25 total — 1 write, 2 read, 22 unclassified
+- **Production hits:** 26 total — 1 write, 2 read, 23 unclassified
 - **Write sites:** `src/engine/ascendant.ts`
 - **Read sites:** `src/engine/essenceIncome.ts`, `src/engine/influence.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +17 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +18 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `spotlight-mortal-joins-guild` — 🟢 LIVE

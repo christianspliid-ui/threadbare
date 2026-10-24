@@ -3424,6 +3424,39 @@ export const CONTRACTS: readonly Contract[] = [
     // Slice 2 (THR-1843) places the map echoes; until then they are carried, not placed.
   },
   {
+    id: 'mandate-completion-ends-age',
+    producerSystem: PROGRESSION,
+    consumerSystem: DOOM,
+    intent:
+      'Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.',
+    ulTerms: ['Mandate', 'Doom Clock', 'Run'],
+    mechanism: { kind: 'state-field', symbols: ['mandateState'] },
+    writeSites: ['src/engine/phaseMandate.ts'],
+    readSites: ['src/engine/orchestrator.ts'],
+    // THR-1381 E3. `phaseMandate` (post-narrative) sets the flag; `phaseDoomExpiry`, later in
+    // the same tick, starts the Twilight from it before its own doom branch, tracing
+    // `age.ended { by: 'mandate' }`. No floor: Law 31 limits doom only.
+  },
+  {
+    id: 'age-end-writes-resonance-memories',
+    producerSystem: NARRATIVE,
+    consumerSystem: WORLDGEN,
+    intent:
+      'When an age ends the World-Soul keeps a few lines about it — how it ended, what the world leaned to, the god\'s greatest mark — and older ones fade.',
+    ulTerms: ['World-Soul', 'Account Record', 'Run'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['captureAgeMemories', 'buildTwilightBeats', 'openTwilight'],
+      module: 'src/engine/twilight.ts',
+    },
+    writeSites: ['src/engine/accountRecord.ts'],
+    readSites: ['src/components/Game/hooks/useSimulation.ts'],
+    // THR-1381 E5. `concludeRun` fades and prunes the carried memories, then appends this
+    // age's through `captureMemory`. Reader this run: the ceremony's third beat, built by
+    // `openTwilight` in useSimulation. The next world loads them into `worldSoul.resonance`
+    // (gameInit, through the account record); showing them there is THR-1971.
+  },
+  {
     id: 'world-tilt-shapes-cosmology',
     producerSystem: QUINTESSENCE,
     consumerSystem: WORLDGEN,
