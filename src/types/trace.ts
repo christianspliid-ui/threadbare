@@ -2590,7 +2590,7 @@ export interface RestlessRoadTrace extends TraceBase {
   fromLocationId: string;
   toLocationId: string | null;
   hexDistance: number | null;
-  /** The drawable story templates at the destination (empty unless one was found). */
+  /** `set_out`: the drawable story templates at the destination. `story_at_home`: the story candidates she already has. Else empty. */
   storyTemplateIds: string[];
 }
 

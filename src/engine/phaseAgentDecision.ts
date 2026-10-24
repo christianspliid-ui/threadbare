@@ -1103,20 +1103,30 @@ export function phaseAgentDecision(
       // decision's own verdict. A mortal with an appointment keeps it (THR-1479).
       const roadDrought = appointmentCtx ? null : restlessRoadDue(graph, agentId, state.tick);
       if (roadDrought !== null) {
-        if (candidates.some(c => !isRoutineTemplate(c.templateId))) {
+        const homeStories = candidates.filter(c => !isRoutineTemplate(c.templateId)).map(c => c.templateId);
+        if (homeStories.length > 0) {
           recordRestlessRoad(graph, agentId, state.tick, 'story_at_home');
-          emitRestlessRoadTrace(state.tick, agentId, roadDrought, 'story_at_home', locationId, null);
+          emitRestlessRoadTrace(state.tick, agentId, roadDrought, 'story_at_home', locationId, null, homeStories);
         } else {
           const relaxed = isTellingsCapRelaxed(graph, agentId, state.tick);
-          const mayStillDraw = (storyEntries: EncounterCacheEntry[]): EncounterCacheEntry[] => {
+          const mayStillDraw = (storyEntries: EncounterCacheEntry[], placeId: string): EncounterCacheEntry[] => {
+            // Her own checks first (retirement, the tellings cap, cooldown), so the
+            // pipeline's candidate cap below never cuts the stories she can still tell.
             const open = storyEntries.filter(e => {
               const told = familiarityRecord.attemptCount[e.templateId] ?? 0;
               return told < MAX_COMPLETIONS_PER_TEMPLATE && (relaxed || told < PAUSED_STORY_MAX_TELLINGS);
             });
-            return filterByCooldown(
+            const cooled = filterByCooldown(
               open, agentId, state.encounterProgress, state.unifiedActions, state.tick,
               rawCandidates.length, state.chapterArchive, PAUSED_STORY_REPEAT_FLOOR_TICKS,
             );
+            if (cooled.length === 0) return cooled;
+            // Then the real pipeline, as if she stood there (no runtime: the eligibility
+            // funnel counts her actual decisions only). A story her own pipeline already
+            // rejected for a prerequisite or a gate is rejected here too.
+            return runFilterPipeline(
+              cooled, agentId, placeId, graph, state.tick, mapCols, mapRows, undefined, holdReader,
+            ).candidates;
           };
           const dest = findRestlessRoadDestination(graph, locationId, encounterCache.getAllEntries(), mayStillDraw);
           const setOut = dest !== null
@@ -1125,6 +1135,25 @@ export function phaseAgentDecision(
           recordRestlessRoad(graph, agentId, state.tick, outcome);
           emitRestlessRoadTrace(state.tick, agentId, roadDrought, outcome, locationId, setOut ? dest : null);
           if (setOut && dest) {
+            // THR-1639: the journey names its story and records its pull on the axis
+            // the moving path's re-route check scores alternatives on (questPriority),
+            // so the road is not dropped at the first re-check, and the arrival flags
+            // that story as her journey goal.
+            const travellerNode = graph.getNode(agentId);
+            const travelling = travellerNode?.properties?.movementState as MovementState | undefined;
+            if (travellerNode && travelling) {
+              graph.updateNode(agentId, {
+                properties: {
+                  ...travellerNode.properties,
+                  movementState: {
+                    ...travelling,
+                    targetEncounterId: dest.targetEntry.templateId,
+                    targetSublocationId: dest.targetEntry.sublocationId ?? undefined,
+                    ...(Number.isFinite(dest.targetEntry.questPriority) ? { motivationPull: dest.targetEntry.questPriority } : {}),
+                  },
+                },
+              });
+            }
             // Law 45: the line lands only once the move is set.
             newEvents.push(buildRestlessRoadEvent(graph, agentId, dest.locationId, state.tick));
             appendEvent(agentId, {

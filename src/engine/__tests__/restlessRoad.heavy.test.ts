@@ -17,8 +17,13 @@ import { resolveLocationToHex } from '../encounterAwareness';
 import { isRoutineTemplate } from '../attentionCadence';
 import { hexDistance } from '../../lib/hexMath';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
-import { STORY_DROUGHT_TICKS, MAX_AWARENESS_HOPS, EDGE_HEX_AWARENESS_BONUS, MAX_COMPLETIONS_PER_TEMPLATE } from '../../data/agent-behavior-constants';
+import { STORY_DROUGHT_TICKS, MAX_COMPLETIONS_PER_TEMPLATE } from '../../data/agent-behavior-constants';
 import type { RestlessRoadTrace } from '../../types/trace';
+import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { SOCIAL_ENCOUNTER_TEMPLATES } from '../../data/social-encounter-content';
+import { SOCIAL_SCENE_TEMPLATES } from '../../data/social-scene-templates';
+import { TAVERN_UNIFIED_ENCOUNTER_TEMPLATES } from '../../data/tavern-encounter-content';
+import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from '../../data/secret-encounter-content';
 import type { GameState } from '../../types/gameState';
 
 const FIRST = 'ind_dev_the_first';
@@ -31,15 +36,31 @@ function setup(retireNearbyStories: boolean) {
   devSeedTheFirst(state);
   touchStructure(runtime);
   if (retireNearbyStories) {
-    // One tick builds the encounter cache; then every story within her awareness is
-    // one she has told to retirement, so the nearest story she may draw lies beyond it.
+    // One tick builds the encounter cache. Then every story she could meet without
+    // a long walk — any story template with an entry nearer than 10 hexes, and every
+    // social / tavern / secret template, which arrive as dynamic candidates — is one
+    // she has told to retirement, so the stories she may still draw lie beyond it.
     state = runTick(state, [], runtime);
     const home = resolveLocationToHex(state.graph, getAgentLocationId(state.graph, FIRST)!)!;
-    const range = MAX_AWARENESS_HOPS + EDGE_HEX_AWARENESS_BONUS + 1;
-    const attemptCount: Record<string, number> = {};
+    const near = new Set<string>();
+    const far = new Set<string>();
     for (const e of runtime.encounterCache!.getAllEntries()) {
+      if (isRoutineTemplate(e.templateId)) continue;
       const hex = resolveLocationToHex(state.graph, e.locationId);
-      if (hex && hexDistance(home, hex) <= range && !isRoutineTemplate(e.templateId)) attemptCount[e.templateId] = MAX_COMPLETIONS_PER_TEMPLATE;
+      const d = hex ? hexDistance(home, hex) : Infinity;
+      // Kept open: stories found only 10–12 hexes out, past any reach she has from home.
+      if (d >= 10 && d <= 12) far.add(e.templateId);
+      else near.add(e.templateId);
+    }
+    const attemptCount: Record<string, number> = {};
+    const known = [
+      ...UNIFIED_ACTION_TEMPLATES, ...SOCIAL_ENCOUNTER_TEMPLATES, ...SOCIAL_SCENE_TEMPLATES,
+      ...TAVERN_UNIFIED_ENCOUNTER_TEMPLATES, ...SECRET_DISCOVERY_ENCOUNTER_TEMPLATES,
+    ].map(t => t.id);
+    for (const id of [...known, ...near]) {
+      if (isRoutineTemplate(id)) continue;
+      if (far.has(id) && !near.has(id)) continue;
+      attemptCount[id] = MAX_COMPLETIONS_PER_TEMPLATE;
     }
     state.graph.getNode(FIRST)!.properties.familiarityRecord = { attemptCount };
   }
@@ -80,7 +101,7 @@ describe('THR-1959 — the restless road on the seeded medium world', () => {
     const { state, roads } = runUntilRoad(runtime, s0);
     expect(roads).toHaveLength(1);
     const road = roads[0];
-    expect(road.outcome).toBe('set_out');
+    expect(road.outcome, JSON.stringify(road.storyTemplateIds)).toBe('set_out');
     expect(road.toLocationId).toBeTruthy();
     expect(road.hexDistance).toBeGreaterThan(0);
     expect(road.storyTemplateIds.length).toBeGreaterThan(0);
@@ -91,5 +112,12 @@ describe('THR-1959 — the restless road on the seeded medium world', () => {
     const refs = entry?.segments?.filter(s => s.ref).map(s => s.ref!);
     expect(refs?.map(r => r.kind)).toEqual(['agent', expect.stringMatching(/^(location|sublocation)$/)]);
     expect(refs?.[1].id).toBe(road.toLocationId);
+    // The journey keeps its road (THR-1639 re-route guard): at the end of the run she is still
+    // bound for the place the Chronicle named, or already standing there.
+    const ms = state.graph.getNode(FIRST)!.properties.movementState as { destinationId?: string; targetEncounterId?: string; movementQueue?: string[] } | undefined;
+    const here = getAgentLocationId(state.graph, FIRST);
+    const stillBound = ms?.destinationId === road.toLocationId && (ms?.movementQueue?.length ?? 0) > 0;
+    expect(stillBound || here === road.toLocationId).toBe(true);
+    if (stillBound) expect(road.storyTemplateIds).toContain(ms!.targetEncounterId);
   });
 });

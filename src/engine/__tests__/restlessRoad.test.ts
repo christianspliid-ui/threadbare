@@ -58,7 +58,7 @@ function makeGraph(opts: { attentionMode?: 'pause' | 'auto_resolve'; extra?: Rec
   return g;
 }
 
-const entry = (templateId: string, locationId: string) => ({ templateId, locationId }) as EncounterCacheEntry;
+const entry = (templateId: string, locationId: string, questPriority = 1) => ({ templateId, locationId, questPriority }) as EncounterCacheEntry;
 const everything = (list: EncounterCacheEntry[]) => list;
 
 beforeEach(() => {
@@ -92,6 +92,13 @@ describe('when the road is due', () => {
     expect(lastRestlessRoadTick(g, AGENT)).toBeNull(); // only set_out stamps it
   });
 
+  it('waits out her story breath — every story is held back then, so the road would be the breath talking', () => {
+    const t = ESTABLISHED + STORY_DROUGHT_TICKS + 10;
+    const g = makeGraph({ extra: { lastStoryChapterEndTick: t - 1 } });
+    expect(restlessRoadDue(g, AGENT, t)).toBeNull();
+    expect(restlessRoadDue(g, AGENT, t + 30)).not.toBeNull();
+  });
+
   it('a future check tick (a save edit) does not hold her', () => {
     const g = makeGraph({ extra: { restlessRoadCheckTick: 5000 } });
     expect(restlessRoadDue(g, AGENT, ESTABLISHED + STORY_DROUGHT_TICKS)).not.toBeNull();
@@ -112,7 +119,8 @@ describe('where she goes', () => {
       entry(STORY, 'loc_b'),
       entry(OTHER_STORY, 'loc_a'),
     ], everything);
-    expect(dest).toEqual({ locationId: 'loc_a', hexDistance: 2, storyTemplateIds: [OTHER_STORY] });
+    expect(dest).toMatchObject({ locationId: 'loc_a', hexDistance: 2, storyTemplateIds: [OTHER_STORY] });
+    expect(dest?.targetEntry.templateId).toBe(OTHER_STORY);
   });
 
   it('ignores chores, her own place, and places beyond RESTLESS_ROAD_MAX_HEXES', () => {
@@ -135,10 +143,32 @@ describe('where she goes', () => {
     expect(dest?.locationId).toBe('loc_far');
   });
 
+  it('targets the drawable story with the highest questPriority, and asks mayStillDraw per place', () => {
+    const g = makeGraph();
+    const asked: string[] = [];
+    const dest = findRestlessRoadDestination(g, 'loc_home', [
+      entry(STORY, 'loc_b', 2),
+      entry(OTHER_STORY, 'loc_b', 5),
+      entry(STORY, 'loc_far', 9),
+    ], (list, placeId) => { asked.push(placeId); return list; });
+    expect(dest?.locationId).toBe('loc_b');
+    expect(dest?.targetEntry.templateId).toBe(OTHER_STORY);
+    expect(asked).toEqual(['loc_b']); // nearest first; stops at the first that passes
+  });
+
+  it('a place whose stories fail the pipeline from there is passed over', () => {
+    const g = makeGraph();
+    const dest = findRestlessRoadDestination(g, 'loc_home', [
+      entry(STORY, 'loc_a'),
+      entry(STORY, 'loc_far'),
+    ], (list, placeId) => (placeId === 'loc_a' ? [] : list));
+    expect(dest?.locationId).toBe('loc_far');
+  });
+
   it('reads a sublocation at its parent\'s hex', () => {
     const g = makeGraph();
     const dest = findRestlessRoadDestination(g, 'loc_home', [entry(STORY, 'loc_a_inn')], everything);
-    expect(dest).toEqual({ locationId: 'loc_a_inn', hexDistance: 2, storyTemplateIds: [STORY] });
+    expect(dest).toMatchObject({ locationId: 'loc_a_inn', hexDistance: 2, storyTemplateIds: [STORY] });
   });
 
   it('fails soft when her own place has no hex', () => {
@@ -150,7 +180,7 @@ describe('where she goes', () => {
 
 describe('the trace', () => {
   it('emits agent.restless_road with the destination on set_out', () => {
-    emitRestlessRoadTrace(90, AGENT, 80, 'set_out', 'loc_home', { locationId: 'loc_a', hexDistance: 2, storyTemplateIds: [STORY] });
+    emitRestlessRoadTrace(90, AGENT, 80, 'set_out', 'loc_home', { locationId: 'loc_a', hexDistance: 2, storyTemplateIds: [STORY], targetEntry: entry(STORY, 'loc_a') });
     const t = getTraces().find(x => x.category === 'agent.restless_road') as unknown as Record<string, unknown>;
     expect(t).toMatchObject({ agentId: AGENT, droughtTicks: 80, outcome: 'set_out', fromLocationId: 'loc_home', toLocationId: 'loc_a', hexDistance: 2, storyTemplateIds: [STORY] });
   });

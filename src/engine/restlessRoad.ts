@@ -35,7 +35,7 @@ import type { ChronicleSegment } from '../types/narrative';
 import type { WorldRef } from '../types/worldRef';
 import type { ThreadEdgeProperties } from '../types/influence';
 import { getThreadTo } from './graphQueries';
-import { isPausedThreadActor, isRoutineTemplate, storyDroughtTicks } from './attentionCadence';
+import { isPausedThreadActor, isRoutineTemplate, storyBreathRemaining, storyDroughtTicks } from './attentionCadence';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
 import { emitTrace } from './traceBuffer';
@@ -57,6 +57,13 @@ export interface RestlessRoadDestination {
   hexDistance: number;
   /** The story templates there she may still draw, sorted. */
   storyTemplateIds: string[];
+  /**
+   * The story she sets out for — the drawable entry with the highest
+   * `questPriority` (ties to the lower template id). The journey records it as
+   * its target and pull, so the moving path's re-route check does not drop the
+   * road at the first re-check (the THR-1639 failure).
+   */
+  targetEntry: EncounterCacheEntry;
 }
 
 function threadProps(graph: WorldGraph, agentId: string): ThreadEdgeProperties | null {
@@ -80,6 +87,9 @@ export function restlessRoadDue(graph: WorldGraph, agentId: string, tick: number
   if (!isPausedThreadActor(graph, agentId)) return null;
   const drought = storyDroughtTicks(graph, agentId, tick);
   if (drought < STORY_DROUGHT_TICKS) return null;
+  // During her story breath every story is held back on purpose, at home and at any
+  // destination alike, so "no story in reach" would be the breath talking. Wait it out.
+  if (storyBreathRemaining(graph, agentId, tick) > 0) return null;
   const last = threadProps(graph, agentId)?.restlessRoadCheckTick;
   if (typeof last === 'number' && last <= tick && tick - last < RESTLESS_ROAD_COOLDOWN_TICKS) return null;
   return drought;
@@ -88,15 +98,19 @@ export function restlessRoadDue(graph: WorldGraph, agentId: string, tick: number
 /**
  * The nearest place, by hex distance from `fromLocationId`, whose cache entries
  * hold a story she may still draw — within RESTLESS_ROAD_MAX_HEXES and at least
- * one hex away (a story on her own hex is already in reach, so if it is not
- * among her candidates it is not hers to draw). Ties go to the lower location id.
- * `mayStillDraw` filters one place's story entries to the ones she may draw.
+ * one hex away. Ties go to the lower location id. `mayStillDraw` filters one
+ * place's story entries to the ones she could draw *standing there*: the caller
+ * runs the real filter pipeline from that place plus her per-agent checks, so a
+ * story in her awareness that the pipeline already rejected (a prerequisite, a
+ * reputation gate) is never the place she walks to. Places are tried nearest
+ * first and the search stops at the first that passes, so the pipeline runs for
+ * a handful of places at most, once per RESTLESS_ROAD_COOLDOWN_TICKS.
  */
 export function findRestlessRoadDestination(
   graph: WorldGraph,
   fromLocationId: string,
   entries: readonly EncounterCacheEntry[],
-  mayStillDraw: (storyEntries: EncounterCacheEntry[]) => EncounterCacheEntry[],
+  mayStillDraw: (storyEntries: EncounterCacheEntry[], locationId: string) => EncounterCacheEntry[],
 ): RestlessRoadDestination | null {
   const fromHex = resolveLocationToHex(graph, fromLocationId);
   if (!fromHex) return null;
@@ -119,12 +133,16 @@ export function findRestlessRoadDestination(
   const ordered = [...byLocation.entries()].sort((a, b) =>
     a[1].dist - b[1].dist || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   for (const [locationId, slot] of ordered) {
-    const drawable = mayStillDraw(slot.entries);
+    const drawable = mayStillDraw(slot.entries, locationId);
     if (drawable.length === 0) continue;
+    const priority = (e: EncounterCacheEntry) => (Number.isFinite(e.questPriority) ? e.questPriority : 0);
+    const targetEntry = [...drawable].sort((a, b) =>
+      priority(b) - priority(a) || (a.templateId < b.templateId ? -1 : a.templateId > b.templateId ? 1 : 0))[0];
     return {
       locationId,
       hexDistance: slot.dist,
       storyTemplateIds: [...new Set(drawable.map(e => e.templateId))].sort(),
+      targetEntry,
     };
   }
   return null;
@@ -160,6 +178,8 @@ export function emitRestlessRoadTrace(
   outcome: RestlessRoadOutcome,
   fromLocationId: string,
   dest: RestlessRoadDestination | null,
+  /** For `story_at_home`: the story candidates she already has, which is why she stays. */
+  homeStoryTemplateIds: readonly string[] = [],
 ): void {
   emitTrace({
     category: 'agent.restless_road',
@@ -170,7 +190,7 @@ export function emitRestlessRoadTrace(
     fromLocationId,
     toLocationId: dest?.locationId ?? null,
     hexDistance: dest?.hexDistance ?? null,
-    storyTemplateIds: dest?.storyTemplateIds ?? [],
+    storyTemplateIds: dest?.storyTemplateIds ?? [...new Set(homeStoryTemplateIds)].sort(),
     summary: outcome === 'set_out'
       ? `${agentId}: ${droughtTicks} ticks without a story; takes the road to ${dest?.locationId} (${dest?.hexDistance} hexes)`
       : `${agentId}: ${droughtTicks} ticks without a story; ${outcome}`,
