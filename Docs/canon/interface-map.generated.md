@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 206 |
+| 🟢 LIVE | 207 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 96 |
-| **Total** | **310** |
+| **Total** | **311** |
 
 ## Contracts by producing subsystem
 
@@ -291,9 +291,10 @@ remediation ticket or the build fails.
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
 | `congregation-sphere-reaches-faction-page` | Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number. | node-prop: `veneratedSphere`, `formatCongregationSphereLine` | Factions & Succession | 🟢 LIVE | — |
-| `crown-oaths-pay-fealty-tax` | A realm wins another faction's fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then moves FEALTY_TAX_SHARE of the vassal's day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived). | edge: `sworn_to`, `executeSeekFealty`, `runCrownPhase`, `fealtyOut`, `fealtyIn` | Mortal Economy & Prosperity | 🟢 LIVE | — |
+| `crown-liege-pays-vassal-wages` | On pay day, after loyalty and before the fealty tax, the crown phase pays the upkeep of each vassal army the vassal's own purse left unpaid (its purseLastDay.armiesUnpaid), in id order, whole armies only, from the liege's purse above LIEGE_WAGE_RESERVE_DAYS of its own upkeep. A covered army is stamped paidThroughTick and liegePaidTick; the wage is written beside the purse verdict (armiesPaidByLiege, wagesFromLiege on the vassal, wagesToVassals on the liege), never over it. While the stamp is fresh (LIEGE_COMMAND_WINDOW_TICKS) commanderFactionOf answers the liege for every army-level enemy question (objective, re-aim, defence, siege and battle start) and supplyFactionsOf adds the liege's towns; the liege is always read from the live sworn_to edge. A gift is priced on oathValueOf (max of income and the upkeep fielded, or would raise), so a free company is never free. The liege's Means counts yesterday's wages. All behind CROWN_WAGES_ENABLED. | node-prop: `liegePaidTick`, `payingLiegeOf`, `commanderFactionOf`, `supplyFactionsOf`, `oathValueOf`, `wagesToVassals`, `armiesPaidByLiege` | War, Armies & Battles | 🟢 LIVE | — |
+| `crown-oaths-pay-fealty-tax` | A realm wins another faction's fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then (THR-1974) pays the soldiers the vassal could not (crown-liege-pays-vassal-wages), then moves FEALTY_TAX_SHARE of the vassal's day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived). | edge: `sworn_to`, `executeSeekFealty`, `runCrownPhase`, `fealtyOut`, `fealtyIn` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `crown-outline-to-political-map` | The realm projection carries crownOf (sworn realm → its Crown), derived from sworn_to on every rebuild; the fingerprint includes the sworn_to pairs so an oath made or broken without a structural bump is traced. BorderMesh draws one outer line, in the Crown's ink, around the union of a Crown's hexes and its sworn realms' (a guild-only Crown draws none), and the Held-by line adds "which owes fealty to <liege>, a Crown". | module-export: `buildCrownOf`, `crownHexes`, `outlinedCrowns` | World Generation, Terrain & Places | 🟢 LIVE | — |
-| `crown-protected-holdings-to-war-aims` | What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper: an enemy army marching on any of these within 8 hexes of a liege's army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45). | module-export: `protectedHoldingsOf`, `vassalsOf`, `liegeOf` | War, Armies & Battles | 🟢 LIVE | — |
+| `crown-protected-holdings-to-war-aims` | What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper, for the army's commander (THR-1974: its paying liege while the wage is fresh, so a liege-paid company defends its liege's and fellow vassals' towns): an enemy army marching on any of these within 8 hexes of a liege's army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45). | module-export: `protectedHoldingsOf`, `vassalsOf`, `liegeOf` | War, Armies & Battles | 🟢 LIVE | — |
 | `destroy-candidates-gated-on-motive` | A mortal may only destroy what they have a reason to destroy — candidate generation reads the world's standing quarrels before offering a destroy verb. | function: `motiveGate`, `evaluateMotiveGate`, `resolveTargetOwners`, `MOTIVE_GATE_KINDS`, `GRUDGE_PROVENANCE` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `faction-embargo-starves-region` | The embargo faction action (THR-1955, war aims S2): a regional monopoly holder writes one activeEmbargo record ({ targetFactionId, resourceId, anchorLocationId, untilTick }) on itself, against the enemy (isEnemyFaction) whose settlements in the region carry most of the good, for EMBARGO_DAYS. Nothing is written on towns or lanes: embargoedTownsOf / embargoedLanesOf derive them. phaseResourceStockTiers subtracts EMBARGO_BALANCE_CUT from each embargoed town's balance on the good (embargoCutsByLocation → deriveLocationStockTiers balanceCuts); the Trade lens draws the derived lanes red and dashed with the "Embargoed by …" hover line; one encounter_route_embargo seed goes on the busiest lane. phaseEconomicPower lifts it on expiry or when the monopoly is lost, chronicling embargo_lifted. | node-prop: `activeEmbargo`, `embargoedTownsOf`, `embargoedLanesOf`, `embargoCutsByLocation` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `faction-relations-to-army-war-aims` | An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. THR-1933 (war aims S1) moves the field-battle start (areHostile) onto isEnemyFaction too, and enemyArm adds a monster arm and an alliance override of the sentiment arm, both behind WAR_AIMS_ENABLED. | module-export: `isEnemyFaction`, `enemyArm`, `factionKeepsHallAt`, `mayBesiege` | War, Armies & Battles | 🟢 LIVE | — |
@@ -1303,16 +1304,28 @@ exit
 - **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/action-technical-effects.ts`, `src/data/unified-action-templates.ts`, `src/debug-bridge.ts`, `src/engine/dominionProjection.ts` +5 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `crown-liege-pays-vassal-wages` — 🟢 LIVE
+
+- **Intent:** On pay day, after loyalty and before the fealty tax, the crown phase pays the upkeep of each vassal army the vassal's own purse left unpaid (its purseLastDay.armiesUnpaid), in id order, whole armies only, from the liege's purse above LIEGE_WAGE_RESERVE_DAYS of its own upkeep. A covered army is stamped paidThroughTick and liegePaidTick; the wage is written beside the purse verdict (armiesPaidByLiege, wagesFromLiege on the vassal, wagesToVassals on the liege), never over it. While the stamp is fresh (LIEGE_COMMAND_WINDOW_TICKS) commanderFactionOf answers the liege for every army-level enemy question (objective, re-aim, defence, siege and battle start) and supplyFactionsOf adds the liege's towns; the liege is always read from the live sworn_to edge. A gift is priced on oathValueOf (max of income and the upkeep fielded, or would raise), so a free company is never free. The liege's Means counts yesterday's wages. All behind CROWN_WAGES_ENABLED.
+- **Producer → Consumer:** Factions & Succession → War, Armies & Battles
+- **UL terms:** *Realm*, *Faction*, *Means*
+- **Module:** `src/engine/crown/wages.ts`
+- **Production hits:** 21 total — 1 write, 15 read, 5 unclassified
+- **Write sites:** `src/engine/crown.ts`
+- **Read sites:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/debug-bridge.ts`, `src/engine/armySpawning.ts`, `src/engine/armySupply.ts` +10 more
+- **Other hits:** `src/engine/crown/offer.ts`, `src/engine/crown/wages.ts`, `src/engine/factionPurse/purseSentences.ts`, `src/types/army.ts`, `src/types/trace.ts`
+- **Verdict:** Verified 2026-10-24: THR-1974. crownWages.test.ts drives the real runCrownPhase and runFactionPurse: a free company with an empty purse sworn to a realm keeps its host paid every day for 30 days, commanded by and fed from the liege; the reserve holds; whole armies in id order; the stamp lapses after one pay day and a broken oath ends the command at once; a realm vassal paying its own army keeps its own wars; the paid army never besieges its liege or its own hall town. crownWages.rollback.test.ts: switched off, the price is income and no wage is paid.
+
 ### `crown-oaths-pay-fealty-tax` — 🟢 LIVE
 
-- **Intent:** A realm wins another faction's fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then moves FEALTY_TAX_SHARE of the vassal's day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived).
+- **Intent:** A realm wins another faction's fealty (seek_fealty: coerced after a siege or a taken town, persuaded by protection and standing, or bought with a gift from its purse) and writes one sworn_to edge, vassal → liege. Once a day, right after faction_purse, the crown phase moves loyalty (liege rich or broke, a holding lost, outgrown, outbid), breaks an oath below Distrusted (a relates_to grudge and cooldown, a rebellion when a big realm breaks), then (THR-1974) pays the soldiers the vassal could not (crown-liege-pays-vassal-wages), then moves FEALTY_TAX_SHARE of the vassal's day income to the liege through applyTreasuryDelta — after the vassal paid its own soldiers, never into debt — and writes fealtyOut/fealtyIn on both purseLastDay records. A realm with CROWN_MIN_OATHS oaths is a Crown (derived).
 - **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
 - **UL terms:** *Realm*, *Faction*, *Means*
 - **Module:** `src/engine/crown.ts`
-- **Production hits:** 17 total — 3 write, 4 read, 10 unclassified
+- **Production hits:** 19 total — 3 write, 4 read, 12 unclassified
 - **Write sites:** `src/engine/crown.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseFactionActions.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionFealty.tsx`, `src/engine/crown/crownView.ts`, `src/engine/crown/fealtySentences.ts`
-- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/engine/crown/eligibility.ts`, `src/engine/crown/offer.ts`, `src/engine/crown/types.ts`, `src/engine/factionPurse.ts` +5 more
+- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/engine/crown/eligibility.ts`, `src/engine/crown/offer.ts`, `src/engine/crown/types.ts`, `src/engine/crown/wages.ts` +7 more
 - **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a two-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege's vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seeds 42, 99 and 7 medium over 1080 ticks: a crown forms on every seed, oath income 15–34% of the crowns' full income at day 60, one-layer held on every tick, no negative wealth.
 
 ### `crown-outline-to-political-map` — 🟢 LIVE
@@ -1329,7 +1342,7 @@ exit
 
 ### `crown-protected-holdings-to-war-aims` — 🟢 LIVE
 
-- **Intent:** What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper: an enemy army marching on any of these within 8 hexes of a liege's army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45).
+- **Intent:** What a realm has promised to keep safe: its own settlements plus every settlement held by a faction sworn to it. War aims' defence-first rule (THR-1933 S1, findThreatToDefend) reads this one helper, for the army's commander (THR-1974: its paying liege while the wage is fresh, so a liege-paid company defends its liege's and fellow vassals' towns): an enemy army marching on any of these within 8 hexes of a liege's army turns that army to defend it. With it on main, the Crown chip tooltip says its armies ride to their defence (Law 45).
 - **Producer → Consumer:** Factions & Succession → War, Armies & Battles
 - **UL terms:** *Realm*
 - **Module:** `src/engine/crown/crownView.ts`
@@ -1810,10 +1823,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → War, Armies & Battles
 - **UL terms:** *Means*
 - **Module:** `src/engine/factionPurse/upkeep.ts`
-- **Production hits:** 7 total — 2 write, 2 read, 3 unclassified
+- **Production hits:** 8 total — 2 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`, `src/engine/factionPurse.ts`
 - **Read sites:** `src/engine/armyAttrition.ts`, `src/engine/notableAgendas.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/engine/factionPurse/upkeep.ts`, `src/types/army.ts`
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/engine/crown.ts`, `src/engine/factionPurse/upkeep.ts`, `src/types/army.ts`
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts: checkUnderfunded is false for an army paid this pay day and true for one last paid two days ago; a realm that loses both towns while keeping a regiment reaches Destitute inside 25 days and leaves the regiment unpaid the next pay day; a two-town realm keeps a host paid for 50 days; the opening purse pays every worldgen army through tick 0 so none is underfunded on day one; canAffordArmy refuses one coin short of raise + first day.
 
 ### `faction-purse-pays-faction-holders` — 🟢 LIVE
@@ -1822,10 +1835,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Means*, *Prosperity*
 - **Module:** `src/engine/factionPurse.ts`
-- **Production hits:** 14 total — 4 write, 5 read, 5 unclassified
+- **Production hits:** 15 total — 4 write, 5 read, 6 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionPursePanel.tsx`, `src/debug-bridge.ts`, `src/engine/factionTopology.ts`, `src/engine/views/subjects/factionRows.ts`
-- **Other hits:** `src/engine/crown/eligibility.ts`, `src/engine/economyShift.ts`, `src/engine/undertakingEconomy.ts`, `src/engine/wealth.ts`, `src/types/unifiedAction.ts`
+- **Other hits:** `src/engine/crown/eligibility.ts`, `src/engine/crown/fealtySentences.ts`, `src/engine/economyShift.ts`, `src/engine/undertakingEconomy.ts`, `src/engine/wealth.ts` +1 more
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts drives the real runFactionPurse against a graph: a realm holding two towns earns town tax at the pivot, rent per border hex and a held place's yield, and a miners' guild in its town hands it LANDHOLDER_TAX_RATE of its work; with a rival also controlling the town, only the border realm collects (the rival's townTax is 0 — nothing pays twice). A seed-42 medium headless run shows faction_0 at 121 coin by day 10 and every guild above its opening purse.
 
 ### `faction-purse-prices-war-aims` — 🟢 LIVE
@@ -1846,10 +1859,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Means*
 - **Module:** `src/engine/factionTopology.ts`
-- **Production hits:** 11 total — 1 write, 2 read, 8 unclassified
+- **Production hits:** 12 total — 1 write, 2 read, 9 unclassified
 - **Write sites:** `src/engine/factionPurse.ts`
 - **Read sites:** `src/engine/factionTopology.ts`, `src/engine/phaseSchismResolution.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionPursePanel.tsx`, `src/data/faction-purse-constants.ts`, `src/data/game-config.ts`, `src/debug-bridge.ts` +3 more
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/FactionPursePanel.tsx`, `src/data/faction-purse-constants.ts`, `src/data/game-config.ts`, `src/debug-bridge.ts` +4 more
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts › the schism strain: computePurseStrain is 0 one day short of the grace, 1 at it, and 0 for a solvent faction.
 
 ### `faction-relations-to-army-war-aims` — 🟢 LIVE
@@ -3153,10 +3166,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 262 total — 2 write, 2 read, 258 unclassified
+- **Production hits:** 261 total — 2 write, 2 read, 257 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +253 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +252 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK

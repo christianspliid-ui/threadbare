@@ -63,7 +63,7 @@ names like `TB-073`) a premise might use.
 | **World Generation, Terrain & Places** | 🟢 ACTIVE | worldgen, world generation, terrain, biome, elevation, climate, hydrology, hex map, tile, coastline, river, lake, settlement genome, sublocation, place, region, area | `world`, `worldgen`, `terrain`, `coastline`, `river`, `lake`, `depression`, `region`, `hex`, `sublocation`, `settlementgenome`, `road` | `6.635`, `6.636` |
 
 - **War, Armies & Battles** — Built March 2026 as "Phase 12: Conflict & Destruction" / TB-073; activated + reconciled by THR-614; war aims (THR-1933 S1): enemies only (`warAims/enemy.ts`), defence first, value targeting by the purse town price within supply reach, a daily re-aim (`warAims.ts`). **Do not design a green-field war system** — extend or tune this one.
-- **Factions & Succession** — Faction actions, ambitions, reputation, rank changes, succession, schism resolution.
+- **Factions & Succession** — Faction actions, ambitions, reputation, rank changes, succession, schism resolution. The crown (THR-1932): oaths of fealty and tax; a liege pays, feeds and commands the armies of vassals it pays (THR-1974, crown/wages.ts).
 - **Rival Gods & Schemes** — Generated rivals from the World-Soul (NOT a fixed pantheon). 4-phase schemes = THR-66; economic family = THR-620. A town whose prayer went unanswered is the first a rival strikes; starve-the-faithful drains its faith (THR-1935).
 - **Doom Clock & Journey** — The run's master clock; journey beats fire at thresholds.
 - **Mandate** — The god's standing objective and its checkpoints.
@@ -286,7 +286,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `control` (2) | `controlContestationResolver.ts`, `controlEffectSpawn.ts` | `Phase 1`, `Phase 2`, `TB-045`, `THR-518`, `THR-662` |
 | `core` (2) | `core/coreConstants.ts`, `core/coreMechanics.ts` | `THR-542`, `THR-544` |
 | `cosmology` (1) | `cosmology.ts` | — |
-| `crown` (6) | `crown.ts`, `crown/crownView.ts`, `crown/eligibility.ts`, `crown/fealtySentences.ts`, `crown/offer.ts`, `crown/types.ts` | `THR-1917`, `THR-1932`, `THR-1934` |
+| `crown` (7) | `crown.ts`, `crown/crownView.ts`, `crown/eligibility.ts`, `crown/fealtySentences.ts`, `crown/offer.ts`, `crown/types.ts`, `crown/wages.ts` | `THR-1917`, `THR-1932`, `THR-1934`, `THR-1939`, `THR-1974` |
 | `cultural` (4) | `culturalGravity.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | `THR-1798` |
 | `culture` (5) | `cultureFlag.ts`, `cultureFoundationPair.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15`, `THR-1623` |
 | `curator` (1) | `curator.ts` | `THR-1218` |
@@ -324,7 +324,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
 | `exploration` (1) | `explorationHooks.ts` | `THR-1621` |
 | `faction` (17) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSplinter.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-1957`, `THR-400`, `THR-430`, `THR-810`, `THR-814` |
-| `factionpurse` (4) | `factionPurse/income.ts`, `factionPurse/means.ts`, `factionPurse/purseSentences.ts`, `factionPurse/upkeep.ts` | `THR-1867`, `THR-1931`, `THR-1932` |
+| `factionpurse` (4) | `factionPurse/income.ts`, `factionPurse/means.ts`, `factionPurse/purseSentences.ts`, `factionPurse/upkeep.ts` | `THR-1867`, `THR-1931`, `THR-1932`, `THR-1974` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
 | `fights` (16) | `fights/calibrationCardPins.ts`, `fights/fightAdvantages.ts`, `fights/fightAllies.ts`, `fights/fightClock.ts`, `fights/fightEnding.ts`, `fights/fightEvents.ts`, `fights/fightForks.ts`, `fights/fightHarm.ts`, `fights/fightOutcome.ts`, `fights/fightParticipants.ts`, `fights/fightRecord.ts`, `fights/fightState.ts`, `fights/fightStepInputs.ts`, `fights/grudgeDuelTrigger.ts`, `fights/opponentCard.ts`, `fights/opposedRoll.ts` | `THR-1261`, `THR-1264`, `THR-1267`, `THR-1271`, `THR-1528`, `THR-1530`, `THR-1531`, `THR-1532`, `THR-1535`, `THR-1537`, `THR-1538`, `THR-1539`, `THR-1540`, `THR-1541`, `THR-1543`, `THR-1548`, `THR-1549`, `THR-1556`, `THR-1558`, `THR-1574`, `THR-1581`, `THR-1628` |
@@ -471,7 +471,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `vignette` (2) | `vignetteNotification.ts`, `vignetteProse.ts` | — |
 | `visibility` (1) | `visibility.ts` | — |
 | `war` (1) | `warAims.ts` | `THR-1868`, `THR-1933` |
-| `waraims` (6) | `warAims/context.ts`, `warAims/defence.ts`, `warAims/enemy.ts`, `warAims/score.ts`, `warAims/sheetView.ts`, `warAims/townValue.ts` | `THR-1922`, `THR-1933` |
+| `waraims` (6) | `warAims/context.ts`, `warAims/defence.ts`, `warAims/enemy.ts`, `warAims/score.ts`, `warAims/sheetView.ts`, `warAims/townValue.ts` | `THR-1922`, `THR-1933`, `THR-1974` |
 | `wealth` (1) | `wealth.ts` | `THR-1931` |
 | `wheel` (1) | `wheel.ts` | — |
 | `work` (1) | `workProgress.ts` | `THR-1962` |
@@ -481,4 +481,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 239 engine domains · 787 modules._
+_Counts: 28 registered subsystems (2 dormant) · 112 tick phases · 239 engine domains · 788 modules._
