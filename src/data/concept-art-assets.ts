@@ -64,7 +64,7 @@ export const CONCEPT_ART_REGISTRY: ConceptArtEntry[] = [
   {
     id: 'dense-forest',
     image: 'dense-forest.png',
-    terrains: ['dense_forest', 'great_home_trees', 'dead_forest'],
+    terrains: ['dense_forest', 'great_home_trees'],
     locationBoost: ['ruins', 'shrine', 'temple'],
     sphereBoost: ['spirit', 'entropy', 'mind'],
   },
@@ -85,7 +85,7 @@ export const CONCEPT_ART_REGISTRY: ConceptArtEntry[] = [
   {
     id: 'swamp',
     image: 'swamp.png',
-    terrains: ['swamp', 'marsh', 'moor_bog', 'lake', 'river'],
+    terrains: ['swamp', 'marsh', 'moor_bog'],
     locationBoost: ['ruins', 'camp'],
     sphereBoost: ['entropy', 'spirit'],
   },
@@ -107,7 +107,7 @@ export const CONCEPT_ART_REGISTRY: ConceptArtEntry[] = [
   {
     id: 'mountains',
     image: 'mountains.png',
-    terrains: ['mountains', 'high_mountains', 'volcano', 'glacier'],
+    terrains: ['mountains', 'high_mountains'],
     locationBoost: ['castle', 'fort', 'temple', 'mining'],
     sphereBoost: ['force', 'matter', 'energy'],
   },
@@ -124,6 +124,37 @@ export const CONCEPT_ART_REGISTRY: ConceptArtEntry[] = [
     terrains: ['tundra', 'arctic', 'snow_fields'],
     locationBoost: ['camp', 'fort'],
     sphereBoost: ['time', 'entropy'],
+  },
+  // THR-1998: these terrains borrowed a neighbour's picture (volcano and glacier the
+  // mountains, lake and river the swamp, dead forest the dense forest). The reef still
+  // shares the ocean.
+  {
+    id: 'volcano',
+    image: 'volcano.png',
+    terrains: ['volcano'],
+    locationBoost: ['temple', 'mining'],
+    sphereBoost: ['force', 'energy'],
+  },
+  {
+    id: 'glacier',
+    image: 'glacier.png',
+    terrains: ['glacier'],
+    locationBoost: ['camp', 'fort'],
+    sphereBoost: ['time', 'matter'],
+  },
+  {
+    id: 'lake',
+    image: 'lake.png',
+    terrains: ['lake', 'river'],
+    locationBoost: ['hamlet', 'town', 'shrine'],
+    sphereBoost: ['life', 'time'],
+  },
+  {
+    id: 'dead-forest',
+    image: 'dead-forest.png',
+    terrains: ['dead_forest'],
+    locationBoost: ['ruins', 'shrine'],
+    sphereBoost: ['entropy', 'spirit'],
   },
 ];
 
