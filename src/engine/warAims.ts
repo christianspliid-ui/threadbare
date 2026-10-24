@@ -33,7 +33,7 @@ import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
 import { WAR_AIMS_ENABLED, WAR_AIM_REAIM_INTERVAL_TICKS } from '../data/war-aims-constants';
 import { RIVALRY_SENTIMENT_THRESHOLD } from '../types/factionAction';
 import { buildWarAimContext, hexOfActor, placeTierLocationOf, type WarAimContext } from './warAims/context';
-import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick } from './warAims/score';
+import { pickWarAim, stillEnemyTarget, inReach, marchableFrom, topCandidates, type WarAimPick, type ScoredTown } from './warAims/score';
 import { findThreatToDefend, type DefenceTarget } from './warAims/defence';
 import { campaignTargetOf, isEnemyFaction } from './warAims/enemy';
 
@@ -114,6 +114,11 @@ function writeAmbitionTarget(graph: WorldGraph, armyId: string, objective: ArmyO
 function tracePicked(state: GameState, armyId: string, factionId: string, pick: WarAimPick): void {
   const best = pick.scored[0];
   if (pick.objective && best) {
+    // THR-1970 — whether value could beat distance on this pick: some in-reach town is
+    // worth more than the nearest before the distance discount (value × (1 + bonuses)).
+    const worth = (s: ScoredTown) => s.value * (1 + s.bonuses);
+    const nearest = pick.scored.find(s => s.townId === pick.nearestEnemyTownId);
+    const richerThanNearest = nearest ? pick.scored.some(s => worth(s) > worth(nearest)) : false;
     emitTrace({
       tick: state.tick,
       category: 'war.aim.picked',
@@ -128,6 +133,7 @@ function tracePicked(state: GameState, armyId: string, factionId: string, pick: 
       score: best.score,
       candidates: pick.scored.length,
       nearestEnemyTownId: pick.nearestEnemyTownId,
+      richerThanNearest,
     });
   } else {
     emitTrace({

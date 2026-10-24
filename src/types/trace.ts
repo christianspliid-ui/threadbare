@@ -2088,6 +2088,11 @@ export interface WarAimPickedTrace extends TraceBase {
   candidates: number;
   /** The fewest-hex in-reach candidate (the "not just the nearest" predicate). */
   nearestEnemyTownId: string | null;
+  /**
+   * THR-1970 — some in-reach town is worth more than the nearest before the distance
+   * discount (value × (1 + bonuses)): the picks where value could beat distance.
+   */
+  richerThanNearest: boolean;
 }
 
 /** THR-1933 — an army turned to defend a threatened own or sworn holding. */

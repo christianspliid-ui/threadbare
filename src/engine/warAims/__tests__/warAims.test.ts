@@ -12,7 +12,9 @@ import { townValueFor } from '../townValue';
 import { findThreatToDefend } from '../defence';
 import { aimNewArmy, reaimArmies, grievanceFactionOf, readWarAims } from '../../warAims';
 import { phaseBattleDetection } from '../../battleResolution';
+import { enableTracing, getTraces, clearTraces } from '../../traceBuffer';
 import type { ArmyState } from '../../../types/army';
+import type { TraceEntry } from '../../../types/trace';
 import type { GameState } from '../../../types/gameState';
 import { WAR_AIM_REAIM_INTERVAL_TICKS } from '../../../data/war-aims-constants';
 import { armyAimTemplate, scarceClauseOf, ARMY_HOLD_COPY } from '../../../data/army-words';
@@ -198,6 +200,23 @@ describe('the richest enemy town in reach (§ Engine 3)', () => {
     expect(pick.objective).toMatchObject({ type: 'conquer', targetNodeId: 't6', reason: 'richest', source: 'war_aim' });
     expect(pick.scored.map(s => s.townId).sort()).toEqual(['t3', 't6']);
     expect(pick.nearestEnemyTownId).toBe('t3');
+  });
+
+  it('the picked trace says whether a town richer than the nearest was in reach (THR-1970)', () => {
+    enableTracing();
+    const pickedTrace = (graph: WorldGraph) => {
+      clearTraces();
+      addArmy(graph, 'army_a', 'a', 't0');
+      aimNewArmy(makeState(graph), 'army_a', noProjection);
+      return getTraces().find(t => t.category === 'war.aim.picked') as (TraceEntry & Record<string, unknown>) | undefined;
+    };
+    // t6 out-values the nearer t3: value could beat distance, and does.
+    expect(pickedTrace(warWorld())).toMatchObject({ townId: 't6', nearestEnemyTownId: 't3', richerThanNearest: true });
+    // The nearest is also the richest: no distance discount should overturn this pick.
+    const rich = warWorld();
+    rich.getNode('t3')!.properties.prosperity = 99;
+    expect(pickedTrace(rich)).toMatchObject({ townId: 't3', nearestEnemyTownId: 't3', richerThanNearest: false });
+    clearTraces();
   });
 
   it('leaves out a town no march path reaches, and holds when nothing is left', () => {
