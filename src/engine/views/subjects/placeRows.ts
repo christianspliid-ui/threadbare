@@ -61,6 +61,7 @@ import {
   WALLS_LINES,
   FOUNDED_BY_LINE,
   LAIR_MONSTER_WORDS,
+  NOTABLE_LINE_WORDS,
   PILGRIM_WAY_LINES,
   postingDistanceWord,
   sphereStrengthWord,
@@ -71,6 +72,7 @@ import { founderOf } from '../../undertakingEconomy';
 import { isSettlement } from '../../factionPurse/income';
 import { isPlaceNode } from '../../sublocationShape';
 import { selectPilgrimWays } from '../../pilgrimWays';
+import { getSettlementNotable, type SettlementNotableClauseKind } from '../../settlementNotable';
 import { buildLairMonsterCardModel } from '../stage/buildLairMonsterCardModel';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
@@ -435,6 +437,35 @@ const pilgrimWay: SectionResolver = (ctx) => {
   return linkedProseSection('pilgrim_way', SUBJECT_ROW_LABELS.pilgrimWays, parts, 'selectPilgrimWays', { labelTooltipId: 'ui.pilgrim_way' });
 };
 
+const NOTABLE_CLAUSE_ORDER: readonly SettlementNotableClauseKind[] = ['holds', 'at_odds_with', 'knows_secret_of', 'is_owed_by'];
+
+/**
+ * The settlement's notable (THR-1991): the name, then one sentence per clause kind —
+ * `NotableLine`'s line (THR-1655), restored. Every noun is a link (Law 21); the secret
+ * clause keeps its knowledge gate through the player's familiarity. Settlement tier only —
+ * a Place inside it has no row. No notable → no row (Law 25).
+ */
+const settlementNotable: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p || typeof p.node.properties.parentLocationId === 'string') return null;
+  const notable = getSettlementNotable(ctx.graph, p.node.id, { familiarityMap: p.state.familiarityMap ?? new Map() });
+  if (!notable) return null;
+  const parts: ProsePart[] = [{ text: notable.notableName, ref: { kind: 'agent', id: notable.notableId } }];
+  let first = true;
+  for (const kind of NOTABLE_CLAUSE_ORDER) {
+    const clauses = notable.clauses.filter(c => c.kind === kind);
+    if (clauses.length === 0) continue;
+    parts.push(first ? NOTABLE_LINE_WORDS.nameTail : ' ', `${NOTABLE_LINE_WORDS.clauseLeads[kind]} `);
+    first = false;
+    clauses.forEach((c, i) => {
+      if (i > 0) parts.push(i === clauses.length - 1 ? NOTABLE_LINE_WORDS.lastJoiner : NOTABLE_LINE_WORDS.joiner);
+      parts.push({ text: c.targetName, ref: { kind: c.targetKind, id: c.targetId } });
+    });
+    parts.push(NOTABLE_LINE_WORDS.tail);
+  }
+  return linkedProseSection('settlement_notable', SUBJECT_ROW_LABELS.notable, parts, 'getSettlementNotable', { labelTooltipId: 'agent.notable' });
+};
+
 const LAIR_SUBTYPES: ReadonlySet<string> = new Set(['lair', 'cleared_lair']);
 
 /**
@@ -493,4 +524,5 @@ export const PLACE_ROW_RESOLVERS = {
   encounters_here: encountersHere,
   pilgrim_way: pilgrimWay,
   lair_monster: lairMonster,
+  settlement_notable: settlementNotable,
 } satisfies Record<string, SectionResolver>;

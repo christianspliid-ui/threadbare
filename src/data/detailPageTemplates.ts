@@ -354,6 +354,7 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
   sheetRow('founded_by', PLACE_ROW_RESOLVERS.founded_by, 16, 'overview', DWF),
   sheetRow('fortunes', PLACE_ROW_RESOLVERS.fortunes, 17, 'overview', DWF),
   sheetRow('lair_monster', PLACE_ROW_RESOLVERS.lair_monster, 12, 'overview', DWF),
+  sheetRow('settlement_notable', PLACE_ROW_RESOLVERS.settlement_notable, 14, 'overview', DWF),
   sheetRow('prayer', PLACE_ROW_RESOLVERS.prayer, 18, 'overview', DWF),
   sheetRow('pilgrim_way', PLACE_ROW_RESOLVERS.pilgrim_way, 19, 'overview', DWF),
   sheetRow('livelihood', PLACE_ROW_RESOLVERS.livelihood, 20, 'overview', DWF),

@@ -30,6 +30,8 @@ export const SUBJECT_ROW_LABELS = {
   // THR-1992 — the lair's monster card and the pilgrim way, restored from the retired sheets.
   lairMonster: 'What lairs here',
   pilgrimWays: 'Pilgrim ways',
+  // THR-1991 — the settlement's notable, restored from the retired LocationView.
+  notable: 'Notable',
   // Faction (§ D7.4)
   description: 'Who they are',
   venerates: 'Venerates',
@@ -91,6 +93,23 @@ export const FOUNDED_BY_LINE = { lead: 'Founded by ', tail: '.' } as const;
  * congregations whose pilgrims come there, a congregation names the towns its ways lead to.
  */
 export const PILGRIM_WAY_LINES = { siteLead: 'Pilgrims come here — a way of ', congregationLead: 'Pilgrim ways to ', joiner: ', ', tail: '.' } as const;
+
+/**
+ * THR-1991 — `NotableLine`'s words (THR-1655), copied word for word: the notable's name,
+ * then one sentence per clause kind — "Holds the Tanner's Yard. At odds with Kael."
+ */
+export const NOTABLE_LINE_WORDS = {
+  clauseLeads: {
+    holds: 'Holds',
+    at_odds_with: 'At odds with',
+    knows_secret_of: 'Knows something about',
+    is_owed_by: 'Is owed a favour by',
+  },
+  nameTail: ' — ',
+  joiner: ', ',
+  lastJoiner: ' and ',
+  tail: '.',
+} as const;
 
 /** THR-1992 — the lair card's kind word, and the "by" that follows "slain" when the killer is known (LairMonsterCard's "slain by {name}"). */
 export const LAIR_MONSTER_WORDS = { kindLiving: 'Holds this lair', kindSlain: 'Held this lair', slainByLead: 'by' } as const;
