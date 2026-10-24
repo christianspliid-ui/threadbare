@@ -550,6 +550,7 @@ export type TraceCategory =
   | 'aftermath_invalid_tally_key_rate_limited'
   | 'aftermath_sentinel_bound'
   | 'agent_validation'
+  | 'agreement_expired'
   | 'ambition_progress'
   | 'bond_change_applied'
   | 'branch_decided'
@@ -1211,6 +1212,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'aftermath_sentinel_bound',
   'agent_validation',
   'ambition_progress',
+  'agreement_expired',
   'bond_change_applied',
   'branch_decided',
   'chain_progress',
@@ -5399,6 +5401,7 @@ export type TraceEntry =
   // Companions (THR-1096)
   | CompanionJoinedTrace
   | CompanionDepartedTrace
+  | AgreementExpiredTrace
   // Seed system v2: family matching + context inheritance (THR-697, Slice D)
   | SeedFamilyMatchedTrace
   | SeedContextInheritedTrace
@@ -7669,6 +7672,18 @@ export interface CompanionJoinedTrace extends TraceBase {
   contributions: Record<string, number>;
   /** Present for contracted companions only. */
   ticksRemaining?: number | null;
+}
+
+/** Trace: an agreement edge was removed because its term ran out (THR-1999). */
+export interface AgreementExpiredTrace extends TraceBase {
+  category: 'agreement_expired';
+  edgeId: string;
+  sourceId: string;
+  targetId: string;
+  agreementType: string | undefined;
+  acquiredTick: number | undefined;
+  /** The full term as written; the agreement ended at acquiredTick + term. */
+  term: number | null | undefined;
 }
 
 /** Trace: a companion left. Never silent — every departure has a named reason. */
