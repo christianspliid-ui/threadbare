@@ -11,7 +11,8 @@
  * game, so a registry edit shows on Vite's hot reload.
  *
  * A dev surface: it may scroll, and it is excluded from the UI-debt ratchet (lab pattern).
- * Deep links: `?view=inspector-lab&kind=faction&size=wide&tier=1440`.
+ * Deep links: `?view=inspector-lab&kind=faction&size=wide&tier=1440`. `&seed=N` builds
+ * another world (default 42) — for a terrain seed 42 lacks (THR-1998: it has no lake).
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GameState } from '../../../../types/gameState';
@@ -59,9 +60,12 @@ interface LabRow {
   fallback: string;
 }
 
-function buildLabWorld(): { state: GameState; runtime: SimulationRuntime } {
+/** The lab world seed when `?seed=` is absent or not a whole number. */
+const INSPECTOR_LAB_DEFAULT_SEED = 42;
+
+function buildLabWorld(seed: number): { state: GameState; runtime: SimulationRuntime } {
   const runtime = createSimulationRuntime();
-  const init = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, 42, undefined, 'medium');
+  const init = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, seed, undefined, 'medium');
   devSeedTheFirst(init.state);
   devSeedAscendantTestPackage(init.state);
   return { state: init.state, runtime };
@@ -124,6 +128,8 @@ export default function InspectorLab() {
   const [tier, setTier] = useState<Tier>(params.get('tier') === '1440' ? '1440' : '1080');
   const kindFilter = params.get('kind');
   const sizeFilter = params.get('size') as InspectorSize | null;
+  const seedParam = Number(params.get('seed'));
+  const seed = Number.isInteger(seedParam) && params.get('seed') ? seedParam : INSPECTOR_LAB_DEFAULT_SEED;
   const [world, setWorld] = useState<{ state: GameState; runtime: SimulationRuntime } | null>(null);
   const [warmed, setWarmed] = useState(0);
   const reports = useRef(new Map<string, { report: InspectorPageReport | null; el: HTMLElement | null; kind: string; subjectKey: string }>());
@@ -136,7 +142,7 @@ export default function InspectorLab() {
     const step = () => {
       if (cancelled) return;
       if (!built) {
-        built = buildLabWorld();
+        built = buildLabWorld(seed);
       } else {
         for (let i = 0; i < WARM_TICKS_PER_STEP && done < INSPECTOR_LAB_WARM_TICKS; i++, done++) {
           built = { state: runTick(built.state, [], built.runtime), runtime: built.runtime };
@@ -148,7 +154,7 @@ export default function InspectorLab() {
     };
     setTimeout(step, 0);
     return () => { cancelled = true; };
-  }, []);
+  }, [seed]);
 
   // The screen toggle: root size and the Inspector's frame tokens on :root, restored on leave.
   useEffect(() => {
@@ -218,7 +224,7 @@ export default function InspectorLab() {
       <header style={{ display: 'flex', gap: '1rem', alignItems: 'baseline', marginBottom: '1rem', flexWrap: 'wrap' }}>
         <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)' }}>Inspector lab</h1>
         <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
-          Seed 42, medium, your First bonded, {INSPECTOR_LAB_WARM_TICKS} ticks. Pages come from the page-layout table — edit a row in detailPageTemplates.ts and it shows here on save.
+          Seed {seed}, medium, your First bonded, {INSPECTOR_LAB_WARM_TICKS} ticks. Pages come from the page-layout table — edit a row in detailPageTemplates.ts and it shows here on save.
         </span>
         <span role="group" aria-label="Screen" style={{ display: 'inline-flex', gap: '0.5rem' }}>
           {(['1080', '1440'] as const).map(t => (
