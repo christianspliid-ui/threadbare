@@ -47,10 +47,7 @@ import { isFactionInAttention, readPurseDay, PURSE_LAST_DAY_PROP } from './facti
 import { buildCrownWorld, maySwear, mayCourt, onReswearCooldown, type CrownWorld } from './crown/eligibility';
 import { offerScore, affordableGift, giftCost } from './crown/offer';
 import { isRealmFaction, readOath, vassalsOf } from './crown/crownView';
-import { crownWagesActive, payingLiegeOf } from './crown/wages';
-import { isEnemyFaction } from './warAims/enemy';
-import { aimNewArmy } from './warAims';
-import { WAR_AIMS_ENABLED } from '../data/war-aims-constants';
+import { crownWagesActive } from './crown/wages';
 import { upkeepOf, upkeepPerDayOf } from './factionPurse/upkeep';
 import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS } from '../data/faction-purse-constants';
 import { OATH_SWORN_LINES, OATH_BROKEN_LINES } from '../data/crown-chronicle-content';
@@ -511,9 +508,7 @@ function payWages(
         }
         paid += -setWealth(graph, liegeId, -cost);
         covered.push(armyId);
-        const takenUp = payingLiegeOf(graph, armyId, tick) !== liegeId;
         armyNode.properties.armyState = { ...as, paidThroughTick: tick, liegePaidTick: tick };
-        if (takenUp) reaimOnTakeUp(state, armyId, liegeId);
       }
 
       const coveredToday = covered.length > 0;
@@ -563,26 +558,6 @@ function payWages(
     graph.updateEdge(edge.id, { properties: { wagesChronicledTick: tick } });
   }
   return records;
-}
-
-/**
- * THR-2020 — an army newly in its liege's pay that is still marching on a town held by
- * someone its liege is not at war with (an aim it picked under its own banner) is re-aimed
- * as the liege's army at once, not at the next daily re-aim: it never marches on its
- * paymaster or a fellow vassal. Fail-soft: the objective is kept.
- */
-function reaimOnTakeUp(state: GameState, armyId: string, liegeId: string): void {
-  if (!WAR_AIMS_ENABLED) return;
-  try {
-    const graph = state.graph;
-    const objective = (graph.getNode(armyId)?.properties.armyState as ArmyState | undefined)?.objective;
-    if (objective?.type !== 'conquer') return;
-    const holder = graph.getIncomingEdges(objective.targetNodeId, 'controls')[0]?.source;
-    if (!holder || isEnemyFaction(graph, liegeId, holder)) return;
-    aimNewArmy(state, armyId);
-  } catch (err) {
-    console.warn(`[crown] re-aim of ${armyId} on wage take-up skipped`, err);
-  }
 }
 
 /**
