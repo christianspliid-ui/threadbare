@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 08:57 local (06:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 09:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,7 +8,7 @@
 ## Also waiting (7)
 
 - **Wednesday night to Friday night (21–23 Oct):** "The scheduled lanes went silent for 48.1h (2026-10-21T21:07:01.000Z → 2026-10-23T21:15:17.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed or the computer off, or was this a pause?
-- **The two process cuts you approved on 15 Oct are stuck.** The unattended builder may not edit the gate and CI files that [THR-1947](https://linear.app/threadbare/issue/THR-1947) and [THR-1949](https://linear.app/threadbare/issue/THR-1949) change. Recommended: ship both in one session with you present, rather than widening the builder's permissions. *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-23.md)*
+- **The two process cuts you approved on 15 Oct are stuck.** The unattended builder may not edit the gate and CI files that [THR-1947](https://linear.app/threadbare/issue/THR-1947) and [THR-1949](https://linear.app/threadbare/issue/THR-1949) change. Recommended: ship both in one session with you present, rather than widening the builder's permissions. *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-24.md)*
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours with no pause recorded. Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
 - **Thursday 1 Oct afternoon and Friday 2 Oct morning:** the computer was on, but no lane ran. Was the Claude app closed?
@@ -20,17 +20,20 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 ## Decided for you
 
 - [Three player texts promise that mandates slow the doom clock](https://linear.app/threadbare/issue/THR-2004/three-player-texts-promise-that-mandates-slow-the-doom-clock-they-only) — the words change, not the rules: four tooltips and The Seat beat will stop saying a finished mandate slows the doom or gives essence. A well-kept mandate checkpoint softens the doom's next blow instead. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24a.md)*
+- [A hand of five to eight cards hides cards under the hand bar](https://linear.app/threadbare/issue/THR-1942/a-hand-of-five-to-eight-cards-hides-cards-under-the-hand-bar-the-bar) — the cards stay as they are: full 16:9 picture, four to a row, and the encounter column scrolls. While a card is hidden under the commit bar, the bar says "2 more cards below", and one click shows the whole hand. *Veto:* "the whole hand should fit without scrolling, shrink the cards". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24b.md)*
+- [A five-card hand on the Stage still makes the column scroll](https://linear.app/threadbare/issue/THR-1994/a-five-card-hand-on-the-stage-at-19201080-still-makes-the-encounter) — the same decision: the scroll stays, the hidden-cards line is added. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24b.md)*
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Backed up: 22 ready, 3 in progress (1 building, 2 parked).** The builder is on [God's stake S3](https://linear.app/threadbare/issue/THR-1969) (the omen market's Fortune's Favour, Ruin and Bless the Holding). Its PR [#2532](https://github.com/christianspliid-ui/threadbare/pull/2532) had a merge conflict, the builder fixed it at 08:53, and it will merge itself when checks pass. The orchestrator put [the restless road](https://linear.app/threadbare/issue/THR-1959) on the shelf: a followed mortal with no story nearby for six days sets out to find one.
+**Backed up: 21 ready, 2 in progress (1 building, 1 parked).** [God's stake S3](https://linear.app/threadbare/issue/THR-1969) merged ([#2532](https://github.com/christianspliid-ui/threadbare/pull/2532)) and is live. The builder is now on [the end of the age](https://linear.app/threadbare/issue/THR-1381) (the Twilight ceremony, the Mandate ending the age, World-Soul memories), with an open PR [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533). The heavy-tests fix ticket [THR-2015](https://linear.app/threadbare/issue/THR-2015) is closed.
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 8 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch for it (checked this run).
-- [The heavy-tests fix ticket](https://linear.app/threadbare/issue/THR-2015) is parked and unassigned. Heavy tests are green on main again, so the builder should confirm and close it. No pushed branch for it.
-- Three ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888), [crown courtship rate](https://linear.app/threadbare/issue/THR-1961) and [twilight authorship](https://linear.app/threadbare/issue/THR-1381). Most of that week is the silences above.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is parked and unassigned, 9 days since it was first claimed. It waits on your answer above, not on the builder. No pushed branch for it (checked this run).
+- Two ready tickets have not been touched for over a week: [the design lane's closing rule](https://linear.app/threadbare/issue/THR-1888) and [crown courtship rate](https://linear.app/threadbare/issue/THR-1961). Most of that week is the silences above.
 
 ## Health
 
-All green. The CI/CD review's tweak [#2529](https://github.com/christianspliid-ui/threadbare/pull/2529) is merged, the worktree cleaner ran at 08:40, main's CI and the three scheduled background jobs are healthy, every lane is on schedule, engine speed is normal (126 ms per tick, 13% under the week's median), and the live site is current ([c5acdb59](https://github.com/christianspliid-ui/threadbare/commit/c5acdb59)).
+- PR [#2533](https://github.com/christianspliid-ui/threadbare/pull/2533) (the end of the age) fails its required check "Test · Typecheck · Build" and is not yet armed to merge. The builder session that opened it is still running; fixing it is the builder's job.
+
+Everything else is green: main's CI and the three scheduled background jobs are healthy, every lane is on schedule, the worktree cleaner ran at 09:40, engine speed is normal (175 ms per tick, within the week's range), and the live site is current ([73f631c3](https://github.com/christianspliid-ui/threadbare/commit/73f631c3)).

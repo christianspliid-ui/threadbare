@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 08:57 local (06:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 09:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-24: God's stake S3 — the omen market's Fortune's Favour, Ruin and Bless the Holding** ([THR-1969](https://linear.app/threadbare/issue/THR-1969)). Merged via [#2532](https://github.com/christianspliid-ui/threadbare/pull/2532) and live.
 - **2026-10-24: stories come in a rhythm — the first slice of the encounter firing pass** ([THR-1218](https://linear.app/threadbare/issue/THR-1218)). Merged via [#2531](https://github.com/christianspliid-ui/threadbare/pull/2531) and live.
 - **2026-10-23: encounters take the Reach their test asks — 39 of the mislabel audit's 41 relabelled** ([THR-2010](https://linear.app/threadbare/issue/THR-2010)). Merged via [#2530](https://github.com/christianspliid-ui/threadbare/pull/2530) and live.
 - **2026-10-23: the reward draw rolls the rarity, then the kind, then the thing** ([THR-1997](https://linear.app/threadbare/issue/THR-1997)). Merged via [#2528](https://github.com/christianspliid-ui/threadbare/pull/2528) and live.
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-21: a shorter road to the first mortal** ([THR-1989](https://linear.app/threadbare/issue/THR-1989)). Merged via [#2522](https://github.com/christianspliid-ui/threadbare/pull/2522) and live.
 - **2026-10-21: the path you chose comes back** ([THR-1988](https://linear.app/threadbare/issue/THR-1988/the-path-you-chose-comes-back-each-what-will-they-become-path-gets-a)). Merged via [#2521](https://github.com/christianspliid-ui/threadbare/pull/2521) and live.
 - **2026-10-21: the mortal picker names all three mortals before the first click** ([THR-1987](https://linear.app/threadbare/issue/THR-1987/name-the-three-mortals-before-the-first-click-name-and-epithet-on)). Merged via [#2520](https://github.com/christianspliid-ui/threadbare/pull/2520) and live.
-- **2026-10-21: The First keeps her trade — the meeting writes the trade the player read** ([THR-1984](https://linear.app/threadbare/issue/THR-1984/the-first-keeps-her-trade-the-meeting-writes-the-trade-the-player-read)). Merged via [#2518](https://github.com/christianspliid-ui/threadbare/pull/2518) and live.
 
 ---
 
