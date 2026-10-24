@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-24 20:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-24 21:58 local (19:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-24: a faction pays for a member's founding they can't afford** ([THR-2008](https://linear.app/threadbare/issue/THR-2008)). Merged via [#2550](https://github.com/christianspliid-ui/threadbare/pull/2550) and live.
 - **2026-10-24: a notable whose plan fails late stays on the Notables list for a while after it fails** ([THR-2005](https://linear.app/threadbare/issue/THR-2005)). Merged via [#2549](https://github.com/christianspliid-ui/threadbare/pull/2549) and live.
 - **2026-10-24: encounter debts end when their term does, and the sheet shows the time left** ([THR-1999](https://linear.app/threadbare/issue/THR-1999)). Merged via [#2548](https://github.com/christianspliid-ui/threadbare/pull/2548) and live.
 - **2026-10-24: volcano, glacier, lake/river and dead forest get land-page pictures of their own** ([THR-1998](https://linear.app/threadbare/issue/THR-1998)). Merged via [#2547](https://github.com/christianspliid-ui/threadbare/pull/2547).
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-24: the design lane closes a design request itself once its outputs are filed or a decision is recorded** ([THR-1888](https://linear.app/threadbare/issue/THR-1888)). Merged via [#2543](https://github.com/christianspliid-ui/threadbare/pull/2543).
 - **2026-10-24: war aims pick the nearest enemy town, with a distance discount a richer target can beat** ([THR-1970](https://linear.app/threadbare/issue/THR-1970)). Merged via [#2542](https://github.com/christianspliid-ui/threadbare/pull/2542) and live.
 - **2026-10-24: crown courtship — a realm courts a crown once per calendar day, on 84–97% of days** ([THR-1961](https://linear.app/threadbare/issue/THR-1961)). Merged via [#2540](https://github.com/christianspliid-ui/threadbare/pull/2540) and live.
-- **2026-10-24: the restless road — a followed mortal with no story nearby for six days sets out for one** ([THR-1959](https://linear.app/threadbare/issue/THR-1959)). Merged via [#2538](https://github.com/christianspliid-ui/threadbare/pull/2538) and live.
 
 ---
 

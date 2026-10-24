@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 20:58 local (18:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 21:58 local (19:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Debts in the money encounters](https://linear.app/threadbare/issue/THR-2023): four calls inside [the debts plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-24-thr-2023-encounter-debts.md). Each can be vetoed on its own. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24c.md)*
+  - **A collected debt is the oldest one owed to the collector.** A won collection pays it, a lost one writes it off. *Veto:* "the collector should pick the biggest or the newest debt".
+  - **The cathedral's treasury is the dean's own purse**, not a temple faction's. *Veto:* "the temple faction's treasury should pay".
+  - **In The Loan, your mortal is the lender**, and is out of pocket until they collect. *Veto:* "the mortal should only broker the loan".
+  - **A note from a house that has stopped paying is worthless** on a bad failure. *Veto:* "the bad note should still count as a debt".
 - [Three player texts promise that mandates slow the doom clock](https://linear.app/threadbare/issue/THR-2004/three-player-texts-promise-that-mandates-slow-the-doom-clock-they-only): the words change, not the rules. Four tooltips and The Seat beat will stop saying a finished mandate slows the doom or gives essence. A well-kept mandate checkpoint softens the doom's next blow instead. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24a.md)*
 - [A hand of five to eight cards hides cards under the hand bar](https://linear.app/threadbare/issue/THR-1942/a-hand-of-five-to-eight-cards-hides-cards-under-the-hand-bar-the-bar): the cards stay as they are, a full 16:9 picture, four to a row, and the encounter column scrolls. While a card is hidden under the commit bar, the bar says "2 more cards below", and one click shows the whole hand. *Veto:* "the whole hand should fit without scrolling, shrink the cards". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24b.md)*
 - [A five-card hand on the Stage still makes the column scroll](https://linear.app/threadbare/issue/THR-1994/a-five-card-hand-on-the-stage-at-19201080-still-makes-the-encounter): the same decision. The scroll stays, and the hidden-cards line is added. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24b.md)*
@@ -27,11 +32,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 13 ready, 2 in progress.** One merge this hour: a notable whose plan fails late now stays on the Notables list for a while after it fails ([THR-2005](https://linear.app/threadbare/issue/THR-2005), [#2549](https://github.com/christianspliid-ui/threadbare/pull/2549), live). The builder is now on [a faction paying for a member's founding](https://linear.app/threadbare/issue/THR-2008).
+**Healthy: 12 ready, 2 in progress.** Merged this hour: a faction now pays for a member's founding they can't afford ([THR-2008](https://linear.app/threadbare/issue/THR-2008), [#2550](https://github.com/christianspliid-ui/threadbare/pull/2550), live), and the debts plan above ([#2552](https://github.com/christianspliid-ui/threadbare/pull/2552)). In progress: [the prose fixes from the mislabel audit](https://linear.app/threadbare/issue/THR-2011).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-All green. Heavy tests pass on main again, so last hour's red is closed. Main's CI, the three scheduled background jobs, all 13 scheduled lanes and the PR queue are fine (no PR waiting). Engine speed is good: 112 ms/tick, 22% faster than the week's median. The worktree reaper ran at 20:40 local. The live site is serving the newest commit on main ([94e9b402](https://github.com/christianspliid-ui/threadbare/commit/94e9b402)).
+- **Engine speed:** tick cost 194 ms/tick steady, 34% above the 7-day median (144, 82 rows since c71c5117); top phase agent_decision, 602 agents. Name the merges between c71c5117 and 1fb6dafd: `git log --oneline --merges c71c5117..1fb6dafd`. Last hour read 112 ms on nearly the same code (only THR-2008 and docs merged since), and a builder run was working on this machine during the measurement, so this may be load, not a slowdown. The next hour's reading will tell. Engine speed is the builder's job, not yours.
+- Everything else is green: main's CI, the three scheduled background jobs, all 13 scheduled lanes, the PR queue (none waiting) and the builder (busy, not stalled). The live site is up to date ([064e42d3](https://github.com/christianspliid-ui/threadbare/commit/064e42d3); later commits are docs only). The worktree reaper ran at 21:40 local.
