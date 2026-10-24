@@ -93,6 +93,18 @@ describe("lint:plan-doc size cap (THR-1948)", () => {
   );
 
   it(
+    "a pipeline packet in a subdirectory is never size-capped",
+    () => {
+      const { root, bundle } = makeSandbox();
+      mkdirSync(path.join(root, "Docs", "plans", "attachments"), { recursive: true });
+      const { status, stdout } = lint(root, bundle, "attachments/upgrade-foo-final.md", docOfLines(450));
+      expect(stdout).not.toContain("plan-size");
+      expect(status).toBe(0);
+    },
+    SUBPROCESS_TEST_TIMEOUT_MS,
+  );
+
+  it(
     "a doc dated before the cap only warns",
     () => {
       const { root, bundle } = makeSandbox();

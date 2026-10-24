@@ -143,7 +143,10 @@ const PLAN_SIZE_FAIL_LINES = 400;
 const PLAN_SIZE_ENFORCED_FROM = '2026-10-25';
 const PLAN_SIZE_EXEMPT_PATTERN = /^[>\s*-]*\**Plan-size-exempt:\**\s*\S/mu;
 const PLAN_SIZE_EXEMPT_SCAN_LINES = 30;
-const PLAN_DOC_DATE_PATTERN = /(?:^|\/)(\d{4}-\d{2}-\d{2})-[^/]*\.md$/u;
+// The cap binds only dated plan docs directly under Docs/plans/. Pipeline packets in
+// subdirectories (attachments/, encounters/) and undated reference docs are a
+// different document type and are never size-capped.
+const PLAN_DOC_DATE_PATTERN = /^Docs\/plans\/(\d{4}-\d{2}-\d{2})-[^/]*\.md$/u;
 
 function normalizeRepoPath(value: string): string {
   return value.trim().replaceAll('\\', '/');
@@ -648,10 +651,11 @@ function checkPlanSize(file: string, lines: string[], findings: Finding[]): void
   // A trailing newline yields one empty last element; it is not a line of the doc.
   const lineCount = lines.length > 0 && lines[lines.length - 1] === '' ? lines.length - 1 : lines.length;
   if (lineCount <= PLAN_SIZE_WARN_LINES) return;
+  const docDate = PLAN_DOC_DATE_PATTERN.exec(file)?.[1];
+  if (docDate === undefined) return;
   if (PLAN_SIZE_EXEMPT_PATTERN.test(lines.slice(0, PLAN_SIZE_EXEMPT_SCAN_LINES).join('\n'))) return;
 
-  const docDate = PLAN_DOC_DATE_PATTERN.exec(file)?.[1];
-  const grandfathered = docDate !== undefined && docDate < PLAN_SIZE_ENFORCED_FROM;
+  const grandfathered = docDate < PLAN_SIZE_ENFORCED_FROM;
   if (lineCount > PLAN_SIZE_FAIL_LINES && !grandfathered) {
     addFinding(findings, {
       check: 'plan-size',
