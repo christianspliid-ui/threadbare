@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-24 19:57 local (17:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-24 20:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -27,12 +27,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 14 ready, 2 in progress.** One merge this hour: encounter debts now end when their term does, and the sheet shows the time left ([THR-1999](https://linear.app/threadbare/issue/THR-1999), [#2548](https://github.com/christianspliid-ui/threadbare/pull/2548), merged 19:36 local and live). The builder is working again now. A small content fix joined the shelf: [a lake's land page still reads like a desert](https://linear.app/threadbare/issue/THR-2021).
+**Healthy: 13 ready, 2 in progress.** One merge this hour: a notable whose plan fails late now stays on the Notables list for a while after it fails ([THR-2005](https://linear.app/threadbare/issue/THR-2005), [#2549](https://github.com/christianspliid-ui/threadbare/pull/2549), live). The builder is now on [a faction paying for a member's founding](https://linear.app/threadbare/issue/THR-2008).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
 
 ## Health
 
-- Heavy tests have not passed on main since the 13:18 UTC red run. The fix ([THR-2019](https://linear.app/threadbare/issue/THR-2019)) merged at 16:02 UTC, the next two runs were cancelled by newer merges, and the run on [9f95acf2](https://github.com/christianspliid-ui/threadbare/commit/9f95acf2) is in progress now. No new ticket: the failure is already fixed. The live game is not affected.
-- Everything else is green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the PR queue are all fine (no PR waiting). Engine speed is normal: 153 ms/tick, +6% on the week's median. The worktree reaper ran at 19:40 local. The live site is serving the newest commit on main ([9f95acf2](https://github.com/christianspliid-ui/threadbare/commit/9f95acf2)).
+All green. Heavy tests pass on main again, so last hour's red is closed. Main's CI, the three scheduled background jobs, all 13 scheduled lanes and the PR queue are fine (no PR waiting). Engine speed is good: 112 ms/tick, 22% faster than the week's median. The worktree reaper ran at 20:40 local. The live site is serving the newest commit on main ([94e9b402](https://github.com/christianspliid-ui/threadbare/commit/94e9b402)).
