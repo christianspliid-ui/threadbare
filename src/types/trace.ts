@@ -3902,6 +3902,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     appointmentDiscount?: number;
     /** THR-1781 — the pull of the god's live whispers on an encounter (already in `score`). */
     whisperPull?: number;
+    /** THR-1969 — Open the Markets' thieves' guild boost on `create × faction` (already in `temperamentWeight`). */
+    thievesGuildOffer?: number;
     /** THR-1952 — the Means want's multiplier on paying work (already in `score`). */
     meansMultiplier?: number;
   }>;

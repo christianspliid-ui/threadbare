@@ -114,9 +114,9 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
   'divine.rekindle_thread':
     'Pours your own fire back into a mortal worn past answering, and lets them rise again.',
   // THR-1969 — the god's stake S3 (plan § Content S3, card text).
-  'divine.fortunes_favour':
+  'action.means.fortunes_favour':
     'Fortune smiles on a mortal: they rise one step in the world\'s eyes.',
-  'divine.ruin':
+  'action.means.ruin':
     'Ruin finds a mortal: they fall one step.',
 
   // — Relay: acting through a bonded mortal —

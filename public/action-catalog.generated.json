@@ -1,20 +1,20 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 180,
+    "total": 183,
     "byCategory": {
-      "action": 67,
+      "action": 69,
       "artifact": 5,
       "company": 4,
       "divine": 20,
       "hex": 49,
-      "location": 23,
+      "location": 24,
       "threads": 12
     },
     "byReach": {
       "iron": 12,
-      "gold": 21,
-      "shadow": 22,
+      "gold": 23,
+      "shadow": 23,
       "veil": 23,
       "heart": 29,
       "eye": 28,
@@ -23,14 +23,14 @@
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 177,
+      "unlockable-generic": 180,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 114,
+      "template-ops": 115,
+      "aftermath-only": 6,
       "control-spec": 19,
-      "engine-bridge": 43,
-      "aftermath-only": 4
+      "engine-bridge": 43
     },
     "beatGranted": 35,
     "starters": 0,
@@ -606,6 +606,38 @@
       "effectSource": "template-ops"
     },
     {
+      "id": "action.means.fortunes_favour",
+      "name": "Fortune's Favour",
+      "spellName": "The Turning Coin",
+      "category": "action",
+      "reach": "gold",
+      "sphereAffinity": "matter",
+      "crudType": "update",
+      "scale": "personal",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [
+        "individual"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": false,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": false,
+      "description": "Tips the world's small chances toward one mortal: a debt forgiven, a buyer at the door, a purse found in the road. They rise one step in the world's eyes, and a mortal with more in hand wants differently.",
+      "technicalEffect": "On success, an `economy_shift` with `bandStep: 1` moves the target mortal's Means up to the next band's floor (clamped at 100).",
+      "effectSource": "aftermath-only"
+    },
+    {
       "id": "action.faction.stir_dissent",
       "name": "Stir Dissent",
       "spellName": "Whisper of Old Grievances",
@@ -662,6 +694,38 @@
       "description": "Unleashes a targeted curse of sickness and pestilence on an individual or group, degrading their health and fighting ability. The affliction spreads and deepens, weakening the target beyond their capacity to resist. Mishandling the curse risks turning the contagion back on the caster.",
       "technicalEffect": "On success, sharply reduces the target's `health`. On failure, the actor takes a health backlash.",
       "effectSource": "template-ops"
+    },
+    {
+      "id": "action.means.ruin",
+      "name": "Ruin",
+      "spellName": "The Empty Strongbox",
+      "category": "action",
+      "reach": "shadow",
+      "sphereAffinity": "entropy",
+      "crudType": "update",
+      "scale": "personal",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "actor"
+      ],
+      "targetSubtypes": [
+        "individual"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": false,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": false,
+      "description": "Lets misfortune find one mortal: a cargo lost, a partner fled, a strongbox opened by someone else. They fall one step, and a mortal with less in hand wants differently.",
+      "technicalEffect": "On success, an `economy_shift` with `bandStep: -1` moves the target mortal's Means to one below its current band's floor (clamped at 0; on a Destitute mortal the poor-loss scale MEANS_POOR_LOSS_SCALE softens the fall, as for every Means loss).",
+      "effectSource": "aftermath-only"
     },
     {
       "id": "action.mentorship.sever",
@@ -2968,7 +3032,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
       "description": "Binds a discovered resource deposit to the deity's divine will, establishing a sustained extraction pipeline that generates essence income each tick. The claim is active as long as the binding holds and rivals do not seize control. A resource node under divine claim produces more reliably than unbound deposits.",
-      "technicalEffect": "Sustained: `ControlEffect` binding a discovered resource deposit — generates per-tick Matter income at a per-tick Matter cost. Persists until it lapses, is usurped (Gold ≥ t2), or destroyed (Stone ≥ t1).",
+      "technicalEffect": "Sustained: `ControlEffect` binding the most abundant deposit on the hex — generates per-tick income in that good's sphere (CLAIM_RESOURCE_BASE_INCOME × CLAIM_RESOURCE_TIER_MULT by its stock tier; a good with no class pays 0.5 Matter) at a per-tick Matter cost. Persists until it lapses, is usurped (Gold ≥ t2), or destroyed (Stone ≥ t1).",
       "effectSource": "control-spec"
     },
     {
@@ -4403,6 +4467,37 @@
       "effectSource": "template-ops"
     },
     {
+      "id": "loc.bless_holding",
+      "name": "Bless the Holding",
+      "spellName": "The Full Measure",
+      "category": "location",
+      "reach": "gold",
+      "sphereAffinity": "order",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 2,
+      "rarityName": "Storied",
+      "intrinsicTier": "shaping",
+      "apCost": 1,
+      "essenceCost": 4,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "location",
+        "sublocation"
+      ],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": false,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": false,
+      "description": "Lays a year's blessing on a held place. Its fields and stalls give half again what they gave, and whoever holds it, a lord's house or a landholder, draws the difference. The blessing fades at the year's end.",
+      "technicalEffect": "On success, writes the god's `blessed` edge (kind `holding_yield`) on a place a faction controls or a mortal owns: its town tax, freehold and tithe pay ×BLESS_HOLDING_YIELD_MULT until BLESS_HOLDING_DAYS have passed. A recast extends; a place no one holds takes nothing.",
+      "effectSource": "template-ops"
+    },
+    {
       "id": "loc.guide_caravan",
       "name": "Guide the Caravan",
       "spellName": "The Kind Mile",
@@ -4472,7 +4567,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
       "description": "Catalyses trade through a settlement's public square. Stalls multiply by the hour; merchants who never knew each other shake hands. The risk is that a thieves' guild has been waiting for the square to wake up too.",
-      "technicalEffect": "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*).",
+      "technicalEffect": "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*), and stamps `marketsOpenedTick`: from LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS later, for THIEVES_GUILD_OFFER_DAYS, a Shadow-led resident's `create × faction` is boosted ×THIEVES_GUILD_OFFER_WANT while prosperity holds at LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD.",
       "effectSource": "template-ops"
     },
     {

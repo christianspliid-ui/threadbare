@@ -7433,6 +7433,52 @@ export const CONTRACTS: readonly Contract[] = [
     writeSites: ['src/engine/orchestrator.ts', 'src/engine/unifiedActionResolution.ts'],
     readSites: ['src/engine/chronicleGrowth.ts', 'src/engine/orchestrator.ts'],
   },
+  // ── THR-1969 — the god's stake S3: market cards and the two promises ──────
+  {
+    id: 'blessed-holding-multiplies-yield',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: ECONOMY,
+    intent:
+      'Bless the Holding funds what a place holds (THR-1969, THR-1935 S3). Its bless_holding op writes the god\'s blessed edge (kind holding_yield, untilTick = cast + BLESS_HOLDING_DAYS days, mult BLESS_HOLDING_YIELD_MULT 1.5) on a place a faction controls or a mortal owns; a recast extends, never stacks; an unheld place is refused. While it lives the faction purse\'s town tax and holding income\'s freehold and tithe on that place pay ×1.5; the purse day sweeps it at untilTick.',
+    ulTerms: ['Settlement', 'Freehold'],
+    mechanism: { kind: 'function', symbols: ['holdingBlessingMult', 'blessHolding', 'sweepExpiredHoldingBlessings'], module: 'src/engine/godsStake.ts' },
+    writeSites: ['src/engine/graphOpExecutor.ts', 'src/engine/godsStake.ts', 'src/engine/factionPurse.ts'],
+    readSites: ['src/engine/factionPurse/income.ts', 'src/engine/holdingIncome.ts', 'src/engine/unifiedActionResolution.ts'],
+    verifiedLive: {
+      date: '2026-10-24',
+      evidence: 'THR-1969. godsStake.test.ts: a faction-held town\'s tax term in the next economy.purse.day trace is TOWN_TAX_BASE × 1.5 (+ the unblessed town) and back to 2 × TOWN_TAX_BASE on the first pay day at untilTick, with the edge swept; a recast keeps one edge; an unheld place is refused; a freehold pays × 1.5 only while the blessing lives.',
+    },
+  },
+  {
+    id: 'claim-resource-pays-good-sphere',
+    producerSystem: ECONOMY,
+    consumerSystem: 'Essence & Divine Economy',
+    intent:
+      'Claim Resource pays in what it claims (THR-1969, THR-1935 S3). A control effect whose ControlSpec says incomeFrom claimed_good binds the most abundant deposit at establishment (claimedGoodId, claimedGoodLocationId); each tick phaseControlEffects credits the good\'s resource-class primarySphere × CLAIM_RESOURCE_BASE_INCOME 0.5 × CLAIM_RESOURCE_TIER_MULT by its live stock tier (scarce 0.5, adequate 1, surplus 1.5) and carries the resolved perTickIncome on the effect for the forecast. A good with no class pays the static perTickIncome (0.5 Matter).',
+    ulTerms: ['Stock Tier', 'Sphere', 'Essence'],
+    mechanism: { kind: 'function', symbols: ['claimedGoodIncome'], module: 'src/engine/godsStake.ts' },
+    writeSites: ['src/engine/controlEffectSpawn.ts'],
+    readSites: ['src/engine/phaseControlEffects.ts'],
+    verifiedLive: {
+      date: '2026-10-24',
+      evidence: 'THR-1969. godsStake.test.ts: spawnControlEffect on a grain hamlet binds grain; phaseControlEffects credits 0.75 Life on surplus, 0.5 on adequate, 0.25 on scarce; an unclassed good pays 0.5 Matter.',
+    },
+  },
+  {
+    id: 'opened-markets-draw-a-thieves-guild',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: AMBITIONS,
+    intent:
+      'Open the Markets\' thieves\' guild comes true (THR-1969, THR-1935 S3). The card\'s mark_markets_opened op stamps marketsOpenedTick on the town; from LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS after, for THIEVES_GUILD_OFFER_DAYS, while the town\'s prosperity is at LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD 75 or more, scoreUnifiedBoard multiplies a Shadow-led resident\'s cell.create.faction temperament weight by THIEVES_GUILD_OFFER_WANT 1.5 (thievesGuildOffer on the board entry and its trace). The founded guild\'s calling (FOUNDED_GUILD_TYPE_BY_REACH shadow → thieves) makes it a thieves\' guild.',
+    ulTerms: ['Settlement', 'Undertaking', 'Faction'],
+    mechanism: { kind: 'property', symbols: ['marketsOpenedTick', 'thievesGuildOffer'] },
+    writeSites: ['src/engine/graphOpExecutor.ts', 'src/engine/godsStake.ts'],
+    readSites: ['src/engine/decisionBoard.ts', 'src/engine/phaseAgentDecision.ts'],
+    verifiedLive: {
+      date: '2026-10-24',
+      evidence: 'THR-1969. godsStake.test.ts: the card stamps the tick; the offer opens at the delay and closes after the offer days or below prosperity 75; a Shadow-led resident\'s create × faction entry carries thievesGuildOffer 1.5 and temperamentWeight × 1.5, a Gold-led one none.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

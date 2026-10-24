@@ -52,7 +52,7 @@ import { PURSE_CYCLE_TICKS, TOWN_TAX_BASE } from '../../data/faction-purse-const
 import { WEALTH_SUBLOCATION_INCOME } from '../wealth';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
 import type { GameState } from '../../types/gameState';
-import type { UnifiedAction } from '../../types/unifiedAction';
+import type { ActionStep, UnifiedAction } from '../../types/unifiedAction';
 import type { RealmProjection } from '../realmProjection';
 import type { ScoredStrategicCandidate } from '../strategicActionScoring';
 
@@ -103,8 +103,8 @@ describe("THR-1969 — Fortune's Favour and Ruin move one Means band", () => {
   });
 
   for (const [templateId, after, word] of [
-    ['divine.fortunes_favour', 60, 'Wealthy'],
-    ['divine.ruin', 39, 'Getting by'],
+    ['action.means.fortunes_favour', 60, 'Wealthy'],
+    ['action.means.ruin', 39, 'Getting by'],
   ] as const) {
     it(`${templateId} on a mortal at Means 45 leaves them at ${after} (${word}), with the band named on the receipt`, () => {
       const state = meansState(45);
@@ -126,8 +126,8 @@ describe("THR-1969 — Fortune's Favour and Ruin move one Means band", () => {
 
   it('a failed cast moves nothing', () => {
     const state = meansState(45);
-    const template = getUnifiedTemplateById('divine.ruin')!;
-    executeStepResult(castOn('divine.ruin', MORTAL), template, 'failure', [], state, () => 0.5, 10, undefined, runtime);
+    const template = getUnifiedTemplateById('action.means.ruin')!;
+    executeStepResult(castOn('action.means.ruin', MORTAL), template, 'failure', [], state, () => 0.5, 10, undefined, runtime);
     expect(state.graph.getNode(MORTAL)!.properties.wealth).toBe(45);
   });
 });
@@ -213,7 +213,7 @@ describe('THR-1969 — Bless the Holding', () => {
   it('the card op writes the blessing and the receipt names the holder and the year', () => {
     const g = heldWorld();
     const template = getUnifiedTemplateById('loc.bless_holding')!;
-    const results = executeGraphOps(g, template.steps[0].onSuccess, { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 40 });
+    const results = executeGraphOps(g, (template.steps[0] as ActionStep).onSuccess, { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 40 });
     expect(results.allSucceeded).toBe(true);
     const receipt = holdingBlessingReceipt(g, GOD, TOWN, 40, 'ua_bless');
     expect(receipt?.detail).toBe("House Ashfold's yield from Ferris swells this year. The blessing fades at the year's end.");
@@ -313,7 +313,7 @@ function foundGuild(actorId: string, index: number): ScoredStrategicCandidate {
     objectHandle: { kind: 'node', nodeId: TOWN },
     scoreComponents: { ambitionAlignment: 0, blockerRelief: 0, worldImpact: 0, catalystValue: 0, roleFit: 0, travelPenalty: 0, varietyPenalty: 0 },
     finalScore: 1, generationReason: 'ambition_progression',
-  } as ScoredStrategicCandidate;
+  } as unknown as ScoredStrategicCandidate;
 }
 
 describe("THR-1969 — Open the Markets' thieves' guild comes true", () => {
@@ -328,7 +328,7 @@ describe("THR-1969 — Open the Markets' thieves' guild comes true", () => {
   it('the card stamps the tick it opened the town', () => {
     const g = marketWorld(80);
     const template = getUnifiedTemplateById('loc.open_markets')!;
-    const results = executeGraphOps(g, template.steps[0].onSuccess, { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: OPENED });
+    const results = executeGraphOps(g, (template.steps[0] as ActionStep).onSuccess, { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: OPENED });
     expect(results.allSucceeded).toBe(true);
     expect(g.getNode(TOWN)!.properties[MARKETS_OPENED_TICK_PROP]).toBe(OPENED);
   });
@@ -368,7 +368,7 @@ describe("THR-1969 — Open the Markets' thieves' guild comes true", () => {
 
 describe('THR-1969 — the three market rows', () => {
   it('are tier 2 in the omen market and resolve a price', () => {
-    for (const id of ['divine.fortunes_favour', 'divine.ruin', 'loc.bless_holding']) {
+    for (const id of ['action.means.fortunes_favour', 'action.means.ruin', 'loc.bless_holding']) {
       const t = getUnifiedTemplateById(id)!;
       expect(t.progression).toMatchObject({ tier: 2, offer: 'market', generic: false });
       expect(priceOf(t, { graph: new WorldGraph(), ascendantId: GOD } as unknown as GameState)).toBeGreaterThan(0);

@@ -538,6 +538,17 @@ export const GRAPH_OP_ROWS: Readonly<Record<string, LedgerRow>> = {
     writes: 'lowered staple resource quantities at the target location',
     consumers: [acts('src/engine/essenceEconomyBridge.ts', 'quantity')],
   },
+  bless_holding: {
+    writes: "the god's `blessed` edge (kind holding_yield, untilTick, mult) on a held place",
+    consumers: [
+      acts('src/engine/factionPurse/income.ts', 'holdingBlessingMult'),
+      acts('src/engine/holdingIncome.ts', 'holdingBlessingMult'),
+    ],
+  },
+  mark_markets_opened: {
+    writes: '`marketsOpenedTick` on the target settlement',
+    consumers: [acts('src/engine/decisionBoard.ts', 'thievesGuildOfferWant')],
+  },
   reveal_vein: {
     writes: 'a surfaced or boosted non-staple deposit at the target location',
     consumers: [acts('src/engine/essenceEconomyBridge.ts', 'quantity')],

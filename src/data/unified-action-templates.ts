@@ -737,7 +737,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   // `economy_shift` (`bandStep`): the amount is computed from their live wealth at the
   // write, so the card always moves one word. The receipt is the Means change.
   {
-    id: 'divine.fortunes_favour',
+    id: 'action.means.fortunes_favour',
     progression: { tier: 2, offer: 'market', generic: false },
     name: 'Fortune\'s Favour',
     spellName: 'The Turning Coin',
@@ -766,7 +766,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'matter',
     targetCategories: ['actor'],
     targetSubtypes: ['individual'],
-    motivations: [],
+    motivations: ['loyalty_ambition'],
     narrativeTemplates: {
       initiation: 'leans on the small chances around a mortal until they tip',
       success: 'a door opens, a debt is forgiven, and the purse is heavier than it was',
@@ -774,7 +774,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     },
   },
   {
-    id: 'divine.ruin',
+    id: 'action.means.ruin',
     progression: { tier: 2, offer: 'market', generic: false },
     name: 'Ruin',
     spellName: 'The Empty Strongbox',
@@ -803,7 +803,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'entropy',
     targetCategories: ['actor'],
     targetSubtypes: ['individual'],
-    motivations: [],
+    motivations: ['loyalty_ambition'],
     narrativeTemplates: {
       initiation: 'turns the small chances around a mortal against them',
       success: 'the cargo is lost, the partner gone, the strongbox empty',

@@ -51,6 +51,8 @@ export function effectSourceFor(template: UnifiedActionTemplate): EffectSource {
   if (ENGINE_EFFECT_TEMPLATE_IDS.has(template.id)) return 'engine-bridge';
   if (
     template.aftermathConfig != null ||
+    // THR-1969 — an outcome table (`economy_shift` …) is an aftermath effect written at the roll.
+    template.outcomeEffects != null ||
     template.secretDiscovery != null ||
     template.revelationAction != null
   ) {

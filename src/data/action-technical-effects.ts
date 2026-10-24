@@ -134,10 +134,10 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     'Applies a divine influence (interventionType `intimidate`, Force sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.inspire':
     'Applies a divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent, biasing their decision-making until the influence decays.',
-  'divine.fortunes_favour':
+  'action.means.fortunes_favour':
     "On success, an `economy_shift` with `bandStep: 1` moves the target mortal's Means up to the next band's floor (clamped at 100).",
-  'divine.ruin':
-    "On success, an `economy_shift` with `bandStep: -1` moves the target mortal's Means to one below its current band's floor (clamped at 0).",
+  'action.means.ruin':
+    "On success, an `economy_shift` with `bandStep: -1` moves the target mortal's Means to one below its current band's floor (clamped at 0; on a Destitute mortal the poor-loss scale MEANS_POOR_LOSS_SCALE softens the fall, as for every Means loss).",
   'divine.coincidence':
     'Applies a divine influence (interventionType `coincidence`, Time sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.omen':

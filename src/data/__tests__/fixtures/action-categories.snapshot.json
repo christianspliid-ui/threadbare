@@ -167,6 +167,14 @@
     "catalog": "action",
     "codex": "actions"
   },
+  "action.means.fortunes_favour": {
+    "catalog": "action",
+    "codex": "actions"
+  },
+  "action.means.ruin": {
+    "catalog": "action",
+    "codex": "actions"
+  },
   "action.mentorship.inspire": {
     "catalog": "action",
     "codex": "actions"
@@ -644,6 +652,10 @@
     "codex": "location"
   },
   "loc.bless_harvest": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.bless_holding": {
     "catalog": "location",
     "codex": "location"
   },
