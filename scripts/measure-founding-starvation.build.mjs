@@ -65,9 +65,20 @@ const flag = (name) => { const i = argv.indexOf(name); return i >= 0 ? argv[i + 
 const seeds = (flag('--seeds') ?? GATE_SEEDS.join(',')).split(',').map(Number);
 const arms = (flag('--arms') ?? 'off,on,patron').split(',');
 const passThrough = argv.filter((x, i) => !['--seeds', '--arms', '--no-build', '--build-only'].includes(x) && !['--seeds', '--arms'].includes(argv[i - 1]));
-const runKey = JSON.stringify(passThrough);
+// The switch gate is measured at 600 ticks on the medium map only: a shorter run founds
+// nothing, so its floor (0.5 × 0) passes trivially and must never reach `measure:means`.
+const ticks = flag('--ticks') ?? '600';
+const map = flag('--map') ?? 'medium';
+const gateConfig = ticks === '600' && map === 'medium';
+const runKey = JSON.stringify({ ticks, map });
 const ARM_FILE = { off: '.cache/founding-starvation-off.mjs', on: '.cache/founding-starvation-on.mjs', patron: '.cache/founding-starvation-patron.mjs' };
 for (const arm of arms) if (!ARM_FILE[arm]) throw new Error(`unknown arm "${arm}" (want off, on, patron)`);
+// Each cached row carries the hash of the bundle that produced it; a row from an older
+// build (the code changed since) is ignored, so it is re-measured rather than reused.
+const bundleHash = {};
+for (const [arm, file] of Object.entries(ARM_FILE)) {
+  try { bundleHash[arm] = createHash('sha1').update(await readFile(file)).digest('hex').slice(0, 12); } catch { bundleHash[arm] = null; }
+}
 
 // One file per arm × seed, so separate commands may run arms in parallel.
 const CACHE_DIR = `.cache/founding-starvation/${createHash('sha1').update(runKey).digest('hex').slice(0, 10)}`;
@@ -76,13 +87,15 @@ for (const arm of arms) {
   for (const seed of seeds) {
     const out = execFileSync('node', [ARM_FILE[arm], ...passThrough, '--seeds', String(seed)], { encoding: 'utf8', maxBuffer: 1 << 26 });
     const row = out.split('\n').filter(l => l.startsWith('{')).map(l => JSON.parse(l))[0];
-    if (row) await writeFile(`${CACHE_DIR}/${arm}-${seed}.json`, JSON.stringify(row));
+    if (row) await writeFile(`${CACHE_DIR}/${arm}-${seed}.json`, JSON.stringify({ ...row, bundleHash: bundleHash[arm] }));
   }
 }
 const results = {};
 for (const f of await readdir(CACHE_DIR)) {
   const m = /^(off|on|patron)-(\d+)\.json$/.exec(f);
-  if (m) results[`${m[1]}:${m[2]}`] = JSON.parse(await readFile(`${CACHE_DIR}/${f}`, 'utf8'));
+  if (!m) continue;
+  const row = JSON.parse(await readFile(`${CACHE_DIR}/${f}`, 'utf8'));
+  if (row.bundleHash && row.bundleHash === bundleHash[m[1]]) results[`${m[1]}:${m[2]}`] = row;
 }
 
 const measuredSeeds = [...new Set(Object.keys(results).map(k => Number(k.split(':')[1])))].sort((a, b) => a - b);
@@ -102,8 +115,9 @@ for (const seed of measuredSeeds) {
 }
 const gateRows = GATE_SEEDS.map(s => rows.find(r => r.seed === s));
 const covered = gateRows.every(r => r?.complete);
-const pass = covered && gateRows.every(r => r.pass);
-console.log(`founding-starvation floor (patron arm) on every gate seed (${GATE_SEEDS.join(', ')}): ${covered ? (pass ? 'PASS' : 'FAIL') : 'not every gate seed measured yet'}`);
-await writeFile('.cache/founding-starvation-verdict.json', JSON.stringify({ pass, floor: FLOOR, gateSeeds: GATE_SEEDS, runKey, rows }, null, 2));
+const pass = gateConfig && covered && gateRows.every(r => r.pass);
+console.log(`founding-starvation floor (patron arm) on every gate seed (${GATE_SEEDS.join(', ')}): ${!gateConfig ? 'not the gate config (600 ticks, medium) — no verdict' : covered ? (pass ? 'PASS' : 'FAIL') : 'not every gate seed measured yet'}`);
+// Only the gate config writes the verdict `measure:means` reads.
+if (gateConfig) await writeFile('.cache/founding-starvation-verdict.json', JSON.stringify({ pass, gateConfig, floor: FLOOR, gateSeeds: GATE_SEEDS, runKey, rows }, null, 2));
 const requested = rows.filter(r => seeds.includes(r.seed) && r.complete);
 process.exitCode = requested.every(r => r.pass) ? 0 : 1;

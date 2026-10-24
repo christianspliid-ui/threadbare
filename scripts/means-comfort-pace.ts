@@ -49,7 +49,9 @@ function foundingFloorVerdict(): boolean | null {
   const path = '.cache/founding-starvation-verdict.json';
   try {
     if (!existsSync(path)) return null;
-    const v = JSON.parse(readFileSync(path, 'utf8')) as { pass?: unknown };
+    const v = JSON.parse(readFileSync(path, 'utf8')) as { pass?: unknown; gateConfig?: unknown };
+    // Only a 600-tick medium-map verdict counts: a short run passes the floor trivially.
+    if (v.gateConfig !== true) return null;
     return typeof v.pass === 'boolean' ? v.pass : null;
   } catch {
     return null;

@@ -25,6 +25,8 @@ export function findFoundingPatron(graph: WorldGraph, founderId: string, cost: n
   for (const edge of graph.getOutgoingEdges(founderId, 'member_of')) {
     const faction = graph.getNode(edge.target);
     if (!isPurseFaction(faction)) continue;
+    // A dissolved faction keeps its member_of edges and its treasury; it backs nothing.
+    if (faction.properties.dissolved) continue;
     if (readWealth(faction.properties as Record<string, unknown>) < cost) continue;
     const rank = getDerivedMembershipRank(edge);
     if (!best || rank > best.rank || (rank === best.rank && faction.id < best.id)) {

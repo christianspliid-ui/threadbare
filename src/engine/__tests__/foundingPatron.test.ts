@@ -52,6 +52,12 @@ describe('findFoundingPatron', () => {
     expect(findFoundingPatron(world({ founderWealth: 0, high: 39, low: 39 }), FOUNDER, 40)).toBeNull();
   });
 
+  it('skips a dissolved faction, which keeps its edges and treasury', () => {
+    const g = world({ founderWealth: 0, high: 100, low: 100 });
+    g.getNode(HIGH)!.properties.dissolved = true;
+    expect(findFoundingPatron(g, FOUNDER, 40)).toBe(LOW);
+  });
+
   it('breaks a rank tie by faction id', () => {
     const g = world({ founderWealth: 0, high: 100, low: 100, highRank: 0.5, lowRank: 0.5 });
     expect(findFoundingPatron(g, FOUNDER, 40)).toBe(LOW); // 'faction_a' < 'faction_b'
