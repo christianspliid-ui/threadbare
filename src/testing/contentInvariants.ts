@@ -51,6 +51,7 @@ const KNOWN_AFTERMATH_EFFECT_KINDS = new Set<EncounterAftermathReactionEffect['k
   'faction_dissolve',
   'faction_declare_war',
   'faction_force_peace',
+  'faction_broker_fealty',
   'thread_strengthen',
   'thread_weaken',
   'thread_break',

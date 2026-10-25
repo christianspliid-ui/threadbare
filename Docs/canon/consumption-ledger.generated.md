@@ -24,15 +24,15 @@ Settled at the attended sitting of 2026-08-17 ([THR-1161](https://linear.app/thr
 
 | Class | Effect kinds | GraphOps | Total |
 |---|---:|---:|---:|
-| ✅ acted-on | 45 | 47 | 92 |
+| ✅ acted-on | 46 | 47 | 93 |
 | 📒 bookkeeping | 1 | 0 | 1 |
 | 🌱 dormant-hook | 1 | 1 | 2 |
 | 🕳️ write-without-consumer | 0 | 0 | 0 |
-| **Total** | **47** | **48** | **95** |
+| **Total** | **48** | **48** | **96** |
 
 ## Aftermath effect kinds
 
-Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 47 members.
+Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 48 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
@@ -62,6 +62,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 | `faction_dissolve` | ✅ acted-on | removal of a faction's `member_of` edges | `src/engine/factionMembership.ts` → `member_of` (acts) |
 | `faction_declare_war` | ✅ acted-on | a `relates_to` edge between the factions with `basis: 'war'` | `src/engine/ambitionTick.ts` → `relates_to` (acts) |
 | `faction_force_peace` | ✅ acted-on | a `relates_to` edge between the factions with a raised sentiment | `src/engine/ambitionTick.ts` → `relates_to` (acts) |
+| `faction_broker_fealty` | ✅ acted-on | a `sworn_to` edge, vassal → the broker's realm, through the crown's writer | `src/engine/crown.ts` → `runCrownPhase` (acts) |
 | `signature_warhost` | ✅ acted-on | a mobilised army force under the selected commander | `src/engine/armyAttrition.ts` → `phaseArmyAttrition` (acts) |
 | `sphere_influence_amplify` | ✅ acted-on | a raised sphere-influence value on the target node | `src/engine/agentLifecycle.ts` → `sphereInfluence` (acts) |
 | `spawn_unique_location` | ✅ acted-on | a location node placed on a resolved hex | `src/engine/holdings.ts` → `grantHolding` (acts) |

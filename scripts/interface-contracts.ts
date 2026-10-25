@@ -7076,6 +7076,33 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a two-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege\'s vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seeds 42, 99 and 7 medium over 1080 ticks: a crown forms on every seed, oath income 15–34% of the crowns\' full income at day 60, one-layer held on every tick, no negative wealth.',
     },
   },
+  // THR-1944 — an encounter a mortal wins is the crown's second writer route. The
+  // aftermath effect resolves its two factions and calls the crown's own writer, so
+  // `writeOath` stays the one place a `sworn_to` edge is made.
+  {
+    id: 'encounter-brokers-oath-of-fealty',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      'A won Faction Unification or a won Warlord\'s Tribute demand fires the faction_broker_fealty aftermath effect from the band\'s outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm\'s own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord\'s company ($cast:warlord) or the best-standing present faction at the mortal\'s town (never the liege\'s enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason.',
+    ulTerms: ['Realm', 'Faction', 'Encounter'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['sworn_to', 'faction_broker_fealty', 'brokerOath', 'swearBrokeredOath', 'brokeredBy'],
+      module: 'src/engine/crown/brokeredOath.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/crown/brokeredOath.ts', 'src/engine/crown.ts'],
+    readSites: [
+      'src/engine/crown/fealtySentences.ts',
+      'src/components/Game/debug/EconomyDebugTab.tsx',
+      'src/debug-bridge.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1944. crownBrokeredOath.test.ts drives applyEncounterAftermathReaction with $actor and $cast:warlord bound: the demand writes sworn_to warlord\'s company → the mortal\'s realm, coerced, forcedBy demand, brokeredBy the mortal, loyalty 0.35; no realm, an already-sworn company and a cooled-down pair write nothing and trace no_realm / may_not_swear / cooldown; a sworn realm hands the oath to its liege; the unification picks the best-standing present faction and never a rival. crown.test.ts passes unchanged.',
+    },
+  },
   {
     id: 'crown-protected-holdings-to-war-aims',
     producerSystem: FACTIONS,
