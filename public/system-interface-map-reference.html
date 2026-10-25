@@ -603,6 +603,33 @@
   </div>
 
   <div class="section">
+    <h2>Spotlight — The settlement economy
+      <span class="lead">Written 2026-10-25 (THR-1923). Every settlement works its own land once a day, grows from its food surplus, raises buildings from spare timber and stone, and sells what is left on a surplus road. Nine contracts, all new; most other economy readers keep their old inputs, now fed by the phase.</span>
+    </h2>
+
+    <ul class="contracts">
+      <li class="live"><span class="flow">Settlement economy <span class="arrow">⟶</span> Prosperity — <code>resourceBalance</code> from the town's own food and build balance</span><span class="chip live">LIVE</span>
+        <span class="note">The phase writes it daily; <code>phaseProsperity</code> reads it unchanged. The stock-tier pass no longer overwrites it on a settlement the economy reached, but lays an embargo's cut on top.</span></li>
+      <li class="live"><span class="flow">Settlement economy <span class="arrow">⟶</span> Settlement tiers — <code>targetTier</code> from people and seat</span><span class="chip live">LIVE</span>
+        <span class="note">A city needs a seat that pulls; a capital a realm's seat. <code>phaseSettlementPromotion</code> steps one tier after the sustain window, a capital included, behind <code>SETTLEMENT_ECONOMY_DRIVES_TIER</code>.</span></li>
+      <li class="live"><span class="flow">Settlement economy <span class="arrow">⟶</span> Places — buildings raised and lost (<code>isBuilding</code>)</span><span class="chip live">LIVE</span>
+        <span class="note">A standing Place of the type is adopted rather than duplicated. The Inspector's Connections fact and the tooltip router read the flag.</span></li>
+      <li class="live"><span class="flow">Settlement economy <span class="arrow">⟶</span> Trade lanes — surplus routes carry <code>carriedPerDay</code></span><span class="chip live">LIVE</span>
+        <span class="note">Only a town's own surplus leaves; imports never circulate. The undertakings trade run reads <code>carriedPerDay</code>. A blockaded or road-cursed lane carries nothing.</span></li>
+      <li class="live"><span class="flow">Settlement economy <span class="arrow">⟶</span> Location traits — fourteen economic traits</span><span class="chip live">LIVE</span>
+        <span class="note">Twelve building traits, Breadbasket and Market Town, each with a step term and a pool row.</span></li>
+      <li class="live"><span class="flow">Settlement economy <span class="arrow">⟶</span> Unrest — happiness as the contentment input</span><span class="chip live">LIVE</span>
+        <span class="note">THR-1934's planned switch: <code>economyContentment</code>, hunger left out (it is its own input). Hunger and Restless leaving switch on from <code>foodStore</code> and <code>population</code>.</span></li>
+      <li class="live"><span class="flow">God verbs <span class="arrow">⟶</span> Settlement economy — a land shock on the best worked hex</span><span class="chip live">LIVE</span>
+        <span class="note">Blight, Bless the Harvest, Sour Mine and Reveal Vein append <code>landShocks</code>, fading over a season; the cast receipt names which fields.</span></li>
+      <li class="live"><span class="flow">War <span class="arrow">⟶</span> Settlement economy — a siege cuts the town's fields</span><span class="chip live">LIVE</span>
+        <span class="note">Read daily from the siege actor, never stored; war code unchanged.</span></li>
+      <li class="live"><span class="flow">Settlement economy <span class="arrow">⟶</span> Stock tiers — <code>foodBalance</code> sets the food staples' tier</span><span class="chip live">LIVE</span>
+        <span class="note">A fed town reads adequate, a starving one scarce, whatever its deposit quantity says.</span></li>
+    </ul>
+  </div>
+
+  <div class="section">
     <h2>Spotlight — The nudge &amp; the broken mortal
       <span class="lead">Audited 2026-07-26 (audit-on-touch, THR-773). The first contract slice for two ⚪ UNAUDITED subsystems — <em>Encounters &amp; Dilemmas</em> and <em>Spheres &amp; Quintessence</em>. Their full-subsystem audits remain open; these two rows are what this ticket touched, not a clean bill of health.</span>
     </h2>
