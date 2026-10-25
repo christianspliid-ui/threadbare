@@ -153,6 +153,20 @@ function wardAgainstDeath(state: GameState, actorId: string): GameState {
   };
 }
 
+/**
+ * The arms that read the plant's regime curve test one promise, so the mortal holds
+ * only the plant. The live world can hand them a second, organic appointment mid-drive
+ * (THR-1687's fair draw reaches the town encounters that plant them); the decision phase
+ * then steers by whichever is due first and the plant is never traced again (THR-2037:
+ * seed 42's mortal drew `town.boundary_survey` at tick 12, got a promise at their own
+ * town, and the plant read `far` once and nothing after).
+ */
+function onlyThePlant(state: GameState, actorId: string, seedId: string): GameState {
+  const seeds = state.pendingEncounterSeeds ?? [];
+  const kept = seeds.filter(x => x.seedId === seedId || x.targetAgentId !== actorId || !readPlantedAppointment(x));
+  return kept.length === seeds.length ? state : { ...state, pendingEncounterSeeds: kept };
+}
+
 function tickAndHarvest(s: GameState, runtime: SimulationRuntime, sink: TraceEntry[]): GameState {
   const next = runTick(s, [], runtime);
   for (const t of getTraces()) {
@@ -182,12 +196,12 @@ describe('THR-1479 — an appointment on a generated small world', () => {
       const sink: TraceEntry[] = [];
       // Up to the due tick: the decision phase must see the appointment and trace a regime.
       while (state.tick < appointment.dueTick) {
-        state = tickAndHarvest(state, runtime, sink);
+        state = tickAndHarvest(onlyThePlant(state, actorId, seed!.seedId), runtime, sink);
       }
       // Scoped to the plant's seed. Since THR-1525 the live world plants appointments
-      // of its own — the Crossroads now reaches the novelty-leaners who accept it, and
-      // since THR-1687 the planted mortal may hold one too — so any other seed's regime
-      // in the sink is the system working, not a leak.
+      // of its own — the Crossroads now reaches the novelty-leaners who accept it — so
+      // any other mortal's regime in the sink is the system working, not a leak. The
+      // planted mortal's own organic promises are stripped above (`onlyThePlant`).
       const allRegimes = sink.filter(t => t.category === 'appointment_regime') as Array<TraceEntry & { agentId: string; regime: string; journeyQueued?: boolean }>;
       const regimes = allRegimes.filter(ofSeed(seed!.seedId));
       expect(regimes.length, 'no appointment_regime trace for the planted mortal — the decision phase never resolved the context').toBeGreaterThan(0);
@@ -296,18 +310,8 @@ describe('THR-1479 — an appointment on a generated small world', () => {
  * re-routed to the promise — the THR-1479 behaviour, kept. Marked is left to run.
  */
 describe('THR-1669 — a journey the board chose while departing is not turned back', () => {
-  /**
-   * Both arms test one promise's outvote rule, so the mortal holds only the plant. The
-   * live world can hand them a second, organic appointment mid-drive (THR-1687's fair
-   * draw reaches the town encounters that plant them); the decision phase then steers by
-   * whichever is due first, and the plant's `departing` memo goes stale under it.
-   */
-  function onlyThePlant(state: GameState, actorId: string, seedId: string): GameState {
-    const seeds = state.pendingEncounterSeeds ?? [];
-    const kept = seeds.filter(x => x.seedId === seedId || x.targetAgentId !== actorId || !readPlantedAppointment(x));
-    return kept.length === seeds.length ? state : { ...state, pendingEncounterSeeds: kept };
-  }
-
+  // Both arms test one promise's outvote rule, so they drive through `onlyThePlant`
+  // too: a second organic promise would leave the plant's `departing` memo stale.
   function driveToDeparting(): { state: GameState; runtime: SimulationRuntime; actorId: string; placeId: string; seedId: string; dueTick: number } {
     let { state, runtime } = world();
     const { actorId, placeId, travel } = pickMortalAndPlace(state);
