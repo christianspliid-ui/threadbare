@@ -164,6 +164,8 @@ export const WORLD_REMEMBERS_WORDS = {
   monumentKin: (spheres: string) =>
     `To a god of ${spheres} it wakes as ground already theirs. Left untended, it fades.`,
   monumentAgainst: (sphere: string) => `It will stand against a god of ${sphere}.`,
+  /** THR-1971: the carried World-Soul memories; each line is the memory's stored summary. */
+  soulHeading: 'What the World-Soul remembers',
   hungersHeading: 'Gods who may wake',
   chip: { awake: 'awake', stirs: 'stirs', asleep: 'asleep' } as const,
   stirPrompt: "Two hungers stir. The old god's echoes favour one; you choose which wakes.",

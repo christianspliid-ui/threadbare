@@ -11,13 +11,13 @@ import type { GameState } from '../types/gameState';
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { EchoDefinition, EchoState } from '../types/echo';
-import type { FundamentState, ResonanceState } from '../types/worldSoul';
+import type { FundamentState, ResonanceMemory, ResonanceState } from '../types/worldSoul';
 import type { HarvestResult } from './cycleEnd';
 import { createEchoState, degradeAllEchoes } from './echo';
-import { blendFundaments, captureMemory, createDefaultFundament, createResonanceState, degradeMemories, pruneMemories } from './worldSoul';
+import { blendFundaments, captureMemory, createDefaultFundament, createResonanceState, degradeMemories, pruneMemories, selectTopMemories } from './worldSoul';
 import { captureAgeMemories, memoryCaptureReason } from './twilight';
 import { emitTrace } from './traceBuffer';
-import { RESONANCE_DEGRADE_PER_RUN } from '../data/game-config';
+import { RESONANCE_DEGRADE_PER_RUN, TWILIGHT_MEMORIES_SHOWN } from '../data/game-config';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
 import type { SpherePoints } from './spherePoints';
 import { HUNGER_CATALOG } from '../data/hunger-catalog';
@@ -37,6 +37,7 @@ import {
   RUN_ONE_AWAKE_HUNGERS,
   STIRRING_HUNGER_COUNT,
   WORLD_TILT_GAIN,
+  memoryWord,
 } from '../data/account-content';
 
 function mulberry32(seed: number): () => number {
@@ -135,6 +136,18 @@ export function liveEchoes(account: AccountRecord): Array<{ def: EchoDefinition;
     if (state && !state.faded) out.push({ def, state });
   }
   return out;
+}
+
+/**
+ * THR-1971 — the World-Soul memories *The world remembers* shows: the live ones (a
+ * memory word still names them), top `TWILIGHT_MEMORIES_SHOWN` by
+ * `significance × (1 − degradation)`. Empty on a first run or an empty record.
+ */
+export function shownWorldSoulMemories(
+  account: AccountRecord,
+): Array<{ memory: ResonanceMemory; word: NonNullable<ReturnType<typeof memoryWord>> }> {
+  const live = (account.resonance?.memories ?? []).filter(m => memoryWord(m.degradation) !== null);
+  return selectTopMemories(live, TWILIGHT_MEMORIES_SHOWN).map(m => ({ memory: m, word: memoryWord(m.degradation)! }));
 }
 
 // ─── The sealed sets (THR-1844, slice 3 — plan E8) ───────────────────
