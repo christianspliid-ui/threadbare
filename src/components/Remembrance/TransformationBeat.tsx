@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { HungerDefinition, RemembranceFragment } from '../../types/remembrance';
+import type { CourtOption } from '../../types/hunger';
 import { selectHungerProse } from '../../engine/remembrance';
 import { getSphereColor } from '../../data/sphereIcons';
 import {
@@ -18,6 +19,11 @@ import { deriveAlignmentFromPoints, presetFromAlignment, type SpherePoints } fro
 interface TransformationBeatProps {
   hungers: HungerDefinition[];
   driveFragment: RemembranceFragment;
+  /**
+   * THR-1844 — the courts open for a hunger: its default, and its second once a run was
+   * played with it (`openCourts`). Absent → every court the hunger carries.
+   */
+  courtsFor?: (hunger: HungerDefinition) => readonly CourtOption[];
   /** THR-1749: `points` is the bought sphere vector (the preset when the buy step is off). */
   onSelect: (hunger: HungerDefinition, courtType: string, points: SpherePoints) => void;
 }
@@ -29,7 +35,7 @@ export const SPHERE_REVEAL_HOLD_MS = 2500;
 /** A click or key in the reveal's first moments is the tail of the confirm (a double-click), not a skip. */
 export const SPHERE_REVEAL_SKIP_AFTER_MS = 400;
 
-export function TransformationBeat({ hungers, driveFragment, onSelect }: TransformationBeatProps) {
+export function TransformationBeat({ hungers, driveFragment, courtsFor, onSelect }: TransformationBeatProps) {
   const [step, setStep] = useState<TransformationStep>('hunger');
   const [selectedCourt, setSelectedCourt] = useState<string | null>(null);
   const [revealing, setRevealing] = useState(false);
@@ -63,10 +69,11 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
   const handleHungerClick = useCallback((hunger: HungerDefinition) => {
     // THR-1804: a hunger row still fading in takes no clicks.
     if (!contentVisible) return;
-    const def = hunger.courtOptions.find(c => c.isDefault) ?? hunger.courtOptions[0];
+    const open = courtsFor ? courtsFor(hunger) : hunger.courtOptions;
+    const def = open.find(c => c.isDefault) ?? open[0];
     setSelectedCourt(def?.courtType ?? null);
     chooseHunger(hunger);
-  }, [chooseHunger, contentVisible]);
+  }, [chooseHunger, contentVisible, courtsFor]);
 
   // An undo (the button or Escape, which clears the choice inside the hook)
   // puts the screen back on the hunger row.
@@ -141,7 +148,7 @@ export function TransformationBeat({ hungers, driveFragment, onSelect }: Transfo
     : '#c9b8f0';
 
 
-  const courtOptions = selectedHunger?.courtOptions ?? [];
+  const courtOptions: readonly CourtOption[] = selectedHunger ? (courtsFor ? courtsFor(selectedHunger) : selectedHunger.courtOptions) : [];
   const selectedCourtIndex = courtOptions.findIndex(c => c.courtType === selectedCourt);
 
   const handleCourtNav = useCallback((direction: -1 | 1) => {

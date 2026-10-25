@@ -21,8 +21,16 @@ import { RESONANCE_DEGRADE_PER_RUN } from '../data/game-config';
 import { getSpherePoints, rankSpherePoints } from './spherePoints';
 import type { SpherePoints } from './spherePoints';
 import { HUNGER_CATALOG } from '../data/hunger-catalog';
+import type { CourtOption, HungerDefinition } from '../types/hunger';
+import { toHungerId } from '../types/hunger';
+import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { godCards } from './godProgression';
 import {
+  ACCOUNT_CARD_UNLOCKS_PER_RUN,
   ACCOUNT_SEED_PRIME,
+  ACCOUNT_UNSEAL_PRIME,
+  ACCOUNT_UNSEAL_PRIMARY_WEIGHT,
+  ACCOUNT_UNSEAL_SECONDARY_WEIGHT,
   ACCOUNT_VERSION,
   FUNDAMENT_BLEND_PER_RUN,
   FUNDAMENT_REVERT,
@@ -102,8 +110,13 @@ export function migrateAccount(raw: unknown): AccountRecord | null {
     echoStates: r.echoStates.map(s => ({ ...s })),
     fundament: { sphereWeights: { ...r.fundament.sphereWeights }, cycleCount: r.fundament.cycleCount },
     resonance: { memories: r.resonance.memories.map(m => ({ ...m })), maxMemories: r.resonance.maxMemories },
-    ...(r.lastRun ? { lastRun: { ...r.lastRun } } : {}),
+    ...(r.lastRun ? { lastRun: copyLastRun(r.lastRun) } : {}),
   };
+}
+
+function copyLastRun(lastRun: AccountLastRun): AccountLastRun {
+  const { unsealedCardIds, ...rest } = lastRun;
+  return isStrArray(unsealedCardIds) ? { ...rest, unsealedCardIds: [...unsealedCardIds] } : { ...rest };
 }
 
 // ─── Reads ───────────────────────────────────────────────────────────
@@ -122,6 +135,109 @@ export function liveEchoes(account: AccountRecord): Array<{ def: EchoDefinition;
     if (state && !state.faded) out.push({ def, state });
   }
   return out;
+}
+
+// ─── The sealed sets (THR-1844, slice 3 — plan E8) ───────────────────
+
+/** Account hunger ids are bare (`gather`); a played god's identity stores `hunger.gather`. */
+function bareHungerId(id: string): string {
+  return toHungerId(id) ?? id;
+}
+
+/** Decided 11 — the hungers a god may wake as this run, in catalog order. */
+export function awakeHungers(
+  account: Pick<AccountRecord, 'awakeHungerIds'>,
+  catalog: readonly HungerDefinition[] = HUNGER_CATALOG,
+): HungerDefinition[] {
+  const awake = new Set(account.awakeHungerIds.map(bareHungerId));
+  return catalog.filter(h => awake.has(h.id));
+}
+
+/** Decided 12 — a hunger's default court, and its second once a run was played with it. */
+export function openCourts(account: Pick<AccountRecord, 'secondCourtHungerIds'>, hunger: HungerDefinition): CourtOption[] {
+  if (account.secondCourtHungerIds.some(id => bareHungerId(id) === hunger.id)) return [...hunger.courtOptions];
+  const def = hunger.courtOptions.find(c => c.isDefault) ?? hunger.courtOptions[0];
+  return def ? [def] : [];
+}
+
+/** The sphere a card belongs to for the unseal draw and the run-1 rule (`pricedIn ?? sphereAffinity`). */
+function cardSphere(t: Pick<UnifiedActionTemplate, 'progression' | 'sphereAffinity'>): SphereName | undefined {
+  return t.progression?.pricedIn ?? t.sphereAffinity ?? undefined;
+}
+
+/**
+ * Decided 13 — the run-1 sealed set, computed from the catalog (never stored, so a
+ * card authored later joins it by itself): every `market` card that is not Tier 1–2,
+ * not generic, and not its sphere's cheapest Tier 3 (lowest `essenceCost`, then
+ * catalog order). On the shipped catalog that leaves 23 sealed (THR-1794).
+ */
+export function runOneSealedCardIds(catalog: readonly UnifiedActionTemplate[]): string[] {
+  const market = catalog.filter(t => t.progression?.offer === 'market');
+  const cheapestTierThree = new Map<string, UnifiedActionTemplate>();
+  for (const t of market) {
+    const p = t.progression!;
+    if (p.tier !== 3 || p.generic) continue;
+    const sphere = cardSphere(t) ?? '';
+    const held = cheapestTierThree.get(sphere);
+    if (!held || (t.essenceCost ?? 0) < (held.essenceCost ?? 0)) cheapestTierThree.set(sphere, t);
+  }
+  const kept = new Set([...cheapestTierThree.values()].map(t => t.id));
+  return market
+    .filter(t => t.progression!.tier > 2 && !t.progression!.generic && !kept.has(t.id))
+    .map(t => t.id);
+}
+
+/** E8 — the cards this account may not yet be offered: the run-1 set less what earlier runs unsealed. */
+export function sealedCardIds(account: Pick<AccountRecord, 'unsealedCardIds'>, catalog: readonly UnifiedActionTemplate[]): string[] {
+  const unsealed = new Set(account.unsealedCardIds);
+  return runOneSealedCardIds(catalog).filter(id => !unsealed.has(id));
+}
+
+/** E8 — true when `cardId` is still sealed for this account. */
+export function isCardSealed(
+  account: Pick<AccountRecord, 'unsealedCardIds'>,
+  cardId: string,
+  catalog: readonly UnifiedActionTemplate[],
+): boolean {
+  return sealedCardIds(account, catalog).includes(cardId);
+}
+
+/**
+ * Decided 13 — the run end's unseal draw: `ACCOUNT_CARD_UNLOCKS_PER_RUN` cards without
+ * replacement from the sealed set, weight 3 on the god's primary sphere, 2 on its
+ * secondary, 1 otherwise, on `mulberry32(worldSeed + ACCOUNT_UNSEAL_PRIME)` — one call
+ * per pick. An empty sealed set draws nothing.
+ */
+export function drawUnsealedCards(
+  account: Pick<AccountRecord, 'unsealedCardIds'>,
+  pair: readonly SphereName[],
+  worldSeed: number,
+  catalog: readonly UnifiedActionTemplate[],
+): { cardIds: string[]; weights: number[] } {
+  const byId = new Map(catalog.map(t => [t.id, t]));
+  const pool = sealedCardIds(account, catalog).map(id => {
+    const sphere = cardSphere(byId.get(id) ?? {});
+    const weight = sphere && sphere === pair[0] ? ACCOUNT_UNSEAL_PRIMARY_WEIGHT
+      : sphere && sphere === pair[1] ? ACCOUNT_UNSEAL_SECONDARY_WEIGHT
+      : 1;
+    return { id, weight };
+  });
+  const rng = mulberry32(worldSeed + ACCOUNT_UNSEAL_PRIME);
+  const cardIds: string[] = [];
+  const weights: number[] = [];
+  for (let k = 0; k < ACCOUNT_CARD_UNLOCKS_PER_RUN && pool.length > 0; k++) {
+    const total = pool.reduce((acc, c) => acc + c.weight, 0);
+    let r = rng() * total;
+    let i = 0;
+    while (i < pool.length - 1 && r >= pool[i].weight) {
+      r -= pool[i].weight;
+      i++;
+    }
+    const [picked] = pool.splice(i, 1);
+    cardIds.push(picked.id);
+    weights.push(picked.weight);
+  }
+  return { cardIds, weights };
 }
 
 /**
@@ -214,8 +330,21 @@ export function concludeRun(account: AccountRecord, state: GameState, harvest: H
   const fundament = blendFundaments(blended, createDefaultFundament(), FUNDAMENT_REVERT);
 
   const hungerId = state.ascendantIdentity?.hungerId ?? '';
+  // The second court opens on the bare id the record keeps (`gather`, not `hunger.gather`).
+  const playedHunger = hungerId ? bareHungerId(hungerId) : '';
   const pair = ranked.slice(0, 2);
   const cycleCount = account.cycleCount + 1;
+  // Decided 13 — two sealed cards unseal, weighted to the god's spheres.
+  const unsealed = drawUnsealedCards(account, pair, state.seed, godCards());
+  if (unsealed.cardIds.length > 0) {
+    emitTrace({
+      tick: state.tick,
+      category: 'account.cards_unsealed',
+      cardIds: unsealed.cardIds,
+      weights: unsealed.weights,
+      summary: `account: ${unsealed.cardIds.join(', ')} unsealed for the next world`,
+    });
+  }
 
   const primary = ranked[0] ?? state.ascendantIdentity?.sphereAlignment.primary;
   const secondary = ranked[1] ?? state.ascendantIdentity?.sphereAlignment.secondary ?? primary;
@@ -226,6 +355,7 @@ export function concludeRun(account: AccountRecord, state: GameState, harvest: H
         secondary,
         hungerId,
         harvestType: harvest.harvestType,
+        unsealedCardIds: [...unsealed.cardIds],
       }
     : account.lastRun;
 
@@ -234,15 +364,11 @@ export function concludeRun(account: AccountRecord, state: GameState, harvest: H
     cycleCount,
     nextWorldSeed: deriveNextWorldSeed(state.seed, cycleCount),
     awakeHungerIds: [...account.awakeHungerIds],
-    secondCourtHungerIds: hungerId && !account.secondCourtHungerIds.includes(hungerId)
-      ? [...account.secondCourtHungerIds, hungerId]
+    secondCourtHungerIds: playedHunger && !account.secondCourtHungerIds.includes(playedHunger)
+      ? [...account.secondCourtHungerIds, playedHunger]
       : [...account.secondCourtHungerIds],
-    // TODO(THR-1844): the hunger sets are recorded here but read only by the debug Account tab;
-    // slice 3 wires the readers (`filterHungers` ← awake, the court step ← second courts, the
-    // *World remembers* beat ← stirring, which calls `wakeHunger`).
     stirringHungerIds: stirringHungers(account.awakeHungerIds, pair),
-    // Decided 13's draw lands with slice 3 (THR-1844); until then nothing unseals.
-    unsealedCardIds: [...account.unsealedCardIds],
+    unsealedCardIds: [...account.unsealedCardIds, ...unsealed.cardIds],
     echoDefinitions: [...carriedDefs, ...freshUnique],
     echoStates: [...degraded, ...freshUnique.map(d => createEchoState(d.id))],
     fundament,
@@ -300,6 +426,13 @@ function concludeResonance(state: GameState, harvest: HarvestResult, cycleCount:
 /** Decided 11 — the player wakes one of the stirring hungers; the other sleeps again. */
 export function wakeHunger(account: AccountRecord, hungerId: string): AccountRecord {
   if (!account.stirringHungerIds.includes(hungerId)) return account;
+  emitTrace({
+    tick: 0,
+    category: 'account.hunger_woken',
+    hungerId,
+    favoured: account.stirringHungerIds[0] === hungerId,
+    summary: `account: ${hungerId} wakes`,
+  });
   return {
     ...account,
     awakeHungerIds: account.awakeHungerIds.includes(hungerId)

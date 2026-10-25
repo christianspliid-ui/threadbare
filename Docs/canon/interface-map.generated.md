@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 98 |
-| **Total** | **314** |
+| 🔵 UNVERIFIED-OK | 100 |
+| **Total** | **316** |
 
 ## Contracts by producing subsystem
 
@@ -121,9 +121,11 @@ remediation ticket or the build fails.
 | `age-end-writes-resonance-memories` | When an age ends the World-Soul keeps a few lines about it — how it ended, what the world leaned to, the god's greatest mark — and older ones fade. | function: `captureAgeMemories`, `buildTwilightBeats`, `openTwilight` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `alert-channel-to-chronicle` | Every alert-channel tick event that reaches News also writes one Witness-voice Chronicle line in its own words (`playerProse ?? message`), so news that lapses out of Needs you can be reread. `phaseAlertChronicle` runs last among the tick's event phases (after the post-narrative slot, where mandate alerts are raised) and skips an id the Chronicle already holds, a type `ALERT_CHRONICLE_POLICY` exempts, and an alert the threading gate suppresses. Each alert site carries an `// alert-chronicle: <type>` marker; `alertChronicle.test.ts` fails on an unclassified one. Traced as `chronicle.intake.alert`. | property: `chronicleEntries` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `alert-channel-to-needs-you` | Alert-level tick events reach the player as Needs-you News rows. The router keeps every alert it routes (only a repeated `sourceEventId` drops), lapses them after `NEEDS_YOU_NEWS_KEEP_DAYS` × `TICKS_PER_DAY` ticks and counts any trimmed at `ALERT_SAFETY_CAP` on `alertsTrimmedAtCap`; `buildNeedsYou` applies the same window and turns a same-kind burst in one tick into one row "· and N more like it". The interrupt registry’s `held` list feeds the Held group, so a moment waiting behind the one on screen is named. | function: `routeNotifications`, `trimAlerts`, `buildNeedsYou`, `NEEDS_YOU_PRODUCERS`, `resolveInterrupts` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
+| `awake-hungers-gate-remembrance` | Your first age offers four hungers, each with one court; each age wakes another hunger, chosen by you from two that stir, and a hunger you have played opens its second court. | function: `awakeHungers`, `openCourts`, `wakeHunger`, `offerAwakeHungers` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
 | `content-ref-opens-codex-overlay` | Authored content opens the same way world objects do, one tier shallower: a ContentRef opens a content card, and the codex overlay is that card's sheet where a category exists. World references never reach the codex and content never reaches a world sheet — THR-1315 kept rather than worked around (THR-1491). | function: `SURFACE_BY_CONTENT_KIND`, `generateContentPage`, `resolveContentEntry` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `first-path-recall-pins-first-chapter` | The path chosen on "What will they become?" comes back in The First's first chapter after the bond. The tick path pins that one chapter on her thread once; the encounter stage only reads the pin, so a re-render never repeats the line and a later chapter never gets it. | edge-prop: `firstPathRecalledActionId`, `noteFirstPathRecall`, `firstPathRecallFor` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `minimised-step-hold` | The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". | state-field: `playerHold`, `isPlayerHoldLive`, `progressActionsWithPlayerHolds` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `sealed-cards-gate-the-offering` | Some powers are sealed when the first world wakes; each age unseals two, leaning to the spheres the last god drew on, and the world never offers a sealed one. | state-field: `sealedCardIds` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
 | `story-breath-anchor-paces-pause-mode-chapters` | The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat. | edge-prop: `lastStoryChapterEndTick` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `twilight-harvest-preserves-defining-card` | A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat. | function: `selectEchoCard`, `buildCardEcho`, `echoCardsFromDefinitions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `world-ref-opens-one-card` | Anything the game names opens the same way. One router dispatches on WorldRefKind; the surface registry says what each kind opens; a kind with no row is a build failure, not a dead link (THR-1490, Law 21 as amended). | function: `SURFACE_BY_WORLD_REF`, `useRefRouter` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -500,10 +502,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Attention, Chronicle & Narrative → World Generation, Terrain & Places
 - **UL terms:** *Run*, *Echo*, *Account Record*
 - **Module:** `src/engine/accountRecord.ts`
-- **Production hits:** 9 total — 1 write, 1 read, 7 unclassified
+- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
 - **Write sites:** `src/components/Game/hooks/useSimulation.ts`
 - **Read sites:** `src/engine/gameInit.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/engine/accountRecord.ts`, `src/engine/accountStore.ts`, `src/engine/seedEchoes.ts` +2 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Remembrance/WorldRemembersBeat.tsx`, `src/engine/accountRecord.ts`, `src/engine/accountStore.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `active-influences-render-on-sheet` — 🔵 UNVERIFIED-OK
@@ -938,6 +940,18 @@ exit
 - **Other hits:** `src/engine/dominion.ts`, `src/engine/targetTierScaling.ts`, `src/engine/views/godRail.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Verified 2026-08-13: THR-1073: `attachment-tier-content.ts` authors the ramp and `unified-action-templates.ts` opts `artifact.enchant`/`artifact.empower` in via `essenceCostContext` + `difficultyContext: 'target_tier_scaled'`. Three read sites resolve it — `targetActions.ts` (card price, affordability gate, displayed risk), `playerCastDispatch.ts` (essence actually charged, with the buff discount applied to the resolved price), `unifiedActionResolution.ts` (the difficulty rolled against). Falsified by removing the marker from `artifact.enchant`: exactly three assertions go red including `expected 4 to be greater than 4`, while `artifact.empower` stays green. `targetTierScaling.test.ts`, 15 assertions. THR-1100 completed the third row of the ramp — `tierScaledDuration` under the *same* per-step marker, read by `unifiedActionLifecycle.ts` at both duration draws (`createUnifiedAction` and `advanceStep`), which now take the target's properties from the five production call sites that hold the graph. Falsified by neutering the helper to return the authored range: 7 of 10 assertions go red including `expected 2 to be greater than 2`. `targetTierScalingDuration.test.ts`, 10 assertions.
 
+### `awake-hungers-gate-remembrance` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Your first age offers four hungers, each with one court; each age wakes another hunger, chosen by you from two that stir, and a hunger you have played opens its second court.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Ascendant Beats & Progression
+- **UL terms:** *Run*, *Account Record*
+- **Module:** `src/engine/accountRecord.ts`
+- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
+- **Write sites:** `src/components/Remembrance/RemembranceFlow.tsx`, `src/engine/accountRecord.ts`
+- **Read sites:** `src/components/Remembrance/TransformationBeat.tsx`
+- **Other hits:** `src/components/Remembrance/WorldRemembersBeat.tsx`, `src/engine/accountStore.ts`, `src/engine/remembrance.ts`, `src/types/traces/account-traces.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `band-opposition-pairs-contested-resolution` — 🟢 LIVE
 
 - **Intent:** A company that walks into a band fights it — the two resolve as one contested encounter rather than each rolling alone against the scenery.
@@ -1080,10 +1094,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 35 total — 1 write, 2 read, 32 unclassified
+- **Production hits:** 36 total — 1 write, 2 read, 33 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicPresentation.ts`, `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +27 more
+- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +28 more
 - **Verdict:** Verified 2026-09-10: THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
@@ -3314,6 +3328,17 @@ exit
 - **Other hits:** `src/data/content-eval/plotHooks.ts`, `src/data/unrest-pressure-constants.ts`
 - **Verdict:** Verified 2026-10-17: THR-1934. economicPower.test.ts: the arc's unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.
 
+### `sealed-cards-gate-the-offering` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Some powers are sealed when the first world wakes; each age unseals two, leaning to the spheres the last god drew on, and the world never offers a sealed one.
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Ascendant Beats & Progression
+- **UL terms:** *Run*, *Account Record*
+- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Write sites:** `src/engine/gameInit.ts`
+- **Read sites:** `src/engine/godProgression.ts`
+- **Other hits:** `src/components/Game/debug/AccountDebugTab.tsx`, `src/engine/accountRecord.ts`, `src/engine/accountStore.ts`, `src/types/gameState.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `secrets-consequences` — 🟢 LIVE
 
 - **Intent:** A revealed secret or broken favor has consequences — feuds ignite, sentiment shifts, leverage bites.
@@ -4041,9 +4066,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → World Generation, Terrain & Places
 - **UL terms:** *World Tilt*, *Cosmology Profile*, *Account Record*
 - **Module:** `src/engine/accountRecord.ts`
-- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
 - **Write sites:** `src/engine/accountRecord.ts`
 - **Read sites:** `src/engine/gameInit.ts`
+- **Other hits:** `src/components/Remembrance/WorldRemembersBeat.tsx`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `worldgen-seeds-the-living-world` — 🟢 LIVE

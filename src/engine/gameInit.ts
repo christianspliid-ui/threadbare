@@ -28,7 +28,8 @@ import { createGreatChronicle } from './chronicle';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
 import type { AccountRecord } from '../types/account';
 import type { FundamentState } from '../types/worldSoul';
-import { accountShapesWorld, liveEchoes, tiltCosmology } from './accountRecord';
+import { accountShapesWorld, liveEchoes, sealedCardIds, tiltCosmology } from './accountRecord';
+import { godCards } from './godProgression';
 import { seedEchoes, seedingOrder } from './seedEchoes';
 import type { WorldGraph } from './graph';
 import type { SeededEchoesSummary } from '../types/echo';
@@ -647,6 +648,10 @@ export function initializeGameStateFromIdentity(
       summary: `world shaped by the account: seed ${seed}, ${live.length} echoes carried`,
     });
   }
+
+  // THR-1844 E9 — the account's sealed cards ride onto the state, from run 1 on (an
+  // empty record seals the run-1 reservoir), so `offerableCards` never reads storage.
+  if (account) result.state.sealedCardIds = sealedCardIds(account, godCards());
 
   // Stamp the full identity onto game state so remembrance-only fields
   // (timeSinceAscension, courtType, mortalTags, ascendantLens) are

@@ -111,3 +111,21 @@ export interface ResonanceMemoryEvictedTrace extends TraceBase {
   memoryId: string;
   cause: 'full' | 'faded';
 }
+
+// ─── Choices widen across runs (THR-1844, slice 3) ───
+
+/** The player woke one of the stirring hungers on *The world remembers*. */
+export interface AccountHungerWokenTrace extends TraceBase {
+  category: 'account.hunger_woken';
+  hungerId: string;
+  /** The one the old god's echoes favoured (the first stirring hunger). */
+  favoured: boolean;
+}
+
+/** Cards drawn out of the sealed set at run end (Decided 13). */
+export interface AccountCardsUnsealedTrace extends TraceBase {
+  category: 'account.cards_unsealed';
+  cardIds: string[];
+  /** The draw weight each picked card had (3 primary / 2 secondary / 1 otherwise). */
+  weights: number[];
+}
