@@ -1001,6 +1001,12 @@ export type EncounterAftermathReactionEffect =
     readonly brokerAgentId: string;
     /** Whose faction swears — `$cast:<key>`. Absent: the present-faction pick. */
     readonly vassalAgentId?: string;
+    /**
+     * Which of `vassalAgentId`'s factions swears first: a membership whose faction has
+     * this `factionDefId` (the Warlord's `mercenary_company`) wins over a higher-ranked
+     * one. A reused local NPC may belong to the realm or the town's own faction too.
+     */
+    readonly vassalFactionDefId?: string;
     /** The oath's kind (`kind` is the effect discriminator). */
     readonly oathKind: 'persuaded' | 'coerced';
     /** What forced a coerced oath; `demand` reads "forced by a demand". */

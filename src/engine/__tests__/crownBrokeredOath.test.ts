@@ -164,6 +164,34 @@ describe('the Warlord\'s Tribute — a demanded oath', () => {
     expect(result).toEqual(expect.objectContaining({ sworn: true, vassalId: MERC, liegeId: R }));
   });
 
+  it('a reused local commander who ranks higher in a guild still swears the free company (review gate, round 2)', () => {
+    const reusedCommander = () => {
+      const s = buildState();
+      s.graph.updateNode(MERC, { properties: { ...s.graph.getNode(MERC)!.properties, factionDefId: 'mercenary_company' } });
+      s.graph.updateEdge('e_warlord_merc', { properties: { rank: 0.3 } });
+      s.graph.addEdge({ id: 'e_warlord_guild', source: WARLORD, target: GUILD_B, type: 'member_of', properties: { rank: 1 } });
+      return s;
+    };
+    // Without the preference the top membership wins: the guild, not the company.
+    expect(brokerOath(reusedCommander(), { brokerId: HERO, vassalAgentId: WARLORD, kind: 'coerced', forcedBy: 'demand' }))
+      .toEqual(expect.objectContaining({ sworn: true, vassalId: GUILD_B }));
+    const shipped = getUnifiedTemplateById('reputation.iron.warlords_tribute')?.aftermathConfig?.variants
+      ?.demand_the_oath?.outcomeEffects?.success?.find(e => e.kind === 'faction_broker_fealty');
+    expect(shipped).toEqual(expect.objectContaining({ vassalFactionDefId: 'mercenary_company' }));
+    const state = reusedCommander();
+    const { state: next } = applyEffects(state, [shipped!], runtime);
+    expect(oathOf(next, MERC)?.liegeId).toBe(R);
+    expect(oathOf(next, GUILD_B)).toBeNull();
+  });
+
+  it('a reused commander with no company falls back to their own swearable faction', () => {
+    const state = buildState();
+    state.graph.removeEdge('e_warlord_merc');
+    state.graph.addEdge({ id: 'e_warlord_guild', source: WARLORD, target: GUILD_B, type: 'member_of', properties: { rank: 1 } });
+    const { state: next } = applyEffects(state, [{ ...DEMAND, vassalFactionDefId: 'mercenary_company' }], runtime);
+    expect(oathOf(next, GUILD_B)?.liegeId).toBe(R);
+  });
+
   it('a mortal in no realm writes nothing and traces no_realm', () => {
     const state = buildState();
     state.graph.removeEdge('e_hero_r');

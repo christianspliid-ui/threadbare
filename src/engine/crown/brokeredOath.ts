@@ -61,12 +61,20 @@ export function brokerLiegeOf(graph: WorldGraph, mortalId: string): string | nul
   return liegeOf(graph, realm) ?? realm;
 }
 
-/** The faction a named agent swears for: their swearable-kind membership (never the liege). */
-function vassalOfAgent(graph: WorldGraph, agentId: string, liegeId: string): string | null {
+/**
+ * The faction a named agent swears for: their swearable-kind membership (never the liege).
+ * With `preferDefId`, a membership of that faction kind wins first (the Warlord's company
+ * over a reused commander's realm or town faction); without one, the top membership.
+ */
+function vassalOfAgent(graph: WorldGraph, agentId: string, liegeId: string, preferDefId?: string): string | null {
   const node = graph.getNode(agentId);
   if (!node) return null;
   if (node.properties.actorType === 'faction') return node.id !== liegeId && isSwearableKind(node) ? node.id : null;
-  return topMembership(graph, agentId, id => id !== liegeId && isSwearableKind(graph.getNode(id)));
+  const swearable = (id: string) => id !== liegeId && isSwearableKind(graph.getNode(id));
+  const preferred = preferDefId
+    ? topMembership(graph, agentId, id => swearable(id) && graph.getNode(id)?.properties.factionDefId === preferDefId)
+    : null;
+  return preferred ?? topMembership(graph, agentId, swearable);
 }
 
 /** Decision 3 — the faction present at the mortal's town that swears to `liegeId`, or null. */
@@ -93,7 +101,7 @@ export function presentVassalFor(state: GameState, brokerId: string, liegeId: st
  */
 export function brokerOath(
   state: GameState,
-  args: { brokerId: string; vassalAgentId?: string; kind: OathKind; forcedBy?: OathForcedBy },
+  args: { brokerId: string; vassalAgentId?: string; vassalFactionDefId?: string; kind: OathKind; forcedBy?: OathForcedBy },
   hooks: CrownHooks = {},
 ): BrokerOathResult {
   if (!BROKERED_OATH_ENABLED) return { sworn: false, reason: 'switch_off' };
@@ -102,7 +110,7 @@ export function brokerOath(
   const liegeId = brokerLiegeOf(graph, args.brokerId);
   if (!liegeId) return { sworn: false, reason: 'no_realm' };
   const vassalId = args.vassalAgentId
-    ? vassalOfAgent(graph, args.vassalAgentId, liegeId)
+    ? vassalOfAgent(graph, args.vassalAgentId, liegeId, args.vassalFactionDefId)
     : presentVassalFor(state, args.brokerId, liegeId);
   if (!vassalId) return { sworn: false, reason: 'no_vassal', liegeId };
   const result = swearBrokeredOath(state, { vassalId, liegeId, kind: args.kind, brokerId: args.brokerId, forcedBy: args.forcedBy }, hooks);

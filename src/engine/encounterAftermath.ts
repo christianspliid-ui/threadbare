@@ -3872,6 +3872,7 @@ export function applyEncounterAftermathReaction(
         const fbf = brokerOath(state, {
           brokerId: effect.brokerAgentId,
           vassalAgentId: effect.vassalAgentId,
+          vassalFactionDefId: effect.vassalFactionDefId,
           kind: effect.oathKind,
           forcedBy: effect.oathKind === 'coerced' ? effect.forcedBy : undefined,
         }, {
