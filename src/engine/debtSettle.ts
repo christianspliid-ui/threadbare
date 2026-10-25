@@ -19,6 +19,7 @@ import type { WorldGraph } from './graph';
 import type { GraphEdge } from '../types/graph';
 import { readAgreement, agreementLapsed, type ReadAgreement } from './agreementShape';
 import { applyMeansShift, type MeansShiftResult } from './mortalMeans';
+import { isAgentGone } from './groups/groupQueries';
 import { DEBT_REPAY_MEANS, ENCOUNTER_DEBT_SETTLE_ENABLED } from '../data/mortal-means-constants';
 
 export type DebtSettlement = 'paid' | 'written_off';
@@ -75,6 +76,8 @@ export function listDebtsOwedTo(
     if (!agreement || agreement.type !== 'debt' || agreementLapsed(agreement, tick)) return;
     if (nestedOnly && agreement.shape !== 'nested') return;
     if (debtorId !== undefined && otherEnd !== debtorId) return;
+    // A debtor killed in `retain` mode keeps its edges; the dead pay nothing and are skipped.
+    if (isAgentGone(graph.getNode(otherEnd))) return;
     seen.add(edge.id);
     out.push({ edge, agreement, debtorId: otherEnd });
   };

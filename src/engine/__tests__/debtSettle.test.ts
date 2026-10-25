@@ -154,6 +154,17 @@ describe('THR-2023 settleDebt', () => {
     expect(state.graph.getEdgesByType('relates_to').length).toBe(before);
   });
 
+  it('a dead debtor is skipped: the oldest living debtor pays (review-gate cycle 2)', () => {
+    const state = buildState(30);
+    const dead = writeDebt(state.graph, BORROWER, LENDER, 5);
+    const living = writeDebt(state.graph, OTHER, LENDER, 20);
+    state.graph.getNode(BORROWER)!.properties.deceased = true; // killed in `retain` mode: edges stay
+    expect(settleDebt(state.graph, { creditorId: LENDER, settlement: 'paid', tick: 30 }))
+      .toMatchObject({ settled: true, edgeId: living, debtorId: OTHER });
+    expect(state.graph.getEdge(dead)).toBeDefined();
+    expect(wealth(state.graph, BORROWER)).toBe(START_WEALTH);
+  });
+
   it('debtorAgentId narrows the pick; an unbound creditor no-ops', () => {
     const state = buildState(30);
     writeDebt(state.graph, BORROWER, LENDER, 5);
