@@ -1185,6 +1185,12 @@ if (import.meta.env.DEV) {
     setFrameFixture: async (fixture) => _topBarBridge?.setFrameFixture(fixture) ?? false,
     _registerTopBarBridge: (bridge) => { _topBarBridge = bridge; },
     getAccountRecord: async () => _accountBridge?.get() ?? null,
+    /** THR-1843 — the echoes this world placed at creation (host, band, lift). Null before a game. */
+    getSeededEchoes: async () => {
+      const state = _gameStateProvider?.();
+      if (!state) return null;
+      return state.seededEchoes ?? { seeded: [], skipped: [] };
+    },
     previewRunEnd: async () => _accountBridge?.previewRunEnd() ?? null,
     endAge: async () => _accountBridge?.endAge() ?? false,
     beginTwilight: async () => _accountBridge?.beginTwilight?.() ?? false,

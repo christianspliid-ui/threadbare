@@ -3424,7 +3424,42 @@ export const CONTRACTS: readonly Contract[] = [
     // THR-1813 slice 1. The record lives outside GameState; `concludeRun` folds
     // the harvest into it when the harvest screen opens, and
     // `initializeGameStateFromIdentity` loads its live echoes into the new world.
-    // Slice 2 (THR-1843) places the map echoes; until then they are carried, not placed.
+    // Slice 2 (THR-1843) places the map echoes (`echo-seeding-writes-place-scores`).
+  },
+  {
+    id: 'echo-lift-reads-dominion',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: WORLDGEN,
+    intent:
+      "An earlier god's monument is raised until the new god feels it: ground already theirs when the old god was kin, ground that stands against them when it was opposed.",
+    ulTerms: ['Echo', 'Dominion'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['dominionOf', 'matchOfScores'],
+      module: 'src/engine/dominion.ts',
+    },
+    writeSites: ['src/engine/dominion.ts'],
+    readSites: ['src/engine/seedEchoes.ts'],
+    // THR-1843. Read only: the monument's lift stops when the one Dominion read
+    // reaches the target band (Decided 1), so the host reads as the story says.
+  },
+  {
+    id: 'echo-seeding-writes-place-scores',
+    producerSystem: WORLDGEN,
+    consumerSystem: QUINTESSENCE,
+    intent:
+      'The marks earlier gods left stand in the new world from its first day: a monument lifts the ground around it, an heir carries the old line, and a relic lies waiting for a hand.',
+    ulTerms: ['Echo', 'Dominion'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['seedEchoes'],
+      module: 'src/engine/seedEchoes.ts',
+    },
+    writeSites: ['src/engine/seedEchoes.ts'],
+    readSites: ['src/engine/gameInit.ts', 'src/engine/phaseDominion.ts'],
+    // THR-1843. Written once at world creation, after `recordSeededScores` (so
+    // neglect fades a kin monument's lift) and before the faction aggregates.
+    // Every reader of a place's `sphereAffinity` sees the lift.
   },
   {
     id: 'mandate-completion-ends-age',

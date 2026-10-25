@@ -52,17 +52,20 @@ export const MONUMENT_OPPOSED_BAND = 'hostile' as const;
 export const LEGACY_SPHERE_LIFT = 2;
 /** The Legacy hydration stream (`hydrateToTier`'s draws only). */
 export const ECHO_SEEDING_PRIME = 70003;
+/** Place subtypes no echo stands in: a monster's home is not ordinary ground (Decided 3). */
+export const ECHO_EXCLUDED_SUBTYPES: ReadonlySet<string> = new Set(['lair', 'nest']);
 /** What an echo-made node carries in `notableOrigin` / `origin` (the heir, the kin tie). */
 export const ECHO_ORIGIN = 'echo';
 
-/** The chronicle's group for the old worlds' marks (Before you woke). */
-export const ECHO_CHRONICLE_TITLE = 'Earlier worlds';
-
-/** One line per seeded echo (plan § Content › Words); `{name}` and the place or heir link. */
+/**
+ * One line per seeded echo in the chronicle's *Before you woke* (plan § Content ›
+ * Words): text around the echo's name and the place or heir it links. Group title:
+ * `BEFORE_YOU_WOKE_GROUP_TITLES.echoes`.
+ */
 export const ECHO_CHRONICLE_LINES = {
-  monument: ['', ' still stands near ', '.'],
-  legacy: ['', ' lives on in ', '.'],
-  relic: ['', ' lies somewhere near ', ', unclaimed.'],
+  monument: { joiner: ' still stands near ', end: '.' },
+  legacy: { joiner: ' lives on in ', end: '.' },
+  relic: { joiner: ' lies somewhere near ', end: ', unclaimed.' },
 } as const;
 
 /** The heir's sheet line under their name. */

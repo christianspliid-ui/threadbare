@@ -28,6 +28,8 @@ export const BEFORE_YOU_WOKE_HEADING = 'Before you woke';
 
 /** The four groups of the chapter, in reading order. */
 export const BEFORE_YOU_WOKE_GROUP_TITLES = {
+  // THR-1843 — the earlier worlds' marks; rendered only when a world was built from an account.
+  echoes: 'Earlier worlds',
   elder: 'The elder age',
   settling: 'The settling',
   living: 'Living memory',
@@ -36,6 +38,7 @@ export const BEFORE_YOU_WOKE_GROUP_TITLES = {
 
 /** Shown in a group that has nothing to say yet. */
 export const BEFORE_YOU_WOKE_EMPTY = {
+  echoes: 'Nothing of the old worlds still stands. This one begins clean.',
   elder: 'No empire older than the living has left a mark on this land.',
   settling: 'No town here remembers its founding.',
   living: 'No war is still remembered here.',

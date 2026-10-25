@@ -2879,6 +2879,13 @@ export interface DebugBridge {
    * the harvest, the concluded (and saved) one after it. Null before a game.
    */
   getAccountRecord: () => Promise<import('./types/account').AccountRecord | null>;
+  /**
+   * THR-1843 — the earlier runs' echoes this world placed at creation: each seeded
+   * echo's node, host, relation, target band, the band the new god reads and the
+   * lift; and each skipped echo with its reason. Empty when the world was not built
+   * from an account; null before a game. Async — `await` it.
+   */
+  getSeededEchoes: () => Promise<import('./types/echo').SeededEchoesSummary | null>;
   /** THR-1813 — the record `concludeRun` would write now, without saving. Null before a game. */
   previewRunEnd: () => Promise<import('./types/account').AccountRecord | null>;
   /**

@@ -28,6 +28,7 @@ import { SPHERE_NAMES, type SphereName } from '../types/index';
 import { MAX_SPHERE_SCORE, type SphereAffinity } from '../types/sphereAffinity';
 import { DOMINION_BAND_RANK, type DominionBand } from '../data/dominion-content';
 import {
+  ECHO_EXCLUDED_SUBTYPES,
   ECHO_ORIGIN,
   ECHO_SEEDING_PRIME,
   LEGACY_SPHERE_LIFT,
@@ -57,6 +58,8 @@ type SkipReason = SeededEchoSkipReason;
 
 const MAP_KINDS: ReadonlySet<string> = new Set<SeededEchoKind>(['monument', 'legacy', 'relic']);
 const RUIN_OR_WILD: ReadonlySet<string> = new Set([...(LOCATION_CLASSES.ruin ?? []), ...(LOCATION_CLASSES.wild ?? [])]);
+
+const notMonsterHome = (n: GraphNode): boolean => !ECHO_EXCLUDED_SUBTYPES.has(String(n.properties.locationSubtype ?? ''));
 
 const byId = (a: { id: string }, b: { id: string }): number => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
@@ -160,7 +163,7 @@ function seedMonument(
   const god = graph.getNode(ascendantId);
   const seatId = god?.properties.homeSeatLocationId;
   const hosts = getLocationNodes(graph)
-    .filter(p => p.id !== 'loc.start' && p.id !== seatId && !hosting.has(p.id))
+    .filter(p => p.id !== 'loc.start' && p.id !== seatId && !hosting.has(p.id) && notMonsterHome(p))
     .filter(p => typeof p.properties.hexCol === 'number' && typeof p.properties.hexRow === 'number' && bagOf(p))
     .filter(p => dominionOf(graph, ascendantId, p.id).band === 'foreign')
     .map(p => ({ node: p, match: echoMatch(def, p) }))
@@ -257,7 +260,7 @@ function seedLegacy(
 
 function seedRelic(graph: WorldGraph, ascendantId: string, def: EchoDefinition): SeededEcho | SkipReason {
   const sites = getLocationNodes(graph)
-    .filter(n => RUIN_OR_WILD.has(String(n.properties.locationSubtype ?? '')))
+    .filter(n => RUIN_OR_WILD.has(String(n.properties.locationSubtype ?? '')) && notMonsterHome(n))
     .map(n => ({ node: n, match: echoMatch(def, n) }))
     .sort((a, b) => (b.match - a.match) || byId(a.node, b.node));
   const site = sites[0]?.node;

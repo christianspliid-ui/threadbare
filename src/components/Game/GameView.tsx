@@ -95,7 +95,7 @@ import { DebugPanel } from './DebugPanel';
 import { getEncounterCacheManager } from '../../engine/orchestrator';
 import { getLatestEncounterDecisionsByAgent } from '../../engine/balanceTelemetry';
 import { readWorldPastForPlayer } from '../../engine/worldPast';
-import { buildBeforeYouWoke, worldHasPast } from '../../engine/worldPastWords';
+import { buildBeforeYouWoke, buildEchoGroup, worldHasPast } from '../../engine/worldPastWords';
 import { ToastStack } from './ToastStack';
 import { useNotificationNavigation, useSheetOpeners } from './hooks/useNotificationNavigation';
 import { useRefRouter } from '../../hooks/useRefRouter';
@@ -809,9 +809,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   );
   const beforeYouWoke = useMemo(() => {
     const view = readWorldPastForPlayer(gameState.graph, pastKnowledge);
-    return worldHasPast(view) ? buildBeforeYouWoke(gameState.graph, view) : [];
+    const past = worldHasPast(view) ? buildBeforeYouWoke(gameState.graph, view) : [];
+    // THR-1843 — the earlier worlds' marks lead the section when this world carries any.
+    const echoes = buildEchoGroup(gameState.graph, gameState.seededEchoes);
+    return echoes ? [echoes, ...past] : past;
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState.graph, runtime.worldVersion, pastKnowledge]);
+  }, [gameState.graph, runtime.worldVersion, pastKnowledge, gameState.seededEchoes]);
 
   // THR-1213 slice 2 deleted an `ascendantLens` memo here. It built a stub lens
   // from *archetype* spheres, nothing read it, and the real lens now comes from

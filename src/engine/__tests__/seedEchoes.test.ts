@@ -12,6 +12,7 @@ import { resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../traceBuffer';
 import { dominionOf } from '../dominion';
 import { phaseDominion } from '../phaseDominion';
+import { buildEchoGroup, pastLineText } from '../worldPastWords';
 import { echoRelation, monumentTargetBand, seedingOrder } from '../seedEchoes';
 import { DOMINION_BAND_RANK } from '../../data/dominion-content';
 import { MAX_SEEDED_ECHOES } from '../../data/account-content';
@@ -147,6 +148,27 @@ describe.each([42, 99, 7])('THR-1843 — seed %i with SAMPLE_ACCOUNT', seed => {
     const a = world(KIN, seed, sampleAccount()).seededEchoes;
     const b = world(KIN, seed, sampleAccount()).seededEchoes;
     expect(a).toEqual(b);
+  });
+});
+
+describe('THR-1843 — the chronicle lines', () => {
+  it('writes one Before-you-woke line per seeded echo, every name linking', () => {
+    const state = world(KIN, 42, sampleAccount());
+    const group = buildEchoGroup(state.graph, state.seededEchoes)!;
+    expect(group.key).toBe('echoes');
+    expect(group.title).toBe('Earlier worlds');
+    expect(group.lines).toHaveLength(state.seededEchoes!.seeded.length);
+    const text = group.lines.map(pastLineText);
+    expect(text[0]).toMatch(/^The Long Barrow still stands near .+\.$/);
+    expect(text[1]).toMatch(/^The line of Maren Ashfold lives on in .+\.$/);
+    expect(text[2]).toMatch(/^The Hollow Bell lies somewhere near .+, unclaimed\.$/);
+    for (const line of group.lines) {
+      expect(line.segments.filter(s => s.ref).length).toBe(2);
+    }
+  });
+
+  it('writes no group when the world placed no echo', () => {
+    expect(buildEchoGroup(world(KIN, 42).graph, undefined)).toBeNull();
   });
 });
 
