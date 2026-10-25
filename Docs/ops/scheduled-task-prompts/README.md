@@ -31,14 +31,14 @@ Three reasons, all learned the hard way:
 | `tb-opus-pickup.md` | `tb-opus-pickup` | Hourly ~:00:53 | Live — the sole executor lane |
 | `tb-orchestrator.md` | `tb-orchestrator` | Hourly ~:26:16 | Live — registered 2026-07-27 (THR-826) |
 | `keep-work-flowing-cc.md` | `keep-work-flowing-cc` | Hourly ~:53:13 | Live |
-| `daily-backlog-grooming.md` | `daily-backlog-grooming` | Daily ~09:16 | Live — enabled 2026-07-22 after its attended trial passed (THR-677) |
-| `weekly-workflow-retro.md` | `weekly-workflow-retro` | Wed ~11:13 | Live — enabled 2026-07-22 after its attended trial passed (THR-677) |
-| `weekly-project-hygiene.md` | `weekly-project-hygiene` | Sun ~10:10 | Live — enabled 2026-07-22 after its attended trial passed (THR-677) |
-| `weekly-retro.md` | `weekly-retro` | Fri ~17:09 | Live |
+| `daily-backlog-grooming.md` | `daily-backlog-grooming` | Daily ~09:16 | **Disabled 2026-10-25** (THR-1950) — folded into `tb-weekly-review`; mirror kept for restore |
+| `weekly-workflow-retro.md` | `weekly-workflow-retro` | Wed ~11:13 | **Disabled 2026-10-25** (THR-1950) — folded into `tb-weekly-review`; mirror kept for restore |
+| `weekly-project-hygiene.md` | `weekly-project-hygiene` | Sun ~10:10 | **Disabled 2026-10-25** (THR-1950) — folded into `tb-weekly-review`; mirror kept for restore |
+| `weekly-retro.md` | `weekly-retro` | Fri ~17:09 | **Disabled 2026-10-25** (THR-1950) — folded into `tb-weekly-review`; mirror kept for restore |
 | `weekly-memory-grooming.md` | `weekly-memory-grooming` | Sun ~16:10 | Live |
 | `monthly-rulebook-review.md` | `monthly-rulebook-review` | 1st ~09:00 | Live — registered 2026-07-22 (THR-704) |
 | `tb-design-lane.md` | `tb-design-lane` | every 3 h ~:14 | Live — registered 2026-09-25 (THR-1611) |
-| `tb-weekly-review.md` | `tb-weekly-review` | Fri 17:00 (cron `0 17 * * 5`) | **Mirror only — awaiting attended registration.** Replaces the five process-review lanes (`weekly-retro`, `weekly-workflow-retro`, `tb-cicd-review`, `weekly-project-hygiene`, `daily-backlog-grooming`); once registered, those five are disabled and their mirrors stay here so they can be restored |
+| `tb-weekly-review.md` | `tb-weekly-review` | Fri 17:00 (cron `0 17 * * 5`) | Live — registered 2026-10-25 (THR-1950). Replaces the five process-review lanes (`weekly-retro`, `weekly-workflow-retro`, `tb-cicd-review`, `weekly-project-hygiene`, `daily-backlog-grooming`), now disabled; their mirrors stay here so they can be restored |
 | `tb-cold-playtest.md` | `tb-cold-playtest` | Daily 10:37 (cron `37 10 * * *`) | **Mirror only — awaiting attended registration** (THR-1610). An attended session creates the task from this mirror and records its observed fire time |
 
 That is every registered task except one, named below.
