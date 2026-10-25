@@ -39,7 +39,7 @@ export const WORLD_TILT_GAIN = 1;
  * against the THR-1843 census kill criterion: a kin god gains at most 5
  * Touched-or-better places at tick 0 after 5 runs of tilt (seed 99 sits at 5).
  */
-export const PLACE_TILT_GAIN = 0.05;
+export const PLACE_TILT_GAIN = 0.02;
 
 // ─── Echoes stand in the new world (THR-1843, slice 2) ───────────────
 

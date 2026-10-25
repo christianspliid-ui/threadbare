@@ -49,7 +49,7 @@ import {
   backfillSphereAffinity,
   computeFactionSphereAggregates,
 } from './sphereAffinity';
-import { createDefaultSphereAffinity } from '../types/sphereAffinity';
+import { createDefaultSphereAffinity, type SphereAffinity } from '../types/sphereAffinity';
 import { seedMonsterLairs } from './lairSeeding';
 import { seedElderRuins } from './ruins/elderRuinSeeding';
 import { generateCultureIdentities, toCultureForWorldgen, stampProvinceCultureOnTiles } from './cultureGenerator';
@@ -255,11 +255,14 @@ export function initializeGameState(
   // ── Seed sphere affinity on all location nodes ─────────────────────
   // THR-2028: a carried World-Soul tilts every place's scores (Decided 8). The
   // cosmology profile never reached place seeding, so the tilt was invisible on
-  // the map. No carried fundament → no tilt, today's world byte for byte.
+  // the map. No carried fundament → no tilt, today's world byte for byte. Places
+  // minted after this loop (lairs, ruins, loc.start, the past) are tilted after the
+  // backfill below seeds them.
+  const tiltFactors = carriedFundament ? placeTiltFactors(carriedFundament) : null;
+  const tiltRng = tiltFactors ? mulberry32(seed + PLACE_TILT_SEED_OFFSET) : undefined;
+  const tiltedPlaceIds = new Set<string>();
+  let placesTilted = 0;
   {
-    const tiltFactors = carriedFundament ? placeTiltFactors(carriedFundament) : null;
-    const tiltRng = tiltFactors ? mulberry32(seed + PLACE_TILT_SEED_OFFSET) : undefined;
-    let placesTilted = 0;
     const locationNodes = graph.getNodesByType('location');
     for (const locNode of locationNodes) {
       const hexCol = locNode.properties.hexCol as number | undefined;
@@ -275,17 +278,9 @@ export function initializeGameState(
         const tilted = tiltSphereAffinity(locAffinity, tiltFactors, tiltRng);
         if (SPHERE_NAMES.some(s => tilted.scores[s] !== locAffinity.scores[s])) placesTilted++;
         locAffinity = tilted;
+        tiltedPlaceIds.add(locNode.id);
       }
       graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity } });
-    }
-    if (tiltFactors) {
-      emitTrace({
-        tick: 0,
-        category: 'account.places_tilted',
-        placesTilted,
-        places: locationNodes.length,
-        summary: `world tilt: ${placesTilted} of ${locationNodes.length} places shifted`,
-      });
     }
   }
 
@@ -402,6 +397,28 @@ export function initializeGameState(
   // all arrive after the seeding loops. One sweep catches each of them, before the
   // starting aggregate below reads the world.
   backfillSphereAffinity(graph, tiles, 0);
+
+  // THR-2028: the places the backfill just seeded take the same tilt, so the
+  // starting grove, lairs, ruins and the past's places lean with the rest.
+  if (tiltFactors) {
+    const places = graph.getNodesByType('location');
+    for (const place of places) {
+      if (tiltedPlaceIds.has(place.id)) continue;
+      const affinity = place.properties.sphereAffinity as SphereAffinity | undefined;
+      if (!affinity?.scores) continue;
+      const tilted = tiltSphereAffinity(affinity, tiltFactors, tiltRng);
+      if (SPHERE_NAMES.some(s => tilted.scores[s] !== affinity.scores[s])) placesTilted++;
+      graph.updateNode(place.id, { properties: { sphereAffinity: tilted } });
+      tiltedPlaceIds.add(place.id);
+    }
+    emitTrace({
+      tick: 0,
+      category: 'account.places_tilted',
+      placesTilted,
+      places: places.length,
+      summary: `world tilt: ${placesTilted} of ${places.length} places shifted`,
+    });
+  }
 
   // ── Dominion's starting record (THR-1748) ─────────────────────────────────
   // The god's power baseline (its bought-sphere scores as seeded, so power reads
