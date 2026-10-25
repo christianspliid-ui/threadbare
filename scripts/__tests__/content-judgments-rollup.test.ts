@@ -249,6 +249,29 @@ describe('coverage rollup (THR-1723)', () => {
     expect(f[0].detail).toContain('steps roll only eye');
   });
 
+  it('v2: compares judged activity with a declared encounterType only while activity is calibrated (THR-2012 item 5)', () => {
+    const typed = [
+      row('m', { reach: 'iron', encounterType: 'duel' }, { reach: 'iron', activity: 'steal', walk: 'combat' }),
+      row('ok', { reach: 'iron', encounterType: 'duel' }, { reach: 'iron', activity: 'duel', walk: 'combat' }),
+      // `trade` is a walk of life, not an activity option: nothing to disagree with.
+      row('tr', { reach: 'gold', encounterType: 'trade' }, { reach: 'gold', activity: 'acquire', walk: 'trade' }),
+    ];
+    const mismatches = (t: CoverageThresholds) => computeFindings(typed, t).filter(x => x.class === 'activity_mismatch').map(x => x.key);
+    expect(mismatches(T)).toEqual(['activity_mismatch|m|steal']);
+    expect(mismatches({ ...T, activity: null })).toEqual([]);
+  });
+
+  it('v2: says a diff\'s resolved findings are not fixes when their axis lost calibration', () => {
+    const art = (reach: number | null): EncounterCoverageArtifact => ({
+      schema: 1, questionsVersion: 2, model: 'jev-1.13.0', doctrine: 'prose@2',
+      ranAt: '2026-10-25T00:00:00.000Z', sourceCommit: 'abc', partial: false, coldStart: false,
+      usage: { requests: 5, inputTokens: 1, usdEstimate: 0, wallSeconds: 1, reusedRows: 0 },
+      thresholds: { ...T, reach }, questions: {}, rows, calibration: null,
+    });
+    expect(renderReport(art(null), art(0.6))).toContain('Resolved here is not fixed: `reach_mislabel` (reach is uncalibrated on this run)');
+    expect(renderReport(art(0.6), art(0.6))).not.toContain('Resolved here is not fixed');
+  });
+
   it('v2: reports the Reach agreement at its threshold beside the previous run\'s', () => {
     const table = (agreement: number, c: number) =>
       ({ reach: [{ c: 0.5, admitted: 50, admittedShare: 0.78, agreement: 0.7 }, { c, admitted: 35, admittedShare: 0.547, agreement }] });

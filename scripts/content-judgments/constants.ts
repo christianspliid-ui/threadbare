@@ -99,34 +99,38 @@ export const DEFAULT_SPHERE_YES = 0.7;
 export const DEFAULT_TAG_FIT_NO = 0.3;
 
 /*
- * Calibrated thresholds (THR-1850). Measured against `JEV_MODEL` and questions v1 on the
- * 64-entry sample, labelled by a blind Claude reader subagent; the tables are in the
+ * Calibrated thresholds (THR-2012; v1 was THR-1850). Measured against `JEV_MODEL` and questions v2
+ * on v1's 64-entry sample, re-labelled by a fresh blind Claude reader subagent on the v2 state; the tables are in the
  * `calibration` block of `origin/ops:Docs/ops/content-judgments/encounter-coverage.json`.
  * `null` = uncalibrated: no cut reached CALIBRATION_TARGET_AGREEMENT over
  * CALIBRATION_MIN_ADMITTED_SHARE of the sample, so every answer on that axis routes to review.
  * They apply when a run answers on `JEV_MODEL` and has no carried thresholds of its own.
  */
 
-/** Reach: 88.6% agreement over 35 of 64 at 0.80. */
-export const CALIBRATED_REACH_CONFIDENCE: number | null = 0.8;
+/**
+ * Reach: uncalibrated — 84.4% over 32 of 64 at 0.80, and 86.2% at 0.85 admits only 45%.
+ * (v1: 88.6% over 35 at 0.80.) v2's answers score 90.6% at 0.80 against v1's labels; the
+ * miss is the v2 reader, which agrees with v1's on 51 of 64 — see the run's report on `ops`.
+ */
+export const CALIBRATED_REACH_CONFIDENCE: number | null = null;
 
-/** Activity: uncalibrated — 85% first appears at 0.85, which admits only 47% of the sample. */
-export const CALIBRATED_ACTIVITY_CONFIDENCE: number | null = null;
+/** Activity: 88.2% agreement over 34 of 64 at 0.80 (uncalibrated on v1). */
+export const CALIBRATED_ACTIVITY_CONFIDENCE: number | null = 0.8;
 
-/** Walk of life: 86.7% agreement over 60 of 64 at 0.50. */
-export const CALIBRATED_WALK_OF_LIFE_CONFIDENCE: number | null = 0.5;
+/** Walk of life: 86.0% agreement over 50 of 64 at 0.65. */
+export const CALIBRATED_WALK_OF_LIFE_CONFIDENCE: number | null = 0.65;
 
-/** Sphere yes: uncalibrated — agreement stays at 62–68% until the cut admits under a third of answers. */
+/** Sphere yes: uncalibrated — agreement stays at 63–77% until the cut admits under a sixth of answers. */
 export const CALIBRATED_SPHERE_YES: number | null = null;
 
-/** Tag-fit no: 0.40 (87.5% at a 0.60 cut over 8 of 10 labelled tag fits — a thin sample). */
-export const CALIBRATED_TAG_FIT_NO: number | null = 0.4;
+/** Tag-fit no: 0.50 (100% at a 0.50 cut over all 10 labelled tag fits — a thin sample). */
+export const CALIBRATED_TAG_FIT_NO: number | null = 0.5;
 
 /** When the thresholds above were measured. */
-export const CALIBRATED_AT = '2026-10-15T11:57:24.635Z';
+export const CALIBRATED_AT = '2026-10-25T11:41:22.298Z';
 
 /** The question-set version the thresholds above were measured on; a bump makes them stale. */
-export const CALIBRATED_QUESTIONS_VERSION = 1;
+export const CALIBRATED_QUESTIONS_VERSION = 2;
 
 /** A grid cell below this count is "thin". */
 export const COVERAGE_THIN_CELL = 3;

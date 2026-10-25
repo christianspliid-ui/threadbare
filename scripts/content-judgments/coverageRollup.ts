@@ -460,6 +460,7 @@ export type FindingClass =
   | 'template_reach_unrolled'
   | 'reach_mislabel'
   | 'activity_backfill'
+  | 'activity_mismatch'
   | 'unearned_tag'
   | 'possible_missing_theme';
 
@@ -502,6 +503,15 @@ export function computeFindings(rows: readonly EncounterJudgmentRow[], t: Covera
     if (row.declared.encounterType === null && activity !== null && activity !== NO_MATCH_OPTION) {
       out.push(finding('activity_backfill', row.id, activity,
         `no encounterType; judged #${activity} (confidence ${readAxis(row, 'activity').confidence})`));
+    }
+    // THR-2012 item 5: only a calibrated activity axis yields a confident answer, so this
+    // stays silent until it calibrates. `trade` is seated as a walk of life, not an
+    // activity option, so a declared `trade` has nothing on this axis to disagree with.
+    const declaredType = row.declared.encounterType;
+    if (declaredType !== null && ACTIVITY_OPTIONS.includes(declaredType)
+      && activity !== null && activity !== NO_MATCH_OPTION && activity !== declaredType) {
+      out.push(finding('activity_mismatch', row.id, activity,
+        `encounterType ${declaredType}, judged #${activity} (confidence ${readAxis(row, 'activity').confidence})`));
     }
 
     if (t.tagFitNo !== null) {
@@ -587,17 +597,27 @@ function findingsMd(list: readonly Finding[]): string {
 }
 
 /** The Reach calibration row at the artifact's own Reach threshold, or null when either is missing. */
-export function reachAtThreshold(artifact: EncounterCoverageArtifact): ThresholdTableRow | null {
-  const c = artifact.thresholds.reach;
+export function reachAtThreshold(
+  artifact: EncounterCoverageArtifact,
+  c: number | null = artifact.thresholds.reach,
+): ThresholdTableRow | null {
   const table = artifact.calibration?.tables.reach;
   if (c === null || !table) return null;
   return table.find(r => Math.abs(r.c - c) < 1e-9) ?? null;
 }
 
-function reachAtThresholdMd(artifact: EncounterCoverageArtifact): string {
+/**
+ * The Reach row at the artifact's own threshold. An uncalibrated axis has none, so it is
+ * read at `fallbackC` (the previous run's threshold) to keep the two runs comparable.
+ */
+function reachAtThresholdMd(artifact: EncounterCoverageArtifact, fallbackC: number | null = null): string {
   const r = reachAtThreshold(artifact);
   if (r) return `**${r.agreement}** at ${r.c} (${r.admitted} admitted)`;
-  return artifact.thresholds.reach === null ? '**uncalibrated**' : `threshold ${artifact.thresholds.reach}, no table`;
+  if (artifact.thresholds.reach !== null) return `threshold ${artifact.thresholds.reach}, no table`;
+  const at = reachAtThreshold(artifact, fallbackC);
+  return at
+    ? `**uncalibrated** (${at.agreement} at ${at.c}, ${at.admitted} admitted, short of ${CALIBRATION_TARGET_AGREEMENT} over ${CALIBRATION_MIN_ADMITTED_SHARE} of the sample)`
+    : '**uncalibrated**';
 }
 
 export function renderReport(
@@ -660,6 +680,15 @@ export function renderReport(
     const { added, resolved } = diffFindings(computeFindings(previous.rows, previous.thresholds), findings);
     lines.push(`Against the previous run: ${added.length} new, ${resolved.length} resolved, ${findings.length} total.`);
     lines.push('');
+    // A finding class read off a confident answer goes quiet when its axis loses calibration;
+    // say so, or the diff reads as fixed work (THR-2012).
+    const lost = ([['reach', 'reach_mislabel'], ['activity', 'activity_backfill'], ['tagFitNo', 'unearned_tag']] as const)
+      .filter(([axis]) => previous.thresholds[axis] !== null && t[axis] === null)
+      .map(([axis, cls]) => `\`${cls}\` (${axis} is uncalibrated on this run)`);
+    if (lost.length) {
+      lines.push(`_Resolved here is not fixed: ${lost.join(', ')} cannot be raised, so the previous run's findings in it read as resolved._`);
+      lines.push('');
+    }
     lines.push('### New');
     lines.push('');
     lines.push(findingsMd(added));
@@ -675,7 +704,7 @@ export function renderReport(
   if (artifact.calibration) {
     lines.push('## Calibration');
     lines.push('');
-    lines.push(`Reach at its threshold: ${reachAtThresholdMd(artifact)} this run · ${previous ? `${reachAtThresholdMd(previous)} previous run (questions v${previous.questionsVersion})` : 'no previous run'}.`);
+    lines.push(`Reach at its threshold: ${reachAtThresholdMd(artifact, previous?.thresholds.reach ?? null)} this run · ${previous ? `${reachAtThresholdMd(previous)} previous run (questions v${previous.questionsVersion})` : 'no previous run'}.`);
     lines.push('');
     for (const [axis, table] of Object.entries(artifact.calibration.tables)) {
       lines.push(`### ${axis}`);
