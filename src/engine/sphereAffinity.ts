@@ -125,6 +125,37 @@ export function seedLocationSphereAffinity(
   return base;
 }
 
+/**
+ * THR-2028 — bend a place's seeded scores by the account's world tilt (Decided 8:
+ * the tilt shapes a world's spheres). Each score is multiplied by its sphere's
+ * factor and brought back to the whole-number scale, clamped to 0–MAX_SPHERE_SCORE.
+ * With `rng`, the fractional part rounds up with its own probability, so the
+ * expected lift over many places is the exact product (a plain round turns a
+ * small tilt into a cliff: every 2 × 1.25 lands on 3 at once). Without it, the
+ * nearest whole point. All factors 1 (an even fundament) → the scores unchanged
+ * and no draw taken.
+ */
+export function tiltSphereAffinity(
+  affinity: SphereAffinity,
+  factors: Readonly<Record<SphereName, number>>,
+  rng?: () => number,
+): SphereAffinity {
+  const out = createDefaultSphereAffinity();
+  for (const sphere of SPHERE_NAMES) {
+    const score = affinity.scores[sphere];
+    const factor = Number.isFinite(factors[sphere]) ? factors[sphere] : 1;
+    let tilted = score;
+    if (factor !== 1 && score !== 0) {
+      const exact = score * factor;
+      const whole = Math.floor(exact);
+      tilted = rng ? whole + (rng() < exact - whole ? 1 : 0) : Math.round(exact);
+    }
+    out.scores[sphere] = Math.max(0, Math.min(MAX_SPHERE_SCORE, tilted));
+    out.progress[sphere] = affinity.progress[sphere];
+  }
+  return out;
+}
+
 // ─── Agent Decision Sphere Influence ─────────────────────────────
 
 /** Weight of sphere-derived axiological adjustment applied to agent's profile */

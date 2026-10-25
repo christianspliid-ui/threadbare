@@ -10,6 +10,7 @@
 import { seedOpeningPurse } from './factionPurse';
 import { resolveWorldScenario, type WorldScenario } from '../data/world-scenario';
 import type { CosmologyProfile, HexTile } from '../types';
+import { SPHERE_NAMES } from '../types';
 import type { AscendantArchetype } from '../types/influence';
 import type { GameState } from '../types/gameState';
 import type { AscendantIdentity } from '../types/remembrance';
@@ -28,7 +29,7 @@ import { createGreatChronicle } from './chronicle';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
 import type { AccountRecord } from '../types/account';
 import type { FundamentState } from '../types/worldSoul';
-import { accountShapesWorld, liveEchoes, sealedCardIds, tiltCosmology } from './accountRecord';
+import { accountShapesWorld, liveEchoes, sealedCardIds, tiltCosmology, placeTiltFactors } from './accountRecord';
 import { godCards } from './godProgression';
 import { seedEchoes, seedingOrder } from './seedEchoes';
 import type { WorldGraph } from './graph';
@@ -44,6 +45,7 @@ import {
   seedHexSphereAffinity,
   seedActorSphereAffinity,
   seedLocationSphereAffinity,
+  tiltSphereAffinity,
   backfillSphereAffinity,
   computeFactionSphereAggregates,
 } from './sphereAffinity';
@@ -86,6 +88,9 @@ const RARITY_SEED_OFFSET = 113513;
 
 /** PRNG offset for latent essence-source seeding (THR-611). Unique prime — no collision. */
 const LATENT_SOURCE_SEED_OFFSET = 156041;
+
+/** PRNG offset for the carried world tilt's place rounding (THR-2028). Unique prime — no collision. */
+const PLACE_TILT_SEED_OFFSET = 171007;
 
 // ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
 
@@ -248,7 +253,13 @@ export function initializeGameState(
   }
 
   // ── Seed sphere affinity on all location nodes ─────────────────────
+  // THR-2028: a carried World-Soul tilts every place's scores (Decided 8). The
+  // cosmology profile never reached place seeding, so the tilt was invisible on
+  // the map. No carried fundament → no tilt, today's world byte for byte.
   {
+    const tiltFactors = carriedFundament ? placeTiltFactors(carriedFundament) : null;
+    const tiltRng = tiltFactors ? mulberry32(seed + PLACE_TILT_SEED_OFFSET) : undefined;
+    let placesTilted = 0;
     const locationNodes = graph.getNodesByType('location');
     for (const locNode of locationNodes) {
       const hexCol = locNode.properties.hexCol as number | undefined;
@@ -259,8 +270,22 @@ export function initializeGameState(
         hexAffinity = hexAffinityByKey.get(key) ?? createDefaultSphereAffinity();
       }
       const locSubtype = locNode.properties.locationType as string | undefined;
-      const locAffinity = seedLocationSphereAffinity(hexAffinity, locSubtype);
+      let locAffinity = seedLocationSphereAffinity(hexAffinity, locSubtype);
+      if (tiltFactors) {
+        const tilted = tiltSphereAffinity(locAffinity, tiltFactors, tiltRng);
+        if (SPHERE_NAMES.some(s => tilted.scores[s] !== locAffinity.scores[s])) placesTilted++;
+        locAffinity = tilted;
+      }
       graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity } });
+    }
+    if (tiltFactors) {
+      emitTrace({
+        tick: 0,
+        category: 'account.places_tilted',
+        placesTilted,
+        places: locationNodes.length,
+        summary: `world tilt: ${placesTilted} of ${locationNodes.length} places shifted`,
+      });
     }
   }
 

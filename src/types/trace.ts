@@ -32,7 +32,7 @@ import type {
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
-import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace, AccountHungerWokenTrace, AccountCardsUnsealedTrace } from './traces/account-traces';
+import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, AccountPlacesTiltedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace, AccountHungerWokenTrace, AccountCardsUnsealedTrace } from './traces/account-traces';
 import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { LuckBagRollTrace, LuckLegendaryCycleTrace } from './traces/luck-traces';
@@ -704,6 +704,7 @@ export type TraceCategory =
   | 'account.saved'
   | 'account.unreadable'
   | 'account.world_shaped'
+  | 'account.places_tilted'
   | 'harvest.divine_echo_picked'
   // Choices widen across runs (THR-1844)
   | 'account.hunger_woken'
@@ -1077,6 +1078,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'account.saved',
   'account.unreadable',
   'account.world_shaped',
+  'account.places_tilted',
   'harvest.divine_echo_picked',
   // Choices widen across runs (THR-1844)
   'account.hunger_woken',
@@ -5699,6 +5701,7 @@ export type TraceEntry =
   | AccountSavedTrace
   | AccountUnreadableTrace
   | AccountWorldShapedTrace
+  | AccountPlacesTiltedTrace
   | HarvestDivineEchoPickedTrace
   // Choices widen across runs (THR-1844)
   | AccountHungerWokenTrace
