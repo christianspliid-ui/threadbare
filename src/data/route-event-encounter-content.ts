@@ -174,7 +174,8 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
     steps: [
       {
-        reach: 'heart',
+        // Gold (THR-2038): the test is striking a rate both banners will pay.
+        reach: 'gold',
         duration: { min: 1, max: 2 },
         difficulty: ROUTE_EVENT_DIFFICULTY,
         failBehavior: 'fail_action',

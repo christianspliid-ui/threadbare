@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { REACH_DOMAINS } from '../../types/traits';
-import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { runnableStepSites, type UnifiedActionTemplate } from '../../types/unifiedAction';
 import { entriesOfKind } from '../contentCatalogs';
 import { getUnifiedTemplateById } from '../unified-action-templates';
 
@@ -52,8 +52,10 @@ const RELABELLED: Record<string, readonly [string, readonly (string | undefined)
   // § 3 Step relabel — the template Reach stays
   'encounter.council_mediation': ['heart', ['heart', 'heart', 'heart']],
   'encounter.militia_aid': ['iron', ['iron', 'heart', 'iron']],
-  'faction.encounter.dissent_surfaces': ['shadow', ['heart', 'heart']],
-  'faction.encounter.doctrine_surfaces': ['star', ['heart', 'heart']],
+  // THR-2038 moved these two templates to the Heart their steps roll
+  // (`template_reach_unrolled`); the seeding cards keep Shadow and Star.
+  'faction.encounter.dissent_surfaces': ['heart', ['heart', 'heart']],
+  'faction.encounter.doctrine_surfaces': ['heart', ['heart', 'heart']],
   'faction.encounter.doubter_chooses': ['eye', ['eye', 'heart']],
   'reputation.iron.the_executioners_commission': ['iron', ['iron', undefined]],
   // § 5 proof templates
@@ -98,5 +100,18 @@ describe('THR-2010 Reach relabels', () => {
       .filter((template) => !eight.includes(template.reach))
       .map((template) => `${template.id}: ${template.reach}`);
     expect(outside).toEqual([]);
+  });
+
+  // THR-2038: the deterministic `template_reach_unrolled` pre-check
+  // (`scripts/content-judgments/coverageRollup.ts`, steps read as
+  // `declaredLabels` reads them). Every runnable step rolls its own Reach, so a
+  // template Reach that no step carries is never rolled.
+  it('leaves no encounter template declaring a Reach none of its steps rolls', () => {
+    const unrolled = entriesOfKind('encounter_template')
+      .map((entry) => entry as unknown as UnifiedActionTemplate)
+      .map((template) => ({ template, steps: runnableStepSites(template.steps).map((site) => String(site.step.reach)) }))
+      .filter(({ template, steps }) => steps.length > 0 && !steps.includes(String(template.reach)))
+      .map(({ template, steps }) => `${template.id}: ${template.reach} vs ${[...new Set(steps)].join(', ')}`);
+    expect(unrolled).toEqual([]);
   });
 });

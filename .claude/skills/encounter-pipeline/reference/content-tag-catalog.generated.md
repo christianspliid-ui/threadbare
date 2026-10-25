@@ -26,12 +26,12 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 |---|---|---|---|---|
 | `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 14 · trait 5 · omen 4 · power 4 · agreement 1 | 189 |  |
 | `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 10 · trait 8 · agreement 2 · omen 2 · power 1 | 132 |  |
-| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 131 |  |
+| `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 130 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 129 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | condition 12 · item 11 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 151 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | condition 12 · item 11 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 153 |  |
 | `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 7 · omen 6 · trait 5 · power 4 · agreement 1 | 166 |  |
 | `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · condition 7 · trait 6 · power 2 · legendary 1 | 110 |  |
-| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 9 · omen 6 · trait 5 · power 4 · agreement 1 | 130 |  |
+| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 9 · omen 6 · trait 5 · power 4 · agreement 1 | 129 |  |
 
 ## sphere
 
