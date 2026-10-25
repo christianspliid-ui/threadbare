@@ -1062,6 +1062,27 @@ export interface DebugBridge {
    * last leaver was sent. Null when nothing matches or the game is not loaded.
    * Always `await` it.
    */
+  /**
+   * THR-1923 — one settlement's economy, by id or name: population and cap, the food,
+   * growth and build meters, the food and build balances, worked hexes with yields, the
+   * buildings (idle days and why), seat / pull count, surplus routes in and out, target
+   * tier, land shocks, and the size and livelihood lines. Null when it is no settlement.
+   * Always `await` it.
+   */
+  getSettlementEconomy: (locationIdOrName: string) => Promise<import('./engine/settlementEconomy/describe').SettlementEconomyReadout | null>;
+  /**
+   * THR-1923 — the four diversity measures (sizes spread, building mixes distinct, traits
+   * many and rare, no convergence) with PASS / FAIL / PENDING flags, judged from the
+   * session's day-1 / 50 / 100 snapshots and a live one. Run `tick(1800)` (150 days) for
+   * all four to read. Always `await` it.
+   */
+  getSettlementDiversity: () => Promise<(import('./engine/settlementEconomy/measures').DiversityVerdict & {
+    day1?: import('./engine/settlementEconomy/measures').DiversitySnapshot;
+    day50?: import('./engine/settlementEconomy/measures').DiversitySnapshot;
+    day100?: import('./engine/settlementEconomy/measures').DiversitySnapshot;
+    now: import('./engine/settlementEconomy/measures').DiversitySnapshot;
+    historyDays: number[];
+  }) | null>;
   getUnrest: (locationIdOrName: string) => Promise<{
     locationId: string;
     locationName: string;

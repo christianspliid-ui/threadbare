@@ -15,6 +15,9 @@
  * | *Veil-thin* | saturation ≥ `LOCATION_TRAIT_VEIL_THIN_ENTER` | `< …_RELEASE` | not while *Haunted* |
  * | *Haunted* | saturation ≥ `LOCATION_TRAIT_HAUNTED_ENTER` | `< …_RELEASE` | `deathCount ≥ LOCATION_TRAIT_HAUNTED_DEATHS` |
  * | *Blood-soaked* | bloodshed ≥ `BLOOD_SOAKED_ENTER` | `< BLOOD_SOAKED_RELEASE` | — (THR-1528) |
+ * | twelve building traits (*Iron Town* …) | its building stands, not idle | it idles or is lost | — (THR-1923) |
+ * | *Breadbasket* | land food per worked hex ≥ `BREADBASKET_ENTER` | `< …_RELEASE` | — (THR-1923) |
+ * | *Market Town* | surplus routes at a standing market ≥ `MARKET_TOWN_ENTER` | `< …_RELEASE` | — (THR-1923) |
  *
  * *Blood-soaked* reads no scalar: its input is {@link readBloodshed}, the weighted
  * count of `battle_fought` / `fight_fought` records at the place inside
@@ -94,6 +97,20 @@ import {
   type LocationTraitRuleId,
 } from '../data/location-trait-constants';
 import { LOCATION_CONDITION_ID_PREFIX } from '../data/condition-trait-content';
+import {
+  ECONOMIC_LOCATION_TRAIT_KEYS,
+  ECONOMY_BUILDING_TRAIT_ENTER,
+  ECONOMY_BUILDING_TRAIT_RELEASE,
+} from '../data/location-trait-constants';
+import {
+  BREADBASKET_ENTER,
+  BREADBASKET_RELEASE,
+  MARKET_TOWN_ENTER,
+  MARKET_TOWN_RELEASE,
+} from '../data/settlement-economy-constants';
+import { readBuildings, isIdle } from './settlementEconomy/building';
+import { isEconomySettlement } from './settlementEconomy/land';
+import { isSurplusRoute } from './settlementEconomy/surplusRoutes';
 
 // ─── The rules ──────────────────────────────────────────────────────────────
 
@@ -124,7 +141,7 @@ interface LocationTraitRule {
   readonly chronicleSignificance?: number;
 }
 
-const SCALAR_PROPERTY: Readonly<Record<Exclude<LocationTraitInput, 'bloodshed'>, string>> = {
+const SCALAR_PROPERTY: Readonly<Record<Exclude<LocationTraitInput, 'bloodshed' | 'economy'>, string>> = {
   prosperity: 'prosperity',
   unrest: 'unrest',
   saturation: 'magicalSaturation',
@@ -182,8 +199,53 @@ export function readBloodshed(graph: WorldGraph, loc: GraphNode, tick: number): 
 /** A rule's input this tick — its computed reader, or its scalar property. */
 function readInput(graph: WorldGraph, rule: LocationTraitRule, loc: GraphNode, tick: number): number | null {
   if (rule.read) return rule.read(graph, loc, tick);
-  if (rule.input === 'bloodshed') return null;
+  if (rule.input === 'bloodshed' || rule.input === 'economy') return null;
   return readNumber(loc, SCALAR_PROPERTY[rule.input]);
+}
+
+// ─── The settlement economy's readers (THR-1923) ────────────────────────────
+
+/** A settlement the settlement economy has reached (it counts people). Others skip the rule. */
+function economyReached(loc: GraphNode): boolean {
+  return isEconomySettlement(loc) && typeof loc.properties?.population === 'number';
+}
+
+/** 1 while a standing (not idle) building that gives `traitId` stands, else 0. */
+function readBuildingTrait(traitId: string) {
+  return (graph: WorldGraph, loc: GraphNode): number | null => {
+    if (!economyReached(loc)) return null;
+    return readBuildings(graph, loc.id).some(b => b.def.trait === traitId && !isIdle(b)) ? 1 : 0;
+  };
+}
+
+/** Land food per worked hex, as the economy last wrote it. */
+export function readBreadbasket(_graph: WorldGraph, loc: GraphNode): number | null {
+  if (!economyReached(loc)) return null;
+  const food = readNumber(loc, 'landFood') ?? 0;
+  return food / Math.max(1, readNumber(loc, 'workedHexes') ?? 0);
+}
+
+/** Surplus routes touching the settlement while a market stands there; 0 without one. */
+export function readMarketTown(graph: WorldGraph, loc: GraphNode): number | null {
+  if (!economyReached(loc)) return null;
+  if (!readBuildings(graph, loc.id).some(b => b.def.id === 'market' && !isIdle(b))) return 0;
+  return [...graph.getOutgoingEdges(loc.id, 'trades_with'), ...graph.getIncomingEdges(loc.id, 'trades_with')]
+    .filter(isSurplusRoute).length;
+}
+
+function economicRule(key: typeof ECONOMIC_LOCATION_TRAIT_KEYS[number]): LocationTraitRule {
+  const traitId = LOCATION_TRAIT_IDS[key];
+  if (key === 'breadbasket') {
+    return { id: key, traitId, input: 'economy', enter: BREADBASKET_ENTER, release: BREADBASKET_RELEASE, read: readBreadbasket };
+  }
+  if (key === 'marketTown') {
+    return { id: key, traitId, input: 'economy', enter: MARKET_TOWN_ENTER, release: MARKET_TOWN_RELEASE, read: readMarketTown };
+  }
+  return {
+    id: key, traitId, input: 'economy',
+    enter: ECONOMY_BUILDING_TRAIT_ENTER, release: ECONOMY_BUILDING_TRAIT_RELEASE,
+    read: readBuildingTrait(traitId),
+  };
 }
 
 /**
@@ -248,6 +310,8 @@ export const LOCATION_TRAIT_RULES: readonly LocationTraitRule[] = [
     read: readBloodshed,
     sustainTicks: BLOOD_SOAKED_SUSTAIN_TICKS,
   },
+  // THR-1923 — the settlement economy's: what a town raised, what its land gives, its market.
+  ...ECONOMIC_LOCATION_TRAIT_KEYS.map(economicRule),
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

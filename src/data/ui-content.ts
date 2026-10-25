@@ -1353,6 +1353,16 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Roads',
     desc: 'The trade roads that run from a place. A threatened road carries less, and trade that picks up feeds both ends.',
   },
+  // THR-1923 — the place page's size line (words and trend, never a number).
+  'ui.econ.size': {
+    label: 'Size',
+    desc: "How many people live here. A settlement grows when its fields feed more than its people eat. Only a faction's seat can grow into a city.",
+  },
+  // THR-1923 — the cast receipt's land line (Blight, Bless the Harvest, Sour Mine, Reveal Vein).
+  'ui.econ.fields': {
+    label: 'Fields',
+    desc: "The land a settlement works for its food, timber and stone. A god's hand on it lasts a season, then fades.",
+  },
   // THR-1937 — the place page's "Founded by" line on a town a mortal founded.
   'ui.place.founded': {
     label: 'Founded',

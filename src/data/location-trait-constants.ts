@@ -46,12 +46,33 @@ export const LOCATION_TRAIT_IDS = {
   haunted: `${LOCATION_CONDITION_ID_PREFIX}haunted`,
   // THR-1528 — minted from battle records, not from any scalar.
   bloodSoaked: `${LOCATION_CONDITION_ID_PREFIX}blood_soaked`,
+  // THR-1923 — the settlement economy's traits: a standing building's, the land's, the market's.
+  ironTown: `${LOCATION_CONDITION_ID_PREFIX}iron_town`,
+  gemCutters: `${LOCATION_CONDITION_ID_PREFIX}gem_cutters`,
+  herbTown: `${LOCATION_CONDITION_ID_PREFIX}herb_town`,
+  spaTown: `${LOCATION_CONDITION_ID_PREFIX}spa_town`,
+  crystalSeers: `${LOCATION_CONDITION_ID_PREFIX}crystal_seers`,
+  amberMarket: `${LOCATION_CONDITION_ID_PREFIX}amber_market`,
+  curioCollectors: `${LOCATION_CONDITION_ID_PREFIX}curio_collectors`,
+  timberTown: `${LOCATION_CONDITION_ID_PREFIX}timber_town`,
+  quarryTown: `${LOCATION_CONDITION_ID_PREFIX}quarry_town`,
+  fishingPort: `${LOCATION_CONDITION_ID_PREFIX}fishing_port`,
+  horseCountry: `${LOCATION_CONDITION_ID_PREFIX}horse_country`,
+  walled: `${LOCATION_CONDITION_ID_PREFIX}walled`,
+  breadbasket: `${LOCATION_CONDITION_ID_PREFIX}breadbasket`,
+  marketTown: `${LOCATION_CONDITION_ID_PREFIX}market_town`,
 } as const;
+
+/** THR-1923 — the traits the settlement economy mints (building, land and market), in rule order. */
+export const ECONOMIC_LOCATION_TRAIT_KEYS = [
+  'ironTown', 'gemCutters', 'herbTown', 'spaTown', 'crystalSeers', 'amberMarket', 'curioCollectors',
+  'timberTown', 'quarryTown', 'fishingPort', 'horseCountry', 'walled', 'breadbasket', 'marketTown',
+] as const satisfies readonly (keyof typeof LOCATION_TRAIT_IDS)[];
 
 export type LocationTraitRuleId = keyof typeof LOCATION_TRAIT_IDS;
 
 /** Which of the world's scalars a rule reads. */
-export type LocationTraitInput = 'prosperity' | 'unrest' | 'saturation' | 'bloodshed';
+export type LocationTraitInput = 'prosperity' | 'unrest' | 'saturation' | 'bloodshed' | 'economy';
 
 // ─── Sustain ────────────────────────────────────────────────────────────────
 
@@ -161,6 +182,16 @@ export const BLOOD_SOAKED_RELEASE = 0.5;
  */
 export const BLOOD_SOAKED_SUSTAIN_TICKS = 1;
 
+// ─── The settlement economy's traits (THR-1923) ─────────────────────────────
+
+/**
+ * A building trait reads 1 while its building stands (not idle) and 0 otherwise; it mints
+ * at 1 and lifts below this. The thresholds of *Breadbasket* and *Market Town* live with
+ * the economy's other numbers (`settlement-economy-constants.ts`).
+ */
+export const ECONOMY_BUILDING_TRAIT_ENTER = 1;
+export const ECONOMY_BUILDING_TRAIT_RELEASE = 0.5;
+
 // ─── The pool term ──────────────────────────────────────────────────────────
 
 /**
@@ -249,6 +280,22 @@ export const LOCATION_TRAIT_ENCOUNTER_BONUS: Readonly<
     '#iron': 0.06,
     '#lead': 0.05,
   },
+  // THR-1923 — what a town is known for draws the stories its trade breeds. Small rows:
+  // a town's character leans the pool, it does not script it.
+  [LOCATION_TRAIT_IDS.ironTown]: { '#iron': 0.06, '#duel': 0.04 },
+  [LOCATION_TRAIT_IDS.gemCutters]: { '#gold': 0.05, '#trade': 0.06 },
+  [LOCATION_TRAIT_IDS.herbTown]: { '#heart': 0.05, '#assist': 0.06 },
+  [LOCATION_TRAIT_IDS.spaTown]: { '#heart': 0.06, '#assist': 0.04 },
+  [LOCATION_TRAIT_IDS.crystalSeers]: { '#star': 0.06, '#veil': 0.04 },
+  [LOCATION_TRAIT_IDS.amberMarket]: { '#gold': 0.04, '#trade': 0.06 },
+  [LOCATION_TRAIT_IDS.curioCollectors]: { '#explore': 0.06, '#anomaly': 0.04 },
+  [LOCATION_TRAIT_IDS.timberTown]: { '#trade': 0.04, '#assist': 0.04 },
+  [LOCATION_TRAIT_IDS.quarryTown]: { '#trade': 0.04, '#iron': 0.03 },
+  [LOCATION_TRAIT_IDS.fishingPort]: { '#trade': 0.04, '#tavern_night': 0.05 },
+  [LOCATION_TRAIT_IDS.horseCountry]: { '#iron': 0.04, '#explore': 0.04 },
+  [LOCATION_TRAIT_IDS.walled]: { '#iron': 0.04, '#lead': 0.04 },
+  [LOCATION_TRAIT_IDS.breadbasket]: { '#heart': 0.04, '#assist': 0.05 },
+  [LOCATION_TRAIT_IDS.marketTown]: { '#gold': 0.05, '#trade': 0.08, '#steal': 0.04 },
 };
 
 /**

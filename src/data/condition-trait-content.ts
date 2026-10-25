@@ -270,6 +270,13 @@ export const LOCATION_VEIL_THIN_VEIL_BONUS = 0.05;
 export const LOCATION_HAUNTED_HEART_PENALTY = -0.06;
 
 /**
+ * THR-1923 — the step bonus a settlement-economy trait gives work done there, in the one
+ * reach its trade moves (an Iron Town's blades, a Spa Town's rest, a Market Town's
+ * bargains). Below the tended shrine's 0.05: a town's character is a lean, not a gift.
+ */
+export const LOCATION_ECONOMY_TRAIT_STEP_BONUS = 0.03;
+
+/**
  * Clamp on the summed location-condition term, mirroring `TERRAIN_MODIFIER_CAP`.
  *
  * Conditions **add** here rather than compounding the way movement taxes
@@ -730,6 +737,249 @@ export const CONDITION_TRAIT_DEFINITIONS: GraphNode[] = [
       censusTag: { scale: 'local' },
     } satisfies TraitDefinitionProperties,
   },
+  // ─── The settlement economy's traits (THR-1923) ──────────────────────────
+  // Minted by `phaseLocationTraits` from what a settlement raised and what its land and
+  // market do (plan Docs/plans/2026-10-14-thr-1923-settlement-economy.md § Building and
+  // trait text — the chip words and tooltips are the plan's, verbatim). No term: a
+  // building trait lifts when its building idles or is lost.
+  {
+    id: 'trait.condition.location.iron_town',
+    type: 'trait',
+    name: "Iron Town",
+    properties: {
+      subcategory: 'condition',
+      description: "Ore is mined nearby and worked in the smithy here. Its smiths are known across the region.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#iron', '#positive'],
+      flavorText: "Every second door has a hammer ringing behind it.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.gem_cutters',
+    type: 'trait',
+    name: "Gem-cutters' Town",
+    properties: {
+      subcategory: 'condition',
+      description: "Its cutters turn rough stones from the nearby deposit into gems sold far away.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#gold', '#positive'],
+      flavorText: "Even the children here can tell glass from garnet by touch.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.herb_town',
+    type: 'trait',
+    name: "Herb Town",
+    properties: {
+      subcategory: 'condition',
+      description: "Its remedies, mixed from herbs grown nearby, are sought by the sick of the region.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#heart', '#positive'],
+      flavorText: "The whole street smells of dried mint and something bitter underneath.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.spa_town',
+    type: 'trait',
+    name: "Spa Town",
+    properties: {
+      subcategory: 'condition',
+      description: "People travel here to rest in its warm healing spring.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#heart', '#positive'],
+      flavorText: "Steam drifts over the rooftops on cold mornings.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.crystal_seers',
+    type: 'trait',
+    name: "Crystal Seers",
+    properties: {
+      subcategory: 'condition',
+      description: "Its seers read omens in crystal from the nearby caverns.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#star', '#positive'],
+      flavorText: "Someone always seems to know you were coming.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.amber_market',
+    type: 'trait',
+    name: "Amber Market",
+    properties: {
+      subcategory: 'condition',
+      description: "Amber carvings from here are sold in towns far away.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#gold', '#positive'],
+      flavorText: "Every stall glows honey-coloured in the evening light.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.curio_collectors',
+    type: 'trait',
+    name: "Curio Collectors",
+    properties: {
+      subcategory: 'condition',
+      description: "It keeps and shows the strange old things dug up nearby.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#eye', '#positive'],
+      flavorText: "A jawbone the size of a cart hangs over the inn door.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.timber_town',
+    type: 'trait',
+    name: "Timber Town",
+    properties: {
+      subcategory: 'condition',
+      description: "It cuts more timber than it needs and sells the wares.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#stone', '#positive'],
+      flavorText: "Sawdust drifts in every doorway.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.quarry_town',
+    type: 'trait',
+    name: "Quarry Town",
+    properties: {
+      subcategory: 'condition',
+      description: "It cuts more stone than it needs and sells it.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#stone', '#positive'],
+      flavorText: "Grey dust settles on everything, and nobody minds.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.fishing_port',
+    type: 'trait',
+    name: "Fishing Port",
+    properties: {
+      subcategory: 'condition',
+      description: "Its boats feed the town and sell what is left over.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#gold', '#positive'],
+      flavorText: "The tide decides when anyone here gets up.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.horse_country',
+    type: 'trait',
+    name: "Horse Country",
+    properties: {
+      subcategory: 'condition',
+      description: "Herds graze the grasslands around it.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#iron', '#positive'],
+      flavorText: "Half the talk at the inn is about horses, and the other half is about better horses.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.walled',
+    type: 'trait',
+    name: "Walled",
+    properties: {
+      subcategory: 'condition',
+      description: "Stone walls guard it. An army has to besiege it, not just walk in.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#iron', '#positive'],
+      flavorText: "The gate closes at dusk, and the watch knows every face.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.breadbasket',
+    type: 'trait',
+    name: "Breadbasket",
+    properties: {
+      subcategory: 'condition',
+      description: "Its fields are rich. It grows more food than most towns its size.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#heart', '#positive'],
+      flavorText: "Nobody here has gone hungry in living memory.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
+  {
+    id: 'trait.condition.location.market_town',
+    type: 'trait',
+    name: "Market Town",
+    properties: {
+      subcategory: 'condition',
+      description: "Several trade roads meet here, and its market is busy.",
+      importance: 0.5,
+      maxLevel: 1,
+      visibility: 'public',
+      // A place has no capability to move; the readers are its step term and the pool.
+      domainContributions: {},
+      tags: ['#condition', '#location', '#gold', '#positive'],
+      flavorText: "You can buy anything here, if you know which stall to ask at.",
+      censusTag: { scale: 'local' },
+    } satisfies TraitDefinitionProperties,
+  },
   // THR-1548 — Scarred: the one fight wound that never heals (plan doc
   // `2026-09-23-defeat-and-victory.md` § Content). Written by the fight ending's
   // mauled face through `applyConditionToActor`, with the victor as the edge's
@@ -878,4 +1128,19 @@ export const LOCATION_CONDITION_STEP_MODIFIER: Record<
   'trait.condition.location.on_the_edge': { iron: LOCATION_ON_THE_EDGE_IRON_PENALTY }, // THR-1957
   'trait.condition.location.veil_thin': { veil: LOCATION_VEIL_THIN_VEIL_BONUS },
   'trait.condition.location.haunted': { heart: LOCATION_HAUNTED_HEART_PENALTY },
+  // THR-1923 — a town's trade leans the work done there, in the one reach it moves.
+  'trait.condition.location.iron_town': { iron: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.gem_cutters': { gold: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.herb_town': { heart: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.spa_town': { heart: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.crystal_seers': { star: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.amber_market': { gold: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.curio_collectors': { eye: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.timber_town': { stone: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.quarry_town': { stone: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.fishing_port': { gold: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.horse_country': { iron: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.walled': { iron: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.breadbasket': { heart: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
+  'trait.condition.location.market_town': { gold: LOCATION_ECONOMY_TRAIT_STEP_BONUS },
 };

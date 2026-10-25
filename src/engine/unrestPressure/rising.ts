@@ -18,8 +18,9 @@
  * `takenFrom: holder`) and `hostile_to` is written both ways (`reason: 'rising'`), which
  * war aims' enemy rule reads. The town takes `RISING_RELIEF` and the cooldown stamp.
  *
- * The sack (the costliest building lost) needs the settlement economy's buildings
- * (THR-1923); until that ships the rising records `sackedBuildingId: null`.
+ * The sack (the costliest building lost) needs the settlement economy's buildings,
+ * which THR-1923 shipped; the rising still records `sackedBuildingId: null`.
+ * TODO(THR-2033): lose the costliest standing building through `loseBuilding`.
  *
  * Unheld towns empty instead (people leave faster) — that cadence lives with the
  * Restless leaving in `unrestPressure.ts`.

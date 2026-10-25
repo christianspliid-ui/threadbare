@@ -22,6 +22,10 @@ import { resolveAxiologicalProfile } from '../../../engine/encounterScoring';
 import { allOathEdges, readOath, isCrown, vassalsOf, crownRulerOf, isRealmFaction } from '../../../engine/crown/crownView';
 import { allRegionalMonopolies, allActiveEmbargoes } from '../../../engine/regionalMonopoly';
 import { readLaneHolders } from '../../../engine/undertakingEconomy';
+import { getEconomySettlements } from '../../../engine/settlementEconomy/land';
+import { readBuildings, isIdle } from '../../../engine/settlementEconomy/building';
+import { economicTraitsOf } from '../../../engine/settlementEconomy/measures';
+import { isSurplusRoute } from '../../../engine/settlementEconomy/surplusRoutes';
 
 interface PurseRow {
   id: string;
@@ -178,6 +182,67 @@ function UnrestTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: 
               <td style={cell}>{r.restlessDays}</td>
               <td style={{ ...cell, textAlign: 'left' }}>{r.leaveTo ?? '—'}</td>
               <td style={cell}>{r.lastTurnTick ?? '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/**
+ * THR-1923 — the settlement economy: every settlement's people, tier → target, buildings
+ * (idle ones starred), traits and surplus routes, most populous first. Numbers are fine here (debug).
+ */
+function SettlementsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  const rows = useMemo(() => {
+    if (!graph) return [];
+    return getEconomySettlements(graph)
+      .filter(s => typeof s.properties.population === 'number')
+      .map(s => {
+        const routes = [...graph.getOutgoingEdges(s.id, 'trades_with'), ...graph.getIncomingEdges(s.id, 'trades_with')].filter(isSurplusRoute);
+        return {
+          id: s.id,
+          name: s.name,
+          population: s.properties.population as number,
+          cap: typeof s.properties.populationCap === 'number' ? s.properties.populationCap : null,
+          tier: String(s.properties.locationSubtype),
+          target: String(s.properties.targetTier ?? '—'),
+          food: typeof s.properties.foodBalance === 'number' ? s.properties.foodBalance : 0,
+          buildings: readBuildings(graph, s.id).map(b => b.def.id + (isIdle(b) ? '*' : '')).join(', '),
+          traits: [...economicTraitsOf(graph, s, routes.length)].join(', '),
+          routesOut: routes.filter(r => r.source === s.id).length,
+          routesIn: routes.filter(r => r.target === s.id).length,
+        };
+      })
+      .sort((a, b) => b.population - a.population || (a.id < b.id ? -1 : 1));
+  }, [graph, currentTick]);
+  if (rows.length === 0) return null;
+  const cell = { padding: '2px 6px', whiteSpace: 'nowrap' as const, textAlign: 'right' as const };
+  return (
+    <div data-testid="economy-settlements" style={{ marginBottom: '12px' }}>
+      <div style={{ color: 'var(--text-tertiary)', marginBottom: '4px' }}>
+        Settlements — {rows.length} settlements, {rows.reduce((n, r) => n + r.population, 0)} people, {rows.reduce((n, r) => n + r.routesOut, 0)} surplus routes
+      </div>
+      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <thead>
+          <tr style={{ color: 'var(--text-tertiary)' }}>
+            <th style={{ ...cell, textAlign: 'left' }}>settlement</th><th style={cell}>people</th><th style={cell}>cap</th>
+            <th style={{ ...cell, textAlign: 'left' }}>tier → target</th><th style={cell}>food</th>
+            <th style={{ ...cell, textAlign: 'left' }}>buildings</th><th style={{ ...cell, textAlign: 'left' }}>traits</th><th style={cell}>routes out/in</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(r => (
+            <tr key={r.id} style={{ color: r.food < 0 ? '#e06c5a' : 'var(--text-secondary)' }}>
+              <td style={{ ...cell, textAlign: 'left' }} title={r.id}>{r.name}</td>
+              <td style={cell}>{r.population}</td>
+              <td style={cell}>{r.cap ?? '—'}</td>
+              <td style={{ ...cell, textAlign: 'left' }}>{r.tier === r.target ? r.tier : `${r.tier} → ${r.target}`}</td>
+              <td style={cell}>{r.food.toFixed(2)}</td>
+              <td style={{ ...cell, textAlign: 'left', whiteSpace: 'normal' as const }}>{r.buildings || '—'}</td>
+              <td style={{ ...cell, textAlign: 'left', whiteSpace: 'normal' as const }}>{r.traits || '—'}</td>
+              <td style={cell}>{r.routesOut}/{r.routesIn}</td>
             </tr>
           ))}
         </tbody>
@@ -498,6 +563,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
         <OathsTable graph={graph} currentTick={currentTick} />
         <MonopoliesTable graph={graph} currentTick={currentTick} />
         <LanesTable graph={graph} currentTick={currentTick} />
+        <SettlementsTable graph={graph} currentTick={currentTick} />
         <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
         <div style={EMPTY_STATE_STYLE}>No locations with resources yet.</div>
@@ -512,6 +578,7 @@ export function EconomyDebugTab({ graph, currentTick }: EconomyDebugTabProps) {
       <OathsTable graph={graph} currentTick={currentTick} />
       <MonopoliesTable graph={graph} currentTick={currentTick} />
       <LanesTable graph={graph} currentTick={currentTick} />
+      <SettlementsTable graph={graph} currentTick={currentTick} />
       <UnrestTable graph={graph} currentTick={currentTick} />
         <PrayersTable graph={graph} currentTick={currentTick} />
       <div style={{ marginBottom: '10px', color: 'var(--text-tertiary)' }}>

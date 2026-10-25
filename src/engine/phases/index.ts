@@ -50,6 +50,7 @@ import { playerReceiptsPhase } from '../playerReceipts';
 import { mandatePhase } from './mandate';
 import { factionSuccessionPhase } from './factionSuccession';
 import { resourceStockTiersPhase } from './resourceStockTiers';
+import { settlementEconomyPhase } from './settlementEconomy';
 import { routeEventsPhase } from './routeEvents';
 import { armySupplyPhase } from './armySupply';
 import { economicPowerPhase } from './economicPower';
@@ -67,6 +68,7 @@ export const ENGINE_PHASES: readonly EnginePhase[] = [
 
   // pre-economy
   reputationDecayPhase,
+  settlementEconomyPhase, // THR-1923: the settlement economy, daily, before stock tiers read foodBalance
   resourceStockTiersPhase, // THR-615: derive stock tiers before prosperity reads resourceBalance
   // post-economy (chained via afterPhase to preserve inline order)
   routeEventsPhase, // THR-669: manifests -> route-event encounter seeds

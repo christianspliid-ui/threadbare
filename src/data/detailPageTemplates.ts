@@ -352,6 +352,8 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
   },
   sheetRow('past_line', PLACE_ROW_RESOLVERS.past_line, 15, 'overview', DWF),
   sheetRow('founded_by', PLACE_ROW_RESOLVERS.founded_by, 16, 'overview', DWF),
+  // THR-1923 — the settlement economy's size line, under the place's own words.
+  sheetRow('settlement_size', PLACE_ROW_RESOLVERS.settlement_size, 16.5, 'overview', DWF),
   sheetRow('fortunes', PLACE_ROW_RESOLVERS.fortunes, 17, 'overview', DWF),
   sheetRow('lair_monster', PLACE_ROW_RESOLVERS.lair_monster, 12, 'overview', DWF),
   sheetRow('settlement_notable', PLACE_ROW_RESOLVERS.settlement_notable, 14, 'overview', DWF),

@@ -45,6 +45,7 @@ import { hexDistance } from '../lib/hexMath';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
 import { generateRegionName } from './regionNaming';
 import { stampRealmSeat } from './realmSeat';
+import { runSettlingRun } from './phases/settlementEconomy';
 import type { DomainRegion } from './regionTypes';
 import type { FactionDefinition } from '../types/faction';
 import {
@@ -2439,6 +2440,21 @@ export function seedWorld(
       + `${pilgrimRoutes} pilgrim routes`,
     ...worldScenarioReport,
   });
+
+  // ── The settlement economy's settling run (THR-1923) ─────────────────
+  // Last of all, because it reads everything above: the tiles, every settlement and its
+  // Places, the realms' seats and `controls`, the factions' homes and the deposits. It
+  // runs the economy SETTLEMENT_SETTLING_DAYS days, muted, so each settlement starts at
+  // what its land and its holder can hold rather than at a size drawn before either
+  // existed. Deterministic: no draw from `rng` (the building choice hashes its own).
+  try {
+    const settling = runSettlingRun(graph, tiles, seed);
+    if (settling.days > 0) {
+      console.log(`[WorldGen] Settlement economy: ${settling.days}-day settling run over ${settling.settlements} settlements in ${settling.ms} ms`);
+    }
+  } catch (err) {
+    console.warn('[WorldGen] Settlement economy settling run failed; settlements start unsettled', err);
+  }
 
   return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds, realmDefinitions, worldScenarioReport };
 }

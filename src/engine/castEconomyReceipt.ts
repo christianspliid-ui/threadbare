@@ -58,11 +58,15 @@ import {
   ECONOMY_UNREST_BAND_WORDS,
   fillEconomyReceiptLine,
   prosperityReceiptWord,
+  LAND_SHOCK_RECEIPT_LINES,
+  LAND_SHOCK_WHERE_WORDS,
   type EconomyReceiptDirection,
   type EconomyReceiptLine,
   type EconomyReceiptQuantity,
   type EconomyUnrestBand,
 } from '../data/economy-receipt-content';
+import { readLandShocks, type GodLandShockSource } from './settlementEconomy/shocks';
+import { DEPOSIT_YIELD_CHANNEL } from '../data/terrain-yields';
 
 // ─── Snapshot ────────────────────────────────────────────────────────────────
 
@@ -92,6 +96,8 @@ export interface CastEconomySnapshot {
   readonly staples?: ReadonlyMap<string, EconomyStapleSnapshot>;
   /** `trades_with` lanes touching the settlement, by edge id. */
   readonly lanes?: ReadonlyMap<string, EconomyLaneSnapshot>;
+  /** THR-1923 — the settlement economy's land shocks, keyed `source:startTick`. */
+  readonly landShocks?: ReadonlyMap<string, { readonly source: GodLandShockSource; readonly direction?: string }>;
   /** A mortal's Means. */
   readonly wealth?: number;
   readonly meansBand?: WealthTier;
@@ -142,8 +148,12 @@ function readStaples(
   const cutSet = REGIONAL_MONOPOLY_ENABLED ? embargoCutsByLocation(graph, realmMap).get(locationId) : undefined;
   const cuts = cutSet ? new Map([...cutSet].map(rid => [rid, EMBARGO_BALANCE_CUT] as const)) : undefined;
   const derivation = deriveLocationStockTiers(props, getSublocationsAt(graph, locationId).length, cuts);
+  // THR-1923 — on a settlement the economy has reached, a food staple's tier is the
+  // economy's (foodBalance), not this derivation; the land line says what the cast did.
+  const economyFood = typeof props.foodBalance === 'number';
   for (const [resourceId, instance] of Object.entries(resources)) {
     if (getResourceClass(resourceId).category !== 'staple') continue;
+    if (economyFood && DEPOSIT_YIELD_CHANNEL[resourceId] === 'food') continue;
     const derived = derivation.perResource[resourceId];
     if (!derived || typeof instance?.quantity !== 'number') continue;
     staples.set(resourceId, {
@@ -196,6 +206,10 @@ export function snapshotCastEconomy(
       unrestBand: worstUnrestBand(graph, place.id, unrest),
       staples: readStaples(graph, place.id, props, realmMap),
       lanes: readLanes(graph, place.id),
+      landShocks: new Map(readLandShocks(place).map(sh => [
+        `${sh.source}:${sh.startTick}`,
+        { source: sh.source, ...(sh.direction ? { direction: sh.direction } : {}) },
+      ] as const)),
     };
   }
 
@@ -363,6 +377,45 @@ function laneChanges(
   return out;
 }
 
+/** THR-1923 — a land shock the cast laid: one row naming which fields, and that it fades. */
+function landChanges(
+  before: CastEconomySnapshot,
+  after: CastEconomySnapshot,
+  ctx: EconomyDiffContext,
+  town: { id: string; name: string },
+): EncounterAftermathChange[] {
+  if (!before.landShocks || !after.landShocks) return [];
+  const out: EncounterAftermathChange[] = [];
+  for (const key of [...after.landShocks.keys()].sort()) {
+    if (before.landShocks.has(key)) continue;
+    const shock = after.landShocks.get(key)!;
+    const line = LAND_SHOCK_RECEIPT_LINES[shock.source];
+    if (!line) continue;
+    const where = (shock.direction ? LAND_SHOCK_WHERE_WORDS[shock.direction] : undefined) ?? line.whereFallback;
+    const detail = fillEconomyReceiptLine(line.detail, { town: town.name, where });
+    if (!detail) continue;
+    out.push({
+      id: `${ctx.idStem}:target:${ctx.targetId}:economy:land:${key}`,
+      kind: 'economy',
+      title: line.title,
+      detail,
+      polarity: line.gain ? 'gain' : 'loss',
+      category: line.gain ? 'boon' : 'scar',
+      direction: line.gain ? 'gain' : 'loss',
+      stateNoun: ECONOMY_RECEIPT_NOUNS.land,
+      ...(detail.includes(town.name)
+        ? { concepts: [{ text: town.name, entityId: town.id, visualKind: 'location' as const }] }
+        : {}),
+      actorId: ctx.targetId,
+      actorName: ctx.targetName,
+      subjectId: ctx.targetId,
+      economyQuantity: 'land',
+      crossed: false,
+    });
+  }
+  return out;
+}
+
 function meansChanges(
   before: CastEconomySnapshot,
   after: CastEconomySnapshot,
@@ -418,6 +471,7 @@ export function diffCastEconomy(
       ...prosperityChanges(before, after, ctx, town),
       ...stapleChanges(before, after, ctx, town),
       ...laneChanges(before, after, ctx, town),
+      ...landChanges(before, after, ctx, town),
     ];
     // Crossed rows lead (stable sort): the receipt's first target change is the line
     // its toast and overview read, and a crossed band is the news.

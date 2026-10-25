@@ -28,7 +28,9 @@ import type { EnginePhase, PhaseContext, PhaseResult } from '../phaseRegistry';
 import { emitTrace } from '../traceBuffer';
 import { touchWorld } from '../simulationRuntime';
 import { getSublocationsAt } from '../graphQueries';
-import { deriveLocationStockTiers, readResources } from '../resourceEconomy';
+import { deriveLocationStockTiers, readResources, tierFromBalance } from '../resourceEconomy';
+import { SETTLEMENT_ECONOMY_ENABLED } from '../../data/settlement-economy-constants';
+import { DEPOSIT_YIELD_CHANNEL } from '../../data/terrain-yields';
 import { resolveEconomicChronicle } from '../economicChronicle';
 import type { EconomicChronicleTrigger } from '../../data/economic-chronicle-content';
 import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
@@ -114,15 +116,38 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
     const cuts = cutSet ? new Map([...cutSet].map(rid => [rid, EMBARGO_BALANCE_CUT] as const)) : undefined;
     const derivation = deriveLocationStockTiers(props, sublocationCount, cuts);
 
+    // THR-1923 — a settlement the settlement economy has reached: its own food balance
+    // sets the tier of every food staple (a fed town reads adequate), and the economy has
+    // already written `resourceBalance` from its food and build balance.
+    const economyFood = SETTLEMENT_ECONOMY_ENABLED && typeof props.foodBalance === 'number'
+      ? props.foodBalance as number
+      : undefined;
     // Store aggregate balance for the prosperity term (read next by phaseProsperity).
-    props.resourceBalance = derivation.aggregateBalance;
+    if (economyFood === undefined) {
+      props.resourceBalance = derivation.aggregateBalance;
+    } else {
+      // An embargo (THR-1955) still bites: the cut's effect on the deposit aggregate is laid
+      // on the economy's own balance, re-read from its base so it never compounds per tick.
+      const base = typeof props.economyResourceBalance === 'number' ? props.economyResourceBalance as number : derivation.aggregateBalance;
+      const cutDelta = cuts ? derivation.aggregateBalance - deriveLocationStockTiers(props, sublocationCount).aggregateBalance : 0;
+      props.resourceBalance = Math.max(-1, Math.min(1, base + cutDelta));
+    }
 
     // Resolve threaded mortals whose home is this location (full-detail only).
     const threadedHere = fullDetail ? (threadedByLocation.get(loc.id) ?? []) : [];
 
     for (const [resourceId, instance] of Object.entries(resources)) {
-      const derived = derivation.perResource[resourceId];
-      if (!derived) continue;
+      const derivedRaw = derivation.perResource[resourceId];
+      if (!derivedRaw) continue;
+      const foodStaple = economyFood !== undefined
+        && DEPOSIT_YIELD_CHANNEL[resourceId] === 'food'
+        && getResourceClass(resourceId).category === 'staple';
+      const derived = foodStaple
+        ? (() => {
+          const balance = Math.max(-1, Math.min(1, economyFood - (cuts?.get(resourceId) ?? 0)));
+          return { tier: tierFromBalance(balance), balance };
+        })()
+        : derivedRaw;
       const prevTier = instance.stockTier;
       const newTier = derived.tier;
 

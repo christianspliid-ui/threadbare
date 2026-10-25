@@ -4325,6 +4325,31 @@ if (import.meta.env.DEV) {
       return describeLocationTraits(graph, locationIdOrName, _gameStateProvider?.()?.tick ?? 0);
     },
 
+    // THR-1923: one settlement's economy — people, cap, meters, balances, worked hexes,
+    // buildings (idle days and why), seat and pulls, surplus routes, land shocks, and the
+    // size and livelihood lines the place page reads from the same numbers.
+    getSettlementEconomy: async (locationIdOrName: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+      const { describeSettlementEconomy } = await import('./engine/settlementEconomy/describe');
+      return describeSettlementEconomy(graph, locationIdOrName, _gameStateProvider?.()?.tick ?? 0);
+    },
+
+    // THR-1923: the four diversity measures (THR-1866) over this session — day 1, 50 and
+    // 100 from the phase's snapshots, and now. A measure missing its snapshots reads PENDING.
+    getSettlementDiversity: async () => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+      const { measureDiversity, judgeDiversity } = await import('./engine/settlementEconomy/measures');
+      const { TICKS_PER_DAY } = await import('./data/attention-constants');
+      const day = Math.floor((_gameStateProvider?.()?.tick ?? 0) / TICKS_PER_DAY);
+      const history = _runtimeProvider?.()?.settlementDiversityHistory ?? [];
+      const at = (d: number) => history.find(h => h.day === d) ?? history.find(h => h.day > d);
+      const now = measureDiversity(graph, day);
+      const snapshots = { day1: at(1), day50: at(50), day100: at(100), now };
+      return { ...judgeDiversity(snapshots), ...snapshots, historyDays: history.map(h => h.day) };
+    },
+
     // THR-1934: a settlement's unrest pressure — the number, its target, the six inputs,
     // the hunger counter, the band and where its last leaver was sent.
     getUnrest: async (locationIdOrName: string) => {

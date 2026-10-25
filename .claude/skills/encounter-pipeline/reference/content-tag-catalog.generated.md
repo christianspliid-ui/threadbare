@@ -24,14 +24,14 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 11 · trait 5 · omen 4 · power 4 · agreement 1 | 186 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · trait 8 · condition 6 · agreement 2 · omen 2 · power 1 | 128 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 14 · trait 5 · omen 4 · power 4 · agreement 1 | 189 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 10 · trait 8 · agreement 2 · omen 2 · power 1 | 132 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 131 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 129 |  |
-| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | item 11 · condition 9 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 148 |  |
-| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 6 · omen 6 · trait 5 · power 4 · agreement 1 | 165 |  |
-| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · trait 6 · condition 5 · power 2 · legendary 1 | 108 |  |
-| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 8 · omen 6 · trait 5 · power 4 · agreement 1 | 129 |  |
+| `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | condition 12 · item 11 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 151 |  |
+| `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 7 · omen 6 · trait 5 · power 4 · agreement 1 | 166 |  |
+| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · condition 7 · trait 6 · power 2 · legendary 1 | 110 |  |
+| `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 9 · omen 6 · trait 5 · power 4 · agreement 1 | 130 |  |
 
 ## sphere
 
@@ -180,9 +180,9 @@ What class of story-object it belongs to, and what walk of life it comes from. A
 | `#reputation` | A reputation — what others have come to say about the bearer, deserved or not. | trait 19 | 19 |  |
 | `#cultural` | A formative mark a culture or a guild stamps on its own. | trait 1 | 1 |  |
 | `#temper` | How a creature breaks when a fight turns. | trait 4 | 4 |  |
-| `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 24 | 24 |  |
+| `#condition` | A condition — a passing state laid on a bearer, which wears off or is cured. | condition 38 | 38 |  |
 | `#scar` | A scar — a condition that does not heal; what a loss left behind. | condition 3 | 3 |  |
-| `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 13 | 13 |  |
+| `#location` | Carried by a place rather than a person — a condition a settlement is under. | condition 27 | 27 |  |
 | `#virtue` | The virtue pole of a continuum or axis — the bearer leans toward the better end. | trait 13 | 13 |  |
 | `#vice` | The vice pole — the bearer leans toward the worse end, and it shows. | trait 13 | 13 |  |
 | `#core_warmth` | Of the Warmth continuum — Warm to Cold; how much care a mortal spends on others. | trait 2 | 2 |  |
@@ -229,7 +229,7 @@ Whether the thing is good or ill to carry. The two words the condition proxy-eve
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#positive` | A good thing to carry — it helps the one who holds it. | condition 26 · trait 8 | 34 |  |
+| `#positive` | A good thing to carry — it helps the one who holds it. | condition 40 · trait 8 | 48 |  |
 | `#negative` | An ill thing to carry — it costs the one who holds it. | condition 47 · trait 8 | 55 |  |
 
 ## Kinds and their required axes

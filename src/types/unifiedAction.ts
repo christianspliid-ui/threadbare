@@ -411,7 +411,7 @@ export interface EncounterAftermathChange {
    * mortal's purse; `prosperity`, `unrest`, `staple` or `lane` for a place).
    * Absent on every other kind (NFP #6).
    */
-  readonly economyQuantity?: 'means' | 'prosperity' | 'unrest' | 'staple' | 'lane';
+  readonly economyQuantity?: 'means' | 'prosperity' | 'unrest' | 'staple' | 'lane' | 'land';
   /**
    * THR-1968 — on an `economy` change only: true when the move crossed a band (the
    * detail names the new word), false when it stayed inside one (the detail names

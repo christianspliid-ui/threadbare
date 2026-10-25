@@ -7424,6 +7424,151 @@ export const CONTRACTS: readonly Contract[] = [
         'THR-1931. factionPurse.test.ts › the schism strain: computePurseStrain is 0 one day short of the grace, 1 at it, and 0 for a solvent faction.',
     },
   },
+  // ── THR-1923 — the settlement economy ─────────────────────────────────
+  {
+    id: 'settlement-economy-writes-resource-balance',
+    producerSystem: ECONOMY,
+    consumerSystem: ECONOMY,
+    intent:
+      'The settlement economy (THR-1923) writes each settlement\'s resourceBalance once a day from its own foodBalance and buildBalance (food weighted twice), instead of the stock-tier phase deriving it from deposit quantity. phaseProsperity reads it unchanged, so prosperity stays the one scalar downstream systems read.',
+    ulTerms: ['Settlement'],
+    mechanism: { kind: 'node-prop', symbols: ['resourceBalance'] },
+    writeSites: ['src/engine/phases/settlementEconomy.ts'],
+    readSites: ['src/engine/phaseProsperity.ts', 'src/engine/resourceEconomy.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. settlementEconomy.heavy.test.ts runs 150 days of real ticks on seeds 42 / 99 with prosperity reading the economy-written balance; phases/resourceStockTiers.ts leaves resourceBalance alone on a settlement carrying foodBalance.',
+    },
+  },
+  {
+    id: 'settlement-economy-drives-tier',
+    producerSystem: ECONOMY,
+    consumerSystem: ECONOMY,
+    intent:
+      'The settlement economy writes targetTier (population plus seat: a city needs a seat that pulls, a capital a realm\'s seat). With SETTLEMENT_ECONOMY_DRIVES_TIER, phaseSettlementPromotion moves the subtype one step toward it after SETTLEMENT_PROMOTION_SUSTAIN_TICKS, a capital included; the prosperity trigger is the fallback.',
+    ulTerms: ['Settlement', 'Faction'],
+    mechanism: { kind: 'node-prop', symbols: ['targetTier'] },
+    writeSites: ['src/engine/phases/settlementEconomy.ts'],
+    readSites: ['src/engine/phaseSettlementPromotion.ts', 'src/engine/settlementEconomy/describe.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. settlementEconomy.test.ts › a capital that loses its realm seat drops a tier: targetTier leaves capital the day the seat role goes, and the promotion phase steps the subtype to city within the sustain window.',
+    },
+  },
+  {
+    id: 'settlement-economy-raises-buildings',
+    producerSystem: ECONOMY,
+    consumerSystem: WORLDGEN,
+    intent:
+      'The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag.',
+    ulTerms: ['Settlement', 'Location'],
+    mechanism: { kind: 'node-prop', symbols: ['IS_BUILDING_PROP', 'buildingFact'] },
+    writeSites: ['src/engine/settlementEconomy/building.ts'],
+    readSites: ['src/engine/settlementEconomy/describe.ts', 'src/engine/views/connections.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. settlementEconomy.test.ts › a settlement raises buildings into its slots and its building Places say "built by the town".',
+    },
+  },
+  {
+    id: 'surplus-route-carries',
+    producerSystem: ECONOMY,
+    consumerSystem: ECONOMY,
+    intent:
+      'A surplus with nowhere to go opens a trades_with edge stamped establishedBy \'surplus\' with carries and carriedPerDay; carrying sets lastTraded. The route ends after ROUTE_DIE_DAYS dry days. The undertakings trade run (THR-1967) and the purse read carriedPerDay.',
+    ulTerms: ['Settlement'],
+    mechanism: { kind: 'edge-prop', symbols: ['carriedPerDay'] },
+    writeSites: ['src/engine/settlementEconomy/surplusRoutes.ts', 'src/engine/phases/settlementEconomy.ts'],
+    readSites: ['src/engine/undertakingEconomy.ts', 'src/engine/settlementEconomy/describe.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. settlementEconomy.test.ts › surplus routes: a town with lasting food surplus opens a route to a seat, carries daily (lastTraded and carriedPerDay set) and the route ends ROUTE_DIE_DAYS after its fields fail.',
+    },
+  },
+  {
+    id: 'building-trait-grant',
+    producerSystem: ECONOMY,
+    consumerSystem: 'Effects & Conditions',
+    intent:
+      'A standing building gives its settlement a location trait (Iron Town, Walled …), and the land and market give Breadbasket and Market Town: fourteen rules in phaseLocationTraits read the buildings and the economy props. Each trait carries a small step term and a pool row.',
+    ulTerms: ['Settlement', 'Trait'],
+    mechanism: { kind: 'function', symbols: ['readBuildings'] },
+    writeSites: ['src/engine/settlementEconomy/building.ts'],
+    readSites: ['src/engine/phaseLocationTraits.ts', 'src/engine/settlementEconomy/measures.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. phaseLocationTraits.test.ts › every minted id is a location condition with a reader (the fourteen included); settlementEconomy.test.ts › every economic trait is a seeded location condition.',
+    },
+  },
+  {
+    id: 'happiness-term-into-unrest',
+    producerSystem: ECONOMY,
+    consumerSystem: ECONOMY,
+    intent:
+      'The settlement economy writes economyContentment daily: -UNREST_FROM_HAPPINESS × happiness (buildings, a route, crowding; hunger left out, it is its own input), bounded ±UNREST_HAPPINESS_MAX. The unrest target reads it as its contentment input (THR-1934\'s switch).',
+    ulTerms: ['Settlement', 'Unrest'],
+    mechanism: { kind: 'node-prop', symbols: ['economyContentment'] },
+    writeSites: ['src/engine/phases/settlementEconomy.ts'],
+    readSites: ['src/engine/unrestPressure/inputs.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. settlementEconomy.test.ts › the unrest target reads the economy: contentment is economyContentment when present, else the prosperity relief.',
+    },
+  },
+  {
+    id: 'god-verb-land-shock',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: ECONOMY,
+    intent:
+      'Blight, Bless the Harvest, Sour Mine and Reveal Vein each append a landShocks record on the target settlement\'s best food or stone hex, fading over SHOCK_DAYS; their existing writes stand. The phase\'s land yields, the cast receipt\'s land line and the livelihood line read it.',
+    ulTerms: ['Settlement'],
+    mechanism: { kind: 'node-prop', symbols: ['appendLandShock', 'readLandShocks'] },
+    writeSites: ['src/engine/graphOpExecutor.ts'],
+    readSites: ['src/engine/phases/settlementEconomy.ts', 'src/engine/castEconomyReceipt.ts', 'src/engine/settlementEconomy/describe.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. settlementEconomy.test.ts › god verbs lay a land shock the receipt names: one record per verb, the receipt row titled per verb in the same diff, Blight lowers the best food hex the next day.',
+    },
+  },
+  {
+    id: 'siege-cuts-settlement-land',
+    producerSystem: 'War, Armies & Battles',
+    consumerSystem: ECONOMY,
+    intent:
+      'While a siege actor names a settlement (battleState.battleType siege, settlementId), every owned hex but the centre yields SHOCK_SIEGE_FACTOR. Read daily, never stored: the yield returns the day the siege node goes. War\'s code is unchanged.',
+    ulTerms: ['Settlement'],
+    mechanism: { kind: 'node-prop', symbols: ['battleState'] },
+    writeSites: ['src/engine/siegeResolution.ts'],
+    readSites: ['src/engine/settlementEconomy/shocks.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. The phase traces settlement_land_shock with source siege on the first and last siege day; settlementEconomy/shocks.ts besiegedSettlementIds is the same scan the unrest phase runs.',
+    },
+  },
+  {
+    id: 'food-balance-sets-famine-tier',
+    producerSystem: ECONOMY,
+    consumerSystem: ECONOMY,
+    intent:
+      'On a settlement the economy has reached, its foodBalance sets the stock tier of every food staple (grain, grazing, fish, water), so a fed town reads adequate and a starving one scarce; the scarcity arcs and the livelihood tug read the tier. The unrest hunger counter reads foodStore / foodBalance directly.',
+    ulTerms: ['Settlement'],
+    mechanism: { kind: 'node-prop', symbols: ['foodBalance'] },
+    writeSites: ['src/engine/phases/settlementEconomy.ts'],
+    readSites: ['src/engine/phases/resourceStockTiers.ts', 'src/engine/unrestPressure/hunger.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence:
+        'THR-1923. The stock-tier phase derives the food staples from tierFromBalance(foodBalance) when the settlement carries one; hunger.ts reads foodStore and foodBalance (THR-1934, built against this plan).',
+    },
+  },
   // ── THR-1934 S1 — unrest as pressure ──────────────────────────────────
   {
     id: 'unrest-pressure-inputs',

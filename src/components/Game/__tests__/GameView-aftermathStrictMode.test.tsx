@@ -204,5 +204,7 @@ describe('GameView aftermath reactions under StrictMode (THR-780)', () => {
         && (trace as { reactionId?: string }).reactionId === REACTION_ID,
     );
     expect(appliedTraces).toHaveLength(1);
-  });
+    // StrictMode builds the world twice, each with the settlement economy's settling
+    // run (THR-1923, ~0.2 s): 1.3 s alone, past 5 s only under the full suite's load.
+  }, 15_000);
 });

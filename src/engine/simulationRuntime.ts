@@ -65,6 +65,12 @@ import type { IncidentRecorder } from './incidentRecorder';
 export interface SimulationRuntime {
   /** Bumps on any graph mutation the UI/renderers care about. */
   worldVersion: number;
+  /**
+   * THR-1923 — the settlement economy's diversity snapshots (day 1 and every 25 days),
+   * read by `__DEBUG.getSettlementDiversity` to judge the four measures over a session.
+   * Session-owned like every engine cache; absent until the phase first records one.
+   */
+  settlementDiversityHistory?: import('./settlementEconomy/measures').DiversitySnapshot[];
   /** Bumps when structural caches (distance matrix, encounter cache) need rebuild. */
   structuralCacheVersion: number;
 

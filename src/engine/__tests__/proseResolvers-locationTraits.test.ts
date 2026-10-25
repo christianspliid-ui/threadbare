@@ -89,6 +89,21 @@ describe('locationTraitResolver', () => {
       veilThin: 'veil',
       haunted: 'haunted',
       bloodSoaked: 'blood',
+      // THR-1923 — the settlement economy's traits.
+      ironTown: 'iron town',
+      gemCutters: 'gem-cutters',
+      herbTown: 'herb town',
+      spaTown: 'spa town',
+      crystalSeers: 'crystal seers',
+      amberMarket: 'amber market',
+      curioCollectors: 'curio collectors',
+      timberTown: 'timber town',
+      quarryTown: 'quarry town',
+      fishingPort: 'fishing port',
+      horseCountry: 'horse country',
+      walled: 'walled',
+      breadbasket: 'breadbasket',
+      marketTown: 'market town',
     };
     for (const [key, traitId] of Object.entries(LOCATION_TRAIT_IDS)) {
       const rows = LOCATION_TRAIT_PROSE[traitId];

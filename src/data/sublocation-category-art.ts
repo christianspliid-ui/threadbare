@@ -131,6 +131,12 @@ export const SUBLOCATION_TYPE_CATEGORY: Record<string, SublocationTag> = {
   'vault': 'commerce',
   'manufactory': 'commerce',
   'mason-yard': 'commerce',
+  // THR-1923 — the settlement economy's five new building Places.
+  'housing-quarter': 'commerce',
+  'mill': 'commerce',
+  'timber-yard': 'commerce',
+  'lapidary': 'commerce',
+  'carvers-hall': 'commerce',
   'smelter': 'commerce',
   'workshop': 'commerce',
   'forge': 'commerce',

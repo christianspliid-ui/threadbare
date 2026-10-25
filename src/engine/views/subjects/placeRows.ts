@@ -74,6 +74,7 @@ import { isPlaceNode } from '../../sublocationShape';
 import { selectPilgrimWays } from '../../pilgrimWays';
 import { getSettlementNotable, type SettlementNotableClauseKind } from '../../settlementNotable';
 import { buildLairMonsterCardModel } from '../stage/buildLairMonsterCardModel';
+import { sizeLine, livelihoodParts } from '../../settlementEconomy/describe';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -141,6 +142,18 @@ const fortunes: SectionResolver = (ctx) => {
 };
 
 /**
+ * The settlement economy's size line (THR-1923): the tier word and its trend, never a
+ * number (Law 13) — "A town, growing." The label carries the size tooltip (Law 17).
+ * Omitted where the economy has not reached the place.
+ */
+const settlementSize: SectionResolver = (ctx) => {
+  const p = placeOf(ctx);
+  if (!p) return null;
+  const line = sizeLine(p.node, ctx.tick);
+  return line ? prose('settlement_size', SUBJECT_ROW_LABELS.size, line.text, 'settlementEconomySize', { labelTooltipId: 'ui.econ.size' }) : null;
+};
+
+/**
  * Who founded a town a mortal founded (THR-1937) — its `constructed_by` edge to a person.
  * Worldgen towns have none, and the line is omitted (Law 14). The name routes (Law 21);
  * the label's tooltip names the freehold the founder keeps (`ui.place.founded`).
@@ -179,6 +192,16 @@ const prayer: SectionResolver = (ctx) => {
 const livelihood: SectionResolver = (ctx) => {
   const p = placeOf(ctx);
   if (!p) return null;
+  // THR-1923 — a settlement the economy has reached is told from its own food, routes and
+  // land; the town names at the far end of a route link (Law 21).
+  const economy = livelihoodParts(ctx.graph, p.node, ctx.tick);
+  if (economy && economy.length > 0) {
+    const subs = getVisibleSubLocations(ctx.graph, p.node.id).map(s => s.id);
+    const v = selectLocationSustenanceVoice(ctx.graph, p.node.id, subs);
+    const sus = v ? getSustenanceProse(v.sphere, v.sustenance.polarity) : null;
+    const parts: ProsePart[] = sus ? [...economy, ` ${sus}`] : [...economy];
+    return linkedProseSection('livelihood', SUBJECT_ROW_LABELS.livelihood, parts, 'settlementEconomyLivelihood');
+  }
   const resources = (p.node.properties.resources ?? {}) as Record<string, ResourceInstance>;
   const entries = Object.entries(resources).filter(([, r]) => r && typeof r.quantity === 'number');
   if (entries.length === 0) return null;
@@ -511,6 +534,7 @@ export const PLACE_ROW_RESOLVERS = {
   place_prose: placeProse,
   past_line: pastLine,
   fortunes,
+  settlement_size: settlementSize,
   founded_by: foundedBy,
   prayer,
   livelihood,
