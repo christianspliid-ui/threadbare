@@ -216,6 +216,22 @@ describe('THR-2023 The Loan → Debt Collection (the loop)', () => {
     expect(getRelationship(state.graph, BORROWER, LENDER).sentiment).toBe(before);
   });
 
+  it('a repeat borrower: resentment written onto the first debt survives settling it (review-gate round 2)', () => {
+    let state = buildState(10);
+    const borrower = [bind('borrower', BORROWER)];
+    state = runBand(state, 'encounter.the_loan', 'success', { bindings: borrower });
+    state = { ...state, tick: 11 } as GameState;
+    state = runBand(state, 'encounter.the_loan', 'failure', { bindings: borrower });
+    // The second loan's bond landed on the first debt edge (the only B→L edge then).
+    const sentiment = getRelationship(state.graph, BORROWER, LENDER).sentiment;
+    expect(sentiment).toBeLessThan(0);
+    state = runBand(state, 'encounter.debt_collection', 'success');
+    expect(debtEdges(state.graph)).toHaveLength(1);
+    const bond = state.graph.getOutgoingEdges(BORROWER, 'relates_to')
+      .find(e => e.target === LENDER && !(e.properties as Record<string, unknown>).agreement);
+    expect(bond?.properties.sentiment).toBe(sentiment);
+  });
+
   it('without a bound borrower the loan writes no debt (the cast is load-bearing)', () => {
     let state = buildState(10);
     state = runBand(state, 'encounter.the_loan', 'success');

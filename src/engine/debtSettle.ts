@@ -86,6 +86,37 @@ export function listDebtsOwedTo(
   ));
 }
 
+/**
+ * Bonds and agreements are both `relates_to` edges, and `bond_change` writes onto the first
+ * edge between two people, which can be a debt. When the settle removes that debt, the bond
+ * it carried (`sentiment`, `trust`) moves onto the pair's bond edge, or onto a new one, so
+ * paying off a debt never erases how the two feel about each other.
+ */
+function carryBondOffDebtEdge(graph: WorldGraph, debtEdge: GraphEdge): void {
+  const props = debtEdge.properties as Record<string, unknown>;
+  const sentiment = typeof props.sentiment === 'number' ? props.sentiment : undefined;
+  const trust = typeof props.trust === 'number' ? props.trust : undefined;
+  if (sentiment === undefined && trust === undefined) return;
+  const bond = graph.getOutgoingEdges(debtEdge.source, 'relates_to').find(e =>
+    e.id !== debtEdge.id && e.target === debtEdge.target
+    && !readAgreement(e.properties as Record<string, unknown> | undefined));
+  const carried: Record<string, unknown> = {
+    ...(sentiment !== undefined ? { sentiment } : {}),
+    ...(trust !== undefined ? { trust } : {}),
+  };
+  if (bond) {
+    graph.updateEdge(bond.id, { properties: { ...bond.properties, ...carried } });
+    return;
+  }
+  graph.addEdge({
+    id: `relates_to_bond_${debtEdge.source}_${debtEdge.target}`,
+    source: debtEdge.source,
+    target: debtEdge.target,
+    type: 'relates_to',
+    properties: carried,
+  });
+}
+
 /** Settle the oldest live debt owed to `creditorId` (optionally only one `debtorId` owes). */
 export function settleDebt(
   graph: WorldGraph,
@@ -99,6 +130,7 @@ export function settleDebt(
   const [pick] = listDebtsOwedTo(graph, creditorId, tick, debtorId);
   if (!pick) return { settled: false, reason: 'no_debt_owed' };
 
+  carryBondOffDebtEdge(graph, pick.edge);
   graph.removeEdge(pick.edge.id);
 
   let shift: MeansShiftResult | null = null;
