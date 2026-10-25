@@ -457,6 +457,7 @@ export function buildReachAgreement(rows: readonly EncounterJudgmentRow[], t: Co
 
 export type FindingClass =
   | 'out_of_eight_reach'
+  | 'template_reach_unrolled'
   | 'reach_mislabel'
   | 'activity_backfill'
   | 'unearned_tag'
@@ -480,6 +481,13 @@ export function computeFindings(rows: readonly EncounterJudgmentRow[], t: Covera
     if (!eight.includes(row.declared.reach)) {
       out.push(finding('out_of_eight_reach', row.id, row.declared.reach,
         `declares reach '${row.declared.reach}', which is not one of the Eight`));
+    }
+    // Deterministic, no model (THR-2012): every runnable step rolls its own Reach, so a
+    // template Reach no step carries is never rolled. Rows from before v2 lack the field.
+    const steps = row.declared.stepReaches;
+    if (steps && steps.length > 0 && !steps.includes(row.declared.reach)) {
+      out.push(finding('template_reach_unrolled', row.id, row.declared.reach,
+        `declares reach '${row.declared.reach}', but its steps roll only ${steps.join(', ')}`));
     }
     if (row.error) continue;
 
@@ -578,6 +586,20 @@ function findingsMd(list: readonly Finding[]): string {
   }).join('\n\n');
 }
 
+/** The Reach calibration row at the artifact's own Reach threshold, or null when either is missing. */
+export function reachAtThreshold(artifact: EncounterCoverageArtifact): ThresholdTableRow | null {
+  const c = artifact.thresholds.reach;
+  const table = artifact.calibration?.tables.reach;
+  if (c === null || !table) return null;
+  return table.find(r => Math.abs(r.c - c) < 1e-9) ?? null;
+}
+
+function reachAtThresholdMd(artifact: EncounterCoverageArtifact): string {
+  const r = reachAtThreshold(artifact);
+  if (r) return `**${r.agreement}** at ${r.c} (${r.admitted} admitted)`;
+  return artifact.thresholds.reach === null ? '**uncalibrated**' : `threshold ${artifact.thresholds.reach}, no table`;
+}
+
 export function renderReport(
   artifact: EncounterCoverageArtifact,
   previous: EncounterCoverageArtifact | null,
@@ -652,6 +674,8 @@ export function renderReport(
 
   if (artifact.calibration) {
     lines.push('## Calibration');
+    lines.push('');
+    lines.push(`Reach at its threshold: ${reachAtThresholdMd(artifact)} this run · ${previous ? `${reachAtThresholdMd(previous)} previous run (questions v${previous.questionsVersion})` : 'no previous run'}.`);
     lines.push('');
     for (const [axis, table] of Object.entries(artifact.calibration.tables)) {
       lines.push(`### ${axis}`);

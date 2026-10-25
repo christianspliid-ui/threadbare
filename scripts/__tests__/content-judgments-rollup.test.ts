@@ -234,4 +234,32 @@ describe('coverage rollup (THR-1723)', () => {
     const again = renderReport({ ...artifact, coldStart: false }, artifact);
     expect(again).toContain('0 new, 0 resolved');
   });
+
+  it('v2: flags a template Reach that no runnable step rolls, from the declared labels alone (THR-2012)', () => {
+    const withSteps = (id: string, reach: string, stepReaches: string[] | undefined) => {
+      const r = row(id, { reach }, { reach, activity: 'duel', walk: 'combat' });
+      return { ...r, declared: { ...r.declared, stepReaches } };
+    };
+    const f = computeFindings([
+      withSteps('unrolled', 'iron', ['eye']),
+      withSteps('rolled', 'iron', ['eye', 'iron']),
+      withSteps('pre_v2', 'iron', undefined),
+    ], T).filter(x => x.class === 'template_reach_unrolled');
+    expect(f.map(x => x.key)).toEqual(['template_reach_unrolled|unrolled|iron']);
+    expect(f[0].detail).toContain('steps roll only eye');
+  });
+
+  it('v2: reports the Reach agreement at its threshold beside the previous run\'s', () => {
+    const table = (agreement: number, c: number) =>
+      ({ reach: [{ c: 0.5, admitted: 50, admittedShare: 0.78, agreement: 0.7 }, { c, admitted: 35, admittedShare: 0.547, agreement }] });
+    const art = (v: number, c: number, agreement: number): EncounterCoverageArtifact => ({
+      schema: 1, questionsVersion: v, model: 'jev-1.13.0', doctrine: 'prose@2',
+      ranAt: '2026-10-25T00:00:00.000Z', sourceCommit: 'abc', partial: false, coldStart: false,
+      usage: { requests: 5, inputTokens: 1, usdEstimate: 0, wallSeconds: 1, reusedRows: 0 },
+      thresholds: { ...T, reach: c, calibratedAt: '2026-10-25T00:00:00.000Z' }, questions: {}, rows,
+      calibration: { reader: 'r', readerPrompt: 'p', sampleIds: [], labels: [], tables: table(agreement, c) },
+    });
+    const md = renderReport(art(2, 0.75, 0.9), art(1, 0.8, 0.886));
+    expect(md).toContain('Reach at its threshold: **0.9** at 0.75 (35 admitted) this run · **0.886** at 0.8 (35 admitted) previous run (questions v1).');
+  });
 });

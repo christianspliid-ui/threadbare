@@ -19,14 +19,14 @@ export const JEV_ENDPOINT = 'https://api.typesafe.ai/v1/systemone';
 export const JEV_PRICE_PER_MTOK_USD = 0.042;
 
 /** Bumped on any question-text, option or quoted-canon change; invalidates cached rows. */
-export const ENCOUNTER_COVERAGE_QUESTIONS_VERSION = 1;
+export const ENCOUNTER_COVERAGE_QUESTIONS_VERSION = 2;
 
 /**
  * FNV-1a of the base question set's JSON. `content-judgments-questions.test.ts` pins it, so
  * any change to a question, an option or a quoted canon or catalog line fails the test until
  * this fingerprint is updated and `ENCOUNTER_COVERAGE_QUESTIONS_VERSION` is bumped with it.
  */
-export const ENCOUNTER_COVERAGE_QUESTIONS_FINGERPRINT = '499a4af3';
+export const ENCOUNTER_COVERAGE_QUESTIONS_FINGERPRINT = 'b4fe6785';
 
 /** Output buffer for `git show` of the previous artifact (a full run is several MB). */
 export const GIT_SHOW_MAX_BUFFER_BYTES = 64 * 1024 * 1024;

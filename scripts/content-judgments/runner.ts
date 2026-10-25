@@ -36,7 +36,6 @@ import {
   renderReport,
   reusableRow,
   rowFromAnswers,
-  selectCalibrationSample,
   type CalibrationLabel,
   type EncounterCoverageArtifact,
   type EncounterJudgmentRow,
@@ -241,7 +240,9 @@ export async function runEncounterCoverage(
     calibration = {
       reader: 'blind Claude reader subagent',
       readerPrompt,
-      sampleIds: selectCalibrationSample(ordered),
+      // The ids actually labelled. A re-calibration reuses an earlier run's sample (THR-2012:
+      // v2 re-reads v1's 64), which a relabel can move away from today's per-Reach pick.
+      sampleIds: labels.map(l => l.id),
       labels,
       tables: result.tables,
     };
