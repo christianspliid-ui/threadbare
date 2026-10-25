@@ -123,7 +123,15 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
       ? props.foodBalance as number
       : undefined;
     // Store aggregate balance for the prosperity term (read next by phaseProsperity).
-    if (economyFood === undefined) props.resourceBalance = derivation.aggregateBalance;
+    if (economyFood === undefined) {
+      props.resourceBalance = derivation.aggregateBalance;
+    } else {
+      // An embargo (THR-1955) still bites: the cut's effect on the deposit aggregate is laid
+      // on the economy's own balance, re-read from its base so it never compounds per tick.
+      const base = typeof props.economyResourceBalance === 'number' ? props.economyResourceBalance as number : derivation.aggregateBalance;
+      const cutDelta = cuts ? derivation.aggregateBalance - deriveLocationStockTiers(props, sublocationCount).aggregateBalance : 0;
+      props.resourceBalance = Math.max(-1, Math.min(1, base + cutDelta));
+    }
 
     // Resolve threaded mortals whose home is this location (full-detail only).
     const threadedHere = fullDetail ? (threadedByLocation.get(loc.id) ?? []) : [];
@@ -135,7 +143,10 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
         && DEPOSIT_YIELD_CHANNEL[resourceId] === 'food'
         && getResourceClass(resourceId).category === 'staple';
       const derived = foodStaple
-        ? { tier: tierFromBalance(economyFood), balance: economyFood }
+        ? (() => {
+          const balance = Math.max(-1, Math.min(1, economyFood - (cuts?.get(resourceId) ?? 0)));
+          return { tier: tierFromBalance(balance), balance };
+        })()
         : derivedRaw;
       const prevTier = instance.stockTier;
       const newTier = derived.tier;

@@ -41,9 +41,12 @@ export function routeCarries(edge: GraphEdge): SurplusGood {
   return edge.properties?.carries === 'goods' ? 'goods' : 'food';
 }
 
-/** Whether the lane is suspended by a blockade (the THR-1636 rule) and carries nothing. */
+/**
+ * Whether the lane carries nothing today: suspended by a blockade (the THR-1636 rule), or
+ * idle — an end gone, or its roads cursed (THR-401) — whatever the surplus.
+ */
 export function isRouteBlockaded(graph: WorldGraph, edge: GraphEdge, tick: number): boolean {
-  return laneTraffic(graph, edge, tick) === 'suspended';
+  return laneTraffic(graph, edge, tick) !== 'carrying';
 }
 
 /** Mint a surplus route. Null when a lane already runs that way, or the write failed. */

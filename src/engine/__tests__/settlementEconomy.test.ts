@@ -183,6 +183,25 @@ describe('surplus routes (plan rule 6)', () => {
   });
 });
 
+describe('a cursed road carries nothing (review gate)', () => {
+  it('while the seller\'s roads are cursed the route stops carrying, and ends after ROUTE_DIE_DAYS', () => {
+    const graph = new WorldGraph();
+    const tiles = tilesOf(16, 10, (col) => (col < 8 ? 'floodplain' : 'tundra'));
+    addSettlement(graph, 'loc.farm', 3, 5, 'town');
+    addSettlement(graph, 'loc.seat', 10, 5, 'town');
+    addFaction(graph, 'faction_order', { factionClass: 'order', homeLocationId: 'loc.seat' });
+    control(graph, 'faction_order', 'loc.seat');
+    let day = runDays(graph, tiles, 1, 120);
+    const route = readSurplusRoutes(graph).find(r => r.source === 'loc.farm')!;
+    expect(route).toBeDefined();
+    p(graph, 'loc.farm').routesCursedUntilTick = 10_000 * TICKS_PER_DAY;
+    day = runDays(graph, tiles, day, 1);
+    expect(route.properties.carriedPerDay).toBe(0);
+    runDays(graph, tiles, day, ROUTE_DIE_DAYS);
+    expect(graph.getEdge(route.id)).toBeUndefined();
+  });
+});
+
 describe('buildings and the place page', () => {
   it('a settlement raises buildings into its slots, its building Places say "built by the town", and the size line has no numerals', () => {
     const graph = new WorldGraph();

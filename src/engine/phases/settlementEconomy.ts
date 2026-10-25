@@ -711,6 +711,8 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
         buildBalance,
         // Prosperity's reader is kept (plan § Substrate): food weighs twice what timber and stone do.
         resourceBalance: clamp((2 * foodBalance + buildBalance) / 3, -1, 1),
+        // The stock-tier pass lays an embargo cut on top of this base each tick (THR-1955).
+        economyResourceBalance: clamp((2 * foodBalance + buildBalance) / 3, -1, 1),
         targetTier,
         populationCap: rec.cap,
         pullCount: pullCountOf(rec.held, incoming),
