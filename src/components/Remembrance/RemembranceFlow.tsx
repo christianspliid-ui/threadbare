@@ -9,7 +9,7 @@ import type {
 import {
   filterOriginFragments,
   filterDriveFragments,
-  filterHungers,
+  offerAwakeHungers,
   generateDivineName,
   buildPersonalitySeed,
 } from '../../engine/remembrance';
@@ -17,6 +17,9 @@ import { STIRRING_IMAGES, REMEMBRANCE_STIRRING_PICK_ENABLED } from '../../data/s
 import { drawStirringBackdrop } from './stirringBackdrop';
 import { ORIGIN_FRAGMENTS, DRIVE_FRAGMENTS } from '../../data/remembrance-fragments';
 import { HUNGER_CATALOG } from '../../data/hunger-catalog';
+import type { AccountRecord } from '../../types/account';
+import { awakeHungers, emptyAccount, openCourts, wakeHunger } from '../../engine/accountRecord';
+import { WorldRemembersBeat } from './WorldRemembersBeat';
 import { toStoredHungerId } from '../../types/hunger';
 import { StirringBeat } from './StirringBeat';
 import { OriginBeat } from './OriginBeat';
@@ -27,7 +30,14 @@ import { deriveAlignmentFromPoints, presetFromAlignment, type SpherePoints } fro
 
 interface RemembranceFlowProps {
   seed: number;
-  onComplete: (identity: AscendantIdentity) => void;
+  /**
+   * THR-1844 — the record this Remembrance reads: its awake hungers and open courts gate
+   * Transformation, and from run 2 on *The world remembers* opens the flow. Absent → an
+   * empty record (run 1: four hungers, default courts).
+   */
+  account?: AccountRecord;
+  /** `account` carries the hunger woken on *The world remembers*, when one was. */
+  onComplete: (identity: AscendantIdentity, account: AccountRecord) => void;
   /** THR-1813 — a line for the first step (the account could not be read on this device). */
   accountNotice?: string;
   /** THR-1989 — defaults to REMEMBRANCE_STIRRING_PICK_ENABLED; a prop so tests can flip it. */
@@ -36,13 +46,19 @@ interface RemembranceFlowProps {
 
 export function RemembranceFlow({
   seed,
+  account: accountProp,
   onComplete,
   accountNotice,
   stirringPickEnabled = REMEMBRANCE_STIRRING_PICK_ENABLED,
 }: RemembranceFlowProps) {
   // THR-1989: with the pick off, the flow opens on Origin and the stirring image
   // is drawn from the seed — it still feeds filterOriginFragments as the pick did.
-  const [beat, setBeat] = useState<RemembranceBeat>(stirringPickEnabled ? 'stirring' : 'origin');
+  const firstBeat: RemembranceBeat = stirringPickEnabled ? 'stirring' : 'origin';
+  const baseAccount = useMemo(() => accountProp ?? emptyAccount(seed), [accountProp, seed]);
+  // THR-1844: from run 2 on the flow opens on *The world remembers*; a first run never sees it.
+  const [beat, setBeat] = useState<RemembranceBeat>(() => (baseAccount.cycleCount > 0 ? 'world_remembers' : firstBeat));
+  const [account, setAccount] = useState<AccountRecord>(baseAccount);
+  const [wokenHungerId, setWokenHungerId] = useState<string | null>(null);
 
   // Accumulated state
   const [stirringImage, setStirringImage] = useState<StirringImage | null>(
@@ -68,8 +84,10 @@ export function RemembranceFlow({
 
   const hungerOptions = useMemo(() => {
     if (!originFragment || !driveFragment) return [];
-    return filterHungers(originFragment, driveFragment, HUNGER_CATALOG, seed);
-  }, [originFragment, driveFragment, seed]);
+    return offerAwakeHungers(originFragment, driveFragment, awakeHungers(account, HUNGER_CATALOG), seed, wokenHungerId);
+  }, [originFragment, driveFragment, seed, account, wokenHungerId]);
+
+  const courtsFor = useCallback((h: HungerDefinition) => openCourts(account, h), [account]);
 
   const suggestedDivineName = useMemo(() => {
     if (!hunger || !originFragment) return 'The Unnamed';
@@ -77,6 +95,16 @@ export function RemembranceFlow({
   }, [hunger, originFragment, seed]);
 
   // Beat handlers
+  const handleWorldRemembered = useCallback((woken: string | null) => {
+    if (woken) {
+      // Called once here, not inside a state updater: StrictMode runs updaters twice,
+      // and `wakeHunger` traces `account.hunger_woken`.
+      setAccount(wakeHunger(account, woken));
+      setWokenHungerId(woken);
+    }
+    setBeat(firstBeat);
+  }, [firstBeat, account]);
+
   const handleStirringSelect = useCallback((image: StirringImage) => {
     setStirringImage(image);
     setBeat('origin');
@@ -124,11 +152,13 @@ export function RemembranceFlow({
       ascendantLens: hunger.ascendantLens,
     };
 
-    onComplete(identity);
-  }, [originFragment, driveFragment, hunger, courtType, spherePoints, mortalName, seed, onComplete]);
+    onComplete(identity, account);
+  }, [originFragment, driveFragment, hunger, courtType, spherePoints, mortalName, seed, onComplete, account]);
 
   // Render current beat
   switch (beat) {
+    case 'world_remembers':
+      return <WorldRemembersBeat account={account} onContinue={handleWorldRemembered} />;
     case 'stirring':
       return <StirringBeat images={STIRRING_IMAGES} onSelect={handleStirringSelect} notice={accountNotice} />;
     case 'origin':
@@ -149,6 +179,7 @@ export function RemembranceFlow({
         <TransformationBeat
           hungers={hungerOptions}
           driveFragment={driveFragment!}
+          courtsFor={courtsFor}
           onSelect={handleTransformationSelect}
         />
       );

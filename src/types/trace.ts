@@ -32,7 +32,7 @@ import type {
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
-import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace } from './traces/account-traces';
+import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace, AccountHungerWokenTrace, AccountCardsUnsealedTrace } from './traces/account-traces';
 import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { LuckBagRollTrace, LuckLegendaryCycleTrace } from './traces/luck-traces';
@@ -703,6 +703,9 @@ export type TraceCategory =
   | 'account.unreadable'
   | 'account.world_shaped'
   | 'harvest.divine_echo_picked'
+  // Choices widen across runs (THR-1844)
+  | 'account.hunger_woken'
+  | 'account.cards_unsealed'
   // Echoes stand in the new world (THR-1843)
   | 'echo.seeded'
   | 'echo.seed_skipped'
@@ -1072,6 +1075,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'account.unreadable',
   'account.world_shaped',
   'harvest.divine_echo_picked',
+  // Choices widen across runs (THR-1844)
+  'account.hunger_woken',
+  'account.cards_unsealed',
   // Echoes stand in the new world (THR-1843)
   'echo.seeded',
   'echo.seed_skipped',
@@ -5674,6 +5680,9 @@ export type TraceEntry =
   | AccountUnreadableTrace
   | AccountWorldShapedTrace
   | HarvestDivineEchoPickedTrace
+  // Choices widen across runs (THR-1844)
+  | AccountHungerWokenTrace
+  | AccountCardsUnsealedTrace
   // Echoes stand in the new world (THR-1843)
   | EchoSeededTrace
   | EchoSeedSkippedTrace

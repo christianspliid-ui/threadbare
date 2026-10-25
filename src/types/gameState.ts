@@ -395,6 +395,12 @@ export interface GameState {
    *  Grown by the `unlock_action` aftermath effect when a beat is resolved (THR-500).
    *  Also the grant set milestone *card* unlocks ride (THR-887) — one ledger, not two. */
   unlockedActionIds?: readonly string[];
+  /**
+   * THR-1844 — god cards this run may not be offered: the account's sealed set,
+   * copied in at world creation so the tick loop never reads storage. Read by
+   * `offerableCards`. Absent (dev routes, tests, the CLI) = nothing sealed.
+   */
+  sealedCardIds?: readonly string[];
 
   /**
    * Run-scoped tally of which library cards this god actually played (THR-887) —

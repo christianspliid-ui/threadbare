@@ -15,6 +15,8 @@ export interface AccountLastRun {
   secondary: SphereName;
   hungerId: string;
   harvestType: HarvestType;
+  /** THR-1844 — the cards this run's end unsealed (*Powers that may now rise*). */
+  unsealedCardIds?: string[];
 }
 
 export interface AccountRecord {

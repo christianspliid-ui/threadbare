@@ -3462,6 +3462,39 @@ export const CONTRACTS: readonly Contract[] = [
     // Every reader of a place's `sphereAffinity` sees the lift.
   },
   {
+    id: 'awake-hungers-gate-remembrance',
+    producerSystem: NARRATIVE,
+    consumerSystem: PROGRESSION,
+    intent:
+      'Your first age offers four hungers, each with one court; each age wakes another hunger, chosen by you from two that stir, and a hunger you have played opens its second court.',
+    ulTerms: ['Run', 'Account Record'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['awakeHungers', 'openCourts', 'wakeHunger', 'offerAwakeHungers'],
+      module: 'src/engine/accountRecord.ts',
+    },
+    writeSites: ['src/engine/accountRecord.ts', 'src/components/Remembrance/RemembranceFlow.tsx'],
+    readSites: ['src/components/Remembrance/RemembranceFlow.tsx', 'src/components/Remembrance/TransformationBeat.tsx'],
+    // THR-1844 slice 3. `concludeRun` names the two stirring hungers and opens the played
+    // hunger's second court; *The world remembers* calls `wakeHunger`; Transformation
+    // offers only `awakeHungers` (via `offerAwakeHungers`) and the court step `openCourts`.
+  },
+  {
+    id: 'sealed-cards-gate-the-offering',
+    producerSystem: NARRATIVE,
+    consumerSystem: PROGRESSION,
+    intent:
+      'Some powers are sealed when the first world wakes; each age unseals two, leaning to the spheres the last god drew on, and the world never offers a sealed one.',
+    ulTerms: ['Run', 'Account Record'],
+    mechanism: { kind: 'state-field', symbols: ['sealedCardIds'] },
+    writeSites: ['src/engine/gameInit.ts'],
+    readSites: ['src/engine/godProgression.ts'],
+    // THR-1844 slice 3. The sealed set is the run-1 reservoir (`runOneSealedCardIds`,
+    // computed from the catalog) less the account's `unsealedCardIds`; `concludeRun` draws
+    // two more each run end. Copied onto GameState at world creation so the tick loop
+    // never reads storage; absent on the dev routes, tests and the CLI (nothing sealed).
+  },
+  {
     id: 'mandate-completion-ends-age',
     producerSystem: PROGRESSION,
     consumerSystem: DOOM,

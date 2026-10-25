@@ -42,6 +42,8 @@ You arrive carrying a remembered identity — a hunger that defines you (Witness
 
 After choosing your hunger and court, you pour yourself into the Creation spheres, five measures in all, never more than three into one and never into both of an opposed pair. Your hunger suggests a split; the two spheres you pour most into are your primary and secondary. Your essence income follows the whole pour, and every sphere, even one you left empty, still trickles in [IMPL — `spherePoints` on the ascendant, `src/engine/spherePoints.ts`, THR-1749].
 
+Your first age offers four hungers; each age wakes another, and you choose which of two stirs. A hunger you have played once opens its second court, and each age unseals two more of the powers the world may offer, leaning to the spheres your last god drew on. From your second age on, Remembrance opens on *The world remembers*: what still stands from earlier worlds, which gods may wake, and which powers may now rise [IMPL — `awakeHungers`, `openCourts`, `sealedCardIds` and the run-end unseal draw in [src/engine/accountRecord.ts](../../src/engine/accountRecord.ts); the step in [src/components/Remembrance/WorldRemembersBeat.tsx](../../src/components/Remembrance/WorldRemembersBeat.tsx); THR-1844].
+
 You see the world from a height. You do not move on the hex map — your avatar does, if you have one, and you can manifest into the world locally, but your primary instrument is influence at a distance [DESIGN — Avatar manifestation in [Docs/plans/2026-03-17-world-state-and-hex-actions-design.md](../plans/2026-03-17-world-state-and-hex-actions-design.md)]. You watch threaded mortals, you spend sphere-typed essence, you make small interventions that shift probabilities, and you live with the outcomes.
 
 You are not omniscient. You are not omnipotent. You are not a chess player and the mortals are not pieces. You are a god — and the question every run asks is *what kind*.
@@ -686,6 +688,8 @@ When the next quarterly architecture-assessment runs, the deferred items (4, 5) 
 ---
 
 ## Last-reviewed
+
+2026-10-25 by Claude Code (THR-1844 — choices widen across runs. §1 gains the hunger, court and sealed-power widening and the *The world remembers* step `[IMPL]`. The quick-reference card gained one sentence.)
 
 2026-10-24 by Claude Code (THR-1959 — the restless road. §7 gains **A mortal with no story nearby goes looking for one** `[IMPL]`: the six-day drought, the four-day patience between searches, and the twelve-hex reach.)
 

@@ -17,6 +17,8 @@ You are an **Ascendant** — a transcended mortal. You watch the world from a he
 
 **Buy your spheres** (THR-1749): at Remembrance you pour five measures into the eight Creation spheres (at most three in one, never both of an opposed pair; your hunger pre-fills a 3 + 2 split). Your two largest are your primary and secondary; income follows the whole pour, and every sphere keeps a small floor.
 
+**Choices widen across runs** (THR-1844): your first age offers four hungers; each age wakes another, and you choose which of two stirs; a played hunger opens its second court, and two sealed powers unseal each age.
+
 ## What the World Is
 
 A procedurally generated hex map. Hexes are mutable state (not graph nodes). Everything else — actors, locations, sublocations, factions, cultures, artifacts, traits — is a graph node connected by typed edges. Agents pursue their own goals through a Maslow needs pipeline. Above the cycle: a **Doom Clock** ticking toward an Unmaking. Beneath it: a **World-Soul** carrying echoes from prior cycles.

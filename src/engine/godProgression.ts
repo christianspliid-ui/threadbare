@@ -262,12 +262,14 @@ export function pricePhrase(template: UnifiedActionTemplate, state: GameState): 
 
 /**
  * Cards the world may offer at `rung`: god cards whose progression is `market`, tier ≤
- * rung, not held, inside the god's reaches; and — only when `OFFERING_IN_SPHERE_ONLY`
+ * rung, not held, not sealed by the account (`state.sealedCardIds`, THR-1844), inside the god's reaches; and — only when `OFFERING_IN_SPHERE_ONLY`
  * is on — sphereless or in the god's primary or secondary.
  */
 export function offerableCards(state: GameState, rung: number = currentRung(state)): UnifiedActionTemplate[] {
   if (rung < 1) return [];
   const held = new Set(state.unlockedActionIds ?? []);
+  // THR-1844 E9: a card the account has not yet unsealed is never offered.
+  const sealed = new Set(state.sealedCardIds ?? []);
   let affinities: Partial<Record<ReachDomain, number>> | undefined;
   try {
     affinities = getAscendantDomainAffinities(state.graph, state.ascendantId);
@@ -278,7 +280,7 @@ export function offerableCards(state: GameState, rung: number = currentRung(stat
   return godCards().filter(t => {
     const p = t.progression;
     if (!p || p.offer !== 'market' || p.tier > rung) return false;
-    if (held.has(t.id)) return false;
+    if (held.has(t.id) || sealed.has(t.id)) return false;
     if (!isWithinGodReaches(t, affinities)) return false;
     if (OFFERING_IN_SPHERE_ONLY && t.sphereAffinity && t.sphereAffinity !== primary && t.sphereAffinity !== secondary) {
       return false;
