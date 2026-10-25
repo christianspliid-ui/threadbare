@@ -1413,6 +1413,7 @@ if (import.meta.env.DEV) {
       camera: null, mapDim: null,
       folded: { inspector: false, ledgerRail: false, lensSuppressed: false, mapControlsHidden: false },
       scrollingBelowCap: [],
+      handCardsBelowBar: 0,
     },
     openHomedSurface: async (kind: string) => _openHomedSurfaceCb?.(kind) ?? { opened: false, reason: 'Game not loaded' },
     getClockHold: async () => _clockHoldProvider?.()

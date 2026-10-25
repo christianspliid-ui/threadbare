@@ -407,6 +407,18 @@ export const NUDGE_LEAN_TAG = 'Leans {word}';
 export const NUDGE_EMPTY_HAND_LINE = 'Nothing here answers to you. Let it play out.';
 
 /**
+ * THR-1942 — the hand bar's line while cards of a two-row hand sit under it.
+ * `{n}` is the count. One card reads in the singular.
+ */
+export const NUDGE_HAND_MORE_ONE = '1 more card below';
+export const NUDGE_HAND_MORE_MANY = '{n} more cards below';
+
+/** The hand bar's "more cards below" line for `n` hidden cards (`n` ≥ 1). */
+export function nudgeHandMoreLine(n: number): string {
+  return n === 1 ? NUDGE_HAND_MORE_ONE : NUDGE_HAND_MORE_MANY.replace('{n}', String(n));
+}
+
+/**
  * How long the pre-roll rejection toast lives. Long enough to read, short
  * enough that it is gone before the next encounter surfaces.
  */

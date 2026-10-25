@@ -123,6 +123,8 @@ export function useStageDebugBridge(args: {
           const scroll = open ? scrollingInside(document.querySelector('[data-stage-panel]')) : { below: [], atCap: [] };
           return { scrollingBelowCap: scroll.below, scrollingAtCap: scroll.atCap };
         })(),
+        // THR-1942 — the count the hand bar's "more cards below" line reads, off its DOM.
+        handCardsBelowBar: Number(document.querySelector('[data-testid="nudge-hand-bar"]')?.getAttribute('data-cards-below') ?? 0) || 0,
       };
     };
 
