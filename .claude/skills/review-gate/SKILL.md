@@ -10,7 +10,7 @@ Nobody reviews code before it merges here — Christian is chat-only and does no
 
 **When:** every code PR **in scope**, after the local gates pass and the closeout edits are committed, **immediately before `gh pr merge --auto --merge`**. A docs-only diff (`npm run classify:diff`) skips the gate — the hook allows it.
 
-**Scope (THR-1949):** the review is required when the diff touches `src/engine/` or `src/types/`, or adds more than 400 non-test lines under `src/components/`, `src/hooks/` or `src/contexts/` (`reviewScope` in `scripts/review-gate.ts`). Any other code PR — content-only, a no-visible-change refactor, a small UI fix, a script or harness change — may arm without a receipt; the hook prints `review optional (THR-1949) — …`. Running the review anyway is allowed, and a receipt with `open` findings still blocks.
+**Scope (THR-1949):** the review is required when the diff touches `src/engine/` or `src/types/`, or adds more than 400 non-test lines under `src/components/`, `src/hooks/` or `src/contexts/` (`reviewScope` in `scripts/review-gate.ts`). Any other code PR — content-only, a no-visible-change refactor, a small UI fix, a script or harness change — may arm without a receipt; the hook prints `review optional (THR-1949) — …`. Running the review anyway is allowed, and a receipt for the head (or carried to it across a docs-only delta) with `open` findings still blocks; one staled by later code is not read.
 
 **Cost:** two to four subagent runs per PR. **Sunset:** the weekly retro renews the gate at six weeks (from 2026-10-02) only by citing confirmed defects it caught, counted from the PR comments (`gh search prs "review-gate-receipt" --repo christianspliid-ui/threadbare`); otherwise it is deleted.
 
