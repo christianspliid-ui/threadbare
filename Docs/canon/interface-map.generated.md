@@ -546,10 +546,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Attention, Chronicle & Narrative → World Generation, Terrain & Places
 - **UL terms:** *World-Soul*, *Account Record*, *Run*
 - **Module:** `src/engine/twilight.ts`
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/accountRecord.ts`
 - **Read sites:** `src/components/Game/hooks/useSimulation.ts`
-- **Other hits:** `src/engine/twilight.ts`
+- **Other hits:** `src/engine/accountStore.ts`, `src/engine/twilight.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `agent-grudge-reaches-the-mortal-sheet` — 🟢 LIVE
@@ -1115,10 +1115,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 36 total — 1 write, 2 read, 33 unclassified
+- **Production hits:** 37 total — 1 write, 2 read, 34 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicPresentation.ts`, `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +28 more
+- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +29 more
 - **Verdict:** Verified 2026-09-10: THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
