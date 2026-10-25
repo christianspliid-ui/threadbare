@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "styleguide", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-10-20
+last_validated_against: 2026-10-25
 validated_doctrine: ui-laws@1
 ---
 
@@ -302,6 +302,8 @@ Load these only when doing specialized work in that domain:
 ---
 
 ## 10. Verification
+
+**Scope first (THR-1949):** read the ticket's purpose. Nothing a player sees changed (content-only, a no-visible-change refactor) → no browser evidence; record `Browser-verify exempt: <reason>`. A small visible fix (≤ 400 non-test UI lines added) → one 1920×1080 screenshot. A larger visible change → the full four-part evidence (`Docs/canon/verification-gates.md` § Browser-verify). A Done-when that asks what a surface shows binds as written either way.
 
 After implementing, verify at 1920×1080 with the Playwright MCP. A change to the layout or type tokens (`src/index.css` `:root` and its breakpoint blocks) also captures 2560×1440, the primary screen — read `innerWidth`/`innerHeight` back in the same pass (THR-1819):
 ```

@@ -30,6 +30,9 @@ import {
   normalizeCwd,
   ownDelta,
   resolveCommandDir,
+  reviewScope,
+  uiAddedLines,
+  LARGE_UI_ADDED_LINES,
   parseCommentMarker,
   parseExemptReason,
   renderReceiptComment,
@@ -190,6 +193,34 @@ describe("review gate — pure verdict", () => {
     expect(decision.reason).toContain("src/a.ts:3");
   });
 
+  it("scopes the review to engine, types and large UI diffs (THR-1949)", () => {
+    expect(reviewScope(["src/engine/a.ts"], 0).required).toBe(true);
+    expect(reviewScope(["src/types/graph.ts"], 0).required).toBe(true);
+    expect(reviewScope(["src/data/encounters/x.ts"], 0).required).toBe(false);
+    expect(reviewScope(["src/components/A.tsx"], LARGE_UI_ADDED_LINES).required).toBe(false);
+    expect(reviewScope(["src/components/A.tsx"], LARGE_UI_ADDED_LINES + 1).required).toBe(true);
+    const numstat = [
+      "300\t2\tsrc/components/A.tsx",
+      "250\t0\tsrc/components/__tests__/A.test.tsx",
+      "90\t0\tsrc/hooks/useX.ts",
+      "-\t-\tsrc/components/art.png",
+      "500\t0\tsrc/data/x.ts",
+    ].join("\n");
+    expect(uiAddedLines(numstat)).toBe(390);
+  });
+
+  it("allows a content-only or refactor diff with no receipt, but still denies one with an open finding (THR-1949)", () => {
+    const content = { ...base, files: ["src/data/encounters/x.ts", "src/components/A.tsx"], addedUiLines: 12 };
+    const allowed = decideReviewGate(content);
+    expect(allowed.verdict).toBe("allow");
+    expect(allowed.reason).toContain("review optional");
+    expect(decideReviewGate({ ...content, addedUiLines: undefined }).verdict).toBe("deny");
+    expect(decideReviewGate({ ...content, addedUiLines: LARGE_UI_ADDED_LINES + 1 }).verdict).toBe("deny");
+    expect(decideReviewGate({ ...base, addedUiLines: 0 }).verdict).toBe("deny");
+    const open = { ...clean, findings: [{ severity: "high", file: "src/data/x.ts", line: 1, summary: "s", disposition: "open" as const }] };
+    expect(decideReviewGate({ ...content, exactReceipt: open }).verdict).toBe("deny");
+  });
+
   it("honors the exemption line", () => {
     expect(decideReviewGate({ ...base, commitBodies: "x\n\nReview-gate exempt: emergency revert\n" }).verdict).toBe("allow");
   });
@@ -228,7 +259,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     const dir = path.join(repo, ".claude/review-receipts");
     mkdirSync(dir, { recursive: true });
     const findings = disposition
-      ? [{ severity: "medium", file: "src/feature.ts", line: 1, summary: "example", disposition }]
+      ? [{ severity: "medium", file: "src/engine/feature.ts", line: 1, summary: "example", disposition }]
       : [];
     writeFileSync(path.join(dir, `${sha}.json`), JSON.stringify({ sha, rounds: 1, findings, reviewedAt: "2026-10-02T00:00:00Z" }));
   };
@@ -273,7 +304,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("denies gh pr merge --auto on a code diff with no receipt", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     const r = runHook();
     expect(r.status).toBe(2);
     expect(r.stderr).toContain("no review receipt");
@@ -282,16 +313,16 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("denies with a stale-SHA receipt (code changed since the review)", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     writeReceipt(head(), null);
-    commit("src/feature2.ts", "feat: more code after the review");
+    commit("src/engine/feature2.ts", "feat: more code after the review");
     expect(runHook().status).toBe(2);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   it("allows a receipt carried across a docs-only delta", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     writeReceipt(head(), null);
     commit("Docs/status/note.md", "docs: closeout");
     expect(runHook().status).toBe(0);
@@ -300,7 +331,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("denies with an open finding", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     writeReceipt(head(), "open");
     const r = runHook();
     expect(r.status).toBe(2);
@@ -317,7 +348,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("allows with a matching clean receipt", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     writeReceipt(head(), "fixed");
     expect(runHook().status).toBe(0);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
@@ -325,8 +356,8 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("honors the exempt line", () => {
     resetTo(baseSha);
     clearReceipts();
-    mkdirSync(path.join(repo, "src"), { recursive: true });
-    writeFileSync(path.join(repo, "src/feature.ts"), "x\n");
+    mkdirSync(path.join(repo, "src/engine"), { recursive: true });
+    writeFileSync(path.join(repo, "src/engine/feature.ts"), "x\n");
     git("add", "-A");
     git("commit", "-q", "-m", "fix: emergency revert", "-m", "Review-gate exempt: reverting a broken merge on main");
     expect(runHook().status).toBe(0);
@@ -335,19 +366,19 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("does not gate a commit whose message mentions the merge command", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     expect(runHook('git commit --allow-empty -m "arm with gh pr merge --auto after review"').status).toBe(0);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   it("keeps a clean receipt across a merge of origin/main that brings in main's code", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     writeReceipt(head(), null);
     const reviewed = head();
     // main moves on with its own code, and the branch merges it (the DIRTY-PR fix).
     git("checkout", "-q", "-b", "main-tip", baseSha);
-    commit("src/main-only.ts", "feat: main's own work");
+    commit("src/engine/main-only.ts", "feat: main's own work");
     git("update-ref", "refs/remotes/origin/main", head());
     git("checkout", "-q", "feature");
     git("merge", "-q", "--no-edit", "main-tip");
@@ -360,7 +391,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("denies a merge whose PR head is not in the repo, instead of failing soft into allow", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     const r = runHook("gh pr merge 77 --auto --merge", { number: 77, headRefOid: "f".repeat(40), comments: [] });
     expect(r.status).toBe(2);
     expect(r.stderr).toContain("not in this repo");
@@ -369,9 +400,9 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("denies a push of unreviewed code to a PR with auto-merge armed", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     writeReceipt(head(), null);
-    commit("src/fix.ts", "fix: after red CI");
+    commit("src/engine/fix.ts", "fix: after red CI");
     const armed = { number: 9, state: "OPEN", autoMergeRequest: { mergeMethod: "MERGE" }, comments: [] };
     const r = runHook("git push", armed);
     expect(r.status).toBe(2);
@@ -386,11 +417,11 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("judges the PR's remote head on a bare `gh pr merge`, not a stale local HEAD", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     const reviewed = head();
     writeReceipt(reviewed, null);
     // Another tree pushed an unreviewed fix; this tree is still at the reviewed commit.
-    commit("src/fix.ts", "fix: pushed from elsewhere");
+    commit("src/engine/fix.ts", "fix: pushed from elsewhere");
     const remoteHead = head();
     resetTo(reviewed);
     expect(runHook("gh pr merge --auto --merge").status).toBe(0);
@@ -402,14 +433,14 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("judges a multi-line call whose last line arms the merge", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     expect(runHook('gh pr comment 9 --body-file c.md\ngh pr merge --auto --merge').status).toBe(2);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
   it("judges `git -C <dir> push` to an armed PR in <dir>", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     const armed = { number: 9, state: "OPEN", autoMergeRequest: { mergeMethod: "MERGE" }, comments: [] };
     const result = spawnSync(BASH as string, [HOOK], {
       input: JSON.stringify({ tool_name: "Bash", tool_input: { command: `git -C "${repo}" push -u origin HEAD` }, cwd: tmpdir() }),
@@ -437,11 +468,11 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("denies a detached-HEAD `git push origin HEAD:<branch>` to an armed PR with no receipt (THR-1795, #1143)", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     writeReceipt(head(), null);
     // The resume shape: detach at the reviewed tip, merge main-like work, push by refspec.
     git("checkout", "-q", "--detach");
-    commit("src/fix.ts", "fix: resume commit");
+    commit("src/engine/fix.ts", "fix: resume commit");
     try {
       const r = runHook("git push origin HEAD:feature", ARMED);
       expect(r.status).toBe(2);
@@ -455,7 +486,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("judges a push as armed when the gh lookup fails, instead of waving it through (THR-1795)", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     const failed = { __ghError: "gh: request timed out" };
     const r = runHook("git push origin HEAD:feature", failed);
     expect(r.status).toBe(2);
@@ -471,7 +502,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("judges `cd <dir> && git push` in <dir>, not the session cwd (THR-1795, #1146)", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     const pushed = head();
     // The session cwd is a different repo whose HEAD is reviewed — today's main judged it and allowed.
     const other = realpathSync(mkdtempSync(path.join(tmpdir(), "tb-review-gate-home-")));
@@ -501,7 +532,7 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("judges an unresolvable `cd` target in the hook's cwd — never a phantom path that fails soft into allow (THR-1795)", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     const r = runHook("cd $WT && git push origin HEAD", ARMED);
     expect(r.status).toBe(2);
     expect(r.stderr).not.toContain("fail-soft");
@@ -513,12 +544,47 @@ describeHook("review gate — the real hook against a fixture repo", () => {
   it("carries a receipt across a reference-page fix, but not across a src/ fix (THR-1795, #1156)", () => {
     resetTo(baseSha);
     clearReceipts();
-    commit("src/feature.ts", "feat: code");
+    commit("src/engine/feature.ts", "feat: code");
     commit("public/encounters-manual-reference.html", "docs: page in the PR");
     writeReceipt(head(), null);
     commit("public/encounters-manual-reference.html", "docs: wiki-freshness one-liner");
     expect(runHook().status).toBe(0);
-    commit("src/feature.ts", "fix: code after the review");
+    commit("src/engine/feature.ts", "fix: code after the review");
+    expect(runHook().status).toBe(2);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+  it("allows gh pr merge on a content-only diff with no receipt, and still denies an engine diff (THR-1949)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/data/encounters/feature.ts", "feat: content");
+    commit("src/components/Small.tsx", "refactor: no visible change");
+    const r = runHook();
+    expect(r.status).toBe(0);
+    expect(r.stderr).toContain("review optional");
+    commit("src/engine/feature.ts", "feat: engine");
+    expect(runHook().status).toBe(2);
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("keeps a file moved out of src/engine/ in scope — a rename does not hide the source path (THR-1949 review)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/engine/moved.ts", "feat: engine module with enough text to be a rename");
+    git("update-ref", "refs/remotes/origin/main", head());
+    git("mv", "src/engine/moved.ts", "src/lib-moved.ts");
+    git("commit", "-q", "-m", "refactor: move it out of engine");
+    try {
+      expect(runHook().status).toBe(2);
+    } finally {
+      git("update-ref", "refs/remotes/origin/main", baseSha);
+    }
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
+  it("denies a UI diff adding more than the large-UI threshold of non-test lines (THR-1949)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    mkdirSync(path.join(repo, "src/components"), { recursive: true });
+    writeFileSync(path.join(repo, "src/components/Big.tsx"), "x\n".repeat(LARGE_UI_ADDED_LINES + 1));
+    git("add", "-A");
+    git("commit", "-q", "-m", "feat: a large panel");
     expect(runHook().status).toBe(2);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 });
