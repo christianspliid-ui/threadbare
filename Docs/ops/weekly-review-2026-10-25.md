@@ -30,7 +30,7 @@ Window 10-18 → 10-25 (row on [cicd-metrics.tsv](https://github.com/christiansp
 - **Worktree leak 600** (+47 a week, fifth week): agent-owned harness fix, not a ticket. It is next week's first tweak (reaper treats kwf output paths as noise).
 - Stays a log row: #1218 (a Done-when the CLI cannot run), #1222's Playwright scroll paint.
 
-Filed: _added on republish_.
+Filed: [THR-2041](https://linear.app/threadbare/issue/THR-2041) (measurement scripts fit the 600 s cap; Todo, Continuous Improvement).
 
 ## Tweaks
 Ledger: [cicd-tweaks.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cicd-tweaks.md).
