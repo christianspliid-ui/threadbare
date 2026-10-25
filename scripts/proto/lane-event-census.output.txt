@@ -1,0 +1,11 @@
+lane-event-census — main @ 1d578d8f, medium map, 360 ticks, one seed per process (design lane run 2026-10-25h)
+
+seed 42  seeded: ambush 8, embargo 5, toll 0 | busiest-lane write hits seeded lane 8, misses 5 | lanes 51, tolled 1, threatened 0
+  toll_bridge F2 S3 · overdue_caravan CS1 F1 · caravan_escort CS1 S4 SaC2
+  route_ambush F7 S2 · route_embargo CF1 F7 S1 SaC1
+seed 99  seeded: ambush 24, embargo 6, toll 0 | hits 14, misses 16 | lanes 64, tolled 1, threatened 0
+  toll_bridge CF1 CS1 F3 S6 · overdue_caravan CF1 CS1 F3 SaC3 · caravan_escort F5 S4 SaC3
+  route_ambush CF5 CS1 F36 SaC2 · route_embargo CF2 F11 SaC1
+seed 7   seeded: ambush 17, embargo 2, toll 0 | hits 4, misses 15 | lanes 52, tolled 1, threatened 0
+  pirate_raid SaC2 · toll_bridge CS1 F4 S1 SaC3 · overdue_caravan CF1 CS1 F1 SaC1 · caravan_escort CS2 F7 S4 SaC2
+  route_ambush CF17 F57 SaC1 · route_embargo CF2 F3 S1
