@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 13:57 local (12:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -7,7 +7,7 @@
 
 ## Also waiting (8)
 
-- **New: approve the new weekly review lane.** The builder wrote it ([THR-1950](https://linear.app/threadbare/issue/THR-1950)): one Friday pass that replaces five separate review lanes. But creating a scheduled lane needs your click. Open one session, say "finish THR-1950", and approve the prompts. The five old lanes keep running until then.
+- **Approve the new weekly review lane.** The builder wrote it ([THR-1950](https://linear.app/threadbare/issue/THR-1950)): one Friday pass that replaces five separate review lanes. But creating a scheduled lane needs your click. Open one session, say "finish THR-1950", and approve the prompts. The five old lanes keep running until then.
 - **Set the Claude app to open when Windows starts.** The longest gap so far was two days, Wednesday 21 to Friday 23 Oct, with 20 jobs ready. Say "done" and the next silence check confirms it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 - **Wednesday night to Friday night (21–23 Oct):** "The scheduled lanes went silent for 48.1h (2026-10-21T21:07:01.000Z → 2026-10-23T21:15:17.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed or the computer off, or was this a pause?
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours with no pause recorded. Was the app closed, or was this a pause?
@@ -33,15 +33,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 ready, the builder is running now.** Since the last brief, the encounter-coverage judge v2 [THR-2012](https://linear.app/threadbare/issue/THR-2012) merged ([#2575](https://github.com/christianspliid-ui/threadbare/pull/2575)), and so did [THR-1949](https://linear.app/threadbare/issue/THR-1949) (review gate only on engine and large UI changes, [#2573](https://github.com/christianspliid-ui/threadbare/pull/2573)).
+**3 ready, but none can be picked up before about 20:45 tonight.** All three ([THR-2023](https://linear.app/threadbare/issue/THR-2023), [THR-2009](https://linear.app/threadbare/issue/THR-2009), [THR-2030](https://linear.app/threadbare/issue/THR-2030)) are inside their veto windows (see *Decided for you*), so the builder is idle by design. Since the last brief, [THR-2038](https://linear.app/threadbare/issue/THR-2038) merged (four encounters' Reach now matches the steps they roll, [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577)), and so did [THR-1924](https://linear.app/threadbare/issue/THR-1924) (six settlement-economy glossary terms, [#2576](https://github.com/christianspliid-ui/threadbare/pull/2576)).
 
 - **The paperwork-cut question stays off your list.** The weekly hygiene and grooming reports still ask for an attended sitting for [THR-1947](https://linear.app/threadbare/issue/THR-1947) and THR-1949. But the builder shipped THR-1949, gate files included, so that wall is gone. THR-1947 (parked and unassigned since 15 Oct) can go the same way.
-- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) have been in progress 11 days. Agent-owned.
+- [THR-1950](https://linear.app/threadbare/issue/THR-1950) is parked in progress, unassigned: its code is merged and it waits only on your approval above. No uncommitted work is sitting in any local worktree for it or for THR-1947.
 - Warm playtest round 3 cannot start: its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)) that themselves wait on round 3. The playtest lane owns that gate.
 
 ## Health
 
-- **Engine speed is past the alarm line again:** tick cost 188 ms/tick steady, 31% above the 7-day median (143, 80 rows since 37809540); top phase agent_decision, 610 agents. Name the merges between 37809540 and f132b560: `git log --oneline --merges 37809540..f132b560`. Last brief it was 181 (27%). The settlement economy ([THR-1923](https://linear.app/threadbare/issue/THR-1923)) is still the likeliest cause. This is the builder's to chase, not yours.
-- The live site is about to catch up: the newest commit (f132b560) was pushed under 20 minutes ago and has not published yet. The site serves [bdcf045e](https://github.com/christianspliid-ui/threadbare/commit/bdcf045e).
+- **Engine speed is still past the alarm line:** tick cost 185 ms/tick steady, 29% above the 7-day median (143, 80 rows since 4bf693b2); top phase agent_decision, 610 agents. Name the merges between 4bf693b2 and e67e0517: `git log --oneline --merges 4bf693b2..e67e0517`. Last brief it was 188 (31%). The settlement economy ([THR-1923](https://linear.app/threadbare/issue/THR-1923)) is still the likeliest cause. This is the builder's to chase, not yours.
 
-Everything else is green: heavy tests are green on main again (the appointment fix held), main's CI, the three scheduled background jobs, all 13 scheduled lanes, the worktree reaper, and the builder (shipping, not stalled).
+Everything else is green: the live site serves the newest commit ([e67e0517](https://github.com/christianspliid-ui/threadbare/commit/e67e0517)), main's CI, the three scheduled background jobs, all 13 scheduled lanes, no PRs stuck, the worktree reaper, and the builder (idle by design, not stalled).

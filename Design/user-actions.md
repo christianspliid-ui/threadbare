@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 12:58 local (11:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 13:57 local (12:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-25: four encounters' declared Reach now matches the steps they roll** ([THR-2038](https://linear.app/threadbare/issue/THR-2038)). Merged via [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577).
+- **2026-10-25: six settlement-economy terms are in the glossary** ([THR-1924](https://linear.app/threadbare/issue/THR-1924)). Merged via [#2576](https://github.com/christianspliid-ui/threadbare/pull/2576).
 - **2026-10-25: the encounter-coverage judge v2 sees the stakes and flags a Reach no step rolls** ([THR-2012](https://linear.app/threadbare/issue/THR-2012)). Merged via [#2575](https://github.com/christianspliid-ui/threadbare/pull/2575).
 - **2026-10-25: the review gate and browser evidence now apply only to engine and large UI changes** ([THR-1949](https://linear.app/threadbare/issue/THR-1949)). Merged via [#2573](https://github.com/christianspliid-ui/threadbare/pull/2573); the process-cuts question needed no answer.
 - **2026-10-25: the heavy tests' appointment check is fixed and green on main** ([THR-2037](https://linear.app/threadbare/issue/THR-2037)). Merged via [#2572](https://github.com/christianspliid-ui/threadbare/pull/2572).
@@ -54,8 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: the restless road ends in its story: a mortal who takes the road for a story now starts it on arrival** ([THR-2036](https://linear.app/threadbare/issue/THR-2036)). Merged via [#2569](https://github.com/christianspliid-ui/threadbare/pull/2569) and live.
 - **2026-10-25: when cards hide under the hand bar, the bar says how many and one click shows them** ([THR-1942](https://linear.app/threadbare/issue/THR-1942)). Merged via [#2568](https://github.com/christianspliid-ui/threadbare/pull/2568) and live.
 - **2026-10-25: the heavy simulation tests' restless-road check and settlement speed budget are fixed** ([THR-2035](https://linear.app/threadbare/issue/THR-2035)). Merged via [#2567](https://github.com/christianspliid-ui/threadbare/pull/2567).
-- **2026-10-25: mandate and essence texts no longer promise that mandates slow the doom** ([THR-2004](https://linear.app/threadbare/issue/THR-2004)). Merged via [#2566](https://github.com/christianspliid-ui/threadbare/pull/2566).
-- **2026-10-25: "The world remembers" lists the World-Soul memories a run carries** ([THR-1971](https://linear.app/threadbare/issue/THR-1971)). Merged via [#2565](https://github.com/christianspliid-ui/threadbare/pull/2565) and live.
 
 ---
 
