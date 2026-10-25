@@ -3375,10 +3375,10 @@ exit
 - **Intent:** Every settlement starts with one notable — its wealthiest-role resident, promoted by `seedLivingWorld.seedNotables` and stamped `notableOrigin: worldgen` — holding a Place, an old quarrel with the nearest decider (else the neighbouring notable) and a secret about or favour from a decider. The notable-agenda phase reads that stamp through `listLocalNotables` and launches feud, claim and rite agendas aimed at the notable’s own quarrel, holding and home, under `MAX_ACTIVE_LOCAL_AGENDAS`, counted apart from the leaders’ cap.
 - **Producer → Consumer:** World Generation, Terrain & Places → Factions & Succession
 - **Module:** `src/engine/notableAgendas.ts`
-- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
+- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
 - **Write sites:** `src/data/worldgen-living-constants.ts`, `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/notableAgendas.ts`
-- **Other hits:** `src/data/notable-agenda-config.ts`, `src/engine/settlementNotable.ts`
+- **Other hits:** `src/data/notable-agenda-config.ts`, `src/engine/npcGraduation.ts`, `src/engine/seedEchoes.ts`, `src/engine/settlementNotable.ts`
 - **Verdict:** Verified 2026-09-29: THR-1654. `Docs/audits/2026-09-25-living-world-data/readers/notables.ts` on medium, seed 42 · 99, same-session A/B: settlements with no resident holding an ambition, quarrel, secret or favour at t0 37/47 · 53/67 → 0; seeded notables 47 · 67 (one per settlement); local agendas launched by t150 11 · 11 (`notable.agenda_launched` with `local: true`); ms/tick t21–200 within +6.4%, deciders at t200 19 → 19 · 20 → 21. `seedLivingWorld.test.ts` pins one notable per settlement and zero storyless settlements on a generated world; `notableAgendas.test.ts` pins the roster, each family’s target and the separate cap.
 
 ### `seeded-notable-reaches-the-settlement-page` — 🟢 LIVE
@@ -3386,10 +3386,10 @@ exit
 - **Intent:** The settlement page names who matters there: `settlementNotable.getSettlementNotable` finds the living, resident seeded notable (`notableOrigin: worldgen`) and reads the edges `seedNotables` wrote — `owns` (Holds), `hostile_to` with cause `old_quarrel` (At odds with), an unrevealed `knows_secret_of` (Knows something about, gated on the player knowing the notable at `known`+) and a live incoming `owes_favor` (Is owed a favour by) — as structured clauses. `LocationView` lifts the notable to the top of Inhabitants with a notable chip and one sentence built from those clauses; `window.__DEBUG.getSettlementNotable` returns the same object.
 - **Producer → Consumer:** World Generation, Terrain & Places → Attention, Chronicle & Narrative
 - **Module:** `src/engine/settlementNotable.ts`
-- **Production hits:** 6 total — 1 write, 3 read, 2 unclassified
+- **Production hits:** 8 total — 1 write, 3 read, 4 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/settlementNotable.ts`, `src/engine/views/subjects/placeRows.ts`
-- **Other hits:** `src/data/worldgen-living-constants.ts`, `src/engine/notableAgendas.ts`
+- **Other hits:** `src/data/worldgen-living-constants.ts`, `src/engine/notableAgendas.ts`, `src/engine/npcGraduation.ts`, `src/engine/seedEchoes.ts`
 - **Verdict:** Verified 2026-09-29: THR-1655. `settlementNotable.test.ts` pins the four clauses, the knowledge gate on the secret and the dropped clause for a dead or spent edge; `whoMattersHere.test.tsx` renders the sentence. Browser evidence on `?view=game&seeded&size=medium` at 1920×1080: The Bone Coast (`loc_7`) shows "notable Remnant · Holds Counting House. At odds with Saiwia.", and `await window.__DEBUG.getSettlementNotable('loc_7')` returns exactly those two clauses with `secretWithheld: true` (the player does not know Remnant). All 12 settlements probed had a notable with holds + at_odds_with.
 
 ### `seeded-opponent-survives-to-spawn` — 🟢 LIVE
@@ -3433,10 +3433,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 119 total — 1 write, 1 read, 117 unclassified
+- **Production hits:** 120 total — 1 write, 1 read, 118 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +112 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +113 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE

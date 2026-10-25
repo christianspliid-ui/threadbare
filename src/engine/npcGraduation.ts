@@ -25,6 +25,7 @@ import { isMonster } from './monsters/isMonster';
 // module touches the other's exports at load, so the ring is inert.
 import { admitToSpotlight, collectBusyActorIds } from './spotlightPull';
 import { NOTABLE_GRADUATION_BUDGETED } from '../data/agent-behavior-constants';
+import { NOTABLE_ORIGIN_WORLDGEN } from '../data/worldgen-living-constants';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────────────────
 
@@ -363,6 +364,15 @@ export function demoteToTier(
   return true;
 }
 
+/**
+ * True when a `relates_to` edge was earned in play and counts toward
+ * SPOTLIGHT_MIN_EDGES. THR-1630: ties seeded at world creation (`origin: 'worldgen'`)
+ * never count. THR-2029: an echo heir's kin tie is one of those.
+ */
+export function isEarnedTie(edge: { properties: Record<string, unknown> }): boolean {
+  return edge.properties.origin !== NOTABLE_ORIGIN_WORLDGEN;
+}
+
 // ─── phaseNpcGraduation ───────────────────────────────────────────────────────
 
 /**
@@ -422,9 +432,8 @@ export function phaseNpcGraduation(
       // people web gives every hero's kin, friend and rival three edges at t0, and
       // letting those cross SPOTLIGHT_MIN_EDGES would make deciders out of seeding
       // (THR-1592 measured +87–115% tick cost that way).
-      const earned = (e: { properties: Record<string, unknown> }) => e.properties.origin !== 'worldgen';
-      const outEdges = state.graph.getOutgoingEdges(actor.id, 'relates_to').filter(earned);
-      const inEdges = state.graph.getIncomingEdges(actor.id, 'relates_to').filter(earned);
+      const outEdges = state.graph.getOutgoingEdges(actor.id, 'relates_to').filter(isEarnedTie);
+      const inEdges = state.graph.getIncomingEdges(actor.id, 'relates_to').filter(isEarnedTie);
       const edgeCount = outEdges.length + inEdges.length;
 
       if (edgeCount >= NPC_CONSTANTS.SPOTLIGHT_MIN_EDGES) {

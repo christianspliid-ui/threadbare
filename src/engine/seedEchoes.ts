@@ -42,6 +42,7 @@ import {
 } from '../data/account-content';
 import { LOCATION_CLASSES } from '../data/world-objects';
 import {
+  NOTABLE_ORIGIN_WORLDGEN,
   WORLDGEN_KIN_SENTIMENT,
   WORLDGEN_KIN_STRENGTH,
   WORLDGEN_TIE_TRUST_FROM_SENTIMENT,
@@ -214,14 +215,18 @@ function hasTieWith(graph: WorldGraph, a: string, b: string): boolean {
     || graph.getOutgoingEdges(b, 'relates_to').some(e => e.target === a);
 }
 
-/** The `relates_to` kin pair, both directions, in the worldgen tie shape. */
+/**
+ * The `relates_to` kin pair, both directions, in the worldgen tie shape — origin
+ * included (THR-2029): a tie seeded at world creation never counts toward
+ * spotlight promotion (`isEarnedTie`, THR-1630).
+ */
 function writeKinTie(graph: WorldGraph, a: string, b: string): void {
   const properties = {
     sentiment: WORLDGEN_KIN_SENTIMENT,
     strength: WORLDGEN_KIN_STRENGTH,
     basis: 'kin',
     trust: WORLDGEN_KIN_SENTIMENT * WORLDGEN_TIE_TRUST_FROM_SENTIMENT,
-    origin: ECHO_ORIGIN,
+    origin: NOTABLE_ORIGIN_WORLDGEN,
   };
   for (const [source, target] of [[a, b], [b, a]] as const) {
     const id = `edge_tie_${source}_${target}_kin`;

@@ -15,6 +15,7 @@ import { buildEchoGroup, pastLineText } from '../worldPastWords';
 import { readView } from '../views/readView';
 import { mapPlacesSelector } from '../views/map/places';
 import { echoRelation, monumentTargetBand, seedingOrder } from '../seedEchoes';
+import { isEarnedTie } from '../npcGraduation';
 import { DOMINION_BAND_RANK } from '../../data/dominion-content';
 import { MAX_SEEDED_ECHOES } from '../../data/account-content';
 
@@ -114,8 +115,20 @@ describe.each([42, 99, 7])('THR-1843 — seed %i with SAMPLE_ACCOUNT', seed => {
     expect(heir.properties.spotlightTier).toBe('notable');
     expect(heir.properties.notableOrigin).toBe('echo');
     expect(heir.properties.echoLineageOf).toBe('Maren Ashfold');
-    const kinTies = state.graph.getOutgoingEdges(heir.id, 'relates_to').filter(e => e.properties.basis === 'kin' && e.properties.origin === 'echo');
+    // The heir's kin tie is identified by the id `writeKinTie` gives it.
+    const kinTies = state.graph.getOutgoingEdges(heir.id, 'relates_to')
+      .filter(e => e.id === `edge_tie_${heir.id}_${e.target}_kin`);
     expect(kinTies).toHaveLength(1);
+    const kinId = kinTies[0].target;
+    const back = state.graph.getEdge(`edge_tie_${kinId}_${heir.id}_kin`)!;
+    // THR-2029: the pair is stamped worldgen, so at tick 0 neither end holds a tie earned in play.
+    expect(kinTies[0].properties.origin).toBe('worldgen');
+    expect(back.properties.origin).toBe('worldgen');
+    const earnedCount = (id: string) =>
+      state.graph.getOutgoingEdges(id, 'relates_to').filter(isEarnedTie).length
+      + state.graph.getIncomingEdges(id, 'relates_to').filter(isEarnedTie).length;
+    expect(earnedCount(heir.id)).toBe(0);
+    expect(earnedCount(kinId)).toBe(0);
     // The kin tie never stacks on a pair already tied (one edge per pair per direction).
     const targets = state.graph.getOutgoingEdges(heir.id, 'relates_to').map(e => e.target);
     expect(new Set(targets).size).toBe(targets.length);
