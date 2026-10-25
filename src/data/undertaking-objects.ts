@@ -83,9 +83,8 @@ import {
   settleFoundedTown, traceFoundTownRefused, settleFoundedLane, payTradeRun,
   foundedGuildReachProfile, settleFoundedGuild, endLoneFounderRule, foundTownSiteRefusal,
   // S2 (THR-1966): a raised building is the town's own next building.
-  raiseBuildingSiteRefusal, pickRaisedBuilding, settleRaisedBuilding, traceRaiseBuildingNoRoom, stampLegacyPlace,
+  raiseBuildingSiteRefusal, raisesTownBuildings, pickRaisedBuilding, settleRaisedBuilding, traceRaiseBuildingNoRoom, stampLegacyPlace,
 } from '../engine/undertakingEconomy';
-import { isEconomySettlement } from '../engine/settlementEconomy/land';
 import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
 import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
 import { isPlaceNode, isLocationNode, resolveToParentLocation } from '../engine/sublocationShape';
@@ -1394,7 +1393,7 @@ const PLACE: UndertakingObjectType = {
       // THR-1966: in a settlement a mortal raises the town's own next building, never a
       // workshop by default — the one picked at the start if it still qualifies, else the
       // chooser's current pick, else nothing (the card says why).
-      if (UNDERTAKING_ECONOMY_ENABLED && !explicitType && isEconomySettlement(ctx.graph.getNode(parentId))) {
+      if (!explicitType && raisesTownBuildings(ctx.graph.getNode(parentId))) {
         const planned = typeof ctx.params?.plannedBuildingId === 'string' ? ctx.params.plannedBuildingId : null;
         const pick = pickRaisedBuilding(ctx.graph, parentId, planned);
         if (!pick) {

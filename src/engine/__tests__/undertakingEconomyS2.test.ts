@@ -15,6 +15,7 @@ import {
   readBuildings,
 } from '../settlementEconomy/building';
 import { buildingFact } from '../settlementEconomy/describe';
+import { buildConnections } from '../views/connections';
 import { getUndertakingObjectType, eligibilityRefusal } from '../../data/undertaking-objects';
 import type { ObjectVerbContext, ObjectVerbSemantic } from '../../data/undertaking-objects';
 import { pickRaisedBuilding, stampLegacyPlace } from '../undertakingEconomy';
@@ -102,6 +103,14 @@ describe('THR-1966 — a mortal raises the town\'s own next building, never a wo
     });
   }
 
+  it('the town page\'s Connections row for the building reads "built by Kael Thornweaver"', () => {
+    const { graph } = world('grassland');
+    const op = raise(graph);
+    const vm = buildConnections(graph, null, { cls: 'location', id: TOWN });
+    const row = vm.groups.flatMap(g => g.rows).find(r => r.ref && 'id' in r.ref && r.ref.id === op.createdId);
+    expect(row?.fact).toBe('built by Kael Thornweaver');
+  });
+
   it('the three terrains do not all raise the same building', () => {
     const raised = terrains.map(t => {
       const { graph } = world(t);
@@ -131,6 +140,15 @@ describe('THR-1966 — a town with full slots is never a target', () => {
     expect(op.success).toBe(false);
     expect(op.completionLine).toBe('no_room');
     expect(graph.getOutgoingEdges(TOWN, 'contains')).toHaveLength(before);
+  });
+
+  it('a settlement the economy has not run on yet is not refused and raises as before (fail-soft)', () => {
+    const { graph } = world('grassland', 0);
+    const place = getUndertakingObjectType('place')!;
+    expect(eligibilityRefusal(graph, place, 'create', BUILDER, { kind: 'node', nodeId: TOWN }, 100)).toBeNull();
+    const op = raise(graph);
+    expect(op.success).toBe(true);
+    expect(graph.getNode(op.createdId!)!.properties.isBuilding).toBeUndefined();
   });
 
   it('a site that is not a settlement is not refused (it stays outside the town\'s economy)', () => {

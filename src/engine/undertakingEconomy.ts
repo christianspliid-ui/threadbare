@@ -530,15 +530,23 @@ export function factionMonopolyResourceIds(graph: WorldGraph, factionId: string)
  * settlement (a fort, a ruin) is outside the town's economy and is left as before.
  */
 export function raiseBuildingSiteRefusal(graph: WorldGraph, siteId: string): string | null {
-  if (!UNDERTAKING_ECONOMY_ENABLED) return null;
-  if (!isEconomySettlement(graph.getNode(siteId))) return null;
+  if (!raisesTownBuildings(graph.getNode(siteId))) return null;
   return nextBuildingFor(graph, siteId) ? null : 'no_building_slot';
+}
+
+/**
+ * Does a mortal's `create × place` here raise the town's next building? Only in a
+ * settlement the settlement economy has run on (it has a day on record). Fail-soft: with
+ * the economy off, or a settlement it has not reached yet, the cell raises as before.
+ */
+export function raisesTownBuildings(site: GraphNode | undefined): boolean {
+  return UNDERTAKING_ECONOMY_ENABLED && isEconomySettlement(site)
+    && typeof site?.properties.economyLastDay === 'number';
 }
 
 /** The building a mortal sets about raising at this site now, or null when there is none. */
 export function plannedBuildingFor(graph: WorldGraph, siteId: string | undefined): SettlementBuildingDef | null {
-  if (!UNDERTAKING_ECONOMY_ENABLED || !siteId) return null;
-  if (!isEconomySettlement(graph.getNode(siteId))) return null;
+  if (!siteId || !raisesTownBuildings(graph.getNode(siteId))) return null;
   return nextBuildingFor(graph, siteId);
 }
 
@@ -644,7 +652,7 @@ export function stampLegacyPlace(
   const def = buildingId ? getSettlementBuilding(buildingId) : undefined;
   const place = graph.getNode(placeId);
   const settlementId = place?.properties.parentLocationId;
-  if (!def || typeof settlementId !== 'string' || !isEconomySettlement(graph.getNode(settlementId))) return null;
+  if (!def || typeof settlementId !== 'string' || !raisesTownBuildings(graph.getNode(settlementId))) return null;
   const pick = pickRaisedBuilding(graph, settlementId, def.id);
   if (pick?.def.id !== def.id) return null;
   settleRaisedBuilding({ graph, builderId, settlementId, placeId, def, plannedBuildingId: def.id, outcome: 'raised', tick });
