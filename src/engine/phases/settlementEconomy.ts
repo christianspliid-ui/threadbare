@@ -90,6 +90,7 @@ import {
   readBuildings,
   adoptWorldgenPlaces,
   chooseBuilding,
+  NEXT_BUILDING_PROP,
   raiseBuilding,
   loseBuilding,
   channelMultiplier,
@@ -506,6 +507,9 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
         lean: leanBuildingOf(graph, holder ?? seats.seatedAt.get(id)?.[0]),
         owned: buildings,
       }, rng);
+      // THR-1966: the pick is what a mortal builder raises here, until the town raises it.
+      if (choice) p[NEXT_BUILDING_PROP] = choice.def.id;
+      else delete p[NEXT_BUILDING_PROP];
       if (choice && buildProgress >= choice.def.cost) {
         const raised = raiseBuilding(graph, node, choice.def, tick);
         if (raised) {
@@ -523,10 +527,12 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
           });
           chron('building_raised', node, { goodsType: choice.def.cardName.toLowerCase() }, `raised:${choice.def.id}`, choice.def.raisedTitle);
           buildings = readBuildings(graph, id);
+          delete p[NEXT_BUILDING_PROP];
         }
       }
       goodsSurplusDays = 0;
     } else {
+      delete p[NEXT_BUILDING_PROP];
       goodsSurplusDays = bp > SURPLUS_MIN_PER_DAY ? goodsSurplusDays + 1 : 0;
       // Only the land's own spare timber and stone is sold on; imports are built with, never
       // re-exported, so goods cannot circulate between seats (review gate).

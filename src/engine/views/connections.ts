@@ -216,7 +216,7 @@ function sentimentWord(edge: GraphEdge): string {
 
 function occupancyFact(graph: WorldGraph, place: GraphNode): string {
   // THR-1923 — a Place the town raised says so, or why it stands idle.
-  const building = buildingFact(place);
+  const building = buildingFact(place, graph);
   if (building) return building;
   const n = graph.getIncomingEdges(place.id, 'located_at').filter(e => {
     const who = graph.getNode(e.source);

@@ -21,6 +21,12 @@ import { getEconomySettlements } from '../settlementEconomy/land';
 import { tierRank } from '../settlementEconomy/tier';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
 import type { GameState } from '../../types/gameState';
+import { nextBuildingFor } from '../settlementEconomy/building';
+import { getUndertakingObjectType, type ObjectVerbContext, type ObjectVerbSemantic } from '../../data/undertaking-objects';
+import { hashString } from '../../lib/prng';
+
+/** THR-1966: a settlement with a pick sees a mortal raise it one day in this many. */
+const MORTAL_RAISE_ONE_IN = 10;
 
 /** CI runs up to ~2.2× slower than a dev machine (impediment log); the budgets carry that headroom. */
 const CI_HEADROOM = 2.5;
@@ -54,6 +60,37 @@ for (const seed of [42, 99]) {
       const verdict = judgeDiversity({ day1: snaps[1], day50: snaps[50], day100: snaps[100], now: snaps[150] });
       console.log(`[THR-1923] seed ${seed}: day-0 within one tier ${within}/${settlements.length}; ` + [1, 50, 100, 150].map(d =>
         `day ${d} cv ${snaps[d].sizeCv.toFixed(2)} distinct ${(snaps[d].distinctShare * 100).toFixed(0)}% combos ${snaps[d].combos} top ${snaps[d].topTrait} ${(snaps[d].topTraitShare * 100).toFixed(0)}% tiers ${JSON.stringify(snaps[d].tiers)}`).join(' | ') + ` → ${JSON.stringify(verdict)}`);
+      expect(verdict).toMatchObject({ sizesSpread: 'PASS', buildingMixesDistinct: 'PASS', traitsManyAndRare: 'PASS', noConvergence: 'PASS' });
+    }, 300_000);
+
+    // THR-1966 (undertakings S2, kill criterion): mortals raising the town's own next building
+    // must not flatten towns. A deliberately heavy rate — each settlement with a pick has a
+    // one-in-MORTAL_RAISE_ONE_IN chance a day that a mortal raises it — far above live play.
+    it('the four diversity measures still hold with mortal-raised buildings on', () => {
+      resetEventCounter();
+      const { state } = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, seed, createBalancedCosmology(), 'medium') as { state: GameState };
+      const builderId = 'actor.thr1966_builder';
+      state.graph.addNode({ id: builderId, type: 'actor', name: 'Kael Thornweaver', properties: { actorType: 'individual' } });
+      const raisePlace = getUndertakingObjectType('place')!.verbs.create as ObjectVerbSemantic;
+      const hexRealmId = buildRealmProjection(state.graph, state.tiles).hexRealmId;
+      const snaps: Record<number, DiversitySnapshot> = {};
+      let raised = 0;
+      for (let d = 1; d <= 150; d++) {
+        const tick = d * TICKS_PER_DAY;
+        runSettlementEconomyDay({ graph: state.graph, tiles: state.tiles, tick, seed, hexRealmId });
+        for (const s of getEconomySettlements(state.graph)) {
+          if (hashString(`${seed}:thr1966:${s.id}:${d}`) % MORTAL_RAISE_ONE_IN !== 0 || !nextBuildingFor(state.graph, s.id)) continue;
+          const op = raisePlace({
+            state, graph: state.graph, actorId: builderId, tick, targetNodeId: s.id, handle: { kind: 'node', nodeId: s.id },
+          } as unknown as ObjectVerbContext) as { success: boolean };
+          if (op.success) raised++;
+        }
+        if (d === 1 || d === 50 || d === 100 || d === 150) snaps[d] = measureDiversity(state.graph, d);
+      }
+      const verdict = judgeDiversity({ day1: snaps[1], day50: snaps[50], day100: snaps[100], now: snaps[150] });
+      console.log(`[THR-1966] seed ${seed}: ${raised} mortal-raised buildings; ` + [1, 50, 100, 150].map(d =>
+        `day ${d} cv ${snaps[d].sizeCv.toFixed(2)} distinct ${(snaps[d].distinctShare * 100).toFixed(0)}% combos ${snaps[d].combos} top ${snaps[d].topTrait} ${(snaps[d].topTraitShare * 100).toFixed(0)}%`).join(' | ') + ` → ${JSON.stringify(verdict)}`);
+      expect(raised).toBeGreaterThan(0);
       expect(verdict).toMatchObject({ sizesSpread: 'PASS', buildingMixesDistinct: 'PASS', traitsManyAndRare: 'PASS', noConvergence: 'PASS' });
     }, 300_000);
 

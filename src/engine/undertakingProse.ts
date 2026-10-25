@@ -23,7 +23,9 @@ import type {
   StrategicActionCandidate,
 } from '../types/strategicAction';
 import { getUndertakingObjectType, objectPlaceNodeId, resolveObjectOwners } from '../data/undertaking-objects';
-import { cellLineSet, UNDERTAKING_CELL_OUTCOME_PROSE } from '../data/undertaking-verb-prose';
+import { cellLineSet, PLANNED_BUILDING_ACTIVITY_LINES, UNDERTAKING_CELL_OUTCOME_PROSE } from '../data/undertaking-verb-prose';
+import { getSettlementBuilding } from '../data/settlement-buildings';
+import { buildingNoun, IS_BUILDING_PROP } from './settlementEconomy/building';
 import { hashSeed } from './naming/workNames';
 import { mulberry32 } from '../lib/prng';
 import { resolveToParentLocation } from './sublocationShape';
@@ -50,6 +52,11 @@ export interface UndertakingProseContext {
   readonly targetNodeId?: string;
   /** The holder the gate named; derived from the object when absent. */
   readonly ownerId?: string;
+  /**
+   * The object's words when the object is not a named node yet (THR-1966): the building a
+   * mortal sets about raising ("a storehouse"). Overrides the handle's name.
+   */
+  readonly objectName?: string;
 }
 
 /** Neutral words for a slot the world cannot fill. */
@@ -169,7 +176,7 @@ export function resolveUndertakingProse(line: string, ctx: UndertakingProseConte
   const concepts: UndertakingProseConcept[] = [];
   const graph = ctx.graph;
 
-  const objectName = objectDisplayName(graph, ctx.objectTypeId, ctx.handle);
+  const objectName = ctx.objectName ?? objectDisplayName(graph, ctx.objectTypeId, ctx.handle);
   if (objectName && ctx.handle) {
     concepts.push({ role: 'object', id: ctx.handle.kind === 'node' ? ctx.handle.nodeId : ctx.handle.edgeId, name: objectName });
   }
@@ -218,9 +225,18 @@ export function pickUndertakingLine(lines: readonly string[], seedKey: string): 
 /** The activity line for a running cell undertaking, resolved. */
 export function cellActivityProse(
   graph: WorldGraph,
-  project: Pick<StrategicProjectRuntime, 'projectId' | 'actorId' | 'objectHandle' | 'objectTypeId' | 'targetNodeId' | 'victimAgentId'>,
+  project: Pick<StrategicProjectRuntime, 'projectId' | 'actorId' | 'objectHandle' | 'objectTypeId' | 'targetNodeId' | 'victimAgentId' | 'plannedBuildingId'>,
   variant: UndertakingVerbVariant,
 ): UndertakingProseResult {
+  // THR-1966: a building planned at the start is named before it is raised (Law 16).
+  const planned = project.plannedBuildingId ? getSettlementBuilding(project.plannedBuildingId) : undefined;
+  if (planned) {
+    const plannedLine = pickUndertakingLine(PLANNED_BUILDING_ACTIVITY_LINES, project.projectId) ?? '';
+    return resolveUndertakingProse(plannedLine, {
+      graph, actorId: project.actorId, objectTypeId: project.objectTypeId, handle: project.objectHandle,
+      targetNodeId: project.targetNodeId, ownerId: project.victimAgentId, objectName: buildingNoun(planned),
+    });
+  }
   const line = pickUndertakingLine(cellLineSet(variant, project.objectTypeId).activity, project.projectId) ?? '';
   return resolveUndertakingProse(line, {
     graph, actorId: project.actorId, objectTypeId: project.objectTypeId, handle: project.objectHandle,
@@ -258,10 +274,15 @@ export function cellCompletionProse(
     const objectOk = !needsObject || !outcome?.objectId || !!graph.getNode(outcome.objectId)?.name;
     const ownerOk = !needsOwner || (!!outcome?.ownerId && !!graph.getNode(outcome.ownerId)?.name);
     if (objectOk && ownerOk) {
+      // THR-1966: a building is named as a building ("a storehouse"), not by its Place's label.
+      const raised = outcome?.objectId ? graph.getNode(outcome.objectId) : undefined;
+      const raisedDef = raised?.properties[IS_BUILDING_PROP] === true
+        ? getSettlementBuilding(String(raised.properties.buildingId ?? '')) : undefined;
       return resolveUndertakingProse(outcomeLine, {
         graph, actorId: project.actorId, objectTypeId: project.objectTypeId,
         handle: outcome?.objectId ? { kind: 'node', nodeId: outcome.objectId } : project.objectHandle,
         targetNodeId: project.targetNodeId, ownerId: outcome?.ownerId ?? project.victimAgentId,
+        ...(raisedDef && { objectName: buildingNoun(raisedDef) }),
       });
     }
   }
