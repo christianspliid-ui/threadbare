@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 03:55 local (02:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-25: choices widen across runs: four hungers on the first run, one more woken each age, a second court, sealed god cards, and "The world remembers"** ([THR-1844](https://linear.app/threadbare/issue/THR-1844)). Merged via [#2562](https://github.com/christianspliid-ui/threadbare/pull/2562) and live.
 - **2026-10-25: an echo heir’s seeded kin tie counts as part of the world’s past** ([THR-2029](https://linear.app/threadbare/issue/THR-2029)). Merged via [#2561](https://github.com/christianspliid-ui/threadbare/pull/2561) and live.
 - **2026-10-25: echoes of a past god stand in the new world** ([THR-1843](https://linear.app/threadbare/issue/THR-1843)). Merged via [#2559](https://github.com/christianspliid-ui/threadbare/pull/2559) and live.
 - **2026-10-25: a lake hex's land page reads as water, not as a desert; coast and river ruins stay dry** ([THR-2021](https://linear.app/threadbare/issue/THR-2021)). Merged via [#2558](https://github.com/christianspliid-ui/threadbare/pull/2558) and live.
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-24: a gift's card line shows its toast once, not twice** ([THR-2013](https://linear.app/threadbare/issue/THR-2013)). Merged via [#2554](https://github.com/christianspliid-ui/threadbare/pull/2554) and live.
 - **2026-10-24: 35 encounters' words now describe the test their Reach actually rolls** ([THR-2011](https://linear.app/threadbare/issue/THR-2011)). Merged via [#2553](https://github.com/christianspliid-ui/threadbare/pull/2553) and live.
 - **2026-10-24: a faction pays for a member's founding they can't afford** ([THR-2008](https://linear.app/threadbare/issue/THR-2008)). Merged via [#2550](https://github.com/christianspliid-ui/threadbare/pull/2550) and live.
-- **2026-10-24: a notable whose plan fails late stays on the Notables list for a while after it fails** ([THR-2005](https://linear.app/threadbare/issue/THR-2005)). Merged via [#2549](https://github.com/christianspliid-ui/threadbare/pull/2549) and live.
 
 ---
 

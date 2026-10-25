@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 03:55 local (02:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 04:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,7 +33,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 ready, 2 in progress.** Two more jobs shipped since the last brief: [echoes of a past god stand in the new world](https://linear.app/threadbare/issue/THR-1843) ([#2559](https://github.com/christianspliid-ui/threadbare/pull/2559)) and [an echo heir's kin tie counts as part of the world's past](https://linear.app/threadbare/issue/THR-2029) ([#2561](https://github.com/christianspliid-ui/threadbare/pull/2561)), both live. The builder is now on [choices widening across runs](https://linear.app/threadbare/issue/THR-1844): its pull request [#2562](https://github.com/christianspliid-ui/threadbare/pull/2562) is open and not yet armed, and the run was active a minute ago. New on the shelf: [the world tilt never reaches a place](https://linear.app/threadbare/issue/THR-2028) and [a seeded relic's place](https://linear.app/threadbare/issue/THR-2030).
+**Healthy: 9 ready, 2 in progress.** One more job shipped since the last brief: [choices widen across runs](https://linear.app/threadbare/issue/THR-1844) ([#2562](https://github.com/christianspliid-ui/threadbare/pull/2562)), now live. The builder has moved on to [the settlement economy](https://linear.app/threadbare/issue/THR-1923): its latest checkpoint was committed two minutes ago on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1923-settlement-economy), and the run is active. New on the shelf: [the next world shows what the World-Soul remembers](https://linear.app/threadbare/issue/THR-1971), unblocked now that "The world remembers" step exists.
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. No local worktree holds uncommitted work for it. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) is agent-owned and older than a week on the shelf; most of that week was the silences above.
@@ -41,4 +41,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (busy, not stalled). One open PR ([#2562](https://github.com/christianspliid-ui/threadbare/pull/2562)), held by its own live run. The live site serves the latest commit ([cffd8b5a](https://github.com/christianspliid-ui/threadbare/commit/cffd8b5a)). The worktree reaper ran recently. Engine speed is 113 ms/tick, 21% faster than the 7-day median (144).
+All green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (busy, not stalled). No pull requests are waiting to merge. The live site serves the latest commit ([e91c8245](https://github.com/christianspliid-ui/threadbare/commit/e91c8245)). The worktree reaper ran at 04:40. Engine speed is 114 ms/tick, 20% faster than the 7-day median (143).
