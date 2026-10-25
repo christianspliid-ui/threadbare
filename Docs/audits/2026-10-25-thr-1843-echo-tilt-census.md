@@ -41,3 +41,15 @@ for (const seed of [42, 99, 7]) {
 ```
 
 `npx vitest run <file>`; the full script is the census test kept with the THR-1843 PR description.
+
+## After the fix (THR-2028, 2026-10-25)
+
+Place seeding now reads the tilt: `placeTiltFactors` (the Decided-8 world factor scaled by `PLACE_TILT_GAIN` = 0.02), with seeded whole-point rounding, on every place including those the backfill seeds. Same setup. The "1-run" and "5-run" columns use the blend described above. The census is committed as `src/engine/__tests__/worldTilt.test.ts`.
+
+| Seed | Even fundament (echoes) | Sample account | 1-run tilt | 5-run tilt | Place `life` sum (even → 5-run) |
+|---|---|---|---|---|---|
+| 42 | 42 | 43 | 43 | 46 | 172 → 181 |
+| 99 | 54 | 54 | 56 | 59 | 253 → 264 |
+| 7 | 53 | 53 | 53 | 55 | 229 → 236 |
+
+**Kill criterion: holds** (at most +5 after 5 runs, seed 99 at the limit). The world-strength multiplier (gain 1) added +14 to +63 places, which is why the gain is a separate place-only constant. `FUNDAMENT_BLEND_PER_RUN` is unchanged.

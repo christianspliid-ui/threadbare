@@ -50,6 +50,15 @@ export interface AccountWorldShapedTrace extends TraceBase {
   echoesLoaded: number;
 }
 
+/** THR-2028 — the carried tilt applied to place scores at world creation. */
+export interface AccountPlacesTiltedTrace extends TraceBase {
+  category: 'account.places_tilted';
+  /** Places whose scores the tilt changed. */
+  placesTilted: number;
+  /** Places seeded (both tiers). */
+  places: number;
+}
+
 // ─── Echoes stand in the new world (THR-1843, slice 2) ───
 
 /** One live echo placed in the new world at creation. */

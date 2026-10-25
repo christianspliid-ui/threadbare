@@ -32,6 +32,14 @@ export const FUNDAMENT_REVERT = 0.05;
  * even fundament multiplies by 1.
  */
 export const WORLD_TILT_GAIN = 1;
+/**
+ * THR-2028 — how much of the world tilt reaches each place's seeded scores: a
+ * place multiplies each score by `1 + gain × (factor − 1)` and returns to whole
+ * points by seeded rounding, so the lift grows smoothly with the tilt. Tuned
+ * against the THR-1843 census kill criterion: a kin god gains at most 5
+ * Touched-or-better places at tick 0 after 5 runs of tilt (seed 99 sits at 5).
+ */
+export const PLACE_TILT_GAIN = 0.02;
 
 // ─── Echoes stand in the new world (THR-1843, slice 2) ───────────────
 

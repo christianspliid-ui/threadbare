@@ -34,6 +34,7 @@ import {
   ACCOUNT_VERSION,
   FUNDAMENT_BLEND_PER_RUN,
   FUNDAMENT_REVERT,
+  PLACE_TILT_GAIN,
   RUN_ONE_AWAKE_HUNGERS,
   STIRRING_HUNGER_COUNT,
   WORLD_TILT_GAIN,
@@ -265,6 +266,17 @@ export function worldTiltFactors(fundament: FundamentState): Record<SphereName, 
     const w = Number(fundament.sphereWeights[s]) || 0;
     out[s] = Math.max(0, 1 + WORLD_TILT_GAIN * (n * w - 1));
   }
+  return out;
+}
+
+/**
+ * THR-2028 — the multiplier the tilt puts on each sphere of a place's seeded
+ * scores: the world factor scaled toward 1 by `PLACE_TILT_GAIN`. Floored at 0.
+ */
+export function placeTiltFactors(fundament: FundamentState): Record<SphereName, number> {
+  const world = worldTiltFactors(fundament);
+  const out = {} as Record<SphereName, number>;
+  for (const s of SPHERE_NAMES) out[s] = Math.max(0, 1 + PLACE_TILT_GAIN * (world[s] - 1));
   return out;
 }
 
