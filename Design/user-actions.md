@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 06:59 local (05:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 08:00 local (07:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,9 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-25: mandate and essence texts no longer promise that mandates slow the doom** ([THR-2004](https://linear.app/threadbare/issue/THR-2004)). Merged via [#2566](https://github.com/christianspliid-ui/threadbare/pull/2566).
+- **2026-10-25: "The world remembers" lists the World-Soul memories a run carries** ([THR-1971](https://linear.app/threadbare/issue/THR-1971)). Merged via [#2565](https://github.com/christianspliid-ui/threadbare/pull/2565) and live.
+- **2026-10-25: a building a mortal raises is the town's next building, and the builder holds it** ([THR-1966](https://linear.app/threadbare/issue/THR-1966)). Merged via [#2564](https://github.com/christianspliid-ui/threadbare/pull/2564) and live.
 - **2026-10-25: towns have a settlement economy: population, buildings, surplus routes and seats** ([THR-1923](https://linear.app/threadbare/issue/THR-1923)). Merged via [#2563](https://github.com/christianspliid-ui/threadbare/pull/2563) and live.
 - **2026-10-25: choices widen across runs: four hungers on the first run, one more woken each age, a second court, sealed god cards, and "The world remembers"** ([THR-1844](https://linear.app/threadbare/issue/THR-1844)). Merged via [#2562](https://github.com/christianspliid-ui/threadbare/pull/2562) and live.
 - **2026-10-25: an echo heir’s seeded kin tie counts as part of the world’s past** ([THR-2029](https://linear.app/threadbare/issue/THR-2029)). Merged via [#2561](https://github.com/christianspliid-ui/threadbare/pull/2561) and live.
@@ -51,9 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: a lake hex's land page reads as water, not as a desert; coast and river ruins stay dry** ([THR-2021](https://linear.app/threadbare/issue/THR-2021)). Merged via [#2558](https://github.com/christianspliid-ui/threadbare/pull/2558) and live.
 - **2026-10-25: a liege pays the raise for a sworn free company with no army and no coin** ([THR-2020](https://linear.app/threadbare/issue/THR-2020)). Merged via [#2557](https://github.com/christianspliid-ui/threadbare/pull/2557) and live.
 - **2026-10-24: the realm check "Oaths pay" is judged on the leading Crown** ([THR-2017](https://linear.app/threadbare/issue/THR-2017)). Merged via [#2556](https://github.com/christianspliid-ui/threadbare/pull/2556) and live.
-- **2026-10-24: plan docs are capped at 400 lines per slice, and only an encounter's final package reaches main** ([THR-1948](https://linear.app/threadbare/issue/THR-1948)). Merged via [#2555](https://github.com/christianspliid-ui/threadbare/pull/2555).
-- **2026-10-24: a gift's card line shows its toast once, not twice** ([THR-2013](https://linear.app/threadbare/issue/THR-2013)). Merged via [#2554](https://github.com/christianspliid-ui/threadbare/pull/2554) and live.
-- **2026-10-24: 35 encounters' words now describe the test their Reach actually rolls** ([THR-2011](https://linear.app/threadbare/issue/THR-2011)). Merged via [#2553](https://github.com/christianspliid-ui/threadbare/pull/2553) and live.
 
 ---
 

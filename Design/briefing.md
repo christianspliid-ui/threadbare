@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 06:59 local (05:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 08:00 local (07:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -26,20 +26,19 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **The cathedral's treasury is the dean's own purse**, not a temple faction's. *Veto:* "the temple faction's treasury should pay".
   - **In The Loan, your mortal is the lender**, and is out of pocket until they collect. *Veto:* "the mortal should only broker the loan".
   - **A note from a house that has stopped paying is worthless** on a bad failure. *Veto:* "the bad note should still count as a debt".
-- [Three player texts promise that mandates slow the doom clock](https://linear.app/threadbare/issue/THR-2004/three-player-texts-promise-that-mandates-slow-the-doom-clock-they-only): the words change, not the rules. A well-kept mandate checkpoint softens the doom's next blow instead. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24a.md)*
-- [A hand of five to eight cards hides cards under the hand bar](https://linear.app/threadbare/issue/THR-1942/a-hand-of-five-to-eight-cards-hides-cards-under-the-hand-bar-the-bar): the cards stay a full 16:9 picture, four to a row, and the encounter column scrolls. While a card is hidden, the bar says "2 more cards below". *Veto:* "the whole hand should fit without scrolling, shrink the cards". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24b.md)*
-- [A five-card hand on the Stage still makes the column scroll](https://linear.app/threadbare/issue/THR-1994/a-five-card-hand-on-the-stage-at-19201080-still-makes-the-encounter): the same decision. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24b.md)*
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 ready, 2 in progress.** [The settlement economy](https://linear.app/threadbare/issue/THR-1923) shipped at 05:20 UTC ([#2563](https://github.com/christianspliid-ui/threadbare/pull/2563)) and is live. Its follow-on, [a building a mortal raises is the town's own next building](https://linear.app/threadbare/issue/THR-1966/undertakings-in-the-economy-s2-a-building-a-mortal-raises-is-the-towns), moved onto the shelf and the builder took it two minutes later; that run is active.
+**Healthy: 10 ready, 2 in progress.** [The mandate texts fix](https://linear.app/threadbare/issue/THR-2004/three-player-texts-promise-that-mandates-slow-the-doom-clock-they-only) merged a few minutes ago ([#2566](https://github.com/christianspliid-ui/threadbare/pull/2566)); its ticket closes itself. The builder has shipped five tickets since 01:40 UTC.
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. No local worktree holds uncommitted work for it. It waits on your answer above, not on the builder.
-- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) is agent-owned and older than a week on the shelf; most of that week was the silences above.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. No branch or local worktree holds work for it. It waits on your answer above, not on the builder.
+- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and [oath-brokering encounters](https://linear.app/threadbare/issue/THR-1944) are agent-owned and have sat on the shelf over a week; most of that week was the silences above.
 - Warm playtest round 3 cannot start: its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)) that themselves wait on round 3. The playtest lane owns that gate. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25b.md)*
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (busy, not stalled). No pull requests are waiting to merge. The live site serves the latest commit ([e6eeafd6](https://github.com/christianspliid-ui/threadbare/commit/e6eeafd6)). The worktree reaper ran at 05:55. Engine speed is 140 ms/tick, 1% faster than the 7-day median (142).
+- **Heavy tests red on main since 06:20 local (05:20 UTC)**, after the settlement economy merged: its new phase runs slightly over its speed budget on the test machine, and the restless-road test no longer finds its link. Ticket [THR-2035](https://linear.app/threadbare/issue/THR-2035) filed for the builder.
+
+Everything else is green: main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (shipping, not stalled). The live site serves the latest commit ([81faa81c](https://github.com/christianspliid-ui/threadbare/commit/81faa81c)). The worktree reaper ran at 07:40. Engine speed is 175 ms/tick, 23% slower than the 7-day median (142) but inside the 25% alarm line.
