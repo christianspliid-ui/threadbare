@@ -74,6 +74,8 @@ export function isIdle(b: BuildingInstance): boolean {
 export interface BuildingContext {
   /** Today's yield including yesterday's imports: [food, wood, stone]. */
   readonly yieldIn: Yield;
+  /** The land's own yield, before imports — what `needs` read (a building rises from its own land). */
+  readonly landYield: Yield;
   readonly fieldHexes: number;
   readonly fishingHexes: number;
   readonly grazingHexes: number;
@@ -89,16 +91,16 @@ export interface BuildingContext {
 export function needsHold(def: SettlementBuildingDef, ctx: BuildingContext): boolean {
   const n = def.needs;
   if (!n) return true;
-  if (n.foodYield !== undefined && ctx.yieldIn[0] < n.foodYield) return false;
-  if (n.woodYield !== undefined && ctx.yieldIn[1] < n.woodYield) return false;
-  if (n.stoneYield !== undefined && ctx.yieldIn[2] < n.stoneYield) return false;
+  if (n.foodYield !== undefined && ctx.landYield[0] < n.foodYield) return false;
+  if (n.woodYield !== undefined && ctx.landYield[1] < n.woodYield) return false;
+  if (n.stoneYield !== undefined && ctx.landYield[2] < n.stoneYield) return false;
   if (n.fieldHexes !== undefined && ctx.fieldHexes < n.fieldHexes) return false;
   if (n.fishingHexes !== undefined && ctx.fishingHexes < n.fishingHexes) return false;
   if (n.grazingHexes !== undefined && ctx.grazingHexes < n.grazingHexes) return false;
   if (n.special !== undefined && !ctx.special.has(n.special)) return false;
   if (n.routes !== undefined && ctx.routes < n.routes) return false;
   if (n.population !== undefined && ctx.population < n.population) return false;
-  if (n.stoneOrSeat !== undefined && !(ctx.yieldIn[2] >= n.stoneOrSeat || ctx.isSeat)) return false;
+  if (n.stoneOrSeat !== undefined && !(ctx.landYield[2] >= n.stoneOrSeat || ctx.isSeat)) return false;
   if (n.faithLeanOrBuilding && !(ctx.lean === def.id || ctx.owned.some(b => b.def.tag === 'faith'))) return false;
   return true;
 }

@@ -465,12 +465,14 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
     let buildProgress = num(p.buildProgress);
     let goodsSurplusDays = num(p.goodsSurplusDays);
     let exportGoods = 0;
-    const tierNow = targetTierOf({ population, realmSeat, pulls });
+    // The slots follow the tier the settlement is held at, hysteresis included (review gate).
+    const tierNow = targetTierOf({ population, realmSeat, pulls }, p.targetTier as string | undefined);
     if (buildings.length < BUILDING_SLOTS[tierNow]) {
       buildProgress += bp;
       const rng = mulberry32(hashString(`${seed}:settlement_economy:${id}:${tick}`));
       const choice = chooseBuilding({
         yieldIn,
+        landYield: y,
         fieldHexes: hexes.filter(h => FIELD_TERRAINS.has(h.terrain)).length,
         fishingHexes: hexes.filter(h => FISHING_TERRAINS.has(h.terrain)).length,
         grazingHexes: hexes.filter(h => GRAZING_TERRAINS.has(h.terrain)).length,
