@@ -46,6 +46,30 @@ The inner place tier — an inn, a granary, a gatehouse, a grove, a spring — i
 
 ---
 
+### Population
+
+**Aliases:** —
+**Also see:** `[[Location]]`, `[[Building]]`, `[[Pulling seat]]`, `[[Unrest]]`
+**Status:** canonical
+
+How many people live in a settlement — a `[[Location]]` of subtype hamlet, town, city or capital. It is the settlement economy's food sink: a food surplus grows it and hunger shrinks it (THR-1923, `src/engine/settlementEconomy/growth.ts`, `tier.ts`). **Never shown to the player as a number** (UI Law 13): the player reads a size word (hamlet · town · city · capital) and a trend (*growing · steady · shrinking · going hungry*, `SizeTrend` in `src/data/settlement-economy-words.ts`). Size follows power as well as people: a city needs a `[[Pulling seat]]`, a capital a `[[Realm]]`'s seat. Code: `population` on the settlement node.
+
+Seated by delegation 2026-10-25 (THR-1924).
+
+---
+
+### Building
+
+**Aliases:** —
+**Also see:** `[[Place]]`, `[[Population]]`, `[[Location]]`
+**Status:** canonical
+
+A `[[Place]]` the settlement economy raised from its wood and stone surplus, into a limited number of slots set by size — hamlet 2, town 3, city 5, capital 6 (`BUILDING_SLOTS`, `src/data/settlement-economy-constants.ts`). A Building is a Place in every respect: a `location` node with `parentLocationId`, marked `isBuilding: true` with a `buildingId` from the catalogue in `src/data/settlement-buildings.ts` (`src/engine/settlementEconomy/building.ts`). Existing Place types the catalogue adopts count as built at day 0. Never *structure*, never *room* — the Place rules hold.
+
+Seated by delegation 2026-10-25 (THR-1924).
+
+---
+
 ### Waypoint
 
 **Aliases:** Transit hex, transient location, `loc.transient.*`
@@ -63,6 +87,44 @@ A patch of open ground an actor passed through: a Location that movement pathing
 **Status:** canonical
 
 An edge between two Locations — `road`, `trades_with`, `sacred_route` — that traversal walks, and that grows an identity node (`location:trade_route` today) the moment it becomes nameable, ownable, blockadable or consecrated. Five ratified classes: road, trail, trade_lane, pilgrim_way, portal; a portal is a route edge with an empty hex path and its own cost. Trail and portal have no edge type yet (THR-1394 slice 2 adds `routeKind`). A pilgrim way (`sacred_route`, congregation → settlement) is seeded to each congregation's seat and, since THR-1660, may be consecrated mid-game by the `create × pilgrim_way` undertaking; it belongs to the congregation, never to the mortal who made it.
+
+---
+
+### Surplus route
+
+**Aliases:** —
+**Also see:** `[[Route]]`, `[[Pulling seat]]`, `[[Population]]`
+**Status:** canonical
+
+A trade route (`trades_with`) born when a settlement's surplus has nowhere to go: it sells that surplus to a buyer and ends when the surplus or the want ends. **A Surplus route is a Trade route, not a second route kind** — it is minted through `createTradeRoute` and told apart only by its stamp, `establishedBy: 'surplus'`, and the resource it `carries` (`src/engine/settlementEconomy/surplusRoutes.ts`, THR-1923). Surplus routes running into a seat are what make it a `[[Pulling seat]]`.
+
+Seated by delegation 2026-10-25 (THR-1924).
+
+---
+
+### Unrest
+
+**Aliases:** —
+**Also see:** `[[Location]]`, `[[Population]]`, `[[Fortunes]]`, `[[Location Trait]]`
+**Status:** canonical
+
+How close a settlement's people are to turning on whoever holds it: a number on the settlement that drifts toward a target summed from bounded inputs — hunger, poverty, siege, sickness and contentment (`computeUnrestInputs`, `src/engine/unrestPressure/inputs.ts`, THR-1934). The player never sees the number. They see bands, read as Location Trait chips with hysteresis: **Restless** (enter 30, release 15), **Lawless**, **On the edge** and **Rising** (chip thresholds `LOCATION_TRAIT_*_ENTER` / `_RELEASE` in `src/data/location-trait-constants.ts`; the plain bands `UNREST_BAND_*` in `src/data/unrest-pressure-constants.ts`), and the `[[Fortunes]]` sentence that names the largest cause.
+
+**Happiness** is a sub-entry of Unrest, **not a separate stat** (Game Design Law 43, one concept per thing). It is the settlement economy's bounded term — buildings, trade, crowding and hunger (`economyHappiness`, `src/engine/phases/settlementEconomy.ts`) — written into Unrest as the *contentment* input (`economyContentment`, bounded ±`UNREST_HAPPINESS_MAX`). The player learns Unrest; Happiness is how the UL explains what moves it. Never a player-facing word.
+
+Seated by delegation 2026-10-25 (THR-1924).
+
+---
+
+### Fortunes
+
+**Aliases:** Fortunes row
+**Also see:** `[[Unrest]]`, `[[Location]]`
+**Status:** canonical
+
+The place page's one-sentence row on how a settlement lives: its prosperity word (`getProsperityTier`'s five — destitute, struggling, modest, prosperous, flourishing) and, when the town bears a Restless or Lawless chip, that band and its largest cause (*"…and its people are restless with hunger."*). The band is read from the trait edges, so the sentence always matches the chips on the page (UI Law 56). It never shows a number. Source: `src/data/fortunes-prose.ts` (THR-1934 S1).
+
+Seated by delegation 2026-10-25 (THR-1924).
 
 ---
 

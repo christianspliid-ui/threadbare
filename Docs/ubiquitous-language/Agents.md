@@ -160,6 +160,18 @@ Approved by Christian in attended chat, 2026-09-11 (THR-1453), shipped with THR-
 
 ---
 
+### Pulling seat
+
+**Aliases:** seat, court (player words)
+**Also see:** `[[Faction]]`, `[[Realm]]`, `[[Surplus route]]`, `[[Population]]`
+**Status:** canonical
+
+A faction's seat that draws resources in. The seat is where the faction sits — its `homeLocationId`, or for a `[[Realm]]` the town its `controls` edge marks `role: 'seat'`. It **pulls** when its faction holds at least one other settlement, or when at least `SEAT_MIN_INCOMING` (2) `[[Surplus route]]`s run into it (`src/engine/settlementEconomy/seat.ts`, THR-1923). Only a pulling seat can grow past town: a city needs one, a capital needs a Realm's. A seat that pulls nothing stays a town. Read only — no edge marks it. The player word is *seat* or *court*.
+
+Seated by delegation 2026-10-25 (THR-1924).
+
+---
+
 ### Congregation
 
 **Aliases:** chapter (code word only — engine comments, `factionMembership.ts`)

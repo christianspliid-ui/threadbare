@@ -13,11 +13,11 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 | Shard | Content | Content-adjacent |
 |---|---|---|
 | [Cosmology.md](./Cosmology.md) | Reaches, Spheres, Foundation/Creation, Tradition, domain capability, prerequisites | ✅ |
-| [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Rite of the Thread, The God's Mark, Faction, Realm, Congregation, Fringe, Monster, Rival, Thread, Avatar | ✅ |
+| [Agents.md](./Agents.md) | Agent, Actor, Ascendant, The First, Rite of the Thread, The God's Mark, Faction, Realm, Pulling seat, Congregation, Fringe, Monster, Rival, Thread, Avatar | ✅ |
 | [Encounters.md](./Encounters.md) | Encounter, Template, UAT, Aftermath, Reaction, Seed, Hidden Mark, Awareness | ✅ |
 | [Traits.md](./Traits.md) | Trait, Trait Category, Destiny, Trait Ref, TraitPredicate, Trait Hook, Visibility — plus the attachment layer: Attachment, Effect, Power, Spell, Bestowal, Innate Power, Temper, Strained | ✅ |
 | [Prose.md](./Prose.md) | IPK, Enrichment Placeholder, Resolver, Strata, Narrative Lexicon, Chronicle | ✅ |
-| [Graph.md](./Graph.md) | World Object, Area, Location, Place, Waypoint, Route, Node, Edge, WorldGraph, NodeType, EdgeType, versioning, position model | ❌ |
+| [Graph.md](./Graph.md) | World Object, Area, Location, Place, Population, Building, Waypoint, Route, Surplus route, Unrest, Fortunes, Node, Edge, WorldGraph, NodeType, EdgeType, versioning, position model | ❌ |
 | [Coordination.md](./Coordination.md) | CC session types, Linear states, claim discipline, WIP, Coordination Block (+ retired Cowork/Codex terms) | ❌ |
 | [Process.md](./Process.md) | NFPs, Three-Pillar Rule, Definition of Done, Design Governance, UL, Drift Scan | ❌ |
 
@@ -61,6 +61,7 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Congregation](./Agents.md#congregation)** — *(code word: chapter)* one Temple of the Spheres instance per living culture, seated at its capital, venerating its people's first sphere; a Faction, never *chapter* on screen
 - **[Fringe](./Agents.md#fringe)** — a settlement outside every heartland carrying the nearest culture as a weak, current-only link; never Realm territory
 - **[Realm](./Agents.md#realm)** — *(alias: nation)* a Faction of class `realm`: a culture's landed polity, seated at a capital, holding towns through `controls`; the map's red border is a projection of them, never a stored stamp
+- **[Pulling seat](./Agents.md#pulling-seat)** — a faction's seat that draws resources in (holds another settlement, or ≥2 surplus routes run into it); only it grows past town; player word *seat* or *court*
 - **[Monster](./Agents.md#monster)** — a lair's beast: a class of Mortal, not a kind; an individual actor with `isMonsterElite` or a `monsterState` card, read through `isMonster`; the plot never targets one, the hunt does (THR-1559)
 - **[Reputation](./Agents.md#reputation)** — the social score that modifies interactions between a and b; directional, band-worded, four legs behind one `getReputationWith`
 - **[Reputation Tally](./Agents.md#reputation-tally)** — what a mortal is becoming known *for*, on a `<reach>.<polarity>` key; not reputation with anyone
@@ -214,8 +215,13 @@ Load this file at session start (referenced from CLAUDE.md). Load specific shard
 - **[Area](./Graph.md#area)** — a multi-hex terrain cluster containing its Locations; the `region` node; geographic, never political
 - **[Location](./Graph.md#location)** — the outer place tier: a `location` node without `parentLocationId`; seven classes over `locationSubtype`
 - **[Place](./Graph.md#place)** — the inner place tier inside a Location: a `location` node with `parentLocationId`; the code word is *sublocation*; never "room" or "structure"
+- **[Population](./Graph.md#population)** — how many people live in a settlement; the food sink; never a number to the player, who reads a size word and a trend
+- **[Building](./Graph.md#building)** — a Place the settlement economy raised from wood and stone surplus, into slots by size (hamlet 2 · town 3 · city 5 · capital 6); `isBuilding: true`; never "structure"
 - **[Waypoint](./Graph.md#waypoint)** — a transit Location movement pathing mints (`loc.transient.*`, subtype `wilderness_waypoint`, wild class); permanent, never a settlement or an endpoint
 - **[Route](./Graph.md#route)** — an edge between two Locations (`road`, `trades_with`, `sacred_route`) that grows an identity node when nameable or ownable; classes road · trail · trade_lane · pilgrim_way · portal
+- **[Surplus route](./Graph.md#surplus-route)** — a trade route born to sell a surplus with nowhere to go (`establishedBy: 'surplus'`); a Trade route, not a second route kind
+- **[Unrest](./Graph.md#unrest)** — how close a settlement is to turning on its holder; bounded inputs, shown only as Restless · Lawless · On the edge · Rising chips; Happiness is its economy input, not a stat
+- **[Fortunes](./Graph.md#fortunes)** — the place page's one sentence: prosperity word plus, under a band chip, the band and its largest cause; never a number
 - **[Node](./Graph.md#node)** — `GraphNode`; the basic entity in the world graph; everything is a node
 - **[Edge](./Graph.md#edge)** — `GraphEdge`; typed directed relationship between nodes; everything meaningful is an edge
 - **[WorldGraph](./Graph.md#worldgraph)** — central data structure; mutated in place; object reference never changes; use version counters for stale-detection
