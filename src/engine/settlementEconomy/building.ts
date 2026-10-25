@@ -31,6 +31,8 @@ import {
   LEAN_BONUS,
   BUILD_CHOICE_JITTER,
   FOOD_PER_PERSON,
+  BUILDING_SLOTS,
+  type SettlementTier,
 } from '../../data/settlement-economy-constants';
 import type { SpecialGood } from '../../data/special-goods';
 import type { Yield } from './land';
@@ -201,6 +203,52 @@ export function adoptWorldgenPlaces(graph: WorldGraph, settlementId: string, tic
     adopted.push(def.id);
   }
   return adopted;
+}
+
+/**
+ * The settlement's next building, as the day's chooser picked it (THR-1966): written by the
+ * phase when a slot is free, removed when the slots are full or the pick was raised. A
+ * mortal who raises a building in the town raises this one, so a builder never flattens
+ * a town into the same workshop everywhere.
+ */
+export const NEXT_BUILDING_PROP = 'economyNextBuilding';
+
+/** How many buildings a settlement at this tier may hold. */
+export function buildingSlotsOf(settlement: GraphNode): number {
+  const p = settlement.properties;
+  const tier = (typeof p.targetTier === 'string' ? p.targetTier : p.locationSubtype) as SettlementTier;
+  return BUILDING_SLOTS[tier] ?? 0;
+}
+
+/**
+ * The building a mortal may raise in this settlement now: the chooser's last pick, while it
+ * is not yet standing and a slot is free. Null otherwise — the settlement is not a target.
+ */
+export function nextBuildingFor(graph: WorldGraph, settlementId: string): SettlementBuildingDef | null {
+  const settlement = graph.getNode(settlementId);
+  if (!settlement) return null;
+  const id = settlement.properties[NEXT_BUILDING_PROP];
+  const def = typeof id === 'string' ? getSettlementBuilding(id) : undefined;
+  if (!def) return null;
+  const owned = readBuildings(graph, settlementId);
+  if (owned.length >= buildingSlotsOf(settlement)) return null;
+  return owned.some(b => b.def.id === def.id) ? null : def;
+}
+
+/** The building as a sentence names it: "a storehouse", "an oracle chamber", "town walls". */
+export function buildingNoun(def: SettlementBuildingDef): string {
+  const n = def.cardName.toLowerCase();
+  if (/s$/.test(n)) return n;
+  return `${/^[aeiou]/.test(n) ? 'an' : 'a'} ${n}`;
+}
+
+/**
+ * Stamp a Place a mortal raised as one of the settlement's buildings (THR-1966). It reads as
+ * adopted, not as the economy's own: on loss the Place stays (its builder's freehold with it)
+ * and stops being a building, rather than being removed.
+ */
+export function markMortalBuilding(node: GraphNode, def: SettlementBuildingDef, tick: number): void {
+  markAdopted(node, def, tick);
 }
 
 export interface RaiseResult {

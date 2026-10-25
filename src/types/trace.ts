@@ -106,6 +106,8 @@ export type TraceCategory =
   | 'undertaking.economy.open_lane' | 'undertaking.economy.found_guild'
   // THR-1967 — undertakings in the economy (S3)
   | 'undertaking.economy.trade_pay' | 'undertaking.economy.ambition_met'
+  // THR-1966 — undertakings in the economy (S2)
+  | 'undertaking.economy.raise_building'
   // THR-1932 — the crown (fealty)
   | 'oath_sworn' | 'oath_refused' | 'oath_broken' | 'rebellion'
   // THR-1974 — a liege pays its vassal's soldiers
@@ -758,6 +760,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'undertaking.economy.found_town', 'undertaking.economy.found_town_refused',
   'undertaking.economy.open_lane', 'undertaking.economy.found_guild',
   'undertaking.economy.trade_pay', 'undertaking.economy.ambition_met',
+  'undertaking.economy.raise_building',
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'oath_wages',
   'oath_raise_funded',
@@ -2110,6 +2113,20 @@ export interface FoundTownRefusedTrace extends TraceBase {
   founderId: string;
   siteId: string;
   outcome: 'no_ground';
+}
+
+/** THR-1966 — a mortal's `create × place` in a settlement: the town's next building, or why not. */
+export interface RaiseBuildingTrace extends TraceBase {
+  category: 'undertaking.economy.raise_building';
+  builderId: string;
+  settlementId: string;
+  /** The building picked when the work started. */
+  plannedBuildingId: string | null;
+  /** The building raised; null when nothing was. */
+  raisedBuildingId: string | null;
+  /** The Place it stands as; null when nothing was raised. */
+  placeId: string | null;
+  outcome: 'raised' | 'repicked' | 'no_room';
 }
 
 /** THR-1937 — a mortal opened a lane and tolls it. */
@@ -5337,6 +5354,7 @@ export type TraceEntry =
   | FactionEmbargoTrace
   | FoundTownTrace
   | FoundTownRefusedTrace
+  | RaiseBuildingTrace
   | OpenLaneTrace
   | FoundGuildTrace
   | TradePayTrace

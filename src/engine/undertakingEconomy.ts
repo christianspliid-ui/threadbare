@@ -45,7 +45,16 @@ import {
   TRADE_RUN_PAY_MAX,
   TRADE_RUN_PAY_PER_UNIT,
   UNDERTAKING_ECONOMY_ENABLED,
+  LEGACY_PLACE_TYPE_TO_BUILDING,
 } from '../data/undertaking-economy-constants';
+import { getSettlementBuilding, type SettlementBuildingDef } from '../data/settlement-buildings';
+import {
+  buildingSlotsOf,
+  markMortalBuilding,
+  nextBuildingFor,
+  readBuildings,
+} from './settlementEconomy/building';
+import { isEconomySettlement } from './settlementEconomy/land';
 import { applyMeansShift } from './mortalMeans';
 import { readRegionalMonopolies } from './regionalMonopoly';
 import { findUnclaimedSite } from './foundingSite';
@@ -57,6 +66,7 @@ import type {
   FoundTownRefusedTrace,
   FoundTownTrace,
   OpenLaneTrace,
+  RaiseBuildingTrace,
   TradePayTrace,
 } from '../types/trace';
 
@@ -510,4 +520,133 @@ export function isFactionAmbitionMet(graph: WorldGraph, factionId: string, ambit
 /** The resource ids of the faction's regional monopolies (the met trace's evidence). */
 export function factionMonopolyResourceIds(graph: WorldGraph, factionId: string): string[] {
   return [...new Set(readRegionalMonopolies(graph.getNode(factionId)?.properties).map(m => m.resourceId))].sort();
+}
+
+// ─── Raise a building: the town's own next building (S2, THR-1966) ───────────
+
+/**
+ * Why `create × place` cannot target this site, or null. A settlement is a target only
+ * while its chooser has a next building and a slot is free; a site that is not a
+ * settlement (a fort, a ruin) is outside the town's economy and is left as before.
+ */
+export function raiseBuildingSiteRefusal(graph: WorldGraph, siteId: string): string | null {
+  if (!UNDERTAKING_ECONOMY_ENABLED) return null;
+  if (!isEconomySettlement(graph.getNode(siteId))) return null;
+  return nextBuildingFor(graph, siteId) ? null : 'no_building_slot';
+}
+
+/** The building a mortal sets about raising at this site now, or null when there is none. */
+export function plannedBuildingFor(graph: WorldGraph, siteId: string | undefined): SettlementBuildingDef | null {
+  if (!UNDERTAKING_ECONOMY_ENABLED || !siteId) return null;
+  if (!isEconomySettlement(graph.getNode(siteId))) return null;
+  return nextBuildingFor(graph, siteId);
+}
+
+export interface RaisedBuildingPick {
+  readonly def: SettlementBuildingDef;
+  readonly outcome: 'raised' | 'repicked';
+}
+
+/**
+ * At completion: the planned building if it still qualifies (not yet standing, a slot
+ * free), else the chooser's current pick, else null (no room — nothing is raised).
+ */
+export function pickRaisedBuilding(
+  graph: WorldGraph,
+  settlementId: string,
+  plannedBuildingId: string | null,
+): RaisedBuildingPick | null {
+  const settlement = graph.getNode(settlementId);
+  if (!settlement) return null;
+  const owned = readBuildings(graph, settlementId);
+  if (owned.length >= buildingSlotsOf(settlement)) return null;
+  const planned = plannedBuildingId ? getSettlementBuilding(plannedBuildingId) : undefined;
+  if (planned && !owned.some(b => b.def.id === planned.id)) return { def: planned, outcome: 'raised' };
+  const next = nextBuildingFor(graph, settlementId);
+  return next ? { def: next, outcome: planned ? 'repicked' : 'raised' } : null;
+}
+
+export interface SettleRaisedBuildingInput {
+  readonly graph: WorldGraph;
+  readonly builderId: string;
+  readonly settlementId: string;
+  readonly placeId: string;
+  readonly def: SettlementBuildingDef;
+  readonly plannedBuildingId: string | null;
+  readonly outcome: 'raised' | 'repicked';
+  readonly tick: number;
+  readonly projectId?: string;
+}
+
+/**
+ * The Place a mortal raised becomes the town's building, and the builder holds it: the
+ * building stamp, then a freehold through `grantHolding` (UL *Freehold*: the edge is the
+ * authority). A refused freehold leaves the building standing (fail-soft).
+ */
+export function settleRaisedBuilding(input: SettleRaisedBuildingInput): void {
+  const { graph, builderId, settlementId, placeId, def, tick } = input;
+  const place = graph.getNode(placeId);
+  if (!place) return;
+  markMortalBuilding(place, def, tick);
+  const freehold = grantHolding(graph, builderId, placeId, { tick, projectId: input.projectId });
+  if (!freehold.success) {
+    console.warn(`[undertakingEconomy] builder freehold refused on ${placeId}: ${freehold.error ?? 'unknown'}`);
+  }
+  emitTrace({
+    category: 'undertaking.economy.raise_building',
+    tick,
+    builderId,
+    settlementId,
+    plannedBuildingId: input.plannedBuildingId,
+    raisedBuildingId: def.id,
+    placeId,
+    outcome: input.outcome,
+    summary: `${graph.getNode(builderId)?.name ?? builderId} raises ${def.id} in ${graph.getNode(settlementId)?.name ?? settlementId}${input.outcome === 'repicked' ? ` (planned ${input.plannedBuildingId})` : ''}`,
+  } as RaiseBuildingTrace);
+}
+
+/** The work found no room left: nothing was raised, and the trace says what was meant. */
+export function traceRaiseBuildingNoRoom(
+  graph: WorldGraph,
+  builderId: string,
+  settlementId: string,
+  plannedBuildingId: string | null,
+  tick: number,
+): void {
+  emitTrace({
+    category: 'undertaking.economy.raise_building',
+    tick,
+    builderId,
+    settlementId,
+    plannedBuildingId,
+    raisedBuildingId: null,
+    placeId: null,
+    outcome: 'no_room',
+    summary: `${graph.getNode(builderId)?.name ?? builderId} finds no room in ${graph.getNode(settlementId)?.name ?? settlementId}`,
+  } as RaiseBuildingTrace);
+}
+
+/**
+ * A strategic pack raised a Place of its own type (the template model): stamp it as the
+ * building `LEGACY_PLACE_TYPE_TO_BUILDING` maps it to, with the builder's freehold, when the
+ * settlement has that building free to take. A non-economic type, a building already
+ * standing or full slots leave the Place as it was raised. Returns the building id stamped.
+ */
+export function stampLegacyPlace(
+  graph: WorldGraph,
+  builderId: string,
+  placeId: string,
+  sublocationTypeId: string,
+  tick: number,
+): string | null {
+  if (!UNDERTAKING_ECONOMY_ENABLED) return null;
+  const buildingId = LEGACY_PLACE_TYPE_TO_BUILDING[sublocationTypeId.replace(/^sublocation-type\./, '')];
+  const def = buildingId ? getSettlementBuilding(buildingId) : undefined;
+  const place = graph.getNode(placeId);
+  const settlementId = place?.properties.parentLocationId;
+  if (!def || typeof settlementId !== 'string' || !isEconomySettlement(graph.getNode(settlementId))) return null;
+  const pick = pickRaisedBuilding(graph, settlementId, def.id);
+  if (pick?.def.id !== def.id) return null;
+  settleRaisedBuilding({ graph, builderId, settlementId, placeId, def, plannedBuildingId: def.id, outcome: 'raised', tick });
+  return def.id;
 }
