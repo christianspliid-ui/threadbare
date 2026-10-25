@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 05:58 local (04:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,7 +33,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 ready, 2 in progress.** One more job shipped since the last brief: [choices widen across runs](https://linear.app/threadbare/issue/THR-1844) ([#2562](https://github.com/christianspliid-ui/threadbare/pull/2562)), now live. The builder has moved on to [the settlement economy](https://linear.app/threadbare/issue/THR-1923): its latest checkpoint was committed two minutes ago on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1923-settlement-economy), and the run is active. New on the shelf: [the next world shows what the World-Soul remembers](https://linear.app/threadbare/issue/THR-1971), unblocked now that "The world remembers" step exists.
+**Healthy: 9 ready, 2 in progress.** Nothing new shipped this hour. The builder is in code review on [the settlement economy](https://linear.app/threadbare/issue/THR-1923): three review-fix commits landed in the last half hour on [its branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-1923-settlement-economy), the newest two minutes ago, and the run is active. No pull request yet. The other pickup runs this hour correctly stood aside for it.
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. No local worktree holds uncommitted work for it. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) is agent-owned and older than a week on the shelf; most of that week was the silences above.
@@ -41,4 +41,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (busy, not stalled). No pull requests are waiting to merge. The live site serves the latest commit ([e91c8245](https://github.com/christianspliid-ui/threadbare/commit/e91c8245)). The worktree reaper ran at 04:40. Engine speed is 114 ms/tick, 20% faster than the 7-day median (143).
+All green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (busy, not stalled). No pull requests are waiting to merge. The live site serves the latest commit ([e91c8245](https://github.com/christianspliid-ui/threadbare/commit/e91c8245)). The worktree reaper ran at 05:51. Engine speed is 123 ms/tick, 14% faster than the 7-day median (142).
