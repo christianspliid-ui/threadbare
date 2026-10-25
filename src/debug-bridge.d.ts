@@ -263,6 +263,11 @@ export interface DebugStageState {
    * scroll region, scrolling at the cap (Law 57). Reported so evidence can name it.
    */
   scrollingAtCap?: { element: string; axis: 'x' | 'y' }[];
+  /**
+   * THR-1942 — cards of the open nudge hand sitting under the stuck hand bar (the number
+   * `nudge-hand-more` reads). 0 when the hand fits, no hand is up, or every card is in view.
+   */
+  handCardsBelowBar: number;
 }
 
 /** `openHomedSurface(kind)` (THR-1892) — whether the lever opened the moment, and why not. */
