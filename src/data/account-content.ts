@@ -54,6 +54,8 @@ export const LEGACY_SPHERE_LIFT = 2;
 export const ECHO_SEEDING_PRIME = 70003;
 /** Place subtypes no echo stands in: a monster's home is not ordinary ground (Decided 3). */
 export const ECHO_EXCLUDED_SUBTYPES: ReadonlySet<string> = new Set(['lair', 'nest']);
+/** The monument sublocation's type id (a Place's `sublocationTypeId`, as `ruins.scar` is). */
+export const ECHO_MONUMENT_SUBLOCATION_TYPE_ID = 'echo.monument';
 /** What an echo-made node carries in `notableOrigin` / `origin` (the heir, the kin tie). */
 export const ECHO_ORIGIN = 'echo';
 

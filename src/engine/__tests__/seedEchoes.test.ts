@@ -12,6 +12,8 @@ import { resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../traceBuffer';
 import { dominionOf } from '../dominion';
 import { buildEchoGroup, pastLineText } from '../worldPastWords';
+import { readView } from '../views/readView';
+import { mapPlacesSelector } from '../views/map/places';
 import { echoRelation, monumentTargetBand, seedingOrder } from '../seedEchoes';
 import { DOMINION_BAND_RANK } from '../../data/dominion-content';
 import { MAX_SEEDED_ECHOES } from '../../data/account-content';
@@ -87,7 +89,10 @@ describe.each([42, 99, 7])('THR-1843 — seed %i with SAMPLE_ACCOUNT', seed => {
     const node = state.graph.getNode(warm.nodeId)!;
     expect(node.name).toBe('The Long Barrow');
     expect(node.properties.parentLocationId).toBe(warm.hostId);
-    expect(node.properties.locationSubtype).toBe('ruins');
+    // Shaped as a Place, so the map's place layer never draws it as a top-level ruin.
+    expect(node.properties.sublocationTypeId).toBe('echo.monument');
+    expect(node.properties.locationSubtype).toBeUndefined();
+    expect(readView(null, state, mapPlacesSelector, undefined).some(p => p.id === warm.nodeId)).toBe(false);
   });
 
   it('stands Hostile against an opposed god, or traces the cap', () => {
@@ -109,6 +114,9 @@ describe.each([42, 99, 7])('THR-1843 — seed %i with SAMPLE_ACCOUNT', seed => {
     expect(heir.properties.echoLineageOf).toBe('Maren Ashfold');
     const kinTies = state.graph.getOutgoingEdges(heir.id, 'relates_to').filter(e => e.properties.basis === 'kin' && e.properties.origin === 'echo');
     expect(kinTies).toHaveLength(1);
+    // The kin tie never stacks on a pair already tied (one edge per pair per direction).
+    const targets = state.graph.getOutgoingEdges(heir.id, 'relates_to').map(e => e.target);
+    expect(new Set(targets).size).toBe(targets.length);
 
     const relic = state.seededEchoes!.seeded.find(e => e.kind === 'relic')!;
     const node = state.graph.getNode(relic.nodeId)!;

@@ -29,6 +29,7 @@ import { MAX_SPHERE_SCORE, type SphereAffinity } from '../types/sphereAffinity';
 import { DOMINION_BAND_RANK, type DominionBand } from '../data/dominion-content';
 import {
   ECHO_EXCLUDED_SUBTYPES,
+  ECHO_MONUMENT_SUBLOCATION_TYPE_ID,
   ECHO_ORIGIN,
   ECHO_SEEDING_PRIME,
   LEGACY_SPHERE_LIFT,
@@ -184,9 +185,12 @@ function seedMonument(
     type: 'location',
     name: def.name,
     properties: {
+      // A Place, shaped like every other sublocation writer's: the type id and
+      // persistence, never an outer-tier `locationSubtype` (THR-1403), so the map's
+      // place layer does not draw it as a second top-level ruin on its host's hex.
+      sublocationTypeId: ECHO_MONUMENT_SUBLOCATION_TYPE_ID,
       parentLocationId: host.id,
-      locationType: 'ruins',
-      locationSubtype: 'ruins',
+      persistence: { type: 'permanent' },
       hexCol: host.properties.hexCol,
       hexRow: host.properties.hexRow,
       echoId: def.id,
@@ -201,6 +205,12 @@ function seedMonument(
     echoId: def.id, kind: 'monument', name: def.name, nodeId, hostId: host.id,
     relation, targetBand, band: result.band, imprint: result.imprint, capped: result.capped,
   };
+}
+
+/** True when `a` and `b` already hold a `relates_to` tie in either direction. */
+function hasTieWith(graph: WorldGraph, a: string, b: string): boolean {
+  return graph.getOutgoingEdges(a, 'relates_to').some(e => e.target === b)
+    || graph.getOutgoingEdges(b, 'relates_to').some(e => e.target === a);
 }
 
 /** The `relates_to` kin pair, both directions, in the worldgen tie shape. */
@@ -251,7 +261,9 @@ function seedLegacy(
       props.sphereAffinity = { ...bag, scores };
     }
     graph.updateNode(heir.id, { properties: props });
-    const kin = residents.filter(n => n.id !== heir.id).sort(byId)[0];
+    // One kin tie, to a co-resident the heir holds no tie with yet (the worldgen
+    // writer's `hasTieWith` guard): readers take the first edge of a pair.
+    const kin = residents.filter(n => n.id !== heir.id && !hasTieWith(graph, heir.id, n.id)).sort(byId)[0];
     if (kin) writeKinTie(graph, heir.id, kin.id);
     return { echoId: def.id, kind: 'legacy', name: def.name, nodeId: heir.id, hostId: settlement.id, imprint };
   }
