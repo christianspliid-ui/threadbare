@@ -41,6 +41,8 @@ describe.each([42, 99, 7])('THR-1843 — neglect on seed %i', seed => {
     untended(kin);
     const after = dominionOf(kin.graph, kinGod, warm.hostId).band;
     expect(DOMINION_BAND_RANK[after]).toBeLessThan(DOMINION_BAND_RANK[before]);
+    // The monument reads through its host, so it fades with it.
+    expect(dominionOf(kin.graph, kinGod, warm.nodeId).band).toBe(after);
 
     const opp = world(OPPOSED, seed);
     const oppGod = godId(opp);

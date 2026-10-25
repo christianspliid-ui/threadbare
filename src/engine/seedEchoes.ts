@@ -47,7 +47,7 @@ import {
   WORLDGEN_TIE_TRUST_FROM_SENTIMENT,
 } from '../data/worldgen-living-constants';
 import { liveEchoes } from './accountRecord';
-import { dominionOf, godSpherePoints, matchOfScores } from './dominion';
+import { DOMINION_READS_PARENT_KEY, dominionOf, godSpherePoints, matchOfScores } from './dominion';
 import { isValidSphereAffinity } from './sphereAffinity';
 import { getLocationNodes } from './sublocationShape';
 import { hydrateToTier } from './npcGraduation';
@@ -179,7 +179,6 @@ function seedMonument(
     : { band: dominionOf(graph, ascendantId, host.id).band, imprint: 0, capped: false };
 
   const nodeId = `echo_monument_${def.id}`;
-  const hostBag = bagOf(graph.getNode(host.id));
   graph.addNode({
     id: nodeId,
     type: 'location',
@@ -196,7 +195,9 @@ function seedMonument(
       echoId: def.id,
       echoOrigin: true,
       echoKind: 'monument',
-      ...(hostBag ? { sphereAffinity: { scores: { ...hostBag.scores }, progress: { ...hostBag.progress } } } : {}),
+      // The band lives on the host (the place tier); the monument reads through it, so
+      // it fades when its host does rather than keeping a frozen copy of the lift.
+      [DOMINION_READS_PARENT_KEY]: true,
     },
   });
   graph.addEdge({ id: `edge_contains_${host.id}_${nodeId}`, source: host.id, target: nodeId, type: 'contains', properties: {} });
@@ -314,10 +315,17 @@ export function seedEchoes(graph: WorldGraph, ascendantId: string, account: Acco
   const rng = mulberry32(seed + ECHO_SEEDING_PRIME);
   const hosting = new Set<string>();
   const ordered = seedingOrder(account);
-  for (const [i, { def, state }] of ordered.entries()) {
-    if (i >= MAX_SEEDED_ECHOES) { skip(summary, def.id, 'over_cap'); continue; }
-    if (!def.name?.trim() || def.sphereAffinities.length === 0) { skip(summary, def.id, 'no_origin'); continue; }
-    if (!def.sphereAffinities.every(s => (SPHERE_NAMES as readonly string[]).includes(s))) { skip(summary, def.id, 'no_origin'); continue; }
+  for (const { def, state } of ordered) {
+    // The cap counts echoes that stand, so one that found no place frees its slot.
+    if (summary.seeded.length >= MAX_SEEDED_ECHOES) { skip(summary, def.id, 'over_cap'); continue; }
+    // A stored record is only shape-checked as a whole: a malformed definition skips
+    // itself, never the echoes already placed.
+    const spheres: unknown = def.sphereAffinities;
+    if (typeof def.name !== 'string' || !def.name.trim() || !Array.isArray(spheres) || spheres.length === 0
+      || !spheres.every(s => (SPHERE_NAMES as readonly string[]).includes(s as string))) {
+      skip(summary, def.id, 'no_origin');
+      continue;
+    }
     let out: SeededEcho | SkipReason;
     try {
       out = def.echoType === 'monument' ? seedMonument(graph, ascendantId, def, state, hosting)

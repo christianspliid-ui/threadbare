@@ -82,6 +82,9 @@ export type TendedBy = 'claim' | 'seat' | 'carry' | 'anointed';
 
 // ─── Band arithmetic ─────────────────────────────────────────────────
 
+/** THR-1843 — a Place carrying this flag reads its parent place's scores (the monument stands for its host). */
+export const DOMINION_READS_PARENT_KEY = 'dominionReadsParent';
+
 /** Cut a dominion value into its band (THR-1760). */
 export function bandOfValue(value: number): DominionBand {
   if (!Number.isFinite(value)) return DOMINION_PAR_BAND;
@@ -207,6 +210,12 @@ export function dominionObjectScores(
   if (!node) return { scores: undefined, kind: 'unknown', readThrough: 'missing' };
 
   if (node.type === 'location' || isPlaceNode(node)) {
+    // THR-1843 — a Place that stands for its host (an earlier world's monument) reads
+    // the host's scores, so it fades with the host instead of keeping a frozen copy.
+    if (isPlaceNode(node) && node.properties[DOMINION_READS_PARENT_KEY] === true) {
+      const parent = resolveToParentLocation(graph, node);
+      if (parent) return { scores: scoresOf(parent), kind: 'sublocation', readThrough: 'parent' };
+    }
     return { scores: scoresOf(node), kind: isPlaceNode(node) ? 'sublocation' : 'place', readThrough: 'own' };
   }
   if (node.type === 'artifact') {

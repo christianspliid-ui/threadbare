@@ -81,6 +81,8 @@ describe.each([42, 99, 7])('THR-1843 — seed %i with SAMPLE_ACCOUNT', seed => {
     expect(dominionOf(state.graph, god, warm.hostId).band).toBe('held');
     expect(dominionOf(state.graph, god, fade.hostId).band).toBe('touched');
     expect(warm.hostId).not.toBe(fade.hostId);
+    // The monument reads through its host.
+    expect(dominionOf(state.graph, god, warm.nodeId).band).toBe('held');
     // The summary matches the traces.
     const traces = getTraces().filter(t => t.category === 'echo.seeded');
     expect(traces.map(t => (t as { echoId: string }).echoId).sort())
@@ -172,6 +174,14 @@ describe('THR-1843 — limits and absence', () => {
     const summary = world(KIN, 42, account).seededEchoes!;
     expect(summary.seeded.length).toBe(MAX_SEEDED_ECHOES);
     expect(summary.skipped.filter(s => s.reason === 'over_cap')).toHaveLength(3);
+  });
+
+  it('skips a malformed stored definition alone, keeping the echoes already placed', () => {
+    const account = sampleAccount();
+    (account.echoDefinitions[2] as unknown as { sphereAffinities: unknown }).sphereAffinities = 'life';
+    const summary = world(KIN, 42, account).seededEchoes!;
+    expect(summary.seeded.map(e => e.kind)).toEqual(['monument', 'legacy']);
+    expect(summary.skipped).toEqual([{ echoId: 'echo_sample_relic', reason: 'no_origin' }]);
   });
 
   it('band ranks order the targets as the reached() check assumes', () => {
