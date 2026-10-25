@@ -138,6 +138,9 @@ import { getAscendantPrimarySphere, applyTeachSpell, type TeachSpellSink } from 
 import { TEACH_SPELL_RECEIPT_SIGNIFICANCE } from '../data/spell-grant-constants';
 import type { DetectionCrossingRecorder } from './agentDetection';
 import { raiseWarhostForce, selectCommander } from './armySpawning';
+// THR-1944 — a mortal brokers an oath through the crown's single `sworn_to` writer.
+import { brokerOath } from './crown/brokeredOath';
+import { CROWN_CHRONICLE_SIGNIFICANCE } from '../data/crown-chronicle-content';
 import type { WorldGraph } from './graph';
 import {
   AFTERMATH_TARGET_SENTINEL,
@@ -3859,6 +3862,62 @@ export function applyEncounterAftermathReaction(
           effectDetail: { factionA: effect.factionA, factionB: effect.factionB, previousSentiment: ffpPrevSent, newSentiment: ffpNewSent },
           success: true,
           summary: `faction_force_peace[${i}]: peace between ${effect.factionA} and ${effect.factionB}`,
+        });
+        break;
+      }
+
+      // ─── THR-1944 — a mortal brokers an oath of fealty ─────────────────────
+
+      case 'faction_broker_fealty': {
+        const fbf = brokerOath(state, {
+          brokerId: effect.brokerAgentId,
+          vassalAgentId: effect.vassalAgentId,
+          kind: effect.oathKind,
+          forcedBy: effect.oathKind === 'coerced' ? effect.forcedBy : undefined,
+        }, {
+          getProjection: () => ensureRealmProjection(runtime, state.graph, state.tiles, tick),
+          onStructure: () => touchStructure(runtime),
+        });
+        if (!fbf.sworn) {
+          emitTrace({
+            tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+            encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'faction_broker_fealty',
+            effectDetail: { brokerAgentId: effect.brokerAgentId, vassalAgentId: effect.vassalAgentId, vassalId: fbf.vassalId, liegeId: fbf.liegeId, oathKind: effect.oathKind },
+            success: false, failReason: fbf.reason,
+            summary: `faction_broker_fealty[${i}] skipped: ${fbf.reason}`,
+          });
+          break;
+        }
+
+        mutationSummary.touchedWorld = true;
+        mutationSummary.touchedStructure = true;
+        touchWorld(runtime);
+        touchStructure(runtime);
+        if (fbf.chronicle.length > 0) {
+          nextChronicleEntries = [...(nextChronicleEntries ?? state.chronicleEntries ?? []), ...fbf.chronicle];
+        }
+
+        const fbfName = (id: string) => state.graph.getNode(id)?.name ?? id;
+        const fbfEvent: TickEvent = {
+          id: `faction_oath_${encounterId}_${reaction.id}_${i}_${tick}`,
+          tick,
+          type: 'narrative',
+          message: effect.narrativeHook
+            ?? `Through ${fbfName(effect.brokerAgentId)}, ${fbfName(fbf.vassalId)} swore fealty to ${fbfName(fbf.liegeId)}.`,
+          significance: CROWN_CHRONICLE_SIGNIFICANCE.oath_sworn,
+          actorId: actorAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, fbfEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, fbfEvent);
+
+        emitTrace({
+          tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
+          encounterId, actionId, reactionId: reaction.id, effectIndex: i,
+          effectKind: 'faction_broker_fealty',
+          effectDetail: { brokerAgentId: effect.brokerAgentId, vassalId: fbf.vassalId, liegeId: fbf.liegeId, oathKind: effect.oathKind },
+          success: true,
+          summary: `faction_broker_fealty[${i}]: ${fbf.vassalId} swears to ${fbf.liegeId} (${effect.oathKind}), brokered by ${effect.brokerAgentId}`,
         });
         break;
       }

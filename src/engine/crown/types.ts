@@ -6,6 +6,9 @@
 
 export type OathKind = 'persuaded' | 'bought' | 'coerced';
 
+/** What forced a coerced oath: a siege, a town taken, or (THR-1944) a mortal's demand. */
+export type OathForcedBy = 'siege' | 'conquest' | 'demand';
+
 /** The six things that move loyalty, in table order (the break-reason tie order). */
 export type LoyaltyReason =
   | 'liege_wealthy'
@@ -48,8 +51,13 @@ export interface SwornToEdgeProperties {
   taxPaidToday: number;
   /** Tick of the last loyalty pass (holding_lost reads conquests after it). */
   lastPassTick: number;
-  /** A coerced oath: what forced it, for the sheet's words. Absent on other kinds. */
-  forcedBy?: 'siege' | 'conquest';
+  /**
+   * A coerced oath: what forced it, for the sheet's words. Absent on other kinds.
+   * THR-1944 — `demand`: a mortal demanded it in an encounter (the Warlord's Tribute).
+   */
+  forcedBy?: OathForcedBy;
+  /** THR-1944 — the mortal whose encounter win brokered this oath. Absent on courted oaths. */
+  brokeredBy?: string;
   /** THR-1974 — the liege covered at least one of the vassal's armies on the last pay day. */
   wagesCoveredLastDay?: boolean;
   /** THR-1974 — wages the liege paid this vassal's soldiers on the last pay day. */

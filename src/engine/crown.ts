@@ -38,7 +38,7 @@ import type { WorldGraph } from './graph';
 import type { RealmProjection } from './realmProjection';
 import type { EconomicChronicleTrigger } from '../data/economic-chronicle-content';
 import type { BattleState } from '../types/battle';
-import type { LoyaltyDelta, LoyaltyReason, OathKind, OfferParts, SwornToEdgeProperties } from './crown/types';
+import type { LoyaltyDelta, LoyaltyReason, OathForcedBy, OathKind, OfferParts, SwornToEdgeProperties } from './crown/types';
 import { LOYALTY_REASON_ORDER } from './crown/types';
 import { emitTrace } from './traceBuffer';
 import { readWealth, applyTreasuryDelta } from './wealth';
@@ -50,7 +50,7 @@ import { isRealmFaction, readOath, vassalsOf } from './crown/crownView';
 import { crownWagesActive } from './crown/wages';
 import { upkeepOf, upkeepPerDayOf } from './factionPurse/upkeep';
 import { FACTION_PURSE_ENABLED, PURSE_CYCLE_TICKS } from '../data/faction-purse-constants';
-import { OATH_SWORN_LINES, OATH_BROKEN_LINES } from '../data/crown-chronicle-content';
+import { OATH_SWORN_LINES, OATH_BROKEN_LINES, OATH_BROKERED_LINES } from '../data/crown-chronicle-content';
 import {
   CROWN_ENABLED,
   CROWN_MIN_OATHS,
@@ -277,7 +277,8 @@ function writeOath(
   kind: OathKind,
   giftPaid: number,
   hooks: CrownHooks,
-  forcedBy?: 'siege' | 'conquest',
+  forcedBy?: OathForcedBy,
+  brokeredBy?: string,
 ): void {
   const props: SwornToEdgeProperties = {
     kind,
@@ -291,6 +292,7 @@ function writeOath(
     taxPaidToday: 0,
     lastPassTick: state.tick,
     ...(forcedBy ? { forcedBy } : {}),
+    ...(brokeredBy ? { brokeredBy } : {}),
   };
   state.graph.addEdge({
     id: `e_sworn_${vassalId}_${liegeId}_${state.tick}`,
@@ -300,6 +302,60 @@ function writeOath(
     properties: props as unknown as Record<string, unknown>,
   });
   hooks.onStructure?.();
+}
+
+interface OathAnnouncement {
+  vassalId: string;
+  liegeId: string;
+  kind: OathKind;
+  parts: OfferParts;
+  giftPaid: number;
+  oathValue: number;
+  /** The liege's oath count before this one (the `crown_formed` test). */
+  before: number;
+  coercedBy?: CoerceCandidate;
+  brokerId?: string;
+}
+
+/**
+ * The one announcement path for a written oath (THR-1944 extraction, behaviour unchanged
+ * for `seek_fealty`): the `oath_sworn` trace, the in-attention chronicle line, and
+ * `crown_formed` when the liege reaches CROWN_MIN_OATHS.
+ */
+function announceOath(state: GameState, a: OathAnnouncement): ChronicleEntry[] {
+  const graph = state.graph;
+  const chronicle: ChronicleEntry[] = [];
+  const liegeName = nameOf(graph, a.liegeId);
+  const brokerName = a.brokerId ? nameOf(graph, a.brokerId) : null;
+  emitTrace({
+    category: 'oath_sworn',
+    tick: state.tick,
+    vassalId: a.vassalId,
+    liegeId: a.liegeId,
+    kind: a.kind,
+    parts: a.parts,
+    giftPaid: a.giftPaid,
+    coercedBy: a.coercedBy ? { siegeBattleId: a.coercedBy.siegeBattleId, townTakenId: a.coercedBy.townTakenId } : undefined,
+    oathValue: a.oathValue,
+    ...(a.brokerId ? { brokeredBy: a.brokerId } : {}),
+    summary: `${nameOf(graph, a.vassalId)} swears fealty to ${liegeName} (${a.kind}`
+      + `${a.giftPaid > 0 ? `, gift ${a.giftPaid.toFixed(1)}` : ''}`
+      + `${brokerName ? `, brokered by ${brokerName}` : ''}) — score ${a.parts.score.toFixed(2)}`,
+  } as OathSwornTrace);
+  if (inAttention(state, a.vassalId, a.liegeId)) {
+    const seed = chronicleSeed(state.seed, a.vassalId) + state.tick;
+    const raw = brokerName
+      ? pickLine(OATH_BROKERED_LINES[a.kind], seed).replace(/\{broker\}/g, brokerName)
+      : pickLine(OATH_SWORN_LINES[a.kind], seed);
+    const line = fill(raw, nameOf(graph, a.vassalId), liegeName);
+    const e = chronicleEntry(state, 'oath_sworn', a.vassalId, a.liegeId, line);
+    if (e) chronicle.push(e);
+  }
+  if (a.before < CROWN_MIN_OATHS && a.before + 1 >= CROWN_MIN_OATHS) {
+    const e = chronicleEntry(state, 'crown_formed', a.liegeId, a.vassalId);
+    if (e) chronicle.push(e);
+  }
+  return chronicle;
 }
 
 /** Execute `seek_fealty` for realm R. Never throws past its own try (the caller's sweep catches). */
@@ -318,28 +374,11 @@ export function executeSeekFealty(
   const sworn = (vassalId: string, kind: OathKind, parts: OfferParts, giftPaid: number, coercedBy?: CoerceCandidate) => {
     const forcedBy = coercedBy ? (coercedBy.siegeBattleId ? 'siege' as const : 'conquest' as const) : undefined;
     writeOath(state, vassalId, R, kind, giftPaid, hooks, forcedBy);
-    emitTrace({
-      category: 'oath_sworn',
-      tick: state.tick,
-      vassalId,
-      liegeId: R,
-      kind,
-      parts,
-      giftPaid,
-      coercedBy: coercedBy ? { siegeBattleId: coercedBy.siegeBattleId, townTakenId: coercedBy.townTakenId } : undefined,
+    chronicle.push(...announceOath(state, {
+      vassalId, liegeId: R, kind, parts, giftPaid,
       oathValue: world.oathValue.get(vassalId) ?? 0,
-      summary: `${nameOf(graph, vassalId)} swears fealty to ${realm.name ?? R} (${kind}`
-        + `${giftPaid > 0 ? `, gift ${giftPaid.toFixed(1)}` : ''}) — score ${parts.score.toFixed(2)}`,
-    } as OathSwornTrace);
-    if (inAttention(state, vassalId, R)) {
-      const line = fill(pickLine(OATH_SWORN_LINES[kind], chronicleSeed(state.seed, vassalId) + state.tick), nameOf(graph, vassalId), realm.name ?? R);
-      const e = chronicleEntry(state, 'oath_sworn', vassalId, R, line);
-      if (e) chronicle.push(e);
-    }
-    if (before < CROWN_MIN_OATHS && before + 1 >= CROWN_MIN_OATHS) {
-      const e = chronicleEntry(state, 'crown_formed', R, vassalId);
-      if (e) chronicle.push(e);
-    }
+      before, coercedBy,
+    }));
     return {
       record: {
         actionType: 'seek_fealty' as const,
@@ -944,4 +983,45 @@ export function swearOathForDebug(
   if (graph.getOutgoingEdges(liegeId, 'sworn_to').length > 0) return false;
   writeOath(state, vassalId, liegeId, kind, 0, hooks, kind === 'coerced' ? 'siege' : undefined);
   return true;
+}
+
+// ─── A brokered oath — an encounter a mortal won (THR-1944) ───────────────
+
+export type BrokeredOathRefusal = 'crown_off' | 'may_not_swear' | 'no_realm' | 'liege_sworn_chain' | 'cooldown';
+
+export type BrokeredOathResult =
+  | { sworn: true; chronicle: ChronicleEntry[] }
+  | { sworn: false; reason: BrokeredOathRefusal };
+
+/**
+ * Swear `vassalId` to `liegeId` because a mortal won the scene that asked for it (spec
+ * 2026-10-18b, decision 4): the win replaces the offer score and no gift is paid, but the
+ * hard rules all hold — crown on, the vassal may swear (one layer, never-swear lists), the
+ * liege is an unsworn realm, and the pair is off its re-swear cooldown. Writes through
+ * `writeOath` and announces through `announceOath`, the same path as `seek_fealty`.
+ */
+export function swearBrokeredOath(
+  state: GameState,
+  oath: { vassalId: string; liegeId: string; kind: OathKind; brokerId: string; forcedBy?: OathForcedBy },
+  hooks: CrownHooks = {},
+): BrokeredOathResult {
+  if (!crownActive()) return { sworn: false, reason: 'crown_off' };
+  const graph = state.graph;
+  const { vassalId, liegeId, kind, brokerId, forcedBy } = oath;
+  if (!isRealmFaction(graph.getNode(liegeId))) return { sworn: false, reason: 'no_realm' };
+  if (graph.getOutgoingEdges(liegeId, 'sworn_to').length > 0) return { sworn: false, reason: 'liege_sworn_chain' };
+  if (vassalId === liegeId || !maySwear(graph, graph.getNode(vassalId))) return { sworn: false, reason: 'may_not_swear' };
+  if (onReswearCooldown(graph, vassalId, liegeId, state.tick)) return { sworn: false, reason: 'cooldown' };
+
+  // The offer parts are read for the trace only (inspectability); they gate nothing.
+  const world = buildCrownWorld(graph, state.tick, hooks.getProjection?.() ?? null);
+  const parts = offerScore(world, vassalId, liegeId, 0);
+  const before = vassalsOf(graph, liegeId).length;
+  writeOath(state, vassalId, liegeId, kind, 0, hooks, kind === 'coerced' ? forcedBy : undefined, brokerId);
+  const chronicle = announceOath(state, {
+    vassalId, liegeId, kind, parts, giftPaid: 0,
+    oathValue: world.oathValue.get(vassalId) ?? 0,
+    before, brokerId,
+  });
+  return { sworn: true, chronicle };
 }

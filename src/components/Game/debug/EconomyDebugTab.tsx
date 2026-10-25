@@ -301,6 +301,8 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
         vassal: name(e.source),
         liege: name(e.target),
         kind: p.kind + (p.forcedBy ? ` (${p.forcedBy})` : ''),
+        // THR-1944 — the mortal whose encounter win brokered the oath.
+        brokeredBy: p.brokeredBy ? name(p.brokeredBy) : '—',
         swornDay: Math.floor((p.swornTick ?? 0) / PURSE_CYCLE_TICKS),
         loyalty: p.loyalty ?? 0,
         deltas: (p.lastLoyaltyDay?.deltas ?? []).map(d => `${d.reason} ${d.amount > 0 ? '+' : ''}${d.amount.toFixed(3)}`).join(', ') || '—',
@@ -355,7 +357,7 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
           <thead>
             <tr style={{ color: 'var(--text-tertiary)' }}>
               <th style={{ ...cell, textAlign: 'left' }}>vassal</th><th style={{ ...cell, textAlign: 'left' }}>liege</th><th style={{ ...cell, textAlign: 'left' }}>kind</th>
-              <th style={cell}>sworn day</th><th style={cell}>loyalty</th><th style={{ ...cell, textAlign: 'left' }}>today</th><th style={cell}>tax today</th>
+              <th style={{ ...cell, textAlign: 'left' }}>brokered by</th><th style={cell}>sworn day</th><th style={cell}>loyalty</th><th style={{ ...cell, textAlign: 'left' }}>today</th><th style={cell}>tax today</th>
               <th style={cell}>wages today</th><th style={cell}>armies covered / uncovered</th>
             </tr>
           </thead>
@@ -365,6 +367,7 @@ function OathsTable({ graph, currentTick }: { graph?: WorldGraph; currentTick: n
                 <td style={{ ...cell, textAlign: 'left' }}>{o.vassal}</td>
                 <td style={{ ...cell, textAlign: 'left' }}>{o.liege}</td>
                 <td style={{ ...cell, textAlign: 'left' }}>{o.kind}</td>
+                <td style={{ ...cell, textAlign: 'left' }}>{o.brokeredBy}</td>
                 <td style={cell}>{o.swornDay}</td>
                 <td style={cell}>{o.loyalty.toFixed(2)}</td>
                 <td style={{ ...cell, textAlign: 'left' }}>{o.deltas}</td>

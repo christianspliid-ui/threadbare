@@ -12,7 +12,7 @@
 import type { WorldGraph } from '../graph';
 import type { PursePart } from '../factionPurse/purseSentences';
 import { durationWords } from '../factionPurse/purseSentences';
-import type { LoyaltyReason, OathKind, SwornToEdgeProperties } from './types';
+import type { LoyaltyReason, OathForcedBy, OathKind, SwornToEdgeProperties } from './types';
 import { getReputationWord } from '../../data/domain-words';
 import { FEALTY_LIST_FOLD } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS } from '../../data/faction-purse-constants';
@@ -40,17 +40,39 @@ function factionPart(graph: WorldGraph, id: string): { text: string; ref: { kind
   return { text: graph.getNode(id)?.name ?? 'a faction', ref: { kind: 'faction', id } };
 }
 
-/** "won by protection" · "bought with silver" · "forced by siege" (the vassal line). */
-export function kindPhrase(kind: OathKind, forcedBy?: 'siege' | 'conquest'): string {
+/** "won by protection" · "bought with silver" · "forced by siege" · "forced by a demand" (the vassal line). */
+export function kindPhrase(kind: OathKind, forcedBy?: OathForcedBy): string {
   if (kind === 'bought') return 'bought with silver';
-  if (kind === 'coerced') return forcedBy === 'conquest' ? 'forced by conquest' : 'forced by siege';
+  if (kind === 'coerced') {
+    if (forcedBy === 'conquest') return 'forced by conquest';
+    return forcedBy === 'demand' ? 'forced by a demand' : 'forced by siege';
+  }
   return 'won by protection';
 }
 
+/**
+ * THR-1944 — the vassal line's tail when a mortal brokered the oath, the mortal a linked
+ * name: "won by <broker>'s word." · "forced by <broker>'s demand." Null for a courted oath
+ * or a broker no longer in the graph (the plain kind phrase reads instead).
+ */
+export function brokeredPhrase(
+  graph: WorldGraph,
+  props: Pick<SwornToEdgeProperties, 'kind' | 'brokeredBy'>,
+): FealtyPart[] | null {
+  const id = props.brokeredBy;
+  const name = id ? graph.getNode(id)?.name : undefined;
+  if (!id || typeof name !== 'string' || name.length === 0) return null;
+  const coerced = props.kind === 'coerced';
+  return [coerced ? 'forced by ' : 'won by ', { text: name, ref: { kind: 'agent', id } }, coerced ? '\'s demand.' : '\'s word.'];
+}
+
 /** "it swore under siege" · "it was bought with silver" · "it swore for protection" (the standing line). */
-function kindClause(kind: OathKind, forcedBy?: 'siege' | 'conquest'): string {
+function kindClause(kind: OathKind, forcedBy?: OathForcedBy): string {
   if (kind === 'bought') return 'it was bought with silver';
-  if (kind === 'coerced') return forcedBy === 'conquest' ? 'it swore after losing a town to its liege' : 'it swore under siege';
+  if (kind === 'coerced') {
+    if (forcedBy === 'conquest') return 'it swore after losing a town to its liege';
+    return forcedBy === 'demand' ? 'it swore because it was made to' : 'it swore under siege';
+  }
   return 'it swore for protection';
 }
 
@@ -133,9 +155,15 @@ export function fealtyView(graph: WorldGraph, factionId: string): FealtyView {
     const p = readOath(mine);
     const days = Math.max(0, ((p.lastPassTick ?? p.swornTick) - p.swornTick) / PURSE_CYCLE_TICKS);
     const s = standingWord(p.loyalty ?? 0);
+    const brokered = brokeredPhrase(graph, p);
     vassal = {
       liegeId: mine.target,
-      oath: ['Owes fealty to ', factionPart(graph, mine.target), ` for ${durationWords(days)}, ${kindPhrase(p.kind, p.forcedBy)}.`],
+      oath: [
+        'Owes fealty to ', factionPart(graph, mine.target),
+        ...(brokered
+          ? [` for ${durationWords(days)}, `, ...brokered]
+          : [` for ${durationWords(days)}, ${kindPhrase(p.kind, p.forcedBy)}.`]),
+      ],
       standing: { ...s, rest: `${kindClause(p.kind, p.forcedBy)}, ${trendClause(p)}.` },
       wages: vassalWagesLine(readPurseDay(graph.getNode(factionId))),
     };

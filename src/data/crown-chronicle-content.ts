@@ -89,6 +89,29 @@ export const OATH_SWORN_LINES: Readonly<Record<OathKind, readonly string[]>> = {
   ],
 };
 
+/**
+ * THR-1944 — `oath_sworn` when a mortal brokered the oath in an encounter they won.
+ * `{broker}` the mortal, `{actor}` vassal, `{target}` liege. `bought` never fires (a
+ * brokered oath pays no gift); it is here so every kind has words.
+ */
+export const OATH_BROKERED_LINES: Readonly<Record<OathKind, readonly string[]>> = {
+  coerced: [
+    '{broker} stood in the hall until {actor} knelt to {target}.',
+    'At the demand of {broker}, {actor} swore fealty to {target}.',
+    '{broker} would not leave without an oath, and {actor} gave it to {target}.',
+  ],
+  bought: [
+    'Through {broker}, the silver of {target} bought the fealty of {actor}.',
+    '{broker} carried the coin of {target}, and {actor} swore it fealty.',
+    '{broker} struck the bargain, and {actor} owes {target} fealty now.',
+  ],
+  persuaded: [
+    'Through the word of {broker}, {actor} swore fealty to {target}.',
+    '{broker} held the room together, and {actor} bound itself to {target}.',
+    '{actor} swore fealty to {target}, persuaded by {broker}.',
+  ],
+};
+
 /** `oath_broken` by the break's reason (the largest loss in the window). */
 export const OATH_BROKEN_LINES: Readonly<Record<LoyaltyReason, readonly string[]>> = {
   liege_destitute: [

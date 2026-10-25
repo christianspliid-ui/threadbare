@@ -1735,6 +1735,10 @@ export interface DebugBridge {
     wagesCoveredLastDay?: boolean;
     /** THR-1974 — wages the liege paid this vassal's soldiers on the last pay day. */
     wagesPaidToday?: number;
+    /** A coerced oath: `siege`, `conquest`, or (THR-1944) `demand` — a mortal demanded it. */
+    forcedBy?: 'siege' | 'conquest' | 'demand';
+    /** THR-1944 — the mortal whose encounter win brokered the oath. Absent on courted oaths. */
+    brokeredBy?: string;
   }>>;
   /**
    * THR-1974 — who an army fights for and who feeds it. `commanderFactionId` is its

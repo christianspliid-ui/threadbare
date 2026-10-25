@@ -988,6 +988,26 @@ export type EncounterAftermathReactionEffect =
     readonly narrativeHook?: string;
     readonly when?: EffectPredicate;
   }
+  | {
+    /**
+     * THR-1944 — a mortal brokers an oath of fealty. Swears one faction to the realm
+     * the broker serves (or that realm's own liege, one layer only) through the crown's
+     * writer (`crown/brokeredOath.ts`). The vassal is `vassalAgentId`'s faction, or with
+     * none named the best-standing faction present at the broker's town. Every crown
+     * rule holds; a refusal writes nothing and traces its reason.
+     */
+    readonly kind: 'faction_broker_fealty';
+    /** The mortal who won the scene — `$actor`. */
+    readonly brokerAgentId: string;
+    /** Whose faction swears — `$cast:<key>`. Absent: the present-faction pick. */
+    readonly vassalAgentId?: string;
+    /** The oath's kind (`kind` is the effect discriminator). */
+    readonly oathKind: 'persuaded' | 'coerced';
+    /** What forced a coerced oath; `demand` reads "forced by a demand". */
+    readonly forcedBy?: 'demand';
+    readonly narrativeHook?: string;
+    readonly when?: EffectPredicate;
+  }
   // ─── Reach signature: Iron / Warhost (THR-550) ────────────────────────────
   | {
     /**

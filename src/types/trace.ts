@@ -1933,6 +1933,8 @@ export interface OathSwornTrace extends TraceBase {
   coercedBy?: { siegeBattleId?: string; townTakenId?: string };
   /** THR-1974 — what the vassal costs to keep (the gift's daily base). */
   oathValue?: number;
+  /** THR-1944 — the mortal whose encounter win brokered the oath (no offer score gated it). */
+  brokeredBy?: string;
 }
 
 /** THR-1932 — a courted faction refused (the best-scoring candidate only). */
