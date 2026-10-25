@@ -1,16 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 18:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 19:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Log the playtest testers back in (new 25 Oct)
 
 [Cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) is due: every round-4 ticket is closed and the fixes are live on [threadbearer.co](https://threadbearer.co/). The run stopped before any tester started, because the standalone `claude` the testers use said its login had expired and could not be refreshed. **Open a terminal, run `claude`, then type `/login`.** The next daily run (about 10:48 tomorrow) then plays round 5 by itself. Nothing was filed this time.
-
-### Approve the new weekly review lane (new 25 Oct)
-
-The builder wrote [THR-1950](https://linear.app/threadbare/issue/THR-1950): one Friday review pass that replaces five lanes (weekly retro, workflow retro, CI/CD review, project hygiene, daily grooming). Its prompt is merged ([#2574](https://github.com/christianspliid-ui/threadbare/pull/2574), [the prompt](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/ops/scheduled-task-prompts/tb-weekly-review.md)). Creating a scheduled lane needs a person to approve it, so an unattended run cannot finish. **Open one session, say "finish THR-1950", and approve the prompts.** Until then the five old lanes keep running, so nothing is lost by waiting.
 
 ### Set the Claude app to open when Windows starts
 
@@ -46,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-25: the weekly review lane is live and the five old review lanes are off** ([THR-1950](https://linear.app/threadbare/issue/THR-1950)). Registered via [#2579](https://github.com/christianspliid-ui/threadbare/pull/2579); its first run wrote [the weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md).
 - **2026-10-25: four encounters' declared Reach now matches the steps they roll** ([THR-2038](https://linear.app/threadbare/issue/THR-2038)). Merged via [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577).
 - **2026-10-25: six settlement-economy terms are in the glossary** ([THR-1924](https://linear.app/threadbare/issue/THR-1924)). Merged via [#2576](https://github.com/christianspliid-ui/threadbare/pull/2576).
 - **2026-10-25: the encounter-coverage judge v2 sees the stakes and flags a Reach no step rolls** ([THR-2012](https://linear.app/threadbare/issue/THR-2012)). Merged via [#2575](https://github.com/christianspliid-ui/threadbare/pull/2575).
@@ -55,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: mortals can broker an oath: a warlord swears its free company first, and a landless realm takes no vassal** ([THR-1944](https://linear.app/threadbare/issue/THR-1944)). Merged via [#2570](https://github.com/christianspliid-ui/threadbare/pull/2570) and live.
 - **2026-10-25: the restless road ends in its story: a mortal who takes the road for a story now starts it on arrival** ([THR-2036](https://linear.app/threadbare/issue/THR-2036)). Merged via [#2569](https://github.com/christianspliid-ui/threadbare/pull/2569) and live.
 - **2026-10-25: when cards hide under the hand bar, the bar says how many and one click shows them** ([THR-1942](https://linear.app/threadbare/issue/THR-1942)). Merged via [#2568](https://github.com/christianspliid-ui/threadbare/pull/2568) and live.
-- **2026-10-25: the heavy simulation tests' restless-road check and settlement speed budget are fixed** ([THR-2035](https://linear.app/threadbare/issue/THR-2035)). Merged via [#2567](https://github.com/christianspliid-ui/threadbare/pull/2567).
 
 ---
 
