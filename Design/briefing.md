@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 23:00 local (22:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 23:55 local (22:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -36,12 +36,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 ready, all waiting out their veto windows.** [THR-2030](https://linear.app/threadbare/issue/THR-2030) and [THR-2009](https://linear.app/threadbare/issue/THR-2009) open overnight, [THR-1929](https://linear.app/threadbare/issue/THR-1929) tomorrow 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) tomorrow 19:05, and the new [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) tomorrow 21:53. Its plan merged via [#2582](https://github.com/christianspliid-ui/threadbare/pull/2582).
+**Healthy: 5 ready, all waiting out their veto windows.** [THR-2030](https://linear.app/threadbare/issue/THR-2030) and [THR-2009](https://linear.app/threadbare/issue/THR-2009) open overnight, [THR-1929](https://linear.app/threadbare/issue/THR-1929) tomorrow 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) tomorrow 19:05, and [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) tomorrow 21:53.
 
-- **Debts in the money encounters is built but not merged.** [THR-2023](https://linear.app/threadbare/issue/THR-2023/plan-doc-debts-in-the-money-encounters-a-debt-collected-is-cleared-a) is in [PR #2583](https://github.com/christianspliid-ui/threadbare/pull/2583). All checks are green, but the automatic code review left one finding open: The Loan's failure bond lands on a second link to the lender that the relationship readers don't see. So the PR is not set to merge, and the ticket sits in development with no owner. Closing that finding is the builder's job.
+- **Debts in the money encounters is merged.** [THR-2023](https://linear.app/threadbare/issue/THR-2023) landed via [PR #2583](https://github.com/christianspliid-ui/threadbare/pull/2583) at 23:52 after its third review cycle, and the live site now serves it. No pull requests are open.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (10 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. Engine speed came back under the alarm line: 181 ms per tick, 24% above the week's median of 146. The alarm line is 25%. The live site is up to date, because the commits since its last publish only touched docs. Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 22:40) are healthy.
+All green. Engine speed: 179 ms per tick, 22% above the week's median of 147 (the alarm line is 25%). The live site serves the latest main. Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 23:40) are healthy.
