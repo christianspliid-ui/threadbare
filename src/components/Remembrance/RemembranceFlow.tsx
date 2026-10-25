@@ -97,11 +97,13 @@ export function RemembranceFlow({
   // Beat handlers
   const handleWorldRemembered = useCallback((woken: string | null) => {
     if (woken) {
-      setAccount(prev => wakeHunger(prev, woken));
+      // Called once here, not inside a state updater: StrictMode runs updaters twice,
+      // and `wakeHunger` traces `account.hunger_woken`.
+      setAccount(wakeHunger(account, woken));
       setWokenHungerId(woken);
     }
     setBeat(firstBeat);
-  }, [firstBeat]);
+  }, [firstBeat, account]);
 
   const handleStirringSelect = useCallback((image: StirringImage) => {
     setStirringImage(image);
