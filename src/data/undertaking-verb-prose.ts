@@ -625,7 +625,21 @@ export const UNDERTAKING_CELL_OUTCOME_PROSE: Readonly<Record<string, Readonly<Re
     // No free hex near the site: nothing was founded, and the card says why (Law 22).
     no_ground: ['{Actor} finds no open ground near {place} to found a town.'],
   },
+  'cell.create.place': {
+    // THR-1966: the town's own next building went up; `{object}` is the building ("a storehouse").
+    raised: ['{Actor} raises {object} in {place}, and it is theirs.'],
+    // The slots filled, or nothing qualifies any more: nothing was raised, and the card says why (Law 22).
+    no_room: ['{Actor} finds no room left in {place} for what they meant to build.'],
+  },
 };
+
+/**
+ * The activity line of a `create × place` whose building was picked at the start
+ * (THR-1966): `{object}` is the planned building, named before it is raised (Law 16).
+ */
+export const PLANNED_BUILDING_ACTIVITY_LINES: readonly string[] = [
+  '{Actor} sets about raising {object} in {place}.',
+];
 
 /**
  * The line set a cell speaks with: its own if it has one, else its verb's.

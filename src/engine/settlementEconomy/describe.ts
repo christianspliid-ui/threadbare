@@ -150,8 +150,24 @@ export function livelihoodParts(graph: WorldGraph, node: GraphNode | undefined, 
   return out;
 }
 
-/** The Connections fact a building Place carries — "built by the town", or why it idles. */
-export function buildingFact(place: GraphNode): string | null {
+/**
+ * The mortal who raised a building (THR-1966): the Place's `constructed_by` edge to a named
+ * actor. Null for a Place the town raised or adopted — then the tag says "built by the town".
+ */
+function builderNameOf(graph: WorldGraph | undefined, place: GraphNode): string | null {
+  if (!graph) return null;
+  for (const e of graph.getOutgoingEdges(place.id, 'constructed_by')) {
+    const who = graph.getNode(e.target);
+    if (who?.type === 'actor' && who.name) return who.name;
+  }
+  return null;
+}
+
+/**
+ * The Connections fact a building Place carries — "built by the town", "built by Kael
+ * Thornweaver" when a mortal raised it, or why it idles.
+ */
+export function buildingFact(place: GraphNode, graph?: WorldGraph): string | null {
   if (place.properties?.[IS_BUILDING_PROP] !== true) return null;
   const def = getSettlementBuilding(String(place.properties.buildingId ?? ''));
   if (!def) return null;
@@ -160,7 +176,8 @@ export function buildingFact(place: GraphNode): string | null {
     return BUILDING_IDLE_INPUT_WORDS[def.needs.special] ?? BUILDING_FACT_WORDS.built;
   }
   if (reason === 'upkeep_short') return BUILDING_FACT_WORDS.idleUpkeep.replace('{material}', def.upkeepWord);
-  return BUILDING_FACT_WORDS.built;
+  const builder = builderNameOf(graph, place);
+  return builder ? BUILDING_FACT_WORDS.builtBy.replace('{builder}', builder) : BUILDING_FACT_WORDS.built;
 }
 
 // ─── Debug readout (`__DEBUG.getSettlementEconomy`) ───────────────────────
@@ -213,7 +230,7 @@ export function describeSettlementEconomy(graph: WorldGraph, idOrName: string, t
       name: n.name,
       idleDays: num(n.properties.idleDays) ?? 0,
       idleReason: typeof n.properties.idleReason === 'string' ? n.properties.idleReason : null,
-      fact: buildingFact(n),
+      fact: buildingFact(n, graph),
     }));
   const routeRow = (e: { source: string; target: string; properties: Record<string, unknown> }, end: string) => ({
     id: end,

@@ -796,6 +796,8 @@ export interface StrategicActionCandidate {
    * Absent on every ungated template, which is most of them.
    */
   readonly victimAgentId?: string;
+  /** THR-1966 — carried from the project at completion; see StrategicProjectRuntime.plannedBuildingId. */
+  readonly plannedBuildingId?: string;
 
   /** Origin anchor for completion-time mutations (THR-669) — see StrategicProjectRuntime.originLocationId. */
   readonly originLocationId?: string;
@@ -888,6 +890,12 @@ export interface StrategicProjectRuntime {
    * Absent on every ungated undertaking.
    */
   readonly victimAgentId?: string;
+  /**
+   * THR-1966 — the settlement building a `create × place` set out to raise, picked from the
+   * town's chooser when the work started (so the activity line names it) and re-checked at
+   * completion. Absent outside a settlement, and on every other cell.
+   */
+  readonly plannedBuildingId?: string;
   /**
    * Where the project was undertaken (THR-669): the actor's resolved,
    * non-transient location at project start. Trade routes must anchor here —

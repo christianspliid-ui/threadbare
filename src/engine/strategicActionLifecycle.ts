@@ -178,6 +178,7 @@ export function renderNameTemplate(
 // without importing the lifecycle; re-exported for the callers that import it from here.
 export { findUnclaimedSite } from './foundingSite';
 import { findUnclaimedSite } from './foundingSite';
+import { plannedBuildingFor, stampLegacyPlace } from './undertakingEconomy';
 
 /**
  * The founder's leading reach, read off the *template's* reach profile rather than
@@ -649,6 +650,8 @@ export function executeStrategicAction(
         // Who the undertaking is aimed at, carried from the motive gate (THR-1298).
         // Read at the terminal paths to attribute the harm to a victim.
         victimAgentId: candidate.victimAgentId,
+        // THR-1966: a building raised in a settlement is picked now, so the work names it.
+        ...plannedBuildingOf(graph, candidate, template?.cellVariant),
         progress: 0,
         progressRequired: duration,
         startedTick: tick,
@@ -1033,6 +1036,7 @@ export function advanceStrategicProjects(
         objectHandle: project.objectHandle,
         objectTypeId: project.objectTypeId,
         objectTier: project.objectTier,
+        plannedBuildingId: project.plannedBuildingId,
         scoreComponents: {
           ambitionAlignment: 0, blockerRelief: 0, worldImpact: 0,
           catalystValue: 0, roleFit: 0,
@@ -1768,6 +1772,30 @@ function applyControlRenewal(
   return result.controls;
 }
 
+/**
+ * THR-1966 — the building a `create × place` sets out to raise: the site's town's next
+ * building, picked when the work starts. Empty for any other cell or a site outside a
+ * settlement (spread into the project, so the key is absent rather than undefined).
+ */
+function plannedBuildingOf(
+  graph: WorldGraph,
+  candidate: StrategicActionCandidate,
+  variant: string | undefined,
+): { plannedBuildingId?: string } {
+  if (variant !== 'create' || candidate.objectTypeId !== 'place') return {};
+  const siteId = candidate.targetNodeId
+    ?? (candidate.objectHandle?.kind === 'node' ? candidate.objectHandle.nodeId : undefined);
+  const site = siteId ? graph.getNode(siteId) : undefined;
+  const parent = site && isPlaceNode(site) ? resolveToParentLocation(graph, site) : site;
+  const def = plannedBuildingFor(graph, parent?.id);
+  return def ? { plannedBuildingId: def.id } : {};
+}
+
+/** THR-1966 — a pack-raised Place of a type the building table knows becomes that building. */
+function stampLegacyPlaceOp(graph: WorldGraph, op: GraphOpResult, actorId: string, typeId: string, tick: number): void {
+  if (op.success && op.createdId) stampLegacyPlace(graph, actorId, op.createdId, typeId, tick);
+}
+
 // ─── Instant Mutation Dispatch ──────────────────────────────────────
 
 // `resolveDurableActorLocation` moved to `tradeRouteOps.ts` (THR-1188) so the
@@ -1829,6 +1857,8 @@ function executeInstantMutation(
       targetNodeId: candidate.targetNodeId,
       outcome,
       runtime,
+      // THR-1966: the building picked at the start, re-checked by the cell at completion.
+      ...(candidate.plannedBuildingId && { params: { plannedBuildingId: candidate.plannedBuildingId } }),
     });
     ops.push(...resolution.ops);
     const succeeded = resolution.ops.some(o => o.success);
@@ -1871,7 +1901,9 @@ function executeInstantMutation(
           const actorNode = graph.getNode(candidate.actorId);
           const locNode = graph.getNode(targetId);
           const name = renderNameTemplate(hint.nameTemplate, actorNode?.name, locNode?.name);
-          ops.push(createSublocation(graph, targetId, candidate.actorId, name, hint.sublocationTypeId, tick));
+          const op = createSublocation(graph, targetId, candidate.actorId, name, hint.sublocationTypeId, tick);
+          stampLegacyPlaceOp(graph, op, candidate.actorId, hint.sublocationTypeId, tick);
+          ops.push(op);
         }
         break;
       }
@@ -2159,21 +2191,25 @@ function executeInstantMutation(
       // rule cannot be right in one place and wrong in the other.
       case 'strategic_build_warehouse': {
         if (targetId) {
-          ops.push(createSublocation(
+          const op = createSublocation(
             graph, targetId, candidate.actorId,
             renderNameTemplate(LEGACY_NAME_TEMPLATE, graph.getNode(candidate.actorId)?.name, graph.getNode(targetId)?.name, 'Warehouse'),
             'warehouse', tick,
-          ));
+          );
+          stampLegacyPlaceOp(graph, op, candidate.actorId, 'warehouse', tick);
+          ops.push(op);
         }
         break;
       }
       case 'strategic_found_guild_chapter': {
         if (targetId) {
-          ops.push(createSublocation(
+          const op = createSublocation(
             graph, targetId, candidate.actorId,
             renderNameTemplate(LEGACY_NAME_TEMPLATE, graph.getNode(candidate.actorId)?.name, graph.getNode(targetId)?.name, 'Guild Chapter'),
             'guild_chapter', tick,
-          ));
+          );
+          stampLegacyPlaceOp(graph, op, candidate.actorId, 'guild_chapter', tick);
+          ops.push(op);
         }
         break;
       }

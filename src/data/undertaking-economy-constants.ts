@@ -102,3 +102,23 @@ export const DOMINATE_TRADE_MEANS_TIER = 'Wealthy' as const;
  * against the same three arms.
  */
 export const FOUNDING_STARVATION_FLOOR = 0.5;
+
+// ─── S2 — a mortal raises the town's own next building (THR-1966) ───────────
+
+/**
+ * The strategic packs' Place types onto the settlement economy's building table (Law 58:
+ * one entry per type a pack raises; `null` is an entry). A type that maps to a building is
+ * stamped as that building when it is raised in a settlement with a free slot; a `null`
+ * type is non-economic — raised as before, taking no slot.
+ */
+export const LEGACY_PLACE_TYPE_TO_BUILDING: Readonly<Record<string, string | null>> = {
+  granary: 'storehouse',
+  warehouse: 'storehouse',
+  workshop: 'workshop',
+  shrine: 'shrine',
+  guild_chapter: 'counting_house',
+  garrison: 'walls',
+  court: null,
+  estate: null,
+  research_circle: null,
+};

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 217 |
+| 🟢 LIVE | 218 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 100 |
-| **Total** | **325** |
+| **Total** | **326** |
 
 ## Contracts by producing subsystem
 
@@ -65,6 +65,7 @@ remediation ticket or the build fails.
 | `minted-ambition-provenance` | Motive receipts name the origin of a minted want — "she seeks vengeance for the blighted fields." | edge-prop: `mintedByEventId` | Omens & Atmospheric Pressure | 🟢 LIVE | — |
 | `mortal-inflicts-a-condition` | A mortal can now put something on another mortal, and every system that already read conditions reads these unchanged. `create × Condition` (`inflict_condition`) and `destroy × Power` (`seal_power`) mint through the catalog's own `instantiateReward`, so an inflicted blessing or curse is the same shape an encounter reward has always produced — with two additions on the bearer's edge that make it legible as somebody's doing: `sign` (blessing | curse | seal) and `inflictedBy`. The **sign is the gate**: self or an ally is a blessing, un-gated; a mortal the actor holds a motive against is a curse; a stranger is refused, and there is no neutral third outcome. A curse or a seal registers the `afflicted` harm class, which crosses into the grievance funnel; a blessing registers none, and that asymmetry is decided per completion rather than per template, so the op carries the harm class the completion site reads (THR-1429). | function: `inflictCondition`, `resolveConditionSign`, `instantiateReward`, `isSpellSuppressedFor`, `afflicted` | Effects & Conditions | 🟢 LIVE | — |
 | `mortal-learns-a-spell` | A mortal who studies a working comes to hold it, and the systems that ask "what can this person do?" get their answer from the graph rather than from the study. `create × Power` (`learn_spell`) is the first writer of `knows_spell`, and the Power kind now has a node shape: one shared `spell`-subcategory trait definition per template, minted at seeding, with per-bearer state on the edge (THR-1395). The two edges mean different things and both cross this boundary — `knows_spell` is the biography and is unlimited, `has_trait` is what the mortal carries now and is held to `SLOT_CAPS.spell` by the attachment system's own slot pass. Learning past the cap writes the knowledge and not the carry, which is a state the sheet reports rather than a refusal (THR-1429). | edge: `knows_spell`, `has_trait`, `spellDefinitionNode`, `SLOT_CAPS` | Attachments, Items & Possessions | 🟢 LIVE | — |
+| `mortal-raised-building-from-town-chooser` | A building a mortal raises through the create × place undertaking (THR-1966, undertakings S2) is the town's own next building. The settlement economy's day writes its chooser's pick on the settlement (economyNextBuilding) while a slot is free, and removes it when the slots fill or the town raises it. The cell's eligibility refuses a settlement with no pick (no_building_slot); the lifecycle stores the pick on the project as plannedBuildingId at start and passes it back as params at completion, where pickRaisedBuilding re-checks it (still not standing, a slot free) or takes the current pick (repicked), else nothing is raised (no_room). The Place is createSublocation's, stamped by markMortalBuilding (isBuilding, buildingId, builtTick) and held by the builder through grantHolding; the settlement economy then counts it as a building. Pack Place types map onto the table through LEGACY_PLACE_TYPE_TO_BUILDING. A settlement the economy has not run on (no economyLastDay) raises as before. | node-prop: `economyNextBuilding`, `plannedBuildingId`, `isBuilding`, `buildingId`, `nextBuildingFor`, `pickRaisedBuilding`, `settleRaisedBuilding`, `LEGACY_PLACE_TYPE_TO_BUILDING` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `one-namer-shared-primitives` | There is one rule for how an id becomes a seed and one rule for English possessives. `naming/workNames.ts` owns both; every other namer imports them rather than minting its own. | module-export: `possessive`, `hashSeed`, `pickFrom`, `generateWorkName` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `ring-is-a-group-that-stays` | A network is a group node that the group phase sees but never moves. `found_ring` mints it through the one group mint (`createGroup`, stamped `groupKind: 'network'`), so it is a company's sibling rather than a new shape, and every membership query already reads it. The phase enumerates `GROUP_PHASE_KINDS` (companies and networks) for upkeep, cohesion and dissolution and gates only the movement sub-step on `GROUP_KINDS_THAT_TRAVEL` — the two lists are separate because each half alone is a defect: widening the enumeration without gating movement makes rings travel, and gating movement without widening the enumeration leaves them invisible to upkeep and dissolution. `getAllGroups` still defaults to companies alone, so its ~40 existing callers are unchanged. A ring has no position of its own; its reach is measured from every living member (`RING_REACH_HEXES`), which is what lets it act somewhere its leader has never been (THR-1430). | function: `foundRing`, `ringMemberInReachOf`, `GROUP_PHASE_KINDS`, `GROUP_KINDS_THAT_TRAVEL` | Companies & Group Travel | 🔵 UNVERIFIED-OK | — |
 | `ruined-settlement-joins-delve-layer` | A settlement a mortal razed becomes somewhere to explore: it carries a depth banded from what it used to be, and the delve layer admits it once the dust has settled — so a warlord's destruction feeds a wanderer's delve rather than ending the story of that place. | node-prop: `ruinMagnitude`, `ruinedTick`, `locationSubtype` | Ruins, Clues & Delves | 🟢 LIVE | — |
@@ -650,10 +651,10 @@ remediation ticket or the build fails.
 - **Intent:** Four ambitions are met by the undertakings that serve them (THR-1967): Dominate Regional Trade adds agent_holds_lanes (DOMINATE_TRADE_LANES_MIN lanes tolled via controlledBy, founded via the Route node's constructed_by, or held via owns on the Route node; a decayed edge no longer counts) and agent_means_at_least (DOMINATE_TRADE_MEANS_TIER) and completes on DOMINATE_TRADE_COMPLETION (3 of 5); Found Something New asks for a settlement-tier town with a constructed_by edge back to the holder (agent_controls_location, foundedBySelf); Rebuild from Ashes for a settlement-tier town of any size; Protect the Home for city-walls in the home settlement (agent_home_has_place: residence origin, else position, climbed to a settlement).
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Ambition*, *Means*, *Route*, *Freehold*
-- **Production hits:** 198 total — 2 write, 2 read, 194 unclassified
+- **Production hits:** 199 total — 2 write, 2 read, 195 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/data/ambition-templates.ts`, `src/engine/graphConditions.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +189 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +190 more
 - **Verdict:** Verified 2026-10-21: THR-1967. undertakingEconomyS3.test.ts: a mortal who founds a town meets found_seat while a merely held town does not (it still meets rebuild_ground); two opened lanes plus Wealthy meet trade_lanes and trade_means; walls in another town do not meet protect_ward, walls at home do; the estate, camp and castle shapes are gone.
 
 ### `answered-prayer-pushes-dominion` — 🟢 LIVE
@@ -1056,10 +1057,10 @@ exit
 - **Intent:** A standing building gives its settlement a location trait (Iron Town, Walled …), and the land and market give Breadbasket and Market Town: fourteen rules in phaseLocationTraits read the buildings and the economy props. Each trait carries a small step term and a pool row.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Effects & Conditions
 - **UL terms:** *Settlement*, *Trait*
-- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
 - **Write sites:** `src/engine/settlementEconomy/building.ts`
 - **Read sites:** `src/engine/phaseLocationTraits.ts`, `src/engine/settlementEconomy/measures.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phases/settlementEconomy.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phases/settlementEconomy.ts`, `src/engine/undertakingEconomy.ts`
 - **Verdict:** Verified 2026-10-25: THR-1923. phaseLocationTraits.test.ts › every minted id is a location condition with a reader (the fourteen included); settlementEconomy.test.ts › every economic trait is a seeded location condition.
 
 ### `calling-derivation` — 🟢 LIVE
@@ -2264,10 +2265,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **UL terms:** *Settlement*, *Freehold*, *Faction*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 308 total — 2 write, 3 read, 303 unclassified
+- **Production hits:** 309 total — 2 write, 3 read, 304 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/factionPurse/income.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/placeRows.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +298 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +299 more
 - **Verdict:** Verified 2026-10-21: THR-1937. src/engine/__tests__/undertakingEconomy.test.ts: the founded hamlet never shares a hex with its site and nothing is founded when the neighbourhood is full; the higher-rank town-holding faction rules, a tie goes to the realm then the lower id, a lone founder rules; the ruler's controls and the founder's owns are written and computePurseIncome lists the town under the ruler's taxHolderOf; the place row reads Founded by with the founder linked.
 
 ### `founding-patron-pays-from-faction-purse` — 🟢 LIVE
@@ -2875,6 +2876,17 @@ exit
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/content/ruins/archetypes.ts` +130 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `mortal-raised-building-from-town-chooser` — 🟢 LIVE
+
+- **Intent:** A building a mortal raises through the create × place undertaking (THR-1966, undertakings S2) is the town's own next building. The settlement economy's day writes its chooser's pick on the settlement (economyNextBuilding) while a slot is free, and removes it when the slots fill or the town raises it. The cell's eligibility refuses a settlement with no pick (no_building_slot); the lifecycle stores the pick on the project as plannedBuildingId at start and passes it back as params at completion, where pickRaisedBuilding re-checks it (still not standing, a slot free) or takes the current pick (repicked), else nothing is raised (no_room). The Place is createSublocation's, stamped by markMortalBuilding (isBuilding, buildingId, builtTick) and held by the builder through grantHolding; the settlement economy then counts it as a building. Pack Place types map onto the table through LEGACY_PLACE_TYPE_TO_BUILDING. A settlement the economy has not run on (no economyLastDay) raises as before.
+- **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
+- **UL terms:** *Freehold*
+- **Production hits:** 12 total — 4 write, 2 read, 6 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/phases/settlementEconomy.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingEconomy.ts`
+- **Read sites:** `src/engine/settlementEconomy/building.ts`, `src/engine/settlementEconomy/describe.ts`
+- **Other hits:** `src/data/settlement-buildings.ts`, `src/data/undertaking-economy-constants.ts`, `src/engine/tooltipResolver.ts`, `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts` +1 more
+- **Verdict:** Verified 2026-10-25: THR-1966. undertakingEconomyS2.test.ts: on grassland, temperate forest and hills the raised building is the chooser's pick (and not the same building on all three), the builder holds it and the card reads "built by Kael Thornweaver"; full slots are refused and a work under way raises nothing with the no_room line; a planned building that still qualifies is raised; a lost mortal-raised building keeps its Place and freehold; the legacy table is complete and a pack warehouse becomes the storehouse.
+
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
 
 - **Intent:** A card can be cheap in essence and expensive somewhere else — visibility to rivals, or the doom clock — so the price of divine help is not always the same currency.
@@ -3328,10 +3340,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 140 total — 1 write, 1 read, 138 unclassified
+- **Production hits:** 141 total — 1 write, 1 read, 139 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +133 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +134 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -3533,10 +3545,10 @@ exit
 - **Intent:** The settlement economy writes targetTier (population plus seat: a city needs a seat that pulls, a capital a realm's seat). With SETTLEMENT_ECONOMY_DRIVES_TIER, phaseSettlementPromotion moves the subtype one step toward it after SETTLEMENT_PROMOTION_SUSTAIN_TICKS, a capital included; the prosperity trigger is the fallback.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Mortal Economy & Prosperity
 - **UL terms:** *Settlement*, *Faction*
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/phases/settlementEconomy.ts`
 - **Read sites:** `src/engine/phaseSettlementPromotion.ts`, `src/engine/settlementEconomy/describe.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/npcGraduation.ts`, `src/engine/settlementEconomy/measures.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/npcGraduation.ts`, `src/engine/settlementEconomy/building.ts`, `src/engine/settlementEconomy/measures.ts`
 - **Verdict:** Verified 2026-10-25: THR-1923. settlementEconomy.test.ts › a capital that loses its realm seat drops a tier: targetTier leaves capital the day the seat role goes, and the promotion phase steps the subtype to city within the sustain window.
 
 ### `settlement-economy-raises-buildings` — 🟢 LIVE
@@ -3544,9 +3556,10 @@ exit
 - **Intent:** The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag.
 - **Producer → Consumer:** Mortal Economy & Prosperity → World Generation, Terrain & Places
 - **UL terms:** *Settlement*, *Location*
-- **Production hits:** 3 total — 1 write, 2 read, 0 unclassified
+- **Production hits:** 4 total — 1 write, 2 read, 1 unclassified
 - **Write sites:** `src/engine/settlementEconomy/building.ts`
 - **Read sites:** `src/engine/settlementEconomy/describe.ts`, `src/engine/views/connections.ts`
+- **Other hits:** `src/engine/undertakingProse.ts`
 - **Verdict:** Verified 2026-10-25: THR-1923. settlementEconomy.test.ts › a settlement raises buildings into its slots and its building Places say "built by the town".
 
 ### `settlement-economy-writes-resource-balance` — 🟢 LIVE

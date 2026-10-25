@@ -7283,6 +7283,24 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'mortal-raised-building-from-town-chooser',
+    producerSystem: AMBITIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A building a mortal raises through the create × place undertaking (THR-1966, undertakings S2) is the town\'s own next building. The settlement economy\'s day writes its chooser\'s pick on the settlement (economyNextBuilding) while a slot is free, and removes it when the slots fill or the town raises it. The cell\'s eligibility refuses a settlement with no pick (no_building_slot); the lifecycle stores the pick on the project as plannedBuildingId at start and passes it back as params at completion, where pickRaisedBuilding re-checks it (still not standing, a slot free) or takes the current pick (repicked), else nothing is raised (no_room). The Place is createSublocation\'s, stamped by markMortalBuilding (isBuilding, buildingId, builtTick) and held by the builder through grantHolding; the settlement economy then counts it as a building. Pack Place types map onto the table through LEGACY_PLACE_TYPE_TO_BUILDING. A settlement the economy has not run on (no economyLastDay) raises as before.',
+    ulTerms: ['Freehold'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['economyNextBuilding', 'plannedBuildingId', 'isBuilding', 'buildingId', 'nextBuildingFor', 'pickRaisedBuilding', 'settleRaisedBuilding', 'LEGACY_PLACE_TYPE_TO_BUILDING'],
+    },
+    writeSites: ['src/engine/phases/settlementEconomy.ts', 'src/data/undertaking-objects.ts', 'src/engine/undertakingEconomy.ts', 'src/engine/strategicActionLifecycle.ts'],
+    readSites: ['src/engine/settlementEconomy/building.ts', 'src/engine/settlementEconomy/describe.ts', 'src/engine/views/connections.ts'],
+    verifiedLive: {
+      date: '2026-10-25',
+      evidence: 'THR-1966. undertakingEconomyS2.test.ts: on grassland, temperate forest and hills the raised building is the chooser\'s pick (and not the same building on all three), the builder holds it and the card reads "built by Kael Thornweaver"; full slots are refused and a work under way raises nothing with the no_room line; a planned building that still qualifies is raised; a lost mortal-raised building keeps its Place and freehold; the legacy table is complete and a pack warehouse becomes the storehouse.',
+    },
+  },
+  {
     id: 'founding-patron-pays-from-faction-purse',
     producerSystem: FACTIONS,
     consumerSystem: AMBITIONS,

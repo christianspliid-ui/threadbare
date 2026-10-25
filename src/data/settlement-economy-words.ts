@@ -75,6 +75,8 @@ export const LIVELIHOOD_BUILDING_LOST_LINE = "{name}'s {building} has gone cold,
 /** The Connections fact on a building Place (the card's kind tag). */
 export const BUILDING_FACT_WORDS = {
   built: 'built by the town',
+  /** THR-1966 — a building a mortal raised; they hold it as a freehold. */
+  builtBy: 'built by {builder}',
   idleUpkeep: 'idle — the town cannot spare the {material} to keep it',
 } as const;
 

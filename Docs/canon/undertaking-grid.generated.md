@@ -151,6 +151,7 @@
 - **Ambitions & Undertakings** — REACHED-BY-OP
   - _the op_ `create_location` (Create × location) — `foundingSite.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `transfer_holding` (Seize × location) — `holdings.ts`, `undertakingEconomy.ts`
+  - _the op_ `create_sublocation` (Create × place) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `create_trade_route` (Create × route) — `strategicGraphOps.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `conduct_trade` (Use × route) — `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `plot_death` (Destroy × mortal) — `agentLifecycle.ts`, `allegiance.ts`, `monsters/isMonster.ts`, `strategicGraphOps.ts`, `undertakingMotive.ts`
@@ -165,7 +166,7 @@
   - _the op_ `modify_location_property (−)` (Lower × location) — `strategicGraphOps.ts`
   - _the op_ `claim_control (mode)` (Claim × location) — `strategicGraphOps.ts`
   - _the op_ `record_intelligence` (Observe × location) — `groupShape.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`
-  - _the op_ `create_sublocation` (Create × place) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`
+  - _the op_ `create_sublocation` (Create × place) — `strategicGraphOps.ts`, `sublocationShape.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `record_intelligence` (Observe × place) — `groupShape.ts`, `strategicGraphOps.ts`, `sublocationShape.ts`
   - _the op_ `create_trade_route` (Create × route) — `strategicGraphOps.ts`, `tradeRouteOps.ts`, `undertakingEconomy.ts`
   - _the op_ `blockade_route` (Lower × route) — `strategicGraphOps.ts`

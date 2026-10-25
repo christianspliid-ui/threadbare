@@ -82,6 +82,8 @@ import { applyPlantSchism } from '../engine/schismPlant';
 import {
   settleFoundedTown, traceFoundTownRefused, settleFoundedLane, payTradeRun,
   foundedGuildReachProfile, settleFoundedGuild, endLoneFounderRule, foundTownSiteRefusal,
+  // S2 (THR-1966): a raised building is the town's own next building.
+  raiseBuildingSiteRefusal, raisesTownBuildings, pickRaisedBuilding, settleRaisedBuilding, traceRaiseBuildingNoRoom, stampLegacyPlace,
 } from '../engine/undertakingEconomy';
 import { findUnclaimedSite, landHexPredicate } from '../engine/foundingSite';
 import { UNDERTAKING_ECONOMY_ENABLED } from './undertaking-economy-constants';
@@ -1372,15 +1374,51 @@ const PLACE: UndertakingObjectType = {
   tierOf: placeTier,
   lexicon: 'place',
   harmOnDestroy: 'property_destroyed',
+  eligibility: {
+    // THR-1966: a settlement is a target only while its chooser has a next building and a
+    // slot is free — a town with full slots has nothing a builder could add.
+    create: (graph, _actorId, handle) => {
+      const node = nodeOf(graph, handle);
+      if (!node || node.type !== 'location') return null;
+      const site = isPlaceNode(node) ? resolveToParentLocation(graph, node) : node;
+      return site ? raiseBuildingSiteRefusal(graph, site.id) : null;
+    },
+  },
   verbs: {
     create: (ctx) => {
       const parentId = createSite(ctx);
       if (!parentId) return fail('create_sublocation', 'no_parent');
-      const typeId = typeof ctx.params?.sublocationTypeId === 'string'
-        ? ctx.params.sublocationTypeId : UNDERTAKING_DEFAULT_PLACE_TYPE_ID;
+      const explicitType = typeof ctx.params?.sublocationTypeId === 'string' ? ctx.params.sublocationTypeId : null;
+      const actorName = ctx.graph.getNode(ctx.actorId)?.name ?? 'A';
+      // THR-1966: in a settlement a mortal raises the town's own next building, never a
+      // workshop by default — the one picked at the start if it still qualifies, else the
+      // chooser's current pick, else nothing (the card says why).
+      if (!explicitType && raisesTownBuildings(ctx.graph.getNode(parentId))) {
+        const planned = typeof ctx.params?.plannedBuildingId === 'string' ? ctx.params.plannedBuildingId : null;
+        const pick = pickRaisedBuilding(ctx.graph, parentId, planned);
+        if (!pick) {
+          traceRaiseBuildingNoRoom(ctx.graph, ctx.actorId, parentId, planned, ctx.tick);
+          return { ...fail('create_sublocation', 'no_room'), completionLine: 'no_room' };
+        }
+        const name = typeof ctx.params?.name === 'string'
+          ? ctx.params.name : `${actorName}'s ${pick.def.cardName.toLowerCase()}`;
+        const raised = createSublocation(ctx.graph, parentId, ctx.actorId, name, pick.def.sublocationTypeId, ctx.tick);
+        if (!raised.success || !raised.createdId) return raised;
+        settleRaisedBuilding({
+          graph: ctx.graph, builderId: ctx.actorId, settlementId: parentId, placeId: raised.createdId,
+          def: pick.def, plannedBuildingId: planned, outcome: pick.outcome, tick: ctx.tick, projectId: ctx.projectId,
+        });
+        return { ...raised, completionLine: 'raised', proseObjectId: raised.createdId };
+      }
+      const typeId = explicitType ?? UNDERTAKING_DEFAULT_PLACE_TYPE_ID;
       const name = typeof ctx.params?.name === 'string'
-        ? ctx.params.name : `${ctx.graph.getNode(ctx.actorId)?.name ?? 'A'}'s ${barePlaceTypeId(typeId).replace(/-/g, ' ')}`;
-      return createSublocation(ctx.graph, parentId, ctx.actorId, name, typeId, ctx.tick);
+        ? ctx.params.name : `${actorName}'s ${barePlaceTypeId(typeId).replace(/-/g, ' ')}`;
+      const created = createSublocation(ctx.graph, parentId, ctx.actorId, name, typeId, ctx.tick);
+      // A pack's own Place type the building table knows becomes that building (THR-1966).
+      if (explicitType && created.success && created.createdId) {
+        stampLegacyPlace(ctx.graph, ctx.actorId, created.createdId, explicitType, ctx.tick);
+      }
+      return created;
     },
     'control:claim': (ctx) => {
       const nodeId = nodeIdOf(ctx.handle);
