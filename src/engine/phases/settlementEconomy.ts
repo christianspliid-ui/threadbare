@@ -138,9 +138,9 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function trace(mute: boolean, entry: Record<string, unknown>): void {
+function trace(mute: boolean, entry: TraceEntryInput): void {
   if (mute) return;
-  emitTrace(entry as unknown as TraceEntryInput);
+  emitTrace(entry);
 }
 
 /** Where `hex` lies from `centre`, in the words the receipt and livelihood line use. */

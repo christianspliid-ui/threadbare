@@ -194,7 +194,9 @@ describe('THR-1244 — condition → damaged/healed proxy', () => {
       // minted from unrest below Lawless — a place's as well.
       // 67 → 68 with THR-1957: `trait.condition.location.on_the_edge` (`#negative`),
       // minted from unrest above Lawless — a place's too.
-      expect(checked).toBe(68);
+      // 68 → 82 with THR-1923: the settlement economy's fourteen traits (`#positive`) —
+      // twelve building traits, Breadbasket and Market Town.
+      expect(checked).toBe(82);
     });
 
     it('classifies wounds and curses as harm, boons as not', () => {

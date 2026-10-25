@@ -75,13 +75,23 @@ function fill(line: string, slots: Record<string, string>): string {
   return line.replace(/\{(\w+)\}/g, (_m, k: string) => slots[k] ?? '');
 }
 
-/** One sentence with one linked name in it, or null when the name is missing. */
-function withName(line: string, slot: 'buyer' | 'seller', other: GraphNode | undefined, slots: Record<string, string>): EconomyPart[] | null {
-  if (!other?.name) return null;
+function isNamed(n: GraphNode | undefined): n is GraphNode {
+  return !!n && typeof n.name === 'string' && n.name.length > 0;
+}
+
+/** One sentence naming every town in `towns` ("A, B and C"), each linked; null when there are none. */
+function withNames(line: string, slot: 'buyer' | 'seller', towns: GraphNode[], slots: Record<string, string>): EconomyPart[] | null {
+  if (towns.length === 0) return null;
+  const sorted = [...towns].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
   const token = `{${slot}}`;
   const at = line.indexOf(token);
   if (at < 0) return [fill(line, slots)];
-  return [fill(line.slice(0, at), slots), { text: other.name, ref: { kind: 'location', id: other.id } }, fill(line.slice(at + token.length), slots)];
+  const names: EconomyPart[] = [];
+  sorted.forEach((t, i) => {
+    if (i > 0) names.push(i === sorted.length - 1 ? ' and ' : ', ');
+    names.push({ text: t.name, ref: { kind: 'location', id: t.id } });
+  });
+  return [fill(line.slice(0, at), slots), ...names, fill(line.slice(at + token.length), slots)];
 }
 
 /**
@@ -112,18 +122,16 @@ export function livelihoodParts(graph: WorldGraph, node: GraphNode | undefined, 
         : LIVELIHOOD_FOOD_LINES.fed;
   sentence([fill(foodLine, slots)]);
 
-  const outgoing = graph.getOutgoingEdges(node.id, 'trades_with').filter(isSurplusRoute)
-    .sort((a, b) => (a.id < b.id ? -1 : 1));
-  for (const r of outgoing) {
-    const line = routeCarries(r) === 'food' ? LIVELIHOOD_ROUTE_LINES.foodOut : LIVELIHOOD_ROUTE_LINES.goodsOut;
-    sentence(withName(line, 'buyer', graph.getNode(r.target), slots));
-  }
-  const incoming = graph.getIncomingEdges(node.id, 'trades_with').filter(isSurplusRoute)
-    .sort((a, b) => (a.id < b.id ? -1 : 1));
-  for (const r of incoming) {
-    const line = routeCarries(r) === 'food' ? LIVELIHOOD_ROUTE_LINES.foodIn : LIVELIHOOD_ROUTE_LINES.goodsIn;
-    sentence(withName(line, 'seller', graph.getNode(r.source), slots));
-  }
+  // One sentence per direction and good, the towns listed ("from A, B and C"), each name linked.
+  const outgoing = graph.getOutgoingEdges(node.id, 'trades_with').filter(isSurplusRoute);
+  const incoming = graph.getIncomingEdges(node.id, 'trades_with').filter(isSurplusRoute);
+  const groups: [string, 'buyer' | 'seller', GraphNode[]][] = [
+    [LIVELIHOOD_ROUTE_LINES.foodOut, 'buyer', outgoing.filter(r => routeCarries(r) === 'food').map(r => graph.getNode(r.target)).filter(isNamed)],
+    [LIVELIHOOD_ROUTE_LINES.goodsOut, 'buyer', outgoing.filter(r => routeCarries(r) === 'goods').map(r => graph.getNode(r.target)).filter(isNamed)],
+    [LIVELIHOOD_ROUTE_LINES.foodIn, 'seller', incoming.filter(r => routeCarries(r) === 'food').map(r => graph.getNode(r.source)).filter(isNamed)],
+    [LIVELIHOOD_ROUTE_LINES.goodsIn, 'seller', incoming.filter(r => routeCarries(r) === 'goods').map(r => graph.getNode(r.source)).filter(isNamed)],
+  ];
+  for (const [line, slot, towns] of groups) sentence(withNames(line, slot, towns, slots));
 
   if (p.economyBesieged === true) sentence([fill(LIVELIHOOD_SHOCK_LINES.siege, slots)]);
   const seen = new Set<string>();

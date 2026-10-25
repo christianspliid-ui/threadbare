@@ -84,9 +84,9 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
 
   // — First divine economic verbs (THR-616 P2) —
   'loc.bless_harvest':
-    'Swells a settlement\'s harvest and stores toward plenty; the fields yield more than the season should allow, and its best fields yield more for a season.',
+    'Swells a settlement\'s harvest and stores toward plenty, and its best fields yield more for a season.',
   'loc.blight':
-    'Turns a settlement\'s harvest against itself, drawing its fields and stores down toward famine, and its best fields yield little for a season.',
+    'Turns a settlement\'s harvest against itself: its stores sink toward famine, and its best fields yield little for a season.',
 
   // ─── THR-1002: the rest of the two predicates ─────────────────────────────
   //
@@ -187,7 +187,7 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
   'loc.bless_holding':
     'For a year, whoever holds this place draws half again from it.',
   'loc.reveal_vein':
-    'Draws divine sight through soil and stone until a seam worth digging answers back, and its richest stone runs fuller for a season.',
+    'Draws divine sight through soil and stone until a seam answers back, and its richest stone runs fuller for a season.',
   'loc.guide_caravan':
     'Walks unseen beside a settlement\'s wagons, so every road that feeds it runs safer and fuller.',
   'loc.sour_mine':

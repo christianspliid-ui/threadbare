@@ -80,6 +80,7 @@ const EXPECTED_PHASE_IDS: readonly string[] = [
   // Mortal economy stock-tier derivation (THR-615): no ordering constraints, so
   // the alphabetical tie-break places it after reputation_decay ('repu' < 'reso'),
   // still before the inline economy block (prosperity) reads resourceBalance.
+  'settlement_economy', // THR-1923: daily, before stock tiers read foodBalance
   'resource_stock_tiers',
   // post-economy slot (afterPhase chain preserves inline ordering)
   'ambition_progress',
