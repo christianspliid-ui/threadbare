@@ -4329,7 +4329,9 @@ export interface EncounterAftermathEffectTrace extends TraceBase {
     // direction of travel this union's own note describes. Its arm emits four
     // traces (no-actor, no-counterparty, refused write, applied) and all four go
     // in unlaundered.
-    | 'reputation_with';
+    | 'reputation_with'
+    // THR-1944 — a brokered oath; its applied and refused traces go in unlaundered.
+    | 'faction_broker_fealty';
   /** Kind-specific payload for inspection */
   effectDetail: Readonly<Record<string, unknown>>;
   success: boolean;

@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 218 |
+| 🟢 LIVE | 219 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 100 |
-| **Total** | **326** |
+| **Total** | **327** |
 
 ## Contracts by producing subsystem
 
@@ -206,6 +206,7 @@ remediation ticket or the build fails.
 | `content-objects-registry` | Every kind of authored content the game hands out has one name, in game words, and one registered home — the catalogs that hold it, the id prefixes its entries carry, the world object a granted entry becomes, and the machine gate that validates it — so an authoring agent and a runtime reader agree on what a piece of content IS without reading each other. The sibling of the world-object registry: that one says what the engine mints, this one says what a person writes, and instantiatesAs is the one-way join. Slice 1 of THR-1481 adds vocabulary and guards only; the tag vocabulary (slice 2) and the content query that lets content name content by kind and tags instead of by rotting literal id (slice 3) are what the registry exists to carry. Adding a kind is one PR: registry row, loader entry, UL term, canon row (THR-1485). | function: `CONTENT_OBJECT_KINDS`, `CONTENT_CATALOGS`, `entriesOfKind`, `contentKindsForId`, `contentKindsForWorldObject`, `SHARED_ID_PREFIXES` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `content-tag-vocabulary` | Every word an author may hang on a piece of content comes from one closed list, so a query can ask for content by what it IS rather than by its id. Five axes: form and family authored, reach and sphere derived from REACH_DOMAINS and SPHERE_NAMES so a ninth reach appears in the vocabulary the day it is added, polarity the two words the condition proxy-event classifier already reads. Where a kind declares a typed projection field the tag is derived and never authored, and an authored tag contradicting its projection fails. The corpus held 153 spellings, 62 of them worn by one or two entries and read by nothing; a query written against that matches whatever the last author typed, which is why the list is closed and why adding to it is a design-session decision rather than a keystroke (THR-1486). | function: `CONTENT_TAGS`, `isContentTag`, `axisOfContentTag`, `contentTagsOnAxis`, `contentTagTooltipId`, `effectiveTags`, `authoredTags`, `projectedTags` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
+| `encounter-brokers-oath-of-fealty` | A won Faction Unification or a won Warlord's Tribute demand fires the faction_broker_fealty aftermath effect from the band's outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm's own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord's company ($cast:warlord) or the best-standing present faction at the mortal's town (never the liege's enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason. | edge: `sworn_to`, `faction_broker_fealty`, `brokerOath`, `swearBrokeredOath`, `brokeredBy` | Factions & Succession | 🟢 LIVE | — |
 | `encounter-hex-lights-stage` | An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window. | property: `hexCol`, `hexRow` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `encounter-outcomes-fill-faction-purse` | The coin a mortal pays in a money encounter goes somewhere: a levy or tithe to the realm the ground belongs to, a toll or fee to the mercenary company, a failed rescue out of a guild's purse. The outcome table's `purse` row moves the faction's treasury through applyTreasuryDelta, the purse's one funnel. | node-prop: `wealth`, `applyTreasuryDelta` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-move-the-town` | A money encounter moves the town it happened in by how the dice fell: the outcome table's `economy_shift` writes the settlement's prosperity, unrest or stock of a good, or the volume on its busiest lane, once at the roll, and the aftermath names the move in the town page's own words. | node-prop: `prosperity`, `unrest`, `resources`, `volume` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
@@ -1360,10 +1361,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
 - **UL terms:** *Realm*, *Faction*, *Means*
 - **Module:** `src/engine/crown.ts`
-- **Production hits:** 18 total — 3 write, 3 read, 12 unclassified
+- **Production hits:** 21 total — 3 write, 3 read, 15 unclassified
 - **Write sites:** `src/engine/crown.ts`, `src/engine/orchestrator.ts`, `src/engine/phaseFactionActions.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/crown/crownView.ts`, `src/engine/crown/fealtySentences.ts`
-- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/engine/crown/eligibility.ts`, `src/engine/crown/offer.ts`, `src/engine/crown/types.ts`, `src/engine/crown/wages.ts` +7 more
+- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/data/content-eval/compositionContract.ts`, `src/engine/crown/brokeredOath.ts`, `src/engine/crown/eligibility.ts`, `src/engine/crown/offer.ts` +10 more
 - **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts drives the real executeSeekFealty and runCrownPhase on a graph: a realm buys a guild with 30 days of its income from its purse; a two-day siege and a town taken within five days each force a coerced oath; the tax takes the share and floors at 0; a destitute liege's vassal at Distrusted breaks with a grudge, a cooldown and a chronicle line naming the reason; a big realm vassal rebels (hostile_to both ways). scripts/measure-crown.ts on seeds 42, 99 and 7 medium over 1080 ticks: a crown forms on every seed, oath income 15–34% of the crowns' full income at day 60, one-layer held on every tick, no negative wealth.
 
 ### `crown-outline-to-political-map` — 🟢 LIVE
@@ -1384,10 +1385,10 @@ exit
 - **Producer → Consumer:** Factions & Succession → War, Armies & Battles
 - **UL terms:** *Realm*
 - **Module:** `src/engine/crown/crownView.ts`
-- **Production hits:** 6 total — 1 write, 4 read, 1 unclassified
+- **Production hits:** 7 total — 1 write, 4 read, 2 unclassified
 - **Write sites:** `src/engine/crown.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/debug-bridge.ts`, `src/engine/crown/crownView.ts`, `src/engine/warAims/defence.ts`
-- **Other hits:** `src/components/shared/HeldByLine.tsx`
+- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/engine/crown/brokeredOath.ts`
 - **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts: with a guild and a realm sworn to faction_0, protectedHoldingsOf(faction_0) is its own town plus the sworn realm's town.
 
 ### `culture-custom-reaches-encounter-opening` — 🟢 LIVE
@@ -1685,6 +1686,18 @@ exit
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/views/stage/buildNudgePhaseModel.ts`
 - **Other hits:** `src/engine/nudgeCardRepertoire.ts`, `src/types/gameState.ts`
 - **Verdict:** Verified 2026-10-09: THR-1753. src/engine/__tests__/foundationDiscovery-seededRun.test.ts (seed 42, small map): transformRuinConsequence on a real elder ruin of the seeded map patches foundationSpheresFound = [chaos, order, light, darkness], emits four ruins.foundation_sphere_found traces, and buildRepertoire then holds gambit, stumble, favor, whisper, veil and undertow; a catastrophic ruin of spirit finds nothing, of darkness finds darkness only; a 60-tick ordinary run with the pool drained earns Foundation essence through income yet finds nothing. dealtCardProvenance.test.tsx renders the dealt face "Darkness found in the ruins."
+
+### `encounter-brokers-oath-of-fealty` — 🟢 LIVE
+
+- **Intent:** A won Faction Unification or a won Warlord's Tribute demand fires the faction_broker_fealty aftermath effect from the band's outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm's own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord's company ($cast:warlord) or the best-standing present faction at the mortal's town (never the liege's enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason.
+- **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
+- **UL terms:** *Realm*, *Faction*, *Encounter*
+- **Module:** `src/engine/crown/brokeredOath.ts`
+- **Production hits:** 26 total — 3 write, 2 read, 21 unclassified
+- **Write sites:** `src/engine/crown/brokeredOath.ts`, `src/engine/crown.ts`, `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/crown/fealtySentences.ts`
+- **Other hits:** `src/components/shared/HeldByLine.tsx`, `src/data/content-eval/compositionContract.ts`, `src/data/crown-constants.ts`, `src/data/encounter-content.ts`, `src/data/encounters/warlords-tribute.ts` +16 more
+- **Verdict:** Verified 2026-10-25: THR-1944. crownBrokeredOath.test.ts drives applyEncounterAftermathReaction with $actor and $cast:warlord bound: the demand writes sworn_to warlord's company → the mortal's realm, coerced, forcedBy demand, brokeredBy the mortal, loyalty 0.35; no realm, an already-sworn company and a cooled-down pair write nothing and trace no_realm / may_not_swear / cooldown; a sworn realm hands the oath to its liege; the unification picks the best-standing present faction and never a rival. crown.test.ts passes unchanged.
 
 ### `encounter-hex-lights-stage` — 🟢 LIVE
 
@@ -3283,10 +3296,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 264 total — 2 write, 2 read, 260 unclassified
+- **Production hits:** 265 total — 2 write, 2 read, 261 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +255 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +256 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -4013,10 +4026,10 @@ exit
 - **Producer → Consumer:** Attachments, Items & Possessions → Ambitions & Undertakings
 - **UL terms:** *Undertaking*, *Condition*, *Companion*, *Standing*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 82 total — 3 write, 4 read, 75 unclassified
+- **Production hits:** 83 total — 3 write, 4 read, 76 unclassified
 - **Write sites:** `src/engine/reputation.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingMotive.ts`, `src/engine/undertakingResolver.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/ambition-templates.ts`, `src/data/army-encounter-content.ts` +70 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/data/ambition-templates.ts`, `src/data/army-encounter-content.ts` +71 more
 - **Verdict:** Verified 2026-09-08: THR-1436. `resolveObjectOwners` answers in order — the type’s own `ownersOf`, an edge object’s source, the `ownedVia` walk — and a type declares one of the two, never both (pinned in `undertaking-objects.test.ts`). The Condition object is the borne edge: `cure_condition` on a definition with two bearers removes exactly one bearer’s edge, and the cure on an ally is not motive-gated while the cure on a stranger is (`undertakingOwnershipReaders.test.ts`). Standing enumerates both edge types deduplicated by ordered pair, the score winning; catalog templates are excluded from Items by id; `create × Route` reports the identity node. Counted on a generated world by `npm run census:ownership` (objects · owned · owned by a deciding mortal, per kind) and the CLI `objects` readout; the cells census on the closing PR shows `no_owned_object` gone for faction, condition and companion and `no_object_exists` gone for standing. THR-1438 extended the reader with a **living**-commander rule for Company and Army (a dead commander leaves a band unowned, which is what `claim × Company` waits for) and added the `eligibility` hook beside `gateExemption` — a precondition about the world rather than about who holds what, consulted after ownership and before the motive gate, refused on the board as `ineligible:<reason>:<target>` and failing closed on a throw.
 
 ### `undertaking-remote-anchor` — 🔵 UNVERIFIED-OK
