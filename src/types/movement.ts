@@ -42,6 +42,13 @@ export interface MovementState {
    * re-route lets such a journey stand. Any rewrite of the journey drops it.
    */
   appointmentOutvoteSeedId?: string;
+  /**
+   * THR-2036 — this journey is a restless road (THR-1959): the mortal set out because
+   * no story was open near home, for `targetEncounterId`. On arrival that story takes
+   * the first decision outright (`arrivalGoal.restlessRoad`). Any rewrite
+   * of the journey (a re-route) drops it.
+   */
+  restlessRoad?: boolean;
 
   // --- Road traversal fields (all optional, backward-compatible) ---
 

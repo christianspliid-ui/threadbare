@@ -580,6 +580,35 @@ describe('scoreUnifiedBoard', () => {
       expect(board.winner?.id).toBe('other');
     });
 
+    // THR-2036 — the road was the decision: its story ranks first however far the
+    // board has moved, and the scores stay as they were for the trace.
+    it('ranks a restless road\'s goal first even against a board that has moved past it', () => {
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('other', 0.4 * M * 3), mk('goal', 0.4), mk('goal', 0.4, 'loc_far')],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal', locationId: 'loc_here', restlessRoad: true },
+      });
+      expect(board.winner?.id).toBe('goal');
+      expect(board.winner?.candidateIndex).toBe(1);
+      expect(board.winner?.restlessRoadGoal).toBe(true);
+      expect(board.winner?.score).toBeCloseTo(0.4 * M, 10);
+      expect(board.entries.filter(e => e.restlessRoadGoal)).toHaveLength(1);
+      expect(board.entries[1].id).toBe('other');
+    });
+
+    it('does not rank a restless road\'s goal first once she would refuse it (score 0)', () => {
+      const refused = { ...(mk('goal', 0.4) as object), engagementFit: 0 } as never;
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [refused, mk('other', 0.1)],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal', locationId: 'loc_here', restlessRoad: true },
+      });
+      expect(board.winner?.id).toBe('other');
+      expect(board.entries.find(e => e.id === 'goal')!.restlessRoadGoal).toBeUndefined();
+    });
+
     it('commits only the instance at the destination when one is there', () => {
       const board = scoreUnifiedBoard({
         graph: emptyGraph, agentId: 'a', tick: 1,
