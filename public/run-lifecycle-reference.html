@@ -318,6 +318,7 @@
       <h3>Run end, Twilight &amp; metaprogression <span class="flag design">DESIGN</span></h3>
       <ul>
         <li>Both clocks and the Twilight trigger are specified in rulebook §8–§9. The Doom Clock is <span class="flag impl">IMPL</span> (<code>DOOM_CLOCK_ARCHETYPES</code> / <code>DOOM_STAGE_NAMES</code>, <code>src/types/doomClock.ts</code>); the Victory Mandate's three-stage structure is named but not all stages are wired.</li>
+        <li>Since THR-1843 a world built from the account places the old god's echoes at creation (<code>src/engine/seedEchoes.ts</code>): a monument on ordinary ground, an heir of the old line, an unborne relic, each named in the chronicle's <em>Before you woke</em>.</li>
         <li>Twilight, echo harvest (Legacy / Monument / Relic), and World-Soul next-cycle seeding are partial: <code>src/types/worldSoul.ts</code> plus adjacent plans. Sphere aggregation into the soul is the most-wired piece; harvest and next-cycle injection are partial.</li>
         <li>Per-account permanent unlocks + run-start picker are the metaprogression carryover layer; unlock-model verdicts live in the THR-390 design audit. Not yet built as an account-persistent layer.</li>
       </ul>
