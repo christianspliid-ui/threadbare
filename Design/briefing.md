@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 13:57 local (12:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 14:56 local (13:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,7 +33,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**3 ready, but none can be picked up before about 20:45 tonight.** All three ([THR-2023](https://linear.app/threadbare/issue/THR-2023), [THR-2009](https://linear.app/threadbare/issue/THR-2009), [THR-2030](https://linear.app/threadbare/issue/THR-2030)) are inside their veto windows (see *Decided for you*), so the builder is idle by design. Since the last brief, [THR-2038](https://linear.app/threadbare/issue/THR-2038) merged (four encounters' Reach now matches the steps they roll, [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577)), and so did [THR-1924](https://linear.app/threadbare/issue/THR-1924) (six settlement-economy glossary terms, [#2576](https://github.com/christianspliid-ui/threadbare/pull/2576)).
+**3 ready, but none can be picked up before about 20:45 tonight.** All three ([THR-2023](https://linear.app/threadbare/issue/THR-2023), [THR-2009](https://linear.app/threadbare/issue/THR-2009), [THR-2030](https://linear.app/threadbare/issue/THR-2030)) are inside their veto windows (see *Decided for you*), so the builder is idle by design: every pickup run since 12:43 UTC stood down for that reason. Nothing new merged since the last brief.
 
 - **The paperwork-cut question stays off your list.** The weekly hygiene and grooming reports still ask for an attended sitting for [THR-1947](https://linear.app/threadbare/issue/THR-1947) and THR-1949. But the builder shipped THR-1949, gate files included, so that wall is gone. THR-1947 (parked and unassigned since 15 Oct) can go the same way.
 - [THR-1950](https://linear.app/threadbare/issue/THR-1950) is parked in progress, unassigned: its code is merged and it waits only on your approval above. No uncommitted work is sitting in any local worktree for it or for THR-1947.
@@ -41,6 +41,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **Engine speed is still past the alarm line:** tick cost 185 ms/tick steady, 29% above the 7-day median (143, 80 rows since 4bf693b2); top phase agent_decision, 610 agents. Name the merges between 4bf693b2 and e67e0517: `git log --oneline --merges 4bf693b2..e67e0517`. Last brief it was 188 (31%). The settlement economy ([THR-1923](https://linear.app/threadbare/issue/THR-1923)) is still the likeliest cause. This is the builder's to chase, not yours.
+- **Engine speed is still past the alarm line:** tick cost 187 ms/tick steady, 30% above the 7-day median (143, 80 rows since 2db65f97); top phase agent_decision, 610 agents. Name the merges between 2db65f97 and e67e0517: `git log --oneline --merges 2db65f97..e67e0517`. Last brief it was 185 (29%); no code merged in between, so this is noise around a steady level. The settlement economy ([THR-1923](https://linear.app/threadbare/issue/THR-1923)) is still the likeliest cause. This is the builder's to chase, not yours.
 
 Everything else is green: the live site serves the newest commit ([e67e0517](https://github.com/christianspliid-ui/threadbare/commit/e67e0517)), main's CI, the three scheduled background jobs, all 13 scheduled lanes, no PRs stuck, the worktree reaper, and the builder (idle by design, not stalled).
