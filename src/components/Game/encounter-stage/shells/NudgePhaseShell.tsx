@@ -27,7 +27,9 @@ import {
   NUDGE_COMMIT_LABEL,
   NUDGE_COMMIT_LABEL_SILENT,
   NUDGE_EMPTY_HAND_LINE,
+  nudgeHandMoreLine,
 } from '../../../../data/nudge-stage-content';
+import { usePrefersReducedMotion } from '../../../../hooks/usePrefersReducedMotion';
 import { NudgeBalance, NudgeReadingMarks } from './NudgeStageHeader';
 import {
   isNudgeDesignerViewEnabled,
@@ -134,6 +136,98 @@ function useColumnOverflow(ref: RefObject<HTMLElement | null>): boolean {
     return () => observer.disconnect();
   }, [ref]);
   return overflow;
+}
+
+/**
+ * THR-1942 — a card counts as "below the bar" when less than this share of its
+ * height shows above the stuck hand bar.
+ */
+export const HAND_MORE_VISIBLE_FRACTION = 0.6;
+
+/**
+ * THR-1942 — gap left between the last card's bottom edge and the bar's top
+ * when the "more cards below" line scrolls the hand into view.
+ */
+export const HAND_MORE_SCROLL_MARGIN_PX = 8;
+
+/** A card's vertical extent on screen (`getBoundingClientRect` top/bottom). */
+export interface CardSpan {
+  top: number;
+  bottom: number;
+}
+
+/**
+ * THR-1942 — how many cards sit under the hand bar: part of the card is below
+ * the bar's top and less than `visibleFraction` of it shows between the
+ * column's top and the bar. A card scrolled off the top is not "below". Pure,
+ * so the hidden test runs against stubbed geometry.
+ */
+export function countCardsBelowBar(
+  cards: readonly CardSpan[],
+  viewTop: number,
+  barTop: number,
+  visibleFraction: number = HAND_MORE_VISIBLE_FRACTION,
+): number {
+  let below = 0;
+  for (const card of cards) {
+    const height = card.bottom - card.top;
+    if (height <= 0 || card.bottom <= barTop) continue;
+    const visible = Math.max(0, Math.min(card.bottom, barTop) - Math.max(card.top, viewTop));
+    if (visible / height < visibleFraction) below += 1;
+  }
+  return below;
+}
+
+/** The card elements of the hand row (each card sits in a `display: contents` wrapper). */
+function handCardElements(row: HTMLElement | null): HTMLElement[] {
+  if (!row) return [];
+  return [...row.children].map((wrap) => wrap.firstElementChild).filter((el): el is HTMLElement => el instanceof HTMLElement);
+}
+
+/**
+ * THR-1942 — counts the cards under the stuck hand bar, live as the column
+ * scrolls or resizes, and scrolls the column until the last card clears the
+ * bar. Presentation state only. No scroll column (or jsdom's zero geometry)
+ * ⇒ 0, so the line never shows.
+ */
+function useCardsBelowBar(
+  shellRef: RefObject<HTMLElement | null>,
+  rowRef: RefObject<HTMLElement | null>,
+  barRef: RefObject<HTMLElement | null>,
+  cardCount: number,
+): { below: number; reveal: () => void } {
+  const [below, setBelow] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
+  useEffect(() => {
+    const column = findScrollParent(shellRef.current);
+    const bar = barRef.current;
+    if (!column || !bar) return;
+    const measure = () => {
+      const spans = handCardElements(rowRef.current).map((el) => el.getBoundingClientRect());
+      setBelow(countCardsBelowBar(spans, column.getBoundingClientRect().top, bar.getBoundingClientRect().top));
+    };
+    column.addEventListener('scroll', measure, { passive: true });
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(column);
+    observer?.observe(bar);
+    if (rowRef.current) observer?.observe(rowRef.current);
+    measure();
+    return () => {
+      column.removeEventListener('scroll', measure);
+      observer?.disconnect();
+    };
+  }, [shellRef, rowRef, barRef, cardCount]);
+
+  const reveal = useCallback(() => {
+    const column = findScrollParent(shellRef.current);
+    const bar = barRef.current;
+    const last = handCardElements(rowRef.current).at(-1);
+    if (!column || !bar || !last) return;
+    const delta = last.getBoundingClientRect().bottom - bar.getBoundingClientRect().top + HAND_MORE_SCROLL_MARGIN_PX;
+    if (delta > 0) column.scrollBy({ top: delta, behavior: reducedMotion ? 'auto' : 'smooth' });
+  }, [shellRef, rowRef, barRef, reducedMotion]);
+
+  return { below, reveal };
 }
 
 export interface NudgePhaseShellProps {
@@ -344,6 +438,11 @@ export function NudgePhaseShell({
   const { testPanel } = phase;
   const shellRef = useRef<HTMLDivElement>(null);
   const handOverflow = useColumnOverflow(shellRef);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const cardsBelow = useCardsBelowBar(shellRef, rowRef, barRef, hand.cards.length);
+  // The line never shows while the hand fits (THR-1942).
+  const cardsBelowBar = handOverflow ? cardsBelow.below : 0;
 
   return (
     <div ref={shellRef} data-testid="nudge-phase-shell" style={{ marginTop: 24 }}>
@@ -423,6 +522,7 @@ export function NudgePhaseShell({
           </p>
         ) : (
           <div
+            ref={rowRef}
             data-testid="nudge-card-row"
             style={{
               // THR-1724 — rows of at most CARDS_PER_ROW that wrap, replacing the
@@ -490,8 +590,10 @@ export function NudgePhaseShell({
           beats' `overflow-y-auto` column). Keep it that way; if one appears,
           the bar degrades to today's in-flow commit row, never worse. */}
       <div
+        ref={barRef}
         data-testid="nudge-hand-bar"
         data-hand-overflow={handOverflow ? 'true' : 'false'}
+        data-cards-below={cardsBelowBar}
         style={{
           position: 'sticky',
           bottom: 0,
@@ -510,6 +612,30 @@ export function NudgePhaseShell({
           >
             {missLine}
           </p>
+        )}
+        {/* THR-1942 — a two-row hand scrolls under this bar; the bar says how
+            many cards are hidden, and one click scrolls them into view. Quiet,
+            where the miss line sits, after it when both show. */}
+        {cardsBelowBar > 0 && (
+          <button
+            type="button"
+            className="focus-ring"
+            data-testid="nudge-hand-more"
+            onClick={cardsBelow.reveal}
+            style={{
+              display: 'block',
+              margin: '0 0 8px',
+              padding: 0,
+              border: 'none',
+              background: 'none',
+              fontSize: 'var(--text-xs)',
+              color: TEXT_WHISPER,
+              fontStyle: 'italic',
+              cursor: 'pointer',
+            }}
+          >
+            {nudgeHandMoreLine(cardsBelowBar)}
+          </button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {/* Rounded down: promising essence the player cannot actually spend
