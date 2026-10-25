@@ -1,14 +1,16 @@
 ---
 name: review-gate
-description: The automatic code-review gate (THR-1691). Run before arming auto-merge on any code PR — a cold, suspicious reviewer subagent reviews the diff against the Threadbare rubric, a second subagent tries to refute each finding, the author fixes or rebuts what survives (max 2 rounds), and a receipt is written. The PreToolUse hook `.claude/hooks/review-gate.sh` denies `gh pr merge` on a code diff without a clean receipt. Triggers on "review gate", "code review before merge", "review receipt", "the merge was blocked by the review gate".
-last_validated_against: 2026-10-14
+description: The automatic code-review gate (THR-1691). Run before arming auto-merge on a code PR that touches src/engine/ or src/types/ or adds >400 non-test UI lines (THR-1949 scope) — a cold, suspicious reviewer subagent reviews the diff against the Threadbare rubric, a second subagent tries to refute each finding, the author fixes or rebuts what survives (max 2 rounds), and a receipt is written. The PreToolUse hook `.claude/hooks/review-gate.sh` denies `gh pr merge` on a code diff without a clean receipt. Triggers on "review gate", "code review before merge", "review receipt", "the merge was blocked by the review gate".
+last_validated_against: 2026-10-25
 ---
 
 # Review gate
 
 Nobody reviews code before it merges here — Christian is chat-only and does not read diffs (THR-608), and the pickup lane writes, tests and ships its own work. Tests certify what they assert; they do not see a reader with no writer, a bare location sweep, an id in a property bag. This gate is that reader. It **blocks**: the hook refuses `gh pr merge` until a clean receipt exists. (The last review gate was advisory and was deleted as decorative — THR-487, THR-269.)
 
-**When:** every code PR, after the local gates pass and the closeout edits are committed, **immediately before `gh pr merge --auto --merge`**. A docs-only diff (`npm run classify:diff`) skips the gate — the hook allows it.
+**When:** every code PR **in scope**, after the local gates pass and the closeout edits are committed, **immediately before `gh pr merge --auto --merge`**. A docs-only diff (`npm run classify:diff`) skips the gate — the hook allows it.
+
+**Scope (THR-1949):** the review is required when the diff touches `src/engine/` or `src/types/`, or adds more than 400 non-test lines under `src/components/`, `src/hooks/` or `src/contexts/` (`reviewScope` in `scripts/review-gate.ts`). Any other code PR — content-only, a no-visible-change refactor, a small UI fix, a script or harness change — may arm without a receipt; the hook prints `review optional (THR-1949) — …`. Running the review anyway is allowed, and a receipt for the head (or carried to it across a docs-only delta) with `open` findings still blocks; one staled by later code is not read.
 
 **Cost:** two to four subagent runs per PR. **Sunset:** the weekly retro renews the gate at six weeks (from 2026-10-02) only by citing confirmed defects it caught, counted from the PR comments (`gh search prs "review-gate-receipt" --repo christianspliid-ui/threadbare`); otherwise it is deleted.
 

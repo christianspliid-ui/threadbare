@@ -21,6 +21,10 @@
  *   - the PR diff classifies docs-only (the CI predicate)          → allow
  *   - a commit in the range carries `Review-gate exempt: <reason>` → allow (audited)
  *   - a receipt for the head SHA with zero `open` findings         → allow
+ *     (a receipt with open findings denies, whatever the scope below)
+ *   - no receipt, and the diff does not owe a review (THR-1949: no
+ *     `src/engine/` or `src/types/` file and ≤ 400 non-test lines
+ *     added under the UI directories — {@link reviewScope})         → allow
  *   - a receipt for an ancestor SHA whose delta to head — counting
  *     only files in this PR's own diff, so a `git merge origin/main`
  *     does not stale it — is docs-only, counting `public/*-reference.html`
@@ -312,10 +316,56 @@ export function parseCommentMarker(body: string): { sha: string; open: number } 
   return m ? { sha: m[1], open: Number(m[2]) } : null;
 }
 
+/**
+ * THR-1949 — which code diffs owe a review. Christian's cut (chat, 2026-10-15): the
+ * gate pays for itself on engine and type changes and on large UI changes; content-only
+ * PRs, no-visible-change refactors and small UI fixes paid the same two-subagent price
+ * for little catch. Tests, typecheck and build still run on every code PR.
+ */
+export const REVIEW_REQUIRED_PREFIXES = ["src/engine/", "src/types/"] as const;
+/** UI directories whose added lines count toward {@link LARGE_UI_ADDED_LINES}. */
+export const LARGE_UI_PREFIXES = ["src/components/", "src/hooks/", "src/contexts/"] as const;
+/** Non-test lines added under {@link LARGE_UI_PREFIXES} above which the review is owed. */
+export const LARGE_UI_ADDED_LINES = 400;
+const TEST_FILE = /(^|\/)__tests__\/|\.(test|spec)\.[cm]?[jt]sx?$/;
+
+/**
+ * Non-test lines added under the UI directories, from `git diff --numstat` output.
+ * Binary files (`-` counts) add nothing.
+ */
+export function uiAddedLines(numstat: string): number {
+  let total = 0;
+  for (const line of numstat.split(/\r?\n/)) {
+    const [added, , file] = line.split("\t");
+    if (!file || TEST_FILE.test(file) || !LARGE_UI_PREFIXES.some((p) => file.startsWith(p))) continue;
+    const n = Number(added);
+    if (Number.isFinite(n)) total += n;
+  }
+  return total;
+}
+
+/** Is a review owed on this code diff? Pure; the reason is printed with the verdict. */
+export function reviewScope(files: readonly string[], addedUiLines: number): { required: boolean; reason: string } {
+  const core = files.find((f) => REVIEW_REQUIRED_PREFIXES.some((p) => f.startsWith(p)));
+  if (core) return { required: true, reason: `touches ${core}` };
+  if (addedUiLines > LARGE_UI_ADDED_LINES) {
+    return { required: true, reason: `adds ${addedUiLines} non-test UI lines (> ${LARGE_UI_ADDED_LINES})` };
+  }
+  return {
+    required: false,
+    reason: `no src/engine/ or src/types/ file and ${addedUiLines} non-test UI lines (≤ ${LARGE_UI_ADDED_LINES})`,
+  };
+}
+
 export type GateInputs = {
   headSha: string;
   /** Files changed `origin/main...head`. */
   files: readonly string[];
+  /**
+   * Non-test lines added under the UI directories (`origin/main...head`). Absent →
+   * treated as above the threshold, so a caller that cannot count never waives a review.
+   */
+  addedUiLines?: number;
   commitBodies: string;
   /** Receipt for exactly `headSha`, if any. */
   exactReceipt: Receipt | null;
@@ -354,10 +404,16 @@ export function decideReviewGate(inputs: GateInputs): GateDecision {
       ? { verdict: "allow", reason: "clean review receipt found in the PR comments" }
       : { verdict: "deny", reason: `the PR's review comment records ${inputs.commentMarker.open} open finding(s)` };
   }
+  // A receipt, when one exists, is judged above whatever the scope — a review that
+  // found open defects blocks even a diff that did not owe one.
+  const scope = reviewScope(inputs.files, inputs.addedUiLines ?? Number.POSITIVE_INFINITY);
+  if (!scope.required) {
+    return { verdict: "allow", reason: `review optional (THR-1949) — ${scope.reason}` };
+  }
   return {
     verdict: "deny",
     reason:
-      `no review receipt for head ${inputs.headSha.slice(0, 10)}. Run the review-gate skill ` +
+      `no review receipt for head ${inputs.headSha.slice(0, 10)}, and this diff owes one (${scope.reason}). Run the review-gate skill ` +
       "(.claude/skills/review-gate/SKILL.md) — cold reviewer, refuting verifier, then " +
       "`node --experimental-strip-types scripts/review-gate.ts write-receipt <findings.json>`. " +
       "A receipt for an older commit counts only when everything since it is docs-only.",
@@ -540,7 +596,11 @@ function ensureCommit(cwd: string, sha: string, prNumber: number | undefined): b
 function gatherGateInputs(cwd: string, headSha: string, prComments: readonly string[]): GateInputs {
   const top = git(cwd, ["rev-parse", "--show-toplevel"]);
   const receiptDir = path.join(top, RECEIPT_DIR);
-  const files = git(cwd, ["diff", "--name-only", `${BASE_REF}...${headSha}`]).split("\n").filter(Boolean);
+  // `--no-renames`: a move reports both paths, so a file moved out of src/engine/ still
+  // puts the diff in scope, and numstat never prints a `src/{hooks => components}/x` path
+  // that matches no UI prefix (THR-1949 review).
+  const files = git(cwd, ["diff", "--no-renames", "--name-only", `${BASE_REF}...${headSha}`]).split("\n").filter(Boolean);
+  const addedUiLines = uiAddedLines(git(cwd, ["diff", "--no-renames", "--numstat", `${BASE_REF}...${headSha}`]));
   const commitBodies = git(cwd, ["log", "--format=%B", `${BASE_REF}..${headSha}`]);
   const exactPath = path.join(receiptDir, `${headSha}.json`);
   const exactReceipt = existsSync(exactPath) ? readReceipt(exactPath) : null;
@@ -550,7 +610,7 @@ function gatherGateInputs(cwd: string, headSha: string, prComments: readonly str
     const marker = parseCommentMarker(body);
     if (marker && marker.sha === headSha) commentMarker = marker;
   }
-  return { headSha, files, commitBodies, exactReceipt, carriedReceipt, commentMarker };
+  return { headSha, files, addedUiLines, commitBodies, exactReceipt, carriedReceipt, commentMarker };
 }
 
 function evaluateMerge(command: string, hookCwd: string): GateDecision {
