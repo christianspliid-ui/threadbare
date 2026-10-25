@@ -227,9 +227,12 @@ describe('THR-2023 The Loan → Debt Collection (the loop)', () => {
     expect(sentiment).toBeLessThan(0);
     state = runBand(state, 'encounter.debt_collection', 'success');
     expect(debtEdges(state.graph)).toHaveLength(1);
-    const bond = state.graph.getOutgoingEdges(BORROWER, 'relates_to')
-      .find(e => e.target === LENDER && !(e.properties as Record<string, unknown>).agreement);
-    expect(bond?.properties.sentiment).toBe(sentiment);
+    // The first-edge readers see the resentment while the younger debt is still live (review-gate cycle 2) …
+    expect(relSentiment(state.graph)).toBe(sentiment);
+    // … and it survives that debt being settled too.
+    state = runBand(state, 'encounter.debt_collection', 'success');
+    expect(debtEdges(state.graph)).toHaveLength(0);
+    expect(relSentiment(state.graph)).toBe(sentiment);
   });
 
   it('without a bound borrower the loan writes no debt (the cast is load-bearing)', () => {
