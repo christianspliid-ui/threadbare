@@ -59,6 +59,15 @@ function getSoulLevel(value: number): HexSoulLevel {
   return 'weak';
 }
 
+/**
+ * Terrains whose ruins lie beneath the water (THR-2021): the open-water terrains, plus the
+ * wadeable shallows. `coast` and `river` are walkable land (`movement-content.ts`), so their
+ * ruins stay dry — which is why this is not `isWaterTerrain`, which counts both as water.
+ */
+export const SUBMERGED_RUIN_TERRAINS: ReadonlySet<TerrainType> = new Set<TerrainType>([
+  'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'reef', 'lake',
+]);
+
 /** HexChronicle's land fallback, word for word. */
 export const FALLBACK_TERRAIN_PROSE = 'An unremarkable stretch of land, waiting for someone to give it meaning.';
 
@@ -199,6 +208,9 @@ export function ruinsParagraphs(input: LandProseInput): string[] {
   if (region.historicalCulture.legacyFlavor) {
     out.push(`“${region.historicalCulture.legacyFlavor}” ~ ${stripLeadingThe(region.historicalCulture.name)}`);
   }
-  for (const hook of buildExplorationHooks(region.historicalCulture.ruinDescriptors)) out.push(hook);
+  // A water hex keeps its Area's culture, quote and history (the territory is the culture's),
+  // but its ruins lie under the water (THR-2021).
+  const underwater = SUBMERGED_RUIN_TERRAINS.has(input.terrain);
+  for (const hook of buildExplorationHooks(region.historicalCulture.ruinDescriptors, underwater)) out.push(hook);
   return out;
 }
