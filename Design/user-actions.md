@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 02:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 03:55 local (02:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-25: an echo heir’s seeded kin tie counts as part of the world’s past** ([THR-2029](https://linear.app/threadbare/issue/THR-2029)). Merged via [#2561](https://github.com/christianspliid-ui/threadbare/pull/2561) and live.
+- **2026-10-25: echoes of a past god stand in the new world** ([THR-1843](https://linear.app/threadbare/issue/THR-1843)). Merged via [#2559](https://github.com/christianspliid-ui/threadbare/pull/2559) and live.
 - **2026-10-25: a lake hex's land page reads as water, not as a desert; coast and river ruins stay dry** ([THR-2021](https://linear.app/threadbare/issue/THR-2021)). Merged via [#2558](https://github.com/christianspliid-ui/threadbare/pull/2558) and live.
 - **2026-10-25: a liege pays the raise for a sworn free company with no army and no coin** ([THR-2020](https://linear.app/threadbare/issue/THR-2020)). Merged via [#2557](https://github.com/christianspliid-ui/threadbare/pull/2557) and live.
 - **2026-10-24: the realm check "Oaths pay" is judged on the leading Crown** ([THR-2017](https://linear.app/threadbare/issue/THR-2017)). Merged via [#2556](https://github.com/christianspliid-ui/threadbare/pull/2556) and live.
@@ -52,8 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-24: 35 encounters' words now describe the test their Reach actually rolls** ([THR-2011](https://linear.app/threadbare/issue/THR-2011)). Merged via [#2553](https://github.com/christianspliid-ui/threadbare/pull/2553) and live.
 - **2026-10-24: a faction pays for a member's founding they can't afford** ([THR-2008](https://linear.app/threadbare/issue/THR-2008)). Merged via [#2550](https://github.com/christianspliid-ui/threadbare/pull/2550) and live.
 - **2026-10-24: a notable whose plan fails late stays on the Notables list for a while after it fails** ([THR-2005](https://linear.app/threadbare/issue/THR-2005)). Merged via [#2549](https://github.com/christianspliid-ui/threadbare/pull/2549) and live.
-- **2026-10-24: encounter debts end when their term does, and the sheet shows the time left** ([THR-1999](https://linear.app/threadbare/issue/THR-1999)). Merged via [#2548](https://github.com/christianspliid-ui/threadbare/pull/2548) and live.
-- **2026-10-24: volcano, glacier, lake/river and dead forest get land-page pictures of their own** ([THR-1998](https://linear.app/threadbare/issue/THR-1998)). Merged via [#2547](https://github.com/christianspliid-ui/threadbare/pull/2547).
 
 ---
 

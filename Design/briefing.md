@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 02:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 03:55 local (02:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [A seeded relic has no place in the graph](https://linear.app/threadbare/issue/THR-2030/a-seeded-relic-has-no-place-in-the-graph-its-site-is-only-a-property): a relic left by an earlier god now **lies at its place** through its own link, the way an unclaimed thing lies on the ground. It is not "at" the place the way a person is. Its page says where it lies, the place's page lists it, and it still reads Foreign until someone takes it up. If it shared the people link, about 15 parts of the game would count it as a resident, including crowd size, threat, the camera and the "your mortal is here" checks. *Veto:* "an artifact should simply be at a place like a person". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25a.md)*
 - [Debts in the money encounters](https://linear.app/threadbare/issue/THR-2023): four calls inside [the debts plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-24-thr-2023-encounter-debts.md). Each can be vetoed on its own. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24c.md)*
   - **A collected debt is the oldest one owed to the collector.** A won collection pays it, a lost one writes it off. *Veto:* "the collector should pick the biggest or the newest debt".
   - **The cathedral's treasury is the dean's own purse**, not a temple faction's. *Veto:* "the temple faction's treasury should pay".
@@ -32,12 +33,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 8 ready, 2 in progress.** Two more jobs shipped since the last brief: [a liege pays for its free company's army](https://linear.app/threadbare/issue/THR-2020) ([#2557](https://github.com/christianspliid-ui/threadbare/pull/2557)) and [a lake hex's land page reads as water](https://linear.app/threadbare/issue/THR-2021) ([#2558](https://github.com/christianspliid-ui/threadbare/pull/2558)), both live. The builder has now claimed [echoes of a past god in the new world](https://linear.app/threadbare/issue/THR-1843); its run was active a minute ago.
+**Healthy: 9 ready, 2 in progress.** Two more jobs shipped since the last brief: [echoes of a past god stand in the new world](https://linear.app/threadbare/issue/THR-1843) ([#2559](https://github.com/christianspliid-ui/threadbare/pull/2559)) and [an echo heir's kin tie counts as part of the world's past](https://linear.app/threadbare/issue/THR-2029) ([#2561](https://github.com/christianspliid-ui/threadbare/pull/2561)), both live. The builder is now on [choices widening across runs](https://linear.app/threadbare/issue/THR-1844): its pull request [#2562](https://github.com/christianspliid-ui/threadbare/pull/2562) is open and not yet armed, and the run was active a minute ago. New on the shelf: [the world tilt never reaches a place](https://linear.app/threadbare/issue/THR-2028) and [a seeded relic's place](https://linear.app/threadbare/issue/THR-2030).
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. It waits on your answer above, not on the builder.
-- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and [widening choices across runs](https://linear.app/threadbare/issue/THR-1844) are agent-owned and older than a week on the shelf; most of that week was the silences above.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. No local worktree holds uncommitted work for it. It waits on your answer above, not on the builder.
+- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) is agent-owned and older than a week on the shelf; most of that week was the silences above.
 - Warm playtest round 3 cannot start: its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)) that themselves wait on round 3. The playtest lane owns that gate. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24d.md)*
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, the PR queue (empty), all 12 scheduled lanes, and the builder (busy, not stalled). The live site serves the latest commit ([dca1ba79](https://github.com/christianspliid-ui/threadbare/commit/dca1ba79)). The worktree reaper ran at 02:40 local. Engine speed is 141 ms/tick, 2% faster than the 7-day median (144).
+All green. Main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (busy, not stalled). One open PR ([#2562](https://github.com/christianspliid-ui/threadbare/pull/2562)), held by its own live run. The live site serves the latest commit ([cffd8b5a](https://github.com/christianspliid-ui/threadbare/commit/cffd8b5a)). The worktree reaper ran recently. Engine speed is 113 ms/tick, 21% faster than the 7-day median (144).
