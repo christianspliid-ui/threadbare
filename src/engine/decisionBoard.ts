@@ -102,7 +102,7 @@ import { FLOOR_UPGRADE_OUTCOME, mapResolverOutcomeToStep } from './stepResolutio
 import { CHECKPOINT_EFFECT_BY_BAND, pickPrimaryReach } from './undertakingCheckpoints';
 import { computeCapability } from './domainCapability';
 import { findAmbitionTemplate, getStrategicTemplate } from './strategicActionCandidates';
-import { ARRIVAL_GOAL_COMMITMENT_MULTIPLIER } from '../data/movement-content';
+import { ARRIVAL_GOAL_COMMITMENT_MULTIPLIER, RESTLESS_ROAD_ARRIVAL_PRECEDENCE } from '../data/movement-content';
 import {
   findGrievanceForAmbitionTemplate,
   grievanceHeat01,
@@ -234,6 +234,11 @@ export interface BoardEntry {
    */
   readonly arrivalCommitment?: number;
   /**
+   * THR-2036 — the goal of a restless road, ranked first on the board whatever its
+   * `score` (`RESTLESS_ROAD_ARRIVAL_PRECEDENCE`). Absent on every other entry.
+   */
+  readonly restlessRoadGoal?: true;
+  /**
    * THR-1663 — the pull of a survey on a ruin the mortal holds a lead on
    * (`CLUE_LEAD_SURVEY_PULL_MULT`), already folded into `desireMultiplier` and
    * `score`; absent on every other entry.
@@ -300,7 +305,15 @@ export interface BoardInput {
    * one at `locationId` when given (THR-1674: never a copy elsewhere), else every
    * entry of the template. Absent → no commitment.
    */
-  readonly arrivalGoal?: { readonly templateId: string; readonly locationId?: string };
+  readonly arrivalGoal?: {
+    readonly templateId: string;
+    readonly locationId?: string;
+    /**
+     * THR-2036 — the journey was a restless road: the goal's entry ranks first
+     * (`RESTLESS_ROAD_ARRIVAL_PRECEDENCE`).
+     */
+    readonly restlessRoad?: boolean;
+  };
   /**
    * THR-1952 — does this encounter template pay its actor on a success? The caller
    * binds it to the session runtime's memo (`templatePaysActor`). Absent → no
@@ -643,6 +656,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const isGoal = goal !== undefined
       && candidate.entry.templateId === goal.templateId
       && (goal.locationId === undefined || candidate.entry.locationId === goal.locationId);
+    const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE;
     const arrivalCommitment = isGoal ? ARRIVAL_GOAL_COMMITMENT_MULTIPLIER : 1;
     // THR-1686 — set by the appointment regime only while `APPOINTMENT_DISCOUNT_ON_BOARD`.
     const appointmentDiscount = candidate.appointmentDiscount;
@@ -662,6 +676,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(encEarning ? { meansEarning: true } : {}),
       ...(meansWant && encEarning ? { meansMultiplier: encMeans } : {}),
       ...(isGoal ? { arrivalCommitment } : {}),
+      ...(roadGoal ? { restlessRoadGoal: true as const } : {}),
       ...(appointmentDiscount !== undefined ? { appointmentDiscount } : {}),
       ...(whisperPull !== undefined ? { whisperPull } : {}),
       candidateIndex: index,
@@ -769,7 +784,10 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // Ties break on the input order both families already arrived in (each is
   // pre-ranked by its own scorer), never on `sort`'s unspecified behaviour for
   // equal keys — the board decides in live mode, and determinism is NFP #3.
-  entries.sort((a, b) => (b.score - a.score) || (a.candidateIndex - b.candidateIndex));
+  // THR-2036: a restless road's story ranks first on arrival, whatever its score
+  // (`RESTLESS_ROAD_ARRIVAL_PRECEDENCE`); the scores stay honest for the trace.
+  entries.sort((a, b) => (Number(!!b.restlessRoadGoal) - Number(!!a.restlessRoadGoal))
+    || (b.score - a.score) || (a.candidateIndex - b.candidateIndex));
 
   return {
     entries,

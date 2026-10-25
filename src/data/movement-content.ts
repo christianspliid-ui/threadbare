@@ -200,6 +200,18 @@ export const REROUTE_SCORE_MULTIPLIER = 1.5;
 export const ARRIVAL_GOAL_COMMITMENT_MULTIPLIER = 2.5;
 
 /**
+ * THR-2036: on arrival from a restless road (THR-1959), the story the road named
+ * takes the first decision outright when it is still on the board — the road was
+ * the decision, made after the window had judged that story drawable (`engages`,
+ * fit > 0). With only `ARRIVAL_GOAL_COMMITMENT_MULTIPLIER`, seed 42 lost it at the
+ * door: The First walked 12 hexes, arrived "goal kept", and an undertaking (the
+ * easy story's window fit was 0.1) or a rest five hexes away (fatigue desire ×6.7,
+ * 1.44 against the goal's 1.06) took the decision — the story never came.
+ * `false` returns the road's story to the ordinary arrival commitment.
+ */
+export const RESTLESS_ROAD_ARRIVAL_PRECEDENCE = true;
+
+/**
  * Maximum tick distance to consider for movement candidates.
  * Locations further than this are not evaluated as destinations.
  */

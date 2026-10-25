@@ -4130,6 +4130,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     forecastZone?: 'refused' | 'below' | 'in' | 'above' | 'certain';
     /** THR-1668 — the arrival commitment on the encounter the mortal walked to (already in `score`). */
     arrivalCommitment?: number;
+    /** THR-2036 — a restless road's goal, ranked first whatever its score. */
+    restlessRoadGoal?: true;
     /** THR-1663 — the lead pull on a survey of a held lead's ruin, already in `desireMultiplier`. */
     leadPull?: number;
     /** THR-1686 — the `leaning` appointment overrun discount on an encounter (already in `score`). */
