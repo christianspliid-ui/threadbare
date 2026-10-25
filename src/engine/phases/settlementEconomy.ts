@@ -458,7 +458,7 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
         locationId: id, buildingId: b.def.id, placeId: b.node.id, ...(reason ? { reason } : {}),
       });
       chron('building_lost', node, { goodsType: b.def.cardName.toLowerCase() }, `lost:${b.def.id}:${tick}`);
-      p.economyLastLost = { buildingId: b.def.id, tick };
+      if (!mute) p.economyLastLost = { buildingId: b.def.id, tick };
     }
     buildings = readBuildings(graph, id);
 
