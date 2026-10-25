@@ -1010,6 +1010,8 @@ export function swearBrokeredOath(
   const { vassalId, liegeId, kind, brokerId, forcedBy } = oath;
   if (!isRealmFaction(graph.getNode(liegeId))) return { sworn: false, reason: 'no_realm' };
   if (graph.getOutgoingEdges(liegeId, 'sworn_to').length > 0) return { sworn: false, reason: 'liege_sworn_chain' };
+  // A landless realm courts no one (`mayCourt`'s settlement test), and no mortal brokers for it either.
+  if (!mayCourt(graph, graph.getNode(liegeId))) return { sworn: false, reason: 'no_realm' };
   if (vassalId === liegeId || !maySwear(graph, graph.getNode(vassalId))) return { sworn: false, reason: 'may_not_swear' };
   if (onReswearCooldown(graph, vassalId, liegeId, state.tick)) return { sworn: false, reason: 'cooldown' };
 

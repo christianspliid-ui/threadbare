@@ -239,6 +239,14 @@ describe('the Warlord\'s Tribute — a demanded oath', () => {
     expect(effectTraces()).toEqual([expect.objectContaining({ success: false, failReason: 'no_realm' })]);
   });
 
+  it('a realm that has lost its last settlement takes no brokered vassal (review gate, cycle 2 round 2)', () => {
+    const state = buildState();
+    state.graph.removeEdge('e_ctl_town');
+    const { state: next } = applyEffects(state, [DEMAND], runtime);
+    expect(oathOf(next, MERC)).toBeNull();
+    expect(effectTraces()).toEqual([expect.objectContaining({ success: false, failReason: 'no_realm' })]);
+  });
+
   it('an already-sworn company writes nothing', () => {
     const state = buildState();
     expect(swearOathForDebug(state, MERC, R2, 'persuaded')).toBe(true);
