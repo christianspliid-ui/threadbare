@@ -452,6 +452,23 @@ export type AftermathTarget =
   | { readonly kind: 'location'; readonly id: string }
   | { readonly kind: 'actor_fallback' };
 
+/**
+ * THR-2023 — settle a debt before its term: the oldest live `relates_to` debt owed to
+ * the creditor is removed. `paid` — the debtor pays `DEBT_REPAY_MEANS`; `written_off` —
+ * the debt is struck and no coin moves. The creditor's gain is authored as its own
+ * `economy_shift` row, never inside the settle, so the coin is counted once. Debts only:
+ * a favour (`owes_favor`) is never touched. Applier: `settleDebt` (`engine/debtSettle.ts`).
+ */
+export interface DebtSettleEffect {
+  readonly kind: 'debt_settle';
+  /** Who is owed. Sentinel-bound; default `$actor`. */
+  readonly creditorAgentId?: string;
+  /** Optional: settle only a debt this agent owes. Unset = any debtor. */
+  readonly debtorAgentId?: string;
+  readonly settlement: 'paid' | 'written_off';
+  readonly when?: EffectPredicate;
+}
+
 export type EncounterAftermathReactionEffect =
   | {
     readonly kind: 'reputation_score';
@@ -853,6 +870,7 @@ export type EncounterAftermathReactionEffect =
     readonly durationOverride?: number | null;
     readonly when?: EffectPredicate;
   }
+  | DebtSettleEffect
   | {
     /**
      * THR-1672 — the god teaches a mortal a spell (acquisition channel 1, the nudge
@@ -1460,6 +1478,12 @@ export type EncounterAftermathReactionEffect =
     readonly trustDelta?: number;
     /** Mirror the deltas onto the reverse (with→actor) edge. Default true. */
     readonly reciprocal?: boolean;
+    /**
+     * THR-2023 — write ONLY the reverse (with→actor) edge: the other agent's feeling
+     * toward the actor changes and the actor's does not (The Loan's borrower resents
+     * the lender). Overrides `reciprocal`. Default false.
+     */
+    readonly reverseOnly?: boolean;
     readonly when?: EffectPredicate;
   }
   | {

@@ -420,7 +420,9 @@ function CardsSectionRenderer({ section }: { section: CardsSection }) {
             key={`${tile.title}-${index}`}
             style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: '8px 10px', background: 'var(--bg-raised)', minWidth: 0 }}
           >
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 700 }}>{tile.kindWord}</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 700 }}>
+              {tile.kindWordTooltipId ? <Tooltip id={tile.kindWordTooltipId}><span>{tile.kindWord}</span></Tooltip> : tile.kindWord}
+            </div>
             <div style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)', fontWeight: 700, overflowWrap: 'anywhere' }}>
               {tile.ref ? <Chip role="identity" size="sm" target={tile.ref} label={tile.title} /> : tile.title}
             </div>

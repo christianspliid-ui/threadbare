@@ -36,7 +36,7 @@ import {
   type ActiveIntent,
   type ActiveUndertakingSummary,
 } from '../../agentDetail';
-import type { AttachmentFullEntry } from '../../agentAttachments';
+import { agreementLine, type AttachmentFullEntry } from '../../agentAttachments';
 import { getFamiliarity, getKnowledgeLevel } from '../../familiarity';
 import { canReadIntention, describeIntentionRead, knowledgeAtLeast, readIntentionFromCard } from '../../intentionReading';
 import { createHoldReader } from '../../holdStanding';
@@ -296,6 +296,9 @@ function tierName(tier: unknown): string {
   return ATTACHMENT_TIER_NAMES[tier as AttachmentTier] ?? '';
 }
 
+/** THR-2023 — the debt's tooltip: what a debt is and how it ends. */
+export const DEBT_TOOLTIP_ID = 'ui.debt_owed';
+
 /** One attachment as a card tile — the profile's vignette, words only. */
 function attachmentTile(entry: AttachmentFullEntry, kindWord?: string): CardTile {
   const lines: string[] = [];
@@ -306,8 +309,8 @@ function attachmentTile(entry: AttachmentFullEntry, kindWord?: string): CardTile
   }
   if (entry.sign === 'blessing') lines.push(`A blessing${entry.inflictedByName ? ` — ${entry.inflictedByName} saw to it` : ''}`);
   if (entry.flavorText) lines.push(entry.flavorText);
-  if (entry.counterpartyName) lines.push(entry.agreementType ? `Bound to ${entry.counterpartyName}` : `With ${entry.counterpartyName}`);
-  else if (entry.grantedBy) lines.push(entry.agreementType ? `Bound to ${entry.grantedBy}` : `Granted by ${entry.grantedBy}`);
+  if (entry.counterpartyName) lines.push(agreementLine(entry, entry.counterpartyName));
+  else if (entry.grantedBy) lines.push(entry.agreementType ? agreementLine(entry, entry.grantedBy) : `Granted by ${entry.grantedBy}`);
   if (entry.learnedFrom) lines.push(`Learned from ${entry.learnedFrom}`);
   if (entry.spellWords) {
     for (const [lead, text] of [
@@ -324,6 +327,7 @@ function attachmentTile(entry: AttachmentFullEntry, kindWord?: string): CardTile
   return {
     title: entry.name,
     kindWord: kindWord ?? [cls, tierName(entry.tier)].filter(Boolean).join(' · '),
+    ...(entry.agreementType === 'debt' ? { kindWordTooltipId: DEBT_TOOLTIP_ID } : {}),
     lines,
     ...(timed ? { meter: (entry.ticksRemaining as number) / (entry.totalTicks as number), durationWord: `${durationLabel(entry.ticksRemaining as number)} remaining` } : {}),
   };

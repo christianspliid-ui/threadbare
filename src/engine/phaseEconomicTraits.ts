@@ -115,9 +115,10 @@ function hasMonopoly(graph: WorldGraph, actorId: string): boolean {
  * encounter's creditor (the dean's factor in `cathedral_loan`) would turn debt-laden too. The
  * nested shape keeps its original either-direction count.
  *
- * Term: nothing expires an agreement edge, so a debt whose term has run out at `tick`, or whose
- * edge reads `active: false`, is skipped here (`agreementLapsed`) — otherwise a 96-tick debt
- * would keep its bearer debt-laden for ever.
+ * Term: the expiry pass removes a term-ended debt each tick (THR-1999), and a debt can also end
+ * early — paid or written off by an encounter's `debt_settle` (THR-2023, `debtSettle.ts`). A debt
+ * whose term has run out at `tick`, or whose edge reads `active: false`, is still skipped here
+ * (`agreementLapsed`) for the window before the expiry pass runs.
  */
 export function countDebts(graph: WorldGraph, actorId: string, tick: number): number {
   let count = 0;

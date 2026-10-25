@@ -783,6 +783,12 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'A Favour Owed',
     desc: 'A debt of goodwill running one way between two named people. It sits on the debtor until it is called in — once — and is then spent. Unpaid, it can still lapse or be broken.',
   },
+  // THR-2023 — the coin sibling of the favour: the word on the debt chips and the
+  // tooltip on the sheet's *Owes* / *Is owed by* rows.
+  'ui.debt_owed': {
+    label: 'A Debt',
+    desc: 'A debt. It ends when it is paid, written off, or its term runs out.',
+  },
   // THR-1175 — the sibling concept, and the reason the sentence above says
   // *people* twice. The director asked how a town could ever repay a favour;
   // it cannot, because every way a favour gets collected runs through one

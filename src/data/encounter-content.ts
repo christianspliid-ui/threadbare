@@ -13,7 +13,10 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
 import { compileOpeningColoration } from '../engine/fragmentResolution';
 import { DEAL_DEFAULT_COUNT } from './nudge-constants';
-import { MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from './mortal-means-constants';
+import {
+  LOAN_PRINCIPAL_MEANS, LOAN_RESENTMENT_SENTIMENT, LOAN_RESENTMENT_SENTIMENT_CRIT,
+  MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL,
+} from './mortal-means-constants';
 import { W_LANE, W_PROSPERITY, W_PURSE, W_STOCK, W_UNREST, harvestStockAmount } from './economy-shift-constants';
 import {
   ENCOUNTER_TONE_ADJECTIVES,
@@ -29,6 +32,28 @@ import { getMonsterEncounterById } from './monster-encounter-content';
 import { getFightEncounterById } from './fights/fight-templates';
 import { getBorderlandEncounterById } from './borderland-encounter-content';
 import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from './secret-encounter-content';
+
+/**
+ * THR-2023 — one band of The Loan: the borrower owes the lender (`$actor`), the
+ * principal moves lender → borrower, and a failed band adds the borrower's resentment.
+ *
+ * The resentment comes FIRST. Agreements and bonds are both `relates_to` edges, and the
+ * relationship readers (`getRelationship`, `findBond`) take the first edge between two
+ * people. Written after the debt, the bond would land on the debt edge and vanish when
+ * the debt is settled; written before it, the bond is its own edge and is found first.
+ */
+function theLoanBand(
+  resentment?: number,
+): readonly import('../types/unifiedAction').EncounterAftermathReactionEffect[] {
+  return [
+    ...(resentment === undefined ? [] : [
+      { kind: 'bond_change' as const, withAgentId: '$cast:borrower', sentimentDelta: resentment, reverseOnly: true },
+    ]),
+    { kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:borrower', counterpartyId: '$actor' },
+    { kind: 'economy_shift', quantity: 'means', amount: -LOAN_PRINCIPAL_MEANS, targetAgentId: '$actor' },
+    { kind: 'economy_shift', quantity: 'means', amount: LOAN_PRINCIPAL_MEANS, targetAgentId: '$cast:borrower' },
+  ];
+}
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -5953,10 +5978,37 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.the_loan',
     stakes: {
       goal: 'set fair terms on a loan to a desperate borrower',
-      risk: 'sign a loan the borrower resents from day one',
+      // THR-2023 — the lender's coin goes out on every band, so the loss is named.
+      risk: 'lend the coin on terms the borrower resents from day one',
       won: 'set a loan both sides signed without flinching',
-      lost: 'signed a loan the borrower resents already',
+      lost: 'lent the coin on terms the borrower resents already',
     },
+    // THR-2023 — the acting mortal is the lender; the borrower is cast, and owes them
+    // on every band. Failure adds the resentment its prose names. The lender lays the
+    // principal out, so a success costs them (no Means-want lean — correctly).
+    outcomeEffects: {
+      critical_success: theLoanBand(),
+      success: theLoanBand(),
+      success_at_cost: theLoanBand(),
+      failure: theLoanBand(LOAN_RESENTMENT_SENTIMENT),
+      critical_failure: theLoanBand(LOAN_RESENTMENT_SENTIMENT_CRIT),
+    },
+    /**
+     * THR-2023 — the borrower. `lazy-materialize-on-trigger` because the debt is
+     * *about* them (the THR-1165 lesson: a bind-only default let a debt land on scenery).
+     */
+    supportBundle: [
+      {
+        kind: 'actor',
+        key: 'borrower',
+        delivery: 'lazy-materialize-on-trigger',
+        persistence: 'must-persist',
+        reuseNpcRoles: ['laborer', 'civilian'],
+        supportRole: 'loan_borrower',
+        spawnNpcRole: 'laborer',
+        spawnName: 'Wenna Tull',
+      },
+    ],
     name: 'The Loan',
     locationTypes: ['town', 'city', 'capital'],
     sublocationTypes: ['sublocation-type.counting-house'],
@@ -6012,14 +6064,33 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.debt_collection',
     stakes: {
       goal: 'collect the overdue debt in full',
-      risk: 'see the debtor skip town and the debt go uncollectable',
+      risk: 'see the debtor hide the coin and the debt go uncollectable',
       won: 'collected the overdue debt in full',
-      lost: 'saw the debtor skip town and the debt go uncollectable',
+      lost: 'saw the debtor hide the coin and the debt go uncollectable',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-2023 — the actor collects what is owed *to them*: the oldest debt is paid on the
+    // good bands and written off on the bad ones. Owed nothing, the pay rows still stand.
     outcomeEffects: {
-      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
-      success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      critical_success: [
+        { kind: 'debt_settle', creditorAgentId: '$actor', settlement: 'paid' },
+        { kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP },
+      ],
+      success: [
+        { kind: 'debt_settle', creditorAgentId: '$actor', settlement: 'paid' },
+        { kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP },
+      ],
+      success_at_cost: [
+        { kind: 'debt_settle', creditorAgentId: '$actor', settlement: 'paid' },
+        { kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL },
+      ],
+      failure: [
+        { kind: 'debt_settle', creditorAgentId: '$actor', settlement: 'written_off' },
+      ],
+      critical_failure: [
+        { kind: 'debt_settle', creditorAgentId: '$actor', settlement: 'written_off' },
+        { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL },
+      ],
     },
     name: 'Debt Collection',
     locationTypes: ['town', 'city', 'capital'],
@@ -6063,7 +6134,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The debtor is gone before the notice takes effect — house emptied, counting-house lease signed over to a cousin. {actor} holds a contract that is entirely valid and entirely uncollectable.',
+          narrative: 'The debtor moves faster than the notice — strongbox emptied, counting-house lease signed over to a cousin. {actor} holds a contract that is entirely valid and entirely uncollectable.',
           reputationDelta: -0.08,
         },
       },

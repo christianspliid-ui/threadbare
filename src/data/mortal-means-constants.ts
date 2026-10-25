@@ -34,6 +34,24 @@ export const MEANS_STEP_BIG = 12;
 /** The named steps an outcome table's `means` amount may use (content test). */
 export const MEANS_NAMED_STEPS: readonly number[] = [MEANS_STEP_SMALL, MEANS_STEP, MEANS_STEP_BIG];
 
+// ─── Encounter debts (THR-2023) ─────────────────────────────────────
+
+/** Kill switch for the `debt_settle` aftermath effect. Off, it no-ops with `debt_settle_noop reason:'disabled'`. */
+export const ENCOUNTER_DEBT_SETTLE_ENABLED = true;
+/** Means a debtor pays when a debt is settled `paid` (scaled down below Getting by, like every loss). */
+export const DEBT_REPAY_MEANS = MEANS_STEP;
+/**
+ * Means the lender lays out and the borrower receives in The Loan. Kept equal to
+ * `DEBT_REPAY_MEANS` so a collected loan nets the lender zero. A named step, so the
+ * outcome-table content test holds; retuning it off-step means adding the value to
+ * `MEANS_NAMED_STEPS` in the same edit.
+ */
+export const LOAN_PRINCIPAL_MEANS = MEANS_STEP;
+/** The borrower's sentiment toward the lender on The Loan's failure. */
+export const LOAN_RESENTMENT_SENTIMENT = -0.1;
+/** The same on critical failure. */
+export const LOAN_RESENTMENT_SENTIMENT_CRIT = -0.2;
+
 /** Getting by's floor. Below it a mortal is poor and a loss is scaled down. */
 export const MEANS_POOR_LINE = WEALTH_TIER_GETTING_BY;
 

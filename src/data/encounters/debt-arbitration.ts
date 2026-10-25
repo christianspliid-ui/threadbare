@@ -848,6 +848,9 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
           success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
           success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+          // THR-2023 — the master's note: the house master owes the mortal the third. The
+          // critical failure writes none — "a note on a house that has stopped paying its notes".
+          failure: [{ kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:master', counterpartyId: '$actor' }],
         },
         overview: '{actor} took the house\'s offer.',
         changes: [],
@@ -935,6 +938,26 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             overview: '{actor} holds the master\'s note for the third, and no coin. The deed goes to the noble.',
             changes: [
               {
+                id: 'debt.neg.fail.note',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'gain',
+                polarity: 'gain',
+                title: 'A note held',
+                detail: '{cast:master} owes {actor} the third.',
+                stateNoun: {
+                  text: 'a debt',
+                  tooltipId: 'ui.debt_owed',
+                },
+                concepts: [
+                  {
+                    text: '{cast:master}',
+                    entityId: '$cast:master',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
                 id: 'debt.neg.fail.rep',
                 kind: 'reputation',
                 category: 'scar',
@@ -988,6 +1011,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
     },
     fallback: {
+      // THR-2023 — the fallback path's step is also *Collect the third*, so its failure
+      // writes the same note debt; its critical failure, like the negative path's, none.
+      outcomeEffects: {
+        failure: [{ kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:master', counterpartyId: '$actor' }],
+      },
       overview: '{actor} left the banking house before any count or ruling.',
       changes: [],
       byOutcome: {
@@ -997,7 +1025,28 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
         failure: {
           overview: '{actor} left the banking house unpaid. The deed goes to the noble.',
-          changes: [],
+          changes: [
+          {
+            id: 'debt.fb.fail.note',
+            kind: 'shell_state',
+            category: 'bond',
+            direction: 'gain',
+            polarity: 'gain',
+            title: 'A note held',
+            detail: '{cast:master} owes {actor} the third.',
+            stateNoun: {
+              text: 'a debt',
+              tooltipId: 'ui.debt_owed',
+            },
+            concepts: [
+              {
+                text: '{cast:master}',
+                entityId: '$cast:master',
+                visualKind: 'agent',
+              },
+            ],
+          },
+          ],
         },
         critical_failure: {
           overview: '{actor} took the master\'s false figures on trust and left before any count or ruling. The deed '

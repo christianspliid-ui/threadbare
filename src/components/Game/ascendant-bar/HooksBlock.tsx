@@ -54,6 +54,7 @@ import React from 'react';
 import type { GameState } from '../../../types/gameState';
 import { attachmentDetailFromNode } from '../../../engine/attachmentTemplateDetail';
 import { readAgreement, agreementTermEnded } from '../../../engine/agreementShape';
+import { agreementLine } from '../../../engine/agentAttachments';
 import { Tooltip } from '../../shared/Tooltip';
 import {
   HOOK_LABEL_FALLBACK,
@@ -325,8 +326,15 @@ export function extractChips(gameState: GameState): {
     const counterpartyName = graph.getNode(counterpartyId)?.name;
     const authored = edgeProps.agreementName;
     const typeWord = agreement.type ? AGREEMENT_TYPE_WORD[agreement.type] : undefined;
+    // THR-2023 — a debt reads the sheet's own words (*Owes* / *Is owed by*), so one debt
+    // reads one way on both surfaces.
     const label =
-      typeof authored === 'string' && authored.trim()
+      agreement.type === 'debt' && counterpartyName
+        ? agreementLine(
+          { agreementType: 'debt', agreementDirection: edge.source === ascendantId ? 'owes' : 'owed' },
+          counterpartyName,
+        )
+        : typeof authored === 'string' && authored.trim()
         ? authored
         : typeWord && counterpartyName
           ? `${typeWord} with ${counterpartyName}`

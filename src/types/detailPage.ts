@@ -300,6 +300,8 @@ export interface CardTile {
   ref?: WorldRef;
   title: string;
   kindWord: string;
+  /** THR-2023 (additive): a tooltip on the kind word — the debt tile's "what a debt is". */
+  kindWordTooltipId?: string;
   lines: string[];
   /** A 0–1 proportion drawn as a bar (same rule as `PanelRow.meter`). */
   meter?: number;

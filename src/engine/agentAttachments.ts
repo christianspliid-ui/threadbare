@@ -70,6 +70,12 @@ export interface AttachmentFullEntry extends AttachmentSummary {
   isPinned?: boolean;
   /** Counterparty name for agreements. */
   counterpartyName?: string;
+  /**
+   * THR-2023 — which way an agreement runs from this mortal's side: `owes` when the
+   * mortal is the edge's source (the reward writer's debtor), `owed` when the target.
+   * The sheet words a debt by it (*Owes* / *Is owed by*).
+   */
+  agreementDirection?: 'owes' | 'owed';
   // ── The dormant kinds I (THR-1429) ──
   /**
    * Which class of Power this is — a spell the mortal learned, or a bestowal a god
@@ -451,6 +457,7 @@ export function getAgentAttachments(
       active: edgeProps.active !== false,
       inactiveReason: edgeProps.inactiveReason as string | undefined,
       counterpartyName,
+      agreementDirection: edge.source === agentId ? 'owes' : 'owed',
     });
   }
 
@@ -500,4 +507,21 @@ function generatedSpellWords(props: Record<string, unknown>): { taughtBy: string
   } catch {
     return null;
   }
+}
+
+/**
+ * THR-2023 — the agreement's counterparty line. A debt says which way it runs
+ * (*Owes {name}* / *Is owed by {name}*), so the two sheets no longer read the same
+ * "Bound to" from both ends; every other agreement keeps *Bound to {name}*, and a
+ * non-agreement *With {name}*.
+ */
+export function agreementLine(
+  entry: Pick<AttachmentFullEntry, 'agreementType' | 'agreementDirection'>,
+  name: string,
+): string {
+  if (!entry.agreementType) return `With ${name}`;
+  if (entry.agreementType === 'debt' && entry.agreementDirection) {
+    return entry.agreementDirection === 'owes' ? `Owes ${name}` : `Is owed by ${name}`;
+  }
+  return `Bound to ${name}`;
 }

@@ -96,7 +96,8 @@ describe('THR-1920: one agreement shape for every reader', () => {
     instantiateAgreementReward(graph, 'debtor', 'creditor1', debtTemplate, 10);
     const { vows } = extractChips({ graph, ascendantId: 'debtor' } as unknown as GameState);
     expect(vows).toHaveLength(1);
-    expect(vows[0]).toMatchObject({ label: debtTemplate.name, def: debtTemplate.terms, valence: 'debt' });
+    // THR-2023 — a debt's label is the sheet's direction words, not the template name.
+    expect(vows[0]).toMatchObject({ label: `Owes ${graph.getNode('creditor1')!.name}`, def: debtTemplate.terms, valence: 'debt' });
   });
 
   it('a reward-path debt lapses when its term runs out, and debt-laden clears with it', () => {

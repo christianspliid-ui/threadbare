@@ -15,6 +15,7 @@ import type {
 } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
 import { applyMeansShift, defaultMeansReason, meansBandStepAmount, type MeansShiftResult } from './mortalMeans';
+import { settleDebt } from './debtSettle';
 import { applyWorldEconomyShift, resolveShiftSettlement } from './economyShift';
 import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
 import { readWealth } from './wealth';
@@ -3014,6 +3015,62 @@ export function applyEncounterAftermathReaction(
         break;
       }
 
+      case 'debt_settle': {
+        // THR-2023 — the second remover of a debt (expiry is the first). The creditor
+        // defaults to the actor; the debtor's repayment is inside `settleDebt`, the
+        // creditor's gain is the template's own authored `means` row.
+        const dsCreditorId = effect.creditorAgentId ?? actorAgentId;
+        const ds = settleDebt(state.graph, {
+          creditorId: dsCreditorId,
+          debtorId: effect.debtorAgentId,
+          settlement: effect.settlement,
+          tick,
+        });
+        if (!ds.settled) {
+          emitTrace({
+            tick, category: 'debt_settle_noop', agentId: actorAgentId,
+            creditorId: dsCreditorId && !dsCreditorId.startsWith('$') ? dsCreditorId : null,
+            debtorId: effect.debtorAgentId,
+            reason: ds.reason,
+            templateId: action?.templateId,
+            summary: `debt_settle[${i}] no-op: ${ds.reason} (${dsCreditorId ?? 'no creditor'})`,
+          });
+          break;
+        }
+        mutationSummary.touchedStructure = true;
+        const dsDebtorName = state.graph.getNode(ds.debtorId)?.name ?? ds.debtorId;
+        const dsCreditorName = state.graph.getNode(ds.creditorId)?.name ?? ds.creditorId;
+        emitTrace({
+          tick, category: 'agreement_settled', agentId: actorAgentId,
+          edgeId: ds.edgeId,
+          debtorId: ds.debtorId,
+          creditorId: ds.creditorId,
+          settlement: effect.settlement,
+          acquiredTick: ds.acquiredTick,
+          meansDelta: ds.meansDelta,
+          templateId: action?.templateId,
+          summary: `debt between ${dsDebtorName} and ${dsCreditorName} settled (${effect.settlement})`,
+        });
+        if (ds.shift) {
+          emitTrace({
+            tick,
+            category: 'economy.means.shift',
+            agentId: ds.debtorId,
+            sourceTemplateId: action?.templateId ?? null,
+            band: options.outcomeBand ?? null,
+            amount: ds.shift.amount,
+            wealthBefore: ds.shift.wealthBefore,
+            wealthAfter: ds.shift.wealthAfter,
+            bandBefore: ds.shift.bandBefore,
+            bandAfter: ds.shift.bandAfter,
+            reason: ds.shift.reason,
+            summary: `${dsDebtorName}'s Means ${ds.shift.wealthBefore} → ${ds.shift.wealthAfter} (${ds.shift.reason})`,
+          });
+          options.onMeansShift?.(ds.debtorId, ds.shift);
+        }
+        break;
+      }
+
       case 'spell_grant': {
         // THR-1672 — the god teaches (acquisition channel 1). A nudge card fired by the
         // god is the god teaching, so this is `applyTeachSpell` — the same seam, pool and
@@ -5010,8 +5067,13 @@ export function applyEncounterAftermathReaction(
           } as unknown as Parameters<typeof emitTrace>[0]);
           break;
         }
-        const reciprocal = effect.reciprocal !== false;
-        const forward = applyBondEdge(state.graph, actorAgentId, withId, effect.sentimentDelta, effect.trustDelta);
+        // THR-2023 — `reverseOnly` writes the with→actor edge alone (the trace's
+        // before/after then describe that edge).
+        const reverseOnly = effect.reverseOnly === true;
+        const reciprocal = !reverseOnly && effect.reciprocal !== false;
+        const forward = reverseOnly
+          ? applyBondEdge(state.graph, withId, actorAgentId, effect.sentimentDelta, effect.trustDelta)
+          : applyBondEdge(state.graph, actorAgentId, withId, effect.sentimentDelta, effect.trustDelta);
         if (reciprocal) {
           applyBondEdge(state.graph, withId, actorAgentId, effect.sentimentDelta, effect.trustDelta);
         }

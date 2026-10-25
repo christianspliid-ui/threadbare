@@ -85,7 +85,8 @@ describe('HooksBlock — reads the live carriers, not the writerless `has_attach
       expect.arrayContaining([
         'Pact: Thornweaver',
         'Oath: The Still Hour',
-        'Debt: The Grey Seer',
+        // THR-2023 — a debt reads the sheet's words: the god owes the Seer.
+        'Owes The Grey Seer',
         'Bound: The Watching Tower',
       ]),
     );
@@ -95,7 +96,7 @@ describe('HooksBlock — reads the live carriers, not the writerless `has_attach
     expect(vows.map((v) => v.label)).not.toContain('The Grey Seer');
 
     // The tooltip body is the agreement's terms, which live on the edge.
-    const debt = vows.find((v) => v.label === 'Debt: The Grey Seer');
+    const debt = vows.find((v) => v.label === 'Owes The Grey Seer');
     expect(debt?.def).toContain('A Vision owed');
 
     // Each agreement type paints its own swatch rather than falling to neutral grey,
@@ -181,17 +182,19 @@ describe('UI Laws, live for the first time now that chips render (THR-1307)', ()
   }
 
   it('Law 14 — the agreement type enum never reaches the chip label', () => {
-    const { vows } = extractChips(unnamedAgreementState('debt'));
+    const { vows } = extractChips(unnamedAgreementState('pact'));
 
     expect(vows).toHaveLength(1);
-    expect(vows[0].label).toBe('A debt with The Grey Seer');
+    expect(vows[0].label).toBe('A pact with The Grey Seer');
+    // THR-2023 — a debt takes the sheet's direction words instead.
+    expect(extractChips(unnamedAgreementState('debt')).vows[0].label).toBe('Owes The Grey Seer');
 
     // The precise thing forbidden is the enum used *as* the label's opening token —
     // `debt with The Grey Seer`, which is what interpolating `agreement.type` produced
     // before this. "debt" as an English noun inside the phrase is not the violation,
     // so the assertion is anchored rather than a bare word search that would forbid
     // the correct answer too.
-    expect(vows[0].label).not.toMatch(/^debt\b/);
+    expect(vows[0].label).not.toMatch(/^pact\b/);
   });
 
   it('Law 14 — an agreement type with no word takes the plain-English stand-in, not the key', () => {

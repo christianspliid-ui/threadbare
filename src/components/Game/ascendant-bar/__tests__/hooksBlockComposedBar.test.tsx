@@ -69,7 +69,7 @@ describe('THR-1330 — the composed ascendant bar, Hooks section open', () => {
     // One named chip per row, so a row that rendered its header and no chips fails.
     expect(screen.getByText('Veiled')).toBeInTheDocument();
     expect(screen.getByText('Rumor: The Sunken Vale')).toBeInTheDocument();
-    expect(screen.getByText('Debt: The Grey Seer')).toBeInTheDocument();
+    expect(screen.getByText('Owes The Grey Seer')).toBeInTheDocument();
 
     // The pre-THR-1307 surface must not be what we captured.
     expect(screen.queryByText('No marks, clues, or vows.')).toBeNull();

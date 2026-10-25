@@ -138,7 +138,7 @@ describe('THR-1330 — the affordance follows the destination, not the handler',
     const onOpenAttachment = vi.fn();
     render(<HooksBlock gameState={seededState()} onOpenAttachment={onOpenAttachment} />);
 
-    const vow = screen.getByText('Debt: The Grey Seer');
+    const vow = screen.getByText('Owes The Grey Seer');
     expect(vow.getAttribute('role')).toBeNull();
     fireEvent.click(vow);
     expect(onOpenAttachment).not.toHaveBeenCalled();

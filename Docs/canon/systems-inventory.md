@@ -294,6 +294,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `curator` (1) | `curator.ts` | `THR-1218` |
 | `cycle` (1) | `cycleEnd.ts` | — |
 | `death` (1) | `deathSiteHaunting.ts` | `THR-1528`, `THR-1574`, `THR-1925` |
+| `debt` (1) | `debtSettle.ts` | `THR-2023` |
 | `debug` (8) | `debugAgentResolver.ts`, `debugCommands.ts`, `debugEncounterTools.ts`, `debugGeneratedRewardPin.ts`, `debugOutcomePin.ts`, `debugTickBatch.ts`, `debugVisibilityOverride.ts`, `debugWorldSpawnTools.ts` | `THR-1030`, `THR-1032`, `THR-1433`, `THR-1626`, `THR-689`, `THR-878` |
 | `decay` (1) | `decayCurve.ts` | — |
 | `decision` (2) | `decisionBoard.ts`, `decisionTier.ts` | `THR-1292`, `THR-1329`, `THR-1348`, `THR-1349` |
@@ -484,4 +485,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 239 engine domains · 801 modules._
+_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 240 engine domains · 802 modules._
