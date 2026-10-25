@@ -33,7 +33,9 @@ export const FACTION_DISSENT_SURFACES_TEMPLATE: UnifiedActionTemplate = {
   name: 'Dissent Surfaces',
   rarityTier: 2,
   intrinsicTier: 'shaping',
-  reach: 'shadow',
+  // Heart, not the seeding card's Shadow (THR-2038): both steps roll the grievance
+  // as Heart, and a template Reach no step rolls is never rolled.
+  reach: 'heart',
   crudType: 'update',
   scale: 'local',
   apCost: 1,
@@ -163,7 +165,8 @@ export const FACTION_DOCTRINE_SURFACES_TEMPLATE: UnifiedActionTemplate = {
   name: 'Doctrine Surfaces',
   rarityTier: 2,
   intrinsicTier: 'shaping',
-  reach: 'star',
+  // Heart, not the seeding card's Star (THR-2038): winning the faction back is Heart.
+  reach: 'heart',
   crudType: 'update',
   scale: 'local',
   apCost: 1,

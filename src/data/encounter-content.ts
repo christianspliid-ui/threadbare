@@ -4952,7 +4952,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'expedition.gathering',
         name: 'The Gathering',
-        reach: 'dominance',
+        reach: 'heart',
         difficulty: DIFFICULTY_BASE,
         duration: 2,
         narrative: 'Six are willing to go, and four of them are willing for reasons {actor} would rather not depend on. The party has to be picked before the season closes the passes.',
@@ -4985,7 +4985,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       {
         id: 'expedition.triumph',
         name: 'The Triumph',
-        reach: 'dominance',
+        reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
         duration: 5,
         narrative: 'The last stretch is what the expedition was funded for, and it is also where the food arithmetic stops being comfortable. {actor} has to decide how much of the return the party can spend getting there.',
