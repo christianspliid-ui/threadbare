@@ -8,7 +8,8 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WorldRemembersBeat } from '../WorldRemembersBeat';
 import { RemembranceFlow } from '../RemembranceFlow';
 import { SAMPLE_UNSEALED_CARD_IDS, sampleAccount } from '../../../engine/accountStore';
-import { emptyAccount } from '../../../engine/accountRecord';
+import { emptyAccount, shownWorldSoulMemories } from '../../../engine/accountRecord';
+import { TWILIGHT_MEMORIES_SHOWN } from '../../../data/game-config';
 import { HUNGER_CATALOG } from '../../../data/hunger-catalog';
 import { WORLD_REMEMBERS_WORDS } from '../../../data/account-content';
 
@@ -64,6 +65,42 @@ describe('WorldRemembersBeat', () => {
     expect(screen.getByText(WORLD_REMEMBERS_WORDS.noneStirs)).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('world-remembers-go-on'));
     expect(onContinue).toHaveBeenCalledWith(null);
+  });
+
+  // THR-1971 — the carried World-Soul memories get their reader.
+  it('lists each shown World-Soul memory summary verbatim, strongest first, with its memory word', () => {
+    const account = sampleAccount();
+    const shown = shownWorldSoulMemories(account);
+    expect(shown.length).toBe(TWILIGHT_MEMORIES_SHOWN);
+    render(<WorldRemembersBeat account={account} onContinue={vi.fn()} />);
+    const section = screen.getByTestId('world-remembers-soul');
+    expect(section.querySelector('h2')?.textContent).toBe(WORLD_REMEMBERS_WORDS.soulHeading);
+    expect(screen.getAllByTestId('world-remembers-soul-summary').map(n => n.textContent)).toEqual(shown.map(s => s.memory.summary));
+    expect(shown.map(s => s.word)).toEqual(['still warm', 'still warm', 'fading']);
+    // The memory past its last word is not shown.
+    expect(section.textContent).not.toContain('An older war');
+    expect(section.textContent).not.toMatch(/\d/);
+  });
+
+  it('no memories (a first run, or an empty record): no section and no empty heading', () => {
+    const account = { ...sampleAccount(), resonance: { ...sampleAccount().resonance, memories: [] } };
+    render(<WorldRemembersBeat account={account} onContinue={vi.fn()} />);
+    expect(screen.queryByTestId('world-remembers-soul')).toBeNull();
+    expect(screen.queryByText(WORLD_REMEMBERS_WORDS.soulHeading)).toBeNull();
+    expect(shownWorldSoulMemories(emptyAccount(42))).toEqual([]);
+  });
+});
+
+describe('shownWorldSoulMemories', () => {
+  it('ranks by significance × (1 − degradation), caps at TWILIGHT_MEMORIES_SHOWN and drops wordless memories', () => {
+    const base = sampleAccount();
+    const mem = (id: string, significance: number, degradation: number) =>
+      ({ id, cycleOrigin: 1, memoryType: 'betrayal' as const, spheres: [], summary: id, significance, degradation });
+    const account = {
+      ...base,
+      resonance: { ...base.resonance, memories: [mem('a', 0.5, 0), mem('b', 0.9, 0.5), mem('c', 0.6, 0.1), mem('d', 0.4, 0), mem('gone', 1, 0.92)] },
+    };
+    expect(shownWorldSoulMemories(account).map(s => s.memory.id)).toEqual(['c', 'a', 'b']);
   });
 });
 

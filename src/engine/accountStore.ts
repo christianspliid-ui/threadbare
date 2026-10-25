@@ -8,6 +8,10 @@
  */
 import type { AccountRecord, LoadedAccount } from '../types/account';
 import type { EchoDefinition } from '../types/echo';
+import type { MemoryType, ResonanceMemory } from '../types/worldSoul';
+import type { SphereName } from '../types/index';
+import { RESONANCE_SIGNIFICANCE_DIVINE, RESONANCE_SIGNIFICANCE_DOMINANCE, RESONANCE_SIGNIFICANCE_DOOM } from '../data/game-config';
+import { TWILIGHT_WORDS } from '../data/twilight-content';
 import { ACCOUNT_STORAGE_KEY, ACCOUNT_UNREADABLE_KEY } from '../data/account-content';
 import { accountReadProblem, emptyAccount, liveEchoes, migrateAccount, sealedCardIds } from './accountRecord';
 import { godCards } from './godProgression';
@@ -37,6 +41,10 @@ function echo(id: string, echoType: EchoDefinition['echoType'], name: string, sp
     significance,
     injection: { injectionType: echoType === 'legacy' ? 'cultural_template' : echoType === 'monument' ? 'location_feature' : 'quest_seed', description: `Seeds from ${name} (cycle 0).` },
   };
+}
+
+function sampleMemory(memoryType: MemoryType, spheres: SphereName[], summary: string, significance: number, degradation: number): ResonanceMemory {
+  return { id: `mem-sample-${memoryType}`, cycleOrigin: 1, memoryType, spheres, summary, significance, degradation };
 }
 
 /** The two cards `sampleAccount()` unsealed (both sealed on run 1, both Spirit). */
@@ -71,7 +79,17 @@ export function sampleAccount(): AccountRecord {
     echoDefinitions: defs,
     echoStates: defs.map((d, i) => ({ id: d.id, degradation: [0.15, 0.45, 0.75][i] ?? 0, cyclesActive: 1, faded: false })),
     fundament,
-    resonance: createResonanceState(),
+    // THR-1971: the run-1 age's memories as `captureAgeMemories` writes them, one run
+    // degraded; the fourth is past its last memory word, so the step hides it.
+    resonance: {
+      ...createResonanceState(),
+      memories: [
+        sampleMemory('doom_scar', [], TWILIGHT_WORDS.memoryDoomScar('The Unmaking', 'The Shepherd'), RESONANCE_SIGNIFICANCE_DOOM, 0.15),
+        sampleMemory('divine_intervention', ['life', 'spirit'], TWILIGHT_WORDS.memoryDivine('The Shepherd', 'monument', 'The Long Barrow'), RESONANCE_SIGNIFICANCE_DIVINE, 0.15),
+        sampleMemory('sphere_dominance', ['life'], TWILIGHT_WORDS.memorySphereDominance('The Shepherd', 'Life'), RESONANCE_SIGNIFICANCE_DOMINANCE, 0.45),
+        sampleMemory('great_conflict', ['entropy'], 'An older war the world has all but forgotten.', 0.6, 0.95),
+      ],
+    },
     lastRun: { divineName: 'The Shepherd', primary: 'life', secondary: 'spirit', hungerId: 'gather', harvestType: 'bittersweet', unsealedCardIds: [...SAMPLE_UNSEALED_CARD_IDS] },
   };
 }

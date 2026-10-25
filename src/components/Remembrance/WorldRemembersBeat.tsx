@@ -6,6 +6,8 @@
  * map echo), gods who may wake (the twelve hunger chips and the choice between the two
  * that stir), and the powers that may now rise (the cards the last run unsealed). A
  * first run never sees it. No number on the step (Law 13): memory and the tilt are words.
+ * THR-1971 adds *What the World-Soul remembers* under what still stands: the carried
+ * age memories' summaries, shown only when the record holds a live one.
  */
 import { useMemo, useState } from 'react';
 import type { AccountRecord } from '../../types/account';
@@ -15,7 +17,7 @@ import { SPHERE_NAMES } from '../../types/index';
 import { HUNGER_CATALOG } from '../../data/hunger-catalog';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { WORLD_REMEMBERS_WORDS as W, echoDisplayName, joinNames, memoryWord } from '../../data/account-content';
-import { awakeHungers, liveEchoes, worldTiltFactors } from '../../engine/accountRecord';
+import { awakeHungers, liveEchoes, shownWorldSoulMemories, worldTiltFactors } from '../../engine/accountRecord';
 import { SPHERE_OPPOSITIONS } from '../../engine/cosmology';
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
@@ -122,6 +124,7 @@ export function WorldRemembersBeat({ account, onContinue }: WorldRemembersBeatPr
   );
   const [chosen, setChosen] = useState<string | null>(null);
   const tilt = useMemo(() => tiltSpheres(account), [account]);
+  const memories = useMemo(() => shownWorldSoulMemories(account), [account]);
   const unsealed = useMemo(
     () => (account.lastRun?.unsealedCardIds ?? []).map(id => getUnifiedTemplateById(id)).filter(t => !!t),
     [account],
@@ -180,6 +183,36 @@ export function WorldRemembersBeat({ account, onContinue }: WorldRemembersBeatPr
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 'var(--space-3)', alignContent: 'start' }}>
               {echoes.map(e => <EchoCard key={e.def.id} def={e.def} state={e.state} />)}
             </div>
+          )}
+          {memories.length > 0 && (
+            <section data-testid="world-remembers-soul" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', marginTop: 'var(--space-2)' }}>
+              <h2 style={heading}>{W.soulHeading}</h2>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
+                {memories.map(({ memory, word }) => (
+                  <li
+                    key={memory.id}
+                    data-testid={`world-remembers-soul-${memory.id}`}
+                    {...(memory.spheres[0] ? { 'data-sphere-tint': memory.spheres[0] } : {})}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'baseline',
+                      gap: 'var(--space-2)',
+                      paddingLeft: 'var(--space-2)',
+                      borderLeft: `2px solid ${memory.spheres[0] ? sphereBrightToken(memory.spheres[0]) : 'var(--border-medium)'}`,
+                    }}
+                  >
+                    <span data-testid="world-remembers-soul-summary" style={{ fontFamily: 'var(--font-prose)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                      {memory.summary}
+                    </span>
+                    <Tooltip id="ui.memory">
+                      <span className="cursor-help" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+                        {W.memoryLabel(word)}
+                      </span>
+                    </Tooltip>
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
         </section>
 
