@@ -21,7 +21,7 @@ import { RemembranceFlow } from './components/Remembrance/RemembranceFlow';
 import { parseWarmStartTicks } from './components/Game/hooks/useWarmStart';
 import { parseDoomArchetypeParam, DEV_SHOWCASE_DOOM_ARCHETYPE } from './engine/doomArchetypeSelection';
 import type { AccountRecord, LoadedAccount } from './types/account';
-import { loadAccount } from './engine/accountStore';
+import { loadAccount, saveAccount } from './engine/accountStore';
 import { ACCOUNT_WORDS } from './data/account-content';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
@@ -219,8 +219,16 @@ function App() {
     return (
       <RemembranceFlow
         seed={seed}
+        account={loadedAccount.account}
         {...(loadedAccount.source === 'unreadable' ? { accountNotice: ACCOUNT_WORDS.remembranceUnreadable } : {})}
-        onComplete={(identity) => {
+        onComplete={(identity, account) => {
+          // THR-1844: a hunger woken on *The world remembers* is kept at once, so a reload
+          // before the harvest does not put it back to sleep. Overrides and dev routes stay
+          // in memory (`accountPersists`).
+          if (account !== loadedAccount.account) {
+            setLoadedAccount(prev => ({ account, source: prev.source }));
+            if (accountPersists) saveAccount(account);
+          }
           setGamePhase({ phase: 'playing-remembrance', identity });
         }}
       />

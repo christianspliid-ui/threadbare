@@ -557,6 +557,43 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
     label: 'Wake in a new world',
     desc: 'This world ends. A new one wakes, and it will not remember this one.',
   },
+  // THR-1844 — The world remembers (the first Remembrance step from run 2 on)
+  'ui.world_tilt': {
+    label: 'The world leans',
+    desc: 'Each world leans a little toward the spheres earlier gods drew on, and drifts back toward balance over time.',
+  },
+  'ui.echo.monument': {
+    label: 'Monument',
+    desc: 'A place an earlier god made its own. A god of kindred spheres finds it already theirs; a god of opposed spheres finds it standing against them.',
+  },
+  'ui.echo.legacy': {
+    label: 'Legacy',
+    desc: 'A mortal line an earlier god raised. Their descendants live in this world and are easier to reach for a kindred god.',
+  },
+  'ui.echo.relic': {
+    label: 'Relic',
+    desc: "Something an earlier god's chosen carried. It lies unclaimed in this world until someone takes it up.",
+  },
+  'ui.memory': {
+    label: 'Memory',
+    desc: 'How strongly the world still remembers. Each new world remembers less; when a memory is gone, the echo is gone.',
+  },
+  'ui.hunger.awake': {
+    label: 'Awake',
+    desc: 'You may wake as this god.',
+  },
+  'ui.hunger.stirs': {
+    label: 'Stirs',
+    desc: 'This hunger is waking. Choose one of the two that stir.',
+  },
+  'ui.hunger.asleep': {
+    label: 'Asleep',
+    desc: 'Not yet. Each age wakes one more.',
+  },
+  'ui.powers_unsealed': {
+    label: 'Powers that may now rise',
+    desc: 'Each age, the world opens a few more powers it may offer, leaning to the spheres the last god drew on.',
+  },
   // THR-1381 — the end of the age (the ceremony before the harvest)
   'ui.twilight_memory': {
     label: 'What the world will remember',

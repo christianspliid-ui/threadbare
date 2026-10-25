@@ -9,7 +9,8 @@
 import type { AccountRecord, LoadedAccount } from '../types/account';
 import type { EchoDefinition } from '../types/echo';
 import { ACCOUNT_STORAGE_KEY, ACCOUNT_UNREADABLE_KEY } from '../data/account-content';
-import { accountReadProblem, emptyAccount, liveEchoes, migrateAccount } from './accountRecord';
+import { accountReadProblem, emptyAccount, liveEchoes, migrateAccount, sealedCardIds } from './accountRecord';
+import { godCards } from './godProgression';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
 import { emitTrace } from './traceBuffer';
 
@@ -38,6 +39,9 @@ function echo(id: string, echoType: EchoDefinition['echoType'], name: string, sp
   };
 }
 
+/** The two cards `sampleAccount()` unsealed (both sealed on run 1, both Spirit). */
+export const SAMPLE_UNSEALED_CARD_IDS: readonly string[] = ['loc.awaken_spirit', 'action.consecrate-relic'];
+
 /**
  * `?account=sample` — a one-run record with one echo of each kind, for browser
  * verification (plan E3). The past god was Life/Spirit.
@@ -62,11 +66,13 @@ export function sampleAccount(): AccountRecord {
     nextWorldSeed: 4242,
     secondCourtHungerIds: ['gather'],
     stirringHungerIds: ['kindle', 'preserve'],
+    // THR-1844: two Spirit cards out of the run-1 reservoir, as a Life/Spirit god's run end would draw.
+    unsealedCardIds: [...SAMPLE_UNSEALED_CARD_IDS],
     echoDefinitions: defs,
     echoStates: defs.map((d, i) => ({ id: d.id, degradation: [0.15, 0.45, 0.75][i] ?? 0, cyclesActive: 1, faded: false })),
     fundament,
     resonance: createResonanceState(),
-    lastRun: { divineName: 'The Shepherd', primary: 'life', secondary: 'spirit', hungerId: 'gather', harvestType: 'bittersweet' },
+    lastRun: { divineName: 'The Shepherd', primary: 'life', secondary: 'spirit', hungerId: 'gather', harvestType: 'bittersweet', unsealedCardIds: [...SAMPLE_UNSEALED_CARD_IDS] },
   };
 }
 
@@ -79,8 +85,7 @@ function traceLoaded(loaded: LoadedAccount): LoadedAccount {
     cycleCount: a.cycleCount,
     liveEchoes: liveEchoes(a).length,
     awakeHungers: a.awakeHungerIds.length,
-    // Sealed cards are computed from the catalog with slice 3 (THR-1844).
-    sealedCards: 0,
+    sealedCards: sealedCardIds(a, godCards()).length,
     summary: `account loaded (${loaded.source}): cycle ${a.cycleCount}, ${liveEchoes(a).length} live echoes`,
   });
   return loaded;

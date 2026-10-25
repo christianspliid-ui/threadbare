@@ -45,7 +45,8 @@ export interface RemembranceFragment {
 
 // --- Flow State ---
 
-export type RemembranceBeat = 'stirring' | 'origin' | 'drive' | 'transformation' | 'reveal';
+/** `world_remembers` opens the flow from run 2 on (THR-1844); a first run starts at `stirring` / `origin`. */
+export type RemembranceBeat = 'world_remembers' | 'stirring' | 'origin' | 'drive' | 'transformation' | 'reveal';
 
 export interface RemembranceState {
   currentBeat: RemembranceBeat;

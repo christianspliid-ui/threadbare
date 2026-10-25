@@ -249,6 +249,34 @@ export function filterHungers(
   );
 }
 
+/** THR-1844 — the fewest hungers Transformation offers; an awake set that scores fewer is topped up. */
+export const MIN_HUNGERS_OFFERED = 2;
+/** The most Transformation offers (`filterHungers` draws two or three). */
+export const MAX_HUNGERS_OFFERED = 3;
+
+/**
+ * THR-1844 E9 (plan Decided 11) — `filterHungers` over the account's awake set only.
+ * If fewer than `MIN_HUNGERS_OFFERED` awake hungers score, the list is topped up from
+ * the awake set in catalog order. A hunger woken this Remembrance is offered at once:
+ * it leads the list (the last entry gives way past `MAX_HUNGERS_OFFERED`).
+ */
+export function offerAwakeHungers(
+  origin: RemembranceFragment,
+  drive: RemembranceFragment,
+  awake: readonly HungerDefinition[],
+  seed: number,
+  wokenHungerId?: string | null,
+): HungerDefinition[] {
+  const offered = filterHungers(origin, drive, awake, seed);
+  for (const h of awake) {
+    if (offered.length >= MIN_HUNGERS_OFFERED) break;
+    if (!offered.includes(h)) offered.push(h);
+  }
+  const woken = wokenHungerId ? awake.find(h => h.id === wokenHungerId) : undefined;
+  if (!woken || offered[0] === woken) return offered;
+  return [woken, ...offered.filter(h => h !== woken)].slice(0, MAX_HUNGERS_OFFERED);
+}
+
 /**
  * Select the best prose variant for a hunger based on drive tags.
  * Falls back to the first variant if no drive tag matches any variant.

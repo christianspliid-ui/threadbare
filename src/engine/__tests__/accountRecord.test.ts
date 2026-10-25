@@ -111,7 +111,8 @@ describe('THR-1813 — concludeRun on a seed-42 harvest', () => {
     expect(after.nextWorldSeed).not.toBe(42);
     expect(after.stirringHungerIds).toHaveLength(2);
     for (const h of after.stirringHungerIds) expect(RUN_ONE_AWAKE_HUNGERS).not.toContain(h);
-    expect(after.secondCourtHungerIds).toContain(DEV_ASCENDANT_IDENTITY.hungerId);
+    // THR-1844: the record keeps bare hunger ids (`witness`), the ones `openCourts` reads.
+    expect(after.secondCourtHungerIds).toContain(DEV_ASCENDANT_IDENTITY.hungerId.replace(/^hunger./, ''));
     expect(after.lastRun?.hungerId).toBe(DEV_ASCENDANT_IDENTITY.hungerId);
     // Pure: the input record is untouched.
     expect(before.cycleCount).toBe(0);

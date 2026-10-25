@@ -137,3 +137,46 @@ export const ACCOUNT_WORDS = {
   remembranceUnreadable:
     'The memory of earlier worlds could not be read on this device. This world wakes as if for the first time.',
 } as const;
+
+// ─── The world remembers (THR-1844, slice 3) ─────────────────────────
+
+/**
+ * The words of *The world remembers*, the first Remembrance step from run 2 on
+ * (plan § UI pillar › Player-facing text). No number anywhere (Law 13): memory and
+ * the tilt are words.
+ */
+export const WORLD_REMEMBERS_WORDS = {
+  heading: 'The world remembers',
+  lead: 'Before you wake, a new world settles around what the old ones left behind.',
+  /** `spheres` is already prose ("Life and Spirit"). */
+  tiltLine: (spheres: string) => `This world leans a little toward ${spheres}, the spheres the last god drew on most.`,
+  standsHeading: 'What still stands',
+  standsEmpty: 'Nothing of the old worlds still stands. This one begins clean.',
+  kindLabel: { monument: 'Monument', legacy: 'Legacy', relic: 'Relic' } as const,
+  memoryLabel: (word: string) => `Memory: ${word}`,
+  /** One story line per kind; names come from `echoDisplayName`. */
+  story: {
+    monument: 'Raised by a god who came before you.',
+    legacy: 'Their descendants walk this world, and they remember a voice in the dark.',
+    relic: 'It lies unclaimed somewhere in this world, waiting for a hand.',
+  } as const,
+  /** A monument's two stakes, shown before the god is chosen (plan § UI pillar). */
+  monumentKin: (spheres: string) =>
+    `To a god of ${spheres} it wakes as ground already theirs. Left untended, it fades.`,
+  monumentAgainst: (sphere: string) => `It will stand against a god of ${sphere}.`,
+  hungersHeading: 'Gods who may wake',
+  chip: { awake: 'awake', stirs: 'stirs', asleep: 'asleep' } as const,
+  stirPrompt: "Two hungers stir. The old god's echoes favour one; you choose which wakes.",
+  favoured: (name: string) => `The old god's echoes favour ${name}.`,
+  wakeButton: (name: string) => `Let ${name} wake`,
+  woken: (name: string) => `${name} wakes.`,
+  allAwake: 'Every hunger is awake.',
+  noneStirs: 'No hunger stirs this age.',
+  powersHeading: 'Powers that may now rise among the omens',
+  /** `sphere` is the capitalised sphere name. */
+  powersLine: (sphere: string) =>
+    `Because the last god drew on ${sphere}, more of ${sphere}'s powers can rise for whoever comes next.`,
+  closing: 'The kind of god you were is part of this world now.',
+  goOn: 'Go on to the stirring',
+  goOnBlocked: 'Choose which hunger wakes',
+} as const;
