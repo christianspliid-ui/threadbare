@@ -64,7 +64,7 @@ describe('THR-1966 — the Inspector shows who raised a building', () => {
       );
     }
     const { container } = render(<Harness />);
-    act(() => store.setInspector(s => openSubject(s, { kind: 'location', id: TOWN }, 'full')));
+    act(() => store.setInspector(s => openSubject(s, { kind: 'location', id: TOWN }, 'wide')));
     const page = container.querySelector('[data-inspector-page]');
     expect(page?.getAttribute('data-inspector-page')).toBe(`location:${TOWN}`);
     const text = page?.textContent ?? '';
