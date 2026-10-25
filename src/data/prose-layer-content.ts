@@ -176,6 +176,29 @@ export const BIOME_PROSE: Record<string, string[]> = {
     'The reef is a city built by creatures too small to see, a labyrinth of living stone beneath shallow water. Navigation here is a negotiation between hull and coral.',
     'Sharp coral ridges lie in wait just below the surface, patient as any predator. The reef does not hunt — it simply occupies the space where accidents happen.',
   ],
+  // THR-2021: the four water terrains that fell through to the "unremarkable stretch of land" fallback.
+  ocean: [
+    'Open sea in every direction, grey water heaving under a grey sky. Nothing marks a place here except what sinks.',
+    'The ocean keeps no roads and honours no borders. Ships cross it on borrowed time and the swell forgets them as soon as they pass.',
+    'Waves roll in long ranks from somewhere no one has charted. Whatever lies beneath has been waiting longer than any kingdom has stood.',
+  ],
+  coastal_shallows: [
+    'Pale water over sand and weed, shallow enough to wade in places and deep enough to drown in the next. The bottom shifts with every tide.',
+    'Fishers work the shallows at dawn, nets dragging over sandbars that were not there last season. The sea gives here, and takes back without warning.',
+    'Sunlight reaches the bottom here, picking out old hulls and older stones under the green water. The shallows hide nothing well.',
+  ],
+  lake: [
+    'Still water fills the basin, dark at its centre and reed-choked at its edges. The surface holds the sky so well that it is hard to say which one is deeper.',
+    'The lake is quiet in a way that feels deliberate. Mist sits on it at dawn, and the far shore comes and goes like a rumour.',
+    'Cold, deep water, fed by streams no one has traced to their source. Fishers say the lake keeps what falls into it and gives back only bones.',
+    'Rings spread across the lake where something surfaces and is gone. The shoreline is soft mud and old pilings, the marks of people who came for the water and stayed.',
+  ],
+  river: [
+    'The river runs brown and steady, carrying silt, timber and the occasional body toward a sea it has never seen. Every ford here has been fought over.',
+    'Water cuts the land in two and binds it together at the same time. Villages crowd the banks, and every one of them claims the river as its own.',
+    'The current is stronger than it looks. Old mooring posts lean out over the water, and the banks are scored with the high marks of past floods.',
+    'The river does not stop for anyone. Ferrymen, millers and smugglers all live by its moods, and all of them have lost something to it.',
+  ],
   floodplain: [
     'The floodplain remembers every drowning. Rich silt marks the high-water line like a scar, and the soil beneath is fat with the deposits of seasonal violence.',
     'Settlers build here because the soil is generous, then curse the generosity when the river returns to collect. The floodplain is a loan, not a gift.',

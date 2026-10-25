@@ -19,12 +19,24 @@ function joinDescriptors(descriptors: readonly string[]): string {
 /**
  * Returns the hex's exploration lines — zero or one. Blank and duplicate
  * descriptors are dropped before the cap is applied.
+ *
+ * `underwater` (THR-2021): a water hex inside an old culture's territory sank
+ * that culture's ruins — the line places them beneath the water instead of
+ * describing them as if they stood on dry land.
  */
-export function buildExplorationHooks(descriptors: readonly string[] | undefined | null): string[] {
+export function buildExplorationHooks(
+  descriptors: readonly string[] | undefined | null,
+  underwater = false,
+): string[] {
   if (!descriptors) return [];
   const named = [...new Set(descriptors.map(d => d.trim()).filter(d => d.length > 0))]
     .slice(0, MAX_EXPLORATION_DESCRIPTORS);
   if (named.length === 0) return [];
+  if (underwater) {
+    return [
+      `Beneath the water lie the ${joinDescriptors(named)} of an older age, drowned and never fully explored. What remains below may reward — or punish — the curious.`,
+    ];
+  }
   return [
     `The ${joinDescriptors(named)} have not been fully explored. What remains within may reward — or punish — the curious.`,
   ];

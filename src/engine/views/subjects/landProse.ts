@@ -25,6 +25,7 @@ import { geographicRegionResolver, historicalCultureResolver, regionEtymologyRes
 import { elapsedLabel } from '../../aftermathWords';
 import { mulberry32 } from '../../../lib/prng';
 import { buildExplorationHooks } from '../../explorationHooks';
+import { isWaterTerrain } from '../../coastline';
 
 // ── HexChronicle's helpers, unchanged ───────────────────────────────
 
@@ -199,6 +200,9 @@ export function ruinsParagraphs(input: LandProseInput): string[] {
   if (region.historicalCulture.legacyFlavor) {
     out.push(`“${region.historicalCulture.legacyFlavor}” ~ ${stripLeadingThe(region.historicalCulture.name)}`);
   }
-  for (const hook of buildExplorationHooks(region.historicalCulture.ruinDescriptors)) out.push(hook);
+  // A water hex keeps its Area's culture, quote and history (the territory is the culture's),
+  // but its ruins lie under the water (THR-2021).
+  const underwater = isWaterTerrain(input.terrain);
+  for (const hook of buildExplorationHooks(region.historicalCulture.ruinDescriptors, underwater)) out.push(hook);
   return out;
 }
