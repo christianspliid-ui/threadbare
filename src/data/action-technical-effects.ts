@@ -238,15 +238,15 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   // loc.fortify: THR-605 wired it (`fortify_location`); the template authors its
   // own `technicalEffect`. Removed here (THR-1075) — see the no-shadowing rule.
   'loc.bless_harvest':
-    "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS, and swells every staple resource's stock toward Glut (LOC_BLESS_HARVEST_STOCK_DELTA) — the coarse stock tier re-derives next tick.",
+    "On success, raises the location's `prosperity` and `populationHealth` by named deltas (LOC_BLESS_HARVEST_*) for LOC_BLESS_HARVEST_DURATION_TICKS, and swells every staple resource's stock toward Glut (LOC_BLESS_HARVEST_STOCK_DELTA) — the coarse stock tier re-derives next tick. THR-1923: also lays a land shock on the settlement's best food hex (×SHOCK_BOON_FACTOR, fading over SHOCK_DAYS).",
   'loc.blight':
-    "On success, lowers the location's `prosperity` and `populationHealth` by named deltas (LOC_BLIGHT_*) and draws every staple resource's stock toward Famine (LOC_BLIGHT_STOCK_DELTA) — the inverse of Bless the Harvest; the coarse stock tier re-derives next tick.",
+    "On success, lowers the location's `prosperity` and `populationHealth` by named deltas (LOC_BLIGHT_*) and draws every staple resource's stock toward Famine (LOC_BLIGHT_STOCK_DELTA) — the inverse of Bless the Harvest; the coarse stock tier re-derives next tick. THR-1923: also lays a land shock on the settlement's best food hex (×SHOCK_BLIGHT_FACTOR, fading over SHOCK_DAYS).",
   'loc.reveal_vein':
-    "On success, surfaces a terrain-appropriate non-staple resource deposit at the location (quantity LOC_REVEAL_VEIN_QUANTITY), or swells the poorest existing eligible deposit by LOC_REVEAL_VEIN_BOOST — the stock tier re-derives next tick.",
+    "On success, surfaces a terrain-appropriate non-staple resource deposit at the location (quantity LOC_REVEAL_VEIN_QUANTITY), or swells the poorest existing eligible deposit by LOC_REVEAL_VEIN_BOOST — the stock tier re-derives next tick. THR-1923: also lays a land shock on the settlement's best stone hex (×SHOCK_BOON_FACTOR, fading over SHOCK_DAYS).",
   'loc.guide_caravan':
     "On success, every trades_with route touching the location gains LOC_GUIDE_CARAVAN_VOLUME_DELTA volume (clamped at the route max), sheds its `threatened` mark, and counts as freshly traded (lastTraded = now) — protecting it from decay and banditry re-rolls.",
   'loc.sour_mine':
-    "On success, drains every non-staple resource deposit at the location by LOC_SOUR_MINE_STOCK_DELTA (staples untouched) — the strategic/luxury inverse of Blight; the stock tier re-derives next tick.",
+    "On success, drains every non-staple resource deposit at the location by LOC_SOUR_MINE_STOCK_DELTA (staples untouched) — the strategic/luxury inverse of Blight; the stock tier re-derives next tick. THR-1923: also lays a land shock on the settlement's best stone hex (×SHOCK_BLIGHT_FACTOR, fading over SHOCK_DAYS).",
   'loc.open_markets':
     "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*), and stamps `marketsOpenedTick`: from LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS later, for THIEVES_GUILD_OFFER_DAYS, a Shadow-led resident's `create × faction` is boosted ×THIEVES_GUILD_OFFER_WANT while prosperity holds at LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD.",
   'loc.bless_holding':

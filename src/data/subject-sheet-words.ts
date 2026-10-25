@@ -13,6 +13,8 @@ export const SUBJECT_ROW_LABELS = {
   placeProse: 'This place',
   pastLine: 'Before you woke',
   fortunes: 'Fortunes',
+  // THR-1923 — the settlement economy's size line.
+  size: 'Size',
   // THR-1937 — who founded a mortal-founded town.
   foundedBy: 'Founded',
   prayer: 'Prayer',

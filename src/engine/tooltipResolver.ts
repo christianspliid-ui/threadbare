@@ -16,7 +16,8 @@
  * - quintessence.* → ascendant-bar-content.ts band tooltips
  * - attachment.* → attachmentTemplateIndex.ts shipped attachment templates
  *                  (conditions, blessings, curses, bestowed powers, possessions)
- * - location.* → world-model location kinds, or a live location node (THR-1172)
+ * - location.* → world-model location kinds, or a live location node (THR-1172);
+ *               location.building.* → the settlement economy's buildings (THR-1923)
  * - agent.* → live agent, gated by familiarity; needs a context (THR-1159)
  * - knowledge.* → the five familiarity tiers
  * - mandate.* → mandate-content.ts templates
@@ -51,6 +52,7 @@ import { contentTagFromTooltipSuffix } from '../data/content-tags';
 import type { FactionDefinition } from '../types/faction';
 import { FIGHT_TOOLTIP_COPY } from '../data/fight-screen-content';
 import { AGENT_CONCEPT_TOOLTIPS } from '../data/agent-concept-tooltips';
+import { getSettlementBuilding } from '../data/settlement-buildings';
 
 /**
  * A faction definition's name template with its generated slots stripped —
@@ -344,10 +346,21 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
       };
     }
 
+    // (a′) THR-1923 — a building kind: `location.building.<id>` (the settlement economy's).
+    if (suffix.startsWith('building.')) {
+      const building = getSettlementBuilding(suffix.slice('building.'.length));
+      return building ? { label: building.cardName, desc: building.tooltip } : null;
+    }
+
     // (b) This place. Explained through its subtype, so the hover says both what
     //     it is called and what it is — fail-soft to the bare name when the
     //     subtype names no concept (a worldgen outcome, not an authoring error).
     const node = context?.graph?.getNode(suffix);
+    // THR-1923 — a Place the town raised is explained by its building's own words.
+    const raised = node?.properties?.isBuilding === true
+      ? getSettlementBuilding(String(node.properties.buildingId ?? ''))
+      : undefined;
+    if (node && raised) return { label: node.name, desc: raised.tooltip };
     if (node) {
       const subtype = (node.properties?.locationSubtype ?? node.properties?.locationType) as
         | string

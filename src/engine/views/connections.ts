@@ -32,6 +32,7 @@ import {
 import { CONNECTIONS_DOCKED_FOLD_AFTER } from './viewConstants';
 import { landNameFor, namedLocationOnHex } from './subjects/landName';
 import type { ConnectionsVM, LinkRowVM } from './subjects/subjectTypes';
+import { buildingFact } from '../settlementEconomy/describe';
 
 /** The subject classes Connections knows. Content cards and missing pages have none. */
 export type ConnectionSubjectClass = 'person' | 'location' | 'faction' | 'army' | 'artifact' | 'god' | 'land' | 'record';
@@ -214,6 +215,9 @@ function sentimentWord(edge: GraphEdge): string {
 }
 
 function occupancyFact(graph: WorldGraph, place: GraphNode): string {
+  // THR-1923 — a Place the town raised says so, or why it stands idle.
+  const building = buildingFact(place);
+  if (building) return building;
   const n = graph.getIncomingEdges(place.id, 'located_at').filter(e => {
     const who = graph.getNode(e.source);
     return who ? isPerson(who) : false;

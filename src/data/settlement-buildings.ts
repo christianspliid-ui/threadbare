@@ -15,7 +15,7 @@
  * trait text. The card names and tooltips are the plan's, verbatim.
  */
 import type { SpecialGood } from './special-goods';
-import { LOCATION_CONDITION_ID_PREFIX } from './condition-trait-content';
+import { LOCATION_TRAIT_IDS } from './location-trait-constants';
 
 export type BuildingTag = 'growth' | 'food' | 'wood' | 'stone' | 'trade' | 'craft' | 'faith';
 
@@ -78,23 +78,8 @@ export interface SettlementBuildingDef {
   readonly upkeepWord: 'timber' | 'stone';
 }
 
-const T = (id: string): string => `${LOCATION_CONDITION_ID_PREFIX}${id}`;
-
-/** The traits standing buildings give, by building (the rules in `phaseLocationTraits`). */
-export const BUILDING_TRAIT_IDS = {
-  iron_town: T('iron_town'),
-  gem_cutters: T('gem_cutters'),
-  herb_town: T('herb_town'),
-  spa_town: T('spa_town'),
-  crystal_seers: T('crystal_seers'),
-  amber_market: T('amber_market'),
-  curio_collectors: T('curio_collectors'),
-  timber_town: T('timber_town'),
-  quarry_town: T('quarry_town'),
-  fishing_port: T('fishing_port'),
-  horse_country: T('horse_country'),
-  walled: T('walled'),
-} as const;
+/** The traits standing buildings give (the rules live in `phaseLocationTraits`). */
+const TR = LOCATION_TRAIT_IDS;
 
 export const SETTLEMENT_BUILDINGS: readonly SettlementBuildingDef[] = [
   {
@@ -118,35 +103,35 @@ export const SETTLEMENT_BUILDINGS: readonly SettlementBuildingDef[] = [
   {
     id: 'fishery', sublocationTypeId: 'sublocation-type.wharf', tag: 'food',
     cost: 15, upkeep: 0.1, needs: { fishingHexes: 2 }, effects: { food: 1.15 },
-    trait: BUILDING_TRAIT_IDS.fishing_port,
+    trait: TR.fishingPort,
     cardName: 'Wharf', upkeepWord: 'timber', raisedTitle: 'Boats Put Out',
     tooltip: 'Boats go out from here each dawn. The catch feeds the town.',
   },
   {
     id: 'stockyard', sublocationTypeId: 'sublocation-type.beast-pen', tag: 'food',
     cost: 15, upkeep: 0.1, needs: { grazingHexes: 3 }, effects: { food: 1.1 },
-    trait: BUILDING_TRAIT_IDS.horse_country,
+    trait: TR.horseCountry,
     cardName: 'Beast pens', upkeepWord: 'timber', raisedTitle: 'The Herds Come In',
     tooltip: 'Herds from the grasslands are kept and fattened here.',
   },
   {
     id: 'timber_yard', sublocationTypeId: 'sublocation-type.timber-yard', tag: 'wood',
     cost: 15, upkeep: 0, needs: { woodYield: 3 }, effects: { wood: 1.3 },
-    trait: BUILDING_TRAIT_IDS.timber_town,
+    trait: TR.timberTown,
     cardName: 'Timber yard', upkeepWord: 'timber', raisedTitle: 'A Timber Yard Opens',
     tooltip: 'Raised from spare timber. More wood is cut here each day, and leftover wares are sold to other towns.',
   },
   {
     id: 'stoneworks', sublocationTypeId: 'sublocation-type.mason-yard', tag: 'stone',
     cost: 18, upkeep: 0.1, needs: { stoneYield: 3 }, effects: { stone: 1.3 },
-    trait: BUILDING_TRAIT_IDS.quarry_town,
+    trait: TR.quarryTown,
     cardName: "Mason's yard", upkeepWord: 'stone', raisedTitle: 'The Masons Set to Work',
     tooltip: 'Stone from the nearby slopes is cut and dressed here.',
   },
   {
     id: 'walls', sublocationTypeId: 'sublocation-type.city-walls', tag: 'stone',
     cost: 30, upkeep: 0.3, needs: { population: 4, stoneOrSeat: 2 }, effects: { happy: 1 },
-    trait: BUILDING_TRAIT_IDS.walled,
+    trait: TR.walled,
     cardName: 'Town walls', upkeepWord: 'stone', raisedTitle: 'New Walls Rise',
     tooltip: 'Stone walls around the town. Its people sleep easier behind them.',
   },
@@ -174,49 +159,49 @@ export const SETTLEMENT_BUILDINGS: readonly SettlementBuildingDef[] = [
   {
     id: 'smithy', sublocationTypeId: 'sublocation-type.smithy', tag: 'craft',
     cost: 20, upkeep: 0.3, needs: { special: 'ore' }, effects: {},
-    trait: BUILDING_TRAIT_IDS.iron_town,
+    trait: TR.ironTown,
     cardName: 'Smithy', upkeepWord: 'timber', raisedTitle: 'The Smithy Is Lit',
     tooltip: 'Ore from nearby is worked into tools and blades here.',
   },
   {
     id: 'lapidary', sublocationTypeId: 'sublocation-type.lapidary', tag: 'craft',
     cost: 20, upkeep: 0.2, needs: { special: 'gems' }, effects: { goods: 1 },
-    trait: BUILDING_TRAIT_IDS.gem_cutters,
+    trait: TR.gemCutters,
     cardName: "Gem-cutter's hall", upkeepWord: 'timber', raisedTitle: 'The Gem-cutters Settle',
     tooltip: 'Stones from the nearby deposit are cut and polished here, then sold far away.',
   },
   {
     id: 'herbalist', sublocationTypeId: 'sublocation-type.herbalist-hut', tag: 'faith',
     cost: 18, upkeep: 0.1, needs: { special: 'herbs' }, effects: { happy: 1 },
-    trait: BUILDING_TRAIT_IDS.herb_town,
+    trait: TR.herbTown,
     cardName: "Herbalist's hut", upkeepWord: 'timber', raisedTitle: 'The Herb Bundles Hang to Dry',
     tooltip: 'Herbs from the nearby gardens are dried and mixed into remedies here.',
   },
   {
     id: 'bathhouse', sublocationTypeId: 'sublocation-type.healing-spring', tag: 'faith',
     cost: 20, upkeep: 0.2, needs: { special: 'springs' }, effects: { happy: 2 },
-    trait: BUILDING_TRAIT_IDS.spa_town,
+    trait: TR.spaTown,
     cardName: 'Healing spring', upkeepWord: 'stone', raisedTitle: 'The Spring Is Walled',
     tooltip: 'The warm spring nearby is walled and roofed. People come to rest in it.',
   },
   {
     id: 'seers_hall', sublocationTypeId: 'sublocation-type.oracle-chamber', tag: 'faith',
     cost: 22, upkeep: 0.2, needs: { special: 'crystal' }, effects: {},
-    trait: BUILDING_TRAIT_IDS.crystal_seers,
+    trait: TR.crystalSeers,
     cardName: 'Oracle chamber', upkeepWord: 'timber', raisedTitle: 'The Seers Take Their Seats',
     tooltip: 'Crystal from the nearby caverns is read here for omens.',
   },
   {
     id: 'carvers_hall', sublocationTypeId: 'sublocation-type.carvers-hall', tag: 'craft',
     cost: 18, upkeep: 0.1, needs: { special: 'amber' }, effects: { goods: 1 },
-    trait: BUILDING_TRAIT_IDS.amber_market,
+    trait: TR.amberMarket,
     cardName: "Carvers' hall", upkeepWord: 'timber', raisedTitle: 'The Amber Carvers Open Their Hall',
     tooltip: 'Amber from the nearby grove is carved here into charms and trinkets.',
   },
   {
     id: 'curio_hall', sublocationTypeId: 'sublocation-type.chronicle-hall', tag: 'faith',
     cost: 18, upkeep: 0.1, needs: { special: 'curios' }, effects: {},
-    trait: BUILDING_TRAIT_IDS.curio_collectors,
+    trait: TR.curioCollectors,
     cardName: 'Chronicle hall', upkeepWord: 'timber', raisedTitle: 'Old Bones Go on Show',
     tooltip: 'Old bones and stones dug up nearby are kept and shown here.',
   },

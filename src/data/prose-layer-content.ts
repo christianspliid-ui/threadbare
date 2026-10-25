@@ -1419,6 +1419,63 @@ export const LOCATION_TRAIT_PROSE: Record<string, string[]> = {
     'A battle was fought at {name}, and the ground is still blood-soaked. Graves are fresh, and the survivors watch the roads.',
     'Blood has been spilled at {name} again and again. The blood-soaked ground keeps traders away and draws the hungry.',
   ],
+  // THR-1923 — the settlement economy's traits.
+  'trait.condition.location.iron_town': [
+    '{name} is an iron town. Ore comes down from the hills and leaves as tools and blades.',
+    'The smithy fires never go out in {name}. It is an iron town, and its smiths are known across the region.',
+  ],
+  'trait.condition.location.gem_cutters': [
+    '{name} is a town of gem-cutters. Rough stones come in from the deposit nearby and leave polished.',
+    'The gem-cutters of {name} work by the window light, and their stones sell far away.',
+  ],
+  'trait.condition.location.herb_town': [
+    '{name} is an herb town. The sick of the region come for its remedies.',
+    'Bundles of drying herbs hang from every eave in {name}. It is an herb town, and its remedies are sought.',
+  ],
+  'trait.condition.location.spa_town': [
+    '{name} is a spa town. People travel a long way to rest in its warm spring.',
+    'The warm spring at {name} makes it a spa town. Visitors come tired and leave rested.',
+  ],
+  'trait.condition.location.crystal_seers': [
+    '{name} is home to crystal seers. They read omens in stones from the caverns nearby.',
+    'The crystal seers of {name} are consulted by people from across the region.',
+  ],
+  'trait.condition.location.amber_market': [
+    '{name} keeps an amber market. Carvings from its grove are sold in towns far away.',
+    'In the amber market of {name}, carvers sell charms cut from the grove nearby.',
+  ],
+  'trait.condition.location.curio_collectors': [
+    '{name} is a town of curio collectors. It keeps and shows the strange old things dug up nearby.',
+    'The curio collectors of {name} have a hall full of old bones and stones.',
+  ],
+  'trait.condition.location.timber_town': [
+    '{name} is a timber town. It cuts more wood than it needs and sells the rest.',
+    'Sawdust drifts through {name}, a timber town that sells its spare wood to its neighbours.',
+  ],
+  'trait.condition.location.quarry_town': [
+    '{name} is a quarry town. It cuts more stone than it needs and sells it.',
+    'Grey dust covers {name}, a quarry town whose stone builds walls in other towns.',
+  ],
+  'trait.condition.location.fishing_port': [
+    '{name} is a fishing port. Its boats feed the town and sell the rest of the catch.',
+    'The boats of {name} go out at dawn. It is a fishing port, and it smells like one.',
+  ],
+  'trait.condition.location.horse_country': [
+    '{name} is horse country. Herds graze the grasslands all around it.',
+    'Around {name} lies horse country, and the herds are its wealth.',
+  ],
+  'trait.condition.location.walled': [
+    '{name} is walled in stone. An army would have to besiege it.',
+    'Stone walls ring {name}. The walled town closes its gate at dusk.',
+  ],
+  'trait.condition.location.breadbasket': [
+    '{name} is a breadbasket. Its fields grow more food than most towns its size.',
+    'The fields of {name} are rich. It is a breadbasket, and its grain feeds its neighbours.',
+  ],
+  'trait.condition.location.market_town': [
+    '{name} is a market town. Several trade roads meet here, and its market is busy.',
+    'Carts from every direction come into {name}. It is a market town, and everything is for sale.',
+  ],
 };
 
 /** Agent biography prose — references an agent's encounter history */

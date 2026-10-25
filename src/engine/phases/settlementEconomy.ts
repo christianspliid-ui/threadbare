@@ -107,6 +107,7 @@ import {
   leanBuildingOf,
 } from '../settlementEconomy/seat';
 import { targetTierOf, landHousingOf, populationCapOf, tierRank } from '../settlementEconomy/tier';
+import { measureDiversity } from '../settlementEconomy/measures';
 import {
   readSurplusRoutes,
   routeCarries,
@@ -190,6 +191,7 @@ interface SettlementDay {
   pullCount: number;
   pulls: boolean;
   workedHexes: number;
+  workedList: { key: string; food: number; wood: number; stone: number }[];
   landFood: number;
   yieldIn: Yield;
   need: number;
@@ -508,6 +510,7 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
       pullCount,
       pulls,
       workedHexes: worked.length,
+      workedList: worked.map(w => ({ key: w.h.key, food: +w.y[0].toFixed(2), wood: +w.y[1].toFixed(2), stone: +w.y[2].toFixed(2) })),
       landFood,
       yieldIn,
       need: food.need,
@@ -707,6 +710,7 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
         economyRealmSeat: rec.realmSeat,
         economyHolderId: rec.holder,
         workedHexes: rec.workedHexes,
+        workedHexList: rec.workedList,
         landFood: rec.landFood,
         foodNeed: rec.need,
         exportFood: rec.exportFood,
@@ -790,10 +794,29 @@ export function phaseSettlementEconomy(state: GameState, ctx: PhaseContext): Pha
     runtime: ctx.runtime,
     alwaysSpotlight: threadedHomeIds(state),
   });
+  recordDiversity(state, ctx);
   const delta: PhaseResult = {};
   if (result.events.length > 0) delta.tickEvents = [...state.tickEvents, ...result.events];
   if (result.chronicle.length > 0) delta.chronicleEntries = [...state.chronicleEntries, ...result.chronicle];
   return delta;
+}
+
+/** Days on which a diversity snapshot is kept: day 1, then every this many days. */
+const DIVERSITY_SNAPSHOT_EVERY_DAYS = 25;
+/** Snapshots kept per session (a long session keeps its first and its most recent). */
+const DIVERSITY_SNAPSHOT_MAX = 40;
+
+function recordDiversity(state: GameState, ctx: PhaseContext): void {
+  if (!ctx.runtime) return;
+  const day = Math.floor(state.tick / TICKS_PER_DAY);
+  if (day !== 1 && day % DIVERSITY_SNAPSHOT_EVERY_DAYS !== 0) return;
+  try {
+    const history = ctx.runtime.settlementDiversityHistory ?? [];
+    if (history.some(h => h.day === day)) return;
+    history.push(measureDiversity(state.graph, day));
+    if (history.length > DIVERSITY_SNAPSHOT_MAX) history.splice(1, history.length - DIVERSITY_SNAPSHOT_MAX);
+    ctx.runtime.settlementDiversityHistory = history;
+  } catch { /* NFP #4: a measure is never worth a tick */ }
 }
 
 export const settlementEconomyPhase: EnginePhase = {

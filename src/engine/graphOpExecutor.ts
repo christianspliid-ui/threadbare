@@ -57,6 +57,7 @@ import {
 } from './groups/groupQueries';
 import { getAgentLocationId } from './graphQueries';
 import { completeThreadWrite, resolveThreadWrite } from './threadingRite';
+import { appendLandShock, type GodLandShockSource } from './settlementEconomy/shocks';
 import { hexDistance } from '../lib/hexMath';
 import {
   BLESS_COMPANY_COHESION_DELTA,
@@ -286,18 +287,18 @@ function executeSingleOp(
         return executeScrySublocation(graph, op, ctx);
 
       case 'reveal_vein':
-        return executeRevealVein(graph, op, ctx);
+        return withLandShock(executeRevealVein(graph, op, ctx), graph, op, ctx, 'reveal_vein');
 
       case 'guide_caravan':
         return executeGuideCaravan(graph, op, ctx);
 
       case 'sour_mine':
-        return executeSourMine(graph, op, ctx);
+        return withLandShock(executeSourMine(graph, op, ctx), graph, op, ctx, 'sour_mine');
       case 'bless_harvest':
-        return executeBlessHarvest(graph, op, ctx);
+        return withLandShock(executeBlessHarvest(graph, op, ctx), graph, op, ctx, 'bless_harvest');
 
       case 'blight_harvest':
-        return executeBlightHarvest(graph, op, ctx);
+        return withLandShock(executeBlightHarvest(graph, op, ctx), graph, op, ctx, 'blight');
 
       case 'bless_holding':
         return executeBlessHolding(graph, op, ctx);
@@ -1703,6 +1704,43 @@ function executeGuideCaravan(
     });
   }
   return { op, success: true };
+}
+
+/**
+ * THR-1923 — the settlement economy's land shock, laid by the four economic god verbs on
+ * top of their existing writes (which stand unchanged). A successful verb on a settlement
+ * (or a Place in one) appends a `landShocks` record on its best food or stone hex that
+ * fades over `SHOCK_DAYS` (`settlementEconomy/shocks.ts`). Fail-soft: a failed verb, a
+ * target that is no settlement, or the economy switched off writes nothing.
+ */
+function withLandShock(
+  result: GraphOpResult,
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+  source: GodLandShockSource,
+): GraphOpResult {
+  if (!result.success) return result;
+  try {
+    const targetId = resolveRef(op.nodeId ?? op.target ?? '$target', ctx);
+    const tick = ctx.tick ?? 0;
+    const shock = appendLandShock(graph, targetId, source, tick);
+    if (shock) {
+      emitTrace({
+        category: 'settlement_land_shock',
+        tick,
+        agentId: ctx.actorId,
+        summary: `${source} lays a land shock on ${targetId} (×${shock.factor}, fading by tick ${shock.untilTick})`,
+        locationId: targetId,
+        hexKey: shock.hexKey,
+        channel: shock.channel,
+        factor: shock.factor,
+        untilTick: shock.untilTick,
+        source,
+      });
+    }
+  } catch { /* NFP #4: the verb's own writes stand */ }
+  return result;
 }
 
 /**

@@ -2390,7 +2390,7 @@ export interface LocationTraitTrace extends TraceBase {
   minted: ReadonlyArray<{
     locationId: string;
     traitId: string;
-    input: 'prosperity' | 'unrest' | 'saturation' | 'bloodshed';
+    input: 'prosperity' | 'unrest' | 'saturation' | 'bloodshed' | 'economy';
     value: number;
     sustainTicks: number;
   }>;

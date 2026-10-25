@@ -24,7 +24,7 @@ import type { StockTier } from '../types/resource';
 export const ECONOMY_RECEIPTS_ENABLED = true;
 
 /** The place-side quantities a cast snapshot reads. `means` is the mortal's. */
-export type EconomyReceiptQuantity = 'prosperity' | 'unrest' | 'staple' | 'lane' | 'means';
+export type EconomyReceiptQuantity = 'prosperity' | 'unrest' | 'staple' | 'lane' | 'means' | 'land';
 
 /** Which way the quantity moved: `up` is more of it (more unrest is `up`). */
 export type EconomyReceiptDirection = 'up' | 'down';
@@ -46,7 +46,7 @@ export interface EconomyReceiptRows {
   readonly inside: EconomyReceiptLine;
 }
 
-type PlaceQuantity = Exclude<EconomyReceiptQuantity, 'means'>;
+type PlaceQuantity = Exclude<EconomyReceiptQuantity, 'means' | 'land'>;
 
 /**
  * The place rows. `up` / `down` are the quantity's direction, not good or bad: rising
@@ -114,6 +114,8 @@ export const ECONOMY_RECEIPT_UP_IS_GAIN: Record<EconomyReceiptQuantity, boolean>
   staple: true,
   lane: true,
   means: true,
+  // The land line's polarity is its verb's (`LAND_SHOCK_RECEIPT_LINES`), not a direction.
+  land: true,
 };
 
 /** The chip's state noun and its tooltip (Law 1). */
@@ -123,6 +125,41 @@ export const ECONOMY_RECEIPT_NOUNS: Record<EconomyReceiptQuantity, { text: strin
   staple: { text: 'Stores', tooltipId: 'ui.econ.stores' },
   lane: { text: 'Roads', tooltipId: 'ui.econ.roads' },
   means: { text: 'Means', tooltipId: 'ui.econ.means.change' },
+  land: { text: 'Fields', tooltipId: 'ui.econ.fields' },
+};
+
+/**
+ * THR-1923 — the settlement economy's land line: which of a town's fields a god's hand
+ * fell on, and that it lasts and fades (plan § Player-facing text, verbatim). `{where}`
+ * is the hex's place from the town ("east of", "by the river at"), with a declared
+ * fallback per verb when the direction is unknown; `{town}` the settlement.
+ */
+export interface LandShockReceiptLine extends EconomyReceiptLine {
+  readonly detail: string;
+  /** Whether the verb helps the town (sets polarity). */
+  readonly gain: boolean;
+  /** `{where}` when the hex's direction is unknown or is the town's own hex. */
+  readonly whereFallback: string;
+}
+
+export const LAND_SHOCK_RECEIPT_LINES: Readonly<Record<'blight' | 'bless_harvest' | 'sour_mine' | 'reveal_vein', LandShockReceiptLine>> = {
+  blight: { title: 'Fields wither', detail: 'The fields {where} {town} wither. They will take a season to recover.', gain: false, whereFallback: 'around' },
+  bless_harvest: { title: 'Fields swell', detail: 'The fields {where} {town} swell with grain. The plenty will ease over the coming season.', gain: true, whereFallback: 'around' },
+  sour_mine: { title: 'The quarry fails', detail: 'The quarry {where} {town} runs to rubble. It will take a season to open again.', gain: false, whereFallback: 'near' },
+  reveal_vein: { title: 'A seam opens', detail: 'A rich seam opens in the hills {where} {town}. It will run thin over the coming season.', gain: true, whereFallback: 'near' },
+};
+
+/** A hex's place from its town, as `{where}` says it. `centre` and unknown use the line's fallback. */
+export const LAND_SHOCK_WHERE_WORDS: Readonly<Record<string, string>> = {
+  north: 'north of',
+  'north-east': 'north-east of',
+  east: 'east of',
+  'south-east': 'south-east of',
+  south: 'south of',
+  'south-west': 'south-west of',
+  west: 'west of',
+  'north-west': 'north-west of',
+  river: 'by the river at',
 };
 
 /** The prosperity word as the Fortunes row prints it (lower case, `fortunesSentence`). */

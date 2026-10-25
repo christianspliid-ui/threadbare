@@ -205,7 +205,16 @@ export function specialGoodsInReach(
     if (typeof q === 'number' && q >= ORE_SPECIAL_MIN) goods.add(good);
   }
   if (!centre) return goods;
-  for (const place of index.places) {
+  // Only the hexes in reach, not every place on the map (the phase's per-day budget).
+  const inReach: LandPlace[] = [];
+  for (let dc = -WORK_RADIUS; dc <= WORK_RADIUS; dc++) {
+    for (let dr = -WORK_RADIUS - 1; dr <= WORK_RADIUS + 1; dr++) {
+      const at = index.placesByKey.get(hexKey(centre.col + dc, centre.row + dr));
+      if (at) inReach.push(...at);
+    }
+  }
+  inReach.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  for (const place of inReach) {
     if (hexDistance(centre, place.hex) > WORK_RADIUS) continue;
     if (realmHolderId !== null && hexRealmId.get(place.key) !== realmHolderId) continue;
     const bySubtype = place.subtype ? SPECIAL_GOOD_BY_PLACE_SUBTYPE[place.subtype] : undefined;
