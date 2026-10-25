@@ -267,6 +267,10 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
     writes: "a `relates_to` edge between the factions with a raised sentiment",
     consumers: [acts('src/engine/ambitionTick.ts', 'relates_to')],
   },
+  faction_broker_fealty: {
+    writes: "a `sworn_to` edge, vassal → the broker's realm, through the crown's writer",
+    consumers: [acts('src/engine/crown.ts', 'runCrownPhase')],
+  },
   signature_warhost: {
     writes: "a mobilised army force under the selected commander",
     consumers: [acts('src/engine/armyAttrition.ts', 'phaseArmyAttrition')],

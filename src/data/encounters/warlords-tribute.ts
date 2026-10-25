@@ -35,6 +35,9 @@ const warlordSpec: EncounterSupportActorSpec = {
   supportRole: 'warlord',
   spawnNpcRole: 'mercenary',
   spawnName: 'the Warlord',
+  // THR-1944 — a minted Warlord leads the free company, so the oath the mortal demands
+  // has a company to swear (`faction_broker_fealty` reads the Warlord's `member_of`).
+  factionDefId: 'mercenary_company',
 };
 
 const hallSpec: EncounterSupportLocationSpec = {
@@ -189,6 +192,17 @@ const step1Branch: ActionStepBranch = {
 
 // ─── Aftermath ───────────────────────────────────────────────────
 
+/** THR-1944 — the oath the mortal demanded, sworn by the warlord's company. */
+const WARLORD_DEMANDED_OATH = {
+  kind: 'faction_broker_fealty',
+  brokerAgentId: '$actor',
+  vassalAgentId: '$cast:warlord',
+  // A reused local commander may rank higher elsewhere; the free company swears first.
+  vassalFactionDefId: 'mercenary_company',
+  oathKind: 'coerced',
+  forcedBy: 'demand',
+} as const;
+
 const ACCEPT_AFTERMATH = {
   // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
   outcomeEffects: {
@@ -283,6 +297,13 @@ const ACCEPT_AFTERMATH = {
 } as const;
 
 const OATH_AFTERMATH = {
+  // THR-1944 — the demanded oath is real: a win swears the warlord's company to the realm
+  // the mortal serves, coerced (it starts disloyal, as the lieutenants' long memories say).
+  outcomeEffects: {
+    critical_success: [WARLORD_DEMANDED_OATH],
+    success: [WARLORD_DEMANDED_OATH],
+    success_at_cost: [WARLORD_DEMANDED_OATH],
+  },
   overview:
     'The oath sat in the warlord\'s chest like a stone he had not chosen to swallow. His ' +
     'commanders were careful with him for three days after. The agent had gotten what they ' +

@@ -5155,6 +5155,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'held the factions together through the battle',
       lost: 'saw the coalition break and the alliance die in retreat',
     },
+    // THR-1944 — a won unification swears one faction in the room to the realm the
+    // mortal serves (the best-standing faction present, never an enemy of that realm).
+    outcomeEffects: {
+      critical_success: [{ kind: 'faction_broker_fealty', brokerAgentId: '$actor', oathKind: 'persuaded' }],
+      success: [{ kind: 'faction_broker_fealty', brokerAgentId: '$actor', oathKind: 'persuaded' }],
+      success_at_cost: [{ kind: 'faction_broker_fealty', brokerAgentId: '$actor', oathKind: 'persuaded' }],
+    },
     name: 'The Faction Unification',
     locationTypes: ['capital', 'castle', 'ruins'],
     reachPrimary: 'heart',

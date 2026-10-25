@@ -20,6 +20,8 @@ import {
 import type { RoleCensus } from './binding/roleCensus';
 import { isAgentGone } from './groups/groupQueries';
 import { isMonster } from './monsters/isMonster';
+import { hexDistance, type HexPosition } from './delivery';
+import { resolveToParentLocation } from './sublocationShape';
 
 const PERMANENT_SUBLOCATION_PERSISTENCE: SublocationPersistence = { type: 'permanent' };
 
@@ -67,17 +69,44 @@ function getLocationCultureId(state: GameState, locationId: string): string | nu
   return cultureEdges[0]?.target ?? null;
 }
 
-function findFactionNodeId(state: GameState, factionDefId: string | undefined): string | null {
+/** The hex a place sits on, read from the place or its parent location; null when unplaced. */
+function placeHex(state: GameState, placeId: string | null | undefined): HexPosition | null {
+  const node = placeId ? state.graph.getNode(placeId) : null;
+  const place = node && typeof node.properties.hexCol !== 'number'
+    ? resolveToParentLocation(state.graph, node) ?? node
+    : node;
+  const col = place?.properties.hexCol;
+  const row = place?.properties.hexRow;
+  return typeof col === 'number' && typeof row === 'number' ? { col, row } : null;
+}
+
+/**
+ * The faction node a minted actor joins for `factionDefId`. Several nodes can share one
+ * def (worldSeed mints a mercenary company per commander), so a walk-on joins the live
+ * one whose nearest member stands closest to `anchorLocationId` (THR-1944: the Warlord
+ * joins the company camped by the hall, not the first company ever seeded). Dissolved
+ * factions are skipped; ties and an unplaced anchor keep graph order.
+ */
+function findFactionNodeId(state: GameState, factionDefId: string | undefined, anchorLocationId?: string): string | null {
   if (!factionDefId) return null;
+  const anchor = placeHex(state, anchorLocationId ?? null);
+  let best: { id: string; distance: number } | null = null;
   for (const node of state.graph.getNodesByType('actor')) {
     if (
-      node.properties.actorType === 'faction'
-      && node.properties.factionDefId === factionDefId
-    ) {
-      return node.id;
+      node.properties.actorType !== 'faction'
+      || node.properties.factionDefId !== factionDefId
+      || node.properties.dissolved
+    ) continue;
+    let distance = Infinity;
+    if (anchor) {
+      for (const edge of state.graph.getIncomingEdges(node.id, 'member_of')) {
+        const hex = placeHex(state, getAgentLocationId(state.graph, edge.source));
+        if (hex) distance = Math.min(distance, hexDistance(anchor, hex));
+      }
     }
+    if (!best || distance < best.distance) best = { id: node.id, distance };
   }
-  return null;
+  return best?.id ?? null;
 }
 
 function resolveLocationSupport(
@@ -270,7 +299,7 @@ export function materializeWalkOnActor(
     });
   }
 
-  const factionId = findFactionNodeId(state, spec.factionDefId);
+  const factionId = findFactionNodeId(state, spec.factionDefId, anchorLocationId);
   if (factionId) {
     state.graph.addEdge({
       id: `${spec.nodeId}_member_of_${factionId}`,

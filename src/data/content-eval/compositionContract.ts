@@ -151,6 +151,8 @@ const PERSISTENT_EFFECT_KINDS: ReadonlySet<string> = new Set([
   'faction_dissolve',
   'faction_declare_war',
   'faction_force_peace',
+  // THR-1944 — a brokered oath writes a `sworn_to` edge.
+  'faction_broker_fealty',
 ]);
 
 /** Effect kinds that move a reputation surface. */
@@ -173,6 +175,8 @@ const FACTION_EFFECT_KINDS: ReadonlySet<string> = new Set([
   'faction_dissolve',
   'faction_declare_war',
   'faction_force_peace',
+  // THR-1944 — a brokered oath writes a `sworn_to` edge.
+  'faction_broker_fealty',
 ]);
 
 /** Effect kinds that put a condition on someone. */

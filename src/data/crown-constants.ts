@@ -47,6 +47,7 @@
  * | WAGES_CHRONICLE_MIN_GAP_DAYS    | days between two wage chronicle lines for one pair             |
  * | LIEGE_RAISE_ENABLED             | THR-2020: a liege pays the raise of a standing-army vassal that fields none |
  * | LIEGE_RAISE_MIN_GAP_DAYS        | days between two liege-paid raises for one vassal               |
+ * | BROKERED_OATH_ENABLED           | THR-1944: an encounter a mortal wins can swear a faction to their realm |
  */
 
 import type { OathKind } from '../engine/crown/types';
@@ -161,3 +162,10 @@ export const WAGES_CHRONICLE_MIN_GAP_DAYS = 5;
 export const LIEGE_RAISE_ENABLED = true;
 /** Days between two liege-paid raises for one vassal (a host lost at once is not re-bought daily). */
 export const LIEGE_RAISE_MIN_GAP_DAYS = 5;
+/**
+ * THR-1944 — a mortal can broker an oath: the `faction_broker_fealty` aftermath effect
+ * (Faction Unification, the Warlord's Tribute demand) swears a faction to the realm the
+ * mortal serves through the crown's own writer. Off → the effect traces `switch_off`
+ * and writes nothing. Read only while `crownActive()`.
+ */
+export const BROKERED_OATH_ENABLED = true;

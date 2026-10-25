@@ -137,6 +137,10 @@ export const SCENE_SENTINEL_FIELDS = {
   // kind check refuses `$actor` / `$target` / `$cast:` here on purpose, since a
   // thread's source end is always the player's god.
   ascendantId: 'ascendant',
+  // THR-1944 — `faction_broker_fealty`: the mortal who brokered the oath (`$actor`) and
+  // the person whose faction swears (`$cast:warlord`).
+  brokerAgentId: 'mortal',
+  vassalAgentId: 'agent',
 } as const;
 
 /** A field that may carry a scene sentinel. */
