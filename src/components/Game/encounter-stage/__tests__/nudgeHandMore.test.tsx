@@ -172,7 +172,8 @@ function rectFor(el: Element): DOMRect {
 }
 
 class StubResizeObserver {
-  constructor(private cb: () => void) {}
+  private cb: () => void;
+  constructor(cb: () => void) { this.cb = cb; }
   observe() { this.cb(); }
   disconnect() {}
   unobserve() {}

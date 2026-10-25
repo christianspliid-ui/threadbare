@@ -16,6 +16,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type RefObject } from 'react';
 import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
+import { Button } from '../../../shared/Button';
 import { CostPips } from '../../../shared/OddsPips';
 import { CardFace, CARD_WIDTH_PX } from '../../../shared/CardFace';
 import { formatEssencePool, sphereWord } from '../../../shared/formatEssence';
@@ -150,6 +151,9 @@ export const HAND_MORE_VISIBLE_FRACTION = 0.6;
  */
 export const HAND_MORE_SCROLL_MARGIN_PX = 8;
 
+/** Intersection ratios at which a card's move re-runs the count (every tenth). */
+const HAND_MORE_INTERSECTION_STEPS = Array.from({ length: 11 }, (_, i) => i / 10);
+
 /** A card's vertical extent on screen (`getBoundingClientRect` top/bottom). */
 export interface CardSpan {
   top: number;
@@ -204,17 +208,32 @@ function useCardsBelowBar(
     if (!column || !bar) return;
     const measure = () => {
       const spans = handCardElements(rowRef.current).map((el) => el.getBoundingClientRect());
-      setBelow(countCardsBelowBar(spans, column.getBoundingClientRect().top, bar.getBoundingClientRect().top));
+      // The bar's top HAND_BAR_FADE_PX is a see-through fade: a card shows
+      // through it, so it is hidden only from the bar's solid base down.
+      const barSolidTop = bar.getBoundingClientRect().top + HAND_BAR_FADE_PX;
+      setBelow(countCardsBelowBar(spans, column.getBoundingClientRect().top, barSolidTop));
     };
     column.addEventListener('scroll', measure, { passive: true });
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
     observer?.observe(column);
     observer?.observe(bar);
     if (rowRef.current) observer?.observe(rowRef.current);
+    // The veil's entrance moves the cards by transform, which fires neither
+    // scroll nor resize. An intersection observer on the cards does fire, and
+    // the animation/transition ends catch the settled position.
+    const intersections = typeof IntersectionObserver === 'undefined'
+      ? null
+      : new IntersectionObserver(measure, { root: column, threshold: HAND_MORE_INTERSECTION_STEPS });
+    for (const card of handCardElements(rowRef.current)) intersections?.observe(card);
+    window.addEventListener('animationend', measure, true);
+    window.addEventListener('transitionend', measure, true);
     measure();
     return () => {
       column.removeEventListener('scroll', measure);
+      window.removeEventListener('animationend', measure, true);
+      window.removeEventListener('transitionend', measure, true);
       observer?.disconnect();
+      intersections?.disconnect();
     };
   }, [shellRef, rowRef, barRef, cardCount]);
 
@@ -617,25 +636,29 @@ export function NudgePhaseShell({
             many cards are hidden, and one click scrolls them into view. Quiet,
             where the miss line sits, after it when both show. */}
         {cardsBelowBar > 0 && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             className="focus-ring"
             data-testid="nudge-hand-more"
             onClick={cardsBelow.reveal}
+            // Ghost's leave handler restores its own muted text; this line rests in the veil's whisper.
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = TEXT_WHISPER;
+            }}
             style={{
-              display: 'block',
+              height: 'auto',
               margin: '0 0 8px',
-              padding: 0,
-              border: 'none',
-              background: 'none',
-              fontSize: 'var(--text-xs)',
+              padding: '2px 4px',
               color: TEXT_WHISPER,
+              fontFamily: FONT_PROSE,
               fontStyle: 'italic',
-              cursor: 'pointer',
             }}
           >
             {nudgeHandMoreLine(cardsBelowBar)}
-          </button>
+          </Button>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           {/* Rounded down: promising essence the player cannot actually spend
