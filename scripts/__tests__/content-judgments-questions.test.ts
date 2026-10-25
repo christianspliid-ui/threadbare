@@ -29,8 +29,16 @@ const cosmology = fs.readFileSync(path.resolve(__dirname, '../../Docs/canon/cosm
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 describe('encounter coverage questions (THR-1723)', () => {
-  it('is version 1 until a quote or option changes', () => {
-    expect(ENCOUNTER_COVERAGE_QUESTIONS_VERSION).toBe(1);
+  it('is version 2 until a quote or option changes', () => {
+    expect(ENCOUNTER_COVERAGE_QUESTIONS_VERSION).toBe(2);
+  });
+
+  it('v2: both Reach orders judge the later test, not the noticing that sets it up (THR-2012)', () => {
+    const q = buildBaseQuestions();
+    for (const qid of ['reach', 'reach_rev']) {
+      expect(q[qid].instructions).toContain(
+        'If the mortal only notices, reads or works something out in order to set up a fight, a deal, a theft, a rite or a piece of craft, judge that later test, not the noticing.');
+    }
   });
 
   it('pins the question text: any edit, including a tag-catalog line, fails until the version is bumped', () => {

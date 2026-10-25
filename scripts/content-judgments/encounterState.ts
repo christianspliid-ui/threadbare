@@ -28,6 +28,12 @@ export interface DeclaredLabels {
   readonly encounterType: string | null;
   readonly sphereAffinity: string | null;
   readonly familyTags: readonly string[];
+  /**
+   * The distinct Reaches the runnable steps roll, sorted (THR-2012). Every runnable step
+   * rolls its own `reach`, so a template Reach missing here is rolled by no step.
+   * Absent on rows persisted before v2.
+   */
+  readonly stepReaches?: readonly string[];
 }
 
 export interface BuiltEncounterState {
@@ -67,10 +73,18 @@ function isProse(value: unknown): value is string {
 }
 
 /**
- * Ordered prose fields for one encounter: the collector's fields first (minus `name`,
- * which becomes the title), then each runnable step's prose in authored order. A step
- * string identical to one already present is skipped, so a shared afterimage is not
- * sent twice.
+ * The stakes-line parts that open the state (questions v2, THR-2012). They are
+ * player-facing — the encounter's stakes line and result line — and the v1 readers
+ * leaned on them more than on any other field, so they go first: a truncated state
+ * still carries them.
+ */
+const STAKES_PROSE_FIELDS = ['goal', 'risk', 'won', 'lost'] as const;
+
+/**
+ * Ordered prose fields for one encounter: the stakes parts first, then the collector's
+ * fields (minus `name`, which becomes the title), then each runnable step's prose in
+ * authored order. A string identical to one already present is skipped, so a shared
+ * afterimage is not sent twice.
  */
 export function encounterProseFields(
   template: UnifiedActionTemplate,
@@ -83,6 +97,8 @@ export function encounterProseFields(
     seen.add(value);
     out.push([key, value]);
   };
+
+  for (const field of STAKES_PROSE_FIELDS) push(`stakes.${field}`, template.stakes?.[field]);
 
   if (collectorFields) {
     for (const [key, value] of Object.entries(collectorFields)) {
@@ -126,11 +142,13 @@ export function capFields(
 export function declaredLabels(template: UnifiedActionTemplate): DeclaredLabels {
   const familyTags = authoredTags(template as unknown as ContentCatalogEntry)
     .filter(tag => axisOfContentTag(tag) === 'family');
+  const stepReaches = [...new Set(runnableStepSites(template.steps).map(site => String(site.step.reach)))].sort();
   return {
     reach: String(template.reach),
     encounterType: template.encounterType ?? null,
     sphereAffinity: template.sphereAffinity ?? null,
     familyTags,
+    stepReaches,
   };
 }
 

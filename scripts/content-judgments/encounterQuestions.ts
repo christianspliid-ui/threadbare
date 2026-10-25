@@ -86,7 +86,9 @@ function reachQuestion(): ChoiceQuestion {
   return {
     type: 'choice',
     instructions:
-      'Which Reach does the mortal\'s main test in `encounter` draw on? Judge by what the mortal must do to succeed, not by the setting.',
+      'Which Reach does the mortal\'s main test in `encounter` draw on? Judge by what the mortal must do to succeed, not by the setting. '
+      // v2 (THR-2012): v1 read the noticing that sets up a test as the test (Eye right 5 of 67).
+      + 'If the mortal only notices, reads or works something out in order to set up a fight, a deal, a theft, a rite or a piece of craft, judge that later test, not the noticing.',
     criteria,
   };
 }

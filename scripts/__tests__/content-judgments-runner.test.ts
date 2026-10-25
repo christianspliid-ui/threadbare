@@ -183,7 +183,7 @@ describe('judge:encounters runner (THR-1723)', () => {
 
   it('drops carried thresholds when the model or question version changed', async () => {
     const calibrated = { ...PLACEHOLDER_THRESHOLDS, reach: 0.42, calibratedAt: '2026-10-01T00:00:00.000Z' };
-    const base = { questionsVersion: 1, model: 'jev-1.13.0', rows: [], thresholds: calibrated, calibration: null };
+    const base = { questionsVersion: 2, model: 'jev-1.13.0', rows: [], thresholds: calibrated, calibration: null };
     const same = harness({ readPrevious: () => base as unknown as EncounterCoverageArtifact });
     expect((await runEncounterCoverage(states, args(), same.io)).artifact?.thresholds.reach).toBe(0.42);
     // Previous artifact on another model: nothing carries; this run answered on the pinned
@@ -205,8 +205,9 @@ describe('judge:encounters runner (THR-1723)', () => {
     const { io } = harness();
     const res = await runEncounterCoverage(states, args(), io);
     expect(res.artifact?.thresholds).toEqual(CALIBRATED_THRESHOLDS);
-    expect(CALIBRATED_THRESHOLDS.reach).toBe(0.8);
-    expect(CALIBRATED_THRESHOLDS.activity).toBeNull();
+    // v2 (THR-2012): activity calibrates, Reach falls just short and routes to review.
+    expect(CALIBRATED_THRESHOLDS.reach).toBeNull();
+    expect(CALIBRATED_THRESHOLDS.activity).toBe(0.8);
   });
 
   it('a committed calibration with no labels in the artifact names its source, never "on 0 entries"', async () => {
