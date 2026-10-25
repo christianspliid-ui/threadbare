@@ -63,7 +63,27 @@ describe('buildEncounterState (THR-1723)', () => {
       encounterType: 'assist',
       sphereAffinity: 'order',
       familyTags: ['#trade', '#relic'],
+      stepReaches: ['eye'],
     });
+  });
+
+  it('v2: opens the state with the stakes parts, ahead of the description (THR-2012)', () => {
+    const staked = {
+      ...fixture,
+      stakes: { goal: 'balance the lantern ledger', risk: 'be named the thief', won: 'balanced the ledger', lost: 'was named the thief' },
+    } as unknown as UnifiedActionTemplate;
+    const keys = Object.keys(buildEncounterState(staked, { description: fixture.description }).state.encounter.text);
+    expect(keys.slice(0, 5)).toEqual(['stakes.goal', 'stakes.risk', 'stakes.won', 'stakes.lost', 'description']);
+    // Without stakes the state is unchanged in shape: the description leads.
+    expect(Object.keys(buildEncounterState(fixture, undefined).state.encounter.text)[0]).toBe('description');
+  });
+
+  it('records the distinct Reaches the runnable steps roll, branch arms included', () => {
+    const mixed = {
+      ...fixture,
+      steps: [step({ reach: 'eye' }), { branchOnStep: 0, variants: { a: step({ reach: 'iron' }) }, fallback: step({ reach: 'eye' }) }],
+    } as unknown as UnifiedActionTemplate;
+    expect(buildEncounterState(mixed, undefined).declared.stepReaches).toEqual(['eye', 'iron']);
   });
 
   it('adds step narrative, purpose lines and afterimages, branch arms included', () => {
