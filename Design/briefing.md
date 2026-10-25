@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 23:55 local (22:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 00:57 local (23:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [A road's encounters write to that road](https://linear.app/threadbare/issue/THR-2046/plan-doc-a-roads-encounters-write-to-that-road-the-ambush-the-toll): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-25-thr-2046-encounter-lane-writes.md). Each can be vetoed on its own. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25h.md)*
+  - **A road event writes its own road.** When bandits, an embargo or a toll quarrel is stirred up on one road, the result lands on that road. Today it lands on the town's busiest road, which is the wrong road about half the time. *Veto:* "an encounter should always pick the town's busiest road".
+  - **Encounters can turn a road red, and clear it.** Beating off an ambush clears the road. A lost caravan escort, or a critical failure on a caravan or pirate raid, threatens it for about two days. A blockade is never lifted by a mortal's scene. *Veto:* "a lost caravan should not turn its road red".
+  - **A struck toll goes to the faction that holds the town.** If no faction holds it, the mortal who struck it keeps it. A scene never takes a toll away from a mortal. *Veto:* "the mortal who strikes a toll should keep it".
+  - **A lost ambush only thins the road.** Only a critical failure also costs the town some prosperity, because ambushes are lost 36 to 57 times a month on two test worlds. *Veto:* "every failed ambush should hurt the town".
 - [A faction's commission pays the member who takes it up](https://linear.app/threadbare/issue/THR-2042/plan-doc-a-factions-commission-pays-the-member-who-takes-it-up-the): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-25-thr-2042-faction-commission-pay.md). Each can be vetoed on its own. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25g.md)*
   - **A guild's errand pays the mortal who does it.** When a faction posts a commission, the coin it spends is now held on the posting. The first of its members **who makes choices** to finish any of its work is paid, and their Means rises one step. The aftermath says "— a commission their faction paid for." Unseen members still earn only standing. *Veto:* "any member, seen or unseen, can take a commission".
   - **The pay is one Means step for the 5 coin posted.** This is the border levy in reverse. *Veto:* "a commission should pay more than that".
@@ -36,12 +41,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 ready, all waiting out their veto windows.** [THR-2030](https://linear.app/threadbare/issue/THR-2030) and [THR-2009](https://linear.app/threadbare/issue/THR-2009) open overnight, [THR-1929](https://linear.app/threadbare/issue/THR-1929) tomorrow 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) tomorrow 19:05, and [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) tomorrow 21:53.
+**Healthy: 6 ready, all waiting out their veto windows.** [THR-2030](https://linear.app/threadbare/issue/THR-2030) opens at 03:25 and [THR-2009](https://linear.app/threadbare/issue/THR-2009) at 06:22 this morning, [THR-1929](https://linear.app/threadbare/issue/THR-1929) at 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, and the new [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50. The builder is idle on purpose until then.
 
-- **Debts in the money encounters is merged.** [THR-2023](https://linear.app/threadbare/issue/THR-2023) landed via [PR #2583](https://github.com/christianspliid-ui/threadbare/pull/2583) at 23:52 after its third review cycle, and the live site now serves it. No pull requests are open.
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (10 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
+- **The road-encounters plan is merged** via [PR #2584](https://github.com/christianspliid-ui/threadbare/pull/2584). The census behind it found that [the Toll Dispute never fires](https://linear.app/threadbare/issue/THR-2047) on any test world; it is filed for the builder. No pull requests are open.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. Engine speed: 179 ms per tick, 22% above the week's median of 147 (the alarm line is 25%). The live site serves the latest main. Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 23:40) are healthy.
+- **Engine speed crossed the alarm line:** tick cost 190 ms/tick steady, 27% above the 7-day median (150, 88 rows since de68cb60); top phase agent_decision, 615 agents. Name the merges between de68cb60 and 75892db9: `git log --oneline --merges de68cb60..75892db9`. This is the builder's to chase, not yours.
+- Everything else is green. The live site serves the latest game build (the newest commit was docs only). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 00:40) are healthy.

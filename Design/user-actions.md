@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 23:55 local (22:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 00:57 local (23:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: the plan for road encounters writing to their own road is merged** ([THR-2046](https://linear.app/threadbare/issue/THR-2046)), via [#2584](https://github.com/christianspliid-ui/threadbare/pull/2584). Its four calls sit in the briefing's *Decided for you* until Tuesday 00:50.
 - **2026-10-25: debts in the money encounters are merged and live** ([THR-2023](https://linear.app/threadbare/issue/THR-2023)): a debt collected is cleared, The Loan names a lender. Merged via [#2583](https://github.com/christianspliid-ui/threadbare/pull/2583) after three review cycles.
 - **2026-10-25: the plan for faction commissions paying their takers is merged** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)), via [#2582](https://github.com/christianspliid-ui/threadbare/pull/2582). Its three calls sit in the briefing's *Decided for you* until tomorrow 21:53.
 - **2026-10-25: every measurement and census script now fits one 10-minute command with no flags** ([THR-2041](https://linear.app/threadbare/issue/THR-2041)). Merged via [#2581](https://github.com/christianspliid-ui/threadbare/pull/2581) and live.
@@ -50,8 +51,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: six settlement-economy terms are in the glossary** ([THR-1924](https://linear.app/threadbare/issue/THR-1924)). Merged via [#2576](https://github.com/christianspliid-ui/threadbare/pull/2576).
 - **2026-10-25: the encounter-coverage judge v2 sees the stakes and flags a Reach no step rolls** ([THR-2012](https://linear.app/threadbare/issue/THR-2012)). Merged via [#2575](https://github.com/christianspliid-ui/threadbare/pull/2575).
 - **2026-10-25: the review gate and browser evidence now apply only to engine and large UI changes** ([THR-1949](https://linear.app/threadbare/issue/THR-1949)). Merged via [#2573](https://github.com/christianspliid-ui/threadbare/pull/2573); the process-cuts question needed no answer.
-- **2026-10-25: the heavy tests' appointment check is fixed and green on main** ([THR-2037](https://linear.app/threadbare/issue/THR-2037)). Merged via [#2572](https://github.com/christianspliid-ui/threadbare/pull/2572).
-- **2026-10-25: the world tilt reaches places, backfill seeds included** ([THR-2028](https://linear.app/threadbare/issue/THR-2028)). Merged via [#2571](https://github.com/christianspliid-ui/threadbare/pull/2571) and live.
 
 ---
 
