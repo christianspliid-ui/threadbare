@@ -216,6 +216,23 @@ export interface SettlementEconomyDayInput {
   readonly mute?: boolean;
   /** Settlements told in full detail whatever their size (threaded mortals' homes). */
   readonly alwaysSpotlight?: ReadonlySet<string>;
+  /**
+   * The worldgen settling run's reuse of what cannot change while it runs (the land, its
+   * owners, the holders and seats, the special goods in reach). Filled on the first day,
+   * read on the rest. Never passed during play, where holders and land move.
+   */
+  readonly landCache?: SettlingLandCache;
+}
+
+/** What one settling run computes once (see `SettlementEconomyDayInput.landCache`). */
+export interface SettlingLandCache {
+  index?: ReturnType<typeof buildLandIndex>;
+  riverByKey?: Set<string>;
+  holders?: Map<string, string | null>;
+  seats?: ReturnType<typeof buildSeatMap>;
+  heldBySeat?: Map<string, number>;
+  ownership?: Map<string, OwnedHex[]>;
+  special?: Map<string, ReturnType<typeof specialGoodsInReach>>;
 }
 
 export interface SettlementEconomyDayResult {
@@ -240,12 +257,16 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
   const settlements = getEconomySettlements(graph);
   if (settlements.length === 0) return { events, chronicle, structureChanged, settlements: 0 };
 
-  const index = buildLandIndex(graph, tiles);
-  const riverByKey = new Set(tiles.filter(t => t.hasRiver).map(t => hexKey(t.coord.col, t.coord.row)));
-  const holders = buildHolderMap(graph, settlements, hexRealmId);
-  const seats = buildSeatMap(graph);
-  const heldBySeat = heldCountBySeat(holders, seats);
-  const ownership = assignHexOwnership(settlements, index, hexRealmId, id => holders.get(id) ?? null);
+  const cache = input.landCache;
+  const index = cache?.index ?? buildLandIndex(graph, tiles);
+  const riverByKey = cache?.riverByKey ?? new Set(tiles.filter(t => t.hasRiver).map(t => hexKey(t.coord.col, t.coord.row)));
+  const holders = cache?.holders ?? buildHolderMap(graph, settlements, hexRealmId);
+  const seats = cache?.seats ?? buildSeatMap(graph);
+  const heldBySeat = cache?.heldBySeat ?? heldCountBySeat(holders, seats);
+  const ownership = cache?.ownership ?? assignHexOwnership(settlements, index, hexRealmId, id => holders.get(id) ?? null);
+  if (cache && !cache.index) {
+    Object.assign(cache, { index, riverByKey, holders, seats, heldBySeat, ownership, special: new Map() });
+  }
   const besieged = besiegedSettlementIds(graph);
 
   const routes = readSurplusRoutes(graph);
@@ -418,7 +439,8 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
     const population = food.meters.population;
 
     // Build sink: upkeep first; short upkeep idles the costliest building.
-    const special = specialGoodsInReach(node, index, hexRealmId, realmHolder);
+    const special = cache?.special?.get(id) ?? specialGoodsInReach(node, index, hexRealmId, realmHolder);
+    cache?.special?.set(id, special);
     const upkeep = population * WOOD_PER_PERSON + upkeepOf(buildings);
     let bp = yieldIn[1] + yieldIn[2] - upkeep;
     let victim: BuildingInstance | undefined;
@@ -790,9 +812,11 @@ export function runSettlingRun(
     hexRealmId = buildRealmProjection(graph, tiles as HexTile[]).hexRealmId;
   } catch { /* NFP #4: no realm map — nearest-settlement ownership */ }
   let settlements = 0;
+  // Nothing the land, holders or seats depend on moves while the settling run runs.
+  const landCache: SettlingLandCache = {};
   for (let d = 0; d < days; d++) {
     const tick = -(days - d) * TICKS_PER_DAY;
-    settlements = runSettlementEconomyDay({ graph, tiles, tick, seed, hexRealmId, mute: true }).settlements;
+    settlements = runSettlementEconomyDay({ graph, tiles, tick, seed, hexRealmId, mute: true, landCache }).settlements;
   }
   for (const r of readSurplusRoutes(graph)) {
     r.properties.lastTraded = 0;
