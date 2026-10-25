@@ -66,6 +66,7 @@ import {
   type EconomyUnrestBand,
 } from '../data/economy-receipt-content';
 import { readLandShocks, type GodLandShockSource } from './settlementEconomy/shocks';
+import { DEPOSIT_YIELD_CHANNEL } from '../data/terrain-yields';
 
 // ─── Snapshot ────────────────────────────────────────────────────────────────
 
@@ -147,8 +148,12 @@ function readStaples(
   const cutSet = REGIONAL_MONOPOLY_ENABLED ? embargoCutsByLocation(graph, realmMap).get(locationId) : undefined;
   const cuts = cutSet ? new Map([...cutSet].map(rid => [rid, EMBARGO_BALANCE_CUT] as const)) : undefined;
   const derivation = deriveLocationStockTiers(props, getSublocationsAt(graph, locationId).length, cuts);
+  // THR-1923 — on a settlement the economy has reached, a food staple's tier is the
+  // economy's (foodBalance), not this derivation; the land line says what the cast did.
+  const economyFood = typeof props.foodBalance === 'number';
   for (const [resourceId, instance] of Object.entries(resources)) {
     if (getResourceClass(resourceId).category !== 'staple') continue;
+    if (economyFood && DEPOSIT_YIELD_CHANNEL[resourceId] === 'food') continue;
     const derived = derivation.perResource[resourceId];
     if (!derived || typeof instance?.quantity !== 'number') continue;
     staples.set(resourceId, {

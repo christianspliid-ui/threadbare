@@ -16,6 +16,7 @@
  */
 import type { SpecialGood } from './special-goods';
 import { LOCATION_TRAIT_IDS } from './location-trait-constants';
+import { HOUSING_PER_BUILDING } from './settlement-economy-constants';
 
 export type BuildingTag = 'growth' | 'food' | 'wood' | 'stone' | 'trade' | 'craft' | 'faith';
 
@@ -84,7 +85,7 @@ const TR = LOCATION_TRAIT_IDS;
 export const SETTLEMENT_BUILDINGS: readonly SettlementBuildingDef[] = [
   {
     id: 'housing', sublocationTypeId: 'sublocation-type.housing-quarter', tag: 'growth',
-    cost: 18, upkeep: 0.1, effects: { homes: 3 },
+    cost: 18, upkeep: 0.1, effects: { homes: HOUSING_PER_BUILDING },
     cardName: 'Housing quarter', upkeepWord: 'timber', raisedTitle: 'New Homes Rise',
     tooltip: 'New homes, built from spare timber and stone. More people can live here.',
   },

@@ -187,6 +187,9 @@ export const MARKET_TOWN_RELEASE = 3;
 
 // ─── Happiness → unrest ─────────────────────────────────────────────────────
 
+/** A starving settlement's chronicle line is told at most once in this many days (one famine, one line). */
+export const STARVING_CHRONICLE_COOLDOWN_DAYS = 30;
+
 /** Happiness a settlement with any surplus route gets. */
 export const ROUTE_HAPPY = 1;
 /**

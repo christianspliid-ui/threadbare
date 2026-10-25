@@ -236,6 +236,17 @@ describe('god verbs lay a land shock the receipt names (plan rule 7)', () => {
     });
   }
 
+  it('Blight bites on land of equal fields — the people do not walk to the next field over (review gate)', () => {
+    const graph = new WorldGraph();
+    const tiles = tilesOf(12, 12, () => 'grassland');
+    addSettlement(graph, 'loc.flat', 5, 5, 'hamlet');
+    let day = runDays(graph, tiles, 1, 30);
+    const before = p(graph, 'loc.flat').landFood as number;
+    executeGraphOps(graph, [{ op: 'blight_harvest', nodeId: '$target' } as never], { actorId: 'god', targetId: 'loc.flat', locationId: 'loc.flat', tick: day * TICKS_PER_DAY });
+    day = runDays(graph, tiles, day, 1);
+    expect(p(graph, 'loc.flat').landFood as number).toBeLessThan(before);
+  });
+
   it('Blight lowers the best food hex the next day, and the livelihood line says so', () => {
     const graph = new WorldGraph();
     const tiles = tilesOf(12, 12, () => 'grassland');

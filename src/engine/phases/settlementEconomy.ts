@@ -67,6 +67,7 @@ import {
   CROWDING_PER_UNHAPPY,
   UNREST_FROM_HAPPINESS,
   UNREST_HAPPINESS_MAX,
+  STARVING_CHRONICLE_COOLDOWN_DAYS,
   type SettlementTier,
 } from '../../data/settlement-economy-constants';
 import {
@@ -383,11 +384,13 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
       return y;
     };
 
-    // Work: one person, one hex — food first while the store is short.
+    // Work: one person, one hex — food first while the store is short. People work the
+    // land they know by its ordinary yield; a blight or a siege then bites the hexes they
+    // work rather than sending them to the next field over (review gate, THR-1923).
     const short = meters.foodStore < meters.population * FOOD_PER_PERSON;
     const foodWeight = short ? WORK_FOOD_WEIGHT_SHORT : WORK_FOOD_WEIGHT;
     const scored = hexes.map(h => ({ h, y: effective(h) }))
-      .map(x => ({ ...x, score: x.y[0] * foodWeight + x.y[1] + x.y[2] }))
+      .map(x => ({ ...x, score: x.h.base[0] * foodWeight + x.h.base[1] + x.h.base[2] }))
       .sort((a, b) => b.score - a.score || (a.h.key < b.h.key ? -1 : 1));
     const worked = scored.slice(0, meters.population);
     const y: Yield = [CENTRE_YIELD[0], CENTRE_YIELD[1], CENTRE_YIELD[2]];
@@ -686,7 +689,12 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
         chron('seat_lost_shrinking', node, {}, `seat:${tick}`);
         p.economySeatLostTick = tick;
       }
-      if (starving && !rec.starvedBefore) chron('settlement_starving', node, {}, `starve:${tick}`, starvingTitle(node.name));
+      // Once per famine: losing a person resets starveDays, so the cooldown, not the counter, gates the line.
+      const toldAt = typeof p.economyStarvingToldTick === 'number' ? p.economyStarvingToldTick : -Infinity;
+      if (starving && !rec.starvedBefore && tick - toldAt >= STARVING_CHRONICLE_COOLDOWN_DAYS * TICKS_PER_DAY) {
+        chron('settlement_starving', node, {}, `starve:${tick}`, starvingTitle(node.name));
+        p.economyStarvingToldTick = tick;
+      }
 
       if (p.targetTier !== targetTier || p.population !== m.population) anyChange = true;
       Object.assign(p, {
@@ -708,7 +716,6 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
         pullCount: pullCountOf(rec.held, incoming),
         economyPulls: pulls,
         economyRealmSeat: rec.realmSeat,
-        economyHolderId: rec.holder,
         workedHexes: rec.workedHexes,
         workedHexList: rec.workedList,
         landFood: rec.landFood,
