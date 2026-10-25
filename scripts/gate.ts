@@ -178,6 +178,10 @@ export function isEnginePath(file: string): boolean {
  * check catches the collision a `git merge origin/main` can union in (both CI jobs
  * run it). It takes about a second.
  */
+/** Default per-test and per-hook timeouts for the gate's `test` run (CI keeps 5 s / 10 s). */
+export const GATE_TEST_TIMEOUT_MS = 15_000;
+export const GATE_HOOK_TIMEOUT_MS = 60_000;
+
 const FINAL_GATES: readonly GateSpec[] = [
   { name: "impediment-ids", command: "npm run check:impediment-ids" },
   { name: "generated-freshness", command: "npm run check:generated-freshness" },
@@ -196,7 +200,10 @@ export function planGates(files: readonly string[], options: GateOptions): GateP
   const stages: GateSpec[][] = [];
   if (track === "code") {
     const first: GateSpec[] = [
-      { name: "test", command: "npm test" },
+      // Under the gate `test` shares the machine with typecheck and build, and the 5 s /
+      // 10 s vitest defaults false-failed files outside the diff ≥6 times on 10-24..10-25
+      // (impediments #1210, #1221, #1222). Looser defaults here only; CI keeps vitest's.
+      { name: "test", command: `npm test -- --testTimeout=${GATE_TEST_TIMEOUT_MS} --hookTimeout=${GATE_HOOK_TIMEOUT_MS}` },
       { name: "typecheck", command: "npm run check:typecheck" },
       { name: "build", command: "npx vite build" },
       // Step 9 of the code track: a required CI step that is not inside `npm test`

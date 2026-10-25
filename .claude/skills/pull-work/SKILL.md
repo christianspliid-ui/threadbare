@@ -343,6 +343,8 @@ Count the rows with `status: "running"` whose `last_activity_at` is within `PRED
 - **Exactly one** (you): every other pickup run has ended. The predecessor is dead, so continue at once, however recently its branch was pushed.
 - **Two or more**: two pickup runs are active at the same time. Stand down. You do not need to work out which row is yours. In a race both runs stand down, and the next slot, with one run alive, goes ahead.
 
+**On the resume path only, a `succeeded` row can still be alive (2026-10-25 weekly review).** When you reached this step from Step 1.5's single-in-flight branch or from Step 0.8 (a claim or PR with no finished ship), also count every other row, whatever its `status`, whose `last_activity_at` is within `RESUME_RECENT_ACTIVITY_MINUTES` of now. A run that waits on a subagent (the review gate's reviewers always run in the background) ends its turn and reads `succeeded`, and the scheduler starts the next run seconds later, off-slot. In 21 h on 10-24/10-25 that built three tickets twice: THR-1948 (20:42Z), THR-1843 (00:48Z beside the 00:24Z run, #1217) and THR-1966 (05:49Z beside the 05:31Z run, #1220), the last two through this resume path; #1215 is the same class. If such a row exists, stand down silently as for two `running` rows. A genuinely dead claim waits at most one slot. The fresh-claim check below does **not** use this rule: an ordinary claim after a finished run must not lose its slot.
+
 **A resumed run checks again, then reads the board again.** If this session was interrupted and resumed (an error, then "Try again" or "continue"), run this check again before your next write. While you were down, a new run may have started and read the board. Stand down on two or more, as above. If you continue, and more than one cadence interval (`PICKUP_CADENCE_MINUTES`, 20) has passed since your last board read, start again from Step 1: do not act on a board read from before the gap (THR-1887).
 
 **A fresh claim checks too — immediately before the claim `save_issue` (THR-1887).** Step 4's claim and Step 1.7's resume both assume that no other pickup run is working. Before the Step 4 `save_issue(id, assignee:"me", state:"In Dev")` (and before each drain claim), run this check once more. Stand down silently on two or more. This closes the race the resume-only check left open. On 2026-10-14 the 03:31Z run, resumed at about 06:45Z, and the 06:45:26Z scheduled run both read `Ready for Dev` and both made a *fresh* claim on THR-1839, so neither run reached Step 1.6, and the result was two full builds (PRs #2366 and #2367). With the check at claim time, each run's row is `running` while it checks. Of two runs that overlap, the run that checks second always sees two rows and stands down, and the run that checks first stands down too if the other row already exists. At most one of them claims. The cost is one `list_task_runs` call per claim.
@@ -364,6 +366,7 @@ Count the rows with `status: "running"` whose `last_activity_at` is within `PRED
 ```
 [pull-work] Step 1.6: 1 pickup run active (this one) — predecessor dead. Continuing to Step 1.7.
 [pull-work] Step 1.6: 2 pickup runs active (<session ids>) — standing down silently, no writes.
+[pull-work] Step 1.6 (resume): run <session id> succeeded but active <N> min ago — standing down silently, no writes.
 [pull-work] Step 1.6: run list unreadable — assuming overlap (fail-closed). Standing down.
 [pull-work] Step 1.6 (claim-time): 1 pickup run active (this one) — claiming THR-XXX.
 [pull-work] Step 1.6 (claim-time): 2 pickup runs active (<session ids>) — not claiming, standing down silently.
@@ -376,6 +379,7 @@ Count the rows with `status: "running"` whose `last_activity_at` is within `PRED
 |---|---|---|
 | `PREDECESSOR_SILENT_MINUTES` | 60 | A `running` row silent for longer is a killed process, not a working run, and is not counted |
 | `PREDECESSOR_CHECK_FAIL_CLOSED` | `true` | An unreadable run list counts as an overlap |
+| `RESUME_RECENT_ACTIVITY_MINUTES` | 15 | Resume path only: another row active this recently counts as alive, whatever its `status` |
 | `PICKUP_CADENCE_MINUTES` | 20 | A resumed run whose last board read is older than this starts again from Step 1 (THR-1887) |
 
 ### Step 1.7 — Resume-from-In-Dev — upstream-shipped check
