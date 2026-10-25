@@ -17,6 +17,8 @@
  * `member_of.rank` written by promotions — run it on the tree before and after the change
  * for the behavioural before/after.
  *
+ * Time: ~2.5 min per seed at 300 ticks on medium (the default three seeds ≈ 7 min, near the
+ *       600 s command cap — pass one seed when the tree is under load).
  * Usage: npm run measure:capability-growth-scales [-- --seeds 42,99,7 --ticks 300 --map medium]
  */
 

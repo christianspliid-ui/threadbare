@@ -8,7 +8,10 @@
  *   - the reputation and rival-membership of each excommunicated member at the moment
  *     it was struck (read from the graph on the tick before the action ran).
  *
- * Usage: npm run measure:realm-membership [-- --seeds 42,99,7 --ticks 600 --map medium]
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap. The plan's
+ *       three seeds (42,99,7) are three commands.
+ * Usage: npm run measure:realm-membership [-- --seeds 42 --ticks 600 --map medium]
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -24,8 +27,9 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
+const SEEDS = (argValue('--seeds') ?? '42').split(',').map(Number);
 const TICKS = Number(argValue('--ticks') ?? 600);
+console.error('[THR-2041] ~6–9 min per seed at 600 ticks on medium; run one seed per command (600 s command cap).');
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
 const CHECKPOINTS = [0, Math.floor(TICKS / 2), TICKS];
 

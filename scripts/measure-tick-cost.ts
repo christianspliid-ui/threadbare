@@ -14,6 +14,7 @@
  * tick count → same agent counts and the same phase *order*; only the milliseconds
  * move with the machine. Every knob is a named constant (NFP #1) with a flag.
  *
+ * Time: ~40 s at the default 200 ticks on small; medium costs ~3× per tick.
  *   npm run measure:tick-cost                       # human report
  *   npm run measure:tick-cost -- --json             # one JSON object on stdout
  *   npm run measure:tick-cost -- --ticks 100 --map medium --seed 99

@@ -26,6 +26,7 @@
  * floor down. So both halves are reported apart, and the verdict reads the corpus
  * total *and* names the two components.
  *
+ * Time: ~70 s per seed at 150 ticks on medium (the default two seeds ≈ 2.5 min).
  * Usage:
  *   npm run census:undertakings                          # seeds 42,99 × 150 ticks
  *   npm run census:undertakings -- --seeds 42 --ticks 60 # faster arm

@@ -2,7 +2,7 @@
  * THR-1974 — the wage rules' Done-when predicates, measured on real seeded worlds.
  *
  * Plan: `Docs/plans/2026-10-19-thr-1974-hiring-a-free-company.md` § Done when / § Kill
- * criteria. Runs each seed for 1080 ticks (90 days), medium map, purse + crown + war aims
+ * criteria. Runs each seed for `--ticks` (default 600, 50 days; seed 42 by default), medium map, purse + crown + war aims
  * live, and reports per seed:
  *   - price never free: free-company days with `oathValueOf` ≤ 0 (want 0);
  *   - companies field armies (a report, not a gate): the share of sworn free-company days
@@ -15,7 +15,10 @@
  *     town of that liege or of a fellow vassal at peace with it (want 0);
  *   - kill criterion 3: the largest daily share of realm-vassal armies fighting for a liege.
  *
- * Usage: npm run measure:crown-wages [-- --seeds 42,99,7 --ticks 1080 --map medium]
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap. The 90-day
+ *       read (--ticks 1080) is ~11–22 min per seed and does not fit one command.
+ * Usage: npm run measure:crown-wages [-- --seeds 42 --ticks 600 --map medium]
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -43,8 +46,9 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
-const TICKS = Number(argValue('--ticks') ?? 1080);
+const SEEDS = (argValue('--seeds') ?? '42').split(',').map(Number);
+const TICKS = Number(argValue('--ticks') ?? 600);
+console.error('[THR-2041] ~6–9 min per seed at 600 ticks on medium; run one seed per command (600 s command cap).');
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
 const KILL_WINDOW_DAYS = 10;
 const PROGRESS = process.argv.includes('--progress');

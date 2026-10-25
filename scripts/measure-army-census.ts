@@ -14,7 +14,10 @@
  *
  * Disband causes need traces, which slow the run roughly twofold: pass --trace.
  *
- * Usage: npm run measure:army-census [-- --seeds 42,99 --days 90 --map medium --trace]
+ * Time: ~6–9 min per seed at 50 days (600 ticks) on medium (≈0.8 s per tick, more as the
+ *       world grows); one seed per command keeps a call under the 600 s command cap. The
+ *       90-day read (--days 90) is ~11–22 min per seed and does not fit one command.
+ * Usage: npm run measure:army-census [-- --seeds 42 --days 50 --map medium --trace]
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -35,8 +38,9 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-const SEEDS = (argValue('--seeds') ?? '42,99').split(',').map(Number);
-const DAYS = Number(argValue('--days') ?? 90);
+const SEEDS = (argValue('--seeds') ?? '42').split(',').map(Number);
+const DAYS = Number(argValue('--days') ?? 50);
+console.error('[THR-2041] ~6–9 min per seed at 600 ticks on medium; run one seed per command (600 s command cap).');
 const TRACE = process.argv.includes('--trace');
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
 

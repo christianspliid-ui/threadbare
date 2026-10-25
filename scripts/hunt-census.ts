@@ -15,6 +15,7 @@
  * - **the avenger census**: vengeance-family projects founded, and the share founded
  *   by `ambition_avenge_fallen` holders.
  *
+ * Time: ~2.5 min per seed at 300 ticks on medium (the default two seeds ≈ 5 min).
  *   npm run census:hunts -- --seeds 42,99 --ticks 300 --map medium [--out <file>]
  */
 import { writeFileSync } from 'fs';

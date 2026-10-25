@@ -15,6 +15,8 @@
  *     .cache/founding-starvation-verdict.json; a missing verdict, or one built from code
  *     that has changed since, counts as not met.
  *
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap.
  * Usage: npm run measure:means [-- --seeds 42 --ticks 600 --map medium]
  */
 

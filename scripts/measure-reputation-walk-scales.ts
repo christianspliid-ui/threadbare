@@ -11,6 +11,8 @@
  * rank), and how often that move changes the ally / neutral / enemy reading that
  * `agentSelection` takes at ±0.3.
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:reputation-walk-scales [-- --seeds 42,99,7 --ticks 0 --map medium]
  */
 

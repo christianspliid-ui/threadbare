@@ -33,6 +33,7 @@
  * `decidedBy` axis in `motivations`), health (encounter picks per tick, board idle
  * share), and the same pole-balance line for undertaking starts.
  *
+ * Time: ~1.5 min per seed at 200 ticks on medium (the default two seeds ≈ 3.5 min).
  * Usage:
  *   npm run census:desire-poles                          # seeds 42,99 × 200 ticks, medium
  *   npm run census:desire-poles -- --seeds 42 --ticks 60

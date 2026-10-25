@@ -19,6 +19,7 @@
  * `--ticks` is greater than 0. Writes the full snapshot (both ticks, every field) to
  * `--out`.
  *
+ * Time: a few seconds per seed at --ticks 0; each tick adds ≈0.8 s per seed on medium.
  *   npm run census:seeded-world -- --seeds 42,99 --map medium [--ticks 0] [--out <file>]
  *
  * THR-1155 adds the realm block: one Realm per culture domain, and every Location

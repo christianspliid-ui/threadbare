@@ -12,6 +12,8 @@
  * commander is the faction's strongest Iron member (the pre-refit curve ties everyone
  * past raw ~20 at tier 10, so the first edge wins).
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:army-scales [-- --seeds 42,99,7 --ticks 0 --map medium]
  */
 

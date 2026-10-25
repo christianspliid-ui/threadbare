@@ -18,6 +18,7 @@
  * a legitimate world, and this script's job is to say so out loud rather than to
  * force routes into a world that should not have them.
  *
+ * Time: ~20 s per seed at 40 ticks on medium.
  * Usage:
  *   npm run census:reachability                            # seeds 42,99 × 40 ticks
  *   npm run census:reachability -- --seeds 1,7,13 --ticks 60
