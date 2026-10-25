@@ -15,6 +15,7 @@ import { compareDebtsOldestFirst, listDebtsOwedTo, settleDebt } from '../debtSet
 import { countDebts, phaseEconomicTraits } from '../phaseEconomicTraits';
 import { getAgentAttachments, agreementLine } from '../agentAttachments';
 import { readAgreement } from '../agreementShape';
+import { getRelationship } from '../encounters/relationshipResolver';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { DEBT_REPAY_MEANS, LOAN_PRINCIPAL_MEANS, MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from '../../data/mortal-means-constants';
@@ -207,6 +208,12 @@ describe('THR-2023 The Loan → Debt Collection (the loop)', () => {
       .find(e => e.target === LENDER && !(e.properties as Record<string, unknown>).agreement);
     expect(bond?.properties.sentiment).toBeLessThan(0.5);
     expect((debtEdges(state.graph)[0].properties as Record<string, unknown>).sentiment).toBeUndefined();
+    // The first-edge relationship reader sees the bond, not the debt (review-gate round 1).
+    const before = getRelationship(state.graph, BORROWER, LENDER).sentiment;
+    expect(before).toBe(bond?.properties.sentiment);
+    // And settling the debt leaves the resentment standing.
+    settleDebt(state.graph, { creditorId: LENDER, settlement: 'written_off', tick: 10 });
+    expect(getRelationship(state.graph, BORROWER, LENDER).sentiment).toBe(before);
   });
 
   it('without a bound borrower the loan writes no debt (the cast is load-bearing)', () => {

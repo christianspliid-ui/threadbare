@@ -36,17 +36,22 @@ import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from './secret-encounter-content
 /**
  * THR-2023 — one band of The Loan: the borrower owes the lender (`$actor`), the
  * principal moves lender → borrower, and a failed band adds the borrower's resentment.
+ *
+ * The resentment comes FIRST. Agreements and bonds are both `relates_to` edges, and the
+ * relationship readers (`getRelationship`, `findBond`) take the first edge between two
+ * people. Written after the debt, the bond would land on the debt edge and vanish when
+ * the debt is settled; written before it, the bond is its own edge and is found first.
  */
 function theLoanBand(
   resentment?: number,
 ): readonly import('../types/unifiedAction').EncounterAftermathReactionEffect[] {
   return [
-    { kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:borrower', counterpartyId: '$actor' },
-    { kind: 'economy_shift', quantity: 'means', amount: -LOAN_PRINCIPAL_MEANS, targetAgentId: '$actor' },
-    { kind: 'economy_shift', quantity: 'means', amount: LOAN_PRINCIPAL_MEANS, targetAgentId: '$cast:borrower' },
     ...(resentment === undefined ? [] : [
       { kind: 'bond_change' as const, withAgentId: '$cast:borrower', sentimentDelta: resentment },
     ]),
+    { kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:borrower', counterpartyId: '$actor' },
+    { kind: 'economy_shift', quantity: 'means', amount: -LOAN_PRINCIPAL_MEANS, targetAgentId: '$actor' },
+    { kind: 'economy_shift', quantity: 'means', amount: LOAN_PRINCIPAL_MEANS, targetAgentId: '$cast:borrower' },
   ];
 }
 

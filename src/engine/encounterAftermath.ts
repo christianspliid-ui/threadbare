@@ -1116,10 +1116,7 @@ function applyBondEdge(
   sentimentDelta: number,
   trustDelta: number | undefined,
 ): { created: boolean; sentimentBefore: number; sentimentAfter: number } {
-  // THR-2023 — agreements are `relates_to` edges too; a bond's sentiment must never land
-  // on a debt edge (and vanish when the debt is settled), so agreement edges are skipped.
-  let edge = graph.getOutgoingEdges(fromId, 'relates_to')
-    .find(e => e.target === toId && !(e.properties as Record<string, unknown> | undefined)?.agreement);
+  let edge = graph.getOutgoingEdges(fromId, 'relates_to').find(e => e.target === toId);
   let created = false;
   if (!edge) {
     const edgeId = `relates_to_bond_${fromId}_${toId}`;
