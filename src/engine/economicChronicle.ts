@@ -13,6 +13,7 @@
 
 import { CROWN_CHRONICLE_TITLES } from '../data/crown-chronicle-content';
 import { UNREST_CHRONICLE_TITLES } from '../data/unrest-chronicle-content';
+import { SETTLEMENT_ECONOMY_CHRONICLE_TITLES } from '../data/settlement-economy-chronicle-content';
 import { EMBARGO_CHRONICLE_TITLES } from '../data/embargo-chronicle-content';
 import type { TickEvent } from '../types/gameState';
 import type { ChronicleChapter } from '../types/chronicle';
@@ -294,6 +295,7 @@ function formatChronicleTitle(trigger: EconomicChronicleTrigger): string {
     ...CROWN_CHRONICLE_TITLES,
     ...UNREST_CHRONICLE_TITLES,
     ...EMBARGO_CHRONICLE_TITLES,
+    ...SETTLEMENT_ECONOMY_CHRONICLE_TITLES,
   };
   return titles[trigger];
 }

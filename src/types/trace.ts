@@ -111,6 +111,11 @@ export type TraceCategory =
   // THR-1974 — a liege pays its vassal's soldiers
   | 'oath_wages'
   | 'oath_raise_funded'
+  // THR-1923 — the settlement economy
+  | 'settlement_economy_day' | 'settlement_growth'
+  | 'settlement_building_raised' | 'settlement_building_lost' | 'settlement_building_idle'
+  | 'surplus_route_born' | 'surplus_route_ended'
+  | 'settlement_land_shock' | 'settlement_happiness'
   | 'settlement_tier_change' | 'target_action_filter'
   | 'founded_place_culture' // THR-1839
   | 'journey.choice_applied' // THR-1854: what a journey choice moved on the First
@@ -753,6 +758,10 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'oath_sworn', 'oath_refused', 'oath_broken', 'rebellion',
   'oath_wages',
   'oath_raise_funded',
+  'settlement_economy_day', 'settlement_growth',
+  'settlement_building_raised', 'settlement_building_lost', 'settlement_building_idle',
+  'surplus_route_born', 'surplus_route_ended',
+  'settlement_land_shock', 'settlement_happiness',
   'settlement_tier_change', 'target_action_filter',
   'founded_place_culture',
   'journey.choice_applied',
@@ -2293,6 +2302,80 @@ export interface SettlementTierChangeTrace extends TraceBase {
   direction: 'promotion' | 'demotion';
   sustainedTicks: number;
   prosperity: number;
+  /**
+   * THR-1923 — what moved the tier: the settlement economy's population, a seat lost or
+   * gained, or (with `SETTLEMENT_ECONOMY_DRIVES_TIER` off) the prosperity trigger.
+   */
+  cause?: 'population' | 'seat_lost' | 'seat_gained' | 'prosperity';
+}
+
+/** THR-1923 — one spotlight settlement's day in the settlement economy. */
+export interface SettlementEconomyDayTrace extends TraceBase {
+  category: 'settlement_economy_day';
+  locationId: string;
+  population: number;
+  cap: number;
+  workedHexes: number;
+  foodYield: number;
+  foodNeed: number;
+  foodBalance: number;
+  buildYield: number;
+  upkeep: number;
+  buildBalance: number;
+  importedFood: number;
+  importedGoods: number;
+  pullCount: number;
+}
+
+/** THR-1923 — a settlement gained or lost a person. */
+export interface SettlementGrowthTrace extends TraceBase {
+  category: 'settlement_growth';
+  locationId: string;
+  delta: 1 | -1;
+  population: number;
+  cause: 'surplus' | 'starvation';
+}
+
+/** THR-1923 — a building raised, lost or idled. */
+export interface SettlementBuildingTrace extends TraceBase {
+  category: 'settlement_building_raised' | 'settlement_building_lost' | 'settlement_building_idle';
+  locationId: string;
+  buildingId: string;
+  placeId: string;
+  /** Raised: the winning score and the runner-up, so "why this one" is answerable. */
+  score?: number;
+  runnerUp?: string;
+  reason?: 'upkeep_short' | 'input_lost' | 'adopted';
+}
+
+/** THR-1923 — a surplus route born or ended. */
+export interface SurplusRouteTrace extends TraceBase {
+  category: 'surplus_route_born' | 'surplus_route_ended';
+  fromId: string;
+  toId: string;
+  carries: 'food' | 'goods';
+  carriedPerDay: number;
+  reason?: 'own_seat' | 'nearest_buyer' | 'surplus_ended' | 'blockaded';
+}
+
+/** THR-1923 — a land shock written (a god verb) or a siege's first and last day. */
+export interface SettlementLandShockTrace extends TraceBase {
+  category: 'settlement_land_shock';
+  locationId: string;
+  hexKey: string | null;
+  channel: 0 | 1 | 2;
+  factor: number;
+  untilTick: number;
+  source: 'bless_harvest' | 'blight' | 'sour_mine' | 'reveal_vein' | 'siege';
+}
+
+/** THR-1923 — a settlement's happiness term changed. */
+export interface SettlementHappinessTrace extends TraceBase {
+  category: 'settlement_happiness';
+  locationId: string;
+  happiness: number;
+  /** The contentment input it hands the unrest target (THR-1934). */
+  unrestTarget: number;
 }
 /**
  * Trace: location traits minted, released or superseded this tick (THR-790).
@@ -5499,6 +5582,13 @@ export type TraceEntry =
   | EconomicPowerScanTrace
   | ScarcityArcPhaseTrace
   // Unrest as pressure (THR-1934)
+  // The settlement economy (THR-1923)
+  | SettlementEconomyDayTrace
+  | SettlementGrowthTrace
+  | SettlementBuildingTrace
+  | SurplusRouteTrace
+  | SettlementLandShockTrace
+  | SettlementHappinessTrace
   | UnrestTargetTrace
   | UnrestLeaveTrace
   | UnrestRiotSeedTrace

@@ -15,6 +15,14 @@
  * - Emits a settlement_tier_change trace
  * - Pushes a chronicle TickEvent (significance 0.9)
  *
+ * **THR-1923 — the settlement economy drives the tier.** With `SETTLEMENT_ECONOMY_ENABLED`
+ * and `SETTLEMENT_ECONOMY_DRIVES_TIER` on, a settlement carrying the economy's
+ * `targetTier` (population plus seat) moves one step toward it after
+ * SETTLEMENT_PROMOTION_SUSTAIN_TICKS ticks of disagreeing with it, in either direction —
+ * **a capital included**: a capital that loses its realm seat drops to city or below. The
+ * prosperity trigger below is the fallback for a settlement the economy has not reached
+ * and for the flag off. Plan: Docs/plans/2026-10-14-thr-1923-settlement-economy.md.
+ *
  * Design doc: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
  * Phase 4 item 10 — Settlement promotion/demotion
  * NFP priorities: Tunability, Inspectability, Fail-soft
@@ -35,6 +43,18 @@ import {
   LOC_HEALTH_DAMPENER_THRESHOLD,
   LOC_HEALTH_DEFAULT_BASELINE,
 } from '../data/location-action-constants';
+import {
+  SETTLEMENT_ECONOMY_ENABLED,
+  SETTLEMENT_ECONOMY_DRIVES_TIER,
+  type SettlementTier,
+} from '../data/settlement-economy-constants';
+import { stepToward, tierRank } from './settlementEconomy/tier';
+import type { GraphNode } from '../types/graph';
+import type { WorldGraph } from './graph';
+
+/** Settlement counters for the economy-driven tier (THR-1923): ticks the tier has disagreed with `targetTier`. */
+export const TIER_SUSTAIN_UP_PROP = 'tierSustainUpTicks';
+export const TIER_SUSTAIN_DOWN_PROP = 'tierSustainDownTicks';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -53,6 +73,108 @@ const DEMOTION_ELIGIBLE: Record<string, string> = {
 /** All settlement subtypes (including capital, which is never changed) */
 const SETTLEMENT_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
 
+// ─── The economy-driven tier (THR-1923) ─────────────────────────────────────
+
+/**
+ * Advance the sustain counters toward `targetTier`; return the one-step change once the
+ * tier has disagreed with it for SETTLEMENT_PROMOTION_SUSTAIN_TICKS, else null. A target
+ * equal to the tier resets both counters.
+ */
+function economyTierStep(
+  loc: GraphNode,
+  current: SettlementTier,
+  target: SettlementTier,
+): { to: SettlementTier; direction: 'promotion' | 'demotion'; cause: 'population' | 'seat_lost' } | null {
+  const p = loc.properties;
+  let up = typeof p[TIER_SUSTAIN_UP_PROP] === 'number' ? (p[TIER_SUSTAIN_UP_PROP] as number) : 0;
+  let down = typeof p[TIER_SUSTAIN_DOWN_PROP] === 'number' ? (p[TIER_SUSTAIN_DOWN_PROP] as number) : 0;
+  const cmp = tierRank(target) - tierRank(current);
+  if (cmp > 0) { up += 1; down = 0; } else if (cmp < 0) { down += 1; up = 0; } else { up = 0; down = 0; }
+  p[TIER_SUSTAIN_UP_PROP] = up;
+  p[TIER_SUSTAIN_DOWN_PROP] = down;
+  if (up < SETTLEMENT_PROMOTION_SUSTAIN_TICKS && down < SETTLEMENT_PROMOTION_SUSTAIN_TICKS) return null;
+  p[TIER_SUSTAIN_UP_PROP] = 0;
+  p[TIER_SUSTAIN_DOWN_PROP] = 0;
+  const direction = up >= SETTLEMENT_PROMOTION_SUSTAIN_TICKS ? 'promotion' : 'demotion';
+  const lostPower = p.economyPulls !== true && p.economyRealmSeat !== true;
+  const cause = direction === 'demotion' && lostPower && (current === 'city' || current === 'capital')
+    ? 'seat_lost' as const
+    : 'population' as const;
+  return { to: stepToward(current, target), direction, cause };
+}
+
+/**
+ * Perform a tier change: mutate the subtype, refresh the encounter cache, trace it, write
+ * the chronicle line and flag the genome for reassessment. Shared by both triggers.
+ */
+function applyTierChange(
+  graph: WorldGraph,
+  loc: GraphNode,
+  from: string,
+  to: string,
+  direction: 'promotion' | 'demotion',
+  cause: 'population' | 'seat_lost' | 'seat_gained' | 'prosperity',
+  tick: number,
+  seed: number,
+  events: TickEvent[],
+  chapters: ChronicleChapter[],
+  runtime?: SimulationRuntime,
+): void {
+  loc.properties.locationSubtype = to;
+  loc.properties.prosperitySustainAboveTicks = 0;
+  loc.properties.prosperitySustainBelowTicks = 0;
+  if (runtime) {
+    const locId = loc.id;
+    applyEncounterCacheUpdate(runtime, cache => cache.onLocationTypeChanged(graph, locId));
+  }
+  const prosperity = typeof loc.properties?.prosperity === 'number' ? loc.properties.prosperity : 0;
+  emitTrace({
+    category: 'settlement_tier_change',
+    tick,
+    agentId: loc.id,
+    summary: `${loc.name} ${direction === 'promotion' ? 'promoted' : 'demoted'} ${from}→${to} (${cause})`,
+    locationId: loc.id,
+    locationName: loc.name,
+    previousSubtype: from,
+    newSubtype: to,
+    direction,
+    sustainedTicks: SETTLEMENT_PROMOTION_SUSTAIN_TICKS,
+    prosperity,
+    cause,
+  });
+  const entry = resolveEconomicChronicle(
+    direction === 'promotion' ? 'settlement_promotion' : 'settlement_demotion',
+    {
+      settlement: loc.name,
+      oldType: from,
+      newType: to,
+      locationId: loc.id,
+      hexCoords: typeof loc.properties?.hexCol === 'number' && typeof loc.properties?.hexRow === 'number'
+        ? { col: loc.properties.hexCol as number, row: loc.properties.hexRow as number }
+        : undefined,
+    },
+    tick,
+    chronicleSeed(seed, loc.id),
+  );
+  if (entry) {
+    events.push(entry.tickEvent);
+    chapters.push(entry.chronicleChapter);
+  } else {
+    events.push({
+      id: `evt_tier_${loc.id}_${tick}`,
+      tick,
+      type: 'settlement_tier_change',
+      message: direction === 'promotion'
+        ? `The ${from} of ${loc.name} has grown into a proper ${to}.`
+        : `${loc.name} has fallen on hard times — the ${from} shrinks to a ${to}.`,
+      significance: 0.9,
+    });
+  }
+  loc.properties.pendingReassessment = true;
+  loc.properties.reassessmentTick = tick;
+  loc.properties.reassessmentTrigger = direction;
+}
+
 // ─── Phase Function ─────────────────────────────────────────────────────────
 
 /**
@@ -68,8 +190,21 @@ export function phaseSettlementPromotion(state: GameState, runtime?: SimulationR
   const chapters: ChronicleChapter[] = [];
   const locations = graph.getNodesByType('location');
 
+  const economyDrives = SETTLEMENT_ECONOMY_ENABLED && SETTLEMENT_ECONOMY_DRIVES_TIER;
+
   for (const loc of locations) {
     const subtype = loc.properties?.locationSubtype as string | undefined;
+
+    // THR-1923 — the settlement economy's target tier, when it has reached this settlement.
+    if (economyDrives && subtype && SETTLEMENT_SUBTYPES.has(subtype)
+      && loc.properties?.parentLocationId === undefined
+      && typeof loc.properties?.targetTier === 'string' && SETTLEMENT_SUBTYPES.has(loc.properties.targetTier as string)) {
+      const change = economyTierStep(loc, subtype as SettlementTier, loc.properties.targetTier as SettlementTier);
+      if (change) {
+        applyTierChange(graph, loc, subtype, change.to, change.direction, change.cause, tick, seed, events, chapters, runtime);
+      }
+      continue;
+    }
 
     // Skip non-settlement or capital (capital never changes)
     if (!subtype || !SETTLEMENT_SUBTYPES.has(subtype) || subtype === 'capital') continue;

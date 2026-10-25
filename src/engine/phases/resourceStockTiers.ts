@@ -28,7 +28,9 @@ import type { EnginePhase, PhaseContext, PhaseResult } from '../phaseRegistry';
 import { emitTrace } from '../traceBuffer';
 import { touchWorld } from '../simulationRuntime';
 import { getSublocationsAt } from '../graphQueries';
-import { deriveLocationStockTiers, readResources } from '../resourceEconomy';
+import { deriveLocationStockTiers, readResources, tierFromBalance } from '../resourceEconomy';
+import { SETTLEMENT_ECONOMY_ENABLED } from '../../data/settlement-economy-constants';
+import { DEPOSIT_YIELD_CHANNEL } from '../../data/terrain-yields';
 import { resolveEconomicChronicle } from '../economicChronicle';
 import type { EconomicChronicleTrigger } from '../../data/economic-chronicle-content';
 import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
@@ -114,15 +116,27 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
     const cuts = cutSet ? new Map([...cutSet].map(rid => [rid, EMBARGO_BALANCE_CUT] as const)) : undefined;
     const derivation = deriveLocationStockTiers(props, sublocationCount, cuts);
 
+    // THR-1923 — a settlement the settlement economy has reached: its own food balance
+    // sets the tier of every food staple (a fed town reads adequate), and the economy has
+    // already written `resourceBalance` from its food and build balance.
+    const economyFood = SETTLEMENT_ECONOMY_ENABLED && typeof props.foodBalance === 'number'
+      ? props.foodBalance as number
+      : undefined;
     // Store aggregate balance for the prosperity term (read next by phaseProsperity).
-    props.resourceBalance = derivation.aggregateBalance;
+    if (economyFood === undefined) props.resourceBalance = derivation.aggregateBalance;
 
     // Resolve threaded mortals whose home is this location (full-detail only).
     const threadedHere = fullDetail ? (threadedByLocation.get(loc.id) ?? []) : [];
 
     for (const [resourceId, instance] of Object.entries(resources)) {
-      const derived = derivation.perResource[resourceId];
-      if (!derived) continue;
+      const derivedRaw = derivation.perResource[resourceId];
+      if (!derivedRaw) continue;
+      const foodStaple = economyFood !== undefined
+        && DEPOSIT_YIELD_CHANNEL[resourceId] === 'food'
+        && getResourceClass(resourceId).category === 'staple';
+      const derived = foodStaple
+        ? { tier: tierFromBalance(economyFood), balance: economyFood }
+        : derivedRaw;
       const prevTier = instance.stockTier;
       const newTier = derived.tier;
 

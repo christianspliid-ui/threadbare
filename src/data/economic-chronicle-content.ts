@@ -25,6 +25,10 @@ import {
   EMBARGO_CHRONICLE_TEMPLATES,
   EMBARGO_CHRONICLE_SIGNIFICANCE,
 } from './embargo-chronicle-content';
+import {
+  SETTLEMENT_ECONOMY_CHRONICLE_TEMPLATES,
+  SETTLEMENT_ECONOMY_CHRONICLE_SIGNIFICANCE,
+} from './settlement-economy-chronicle-content';
 
 // ─── Trigger Types ──────────────────────────────────────────────────────────
 
@@ -67,7 +71,14 @@ export type EconomicChronicleTrigger =
   | 'town_empties'
   // Regional monopolies and embargo (THR-1955) — content in embargo-chronicle-content.ts
   | 'embargo_laid'
-  | 'embargo_lifted';
+  | 'embargo_lifted'
+  // The settlement economy (THR-1923) — content in settlement-economy-chronicle-content.ts
+  | 'building_raised'
+  | 'building_lost'
+  | 'surplus_route_born'
+  | 'surplus_route_ended'
+  | 'settlement_starving'
+  | 'seat_lost_shrinking';
 
 // ─── Significance defaults per trigger ──────────────────────────────────────
 
@@ -92,6 +103,7 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
   ...CROWN_CHRONICLE_SIGNIFICANCE,
   ...UNREST_CHRONICLE_SIGNIFICANCE,
   ...EMBARGO_CHRONICLE_SIGNIFICANCE,
+  ...SETTLEMENT_ECONOMY_CHRONICLE_SIGNIFICANCE,
 };
 
 // ─── Chronicle Templates ────────────────────────────────────────────────────
@@ -255,6 +267,12 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
   town_empties: [...UNREST_CHRONICLE_TEMPLATES.town_empties],
   embargo_laid: [...EMBARGO_CHRONICLE_TEMPLATES.embargo_laid],
   embargo_lifted: [...EMBARGO_CHRONICLE_TEMPLATES.embargo_lifted],
+  building_raised: [...SETTLEMENT_ECONOMY_CHRONICLE_TEMPLATES.building_raised],
+  building_lost: [...SETTLEMENT_ECONOMY_CHRONICLE_TEMPLATES.building_lost],
+  surplus_route_born: [...SETTLEMENT_ECONOMY_CHRONICLE_TEMPLATES.surplus_route_born],
+  surplus_route_ended: [...SETTLEMENT_ECONOMY_CHRONICLE_TEMPLATES.surplus_route_ended],
+  settlement_starving: [...SETTLEMENT_ECONOMY_CHRONICLE_TEMPLATES.settlement_starving],
+  seat_lost_shrinking: [...SETTLEMENT_ECONOMY_CHRONICLE_TEMPLATES.seat_lost_shrinking],
 };
 
 // ─── Wealth Tier Flavor ─────────────────────────────────────────────────────

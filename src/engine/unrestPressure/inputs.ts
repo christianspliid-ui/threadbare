@@ -79,12 +79,18 @@ export function sicknessTerm(populationHealth: number | undefined): number {
   return health < SICK_HEALTH_LINE ? SICK_PRESSURE : 0;
 }
 
+/** Settlement property the settlement economy writes daily: its happiness term as an unrest input (THR-1923). */
+export const ECONOMY_CONTENTMENT_PROP = 'economyContentment';
+
 /**
- * Contentment, before the settlement economy: a prosperous town is calmer.
- * The settlement economy's PR switches this to its happiness term (without
- * `HUNGER_UNHAPPY`, so hunger is never counted twice) — plan § Wiring.
+ * Contentment. With the settlement economy live (the town carries a numeric
+ * `economyContentment`) it is the economy's happiness term —
+ * `−UNREST_FROM_HAPPINESS × happiness`, bounded ±`UNREST_HAPPINESS_MAX`, written without
+ * `HUNGER_UNHAPPY` so hunger is never counted twice (THR-1923; plan § Wiring of
+ * THR-1934). Before it reaches a town: a prosperous town is calmer.
  */
-export function contentmentTerm(prosperity: number | undefined): number {
+export function contentmentTerm(prosperity: number | undefined, economyContentment?: number): number {
+  if (economyContentment !== undefined) return economyContentment;
   return (prosperity ?? 0) > PROSPERITY_CONTENT_LINE ? -PROSPERITY_CONTENT_RELIEF : 0;
 }
 
@@ -108,7 +114,7 @@ export function computeUnrestInputs(
     siege: siegeTerm(besiegedNow, num(props[LAST_SIEGE_SEEN_PROP]), tick),
     sickness: sicknessTerm(num(props.populationHealth)),
     deathSite: Math.max(0, num(props[DEATH_SITE_UNREST_TARGET_PROPERTY]) ?? 0),
-    contentment: contentmentTerm(prosperity),
+    contentment: contentmentTerm(prosperity, num(props[ECONOMY_CONTENTMENT_PROP])),
   };
 }
 
