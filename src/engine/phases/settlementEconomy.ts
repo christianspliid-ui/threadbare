@@ -342,9 +342,21 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
     };
     const starvedBefore = meters.starveDays > 0;
 
-    // Land shocks: drop the faded ones, pin a record cast before the phase named a hex.
+    // Work: one person, one hex — food first while the store is short. People work the
+    // land they know by its ordinary yield, so a blight or a siege bites the hexes they work
+    // rather than sending them to the next field over (review gate, THR-1923).
+    const short = meters.foodStore < meters.population * FOOD_PER_PERSON;
+    const foodWeight = short ? WORK_FOOD_WEIGHT_SHORT : WORK_FOOD_WEIGHT;
+    const workedHexes = [...hexes]
+      .sort((a, b) => (b.base[0] * foodWeight + b.base[1] + b.base[2]) - (a.base[0] * foodWeight + a.base[1] + a.base[2]) || (a.key < b.key ? -1 : 1))
+      .slice(0, meters.population);
+
+    // Land shocks: drop the faded ones, pin a record cast before the phase named a hex. A
+    // shock lands on the best hex people actually work for its channel — one nobody works
+    // would change nothing while the receipt said it did (review gate).
     const bestHex = (channel: 0 | 2): OwnedHex | undefined =>
-      [...hexes].sort((a, b) => b.base[channel] - a.base[channel] || (a.key < b.key ? -1 : 1))[0];
+      workedHexes.filter(h => h.base[channel] > 0)
+        .sort((a, b) => b.base[channel] - a.base[channel] || (a.key < b.key ? -1 : 1))[0];
     const shocks: LandShock[] = readLandShocks(node).filter(s => isShockActive(s, tick));
     for (const s of shocks) {
       if (s.hexKey) continue;
@@ -384,15 +396,7 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
       return y;
     };
 
-    // Work: one person, one hex — food first while the store is short. People work the
-    // land they know by its ordinary yield; a blight or a siege then bites the hexes they
-    // work rather than sending them to the next field over (review gate, THR-1923).
-    const short = meters.foodStore < meters.population * FOOD_PER_PERSON;
-    const foodWeight = short ? WORK_FOOD_WEIGHT_SHORT : WORK_FOOD_WEIGHT;
-    const scored = hexes.map(h => ({ h, y: effective(h) }))
-      .map(x => ({ ...x, score: x.h.base[0] * foodWeight + x.h.base[1] + x.h.base[2] }))
-      .sort((a, b) => b.score - a.score || (a.h.key < b.h.key ? -1 : 1));
-    const worked = scored.slice(0, meters.population);
+    const worked = workedHexes.map(h => ({ h, y: effective(h) }));
     const y: Yield = [CENTRE_YIELD[0], CENTRE_YIELD[1], CENTRE_YIELD[2]];
     for (const w of worked) for (let i = 0; i < 3; i++) y[i] += w.y[i];
     y[0] *= channelMultiplier(buildings, 'food');
@@ -662,7 +666,7 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
       const m = rec.meters;
       const incoming = incomingNow.get(rec.id) ?? 0;
       const pulls = seatPulls(rec.isSeat, rec.held, incoming, SEAT_MIN_INCOMING);
-      const targetTier = targetTierOf({ population: m.population, realmSeat: rec.realmSeat, pulls });
+      const targetTier = targetTierOf({ population: m.population, realmSeat: rec.realmSeat, pulls }, p.targetTier as string | undefined);
 
       const routesHere = touching.get(rec.id) ?? 0;
       const starving = m.starveDays > 0;
@@ -682,16 +686,19 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
       const foodBalance = clamp((rec.yieldIn[0] - rec.need) / Math.max(rec.need, 1), -1, 1);
       const buildBalance = clamp((rec.yieldIn[1] + rec.yieldIn[2] - rec.upkeep) / Math.max(rec.upkeep, 1), -1, 1);
 
-      // A seat that stopped pulling, or a realm that moved its court, shrinks the town.
-      const hadPower = p.economyPulls === true || p.economyRealmSeat === true;
-      const hasPower = pulls || rec.realmSeat;
-      if (hadPower && !hasPower && tierRank(targetTier) < tierRank(p.locationSubtype as string)) {
+      // A court that left: a realm's seat moved away, or the seated faction lost every
+      // settlement it held. Surplus roads coming and going are not a court leaving, so they
+      // never tell this line (review gate). The muted settling run stamps nothing.
+      const hadCourt = p.economyRealmSeat === true || p.economyHeldCourt === true;
+      const hasCourt = rec.realmSeat || (rec.isSeat && rec.held > 0);
+      if (!mute && hadCourt && !hasCourt && tierRank(targetTier) < tierRank(p.locationSubtype as string)) {
         chron('seat_lost_shrinking', node, {}, `seat:${tick}`);
         p.economySeatLostTick = tick;
       }
+      p.economyHeldCourt = rec.isSeat && rec.held > 0;
       // Once per famine: losing a person resets starveDays, so the cooldown, not the counter, gates the line.
       const toldAt = typeof p.economyStarvingToldTick === 'number' ? p.economyStarvingToldTick : -Infinity;
-      if (starving && !rec.starvedBefore && tick - toldAt >= STARVING_CHRONICLE_COOLDOWN_DAYS * TICKS_PER_DAY) {
+      if (!mute && starving && !rec.starvedBefore && tick - toldAt >= STARVING_CHRONICLE_COOLDOWN_DAYS * TICKS_PER_DAY) {
         chron('settlement_starving', node, {}, `starve:${tick}`, starvingTitle(node.name));
         p.economyStarvingToldTick = tick;
       }

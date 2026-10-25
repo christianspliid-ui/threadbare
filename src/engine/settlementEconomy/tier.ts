@@ -13,6 +13,7 @@ import {
   LAND_HOUSING_MIN,
   PULL_HOMES,
   CENTRE_YIELD,
+  TIER_DEMOTE_MARGIN,
   SETTLEMENT_TIERS,
   type SettlementTier,
 } from '../../data/settlement-economy-constants';
@@ -23,11 +24,24 @@ export interface TierInputs {
   readonly pulls: boolean;
 }
 
-export function targetTierOf(t: TierInputs): SettlementTier {
+function rawTierOf(t: TierInputs): SettlementTier {
   if (t.realmSeat && t.population >= CAPITAL_POP) return 'capital';
   if (t.pulls && t.population >= CITY_POP) return 'city';
   if (t.population >= TOWN_POP) return 'town';
   return 'hamlet';
+}
+
+/**
+ * The tier a settlement's size and power earn. Given the tier it was aiming at yesterday,
+ * a drop by size alone waits until it is `TIER_DEMOTE_MARGIN` people under the threshold,
+ * so a town that starves one person below it and regrows does not flip tier every month
+ * (review gate). A lost seat or court drops at once.
+ */
+export function targetTierOf(t: TierInputs, previous?: string): SettlementTier {
+  const raw = rawTierOf(t);
+  if (!previous || tierRank(raw) >= tierRank(previous)) return raw;
+  const withMargin = rawTierOf({ ...t, population: t.population + TIER_DEMOTE_MARGIN });
+  return tierRank(withMargin) >= tierRank(previous) ? (previous as SettlementTier) : raw;
 }
 
 /** Rank on the tier ladder (hamlet 0 … capital 3); an unknown subtype reads as hamlet. */

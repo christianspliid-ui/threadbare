@@ -92,6 +92,9 @@ export function appendLandShock(
   if (!settlement || !isEconomySettlement(settlement)) return null;
   const shape = LAND_SHOCK_SHAPE[source];
   const best = (settlement.properties[BEST_HEX_PROP] as Record<string, { key: string; direction?: HexDirection }> | undefined)?.[String(shape.channel)];
+  // The phase has run and the town works no hex of this channel: there is nothing for the
+  // verb to touch, so no shock is laid and the receipt says nothing (Law 56).
+  if (settlement.properties[BEST_HEX_PROP] !== undefined && !best) return null;
   const shock: LandShock = {
     hexKey: best?.key ?? null,
     channel: shape.channel,

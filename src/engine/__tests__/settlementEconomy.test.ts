@@ -235,7 +235,8 @@ describe('god verbs lay a land shock the receipt names (plan rule 7)', () => {
   for (const verb of VERBS) {
     it(`${verb.op}: one landShocks record on the best hex, and the receipt's land line in the same diff`, () => {
       const graph = new WorldGraph();
-      const tiles = tilesOf(12, 12, (col) => (col >= 6 ? 'mountains' : 'floodplain'));
+      // Few fields, much stone: the town works both its floodplain and its slopes.
+      const tiles = tilesOf(12, 12, (col, row) => (row === 5 && col >= 4 && col <= 6 ? 'floodplain' : 'mountains'));
       addSettlement(graph, 'loc.town', 5, 5, 'town', { resources: { stone: { resourceId: 'stone', quantity: 30 } } });
       const day = runDays(graph, tiles, 1, 10);
       const before = snapshotCastEconomy(graph, 'loc.town');
@@ -246,6 +247,9 @@ describe('god verbs lay a land shock the receipt names (plan rule 7)', () => {
       expect(shocks[0].source).toBe(verb.source);
       expect(shocks[0].channel).toBe(verb.channel);
       expect(shocks[0].hexKey).not.toBeNull();
+      // The shock lies on a hex the town works (review gate): it changes a real yield.
+      const workedKeys = (p(graph, 'loc.town').workedHexList as { key: string }[]).map(w => w.key);
+      expect(workedKeys).toContain(shocks[0].hexKey);
       const after = snapshotCastEconomy(graph, 'loc.town');
       const rows = diffCastEconomy(before, after, { idStem: 'cast:step:0', targetId: 'loc.town', targetName: 'Town' });
       const land = rows.find(r => r.economyQuantity === 'land');

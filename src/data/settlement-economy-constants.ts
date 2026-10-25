@@ -94,6 +94,9 @@ export const TOWN_POP = 4;
 export const CITY_POP = 10;
 export const CAPITAL_POP = 14;
 
+/** People under a tier's threshold before a settlement drops by size alone (hysteresis). */
+export const TIER_DEMOTE_MARGIN = 1;
+
 /**
  * Ceiling without a pulling seat: *"a town can be the outcome of a strong local economy
  * without the power structure to develop trade to the level a city needs."*
