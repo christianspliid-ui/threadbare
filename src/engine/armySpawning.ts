@@ -275,6 +275,8 @@ export function selectArmyObjective(
  * `opts.charge` (THR-1931): an ambition or agenda raise pays `ARMY_CREATION_GOLD_COST`
  * from the faction purse. Worldgen spawns and encounter warhosts pass nothing and pay
  * nothing — a warhost's price was paid in its scene. Every army costs upkeep regardless.
+ * `opts.liegePaid` (THR-2020): the crown's liege-paid raise — the army starts paid
+ * through today by the liege (`liegePaidTick`), and aims as its liege's army.
  *
  * Returns the army node ID, or null on failure.
  */
@@ -283,7 +285,7 @@ export function spawnArmy(
   factionId: string,
   commanderId: string,
   ambitionNodeId: string,
-  opts: { charge?: boolean } = {},
+  opts: { charge?: boolean; liegePaid?: boolean } = {},
 ): string | null {
   const graph = state.graph;
 
@@ -328,6 +330,9 @@ export function spawnArmy(
           raisedTick: state.tick,
           maintenanceCost: ARMY_MAINTENANCE_COST[size],
           thresholdsFired: [],
+          // THR-2020 — a liege-paid raise is stamped before it aims, so its first
+          // objective is picked for the liege that commands it (`commanderFactionOf`).
+          ...(opts.liegePaid ? { paidThroughTick: state.tick, liegePaidTick: state.tick } : {}),
         },
       },
     });
