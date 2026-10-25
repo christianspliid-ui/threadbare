@@ -31,6 +31,8 @@ const KIN: AscendantIdentity = {
 const SEEDS = [42, 99, 7];
 /** The census kill criterion: the tilt may add at most this many Touched-or-better places. */
 const KILL_EXTRA_PLACES = 5;
+/** Four medium worlds per census case; generous for a loaded parallel run. */
+const WORLD_BUILD_TIMEOUT_MS = 120_000;
 
 function world(seed: number, account?: AccountRecord): GameState {
   resetEventCounter();
@@ -112,7 +114,7 @@ describe('THR-2028 — the tilt census (tick 0)', () => {
     expect(fiveRuns.life + fiveRuns.spirit).toBeGreaterThan(evenEchoes.life + evenEchoes.spirit);
     expect(fiveRuns.touched - evenEchoes.touched).toBeLessThanOrEqual(KILL_EXTRA_PLACES);
     expect(fiveRuns.touched).toBeGreaterThanOrEqual(evenEchoes.touched);
-  });
+  }, WORLD_BUILD_TIMEOUT_MS);
 
   it('traces the places the tilt shifted, and nothing without an account', () => {
     world(42, withFundament(tiltedFundament(1)));
@@ -123,5 +125,5 @@ describe('THR-2028 — the tilt census (tick 0)', () => {
     clearTraces();
     world(42);
     expect(getTraces().some(e => e.category === 'account.places_tilted')).toBe(false);
-  });
+  }, WORLD_BUILD_TIMEOUT_MS);
 });
