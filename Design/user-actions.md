@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 08:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -18,7 +18,7 @@ The silence check says: "No scheduled Claude Code lane has written to origin/mai
 
 You approved both on 15 Oct. The unattended builder claimed [THR-1947](https://linear.app/threadbare/issue/THR-1947) (one status line per PR instead of three ledgers), but it is not allowed to edit the gate, CI and Definition-of-Done files, so nothing changed ([the park note](https://linear.app/threadbare/issue/THR-1947)). [THR-1949](https://linear.app/threadbare/issue/THR-1949) edits the same files and will hit the same wall. [THR-1951](https://linear.app/threadbare/issue/THR-1951) waits on 1947.
 
-**Run 1947, then 1949, in one session with you present** (recommended, the smaller trust change), **or allow the unattended builder to edit those files.** *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-23.md)*
+**Run 1947, then 1949, in one session with you present** (recommended, the smaller trust change), **or allow the unattended builder to edit those files.** *— from [daily-backlog-grooming](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/backlog-grooming-2026-10-25.md)*
 
 ### Sunday 18 – Monday 19 Oct: was the app closed, or was this a pause? (new 19 Oct)
 
@@ -44,7 +44,9 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
-- **2026-10-25: the heavy simulation tests' restless-road check and settlement speed budget are fixed** ([THR-2035](https://linear.app/threadbare/issue/THR-2035)). Merged via [#2567](https://github.com/christianspliid-ui/threadbare/pull/2567) and live; the heavy tests are re-running on it now.
+- **2026-10-25: the restless road ends in its story: a mortal who takes the road for a story now starts it on arrival** ([THR-2036](https://linear.app/threadbare/issue/THR-2036)). Merged via [#2569](https://github.com/christianspliid-ui/threadbare/pull/2569) and live.
+- **2026-10-25: when cards hide under the hand bar, the bar says how many and one click shows them** ([THR-1942](https://linear.app/threadbare/issue/THR-1942)). Merged via [#2568](https://github.com/christianspliid-ui/threadbare/pull/2568) and live.
+- **2026-10-25: the heavy simulation tests' restless-road check and settlement speed budget are fixed** ([THR-2035](https://linear.app/threadbare/issue/THR-2035)). Merged via [#2567](https://github.com/christianspliid-ui/threadbare/pull/2567); the heavy tests are re-running on the latest commit now.
 - **2026-10-25: mandate and essence texts no longer promise that mandates slow the doom** ([THR-2004](https://linear.app/threadbare/issue/THR-2004)). Merged via [#2566](https://github.com/christianspliid-ui/threadbare/pull/2566).
 - **2026-10-25: "The world remembers" lists the World-Soul memories a run carries** ([THR-1971](https://linear.app/threadbare/issue/THR-1971)). Merged via [#2565](https://github.com/christianspliid-ui/threadbare/pull/2565) and live.
 - **2026-10-25: a building a mortal raises is the town's next building, and the builder holds it** ([THR-1966](https://linear.app/threadbare/issue/THR-1966)). Merged via [#2564](https://github.com/christianspliid-ui/threadbare/pull/2564) and live.
@@ -52,8 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: choices widen across runs: four hungers on the first run, one more woken each age, a second court, sealed god cards, and "The world remembers"** ([THR-1844](https://linear.app/threadbare/issue/THR-1844)). Merged via [#2562](https://github.com/christianspliid-ui/threadbare/pull/2562) and live.
 - **2026-10-25: an echo heir’s seeded kin tie counts as part of the world’s past** ([THR-2029](https://linear.app/threadbare/issue/THR-2029)). Merged via [#2561](https://github.com/christianspliid-ui/threadbare/pull/2561) and live.
 - **2026-10-25: echoes of a past god stand in the new world** ([THR-1843](https://linear.app/threadbare/issue/THR-1843)). Merged via [#2559](https://github.com/christianspliid-ui/threadbare/pull/2559) and live.
-- **2026-10-25: a lake hex's land page reads as water, not as a desert; coast and river ruins stay dry** ([THR-2021](https://linear.app/threadbare/issue/THR-2021)). Merged via [#2558](https://github.com/christianspliid-ui/threadbare/pull/2558) and live.
-- **2026-10-25: a liege pays the raise for a sworn free company with no army and no coin** ([THR-2020](https://linear.app/threadbare/issue/THR-2020)). Merged via [#2557](https://github.com/christianspliid-ui/threadbare/pull/2557) and live.
 
 ---
 
