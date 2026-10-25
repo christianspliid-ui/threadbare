@@ -56,7 +56,10 @@ export const ECHO_SEEDING_PRIME = 70003;
 export const ECHO_EXCLUDED_SUBTYPES: ReadonlySet<string> = new Set(['lair', 'nest']);
 /** The monument sublocation's type id (a Place's `sublocationTypeId`, as `ruins.scar` is). */
 export const ECHO_MONUMENT_SUBLOCATION_TYPE_ID = 'echo.monument';
-/** What an echo-made node carries in `notableOrigin` / `origin` (the heir, the kin tie). */
+/**
+ * What an echo heir carries in `notableOrigin`. Its kin tie is stamped `origin: 'worldgen'`
+ * instead, so it never counts as a tie earned in play (THR-2029).
+ */
 export const ECHO_ORIGIN = 'echo';
 
 /**
