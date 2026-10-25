@@ -10,7 +10,6 @@ import type { TerrainType } from '../../../types';
 import { BIOME_PROSE } from '../../../data/prose-layer-content';
 import { biomeParagraphs, ruinsParagraphs, FALLBACK_TERRAIN_PROSE, type LandProseInput } from '../subjects/landProse';
 import { buildExplorationHooks } from '../../explorationHooks';
-import { isWaterTerrain } from '../../coastline';
 import { WorldGraph } from '../../graph';
 
 const ALL_TERRAINS: TerrainType[] = [
@@ -83,10 +82,19 @@ describe('THR-2021 a water hex sinks its culture\'s ruins', () => {
     );
   });
 
-  it('every water terrain takes the underwater line; no land terrain does', () => {
+  it('open water takes the underwater line; coast, river and every land terrain stay dry', () => {
+    const submerged = ['ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'reef', 'lake'];
     for (const terrain of ALL_TERRAINS) {
-      const hook = buildExplorationHooks(SAND_KINGS.ruinDescriptors, isWaterTerrain(terrain))[0];
-      expect(hook.startsWith('Beneath the water'), terrain).toBe(isWaterTerrain(terrain));
+      const paragraphs = ruinsParagraphs(inputFor(terrain));
+      const hook = paragraphs[paragraphs.length - 1];
+      expect(hook.startsWith('Beneath the water'), terrain).toBe(submerged.includes(terrain));
     }
+  });
+
+  it('the underwater flag only changes the line, not which descriptors it names', () => {
+    const dry = buildExplorationHooks(SAND_KINGS.ruinDescriptors)[0];
+    const wet = buildExplorationHooks(SAND_KINGS.ruinDescriptors, true)[0];
+    expect(dry).toContain('wind-scoured obelisks, buried step-pyramids and sand-choked colonnades');
+    expect(wet).toContain('wind-scoured obelisks, buried step-pyramids and sand-choked colonnades');
   });
 });
