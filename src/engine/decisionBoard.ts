@@ -114,6 +114,7 @@ import {
   PERSONALITY_SELECTION_WEIGHT,
 } from '../data/agent-behavior-constants';
 import {
+  BOARD_SCORE_FLOOR,
   BOARD_TRACE_TOP_N,
   STRATEGIC_DEFAULT_PROJECT_WORK_TICKS,
   STRATEGIC_VERB_IMPACT,
@@ -656,7 +657,6 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const isGoal = goal !== undefined
       && candidate.entry.templateId === goal.templateId
       && (goal.locationId === undefined || candidate.entry.locationId === goal.locationId);
-    const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE;
     const arrivalCommitment = isGoal ? ARRIVAL_GOAL_COMMITMENT_MULTIPLIER : 1;
     // THR-1686 — set by the appointment regime only while `APPOINTMENT_DISCOUNT_ON_BOARD`.
     const appointmentDiscount = candidate.appointmentDiscount;
@@ -665,14 +665,19 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     // THR-1952 — an encounter whose outcome table pays its actor is paying work.
     const encEarning = input.paysActor?.(candidate.entry.templateId) ?? false;
     const encMeans = encEarning ? payingMultiplier : 1;
+    const score = candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
+      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * encMeans;
+    // THR-2036: only a goal she would still take ranks first — one refused on arrival
+    // (fit 0) or otherwise under the floor sorts by its score, so it cannot idle her.
+    const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE
+      && score >= BOARD_SCORE_FLOOR;
     entries.push({
       family: 'encounter',
       id: candidate.entry.templateId,
       evt: candidate.valuePerTick,
       desireMultiplier: candidate.desireMultiplier,
       temperamentWeight: 1,
-      score: candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
-        * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * encMeans,
+      score,
       ...(encEarning ? { meansEarning: true } : {}),
       ...(meansWant && encEarning ? { meansMultiplier: encMeans } : {}),
       ...(isGoal ? { arrivalCommitment } : {}),

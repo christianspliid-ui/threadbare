@@ -597,6 +597,18 @@ describe('scoreUnifiedBoard', () => {
       expect(board.entries[1].id).toBe('other');
     });
 
+    it('does not rank a restless road\'s goal first once she would refuse it (score 0)', () => {
+      const refused = { ...(mk('goal', 0.4) as object), engagementFit: 0 } as never;
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [refused, mk('other', 0.1)],
+        strategicCandidates: [],
+        arrivalGoal: { templateId: 'goal', locationId: 'loc_here', restlessRoad: true },
+      });
+      expect(board.winner?.id).toBe('other');
+      expect(board.entries.find(e => e.id === 'goal')!.restlessRoadGoal).toBeUndefined();
+    });
+
     it('commits only the instance at the destination when one is there', () => {
       const board = scoreUnifiedBoard({
         graph: emptyGraph, agentId: 'a', tick: 1,
