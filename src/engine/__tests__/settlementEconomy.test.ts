@@ -183,6 +183,25 @@ describe('surplus routes (plan rule 6)', () => {
   });
 });
 
+describe('food does not circulate (review gate)', () => {
+  it('two full seats trading food both ways carry no more than their own land spares, day after day', () => {
+    const graph = new WorldGraph();
+    const tiles = tilesOf(16, 10, () => 'floodplain');
+    addSettlement(graph, 'loc.a', 3, 5, 'town');
+    addSettlement(graph, 'loc.b', 9, 5, 'town');
+    addFaction(graph, 'faction_a', { factionClass: 'order', homeLocationId: 'loc.a' });
+    addFaction(graph, 'faction_b', { factionClass: 'order', homeLocationId: 'loc.b' });
+    control(graph, 'faction_a', 'loc.a');
+    control(graph, 'faction_b', 'loc.b');
+    runDays(graph, tiles, 1, 300);
+    for (const r of readSurplusRoutes(graph)) {
+      const seller = graph.getNode(r.source)!.properties;
+      expect(r.properties.carriedPerDay as number).toBeLessThanOrEqual((seller.landFood as number) + (seller.exportGoods as number) + 1e-9);
+    }
+    expect(p(graph, 'loc.a').importedFood as number).toBeLessThanOrEqual(p(graph, 'loc.b').landFood as number);
+  });
+});
+
 describe('a cursed road carries nothing (review gate)', () => {
   it('while the seller\'s roads are cursed the route stops carrying, and ends after ROUTE_DIE_DAYS', () => {
     const graph = new WorldGraph();

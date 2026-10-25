@@ -96,7 +96,10 @@ function economyTierStep(
   p[TIER_SUSTAIN_UP_PROP] = 0;
   p[TIER_SUSTAIN_DOWN_PROP] = 0;
   const direction = up >= SETTLEMENT_PROMOTION_SUSTAIN_TICKS ? 'promotion' : 'demotion';
-  const lostPower = p.economyPulls !== true && p.economyRealmSeat !== true;
+  // A capital stands on its realm's seat; a city on a seat that pulls.
+  const lostPower = current === 'capital'
+    ? p.economyRealmSeat !== true
+    : p.economyPulls !== true && p.economyRealmSeat !== true;
   const cause = direction === 'demotion' && lostPower && (current === 'city' || current === 'capital')
     ? 'seat_lost' as const
     : 'population' as const;

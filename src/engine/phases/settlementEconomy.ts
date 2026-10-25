@@ -506,7 +506,9 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
       goodsSurplusDays = 0;
     } else {
       goodsSurplusDays = bp > SURPLUS_MIN_PER_DAY ? goodsSurplusDays + 1 : 0;
-      exportGoods = bp;
+      // Only the land's own spare timber and stone is sold on; imports are built with, never
+      // re-exported, so goods cannot circulate between seats (review gate).
+      exportGoods = Math.min(bp, Math.max(0, y[1] + y[2] - upkeep));
     }
 
     return {
@@ -524,7 +526,9 @@ export function runSettlementEconomyDay(input: SettlementEconomyDayInput): Settl
       yieldIn,
       need: food.need,
       upkeep,
-      exportFood: food.exportableFood,
+      // Only the land's own surplus food leaves: imported food is eaten or grown on, never
+      // passed on, so two seats cannot pass a growing stockpile back and forth (review gate).
+      exportFood: Math.min(food.exportableFood, Math.max(0, landFood - food.need)),
       exportGoods,
       goodsOutput: sumEffect(buildings, 'goods'),
       nextImportFood: 0,
