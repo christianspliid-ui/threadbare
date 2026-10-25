@@ -14,7 +14,7 @@
       "filename": "Agents.md",
       "title": "Agents",
       "contentAdjacent": true,
-      "termCount": 64,
+      "termCount": 65,
       "blurb": "Content-adjacent shard. Terms covering entities in the simulation: agents, actors, Ascendant, factions, and their relationships."
     },
     {
@@ -46,7 +46,7 @@
       "filename": "Graph.md",
       "title": "Graph",
       "contentAdjacent": false,
-      "termCount": 21,
+      "termCount": 26,
       "blurb": "Not content-adjacent. Terms covering the world graph data model: nodes, edges, versioning, position, and cache architecture."
     },
     {
@@ -1112,6 +1112,43 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Agents.md#realm",
+      "contentAdjacent": true
+    },
+    {
+      "shardId": "agents",
+      "slug": "pulling-seat",
+      "name": "Pulling seat",
+      "aliases": [
+        "seat",
+        "court (player words)"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "a faction's seat that draws resources in (holds another settlement, or ≥2 surplus routes run into it); only it grows past town; player word *seat* or *court*",
+      "body": "A faction's seat that draws resources in. The seat is where the faction sits — its `homeLocationId`, or for a `[[Realm]]` the town its `controls` edge marks `role: 'seat'`. It **pulls** when its faction holds at least one other settlement, or when at least `SEAT_MIN_INCOMING` (2) `[[Surplus route]]`s run into it (`src/engine/settlementEconomy/seat.ts`, THR-1923). Only a pulling seat can grow past town: a city needs one, a capital needs a Realm's. A seat that pulls nothing stays a town. Read only — no edge marks it. The player word is *seat* or *court*.\n\nSeated by delegation 2026-10-25 (THR-1924).",
+      "seeAlso": [
+        {
+          "raw": "Faction",
+          "termName": "Faction",
+          "resolvedSlug": "agents#faction"
+        },
+        {
+          "raw": "Realm",
+          "termName": "Realm",
+          "resolvedSlug": "agents#realm"
+        },
+        {
+          "raw": "Surplus route",
+          "termName": "Surplus route",
+          "resolvedSlug": "graph#surplus-route"
+        },
+        {
+          "raw": "Population",
+          "termName": "Population",
+          "resolvedSlug": "graph#population"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Agents.md#pulling-seat",
       "contentAdjacent": true
     },
     {
@@ -6512,6 +6549,73 @@
     },
     {
       "shardId": "graph",
+      "slug": "population",
+      "name": "Population",
+      "aliases": [
+        "—"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "how many people live in a settlement; the food sink; never a number to the player, who reads a size word and a trend",
+      "body": "How many people live in a settlement — a `[[Location]]` of subtype hamlet, town, city or capital. It is the settlement economy's food sink: a food surplus grows it and hunger shrinks it (THR-1923, `src/engine/settlementEconomy/growth.ts`, `tier.ts`). **Never shown to the player as a number** (UI Law 13): the player reads a size word (hamlet · town · city · capital) and a trend (*growing · steady · shrinking · going hungry*, `SizeTrend` in `src/data/settlement-economy-words.ts`). Size follows power as well as people: a city needs a `[[Pulling seat]]`, a capital a `[[Realm]]`'s seat. Code: `population` on the settlement node.\n\nSeated by delegation 2026-10-25 (THR-1924).",
+      "seeAlso": [
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        },
+        {
+          "raw": "Building",
+          "termName": "Building",
+          "resolvedSlug": "graph#building"
+        },
+        {
+          "raw": "Pulling seat",
+          "termName": "Pulling seat",
+          "resolvedSlug": "agents#pulling-seat"
+        },
+        {
+          "raw": "Unrest",
+          "termName": "Unrest",
+          "resolvedSlug": "graph#unrest"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#population",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "building",
+      "name": "Building",
+      "aliases": [
+        "—"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "a Place the settlement economy raised from wood and stone surplus, into slots by size (hamlet 2 · town 3 · city 5 · capital 6); `isBuilding: true`; never \"structure\"",
+      "body": "A `[[Place]]` the settlement economy raised from its wood and stone surplus, into a limited number of slots set by size — hamlet 2, town 3, city 5, capital 6 (`BUILDING_SLOTS`, `src/data/settlement-economy-constants.ts`). A Building is a Place in every respect: a `location` node with `parentLocationId`, marked `isBuilding: true` with a `buildingId` from the catalogue in `src/data/settlement-buildings.ts` (`src/engine/settlementEconomy/building.ts`). Existing Place types the catalogue adopts count as built at day 0. Never *structure*, never *room* — the Place rules hold.\n\nSeated by delegation 2026-10-25 (THR-1924).",
+      "seeAlso": [
+        {
+          "raw": "Place",
+          "termName": "Place",
+          "resolvedSlug": "graph#place"
+        },
+        {
+          "raw": "Population",
+          "termName": "Population",
+          "resolvedSlug": "graph#population"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#building",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
       "slug": "waypoint",
       "name": "Waypoint",
       "aliases": [
@@ -6575,6 +6679,99 @@
         }
       ],
       "sourcePath": "Docs/ubiquitous-language/Graph.md#route",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "surplus-route",
+      "name": "Surplus route",
+      "aliases": [
+        "—"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "a trade route born to sell a surplus with nowhere to go (`establishedBy: 'surplus'`); a Trade route, not a second route kind",
+      "body": "A trade route (`trades_with`) born when a settlement's surplus has nowhere to go: it sells that surplus to a buyer and ends when the surplus or the want ends. **A Surplus route is a Trade route, not a second route kind** — it is minted through `createTradeRoute` and told apart only by its stamp, `establishedBy: 'surplus'`, and the resource it `carries` (`src/engine/settlementEconomy/surplusRoutes.ts`, THR-1923). Surplus routes running into a seat are what make it a `[[Pulling seat]]`.\n\nSeated by delegation 2026-10-25 (THR-1924).",
+      "seeAlso": [
+        {
+          "raw": "Route",
+          "termName": "Route",
+          "resolvedSlug": "graph#route"
+        },
+        {
+          "raw": "Pulling seat",
+          "termName": "Pulling seat",
+          "resolvedSlug": "agents#pulling-seat"
+        },
+        {
+          "raw": "Population",
+          "termName": "Population",
+          "resolvedSlug": "graph#population"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#surplus-route",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "unrest",
+      "name": "Unrest",
+      "aliases": [
+        "—"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "how close a settlement is to turning on its holder; bounded inputs, shown only as Restless · Lawless · On the edge · Rising chips; Happiness is its economy input, not a stat",
+      "body": "How close a settlement's people are to turning on whoever holds it: a number on the settlement that drifts toward a target summed from bounded inputs — hunger, poverty, siege, sickness and contentment (`computeUnrestInputs`, `src/engine/unrestPressure/inputs.ts`, THR-1934). The player never sees the number. They see bands, read as Location Trait chips with hysteresis: **Restless** (enter 30, release 15), **Lawless**, **On the edge** and **Rising** (chip thresholds `LOCATION_TRAIT_*_ENTER` / `_RELEASE` in `src/data/location-trait-constants.ts`; the plain bands `UNREST_BAND_*` in `src/data/unrest-pressure-constants.ts`), and the `[[Fortunes]]` sentence that names the largest cause.\n\n**Happiness** is a sub-entry of Unrest, **not a separate stat** (Game Design Law 43, one concept per thing). It is the settlement economy's bounded term — buildings, trade, crowding and hunger (`economyHappiness`, `src/engine/phases/settlementEconomy.ts`) — written into Unrest as the *contentment* input (`economyContentment`, bounded ±`UNREST_HAPPINESS_MAX`). The player learns Unrest; Happiness is how the UL explains what moves it. Never a player-facing word.\n\nSeated by delegation 2026-10-25 (THR-1924).",
+      "seeAlso": [
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        },
+        {
+          "raw": "Population",
+          "termName": "Population",
+          "resolvedSlug": "graph#population"
+        },
+        {
+          "raw": "Fortunes",
+          "termName": "Fortunes",
+          "resolvedSlug": "graph#fortunes"
+        },
+        {
+          "raw": "Location Trait",
+          "termName": "Location Trait",
+          "resolvedSlug": "traits#location-trait"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#unrest",
+      "contentAdjacent": false
+    },
+    {
+      "shardId": "graph",
+      "slug": "fortunes",
+      "name": "Fortunes",
+      "aliases": [
+        "Fortunes row"
+      ],
+      "status": "canonical",
+      "statusNote": null,
+      "oneLiner": "the place page's one sentence: prosperity word plus, under a band chip, the band and its largest cause; never a number",
+      "body": "The place page's one-sentence row on how a settlement lives: its prosperity word (`getProsperityTier`'s five — destitute, struggling, modest, prosperous, flourishing) and, when the town bears a Restless or Lawless chip, that band and its largest cause (*\"…and its people are restless with hunger.\"*). The band is read from the trait edges, so the sentence always matches the chips on the page (UI Law 56). It never shows a number. Source: `src/data/fortunes-prose.ts` (THR-1934 S1).\n\nSeated by delegation 2026-10-25 (THR-1924).",
+      "seeAlso": [
+        {
+          "raw": "Unrest",
+          "termName": "Unrest",
+          "resolvedSlug": "graph#unrest"
+        },
+        {
+          "raw": "Location",
+          "termName": "Location",
+          "resolvedSlug": "graph#location"
+        }
+      ],
+      "sourcePath": "Docs/ubiquitous-language/Graph.md#fortunes",
       "contentAdjacent": false
     },
     {
