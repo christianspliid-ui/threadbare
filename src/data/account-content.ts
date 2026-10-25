@@ -33,6 +33,41 @@ export const FUNDAMENT_REVERT = 0.05;
  */
 export const WORLD_TILT_GAIN = 1;
 
+// ─── Echoes stand in the new world (THR-1843, slice 2) ───────────────
+
+/**
+ * Mean lift per echo sphere per imprint step (Decided 1). Sphere scores are whole
+ * numbers (the triangle scale neglect walks down a point at a time), so a step
+ * deals `step × sphere count` whole points round-robin to the least-lifted echo
+ * sphere, primary first: two spheres take one point a step between them.
+ */
+export const MONUMENT_IMPRINT_STEP = 0.5;
+/** Most mean lift a monument may add (measured: opposed → Hostile within 6 in 8 of 9 cells). */
+export const MONUMENT_IMPRINT_MAX = 6;
+/** Target band for a kin god by memory word (THR-1773); `almost gone` lifts nothing. */
+export const MONUMENT_KIN_BANDS = { stillWarm: 'held', fading: 'touched' } as const;
+/** Target band for an opposed god at any memory. */
+export const MONUMENT_OPPOSED_BAND = 'hostile' as const;
+/** Lift on the heir's echo-sphere scores, × the echo's strength (1 − degradation), rounded. */
+export const LEGACY_SPHERE_LIFT = 2;
+/** The Legacy hydration stream (`hydrateToTier`'s draws only). */
+export const ECHO_SEEDING_PRIME = 70003;
+/** What an echo-made node carries in `notableOrigin` / `origin` (the heir, the kin tie). */
+export const ECHO_ORIGIN = 'echo';
+
+/** The chronicle's group for the old worlds' marks (Before you woke). */
+export const ECHO_CHRONICLE_TITLE = 'Earlier worlds';
+
+/** One line per seeded echo (plan § Content › Words); `{name}` and the place or heir link. */
+export const ECHO_CHRONICLE_LINES = {
+  monument: ['', ' still stands near ', '.'],
+  legacy: ['', ' lives on in ', '.'],
+  relic: ['', ' lies somewhere near ', ', unclaimed.'],
+} as const;
+
+/** The heir's sheet line under their name. */
+export const echoLineageLine = (name: string): string => `Of the line of ${name}`;
+
 // ─── Unlocks ─────────────────────────────────────────────────────────
 
 /** Run 1's awake hungers, one per court shape (THR-1773). */

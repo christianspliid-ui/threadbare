@@ -80,3 +80,36 @@ export interface EchoState {
   /** True when degradation >= ECHO_FADE_THRESHOLD */
   faded: boolean;
 }
+
+// ── Seeded echoes (THR-1843) ────────────────────────────────────
+
+export type SeededEchoKind = 'monument' | 'legacy' | 'relic';
+export type EchoRelation = 'kin' | 'opposed' | 'unrelated';
+
+/** One echo placed in a new world at creation — what `getSeededEchoes()` reports. */
+export interface SeededEcho {
+  echoId: string;
+  kind: SeededEchoKind;
+  /** The echo's name as the player reads it (`echoDisplayName`'s input). */
+  name: string;
+  /** The node the echo became: the monument sublocation, the heir, the relic. */
+  nodeId: string;
+  /** Where it stands: the monument's host, the heir's settlement, the relic's site. */
+  hostId: string;
+  /** Monument only. */
+  relation?: EchoRelation;
+  /** Monument only: the band the host was lifted toward (`null` = a landmark only). */
+  targetBand?: 'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign' | null;
+  /** The new god's read of the host after the imprint (monument) or the node (relic). */
+  band?: 'hostile' | 'foreign' | 'touched' | 'held' | 'sovereign';
+  /** Mean lift per echo sphere on the host (monument) or the heir (legacy). */
+  imprint?: number;
+  capped?: boolean;
+}
+
+export type SeededEchoSkipReason = 'over_cap' | 'no_host' | 'no_heir' | 'no_site' | 'faded' | 'no_origin' | 'error';
+
+export interface SeededEchoesSummary {
+  seeded: SeededEcho[];
+  skipped: Array<{ echoId: string; reason: SeededEchoSkipReason }>;
+}

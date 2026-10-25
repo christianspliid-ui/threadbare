@@ -50,6 +50,28 @@ export interface AccountWorldShapedTrace extends TraceBase {
   echoesLoaded: number;
 }
 
+// ─── Echoes stand in the new world (THR-1843, slice 2) ───
+
+/** One live echo placed in the new world at creation. */
+export interface EchoSeededTrace extends TraceBase {
+  category: 'echo.seeded';
+  echoId: string;
+  kind: 'monument' | 'legacy' | 'relic';
+  hostId: string;
+  relation?: 'kin' | 'opposed' | 'unrelated';
+  targetBand?: string | null;
+  band?: string;
+  imprint?: number;
+  capped?: boolean;
+}
+
+/** A live echo that could not be placed; no node is minted to force it. */
+export interface EchoSeedSkippedTrace extends TraceBase {
+  category: 'echo.seed_skipped';
+  echoId: string;
+  reason: 'over_cap' | 'no_host' | 'no_heir' | 'no_site' | 'faded' | 'no_origin' | 'error';
+}
+
 // ─── The end of the age (THR-1381, plan `Docs/plans/2026-10-17-thr-1381-the-end-of-the-age.md` § Tracing) ───
 
 /** The age-end check started the Twilight. */
