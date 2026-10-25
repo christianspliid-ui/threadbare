@@ -12,6 +12,8 @@
  * engagement idle rate — the mandatory candidate-pool check for this reader (run it on the
  * tree before and after the change for the behavioural before/after).
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:awareness-scales [-- --seeds 42,99,7 --ticks 0 --map medium]
  */
 

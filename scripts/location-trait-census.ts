@@ -36,6 +36,7 @@
  * It reports. It does not tune: a `FLAT` on a healthy corpus is the plan's own signal
  * to look at the table, and a human decides whether to raise a row.
  *
+ * Time: ~70 s per seed at 150 ticks on medium (the default two seeds ≈ 2.5 min).
  * Usage:
  *   npm run census:location-traits                         # seeds 42,99 × 150 ticks × medium
  *   npm run census:location-traits -- --seeds 7,13 --ticks 300

@@ -17,7 +17,10 @@
  *     from their conquer target (must be 0);
  *   - defence turns and re-aims by why, armies seen, and the cost of one re-aim pass.
  *
- * Usage: npm run measure:war-aims [-- --seeds 42,99,7 --ticks 600 --map medium --verbose]
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap. The plan's
+ *       three seeds (42,99,7) are three commands.
+ * Usage: npm run measure:war-aims [-- --seeds 42 --ticks 600 --map medium --verbose]
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -42,8 +45,9 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
+const SEEDS = (argValue('--seeds') ?? '42').split(',').map(Number);
 const TICKS = Number(argValue('--ticks') ?? 600);
+console.error('[THR-2041] ~6–9 min per seed at 600 ticks on medium; run one seed per command (600 s command cap).');
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
 /** THR-1970 — print every contested pick's top candidates (`*` marks the nearest). */
 const VERBOSE = process.argv.includes('--verbose');

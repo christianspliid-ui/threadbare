@@ -1,14 +1,18 @@
 /**
  * THR-1955 — regional monopolies and embargo, measured on real seeded worlds.
  *
- * Runs each seed for `--ticks` (default 1080, 90 days) and reports, per seed:
+ * Runs each seed for `--ticks` (default 600, 50 days; seed 42 by default) and reports, per seed:
  *   - regional monopolies standing at day 10 (Done-when: ≥ 2 on each seed), and at day 60;
  *   - the largest holder's share of all regional monopolies at day 60 (kill criterion: ≤ half);
  *   - every embargo laid: whether it left an `embargo_laid` chronicle line and a stock change
  *     in the target region (an embargoed town bearing the good carries the cut derivation's
  *     tier; "tier moved" when the cut moved it off the uncut tier).
  *
- * Usage: npm run measure:monopolies [-- --seeds 42,99,7 --ticks 1080 --map medium]
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap. The day-60
+ *       line needs --ticks 720 (~10 min); the 90-day read (--ticks 1080) is ~11–22 min per
+ *       seed and does not fit one command.
+ * Usage: npm run measure:monopolies [-- --seeds 42 --ticks 600 --map medium]
  */
 
 import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
@@ -28,8 +32,9 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
-const TICKS = Number(argValue('--ticks') ?? 1080);
+const SEEDS = (argValue('--seeds') ?? '42').split(',').map(Number);
+const TICKS = Number(argValue('--ticks') ?? 600);
+console.error('[THR-2041] ~6–9 min per seed at 600 ticks on medium; run one seed per command (600 s command cap).');
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
 
 interface EmbargoSeen {

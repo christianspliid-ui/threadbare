@@ -15,6 +15,7 @@
  * the expected detections per tick (sum of chances) — the colocation-encounter rate.
  * Both arms are computed in one run on the same pairs, so the comparison is exact.
  *
+ * Time: ~30 s per seed at 60 ticks on medium.
  * Usage:
  *   npm run census:colocation                      # seeds 42,99; ticks 1..60; medium
  *   npm run census:colocation -- --seeds 42 --ticks 30

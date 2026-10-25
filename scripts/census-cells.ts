@@ -9,6 +9,7 @@
  * census is legible as templates-model noise until the flip to cells. Writes JSON
  * to the path in --out.
  *
+ * Time: ~70 s per seed at 150 ticks on medium (the default two seeds ≈ 2.5 min).
  *   npm run census:cells -- --seeds 42,99 --ticks 150 --map medium --out <file>
  */
 import { writeFileSync } from 'fs';

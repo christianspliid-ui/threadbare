@@ -8,6 +8,8 @@
  * script measures, over every ordered pair of agents on a generated world, how often
  * each bonus fires on three scales: pre-refit, the dice curve, and the reach share.
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:leverage-scales [-- --seeds 42,99,7 --ticks 0 --map medium]
  */
 

@@ -29,8 +29,11 @@
  *     design while she is not free, so only free, due ticks count toward a miss. Each window's outcomes and the first check's delay are listed;
  *     `no_destination` is listed, not failed (the relax window covers it).
  *
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap. The
+ *       baseline's three seeds (42,7,1234) are three commands.
  * Usage:
- *   npm run census:rhythm                                        # seeds 42,7,1234 × 600 ticks, medium
+ *   npm run census:rhythm                                        # seed 42 × 600 ticks, medium
  *   npm run census:rhythm -- --seeds 42 --ticks 300 --map small
  */
 
@@ -67,9 +70,10 @@ const QUARTER_TICKS = 150;
 
 const argv = process.argv.slice(2);
 const arg = (n: string) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : undefined; };
-const seeds = (arg('--seeds') ?? '42,7,1234').split(',').map(Number);
+const seeds = (arg('--seeds') ?? '42').split(',').map(Number);
 const ticks = Number(arg('--ticks') ?? 600);
 const map = (arg('--map') ?? 'medium') as MapSizePreset;
+console.error('[THR-2041] ~6–9 min per seed at 600 ticks on medium; run one seed per command (600 s command cap).');
 
 interface TemplateInfo { routine?: boolean; encounterType?: string; steps?: unknown[]; name?: string }
 const TEMPLATES = new Map<string, TemplateInfo>();

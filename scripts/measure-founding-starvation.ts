@@ -12,6 +12,10 @@
  *   - lanesHeld2: deciders holding at least two lanes at the end;
  *   - patronPaid: foundings a faction paid for its member (THR-2008, patron arm only).
  *
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap. This is one
+ *       arm; `npm run measure:founding-starvation` (the .build.mjs wrapper) runs one arm ×
+ *       seed cell per call.
  * Usage: npm run measure:founding-starvation [-- --seeds 42 --ticks 600 --map medium]
  */
 

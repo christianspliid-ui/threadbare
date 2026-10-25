@@ -1,6 +1,9 @@
 // THR-1742: why do masters skip master work? Absent from their board, cut before scoring, or
 // present and outscored?
 //
+// Time: ~65 s per seed at 120 ticks on medium; `npm run measure:master-band` (seeds 42,99,7)
+// takes ~3.5 min, inside the 600 s command cap.
+//
 // Runs the gameplay-report world (random archetype + balanced cosmology, medium map) — the same
 // world `engagementWindow.invariant.test.ts` and `out-of-window.ts` run — and, for every
 // free-choice commit whose decider stamps as a MASTER (capability ≥ 0.85 in the chosen work's

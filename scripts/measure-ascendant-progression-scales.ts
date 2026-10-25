@@ -12,6 +12,7 @@
  * `accruePlayerReachPractice` + `getAscendantProgress` on seeded worlds, so running it on the
  * tree before and after the change gives the behavioural before/after.
  *
+ * Time: a few seconds per seed (world generation plus the --actions loop; no ticks).
  * Usage: npm run measure:ascendant-progression-scales [-- --seeds 42,99,7 --map medium --actions 120]
  */
 

@@ -16,6 +16,8 @@
  *      "nudge-reachable" for an actor when a plausible hand can lift the raw
  *      threshold above the floor and keep it there.
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:nudge-headroom [-- --seeds 42,99 --ticks 0]
  */
 

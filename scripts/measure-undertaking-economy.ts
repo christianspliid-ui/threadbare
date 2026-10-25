@@ -1,7 +1,7 @@
 /**
  * THR-1937 S1 — undertakings in the economy, measured on real seeded worlds.
  *
- * Runs each seed for `--ticks` (default 600) and reports, per seed:
+ * Runs each seed for `--ticks` (default 600; seed 42 by default) and reports, per seed:
  *   - towns founded by a mortal, and how many a faction rules (the kill criterion: a run
  *     with no founded town paying tax to any faction means the ruler rule picks nothing);
  *   - Done-when "Taxed": every faction-ruled founded town is in its ruler's last pay day's
@@ -12,7 +12,10 @@
  * `--fingerprint N` instead prints a hash of every `controls`, `owns` and `trades_with`
  * edge at tick N (the rollback Done-when compares it against main with the switch off).
  *
- * Usage: npm run measure:undertaking-economy [-- --seeds 42,99,7 --ticks 600 --map medium]
+ * Time: ~6–9 min per seed at 600 ticks on medium (≈0.8 s per tick, more as the world
+ *       grows); one seed per command keeps a call under the 600 s command cap. The plan's
+ *       three seeds (42,99,7) are three commands.
+ * Usage: npm run measure:undertaking-economy [-- --seeds 42 --ticks 600 --map medium]
  */
 
 import { createHash } from 'node:crypto';
@@ -33,8 +36,9 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? process.argv[i + 1] : undefined;
 }
 
-const SEEDS = (argValue('--seeds') ?? '42,99,7').split(',').map(Number);
+const SEEDS = (argValue('--seeds') ?? '42').split(',').map(Number);
 const TICKS = Number(argValue('--ticks') ?? 600);
+console.error('[THR-2041] ~6–9 min per seed at 600 ticks on medium; run one seed per command (600 s command cap).');
 const MAP = (argValue('--map') ?? 'medium') as MapSizePreset;
 const FINGERPRINT = argValue('--fingerprint');
 

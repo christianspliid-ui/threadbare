@@ -9,6 +9,8 @@
  * (spotlight or faction-linked, not a monster — the `findVisibleAgents` filter), the
  * Eye raw distribution and the share each scale would call "perceptive".
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:stranger-curiosity-scales [-- --seeds 42,99,7 --ticks 0 --map medium]
  */
 

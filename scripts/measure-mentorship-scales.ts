@@ -13,6 +13,8 @@
  * With `--ticks N` it also counts the `mentors` edges the live run minted (run it on the
  * tree before and after the change for the behavioural before/after).
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:mentorship-scales [-- --seeds 42,99,7 --ticks 0 --map medium]
  */
 
