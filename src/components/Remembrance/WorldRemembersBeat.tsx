@@ -18,6 +18,7 @@ import { WORLD_REMEMBERS_WORDS as W, echoDisplayName, joinNames, memoryWord } fr
 import { awakeHungers, liveEchoes, worldTiltFactors } from '../../engine/accountRecord';
 import { SPHERE_OPPOSITIONS } from '../../engine/cosmology';
 import { Tooltip } from '../shared/Tooltip';
+import { Button } from '../shared/Button';
 import { sphereBrightToken, sphereTint } from '../shared/sphereTint';
 import { ActionCard } from '../Game/ActionCard';
 import { templateToPreviewSlot } from '../Game/AscendantBeatModal';
@@ -64,7 +65,7 @@ function EchoCard({ def, state }: { def: EchoDefinition & { echoType: MapEchoKin
       style={{
         border: `1px solid ${primary ? sphereTint(tint, 'border') : tint}`,
         background: primary ? sphereTint(tint, 'bg') : 'var(--bg-surface)',
-        borderRadius: 'var(--radius-md)',
+        borderRadius: 'var(--radius-panel)',
         padding: 'var(--space-3)',
         display: 'flex',
         flexDirection: 'column',
@@ -72,22 +73,19 @@ function EchoCard({ def, state }: { def: EchoDefinition & { echoType: MapEchoKin
         minWidth: 0,
       }}
     >
-      <Tooltip id={`ui.echo.${def.echoType}`}>
-        <span className="cursor-help" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          {W.kindLabel[def.echoType]}
-          {spheres.length > 0 ? ' · ' : ''}
-        </span>
-      </Tooltip>
-      {spheres.length > 0 && (
-        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-          {spheres.map((s, i) => (
-            <span key={s}>
-              {i > 0 ? ' and ' : ''}
-              <Tooltip id={`sphere.${s}`}><span className="cursor-help" style={{ color: sphereBrightToken(s) }}>{cap(s)}</span></Tooltip>
-            </span>
-          ))}
-        </span>
-      )}
+      {/* "Monument · Life and Spirit" on one line: the kind and each sphere carry their own tooltip. */}
+      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+        <Tooltip id={`ui.echo.${def.echoType}`}>
+          <span className="cursor-help" style={{ fontWeight: 700 }}>{W.kindLabel[def.echoType]}</span>
+        </Tooltip>
+        {spheres.length > 0 ? ' · ' : ''}
+        {spheres.map((s, i) => (
+          <span key={s}>
+            {i > 0 ? ' and ' : ''}
+            <Tooltip id={`sphere.${s}`}><span className="cursor-help" style={{ color: sphereBrightToken(s) }}>{cap(s)}</span></Tooltip>
+          </span>
+        ))}
+      </span>
       <span style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg)', color: 'var(--text-primary)' }}>
         {cap(echoDisplayName(def))}
       </span>
@@ -116,7 +114,7 @@ export function WorldRemembersBeat({ account, onContinue }: WorldRemembersBeatPr
     () => liveEchoes(account).filter((e): e is { def: EchoDefinition & { echoType: MapEchoKind }; state: EchoState } => isMapEcho(e.def)),
     [account],
   );
-  const awake = useMemo(() => new Set(awakeHungers(account).map(h => h.id)), [account]);
+  const awake = useMemo(() => new Set<string>(awakeHungers(account).map(h => h.id)), [account]);
   // A stirring id the catalog no longer has is dropped (fail-soft row).
   const stirring = useMemo(
     () => account.stirringHungerIds.filter(id => HUNGER_CATALOG.some(h => h.id === id) && !awake.has(id)),
@@ -201,7 +199,7 @@ export function WorldRemembersBeat({ account, onContinue }: WorldRemembersBeatPr
                         display: 'inline-flex',
                         gap: 'var(--space-1)',
                         padding: '2px var(--space-2)',
-                        borderRadius: 'var(--radius-sm)',
+                        borderRadius: 'var(--radius-chip)',
                         border: `1px solid ${s === 'awake' ? 'var(--accent-gold)' : s === 'stirs' ? 'var(--text-secondary)' : 'var(--border-subtle)'}`,
                         color: s === 'asleep' ? 'var(--text-muted)' : 'var(--text-primary)',
                         fontSize: 'var(--text-sm)',
@@ -220,24 +218,16 @@ export function WorldRemembersBeat({ account, onContinue }: WorldRemembersBeatPr
                 <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', margin: 0 }}>{W.favoured(nameOf(stirring[0]))}</p>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                   {stirring.map(id => (
-                    <button
+                    <Button
                       key={id}
-                      type="button"
-                      className="focus-ring"
+                      variant={chosen === id ? 'primary' : 'secondary'}
+                      size="sm"
                       aria-pressed={chosen === id}
                       data-testid={`world-remembers-wake-${id}`}
                       onClick={() => setChosen(id)}
-                      style={{
-                        padding: 'var(--space-1) var(--space-3)',
-                        borderRadius: 'var(--radius-sm)',
-                        border: `1px solid ${chosen === id ? 'var(--accent-gold)' : 'var(--border-medium)'}`,
-                        background: chosen === id ? 'var(--bg-elevated)' : 'transparent',
-                        color: 'var(--text-primary)',
-                        cursor: 'pointer',
-                      }}
                     >
                       {W.wakeButton(nameOf(id))}
-                    </button>
+                    </Button>
                   ))}
                 </div>
                 {chosen && (
@@ -275,25 +265,16 @@ export function WorldRemembersBeat({ account, onContinue }: WorldRemembersBeatPr
 
       <footer style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-2)', marginTop: 'var(--space-4)' }}>
         <p style={{ fontFamily: 'var(--font-prose)', fontStyle: 'italic', color: 'var(--text-secondary)', margin: 0 }}>{W.closing}</p>
-        <button
-          type="button"
-          className="focus-ring"
+        <Button
+          variant="primary"
+          size="lg"
           data-testid="world-remembers-go-on"
           disabled={!canGoOn}
           title={canGoOn ? undefined : W.goOnBlocked}
           onClick={() => { if (canGoOn) onContinue(chosen); }}
-          style={{
-            padding: 'var(--space-2) var(--space-6)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--accent-gold)',
-            background: 'transparent',
-            color: 'var(--accent-gold)',
-            opacity: canGoOn ? 1 : 0.45,
-            cursor: canGoOn ? 'pointer' : 'not-allowed',
-          }}
         >
           {W.goOn}
-        </button>
+        </Button>
         {!canGoOn && (
           <span data-testid="world-remembers-go-on-reason" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>{W.goOnBlocked}</span>
         )}

@@ -80,7 +80,8 @@ describe('THR-1844 — the sealed card set (Decided 13)', () => {
     let spirit = 0;
     let total = 0;
     const byId = new Map(catalog.map(t => [t.id, t]));
-    for (let seed = 1; seed <= 300; seed++) {
+    // Draw seeds, not ticks: no world is built in this loop.
+    for (const seed of Array.from({ length: 300 }, (_, i) => i + 1)) {
       for (const id of drawUnsealedCards(emptyAccount(1), ['spirit', 'life'], seed, catalog).cardIds) {
         total++;
         const t = byId.get(id)!;
