@@ -223,7 +223,7 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
 describe('opening reveal copy (THR-1837 C2–C4)', () => {
   it('The Seat names the Doom and the mandates, verbatim', () => {
     expect(SPINE_BEAT_PRESENTATION['beat.spine.the_seat'].prose.endsWith(
-      'tide after patient tide. You will need it. This age has begun its slow slide toward its Doom, and every mandate you complete holds it back.',
+      'tide after patient tide. You will need it. This age has begun its slow slide toward its Doom, and every mandate you keep well blunts its blows.',
     )).toBe(true);
   });
 

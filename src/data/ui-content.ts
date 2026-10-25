@@ -142,7 +142,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   // ─── Core HUD ──────────────────────────────────────────────────
   // THR-1814 — says what Doom does to your game, and that it cannot end the world early.
   // The label stays "Doom Clock": the top bar overrides it with the live stage, and
-  // it is the link text other entries chain to ("slow the {{ui.doom_bar}}").
+  // it is the link text other entries chain to ("racing the {{ui.doom_bar}}").
   'ui.doom_bar': {
     label: 'Doom Clock',
     // THR-1965 — the pacing sentence says why The First's road sits in the Doom box (≤200 chars: tooltipValidation).
@@ -308,11 +308,15 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.essence_panel': {
     label: 'Divine Essence',
-    desc: 'Your power reserve. Spent on {{ui.your_cards}}, replenished by {{ui.mandate_tracker}} completion.',
+    // THR-2004 — names the income computeEssenceIncome actually pays (threads, seat, held
+    // places of power, aspects); mandates grant no essence.
+    desc: 'Your power reserve. Spent on {{ui.your_cards}}. It flows in every day from your threads, your {{ui.home_seat}}, the places of power you hold and your aspects.',
   },
   'ui.mandate_tracker': {
     label: 'Active Mandates',
-    desc: 'Divine objectives — complete them to gain essence and slow the {{ui.doom_bar}}.',
+    // THR-2004 — a mandate neither slows the Doom nor grants essence: a checkpoint kept
+    // well banks counter-omens that soften the next stage (phaseDoom computeEscalationSeverity).
+    desc: 'Divine objectives — the second clock, racing the {{ui.doom_bar}}. Keep a checkpoint well and you blunt the doom\'s next blow.',
   },
 
   // ─── Ascendant identity (THR-1118) ─────────────────────────────
@@ -623,7 +627,8 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.mandate_stage_culmination': {
     label: 'Culmination',
-    desc: 'The final stage. Completion grants essence and slows the {{ui.doom_bar}}.',
+    // THR-2004 — completion fulfils the mandate; it grants no essence and leaves the Doom's pace alone.
+    desc: 'The final stage. Complete it and the mandate is fulfilled before the {{ui.doom_bar}} closes.',
   },
 
   // ─── Hex / Map ───────────────────────────────────────────────────

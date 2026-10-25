@@ -285,7 +285,7 @@ export const SPINE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentat
     eyebrow: 'A Place to Stand',
     title: 'The Seat',
     prose:
-      'A god adrift is only weather. But the world has left a hollow shaped to your absence — these stones, this height, this hush between walls. Bind a place to yourself and call it your seat, and the faith that gathers there will rise back to you as power, tide after patient tide. You will need it. This age has begun its slow slide toward its Doom, and every mandate you complete holds it back.',
+      'A god adrift is only weather. But the world has left a hollow shaped to your absence — these stones, this height, this hush between walls. Bind a place to yourself and call it your seat, and the faith that gathers there will rise back to you as power, tide after patient tide. You will need it. This age has begun its slow slide toward its Doom, and every mandate you keep well blunts its blows.',
     cta: 'Take the Seat',
   },
   'beat.spine.thing_left_behind': {
