@@ -20,7 +20,15 @@ Prosperity misses most famines. A headless census (seeds 42 / 99 / 7, medium map
 | 99 | 74 (4.6 %) | 31 | 43 | 814 (50.7 %) | 51 % |
 | 7 | 60 (3.9 %) | 11 | 49 | 649 (42.1 %) | 32 % |
 
-**136 of 179 hungry town-days (76 %) sit outside the bust band**, so the bust weights never fire there. In those towns the scenes that did fire were stargazing, flawed steel and scripture copying. The surplus counter alone is a mature town's normal state (42–67 % of town-days), so *glut* needs a stronger test than "a surplus day" (§ Engine 1).
+**136 of 179 hungry town-days (76 %) sit outside the bust band**, so the bust weights never fire there. In those towns the scenes that did fire were stargazing, flawed steel and scripture copying. The baseline for this plan's 18 rows, as their share of the firings in settlements:
+
+| seed | famine rows in hungry towns | famine rows in all towns | plenty rows in glutted towns | plenty rows in all towns |
+|---|---|---|---|---|
+| 42 | 5 / 46 (10.9 %) | 80 / 1603 (5.0 %) | 54 / 1052 (5.1 %) | 79 / 1603 (4.9 %) |
+| 99 | 1 / 75 (1.3 %) | 73 / 1766 (4.1 %) | 23 / 698 (3.3 %) | 65 / 1766 (3.7 %) |
+| 7 | 2 / 76 (2.6 %) | 88 / 2017 (4.4 %) | 8 / 126 (6.3 %) | 69 / 2017 (3.4 %) |
+
+On two seeds of three, a hunger scene is **rarer** in a hungry town than elsewhere. The surplus counter alone is a mature town's normal state (42–67 % of town-days), so *glut* needs a stronger test than "a surplus day" (§ Engine 1).
 
 ## Substrate inventory
 
