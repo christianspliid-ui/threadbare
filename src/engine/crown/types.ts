@@ -56,6 +56,8 @@ export interface SwornToEdgeProperties {
   wagesPaidToday?: number;
   /** THR-1974 — tick of the pair's last wage chronicle line (WAGES_CHRONICLE_MIN_GAP_DAYS). */
   wagesChronicledTick?: number;
+  /** THR-2020 — tick of the last raise the liege paid for this vassal (LIEGE_RAISE_MIN_GAP_DAYS). */
+  liegeRaisedTick?: number;
 }
 
 /** One offer's four inputs and its score (the trace and the debug tab read these). */
