@@ -65,6 +65,7 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
+import { MEANS_STEP, MEANS_STEP_BIG } from '../mortal-means-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -337,6 +338,16 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     branchOnStep: 1,
     variants: {},
     fallback: {
+      // THR-2023 — which way the coin moves. [lane] The chapter's treasury rides the dean's
+      // Means, the lenders' the factor's. No band pays the acting mortal (the Means want is
+      // untouched). The *Stand surety* reaction still adds the mortal's own debt.
+      outcomeEffects: {
+        critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP, targetAgentId: '$cast:factor' }, { kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:dean' }],
+        success: [{ kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:dean', counterpartyId: '$cast:factor' }],
+        success_at_cost: [{ kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:dean', counterpartyId: '$cast:factor' }],
+        failure: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP, targetAgentId: '$cast:factor' }, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP, targetAgentId: '$cast:dean' }],
+        critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG, targetAgentId: '$cast:factor' }, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG, targetAgentId: '$cast:dean' }],
+      },
       overview: '{actor} left the chapter house once the factor had given an answer.',
       changes: [],
       byOutcome: {
@@ -428,6 +439,26 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             + 'away with a piece from the cathedral treasury.',
           changes: [
             {
+              id: 'cathedral.s.debt',
+              kind: 'shell_state',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The chapter\'s debt',
+              detail: 'The chapter owes {cast:factor}, in tithes now, not plate.',
+              stateNoun: {
+                text: 'a debt',
+                tooltipId: 'ui.debt_owed',
+              },
+              concepts: [
+                {
+                  text: '{cast:factor}',
+                  entityId: '$cast:factor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+            {
               id: 'cathedral.s.dean',
               kind: 'reputation',
               category: 'bond',
@@ -510,6 +541,26 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           overview: 'The plate is back inside, but the chapter will pay the lenders a harder rate for a generation. '
             + '{cast:dean} paid {actor} from the treasury, and called the terms a fair price for the plate.',
           changes: [
+            {
+              id: 'cathedral.sac.debt',
+              kind: 'shell_state',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The chapter\'s debt',
+              detail: 'The chapter owes {cast:factor}, in tithes now, not plate.',
+              stateNoun: {
+                text: 'a debt',
+                tooltipId: 'ui.debt_owed',
+              },
+              concepts: [
+                {
+                  text: '{cast:factor}',
+                  entityId: '$cast:factor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
             {
               id: 'cathedral.sac.dean',
               kind: 'reputation',
@@ -595,6 +646,26 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
             + 'and the plate is lost.',
           changes: [
             {
+              id: 'cathedral.f.plate',
+              kind: 'shell_state',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The plate taken',
+              detail: '{cast:factor} carried the chapter\'s silver away.',
+              stateNoun: {
+                text: 'means',
+                tooltipId: 'ui.econ.means.change',
+              },
+              concepts: [
+                {
+                  text: '{cast:factor}',
+                  entityId: '$cast:factor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
+            {
               id: 'cathedral.f.town',
               kind: 'reputation',
               category: 'scar',
@@ -643,6 +714,26 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           overview: 'The plate is gone to be melted down, and the whole chapter watched it go. {cast:dean} had sent '
             + 'for {actor} to save it.',
           changes: [
+            {
+              id: 'cathedral.cf.plate',
+              kind: 'shell_state',
+              category: 'bond',
+              direction: 'loss',
+              polarity: 'loss',
+              title: 'The plate taken',
+              detail: '{cast:factor} carried the chapter\'s silver away.',
+              stateNoun: {
+                text: 'means',
+                tooltipId: 'ui.econ.means.change',
+              },
+              concepts: [
+                {
+                  text: '{cast:factor}',
+                  entityId: '$cast:factor',
+                  visualKind: 'agent',
+                },
+              ],
+            },
             {
               id: 'cathedral.cf.town',
               kind: 'reputation',

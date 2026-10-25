@@ -118,6 +118,8 @@ export const SCENE_SENTINEL_FIELDS = {
   // to bind a location: that refusal is the point, since a place owing a social
   // favour is an edge no consumer can collect.
   debtorAgentId: 'agent',
+  // THR-2023 — `debt_settle` names who is *owed* here; `$actor` is the collector.
+  creditorAgentId: 'agent',
   targetFactionId: 'faction',
   // THR-1144 — `membership_change` names the faction someone joins or leaves in
   // `factionId`, not `targetFactionId`, because the *person* is the effect's target.

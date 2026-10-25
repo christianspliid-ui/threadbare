@@ -217,6 +217,8 @@ export const CHIP_BACKING_EFFECT_KINDS: ReadonlySet<string> = new Set([
   ...PERSISTENT_EFFECT_KINDS,
   ...REPUTATION_EFFECT_KINDS,
   'attachment_grant',
+  // THR-2023 — a settled debt is the removal of an agreement edge: durable state.
+  'debt_settle',
   'grant_companion',
   'remove_companion',
   'intelligence',

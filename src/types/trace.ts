@@ -561,6 +561,8 @@ export type TraceCategory =
   | 'aftermath_sentinel_bound'
   | 'agent_validation'
   | 'agreement_expired'
+  | 'agreement_settled'
+  | 'debt_settle_noop'
   | 'ambition_progress'
   | 'bond_change_applied'
   | 'branch_decided'
@@ -1244,6 +1246,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'agent_validation',
   'ambition_progress',
   'agreement_expired',
+  'agreement_settled',
+  'debt_settle_noop',
   'bond_change_applied',
   'branch_decided',
   'chain_progress',
@@ -5556,6 +5560,8 @@ export type TraceEntry =
   | CompanionJoinedTrace
   | CompanionDepartedTrace
   | AgreementExpiredTrace
+  | AgreementSettledTrace
+  | DebtSettleNoopTrace
   // Seed system v2: family matching + context inheritance (THR-697, Slice D)
   | SeedFamilyMatchedTrace
   | SeedContextInheritedTrace
@@ -7852,6 +7858,29 @@ export interface AgreementExpiredTrace extends TraceBase {
   acquiredTick: number | undefined;
   /** The full term as written; the agreement ended at acquiredTick + term. */
   term: number | null | undefined;
+}
+
+/** Trace: a debt edge was removed before its term because it was paid or written off (THR-2023). */
+export interface AgreementSettledTrace extends TraceBase {
+  category: 'agreement_settled';
+  edgeId: string;
+  debtorId: string;
+  creditorId: string;
+  settlement: 'paid' | 'written_off';
+  acquiredTick: number | undefined;
+  /** The debtor's actual Means change (0 when written off, Means is off, or the debtor is gone). */
+  meansDelta: number;
+  /** The encounter whose band settled it. */
+  templateId?: string;
+}
+
+/** Trace: a debt_settle effect found nothing to settle (THR-2023). */
+export interface DebtSettleNoopTrace extends TraceBase {
+  category: 'debt_settle_noop';
+  creditorId: string | null;
+  debtorId?: string;
+  reason: 'no_debt_owed' | 'creditor_unbound' | 'disabled';
+  templateId?: string;
 }
 
 /** Trace: a companion left. Never silent — every departure has a named reason. */

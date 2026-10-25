@@ -799,6 +799,14 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
         },
       },
       negative: {
+        // THR-2023 — the toll book. The mortal's name stands beside the family's writ, so
+        // the mortal owes the toll-master for their passage (unconditional: nothing models
+        // whether the writ holds, and the chip says so).
+        outcomeEffects: {
+          success_at_cost: [
+            { kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$actor', counterpartyId: '$cast:tollmaster' },
+          ],
+        },
         overview: 'The toll gate has its answer on the family\'s writ.',
         changes: [],
         byOutcome: {
@@ -1006,6 +1014,26 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
                   {
                     text: '{cast:traveller}',
                     entityId: '$cast:traveller',
+                    visualKind: 'agent',
+                  },
+                ],
+              },
+              {
+                id: 'writ.sent.cost.toll_book',
+                kind: 'shell_state',
+                category: 'bond',
+                direction: 'loss',
+                polarity: 'loss',
+                title: 'In the toll book',
+                detail: '{actor}\'s name stands in the toll book; {actor} owes {cast:tollmaster}.',
+                stateNoun: {
+                  text: 'a debt',
+                  tooltipId: 'ui.debt_owed',
+                },
+                concepts: [
+                  {
+                    text: '{cast:tollmaster}',
+                    entityId: '$cast:tollmaster',
                     visualKind: 'agent',
                   },
                 ],
