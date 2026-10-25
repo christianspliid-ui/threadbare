@@ -9,6 +9,8 @@
 // It is the second of the two predicates `MEANS_CELL_COST_ENABLED` needs (THR-2008); the
 // verdict is written to .cache/founding-starvation-verdict.json for `npm run measure:means`.
 // Default seeds are the gate seeds (`FOUNDING_GATE_SEEDS`); see the args note below.
+// Time: ~6–9 min per arm × seed cell at 600 ticks on medium. A call with no `--seeds` /
+// `--arms` measures one uncached cell and reports, so it fits the 600 s command cap.
 import { build } from 'esbuild';
 import { readFile, writeFile, mkdir, readdir } from 'fs/promises';
 import { createHash } from 'crypto';
@@ -95,12 +97,27 @@ for (const [arm, file] of Object.entries(ARM_FILE)) {
 // One file per arm × seed, so separate commands may run arms in parallel.
 const CACHE_DIR = `.cache/founding-starvation/${createHash('sha1').update(runKey).digest('hex').slice(0, 10)}`;
 await mkdir(CACHE_DIR, { recursive: true });
-for (const arm of arms) {
-  for (const seed of seeds) {
-    const out = execFileSync('node', [ARM_FILE[arm], ...passThrough, '--seeds', String(seed)], { encoding: 'utf8', maxBuffer: 1 << 26 });
-    const row = out.split('\n').filter(l => l.startsWith('{')).map(l => JSON.parse(l))[0];
-    if (row) await writeFile(`${CACHE_DIR}/${arm}-${seed}.json`, JSON.stringify({ ...row, bundleHash: bundleHash[arm], buildHead: buildStamp.head, buildDirty: buildStamp.dirty }));
+// THR-2041: with neither `--seeds` nor `--arms`, a call measures ONE cell — the first gate
+// arm × seed with no valid cached row — and then reports, so every call fits the 600 s
+// command cap (~6–9 min per cell on medium). Repeat until the report says every gate seed
+// is measured; nine calls cover the gate from a cold cache.
+let cells = arms.flatMap(arm => seeds.map(seed => [arm, seed]));
+if (!argv.includes('--report-only') && flag('--seeds') === undefined && flag('--arms') === undefined) {
+  const missing = [];
+  for (const [arm, seed] of cells) {
+    let cached = null;
+    try { cached = JSON.parse(await readFile(`${CACHE_DIR}/${arm}-${seed}.json`, 'utf8')); } catch { /* not measured yet */ }
+    if (!cached || cached.bundleHash !== bundleHash[arm]) missing.push([arm, seed]);
   }
+  cells = missing.slice(0, 1);
+  console.log(cells.length
+    ? `measuring one cell: arm ${cells[0][0]} × seed ${cells[0][1]} (${missing.length - 1} cells left after it; ~6–9 min per cell, one per command)`
+    : 'every gate cell is cached for this build — reporting only');
+}
+for (const [arm, seed] of cells) {
+  const out = execFileSync('node', [ARM_FILE[arm], ...passThrough, '--seeds', String(seed)], { encoding: 'utf8', maxBuffer: 1 << 26 });
+  const row = out.split('\n').filter(l => l.startsWith('{')).map(l => JSON.parse(l))[0];
+  if (row) await writeFile(`${CACHE_DIR}/${arm}-${seed}.json`, JSON.stringify({ ...row, bundleHash: bundleHash[arm], buildHead: buildStamp.head, buildDirty: buildStamp.dirty }));
 }
 const results = {};
 for (const f of await readdir(CACHE_DIR)) {

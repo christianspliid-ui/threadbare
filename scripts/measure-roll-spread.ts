@@ -22,6 +22,7 @@
  * Changes no behaviour. The raw score is read directly through the trace's `reach`
  * (added by this ticket) instead of inverting the capability sigmoid.
  *
+ * Time: ~2.5 min per seed at 300 ticks on medium (the default two seeds ≈ 5 min).
  * Usage: npm run measure:roll-spread [-- --seeds 42,99 --ticks 300 --map medium]
  *        npm run measure:roll-spread -- --coverage-only   (static tables only, no worlds)
  */

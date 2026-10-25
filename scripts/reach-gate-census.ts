@@ -17,6 +17,7 @@
  *   - mortals with capabilities holding ≥ 1 eligible ambition (any pool) ≥ 95%
  *   - protagonist milestones met on first check at tick 0 ≤ 60%
  *
+ * Time: ~70 s per seed at ticks 0,150 on medium (the default two seeds ≈ 2.5 min).
  * Usage:
  *   npm run census:reach-gates                              # seeds 42,99; ticks 0,150; medium
  *   npm run census:reach-gates -- --seeds 42 --ticks 0,60

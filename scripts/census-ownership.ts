@@ -7,6 +7,7 @@
  * Reads the registry through the same `ownershipCensus` the CLI `objects` readout
  * uses, so the two never disagree.
  *
+ * Time: a few seconds per seed at --ticks 0; each tick adds ≈0.8 s per seed on medium.
  *   npm run census:ownership -- [--seeds 42,99] [--map medium] [--ticks 0] [--json <file>]
  */
 import { writeFileSync } from 'fs';

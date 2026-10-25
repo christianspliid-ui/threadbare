@@ -9,6 +9,8 @@
  * actor type (individual / faction / monster) — and, for individuals, how many carry
  * a raw ≥ 20 best reach, where the pre-refit curve reads everyone as tier 10.
  *
+ * Time: a few seconds per seed at --ticks 0 (world generation only); each tick adds ≈0.8 s
+ *       per seed on medium.
  * Usage: npm run measure:renown-scales [-- --seeds 42,99,7 --ticks 0 --map medium]
  */
 
