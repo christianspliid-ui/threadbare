@@ -209,11 +209,11 @@ describe('THR-2023 The Loan → Debt Collection (the loop)', () => {
     expect(bond?.properties.sentiment).toBeLessThan(0.5);
     expect((debtEdges(state.graph)[0].properties as Record<string, unknown>).sentiment).toBeUndefined();
     // The first-edge relationship reader sees the bond, not the debt (review-gate round 1).
-    const before = getRelationship(state.graph, BORROWER, LENDER).sentiment;
+    const before = relSentiment(state.graph);
     expect(before).toBe(bond?.properties.sentiment);
     // And settling the debt leaves the resentment standing.
     settleDebt(state.graph, { creditorId: LENDER, settlement: 'written_off', tick: 10 });
-    expect(getRelationship(state.graph, BORROWER, LENDER).sentiment).toBe(before);
+    expect(relSentiment(state.graph)).toBe(before);
   });
 
   it('a repeat borrower: resentment written onto the first debt survives settling it (review-gate round 2)', () => {
@@ -223,7 +223,7 @@ describe('THR-2023 The Loan → Debt Collection (the loop)', () => {
     state = { ...state, tick: 11 } as GameState;
     state = runBand(state, 'encounter.the_loan', 'failure', { bindings: borrower });
     // The second loan's bond landed on the first debt edge (the only B→L edge then).
-    const sentiment = getRelationship(state.graph, BORROWER, LENDER).sentiment;
+    const sentiment = relSentiment(state.graph);
     expect(sentiment).toBeLessThan(0);
     state = runBand(state, 'encounter.debt_collection', 'success');
     expect(debtEdges(state.graph)).toHaveLength(1);
@@ -370,3 +370,9 @@ describe('THR-2023 sheet words', () => {
     expect(agreementLine({}, 'X')).toBe('With X');
   });
 });
+
+/** The first-edge reader's sentiment between borrower and lender (undefined when no edge). */
+function relSentiment(graph: WorldGraph): number | undefined {
+  const r = getRelationship(graph, BORROWER, LENDER);
+  return 'sentiment' in r ? r.sentiment : undefined;
+}
