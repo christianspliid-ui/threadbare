@@ -78,16 +78,18 @@ function runUntilRoad(runtime: ReturnType<typeof createSimulationRuntime>, start
   enableTracing();
   const roads: RestlessRoadTrace[] = [];
   const stoodAt = new Set<string>();
+  const started = new Set<string>();
   for (let i = 0; i < 40; i++) {
     state = runTick(state, [], runtime);
     const at = getAgentLocationId(state.graph, FIRST);
     if (at) stoodAt.add(at);
+    for (const a of state.unifiedActions) if (a.actorId === FIRST) started.add(a.templateId);
     for (const t of getTraces()) {
       if (t.category === 'agent.restless_road' && t.agentId === FIRST) roads.push(t as unknown as RestlessRoadTrace);
     }
     clearTraces();
   }
-  return { state, roads, stoodAt };
+  return { state, roads, stoodAt, started };
 }
 
 describe('THR-1959 — the restless road on the seeded medium world', () => {
@@ -104,7 +106,7 @@ describe('THR-1959 — the restless road on the seeded medium world', () => {
 
   it('with every nearby story told out, she sets out, moves, and the Chronicle names both as links', () => {
     const { runtime, state: s0 } = setup(true);
-    const { state, roads, stoodAt } = runUntilRoad(runtime, s0);
+    const { state, roads, stoodAt, started } = runUntilRoad(runtime, s0);
     expect(roads).toHaveLength(1);
     const road = roads[0];
     expect(road.outcome, JSON.stringify(road.storyTemplateIds)).toBe('set_out');
@@ -126,5 +128,11 @@ describe('THR-1959 — the restless road on the seeded medium world', () => {
     const stillBound = ms?.destinationId === road.toLocationId && (ms?.movementQueue?.length ?? 0) > 0;
     expect(stillBound || stoodAt.has(road.toLocationId!)).toBe(true);
     if (stillBound) expect(road.storyTemplateIds).toContain(ms!.targetEncounterId);
+    // THR-2036: the road ends in its story. Once she has stood at the place the Chronicle
+    // named, the story the road was taken for is started within the run — not out-voted
+    // at the door (on 9c4417ac she arrived "goal kept", an undertaking or a rest five
+    // hops away took the decision, and she left).
+    expect(stoodAt.has(road.toLocationId!)).toBe(true);
+    expect([...started].filter(id => road.storyTemplateIds.includes(id))).not.toEqual([]);
   });
 });

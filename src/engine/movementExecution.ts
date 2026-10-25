@@ -267,6 +267,7 @@ export function tickMovement(
           movementHistory: newHistory,
           targetSublocationId: state.targetSublocationId,
           targetEncounterId: state.targetEncounterId,
+          ...(state.restlessRoad ? { restlessRoad: true } : {}),
           motivationPull: state.motivationPull,
           roadSegments: state.roadSegments,
           currentHexPosition: { col: nextHex.col, row: nextHex.row },
@@ -342,6 +343,7 @@ export function tickMovement(
       movementHistory: newHistory,
       targetSublocationId: state.targetSublocationId,
       targetEncounterId: state.targetEncounterId,
+      ...(state.restlessRoad ? { restlessRoad: true } : {}),
       motivationPull: state.motivationPull,
       roadSegments: state.roadSegments,
     };

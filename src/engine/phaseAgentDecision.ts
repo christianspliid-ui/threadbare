@@ -1162,6 +1162,8 @@ export function phaseAgentDecision(
                     ...travelling,
                     targetEncounterId: dest.targetEntry.templateId,
                     targetSublocationId: dest.targetEntry.sublocationId ?? undefined,
+                    // THR-2036: on arrival this story takes the first decision outright.
+                    restlessRoad: true,
                     ...(Number.isFinite(dest.targetEntry.questPriority) ? { motivationPull: dest.targetEntry.questPriority } : {}),
                   },
                 },
@@ -1317,7 +1319,11 @@ export function phaseAgentDecision(
             const committed = decision.rankedCandidates.find(isCommitted);
             if (committed) decision.topCandidates = [...decision.topCandidates, committed];
           }
-          boardArrivalGoal = { templateId: goalId, locationId: goalCandidate.entry.locationId };
+          boardArrivalGoal = {
+            templateId: goalId,
+            locationId: goalCandidate.entry.locationId,
+            ...(arrivedState.restlessRoad ? { restlessRoad: true } : {}),
+          };
         }
         arrivalGoal = goalOnBoard ? 'kept' : 'dropped';
         // THR-1930: the DECIDE timeline event carries this verdict only when an
@@ -1340,6 +1346,7 @@ export function phaseAgentDecision(
         // Consumed in place: later writes in this iteration spread the actor's
         // properties snapshot, which shares this movementState object.
         arrivedState.targetEncounterId = undefined;
+        arrivedState.restlessRoad = undefined;
       }
 
       // ── THR-1479: the regime — discount, drop, and the journey ─────────
@@ -1632,6 +1639,7 @@ export function phaseAgentDecision(
               ...(e.forecastFit !== undefined ? { forecastFit: e.forecastFit } : {}),
               ...(e.forecastZone !== undefined ? { forecastZone: e.forecastZone } : {}),
               ...(e.arrivalCommitment !== undefined ? { arrivalCommitment: e.arrivalCommitment } : {}),
+              ...(e.restlessRoadGoal ? { restlessRoadGoal: e.restlessRoadGoal } : {}),
               ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
               ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
               ...(e.whisperPull !== undefined ? { whisperPull: e.whisperPull } : {}),
