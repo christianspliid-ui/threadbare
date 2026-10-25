@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 15:56 local (14:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 16:58 local (15:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -42,4 +42,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The live site serves the newest commit ([e67e0517](https://github.com/christianspliid-ui/threadbare/commit/e67e0517)). Main's CI, the three scheduled background jobs, all 13 scheduled lanes and the worktree reaper are healthy, and no PRs are stuck. The builder is idle by design, not stalled. Engine speed is back under the alarm line: 176 ms/tick, 23% above the 7-day median of 144. Last brief it was 30% above, and no code merged in between.
+All green. The live site serves the newest commit ([e67e0517](https://github.com/christianspliid-ui/threadbare/commit/e67e0517)). Main's CI, the three scheduled background jobs, all 13 scheduled lanes and the worktree reaper are healthy, and no PRs are stuck. The builder is idle by design, not stalled. Engine speed stays under the alarm line: 175 ms/tick, 22% above the 7-day median of 143.
