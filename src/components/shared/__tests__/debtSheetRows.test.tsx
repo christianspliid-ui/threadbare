@@ -19,7 +19,7 @@ import { createBalancedCosmology } from '../../../engine/cosmology';
 import { generateArchetypes } from '../../../engine/ascendant';
 import type { GameState } from '../../../types/gameState';
 import type { UnifiedAction, UnifiedActionTemplate } from '../../../types/unifiedAction';
-import type { DetailSection } from '../../../types/detailPage';
+import type { Section as DetailSection, CardTile } from '../../../types/detailPage';
 
 function worldWithLoan(): { state: GameState; lender: string; borrower: string } {
   const preset = MAP_SIZE_PRESETS.small;
@@ -73,7 +73,7 @@ describe('THR-2023 — the sheet says which way a debt runs', () => {
 
   it('the debt tile carries the debt tooltip on its kind word', () => {
     const section = slotsFor(state, borrower) as Extract<DetailSection, { kind: 'cards' }>;
-    const tile = section.tiles.find(t => t.lines.includes(`Owes ${lenderName}`));
+    const tile = section.tiles.find((t: CardTile) => t.lines.includes(`Owes ${lenderName}`));
     expect(tile?.kindWordTooltipId).toBe(DEBT_TOOLTIP_ID);
   });
 });
