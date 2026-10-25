@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 21:58 local (20:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 23:00 local (22:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-25: the plan for faction commissions paying their takers is merged** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)), via [#2582](https://github.com/christianspliid-ui/threadbare/pull/2582). Its three calls sit in the briefing's *Decided for you* until tomorrow 21:53.
 - **2026-10-25: every measurement and census script now fits one 10-minute command with no flags** ([THR-2041](https://linear.app/threadbare/issue/THR-2041)). Merged via [#2581](https://github.com/christianspliid-ui/threadbare/pull/2581) and live.
 - **2026-10-25: the weekly review lane is live and the five old review lanes are off** ([THR-1950](https://linear.app/threadbare/issue/THR-1950)). Registered via [#2579](https://github.com/christianspliid-ui/threadbare/pull/2579); its first run wrote [the weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md).
 - **2026-10-25: four encounters' declared Reach now matches the steps they roll** ([THR-2038](https://linear.app/threadbare/issue/THR-2038)). Merged via [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577).
@@ -51,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: the heavy tests' appointment check is fixed and green on main** ([THR-2037](https://linear.app/threadbare/issue/THR-2037)). Merged via [#2572](https://github.com/christianspliid-ui/threadbare/pull/2572).
 - **2026-10-25: the world tilt reaches places, backfill seeds included** ([THR-2028](https://linear.app/threadbare/issue/THR-2028)). Merged via [#2571](https://github.com/christianspliid-ui/threadbare/pull/2571) and live.
 - **2026-10-25: mortals can broker an oath: a warlord swears its free company first, and a landless realm takes no vassal** ([THR-1944](https://linear.app/threadbare/issue/THR-1944)). Merged via [#2570](https://github.com/christianspliid-ui/threadbare/pull/2570) and live.
-- **2026-10-25: the restless road ends in its story: a mortal who takes the road for a story now starts it on arrival** ([THR-2036](https://linear.app/threadbare/issue/THR-2036)). Merged via [#2569](https://github.com/christianspliid-ui/threadbare/pull/2569) and live.
 
 ---
 
