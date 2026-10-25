@@ -62,19 +62,23 @@ export function brokerLiegeOf(graph: WorldGraph, mortalId: string): string | nul
 }
 
 /**
- * The faction a named agent swears for: their swearable-kind membership (never the liege).
- * With `preferDefId`, a membership of that faction kind wins first (the Warlord's company
- * over a reused commander's realm or town faction); without one, the top membership.
+ * The faction a named agent swears for: their swearable-kind membership, never the liege
+ * and never its enemy. With `preferDefId`, a membership of that faction kind wins first
+ * (the Warlord's free company). Without one, a reused local commander swears the company
+ * they lead (their top non-realm membership — a holy order's or a guild's commander):
+ * one mortal winning a hall scene never swears a whole realm.
  */
 function vassalOfAgent(graph: WorldGraph, agentId: string, liegeId: string, preferDefId?: string): string | null {
   const node = graph.getNode(agentId);
   if (!node) return null;
-  if (node.properties.actorType === 'faction') return node.id !== liegeId && isSwearableKind(node) ? node.id : null;
-  const swearable = (id: string) => id !== liegeId && isSwearableKind(graph.getNode(id));
+  const swearable = (id: string) => id !== liegeId
+    && isSwearableKind(graph.getNode(id))
+    && !isEnemy(graph, id, liegeId);
+  if (node.properties.actorType === 'faction') return swearable(node.id) ? node.id : null;
   const preferred = preferDefId
     ? topMembership(graph, agentId, id => swearable(id) && graph.getNode(id)?.properties.factionDefId === preferDefId)
     : null;
-  return preferred ?? topMembership(graph, agentId, swearable);
+  return preferred ?? topMembership(graph, agentId, id => swearable(id) && !isRealmFaction(graph.getNode(id)));
 }
 
 /** Decision 3 — the faction present at the mortal's town that swears to `liegeId`, or null. */

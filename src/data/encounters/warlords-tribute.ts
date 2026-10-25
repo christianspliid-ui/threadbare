@@ -197,7 +197,7 @@ const WARLORD_DEMANDED_OATH = {
   kind: 'faction_broker_fealty',
   brokerAgentId: '$actor',
   vassalAgentId: '$cast:warlord',
-  // A reused local commander may serve the realm or the town as well; the company swears.
+  // A reused local commander may rank higher elsewhere; the free company swears first.
   vassalFactionDefId: 'mercenary_company',
   oathKind: 'coerced',
   forcedBy: 'demand',

@@ -1002,9 +1002,9 @@ export type EncounterAftermathReactionEffect =
     /** Whose faction swears — `$cast:<key>`. Absent: the present-faction pick. */
     readonly vassalAgentId?: string;
     /**
-     * Which of `vassalAgentId`'s factions swears first: a membership whose faction has
-     * this `factionDefId` (the Warlord's `mercenary_company`) wins over a higher-ranked
-     * one. A reused local NPC may belong to the realm or the town's own faction too.
+     * `vassalAgentId`'s membership of this faction kind swears first (the Warlord's
+     * `mercenary_company`), over a higher-ranked one. Without it, their top non-realm
+     * faction swears; a named agent never hands over a realm or the liege's enemy.
      */
     readonly vassalFactionDefId?: string;
     /** The oath's kind (`kind` is the effect discriminator). */

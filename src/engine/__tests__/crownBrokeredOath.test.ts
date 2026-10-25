@@ -184,12 +184,51 @@ describe('the Warlord\'s Tribute — a demanded oath', () => {
     expect(oathOf(next, GUILD_B)).toBeNull();
   });
 
-  it('a reused commander with no company falls back to their own swearable faction', () => {
+  it('a reused commander who serves another realm and no company never swears that realm (review gate, cycle 2)', () => {
+    const state = buildState();
+    state.graph.removeEdge('e_warlord_merc');
+    state.graph.addEdge({ id: 'e_warlord_r2', source: WARLORD, target: R2, type: 'member_of', properties: { rank: 1 } });
+    const { state: next } = applyEffects(state, [{ ...DEMAND, vassalFactionDefId: 'mercenary_company' }], runtime);
+    expect(oathOf(next, R2)).toBeNull();
+    expect(effectTraces()).toEqual([expect.objectContaining({ success: false, failReason: 'no_vassal' })]);
+  });
+
+  it('a reused commander with no company swears the order they lead', () => {
     const state = buildState();
     state.graph.removeEdge('e_warlord_merc');
     state.graph.addEdge({ id: 'e_warlord_guild', source: WARLORD, target: GUILD_B, type: 'member_of', properties: { rank: 1 } });
     const { state: next } = applyEffects(state, [{ ...DEMAND, vassalFactionDefId: 'mercenary_company' }], runtime);
     expect(oathOf(next, GUILD_B)?.liegeId).toBe(R);
+  });
+
+  it('a named agent\'s company that is the liege\'s enemy never swears', () => {
+    const state = buildState();
+    state.graph.addEdge({ id: 'e_merc_hostile', source: MERC, target: R, type: 'hostile_to', properties: {} });
+    expect(brokerOath(state, { brokerId: HERO, vassalAgentId: WARLORD, kind: 'coerced', forcedBy: 'demand' }))
+      .toEqual(expect.objectContaining({ sworn: false, reason: 'no_vassal' }));
+  });
+
+  it('a minted Warlord joins the live company nearest the hall, not the first one seeded (review gate, cycle 2)', () => {
+    const state = buildState();
+    const FAR = 'faction_merc_far';
+    state.graph.addNode({ id: FAR, name: 'Grey Lances', type: 'actor', properties: { actorType: 'faction', factionClass: 'mercenary', factionDefId: 'mercenary_company' } });
+    state.graph.addNode({ id: 'npc-far-cap', name: 'Far Captain', type: 'actor', properties: { actorType: 'individual' } });
+    state.graph.addEdge({ id: 'e_far_cap_at', source: 'npc-far-cap', target: TOWN_B, type: 'located_at', properties: {} });
+    state.graph.addEdge({ id: 'e_far_cap_m', source: 'npc-far-cap', target: FAR, type: 'member_of', properties: { rank: 1 } });
+    // FAR is seeded first in graph order; the near company stands in Millbrook.
+    state.graph.removeNode(MERC);
+    state.graph.addNode({ id: MERC, name: 'Scarlet Company', type: 'actor', properties: { actorType: 'faction', factionClass: 'mercenary', factionDefId: 'mercenary_company' } });
+    state.graph.addEdge({ id: 'e_warlord_at', source: WARLORD, target: TOWN, type: 'located_at', properties: {} });
+    state.graph.addEdge({ id: 'e_warlord_merc2', source: WARLORD, target: MERC, type: 'member_of', properties: { rank: 1 } });
+    const minted = materializeWalkOnActor(state, TOWN, TOWN, {
+      nodeId: 'npc-minted-near', name: 'the Warlord', supportRole: 'warlord', factionDefId: 'mercenary_company', generatedBy: 'test',
+    });
+    expect(state.graph.getOutgoingEdges(minted, 'member_of').map(e => e.target)).toEqual([MERC]);
+    state.graph.updateNode(MERC, { properties: { ...state.graph.getNode(MERC)!.properties, dissolved: true } });
+    const minted2 = materializeWalkOnActor(state, TOWN, TOWN, {
+      nodeId: 'npc-minted-near-2', name: 'the Warlord', supportRole: 'warlord', factionDefId: 'mercenary_company', generatedBy: 'test',
+    });
+    expect(state.graph.getOutgoingEdges(minted2, 'member_of').map(e => e.target)).toEqual([FAR]);
   });
 
   it('a mortal in no realm writes nothing and traces no_realm', () => {
