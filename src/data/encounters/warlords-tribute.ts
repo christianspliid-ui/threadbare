@@ -35,6 +35,9 @@ const warlordSpec: EncounterSupportActorSpec = {
   supportRole: 'warlord',
   spawnNpcRole: 'mercenary',
   spawnName: 'the Warlord',
+  // THR-1944 — a minted Warlord leads the free company, so the oath the mortal demands
+  // has a company to swear (`faction_broker_fealty` reads the Warlord's `member_of`).
+  factionDefId: 'mercenary_company',
 };
 
 const hallSpec: EncounterSupportLocationSpec = {

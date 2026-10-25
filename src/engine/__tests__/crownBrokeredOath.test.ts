@@ -23,6 +23,7 @@ import { PURSE_LAST_DAY_PROP, MEANS_BAND_PROP } from '../factionPurse';
 import { LOYALTY_START, OATH_RESWEAR_COOLDOWN_DAYS } from '../../data/crown-constants';
 import { PURSE_CYCLE_TICKS } from '../../data/faction-purse-constants';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { materializeWalkOnActor } from '../encounterSupportBundle';
 
 const R = 'faction_0';        // the mortal's realm, holds Millbrook
 const R2 = 'faction_1';       // a second realm
@@ -148,6 +149,19 @@ describe('the Warlord\'s Tribute — a demanded oath', () => {
     expect(sworn.brokeredBy).toBe(HERO);
     expect(effectTraces()).toEqual([expect.objectContaining({ success: true })]);
     expect(next.tickEvents.some(e => e.message.includes('Scarlet Company swore fealty to Hold of Witness Skyfield'))).toBe(true);
+  });
+
+  it('a minted Warlord leads the free company, so the demand has a company to swear (review gate, round 1)', () => {
+    const state = buildState();
+    state.graph.updateNode(MERC, { properties: { ...state.graph.getNode(MERC)!.properties, factionDefId: 'mercenary_company' } });
+    const spec = getUnifiedTemplateById('reputation.iron.warlords_tribute')?.supportBundle
+      ?.find(s => s.kind === 'actor' && s.key === 'warlord') as { factionDefId?: string; supportRole?: string } | undefined;
+    expect(spec?.factionDefId).toBe('mercenary_company');
+    const minted = materializeWalkOnActor(state, TOWN, TOWN, {
+      nodeId: 'npc-minted-warlord', name: 'the Warlord', supportRole: spec!.supportRole, factionDefId: spec!.factionDefId, generatedBy: 'test',
+    });
+    const result = brokerOath(state, { brokerId: HERO, vassalAgentId: minted, kind: 'coerced', forcedBy: 'demand' });
+    expect(result).toEqual(expect.objectContaining({ sworn: true, vassalId: MERC, liegeId: R }));
   });
 
   it('a mortal in no realm writes nothing and traces no_realm', () => {
