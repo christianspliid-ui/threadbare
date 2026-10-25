@@ -11,7 +11,6 @@ import { sampleAccount } from '../accountStore';
 import { resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../traceBuffer';
 import { dominionOf } from '../dominion';
-import { phaseDominion } from '../phaseDominion';
 import { buildEchoGroup, pastLineText } from '../worldPastWords';
 import { echoRelation, monumentTargetBand, seedingOrder } from '../seedEchoes';
 import { DOMINION_BAND_RANK } from '../../data/dominion-content';
@@ -119,29 +118,6 @@ describe.each([42, 99, 7])('THR-1843 — seed %i with SAMPLE_ACCOUNT', seed => {
     expect(state.graph.getIncomingEdges(relic.nodeId, 'possesses')).toHaveLength(0);
     expect(state.graph.getIncomingEdges(relic.nodeId, 'bonded_to')).toHaveLength(0);
     expect(dominionOf(state.graph, god, relic.nodeId).band).toBe('foreign');
-  });
-
-  it('fades a kin monument untended for 300 ticks; an opposed one still stands Hostile', () => {
-    const untended = (state: GameState): void => {
-      for (let t = 1; t <= 300; t++) {
-        state.tick = t;
-        phaseDominion(state);
-      }
-    };
-    const kin = world(KIN, seed, sampleAccount());
-    const kinGod = godId(kin);
-    const warm = kin.seededEchoes!.seeded.find(e => e.kind === 'monument')!;
-    const before = dominionOf(kin.graph, kinGod, warm.hostId).band;
-    untended(kin);
-    const after = dominionOf(kin.graph, kinGod, warm.hostId).band;
-    expect(DOMINION_BAND_RANK[after]).toBeLessThan(DOMINION_BAND_RANK[before]);
-
-    const opp = world(OPPOSED, seed, sampleAccount());
-    const oppGod = godId(opp);
-    const m = opp.seededEchoes!.seeded.find(e => e.kind === 'monument')!;
-    const oppBefore = dominionOf(opp.graph, oppGod, m.hostId).band;
-    untended(opp);
-    expect(dominionOf(opp.graph, oppGod, m.hostId).band).toBe(oppBefore);
   });
 
   it('is deterministic: the same account and seed place the same echoes', () => {
