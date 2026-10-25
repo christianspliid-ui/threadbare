@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-25 08:00 local (07:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-25 08:58 local (07:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -44,6 +44,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-25: the heavy simulation tests' restless-road check and settlement speed budget are fixed** ([THR-2035](https://linear.app/threadbare/issue/THR-2035)). Merged via [#2567](https://github.com/christianspliid-ui/threadbare/pull/2567) and live; the heavy tests are re-running on it now.
 - **2026-10-25: mandate and essence texts no longer promise that mandates slow the doom** ([THR-2004](https://linear.app/threadbare/issue/THR-2004)). Merged via [#2566](https://github.com/christianspliid-ui/threadbare/pull/2566).
 - **2026-10-25: "The world remembers" lists the World-Soul memories a run carries** ([THR-1971](https://linear.app/threadbare/issue/THR-1971)). Merged via [#2565](https://github.com/christianspliid-ui/threadbare/pull/2565) and live.
 - **2026-10-25: a building a mortal raises is the town's next building, and the builder holds it** ([THR-1966](https://linear.app/threadbare/issue/THR-1966)). Merged via [#2564](https://github.com/christianspliid-ui/threadbare/pull/2564) and live.
@@ -53,7 +54,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: echoes of a past god stand in the new world** ([THR-1843](https://linear.app/threadbare/issue/THR-1843)). Merged via [#2559](https://github.com/christianspliid-ui/threadbare/pull/2559) and live.
 - **2026-10-25: a lake hex's land page reads as water, not as a desert; coast and river ruins stay dry** ([THR-2021](https://linear.app/threadbare/issue/THR-2021)). Merged via [#2558](https://github.com/christianspliid-ui/threadbare/pull/2558) and live.
 - **2026-10-25: a liege pays the raise for a sworn free company with no army and no coin** ([THR-2020](https://linear.app/threadbare/issue/THR-2020)). Merged via [#2557](https://github.com/christianspliid-ui/threadbare/pull/2557) and live.
-- **2026-10-24: the realm check "Oaths pay" is judged on the leading Crown** ([THR-2017](https://linear.app/threadbare/issue/THR-2017)). Merged via [#2556](https://github.com/christianspliid-ui/threadbare/pull/2556) and live.
 
 ---
 

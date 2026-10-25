@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 08:00 local (07:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 08:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -21,7 +21,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 - [Founding gates read a meeting-record field nobody writes](https://linear.app/threadbare/issue/THR-2009/founding-gates-read-a-meeting-record-field-nobody-writes-the-reach): at the end of the run, what the First becomes depends on **who they were born as**, not on the Reach the god strengthened. Their mark does not decide it. A Shadow-born First can never end in Sacrifice. Only a Star-, Veil- or Eye-born First can Transcend. Today Transcendence never happens in any run, because the check reads an empty field. *Veto:* "the ending should follow what the god made of them — the mark". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25b.md)*
 - [A seeded relic has no place in the graph](https://linear.app/threadbare/issue/THR-2030/a-seeded-relic-has-no-place-in-the-graph-its-site-is-only-a-property): a relic left by an earlier god now **lies at its place** through its own link, the way an unclaimed thing lies on the ground. It is not "at" the place the way a person is. Its page says where it lies, the place's page lists it, and it still reads Foreign until someone takes it up. *Veto:* "an artifact should simply be at a place like a person". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25a.md)*
-- [Debts in the money encounters](https://linear.app/threadbare/issue/THR-2023): four calls inside [the debts plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-24-thr-2023-encounter-debts.md). Each can be vetoed on its own. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24c.md)*
+- [Debts in the money encounters](https://linear.app/threadbare/issue/THR-2023): four calls inside [the debts plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-24-thr-2023-encounter-debts.md). Each can be vetoed on its own; the veto window closes around 21:55 tonight. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24c.md)*
   - **A collected debt is the oldest one owed to the collector.** A won collection pays it, a lost one writes it off. *Veto:* "the collector should pick the biggest or the newest debt".
   - **The cathedral's treasury is the dean's own purse**, not a temple faction's. *Veto:* "the temple faction's treasury should pay".
   - **In The Loan, your mortal is the lender**, and is out of pocket until they collect. *Veto:* "the mortal should only broker the loan".
@@ -31,7 +31,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 ready, 2 in progress.** [The mandate texts fix](https://linear.app/threadbare/issue/THR-2004/three-player-texts-promise-that-mandates-slow-the-doom-clock-they-only) merged a few minutes ago ([#2566](https://github.com/christianspliid-ui/threadbare/pull/2566)); its ticket closes itself. The builder has shipped five tickets since 01:40 UTC.
+**Healthy: 9 ready, 2 being built.** [The heavy-tests fix](https://linear.app/threadbare/issue/THR-2035) merged ([#2567](https://github.com/christianspliid-ui/threadbare/pull/2567)). [The hand bar that names the cards below it](https://linear.app/threadbare/issue/THR-1942/a-hand-of-five-to-eight-cards-hides-cards-under-the-hand-bar-the-bar) is armed as [#2568](https://github.com/christianspliid-ui/threadbare/pull/2568) and merges on green. A new pickup run is on [the restless road that ends at the door](https://linear.app/threadbare/issue/THR-2036/the-restless-road-ends-at-the-door-the-first-walks-12-hexes-for-a).
 
 - [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. No branch or local worktree holds work for it. It waits on your answer above, not on the builder.
 - [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and [oath-brokering encounters](https://linear.app/threadbare/issue/THR-1944) are agent-owned and have sat on the shelf over a week; most of that week was the silences above.
@@ -39,6 +39,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-- **Heavy tests red on main since 06:20 local (05:20 UTC)**, after the settlement economy merged: its new phase runs slightly over its speed budget on the test machine, and the restless-road test no longer finds its link. Ticket [THR-2035](https://linear.app/threadbare/issue/THR-2035) filed for the builder.
+- **Heavy tests red on main since 06:20 local (05:20 UTC).** The fix ([THR-2035](https://linear.app/threadbare/issue/THR-2035), [#2567](https://github.com/christianspliid-ui/threadbare/pull/2567)) merged at 08:38 local, and the heavy tests are running on it now ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/40173518642)). No new ticket: if that run is red, the next brief files one.
+- **Engine speed crossed the alarm line:** tick cost 183 ms/tick steady, 28% above the 7-day median (143, 81 rows since 07a83918); top phase agent_decision, 610 agents. Name the merges between 07a83918 and 78674965: `git log --oneline --merges 07a83918..78674965`. The settlement economy ([THR-1923](https://linear.app/threadbare/issue/THR-1923)) merged in that window and is the likeliest cause. This is the builder's to chase, not yours.
 
-Everything else is green: main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (shipping, not stalled). The live site serves the latest commit ([81faa81c](https://github.com/christianspliid-ui/threadbare/commit/81faa81c)). The worktree reaper ran at 07:40. Engine speed is 175 ms/tick, 23% slower than the 7-day median (142) but inside the 25% alarm line.
+Everything else is green: main's CI, the three scheduled background jobs, all 13 scheduled lanes, and the builder (shipping, not stalled). The live site serves the latest commit ([78674965](https://github.com/christianspliid-ui/threadbare/commit/78674965)).
