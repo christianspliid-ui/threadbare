@@ -596,8 +596,11 @@ function ensureCommit(cwd: string, sha: string, prNumber: number | undefined): b
 function gatherGateInputs(cwd: string, headSha: string, prComments: readonly string[]): GateInputs {
   const top = git(cwd, ["rev-parse", "--show-toplevel"]);
   const receiptDir = path.join(top, RECEIPT_DIR);
-  const files = git(cwd, ["diff", "--name-only", `${BASE_REF}...${headSha}`]).split("\n").filter(Boolean);
-  const addedUiLines = uiAddedLines(git(cwd, ["diff", "--numstat", `${BASE_REF}...${headSha}`]));
+  // `--no-renames`: a move reports both paths, so a file moved out of src/engine/ still
+  // puts the diff in scope, and numstat never prints a `src/{hooks => components}/x` path
+  // that matches no UI prefix (THR-1949 review).
+  const files = git(cwd, ["diff", "--no-renames", "--name-only", `${BASE_REF}...${headSha}`]).split("\n").filter(Boolean);
+  const addedUiLines = uiAddedLines(git(cwd, ["diff", "--no-renames", "--numstat", `${BASE_REF}...${headSha}`]));
   const commitBodies = git(cwd, ["log", "--format=%B", `${BASE_REF}..${headSha}`]);
   const exactPath = path.join(receiptDir, `${headSha}.json`);
   const exactReceipt = existsSync(exactPath) ? readReceipt(exactPath) : null;

@@ -564,6 +564,20 @@ describeHook("review gate — the real hook against a fixture repo", () => {
     expect(runHook().status).toBe(2);
   }, SUBPROCESS_TEST_TIMEOUT_MS);
 
+  it("keeps a file moved out of src/engine/ in scope — a rename does not hide the source path (THR-1949 review)", () => {
+    resetTo(baseSha);
+    clearReceipts();
+    commit("src/engine/moved.ts", "feat: engine module with enough text to be a rename");
+    git("update-ref", "refs/remotes/origin/main", head());
+    git("mv", "src/engine/moved.ts", "src/lib-moved.ts");
+    git("commit", "-q", "-m", "refactor: move it out of engine");
+    try {
+      expect(runHook().status).toBe(2);
+    } finally {
+      git("update-ref", "refs/remotes/origin/main", baseSha);
+    }
+  }, SUBPROCESS_TEST_TIMEOUT_MS);
+
   it("denies a UI diff adding more than the large-UI threshold of non-test lines (THR-1949)", () => {
     resetTo(baseSha);
     clearReceipts();
