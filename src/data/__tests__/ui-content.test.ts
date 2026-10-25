@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { UI_TOOLTIPS, getUITooltip } from '../ui-content';
+import { SPINE_BEAT_PRESENTATION } from '../ascendant-beat-content';
 
 describe('UI_TOOLTIPS', () => {
   it('has entries for all core HUD elements', () => {
@@ -38,6 +39,32 @@ describe('UI_TOOLTIPS', () => {
         }
       }
     }
+  });
+});
+
+// THR-2004 — mandates neither slow the Doom nor grant essence (a checkpoint kept well
+// only softens the next stage's blow). No player text may promise otherwise.
+describe('mandate texts promise only what the engine does', () => {
+  // "slow slide" (the seat beat's Doom) is the clock's own pace, not a mandate's effect.
+  const DOOM_SLOWING = /\bslow(s|ed|ing)? (the|it|its|down)\b|\bhold(s)? (it|the \w+) back|holds back/i;
+
+  it('the mandate tooltips carry no doom-slowing claim', () => {
+    for (const key of ['ui.mandate_tracker', 'ui.mandate_stage_culmination']) {
+      expect(UI_TOOLTIPS[key].desc, key).not.toMatch(DOOM_SLOWING);
+      expect(UI_TOOLTIPS[key].desc, key).not.toMatch(/essence/i);
+    }
+  });
+
+  it('the essence tooltip does not name mandates as an income', () => {
+    const desc = UI_TOOLTIPS['ui.essence_panel'].desc ?? '';
+    expect(desc).not.toMatch(/mandate/i);
+    expect(desc).toMatch(/threads/);
+  });
+
+  it('the seat beat does not say mandates hold the Doom back', () => {
+    const text = JSON.stringify(SPINE_BEAT_PRESENTATION['beat.spine.the_seat']);
+    expect(text).not.toMatch(DOOM_SLOWING);
+    expect(text).toMatch(/blunts its blows/);
   });
 });
 
