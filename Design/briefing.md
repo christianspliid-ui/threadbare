@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 01:58 local (23:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 02:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -32,11 +32,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 ready, 2 in progress.** The builder is still working on [a liege paying for its vassal's army](https://linear.app/threadbare/issue/THR-2020) (sworn free companies field an army on only 12–33% of their sworn days); its branch is pushed and the run, started at 23:36 local, was active a few minutes ago. Back on the shelf: [the encounter checker's second version](https://linear.app/threadbare/issue/THR-2012), which will see each encounter's stakes and judge the real test. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-24f.md)* The design lane closed two tickets whose calls you saw on 20–21 Oct ([warm brief v2](https://linear.app/threadbare/issue/THR-1861), [founding costs](https://linear.app/threadbare/issue/THR-2006)); nothing was vetoed.
+**Healthy: 8 ready, 2 in progress.** Two more jobs shipped since the last brief: [a liege pays for its free company's army](https://linear.app/threadbare/issue/THR-2020) ([#2557](https://github.com/christianspliid-ui/threadbare/pull/2557)) and [a lake hex's land page reads as water](https://linear.app/threadbare/issue/THR-2021) ([#2558](https://github.com/christianspliid-ui/threadbare/pull/2558)), both live. The builder has now claimed [echoes of a past god in the new world](https://linear.app/threadbare/issue/THR-1843); its run was active a minute ago.
 
-- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 9 days after it was first claimed. It waits on your answer above, not on the builder.
-- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and the two cross-run Dominion jobs ([echoes](https://linear.app/threadbare/issue/THR-1843), [widening choices](https://linear.app/threadbare/issue/THR-1844)) have not been touched for a week. The agents own these; most of that week is the silences above.
+- [Cut per-PR paperwork to one line](https://linear.app/threadbare/issue/THR-1947) is still parked and unassigned, 10 days after it was first claimed. It waits on your answer above, not on the builder.
+- [The settlement-economy glossary terms](https://linear.app/threadbare/issue/THR-1924) and [widening choices across runs](https://linear.app/threadbare/issue/THR-1844) are agent-owned and older than a week on the shelf; most of that week was the silences above.
+- Warm playtest round 3 cannot start: its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)) that themselves wait on round 3. The playtest lane owns that gate. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-24d.md)*
 
 ## Health
 
-All green. Main's CI, the three scheduled background jobs, the PR queue (empty), all 12 scheduled lanes, and the builder (busy, not stalled). The live site serves the latest commit ([8ad288e1](https://github.com/christianspliid-ui/threadbare/commit/8ad288e1)). The worktree reaper ran at 01:40 local. Engine speed is 130 ms/tick, 10% faster than the 7-day median (144).
+All green. Main's CI, the three scheduled background jobs, the PR queue (empty), all 12 scheduled lanes, and the builder (busy, not stalled). The live site serves the latest commit ([dca1ba79](https://github.com/christianspliid-ui/threadbare/commit/dca1ba79)). The worktree reaper ran at 02:40 local. Engine speed is 141 ms/tick, 2% faster than the 7-day median (144).
