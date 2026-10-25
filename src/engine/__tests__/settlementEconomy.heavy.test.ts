@@ -33,6 +33,17 @@ const CI_HEADROOM = 2.5;
 /** Plan budgets: phase per day on medium, and the settling run's added world-creation time. */
 const PHASE_MS_PER_DAY_MEDIUM = 2;
 const SETTLING_RUN_MS_MEDIUM = 300;
+/**
+ * THR-2035: vitest's transformed modules run the phase ~2× slower than the shipped bundle.
+ * Measured 2026-10-25 on one machine: 1.51 / 1.75 ms a day (seeds 42 / 99, esbuild bundle,
+ * 300 days) against 2.9 / 3.3 ms in this test — the plan's 2 ms holds for the game, and the
+ * test's ceiling carries the harness on top of CI_HEADROOM.
+ */
+const VITEST_HARNESS_OVERHEAD = 2;
+/** Days run unmeasured first, so JIT warm-up is not billed to the phase. */
+const PHASE_WARMUP_DAYS = 10;
+/** Days measured for the per-day figure. */
+const PHASE_MEASURED_DAYS = 50;
 
 for (const seed of [42, 99]) {
   describe(`settlement economy on seed ${seed} (medium)`, () => {
@@ -109,13 +120,15 @@ for (const seed of [42, 99]) {
     it('the phase stays inside its per-day budget, and the settling run inside its world-creation budget', () => {
       const { state } = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, seed, createBalancedCosmology(), 'medium') as { state: GameState };
       const hexRealmId = buildRealmProjection(state.graph, state.tiles).hexRealmId;
-      const start = Date.now();
-      for (let d = 1; d <= 50; d++) runSettlementEconomyDay({ graph: state.graph, tiles: state.tiles, tick: d * TICKS_PER_DAY, seed, hexRealmId });
-      const perDay = (Date.now() - start) / 50;
+      const runDay = (d: number) => runSettlementEconomyDay({ graph: state.graph, tiles: state.tiles, tick: d * TICKS_PER_DAY, seed, hexRealmId });
+      for (let d = 1; d <= PHASE_WARMUP_DAYS; d++) runDay(d);
+      const start = performance.now();
+      for (let d = PHASE_WARMUP_DAYS + 1; d <= PHASE_WARMUP_DAYS + PHASE_MEASURED_DAYS; d++) runDay(d);
+      const perDay = (performance.now() - start) / PHASE_MEASURED_DAYS;
       // A second settling run on the settled world costs what the first one did.
       const settling = runSettlingRun(state.graph, state.tiles, seed);
       console.log(`[THR-1923] seed ${seed}: phase ${perDay.toFixed(2)} ms/day; settling run ${settling.ms} ms over ${settling.settlements} settlements`);
-      expect(perDay).toBeLessThan(PHASE_MS_PER_DAY_MEDIUM * CI_HEADROOM);
+      expect(perDay).toBeLessThan(PHASE_MS_PER_DAY_MEDIUM * VITEST_HARNESS_OVERHEAD * CI_HEADROOM);
       expect(settling.ms).toBeLessThan(SETTLING_RUN_MS_MEDIUM * CI_HEADROOM);
     }, 300_000);
   });
