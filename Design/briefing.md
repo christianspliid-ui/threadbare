@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-25 17:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-25 18:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,7 +34,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**4 ready, but none can be picked up before about 20:45 tonight.** All four ([THR-2023](https://linear.app/threadbare/issue/THR-2023), [THR-2009](https://linear.app/threadbare/issue/THR-2009), [THR-2030](https://linear.app/threadbare/issue/THR-2030), and the new [THR-1929](https://linear.app/threadbare/issue/THR-1929), which opens tomorrow at 15:29) are inside their veto windows (see *Decided for you*). So the builder is idle by design: every pickup run since 12:43 UTC stood down for that reason. Nothing new merged since the last brief. The design lane also filed [THR-2039](https://linear.app/threadbare/issue/THR-2039/a-seeds-query-can-never-reach-a-tavern-scene-all-ten-tavern-night) (no seed can reach a tavern scene), which waits on THR-1929.
+**4 ready, but none can be picked up before about 20:45 tonight.** All four ([THR-2023](https://linear.app/threadbare/issue/THR-2023), [THR-2009](https://linear.app/threadbare/issue/THR-2009), [THR-2030](https://linear.app/threadbare/issue/THR-2030), and the new [THR-1929](https://linear.app/threadbare/issue/THR-1929), which opens tomorrow at 15:29) are inside their veto windows (see *Decided for you*). So the builder is idle by design: every pickup run since 12:43 UTC stood down for that reason, the latest at 17:52 UTC. Nothing new merged since the last brief, and no lane wrote a new report. The design lane also filed [THR-2039](https://linear.app/threadbare/issue/THR-2039/a-seeds-query-can-never-reach-a-tavern-scene-all-ten-tavern-night) (no seed can reach a tavern scene), which waits on THR-1929.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked and unassigned since 15 Oct (10 days). Its sibling THR-1949 shipped without an attended sitting, so THR-1947 can go the same way.
 - [THR-1950](https://linear.app/threadbare/issue/THR-1950) is parked in progress, unassigned: its code is merged and it waits only on your approval above. No branch and no local worktree holds work for either ticket.
@@ -42,4 +42,6 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The live site serves the newest commit ([e67e0517](https://github.com/christianspliid-ui/threadbare/commit/e67e0517)). Main's CI, the three scheduled background jobs, all 13 scheduled lanes and the worktree reaper are healthy, and no PRs are stuck. The builder is idle by design, not stalled. Engine speed stays under the alarm line: 177 ms/tick, 23% above the 7-day median of 144.
+- **Engine speed crossed the alarm line this hour:** "tick cost 197 ms/tick steady, 37% above the 7-day median (144, 82 rows since de68cb60); top phase agent_decision, 610 agents. Name the merges between de68cb60 and e67e0517: git log --oneline --merges de68cb60..e67e0517". The same commit measured 175 and 177 in the last two hours, so this reading is partly machine noise; the climb across the week is the builder's to chase, not yours.
+
+Everything else is green. The live site serves the newest commit ([e67e0517](https://github.com/christianspliid-ui/threadbare/commit/e67e0517)). Main's CI, the three scheduled background jobs, all 13 scheduled lanes and the worktree reaper are healthy, and no PRs are stuck. The builder is idle by design, not stalled.
