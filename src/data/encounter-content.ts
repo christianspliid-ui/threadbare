@@ -5973,9 +5973,10 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.the_loan',
     stakes: {
       goal: 'set fair terms on a loan to a desperate borrower',
-      risk: 'sign a loan the borrower resents from day one',
+      // THR-2023 — the lender's coin goes out on every band, so the loss is named.
+      risk: 'lend the coin on terms the borrower resents from day one',
       won: 'set a loan both sides signed without flinching',
-      lost: 'signed a loan the borrower resents already',
+      lost: 'lent the coin on terms the borrower resents already',
     },
     // THR-2023 — the acting mortal is the lender; the borrower is cast, and owes them
     // on every band. Failure adds the resentment its prose names. The lender lays the

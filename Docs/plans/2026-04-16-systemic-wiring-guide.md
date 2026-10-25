@@ -329,6 +329,7 @@ The following typed effects ARE callable from `aftermathConfig.reactions[].effec
 - `intelligence` — writes `intelligenceRecords` on agent node (existing)
 - `apply_condition` / `remove_condition` / `condition_attachment` — condition edges + attachments (THR-114 / THR-117)
 - `attachment_grant` — any catalog attachment: blessing, curse, bestowed power, spell, or an **agreement** (edge-backed, needs a counterparty) (THR-1110)
+- `debt_settle` — ends a **debt** before its term: the oldest live debt owed to `creditorAgentId` (default `$actor`) is paid or written off (THR-2023)
 - `grant_companion` / `remove_companion` — a named person who walks with the bearer (THR-1096)
 - `hidden_mark` — discoverable secret on agent (existing)
 - `encounter_seed` — plants future encounter, creates `caused_by` edge (THR-116)
@@ -1202,6 +1203,32 @@ With the markers, `artifact.enchant` / `artifact.empower` charge 4 essence at di
 **This is a dispatcher, not a new system.** Both write paths already existed: `instantiateReward` for node-backed categories and `instantiateAgreementReward` for agreements — the latter fully built since the attachment-slot design and, until this, with **zero callers**. Nothing about how an attachment is written changed; what changed is that an aftermath can now ask for it.
 
 **Where to find the implementation:** the `attachment_grant` case in `src/engine/encounterAftermath.ts`, the two instantiation paths in `src/engine/rewardPool.ts`, the catalog in `src/data/agreement-reward-catalog.ts`, and the `attachment` ref kind in `src/engine/nudgeGrantLiveness.ts`.
+
+### Ending a debt early: `debt_settle` (THR-2023)
+
+**What it does:** removes the oldest live debt owed to a creditor, before its term. `settlement: 'paid'` makes the debtor pay `DEBT_REPAY_MEANS` (scaled down for a poor debtor, like every loss); `'written_off'` strikes it and no coin moves.
+
+**Why you want it:** a debt used to end only when its term ran out or a party died, so a scene *about* collecting one ("collect the overdue debt in full") collected nothing. Now Debt Collection pays off or writes off the collector's own oldest debt, and the debtor's sheet row, Debt-Laden and the ascendant bar's vow all follow.
+
+**How to author it:**
+
+```ts
+// The actor collects what is owed to them; the creditor's gain is its own row.
+critical_success: [
+  { kind: 'debt_settle', creditorAgentId: '$actor', settlement: 'paid' },
+  { kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP },
+],
+failure: [{ kind: 'debt_settle', creditorAgentId: '$actor', settlement: 'written_off' }],
+```
+
+**What an author must know:**
+
+1. **The creditor's gain is yours to author.** `settleDebt` writes only the debtor's loss, so the coin is counted once. Put the collector's pay in its own `economy_shift` row.
+2. **Owed nothing is not a failure.** A creditor with no live debt no-ops with `debt_settle_noop reason:'no_debt_owed'`, and the band's other rows still apply.
+3. **Debts only.** A favour (`owes_favor`) has its own verbs (call in, forgive) and is never touched. Every debt is the one `agreement.debt.minor`; do not add a note or toll-book kind (Law 43).
+4. **`debtorAgentId`** narrows the pick to one debtor when the scene names them (a `$cast:` key).
+
+**Where to find the implementation:** `src/engine/debtSettle.ts` (`settleDebt`, `compareDebtsOldestFirst`), the `debt_settle` case in `src/engine/encounterAftermath.ts`, the constants in `src/data/mortal-means-constants.ts`, traces `agreement_settled` / `debt_settle_noop`.
 
 ---
 

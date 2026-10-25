@@ -3037,7 +3037,7 @@ export function applyEncounterAftermathReaction(
             reason: ds.reason,
             templateId: action?.templateId,
             summary: `debt_settle[${i}] no-op: ${ds.reason} (${dsCreditorId ?? 'no creditor'})`,
-          } as unknown as TraceEntry);
+          });
           break;
         }
         mutationSummary.touchedStructure = true;
@@ -3053,7 +3053,7 @@ export function applyEncounterAftermathReaction(
           meansDelta: ds.meansDelta,
           templateId: action?.templateId,
           summary: `debt between ${dsDebtorName} and ${dsCreditorName} settled (${effect.settlement})`,
-        } as unknown as TraceEntry);
+        });
         if (ds.shift) {
           emitTrace({
             tick,

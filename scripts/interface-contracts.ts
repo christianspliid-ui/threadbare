@@ -1260,7 +1260,9 @@ export const CONTRACTS: readonly Contract[] = [
     // THR-1999: an agreement edge `instantiateAgreementReward` writes is removed by
     // `expireAgreements` (orchestrator phase 6.625c) once `acquiredTick + ticksRemaining`
     // is reached — the reward path's term now ends on the graph, not only at read time.
-    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts', 'src/engine/spellGrant.ts', 'src/engine/agreementExpiry.ts'],
+    // THR-2023: a second remover — an encounter's `debt_settle` band row (`settleDebt`)
+    // removes the oldest live debt owed to a creditor before its term (paid or written off).
+    writeSites: ['src/engine/rewardPool.ts', 'src/types/attachments.ts', 'src/engine/itemGenerator/rewardMinting.ts', 'src/engine/spellGrant.ts', 'src/engine/agreementExpiry.ts', 'src/engine/debtSettle.ts'],
     readSites: [
       'src/engine/orchestrator.ts',
       'src/engine/unifiedActionResolution.ts',
