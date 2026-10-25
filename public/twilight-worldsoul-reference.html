@@ -49,7 +49,12 @@
     folds the run into the account record at harvest; "Wake in a new world" builds a
     NEW world (fresh worldgen, derived seed) through Remembrance, tilted by the carried
     fundament and loaded with the live echoes. transitionToNewCycle has no production
-    caller any more. Placing echoes on the new map is slice 2 (THR-1843) = DESIGN.
+    caller any more.
+  - THR-1843 slice 2 (2026-10-25): seedEchoes (seedEchoes.ts) places the live map
+    echoes at world creation, up to 6, the god's own first: a monument Place on
+    Foreign ground (host lifted until the new god reads Held/Touched when kin, Hostile
+    when opposed), an heir promoted to notable of the old line, an unborne relic.
+    One "Earlier worlds" line per echo leads Before you woke. IMPL.
   - The new cycle gets a fresh Doom clock (THR-1642): createDoomClockState with the
     same archetype and DEFAULT_DOOM_TICKS, identity milestones un-fired. Before, the
     expired clock carried over and cycle 2 re-entered twilight on its first tick.

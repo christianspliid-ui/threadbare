@@ -29,6 +29,9 @@ import { createDefaultFundament, createResonanceState } from './worldSoul';
 import type { AccountRecord } from '../types/account';
 import type { FundamentState } from '../types/worldSoul';
 import { accountShapesWorld, liveEchoes, tiltCosmology } from './accountRecord';
+import { seedEchoes, seedingOrder } from './seedEchoes';
+import type { WorldGraph } from './graph';
+import type { SeededEchoesSummary } from '../types/echo';
 import { createStartingEssencePool } from './influence';
 import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { TICKS_PER_SEASON } from '../types/temporal';
@@ -112,6 +115,22 @@ export const DEFAULT_TICKS_PER_SEASON = TICKS_PER_SEASON;
 // ─── Game Initialization ──────────────────────────────────────────
 
 /**
+ * THR-1843 — `seedEchoes` behind the fail-soft row: a throw starts the world with no
+ * echoes and one `echo.seed_skipped` per live echo, never a failed world.
+ */
+function seedEchoesFailSoft(graph: WorldGraph, ascendantId: string, account: AccountRecord, seed: number): SeededEchoesSummary {
+  try {
+    return seedEchoes(graph, ascendantId, account, seed);
+  } catch {
+    const skipped = seedingOrder(account).map(e => ({ echoId: e.def.id, reason: 'error' as const }));
+    for (const s of skipped) {
+      emitTrace({ tick: 0, category: 'echo.seed_skipped', echoId: s.echoId, reason: 'error', summary: `echo ${s.echoId} not seeded: seeding failed` });
+    }
+    return { seeded: [], skipped };
+  }
+}
+
+/**
  * Initialize a fresh GameState for a new playthrough.
  *
  * Creates:
@@ -151,6 +170,11 @@ export function initializeGameState(
    * fundament, so every existing caller builds today's world byte for byte.
    */
   carriedFundament?: FundamentState,
+  /**
+   * THR-1843 — the account whose live echoes stand in this world (monument, heir,
+   * relic). Absent → no echoes, today's world byte for byte.
+   */
+  echoAccount?: AccountRecord,
 ): {
   state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
   const worldScenario = resolveWorldScenario(scenario);
@@ -359,6 +383,9 @@ export function initializeGameState(
   // crosses), and the faction aggregates — so tick 0 reads a band for a faction too.
   graph.updateNode(ascendantId, { properties: { dominionPowerBaseline: godBoughtScoreSum(graph, ascendantId) } });
   recordSeededScores(graph);
+  // THR-1843 E7 — the old gods' marks, after the seed snapshot (so a kin monument's
+  // lift fades untended) and before the faction aggregates (so factions see it).
+  const seededEchoes = echoAccount ? seedEchoesFailSoft(graph, ascendantId, echoAccount, seed) : undefined;
   computeFactionSphereAggregates(graph, 0);
 
   // No initial threads — the ascendant starts alone with no retinue.
@@ -491,6 +518,7 @@ export function initializeGameState(
     },
     echoDefinitions: [],
     echoStates: [],
+    ...(seededEchoes ? { seededEchoes } : {}),
     chronicle: createGreatChronicle(),
     worldScenario,
   };
@@ -591,6 +619,7 @@ export function initializeGameStateFromIdentity(
     doomArchetypeOverride,
     undefined,
     carried?.fundament,
+    carried,
   );
 
   // THR-1813 E5 — the carried echoes and memories enter the new world, so the card

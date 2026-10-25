@@ -32,6 +32,7 @@ import { getHexRegionData } from '../../hexRegion';
 import { resolveContentEntry } from '../../contentEntryResolver';
 import { SURFACE_BY_CONTENT_KIND } from '../../../data/surface-registry';
 import { INSPECTOR_WORDS, positionalDangerWord } from '../../../data/view-content';
+import { echoLineageLine } from '../../../data/account-content';
 import type { ViewSelector } from '../readView';
 import { readView } from '../readView';
 import { buildConnections, containmentRows, type ConnectionSubject } from '../connections';
@@ -169,6 +170,8 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
       ref,
       name: node.name,
       kindLabel: 'Thing',
+      // THR-1843 — an heir of an earlier world's line reads it under their name.
+      ...(typeof node.properties.echoLineageOf === 'string' ? { epithet: echoLineageLine(node.properties.echoLineageOf) } : {}),
       visual: { kind: ref.kind, id: node.id, portraitGate: 'shown' },
       whereLine: whereOf(state, node),
       mapLocated: hk !== null,

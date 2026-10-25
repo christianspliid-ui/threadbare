@@ -32,7 +32,7 @@ import type {
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
 import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace } from './traces/sphere-traces';
-import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace } from './traces/account-traces';
+import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace } from './traces/account-traces';
 import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
 import type { LuckBagRollTrace, LuckLegendaryCycleTrace } from './traces/luck-traces';
@@ -698,6 +698,9 @@ export type TraceCategory =
   | 'account.unreadable'
   | 'account.world_shaped'
   | 'harvest.divine_echo_picked'
+  // Echoes stand in the new world (THR-1843)
+  | 'echo.seeded'
+  | 'echo.seed_skipped'
   // The end of the age — Twilight beats and World-Soul memories (THR-1381). Interfaces in `src/types/traces/account-traces.ts`.
   | 'age.ended'
   | 'twilight.beats_built'
@@ -1060,6 +1063,9 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'account.unreadable',
   'account.world_shaped',
   'harvest.divine_echo_picked',
+  // Echoes stand in the new world (THR-1843)
+  'echo.seeded',
+  'echo.seed_skipped',
   // The end of the age (THR-1381)
   'age.ended',
   'twilight.beats_built',
@@ -5578,6 +5584,9 @@ export type TraceEntry =
   | AccountUnreadableTrace
   | AccountWorldShapedTrace
   | HarvestDivineEchoPickedTrace
+  // Echoes stand in the new world (THR-1843)
+  | EchoSeededTrace
+  | EchoSeedSkippedTrace
   // The end of the age (THR-1381)
   | AgeEndedTrace
   | TwilightBeatsBuiltTrace

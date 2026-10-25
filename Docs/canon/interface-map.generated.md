@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 96 |
-| **Total** | **312** |
+| 🔵 UNVERIFIED-OK | 98 |
+| **Total** | **314** |
 
 ## Contracts by producing subsystem
 
@@ -406,6 +406,7 @@ remediation ticket or the build fails.
 | `dominion-band-prices-god-casts` | Home turf is cheaper and surer (THR-1748). A god card is priced and rolled on its target's Dominion band — `dominionOf` over the target's sphere scores against the god's bought points. The preview (`getTargetActionSlots`) and the charge (`preparePlayerCast`, through `dominionScaledEssenceCost`) read the same band so the price shown is the price paid; the resolver's `sphereFactor` reads it for a player cast only, and the card forecast reads the same factor. Both read the band since THR-1750 turned `DOMINION_PRICES_LIVE` on with the card chip. | function: `castTargetBand`, `dominionScaledEssenceCost`, `dominionSphereFactor` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
 | `dominion-band-projected-to-hex-map` | The player sees their turf and its edge (THR-1750). Hexes are not nodes, so `dominionProjection.ts` lends each land hex the band of the nearest top-level place within `DOMINION_HEX_FILL_RADIUS` (the terrain read past it) — a runtime cache owned by `ensureDominionProjection`, never stored on a tile. `dominionLensVM` feeds the HexMapV2 lens (dim, Sovereign glow, gold frontier) behind the key-1 switch; the band-drop badge reads the ledger `phaseDominion` writes. | function: `buildDominionHexProjection`, `frontierEdges`, `ensureDominionProjection`, `dominionLensVM` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
 | `dominion-band-scales-thread-yield-and-source-income` | Threads and sources pay by turf (THR-1748). `computeThreadYield` pays each thread `ESSENCE_PER_THREAD_BY_TIER` × its mortal's band multiplier, read by the ledger (`computeEssenceGeneration`) and the essence bar (`computeEssenceIncome`) alike; `sourceIncomeMultiplier` scales each typed source by its host's band before diminishing returns (a Hostile host pays nothing). | function: `computeThreadYield`, `sourceIncomeMultiplier` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
+| `echo-lift-reads-dominion` | An earlier god's monument is raised until the new god feels it: ground already theirs when the old god was kin, ground that stands against them when it was opposed. | function: `dominionOf`, `matchOfScores` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `faction-sphere-aggregate-reaches-battle-aftermath` | A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing. | node-prop: `computeFactionSphereAggregates`, `getFactionSphereScores`, `FactionSphereAggregate` | War, Armies & Battles | 🟢 LIVE | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
@@ -450,6 +451,7 @@ remediation ticket or the build fails.
 | `area-partition-to-map` | There is one geography. `worldSeed` stamps every land hex with the Area that holds it, and every surface that draws or resolves an Area reads a projection of those nodes - never a second partition of its own. | module-export: `buildAreaProjection`, `ensureAreaProjection`, `detectRegionsBorderCost` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `deciders-born-with-means` | Every mortal who makes choices starts the world with the Means of their walk of life, shifted by how well their home town lives, so the sheet shows Means for every decider and the money encounters have something to move. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `descent-gates-old-banner-drive` | A deciding mortal descended from a dead empire (`backstoryStrata` `relation: 'descent'`) may take up Raise the Old Banner when a slot frees at re-evaluation — never at t0, never as a spotlight pull — and finishes it by standing on an elder ruin of that empire and taking ground on its old land since the drive began. No culprit, no heat; the edge's `mintedByLabel` names the blood. | node-prop: `backstoryStrata`, `requiresDescent`, `descentCultureIds`, `agent_at_ancestral_ruin`, `agent_took_ancestral_ground`, `agent_rooted_off_ancestral_land`, `historicalCultureOfRegion` | Ambitions & Undertakings | 🟢 LIVE | — |
+| `echo-seeding-writes-place-scores` | The marks earlier gods left stand in the new world from its first day: a monument lifts the ground around it, an heir carries the old line, and a relic lies waiting for a hand. | function: `seedEchoes` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `lair-arrival-spawns-confront` | A mortal who ends a journey in a lair whose beast still lives is confronted by it — the fight starts on arrival, never for passing through or for sharing the hex, never for the god's avatar, and never a second time for a mortal who came to hunt it. | state-field: `checkLairArrival`, `fightCooldowns`, `fightPairKey`, `fight.lair.confront` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `pilgrim-way-reaches-location-and-faction-sheets` | Every pilgrim way, seeded or consecrated, reaches the player: a town's Location sheet names the congregations whose pilgrims come there, and a congregation's Faction sheet names the towns its ways lead to — each name an image and a link. | edge: `sacred_route`, `selectPilgrimWays`, `PilgrimWayLine` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `seeded-dead-stay-dead` | The dead worldgen seeds — founders, fallen commanders, wonder finders — lie where they rest in the run-time `retain` death shape, and no living-actor sweep treats them as a decider, a resident, an encounter participant or a seed target. | node-prop: `deceased` | Ambitions & Undertakings | 🟢 LIVE | — |
@@ -498,10 +500,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Attention, Chronicle & Narrative → World Generation, Terrain & Places
 - **UL terms:** *Run*, *Echo*, *Account Record*
 - **Module:** `src/engine/accountRecord.ts`
-- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
+- **Production hits:** 9 total — 1 write, 1 read, 7 unclassified
 - **Write sites:** `src/components/Game/hooks/useSimulation.ts`
 - **Read sites:** `src/engine/gameInit.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/engine/accountRecord.ts`, `src/engine/accountStore.ts`, `src/engine/twilight.ts` +1 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/engine/accountRecord.ts`, `src/engine/accountStore.ts`, `src/engine/seedEchoes.ts` +2 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `active-influences-render-on-sheet` — 🔵 UNVERIFIED-OK
@@ -1078,10 +1080,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **UL terms:** *Outcome Band*
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 34 total — 1 write, 2 read, 31 unclassified
+- **Production hits:** 35 total — 1 write, 2 read, 32 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicPresentation.ts`, `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +26 more
+- **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +27 more
 - **Verdict:** Verified 2026-09-10: THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
@@ -1524,6 +1526,30 @@ exit
 - **Other hits:** `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts`, `src/data/ascendant-trap-encounters.ts` +92 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `echo-lift-reads-dominion` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An earlier god's monument is raised until the new god feels it: ground already theirs when the old god was kin, ground that stands against them when it was opposed.
+- **Producer → Consumer:** Spheres & Quintessence → World Generation, Terrain & Places
+- **UL terms:** *Echo*, *Dominion*
+- **Module:** `src/engine/dominion.ts`
+- **Production hits:** 11 total — 1 write, 1 read, 9 unclassified
+- **Write sites:** `src/engine/dominion.ts`
+- **Read sites:** `src/engine/seedEchoes.ts`
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/cycleEnd.ts`, `src/engine/dominionProjection.ts`, `src/engine/dominionViewModels.ts` +4 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `echo-seeding-writes-place-scores` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The marks earlier gods left stand in the new world from its first day: a monument lifts the ground around it, an heir carries the old line, and a relic lies waiting for a hand.
+- **Producer → Consumer:** World Generation, Terrain & Places → Spheres & Quintessence
+- **UL terms:** *Echo*, *Dominion*
+- **Module:** `src/engine/seedEchoes.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/seedEchoes.ts`
+- **Read sites:** `src/engine/gameInit.ts`
+- **Other hits:** `src/engine/worldSeed.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `economy-context-scene-scoring` — 🟢 LIVE
 
 - **Intent:** Boom and bust color which scenes fire — a blighted province tells desperate stories, a boom throws festivals.
@@ -1630,10 +1656,10 @@ exit
 - **Intent:** An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *Location*
-- **Production hits:** 164 total — 3 write, 1 read, 160 unclassified
+- **Production hits:** 165 total — 3 write, 1 read, 161 unclassified
 - **Write sites:** `src/engine/views/stage/buildGateDutyEncounterStageModel.ts`, `src/engine/views/stage/buildSimpleEncounterStageModel.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`
-- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +155 more
+- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +156 more
 - **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
 
 ### `encounter-outcomes-fill-faction-purse` — 🔵 UNVERIFIED-OK
@@ -1884,10 +1910,10 @@ exit
 - **Producer → Consumer:** Spheres & Quintessence → War, Armies & Battles
 - **UL terms:** *Sphere*, *Faction*
 - **Module:** `src/engine/sphereAffinity.ts`
-- **Production hits:** 6 total — 1 write, 1 read, 4 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/phaseSphereAggregation.ts`
 - **Read sites:** `src/engine/battleAftermath.ts`
-- **Other hits:** `src/engine/dominion.ts`, `src/engine/gameInit.ts`, `src/engine/sphereAffinity.ts`, `src/types/sphereAffinity.ts`
+- **Other hits:** `src/engine/dominion.ts`, `src/engine/gameInit.ts`, `src/engine/seedEchoes.ts`, `src/engine/sphereAffinity.ts`, `src/types/sphereAffinity.ts`
 - **Verdict:** Verified 2026-10-08: THR-1768. `src/engine/__tests__/sphereSeeding.test.ts`: the aggregate is the rounded mean of individual members (4, 2 → 3) and moves when one member's score moves (→ 5), with no write when nothing changed; `getFactionSphereScores` sums own + aggregate and reads all zeros for a faction with neither, which makes the aftermath press nothing instead of `chaos`. On generated medium worlds (seeds 42 and 99) every faction carries a `sphereAggregate` after 6 ticks. Headless seed-42 240-tick re-read: 83 factions, 17 of them non-zero under the chaos/energy god (11 positive, 6 negative), up from 0 of 52.
 
 ### `factory-pack-registry` — 🔵 UNVERIFIED-OK
@@ -3007,10 +3033,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 454 total — 1 write, 1 read, 452 unclassified
+- **Production hits:** 458 total — 1 write, 1 read, 456 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +447 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +451 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3235,10 +3261,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 134 total — 1 write, 1 read, 132 unclassified
+- **Production hits:** 135 total — 1 write, 1 read, 133 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/components/Game/inspector/lab/labSubjects.ts` +127 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts`, `src/components/Game/inspector/lab/labSubjects.ts` +128 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -3407,10 +3433,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 118 total — 1 write, 1 read, 116 unclassified
+- **Production hits:** 119 total — 1 write, 1 read, 117 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +111 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +112 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -3705,10 +3731,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 257 total — 2 write, 2 read, 253 unclassified
+- **Production hits:** 258 total — 2 write, 2 read, 254 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +248 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +249 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE
@@ -4036,10 +4062,10 @@ exit
 - **Intent:** Every named hero starts with a kin, a friend and a rival among their neighbours (`seedLivingWorld.seedTies`, both directions, stamped `origin: worldgen`), and the systems that read ties by basis see them: ambition selection scores `bondModifiers` through one alias table (`src/data/bond-basis.ts` — `lineage`, `heir` and `exile_kin` read as `kin`, `enemy` as `rivalry`), a dead hero’s grievance passes to the strongest tie (kin at 0.8), grief routes to bonds, and the binder casts tied mortals in each other’s scenes.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 90 total — 1 write, 3 read, 86 unclassified
+- **Production hits:** 91 total — 1 write, 3 read, 87 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/ambitionTick.ts`, `src/engine/grievance/grievanceLifecycle.ts`, `src/engine/grievance/undertakingOutcomeNode.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +81 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/KnowledgeComparisonTab.tsx`, `src/components/Game/debug/RelationshipGraph.tsx` +82 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `Docs/audits/2026-09-25-living-world-data/readers/ties.ts` on medium, seed 42 · 99: person-to-person `relates_to` at t0 21 · 37 → 104 · 128, every seeded tie mutual and stamped (was 0 mutual, 0 between co-residents); kin 14 · 17 (was 0). Over 200 ticks, ambition re-evaluations scoring a seeded bond 3 · 3 (the new `bondsMatched` field on the assignment trace). `seededTies-generatedWorld.test.ts` (heavy) pins the kin → `protect_the_home` bond modifier and the kin heir on a generated world.
 
 ### `yield-is-a-verb` — 🟢 LIVE

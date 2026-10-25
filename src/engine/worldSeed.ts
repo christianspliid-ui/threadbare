@@ -903,6 +903,7 @@ export function seedWorld(
   // top-up's own stream — and the draws happen in the same order either way.
   const placeLocation = (tile: HexTile, locationSubtype: LocationSubtype, drawRng: () => number): string => {
     const hexKey = `${tile.coord.col},${tile.coord.row}`;
+    // THR-1843: echoes are placed by `seedEchoes` (gameInit), not through these global hooks.
     const locInjection = injections?.find(inj => inj.injection.injectionType === 'location_feature');
     const sphereBiases = locInjection ? { ...locInjection.injection.sphereBiases } : {};
 

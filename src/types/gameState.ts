@@ -29,7 +29,7 @@ import type { QuintessenceEvent } from './quintessence';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
-import type { EchoDefinition, EchoState } from './echo';
+import type { EchoDefinition, EchoState, SeededEchoesSummary } from './echo';
 import type { GreatChronicle } from './chronicle';
 import type { WorldGraph } from '../engine/graph';
 import type { VisibilityMap } from './visibility';
@@ -637,6 +637,12 @@ export interface GameState {
   worldSoul: WorldSoulState;
   echoDefinitions: EchoDefinition[];
   echoStates: EchoState[];
+  /**
+   * THR-1843 — the earlier runs' echoes this world placed at creation (monument,
+   * heir, relic), with host, band and lift. Written once; absent when the world was
+   * not built from an account. Read by the Chronicle and `getSeededEchoes`.
+   */
+  seededEchoes?: SeededEchoesSummary;
   chronicle: GreatChronicle;
 }
 

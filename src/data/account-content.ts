@@ -33,6 +33,46 @@ export const FUNDAMENT_REVERT = 0.05;
  */
 export const WORLD_TILT_GAIN = 1;
 
+// ─── Echoes stand in the new world (THR-1843, slice 2) ───────────────
+
+/**
+ * Mean lift per echo sphere per imprint step (Decided 1). Sphere scores are whole
+ * numbers (the triangle scale neglect walks down a point at a time), so a step
+ * deals `step × sphere count` whole points round-robin to the least-lifted echo
+ * sphere, primary first: two spheres take one point a step between them.
+ */
+export const MONUMENT_IMPRINT_STEP = 0.5;
+/** Most mean lift a monument may add (measured: opposed → Hostile within 6 in 8 of 9 cells). */
+export const MONUMENT_IMPRINT_MAX = 6;
+/** Target band for a kin god by memory word (THR-1773); `almost gone` lifts nothing. */
+export const MONUMENT_KIN_BANDS = { stillWarm: 'held', fading: 'touched' } as const;
+/** Target band for an opposed god at any memory. */
+export const MONUMENT_OPPOSED_BAND = 'hostile' as const;
+/** Lift on the heir's echo-sphere scores, × the echo's strength (1 − degradation), rounded. */
+export const LEGACY_SPHERE_LIFT = 2;
+/** The Legacy hydration stream (`hydrateToTier`'s draws only). */
+export const ECHO_SEEDING_PRIME = 70003;
+/** Place subtypes no echo stands in: a monster's home is not ordinary ground (Decided 3). */
+export const ECHO_EXCLUDED_SUBTYPES: ReadonlySet<string> = new Set(['lair', 'nest']);
+/** The monument sublocation's type id (a Place's `sublocationTypeId`, as `ruins.scar` is). */
+export const ECHO_MONUMENT_SUBLOCATION_TYPE_ID = 'echo.monument';
+/** What an echo-made node carries in `notableOrigin` / `origin` (the heir, the kin tie). */
+export const ECHO_ORIGIN = 'echo';
+
+/**
+ * One line per seeded echo in the chronicle's *Before you woke* (plan § Content ›
+ * Words): text around the echo's name and the place or heir it links. Group title:
+ * `BEFORE_YOU_WOKE_GROUP_TITLES.echoes`.
+ */
+export const ECHO_CHRONICLE_LINES = {
+  monument: { joiner: ' still stands near ', end: '.' },
+  legacy: { joiner: ' lives on in ', end: '.' },
+  relic: { joiner: ' lies somewhere near ', end: ', unclaimed.' },
+} as const;
+
+/** The heir's sheet line under their name. */
+export const echoLineageLine = (name: string): string => `Of the line of ${name}`;
+
 // ─── Unlocks ─────────────────────────────────────────────────────────
 
 /** Run 1's awake hungers, one per court shape (THR-1773). */

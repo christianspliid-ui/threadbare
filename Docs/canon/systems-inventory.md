@@ -427,7 +427,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `scry` (1) | `scry.ts` | — |
 | `secret` (1) | `secretGeneration.ts` | `THR-30` |
 | `secrets` (2) | `secretsFavorsConsequences.ts`, `secretsFromResolution.ts` | `THR-30`, `THR-724` |
-| `seed` (3) | `seedAttachments.ts`, `seedLivingWorld.ts`, `seedOnlySequels.ts` | `THR-1435`, `THR-1437`, `THR-1526`, `THR-1630`, `THR-1654` |
+| `seed` (4) | `seedAttachments.ts`, `seedEchoes.ts`, `seedLivingWorld.ts`, `seedOnlySequels.ts` | `THR-1435`, `THR-1437`, `THR-1526`, `THR-1630`, `THR-1654`, `THR-1813`, `THR-1843` |
 | `settlement` (1) | `settlementNotable.ts` | `THR-1630`, `THR-1655` |
 | `settlementgenome` (11) | `settlementGenome/archetypes.ts`, `settlementGenome/constants.ts`, `settlementGenome/cultureBaseline.ts`, `settlementGenome/index.ts`, `settlementGenome/infrastructure.ts`, `settlementGenome/materialize.ts`, `settlementGenome/reachMenu.ts`, `settlementGenome/runGenome.ts`, `settlementGenome/sphereMenu.ts`, `settlementGenome/types.ts`, `settlementGenome/vitality.ts` | `THR-1344`, `THR-1857` |
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
@@ -482,4 +482,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 113 tick phases · 238 engine domains · 789 modules._
+_Counts: 28 registered subsystems (2 dormant) · 113 tick phases · 238 engine domains · 790 modules._

@@ -115,7 +115,7 @@ export interface LivingWorldSummary {
 
 // ─── Shared helpers (sorted-first, id tie-breaks — NFP #3) ─────────────────
 
-const SETTLEMENT_SUBTYPES: ReadonlySet<string> = new Set(LOCATION_CLASSES.settlement);
+export const SETTLEMENT_SUBTYPES: ReadonlySet<string> = new Set(LOCATION_CLASSES.settlement);
 
 function byId(a: { id: string }, b: { id: string }): number {
   return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
@@ -525,7 +525,7 @@ export function tiePoolSettlementOf(
 }
 
 /** Individuals standing in `settlementId` or any of its Places, monsters excluded, sorted by id. */
-function residentsOf(graph: WorldGraph, settlementId: string): GraphNode[] {
+export function residentsOf(graph: WorldGraph, settlementId: string): GraphNode[] {
   const out: GraphNode[] = [];
   const seen = new Set<string>();
   const collect = (locId: string): void => {
@@ -891,7 +891,7 @@ export interface SeededNotablesSummary {
 }
 
 /** An ambient resident: an individual with no tier above ambient, no capabilities, no host. */
-function isAmbientResident(node: GraphNode): boolean {
+export function isAmbientResident(node: GraphNode): boolean {
   const tier = node.properties.spotlightTier;
   if (tier !== undefined && tier !== 'ambient') return false;
   if (node.properties.domainCapabilities) return false;
@@ -899,7 +899,7 @@ function isAmbientResident(node: GraphNode): boolean {
   return true;
 }
 
-function wealthOfRole(node: GraphNode): number {
+export function wealthOfRole(node: GraphNode): number {
   const role = node.properties.npcRole;
   return typeof role === 'string' ? (ROLE_WEALTH[role] ?? DEFAULT_WEALTH) : DEFAULT_WEALTH;
 }

@@ -18,6 +18,8 @@
 
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
+import type { SeededEchoesSummary } from '../types/echo';
+import { ECHO_CHRONICLE_LINES, echoDisplayName } from '../data/account-content';
 import type {
   ElderRuinArchetype,
   WorldPastEmpire,
@@ -410,6 +412,42 @@ export function buildBeforeYouWoke(graph: WorldGraph, view: WorldPastPlayerView)
     group('living', living, view.livingMemory.length),
     group('wonders', wonders, seen.length),
   ];
+}
+
+/**
+ * THR-1843 — the earlier worlds' marks: one line per seeded echo, in seeding order,
+ * each name linking (Law 21) — the monument to its place page, the line to the heir,
+ * the relic to the place it lies at. `null` when the world placed no echo.
+ */
+export function buildEchoGroup(graph: WorldGraph, summary: SeededEchoesSummary | undefined): BeforeYouWokeGroup | null {
+  const seeded = summary?.seeded ?? [];
+  const lines: PastLine[] = [];
+  for (const e of seeded) {
+    const words = ECHO_CHRONICLE_LINES[e.kind];
+    const display = echoDisplayName({ echoType: e.kind, name: e.name });
+    const name = display.charAt(0).toUpperCase() + display.slice(1);
+    if (e.kind === 'monument') {
+      if (!graph.getNode(e.nodeId) || !graph.getNode(e.hostId)) continue;
+      lines.push({ id: `echo:${e.echoId}`, segments: [
+        { text: name, ref: { kind: 'location', id: e.nodeId } },
+        { text: words.joiner }, placeSeg(graph, e.hostId), { text: words.end },
+      ] });
+    } else if (e.kind === 'legacy') {
+      if (!graph.getNode(e.nodeId)) continue;
+      lines.push({ id: `echo:${e.echoId}`, segments: [
+        { text: name, ref: { kind: 'agent', id: e.nodeId } },
+        { text: words.joiner }, personSeg(graph, e.nodeId), { text: words.end },
+      ] });
+    } else {
+      if (!graph.getNode(e.hostId)) continue;
+      lines.push({ id: `echo:${e.echoId}`, segments: [
+        { text: name, ref: { kind: 'location', id: e.hostId } },
+        { text: words.joiner }, placeSeg(graph, e.hostId), { text: words.end },
+      ] });
+    }
+  }
+  if (lines.length === 0) return null;
+  return { key: 'echoes', title: BEFORE_YOU_WOKE_GROUP_TITLES.echoes, count: lines.length, lines };
 }
 
 /** True when the world has any past to show — the chronicle mounts on it at minute one. */
