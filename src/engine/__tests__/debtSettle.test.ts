@@ -219,6 +219,8 @@ describe('THR-2023 The Loan → Debt Collection (the loop)', () => {
       .find(e => e.target === LENDER && !(e.properties as Record<string, unknown>).agreement);
     expect(bond?.properties.sentiment).toBeLessThan(0.5);
     expect((debtEdges(state.graph)[0].properties as Record<string, unknown>).sentiment).toBeUndefined();
+    // Only the borrower resents: the lender's own edge toward the borrower is untouched (review-gate cycle 3).
+    expect(state.graph.getOutgoingEdges(LENDER, 'relates_to').some(e => e.target === BORROWER)).toBe(false);
     // The first-edge relationship reader sees the bond, not the debt (review-gate round 1).
     const before = relSentiment(state.graph);
     expect(before).toBe(bond?.properties.sentiment);

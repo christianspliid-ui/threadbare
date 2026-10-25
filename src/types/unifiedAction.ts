@@ -1478,6 +1478,12 @@ export type EncounterAftermathReactionEffect =
     readonly trustDelta?: number;
     /** Mirror the deltas onto the reverse (with→actor) edge. Default true. */
     readonly reciprocal?: boolean;
+    /**
+     * THR-2023 — write ONLY the reverse (with→actor) edge: the other agent's feeling
+     * toward the actor changes and the actor's does not (The Loan's borrower resents
+     * the lender). Overrides `reciprocal`. Default false.
+     */
+    readonly reverseOnly?: boolean;
     readonly when?: EffectPredicate;
   }
   | {

@@ -5067,8 +5067,13 @@ export function applyEncounterAftermathReaction(
           } as unknown as Parameters<typeof emitTrace>[0]);
           break;
         }
-        const reciprocal = effect.reciprocal !== false;
-        const forward = applyBondEdge(state.graph, actorAgentId, withId, effect.sentimentDelta, effect.trustDelta);
+        // THR-2023 — `reverseOnly` writes the with→actor edge alone (the trace's
+        // before/after then describe that edge).
+        const reverseOnly = effect.reverseOnly === true;
+        const reciprocal = !reverseOnly && effect.reciprocal !== false;
+        const forward = reverseOnly
+          ? applyBondEdge(state.graph, withId, actorAgentId, effect.sentimentDelta, effect.trustDelta)
+          : applyBondEdge(state.graph, actorAgentId, withId, effect.sentimentDelta, effect.trustDelta);
         if (reciprocal) {
           applyBondEdge(state.graph, withId, actorAgentId, effect.sentimentDelta, effect.trustDelta);
         }

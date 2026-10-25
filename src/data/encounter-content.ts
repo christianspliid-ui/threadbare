@@ -47,7 +47,7 @@ function theLoanBand(
 ): readonly import('../types/unifiedAction').EncounterAftermathReactionEffect[] {
   return [
     ...(resentment === undefined ? [] : [
-      { kind: 'bond_change' as const, withAgentId: '$cast:borrower', sentimentDelta: resentment },
+      { kind: 'bond_change' as const, withAgentId: '$cast:borrower', sentimentDelta: resentment, reverseOnly: true },
     ]),
     { kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:borrower', counterpartyId: '$actor' },
     { kind: 'economy_shift', quantity: 'means', amount: -LOAN_PRINCIPAL_MEANS, targetAgentId: '$actor' },
