@@ -33,4 +33,6 @@ export const DECAY_CONSTANTS: Record<InterventionType, Omit<DecayParams, 'tickAp
   coincidence:          { initialStrength: 0.60, decayRate: 0.20, minimumStrength: 0.02, maxDuration: 15 },
   omen:                 { initialStrength: 0.50, decayRate: 0.10, minimumStrength: 0.05, maxDuration: 25 },
   afflict_bless:        { initialStrength: 0.75, decayRate: 0.08, minimumStrength: 0.06, maxDuration: 30 },
+  // THR-2057: compulsions set their own short curve (premonitionActions); this mirrors it.
+  compel:               { initialStrength: 0.90, decayRate: 1.00, minimumStrength: 0,    maxDuration: 3 },
 };

@@ -397,6 +397,7 @@ const INTERVENTION_LABELS: Record<InterventionType, string> = {
   coincidence: 'Coincidence',
   omen: 'Omen',
   afflict_bless: 'Blessed / Afflicted',
+  compel: 'Compelled',
 };
 
 export interface ActiveEffect {

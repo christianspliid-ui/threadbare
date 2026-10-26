@@ -36,6 +36,7 @@ import { LOCATION_TRAIT_IDS } from '../data/location-trait-constants';
 import {
   INFLUENCE_CHIP_NOUNS,
   INFLUENCE_CHIP_HOVER,
+  INFLUENCE_CHIP_HOVER_CAUSE,
   TARGET_INFLUENCE_CHANGE_TITLE,
   TARGET_INFLUENCE_CHANGE_DETAIL,
   TARGET_INFLUENCE_CHANGE_DETAIL_PLAIN,
@@ -70,15 +71,19 @@ export function dominantValueDrift(entry: Pick<DivineInfluenceEntry, 'valueDrift
 
 /**
  * The chip's hover sentence — what the influence does and when it fades.
- * Undefined when the influence carries no value drift: the older intervention
- * kinds keep their duration-only reading.
+ * Undefined when the influence carries neither a value drift nor a cause: the
+ * older intervention kinds keep their duration-only reading.
  */
 export function influenceChipHover(
-  entry: Pick<DivineInfluenceEntry, 'valueDrifts'>,
+  entry: Pick<DivineInfluenceEntry, 'valueDrifts' | 'cause'>,
   durationWord: string,
 ): string | undefined {
   const drift = dominantValueDrift(entry);
-  if (!drift) return undefined;
+  if (!drift) {
+    // THR-2057: a compulsion carries no drift; it names what it drives toward.
+    if (!entry.cause) return undefined;
+    return fillReceiptSlots(INFLUENCE_CHIP_HOVER_CAUSE, { cause: entry.cause, duration: durationWord });
+  }
   return fillReceiptSlots(INFLUENCE_CHIP_HOVER, {
     pole: valuePoleWord(drift[0], drift[1]),
     duration: durationWord,

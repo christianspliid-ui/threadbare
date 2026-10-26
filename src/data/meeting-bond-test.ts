@@ -44,7 +44,7 @@ const BOND_NUDGES: BondTest['nudges'] = [
   },
   {
     id: 'bond.name_them',
-    name: 'Say their name',
+    name: 'Say {their} name',
     sphere: 'mind',
     essenceCost: 3,
     forecastDelta: 0.14,
@@ -61,7 +61,7 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'time',
     essenceCost: 4,
     forecastDelta: 0.16,
-    effectLine: 'They already owe you. This is the reminder.',
+    effectLine: '{They} already owe{s} you. This is the reminder.',
     bandProse: {
       critical_success: 'They understand they have been carried before, and that they never asked why.',
       success: 'The old night comes back with a witness in it.',
@@ -70,7 +70,7 @@ const BOND_NUDGES: BondTest['nudges'] = [
   },
   {
     id: 'bond.warmth',
-    name: 'Warm their hands',
+    name: 'Warm {their} hands',
     sphere: 'life',
     essenceCost: 2,
     forecastDelta: 0.10,
@@ -86,7 +86,7 @@ const BOND_NUDGES: BondTest['nudges'] = [
     sphere: 'light',
     essenceCost: 2,
     forecastDelta: 0.11,
-    effectLine: 'Something small goes right, in front of them.',
+    effectLine: 'Something small goes right, in front of {them}.',
     bandProse: {
       critical_success: 'A lamp lighting itself is a small miracle, and they take it as one.',
       failure: 'They put the lamp out and stand in the dark on purpose.',
@@ -161,6 +161,9 @@ const GOD_VOICE_FALLBACK =
 /**
  * The bond test.
  *
+ * THR-2057: lines carry `{name}` and pronoun tokens; every renderer passes the
+ * test through `personalizeBondTest` (engine/bondTestVoice.ts) for the mortal.
+ *
  * Difficulty sits at `fair` — the climax should usually land well, because the
  * lesson is "you shift the odds", not "the game punishes you at the door". The
  * two worst bands stay reachable, which is what makes `awe` mean anything.
@@ -168,14 +171,14 @@ const GOD_VOICE_FALLBACK =
 export const MEETING_BOND_TEST: BondTest = {
   id: 'meeting.bond_test',
   setup:
-    'They are alone, doing something ordinary — and they stop, because they can tell they are being looked at. '
-    + 'Not by anyone in the room. They stand very still and wait to find out what is looking.',
-  purposeLine: 'How they take you',
+    '{name} is alone, doing something ordinary — and stops, because {they} can tell {they} {is} being looked at. '
+    + 'Not by anyone in the room. {They} stand{s} very still and wait{s} to find out what is looking.',
+  purposeLine: 'How {name} takes you',
   difficulty: 0.35,
   factorLines: [
-    { text: 'They have wanted something to be out there for a long time.', polarity: 'for' },
-    { text: 'The last person who watched them this closely wanted something.', polarity: 'against' },
-    { text: 'Nobody has come looking for them before.', polarity: 'for' },
+    { text: '{name} has wanted something to be out there for a long time.', polarity: 'for' },
+    { text: 'The last person who watched {them} this closely wanted something.', polarity: 'against' },
+    { text: 'Nobody has come looking for {them} before.', polarity: 'for' },
   ],
   nudges: BOND_NUDGES,
   godVoiceByHunger: GOD_VOICE_BY_HUNGER,
@@ -183,32 +186,32 @@ export const MEETING_BOND_TEST: BondTest = {
   receptions: {
     awe: {
       prose:
-        'They go down on the floor where they stand, not to worship — their legs simply stop holding them. '
-        + 'When they can speak, they ask what you want them to do. They mean it as a real question.',
+        '{name} goes down on the floor where {they} stand{s}, not to worship — {their} legs simply stop holding {them}. '
+        + 'When {they} can speak, {they} ask{s} what you want {them} to do. {They} mean{s} it as a real question.',
       traitSeed: 'struck_by_the_first_sight',
     },
     devotion: {
       prose:
-        'They straighten up and say yes before you have asked anything. '
-        + 'They spend the rest of the night deciding what they will have to give up, and are calm about it.',
+        '{name} straightens up and says yes before you have asked anything. '
+        + '{They} spend{s} the rest of the night deciding what {they} will have to give up, and {is} calm about it.',
       traitSeed: 'gave_the_answer_first',
     },
     bargain: {
       prose:
-        'They ask what this costs. When you do not answer, they name their own terms out loud, '
+        '{name} asks what this costs. When you do not answer, {they} name{s} {their} own terms out loud, '
         + 'to the empty room, so that both of you have heard them.',
       traitSeed: 'named_their_own_terms',
     },
     doubt: {
       prose:
-        'They agree, and do not believe it. They check the room twice for someone playing a trick, '
-        + 'and go to work in the morning as if nothing happened, waiting to be proven a fool.',
+        '{name} agrees, and does not believe it. {They} check{s} the room twice for someone playing a trick, '
+        + 'and {is} back at work in the morning as if nothing happened, waiting to be proven a fool.',
       traitSeed: 'waiting_to_be_fooled',
     },
     defiance: {
       prose:
-        'They tell you no, out loud, to the ceiling. Then they feel the tie hold anyway, '
-        + 'and understand that refusing was never one of the options. They will not forgive that.',
+        '{name} tells you no, out loud, to the ceiling. Then {they} feel{s} the tie hold anyway, '
+        + 'and understand{s} that refusing was never one of the options. {They} will not forgive that.',
       traitSeed: 'bound_against_their_word',
     },
   },

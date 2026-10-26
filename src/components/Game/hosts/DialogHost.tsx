@@ -43,6 +43,7 @@ import { emitTrace } from '../../../engine/traceBuffer';
 import { touchWorld } from '../../../engine/simulationRuntime';
 import { withEssenceSpend } from '../../../engine/essenceMovement';
 import { previewReachSignatureGrant } from '../../../engine/ascendantBeat';
+import { previewHomeSeat } from '../../../engine/ascendantBeatSeeding';
 import { describeOffering, isRungOpeningOffer } from '../../../engine/godProgression';
 import { isSpineBeatId } from '../../../data/ascendant-beat-content';
 import { buildCodexRunContext, type CodexRunStateFilter } from '../../Codex/codexRunState';
@@ -261,6 +262,8 @@ export function DialogHost({
           proseOverride={beatProseOverride}
           // THR-1609: Beat 0 names the avatar as the player's own shape.
           avatarName={avatarName}
+          // THR-2057: The Seat names its place before the player presses.
+          seatPreview={pendingBeat.beatId === 'beat.spine.the_seat' ? previewHomeSeat(gameState, gameState.ascendantId) : undefined}
           // THR-1811: the offering's cards with what each costs now.
           offering={pendingBeat.kind === 'offering'
             ? describeOffering(gameState, pendingBeat.offeredActionIds ?? [])

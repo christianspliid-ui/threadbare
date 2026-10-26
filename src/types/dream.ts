@@ -51,7 +51,9 @@ export type InterventionType =
   | 'inspire_intervention'
   | 'coincidence'
   | 'omen'
-  | 'afflict_bless';
+  | 'afflict_bless'
+  /** THR-2057: a God's Will compulsion (premonition) — its own kind, not a threat. */
+  | 'compel';
 
 /** How an intervention reaches its target */
 export type DeliveryMode = 'astral' | 'regional' | 'remote' | 'local';
@@ -125,6 +127,8 @@ export interface DivineInfluenceEntry {
   traitId?: string;
   personalityBoost?: number;
   strategyOverride?: string;
+  /** THR-2057: what the influence drives toward, in player words (a compulsion's encounter name). */
+  cause?: string;
   // Agenda reference
   agendaId?: string;
   /**

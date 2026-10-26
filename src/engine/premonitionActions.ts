@@ -21,6 +21,7 @@ import {
   COMPULSION_SCORE_BOOST,
   AMBITION_DRIFT_PROBABILITY,
 } from '../data/premonition-constants';
+import { describeWhisperDirection } from '../data/premonition-content';
 
 // ─── Influence Counter ──────────────────────────────────────────
 
@@ -153,7 +154,7 @@ export function applyWhisperChoice(
     essenceCost: nudge.essenceCost,
     sphereUsed: nudge.sphere,
     influenceId,
-    summary: `Whisper: ${agentName} nudged toward ${nudge.prose}`,
+    summary: `Whisper: ${agentName} nudged toward ${describeWhisperDirection(nudge)}`,
   };
   emitTrace(trace as unknown as import('../types/trace').TraceEntry);
 
@@ -161,7 +162,7 @@ export function applyWhisperChoice(
     success: true,
     influenceId,
     essenceSpent: nudge.essenceCost,
-    message: `${agentName} is subtly drawn toward ${nudge.prose}`,
+    message: `${agentName} is subtly drawn toward ${describeWhisperDirection(nudge)}`,
   };
 }
 
@@ -194,7 +195,7 @@ export function applyCompulsionChoice(
   // Create a strong, short-lived influence that boosts the specific encounter
   const influence: DivineInfluenceEntry = {
     id: influenceId,
-    interventionType: 'intimidate', // Compulsion = forceful
+    interventionType: 'compel', // THR-2057: its own kind — the sheet reads "Compelled", not "Intimidated"
     sphere: candidate.sphere,
     tickApplied: tick,
     initialStrength: COMPULSION_SCORE_BOOST,
@@ -202,6 +203,7 @@ export function applyCompulsionChoice(
     minimumStrength: 0,
     maxDuration: 3, // Only lasts a few ticks
     behaviorTag: `compulsion_target_${candidate.templateId}`,
+    cause: candidate.encounterName,
   };
 
   // Also set a reach boost for the encounter's primary reach

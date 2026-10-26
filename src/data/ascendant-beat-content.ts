@@ -262,6 +262,42 @@ export function fillSpineAvatarName(prose: string, avatarName: string | undefine
 }
 
 /**
+ * THR-2057 — The Seat beat names the place it takes before the player presses. The
+ * seat is chosen for them (THR-1792: The First's settlement, or the nearest one), so
+ * the old "Bind a place to yourself" offered a choice the beat never gave.
+ */
+export const SPINE_SEAT_LINE_TOKEN = '{seatLine}';
+export const SPINE_SEAT_LINE_FIRST = '{place}, where {first} stands, becomes your seat';
+export const SPINE_SEAT_LINE_NEAREST = '{place}, the nearest town to {first}, becomes your seat';
+/** When the place is known but The First is not, or the seat could not be previewed. */
+export const SPINE_SEAT_LINE_PLACE_ONLY = '{place} becomes your seat';
+export const SPINE_SEAT_LINE_FALLBACK = 'A town of the world becomes your seat';
+
+/** What `previewHomeSeat` reports, as far as the copy needs it. */
+export interface SpineSeatPreview {
+  readonly placeName: string;
+  readonly firstName?: string;
+  readonly seatRule?: string;
+}
+
+/** Fills `{seatLine}` in authored spine prose; never leaks the raw token. */
+export function fillSpineSeatLine(prose: string, seat: SpineSeatPreview | undefined): string {
+  if (!prose.includes(SPINE_SEAT_LINE_TOKEN)) return prose;
+  let line = SPINE_SEAT_LINE_FALLBACK;
+  if (seat?.placeName) {
+    const template = !seat.firstName
+      ? SPINE_SEAT_LINE_PLACE_ONLY
+      : seat.seatRule === 'nearest_settlement'
+        ? SPINE_SEAT_LINE_NEAREST
+        : seat.seatRule === 'first_settlement'
+          ? SPINE_SEAT_LINE_FIRST
+          : SPINE_SEAT_LINE_PLACE_ONLY;
+    line = template.replace('{place}', seat.placeName).replace('{first}', seat.firstName ?? '');
+  }
+  return prose.split(SPINE_SEAT_LINE_TOKEN).join(line);
+}
+
+/**
  * The scripted onboarding spine's authored presentation, keyed by `beatId`. The modal
  * prefers this over the generic kind-derived placeholder copy so the opening reads as a
  * bespoke, voiced arc rather than five identical "the weave is yours to touch" cards.
@@ -285,7 +321,7 @@ export const SPINE_BEAT_PRESENTATION: Readonly<Record<string, SpineBeatPresentat
     eyebrow: 'A Place to Stand',
     title: 'The Seat',
     prose:
-      'A god adrift is only weather. But the world has left a hollow shaped to your absence — these stones, this height, this hush between walls. Bind a place to yourself and call it your seat, and the faith that gathers there will rise back to you as power, tide after patient tide. You will need it. This age has begun its slow slide toward its Doom, and every mandate you keep well blunts its blows.',
+      'A god adrift is only weather. But the world has left a hollow shaped to your absence — these stones, this height, this hush between walls. {seatLine}, and the faith that gathers there will rise back to you as power, tide after patient tide. You will need it. This age has begun its slow slide toward its Doom, and every mandate you keep well blunts its blows.',
     cta: 'Take the Seat',
   },
   'beat.spine.thing_left_behind': {
