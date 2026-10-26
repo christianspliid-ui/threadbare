@@ -211,6 +211,7 @@ import { phaseComposition } from './phaseComposition';
 import { phaseAscendantBeatDirector } from './ascendantBeat';
 import { phaseAscendantProgression } from './phaseAscendantProgression';
 import { phaseEncounterVisibility, expireOverdueEncounterNotifications } from './encounterVisibility';
+import { holdStepsForPostedBeats } from './playerStepHold';
 import { phaseAscendantHandFilter } from './orchestrator/phaseAscendantHandFilter';
 import { phaseDetectionPressure } from './orchestrator/phaseDetectionPressure';
 import { phaseDriftDecay } from './orchestrator/phaseDriftDecay';
@@ -3379,6 +3380,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       ...encVisResult.notifications,
     ],
   };
+  // THR-2052 — a pause-tier step posted this tick waits for its god until the
+  // player decides it (or the step, action or thread moves on).
+  {
+    const unifiedActions = s.unifiedActions ?? [];
+    const held = holdStepsForPostedBeats(unifiedActions, encVisResult.notifications, s.graph, s.tick);
+    if (held !== unifiedActions) s = { ...s, unifiedActions: [...held] };
+  }
   phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
 
