@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 19:58 local (18:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 21:00 local (20:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -61,14 +61,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 ready, 1 being built.** The builder took [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 18:13 UTC, as soon as its veto window closed, and is still working on it. Its calls have left *Decided for you*.
+**Healthy: 9 ready, none being built right now.** Every ready ticket is still inside its veto window, so the builder is idle by design until the first one opens.
+
+- **Shipped this hour:** [a town short of stone no longer "goes hungry"](https://linear.app/threadbare/issue/THR-2070) is live ([#2611](https://github.com/christianspliid-ui/threadbare/pull/2611)).
+- **Back on the shelf:** [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) was built but not shipped. Its own check found the shortage count did not move, so the builder put it back in Todo with the work kept on a branch. That is the builder's to rework, not yours.
 
 - Next to open: [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday. Round 5's design tickets open Tuesday: [THR-2060](https://linear.app/threadbare/issue/THR-2060) and [THR-2061](https://linear.app/threadbare/issue/THR-2061) at 11:38 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30 UTC. Salt, [THR-2069](https://linear.app/threadbare/issue/THR-2069), opens Tuesday 18:03 UTC.
-- **New on the shelf:** [a town short of stone no longer "goes hungry"](https://linear.app/threadbare/issue/THR-2070), a small wording bug the design lane found. Nothing holds it.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Engine speed reading is high:** "tick cost 198 ms/tick steady, 29% above the 7-day median (153, 105 rows since 04ed4c85); top phase agent_decision, 622 agents. Name the merges between 04ed4c85 and d72e5e23: git log --oneline --merges 04ed4c85..d72e5e23". The only change since the last reading (143 ms, an hour ago) is a plan doc, so this is most likely the builder's run loading the same machine. If the next reading stays high, it is the builder's to chase.
-- Everything else is green. The live site is up to date (only docs changed since the last game publish). Main's CI, the three scheduled background jobs, the nine scheduled lanes and the worktree reaper (last run 19:40) are healthy. No pull requests are open.
+All green. The live site serves the latest main (b5fbb824, the THR-2070 fix). Main's CI, the three scheduled background jobs, the nine scheduled lanes and the worktree reaper (last run 20:51) are healthy. No pull requests are open. Engine speed is back inside its band (184 ms/tick, 20% over the weekly median, under the 25% line), so last hour's high reading was the builder loading the machine.
