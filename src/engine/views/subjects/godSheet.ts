@@ -245,7 +245,7 @@ export function selectEssenceRows(
       // THR-2061 (E3) — the arrow follows the refill band, as the row's word
       // does; the movement history keeps only the hover's feeds and draws. The
       // hover's trend word reads the same direction, so the two cannot disagree.
-      const trend = essenceDirection(rowRefill, level, cap);
+      const trend = essenceDirection(refill[sphere], level, cap);
       const reading: EssenceMovementReading = { ...readEssenceMovement(movement, gameState.tick), trend };
       return {
         sphere,

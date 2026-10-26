@@ -175,8 +175,14 @@ export function readEssenceMovement(
   return { trend, feeds, draws };
 }
 
-/** The causes the player's own spends file under — the only ones that light the ▼ (THR-2061, plan E4). */
-export const PLAYER_SPEND_CAUSES: readonly EssenceMovementCause[] = ['spend_nudge', 'spend_cast'];
+/**
+ * The causes the player's own spends file under — the only ones that light the ▼
+ * (THR-2061, plan E4). `premonition` is a player cause too: the
+ * `divine_premonition` phase only queues premonitions and never moves the pool,
+ * so every `premonition` movement is a whisper or compulsion the player paid for
+ * (GameView's premonition handlers).
+ */
+export const PLAYER_SPEND_CAUSES: readonly EssenceMovementCause[] = ['spend_nudge', 'spend_cast', 'spend_other', 'premonition'];
 
 /** What the player spent inside one window, as a positive magnitude (refunds net it down, never below 0). */
 function playerSpendIn(window: EssenceMovementWindow | undefined): number {
@@ -191,7 +197,7 @@ function playerSpendIn(window: EssenceMovementWindow | undefined): number {
 
 /**
  * THR-2061 (plan E4) — how much the player spent from this pool between two
- * reads of its record. Pure. Only `spend_nudge` and `spend_cast` count: income,
+ * reads of its record. Pure. Only {@link PLAYER_SPEND_CAUSES} count: income,
  * upkeep and a sustained control never light the ▼.
  *
  * Same window → the growth of its spend. A window that opened after `prev` was

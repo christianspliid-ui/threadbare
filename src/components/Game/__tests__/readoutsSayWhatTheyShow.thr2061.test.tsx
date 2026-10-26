@@ -36,6 +36,14 @@ describe('E3 — the essence arrow follows the refill band', () => {
     expect(essenceDirection({ band: 'drains' }, 50, 50)).toBe('ebbing');
   });
 
+  // Review gate round 1: the essence phase clamps to the cap, then upkeep takes
+  // its share in the same tick, so a pool refilled every tick sits that far below.
+  it('a pool held at cap − upkeep reads full, not rising', () => {
+    expect(essenceDirection({ band: 'steady', drawnPerTick: 0.5 }, 49.5, 50)).toBe('steady');
+    expect(essenceDirection({ band: 'steady', drawnPerTick: 0.5 }, 49.4, 50)).toBe('rising');
+    expect(essenceDirection({ band: 'slow', drawnPerTick: Number.NaN }, 49.5, 50)).toBe('rising');
+  });
+
   it('no band (the ledger read gave none) reads steady, never a guess', () => {
     expect(essenceDirection(undefined, 10, 50)).toBe('steady');
     expect(essenceDirection({ band: 'slow' }, Number.NaN, 50)).toBe('steady');
@@ -51,6 +59,13 @@ describe('E4 — the ▼ reads only the player\'s own spends', () => {
     expect(playerSpendSince(undefined, nudge)).toBe(5);
     const cast = recordEssenceMovement(undefined, before, spent, 'spend_cast', 10)!.mind;
     expect(playerSpendSince(undefined, cast)).toBe(5);
+  });
+
+  it('lights on every spend the player chooses: a premonition, Read the Threads, a court title', () => {
+    for (const cause of ['premonition', 'spend_other'] as const) {
+      const rec = recordEssenceMovement(undefined, before, spent, cause, 10)!.mind;
+      expect(playerSpendSince(undefined, rec), cause).toBe(5);
+    }
   });
 
   it('never lights on income, upkeep or a sustained control', () => {
