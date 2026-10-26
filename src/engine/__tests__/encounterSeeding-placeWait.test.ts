@@ -146,3 +146,20 @@ describe('THR-1929 — a templateId sequel waits for its place', () => {
     expect(templateAcceptsWhereTheyStand(state.graph, 'actor-ghost', { locationSubtypes: [] })).toBe(true);
   });
 });
+
+describe('THR-1929 — engine-planted placeless seeds', () => {
+  beforeEach(() => { clearTraces(); enableTracing(); });
+  afterEach(() => { clearTraces(); disableTracing(); });
+
+  it('the apotheosis capstone fires where its envelope does not reach (planted firesPlaceless)', () => {
+    const CAPSTONE = 'encounter.apotheosis.ascension';
+    const gate = getUnifiedTemplateById(CAPSTONE)!.locationSubtypes ?? [];
+    expect(gate.length).toBeGreaterThan(0);
+    expect(gate).not.toContain('wilderness_waypoint');
+    const state = buildState('loc-road');
+    state.graph.updateNode('loc-road', { properties: { locationSubtype: 'fort' } });
+    expect(gate).not.toContain('fort');
+    const fired = run(state, RIPE, [seed(CAPSTONE, { firesPlaceless: true })]);
+    expect(fired.unifiedActions.map(a => a.templateId)).toEqual([CAPSTONE]);
+  });
+});
