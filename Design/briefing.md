@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 13:57 local (12:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 14:58 local (13:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -57,14 +57,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 12 ready, and the builder is at work on [THR-2053](https://linear.app/threadbare/issue/THR-2053/recurs-after-fix-a-chapter-the-world-opens-still-lands-on-the-players)** (High): a chapter the world opens still lands on the player's click.
+**Healthy: 10 ready.** Most are waiting out their veto windows; one round-5 bug can be built now ([THR-2057](https://linear.app/threadbare/issue/THR-2057), six small faults).
 
-- **Two round-5 fixes went live this hour.** A First's chapter no longer plays out unseen ([THR-2052](https://linear.app/threadbare/issue/THR-2052), [#2597](https://github.com/christianspliid-ui/threadbare/pull/2597)), and the First's own page now agrees she is bound to you ([THR-2054](https://linear.app/threadbare/issue/THR-2054), [#2598](https://github.com/christianspliid-ui/threadbare/pull/2598)).
-- **Round 5's remaining work:** three bugs can be built now ([THR-2055](https://linear.app/threadbare/issue/THR-2055), [THR-2056](https://linear.app/threadbare/issue/THR-2056), [THR-2057](https://linear.app/threadbare/issue/THR-2057)); the two design tickets ([New things arrive one at a time](https://linear.app/threadbare/issue/THR-2060), [Readouts say what they show](https://linear.app/threadbare/issue/THR-2061)) are buildable from Tuesday 11:38 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26c.md)*
+- **Two more round-5 fixes went live this hour.** A chapter the world opens no longer lands on your click ([THR-2053](https://linear.app/threadbare/issue/THR-2053), [#2599](https://github.com/christianspliid-ui/threadbare/pull/2599)), and the map no longer drifts to the right edge after a chapter ([THR-2056](https://linear.app/threadbare/issue/THR-2056), [#2600](https://github.com/christianspliid-ui/threadbare/pull/2600)).
+- **"Unknown — Resolved successfully" is fixed but not merged yet.** [THR-2055](https://linear.app/threadbare/issue/THR-2055)'s fix is built and gated in [#2601](https://github.com/christianspliid-ui/threadbare/pull/2601); its last review fix needs one more review, so the builder left it unowned for the next run to finish. The work is pushed; nothing is sitting only on this computer.
+- **Round 5's design tickets:** ([New things arrive one at a time](https://linear.app/threadbare/issue/THR-2060), [Readouts say what they show](https://linear.app/threadbare/issue/THR-2061)) are buildable from Tuesday 11:38 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26c.md)*
 - Next to open: [THR-1929](https://linear.app/threadbare/issue/THR-1929) (sequels wait for their place) at 15:29 today, [THR-2040](https://linear.app/threadbare/issue/THR-2040) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site is serving the newest main ([#2598](https://github.com/christianspliid-ui/threadbare/pull/2598)); main's CI, the three scheduled background jobs, all 9 scheduled lanes, the worktree reaper (last run 13:47) are healthy and no pull requests are waiting. Last hour's engine-speed jump was a one-off: this hour measured 124 ms/tick, 21% under the 7-day median.
+All green. The live site is serving the newest main ([#2600](https://github.com/christianspliid-ui/threadbare/pull/2600)); main's CI, the three scheduled background jobs, all 9 scheduled lanes and the worktree reaper (last run 14:49) are healthy. The one open pull request ([#2601](https://github.com/christianspliid-ui/threadbare/pull/2601)) is waiting on the builder's next review, not on CI. Engine speed is within its normal range.

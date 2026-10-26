@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 13:57 local (12:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 14:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: a chapter the world opens no longer lands on your click, and the fix is live** ([THR-2053](https://linear.app/threadbare/issue/THR-2053)). Merged via [#2599](https://github.com/christianspliid-ui/threadbare/pull/2599).
+- **2026-10-26: the map no longer drifts to the right edge after a chapter, and the fix is live** ([THR-2056](https://linear.app/threadbare/issue/THR-2056)). Merged via [#2600](https://github.com/christianspliid-ui/threadbare/pull/2600).
 - **2026-10-26: a First's chapter no longer plays out unseen, and the fix is live** ([THR-2052](https://linear.app/threadbare/issue/THR-2052)). Merged via [#2597](https://github.com/christianspliid-ui/threadbare/pull/2597).
 - **2026-10-26: the First's own page now agrees she is bound to you, and the fix is live** ([THR-2054](https://linear.app/threadbare/issue/THR-2054)). Merged via [#2598](https://github.com/christianspliid-ui/threadbare/pull/2598).
 - **2026-10-26: round 5's two design findings are planned and on the build shelf.** [New things arrive one at a time](https://linear.app/threadbare/issue/THR-2060) and [Readouts say what they show](https://linear.app/threadbare/issue/THR-2061), from [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2058-one-thing-at-a-time.md) merged via [#2596](https://github.com/christianspliid-ui/threadbare/pull/2596). Its five calls sit in the briefing's *Decided for you* until Tuesday 11:38 UTC.
@@ -46,8 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: the plan for an oath sworn from tribute is merged** ([THR-2051](https://linear.app/threadbare/issue/THR-2051)), via [#2594](https://github.com/christianspliid-ui/threadbare/pull/2594). Its four calls sit in the briefing's *Decided for you* until Tuesday 09:49.
 - **2026-10-26: three settings that no longer changed anything are removed, and the change is live** ([THR-2050](https://linear.app/threadbare/issue/THR-2050/authored-knobs-with-no-reader-minwealthrequired-on-five-action)). Merged via [#2593](https://github.com/christianspliid-ui/threadbare/pull/2593).
 - **2026-10-26: eight pieces of old code the game no longer used are removed, and the change is live** ([THR-2049](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its)). Merged via [#2592](https://github.com/christianspliid-ui/threadbare/pull/2592).
-- **2026-10-26: the First's temperament now counts toward how its story ends, and the fix is live** ([THR-2034](https://linear.app/threadbare/issue/THR-2034/return-archetype-reads-never-match-the-usurper-bypass-and-the)). Merged via [#2591](https://github.com/christianspliid-ui/threadbare/pull/2591).
-- **2026-10-26: the ending now follows who the First was born as, and the fix is live** ([THR-2009](https://linear.app/threadbare/issue/THR-2009/founding-gates-read-a-meeting-record-field-nobody-writes-the-reach)). The founding checks read the First's own Reach, so Transcendence can now happen. Merged via [#2590](https://github.com/christianspliid-ui/threadbare/pull/2590).
 
 ---
 
