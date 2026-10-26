@@ -586,6 +586,7 @@ export type TraceCategory =
   | 'effect_reaction'
   | 'encounter'
   | 'encounter_seed_family_matched'
+  | 'encounter_seed_waiting'
   | 'encounter_trait'
   | 'faction_action'
   | 'faction_bonus'
@@ -1265,6 +1266,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'effect_reaction',
   'encounter',
   'encounter_seed_family_matched',
+  'encounter_seed_waiting',
   'encounter_trait',
   'faction_action',
   'faction_bonus',
@@ -4385,6 +4387,7 @@ export interface EncounterSeedTriggeredTrace extends TraceBase {
   /** templateId if fired, 'family:<name>' if family-only, 'none' if discarded */
   resolvedTemplateId: string;
   outcome: 'fired' | 'discarded';
+  /** 'target_agent_missing' | 'no_template_or_family' | 'place_never_reached' (THR-1929) */
   discardReason?: string;
 }
 
@@ -4818,6 +4821,22 @@ export interface SeedFamilyMatchedTrace extends TraceBase {
   /** Number of eligible templates in the draw pool (after affinity + location filters). */
   candidateCount: number;
   resolvedTemplateId: string;
+}
+
+/**
+ * Trace: a ripe templateId sequel holds because the mortal stands somewhere its
+ * template does not accept (THR-1929). Emitted once per seed, on its first held tick.
+ */
+export interface SeedWaitingForPlaceTrace extends TraceBase {
+  category: 'encounter_seed_waiting';
+  seedId: string;
+  templateId: string;
+  /** The Location-tier subtype the mortal stood at when judged. */
+  judgedSubtype?: string;
+  /** The Place's sublocation type, when the mortal stands inside one. */
+  judgedSublocationTypeId?: string;
+  /** Last tick the seed may still fire before it withers. */
+  waitsUntilTick: number;
 }
 
 /** Trace: inherited scene context attached to a seeded encounter at spawn (THR-697, Slice D). */
@@ -5570,6 +5589,7 @@ export type TraceEntry =
   | DebtSettleNoopTrace
   // Seed system v2: family matching + context inheritance (THR-697, Slice D)
   | SeedFamilyMatchedTrace
+  | SeedWaitingForPlaceTrace
   | SeedContextInheritedTrace
   // (Initiative traces retired with the pipeline — THR-1292 §3)
   // Portfolio-pinning traces (THR-148)

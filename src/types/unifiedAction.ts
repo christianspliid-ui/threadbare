@@ -1596,6 +1596,12 @@ export interface PendingEncounterSeed {
    * the mortal did not keep. Absent on every other seed.
    */
   readonly missedAppointment?: { readonly locationId: string; readonly dueTick: number; readonly reason: AppointmentMissReason };
+  /**
+   * THR-1929 — set once a ripe templateId sequel has started waiting for a place its
+   * template accepts, so `encounter_seed_waiting` is traced once per seed rather than
+   * every held tick. The wait itself is measured from `eligibleAfterTick`.
+   */
+  readonly placeWaitTraced?: boolean;
 }
 
 /** Why an appointment was missed (THR-1479). */

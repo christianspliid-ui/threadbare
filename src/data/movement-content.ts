@@ -301,6 +301,17 @@ export const RELOCATION_AWAY_MAX_HEXES = 20;
 /** How long the meeting can be kept once due — one day at the 12-tick day. */
 export const APPOINTMENT_WINDOW_TICKS = 12;
 
+/**
+ * How long a ripe `templateId` sequel waits for a place its template accepts before
+ * it withers — four days at the 12-tick day (THR-1929). A sequel names one scene, so
+ * like an appointment it holds rather than playing on the wrong ground. Census behind
+ * the number (medium map, 300 ticks, seeds 42/99/7): 77 of 264 gated sequels fired
+ * somewhere their template rejects; of those, the 13 mortals who later stood somewhere
+ * eligible did so after 4–43 ticks (seed 99's tail: p75 61, p90 123). Four days
+ * catches the cluster without carrying dead seeds for the run.
+ */
+export const SEQUEL_PLACE_WAIT_TICKS = 48;
+
 /** Slack at or below which the lean begins (two days). Above it, life continues. */
 export const APPOINTMENT_PULL_HORIZON_TICKS = 24;
 
