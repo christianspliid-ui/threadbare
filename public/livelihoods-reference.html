@@ -31,7 +31,10 @@
     locations/tick; beyond the cap tiers still update (coarse), no events fire.
   - Chronicle: resource_scarcity / resource_glut triggers (economicChronicle.ts),
     staple/strategic + baseValue ≥ 0.6, on genuine crossings only (first derivation
-    is silent — no trace, no chronicle, to avoid a tick-1 burst).
+    is silent — no trace, no chronicle, to avoid a tick-1 burst). Staples draw the
+    famine lines; strategic goods draw RESOURCE_WANT_CHRONICLE_TEMPLATES (builders
+    wait, no hunger word) via context.resourceCategory; {resource} is the lower-cased
+    good name (THR-2070).
   - Livelihood tug: a bonded, non-dormant mortal whose home settlement holds a
     staple in scarce (Famine) or surplus (Glut) pulls a Gold-reach thread tug on the
     existing attention system (phaseAttention machinery). State-based + deduped.
@@ -222,7 +225,7 @@
   <section class="section">
     <h2>Famine and Glut — when a staple turns<span class="lead">Food and water are what a people live on. When a staple crosses into scarcity or drowns in surplus, it carries a name and a weight the rest of the economy does not.</span></h2>
     <p>Two words in the world's reports carry real force. <span class="term">Famine</span> is a staple — grain, grazing, fish, water — fallen into scarcity: hungry people, and hunger breeds desperation and trouble. <span class="term">Glut</span> is the opposite ruin: a staple so abundant its worth collapses, and those who traded in it are undone. Both are turning points, not background texture — a place in Famine is a place where things are about to go wrong, and a place in Glut is a place where a fortune just evaporated.</p>
-    <p>When a staple crosses one of these lines, the world writes it into the Great Chronicle — "A Scarcity Bites", "A Glut Descends" — so the turn of a livelihood becomes part of the story of a place, the same way a settlement's rise or a road's death does.</p>
+    <p>When a staple crosses one of these lines, the world writes it into the Great Chronicle — "A Scarcity Bites", "A Glut Descends" — so the turn of a livelihood becomes part of the story of a place, the same way a settlement's rise or a road's death does. A building good — stone, timber, ore — runs short too, and is chronicled the same way, but in its own words: a town short of stone does not starve, its builders wait.</p>
     <div class="callout red">
       <div class="callout-title">Scarcity and surplus feed prosperity</div>
       <p>A place that meets its needs prospers; a place in shortage or drowning in unsellable surplus does not. The balance of a settlement's livelihoods is one of the forces that lifts or drags its prosperity over time — so a famine is not just grim flavour, it is a weight on the whole place's fortunes.</p>
