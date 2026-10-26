@@ -249,37 +249,46 @@ export function applyMeansShift(
  * The aftermath change's sentence (plan § UI pillar): a crossed band names the new
  * word; a move inside a band names only the direction. Never an amount (Law 13).
  * An empty name falls back to the pronoun and draws no link.
+ *
+ * THR-2042 — an optional `cause` names where the change came from: the closing full stop
+ * becomes ` — <cause>.`. Without it the text is exactly as before.
  */
 export function meansChangeSentence(
   name: string | undefined,
   shift: Pick<MeansShiftResult, 'wealthBefore' | 'wealthAfter' | 'bandBefore' | 'bandAfter'>,
+  cause?: string,
 ): { title: string; detail: string; polarity: 'gain' | 'loss' } {
   const gained = shift.wealthAfter > shift.wealthBefore;
   const who = name && name.trim().length > 0 ? name : undefined;
+  const end = cause && cause.trim().length > 0 ? ` — ${cause}.` : '.';
   if (shift.bandAfter !== shift.bandBefore) {
     return {
       title: gained ? 'Better off' : 'Worse off',
-      detail: who ? `${who} is now ${shift.bandAfter}.` : `They are now ${shift.bandAfter}.`,
+      detail: who ? `${who} is now ${shift.bandAfter}${end}` : `They are now ${shift.bandAfter}${end}`,
       polarity: gained ? 'gain' : 'loss',
     };
   }
   const tail = gained ? 'a little richer' : 'a little poorer';
   return {
     title: gained ? 'Fortunes turn up' : 'Fortunes turn down',
-    detail: who ? `${who} comes away ${tail}.` : `They come away ${tail}.`,
+    detail: who ? `${who} comes away ${tail}${end}` : `They come away ${tail}${end}`,
     polarity: gained ? 'gain' : 'loss',
   };
 }
 
-/** Build the `economy` aftermath change for one shift. */
+/**
+ * Build the `economy` aftermath change for one shift. `options.cause` (THR-2042) names
+ * where the change came from, at the end of the detail.
+ */
 export function buildMeansChange(
   id: string,
   agentId: string,
   name: string | undefined,
   shift: MeansShiftResult,
   actorId: string | undefined,
+  options: { cause?: string } = {},
 ): EncounterAftermathChange {
-  const words = meansChangeSentence(name, shift);
+  const words = meansChangeSentence(name, shift, options.cause);
   const who = name && name.trim().length > 0 ? name : undefined;
   return {
     id,

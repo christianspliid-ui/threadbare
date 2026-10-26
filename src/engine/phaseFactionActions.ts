@@ -55,6 +55,7 @@ import {
 } from '../data/faction-action-constants';
 import { refreshFactionDerivedFlags, getFactionLeaderId, getAnointedLeaderId } from './factionNetwork';
 import { resolveFactionMemberWork } from './factionMemberWork';
+import { lapseCommissions } from './factionCommissions';
 import type { FactionStirDissentTrace } from '../types/factionAction';
 import { getFactionMembershipEdges } from './graphQueries';
 import {
@@ -394,7 +395,10 @@ function executeCommissionQuest(
       factionId: faction.id,
       factionDefId,
       expiryTick: expiry,
-      reward: BOUNTY_REWARD,
+      // THR-2042 — the coin is held on the posting and paid to the member who takes it
+      // up (factionCommissions), or refunded when it lapses. Replaces the unread `reward`.
+      escrow: COMMISSION_QUEST_COST,
+      status: 'open',
       createdTick: state.tick,
       claimed: false,
     },
@@ -951,6 +955,14 @@ export function phaseFactionActions(state: GameState, runtime?: SimulationRuntim
   // smoothly to avoid stepwise gaps in the ambient indicator. Cost is O(F) per
   // tick where F is the faction count (~5–20 in a run).
   tickFactionGovernance(state);
+
+  // THR-2042 — an untaken commission past its expiry gives its escrow back to the purse.
+  // Every tick, so a lapse is never late by a faction-action interval.
+  try {
+    lapseCommissions(state, state.tick);
+  } catch {
+    // Fail-soft: the faction phase goes on.
+  }
 
   // THR-815 — off-screen guild work for members the decision loop never reaches.
   // Runs on its own interval (FACTION_MEMBER_WORK_INTERVAL), independent of the

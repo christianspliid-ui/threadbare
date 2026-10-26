@@ -351,6 +351,7 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
  *   Kept as one optional parameter rather than a second reward function on purpose:
  *   rank bonus, alignment multiplier, and the completion bonus must stay on a single
  *   code path, or a future change to any of them silently applies to only one caller.
+ * @returns THR-2042 — the faction node id the work was credited to, or null when none was.
  */
 export function processFactionEncounterReputation(
   graph: WorldGraph,
@@ -360,24 +361,24 @@ export function processFactionEncounterReputation(
   encounterCompleted: boolean,
   tick: number,
   rewardScale = 1,
-): void {
+): string | null {
   const meta = FACTION_ENCOUNTER_META.get(encounterId);
-  if (!meta) return; // Not a faction encounter
+  if (!meta) return null; // Not a faction encounter
 
-  if (!stepSuccess) return; // No reputation for failed steps
+  if (!stepSuccess) return null; // No reputation for failed steps
 
   // Find the agent's membership in this faction
   // THR-1155: a class-scoped row resolves to the Realm this agent has standing with, so
   // the reputation a court's work pays lands on the court's own ladder.
   const metaDefId = resolveMetaFactionDefId(graph, agentId, meta);
-  if (!metaDefId) return;
+  if (!metaDefId) return null;
   const memberEdges = getFactionMembershipEdges(graph, agentId);
   const factionEdge = memberEdges.find(e => {
     const props = e.properties as Partial<MemberOfEdgeProperties>;
     return props.factionDefId === metaDefId;
   });
 
-  if (!factionEdge) return; // Agent not a member of this faction
+  if (!factionEdge) return null; // Agent not a member of this faction
 
   // Clear promotionPending flag if this is a promotion encounter completion
   const edgeProps = factionEdge.properties as Partial<import('../types/disposition').MemberOfEdgeProperties>;
@@ -420,6 +421,10 @@ export function processFactionEncounterReputation(
       'quest_complete',
     );
   }
+
+  // THR-2042 — the faction this work counted for, so the commission take-up has one
+  // answer to "whose work was this" (class-scoped rows included, THR-1155).
+  return factionEdge.target;
 }
 
 // ─── Reputation Alignment ───────────────────────────────────────────────

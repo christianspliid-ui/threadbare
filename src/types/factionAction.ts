@@ -12,6 +12,7 @@
  */
 
 import type { FactionAmbitionType } from './faction';
+import { MEANS_STEP } from '../data/mortal-means-constants';
 
 // ─── Action Types ────────────────────────────────────────────────────────────
 
@@ -89,6 +90,18 @@ export const COMMISSION_QUEST_COST = 5;
 
 /** Ticks before an unclaimed faction quest expires */
 export const COMMISSION_QUEST_EXPIRY = 30;
+
+/**
+ * THR-2042 — Means a commission pays the decider member who takes it up: the border
+ * levy in reverse (one `MEANS_STEP` for the `COMMISSION_QUEST_COST` the posting holds).
+ */
+export const COMMISSION_MEANS_PAY = MEANS_STEP;
+
+/**
+ * THR-2042 — rollback switch. Off: no take-up and no lapse refund (the posting still
+ * holds its escrow, which then simply leaves the world as before).
+ */
+export const FACTION_COMMISSIONS_ENABLED = true;
 
 /** Minimum negative sentiment to declare rivalry */
 export const RIVALRY_SENTIMENT_THRESHOLD = -0.3;
