@@ -112,6 +112,16 @@ export const RESOURCE_DEFINITIONS: Record<string, ResourceDefinition> = {
     renewalRate: 0.05, // technically renewable but on geological timescales
     description: 'Compressed plant matter — fuel and preservative.',
   },
+  salt: {
+    id: 'salt',
+    name: 'Salt',
+    terrains: ['steppe', 'plateau', 'desert', 'rocky_desert', 'sand_dunes', 'coast'],
+    baseQuantity: [20, 60],
+    sphereAffinities: ['matter', 'order'],
+    renewable: true,
+    renewalRate: 0.2,
+    description: 'Salt from pans, licks and dry lake beds — for curing meat and keeping the winter.',
+  },
 
   // ── Rare Resources (anomaly-exclusive) ─────────────────────────────
   // Only appear at discovered anomaly locations. Lower base quantity than common resources.
@@ -232,6 +242,7 @@ export const TERRAIN_RESOURCE_TABLE: Readonly<Record<string, readonly TerrainRes
     { type: 'fish', min: 40, max: 75 },
   ],
   coast: [
+    { type: 'salt', min: 15, max: 35 },
     { type: 'fish', min: 35, max: 70 },
     { type: 'water', min: 15, max: 35 },
   ],
@@ -261,6 +272,7 @@ export const TERRAIN_RESOURCE_TABLE: Readonly<Record<string, readonly TerrainRes
     { type: 'grazing', min: 40, max: 70 },
   ],
   steppe: [
+    { type: 'salt', min: 40, max: 70 },
     { type: 'grazing', min: 35, max: 65 },
   ],
   floodplain: [
@@ -328,6 +340,7 @@ export const TERRAIN_RESOURCE_TABLE: Readonly<Record<string, readonly TerrainRes
     { type: 'ore', min: 40, max: 75 },
   ],
   plateau: [
+    { type: 'salt', min: 45, max: 75 },
     { type: 'stone', min: 35, max: 60 },
     { type: 'grazing', min: 20, max: 45 },
   ],
@@ -360,11 +373,16 @@ export const TERRAIN_RESOURCE_TABLE: Readonly<Record<string, readonly TerrainRes
   ],
 
   // Extreme
-  desert: [],
+  desert: [
+    { type: 'salt', min: 40, max: 75 },
+  ],
   rocky_desert: [
+    { type: 'salt', min: 30, max: 55 },
     { type: 'stone', min: 20, max: 45 },
   ],
-  sand_dunes: [],
+  sand_dunes: [
+    { type: 'salt', min: 25, max: 50 },
+  ],
   tundra: [],
   glacier: [
     { type: 'water', min: 30, max: 55 },
@@ -458,6 +476,16 @@ export const RESOURCE_PROSE: Readonly<Record<string, { abundant: readonly string
     scarce: [
       'The soil is thin and reluctant. What grain grows does so grudgingly.',
       'A poor harvest is the norm here. The land gives little and asks much.',
+    ],
+  },
+  salt: {
+    abundant: [
+      'The salt pans here shine white to the horizon. Meat keeps through any winter.',
+      'Salt is cheap in this place, and the curing sheds are never empty.',
+    ],
+    scarce: [
+      'A thin crust of salt, scraped by hand. It barely cures a season\'s meat.',
+      'The licks are worked nearly bare. Salt is weighed out here like silver.',
     ],
   },
   peat: {
