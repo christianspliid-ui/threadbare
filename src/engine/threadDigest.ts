@@ -125,10 +125,10 @@ export function selectBeats(
   lookbackTicks: number = STORY_DIGEST_LOOKBACK_TICKS,
 ): SelectedBeat[] {
   const fromTick = Math.max(0, currentTick - lookbackTicks);
-  // THR-2055: an entry filed before its chapter resolved says nothing about how
-  // it went, so it cannot be told as a beat until it is settled.
+  // THR-2055: an entry filed before its chapter resolved (or whose chapter ended
+  // unresolved) says nothing about how it went, so it is not a beat.
   const entries = queryDigest(buffer, { agentId, fromTick, toTick: currentTick })
-    .filter(e => !e.unresolved);
+    .filter(e => !e.unresolved && !e.ended);
 
   if (entries.length === 0) return [];
 

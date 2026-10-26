@@ -24,7 +24,13 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { regenAttention } from './attentionPool';
 import { scoreCurationCandidates } from './curator';
 import type { CurationCandidate } from './curator';
-import { appendDigestEntry, digestAgentName, digestEntryWon, MISSED_CHAPTER_NAME } from './digestBuffer';
+import {
+  appendDigestEntry,
+  digestAgentName,
+  digestEntryWon,
+  endStrandedDigestEntries,
+  MISSED_CHAPTER_NAME,
+} from './digestBuffer';
 import {
   canFireStoryBeat,
   enqueueStoryBeat,
@@ -373,6 +379,16 @@ export function phaseAttention(
     };
     appendDigestEntry(digestBuffer, curatedOutEntry);
   }
+
+  // ── 6c. THR-2055: close entries whose chapter can no longer resolve ──────
+  // Settling happens on resolution (unifiedActionResolution, orchestrator); an
+  // action dropped unresolved (the mortal died) or gone before its tug lapsed
+  // would otherwise leave its entry "Still unfolding" for good.
+  endStrandedDigestEntries(digestBuffer, (e) =>
+    state.unifiedActions.some(a => a.actionId === e.encounterId && !a.resolved) ||
+    state.encounterProgress.some(ep =>
+      ep.encounterId === e.encounterId && ep.actorId === e.agentId && ep.status === 'active'),
+  );
 
   // ── 7. Emit traces ─────────────────────────────────────────────────────────
 

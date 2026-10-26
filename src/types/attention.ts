@@ -76,6 +76,12 @@ export interface DigestEntry {
    * and meaningless until `settleDigestOutcome` fills in the band.
    */
   unresolved?: boolean;
+  /**
+   * THR-2055 — was unresolved, but its chapter left the world without resolving
+   * (the mortal died, the action was dropped or pruned unseen). Says nothing
+   * about how it went; Read the Threads tells it as ended out of sight.
+   */
+  ended?: boolean;
 }
 
 // ─── Thread Tugs ─────────────────────────────────────────────────────

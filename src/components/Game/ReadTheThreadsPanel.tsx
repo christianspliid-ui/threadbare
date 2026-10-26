@@ -176,7 +176,7 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
   // full / high: show everything including deltas and attachments
   const outcomeText = entry.significantOutcomes.length > 0
     ? entry.significantOutcomes[0]
-    : entry.unresolved || entry.outcomeBand
+    : entry.unresolved || entry.ended || entry.outcomeBand
       ? `${digestOutcomeLabel(entry)}.`
       : entry.success ? 'Resolved successfully.' : 'Did not go as planned.';
 
@@ -327,7 +327,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
   const notable = entries.filter(e => e.isNotable && !e.wasCuratedOut);
   // THR-2055: a candidate demoted on several ticks is one missed chapter, and
   // a dormant mortal is named once however many entries they filed.
-  const curatedOut = [...new Map(entries.filter(e => e.wasCuratedOut).map(e => [e.encounterId, e])).values()];
+  const curatedOut = [...new Map(entries.filter(e => e.wasCuratedOut).map(e => [`${e.agentId}|${e.encounterId}`, e])).values()];
   const dormant = oneEntryPerAgent(entries.filter(e => e.isDormantAgent && !e.wasCuratedOut));
   const locationEntries = entries.filter(e => e.sourceType === 'location' && !e.wasCuratedOut && !e.isDormantAgent);
 
@@ -382,7 +382,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
             {fidelity === 'vague' ? (
               // Vague: group-level summary only — no individual entries
               <div style={{ padding: 'var(--space-2) 0', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                {group.length} encounter{group.length !== 1 ? 's' : ''}. {group.filter(e => !e.unresolved && digestEntryWon(e)).length} succeeded.
+                {group.length} encounter{group.length !== 1 ? 's' : ''}. {group.filter(e => !e.unresolved && !e.ended && digestEntryWon(e)).length} succeeded.
               </div>
             ) : (
               group.map((e, i) => <DigestRow key={`${reach}-${i}`} entry={e} fidelity={fidelity} />)

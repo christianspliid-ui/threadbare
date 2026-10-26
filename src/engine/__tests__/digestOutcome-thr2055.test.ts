@@ -16,7 +16,9 @@ import {
   digestOutcomeLabel,
   oneEntryPerAgent,
   settleDigestOutcome,
+  endStrandedDigestEntries,
   DIGEST_UNNAMED_AGENT,
+  DIGEST_ENDED_UNSEEN,
 } from '../digestBuffer';
 import { composeThreadStory, selectBeats } from '../threadDigest';
 import { BEAT_TEMPLATES } from '../../data/thread-digest-content';
@@ -209,5 +211,34 @@ describe('THR-2055 — the dormant court names each mortal once', () => {
     ]);
     expect(list.map(e => e.agentName)).toEqual(['Ana', 'Bo']);
     expect(list[0].tick).toBe(3);
+  });
+});
+
+describe('THR-2055 — a chapter that leaves the world unresolved', () => {
+  it('an entry whose action is gone is closed as ended, not left unfolding', () => {
+    // The tug lapses after the action left unifiedActions (the mortal died).
+    const state = makeState(makeAction(), LAPSED_TUG);
+    (state as { unifiedActions: UnifiedAction[] }).unifiedActions = [];
+    const entry = phaseAttention(state, [TEMPLATE], () => 0.5).digestBuffer!.find(e => e.encounterId === 'ua_1')!;
+    expect(entry.unresolved).toBe(false);
+    expect(entry.ended).toBe(true);
+    expect(digestOutcomeLabel(entry)).toBe(DIGEST_ENDED_UNSEEN);
+    expect(selectBeats('elara', [entry], 20)).toHaveLength(0);
+  });
+
+  it('a live action keeps its entry unresolved', () => {
+    const buffer = [makeEntry({ unresolved: true, success: false })];
+    expect(endStrandedDigestEntries(buffer, () => true)).toBe(0);
+    expect(buffer[0].unresolved).toBe(true);
+  });
+
+  it('a legacy settle matches the actor, since template ids are shared', () => {
+    const buffer = [
+      makeEntry({ agentId: 'a', encounterId: 'tavern_brawl', unresolved: true, success: false }),
+      makeEntry({ agentId: 'b', encounterId: 'tavern_brawl', unresolved: true, success: false }),
+    ];
+    expect(settleDigestOutcome(buffer, 'tavern_brawl', 'failure', 'a')).toBe(1);
+    expect(buffer[0].outcomeBand).toBe('failure');
+    expect(buffer[1].unresolved).toBe(true);
   });
 });

@@ -21,6 +21,9 @@ export const DIGEST_UNNAMED_AGENT = 'Someone';
 /** Fallback chapter name when the action or its template is gone. */
 export const MISSED_CHAPTER_NAME = 'A chapter';
 
+/** What Read the Threads says of a chapter that left the world without resolving. */
+export const DIGEST_ENDED_UNSEEN = 'Ended out of sight';
+
 /**
  * The name a digest entry files under. Agents carry it on `node.name`;
  * `properties.name` is checked first for the few writers that set it there.
@@ -52,8 +55,11 @@ export function digestEntryWon(entry: Pick<DigestEntry, 'success' | 'outcomeBand
  * the band is known ("It faltered", "Won, at a price"), "Still unfolding" when
  * the entry was filed before it resolved.
  */
-export function digestOutcomeLabel(entry: Pick<DigestEntry, 'success' | 'outcomeBand' | 'unresolved'>): string {
+export function digestOutcomeLabel(
+  entry: Pick<DigestEntry, 'success' | 'outcomeBand' | 'unresolved' | 'ended'>,
+): string {
   if (entry.unresolved) return 'Still unfolding';
+  if (entry.ended) return DIGEST_ENDED_UNSEEN;
   const phrase = outcomePhrase(entry.outcomeBand);
   if (phrase) return phrase.charAt(0).toUpperCase() + phrase.slice(1);
   return digestEntryWon(entry) ? 'Success' : 'Failed';
@@ -69,15 +75,38 @@ export function settleDigestOutcome(
   buffer: DigestEntry[],
   encounterId: string,
   outcome: UnifiedActionOutcome,
+  /** Legacy encounters key by template id, which many mortals share — match the actor too. */
+  agentId?: string,
 ): number {
   let settled = 0;
   for (let i = 0; i < buffer.length; i++) {
     const e = buffer[i];
     if (!e.unresolved || e.encounterId !== encounterId) continue;
+    if (agentId !== undefined && e.agentId !== agentId) continue;
     buffer[i] = { ...e, unresolved: false, outcomeBand: outcome, success: !LOST_BANDS.has(outcome) };
     settled++;
   }
   return settled;
+}
+
+/**
+ * Close every unresolved entry whose chapter can no longer resolve (`isLive`
+ * false): the mortal died, or the action left the world before resolving. Such
+ * an entry would otherwise say "Still unfolding" for good. Replaces entries
+ * with copies, like `settleDigestOutcome`. Returns how many it closed.
+ */
+export function endStrandedDigestEntries(
+  buffer: DigestEntry[],
+  isLive: (entry: DigestEntry) => boolean,
+): number {
+  let ended = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    const e = buffer[i];
+    if (!e.unresolved || isLive(e)) continue;
+    buffer[i] = { ...e, unresolved: false, ended: true, success: false };
+    ended++;
+  }
+  return ended;
 }
 
 /** One entry per agent, newest kept — a list that names mortals names each once. */

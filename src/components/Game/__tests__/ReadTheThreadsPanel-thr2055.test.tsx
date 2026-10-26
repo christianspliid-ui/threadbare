@@ -75,4 +75,14 @@ describe('THR-2055 — Read the Threads tells a lost chapter as lost', () => {
     expect(text.match(/Ana — faint signs of movement/g)).toHaveLength(1);
     expect(text.match(/Bo — faint signs of movement/g)).toHaveLength(1);
   });
+
+  it('two mortals missing the same chapter are both listed', () => {
+    const text = readThreads([
+      makeEntry({ agentId: 'a', agentName: 'Ana', encounterId: 'tavern_brawl', wasCuratedOut: true, unresolved: true }),
+      makeEntry({ agentId: 'b', agentName: 'Bo', encounterId: 'tavern_brawl', wasCuratedOut: true, unresolved: true }),
+      makeEntry({ agentId: 'b', agentName: 'Bo', encounterId: 'tavern_brawl', wasCuratedOut: true, unresolved: true, tick: 96 }),
+    ]);
+    expect(text.match(/Ana — The Tribute Exchange/g)).toHaveLength(1);
+    expect(text.match(/Bo — The Tribute Exchange/g)).toHaveLength(1);
+  });
 });
