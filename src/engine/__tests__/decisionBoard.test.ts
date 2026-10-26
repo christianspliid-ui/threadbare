@@ -25,6 +25,7 @@ import {
   computeTemperamentWeight,
   forecastAdvanceProbability,
   resolveUndertakingPayoff,
+  roleAffinityBoardPull,
   scoreUnifiedBoard,
   undertakingEVT,
 } from '../decisionBoard';
@@ -48,7 +49,12 @@ import {
   UNDERTAKING_TEMPERAMENT_REACH_WEIGHT,
   UNDERTAKING_NEUTRAL_DESIRE,
 } from '../../data/strategic-action-constants';
-import { MINIMUM_DESIRE, PERSONALITY_SCORE_EXPONENT } from '../../data/agent-behavior-constants';
+import {
+  MINIMUM_DESIRE,
+  PERSONALITY_SCORE_EXPONENT,
+  ROLE_AFFINITY_BOARD_WEIGHT,
+  ROLE_PRIMARY_AFFINITY_BONUS,
+} from '../../data/agent-behavior-constants';
 import { ARRIVAL_GOAL_COMMITMENT_MULTIPLIER } from '../../data/movement-content';
 
 // ─── Fixtures ───────────────────────────────────────────────────
@@ -542,6 +548,48 @@ describe('scoreUnifiedBoard', () => {
     // An encounter has no checkpoint, so it carries no forecast — an absent key,
     // not a zero that would read as "certain to halt".
     expect(board.entries[0].advanceProbability).toBeUndefined();
+  });
+
+  // THR-2067 — the trade's lean acts on the board. It used to scale `finalScore` only,
+  // which this board never reads, so a healer's trade never steered her own choice.
+  describe('roleAffinityPull (THR-2067)', () => {
+    const mk = (id: string, roleAffinityMultiplier?: number) => ({
+      entry: { templateId: id },
+      valuePerTick: 0.4,
+      desireMultiplier: 1,
+      ...(roleAffinityMultiplier !== undefined ? { roleAffinityMultiplier } : {}),
+    }) as never;
+
+    it('ranks a role-matching encounter above an equal-EVT non-matching one', () => {
+      const lean = 1 + ROLE_PRIMARY_AFFINITY_BONUS;
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('off_trade', 1), mk('trade', lean)],
+        strategicCandidates: [],
+      });
+      const pull = roleAffinityBoardPull(lean);
+      expect(pull).toBeGreaterThan(1);
+      expect(board.winner?.id).toBe('trade');
+      expect(board.winner?.roleAffinityPull).toBeCloseTo(pull, 10);
+      expect(board.winner?.score).toBeCloseTo(0.4 * pull, 10);
+      // No lean → no key, so the trace shows the pull only where it acted.
+      expect(board.entries.find(e => e.id === 'off_trade')!.roleAffinityPull).toBeUndefined();
+      expect(board.entries.find(e => e.id === 'off_trade')!.score).toBeCloseTo(0.4, 10);
+    });
+
+    it('scales the lean by ROLE_AFFINITY_BOARD_WEIGHT and reads a missing multiplier as no lean', () => {
+      expect(roleAffinityBoardPull(1.4)).toBeCloseTo(1 + 0.4 * ROLE_AFFINITY_BOARD_WEIGHT, 10);
+      expect(roleAffinityBoardPull(1)).toBe(1);
+      expect(roleAffinityBoardPull(undefined)).toBe(1);
+      expect(roleAffinityBoardPull(Number.NaN)).toBe(1);
+      const board = scoreUnifiedBoard({
+        graph: emptyGraph, agentId: 'a', tick: 1,
+        encounterCandidates: [mk('legacy')],
+        strategicCandidates: [],
+      });
+      expect(board.winner?.score).toBeCloseTo(0.4, 10);
+      expect(board.winner?.roleAffinityPull).toBeUndefined();
+    });
   });
 
   // THR-1668 — the arrival commitment acts on the board, where the decision is made.
