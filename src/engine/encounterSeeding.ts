@@ -655,6 +655,9 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
     // Location's hex is keeping it (the awareness rule), so a town meeting cannot be
     // missed by standing in the wrong inn.
     let keptAppointment: PlantedAppointment | null = null;
+    // THR-1929: set when the world lost the meeting's place — the arm has already
+    // decided the kept branch fires wherever the mortal is, so the place wait skips it.
+    let placeLostFiresPlaceless = false;
     {
       const appointment = readPlantedAppointment(seed);
       if (appointment) {
@@ -682,6 +685,7 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
           });
           if (drop) continue;
           seed = { ...seed, appointment: undefined };
+          placeLostFiresPlaceless = true;
         } else if (windowOpen && slack.atPlace) {
           keptAppointment = appointment;
           // THR-1511's field: a subtype-gated query is judged at the place, not the feet.
@@ -763,8 +767,9 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
     // one scene, so it never plays on the wrong ground: it holds while the mortal stands
     // elsewhere, and withers after SEQUEL_PLACE_WAIT_TICKS without falling through to
     // query or family. A kept appointment is exempt — its arm already judged the place,
-    // and the THR-1519 kept bookkeeping must still run.
-    if (template && !keptAppointment && !templateAcceptsWhereTheyStand(state.graph, seed.targetAgentId, template)) {
+    // and the THR-1519 kept bookkeeping must still run — and so is a meeting whose place
+    // the world lost, which that arm deliberately fires placeless (THR-1479).
+    if (template && !keptAppointment && !placeLostFiresPlaceless && !templateAcceptsWhereTheyStand(state.graph, seed.targetAgentId, template)) {
       const waitsUntilTick = seed.eligibleAfterTick + SEQUEL_PLACE_WAIT_TICKS - 1;
       if (tick <= waitsUntilTick) {
         if (!seed.placeWaitTraced) {
