@@ -55,6 +55,9 @@ function buildState(): GameState {
       properties: { hexCol: 1, hexRow: 1, locationSubtype: 'hamlet' },
     });
   }
+  // THR-1929: the hero stands in the town that owes the return visit — a gated
+  // templateId sequel waits for a place its template accepts.
+  graph.addEdge({ id: 'hero_loc', source: HERO, target: WELCOMING, type: 'located_at', properties: {} });
   return {
     tick: 10, seed: 42, cycle: 1, phase: 'playing', graph,
     cosmology: {} as never, tiles: [], clock: {} as never,

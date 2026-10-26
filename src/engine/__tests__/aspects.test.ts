@@ -267,6 +267,8 @@ describe('seedApotheosisEncounters', () => {
     expect(patch.pendingEncounterSeeds).toHaveLength(1);
     const seed = patch.pendingEncounterSeeds![0];
     expect(seed.templateId).toBe(APOTHEOSIS_ENCOUNTER_TEMPLATE_ID);
+    // THR-1929: the capstone skips the templateId place wait.
+    expect(seed.firesPlaceless).toBe(true);
     expect(seed.targetAgentId).toBe(MORTAL);
     // Offer is stamped on the thread edge so it won't re-seed within cooldown.
     expect((threadEdge(graph).properties as { apotheosisOfferedTick?: number }).apotheosisOfferedTick).toBe(1000);

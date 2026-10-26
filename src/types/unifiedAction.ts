@@ -1596,6 +1596,20 @@ export interface PendingEncounterSeed {
    * the mortal did not keep. Absent on every other seed.
    */
   readonly missedAppointment?: { readonly locationId: string; readonly dueTick: number; readonly reason: AppointmentMissReason };
+  /**
+   * THR-1929 — set once a ripe templateId sequel has started waiting for a place its
+   * template accepts, so `encounter_seed_waiting` is traced once per seed rather than
+   * every held tick. The wait itself is measured from `eligibleAfterTick`.
+   */
+  readonly placeWaitTraced?: boolean;
+  /**
+   * THR-1929 — the templateId place wait skips this seed on every tick, busy or not.
+   * Set when the world lost an appointment's place and the appointment arm rewrote
+   * the seed to fire its kept branch wherever the mortal is (THR-1479), and by
+   * engine planters whose scene fires wherever the mortal stands (the apotheosis
+   * capstone, `aspects.ts`).
+   */
+  readonly firesPlaceless?: boolean;
 }
 
 /** Why an appointment was missed (THR-1479). */

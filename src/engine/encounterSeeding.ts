@@ -40,6 +40,7 @@ import { touchWorld } from './simulationRuntime';
 import {
   APPOINTMENT_EVENT_SIGNIFICANCE,
   APPOINTMENT_MISSED_SEQUEL_DELAY_TICKS,
+  SEQUEL_PLACE_WAIT_TICKS,
 } from '../data/movement-content';
 import { describeContentQuery as describeMissedQuery } from './contentQuery';
 import type { EncounterSupportBinding } from '../types/encounter';
@@ -224,6 +225,33 @@ export function seedTargetSubtype(graph: WorldGraph, targetAgentId: string): str
 export function seedAnchorSubtype(graph: WorldGraph, seed: PendingEncounterSeed): string | undefined {
   if (!seed.resolutionLocationId) return undefined;
   return locationTierSubtype(graph, graph.getNode(seed.resolutionLocationId));
+}
+
+/**
+ * Whether a template accepts the place its actor stands right now (THR-1929).
+ *
+ * True when the template declares no `locationSubtypes`, or when its gate holds either
+ * the Location-tier subtype ({@link seedTargetSubtype}) or the mortal's own Place
+ * `sublocationTypeId`. Both, because "where they stand" means what the board means by
+ * it: a tavern scene gated on `sublocation-type.tavern` plays in a tavern Place, and a
+ * town scene plays anywhere inside the town. A missing or dangling location is nowhere
+ * a gated template accepts — false, fail-soft.
+ *
+ * Deliberately free of seed and query types so THR-2039's query path can reuse it.
+ */
+export function templateAcceptsWhereTheyStand(
+  graph: WorldGraph,
+  agentId: string,
+  template: Pick<UnifiedActionTemplate, 'locationSubtypes'>,
+): boolean {
+  const gate = template.locationSubtypes as readonly string[] | undefined;
+  if (!gate || gate.length === 0) return true;
+  const located = getAgentLocation(graph, agentId);
+  if (!located) return false;
+  const subtype = locationTierSubtype(graph, located);
+  if (subtype && gate.includes(subtype)) return true;
+  const sublocationTypeId = located.properties.sublocationTypeId as string | undefined;
+  return !!sublocationTypeId && gate.includes(sublocationTypeId);
 }
 
 function locationTierSubtype(graph: WorldGraph, node: GraphNode | undefined): string | undefined {
@@ -653,7 +681,9 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
               : `Appointment place lost: ${seed.targetAgentId} — "${seed.seedLabel}" fires placeless`,
           });
           if (drop) continue;
-          seed = { ...seed, appointment: undefined };
+          // THR-1929: carried on the seed, not a local, so a busy mortal's requeued
+          // seed still skips the place wait on the tick it finally fires.
+          seed = { ...seed, appointment: undefined, firesPlaceless: true };
         } else if (windowOpen && slack.atPlace) {
           keptAppointment = appointment;
           // THR-1511's field: a subtype-gated query is judged at the place, not the feet.
@@ -729,6 +759,57 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
       template = getUnifiedTemplateById(seed.templateId);
       if (template) resolvedTemplateId = seed.templateId;
       // templateId set but not found → fall through to query / family / fail-soft below.
+    }
+
+    // THR-1929: a templateId sequel waits for a place its template accepts. It names
+    // one scene, so it never plays on the wrong ground: it holds while the mortal stands
+    // elsewhere, and withers after SEQUEL_PLACE_WAIT_TICKS without falling through to
+    // query or family. A kept appointment is exempt — its arm already judged the place,
+    // and the THR-1519 kept bookkeeping must still run — and so is a meeting whose place
+    // the world lost, which that arm deliberately fires placeless (THR-1479).
+    if (template && !keptAppointment && !seed.firesPlaceless && !templateAcceptsWhereTheyStand(state.graph, seed.targetAgentId, template)) {
+      const waitsUntilTick = seed.eligibleAfterTick + SEQUEL_PLACE_WAIT_TICKS - 1;
+      if (tick <= waitsUntilTick) {
+        if (!seed.placeWaitTraced) {
+          const located = getAgentLocation(state.graph, seed.targetAgentId);
+          const judgedSubtype = seedTargetSubtype(state.graph, seed.targetAgentId);
+          emitTrace({
+            tick, category: 'encounter_seed_waiting',
+            agentId: seed.targetAgentId,
+            seedId: seed.seedId,
+            templateId: template.id,
+            judgedSubtype,
+            judgedSublocationTypeId: located?.properties.sublocationTypeId as string | undefined,
+            waitsUntilTick,
+            summary: `Seed waiting for its place: "${seed.seedLabel}" → ${template.id} not accepted at ${judgedSubtype ?? 'nowhere'} (waits until tick ${waitsUntilTick})`,
+          });
+          seed = { ...seed, placeWaitTraced: true };
+        }
+        remaining.push(seed);
+        continue;
+      }
+      const witheredEvent: TickEvent = {
+        id: `${seed.seedId}_expired`,
+        tick,
+        type: 'narrative',
+        message: `A planted thread withered before it could take root: ${seed.seedLabel}`,
+        significance: 0.3,
+        actorId: seed.targetAgentId,
+      };
+      nextTickEvents = [...nextTickEvents, witheredEvent];
+      nextRecentEvents = appendRecentEvent(nextRecentEvents, witheredEvent);
+      emitTrace({
+        tick, category: 'encounter_seed_triggered',
+        agentId: seed.targetAgentId,
+        seedId: seed.seedId,
+        targetAgentId: seed.targetAgentId,
+        ticksBetweenPlantAndTrigger: ticksSincePlant,
+        resolvedTemplateId: 'none',
+        outcome: 'discarded',
+        discardReason: 'place_never_reached',
+        summary: `Seed discarded (place never reached): "${seed.seedLabel}" → ${template.id} waited ${SEQUEL_PLACE_WAIT_TICKS} ticks`,
+      });
+      continue;
     }
     const query = template ? undefined : seedContentQuery(seed);
     if (!template && query) {

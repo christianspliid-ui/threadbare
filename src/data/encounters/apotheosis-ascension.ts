@@ -68,10 +68,10 @@ import {
  * coverage the prose has never been written for.
  *
  * The envelope is declarative only for *this* template's reachability: the
- * apotheosis seed carries an explicit `templateId` (`aspects.ts`), and the
- * location-subtype filter in `encounterSeeding.ts` gates **family-only** seeds.
- * So `locationSubtypes` changes where the opening prose binds, never whether the
- * capstone can fire.
+ * apotheosis seed carries an explicit `templateId` (`aspects.ts`) and is planted
+ * `firesPlaceless`, so the templateId place wait in `encounterSeeding.ts` (THR-1929)
+ * skips it. So `locationSubtypes` changes where the opening prose binds, never
+ * whether the capstone can fire.
  */
 const APOTHEOSIS_SETTINGS = ['rural', 'urban', 'sacred', 'wayside'] as const;
 

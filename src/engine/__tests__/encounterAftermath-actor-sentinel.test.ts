@@ -36,7 +36,9 @@ function buildState(): GameState {
   graph.addNode({ id: 'actor-hero', type: 'actor', name: 'Hero', properties: { actorType: 'individual', reputationScore: 0.5 } });
   graph.addNode({ id: 'actor-victim', type: 'actor', name: 'Victim', properties: { actorType: 'individual' } });
   graph.addNode({ id: 'faction-guild', type: 'actor', name: 'Guild', properties: { actorType: 'faction' } });
-  graph.addNode({ id: 'loc-town', type: 'location', name: 'Town', properties: { hexCol: 1, hexRow: 1 } });
+  graph.addNode({ id: 'loc-town', type: 'location', name: 'Town', properties: { hexCol: 1, hexRow: 1, locationSubtype: 'town' } });
+  // THR-1929: the hero stands in town, where the gated swindler sequel is accepted.
+  graph.addEdge({ id: 'hero_loc', source: 'actor-hero', target: 'loc-town', type: 'located_at', properties: {} });
   return {
     tick: 10, seed: 42, cycle: 1, phase: 'playing', graph,
     cosmology: {} as never, tiles: [], clock: {} as never,

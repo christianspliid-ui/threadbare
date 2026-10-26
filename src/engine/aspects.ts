@@ -217,6 +217,9 @@ export function seedApotheosisEncounters(
       priority: 1.5,
       seedLabel: 'A mortal stands at the threshold of apotheosis.',
       plantedTick: tick,
+      // THR-1929: the capstone fires wherever the mortal stands — its envelope binds
+      // the opening prose, never whether it can fire — so it skips the place wait.
+      firesPlaceless: true,
     });
 
     // Stamp the offer so we respect the re-offer cooldown and don't double-seed.
