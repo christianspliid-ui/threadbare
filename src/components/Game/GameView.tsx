@@ -153,7 +153,6 @@ import {
   resolveNotificationsOnAftermathAcknowledge,
   resolveNotificationsOnVeilLeave,
   runEncounterAutoOpenScan,
-  shouldAutoOpenEncounterNotification,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForNotification,
 } from './encounterNotificationRuntime';
@@ -1345,9 +1344,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // Returns whether the modal actually opened — a stale notification (missing
   // template, no live runtime, or a step the encounter has already moved past)
   // declines, and callers must not treat it as read (THR-664).
-  const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification): boolean => {
-    const template = getUnifiedTemplateById(notif.encounterId);
-    if (!template) return false;
+  /**
+   * Can this notification open a veil right now? The open below and THR-2053's
+   * auto-open hold share it, so the hold waits on the chapter the scan would open,
+   * never on a spent step record.
+   */
+  const canOpenEncounterNotification = useCallback((notif: EncounterNotification): boolean => {
+    if (!getUnifiedTemplateById(notif.encounterId)) return false;
     const { encounter, activeAction } = selectEncounterRuntimeForNotification(
       notif,
       gameState.encounterProgress,
@@ -1360,11 +1363,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     // (it freezes rather than advancing), so the stepIndex check above cannot
     // catch it. Left openable it eats the one auto-interrupt slot and the
     // aftermath queued behind it never pops on its own.
-    if (isStepNotificationSupersededByAftermath(
+    return !isStepNotificationSupersededByAftermath(
       notif,
       activeAction,
       gameState.encounterNotifications ?? [],
-    )) return false;
+    );
+  }, [gameState.encounterNotifications, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
+
+  const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification): boolean => {
+    if (!canOpenEncounterNotification(notif)) return false;
+    const template = getUnifiedTemplateById(notif.encounterId);
+    if (!template) return false;
+    const { encounter, activeAction } = selectEncounterRuntimeForNotification(
+      notif,
+      gameState.encounterProgress,
+      gameState.unifiedActions,
+      gameState.tick,
+    );
+    if (!encounter) return false;
     const threadTier = courtPositionToThreadTier(notif.courtPosition);
     const clearanceGateRuntimeId = activeAction?.clearanceGateIds?.[0];
     const clearanceGateStateSnapshot = clearanceGateRuntimeId
@@ -1384,7 +1400,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       clearanceGateStateSnapshot,
     });
     return true;
-  }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
+  }, [canOpenEncounterNotification, gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
   // THR-664: encounter activity is anchored to the entity it concerns. Pending
   // notifications become badges on the agent's thread row instead of toasts in
@@ -2914,6 +2930,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // scan would bail forever and strand the aftermath. See
   // `isEncounterAutoOpenSuppressed` for the full mechanism.
   useEffect(() => {
+    heldEncounterRef.current = null;
     if (isEncounterAutoOpenSuppressed(interruptsSuppressed, running)) return;
     // Don't auto-open tiered encounters while a premonition modal is active —
     // compulsion handles encounter selection for that agent
@@ -2939,8 +2956,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     const candidates = minimised.size > 0 ? notifications.filter(n => !minimised.has(n.id)) : notifications;
     // THR-2053 — the world never opens a chapter under the player's click or over a
     // surface they opened; it looks again when the quiet window ends or the surface closes.
-    const waiting = candidates.find(n =>
-      shouldAutoOpenEncounterNotification(n) && n.id !== suppressedEncounterNotificationId.current);
+    // A dry run of the scan with the open's own checks: the chapter it would open.
+    const waitingId = runEncounterAutoOpenScan(candidates, suppressedEncounterNotificationId.current, canOpenEncounterNotification);
+    const waiting = waitingId ? candidates.find(n => n.id === waitingId) : undefined;
     const msSinceInput = Date.now() - lastInputAtRef.current;
     const heldBy = waiting
       ? worldOpenedEncounterHeldBy({
@@ -2963,7 +2981,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck, canOpenEncounterNotification]);
 
   // THR-1724 (review gate) — a minimised step the world resolved without the
   // player must not leave a badge that opens nothing. Since THR-1730 a
