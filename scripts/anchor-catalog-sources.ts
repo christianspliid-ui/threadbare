@@ -445,6 +445,11 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     'The map, and the actor\'s current-position readout',
     'Where someone *is* — the anchor for a chip about arrival or displacement.',
   ),
+  lies_at: RELATIONAL(
+    'The artifact\'s page ("where"), and the Connections of the place it lies at',
+    'Where an artifact no one carries *lies* — anchor the ARTIFACT, not the place. '
+    + 'Taking it up ends this edge (THR-2030).',
+  ),
   avatar_of: RELATIONAL('The avatar and ascendant surfaces'),
   // Action
   performing: STRUCTURAL('in-progress bookkeeping, resolved within the tick'),

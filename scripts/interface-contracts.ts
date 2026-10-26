@@ -3464,6 +3464,24 @@ export const CONTRACTS: readonly Contract[] = [
     // Every reader of a place's `sphereAffinity` sees the lift.
   },
   {
+    id: 'unborne-artifact-lies-at-its-place',
+    producerSystem: WORLDGEN,
+    consumerSystem: ATTACHMENTS,
+    intent:
+      "An artifact no one carries still lies somewhere: the earlier god's relic waits at its site, its page names that place, the place's page lists it, and Dominion's place reader finds it there.",
+    ulTerms: ['Echo', 'Dominion'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['lies_at', 'placeOf'],
+      module: 'src/engine/seedEchoes.ts',
+    },
+    writeSites: ['src/engine/seedEchoes.ts'],
+    readSites: ['src/engine/dominion.ts', 'src/engine/views/subjects/subjectPage.ts', 'src/engine/views/connections.ts'],
+    // THR-2030. A new narrow edge rather than a widened `located_at` (~39 readers
+    // take its sources as residents) or `contains` (pathfinding walks it). An
+    // artifact with a bearer has no `lies_at`; the take-up verb (THR-2031) removes it.
+  },
+  {
     id: 'awake-hungers-gate-remembrance',
     producerSystem: NARRATIVE,
     consumerSystem: PROGRESSION,

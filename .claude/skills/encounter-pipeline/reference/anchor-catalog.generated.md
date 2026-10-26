@@ -7,7 +7,7 @@
 
 **What this is for.** Law 56's second clause requires a chip's referent to be an existing graph object, resolvable in the live world the player is in, and requires the chip's prose to name *that particular object*. This catalog is the list of objects that sentence can be about. THR-1153's anchor-resolution gate checks the declaration forms in the fourth column.
 
-**Totals.** 64 anchorable members across 81 classified.
+**Totals.** 65 anchorable members across 82 classified.
 
 ## How to read the status column
 
@@ -273,6 +273,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 | `cursed` | — | ⛔ reserved | — | — | — |
 | `blessed` | — | ⛔ reserved | — | — | — |
 | `located_at` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The map, and the actor's current-position readout |
+| `lies_at` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The artifact's page ("where"), and the Connections of the place it lies at |
 | `avatar_of` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The avatar and ascendant surfaces |
 | `performing` | — | — not an anchor | — | — | — |
 | `aligned_with` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The alignment readouts |
@@ -318,6 +319,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 - **`cursed`** — Declared in `EdgeType` and marked RESERVED — not yet implemented, so nothing ever writes one. Anchoring a chip here would claim state that cannot exist.
 - **`blessed`** — Declared in `EdgeType` and marked RESERVED — not yet implemented, so nothing ever writes one. Anchoring a chip here would claim state that cannot exist.
 - **`located_at`** — Where someone *is* — the anchor for a chip about arrival or displacement.
+- **`lies_at`** — Where an artifact no one carries *lies* — anchor the ARTIFACT, not the place. Taking it up ends this edge (THR-2030).
 - **`performing`** — Structural edge — in-progress bookkeeping, resolved within the tick
 - **`encounter_at`** — Structural edge — availability wiring, invisible to the player
 - **`gates_to`** — Structural edge — template graph wiring; the player sees the unlocked encounter, not the edge

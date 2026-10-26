@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 100 |
-| **Total** | **327** |
+| 🔵 UNVERIFIED-OK | 101 |
+| **Total** | **328** |
 
 ## Contracts by producing subsystem
 
@@ -476,6 +476,7 @@ remediation ticket or the build fails.
 | `spell-template-resolves-from-graph` | A generated spell's template lives on its definition node, and every site that needs a spell's template reads it through one resolver — authored first, then the node. No module-level registry outlives the world that minted it. | function: `resolveSpellTemplate`, `spellDefinitionNode` | Effects & Conditions | 🟢 LIVE | — |
 | `sphere-points-read-by-dominion` | The god's bought spheres decide what its ground is (THR-1748, THR-1749's "future" row). The Dominion read takes the bought vector through `getSpherePoints` and the power baseline `dominionPowerBaseline` recorded at world init, so power reads 1.0 at start for every buy. | node-prop: `dominionPowerBaseline` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `sphere-points-split-essence-income` | The god is what it poured itself into (THR-1749). Remembrance writes the bought sphere vector onto the ascendant node as `spherePoints` (`createAscendant`, with `sphereAlignment` re-derived as the two largest buys); the essence ledger and the essence bar read it through `getSpherePoints` and split income with the one shared `distributeBySpherePoints` (every sphere keeps `UNBOUGHT_SPHERE_INCOME_SHARE`, the rest follows the points), so ledger and readout cannot disagree. | node-prop: `spherePoints`, `distributeBySpherePoints` | Essence & Divine Economy | 🔵 UNVERIFIED-OK | — |
+| `unborne-artifact-lies-at-its-place` | An artifact no one carries still lies somewhere: the earlier god's relic waits at its site, its page names that place, the place's page lists it, and Dominion's place reader finds it there. | edge: `lies_at`, `placeOf` | Attachments, Items & Possessions | 🔵 UNVERIFIED-OK | — |
 | `world-past-descent-feeds-clue-scoring` | About a quarter of the mortals living on a dead empire's old land descend from it (`backstoryStrata` + `originCultureId`), and a ruin's clue prefers a descendant of the people who built it. | node-prop: `backstoryStrata`, `WorldPastDescentStratum` | Ruins, Clues & Delves | 🟢 LIVE | — |
 | `world-past-mints-ambitions` | The past gives the living reasons (THR-1657, S3): a fallen commander's kin — the losing Realm's highest-standing protagonist with a free slot, tied `kin` both ways — inherits a `seek_revenge` grievance against the winning Realm's current leader through `resolveGrievanceDisposition`'s succession, and the protagonist nearest a wonder with a finder comes to chase it. Deciders only, no spotlight pull, so the t0 decider headcount is unchanged; every source that mints nothing is named with its reason in `world_past_seeded.ambitions`. | function: `mintPastAmbitions`, `assignAmbitionToActor`, `resolveGrievanceDisposition` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `world-past-reaches-the-chronicle` | The past worldgen derives from what it placed — an elder war, founding ages, wars in living memory, the dead — is readable back through one pure selector, `readWorldPast` (fog-gated for the player as `readWorldPastForPlayer`), which the "Before you woke" chronicle section, the place line on a settlement or ruin page and the line on the sheet of someone long dead read through `worldPastWords` (THR-1656), and never through `chronicleEntries`, which cycle end empties. | function: `seedWorldPast`, `readWorldPast`, `readWorldPastForPlayer`, `getPlacePast` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
@@ -1580,10 +1581,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Spheres & Quintessence
 - **UL terms:** *Echo*, *Dominion*
 - **Module:** `src/engine/seedEchoes.ts`
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/seedEchoes.ts`
 - **Read sites:** `src/engine/gameInit.ts`
-- **Other hits:** `src/engine/worldSeed.ts`
+- **Other hits:** `src/engine/worldSeed.ts`, `src/types/edgeSchema.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `economy-context-scene-scoring` — 🟢 LIVE
@@ -3951,6 +3952,18 @@ exit
 - **Write sites:** `src/engine/cycleEnd.ts`
 - **Read sites:** `src/engine/views/stage/buildNudgePhaseModel.ts`
 - **Other hits:** `src/debug-bridge.ts`, `src/engine/echo.ts`, `src/engine/encounters/dealHand.ts`, `src/engine/gameInit.ts`, `src/engine/nudgeCardRepertoire.ts` +2 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `unborne-artifact-lies-at-its-place` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An artifact no one carries still lies somewhere: the earlier god's relic waits at its site, its page names that place, the place's page lists it, and Dominion's place reader finds it there.
+- **Producer → Consumer:** World Generation, Terrain & Places → Attachments, Items & Possessions
+- **UL terms:** *Echo*, *Dominion*
+- **Module:** `src/engine/seedEchoes.ts`
+- **Production hits:** 13 total — 1 write, 3 read, 9 unclassified
+- **Write sites:** `src/engine/seedEchoes.ts`
+- **Read sites:** `src/engine/dominion.ts`, `src/engine/views/connections.ts`, `src/engine/views/subjects/subjectPage.ts`
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/dominionViewModels.ts`, `src/engine/itemGenerator/worldContext.ts`, `src/engine/phaseDominion.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertaking-catalyst-resolves-by-query` — 🟢 LIVE
