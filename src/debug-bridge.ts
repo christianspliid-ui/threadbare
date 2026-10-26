@@ -1410,7 +1410,7 @@ if (import.meta.env.DEV) {
       ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false, heldArrivals: [], rendering: [], foreground: null, stage: null, held: [], homedSurfaces: [] },
     getStage: async () => _stageProvider?.() ?? {
       open: null, vm: null, held: [], panelRect: null, windowRect: null, litHexScreen: null, litHexInWindow: false,
-      camera: null, mapDim: null,
+      camera: null, afterClose: null, mapDim: null,
       folded: { inspector: false, ledgerRail: false, lensSuppressed: false, mapControlsHidden: false },
       scrollingBelowCap: [],
       handCardsBelowBar: 0,

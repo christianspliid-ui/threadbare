@@ -44,6 +44,12 @@ export interface StageScreenState {
   inspectorOverStage: boolean;
   /** THR-1897 — the premonition option hovered or focused now (its `col,row`); its ring shows on the map. */
   hoveredOption: string | null;
+  /**
+   * THR-2056 — what the last close did with the camera: the place it lit (`col,row`), and
+   * whether the camera re-centred it in the visible map (it sat outside the middle third)
+   * or left it where it was. Null until a Stage has closed.
+   */
+  closeCamera: { hex: string; recentred: boolean } | null;
 }
 
 export const IDLE_STAGE: StageScreenState = {
@@ -56,6 +62,7 @@ export const IDLE_STAGE: StageScreenState = {
   litHexScreen: null,
   inspectorOverStage: false,
   hoveredOption: null,
+  closeCamera: null,
 };
 
 export function isStageOpen(stage: Pick<StageScreenState, 'phase'>): boolean {

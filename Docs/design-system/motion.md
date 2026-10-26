@@ -142,7 +142,7 @@ When a moment opens on the Stage (`src/components/Game/stage/`), the camera ease
 | Camera | `centerHexesAt` eases over `JUMP_TO_DURATION_MS` (500 ms); the player's zoom is kept when the place is legible there (k ≥ 5 and the hex ≤ 0.8 of the window), else `FOCUS_ZOOM` 10 | **cut** — the camera jumps (`camera.mode === 'cut'`) |
 | Map dim | fades to `STAGE_MAP_DIM` (0.7) over `STAGE_DIM_FADE_MS` (500 ms), with the camera | appears at once |
 | Panel | enters on the ceremonial tier, `opacity` over `STAGE_PANEL_ENTRANCE_S` (0.6 s), when the camera lands or after `STAGE_CAMERA_SETTLE_TIMEOUT_MS` (800 ms) | `--anim-fast` fade |
-| Close | the dim goes; **the camera stays** (THR-1829 § 5) — unless the returning Ledger rail would cover the place, then it eases the least distance that keeps it `STAGE_CLOSE_EDGE_MARGIN_PX` inside the visible map | cut |
+| Close | the dim goes; the camera never goes back to its pre-Stage view (THR-1829 § 5) — a place still inside the visible map's middle third (`STAGE_CLOSE_CENTRE_BAND_FRACTION`) stays put, one outside it eases to the visible map's centre, so chapters that open by themselves never drift the map to the edge (THR-2056) | cut |
 
 Nothing is carried by the motion alone: the ring and the place tag say where. The constants live in `src/data/stage-content.ts`.
 

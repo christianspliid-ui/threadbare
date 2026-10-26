@@ -21,7 +21,7 @@
  * | STAGE_LAYOUT_SETTLE_FRAMES | 2 | animation frames the camera waits after the rails move |
  * | STAGE_MAP_HINT_MS | 2000 | how long the hold line shows after an input on the map |
  * | STAGE_LIT_HEX_MIN_HIT_PX | 24 | the lit-hex button's smallest hit area (Law 46) |
- * | STAGE_CLOSE_EDGE_MARGIN_PX | 48 | on close, how far inside the visible map the place is kept |
+ * | STAGE_CLOSE_CENTRE_BAND_FRACTION | 1/3 | on close, the middle band of the visible map the place must sit in, or the camera re-centres it (THR-2056) |
  * | STAGE_OPTION_RING_DASH | { dash: 0.18, gap: 0.12 } | a premonition option ring's dashes, as shares of an edge (S4) |
  * | STAGE_OPTION_RING_COLOR_VAR | whisper / compulsion text rgb | an option ring's colour, the premonition's dream tone (S4) |
  */
@@ -63,7 +63,8 @@ export const STAGE_CAMERA_SETTLE_TIMEOUT_MS = 800;
 export const STAGE_LAYOUT_SETTLE_FRAMES = 2;
 export const STAGE_MAP_HINT_MS = 2000;
 export const STAGE_LIT_HEX_MIN_HIT_PX = 24;
-export const STAGE_CLOSE_EDGE_MARGIN_PX = 48;
+/** THR-2056 — the middle third: a place outside it after a chapter closes is re-centred, so the map never drifts to the edge. */
+export const STAGE_CLOSE_CENTRE_BAND_FRACTION = 1 / 3;
 
 /** THR-1897 — a premonition option ring is dashed: each edge is dash, gap, dash… as shares of the edge. */
 export const STAGE_OPTION_RING_DASH = { dash: 0.18, gap: 0.12 } as const;

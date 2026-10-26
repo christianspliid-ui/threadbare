@@ -8,17 +8,20 @@
  * (`cameraSettled`, its mode and zoom, the lit hex on screen) is written back, and the
  * panel enters on it.
  *
- * When the Stage closes the dim goes and **the camera never goes back** (THR-1829 § 5).
- * The returning Ledger rail covers the map's right edge, where the window was, so if the
- * place would land under returning chrome the camera eases the smallest distance that
- * keeps it inside the visible map; otherwise it does not move.
+ * When the Stage closes the dim goes and **the camera never goes back** to where it was
+ * before (THR-1829 § 5). But the window sat at the map's right edge, so a place left where
+ * the Stage put it drifts the map to that edge, chapter after chapter (THR-2056, cold
+ * playtest round 5). A place outside the visible map's middle third
+ * (`STAGE_CLOSE_CENTRE_BAND_FRACTION`) is eased to the visible map's centre; one inside
+ * it stays. The visible map is the canvas after the rails settle, so a docked Inspector
+ * (a flex sibling) is already outside it.
  */
 import { useEffect, useRef, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
-import { chooseStageFrame, chooseStageZoom, hexScreenWidth, nudgeInside } from '../../HexMapV2/camera/stageCamera';
+import { chooseStageFrame, chooseStageZoom, hexScreenWidth, recentreOnClose } from '../../HexMapV2/camera/stageCamera';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
-import { STAGE_CLOSE_EDGE_MARGIN_PX, STAGE_DIM_FADE_MS, STAGE_LAYOUT_SETTLE_FRAMES } from '../../../data/stage-content';
+import { STAGE_CLOSE_CENTRE_BAND_FRACTION, STAGE_DIM_FADE_MS, STAGE_LAYOUT_SETTLE_FRAMES } from '../../../data/stage-content';
 import { isStageOpen, type StageCameraMode, type StageScreenState } from './stageState';
 
 function parseKey(key: string | undefined): { col: number; row: number } | null {
@@ -82,7 +85,7 @@ export function useStageCamera(
     hexMapRef.current?.setStageOptionHover(hoveredOption);
   }, [focus, hoveredOption, hexMapRef]);
 
-  // ── Close: the dim goes; the camera stays, unless returning chrome would cover the place. ──
+  // ── Close: the dim goes; a place outside the middle third is re-centred (THR-2056). ──
   const open = isStageOpen(stage);
   useEffect(() => {
     if (open) return;
@@ -106,11 +109,12 @@ export function useStageCamera(
       // Projected whether or not it is on the canvas: the returning rail may have covered it.
       const vp = map.projectHex(at.col, at.row);
       if (!vp) return;
-      const target = nudgeInside(vp, rect, STAGE_CLOSE_EDGE_MARGIN_PX);
+      const target = recentreOnClose(vp, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION);
+      setStage(prev => (isStageOpen(prev) ? prev : { ...prev, closeCamera: { hex: last.key, recentred: target !== null } }));
       if (!target) return;
       void map.centerHexesAt([last.key], target, { zoom: map.getCameraState().k, instant: last.instant });
     };
     id = requestAnimationFrame(step);
     return () => cancelAnimationFrame(id);
-  }, [open, hexMapRef]);
+  }, [open, hexMapRef, setStage]);
 }

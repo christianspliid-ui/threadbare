@@ -253,6 +253,18 @@ export interface DebugStageState {
   /** The camera assertion: the lit hex sits inside the window. */
   litHexInWindow: boolean;
   camera: { k: number; mode: 'eased' | 'cut' | 'stayed' | 'timed_out' } | null;
+  /**
+   * THR-2056 — after a Stage closes: the place it lit, whether the close re-centred it, where
+   * it sits on screen now, the visible map (the canvas), and whether it sits in that map's
+   * middle third. Null while a Stage is open and before the first close.
+   */
+  afterClose: {
+    hex: string;
+    recentred: boolean;
+    litHexScreen: { x: number; y: number } | null;
+    canvasRect: { left: number; top: number; right: number; bottom: number } | null;
+    inMiddleThird: boolean;
+  } | null;
   /** THR-1897 adds `options` (premonition option rings built) and `hoveredOption` (the one shown). */
   mapDim: { strength: number; lit: number; dimmed: number; options: number; hoveredOption: string | null } | null;
   folded: { inspector: boolean; ledgerRail: boolean; lensSuppressed: boolean; mapControlsHidden: boolean };
