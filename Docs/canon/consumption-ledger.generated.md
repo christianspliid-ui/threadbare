@@ -40,7 +40,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 | `reputation_tally` | 📒 bookkeeping | a keyed counter in `reputationTallies` on the target actor | `src/engine/phaseReputationTraits.ts` → `reputationTallies` (tally-point) |
 | `recent_event` | ✅ acted-on | an event appended to the actor's `recentEvents` (and the tick event stream) | `src/engine/ambitionTick.ts` → `recentEvents` (acts) |
 | `encounter_seed` | 🌱 dormant-hook | a seed record in `pendingEncounterSeeds` | `src/engine/encounterSeeding.ts` → `evaluateEncounterSeeds` (spawns) |
-| `economy_shift` | ✅ acted-on | `wealth` and `lastWealthReason` on the target mortal, through `bankWealth` (THR-1936) | `src/engine/phaseEconomicTraits.ts` → `readWealth` (acts)<br/>`src/engine/actionCandidates.ts` → `wealth` (acts) |
+| `economy_shift` | ✅ acted-on | `wealth` and `lastWealthReason` on the target mortal, through `bankWealth` (THR-1936) | `src/engine/phaseEconomicTraits.ts` → `readWealth` (acts)<br/>`src/engine/decisionBoard.ts` → `readWealth` (acts) |
 | `quintessence_shift` | ✅ acted-on | `quintessence` on the target actor | `src/engine/brokenState.ts` → `isBrokenMortal` (acts) |
 | `hidden_mark` | ✅ acted-on | a mark appended to `state.hiddenMarks` | `src/engine/encounterScoring.ts` → `hiddenMarks` (acts)<br/>`src/engine/effects/effectPredicates.ts` → `hiddenMarks` (acts) |
 | `intelligence` | ✅ acted-on | a record appended to `state.intelligenceRecords` | `src/engine/encounterScoring.ts` → `intelligenceRecords` (acts) |
