@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 01:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 02:58 local (01:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: the Toll Dispute can now fire, and the fix is live** ([THR-2047](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had)). Its trigger now uses the shared enemy-faction rule, so a road between two hostile factions can start one. Merged via [#2585](https://github.com/christianspliid-ui/threadbare/pull/2585).
 - **2026-10-26: the plan for road encounters writing to their own road is merged** ([THR-2046](https://linear.app/threadbare/issue/THR-2046)), via [#2584](https://github.com/christianspliid-ui/threadbare/pull/2584). Its four calls sit in the briefing's *Decided for you* until Tuesday 00:50.
 - **2026-10-25: debts in the money encounters are merged and live** ([THR-2023](https://linear.app/threadbare/issue/THR-2023)): a debt collected is cleared, The Loan names a lender. Merged via [#2583](https://github.com/christianspliid-ui/threadbare/pull/2583) after three review cycles.
 - **2026-10-25: the plan for faction commissions paying their takers is merged** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)), via [#2582](https://github.com/christianspliid-ui/threadbare/pull/2582). Its three calls sit in the briefing's *Decided for you* until tomorrow 21:53.
@@ -50,7 +51,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: four encounters' declared Reach now matches the steps they roll** ([THR-2038](https://linear.app/threadbare/issue/THR-2038)). Merged via [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577).
 - **2026-10-25: six settlement-economy terms are in the glossary** ([THR-1924](https://linear.app/threadbare/issue/THR-1924)). Merged via [#2576](https://github.com/christianspliid-ui/threadbare/pull/2576).
 - **2026-10-25: the encounter-coverage judge v2 sees the stakes and flags a Reach no step rolls** ([THR-2012](https://linear.app/threadbare/issue/THR-2012)). Merged via [#2575](https://github.com/christianspliid-ui/threadbare/pull/2575).
-- **2026-10-25: the review gate and browser evidence now apply only to engine and large UI changes** ([THR-1949](https://linear.app/threadbare/issue/THR-1949)). Merged via [#2573](https://github.com/christianspliid-ui/threadbare/pull/2573); the process-cuts question needed no answer.
 
 ---
 

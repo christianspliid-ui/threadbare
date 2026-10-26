@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 01:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 02:58 local (01:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,11 +43,10 @@ Say "veto <title>" to reverse any of these.
 
 **Healthy: 6 ready, all waiting out their veto windows.** [THR-2030](https://linear.app/threadbare/issue/THR-2030) opens at 03:25 and [THR-2009](https://linear.app/threadbare/issue/THR-2009) at 06:22 this morning, [THR-1929](https://linear.app/threadbare/issue/THR-1929) at 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, and the new [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50.
 
-- **The builder is working on [the Toll Dispute never firing](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had)** (its run started 01:32 and is still active). The census behind the merged road-encounters plan found that no test world ever had enemy factions at both ends of a road. No pull requests are open yet.
+- **[The Toll Dispute fix](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had) is merged and live** via [#2585](https://github.com/christianspliid-ui/threadbare/pull/2585). The builder's last three runs stood down only because every ready ticket is still inside its veto window, which is correct, not a stall.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Engine speed is over the alarm line, second hour running:** tick cost 205 ms/tick steady, 34% above the 7-day median (153, 89 rows since de68cb60); top phase agent_decision, 615 agents. Name the merges between de68cb60 and 75892db9: `git log --oneline --merges de68cb60..75892db9`. This is the builder's to chase, not yours.
-- Everything else is green. The live site serves the latest game build (the newest commit was docs only). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 01:40) are healthy.
+All green. The live site serves the latest commit on main (45feeb2f, the Toll Dispute fix). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 02:40) are healthy. Engine speed is back under the alarm line: 184 ms/tick, 20% above the 7-day median of 153.
