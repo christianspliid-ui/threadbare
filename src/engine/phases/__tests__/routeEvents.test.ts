@@ -143,6 +143,30 @@ describe('phaseRouteEvents (THR-669)', () => {
     expect(hostile.pendingEncounterSeeds?.[0]?.templateId).toBe(ROUTE_TOLL_TEMPLATE_ID);
   });
 
+  // THR-2047: generated factions keep their quarrels on `relates_to`, never `hostile_to`
+  // between each other, so the toll trigger reads the shared enemy rule.
+  it.each([
+    ['a rivalry', { isRival: true }],
+    ['a declared war', { basis: 'war' }],
+  ])('%s between endpoint controllers makes a toll dispute eligible; a neutral tie does not', (_label, props) => {
+    const graph = new WorldGraph();
+    addTown(graph, 'a', 'Aford'); addTown(graph, 'b', 'Bmark');
+    graph.addNode({ id: 'f1', type: 'actor', name: 'F1', properties: { actorType: 'faction' } });
+    graph.addNode({ id: 'f2', type: 'actor', name: 'F2', properties: { actorType: 'faction' } });
+    graph.addEdge({ id: 'c1', source: 'f1', target: 'a', type: 'controls', properties: {} });
+    graph.addEdge({ id: 'c2', source: 'f2', target: 'b', type: 'controls', properties: {} });
+    graph.addEdge({ id: 'rel', source: 'f2', target: 'f1', type: 'relates_to', properties: {} });
+    addRoute(graph, 'r1', 'a', 'b', poorManifest);
+    addAgent(graph, 'ag1', 'b');
+
+    const seed = seedWhereFirstRoll(SCAN, ROUTE_TOLL_CHANCE, true);
+    expect(phaseRouteEvents(makeState(SCAN, graph, seed), ctx).pendingEncounterSeeds).toBeUndefined();
+
+    graph.updateEdge('rel', { properties: props });
+    const quarrel = phaseRouteEvents(makeState(SCAN, graph, seed), ctx);
+    expect(quarrel.pendingEncounterSeeds?.[0]?.templateId).toBe(ROUTE_TOLL_TEMPLATE_ID);
+  });
+
   it('staple cargo into a scarce endpoint makes an embargo eligible', () => {
     const graph = new WorldGraph();
     addTown(graph, 'a', 'Aford');

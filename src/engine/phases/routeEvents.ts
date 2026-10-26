@@ -2,7 +2,7 @@
  * Phase: Route Events (THR-669) — Mortal Economy P2b.
  *
  * Cargo manifests materialize into encounters: rich cargo draws banditry,
- * hostile endpoint controllers breed toll disputes, staple lifelines into
+ * enemy endpoint controllers breed toll disputes, staple lifelines into
  * scarcity build embargo pressure. Caravans are route STATE, not agents
  * (NFP #7): nothing is simulated per-caravan — a route crossing a threshold
  * plants a `PendingEncounterSeed` for a mortal at one of its endpoints, and
@@ -30,6 +30,7 @@ import type { TraceEntry, RouteEventScanTrace, RouteEventSeededTrace } from '../
 import { mulberry32 } from '../../lib/prng';
 import { readTradeRouteProps } from '../tradeRoute';
 import { readLocationResourceBalance } from '../resourceEconomy';
+import { isEnemyFaction } from '../warAims/enemy';
 import {
   ROUTE_EVENT_SCAN_INTERVAL_TICKS,
   ROUTE_AMBUSH_RICHNESS_MIN,
@@ -59,14 +60,6 @@ function emitRouteTrace(
 /** Controlling faction of a location (incoming `controls`), or undefined. */
 function controllerOf(state: GameState, locationId: string): string | undefined {
   return state.graph.getIncomingEdges(locationId, 'controls')[0]?.source;
-}
-
-/** True when the two factions carry a `hostile_to` edge in either direction. */
-function factionsHostile(state: GameState, a: string, b: string): boolean {
-  return (
-    state.graph.getOutgoingEdges(a, 'hostile_to').some((e) => e.target === b) ||
-    state.graph.getOutgoingEdges(b, 'hostile_to').some((e) => e.target === a)
-  );
 }
 
 /**
@@ -192,7 +185,11 @@ export function phaseRouteEvents(state: GameState, _ctx: PhaseContext): PhaseRes
     }
     const srcFaction = controllerOf(state, route.source);
     const tgtFaction = controllerOf(state, route.target);
-    if (srcFaction && tgtFaction && srcFaction !== tgtFaction && factionsHostile(state, srcFaction, tgtFaction)) {
+    // The endpoint controllers must have a quarrel. Factions keep theirs on `relates_to`
+    // (rival, war, sour sentiment) far more than on `hostile_to`, so a `hostile_to`-only
+    // test never fired on a generated world (THR-2047: 0 tolls on seeds 42/99/7); the
+    // shared enemy rule armies already march on (THR-1922) reads every arm.
+    if (isEnemyFaction(state.graph, srcFaction, tgtFaction)) {
       events.push({
         edge: route, kind: 'toll', templateId: ROUTE_TOLL_TEMPLATE_ID,
         chance: ROUTE_TOLL_CHANCE,
