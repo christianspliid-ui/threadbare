@@ -14,6 +14,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
 import { initializeGameStateFromIdentity, devSeedTheFirst, DEV_ASCENDANT_IDENTITY } from '../gameInit';
 import { runTick, resetEventCounter } from '../orchestrator';
+import { unattended } from '../playerStepHold';
 import { createBalancedCosmology } from '../cosmology';
 import { createSimulationRuntime } from '../simulationRuntime';
 import { resetReputationTraitInit } from '../phaseReputationTraits';
@@ -58,7 +59,7 @@ describe('THR-1781 — a compulsion paid mid-chapter holds until the next decisi
     let outcome: PremonitionTraceLike | null = null;
 
     for (let t = 0; t < MAX_TICKS && !outcome; t++) {
-      state = runTick(state, [], runtime);
+      state = unattended(runTick(state, [], runtime)); // THR-2052: no player answers
       for (const tr of getTraces() as ReadonlyArray<ScoringTraceLike & PremonitionTraceLike>) {
         if (tr.agentId !== FIRST_ID) continue;
         if (tr.category === 'encounter_scoring' && (tr.topCandidates?.length ?? 0) > 1) {

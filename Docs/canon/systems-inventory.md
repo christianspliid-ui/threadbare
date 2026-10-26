@@ -394,7 +394,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `place` (1) | `placeConditions.ts` | `THR-1143`, `THR-1910`, `THR-790` |
 | `planner` (1) | `plannerForecast.ts` | `Phase 4` |
 | `planted` (1) | `plantedCompulsion.ts` | `THR-886` |
-| `player` (5) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts`, `playerStepHold.ts` | `Phase 1`, `THR-1581`, `THR-1647`, `THR-1730`, `THR-727`, `THR-739`, `THR-998` |
+| `player` (5) | `playerActs.ts`, `playerCastDispatch.ts`, `playerCastReadout.ts`, `playerReceipts.ts`, `playerStepHold.ts` | `Phase 1`, `THR-1581`, `THR-1647`, `THR-1730`, `THR-2052`, `THR-727`, `THR-739`, `THR-998` |
 | `portfolio` (1) | `portfolioManager.ts` | — |
 | `prayers` (1) | `prayers.ts` | `THR-1935` |
 | `premonition` (3) | `premonitionActions.ts`, `premonitionCompulsion.ts`, `premonitionSteer.ts` | `THR-1781`, `THR-1783` |

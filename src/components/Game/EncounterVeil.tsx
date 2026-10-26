@@ -50,6 +50,7 @@ import {
   CHAPTER_ANSWER_WAITS_LINE,
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
+  lastStepAnswer,
 } from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
 import { Z_BAND } from '../shared/zBands';
@@ -2421,6 +2422,41 @@ export function EncounterVeil({
             <StepReplayView entry={replayEntry} onReturn={() => setReplayStepIndex(null)} onSelectEntity={onSelectEntity} />
           ) : (
           <>
+          {/* THR-2052 — the step opens on the answer to the last one: a step
+              committed on a running clock resolved out of sight, so this is
+              where the player first learns how it went. */}
+          {(() => {
+            const answer = lastStepAnswer(model.history);
+            if (!answer) return null;
+            return (
+              <div data-testid="veil-last-step-answer" style={{ marginBottom: 18, maxWidth: PROSE_MEASURE }}>
+                <div
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: GOLD,
+                    letterSpacing: '0.04em',
+                    marginBottom: answer.prose ? 6 : 0,
+                  }}
+                >
+                  {answer.line}
+                </div>
+                {answer.prose && (
+                  <p
+                    style={{
+                      fontFamily: FONT_PROSE,
+                      fontStyle: 'italic',
+                      fontSize: 'var(--text-xs)',
+                      lineHeight: 1.7,
+                      color: TEXT_WHISPER,
+                      margin: 0,
+                    }}
+                  >
+                    {answer.prose}
+                  </p>
+                )}
+              </div>
+            );
+          })()}
           {model.narrative.paragraphs.map((para, pIdx) => {
             const text = para.segments.map((s) => s.text).join('');
             // Drop cap on first paragraph

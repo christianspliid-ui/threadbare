@@ -4,6 +4,7 @@ import type { UnifiedAction } from '../../types/unifiedAction';
 import { WorldGraph } from '../graph';
 import { prepareDebugEncounterSpawn } from '../debugEncounterTools';
 import { recordUnifiedActionNudgeMemory } from '../encounterChoiceMemory';
+import { releasePlayerHold } from '../playerStepHold';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { runTick, resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { clearOutcomePin, setOutcomePin } from '../debugOutcomePin';
@@ -153,8 +154,10 @@ function commitNudgeForCurrentStep(state: GameState, nudgeId: string): GameState
     ...state,
     unifiedActions: state.unifiedActions.map(candidate => {
       if (candidate.templateId !== 'cg.quest.gate_duty') return candidate;
+      // THR-2052 — the hero's pause-tier step is held from the tick its beat
+      // posts; a commit releases it, exactly as GameView's handleCommitNudges does.
       return recordUnifiedActionNudgeMemory(
-        { ...candidate, activeNudges: [nudgeId] },
+        { ...releasePlayerHold(candidate), activeNudges: [nudgeId] },
         step,
         stepId,
         [nudgeId],

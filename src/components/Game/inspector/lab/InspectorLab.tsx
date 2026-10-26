@@ -20,6 +20,7 @@ import type { SimulationRuntime } from '../../../../engine/simulationRuntime';
 import { createSimulationRuntime } from '../../../../engine/simulationRuntime';
 import { initializeGameStateFromIdentity, devSeedTheFirst, devSeedAscendantTestPackage, DEV_ASCENDANT_IDENTITY } from '../../../../engine/gameInit';
 import { runTick } from '../../../../engine/orchestrator';
+import { unattended } from '../../../../engine/playerStepHold';
 import { buildSubjectPage } from '../../../../engine/views/subjects/subjectPage';
 import type { SubjectPageVM } from '../../../../engine/views/subjects/subjectTypes';
 import type { DebugInspectorLabCell, DebugInspectorLabResult } from '../../../../debug-bridge.d';
@@ -145,7 +146,7 @@ export default function InspectorLab() {
         built = buildLabWorld(seed);
       } else {
         for (let i = 0; i < WARM_TICKS_PER_STEP && done < INSPECTOR_LAB_WARM_TICKS; i++, done++) {
-          built = { state: runTick(built.state, [], built.runtime), runtime: built.runtime };
+          built = { state: unattended(runTick(built.state, [], built.runtime)), runtime: built.runtime };
         }
         setWarmed(done);
       }

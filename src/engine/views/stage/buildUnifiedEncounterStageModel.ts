@@ -33,6 +33,7 @@ import { stakesContextFor, stakesLineForAction } from '../../encounters/stakesLi
 import { resolveFightStepInputs } from '../../fights/fightStepInputs';
 import { buildOpponentHeaderModel, fightStepLabel } from './buildOpponentHeaderModel';
 import { resolveStepDefinition } from '../../unifiedActionLifecycle';
+import { BRANCH_DECISION_INTERVENTION_TYPE } from '../../encounters/branchDecision';
 import { firstPathRecallFor } from '../../firstPath';
 import {
   getAgentPortraitUrlFromProperties,
@@ -549,6 +550,7 @@ function buildHistory(
     let reachLabel: string | undefined;
     let replayNarrative: string | undefined;
     let choiceText: string | undefined;
+    let choiceDecided = false;
     if (isResolved) {
       outcome = activeAction.stepOutcomes[index];
       const success = isStepSuccess(outcome);
@@ -593,8 +595,13 @@ function buildHistory(
       // the authored reach on every ordinary step.
       reachLabel = reachLabelFor(record?.reach ?? resolvedStep.reach);
       replayNarrative = record?.narrativeProse || undefined;
-      choiceText = record?.choiceText
-        ?? activeAction.choiceHistory?.find((c) => c.stepIndex === index)?.choiceText;
+      // THR-2052 — the frozen record holds the player's own play; when it has
+      // none, the history entry may be the mortal's branch decision, which
+      // replaced it and must not read as the god's play.
+      const memory = activeAction.choiceHistory?.find((c) => c.stepIndex === index);
+      choiceText = record?.choiceText ?? memory?.choiceText;
+      choiceDecided = !record?.choiceText
+        && memory?.interventionType === BRANCH_DECISION_INTERVENTION_TYPE;
     }
 
     return {
@@ -610,6 +617,7 @@ function buildHistory(
       reachLabel,
       replayNarrative,
       choiceText,
+      ...(choiceDecided ? { choiceDecided } : {}),
     };
   });
 }
