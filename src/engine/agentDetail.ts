@@ -108,6 +108,7 @@ function networkSizeWord(count: number): string {
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { describeWorkProgress } from './workProgress';
 import { readStoredCalling } from './calling';
+import { COMMISSION_CAUSE_LINE } from '../data/mortal-means-constants';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -1033,6 +1034,8 @@ function describeWealthSource(reason: string | undefined): string | undefined {
     // THR-1969 — the god's hand on a mortal's purse (Fortune's Favour, Ruin).
     case 'divine_favour': return 'a turn of fortune no one could explain';
     case 'divine_ruin': return 'a run of ruin no one could explain';
+    // THR-2042 — the same constant the aftermath change's cause reads.
+    case 'commission': return COMMISSION_CAUSE_LINE;
     default: return undefined;
   }
 }

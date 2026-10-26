@@ -506,6 +506,15 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: ['expiryTick'],
     description: 'Faction commissions a quest. Source = faction actor, target = event node with eventType "faction_quest" (phaseFactionActions).',
   },
+  took_up: {
+    type: 'took_up',
+    sourceNodeType: 'actor',
+    targetNodeType: 'event',
+    direction: 'directed',
+    cardinality: 'one-to-many',
+    requiredProperties: ['tick'],
+    description: 'THR-2042 — a decider member took up their faction\'s commission and was paid from its escrow. Source = individual actor, target = event node with eventType "faction_quest"; at most one per posting (factionCommissions).',
+  },
   issues: {
     type: 'issues',
     sourceNodeType: 'actor',

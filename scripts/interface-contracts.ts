@@ -7365,6 +7365,45 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-2008. foundingPatron.test.ts (costs mocked on): the pick takes the higher rank, skips a treasury below cost, ties by id; the board keeps the cell with a patron and drops it without one or with the rule off; the charge moves the cost from the patron\'s treasury, never the founder\'s, and emits economy.founding.patron; no patron charges nobody. npm run measure:founding-starvation measures the patron arm on seeds 42, 7 and 99.',
     },
   },
+  // ── THR-2042 — a faction's commission pays the member who takes it up ────────────
+  {
+    id: 'commission-pays-member',
+    producerSystem: FACTIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'The first faction → mortal coin write (THR-2042). Commission Quest holds COMMISSION_QUEST_COST on its faction_quest posting as escrow (status open). When a mortal who makes choices (isAutonomousDecisionActor) completes a faction encounter, processFactionEncounterReputation returns the faction it credited and executeStepResult calls takeUpCommission: the oldest open posting is taken only if applyMeansShift(COMMISSION_MEANS_PAY, reason commission) lands — then the posting reads taken, escrow moves to escrowPaid, a took_up edge (agent → posting) records the taker, and the aftermath carries one economy change ending "— a commission their faction paid for." (COMMISSION_CAUSE_LINE, the same phrase describeWealthSource shows on the sheet). Unseen members (faction member work) never take one. Switch: FACTION_COMMISSIONS_ENABLED.',
+    ulTerms: ['Means', 'Faction'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['took_up', 'takeUpCommission', 'openCommissionsOf', 'COMMISSION_MEANS_PAY', 'COMMISSION_CAUSE_LINE', 'FACTION_COMMISSIONS_ENABLED'],
+      module: 'src/engine/factionCommissions.ts',
+    },
+    writeSites: ['src/engine/factionCommissions.ts', 'src/engine/phaseFactionActions.ts', 'src/engine/unifiedActionResolution.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/engine/mortalMeans.ts', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-26',
+      evidence: 'THR-2042. factionCommissions.test.ts: a decider member takes the oldest open posting (Means +COMMISSION_MEANS_PAY, posting taken, one took_up edge passing EDGE_SCHEMA); a non-decider, a stranger, an expired posting and a Magnate at 100 take nothing and leave it open. factionCommissionsResolution.test.ts: a completed encounter through executeStepResult carries one economy change ending "— a commission their faction paid for."; a failed or unfinished one carries none. npm run census:commissions (medium, 360 ticks): taken 4 / 8 / 10 on seeds 42 / 99 / 7.',
+    },
+  },
+  {
+    id: 'lapsed-commission-refunds-purse',
+    producerSystem: FACTIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A commission nobody takes before its expiryTick lapses (THR-2042): lapseCommissions runs every tick in phaseFactionActions, marks the posting lapsed and returns its escrow to the posting faction\'s wealth through applyTreasuryDelta (escrowRefunded on the posting), tracing economy.commission (lapsed). A posting whose faction is gone lapses with nothing refunded. Read by the purse\'s own readWealth (the next pay day, the action gates).',
+    ulTerms: ['Means', 'Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['lapseCommissions', 'escrow', 'escrowRefunded', 'applyTreasuryDelta'],
+      module: 'src/engine/factionCommissions.ts',
+    },
+    writeSites: ['src/engine/factionCommissions.ts'],
+    readSites: ['src/engine/factionPurse.ts', 'src/engine/phaseFactionActions.ts'],
+    verifiedLive: {
+      date: '2026-10-26',
+      evidence: 'THR-2042. factionCommissions.test.ts: a lapsed posting refunds escrow to the purse exactly once, a taken one never lapses, a pre-THR-2042 posting refunds 0. npm run census:commissions: on seeds 42 / 99 / 7 escrow posted = paid + refunded + still held (250 = 20 + 230 + 0; 210 = 40 + 160 + 10; 330 = 50 + 265 + 15).',
+    },
+  },
   {
     id: 'trade-run-pays-means',
     producerSystem: AMBITIONS,

@@ -415,6 +415,11 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     'The faction sheet posted-work list, and the quest itself',
     'Anchor the faction and the quest event node; the edge carries only `expiryTick`.',
   ),
+  took_up: RELATIONAL(
+    'The taker\'s Means change in the aftermath, and their sheet\'s Means tooltip',
+    'Anchor the mortal, not the posting: the player reads "a commission their faction paid for" '
+    + 'on the taker. The edge carries only `tick` (THR-2042).',
+  ),
   issues: RELATIONAL(
     'The faction sheet posted-work list, and the bounty itself',
     'Anchor the faction and the bounty event node; the edge carries only `expiryTick`.',

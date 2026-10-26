@@ -97,6 +97,8 @@ export type TraceCategory =
   | 'economy.founding.patron'
   // THR-1953 — money encounters change the world
   | 'economy.world.shift'
+  // THR-2042 — a faction's commission taken up or lapsed
+  | 'economy.commission'
   // THR-1933 — war aims
   | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
   // THR-1955 — regional monopolies and embargo
@@ -758,7 +760,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
   'economy.means.birth', 'economy.means.shift', 'economy.world.shift',
-  'economy.founding.patron',
+  'economy.founding.patron', 'economy.commission',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'faction.embargo.laid', 'faction.embargo.lifted',
   'undertaking.economy.found_town', 'undertaking.economy.found_town_refused',
@@ -2100,6 +2102,22 @@ export interface WorldEconomyShiftTrace extends TraceBase {
   amount: number;
   before: number;
   after: number;
+}
+
+/**
+ * THR-2042 — a faction's commission was taken up by a decider member (their Means paid
+ * from its escrow) or lapsed untaken (its escrow back to the purse).
+ */
+export interface CommissionTrace extends TraceBase {
+  category: 'economy.commission';
+  action: 'taken' | 'lapsed';
+  factionId: string;
+  commissionId: string;
+  /** The escrow paid out (taken) or refunded (lapsed). */
+  escrow: number;
+  /** Taken only. */
+  wealthBefore?: number;
+  wealthAfter?: number;
 }
 
 /** THR-1937 — a mortal founded a town: who rules it and why. */
@@ -5385,6 +5403,7 @@ export type TraceEntry =
   | MeansShiftTrace
   | FoundingPatronTrace
   | WorldEconomyShiftTrace
+  | CommissionTrace
   | WarAimPickedTrace
   | WarAimDefendTrace
   | WarAimHoldTrace
