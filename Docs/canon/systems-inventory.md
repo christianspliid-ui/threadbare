@@ -243,7 +243,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | Domain | Files | Tags |
 |---|---|---|
 | `account` (2) | `accountRecord.ts`, `accountStore.ts` | `THR-1773`, `THR-1813` |
-| `action` (3) | `actionCandidates.ts`, `actionLifecycle.ts`, `actionUnlock.ts` | `THR-501` |
+| `action` (2) | `actionLifecycle.ts`, `actionUnlock.ts` | `THR-501` |
 | `aftermath` (1) | `aftermathWords.ts` | `THR-1004` |
 | `agenda` (1) | `agendaGenerator.ts` | — |
 | `agent` (10) | `agentActivity.ts`, `agentArc.ts`, `agentAttachments.ts`, `agentDetail.ts`, `agentDetection.ts`, `agentGeneration.ts`, `agentLifecycle.ts`, `agentResidence.ts`, `agentSelection.ts`, `agentValidation.ts` | `THR-1289`, `THR-1296`, `THR-1299`, `THR-1672`, `THR-1690`, `THR-719`, `THR-822` |
@@ -320,7 +320,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153`, `THR-1753` |
 | `embargo` (1) | `embargo.ts` | `THR-1955` |
 | `encounter` (19) | `encounter-contract-adapter.ts`, `encounter.ts`, `encounter/branchingConstants.ts`, `encounter/branchingCurator.ts`, `encounterAftermath.ts`, `encounterAwareness.ts`, `encounterCache.ts`, `encounterChains.ts`, `encounterChoiceMemory.ts`, `encounterEventNode.ts`, `encounterFilterPipeline.ts`, `encounterLogExporter.ts`, `encounterRuntime.ts`, `encounterScoring.ts`, `encounterSeeding.ts`, `encounterSupportBundle.ts`, `encounterSurface.ts`, `encounterTimeline.ts`, `encounterVisibility.ts` | `Phase 4`, `TB-035`, `TB-077`, `THR-1123`, `THR-1488`, `THR-1580`, `THR-1715`, `THR-1982`, `THR-452`, `THR-465`, `THR-475`, `THR-697`, `THR-924` |
-| `encounters` (17) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/relationshipResolver.ts`, `encounters/stakesLine.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1394`, `THR-1432`, `THR-1727`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963`, `THR-972` |
+| `encounters` (16) | `encounters/branchDecision.ts`, `encounters/dealHand.ts`, `encounters/detectionPressure.ts`, `encounters/driftAccumulator.ts`, `encounters/encounterTemplateGraph.ts`, `encounters/generateEncounterCandidates.ts`, `encounters/handFilter.ts`, `encounters/motiveClassifier.ts`, `encounters/nudgeDispatch.ts`, `encounters/nudges.ts`, `encounters/outcomeForecast.ts`, `encounters/placeGating.ts`, `encounters/poleLean.ts`, `encounters/reactionChooser.ts`, `encounters/stakesLine.ts`, `encounters/stepFactorLines.ts` | `THR-1247`, `THR-1432`, `THR-1727`, `THR-327`, `THR-528`, `THR-530`, `THR-631`, `THR-773`, `THR-883`, `THR-885`, `THR-887`, `THR-892`, `THR-894`, `THR-898`, `THR-963`, `THR-972` |
 | `engagement` (1) | `engagementWindow.ts` | `THR-1582` |
 | `engine` (1) | `engineEffectRegistry.ts` | `THR-604`, `THR-996` |
 | `essence` (7) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSourceWrite.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-1935`, `THR-611`, `THR-615`, `THR-618` |
@@ -362,7 +362,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `journey` (1) | `journeyEngine.ts` | `Phase 2`, `TB-035` |
 | `kpi` (4) | `kpi/branchingDistance.ts`, `kpi/engagementKpi.ts`, `kpi/gameplayKpi.ts`, `kpi/kpiConstants.ts` | `THR-1578`, `THR-1740`, `THR-452`, `THR-457`, `THR-571` |
 | `lair` (3) | `lairClearing.ts`, `lairEscalation.ts`, `lairSeeding.ts` | `M2.5`, `Phase 2`, `THR-1319` |
-| `lake` (2) | `lakeGeneration.ts`, `lakeOutflow.ts` | — |
+| `lake` (1) | `lakeOutflow.ts` | — |
 | `leverage` (1) | `leverageOps.ts` | `THR-1439` |
 | `location` (1) | `locationTraitBonus.ts` | `THR-1481`, `THR-790` |
 | `luck` (1) | `luck.ts` | — |
@@ -435,12 +435,11 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `settlementgenome` (11) | `settlementGenome/archetypes.ts`, `settlementGenome/constants.ts`, `settlementGenome/cultureBaseline.ts`, `settlementGenome/index.ts`, `settlementGenome/infrastructure.ts`, `settlementGenome/materialize.ts`, `settlementGenome/reachMenu.ts`, `settlementGenome/runGenome.ts`, `settlementGenome/sphereMenu.ts`, `settlementGenome/types.ts`, `settlementGenome/vitality.ts` | `THR-1344`, `THR-1857` |
 | `siege` (1) | `siegeResolution.ts` | `Phase 4`, `TB-073` |
 | `simulation` (2) | `simulation.ts`, `simulationRuntime.ts` | `TB-086`, `TB-087` |
-| `social` (4) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts`, `socialOutcome.ts` | `THR-1562`, `THR-1580` |
+| `social` (3) | `socialCounterArgument.ts`, `socialEncounterGeneration.ts`, `socialLeverage.ts` | `THR-1562`, `THR-1580` |
 | `spell` (3) | `spellActivation.ts`, `spellCasting.ts`, `spellGrant.ts` | `THR-1231`, `THR-1571`, `THR-1572`, `THR-1672` |
 | `spellgenerator` (10) | `spellGenerator/casterTradition.ts`, `spellGenerator/describeSpell.ts`, `spellGenerator/generateSpell.ts`, `spellGenerator/libraryRead.ts`, `spellGenerator/notice.ts`, `spellGenerator/readBack.ts`, `spellGenerator/spellLibrary.ts`, `spellGenerator/traditionCatalog.ts`, `spellGenerator/types.ts`, `spellGenerator/validateGeneratedSpell.ts` | `THR-1230`, `THR-1232`, `THR-1572`, `THR-1672` |
 | `sphere` (3) | `sphereAffinity.ts`, `spherePoints.ts`, `sphereScaling.ts` | `THR-1749` |
 | `spotlight` (1) | `spotlightPull.ts` | `THR-1329`, `THR-1348` |
-| `stealth` (1) | `stealth.ts` | — |
 | `step` (2) | `stepCast.ts`, `stepResolutionCore.ts` | `THR-1292`, `THR-1670` |
 | `strands` (1) | `strands.ts` | — |
 | `strategic` (7) | `strategicActionCandidates.ts`, `strategicActionLifecycle.ts`, `strategicActionScoring.ts`, `strategicGraphOps.ts`, `strategicKindReachability.ts`, `strategicPresentation.ts`, `strategicTelemetry.ts` | `THR-1309`, `THR-1329` |
@@ -485,4 +484,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 240 engine domains · 802 modules._
+_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 239 engine domains · 797 modules._
