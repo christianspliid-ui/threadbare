@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 06:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 08:00 local (07:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: the First's temperament now counts toward how its story ends, and the fix is live** ([THR-2034](https://linear.app/threadbare/issue/THR-2034/return-archetype-reads-never-match-the-usurper-bypass-and-the)). Merged via [#2591](https://github.com/christianspliid-ui/threadbare/pull/2591).
 - **2026-10-26: the ending now follows who the First was born as, and the fix is live** ([THR-2009](https://linear.app/threadbare/issue/THR-2009/founding-gates-read-a-meeting-record-field-nobody-writes-the-reach)). The founding checks read the First's own Reach, so Transcendence can now happen. Merged via [#2590](https://github.com/christianspliid-ui/threadbare/pull/2590).
 - **2026-10-26: an earlier god's relic now lies at its place, and the fix is live** ([THR-2030](https://linear.app/threadbare/issue/THR-2030)). Its page, its site's connections and Dominion all find it. Merged via [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588).
 - **2026-10-26: the Toll Dispute can now fire, and the fix is live** ([THR-2047](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had)). Its trigger now uses the shared enemy-faction rule, so a road between two hostile factions can start one. Merged via [#2585](https://github.com/christianspliid-ui/threadbare/pull/2585).
@@ -51,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: every measurement and census script now fits one 10-minute command with no flags** ([THR-2041](https://linear.app/threadbare/issue/THR-2041)). Merged via [#2581](https://github.com/christianspliid-ui/threadbare/pull/2581) and live.
 - **2026-10-25: the weekly review lane is live and the five old review lanes are off** ([THR-1950](https://linear.app/threadbare/issue/THR-1950)). Registered via [#2579](https://github.com/christianspliid-ui/threadbare/pull/2579); its first run wrote [the weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md).
 - **2026-10-25: four encounters' declared Reach now matches the steps they roll** ([THR-2038](https://linear.app/threadbare/issue/THR-2038)). Merged via [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577).
-- **2026-10-25: six settlement-economy terms are in the glossary** ([THR-1924](https://linear.app/threadbare/issue/THR-1924)). Merged via [#2576](https://github.com/christianspliid-ui/threadbare/pull/2576).
 
 ---
 

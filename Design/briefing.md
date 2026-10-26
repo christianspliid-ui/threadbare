@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 06:58 local (05:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 08:00 local (07:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,7 +19,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- **New:** [A place held after success](https://linear.app/threadbare/issue/THR-2048/plan-doc-a-place-held-after-success-the-forge-a-mortal-builds-the-mill): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2048-place-held-after-success.md#decisions). Each can be vetoed on its own until Tuesday 06:45. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26a.md)*
+- [A place held after success](https://linear.app/threadbare/issue/THR-2048/plan-doc-a-place-held-after-success-the-forge-a-mortal-builds-the-mill): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2048-place-held-after-success.md#decisions). Each can be vetoed on its own until Tuesday 06:45. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26a.md)*
   - **The forge a mortal builds is theirs.** When a forge-building scene succeeds, the town gets a forge and the builder holds it. It pays them a little every day, as any freehold does. The forge is not one of the town's own buildings. *Veto:* "the smiths, not the builder, should hold the forge".
   - **One forge per town, and one claim per place.** If a forge already stands and nobody holds it, the builder takes it. If someone holds it, the builder is paid for the work instead. A prospector holds the place's mine the same way, or stakes one if there is none. A held mine stays even when it is worked out.
   - **A scene never takes a holding away.** A failed stake gains nothing, but it never loses a claim the mortal already holds. *Veto:* "a failed stake should lose the claim they had".
@@ -48,14 +48,15 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready, all waiting out their veto windows; the builder is idle by design until the next one opens.**
+**Healthy: 6 ready, all waiting out their veto windows; the builder is working the one job that was free.**
 
-- **[The ending now follows who the First was born as](https://linear.app/threadbare/issue/THR-2009/founding-gates-read-a-meeting-record-field-nobody-writes-the-reach) shipped** via [#2590](https://github.com/christianspliid-ui/threadbare/pull/2590) and is live. Transcendence can now happen for a Star-, Veil- or Eye-born First.
+- **[The First's temperament now counts toward how its story ends](https://linear.app/threadbare/issue/THR-2034/return-archetype-reads-never-match-the-usurper-bypass-and-the) shipped** via [#2591](https://github.com/christianspliid-ui/threadbare/pull/2591) and is live. Expect endings to shift a little.
+- **Being built now:** [removing eight pieces of old code the game no longer uses](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its). Nothing changes on screen.
 - Next to open: [THR-1929](https://linear.app/threadbare/issue/THR-1929) (sequels wait for their place) at 15:29 today, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50, [THR-2031](https://linear.app/threadbare/issue/THR-2031) (relic take-up) Tuesday at 03:42, and [THR-2048](https://linear.app/threadbare/issue/THR-2048) (a place held after success) Tuesday at 06:45.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **The long simulation checks after each merge are running out of time.** Seven runs since Friday were cut off at the 45-minute limit and show as "cancelled", not red, so the red-main check does not catch them. Those merges went without full heavy coverage. This is CI work for an agent. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26c.md)*
-- Everything else is green. The live site serves the latest commit on main (6a1ff261). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 06:52) are healthy; no pull requests are open. Engine speed: 182 ms/tick, 16% above the 7-day median of 158, under the alarm line.
+- **The long simulation checks after each merge are running out of time.** Runs since Friday keep getting cut off at the 45-minute limit; the latest was [#2590](https://github.com/christianspliid-ui/threadbare/pull/2590)'s merge at 06:56. They show as "cancelled", not red, so the red-main check does not catch them, and those merges went without full heavy coverage. This is CI work for an agent. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26c.md)*
+- Everything else is green. The live site serves the latest commit on main (48a3db1e). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 07:40) are healthy; no pull requests are open. Engine speed: 178 ms/tick, 12% above the 7-day median of 159, under the alarm line.
