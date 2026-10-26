@@ -1729,6 +1729,19 @@ export interface DebugBridge {
     wealth: number;
     meansBand: 'Destitute' | 'Getting by' | 'Comfortable' | 'Wealthy' | 'Magnate';
   } | null>;
+  /**
+   * THR-2042 — one faction's commissions, oldest first. `escrow` is the coin still held
+   * (0 once taken or lapsed); `takenBy` is derived from the `took_up` edge.
+   */
+  getFactionCommissions: (factionId: string) => Promise<Array<{
+    id: string;
+    status: 'open' | 'taken' | 'lapsed';
+    escrow: number;
+    createdTick: number;
+    expiryTick: number;
+    takenBy?: string;
+    takenTick?: number;
+  }>>;
   /** THR-1931 — every faction's last pay day, keyed by faction id (empty before tick 12). */
   getPurseLedger: () => Promise<Record<string, unknown>>;
   /**

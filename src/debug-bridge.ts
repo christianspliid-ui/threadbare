@@ -2632,6 +2632,16 @@ if (import.meta.env.DEV) {
       return { ...(day ?? {}), wealth, meansBand };
     },
     /**
+     * THR-2042 — one faction's commissions, oldest first: status, escrow held, and who
+     * took it (from the `took_up` edge). Empty when the id names no poster.
+     */
+    getFactionCommissions: async (factionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { readFactionCommissions } = await import('./engine/factionCommissions');
+      return readFactionCommissions(state.graph, factionId);
+    },
+    /**
      * THR-1936 — one mortal's Means: wealth, band word, last reason. `want` is null
      * until S2 ships the want. Null when the id is not an actor.
      */

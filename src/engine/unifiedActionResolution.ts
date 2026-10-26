@@ -34,7 +34,7 @@ import { buildMeansChange, selectOutcomeEffects, type MeansShiftResult } from '.
 import { resolveShiftSettlement } from './economyShift';
 import { snapshotCastEconomy, diffCastEconomy } from './castEconomyReceipt';
 import { resolveSceneHere } from './sceneHere';
-import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
+import { MORTAL_MEANS_ENABLED, COMMISSION_CAUSE_LINE } from '../data/mortal-means-constants';
 import {
   foldActorReputation,
   reputationFoldId,
@@ -167,6 +167,7 @@ import { stepCastRecordFor, traceStepCastDecided } from './stepCast';
 import { resolveCast } from './spellCasting';
 import { resolveSpellTemplate } from '../data/spell-templates';
 import { processFactionEncounterReputation } from './factionReputation';
+import { takeUpCommission } from './factionCommissions';
 import { processReputationTally } from './phaseReputationTraits';
 import {
   canSpendQuintessence,
@@ -2676,9 +2677,11 @@ export function executeStepResult(
   // Phase 5: migrated encounter templates should carry forward the real
   // faction reputation and reputation-tally progression they already had in
   // the legacy runtime. Non-encounter unified actions naturally no-op here.
+  // THR-2042 — the faction a completed faction encounter counted for (null otherwise).
+  let commissionFactionId: string | null = null;
   if (isStepSuccess(outcome)) {
     const encounterCompleted = finalAction.resolved && isActionSuccess(finalAction.outcome);
-    processFactionEncounterReputation(
+    const creditedFactionId = processFactionEncounterReputation(
       state.graph,
       action.actorId,
       action.templateId,
@@ -2686,6 +2689,7 @@ export function executeStepResult(
       encounterCompleted,
       tick,
     );
+    if (encounterCompleted) commissionFactionId = creditedFactionId;
     processReputationTally(
       state.graph,
       action.actorId,
@@ -3057,6 +3061,23 @@ export function executeStepResult(
     } catch (err) {
       // Fail-soft (NFP #4): the receipt proceeds without target changes.
       console.warn('[unifiedActionResolution] snapshotTargetChanges failed:', err);
+    }
+  }
+
+  // THR-2042 — a decider who finished their faction's work takes up its oldest open
+  // commission. Only a landed Means shift draws the change (Law 56).
+  if (commissionFactionId) {
+    const taken = takeUpCommission(state, action.actorId, commissionFactionId, tick);
+    if (taken) {
+      if (runtime) touchWorld(runtime);
+      aftermathChanges.push(buildMeansChange(
+        `${action.actionId}:commission:${taken.commissionId}`,
+        action.actorId,
+        state.graph.getNode(action.actorId)?.name,
+        taken.shift,
+        action.actorId,
+        { cause: COMMISSION_CAUSE_LINE },
+      ));
     }
   }
 

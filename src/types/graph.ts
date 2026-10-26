@@ -144,6 +144,7 @@ export type EdgeType =
   // construction: `EDGE_SCHEMA[type]` returned undefined and the dev-mode warn skipped
   // straight past. Endpoints below match the writers, not an intention.
   | 'commissions'      // faction → event(faction_quest): faction posts a quest (phaseFactionActions:302)
+  | 'took_up'          // actor → event(faction_quest): a decider member took up a commission (THR-2042, factionCommissions)
   | 'issues'           // faction → event(bounty): faction issues a bounty (phaseFactionActions:649)
   // Pilgrimage routes (THR-1177) — content-minted by zealotStrategicPack via
   // `createRelationEdge`, which accepted any string as an edge type. Registered rather

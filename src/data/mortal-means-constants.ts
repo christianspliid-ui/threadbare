@@ -143,3 +143,11 @@ export const MEANS_UNAFFORDED_WANT = 0.3;
 
 /** The cost switch's predicate: a Getting-by decider reaches Comfortable within this many ticks (median). */
 export const MEANS_COMFORT_PACE_TARGET_TICKS = 120;
+
+// ─── Faction commissions (THR-2042) ─────────────────────────────────
+
+/**
+ * The one phrase a commission's pay is named by — the aftermath change's cause and the
+ * sheet's Means tooltip read this same constant, so the two surfaces cannot drift.
+ */
+export const COMMISSION_CAUSE_LINE = 'a commission their faction paid for';
