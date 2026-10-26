@@ -57,8 +57,33 @@ import { mulberry32 } from '../lib/prng';
 import { RETURN_OUTCOME_PROSE, RIPPLE_CONSEQUENCE_PROSE } from '../data/return-content';
 import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
 import type { DoomIdentityMatrix } from '../types/doomIdentity';
+import type { ReachDomain } from '../types/traits';
+import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 
 // ─── Founding Gates ────────────────────────────────────────────────
+
+/** Where a record's intent reach came from — carried on the resolution trace. */
+export type IntentReachSource = 'record' | 'vision' | 'none';
+
+/**
+ * The "intent reach" a founding gate checks: who the mortal is — the chosen
+ * candidate's primary Reach — never the mark their path strengthened
+ * (THR-2009, design-lane decision 2026-10-25). Records bonded before the
+ * field existed fall back to the spark vision's family
+ * (`requiredPrimaryReach`, which always equals the candidate's primary Reach).
+ */
+export function intentReachOf(
+  meetingRecord: MeetingChoiceRecord | undefined,
+): { reach: ReachDomain | undefined; source: IntentReachSource } {
+  if (meetingRecord?.primaryReach) {
+    return { reach: meetingRecord.primaryReach, source: 'record' };
+  }
+  const visionReach = meetingRecord?.sparkVisionId
+    ? SPARK_VISION_CATALOG.find(v => v.id === meetingRecord.sparkVisionId)?.requiredPrimaryReach
+    : undefined;
+  if (visionReach) return { reach: visionReach, source: 'vision' };
+  return { reach: undefined, source: 'none' };
+}
 
 /**
  * Check if a Return outcome passes its founding gate.
@@ -76,16 +101,16 @@ export function passesFoundingGate(
 
   const config = FOUNDING_GATES[outcome];
   const tags = meetingRecord.foundingGateTags ?? [];
-  const intentReach = meetingRecord.intentPrimaryReach;
+  const intentReach = intentReachOf(meetingRecord).reach;
 
-  // Check excluded intent reaches
-  if (config.excludedIntentReaches?.includes(intentReach)) {
+  // Check excluded intent reaches (an unknown reach matches no exclusion)
+  if (intentReach && config.excludedIntentReaches?.includes(intentReach)) {
     return false;
   }
 
-  // Check required intent reaches
+  // Check required intent reaches (an unknown reach fails a required gate)
   if (config.requiredIntentReaches && config.requiredIntentReaches.length > 0) {
-    if (!config.requiredIntentReaches.includes(intentReach)) {
+    if (!intentReach || !config.requiredIntentReaches.includes(intentReach)) {
       return false;
     }
   }
@@ -802,12 +827,15 @@ export function executeReturn(
   const cooldownTicks = applyCourtSlotCooldown(graph, ascendantId, outcome, tick);
 
   // Emit resolution trace
+  const intent = intentReachOf(meetingRecord);
   emitTrace({
     type: 'return_resolution',
     tick,
     agentId,
     outcome,
     foundingGateResults,
+    intentReach: intent.reach,
+    intentReachSource: intent.source,
     ordealOutcome,
     relationshipState: relationship,
     scores,

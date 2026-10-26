@@ -212,6 +212,10 @@ export interface ReturnResolutionTrace {
   agentId: string;
   outcome: ReturnOutcome;
   foundingGateResults: Record<ReturnOutcome, boolean>;
+  /** The intent reach the founding gates read (THR-2009). */
+  intentReach?: ReachDomain;
+  /** Where it came from: the record, the spark vision's family, or nowhere. */
+  intentReachSource?: 'record' | 'vision' | 'none';
   ordealOutcome: OrdealOutcome;
   relationshipState: ReturnRelationshipState;
   scores: Partial<Record<ReturnOutcome, number>>;
