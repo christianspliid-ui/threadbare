@@ -343,6 +343,57 @@ export const CHAPTER_ANSWER_CARD_ON_RUNNING_CLOCK = false;
 /** How long the timeout / dropped toasts stay on screen. */
 export const CHAPTER_ANSWER_TOAST_MS = 8000;
 
+/**
+ * THR-2052 — the next step's veil opens on the answer to the last one. A step
+ * committed on a running clock closes the veil and resolves out of sight; the
+ * player then met step 2 with no word of how step 1 went, short of "re-read
+ * the finished step". `{n}` is the 1-based step number, `{word}` its band word
+ * (`OUTCOME_BAND_WORDS`: "held", "broke" …).
+ */
+export const CHAPTER_LAST_STEP_ANSWER_LINE = 'Step {n} {word}.';
+/** Appended when the player played on that step. `{choice}` is the hand or choice. */
+export const CHAPTER_LAST_STEP_CHOICE_SUFFIX = ' You: {choice}';
+
+/** The slice of a step-history entry the last-step answer reads. */
+export interface LastStepAnswerSource {
+  status: 'resolved' | 'current' | 'future';
+  outcomeWord?: string;
+  afterimage?: string;
+  replayNarrative?: string;
+  choiceText?: string;
+  /** The choice line is the mortal's own branch decision, not the player's play. */
+  choiceDecided?: boolean;
+}
+
+/**
+ * THR-2052 — the answer to the step just before the current one, or `null`
+ * when the veil is on the first step, the encounter has ended, or the step
+ * before it carries no band word (an adapter that records none).
+ */
+export function lastStepAnswer(
+  history: ReadonlyArray<LastStepAnswerSource> | undefined,
+): { line: string; prose: string | null } | null {
+  if (!history) return null;
+  const current = history.findIndex(step => step.status === 'current');
+  if (current <= 0) return null;
+  const previous = history[current - 1];
+  if (!previous || previous.status !== 'resolved' || !previous.outcomeWord) return null;
+  const choice = previous.choiceDecided ? undefined : previous.choiceText?.trim().replace(/[.!?]+$/, '');
+  const line = CHAPTER_LAST_STEP_ANSWER_LINE
+    .replace('{n}', String(current))
+    .replace('{word}', previous.outcomeWord)
+    + (choice ? CHAPTER_LAST_STEP_CHOICE_SUFFIX.replace('{choice}', `${choice}.`) : '');
+  // The stage model writes a bare 'Succeeded' / 'Failed' when a step authored no
+  // afterimage; the line already says how it went, so the frozen narrative reads instead.
+  const afterimage = previous.afterimage?.trim();
+  const authored = afterimage && !LAST_STEP_BARE_STATUS_WORDS.has(afterimage) ? afterimage : undefined;
+  const prose = authored || previous.replayNarrative?.trim() || null;
+  return { line, prose };
+}
+
+/** The stage model's no-prose afterimage fallback (`buildHistory`). Never shown as the answer's prose. */
+const LAST_STEP_BARE_STATUS_WORDS: ReadonlySet<string> = new Set(['Succeeded', 'Failed']);
+
 /** Fill `{chapter}` in a chapter-answer string; an unresolved name reads "this chapter". */
 export function chapterAnswerText(template: string, chapterName: string | null | undefined): string {
   const name = chapterName?.trim() || CHAPTER_ANSWER_UNNAMED;

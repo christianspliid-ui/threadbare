@@ -40,6 +40,7 @@
 import { initializeGameState, MAP_SIZE_PRESETS, devSeedTheFirst } from '../src/engine/gameInit';
 import type { MapSizePreset } from '../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../src/engine/orchestrator';
+import { unattended } from '../src/engine/playerStepHold';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import { createSimulationRuntime, touchStructure } from '../src/engine/simulationRuntime';
@@ -205,7 +206,7 @@ function runSeed(seed: number) {
 
   harvest();
   for (let i = 0; i < ticks; i++) {
-    state = runTick(state, [], runtime);
+    state = unattended(runTick(state, [], runtime));
     harvest();
   }
   for (const ch of chapters) {

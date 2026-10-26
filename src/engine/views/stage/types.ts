@@ -308,6 +308,12 @@ export interface EncounterStageHistoryModel {
   replayNarrative?: string;
   /** The god-action the player took on this step, if any. */
   choiceText?: string;
+  /**
+   * THR-2052 — true when `choiceText` is the mortal's own decision on a
+   * branching step (`agent_decided`), not a play of the god's; the last-step
+   * answer must not credit it to the player.
+   */
+  choiceDecided?: boolean;
 }
 
 /** THR-1670 — one step's cast, as the step history renders it. */
