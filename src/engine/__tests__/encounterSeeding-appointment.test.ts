@@ -259,6 +259,19 @@ describe('the evaluator — kept, missed, wait, place lost', () => {
     const trace = getTraces().find(t => t.category === 'appointment_missed') as { reason?: string } | undefined;
     expect(trace?.reason).toBe('place_lost');
   });
+
+  it('place lost while busy: the requeued seed still fires placeless once the mortal is free (THR-1929)', () => {
+    const { state, dueTick } = plantedAt50();
+    state.graph.updateNode('loc-cross', { properties: { hexCol: undefined, hexRow: undefined } });
+    rebindLocatedAt(state.graph, 'actor-hero', 'loc-town');
+    const busy = { ...state, unifiedActions: [makeAction({ actionId: 'ua_busy', resolved: false })] };
+    const held = evaluateEncounterSeeds(busy, dueTick + 1, rng, runtime);
+    expect(held.pendingEncounterSeeds).toHaveLength(1);
+    expect(held.pendingEncounterSeeds![0].firesPlaceless).toBe(true);
+    const free = evaluateEncounterSeeds({ ...held, unifiedActions: [] }, dueTick + 2, rng, runtime);
+    expect(free.unifiedActions.map(a => a.templateId)).toEqual([SLICE_TEMPLATE_IDS.fullMoon]);
+    expect(getTraces().some(t => t.category === 'encounter_seed_waiting')).toBe(false);
+  });
 });
 
 describe('the gate — both branches, or nothing ships', () => {

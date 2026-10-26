@@ -1602,6 +1602,12 @@ export interface PendingEncounterSeed {
    * every held tick. The wait itself is measured from `eligibleAfterTick`.
    */
   readonly placeWaitTraced?: boolean;
+  /**
+   * THR-1929 — set when the world lost an appointment's place and the appointment arm
+   * rewrote the seed to fire its kept branch wherever the mortal is (THR-1479). The
+   * templateId place wait skips such a seed on every later tick, busy or not.
+   */
+  readonly firesPlaceless?: boolean;
 }
 
 /** Why an appointment was missed (THR-1479). */
