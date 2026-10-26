@@ -133,6 +133,29 @@ export const OPENING_REVEAL_HIGHLIGHT_MS = 6000;
 /** localStorage key for the "Show every panel" setting. */
 export const OPENING_REVEAL_SHOW_ALL_KEY = 'tb.openingReveal.showAll';
 
+/** THR-2060 — which queued surfaces have arrived, and when the last one did. Held by the screen. */
+export interface OpeningArrivalLedger {
+  /** Surface → tick it arrived. */
+  readonly arrived: Readonly<Partial<Record<OpeningRevealSurfaceId, number>>>;
+  readonly lastArrivalTick: number | null;
+}
+
+// The screen's live arrival ledger, for readers outside its reveal hook (the
+// inspector's Dominion row). A UI snapshot like the setting below, not an engine
+// cache: the hook republishes it every render and clears it on unmount, so a new
+// session never reads the last one's. Null → no screen → readers see readiness.
+let publishedArrivalLedger: OpeningArrivalLedger | null = null;
+
+/** THR-2060 — the screen publishes its ledger (null on unmount). */
+export function publishOpeningArrivalLedger(ledger: OpeningArrivalLedger | null): void {
+  publishedArrivalLedger = ledger;
+}
+
+/** THR-2060 — the screen's arrival ledger, or null when no screen holds one. */
+export function readPublishedOpeningArrivalLedger(): OpeningArrivalLedger | null {
+  return publishedArrivalLedger;
+}
+
 /**
  * The "Show every panel" setting, for readers outside the screen's reveal hook
  * (THR-1986: the inspector's Dominion row). Fail-soft: unreadable storage is off.

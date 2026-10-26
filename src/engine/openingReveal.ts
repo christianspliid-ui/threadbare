@@ -39,6 +39,7 @@ import {
   OPENING_REVEAL_CEILING_TICKS,
   OPENING_REVEAL_CHAPTERS_PER_ARRIVAL,
   OPENING_REVEAL_ARRIVAL_IDLE_TICKS,
+  type OpeningArrivalLedger,
   type OpeningRevealRow,
   type OpeningRevealSurfaceId,
 } from '../data/opening-reveal-table';
@@ -91,12 +92,7 @@ export interface OpeningReveal {
   readonly ledger?: OpeningArrivalLedger;
 }
 
-/** THR-2060 — which queued surfaces have arrived, and when the last one did. Held by the screen. */
-export interface OpeningArrivalLedger {
-  /** Surface → tick it arrived. */
-  readonly arrived: Readonly<Partial<Record<OpeningRevealSurfaceId, number>>>;
-  readonly lastArrivalTick: number | null;
-}
+export type { OpeningArrivalLedger };
 
 export const EMPTY_ARRIVAL_LEDGER: OpeningArrivalLedger = { arrived: {}, lastArrivalTick: null };
 

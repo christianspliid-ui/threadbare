@@ -34,6 +34,7 @@ import {
   OPENING_REVEAL_TABLE,
   OPENING_REVEAL_HIGHLIGHT_MS,
   OPENING_REVEAL_SHOW_ALL_KEY,
+  publishOpeningArrivalLedger,
   type OpeningRevealSurfaceId,
 } from '../../../data/opening-reveal-table';
 import { formatOpeningRevealToast } from '../../../data/ui-content';
@@ -139,6 +140,9 @@ export function useOpeningReveal(
   const ledgerRef = useRef<OpeningArrivalLedger | null>(null);
   ledgerRef.current = nextLedger(ledgerRef.current, readiness, gameState);
   const ledger = ledgerRef.current;
+  // Readers outside this hook (the inspector's Dominion row) read the same arrivals.
+  publishOpeningArrivalLedger(ledger);
+  useEffect(() => () => publishOpeningArrivalLedger(null), []);
   const reveal = useMemo(() => applyArrivalLedger(readiness, ledger), [readiness, ledger]);
 
   // Latch, and note what flipped on this render.

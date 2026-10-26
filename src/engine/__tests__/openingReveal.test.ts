@@ -21,6 +21,8 @@ import {
   OPENING_REVEAL_CEILING_TICKS,
   OPENING_REVEAL_ARRIVAL_IDLE_TICKS,
   ATTENTION_GAUGE_SHOWN,
+  publishOpeningArrivalLedger,
+  readPublishedOpeningArrivalLedger,
   type OpeningRevealSurfaceId,
 } from '../../data/opening-reveal-table';
 import { ASCENDANT_SPINE, SPINE_BEAT_PRESENTATION } from '../../data/ascendant-beat-content';
@@ -374,6 +376,19 @@ describe('the arrival queue (THR-2060 E1–E2)', () => {
 
   it('the Trade lens waits for the ceiling alone', () => {
     expect(selectOpeningReveal(makeState({ spineCursor: -1 })).rows.lens_trade).toEqual({ revealed: false, reason: 'waiting:ceiling' });
+  });
+
+  it('the published ledger lets readers outside the screen (the Dominion row) see arrival, not readiness', () => {
+    const s = makeState({ resolvedBeats: ['beat.spine.opening', 'beat.spine.a_path_opens'] });
+    expect(readPublishedOpeningArrivalLedger()).toBeNull();
+    publishOpeningArrivalLedger(seedArrivalLedger(['chapter_ledger'], BOND_TICK));
+    try {
+      const ledger = readPublishedOpeningArrivalLedger() ?? undefined;
+      expect(selectOpeningReveal(s, { ledger }).rows.dominion).toEqual({ revealed: false, reason: 'waiting:queue', readyReason: 'gift:beat.spine.a_path_opens' });
+    } finally {
+      publishOpeningArrivalLedger(null);
+    }
+    expect(selectOpeningReveal(s, { ledger: readPublishedOpeningArrivalLedger() ?? undefined }).rows.dominion.revealed).toBe(true);
   });
 
   it('a reload is not an arrival: rows ready at the first read have all arrived', () => {
