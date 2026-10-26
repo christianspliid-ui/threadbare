@@ -2406,10 +2406,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 93 total — 1 write, 2 read, 90 unclassified
+- **Production hits:** 95 total — 1 write, 2 read, 92 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +85 more
+- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +87 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -3342,10 +3342,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Daily life*, *Chapter Ledger*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 14 total — 1 write, 4 read, 9 unclassified
+- **Production hits:** 14 total — 1 write, 5 read, 8 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
-- **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`, `src/engine/threadedChapters.ts`
-- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/openingReveal.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseAttention.ts` +4 more
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`, `src/engine/openingReveal.ts`, `src/engine/threadedChapters.ts`
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseAttention.ts`, `src/engine/restlessRoad.ts` +3 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE
