@@ -706,19 +706,6 @@ export const IA_SURFACES: IASurface[] = [
     "notes": "Dev-only diagnostic panel. Keyboard: ` toggles, F1 opens to CLI tab. Not prod-visible but part of the dev IA. The 'Prose QA' tab (THR-490) audits the static authored-content library via collectAuthoredProse + the prose-quality scorer — reads content tables, not GameState; scriptable via __DEBUG.proseQualityReport() / scoreProseEntry(id).\n"
   },
   {
-    "surface": "game.narrative-feed",
-    "view": "game",
-    "mount": "drillin",
-    "reads": [
-      {
-        "state_path": "recentEvents",
-        "reader": "NarrativeFeed",
-        "visible_when": "always"
-      }
-    ],
-    "notes": "Rolling narrative prose feed. Drives player's sense of what's happening.\n"
-  },
-  {
     "surface": "codex.main",
     "view": "codex",
     "mount": "always",

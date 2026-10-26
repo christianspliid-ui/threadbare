@@ -1,24 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import {
-  createMortalDetectionState,
-  processMortalDetection,
-  createRivalDetectionState,
-  processRivalDetection,
-} from '../stealth';
-import {
   createMandateState,
   evaluateMandate,
   advanceMandateStage,
 } from '../mandate';
 import type { MandateDefinition } from '../../types/mandate';
 
-describe('Stealth + Mandate integration', () => {
+describe('Mandate stage progression', () => {
   function buildWorld() {
     const graph = new WorldGraph();
 
     graph.addNode({ id: 'actor_asc', type: 'actor', name: 'The Verdant One', properties: { actorType: 'ascendant' } });
-    graph.addNode({ id: 'actor_rival', type: 'actor', name: 'The Iron Judge', properties: { actorType: 'ascendant' } });
     graph.addNode({ id: 'loc_north', type: 'location', name: 'Northern Reach', properties: { locationType: 'region' } });
 
     // 4 threaded agents at various tiers
@@ -30,23 +23,6 @@ describe('Stealth + Mandate integration', () => {
 
     return graph;
   }
-
-  it('heavy intervention use triggers both mortal and rival detection', () => {
-    let mortalState = createMortalDetectionState('actor_agent_1');
-    let rivalState = createRivalDetectionState('actor_rival', 'loc_north');
-
-    // 5 coincidence interventions (3.0 each)
-    for (let tick = 1; tick <= 5; tick++) {
-      mortalState = processMortalDetection(mortalState, 'coincidence', tick);
-      rivalState = processRivalDetection(rivalState, 'coincidence', tick);
-    }
-
-    // Mortal: 5 × 3.0 = 15.0 → revelation
-    expect(mortalState.awarenessLevel).toBe('revelation');
-
-    // Rival: 5 × 3.0 = 15.0 → identified (threshold 12.0, below targeted 20.0)
-    expect(rivalState.awarenessLevel).toBe('identified');
-  });
 
   it('mandate progresses through stages as graph conditions are met', () => {
     const graph = buildWorld();

@@ -2,7 +2,7 @@
  * Attachment Tooltip Resolver
  *
  * Formats attachment data into tooltip content for the Tooltip component.
- * Used by AttachmentRow (sidebar) and prose vignettes (modal).
+ * Used by prose vignettes (modal).
  */
 
 import type { AttachmentTier } from '../types/attachments';

@@ -1,14 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { generateLakeOutflows } from '../lakeOutflow';
 import { createWorldGenData } from '../worldGenData';
-import { generateLakes } from '../lakeGeneration';
 import { fillDepressions } from '../depressionFilling';
 import { generateRivers } from '../riverGeneration';
 
 describe('generateLakeOutflows', () => {
   it('does not crash on a default world', () => {
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
     generateRivers(data);
     const pathsBefore = data.riverPaths.length;

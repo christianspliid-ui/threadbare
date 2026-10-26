@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { createWorldGenData, toHexTiles, RIVER_MIN_LENGTH } from '../worldGenData';
 import { generateRivers } from '../riverGeneration';
-import { generateLakes } from '../lakeGeneration';
 import { fillDepressions } from '../depressionFilling';
-import { LAKE_SIZE_MAX, GREAT_LAKE_SIZE_MAX, GREAT_LAKE_COUNT } from '../worldGenData';
+import { promoteDepressionLakes } from '../depressionLakes';
 
 describe('World generation pipeline integration', () => {
   const seeds = [1, 2, 3, 4, 5];
@@ -12,9 +11,10 @@ describe('World generation pipeline integration', () => {
     describe(`seed ${seed}`, () => {
       it('generates a complete world with rivers and lakes', () => {
         const data = createWorldGenData(20, 15, seed);
-        generateLakes(data);
+        // Live hydrology order (pass05-hydrology): fill → rivers → depression lakes
         fillDepressions(data);
         generateRivers(data);
+        promoteDepressionLakes(data);
         const tiles = toHexTiles(data);
 
         // Correct tile count
@@ -38,19 +38,10 @@ describe('World generation pipeline integration', () => {
           }
         }
 
-        // Lake size constraints
-        const lakeSizes = new Map<number, number>();
-        for (const id of data.lakeIds) {
-          if (id >= 0) lakeSizes.set(id, (lakeSizes.get(id) ?? 0) + 1);
+        // Every promoted lake hex carries lake terrain
+        for (let i = 0; i < data.lakeIds.length; i++) {
+          if (data.lakeIds[i] >= 0) expect(data.terrain[i]).toBe('lake');
         }
-        let greatLakeCount = 0;
-        for (const [, size] of lakeSizes) {
-          if (size > LAKE_SIZE_MAX) {
-            greatLakeCount++;
-            expect(size).toBeLessThanOrEqual(GREAT_LAKE_SIZE_MAX);
-          }
-        }
-        expect(greatLakeCount).toBeLessThanOrEqual(GREAT_LAKE_COUNT);
 
         // hasRiver flag propagated to tiles
         const riverTiles = tiles.filter(t => t.hasRiver);
@@ -62,9 +53,9 @@ describe('World generation pipeline integration', () => {
   it('pipeline completes in < 500ms for 20x15 grid', () => {
     const start = performance.now();
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
     generateRivers(data);
+    promoteDepressionLakes(data);
     toHexTiles(data);
     const elapsed = performance.now() - start;
     expect(elapsed).toBeLessThan(500);

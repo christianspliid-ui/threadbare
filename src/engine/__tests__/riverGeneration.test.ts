@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateRivers } from '../riverGeneration';
 import { createWorldGenData } from '../worldGenData';
-import { generateLakes } from '../lakeGeneration';
 import { fillDepressions } from '../depressionFilling';
 import { hexDistance } from '../../lib/hexMath';
 import { RIVER_MIN_LENGTH, RIVER_SOURCE_MIN_DISTANCE } from '../worldGenData';
@@ -9,7 +8,6 @@ import { RIVER_MIN_LENGTH, RIVER_SOURCE_MIN_DISTANCE } from '../worldGenData';
 describe('generateRivers', () => {
   it('generates at least 1 river on a 20x15 grid', () => {
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
     generateRivers(data);
     expect(data.riverPaths.length).toBeGreaterThanOrEqual(1);
@@ -17,7 +15,6 @@ describe('generateRivers', () => {
 
   it('marks hasRiver on traversed hexes', () => {
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
     generateRivers(data);
     const riverHexCount = Array.from(data.hasRiver).filter(v => v === 1).length;
@@ -26,7 +23,6 @@ describe('generateRivers', () => {
 
   it('all primary rivers meet minimum length', () => {
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
     generateRivers(data);
     for (const path of data.riverPaths) {
@@ -38,7 +34,6 @@ describe('generateRivers', () => {
 
   it('rivers flow downhill on drainageElevation (each hex has lower or equal elevation)', () => {
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
     generateRivers(data);
     const elev = data.drainageElevation;
@@ -54,7 +49,6 @@ describe('generateRivers', () => {
 
   it('rivers terminate at ocean, lake, edge, or confluence', () => {
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
     generateRivers(data);
     for (const path of data.riverPaths) {
@@ -72,12 +66,10 @@ describe('generateRivers', () => {
 
   it('is deterministic', () => {
     const a = createWorldGenData(20, 15, 42);
-    generateLakes(a);
     fillDepressions(a);
     generateRivers(a);
 
     const b = createWorldGenData(20, 15, 42);
-    generateLakes(b);
     fillDepressions(b);
     generateRivers(b);
 
@@ -92,7 +84,6 @@ describe('generateRivers', () => {
     let foundFork = false;
     for (let seed = 1; seed <= 20; seed++) {
       const data = createWorldGenData(20, 15, seed);
-      generateLakes(data);
       fillDepressions(data);
       generateRivers(data);
       if (data.riverPaths.some(p => p.id.includes('fork'))) {
@@ -108,7 +99,6 @@ describe('river sea outlet guarantee', () => {
   it('at least one river reaches the sea across 10 seeds', () => {
     for (let seed = 1; seed <= 10; seed++) {
       const data = createWorldGenData(20, 15, seed);
-      generateLakes(data);
       fillDepressions(data);
       generateRivers(data);
 
@@ -131,7 +121,6 @@ describe('river spring minimum distance', () => {
   it('no two primary river sources are closer than RIVER_SOURCE_MIN_DISTANCE', () => {
     for (let seed = 1; seed <= 5; seed++) {
       const data = createWorldGenData(20, 15, seed);
-      generateLakes(data);
       fillDepressions(data);
       generateRivers(data);
 
@@ -153,7 +142,6 @@ describe('river integration: no land dead-ends', () => {
   it('no river terminates on inland land hex across 5 seeds', () => {
     for (let seed = 1; seed <= 5; seed++) {
       const data = createWorldGenData(20, 15, seed);
-      generateLakes(data);
       fillDepressions(data);
       generateRivers(data);
 
