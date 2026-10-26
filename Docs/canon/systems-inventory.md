@@ -303,7 +303,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `derive` (1) | `deriveLocationActivities.ts` | — |
 | `descent` (1) | `descent.ts` | `THR-1658` |
 | `detail` (2) | `detailPageGenerator.ts`, `detailPageResolvers.ts` | — |
-| `digest` (1) | `digestBuffer.ts` | — |
+| `digest` (1) | `digestBuffer.ts` | `THR-2055` |
 | `disposition` (1) | `disposition.ts` | — |
 | `distance` (1) | `distanceMatrix.ts` | `THR-1183`, `THR-1346` |
 | `divine` (1) | `divineAttention.ts` | — |
