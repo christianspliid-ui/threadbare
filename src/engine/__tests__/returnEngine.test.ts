@@ -153,7 +153,9 @@ describe('Founding Gates', () => {
 
   it('usurper passes with bypass archetype even without tags', () => {
     const record = makeMeetingRecord({ foundingGateTags: [] });
-    expect(passesFoundingGate(record, 'usurper', 'schemer')).toBe(true);
+    expect(passesFoundingGate(record, 'usurper', 'shadow_heart')).toBe(true);
+    // THR-2034 retired the never-reachable 'schemer' name
+    expect(passesFoundingGate(record, 'usurper', 'schemer')).toBe(false);
   });
 
   it('monster requires dark tag', () => {

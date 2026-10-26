@@ -99,16 +99,20 @@ export const FOUNDING_GATES: Record<ReturnOutcome, FoundingGateConfig> = {
   },
   usurper: {
     requiredTags: ['cunning', 'dark', 'ruthless_origin', 'ambition_seed'],
-    // Also eligible if archetype is Schemer/Trickster/Fallen Noble (checked separately)
+    // Also eligible if the archetype key is shadow-primary (USURPER_BYPASS_ARCHETYPES, checked separately)
   },
   monster: {
     requiredTags: ['dark', 'ruthless_origin', 'corruption_seed'],
   },
 };
 
-/** Archetype IDs that bypass the tag requirement for Usurper */
+/**
+ * Archetype keys (`${primaryReach}_${secondaryReach}`, the keys of
+ * ARCHETYPE_NAME_MAP) that bypass the tag requirement for Usurper.
+ * THR-2034 retired 'schemer' / 'trickster' / 'fallen_noble': no candidate
+ * ever carried them (the name map has no such archetypes).
+ */
 export const USURPER_BYPASS_ARCHETYPES = [
-  'schemer', 'trickster', 'fallen_noble',
   'shadow_iron', 'shadow_gold', 'shadow_shadow',
   'shadow_heart', 'shadow_eye', 'shadow_veil',
 ];
@@ -216,6 +220,8 @@ export interface ReturnResolutionTrace {
   intentReach?: ReachDomain;
   /** Where it came from: the record, the spark vision's family, or nowhere. */
   intentReachSource?: 'record' | 'vision' | 'none';
+  /** The `primary_secondary` key the archetype reads compared against (THR-2034); '' when unknown. */
+  archetypeKey?: string;
   ordealOutcome: OrdealOutcome;
   relationshipState: ReturnRelationshipState;
   scores: Partial<Record<ReturnOutcome, number>>;
