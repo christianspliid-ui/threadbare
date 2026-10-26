@@ -1,5 +1,5 @@
 {
-  "total": 2689,
+  "total": 2681,
   "command": "npx tsc -b --force --pretty false",
   "perFile": {
     "src/__tests__/debug-bridge.test.ts": 3,
@@ -387,7 +387,7 @@
     "src/engine/__tests__/reputationWalk.test.ts": 2,
     "src/engine/__tests__/resourceSeeding.test.ts": 2,
     "src/engine/__tests__/retinue.test.ts": 5,
-    "src/engine/__tests__/returnEngine.test.ts": 18,
+    "src/engine/__tests__/returnEngine.test.ts": 11,
     "src/engine/__tests__/revelationActionCards.test.ts": 10,
     "src/engine/__tests__/revelationEmitter.test.ts": 4,
     "src/engine/__tests__/revelationGate.test.ts": 3,
@@ -568,7 +568,7 @@
     "src/engine/regionPolitical.ts": 4,
     "src/engine/reputationWalk.ts": 1,
     "src/engine/resolutionService.ts": 1,
-    "src/engine/returnEngine.ts": 11,
+    "src/engine/returnEngine.ts": 10,
     "src/engine/revelationEmitter.ts": 1,
     "src/engine/revelationResolver.ts": 1,
     "src/engine/rewardPool.ts": 1,
