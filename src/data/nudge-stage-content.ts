@@ -361,6 +361,8 @@ export interface LastStepAnswerSource {
   afterimage?: string;
   replayNarrative?: string;
   choiceText?: string;
+  /** The choice line is the mortal's own branch decision, not the player's play. */
+  choiceDecided?: boolean;
 }
 
 /**
@@ -376,7 +378,7 @@ export function lastStepAnswer(
   if (current <= 0) return null;
   const previous = history[current - 1];
   if (!previous || previous.status !== 'resolved' || !previous.outcomeWord) return null;
-  const choice = previous.choiceText?.trim().replace(/[.!?]+$/, '');
+  const choice = previous.choiceDecided ? undefined : previous.choiceText?.trim().replace(/[.!?]+$/, '');
   const line = CHAPTER_LAST_STEP_ANSWER_LINE
     .replace('{n}', String(current))
     .replace('{word}', previous.outcomeWord)

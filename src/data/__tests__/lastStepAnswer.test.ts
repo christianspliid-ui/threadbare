@@ -39,6 +39,14 @@ describe('THR-2052 — lastStepAnswer', () => {
     expect(answer?.line).toBe('Step 1 held. You: Stay your hand.');
   });
 
+  it('never credits the player with the mortal’s own branch decision', () => {
+    const answer = lastStepAnswer([
+      resolved({ choiceText: 'They chose as they are.', choiceDecided: true }),
+      { status: 'current' },
+    ]);
+    expect(answer?.line).toBe('Step 1 held.');
+  });
+
   it('says nothing on the first step, after the end, or without a band word', () => {
     expect(lastStepAnswer([{ status: 'current' }, { status: 'future' }])).toBeNull();
     expect(lastStepAnswer([resolved(), resolved()])).toBeNull();
