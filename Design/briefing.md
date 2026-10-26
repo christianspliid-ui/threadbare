@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 17:56 local (16:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 18:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -61,12 +61,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 ready, none being built.** The builder shipped three fixes this hour: [a follow-up scene waits for its place](https://linear.app/threadbare/issue/THR-1929) ([#2605](https://github.com/christianspliid-ui/threadbare/pull/2605)), [a mortal's trade now steers what they choose](https://linear.app/threadbare/issue/THR-2067) ([#2606](https://github.com/christianspliid-ui/threadbare/pull/2606)) and [tavern follow-ups can now happen](https://linear.app/threadbare/issue/THR-2039) ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)). All nine ready tickets are still inside their veto windows, so the builder waits until the first one opens. That is by design, not a stall.
+**Healthy: 9 ready, none being built.** All nine ready tickets are still inside their veto windows, so the builder's last three runs claimed nothing. That is by design, not a stall. The first window opens in a few minutes, and the next builder run should take [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws).
 
-- Next to open: [THR-2040](https://linear.app/threadbare/issue/THR-2040) at 19:05 today, [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday. Round 5's design tickets open Tuesday: [THR-2060](https://linear.app/threadbare/issue/THR-2060) and [THR-2061](https://linear.app/threadbare/issue/THR-2061) at 11:38 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30 UTC.
+- Next to open after that: [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday. Round 5's design tickets open Tuesday: [THR-2060](https://linear.app/threadbare/issue/THR-2060) and [THR-2061](https://linear.app/threadbare/issue/THR-2061) at 11:38 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30 UTC.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site is serving the newest main ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 17:51) are healthy. No pull requests are open. Engine speed is normal: 130 ms a tick, 18% below the week's median.
+All green. The live site is serving the newest main ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 18:40) are healthy. No pull requests are open. Engine speed is normal: 143 ms a tick, 9% below the week's median.
