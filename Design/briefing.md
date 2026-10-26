@@ -1,9 +1,9 @@
 # Briefing
-**Generated:** 2026-10-26 02:58 local (01:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 03:58 local (02:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Log the playtest testers back in.** Round 5 of the new-player playtest is due, and every round-4 fix is live on [threadbearer.co](https://threadbearer.co/). But the testers could not start this morning because their Claude login has expired. Open a terminal, run `claude`, then type `/login`. It takes about a minute. The next daily run (about 10:48 tomorrow) then plays round 5 by itself. *— from [cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md)*
+**Log the playtest testers back in.** Round 5 of the new-player playtest is due, and every round-4 fix is live on [threadbearer.co](https://threadbearer.co/). But the testers could not start this morning because their Claude login has expired. Open a terminal, run `claude`, then type `/login`. It takes about a minute. The next daily run (about 10:48 this morning) then plays round 5 by itself. *— from [cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md)*
 
 ## Also waiting (7)
 
@@ -34,19 +34,19 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **The granary riot keeps one cause.** Hunger and unrest already start it. Famine does not also make it likelier on the everyday board. *Veto:* "famine should also make the riot likelier".
 - [A sequel seeded by templateId fires wherever the mortal stands](https://linear.app/threadbare/issue/THR-1929/a-sequel-seeded-by-templateid-fires-wherever-the-mortal-stands-no): a follow-up scene that belongs somewhere (a rematch in a tavern, a mill lease in a town) **waits for its place**. It plays the first time the mortal stands somewhere it fits. If that does not happen within 4 days, it withers with the existing "a planted thread withered" line. It never plays on the wrong ground. Today 29% of these scenes play in the wrong place. *Veto:* "a sequel should find the mortal wherever they are". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25e.md)*
 - [Founding gates read a meeting-record field nobody writes](https://linear.app/threadbare/issue/THR-2009/founding-gates-read-a-meeting-record-field-nobody-writes-the-reach): at the end of the run, what the First becomes depends on **who they were born as**, not on the Reach the god strengthened. Their mark does not decide it. A Shadow-born First can never end in Sacrifice. Only a Star-, Veil- or Eye-born First can Transcend. Today Transcendence never happens in any run, because the check reads an empty field. *Veto:* "the ending should follow what the god made of them — the mark". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25b.md)*
-- [A seeded relic has no place in the graph](https://linear.app/threadbare/issue/THR-2030/a-seeded-relic-has-no-place-in-the-graph-its-site-is-only-a-property): a relic left by an earlier god now **lies at its place** through its own link, the way an unclaimed thing lies on the ground. It is not "at" the place the way a person is. Its page says where it lies, the place's page lists it, and it still reads Foreign until someone takes it up. *Veto:* "an artifact should simply be at a place like a person". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25a.md)*
 - [No non-human cast primitive](https://linear.app/threadbare/issue/THR-1274/no-non-human-cast-primitive-a-beast-cannot-be-a-bound-scene-actor): closed under its 20 Oct decision. A beast you can fight is a lair's monster. Any other animal stays scenery. *Veto:* "animals should live in the world". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25d.md)*
 
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready, all waiting out their veto windows.** [THR-2030](https://linear.app/threadbare/issue/THR-2030) opens at 03:25 and [THR-2009](https://linear.app/threadbare/issue/THR-2009) at 06:22 this morning, [THR-1929](https://linear.app/threadbare/issue/THR-1929) at 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, and the new [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50.
+**Healthy: 5 ready, all waiting out their veto windows, and one in the build.**
 
-- **[The Toll Dispute fix](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had) is merged and live** via [#2585](https://github.com/christianspliid-ui/threadbare/pull/2585). The builder's last three runs stood down only because every ready ticket is still inside its veto window, which is correct, not a stall.
+- **The builder is on [a seeded relic lies at its place](https://linear.app/threadbare/issue/THR-2030/a-seeded-relic-has-no-place-in-the-graph-its-site-is-only-a-property)** now that its veto window closed. Its pull request [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588) is open and the run is still going.
+- Next to open: [THR-2009](https://linear.app/threadbare/issue/THR-2009) at 06:22 this morning, [THR-1929](https://linear.app/threadbare/issue/THR-1929) at 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, and [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest commit on main (45feeb2f, the Toll Dispute fix). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 02:40) are healthy. Engine speed is back under the alarm line: 184 ms/tick, 20% above the 7-day median of 153.
+All green. The live site is up to date (45feeb2f; later commits touched only docs). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 03:40) are healthy. Engine speed: 186 ms/tick, 21% above the 7-day median of 153, under the alarm line.

@@ -1,12 +1,12 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 02:58 local (01:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 03:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
 ### Log the playtest testers back in (new 25 Oct)
 
-[Cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) is due: every round-4 ticket is closed and the fixes are live on [threadbearer.co](https://threadbearer.co/). The run stopped before any tester started, because the standalone `claude` the testers use said its login had expired and could not be refreshed. **Open a terminal, run `claude`, then type `/login`.** The next daily run (about 10:48 tomorrow) then plays round 5 by itself. Nothing was filed this time.
+[Cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) is due: every round-4 ticket is closed and the fixes are live on [threadbearer.co](https://threadbearer.co/). The run stopped before any tester started, because the standalone `claude` the testers use said its login had expired and could not be refreshed. **Open a terminal, run `claude`, then type `/login`.** The next daily run (about 10:48 this morning) then plays round 5 by itself. Nothing was filed this time.
 
 ### Set the Claude app to open when Windows starts
 
