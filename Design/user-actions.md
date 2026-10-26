@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 14:58 local (13:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 15:58 local (14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,9 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: six small round-5 faults are fixed, and the fix is live** ([THR-2057](https://linear.app/threadbare/issue/THR-2057)). Merged via [#2604](https://github.com/christianspliid-ui/threadbare/pull/2604).
+- **2026-10-26: Read the Threads now shows the mortal’s real name and how a missed chapter ended, and the fix is live** ([THR-2055](https://linear.app/threadbare/issue/THR-2055)). Merged via [#2601](https://github.com/christianspliid-ui/threadbare/pull/2601).
+- **2026-10-26: the plan for making the chosen path steer her chapters is merged** ([THR-2059](https://linear.app/threadbare/issue/THR-2059)), via [#2603](https://github.com/christianspliid-ui/threadbare/pull/2603). Its build ticket is [THR-2068](https://linear.app/threadbare/issue/THR-2068); its four calls sit in the briefing’s *Decided for you* until Tuesday 14:30 UTC.
 - **2026-10-26: a chapter the world opens no longer lands on your click, and the fix is live** ([THR-2053](https://linear.app/threadbare/issue/THR-2053)). Merged via [#2599](https://github.com/christianspliid-ui/threadbare/pull/2599).
 - **2026-10-26: the map no longer drifts to the right edge after a chapter, and the fix is live** ([THR-2056](https://linear.app/threadbare/issue/THR-2056)). Merged via [#2600](https://github.com/christianspliid-ui/threadbare/pull/2600).
 - **2026-10-26: a First's chapter no longer plays out unseen, and the fix is live** ([THR-2052](https://linear.app/threadbare/issue/THR-2052)). Merged via [#2597](https://github.com/christianspliid-ui/threadbare/pull/2597).
@@ -45,9 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: round 5's two design findings are planned and on the build shelf.** [New things arrive one at a time](https://linear.app/threadbare/issue/THR-2060) and [Readouts say what they show](https://linear.app/threadbare/issue/THR-2061), from [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2058-one-thing-at-a-time.md) merged via [#2596](https://github.com/christianspliid-ui/threadbare/pull/2596). Its five calls sit in the briefing's *Decided for you* until Tuesday 11:38 UTC.
 - **2026-10-26: cold playtest round 5 is done.** 8 tickets are filed: 6 bugs ready to build, 2 for design. The builder took the Urgent one, [THR-2052](https://linear.app/threadbare/issue/THR-2052). See [the report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md).
 - **2026-10-26: the playtest testers can log in again.** Their login worked this morning, and the three new-player testers of [cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) started at 10:49.
-- **2026-10-26: the plan for an oath sworn from tribute is merged** ([THR-2051](https://linear.app/threadbare/issue/THR-2051)), via [#2594](https://github.com/christianspliid-ui/threadbare/pull/2594). Its four calls sit in the briefing's *Decided for you* until Tuesday 09:49.
-- **2026-10-26: three settings that no longer changed anything are removed, and the change is live** ([THR-2050](https://linear.app/threadbare/issue/THR-2050/authored-knobs-with-no-reader-minwealthrequired-on-five-action)). Merged via [#2593](https://github.com/christianspliid-ui/threadbare/pull/2593).
-- **2026-10-26: eight pieces of old code the game no longer used are removed, and the change is live** ([THR-2049](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its)). Merged via [#2592](https://github.com/christianspliid-ui/threadbare/pull/2592).
 
 ---
 
