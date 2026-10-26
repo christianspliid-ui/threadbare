@@ -95,6 +95,7 @@ export type EdgeType =
   | 'blessed'          // source → target blessing
   // Location
   | 'located_at'       // actor is at location
+  | 'lies_at'          // unborne artifact → the place it lies at (THR-2030; sinceTick)
   | 'avatar_of'        // avatar ↔ ascendant link
   // Action
   | 'performing'       // actor → action_template (in-progress action)

@@ -89,7 +89,8 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
     friendsAndFoes: [{ helper: 'factionHallsHere' }],
     holdsKnows: [
       { edge: 'contains', dir: 'out', fact: 'occupancy', only: 'place' },
-      { edge: 'located_at', dir: 'in', fact: 'kind', only: 'artifact' },
+      // THR-2030: an unborne artifact lies at its place (`lies_at`); none is ever `located_at`.
+      { edge: 'lies_at', dir: 'in', fact: 'kind', only: 'artifact' },
       { edge: 'located_at', dir: 'in', fact: 'factHere', only: 'army' },
     ],
     story: [{ edge: 'occurred_at', dir: 'in', only: 'event' }],
@@ -121,7 +122,7 @@ export const CONNECTION_RECIPES: Readonly<Record<ConnectionSubjectClass, Partial
     friendsAndFoes: [{ edge: 'participates_in', dir: 'out', fact: 'kind' }],
   },
   artifact: {
-    where: [{ edge: 'located_at', dir: 'out', fact: 'factHere', only: 'place' }],
+    where: [{ edge: 'lies_at', dir: 'out', fact: 'factHere', only: 'place' }],
     who: [
       { edge: 'possesses', dir: 'in', fact: 'factHolder', only: 'person' },
       { edge: 'bonded_to', dir: 'in', fact: 'factBonded', only: 'person' },

@@ -296,9 +296,11 @@ function seedRelic(graph: WorldGraph, ascendantId: string, def: EchoDefinition):
       echoOrigin: true,
       echoId: def.id,
       echoKind: 'relic',
-      locationId: site.id,
     },
   });
+  // The relic lies at its site through the graph, not a property-bag id (THR-2030):
+  // `placeOf` and the Inspector's "where" read this edge.
+  graph.addEdge({ id: `edge_lies_at_${nodeId}_${site.id}`, source: nodeId, target: site.id, type: 'lies_at', properties: { sinceTick: 0 } });
   return {
     echoId: def.id, kind: 'relic', name: def.name, nodeId, hostId: site.id,
     band: dominionOf(graph, ascendantId, nodeId).band,

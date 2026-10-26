@@ -268,6 +268,15 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Actor is physically at this location or sublocation. Source = actor, target = the most specific node they occupy.',
   },
+  lies_at: {
+    type: 'lies_at',
+    sourceNodeType: ['artifact', 'artifact_legendary'],
+    targetNodeType: ['location', 'sublocation'],
+    direction: 'directed',
+    cardinality: 'many-to-one',
+    requiredProperties: ['sinceTick'],
+    description: 'An artifact no one bears lies at this place (THR-2030; first writer: the seeded echo relic, `seedEchoes.ts`). Deliberately NOT a widening of `located_at`: ~39 readers take incoming `located_at` as the place\'s residents, and about 15 of them count or act on every source with no type filter (crowd bonus, threat, co-resident counts, sublocation dissolve-on-visit, the god\'s-mortal check), so an artifact there would read as a person. `contains` is no better: pathfinding walks it as a route. Invariant: an artifact with a bearer (`possesses` / `bonded_to`) has no `lies_at`; whatever takes it up removes the edge. An artifact lies in one place. Properties: sinceTick.',
+  },
   avatar_of: {
     type: 'avatar_of',
     sourceNodeType: 'actor',

@@ -10,7 +10,10 @@ import { DEV_ASCENDANT_IDENTITY, initializeGameStateFromIdentity } from '../game
 import { sampleAccount } from '../accountStore';
 import { resetDecisionCache, resetEventCounter } from '../orchestrator';
 import { clearTraces, disableTracing, enableTracing, getTraces } from '../traceBuffer';
-import { dominionOf } from '../dominion';
+import { dominionOf, placeOf } from '../dominion';
+import { buildSubjectPage } from '../views/subjects/subjectPage';
+import { buildConnections } from '../views/connections';
+import { EDGE_SCHEMA, validateEdgeEndpoints } from '../../types/edgeSchema';
 import { buildEchoGroup, pastLineText } from '../worldPastWords';
 import { readView } from '../views/readView';
 import { mapPlacesSelector } from '../views/map/places';
@@ -59,6 +62,17 @@ describe('THR-1843 — the order and the targets', () => {
     expect(monumentTargetBand('kin', 0.75)).toBeNull();
     expect(monumentTargetBand('opposed', 0.75)).toBe('hostile');
     expect(monumentTargetBand('unrelated', 0.1)).toBeNull();
+  });
+});
+
+describe('THR-2030 — lies_at schema', () => {
+  it('places an artifact at a place and refuses an actor source', () => {
+    expect(EDGE_SCHEMA.lies_at.cardinality).toBe('many-to-one');
+    expect(EDGE_SCHEMA.lies_at.requiredProperties).toEqual(['sinceTick']);
+    expect(validateEdgeEndpoints('lies_at', 'artifact', 'location')).toBeNull();
+    expect(validateEdgeEndpoints('lies_at', 'artifact_legendary', 'location')).toBeNull();
+    expect(validateEdgeEndpoints('lies_at', 'actor', 'location')?.reason).toBe('source_type');
+    expect(validateEdgeEndpoints('lies_at', 'artifact', 'actor')?.reason).toBe('target_type');
   });
 });
 
@@ -141,6 +155,33 @@ describe.each([42, 99, 7])('THR-1843 — seed %i with SAMPLE_ACCOUNT', seed => {
     expect(state.graph.getIncomingEdges(relic.nodeId, 'possesses')).toHaveLength(0);
     expect(state.graph.getIncomingEdges(relic.nodeId, 'bonded_to')).toHaveLength(0);
     expect(dominionOf(state.graph, god, relic.nodeId).band).toBe('foreign');
+  });
+
+  it('lays the relic at its site with one lies_at edge the place readers find (THR-2030)', () => {
+    const state = world(KIN, seed, sampleAccount());
+    const relic = state.seededEchoes!.seeded.find(e => e.kind === 'relic')!;
+    const node = state.graph.getNode(relic.nodeId)!;
+    const lies = state.graph.getOutgoingEdges(relic.nodeId, 'lies_at');
+    expect(lies).toHaveLength(1);
+    expect(lies[0].target).toBe(relic.hostId);
+    expect(lies[0].properties.sinceTick).toBe(0);
+    expect(validateEdgeEndpoints('lies_at', node.type, state.graph.getNode(relic.hostId)?.type)).toBeNull();
+    expect(node.properties.locationId).toBeUndefined();
+    expect(state.graph.getOutgoingEdges(relic.nodeId, 'located_at')).toHaveLength(0);
+    expect(placeOf(state.graph, relic.nodeId)?.id).toBe(relic.hostId);
+
+    // The relic's page names where it lies; the site's Connections list the relic.
+    const page = buildSubjectPage(state, { kind: 'artifact', id: relic.nodeId });
+    expect(page.header.whereLine.map(r => r.ref.id)).toContain(relic.hostId);
+    // Connections keep the knowledge floor: an undiscovered site is not named there.
+    const site = state.graph.getNode(relic.hostId)!;
+    const relicWhere = buildConnections(state.graph, state, { cls: 'artifact', id: relic.nodeId })
+      .groups.find(g => g.id === 'where');
+    if (site.properties.discovered === false || site.properties.hidden === true) expect(relicWhere).toBeUndefined();
+    else expect(relicWhere!.rows.map(r => r.ref.id)).toContain(relic.hostId);
+    const siteRows = buildConnections(state.graph, state, { cls: 'location', id: relic.hostId })
+      .groups.flatMap(g => g.rows.map(r => r.ref.id));
+    expect(siteRows).toContain(relic.nodeId);
   });
 
   it('is deterministic: the same account and seed place the same echoes', () => {

@@ -316,7 +316,8 @@ export function placeOf(graph: WorldGraph, nodeId: string | undefined): GraphNod
   const node = graph.getNode(nodeId);
   if (!node) return undefined;
   if (node.type === 'location' || isPlaceNode(node)) return resolveToParentLocation(graph, node);
-  const loc = graph.getOutgoingEdges(nodeId, 'located_at')[0];
+  // An unborne artifact has no `located_at`; it lies at its place (THR-2030).
+  const loc = graph.getOutgoingEdges(nodeId, 'located_at')[0] ?? graph.getOutgoingEdges(nodeId, 'lies_at')[0];
   return loc ? placeOf(graph, loc.target) : undefined;
 }
 

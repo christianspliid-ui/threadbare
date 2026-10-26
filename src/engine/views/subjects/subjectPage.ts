@@ -127,7 +127,9 @@ function hexOfNode(graph: WorldGraph, node: GraphNode): string | null {
 function whereOf(state: GameState, node: GraphNode): RefRow[] {
   const graph = state.graph;
   if (node.type === 'location') return containmentRows(graph, state, node, false).map(r => ({ ref: r.ref, name: r.name }));
-  const at = graph.getOutgoingEdges(node.id, 'located_at')[0];
+  // An unborne artifact has no `located_at`; it lies at its place (THR-2030).
+  const at = graph.getOutgoingEdges(node.id, 'located_at')[0]
+    ?? (node.type === 'artifact' || node.type === 'artifact_legendary' ? graph.getOutgoingEdges(node.id, 'lies_at')[0] : undefined);
   return containmentRows(graph, state, at ? graph.getNode(at.target) : undefined, true).map(r => ({ ref: r.ref, name: r.name }));
 }
 
