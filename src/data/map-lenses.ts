@@ -12,6 +12,10 @@
  * Keys `1`–`5` are reserved for lenses (THR-1831); `5` stays unbound. Trouble (`3`)
  * and Trade (`4`) joined in Lenses II (THR-1898).
  *
+ * THR-2060: each lens names the opening-reveal surface that brings its button (a
+ * staged run grows the bar one lens at a time); a `lens_*` surface belongs to the
+ * lens bar alone, any other is shared with the panel it travels with.
+ *
  * Named test: `src/data/__tests__/mapLenses.coverage.test.ts`.
  */
 
@@ -22,6 +26,7 @@ import {
   DOMINION_TOOLTIP_IDS,
 } from './dominion-ui-content';
 import { THREADS_LENS_WORDS, TROUBLE_LENS_WORDS, TRADE_LENS_WORDS } from './view-content';
+import type { OpeningRevealSurfaceId } from './opening-reveal-table';
 
 /** The closed union of lens ids — grows one member per row. */
 export type MapLensId = 'dominion' | 'threads' | 'trouble' | 'trade';
@@ -43,6 +48,8 @@ export interface MapLensDef {
   legend: readonly string[];
   /** Which layer family draws it. */
   layer: MapLensLayerKind;
+  /** THR-2060: the opening-reveal surface whose arrival puts this lens on the bar. */
+  revealSurface: OpeningRevealSurfaceId;
 }
 
 /** The keys a lens may take. `5` is reserved and unbound. */
@@ -56,6 +63,7 @@ export const MAP_LENSES: readonly MapLensDef[] = [
     tooltipId: DOMINION_TOOLTIP_IDS.lens,
     legend: DOMINION_LEGEND_LINES,
     layer: 'dominion',
+    revealSurface: 'dominion',
   },
   {
     id: 'threads',
@@ -64,6 +72,7 @@ export const MAP_LENSES: readonly MapLensDef[] = [
     tooltipId: 'ui.lens.threads',
     legend: THREADS_LENS_WORDS.legend,
     layer: 'hex',
+    revealSurface: 'lens_threads',
   },
   {
     id: 'trouble',
@@ -72,6 +81,7 @@ export const MAP_LENSES: readonly MapLensDef[] = [
     tooltipId: 'ui.lens.trouble',
     legend: TROUBLE_LENS_WORDS.legend,
     layer: 'hex',
+    revealSurface: 'doom',
   },
   {
     id: 'trade',
@@ -80,6 +90,7 @@ export const MAP_LENSES: readonly MapLensDef[] = [
     tooltipId: 'ui.lens.trade',
     legend: TRADE_LENS_WORDS.legend,
     layer: 'hex',
+    revealSurface: 'lens_trade',
   },
 ];
 

@@ -109,6 +109,8 @@ export interface GameMapProps extends MapAnchoredDialogsProps {
   armedHighlight?: HexMapV2Props['armedHighlight'];
   setMapLensFromBar: MapLensSwitchProps['onChange'];
   dominionBandColors: MapLensSwitchProps['bandColors'];
+  /** THR-2060 — the lenses whose reveal has arrived (the bar shows only these). */
+  shownLenses?: MapLensSwitchProps['shownLenses'];
 }
 
 export function GameMap({
@@ -162,6 +164,7 @@ export function GameMap({
   hexLens,
   armedHighlight = null,
   setMapLensFromBar,
+  shownLenses,
   dominionBandColors,
   agendaPickerOpen,
   pendingAgendas,
@@ -300,6 +303,7 @@ export function GameMap({
           suppressed={lensSuppressed}
           onChange={setMapLensFromBar}
           bandColors={dominionBandColors}
+          shownLenses={shownLenses}
           hexLegend={hexLens ? { head: hexLens.legend.head, headNote: hexLens.legend.headNote ?? null, lines: hexLens.legend.lines, emptyLine: hexLens.emptyLine } : null}
         />
       )}

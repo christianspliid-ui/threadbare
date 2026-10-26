@@ -252,7 +252,7 @@ import { hexKey as dominionHexKey } from '../../lib/hexKey';
 import { DOMINION_BANDS, DOMINION_BAND_WORDS } from '../../data/dominion-content';
 import { DOMINION_TOOLTIP_IDS } from '../../data/dominion-ui-content';
 import { getUITooltip } from '../../data/ui-content';
-import type { MapLensId } from '../../data/map-lenses';
+import { MAP_LENSES, type MapLensId } from '../../data/map-lenses';
 import type { MapLensChangeSource } from '../../types/traces/ui-traces';
 import { toggleLensValue } from './frame/GameScreenState';
 
@@ -1616,7 +1616,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   const setDominionLens = useCallback((on: boolean) => {
     setMapLens(on ? 'dominion' : null, 'debug');
   }, [setMapLens]);
+  // THR-2060 — a lens whose reveal has not arrived answers no key; set once the reveal is read below.
+  const lensShownRef = useRef<(lens: MapLensId) => boolean>(() => true);
   const toggleMapLens = useCallback((lens: MapLensId) => {
+    if (!lensShownRef.current(lens)) return;
     setMapLens(toggleLensValue(activeLensRef.current, lens), 'key');
   }, [setMapLens]);
   const setMapLensFromBar = useCallback((next: MapLensId | null) => {
@@ -1710,6 +1713,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [handlePushToast]);
   const openingReveal = useOpeningReveal(gameState, runtime.worldVersion, pushOpeningRevealToast);
   const firstScreenReveal = useFirstScreenReveal(gameState, openingReveal.show);
+  // THR-2060 — the lens bar grows one lens per arrival (Dominion with Dominion, Trouble with Doom).
+  // `show` is a fresh object each render; key the set on its lens bits so the bar's memo holds.
+  const shownLensKey = MAP_LENSES.filter(l => openingReveal.show[l.revealSurface]).map(l => l.id).join('|');
+  const shownLenses = useMemo(
+    () => new Set(shownLensKey ? (shownLensKey.split('|') as MapLensId[]) : []),
+    [shownLensKey],
+  );
+  lensShownRef.current = (lens) => shownLenses.has(lens);
 
   /**
    * The direction line arrow (THR-1837 U3): open The First's waiting chapter
@@ -4514,6 +4525,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
               // Under the Stage the map is the moment's backdrop: no armed lighting on top of it.
               armedHighlight={stageOpen ? null : (arming.vm?.map ?? null)}
               setMapLensFromBar={setMapLensFromBar}
+              shownLenses={shownLenses}
               dominionBandColors={dominionBandColors}
               agendaPickerOpen={agendaPickerOpen}
               pendingAgendas={pendingAgendas}

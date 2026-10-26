@@ -3203,6 +3203,12 @@ export interface DebugBridge {
    *  - `direction` — the standing top-bar line: `show` until The First's first
    *    non-routine post-bond chapter resolves; `mode` `chapter_waiting` while one of hers
    *    is open (its id in `chapterActionId`), else `let_time_run`.
+   *  - THR-2060 — `queued`: rows whose trigger fired but which have not arrived yet
+   *    (reason `waiting:queue`), in table order; an arrived row reads `queued` with its
+   *    trigger in `readyReason`. `ledger`: `{ arrived: surface → tick, lastArrivalTick }`,
+   *    one arrival per closed First chapter (pairs share a tick: Reaches + Dominion).
+   *    `rival_acted`, `waiting:rival_acted` and `waiting:ceiling` are new reasons. The
+   *    selector fallback (no screen mounted) has no ledger and an empty `queued`.
    *
    *  Resolves `{ error }` with no live game state. **Async** (`await` it). */
   getOpeningReveal: () => Promise<{ error: string } | import('./engine/openingReveal').OpeningReveal>;

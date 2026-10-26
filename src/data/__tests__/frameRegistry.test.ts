@@ -16,6 +16,7 @@ import {
   frameRevealClaims,
 } from '../frame-registry';
 import { OPENING_REVEAL_TABLE } from '../opening-reveal-table';
+import { MAP_LENSES } from '../map-lenses';
 import { TOP_BAR_KEYS } from '../top-bar-keys';
 import { getUITooltip } from '../ui-content';
 import { ICON_REGISTRY } from '../icons/iconRegistry';
@@ -73,7 +74,12 @@ describe('frame registry — check 1: words, icons, tooltips', () => {
 });
 
 describe('frame registry — check 2: the reveal table and the frame agree', () => {
-  const claims = frameRevealClaims();
+  // THR-2060: a `lens_*` surface belongs to the lens bar alone (MAP_LENSES); other lenses
+  // share the surface of the panel they arrive with, which a frame entry already claims.
+  const claims = [
+    ...frameRevealClaims(),
+    ...MAP_LENSES.filter(l => l.revealSurface.startsWith('lens_')).map(l => ({ surface: l.revealSurface, claimedBy: `MAP_LENSES.${l.id}` })),
+  ];
   const tableSurfaces = OPENING_REVEAL_TABLE.map(r => r.surface);
 
   it('every opening-reveal surface is claimed by exactly one frame entry', () => {

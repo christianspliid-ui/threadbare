@@ -9,17 +9,25 @@
  * on it; Dominion arrives with the Reaches it is read with.)
  * Each row keys one dashboard surface (by id, never by screen position) to the
  * thing that brings it: the bond, The First's first chapter, or one opening gift.
+ * (THR-2060, plan `2026-10-26-thr-2058-one-thing-at-a-time.md` E1–E2: a fired
+ * trigger makes a labelled row *ready*; ready rows then arrive one per closed First
+ * chapter, in table order. Rivals and the map lenses joined the table.)
  *
  * Moving a row is a one-line change (NFP #1). Every gift `beatId` must be an
  * `ASCENDANT_SPINE` id — a test asserts it; at runtime an unknown id reveals at
  * the bond (`unknown_beat`).
  *
  * ─── Constants ───────────────────────────────────────────────────
- * | OPENING_REVEAL_TABLE         | 18 rows   | Which surface waits for which trigger |
- * | OPENING_REVEAL_CEILING_TICKS | 200       | Ticks after the bond when every row reveals |
+ * | OPENING_REVEAL_TABLE         | 21 rows   | Which surface waits for which trigger |
+ * | OPENING_REVEAL_CEILING_TICKS | 200       | Ticks after the bond when every row is ready (THR-2060: they still arrive one at a time) |
+ * | OPENING_REVEAL_CHAPTERS_PER_ARRIVAL | 1   | Closed First chapters between two arrivals (THR-2060) |
+ * | OPENING_REVEAL_ARRIVAL_IDLE_TICKS   | 36  | Running ticks after which the next arrival comes without a chapter |
+ * | ATTENTION_GAUGE_SHOWN        | false     | The Attention gauge shows only once something spends Attention |
  * | OPENING_REVEAL_HIGHLIGHT_MS  | 6000      | Gold ring on a newly revealed panel (0 = off) |
  * | OPENING_REVEAL_SHOW_ALL_KEY  | localStorage key for "Show every panel" |
  */
+
+import { SPINE_IDLE_FALLBACK_TICKS } from './ascendant-beat-content';
 
 export type OpeningRevealSurfaceId =
   | 'time_controls'
@@ -39,47 +47,85 @@ export type OpeningRevealSurfaceId =
   | 'reaches'
   | 'world_soul'
   | 'omen'
-  | 'dominion';
+  | 'dominion'
+  | 'rivals'
+  | 'lens_threads'
+  | 'lens_trade';
 
 export type OpeningRevealTrigger =
   | { readonly kind: 'bond' }
   | { readonly kind: 'first_chapter' }
-  | { readonly kind: 'gift'; readonly beatId: string };
+  | { readonly kind: 'gift'; readonly beatId: string }
+  /** THR-2060: once any rival has acted (an intervention landed or a scheme launched). */
+  | { readonly kind: 'rival_acted' }
+  /** THR-2060: only the ceiling brings it. */
+  | { readonly kind: 'ceiling' };
 
 export interface OpeningRevealRow {
   readonly surface: OpeningRevealSurfaceId;
   readonly trigger: OpeningRevealTrigger;
   /** The noun the "New beside the map" line uses. Absent for rows shown at the bond. */
   readonly newLabel?: string;
+  /**
+   * THR-2060: arrives in the same step as this surface (Reaches and Dominion, THR-1986).
+   * An unknown id is ignored: the row arrives on its own.
+   */
+  readonly arrivesWith?: OpeningRevealSurfaceId;
 }
+
+/**
+ * Hides the Attention gauge until something spends Attention (THR-2060 U4). Nothing
+ * calls `spendAttention` in production today, so a shown gauge always sits full.
+ * TODO(THR-2062): wire a spend (or retire the pool), then set this back to true.
+ */
+export const ATTENTION_GAUGE_SHOWN = false;
 
 const BOND = { kind: 'bond' } as const;
 const gift = (beatId: string): OpeningRevealTrigger => ({ kind: 'gift', beatId });
 
-/** Table order is the order labels are joined in the reveal toast. */
+/**
+ * Table order is queue order (THR-2060): ready rows arrive first to last, one per
+ * closed First chapter. Rows with no `newLabel` never queue (they show when ready).
+ */
 export const OPENING_REVEAL_TABLE: readonly OpeningRevealRow[] = [
   { surface: 'time_controls', trigger: BOND },
   { surface: 'identity', trigger: BOND },
   { surface: 'essence', trigger: BOND },
-  { surface: 'attention', trigger: { kind: 'first_chapter' }, newLabel: 'Attention' },
   { surface: 'hand', trigger: BOND },
   { surface: 'threads', trigger: BOND },
-  { surface: 'chapter_ledger', trigger: { kind: 'first_chapter' }, newLabel: 'the Chapter Ledger' },
   { surface: 'chronicle', trigger: BOND },
   { surface: 'settings', trigger: BOND },
   { surface: 'read_threads', trigger: BOND },
-  { surface: 'doom', trigger: gift('beat.spine.the_seat'), newLabel: 'Doom' },
-  { surface: 'mandate', trigger: gift('beat.spine.the_seat'), newLabel: 'Mandates' },
-  { surface: 'investiture', trigger: gift('beat.spine.the_seat'), newLabel: 'Investiture' },
+  // While the gauge is hidden it has nothing to announce, so it does not queue.
+  { surface: 'attention', trigger: { kind: 'first_chapter' }, ...(ATTENTION_GAUGE_SHOWN ? { newLabel: 'Attention' } : {}) },
+  { surface: 'chapter_ledger', trigger: { kind: 'first_chapter' }, newLabel: 'the Chapter Ledger' },
   { surface: 'notables', trigger: gift('beat.spine.the_first_word'), newLabel: 'Notables' },
   { surface: 'reaches', trigger: gift('beat.spine.a_path_opens'), newLabel: 'your Reaches' },
-  { surface: 'dominion', trigger: gift('beat.spine.a_path_opens'), newLabel: 'Dominion' },
+  { surface: 'dominion', trigger: gift('beat.spine.a_path_opens'), newLabel: 'Dominion', arrivesWith: 'reaches' },
+  { surface: 'doom', trigger: gift('beat.spine.the_seat'), newLabel: 'Doom' },
+  { surface: 'rivals', trigger: { kind: 'rival_acted' }, newLabel: 'Rivals' },
+  { surface: 'mandate', trigger: gift('beat.spine.the_seat'), newLabel: 'Mandates' },
+  { surface: 'investiture', trigger: gift('beat.spine.the_seat'), newLabel: 'Investiture' },
+  { surface: 'lens_threads', trigger: gift('beat.spine.the_seat'), newLabel: 'the Threads lens' },
   { surface: 'world_soul', trigger: gift('beat.spine.a_path_opens'), newLabel: 'the World-Soul' },
   { surface: 'omen', trigger: gift('beat.spine.a_path_opens'), newLabel: 'Omens' },
+  { surface: 'lens_trade', trigger: { kind: 'ceiling' }, newLabel: 'the Trade lens' },
 ];
 
-/** Ticks after the bond when every staged row reveals regardless (spine worst case ≈ 4 × 36). */
+/**
+ * Ticks after the bond when every staged row is ready regardless (spine worst case ≈ 4 × 36).
+ * THR-2060: ready, not shown — the rows still arrive one at a time.
+ */
 export const OPENING_REVEAL_CEILING_TICKS = 200;
+
+/** Closed First chapters between two arrivals (THR-2060). */
+export const OPENING_REVEAL_CHAPTERS_PER_ARRIVAL = 1;
+
+/**
+ * Running ticks after the last arrival when the next ready row arrives without a
+ * chapter (THR-2060). Mirrors `SPINE_IDLE_FALLBACK_TICKS` (36), the spine's own idle pace.
+ */
+export const OPENING_REVEAL_ARRIVAL_IDLE_TICKS = SPINE_IDLE_FALLBACK_TICKS;
 
 /** How long a newly revealed panel keeps its gold ring. 0 disables the ring. */
 export const OPENING_REVEAL_HIGHLIGHT_MS = 6000;

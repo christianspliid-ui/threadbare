@@ -22,6 +22,7 @@
 
 import { useRef } from 'react';
 import { isFirstBonded } from '../../../engine/meetingEncounter';
+import { hasRivalActed } from '../../../engine/openingReveal';
 import type { GameState } from '../../../types/gameState';
 import type { OpeningRevealShow } from './openingReveal';
 
@@ -35,13 +36,8 @@ export interface FirstScreenReveal {
   readonly omens: boolean;
 }
 
-/** True once any rival has acted — an intervention landed or a scheme launched. */
-export function hasRivalActed(gameState: GameState): boolean {
-  const states = gameState.rivalStates ?? [];
-  return states.some(
-    s => (s.interventionCount ?? 0) > 0 || (s.schemes?.length ?? 0) > 0 || s.lastSchemeLaunchTick != null,
-  );
-}
+/** True once any rival has acted (THR-2060: moved into the engine's reveal selector). */
+export { hasRivalActed };
 
 export function selectFirstScreenReveal(gameState: GameState): FirstScreenReveal {
   let bonded = false;
@@ -82,7 +78,8 @@ export function useFirstScreenReveal(gameState: GameState, staged?: OpeningRevea
     doom: l.doom && (staged?.doom ?? true),
     mandate: l.mandate && (staged?.mandate ?? true),
     notables: l.notables && (staged?.notables ?? true),
-    rivals: l.rivals,
+    // THR-2060: Rivals arrive through the opening queue after their first act.
+    rivals: l.rivals && (staged?.rivals ?? true),
     omens: l.bonded && !!gameState.omenState?.primary && (staged?.omen ?? true),
   };
 }

@@ -27,6 +27,7 @@ import { REACH_EMPTY_COPY } from '../../../data/ascendant-bar-content';
 import { ESSENCE_LABEL, ESSENCE_PRIMARY_LABEL, YOUR_FIRST_LABEL } from '../../../data/frame-content';
 import { HandSection, type HandRest } from './HandSection';
 import { NEWLY_REVEALED_STYLE } from '../GameView/openingReveal';
+import { ATTENTION_GAUGE_SHOWN } from '../../../data/opening-reveal-table';
 import { FirstUseCaption, FirstUseCaptionZone } from '../../shared/FirstUseCaption';
 
 /** Everything a section body may read. */
@@ -95,8 +96,9 @@ function EssenceBody({ vm, shown, newly, onCenterOnSeat }: GodRailBag): ReactEle
         <EssenceBlock rows={vm.essence.rows} />
         <FirstUseCaption id="essence" />
       </FirstUseCaptionZone>
-      {/* THR-1894 — Attention moved here from the top bar, under the essence it spends beside. */}
-      {shown('attention') && (
+      {/* THR-1894 — Attention moved here from the top bar, under the essence it spends beside.
+          THR-2060 — hidden while nothing spends Attention (a gauge that never moves); the rail closes the gap. */}
+      {ATTENTION_GAUGE_SHOWN && shown('attention') && (
         <div
           data-testid="god-rail-attention"
           {...(newly('attention') ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {})}

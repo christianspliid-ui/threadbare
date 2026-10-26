@@ -189,7 +189,7 @@ export const TOP_BAR_ITEMS: readonly TopBarItemDef[] = [
   { id: 'find', group: 'centre', order: 1, label: TOP_BAR_WORDS.find, icon: 'find', tooltipId: null, revealSurface: null, firstScreenGate: 'bonded', guardedWhileEncounter: true, hotkey: null },
   { id: 'doom', group: 'right', order: 1, label: TOP_BAR_WORDS.doom, icon: null, tooltipId: 'ui.doom_bar', revealSurface: 'doom', firstScreenGate: 'doom', guardedWhileEncounter: true, hotkey: null },
   { id: 'omen', group: 'right', order: 2, label: TOP_BAR_WORDS.omen, icon: null, tooltipId: 'ui.omen', revealSurface: 'omen', firstScreenGate: 'omens', guardedWhileEncounter: true, hotkey: null },
-  { id: 'rivals', group: 'right', order: 3, label: TOP_BAR_WORDS.rivals, icon: 'rivals', tooltipId: 'ui.rival_panel', revealSurface: null, firstScreenGate: 'rivals', guardedWhileEncounter: true, hotkey: null },
+  { id: 'rivals', group: 'right', order: 3, label: TOP_BAR_WORDS.rivals, icon: 'rivals', tooltipId: 'ui.rival_panel', revealSurface: 'rivals', firstScreenGate: 'rivals', guardedWhileEncounter: true, hotkey: null },
   { id: 'notables', group: 'right', order: 4, label: TOP_BAR_WORDS.notables, icon: 'notables', tooltipId: 'ui.notables', revealSurface: 'notables', firstScreenGate: 'notables', guardedWhileEncounter: true, hotkey: null },
   { id: 'read_threads', group: 'right', order: 5, label: TOP_BAR_WORDS.readThreads, icon: 'read-the-threads', tooltipId: 'ui.read_threads', revealSurface: 'read_threads', firstScreenGate: null, guardedWhileEncounter: true, hotkey: null },
   { id: 'settings', group: 'right', order: 6, label: TOP_BAR_WORDS.settings, icon: 'settings', tooltipId: null, revealSurface: 'settings', firstScreenGate: null, guardedWhileEncounter: true, hotkey: null },

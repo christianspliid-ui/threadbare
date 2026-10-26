@@ -36,7 +36,8 @@ export const OPENING_DIRECTION_LET_TIME_RUN_SHORT = 'Let time run for {firstName
 export const OPENING_DIRECTION_FIRST_FALLBACK = 'The First';
 
 /** THR-1837 — the toast-tier line when panels arrive. `{labels}` joins with ", " and a final " and ". */
-export const OPENING_REVEAL_TOAST = 'New beside the map: {labels}.';
+/** THR-2060: the second sentence is the first arrival's first-use caption (one home, Law 58). */
+export const OPENING_REVEAL_TOAST = 'New beside the map: {labels}. {caption}';
 /** Appended when the 200-tick ceiling, not a gift, revealed the rows (PC-4). */
 export const OPENING_REVEAL_CEILING_SUFFIX = ' Nothing more is hidden.';
 /** How long the reveal toast stays. */
@@ -55,10 +56,13 @@ export function joinRevealLabels(labels: readonly string[]): string {
   return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`;
 }
 
-/** The rendered reveal line, or null when no row brought a label. */
-export function formatOpeningRevealToast(labels: readonly string[], byCeiling: boolean): string | null {
+/** The rendered reveal line, or null when no row brought a label. With no caption the line ends after the labels. */
+export function formatOpeningRevealToast(labels: readonly string[], byCeiling: boolean, caption?: string | null): string | null {
   if (labels.length === 0) return null;
-  const line = OPENING_REVEAL_TOAST.replace('{labels}', () => joinRevealLabels(labels));
+  const line = OPENING_REVEAL_TOAST
+    .replace('{labels}', () => joinRevealLabels(labels))
+    .replace('{caption}', () => caption?.trim() ?? '')
+    .trimEnd();
   return byCeiling ? line + OPENING_REVEAL_CEILING_SUFFIX : line;
 }
 
