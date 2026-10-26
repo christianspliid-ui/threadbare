@@ -146,6 +146,7 @@ import {
 import { readWealth } from './wealth';
 import { MEANS_CELL_COST_ENABLED } from '../data/mortal-means-constants';
 import { isFoundingUnaffordable } from './foundingPatron';
+import { LARDER_BOARD_WEIGHT } from '../data/economic-scene-affinity';
 
 /**
  * THR-2067 — the board's share of the scorer's role lean:
@@ -156,6 +157,18 @@ import { isFoundingUnaffordable } from './foundingPatron';
 export function roleAffinityBoardPull(roleAffinityMultiplier: number | undefined): number {
   if (typeof roleAffinityMultiplier !== 'number' || !Number.isFinite(roleAffinityMultiplier)) return 1;
   return 1 + (roleAffinityMultiplier - 1) * ROLE_AFFINITY_BOARD_WEIGHT;
+}
+
+/**
+ * THR-2040 — the board's share of the scorer's larder (famine/glut) term:
+ * `1 + larderContextBonus × LARDER_BOARD_WEIGHT`, floored at 0. The term is capped at
+ * ±`LARDER_SCORING_CAP` at source, so at the defaults the pull stays within 0.5–1.5.
+ * Fail-soft: a missing or non-finite term (a fixture, a candidate scored before
+ * THR-2040) reads as no lean.
+ */
+export function larderBoardPull(larderContextBonus: number | undefined): number {
+  if (typeof larderContextBonus !== 'number' || !Number.isFinite(larderContextBonus)) return 1;
+  return Math.max(0, 1 + larderContextBonus * LARDER_BOARD_WEIGHT);
 }
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -276,6 +289,12 @@ export interface BoardEntry {
    * reads, so a healer's trade steered God's Will's ranking but not her own choice.
    */
   readonly roleAffinityPull?: number;
+  /**
+   * THR-2040 — a hungry or glutted town's lean on an encounter (`larderBoardPull`),
+   * already folded into `score`; absent when it is 1. The scorer's
+   * `larderContextBonus` rides `finalScore`, which this board never reads.
+   */
+  readonly larderPull?: number;
   /**
    * THR-1952 — the Means want's multiplier on paying work (`1 + MEANS_WANT_WEIGHT ×
    * want`), already folded into `score` (an undertaking's into `temperamentWeight`);
@@ -683,11 +702,13 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const whisperPull = candidate.whisperPull;
     // THR-2067 — the trade leans the board toward encounters of the mortal's role reach.
     const roleAffinityPull = roleAffinityBoardPull(candidate.roleAffinityMultiplier);
+    // THR-2040 — a hungry town leans toward hunger's stories, a glutted one toward plenty's.
+    const larderPull = larderBoardPull(candidate.larderContextBonus);
     // THR-1952 — an encounter whose outcome table pays its actor is paying work.
     const encEarning = input.paysActor?.(candidate.entry.templateId) ?? false;
     const encMeans = encEarning ? payingMultiplier : 1;
     const score = candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
-      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * encMeans;
+      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * larderPull * encMeans;
     // THR-2036: only a goal she would still take ranks first — one refused on arrival
     // (fit 0) or otherwise under the floor sorts by its score, so it cannot idle her.
     const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE
@@ -706,6 +727,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(appointmentDiscount !== undefined ? { appointmentDiscount } : {}),
       ...(whisperPull !== undefined ? { whisperPull } : {}),
       ...(roleAffinityPull !== 1 ? { roleAffinityPull } : {}),
+      ...(larderPull !== 1 ? { larderPull } : {}),
       candidateIndex: index,
       forecast: candidate.engagementForecast,
       forecastFit,

@@ -4160,6 +4160,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     whisperPull?: number;
     /** THR-2067 — the trade's lean on an encounter of the mortal's role reach (already in `score`). */
     roleAffinityPull?: number;
+    /** THR-2040 — a hungry or glutted town's lean on an encounter (already in `score`). */
+    larderPull?: number;
     /** THR-1969 — Open the Markets' thieves' guild boost on `create × faction` (already in `temperamentWeight`). */
     thievesGuildOffer?: number;
     /** THR-1952 — the Means want's multiplier on paying work (already in `score`). */

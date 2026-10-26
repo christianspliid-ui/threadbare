@@ -5,7 +5,8 @@
  * needs both the surplus run and the balance floor, a sublocation reads its settlement,
  * the stock-tier fallback answers when there is no food store, and every missing-data
  * path is neutral. Then the scoring seam: the same town, hungry vs fed, lifts
- * `encounter.aid_refugees` and sinks `encounter.market_day_festival`, never past the cap.
+ * `encounter.aid_refugees` and sinks `encounter.market_day_festival`, never past the cap —
+ * and the lean reaches the live decision board, which never reads `finalScore`.
  */
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
@@ -15,9 +16,11 @@ import type { ValuePair, AxiologicalProfile } from '../../types/agent';
 import { VALUE_PAIRS } from '../../types/agent';
 import { scoreAndSelect } from '../encounterScoring';
 import { computeLarderContextBonus, readLarder } from '../economicContext';
+import { larderBoardPull, scoreUnifiedBoard } from '../decisionBoard';
 import {
   ECONOMIC_SCENE_AFFINITY,
   FAMINE_FULL_DAYS,
+  LARDER_BOARD_WEIGHT,
   LARDER_SCORING_CAP,
   LARDER_SCORING_WEIGHT,
   PLENTY_BALANCE_FLOOR,
@@ -206,5 +209,47 @@ describe('scoreAndSelect — the larder term is folded into the score (THR-2040)
     expect(glut.larderState).toBe('glut');
     expect(glut.larderContextBonus).toBeGreaterThan(0);
     expect(glut.finalScore).toBeGreaterThan(fed.finalScore);
+  });
+});
+
+// ─── The live board ──────────────────────────────────────────────────────────
+
+describe('larderBoardPull — the lean reaches the live decision board', () => {
+  it('is 1 + term × LARDER_BOARD_WEIGHT, floored at 0, and reads a missing term as no lean', () => {
+    expect(larderBoardPull(0.15)).toBeCloseTo(1 + 0.15 * LARDER_BOARD_WEIGHT, 10);
+    expect(larderBoardPull(-0.15)).toBeCloseTo(1 - 0.15 * LARDER_BOARD_WEIGHT, 10);
+    expect(larderBoardPull(-5)).toBe(0);
+    expect(larderBoardPull(0)).toBe(1);
+    expect(larderBoardPull(undefined)).toBe(1);
+    expect(larderBoardPull(Number.NaN)).toBe(1);
+  });
+
+  it("a hungry town's board ranks refugees above an equal-value festival, and says so on the entry", () => {
+    const starving = buildTown(hungry(FAMINE_FULL_DAYS));
+    const refugees = score(starving, 'encounter.aid_refugees');
+    const festival = score(starving, 'encounter.market_day_festival');
+    // Equalize the two candidates' value so only the larder separates them.
+    const mk = (c: typeof refugees) => ({ ...c, valuePerTick: 0.4, desireMultiplier: 1, engagementFit: 1, roleAffinityMultiplier: 1 }) as never;
+    const board = scoreUnifiedBoard({
+      graph: starving, agentId: 'agent_1', tick: 1,
+      encounterCandidates: [mk(festival), mk(refugees)],
+      strategicCandidates: [],
+    });
+    expect(board.winner?.id).toBe('encounter.aid_refugees');
+    expect(board.winner?.larderPull).toBeCloseTo(larderBoardPull(refugees.larderContextBonus), 10);
+    const festivalEntry = board.entries.find(e => e.id === 'encounter.market_day_festival')!;
+    expect(festivalEntry.larderPull).toBeLessThan(1);
+    expect(festivalEntry.score).toBeLessThan(board.winner!.score);
+  });
+
+  it("a fed town's board carries no larder key", () => {
+    const fed = buildTown(FED);
+    const c = score(fed, 'encounter.aid_refugees');
+    const board = scoreUnifiedBoard({
+      graph: fed, agentId: 'agent_1', tick: 1,
+      encounterCandidates: [{ ...c, valuePerTick: 0.4, desireMultiplier: 1, engagementFit: 1, roleAffinityMultiplier: 1 } as never],
+      strategicCandidates: [],
+    });
+    expect(board.winner?.larderPull).toBeUndefined();
   });
 });

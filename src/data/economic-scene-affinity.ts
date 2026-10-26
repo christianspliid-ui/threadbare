@@ -68,6 +68,18 @@ export const LARDER_SCORING_WEIGHT = 0.15;
 /** Cap on the larder term's absolute contribution. */
 export const LARDER_SCORING_CAP = 0.5;
 
+/**
+ * How much of the larder term reaches the live decision board, as the pull
+ * `1 + larderContextBonus × LARDER_BOARD_WEIGHT` on an encounter's board score.
+ *
+ * The board ranks encounters on `valuePerTick × desireMultiplier × pulls` and never reads
+ * `finalScore`, so an additive `baseScore` term alone moves only God's Will's ranking and
+ * the trace — not what the mortal does (the THR-2067 finding, measured again here: at
+ * weight 0.15 and 0.3 the census was flat with the term in `baseScore` only). 1 = the whole
+ * term; 0 = today's behaviour exactly (the plan's tick-cost kill switch).
+ */
+export const LARDER_BOARD_WEIGHT = 1;
+
 /** Hungry days until a famine reads at full depth: the first day reads 1/5, the fifth and later 1. */
 export const FAMINE_FULL_DAYS = 5;
 
