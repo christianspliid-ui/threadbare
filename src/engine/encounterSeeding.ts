@@ -248,10 +248,26 @@ export function templateAcceptsWhereTheyStand(
   if (!gate || gate.length === 0) return true;
   const located = getAgentLocation(graph, agentId);
   if (!located) return false;
-  const subtype = locationTierSubtype(graph, located);
+  return gateAcceptsPlace(gate, locationTierSubtype(graph, located), placeTypeOf(located));
+}
+
+/**
+ * The one gate test both seeding paths share (THR-1929, THR-2039): an ungated template
+ * passes; a gated one passes when it names the Location-tier subtype or the Place type.
+ */
+function gateAcceptsPlace(
+  gate: readonly string[] | undefined,
+  subtype: string | undefined,
+  sublocationTypeId: string | undefined,
+): boolean {
+  if (!gate || gate.length === 0) return true;
   if (subtype && gate.includes(subtype)) return true;
-  const sublocationTypeId = located.properties.sublocationTypeId as string | undefined;
   return !!sublocationTypeId && gate.includes(sublocationTypeId);
+}
+
+/** The Place type a node carries (`sublocation-type.tavern`…), or undefined at the Location tier. */
+function placeTypeOf(node: GraphNode | undefined): string | undefined {
+  return node?.properties.sublocationTypeId as string | undefined;
 }
 
 function locationTierSubtype(graph: WorldGraph, node: GraphNode | undefined): string | undefined {
@@ -268,14 +284,23 @@ function locationTierSubtype(graph: WorldGraph, node: GraphNode | undefined): st
  */
 interface JudgedLocation {
   readonly subtype: string | undefined;
+  /**
+   * The Place type the mortal stands in, when this judgement is where they stand
+   * (THR-2039). A tavern scene gates on `sublocation-type.tavern`, which no Location
+   * carries, so without it every `#tavern_night` query withered inside the tavern.
+   * Never set on a bare anchor: an anchor is a Location, not a Place.
+   */
+  readonly sublocationTypeId?: string;
   readonly locationId: string | undefined;
   readonly judgedAt: 'resolution_anchor' | 'target_location';
 }
 
 function seedJudgedLocations(graph: WorldGraph, seed: PendingEncounterSeed): readonly JudgedLocation[] {
+  const located = getAgentLocation(graph, seed.targetAgentId);
   const feet: JudgedLocation = {
     subtype: seedTargetSubtype(graph, seed.targetAgentId),
-    locationId: resolveToParentLocation(graph, getAgentLocation(graph, seed.targetAgentId))?.id,
+    sublocationTypeId: placeTypeOf(located),
+    locationId: resolveToParentLocation(graph, located)?.id,
     judgedAt: 'target_location',
   };
   if (!seed.resolutionLocationId) return [feet];
@@ -287,8 +312,11 @@ function seedJudgedLocations(graph: WorldGraph, seed: PendingEncounterSeed): rea
     locationId: anchorNode.id,
     judgedAt: 'resolution_anchor',
   };
-  // The same place twice is one judgement, not two.
-  return anchor.locationId === feet.locationId ? [anchor] : [anchor, feet];
+  // The same place twice is one judgement, not two — and the mortal is standing in
+  // it, so their own Place counts there too (THR-2039).
+  return anchor.locationId === feet.locationId
+    ? [{ ...anchor, sublocationTypeId: feet.sublocationTypeId }]
+    : [anchor, feet];
 }
 
 /**
@@ -362,7 +390,7 @@ function resolveSeedByQuery(
   let judged: JudgedLocation | undefined;
   for (const where of seedJudgedLocations(graph, seed)) {
     judged = where;
-    eligible = eligibleAt(query, catalogs, where.subtype);
+    eligible = eligibleAt(query, catalogs, where);
     if (eligible.length > 0) break;
   }
 
@@ -388,23 +416,22 @@ function resolveSeedByQuery(
 }
 
 /**
- * The query's hits this seeding site can spawn at a location of the given subtype:
- * individual-performable, and either ungated or gated to that subtype. Capped at
+ * The query's hits this seeding site can spawn at the judged location:
+ * individual-performable, and either ungated or gated to its Location-tier subtype or
+ * — where the mortal stands — their own Place type (THR-2039). Capped at
  * {@link CONTENT_QUERY_MAX_CANDIDATES}.
  */
 function eligibleAt(
   query: ContentQuery,
   catalogs: ReturnType<typeof sessionContentCatalogs>,
-  subtype: string | undefined,
+  where: Pick<JudgedLocation, 'subtype' | 'sublocationTypeId'>,
 ): UnifiedActionTemplate[] {
   const eligible: UnifiedActionTemplate[] = [];
   for (const hit of resolveContentQuery(query, catalogs)) {
     const template = getUnifiedTemplateById(hit.id);
     if (!template) continue;
     if (!template.actorAffinities?.includes('individual')) continue;
-    if (template.locationSubtypes && template.locationSubtypes.length > 0) {
-      if (!subtype || !template.locationSubtypes.includes(subtype)) continue;
-    }
+    if (!gateAcceptsPlace(template.locationSubtypes, where.subtype, where.sublocationTypeId)) continue;
     eligible.push(template);
     if (eligible.length >= CONTENT_QUERY_MAX_CANDIDATES) break;
   }
@@ -432,17 +459,14 @@ function matchFamilyTemplate(
   if (!family) return undefined;
   const prefix = `${family}.`;
 
-  const subtype = seedTargetSubtype(graph, seed.targetAgentId);
-
   const eligible: UnifiedActionTemplate[] = [];
   for (const template of UNIFIED_ACTION_TEMPLATES) {
     if (!template.id.startsWith(prefix)) continue;
     // (a) agent-performable
     if (!template.actorAffinities?.includes('individual')) continue;
-    // (b) location-subtype eligibility (templates with no restriction always pass)
-    if (template.locationSubtypes && template.locationSubtypes.length > 0) {
-      if (!subtype || !template.locationSubtypes.includes(subtype)) continue;
-    }
+    // (b) place eligibility: ungated passes; a gate names the town or the mortal's own
+    // Place (THR-2039 — a tavern member gates on the tavern, not the town)
+    if (!templateAcceptsWhereTheyStand(graph, seed.targetAgentId, template)) continue;
     eligible.push(template);
     if (eligible.length >= FAMILY_SEED_MAX_CANDIDATES) break;
   }
