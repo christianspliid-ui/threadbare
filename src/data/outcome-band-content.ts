@@ -153,7 +153,8 @@ export function stepOutcomeToOutcomeBand(outcome: StepOutcome): OutcomeBand {
 export const OUTCOME_BAND_WORDS: Record<OutcomeBand, string> = {
   surge: 'triumphed',
   neutral: 'held',
-  strained: 'faltered',
+  // THR-2054: a success at cost. "faltered" read as a failure on a bind that took.
+  strained: 'held at a cost',
   fortunate: 'wavered',
   setback: 'broke',
   catastrophe: 'collapsed',

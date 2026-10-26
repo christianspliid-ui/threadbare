@@ -35,6 +35,7 @@ import { AGENT_INTERVENTION_TEMPLATES, UNIFIED_ACTION_TEMPLATES } from '../../..
 import { actionBlockedReason } from '../../../data/action-card-display';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
 import { outcomeBandWord } from '../../../data/outcome-band-content';
+import { FORECAST_TIER_WORDS } from '../../../data/nudge-stage-content';
 import type { ActOnCardVM, ActOnVM } from './subjectTypes';
 import { godSpheres } from './pageResolvers';
 import { tileAt } from './pageResolvers';
@@ -137,7 +138,10 @@ export function actOnSlots(
   if (!spheres || !ctx) return null;
 
   const graph = state.graph;
-  const threadTier = threadTierOf(state, ctx.nodeId);
+  // THR-2054: the bind dedup gate reads "a thread exists", so a thread edge with no
+  // `tier` still counts (0). Agents get the gate too — a bound First was offered a bind.
+  const threaded = state.graph.getOutgoingEdges(state.ascendantId, 'thread').some(e => e.target === ctx.nodeId);
+  const threadTier = threaded ? (threadTierOf(state, ctx.nodeId) ?? 0) : null;
   const slots = getTargetActionSlots({
     target: ctx,
     templates: templates ?? (target.kind === 'agent' ? AGENT_INTERVENTION_TEMPLATES : UNIFIED_ACTION_TEMPLATES),
@@ -146,7 +150,7 @@ export function actOnSlots(
     avatarPos: getAvatarHexPosition(graph, state.ascendantId) ?? undefined,
     accessibleSpheres: [spheres.primary, spheres.secondary],
     hexRevelation: state.hexRevelation,
-    existingThreadTier: target.kind === 'agent' ? undefined : (threadTier ?? null),
+    existingThreadTier: threadTier,
     unlockedActionIds: state.unlockedActionIds,
     ascendantDomainAffinities: getAscendantDomainAffinities(graph, state.ascendantId),
     ascendantCastCapabilities: castCapabilityByReach(graph, state.ascendantId),
@@ -205,6 +209,7 @@ function cardsOf(slots: readonly WheelSlot[]): ActOnCardVM[] {
       sphere: (s.sphere ?? null) as SphereName | null,
       available: s.available,
       reason: s.available ? null : (actionBlockedReason(s.lockedReason, s.rangeStatus) ?? null),
+      ...(s.forecastTier ? { odds: FORECAST_TIER_WORDS[s.forecastTier] } : {}),
     }));
 }
 

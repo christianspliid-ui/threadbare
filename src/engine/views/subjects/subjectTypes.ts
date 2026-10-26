@@ -77,6 +77,11 @@ export interface ActOnCardVM {
    * authority. Absent when the card was never cast here.
    */
   fate?: { band: string; word: string };
+  /**
+   * THR-2054: the cast's pre-roll odds word ("Favorable"), from the slot's
+   * `forecastTier` — the one odds formula. Absent for a card that does not roll.
+   */
+  odds?: string;
 }
 
 /** The Act row (§ D9 way 1): what is castable on the subject; S3 (THR-1911) casts from it. */

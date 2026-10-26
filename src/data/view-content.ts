@@ -97,6 +97,8 @@ export const INSPECTOR_WORDS = {
   meetTheFirst: 'Meet The First',
   /** THR-1911 — the armed card's second beat (Law 48): "Cast on Shutash". */
   castOn: 'Cast on {name}',
+  /** THR-2054 — the armed card's odds, shown before the essence is taken: "Odds: Favorable". */
+  castOdds: 'Odds: {word}',
   /** THR-1913 — a world-ref row's card count, spoken and in its tooltip: "2 cards". */
   rowCards: { one: '1 card', many: '{n} cards' },
   /** THR-1913 — the row tray's name: "Your cards for Temple Quarter". */
