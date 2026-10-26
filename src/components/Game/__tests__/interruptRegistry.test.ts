@@ -6,10 +6,11 @@ import { describe, it, expect, vi } from 'vitest';
 import {
   INTERRUPT_SURFACES,
   resolveInterrupts,
+  worldOpenedEncounterHeldBy,
   type InterruptSnapshot,
   type InterruptSurface,
 } from '../interruptRegistry';
-import { arrivalHoldingSurfaces, openPlayerSurfaces, resolveGiftDelivery, type PlayerSurfaceFlags } from '../giftDelivery';
+import { arrivalHoldingSurfaces, encounterHoldingSurfaces, openPlayerSurfaces, resolveGiftDelivery, type PlayerSurfaceFlags } from '../giftDelivery';
 
 const closed: InterruptSnapshot = {
   interruptsSuppressed: false,
@@ -282,5 +283,30 @@ describe('interruptRegistry — arrivals wait their turn (THR-1853)', () => {
   it('every arrival is a surface the world pushes, never one the player opens', () => {
     const arrivals = INTERRUPT_SURFACES.filter(s => s.arrival).map(s => s.id);
     expect(arrivals).toEqual(['PremonitionModal', 'JourneyVignetteModal', 'StoryBeatModal', 'MomentCard', 'EventPopup']);
+  });
+});
+
+describe('interruptRegistry — a chapter the world opens waits like an arrival (THR-2053)', () => {
+  it('an encounter arriving inside the quiet window is held, and opens once the window passes', () => {
+    expect(worldOpenedEncounterHeldBy({ playerSurfaceOpen: false, recentInput: true })).toEqual(['recent_input']);
+    expect(worldOpenedEncounterHeldBy({ playerSurfaceOpen: false, recentInput: false })).toEqual([]);
+  });
+
+  it('the ledger and the court hold a world-opened chapter, since a chapter shares the screen with dialogs', () => {
+    const ledger = ['ChapterLedger'];
+    expect(encounterHoldingSurfaces(ledger)).toEqual(['ChapterLedger']);
+    expect(encounterHoldingSurfaces(['ScryOverlay', 'RivalsPanel'])).toEqual(['ScryOverlay', 'RivalsPanel']);
+    expect(worldOpenedEncounterHeldBy({ playerSurfaceOpen: encounterHoldingSurfaces(ledger).length > 0, recentInput: true }))
+      .toEqual(['player_surface', 'recent_input']);
+  });
+
+  it('the Full Inspector does not hold a chapter — it steps down, as for every arrival', () => {
+    expect(encounterHoldingSurfaces(['InspectorFull'])).toEqual([]);
+  });
+
+  it('the encounter home entry stays a non-arrival, so a badge- or row-opened chapter mounts at once', () => {
+    const encounter = INTERRUPT_SURFACES.find(s => s.id === 'EncounterVeil');
+    expect(encounter?.arrival).toBeUndefined();
+    expect(resolveInterrupts(snap({ encounterOpen: true, recentInput: true, playerSurfaceOpen: true })).open).toEqual(['EncounterVeil']);
   });
 });
