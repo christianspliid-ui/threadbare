@@ -686,8 +686,13 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     // THR-1952 — an encounter whose outcome table pays its actor is paying work.
     const encEarning = input.paysActor?.(candidate.entry.templateId) ?? false;
     const encMeans = encEarning ? payingMultiplier : 1;
+    const __c: any = candidate; const __W = Number(process.env.CTXW ?? 0);
+    const __C = (__c.__factionBoost ?? 0) + (__c.reputationBonus ?? 0) + (__c.economicContextBonus ?? 0) + (__c.locationTraitBonus ?? 0)
+      + (__c.resonance ?? 0) + (__c.chainBonus ?? 0) + (__c.intelBonus ?? 0) + (__c.attractionBonus ?? 0) + (__c.convergenceBonus ?? 0) + (__c.hunchBonus ?? 0);
+    const __base = candidate.valuePerTick * candidate.desireMultiplier;
+    const contextPull = __base > 0 && Number.isFinite(__C) ? Math.min(Number(process.env.CTXMAX ?? 2), Math.max(0.5, (__base + __W * __C) / __base)) : 1;
     const score = candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
-      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * encMeans;
+      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * encMeans * contextPull;
     // THR-2036: only a goal she would still take ranks first — one refused on arrival
     // (fit 0) or otherwise under the floor sorts by its score, so it cannot idle her.
     const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE
@@ -706,6 +711,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(appointmentDiscount !== undefined ? { appointmentDiscount } : {}),
       ...(whisperPull !== undefined ? { whisperPull } : {}),
       ...(roleAffinityPull !== 1 ? { roleAffinityPull } : {}),
+      __ctx: __C, __pull: contextPull, __terms: { econ: __c.economicContextBonus ?? 0, trait: __c.locationTraitBonus ?? 0, rep: __c.reputationBonus ?? 0, res: __c.resonance ?? 0, chain: __c.chainBonus ?? 0, intel: __c.intelBonus ?? 0, fac: __c.__factionBoost ?? 0 },
       candidateIndex: index,
       forecast: candidate.engagementForecast,
       forecastFit,

@@ -1623,6 +1623,7 @@ export function scoreAndSelect(
       reputationBonus,
       economicContextBonus,
       locationTraitBonus,
+      __factionBoost: factionScoringBoost,
       hexDistanceToEntry: distance,
       intelBonus,
       identityBiasBonus,
@@ -1683,6 +1684,7 @@ function buildTrace(
     category: 'encounter_scoring',
     agentId,
     topCandidates: top5.map((c) => ({
+      __raw: { ...c, entry: undefined },
       templateId: c.entry.templateId,
       locationId: c.entry.locationId,
       isLocal: c.action === 'start_local',
