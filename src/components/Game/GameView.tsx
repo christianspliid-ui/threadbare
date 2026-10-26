@@ -153,6 +153,7 @@ import {
   resolveNotificationsOnAftermathAcknowledge,
   resolveNotificationsOnVeilLeave,
   runEncounterAutoOpenScan,
+  shouldAutoOpenEncounterNotification,
   type ActiveEncounterDisplay,
   selectEncounterRuntimeForNotification,
 } from './encounterNotificationRuntime';
@@ -169,7 +170,7 @@ import { firstClaimedMessage } from '../../data/threading-rite-prose';
 import { useNotifications } from './hooks/useNotifications';
 import { useInterruptAutoPause, releaseClockOnBond, type InterruptAutoPauseHandle } from './hooks/useInterruptAutoPause';
 import { useChapterAnswerRun, type ChapterAnswerRunHandle } from './hooks/useChapterAnswerRun';
-import { resolveInterrupts, INTERRUPT_QUIET_AFTER_INPUT_MS } from './interruptRegistry';
+import { resolveInterrupts, worldOpenedEncounterHeldBy, INTERRUPT_QUIET_AFTER_INPUT_MS, type ArrivalHoldReason } from './interruptRegistry';
 import { HOMED_SURFACES, type HomedSurfaceKind, type StageHomedKind } from '../../data/homed-surfaces';
 import { selectEncounterBadges, type EncounterBadgeModel } from './encounterBadgeModel';
 import { selectEncounterStakesLines, stakesLineForNotification } from './encounterStakesRows';
@@ -202,6 +203,7 @@ import {
   resolveGiftDelivery,
   openPlayerSurfaces,
   arrivalHoldingSurfaces,
+  encounterHoldingSurfaces,
   isGiftHoldExempt,
   PLAYER_SURFACE_INTERRUPT_IDS,
   type GiftDelivery,
@@ -2038,6 +2040,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
 
   const suppressedEncounterNotificationId = useRef<string | null>(null);
   /**
+   * THR-2053 — a chapter the world opens waits like any arrival. The scan runs above
+   * the player-surface list, so it reads that list through this ref (synced each
+   * render below it) and looks again on `encounterHoldRecheck` when the hold lifts.
+   */
+  const encounterSurfaceHoldRef = useRef(false);
+  const [encounterHoldRecheck, setEncounterHoldRecheck] = useState(0);
+  /** `__DEBUG.getInterruptState().heldEncounter` — the chapter the scan holds, and why. */
+  const heldEncounterRef = useRef<{ notificationId: string; heldBy: ArrivalHoldReason[] } | null>(null);
+  /**
    * THR-1724 — notifications the player minimised. The auto-open scan skips
    * them for as long as they stay pending; only the badge reopens them. A set,
    * not the single suppression ref above, because two encounters can be set
@@ -2925,12 +2936,34 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
       for (const id of minimised) if (!pending.has(id)) minimised.delete(id);
       for (const id of committed) if (!pending.has(id)) committed.delete(id);
     }
+    const candidates = minimised.size > 0 ? notifications.filter(n => !minimised.has(n.id)) : notifications;
+    // THR-2053 — the world never opens a chapter under the player's click or over a
+    // surface they opened; it looks again when the quiet window ends or the surface closes.
+    const waiting = candidates.find(n =>
+      shouldAutoOpenEncounterNotification(n) && n.id !== suppressedEncounterNotificationId.current);
+    const msSinceInput = Date.now() - lastInputAtRef.current;
+    const heldBy = waiting
+      ? worldOpenedEncounterHeldBy({
+          playerSurfaceOpen: encounterSurfaceHoldRef.current,
+          recentInput: lastInputAtRef.current > 0 && msSinceInput < INTERRUPT_QUIET_AFTER_INPUT_MS,
+        })
+      : [];
+    if (waiting && heldBy.length > 0) {
+      heldEncounterRef.current = { notificationId: waiting.id, heldBy };
+      if (!heldBy.includes('recent_input')) return;
+      const timer = setTimeout(
+        () => setEncounterHoldRecheck(n => n + 1),
+        Math.max(0, INTERRUPT_QUIET_AFTER_INPUT_MS - msSinceInput) + 50,
+      );
+      return () => clearTimeout(timer);
+    }
+    heldEncounterRef.current = null;
     runEncounterAutoOpenScan(
-      minimised.size > 0 ? notifications.filter(n => !minimised.has(n.id)) : notifications,
+      candidates,
       suppressedEncounterNotificationId.current,
       handleOpenEncounterFromNotification,
     );
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed, running, activePremonition, encounterHoldRecheck]);
 
   // THR-1724 (review gate) — a minimised step the world resolved without the
   // player must not leave a badge that opens nothing. Since THR-1730 a
@@ -3526,6 +3559,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // interrupts already, so they hold arrivals as interrupts, not as surfaces.
   // The card hand is exempt: it stays open through play (`arrivalHoldingSurfaces`).
   const arrivalSurfaceOpen = arrivalHoldingSurfaces(playerSurfacesOpen).length > 0;
+  // THR-2053 — the encounter scan's surface hold (ledger and court included); a lift re-runs it.
+  const encounterSurfaceHold = encounterHoldingSurfaces(playerSurfacesOpen).length > 0;
+  encounterSurfaceHoldRef.current = encounterSurfaceHold;
+  useEffect(() => {
+    if (!encounterSurfaceHold && heldEncounterRef.current) setEncounterHoldRecheck(n => n + 1);
+  }, [encounterSurfaceHold]);
   const msSinceInputNow = Date.now() - lastInputAtRef.current;
   const arrivalRecentInput = lastInputAtRef.current > 0 && msSinceInputNow < INTERRUPT_QUIET_AFTER_INPUT_MS;
   // What the registry rendered last commit: an arrival already on screen keeps its slot.
@@ -3946,6 +3985,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     running,
     // THR-1853: arrivals waiting their turn, and why.
     heldArrivals: interruptResolution.heldArrivals,
+    // THR-2053: a chapter the world would open, waiting on the player.
+    heldEncounter: heldEncounterRef.current,
     // THR-1877: what renders, the one foreground, and what waits behind it.
     rendering: interruptResolution.rendering,
     foreground: interruptResolution.foreground,

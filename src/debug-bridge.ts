@@ -13,6 +13,7 @@ if (import.meta.env.DEV) {
     queuedPopups: number;
     running: boolean;
     heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
+    heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> } | null;
     rendering: string[];
     foreground: string | null;
     stage: string | null;
