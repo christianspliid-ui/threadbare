@@ -1,13 +1,12 @@
 # Briefing
-**Generated:** 2026-10-26 09:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 10:59 local (09:59 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Log the playtest testers back in.** Round 5 of the new-player playtest is due, and every round-4 fix is live on [threadbearer.co](https://threadbearer.co/). But the testers could not start yesterday because their Claude login has expired. Open a terminal, run `claude`, then type `/login`. It takes about a minute. The next daily run (about 10:48 this morning) then plays round 5 by itself. *— from [cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md)*
+**Set the Claude app to open when Windows starts.** Every recent silence began when the computer started or woke and the app did not come back by itself. The longest was two days, Wednesday 21 to Friday 23 Oct, with 20 jobs ready. Turning on "open at login" for the Claude app closes these gaps. Only you can change that setting. Say "done" and the next silence check confirms it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
-## Also waiting (7)
+## Also waiting (6)
 
-- **Set the Claude app to open when Windows starts.** The longest gap so far was two days, Wednesday 21 to Friday 23 Oct, with 20 jobs ready. Say "done" and the next silence check confirms it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 - **Wednesday night to Friday night (21–23 Oct):** "The scheduled lanes went silent for 48.1h (2026-10-21T21:07:01.000Z → 2026-10-23T21:15:17.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the app closed or the computer off, or was this a pause?
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours and no pause was recorded. Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
@@ -53,14 +52,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 ready, all waiting out their veto windows; nothing is being built because nothing is free yet.** The builder's last three runs each found nothing it could claim, which is correct while every ticket is on hold.
+**Healthy: 7 ready, all waiting out their veto windows; nothing is being built because nothing is free yet.** The builder's runs since 08:11 each found nothing it could claim, which is correct while every ticket is on hold.
 
-- **New on the shelf:** [an oath from tribute](https://linear.app/threadbare/issue/THR-2051) (plan merged via [#2594](https://github.com/christianspliid-ui/threadbare/pull/2594)), opening Tuesday at 09:49.
+- **Playtest round 5 is under way.** The testers' login works again: the three new-player testers started on [threadbearer.co](https://threadbearer.co/) at 10:49 this morning. Their findings land in [the round 5 report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) when they finish.
 - Next to open: [THR-1929](https://linear.app/threadbare/issue/THR-1929) (sequels wait for their place) at 15:29 today, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50, [THR-2031](https://linear.app/threadbare/issue/THR-2031) (relic take-up) Tuesday at 03:42, and [THR-2048](https://linear.app/threadbare/issue/THR-2048) (a place held after success) Tuesday at 06:45.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **The long simulation checks after each merge passed again.** The run on the latest game code (3f54d0dd, 08:45) finished green, after four earlier merge runs this morning ended "cancelled". Still worth an agent's look if the cancellations return. *— first raised by [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26c.md)*
-- Everything else is green. The live site is up to date (the newest commits on main are docs only). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 09:45) are healthy; no pull requests are open. Engine speed: 121 ms/tick, 24% below the 7-day median of 159.
+All green. The live site is up to date (the newest commits on main are docs only). Main's CI, the long simulation checks, the three scheduled background jobs, all 8 scheduled lanes and the worktree reaper (last run 10:45) are healthy; no pull requests are open. Engine speed: 143 ms/tick, 9% below the 7-day median of 158.
