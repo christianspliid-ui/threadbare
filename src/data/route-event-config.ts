@@ -2,7 +2,7 @@
  * Route Event Constants — THR-669 (Mortal Economy P2b).
  *
  * Route events materialize from cargo manifests: rich cargo draws banditry,
- * hostile-controlled endpoints breed toll disputes, staple-heavy routes into
+ * enemy-controlled endpoints breed toll disputes, staple-heavy routes into
  * scarcity build embargo pressure. Caravans are route STATE, not agents
  * (NFP #7 — the spotlight pattern): nothing is simulated per-caravan; a route
  * crossing a threshold plants an encounter seed for a nearby mortal and the
@@ -24,7 +24,7 @@ export const ROUTE_AMBUSH_RICHNESS_MIN = 2.0;
 /** Chance per scan that an ambush-eligible route actually plants a banditry seed. */
 export const ROUTE_AMBUSH_CHANCE = 0.2;
 
-/** Chance per scan that a toll-eligible route (hostile endpoint controllers) plants a dispute seed. */
+/** Chance per scan that a toll-eligible route (endpoint controllers are enemies — `isEnemyFaction`, THR-2047) plants a dispute seed. */
 export const ROUTE_TOLL_CHANCE = 0.25;
 
 /** Chance per scan that an embargo-eligible route (staple cargo into a scarce endpoint) plants a seed. */

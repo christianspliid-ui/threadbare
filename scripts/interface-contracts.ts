@@ -7168,7 +7168,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: FACTIONS,
     consumerSystem: 'War, Armies & Battles',
     intent:
-      'An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. THR-1933 (war aims S1) moves the field-battle start (areHostile) onto isEnemyFaction too, and enemyArm adds a monster arm and an alliance override of the sentiment arm, both behind WAR_AIMS_ENABLED.',
+      'An army marches on and besieges only an enemy of its faction, never a town its faction keeps a hall or home in (THR-1922). isEnemyFaction reads hostile_to either way and relates_to with isRival, basis war or sentiment below RIVALRY_SENTIMENT_THRESHOLD; factionKeepsHallAt reads the faction homeLocationId, its located_at hall edges and faction-hall sublocations. selectArmyObjective filters on both; siege start (phaseBattleDetection) asks mayBesiege, which also lets an army besiege the town its own objective names. THR-1933 (war aims S1) moves the field-battle start (areHostile) onto isEnemyFaction too, and enemyArm adds a monster arm and an alliance override of the sentiment arm, both behind WAR_AIMS_ENABLED. THR-2047: the route-event toll trigger (phaseRouteEvents) asks isEnemyFaction of a lane's two endpoint controllers too; its old hostile_to-only test never fired, because generated factions keep their quarrels on relates_to.',
     ulTerms: ['Faction'],
     mechanism: {
       kind: 'module-export',
@@ -7176,7 +7176,7 @@ export const CONTRACTS: readonly Contract[] = [
       module: 'src/engine/warAims/enemy.ts',
     },
     writeSites: ['src/engine/warAims/enemy.ts'],
-    readSites: ['src/engine/armySpawning.ts', 'src/engine/battleResolution.ts', 'src/engine/notableAgendas.ts', 'src/engine/warAims/score.ts', 'src/engine/warAims/defence.ts'],
+    readSites: ['src/engine/armySpawning.ts', 'src/engine/battleResolution.ts', 'src/engine/notableAgendas.ts', 'src/engine/warAims/score.ts', 'src/engine/warAims/defence.ts', 'src/engine/phases/routeEvents.ts'],
     verifiedLive: {
       date: '2026-10-17',
       evidence:
