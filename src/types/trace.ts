@@ -2973,6 +2973,8 @@ export interface ReturnResolutionTrace extends TraceBase {
   intentReach?: string;
   /** Where it came from: 'record' | 'vision' | 'none'. */
   intentReachSource?: string;
+  /** The `primary_secondary` archetype key the archetype reads compared against (THR-2034). */
+  archetypeKey?: string;
   ordealOutcome: string;
   eligibleOutcomes: string[];
   scores: Record<string, number>;

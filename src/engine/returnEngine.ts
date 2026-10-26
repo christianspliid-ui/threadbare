@@ -59,6 +59,7 @@ import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
 import type { DoomIdentityMatrix } from '../types/doomIdentity';
 import type { ReachDomain } from '../types/traits';
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
+import { ARCHETYPE_NAME_MAP } from '../data/meeting-content';
 
 // ─── Founding Gates ────────────────────────────────────────────────
 
@@ -83,6 +84,28 @@ export function intentReachOf(
     : undefined;
   if (visionReach) return { reach: visionReach, source: 'vision' };
   return { reach: undefined, source: 'none' };
+}
+
+/** Display name → `primary_secondary` key, for records that carry only the name. */
+const ARCHETYPE_KEY_BY_NAME: Record<string, string> = Object.fromEntries(
+  Object.entries(ARCHETYPE_NAME_MAP).map(([key, name]) => [name, key]),
+);
+
+/**
+ * The archetype key the Return's archetype reads compare against: the chosen
+ * candidate's `${primaryReach}_${secondaryReach}` (THR-2034). The record's
+ * `archetypeId` is display-shaped on the narrative path ('Phantom') and
+ * key-shaped on the legacy path ('shadow_shadow'), so it is read only as a
+ * fallback for records bonded before THR-2009 — a key as-is, a display name
+ * through ARCHETYPE_NAME_MAP. Unknown → '' (matches no archetype list).
+ */
+export function archetypeKeyOf(meetingRecord: MeetingChoiceRecord | undefined): string {
+  if (meetingRecord?.primaryReach && meetingRecord.secondaryReach) {
+    return `${meetingRecord.primaryReach}_${meetingRecord.secondaryReach}`;
+  }
+  const id = meetingRecord?.archetypeId ?? '';
+  if (id in ARCHETYPE_NAME_MAP) return id;
+  return ARCHETYPE_KEY_BY_NAME[id] ?? '';
 }
 
 /**
@@ -235,26 +258,30 @@ function relationshipScore(rel: ReturnRelationshipState, outcome: ReturnOutcome)
  * Default archetype trajectory bonus.
  * Maps archetype patterns to natural endings.
  */
-function archetypeDefaultScore(archetypeId: string, outcome: ReturnOutcome): number {
-  // Broad archetype → outcome affinities
-  const heroArchetypes = ['iron_iron', 'iron_heart', 'heart_iron', 'star_iron'];
-  const scholarArchetypes = ['eye_eye', 'eye_veil', 'veil_eye', 'eye_star'];
-  const tricksterArchetypes = ['shadow_shadow', 'shadow_gold', 'gold_shadow'];
-  const mysticArchetypes = ['star_star', 'star_veil', 'veil_star', 'star_eye'];
+/**
+ * Broad archetype → outcome affinities. Keys are `primary_secondary`
+ * archetype keys (ARCHETYPE_NAME_MAP's keys — see archetypeKeyOf).
+ */
+export const ARCHETYPE_TRAJECTORY_GROUPS: ReadonlyArray<{
+  archetypes: readonly string[];
+  outcomes: readonly ReturnOutcome[];
+}> = [
+  // hero
+  { archetypes: ['iron_iron', 'iron_heart', 'heart_iron', 'star_iron'], outcomes: ['loyal_ascension', 'sacrifice'] },
+  // scholar
+  { archetypes: ['eye_eye', 'eye_veil', 'veil_eye', 'eye_star'], outcomes: ['transcendence', 'vanishing'] },
+  // trickster
+  { archetypes: ['shadow_shadow', 'shadow_gold', 'gold_shadow'], outcomes: ['usurper', 'vanishing'] },
+  // mystic
+  { archetypes: ['star_star', 'star_veil', 'veil_star', 'star_eye'], outcomes: ['transcendence', 'loyal_ascension'] },
+];
 
-  if (heroArchetypes.includes(archetypeId)) {
-    if (outcome === 'loyal_ascension' || outcome === 'sacrifice') return ARCHETYPE_DEFAULT_BONUS;
+function archetypeDefaultScore(archetypeKey: string, outcome: ReturnOutcome): number {
+  for (const group of ARCHETYPE_TRAJECTORY_GROUPS) {
+    if (group.archetypes.includes(archetypeKey) && group.outcomes.includes(outcome)) {
+      return ARCHETYPE_DEFAULT_BONUS;
+    }
   }
-  if (scholarArchetypes.includes(archetypeId)) {
-    if (outcome === 'transcendence' || outcome === 'vanishing') return ARCHETYPE_DEFAULT_BONUS;
-  }
-  if (tricksterArchetypes.includes(archetypeId)) {
-    if (outcome === 'usurper' || outcome === 'vanishing') return ARCHETYPE_DEFAULT_BONUS;
-  }
-  if (mysticArchetypes.includes(archetypeId)) {
-    if (outcome === 'transcendence' || outcome === 'loyal_ascension') return ARCHETYPE_DEFAULT_BONUS;
-  }
-
   return 0;
 }
 
@@ -791,7 +818,9 @@ export function executeReturn(
   const agentNode = graph.getNode(agentId);
   const agentName = agentNode?.name ?? 'The First';
   const meetingRecord = threadProps.meetingChoiceRecord;
+  // Display name for prose; the archetype reads take the reach-pair key (THR-2034)
   const archetypeId = meetingRecord?.archetypeId ?? '';
+  const archetypeKey = archetypeKeyOf(meetingRecord);
   const ordealOutcome: OrdealOutcome = threadProps.ordealOutcome ?? 'scraped_through';
   const beatHistory = threadProps.beatHistory ?? [];
 
@@ -799,11 +828,11 @@ export function executeReturn(
   const relationship = buildRelationshipState(threadProps);
 
   // Evaluate founding gates
-  const foundingGateResults = evaluateAllFoundingGates(meetingRecord, archetypeId);
+  const foundingGateResults = evaluateAllFoundingGates(meetingRecord, archetypeKey);
 
   // Resolve convergence
   const { outcome, scores, eligible } = resolveReturn(
-    meetingRecord, ordealOutcome, relationship, archetypeId, beatHistory,
+    meetingRecord, ordealOutcome, relationship, archetypeKey, beatHistory,
   );
 
   // Generate return prose (enriched with full narrative context including doom vocabulary)
@@ -836,6 +865,7 @@ export function executeReturn(
     foundingGateResults,
     intentReach: intent.reach,
     intentReachSource: intent.source,
+    archetypeKey,
     ordealOutcome,
     relationshipState: relationship,
     scores,
