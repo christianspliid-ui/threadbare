@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 10:59 local (09:59 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 11:57 local (10:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: cold playtest round 5 is done.** 8 tickets are filed: 6 bugs ready to build, 2 for design. The builder took the Urgent one, [THR-2052](https://linear.app/threadbare/issue/THR-2052). See [the report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md).
 - **2026-10-26: the playtest testers can log in again.** Their login worked this morning, and the three new-player testers of [cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) started at 10:49.
 - **2026-10-26: the plan for an oath sworn from tribute is merged** ([THR-2051](https://linear.app/threadbare/issue/THR-2051)), via [#2594](https://github.com/christianspliid-ui/threadbare/pull/2594). Its four calls sit in the briefing's *Decided for you* until Tuesday 09:49.
 - **2026-10-26: three settings that no longer changed anything are removed, and the change is live** ([THR-2050](https://linear.app/threadbare/issue/THR-2050/authored-knobs-with-no-reader-minwealthrequired-on-five-action)). Merged via [#2593](https://github.com/christianspliid-ui/threadbare/pull/2593).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: an earlier god's relic now lies at its place, and the fix is live** ([THR-2030](https://linear.app/threadbare/issue/THR-2030)). Its page, its site's connections and Dominion all find it. Merged via [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588).
 - **2026-10-26: the Toll Dispute can now fire, and the fix is live** ([THR-2047](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had)). Its trigger now uses the shared enemy-faction rule, so a road between two hostile factions can start one. Merged via [#2585](https://github.com/christianspliid-ui/threadbare/pull/2585).
 - **2026-10-26: the plan for road encounters writing to their own road is merged** ([THR-2046](https://linear.app/threadbare/issue/THR-2046)), via [#2584](https://github.com/christianspliid-ui/threadbare/pull/2584). Its four calls sit in the briefing's *Decided for you* until Tuesday 00:50.
-- **2026-10-25: debts in the money encounters are merged and live** ([THR-2023](https://linear.app/threadbare/issue/THR-2023)): a debt collected is cleared, The Loan names a lender. Merged via [#2583](https://github.com/christianspliid-ui/threadbare/pull/2583) after three review cycles.
 
 ---
 

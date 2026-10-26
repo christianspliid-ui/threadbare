@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 10:59 local (09:59 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 11:57 local (10:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -52,13 +52,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 ready, all waiting out their veto windows; nothing is being built because nothing is free yet.** The builder's runs since 08:11 each found nothing it could claim, which is correct while every ticket is on hold.
+**Healthy: 12 ready, and the builder is at work again.** It took [THR-2052](https://linear.app/threadbare/issue/THR-2052/recurs-after-fix-on-a-running-clock-a-chapter-still-ends-out-of-sight) (Urgent): chapters on a running clock that still end out of sight, or play out without you.
 
-- **Playtest round 5 is under way.** The testers' login works again: the three new-player testers started on [threadbearer.co](https://threadbearer.co/) at 10:49 this morning. Their findings land in [the round 5 report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) when they finish.
+- **Playtest round 5 is done.** For the fourth round running, all three new players bonded a mortal and loved those first scenes. The biggest wall is chapters ending without showing what happened. 8 tickets are filed in [the round-5 group](https://linear.app/threadbare/project/onboarding-and-first-run-experience-4591bc5f51c7). The 6 bugs can be built now: [THR-2052](https://linear.app/threadbare/issue/THR-2052) (being built), [THR-2053](https://linear.app/threadbare/issue/THR-2053) (popups open over what you clicked), [THR-2054](https://linear.app/threadbare/issue/THR-2054) (the First's page says she isn't bound to you), [THR-2056](https://linear.app/threadbare/issue/THR-2056) (the map slides to the edge after each chapter), [THR-2055](https://linear.app/threadbare/issue/THR-2055) and [THR-2057](https://linear.app/threadbare/issue/THR-2057). The other 2 tickets are design work. Nothing in it needs you. *— from [the round 5 report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md)*
 - Next to open: [THR-1929](https://linear.app/threadbare/issue/THR-1929) (sequels wait for their place) at 15:29 today, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50, [THR-2031](https://linear.app/threadbare/issue/THR-2031) (relic take-up) Tuesday at 03:42, and [THR-2048](https://linear.app/threadbare/issue/THR-2048) (a place held after success) Tuesday at 06:45.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site is up to date (the newest commits on main are docs only). Main's CI, the long simulation checks, the three scheduled background jobs, all 8 scheduled lanes and the worktree reaper (last run 10:45) are healthy; no pull requests are open. Engine speed: 143 ms/tick, 9% below the 7-day median of 158.
+All green. The live site is up to date (the newest commits on main are docs only). These are all healthy: main's CI, the long simulation checks, the three scheduled background jobs, all 9 scheduled lanes and the worktree reaper (last run 11:40). No pull requests are open. Engine speed: 133 ms/tick, 15% below the 7-day median of 157.
