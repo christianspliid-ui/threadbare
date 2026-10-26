@@ -305,6 +305,12 @@ export interface DebugInterruptState {
    */
   heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
   /**
+   * THR-2053 — a chapter the world would open, held while the player is mid-click
+   * (`INTERRUPT_QUIET_AFTER_INPUT_MS`) or has a surface open (the ledger and court included).
+   * `null` when no chapter waits. Badge-, row- and Needs-you-opened chapters never wait.
+   */
+  heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> } | null;
+  /**
    * THR-1877 — every homed surface rendering now, stopping or not, by kind
    * (`HomedSurfaceKind`, `src/data/homed-surfaces.ts`). The hosts render exactly these.
    */

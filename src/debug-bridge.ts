@@ -13,6 +13,7 @@ if (import.meta.env.DEV) {
     queuedPopups: number;
     running: boolean;
     heldArrivals: Array<{ id: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> }>;
+    heldEncounter: { notificationId: string; heldBy: Array<'interrupt' | 'player_surface' | 'recent_input'> } | null;
     rendering: string[];
     foreground: string | null;
     stage: string | null;
@@ -1407,7 +1408,7 @@ if (import.meta.env.DEV) {
     // list never clears its count). Dynamic import keeps Chip out of this module's static graph.
     getCountChips: async () => (await import('./components/shared/Chip')).readCountChips(),
     getInterruptState: async () => _interruptStateProvider?.()
-      ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false, heldArrivals: [], rendering: [], foreground: null, stage: null, held: [], homedSurfaces: [] },
+      ?? { open: [], wasRunningBeforeInterrupt: null, queuedPopups: 0, running: false, heldArrivals: [], heldEncounter: null, rendering: [], foreground: null, stage: null, held: [], homedSurfaces: [] },
     getStage: async () => _stageProvider?.() ?? {
       open: null, vm: null, held: [], panelRect: null, windowRect: null, litHexScreen: null, litHexInWindow: false,
       camera: null, afterClose: null, mapDim: null,

@@ -160,3 +160,12 @@ export const PLAYER_SURFACE_INTERRUPT_IDS: readonly string[] = ['ChapterLedger',
 export function arrivalHoldingSurfaces(open: readonly string[]): string[] {
   return open.filter(id => !PLAYER_SURFACE_INTERRUPT_IDS.includes(id) && !ARRIVAL_HOLD_EXEMPT_SURFACES.includes(id));
 }
+
+/**
+ * THR-2053 — the open player surfaces that hold a chapter the world opens. Unlike the
+ * other arrivals, an encounter shares the screen with dialogs, so the ledger and the
+ * court hold it here too ("clicked Ledger and got step 2"). Full steps down as before.
+ */
+export function encounterHoldingSurfaces(open: readonly string[]): string[] {
+  return open.filter(id => !ARRIVAL_HOLD_EXEMPT_SURFACES.includes(id));
+}

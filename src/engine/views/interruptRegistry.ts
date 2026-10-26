@@ -182,6 +182,28 @@ export interface HeldArrival {
   heldBy: ArrivalHoldReason[];
 }
 
+/** What the encounter auto-open scan reads before it opens a chapter on its own (THR-2053). */
+export interface WorldOpenedEncounterHoldInput {
+  /** A player surface is open — the Chapter Ledger and the court included, since an encounter co-renders with dialogs. */
+  playerSurfaceOpen: boolean;
+  /** The last pointer or key input is inside `INTERRUPT_QUIET_AFTER_INPUT_MS`. */
+  recentInput: boolean;
+}
+
+/**
+ * THR-2053 — a chapter the world opens is an arrival too. The `encounter` home entry is
+ * not marked `arrival` (a badge-, row- or Needs-you-opened chapter must mount at once),
+ * so the auto-open scan asks here first: it opens nothing while the player is mid-click
+ * or has one of their own surfaces open, and looks again when the hold lifts.
+ * Empty = open now. Pure.
+ */
+export function worldOpenedEncounterHeldBy(input: WorldOpenedEncounterHoldInput): ArrivalHoldReason[] {
+  const heldBy: ArrivalHoldReason[] = [];
+  if (input.playerSurfaceOpen) heldBy.push('player_surface');
+  if (input.recentInput) heldBy.push('recent_input');
+  return heldBy;
+}
+
 /** THR-1877 — a surface that wants the screen and waits (D2, R6). */
 export interface HeldSurface {
   kind: HomedSurfaceKind;
