@@ -515,6 +515,4 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
       archetypeAffinities: ['conqueror', 'reluctant_leader', 'zealot_prophet'],
     },
   ],
-  // THR-2057: a compulsion names its own target encounter; it draws no agenda.
-  compel: [],
 };

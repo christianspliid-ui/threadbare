@@ -186,7 +186,7 @@ describe('THR-1754 S2 — planning the rite (D2)', () => {
 
   it('the bond-only hand is the meeting bond test, cut to its first two cards', () => {
     expect(RITE_BOND_ONLY_TEST.nudges).toHaveLength(RITE_BOND_ONLY_HAND_SIZE);
-    expect(RITE_BOND_ONLY_TEST.nudges.map(n => n.name)).toEqual(['Still the room', 'Say their name']);
+    expect(RITE_BOND_ONLY_TEST.nudges.map(n => n.name)).toEqual(['Still the room', 'Say {their} name']); // THR-2057: filled per mortal at render
     expect(RITE_BOND_ONLY_TEST.setup).toBe(MEETING_BOND_TEST.setup);
     expect(RITE_BOND_ONLY_TEST.factorLines).toEqual(MEETING_BOND_TEST.factorLines);
     // The meeting's per-Hunger voice speaks of a first soul; every rite has its own line.

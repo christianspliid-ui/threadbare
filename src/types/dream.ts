@@ -51,9 +51,14 @@ export type InterventionType =
   | 'inspire_intervention'
   | 'coincidence'
   | 'omen'
-  | 'afflict_bless'
-  /** THR-2057: a God's Will compulsion (premonition) — its own kind, not a threat. */
-  | 'compel';
+  | 'afflict_bless';
+
+/**
+ * What kind of divine influence an agent carries: an intervention, or (THR-2057) a
+ * God's Will compulsion from a premonition — its own kind, not a threat, and not a
+ * player intervention, so it stays out of `InterventionType`'s toolkit tables.
+ */
+export type DivineInfluenceKind = InterventionType | 'compel';
 
 /** How an intervention reaches its target */
 export type DeliveryMode = 'astral' | 'regional' | 'remote' | 'local';
@@ -112,7 +117,7 @@ export interface DivineInfluence {
 /** A single active divine influence stored on an agent node's properties.divineInfluences[] */
 export interface DivineInfluenceEntry {
   id: string;
-  interventionType: InterventionType;
+  interventionType: DivineInfluenceKind;
   sphere: SphereName;
   tickApplied: number;
   // Decay curve parameters (replace binary ticksRemaining)

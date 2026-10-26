@@ -10,7 +10,8 @@ import { applyWhisperChoice, applyCompulsionChoice } from '../premonitionActions
 import { getDivineInfluences } from '../interventionEffects';
 import { influenceChipNoun, influenceChipHover } from '../castTargetChanges';
 import { personalizeBondTest, fillBondLine } from '../bondTestVoice';
-import { previewHomeSeat } from '../ascendantBeatSeeding';
+import { previewHomeSeat, seedBeatGraph } from '../ascendantBeatSeeding';
+import { ASCENDANT_SPINE } from '../../data/ascendant-beat-content';
 import { describeWhisperDirection } from '../../data/premonition-content';
 import { MEETING_BOND_TEST } from '../../data/meeting-bond-test';
 import { SPINE_BEAT_PRESENTATION, fillSpineSeatLine } from '../../data/ascendant-beat-content';
@@ -130,5 +131,22 @@ describe('item 6 — The Seat names its place before the press (THR-2057)', () =
     });
     expect(graph.getOutgoingEdges('asc-1', 'controls').length).toBe(edgesBefore);
     expect(previewHomeSeat(stateWith(graph), undefined)).toBeUndefined();
+  });
+
+  it("names the same place the gift then seats — preview and seed share one resolver", () => {
+    const graph = graphWithAgent();
+    graph.addNode({ id: "asc-1", type: "actor", name: "God", properties: {} });
+    graph.addNode({ id: "loc-coast", type: "location", name: "The Bone Coast", properties: { locationSubtype: "wilderness", hexCol: 3, hexRow: 3 } });
+    graph.addNode({ id: "loc-grove", type: "location", name: "Sacred Grove", properties: { parentLocationId: "loc-coast" } });
+    graph.addNode({ id: "loc-horseford", type: "location", name: "Horseford", properties: { locationSubtype: "town", hexCol: 4, hexRow: 3 } });
+    graph.addEdge({ id: "thr", source: "asc-1", target: AGENT, type: "thread", properties: { courtPosition: "the_first" } });
+    graph.addEdge({ id: "loc", source: AGENT, target: "loc-grove", type: "located_at", properties: {} });
+    const state = stateWith(graph);
+    const preview = previewHomeSeat(state, "asc-1");
+    const seatBeat = ASCENDANT_SPINE.find(b => b.beatId === "beat.spine.the_seat")!;
+    const seeded = seedBeatGraph(state, seatBeat, 2);
+    expect(seeded.seededNodeIds[0]).toBeDefined();
+    expect(preview?.placeName).toBe(graph.getNode(seeded.seededNodeIds[0])?.name);
+    expect(preview?.seatRule).toBe(seeded.seatRule);
   });
 });

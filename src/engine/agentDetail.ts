@@ -52,7 +52,7 @@ import type { RiteHistoryEntry } from './threadingRite';
 import { deriveSeasonAndYear } from '../types/temporal';
 import { riteSheetLine } from '../data/threading-rite-prose';
 import { influenceChipNoun, influenceChipHover } from './castTargetChanges';
-import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
+import type { InterventionType, DivineInfluenceEntry, DivineInfluenceKind } from '../types/dream';
 import {
   getAgentLocationId,
   getAgentFaction,
@@ -388,7 +388,7 @@ export interface TraitSummary {
 // ─── Active Effects (divine influences visible on agent card) ────────
 
 /** Display-friendly labels for each intervention type */
-const INTERVENTION_LABELS: Record<InterventionType, string> = {
+const INTERVENTION_LABELS: Record<DivineInfluenceKind, string> = {
   dream: 'Dream',
   persuade: 'Persuaded',
   deceive: 'Deceived',
@@ -402,7 +402,7 @@ const INTERVENTION_LABELS: Record<InterventionType, string> = {
 
 export interface ActiveEffect {
   /** Source intervention type or 'scry_court' for court positions */
-  type: InterventionType | 'scry_court';
+  type: DivineInfluenceKind | 'scry_court';
   /** Human-readable label */
   label: string;
   /** Sphere used for this effect (for color coding) */

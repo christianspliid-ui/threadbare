@@ -137,7 +137,7 @@ function findBondedFirstId(graph: GameState['graph'], ascendantId: string): stri
 function resolveHomeSeatTarget(
   graph: GameState['graph'],
   ascendantId: string,
-): { seatRef: string | undefined; seatRule: HomeSeatRule; firstId: string | undefined } {
+): { seatRef: string | undefined; seatRule: HomeSeatRule; firstId: string | null } {
   const firstId = findBondedFirstId(graph, ascendantId);
   let seatRef: string | undefined;
   let seatRule: HomeSeatRule = 'default';
