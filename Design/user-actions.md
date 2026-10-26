@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 13:05 local (12:05 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 13:57 local (12:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: a First's chapter no longer plays out unseen, and the fix is live** ([THR-2052](https://linear.app/threadbare/issue/THR-2052)). Merged via [#2597](https://github.com/christianspliid-ui/threadbare/pull/2597).
+- **2026-10-26: the First's own page now agrees she is bound to you, and the fix is live** ([THR-2054](https://linear.app/threadbare/issue/THR-2054)). Merged via [#2598](https://github.com/christianspliid-ui/threadbare/pull/2598).
 - **2026-10-26: round 5's two design findings are planned and on the build shelf.** [New things arrive one at a time](https://linear.app/threadbare/issue/THR-2060) and [Readouts say what they show](https://linear.app/threadbare/issue/THR-2061), from [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2058-one-thing-at-a-time.md) merged via [#2596](https://github.com/christianspliid-ui/threadbare/pull/2596). Its five calls sit in the briefing's *Decided for you* until Tuesday 11:38 UTC.
 - **2026-10-26: cold playtest round 5 is done.** 8 tickets are filed: 6 bugs ready to build, 2 for design. The builder took the Urgent one, [THR-2052](https://linear.app/threadbare/issue/THR-2052). See [the report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md).
 - **2026-10-26: the playtest testers can log in again.** Their login worked this morning, and the three new-player testers of [cold playtest round 5](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md) started at 10:49.
@@ -46,8 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: eight pieces of old code the game no longer used are removed, and the change is live** ([THR-2049](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its)). Merged via [#2592](https://github.com/christianspliid-ui/threadbare/pull/2592).
 - **2026-10-26: the First's temperament now counts toward how its story ends, and the fix is live** ([THR-2034](https://linear.app/threadbare/issue/THR-2034/return-archetype-reads-never-match-the-usurper-bypass-and-the)). Merged via [#2591](https://github.com/christianspliid-ui/threadbare/pull/2591).
 - **2026-10-26: the ending now follows who the First was born as, and the fix is live** ([THR-2009](https://linear.app/threadbare/issue/THR-2009/founding-gates-read-a-meeting-record-field-nobody-writes-the-reach)). The founding checks read the First's own Reach, so Transcendence can now happen. Merged via [#2590](https://github.com/christianspliid-ui/threadbare/pull/2590).
-- **2026-10-26: an earlier god's relic now lies at its place, and the fix is live** ([THR-2030](https://linear.app/threadbare/issue/THR-2030)). Its page, its site's connections and Dominion all find it. Merged via [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588).
-- **2026-10-26: the Toll Dispute can now fire, and the fix is live** ([THR-2047](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had)). Its trigger now uses the shared enemy-faction rule, so a road between two hostile factions can start one. Merged via [#2585](https://github.com/christianspliid-ui/threadbare/pull/2585).
 
 ---
 
