@@ -583,14 +583,6 @@ export const REPUTATION_BOND_SHIFT_SCALE = 0.2;
  * @range 0.1–0.5 */
 export const REPUTATION_BOND_SHIFT_MAX = 0.25;
 
-/** Trust gain on successful cooperative encounter completion.
- * @range 0.01–0.2 */
-export const SOCIAL_COOPERATE_TRUST_BONUS = 0.05;
-
-/** Trust loss on successful destructive encounter completion.
- * @range -0.2–-0.01 */
-export const SOCIAL_DESTRUCTIVE_TRUST_PENALTY = -0.10;
-
 /** Default duration in ticks for agreement edges.
  * @range 10–100 */
 export const AGREEMENT_DEFAULT_TICKS = 30;

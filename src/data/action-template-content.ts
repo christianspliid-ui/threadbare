@@ -47,10 +47,6 @@ export interface ActionTemplateData {
   actorAffinities?: ActorType[];
   sphereAffinity?: string;
 
-  // Economic gate: actor must have wealth >= this value to select the action.
-  // Wealth is on 0–100 scale. Fail-soft: agents with insufficient wealth skip this action.
-  minWealthRequired?: number;
-
   // Phase 17 display fields
   /** Evocative spell-like display name (Ars Magica style, max 3 words). */
   spellName?: string;
@@ -393,7 +389,6 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
     motivations: ['asceticism_extravagance', 'courage_prudence', 'loyalty_ambition'],
-    minWealthRequired: 10, // WEALTH_MERCENARY_COST
     onSuccess: [
       // THR-1096: was an `add_node` of type `attachment` — a node type outside
       // `NodeType` entirely — carrying `ironCapability: 30` that no reader ever
@@ -427,7 +422,6 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
     motivations: ['asceticism_extravagance', 'honesty_cunning', 'loyalty_ambition'],
-    minWealthRequired: 15, // WEALTH_ASSASSINATION_COST
     onSuccess: [
       // THR-1430: the god's bought killing stops deleting. `mark_mortal_dead` routes
       // through the one funnel in `retain`, so a commissioned death honours the ward
@@ -457,7 +451,6 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 1, max: 3 },
     motivations: ['asceticism_extravagance', 'honesty_cunning', 'preservation_transformation'],
-    minWealthRequired: 8, // WEALTH_INFLUENCE_COST
     onSuccess: [
       {
         op: 'update_edge',
@@ -489,7 +482,6 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
     motivations: ['loyalty_ambition', 'asceticism_extravagance', 'tradition_novelty'],
-    minWealthRequired: 12, // WEALTH_CONSTRUCTION_COST
     onSuccess: [
       {
         op: 'add_node',
@@ -527,7 +519,6 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 4, max: 6 },
     motivations: ['asceticism_extravagance', 'preservation_transformation', 'loyalty_ambition'],
-    minWealthRequired: 25, // WEALTH_MONOPOLY_COST
     onSuccess: [
       // Mark the target location as monopoly-controlled by this actor
       { op: 'update_node', nodeId: '$location', changes: { monopolyControlledBy: '$actor', prosperityDelta: -10 } },
