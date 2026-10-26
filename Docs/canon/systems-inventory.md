@@ -327,7 +327,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `essence` (7) | `essenceEarned.ts`, `essenceEconomyBridge.ts`, `essenceIncome.ts`, `essenceMovement.ts`, `essenceSourceSeeding.ts`, `essenceSourceWrite.ts`, `essenceSources.ts` | `THR-1180`, `THR-1713`, `THR-1935`, `THR-611`, `THR-615`, `THR-618` |
 | `event` (1) | `eventAggregation.ts` | `THR-456` |
 | `exploration` (1) | `explorationHooks.ts` | `THR-1621`, `THR-2021` |
-| `faction` (17) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSplinter.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-1957`, `THR-400`, `THR-430`, `THR-810`, `THR-814` |
+| `faction` (18) | `factionAmbitions.ts`, `factionAwareness.ts`, `factionCommissions.ts`, `factionGovernanceVerbs.ts`, `factionMemberWork.ts`, `factionMembership.ts`, `factionMetaScope.ts`, `factionNameSubstitution.ts`, `factionNetwork.ts`, `factionOutcome.ts`, `factionPurse.ts`, `factionQuestGeneration.ts`, `factionRankBonus.ts`, `factionReputation.ts`, `factionSeeding.ts`, `factionSplinter.ts`, `factionSuccessionOps.ts`, `factionTopology.ts` | `Phase 0`, `Phase 1`, `Phase 2`, `Phase 3`, `Phase 4`, `TB-061`, `TB-073`, `THR-1144`, `THR-1155`, `THR-1211`, `THR-1430`, `THR-1438`, `THR-1454`, `THR-1708`, `THR-1867`, `THR-1931`, `THR-1957`, `THR-2042`, `THR-400`, `THR-430`, `THR-810`, `THR-814` |
 | `factionpurse` (4) | `factionPurse/income.ts`, `factionPurse/means.ts`, `factionPurse/purseSentences.ts`, `factionPurse/upkeep.ts` | `THR-1867`, `THR-1931`, `THR-1932`, `THR-1974` |
 | `failure` (1) | `failureStoryArtifact.ts` | `THR-470`, `THR-571` |
 | `familiarity` (1) | `familiarity.ts` | — |
@@ -485,4 +485,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 240 engine domains · 798 modules._
+_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 240 engine domains · 799 modules._
