@@ -1137,6 +1137,14 @@ export const ROLE_PRIMARY_AFFINITY_BONUS = 0.4;
  * @range 0.05–0.25 */
 export const ROLE_SECONDARY_AFFINITY_BONUS = 0.15;
 
+/** THR-2067 — the share of the role lean the live decision board takes. The board
+ * multiplies each encounter's score by `1 + (roleAffinityMultiplier − 1) × weight`
+ * (`roleAffinityPull`). 1 = the scorer's full lean; 0 = the pre-THR-2067 board, where
+ * the lean reached only `finalScore` (God's Will's ranking), never the mortal's choice.
+ * Measured at 1 against 0 on a 600-tick seeded run (`npm run measure:role-lean`).
+ * @range 0–1 */
+export const ROLE_AFFINITY_BOARD_WEIGHT = 1;
+
 // ═══════════════════════════════════════════════════════════════════
 // REPUTATION TRAITS — Reach-polarity reputation accumulation (phaseReputationTraits.ts)
 // ═══════════════════════════════════════════════════════════════════

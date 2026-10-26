@@ -1643,6 +1643,7 @@ export function phaseAgentDecision(
               ...(e.leadPull !== undefined ? { leadPull: e.leadPull } : {}),
               ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
               ...(e.whisperPull !== undefined ? { whisperPull: e.whisperPull } : {}),
+              ...(e.roleAffinityPull !== undefined ? { roleAffinityPull: e.roleAffinityPull } : {}),
               ...(e.meansMultiplier !== undefined ? { meansMultiplier: e.meansMultiplier } : {}),
               ...(e.thievesGuildOffer !== undefined ? { thievesGuildOffer: e.thievesGuildOffer } : {}),
             })),
