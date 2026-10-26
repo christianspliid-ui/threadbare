@@ -273,7 +273,7 @@ import { applySuppressions } from './effects/effectSuppression';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { checkMidEncounterPromotion, isNotableEntry } from './attentionTier';
 import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
-import { appendDigestEntry } from './digestBuffer';
+import { appendDigestEntry, digestAgentName, settleDigestOutcome } from './digestBuffer';
 import { phaseAttention } from './phaseAttention';
 import { phaseSlotCaps, phaseDisposalTimeout } from './phaseSlotCaps';
 import { resetUnifiedActionCounter } from './unifiedActionLifecycle';
@@ -1262,6 +1262,13 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       }
     }
 
+    // ── THR-2055: settle a legacy chapter filed unresolved by phaseAttention ──
+    // Legacy entries are keyed by template id, which many mortals share, so the
+    // actor is matched too. The legacy path knows only win or loss.
+    if (progress.status === 'completed' || progress.status === 'abandoned') {
+      settleDigestOutcome(digestBuffer, progress.encounterId, result.success ? 'success' : 'failure', progress.actorId);
+    }
+
     // ── Digest Buffer: accumulate background/invisible encounter outcomes ──
     // Only runs on completion or abandonment (not mid-step). Fail-soft: missing
     // template or agent node → use defaults. Only accumulates if effectiveTier
@@ -1274,7 +1281,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       const digestTemplate = getAnyEncounterById(progress.encounterId);
       const digestEntry: DigestEntry = {
         agentId: progress.actorId,
-        agentName: digestAgentNode?.properties?.name ?? digestAgentNode?.name ?? 'Unknown',
+        agentName: digestAgentName(digestAgentNode),
         encounterId: progress.encounterId,
         encounterName: digestTemplate?.name ?? 'Unknown Encounter',
         encounterType: digestTemplate?.encounterType ?? 'explore',

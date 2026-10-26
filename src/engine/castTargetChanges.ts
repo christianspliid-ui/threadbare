@@ -30,6 +30,7 @@ import type { ValuePair } from '../types/agent';
 import type { DigestEntry } from '../types/attention';
 import type { ReachDomain } from '../types/traits';
 import { valuePoleWord } from './castInfluenceDrift';
+import { digestAgentName } from './digestBuffer';
 import { snapshotCastEconomy, diffCastEconomy, type CastEconomySnapshot } from './castEconomyReceipt';
 import { LOCATION_TRAIT_IDS } from '../data/location-trait-constants';
 import {
@@ -273,7 +274,7 @@ export function castDigestEntry(args: {
   const node = args.graph.getNode(args.targetId);
   return {
     agentId: args.targetId,
-    agentName: (node?.properties?.name as string | undefined) ?? node?.name ?? 'Unknown',
+    agentName: digestAgentName(node),
     encounterId: args.templateId,
     encounterName: args.templateName,
     encounterType: 'explore',

@@ -22,7 +22,7 @@ import { Button } from '../shared/Button';
 import { formatEssence, formatEssencePool } from '../shared/formatEssence';
 import type { DigestEntry } from '../../types/attention';
 import type { ReachDomain } from '../../types/traits';
-import { queryDigest } from '../../engine/digestBuffer';
+import { queryDigest, digestEntryWon, digestOutcomeLabel, oneEntryPerAgent } from '../../engine/digestBuffer';
 import { durationLabel } from '../../engine/aftermathWords';
 import {
   READ_THREADS_COST_6,
@@ -148,7 +148,7 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
   // vague: no individual entries — handled at group level
   if (fidelity === 'vague') return null;
 
-  const outcome = entry.success ? 'Success' : 'Failed';
+  const outcome = digestOutcomeLabel(entry);
 
   if (fidelity === 'moderate') {
     // No deltas, no attachment names — encounter type and outcome only
@@ -176,7 +176,9 @@ function DigestRow({ entry, fidelity }: { entry: DigestEntry; fidelity: Fidelity
   // full / high: show everything including deltas and attachments
   const outcomeText = entry.significantOutcomes.length > 0
     ? entry.significantOutcomes[0]
-    : entry.success ? 'Resolved successfully.' : 'Did not go as planned.';
+    : entry.unresolved || entry.ended || entry.outcomeBand
+      ? `${digestOutcomeLabel(entry)}.`
+      : entry.success ? 'Resolved successfully.' : 'Did not go as planned.';
 
   return (
     <div
@@ -323,8 +325,10 @@ function PreReadState({
 function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity: Fidelity }) {
   // Partition entries
   const notable = entries.filter(e => e.isNotable && !e.wasCuratedOut);
-  const curatedOut = entries.filter(e => e.wasCuratedOut);
-  const dormant = entries.filter(e => e.isDormantAgent && !e.wasCuratedOut);
+  // THR-2055: a candidate demoted on several ticks is one missed chapter, and
+  // a dormant mortal is named once however many entries they filed.
+  const curatedOut = [...new Map(entries.filter(e => e.wasCuratedOut).map(e => [`${e.agentId}|${e.encounterId}`, e])).values()];
+  const dormant = oneEntryPerAgent(entries.filter(e => e.isDormantAgent && !e.wasCuratedOut));
   const locationEntries = entries.filter(e => e.sourceType === 'location' && !e.wasCuratedOut && !e.isDormantAgent);
 
   // Group active agent entries by reach
@@ -378,7 +382,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
             {fidelity === 'vague' ? (
               // Vague: group-level summary only — no individual entries
               <div style={{ padding: 'var(--space-2) 0', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-                {group.length} encounter{group.length !== 1 ? 's' : ''}. {group.filter(e => e.success).length} succeeded.
+                {group.length} encounter{group.length !== 1 ? 's' : ''}. {group.filter(e => !e.unresolved && !e.ended && digestEntryWon(e)).length} succeeded.
               </div>
             ) : (
               group.map((e, i) => <DigestRow key={`${reach}-${i}`} entry={e} fidelity={fidelity} />)
@@ -400,7 +404,7 @@ function PostReadState({ entries, fidelity }: { entries: DigestEntry[]; fidelity
               }}
             >
               <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                {e.encounterName} — {e.success ? 'settled quietly' : 'stirred unresolved'}
+                {e.encounterName} — {digestEntryWon(e) ? 'settled quietly' : 'stirred unresolved'}
               </span>
             </div>
           ))}
