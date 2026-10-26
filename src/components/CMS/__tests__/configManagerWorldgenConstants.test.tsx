@@ -31,11 +31,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ConfigManager } from '../viewers/ConfigManager';
 import { TUNABLE_GROUPS } from '../tunableConstants';
-import {
-  RIVER_MIN_LENGTH,
-  LAKE_SIZE_MAX,
-  GREAT_LAKE_SIZE_MAX,
-} from '../../../engine/worldGenData';
+import { RIVER_MIN_LENGTH } from '../../../engine/worldGenData';
 import { TEMP_ALTITUDE_PENALTY } from '../../../engine/worldgen/constants';
 
 describe('ConfigManager — worldgen terrain constants (THR-1409)', () => {
@@ -47,15 +43,6 @@ describe('ConfigManager — worldgen terrain constants (THR-1409)', () => {
     // re-pointed at any module the river generator does not import.
     expect(screen.getByDisplayValue(String(RIVER_MIN_LENGTH))).toBeTruthy();
     expect(screen.getByText('src/engine/worldGenData.ts')).toBeTruthy();
-  });
-
-  it('paints LAKE_SIZE_MAX and GREAT_LAKE_SIZE_MAX with the values lakeGeneration imports', () => {
-    render(<ConfigManager groups={TUNABLE_GROUPS} searchQuery="LAKE_SIZE_MAX" />);
-
-    expect(screen.getByText('LAKE_SIZE_MAX')).toBeTruthy();
-    expect(screen.getByText('GREAT_LAKE_SIZE_MAX')).toBeTruthy();
-    expect(screen.getByDisplayValue(String(LAKE_SIZE_MAX))).toBeTruthy();
-    expect(screen.getByDisplayValue(String(GREAT_LAKE_SIZE_MAX))).toBeTruthy();
   });
 
   it('paints TEMP_ALTITUDE_PENALTY from the module the climate pass imports', () => {
@@ -74,12 +61,9 @@ describe('ConfigManager — worldgen terrain constants (THR-1409)', () => {
     expect(screen.queryByDisplayValue('5')).toBeNull();
     expect(screen.queryByText('src/engine/terrainPipeline/types.ts')).toBeNull();
 
-    render(<ConfigManager groups={TUNABLE_GROUPS} searchQuery="GREAT_LAKE_SIZE_MAX" />);
-    expect(screen.queryByDisplayValue('15')).toBeNull();
-
-    // Sanity: the searches above actually matched something, so the absence assertions are
+    // Sanity: the search above actually matched something, so the absence assertions are
     // not passing on an empty render.
-    expect(screen.getByText('GREAT_LAKE_SIZE_MAX')).toBeTruthy();
+    expect(screen.getByText('RIVER_MIN_LENGTH')).toBeTruthy();
   });
 });
 
@@ -102,7 +86,9 @@ describe('ConfigManager — worldgen terrain constants (THR-1409)', () => {
  *     MOISTURE_COAST_BONUS     → MOISTURE_COASTAL_BONUS
  *     RAIN_SHADOW_FACTOR       → RAIN_SHADOW_PENALTY
  *     RIVER_SOURCE_COUNT       → RIVER_SOURCE_COUNT_MIN / _MAX
- *     GREAT_LAKE_CHANCE        → GREAT_LAKE_COUNT        (a count, not a probability)
+ *     GREAT_LAKE_CHANCE        → GREAT_LAKE_COUNT        (a count, not a probability;
+ *                                 retired with LAKE_SIZE_MAX / GREAT_LAKE_SIZE_MAX in THR-2049,
+ *                                 when their only reader, lakeGeneration.ts, was deleted as dead)
  *     REGION_SIZE_MIN/MAX      → PROVINCE_MIN_SEED_DISTANCE / PROVINCE_MAX_HEXES
  *   REMOVED, live pipeline models no such thing (6 rows):
  *     CONTINENT_COUNT_MIN/MAX, CONTINENT_RADIUS_MIN/MAX, MOISTURE_BASE, LATITUDE_EQUATOR_ROW
@@ -125,7 +111,6 @@ describe('ConfigManager — worldgen terrain constants (THR-1409)', () => {
 import {
   RIVER_SOURCE_COUNT_MIN,
   RIVER_SOURCE_COUNT_MAX,
-  GREAT_LAKE_COUNT,
 } from '../../../engine/worldGenData';
 import {
   RIDGE_COUNT_DEFAULT,
@@ -147,6 +132,8 @@ const RETIRED_ROWS = [
   'TEMP_BASE_RANGE', 'WIND_DIRECTION', 'MOISTURE_COAST_BONUS',
   'RAIN_SHADOW_FACTOR', 'MOISTURE_BASE', 'RIVER_SOURCE_COUNT',
   'GREAT_LAKE_CHANCE', 'REGION_SIZE_MIN', 'REGION_SIZE_MAX',
+  // THR-2049: no live reader once the dead lakeGeneration.ts went.
+  'LAKE_SIZE_MAX', 'GREAT_LAKE_SIZE_MAX', 'GREAT_LAKE_COUNT',
 ] as const;
 
 describe('ConfigManager — worldgen terrain group rebuilt on live constants (THR-1418)', () => {
@@ -160,7 +147,6 @@ describe('ConfigManager — worldgen terrain group rebuilt on live constants (TH
       ['PROVINCE_MIN_SEED_DISTANCE', PROVINCE_MIN_SEED_DISTANCE, 'src/engine/worldgen/constants.ts'],
       ['RIVER_SOURCE_COUNT_MIN', RIVER_SOURCE_COUNT_MIN, 'src/engine/worldGenData.ts'],
       ['RIVER_SOURCE_COUNT_MAX', RIVER_SOURCE_COUNT_MAX, 'src/engine/worldGenData.ts'],
-      ['GREAT_LAKE_COUNT', GREAT_LAKE_COUNT, 'src/engine/worldGenData.ts'],
     ];
 
     for (const [exportName, liveValue, ownerFile] of rows) {

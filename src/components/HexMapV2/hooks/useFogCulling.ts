@@ -8,7 +8,7 @@
  * - Remembered hexes: full terrain colors, live layers (agents/events) hidden
  * - Visible hexes: full terrain colors, all layers visible
  *
- * NFP #1: Uses PARCHMENT_FOG_CONSTANTS — no new magic numbers.
+ * NFP #1: Fog alpha comes from FogOverlayMesh — no new magic numbers.
  * NFP #4: Null refs → skip entire effect. Missing hex keys → skip silently.
  */
 

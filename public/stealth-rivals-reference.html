@@ -25,12 +25,11 @@
     write (1 x 0.8) already cleared notice AND turn and the ladder collapsed in one
     step. Do NOT "correct" the deltas back to the essence costs; they are two different
     quantities and the ladder depends on the separation.
-  - The TWO-AUDIENCE per-actor model in src/engine/stealth.ts (mortal suspicion
-    unaware/suspicion/realization/revelation at 3/8/15; rival scrutiny unaware/noticed/
-    identified/targeted at 5/12/20; DETECTION_SCORE_BY_TYPE per intervention type) is
-    AUTHORED AND UNIT-TESTED (stealth.test.ts) but NOT called by any tick phase — no
-    live caller of processMortalDetection/processRivalDetection outside tests. Flag it
-    DESIGN / dormant. Do NOT describe the per-mortal suspicion ladder as shipped.
+  - The TWO-AUDIENCE per-actor model that lived in src/engine/stealth.ts + src/types/stealth.ts
+    (mortal suspicion unaware/suspicion/realization/revelation at 3/8/15; rival scrutiny
+    unaware/noticed/identified/targeted at 5/12/20; DETECTION_SCORE_BY_TYPE per intervention
+    type) never had a live caller and was DELETED in THR-2049 (2026-10-26). It survives
+    in git history only. Do NOT describe the per-mortal suspicion ladder as shipped.
   - regionDetection.ts is GEOGRAPHIC region clustering (watershed), NOT stealth. Not
     part of this page.
   - Rivals: generateRivals (gameInit.ts:281) seeds 2 + floor(rng*3) = 2..4 rivals from
@@ -322,11 +321,11 @@
     </summary>
     <div class="designer-body">
 
-      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partial or dormant, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Sources: <code>src/engine/stealth.ts</code>, <code>src/engine/orchestrator/phaseDetectionPressure.ts</code>, <code>src/engine/encounters/detectionPressure.ts</code>, <code>src/engine/rival.ts</code>, <code>src/data/rival-content.ts</code>, <code>src/data/rival-scheme-config.ts</code>, <code>src/data/rival-schemes/</code>, <code>src/engine/hiddenMarks.ts</code> + <code>phaseHiddenMarkDecay.ts</code>, <code>src/engine/intelligence.ts</code> + <code>phaseIntelligenceDecay.ts</code>, <code>src/types/stealth.ts</code>, <code>src/types/rival.ts</code>.</p>
+      <p>Status flags follow the rulebook convention: <span class="flag impl">IMPL</span> shipped and wired, <span class="flag design">DESIGN</span> specified but partial or dormant, <span class="flag open">OPEN</span> an unresolved question (referenced, never minted here). Sources: <code>src/engine/orchestrator/phaseDetectionPressure.ts</code>, <code>src/engine/encounters/detectionPressure.ts</code>, <code>src/engine/rival.ts</code>, <code>src/data/rival-content.ts</code>, <code>src/data/rival-scheme-config.ts</code>, <code>src/data/rival-schemes/</code>, <code>src/engine/hiddenMarks.ts</code> + <code>phaseHiddenMarkDecay.ts</code>, <code>src/engine/intelligence.ts</code> + <code>phaseIntelligenceDecay.ts</code>, <code>src/types/rival.ts</code>.</p>
 
       <div class="callout red">
         <div class="callout-title">The load-bearing honest call for this page</div>
-        <p>There are <strong>two</strong> detection systems in the tree, and only one is live. <strong>Region detection pressure</strong> (<code>phaseDetectionPressure</code>, wired at <code>orchestrator.ts:2640</code>) is the shipped surface. The <strong>per-actor two-audience escalation model</strong> in <code>stealth.ts</code> — mortal suspicion and rival scrutiny ladders — is fully authored and unit-tested (<code>stealth.test.ts</code>) but <strong>has no live caller</strong>: nothing outside tests invokes <code>processMortalDetection</code> / <code>processRivalDetection</code>. It is <span class="flag design">DESIGN</span> / dormant. The player layer above is deliberately written around the region-pressure model that actually runs. (Unrelated: <code>regionDetection.ts</code> is geographic region <em>clustering</em>, not stealth.)</p>
+        <p>There is <strong>one</strong> detection system in the tree. <strong>Region detection pressure</strong> (<code>phaseDetectionPressure</code>, wired at <code>orchestrator.ts:2640</code>) is the shipped surface. A <strong>per-actor two-audience escalation model</strong> (<code>stealth.ts</code> — mortal suspicion and rival scrutiny ladders) was authored and unit-tested but never had a live caller; it was deleted in THR-2049 (2026-10-26). The player layer above is written around the region-pressure model that actually runs. (Unrelated: <code>regionDetection.ts</code> is geographic region <em>clustering</em>, not stealth.)</p>
       </div>
 
       <h3>Detection pressure — region-level, choice-cost driven <span class="flag impl">IMPL</span></h3>
@@ -338,10 +337,10 @@
         <li>Decay is <code>DETECTION_DECAY_RATE_PER_TICK 0.005</code>/tick (all constants in <code>src/data/encounter-experience-constants.ts</code>). State is held on <code>GameState.regionalDetectionPressure</code> (mirrored to legacy <code>regionDetection</code>).</li>
       </ul>
 
-      <h3>Two-audience per-actor model — authored, dormant <span class="flag design">DESIGN</span></h3>
+      <h3>Two-audience per-actor model — deleted (THR-2049)</h3>
       <ul>
-        <li><code>stealth.ts</code> implements a richer model that is <strong>not wired</strong>: per-actor <code>MortalDetectionState</code> with a suspicion ladder <code>unaware → suspicion (3) → realization (8) → revelation (15)</code> (<code>MORTAL_AWARENESS_THRESHOLDS</code>), and per-rival-per-region <code>RivalDetectionState</code> with a scrutiny ladder <code>unaware → noticed (5) → identified (12) → targeted (20)</code> (<code>RIVAL_AWARENESS_THRESHOLDS</code>). Each intervention adds a per-type score (<code>DETECTION_SCORE_BY_TYPE</code>: <code>coincidence 3.0</code>, <code>afflict_bless 2.5</code>, <code>deceive/intimidate 1.5</code>, <code>persuade/omen 1.0</code>, <code>dream/inspire 0.5</code>) and both ladders decay.</li>
-        <li>The functions are pure, exported, and covered by <code>stealth.test.ts</code> / <code>stealth-mandate-integration.test.ts</code>, but grep confirms no tick phase calls them — a build-but-dormant model, not a shipped one. Activating it (or reconciling it with the region-pressure model) is design/engine work, not documented here as live.</li>
+        <li><code>stealth.ts</code> held a richer model that was <strong>never wired</strong> and was deleted on 2026-10-26 (THR-2049); it survives in git history. It had per-actor <code>MortalDetectionState</code> with a suspicion ladder <code>unaware → suspicion (3) → realization (8) → revelation (15)</code> (<code>MORTAL_AWARENESS_THRESHOLDS</code>), and per-rival-per-region <code>RivalDetectionState</code> with a scrutiny ladder <code>unaware → noticed (5) → identified (12) → targeted (20)</code> (<code>RIVAL_AWARENESS_THRESHOLDS</code>). Each intervention adds a per-type score (<code>DETECTION_SCORE_BY_TYPE</code>: <code>coincidence 3.0</code>, <code>afflict_bless 2.5</code>, <code>deceive/intimidate 1.5</code>, <code>persuade/omen 1.0</code>, <code>dream/inspire 0.5</code>) and both ladders decay.</li>
+        <li>No tick phase ever called it, so only its tests ran it. Reviving it (or folding its ideas into the region-pressure model) is new design/engine work, starting from git history.</li>
       </ul>
 
       <h3>Rival generation <span class="flag impl">IMPL</span></h3>
@@ -395,8 +394,6 @@
           <tr><td>DETECTION_THRESHOLD_ENCOUNTER</td><td>1.0</td><td>Pressure that seeds a <code>shadow.rival_strike</code> · <code>encounter-experience-constants.ts</code></td></tr>
           <tr><td>DETECTION_DECAY_RATE_PER_TICK</td><td>0.005</td><td>Region pressure lost per tick · <code>encounter-experience-constants.ts</code></td></tr>
           <tr><td>DETECTION_DELTA_SMALL / FULLER / DEEP</td><td>0.15 / 0.30 / 0.50</td><td>Base detection delta by choice weight, on the 0–1 pressure scale (THR-963) · <code>encounter-experience-constants.ts</code></td></tr>
-          <tr><td>MORTAL_AWARENESS_THRESHOLDS</td><td>3 / 8 / 15</td><td>Suspicion → realization → revelation (DESIGN, dormant) · <code>types/stealth.ts</code></td></tr>
-          <tr><td>RIVAL_AWARENESS_THRESHOLDS</td><td>5 / 12 / 20</td><td>Noticed → identified → targeted (DESIGN, dormant) · <code>types/stealth.ts</code></td></tr>
           <tr><td>RIVAL_MAX_ESCALATION_TIER</td><td>3</td><td>Top scheme escalation tier · <code>rival-scheme-config.ts:18</code></td></tr>
           <tr><td>RIVAL_MAX_CONCURRENT_SCHEMES</td><td>[1,1,2,3]</td><td>Simultaneous schemes per rival, by tier · <code>rival-scheme-config.ts:21</code></td></tr>
           <tr><td>RIVAL_SCHEME_LAUNCH_COOLDOWN_TICKS</td><td>24</td><td>Min ticks between a rival's launches · <code>rival-scheme-config.ts:24</code></td></tr>
@@ -413,14 +410,14 @@
 
       <h3>Canon &amp; terminology</h3>
       <ul>
-        <li>Phase &amp; type sources: <code>stealth.ts</code> + <code>types/stealth.ts</code> (dormant two-audience model), <code>orchestrator/phaseDetectionPressure.ts</code> + <code>encounters/detectionPressure.ts</code> (live region pressure), <code>rival.ts</code> + <code>rival-content.ts</code> + <code>rival-scheme-config.ts</code> + <code>rival-schemes/</code> + <code>types/rival.ts</code> (rivals &amp; schemes), <code>hiddenMarks.ts</code> + <code>phaseHiddenMarkDecay.ts</code>, <code>intelligence.ts</code> + <code>phaseIntelligenceDecay.ts</code>.</li>
+        <li>Phase &amp; type sources: <code>orchestrator/phaseDetectionPressure.ts</code> + <code>encounters/detectionPressure.ts</code> (live region pressure), <code>rival.ts</code> + <code>rival-content.ts</code> + <code>rival-scheme-config.ts</code> + <code>rival-schemes/</code> + <code>types/rival.ts</code> (rivals &amp; schemes), <code>hiddenMarks.ts</code> + <code>phaseHiddenMarkDecay.ts</code>, <code>intelligence.ts</code> + <code>phaseIntelligenceDecay.ts</code>.</li>
         <li>UL: no dedicated stealth/detection/rival shard yet — <em>detection pressure</em>, <em>rival god</em>, <em>scheme</em>, <em>hidden mark</em>, and <em>intelligence</em> are a known documentation gap (surface a <code>UL-proposal</code> to close it, don't re-open). Rivals-from-World-Soul (rejected: fixed pantheon) is a load-bearing decision in <a href="cosmology-reference.html">the cosmology</a>.</li>
         <li>Adjacent Manual pages: <a href="threads-court-reference.html">Threads, the Court &amp; The First</a> (the mortal-awareness ladder — the <em>other</em> audience), <a href="encounters-manual-reference.html">Encounters &amp; Aftermath</a> (how a rival strike or a mark reveal surfaces, and where hidden marks are planted), <a href="clocks-reference.html">Doom, the Mandate &amp; Omens</a> (the doom stage that escalates schemes), <a href="world-map-reference.html">The World: Hexes, Terrain &amp; Sight</a> (the regions detection pressure is keyed to). Game title in player copy: <strong>Threadbearer</strong>.</li>
       </ul>
 
       <h3>Open questions <span class="flag open">OPEN</span></h3>
       <ul>
-        <li>None minted here. The clearest honest gaps are the dormant per-actor two-audience model (<code>stealth.ts</code> authored + tested but unwired — whether to activate it or fold it into region pressure), and the missing UL stealth/detection/rival shard. Both are design/documentation debt, referenced not opened. New open questions surface in chat and land in the rulebook's Open Questions list, never on this page.</li>
+        <li>None minted here. The clearest honest gap is the missing UL stealth/detection/rival shard (the unwired per-actor model was deleted in THR-2049). It is documentation debt, referenced not opened. New open questions surface in chat and land in the rulebook's Open Questions list, never on this page.</li>
       </ul>
 
     </div>

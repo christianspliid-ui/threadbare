@@ -173,7 +173,7 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
     writes: "`wealth` and `lastWealthReason` on the target mortal, through `bankWealth` (THR-1936)",
     consumers: [
       acts('src/engine/phaseEconomicTraits.ts', 'readWealth'),
-      acts('src/engine/actionCandidates.ts', 'wealth'),
+      acts('src/engine/decisionBoard.ts', 'readWealth'),
     ],
   },
   quintessence_shift: {

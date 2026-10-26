@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { fillDepressions } from '../depressionFilling';
 import { createWorldGenData } from '../worldGenData';
-import { generateLakes } from '../lakeGeneration';
 
 describe('fillDepressions', () => {
   it('fills a known depression so drainageElevation >= neighbors', () => {
@@ -49,7 +48,6 @@ describe('fillDepressions', () => {
     const data = createWorldGenData(20, 15, 42);
     const originalElev = new Float32Array(data.elevation);
 
-    generateLakes(data);
     fillDepressions(data);
 
     expect(data.elevation).toEqual(originalElev);
@@ -57,11 +55,9 @@ describe('fillDepressions', () => {
 
   it('is deterministic: same input produces same output', () => {
     const a = createWorldGenData(20, 15, 42);
-    generateLakes(a);
     fillDepressions(a);
 
     const b = createWorldGenData(20, 15, 42);
-    generateLakes(b);
     fillDepressions(b);
 
     expect(a.drainageElevation).toEqual(b.drainageElevation);
@@ -70,7 +66,6 @@ describe('fillDepressions', () => {
 
   it('resolves all hexes (no unresolved gaps)', () => {
     const data = createWorldGenData(20, 15, 42);
-    generateLakes(data);
     fillDepressions(data);
 
     // Every hex should have drainageElevation >= its original elevation

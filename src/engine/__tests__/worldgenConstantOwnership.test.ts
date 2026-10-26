@@ -24,7 +24,8 @@
  * Three guards, because the failure has three independent halves:
  *   1. No constant name is declared by more than one worldgen constants module.
  *   2. Every panel row resolves to a live module and is identity-equal to it.
- *   3. The four THR-1409 constants specifically still point at their owner.
+ *   3. The THR-1409 constants that still have a reader point at their owner
+ *      (the two lake limits were retired in THR-2049 with their dead generator).
  *
  * Guard 1 alone would not have caught a panel re-pointed at a third module,
  * guard 2 alone would not have caught a fresh duplicate nothing renders yet,
@@ -139,8 +140,6 @@ describe('worldgen constant ownership (THR-1409, THR-1418)', () => {
      */
     const expectations: ReadonlyArray<readonly [string, number, string]> = [
       ['RIVER_MIN_LENGTH', worldGenData.RIVER_MIN_LENGTH, 'src/engine/worldGenData.ts'],
-      ['LAKE_SIZE_MAX', worldGenData.LAKE_SIZE_MAX, 'src/engine/worldGenData.ts'],
-      ['GREAT_LAKE_SIZE_MAX', worldGenData.GREAT_LAKE_SIZE_MAX, 'src/engine/worldGenData.ts'],
       ['TEMP_ALTITUDE_PENALTY', worldgenConstants.TEMP_ALTITUDE_PENALTY, 'src/engine/worldgen/constants.ts'],
     ];
 
@@ -154,12 +153,12 @@ describe('worldgen constant ownership (THR-1409, THR-1418)', () => {
     }
   });
 
-  it('the generators and the panel agree on the river and lake limits', () => {
-    // The consumer side of the same contract, asserted against the modules that
-    // actually run: riverGeneration and lakeGeneration both import from
-    // worldGenData, so these are the numbers in force during worldgen.
+  it('the generators and the panel agree on the river limits', () => {
+    // The consumer side of the same contract, asserted against the module that
+    // actually runs: riverGeneration imports from worldGenData, so these are the
+    // numbers in force during worldgen. (The lake-size limits went with the dead
+    // lakeGeneration.ts in THR-2049; live lakes are promoted by depressionLakes.ts.)
     expect(worldGenData.RIVER_MIN_LENGTH).toBeGreaterThan(0);
-    expect(worldGenData.LAKE_SIZE_MAX).toBeLessThan(worldGenData.GREAT_LAKE_SIZE_MAX);
     expect(worldGenData.RIVER_SOURCE_COUNT_MIN).toBeLessThan(worldGenData.RIVER_SOURCE_COUNT_MAX);
   });
 });

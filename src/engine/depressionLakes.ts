@@ -53,7 +53,7 @@ export function promoteDepressionLakes(data: WorldGenData): void {
   for (let i = 0; i < total; i++) {
     if (visited[i]) continue;
     if (filledDepth[i] <= 0) continue;
-    if (terrain[i] === 'lake') continue; // already a lake from generateLakes
+    if (terrain[i] === 'lake') continue; // already a lake (promoted earlier in this pass)
 
     // Flood-fill this depression cluster
     const cluster: number[] = [i];

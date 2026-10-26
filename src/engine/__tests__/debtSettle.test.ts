@@ -15,7 +15,6 @@ import { compareDebtsOldestFirst, listDebtsOwedTo, settleDebt } from '../debtSet
 import { countDebts, phaseEconomicTraits } from '../phaseEconomicTraits';
 import { getAgentAttachments, agreementLine } from '../agentAttachments';
 import { readAgreement } from '../agreementShape';
-import { getRelationship } from '../encounters/relationshipResolver';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { DEBT_REPAY_MEANS, LOAN_PRINCIPAL_MEANS, MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from '../../data/mortal-means-constants';
@@ -387,8 +386,13 @@ describe('THR-2023 sheet words', () => {
   });
 });
 
-/** The first-edge reader's sentiment between borrower and lender (undefined when no edge). */
+/**
+ * The first-edge sentiment between borrower and lender (undefined when no edge): the first
+ * `relates_to` edge borrower → lender, else lender → borrower, read the way the bond readers do.
+ */
 function relSentiment(graph: WorldGraph): number | undefined {
-  const r = getRelationship(graph, BORROWER, LENDER);
-  return 'sentiment' in r ? r.sentiment : undefined;
+  const edge = graph.getOutgoingEdges(BORROWER, 'relates_to').find(e => e.target === LENDER)
+    ?? graph.getIncomingEdges(BORROWER, 'relates_to').find(e => e.source === LENDER);
+  if (!edge) return undefined;
+  return (edge.properties.sentiment as number | undefined) ?? 0;
 }

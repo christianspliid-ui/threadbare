@@ -38,7 +38,7 @@ import { SECRET_DISCOVERY_ENCOUNTER_TEMPLATES } from './secret-encounter-content
  * principal moves lender → borrower, and a failed band adds the borrower's resentment.
  *
  * The resentment comes FIRST. Agreements and bonds are both `relates_to` edges, and the
- * relationship readers (`getRelationship`, `findBond`) take the first edge between two
+ * relationship readers (and `applyBondEdge`) take the first edge between two
  * people. Written after the debt, the bond would land on the debt edge and vanish when
  * the debt is settled; written before it, the bond is its own edge and is found first.
  */

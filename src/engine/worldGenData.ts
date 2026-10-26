@@ -12,11 +12,6 @@ export const RIVER_SOURCE_ELEVATION_THRESHOLD = 0.7;
 /** Min hex distance between river spring sources (prevents parallel rivers) */
 export const RIVER_SOURCE_MIN_DISTANCE = 3;
 
-export const LAKE_SIZE_MIN = 1;
-export const LAKE_SIZE_MAX = 5;
-export const GREAT_LAKE_SIZE_MAX = 12;
-export const GREAT_LAKE_COUNT = 1;
-export const LAKE_BLOB_RADIUS_FACTOR = 0.6;
 
 // ─── Depression filling constants ────────────────────────────────
 /** Tiny elevation bump per filled hex for strict downhill ordering */

@@ -148,7 +148,7 @@ export const BEHAVIOR_ICONS: Record<string, string> = {
 };
 
 // ============================================================================
-// Tick Event Type Colors (NarrativeLog, NarrativeFeed)
+// Tick Event Type Colors (NarrativeLog)
 // ============================================================================
 export const TICK_EVENT_COLORS: Record<TickEvent['type'], string> = {
   agent_action: '#d4a574',

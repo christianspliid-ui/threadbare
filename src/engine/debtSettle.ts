@@ -93,7 +93,7 @@ export function listDebtsOwedTo(
  * Bonds and agreements are both `relates_to` edges, and `bond_change` writes onto the first
  * edge between two people, which can be a debt. When the settle removes that debt, the bond
  * it carried (`sentiment`, `trust`) moves onto the edge the readers will find first once it is
- * gone — the same first-edge lookup `applyBondEdge` and `getRelationship` use, agreement or
+ * gone — the same first-edge lookup `applyBondEdge` and the bond readers use, agreement or
  * not — or onto a new one, so paying off a debt never erases how the two feel about each other.
  * (Carrying it onto a bare bond edge behind a younger debt would hide it from those readers.)
  */
