@@ -18,11 +18,13 @@ import { EMBARGO_CHRONICLE_TITLES } from '../data/embargo-chronicle-content';
 import type { TickEvent } from '../types/gameState';
 import type { ChronicleChapter } from '../types/chronicle';
 import type { SphereName } from '../types/index';
+import type { ResourceClassCategory } from '../data/resource-classes';
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 import {
   ECONOMIC_CHRONICLE_TEMPLATES,
   ECONOMIC_CHRONICLE_SIGNIFICANCE,
+  RESOURCE_WANT_CHRONICLE_TEMPLATES,
   WEALTH_TIER_FLAVOR,
   GUILD_FOUNDING_FLAVOR,
   type EconomicChronicleTrigger,
@@ -100,6 +102,11 @@ export interface EconomicChronicleContext {
   hexCoords?: { col: number; row: number };
   /** Sphere coloring for the event */
   sphere?: SphereName;
+  /**
+   * The resource's class category (THR-2070). On `resource_scarcity` / `resource_glut`,
+   * `'strategic'` draws the want-of-goods pool instead of the food (famine) pool.
+   */
+  resourceCategory?: ResourceClassCategory;
 }
 
 // ─── Fail-soft name resolution ──────────────────────────────────────────────
@@ -182,7 +189,12 @@ export function resolveEconomicChronicle(
   tick: number,
   seed: number,
 ): EconomicChronicleResult | null {
-  const templates = ECONOMIC_CHRONICLE_TEMPLATES[trigger];
+  // THR-2070 — a strategic good's shortage is a want of goods, not a famine.
+  const wantPool = context.resourceCategory === 'strategic'
+    && (trigger === 'resource_scarcity' || trigger === 'resource_glut')
+    ? RESOURCE_WANT_CHRONICLE_TEMPLATES[trigger]
+    : undefined;
+  const templates = wantPool ?? ECONOMIC_CHRONICLE_TEMPLATES[trigger];
   if (!templates || templates.length === 0) return null;
 
   const rng = mulberry32(seed);

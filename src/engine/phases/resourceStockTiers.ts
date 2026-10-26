@@ -54,6 +54,11 @@ function resourceName(resourceId: string): string {
   return RESOURCE_DEFINITIONS[resourceId]?.name ?? resourceId;
 }
 
+/** The good as a word mid-sentence — "the stone", never "the Stone" (THR-2070). */
+function resourceWord(resourceId: string): string {
+  return (RESOURCE_DEFINITIONS[resourceId]?.name ?? resourceId.replace(/_/g, ' ')).toLowerCase();
+}
+
 /**
  * Existing active livelihood-tug keys `${agentId}::${resourceId}`, used to avoid
  * re-pulling the same thread every tick while a famine/glut persists.
@@ -212,10 +217,11 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
           trigger,
           {
             settlement: loc.name,
-            resource: resourceName(resourceId),
+            resource: resourceWord(resourceId),
             locationId: loc.id,
             hexCoords,
             sphere: cls.primarySphere,
+            resourceCategory: cls.category,
           },
           tick,
           state.seed + hashString(loc.id + resourceId),

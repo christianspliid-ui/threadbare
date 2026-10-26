@@ -109,6 +109,26 @@ export const ECONOMIC_CHRONICLE_SIGNIFICANCE: Record<EconomicChronicleTrigger, n
 // ─── Chronicle Templates ────────────────────────────────────────────────────
 
 /**
+ * Stock crossings for a strategic good — stone, timber, ore, peat (THR-2070). A town
+ * short of stone is not starving: its builders and smiths wait. No hunger or famine
+ * word belongs here, and nothing rots.
+ */
+export const RESOURCE_WANT_CHRONICLE_TEMPLATES: Record<'resource_scarcity' | 'resource_glut', string[]> = {
+  resource_scarcity: [
+    'Builders at {settlement} wait for {resource} that does not come.',
+    'The {resource} at {settlement} has run short. Work stands half-done, and the price of what is left climbs.',
+    '{settlement} counts its {resource} now, and finds too little. Whatever it meant to build will have to wait.',
+    'Word from {settlement}: the {resource} is scarce. The yards are quiet, and those who hold any name their price.',
+  ],
+  resource_glut: [
+    'A glut of {resource} has swamped {settlement}. It sells for almost nothing, and those who traded in it are ruined.',
+    '{settlement} has more {resource} than it can use. It piles in the yards while its worth collapses.',
+    'The {resource} floods {settlement}\'s markets. Cheap plenty for the builder, quiet ruin for the seller.',
+    'So much {resource} has come to {settlement} that no one will pay for it. The abundance is its own kind of trouble.',
+  ],
+};
+
+/**
  * Multiple template variants per trigger. The resolver picks one via PRNG.
  * Templates use {placeholder} syntax resolved from EconomicChronicleContext.
  */
@@ -225,6 +245,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
   ],
 
   // Mortal economy — resource stock crossings (THR-615). Baseline register.
+  // These are the food lines, for staples; strategic goods draw
+  // RESOURCE_WANT_CHRONICLE_TEMPLATES instead (THR-2070).
   resource_scarcity: [
     'Famine has come to {settlement}. The {resource} has run short, and the people go hungry.',
     'The {resource} at {settlement} has failed. Prices climb, tempers fray, and the poor go without.',
