@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 08:00 local (07:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 08:56 local (07:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -48,15 +48,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready, all waiting out their veto windows; the builder is working the one job that was free.**
+**Healthy: 6 ready, all waiting out their veto windows; nothing is being built because nothing is free yet.**
 
-- **[The First's temperament now counts toward how its story ends](https://linear.app/threadbare/issue/THR-2034/return-archetype-reads-never-match-the-usurper-bypass-and-the) shipped** via [#2591](https://github.com/christianspliid-ui/threadbare/pull/2591) and is live. Expect endings to shift a little.
-- **Being built now:** [removing eight pieces of old code the game no longer uses](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its). Nothing changes on screen.
+- **Two cleanups shipped and are live:** [eight pieces of old code the game no longer used](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its) are gone ([#2592](https://github.com/christianspliid-ui/threadbare/pull/2592)), and so are [three settings that no longer changed anything](https://linear.app/threadbare/issue/THR-2050/authored-knobs-with-no-reader-minwealthrequired-on-five-action) ([#2593](https://github.com/christianspliid-ui/threadbare/pull/2593)). Nothing changes on screen.
 - Next to open: [THR-1929](https://linear.app/threadbare/issue/THR-1929) (sequels wait for their place) at 15:29 today, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50, [THR-2031](https://linear.app/threadbare/issue/THR-2031) (relic take-up) Tuesday at 03:42, and [THR-2048](https://linear.app/threadbare/issue/THR-2048) (a place held after success) Tuesday at 06:45.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **The long simulation checks after each merge are running out of time.** Runs since Friday keep getting cut off at the 45-minute limit; the latest was [#2590](https://github.com/christianspliid-ui/threadbare/pull/2590)'s merge at 06:56. They show as "cancelled", not red, so the red-main check does not catch them, and those merges went without full heavy coverage. This is CI work for an agent. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26c.md)*
-- Everything else is green. The live site serves the latest commit on main (48a3db1e). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 07:40) are healthy; no pull requests are open. Engine speed: 178 ms/tick, 12% above the 7-day median of 159, under the alarm line.
+- **The long simulation checks after each merge are running out of time.** Runs since Friday keep getting cut off at the 45-minute limit or cancelled; the last four merge runs (latest 08:19) all ended "cancelled", and only the 04:36 nightly run passed. One is running now. They show as "cancelled", not red, so the red-main check does not catch them, and those merges went without full heavy coverage. This is CI work for an agent. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26c.md)*
+- Everything else is green. The live site serves the latest commit on main (3f54d0dd). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 08:40) are healthy; no pull requests are open. Engine speed: 125 ms/tick, 22% below the 7-day median of 159.

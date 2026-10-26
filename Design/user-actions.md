@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 08:00 local (07:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 08:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: three settings that no longer changed anything are removed, and the change is live** ([THR-2050](https://linear.app/threadbare/issue/THR-2050/authored-knobs-with-no-reader-minwealthrequired-on-five-action)). Merged via [#2593](https://github.com/christianspliid-ui/threadbare/pull/2593).
+- **2026-10-26: eight pieces of old code the game no longer used are removed, and the change is live** ([THR-2049](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its)). Merged via [#2592](https://github.com/christianspliid-ui/threadbare/pull/2592).
 - **2026-10-26: the First's temperament now counts toward how its story ends, and the fix is live** ([THR-2034](https://linear.app/threadbare/issue/THR-2034/return-archetype-reads-never-match-the-usurper-bypass-and-the)). Merged via [#2591](https://github.com/christianspliid-ui/threadbare/pull/2591).
 - **2026-10-26: the ending now follows who the First was born as, and the fix is live** ([THR-2009](https://linear.app/threadbare/issue/THR-2009/founding-gates-read-a-meeting-record-field-nobody-writes-the-reach)). The founding checks read the First's own Reach, so Transcendence can now happen. Merged via [#2590](https://github.com/christianspliid-ui/threadbare/pull/2590).
 - **2026-10-26: an earlier god's relic now lies at its place, and the fix is live** ([THR-2030](https://linear.app/threadbare/issue/THR-2030)). Its page, its site's connections and Dominion all find it. Merged via [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588).
@@ -50,8 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-25: debts in the money encounters are merged and live** ([THR-2023](https://linear.app/threadbare/issue/THR-2023)): a debt collected is cleared, The Loan names a lender. Merged via [#2583](https://github.com/christianspliid-ui/threadbare/pull/2583) after three review cycles.
 - **2026-10-25: the plan for faction commissions paying their takers is merged** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)), via [#2582](https://github.com/christianspliid-ui/threadbare/pull/2582). Its three calls sit in the briefing's *Decided for you* until 21:53 today.
 - **2026-10-25: every measurement and census script now fits one 10-minute command with no flags** ([THR-2041](https://linear.app/threadbare/issue/THR-2041)). Merged via [#2581](https://github.com/christianspliid-ui/threadbare/pull/2581) and live.
-- **2026-10-25: the weekly review lane is live and the five old review lanes are off** ([THR-1950](https://linear.app/threadbare/issue/THR-1950)). Registered via [#2579](https://github.com/christianspliid-ui/threadbare/pull/2579); its first run wrote [the weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md).
-- **2026-10-25: four encounters' declared Reach now matches the steps they roll** ([THR-2038](https://linear.app/threadbare/issue/THR-2038)). Merged via [#2577](https://github.com/christianspliid-ui/threadbare/pull/2577).
 
 ---
 
