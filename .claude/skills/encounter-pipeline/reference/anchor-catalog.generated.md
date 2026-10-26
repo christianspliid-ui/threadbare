@@ -7,7 +7,7 @@
 
 **What this is for.** Law 56's second clause requires a chip's referent to be an existing graph object, resolvable in the live world the player is in, and requires the chip's prose to name *that particular object*. This catalog is the list of objects that sentence can be about. THR-1153's anchor-resolution gate checks the declaration forms in the fourth column.
 
-**Totals.** 65 anchorable members across 82 classified.
+**Totals.** 66 anchorable members across 83 classified.
 
 ## How to read the status column
 
@@ -301,6 +301,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 | `will_succeed` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
 | `leads` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet |
 | `commissions` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the quest itself |
+| `took_up` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The taker's Means change in the aftermath, and their sheet's Means tooltip |
 | `issues` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The faction sheet posted-work list, and the bounty itself |
 | `sacred_route` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The consecrating actor sheet, and the destination location |
 | `reputation_with` | Relationship (edge) | 📍 named | — | Anchor **both endpoint nodes** by `entityId`; the edge itself has no page | The counterparty profile — the Location Profile standing row, or the agent Standings section |
@@ -332,6 +333,7 @@ The director's *"a particular relationship (edge) between objects"*. An edge has
 - **`knows_of`** — Familiarity, created when a clue is consumed at convergence.
 - **`leads`** — Authoritative for the seated leader when present.
 - **`commissions`** — Anchor the faction and the quest event node; the edge carries only `expiryTick`.
+- **`took_up`** — Anchor the mortal, not the posting: the player reads "a commission their faction paid for" on the taker. The edge carries only `tick` (THR-2042).
 - **`issues`** — Anchor the faction and the bounty event node; the edge carries only `expiryTick`.
 - **`sacred_route`** — KNOWN GAP: nothing consumes this edge yet (THR-1184), so a chip naming it would report a write that changes nothing — do not anchor one until a consumer exists.
 - **`reputation_with`** — Anchor the *counterparty*, not the edge: the chip says "reputation with X", so X is what the player clicks through to.
