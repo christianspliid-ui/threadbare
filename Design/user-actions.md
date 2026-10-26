@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 21:55 local (20:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 22:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: a faction's commission now pays the member who takes it up, and an untaken one goes back to the purse; the fix is live** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)). Merged via [#2613](https://github.com/christianspliid-ui/threadbare/pull/2613).
+- **2026-10-26: you waived the veto on "new things arrive one at a time".** Its first half is being built now ([THR-2060](https://linear.app/threadbare/issue/THR-2060)); the readouts half ([THR-2061](https://linear.app/threadbare/issue/THR-2061)) is next in line. The plan for a bounty collected in a duel is merged too ([THR-2072](https://linear.app/threadbare/issue/THR-2072), [#2612](https://github.com/christianspliid-ui/threadbare/pull/2612)); its calls sit in the briefing's *Decided for you* until Tuesday 21:05 UTC.
 - **2026-10-26: a town short of stone, ore or timber no longer "goes hungry" in the chronicle, and the fix is live** ([THR-2070](https://linear.app/threadbare/issue/THR-2070)). Merged via [#2611](https://github.com/christianspliid-ui/threadbare/pull/2611).
 - **2026-10-26: the plan for salt, the good the smugglers carry, is merged** ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), via [#2609](https://github.com/christianspliid-ui/threadbare/pull/2609). Its four calls sit in the briefing's *Decided for you* until Tuesday 18:03 UTC.
 - **2026-10-26: three more fixes are live.** [A follow-up scene waits for its place](https://linear.app/threadbare/issue/THR-1929) ([#2605](https://github.com/christianspliid-ui/threadbare/pull/2605)), [a mortal's trade steers what they choose](https://linear.app/threadbare/issue/THR-2067) ([#2606](https://github.com/christianspliid-ui/threadbare/pull/2606)) and [tavern follow-ups can happen](https://linear.app/threadbare/issue/THR-2039) ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)).
@@ -46,8 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: the plan for making the chosen path steer her chapters is merged** ([THR-2059](https://linear.app/threadbare/issue/THR-2059)), via [#2603](https://github.com/christianspliid-ui/threadbare/pull/2603). Its build ticket is [THR-2068](https://linear.app/threadbare/issue/THR-2068); its four calls sit in the briefing’s *Decided for you* until Tuesday 14:30 UTC.
 - **2026-10-26: a chapter the world opens no longer lands on your click, and the fix is live** ([THR-2053](https://linear.app/threadbare/issue/THR-2053)). Merged via [#2599](https://github.com/christianspliid-ui/threadbare/pull/2599).
 - **2026-10-26: the map no longer drifts to the right edge after a chapter, and the fix is live** ([THR-2056](https://linear.app/threadbare/issue/THR-2056)). Merged via [#2600](https://github.com/christianspliid-ui/threadbare/pull/2600).
-- **2026-10-26: a First's chapter no longer plays out unseen, and the fix is live** ([THR-2052](https://linear.app/threadbare/issue/THR-2052)). Merged via [#2597](https://github.com/christianspliid-ui/threadbare/pull/2597).
-- **2026-10-26: the First's own page now agrees she is bound to you, and the fix is live** ([THR-2054](https://linear.app/threadbare/issue/THR-2054)). Merged via [#2598](https://github.com/christianspliid-ui/threadbare/pull/2598).
 
 ---
 
