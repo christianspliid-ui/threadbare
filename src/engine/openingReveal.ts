@@ -175,13 +175,16 @@ function rowState(
 ): OpeningRevealRowState {
   const t = row.trigger;
   if (t.kind === 'bond') return { revealed: true, reason: 'at_bond' };
-  if (ctx.ceilingPassed) return { revealed: true, reason: 'ceiling' };
-  if (t.kind === 'ceiling') return { revealed: false, reason: 'waiting:ceiling' };
+  // Rivals wait for a real act even past the ceiling: the top bar's Rivals item is
+  // gated on the same act (`useFirstScreenReveal`), so an earlier arrival would
+  // announce a panel that cannot show.
   if (t.kind === 'rival_acted') {
     return hasRivalActed(state)
       ? { revealed: true, reason: 'rival_acted' }
       : { revealed: false, reason: 'waiting:rival_acted' };
   }
+  if (ctx.ceilingPassed) return { revealed: true, reason: 'ceiling' };
+  if (t.kind === 'ceiling') return { revealed: false, reason: 'waiting:ceiling' };
   if (t.kind === 'first_chapter') {
     return ctx.firstChapter
       ? { revealed: true, reason: 'first_chapter' }

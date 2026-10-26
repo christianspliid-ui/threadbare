@@ -269,13 +269,14 @@ describe('opening reveal copy (THR-1837 C2–C4)', () => {
   });
 
   it('a ceiling reveal says nothing more is hidden', () => {
-    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS }));
+    // THR-2060: Rivals wait for a rival's act even past the ceiling, so one has acted here.
+    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS, rivalActed: true }));
     expect(revealToastFor(new Set(['notables', 'reaches', 'world_soul', 'omen']), r))
       .toBe('New beside the map: Notables, your Reaches, the World-Soul and Omens. The people this world talks about. Some may be worth a thread. Nothing more is hidden.');
   });
 
   it('THR-2060: a queued ceiling arrival says nothing more is hidden only once the queue is empty', () => {
-    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS }));
+    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS, rivalActed: true }));
     const ready = readyQueuedSurfaces(r);
     const partial = applyArrivalLedger(r, seedArrivalLedger(ready.slice(0, 1), 300));
     expect(revealToastFor(new Set([ready[0]]), partial)).not.toContain('Nothing more is hidden');
@@ -333,7 +334,12 @@ describe('the arrival queue (THR-2060 E1–E2)', () => {
   it('past the ceiling every row is ready, and they still arrive one per step', () => {
     const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS }));
     const ready = readyQueuedSurfaces(r);
-    expect(ready).toEqual(['chapter_ledger', 'notables', 'reaches', 'dominion', 'doom', 'rivals', 'mandate', 'investiture', 'lens_threads', 'world_soul', 'omen', 'lens_trade']);
+    // Rivals are not ready without a rival's act, ceiling or not (review-gate round 1).
+    expect(ready).toEqual(['chapter_ledger', 'notables', 'reaches', 'dominion', 'doom', 'mandate', 'investiture', 'lens_threads', 'world_soul', 'omen', 'lens_trade']);
+    expect(r.rows.rivals).toEqual({ revealed: false, reason: 'waiting:rival_acted' });
+    // With every other row arrived, Rivals still waiting means the ceiling line cannot claim nothing is hidden.
+    const allButRivals = applyArrivalLedger(r, seedArrivalLedger(ready, 300));
+    expect(revealToastFor(new Set(['lens_trade']), allButRivals)).not.toContain('Nothing more is hidden');
     let l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(210));
     expect(arrivedOf(l)).toEqual(['chapter_ledger']);
     expect(releaseOpeningArrivals(l, ready, at(211))).toBe(l);

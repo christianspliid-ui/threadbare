@@ -87,7 +87,9 @@ export function revealToastFor(
     const r = reveal.rows[row.surface];
     if (r.reason === 'ceiling' || r.readyReason === 'ceiling') byCeiling = true;
   }
-  return formatOpeningRevealToast(labels, byCeiling && reveal.queued.length === 0, caption);
+  // "Nothing more is hidden" only when no labelled row still waits (queued, or for Rivals' first act).
+  const stillHidden = OPENING_REVEAL_TABLE.some(row => row.newLabel && !reveal.rows[row.surface].revealed);
+  return formatOpeningRevealToast(labels, byCeiling && !stillHidden, caption);
 }
 
 /** Advance the ledger one render; a throw lets every ready row arrive (today's screen, fail-soft). */
