@@ -12,7 +12,7 @@
 import type { WorldGraph } from './graph';
 import type { DigestEntry, TensionKind, ThreadStoryComposedTrace } from '../types/attention';
 import type { ReachDomain } from '../types/traits';
-import { queryDigest } from './digestBuffer';
+import { queryDigest, digestEntryWon } from './digestBuffer';
 import { gatherNarrativeContext, enrichProse } from './proseEnrichment';
 import { emitTrace } from './traceBuffer';
 import {
@@ -125,7 +125,10 @@ export function selectBeats(
   lookbackTicks: number = STORY_DIGEST_LOOKBACK_TICKS,
 ): SelectedBeat[] {
   const fromTick = Math.max(0, currentTick - lookbackTicks);
-  const entries = queryDigest(buffer, { agentId, fromTick, toTick: currentTick });
+  // THR-2055: an entry filed before its chapter resolved says nothing about how
+  // it went, so it cannot be told as a beat until it is settled.
+  const entries = queryDigest(buffer, { agentId, fromTick, toTick: currentTick })
+    .filter(e => !e.unresolved);
 
   if (entries.length === 0) return [];
 
@@ -227,7 +230,8 @@ function buildBeatLine(beat: SelectedBeat, agentName: string, graph: WorldGraph)
   // THR-1606: a cast filed on this mortal tells its own line, verbatim.
   if (beat.entry.castLine) return beat.entry.castLine;
   const reach = beat.entry.reachPrimary ?? 'iron';
-  const outcome = beat.entry.success ? 'success' : 'failure';
+  // THR-2055: keyed by the band, so the line agrees with the aftermath's word.
+  const outcome = digestEntryWon(beat.entry) ? 'success' : 'failure';
   const templateKey = `${beat.role}_${reach}_${outcome}` as const;
 
   const variants =

@@ -273,7 +273,7 @@ import { applySuppressions } from './effects/effectSuppression';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { checkMidEncounterPromotion, isNotableEntry } from './attentionTier';
 import type { EncounterPromotionTrace, DigestEntry } from '../types/attention';
-import { appendDigestEntry } from './digestBuffer';
+import { appendDigestEntry, digestAgentName } from './digestBuffer';
 import { phaseAttention } from './phaseAttention';
 import { phaseSlotCaps, phaseDisposalTimeout } from './phaseSlotCaps';
 import { resetUnifiedActionCounter } from './unifiedActionLifecycle';
@@ -1274,7 +1274,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       const digestTemplate = getAnyEncounterById(progress.encounterId);
       const digestEntry: DigestEntry = {
         agentId: progress.actorId,
-        agentName: digestAgentNode?.properties?.name ?? digestAgentNode?.name ?? 'Unknown',
+        agentName: digestAgentName(digestAgentNode),
         encounterId: progress.encounterId,
         encounterName: digestTemplate?.name ?? 'Unknown Encounter',
         encounterType: digestTemplate?.encounterType ?? 'explore',

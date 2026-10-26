@@ -9,7 +9,86 @@
  */
 
 import type { DigestEntry } from '../types/attention';
+import type { UnifiedActionOutcome } from '../types/unifiedAction';
 import { DIGEST_BUFFER_RETENTION } from '../data/attention-constants';
+import { outcomePhrase } from './aftermathWords';
+
+// ─── THR-2055: who, and how it went ──────────────────────────────────────────
+
+/** Fallback when an entry's agent has no node left to name it. */
+export const DIGEST_UNNAMED_AGENT = 'Someone';
+
+/** Fallback chapter name when the action or its template is gone. */
+export const MISSED_CHAPTER_NAME = 'A chapter';
+
+/**
+ * The name a digest entry files under. Agents carry it on `node.name`;
+ * `properties.name` is checked first for the few writers that set it there.
+ */
+export function digestAgentName(
+  node: { name?: string; properties?: Record<string, unknown> } | undefined,
+): string {
+  const fromProps = node?.properties?.name;
+  if (typeof fromProps === 'string' && fromProps.length > 0) return fromProps;
+  return node?.name || DIGEST_UNNAMED_AGENT;
+}
+
+/** Bands the aftermath tells as lost (`aftermathWords` OUTCOME_SENTENCE_SHAPES: "lost"). */
+const LOST_BANDS: ReadonlySet<UnifiedActionOutcome> = new Set<UnifiedActionOutcome>([
+  'failure', 'critical_failure', 'contested_lost',
+]);
+
+/**
+ * Did this entry's chapter go the mortal's way? The band wins over `success`,
+ * so the digest line agrees with the aftermath's word for the same chapter.
+ */
+export function digestEntryWon(entry: Pick<DigestEntry, 'success' | 'outcomeBand'>): boolean {
+  if (entry.outcomeBand) return !LOST_BANDS.has(entry.outcomeBand);
+  return entry.success;
+}
+
+/**
+ * How the chapter went, for a player surface: the aftermath's own phrase when
+ * the band is known ("It faltered", "Won, at a price"), "Still unfolding" when
+ * the entry was filed before it resolved.
+ */
+export function digestOutcomeLabel(entry: Pick<DigestEntry, 'success' | 'outcomeBand' | 'unresolved'>): string {
+  if (entry.unresolved) return 'Still unfolding';
+  const phrase = outcomePhrase(entry.outcomeBand);
+  if (phrase) return phrase.charAt(0).toUpperCase() + phrase.slice(1);
+  return digestEntryWon(entry) ? 'Success' : 'Failed';
+}
+
+/**
+ * Fill in the outcome of every entry written for `encounterId` before it
+ * resolved. Replaces those entries with settled copies (the buffer is the
+ * caller's own working copy; the entry objects may still be shared with the
+ * previous state). Returns how many it settled.
+ */
+export function settleDigestOutcome(
+  buffer: DigestEntry[],
+  encounterId: string,
+  outcome: UnifiedActionOutcome,
+): number {
+  let settled = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    const e = buffer[i];
+    if (!e.unresolved || e.encounterId !== encounterId) continue;
+    buffer[i] = { ...e, unresolved: false, outcomeBand: outcome, success: !LOST_BANDS.has(outcome) };
+    settled++;
+  }
+  return settled;
+}
+
+/** One entry per agent, newest kept — a list that names mortals names each once. */
+export function oneEntryPerAgent(entries: readonly DigestEntry[]): DigestEntry[] {
+  const byAgent = new Map<string, DigestEntry>();
+  for (const e of entries) {
+    const prev = byAgent.get(e.agentId);
+    if (!prev || e.tick >= prev.tick) byAgent.set(e.agentId, e);
+  }
+  return [...byAgent.values()];
+}
 
 // ─── Query interface ──────────────────────────────────────────────────────────
 

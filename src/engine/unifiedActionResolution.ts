@@ -209,7 +209,7 @@ import { composeDealtStepFromState, isDealtNudgeId } from './encounters/dealHand
 import type { EncounterChoiceMemory } from '../types/encounter';
 import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/contentShells';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
-import { appendDigestEntry } from './digestBuffer';
+import { appendDigestEntry, digestAgentName, settleDigestOutcome } from './digestBuffer';
 import { snapshotCastTarget, snapshotTargetChanges, targetSideChanges, castDigestEntry } from './castTargetChanges';
 import { realmBorderMap } from './realmBorderMap';
 import { resolvePrayerCast } from './prayers';
@@ -4406,13 +4406,14 @@ export function phaseUnifiedActionProgress(
       const digestAgentNode = state.graph.getNode(completing_action.actorId);
       const digestEntry: DigestEntry = {
         agentId: completing_action.actorId,
-        agentName: digestAgentNode?.properties?.name ?? digestAgentNode?.name ?? 'Unknown',
+        agentName: digestAgentName(digestAgentNode),
         encounterId: completing_action.templateId,
         encounterName: template.name ?? 'Unknown Action',
         encounterType: 'explore',
         reachPrimary: template.reach ?? 'iron',
         tick: state.tick,
         success: isActionSuccess(updatedAction.outcome),
+        ...(updatedAction.outcome ? { outcomeBand: updatedAction.outcome } : {}),
         significantOutcomes: [],
         capabilityChanges: {},
         attachmentsGained: [],
@@ -4428,6 +4429,14 @@ export function phaseUnifiedActionProgress(
         attachmentsLost: digestEntry.attachmentsLost,
       });
       appendDigestEntry(digestBuffer, digestEntry);
+    }
+
+    // ── THR-2055: a chapter filed before it resolved learns how it went ──
+    // A tug that lapsed unattended (or a curated-out candidate) is filed by
+    // phaseAttention with `unresolved`, keyed by this action id; settle it now
+    // so Read the Threads and the story digest tell the real band.
+    if (updatedAction.resolved && updatedAction.outcome) {
+      settleDigestOutcome(digestBuffer, updatedAction.actionId, updatedAction.outcome);
     }
 
     // ── THR-1606: the target's story remembers your hand ──

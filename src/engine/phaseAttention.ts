@@ -24,7 +24,7 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { regenAttention } from './attentionPool';
 import { scoreCurationCandidates } from './curator';
 import type { CurationCandidate } from './curator';
-import { appendDigestEntry } from './digestBuffer';
+import { appendDigestEntry, digestAgentName, digestEntryWon, MISSED_CHAPTER_NAME } from './digestBuffer';
 import {
   canFireStoryBeat,
   enqueueStoryBeat,
@@ -114,6 +114,10 @@ export function phaseAttention(
 
   const regenAmount = regenned.attentionPool - prevPool;
 
+  // Build a quick lookup map for templates
+  const templateById = new Map<string, UnifiedActionTemplate>();
+  for (const t of templates) templateById.set(t.id, t);
+
   // ── 3. Expire old tugs + produce missed-tug digest entries ───────────────
 
   const existingTugs: ThreadTug[] = state.activeThreadTugs ?? [];
@@ -129,15 +133,23 @@ export function phaseAttention(
     if (tug.attended) continue;
 
     const agentNode = state.graph.getNode(tug.agentId);
+    // THR-2055: the chapter usually outlives its tug, so the entry says how it
+    // went only when the action has already resolved; otherwise it is filed
+    // unresolved and unifiedActionResolution settles it with the real band.
+    const action = tug.actionId
+      ? state.unifiedActions.find(a => a.actionId === tug.actionId)
+      : undefined;
+    const settledOutcome = action?.resolved ? action.outcome : undefined;
     const missedEntry: DigestEntry = {
       agentId:             tug.agentId,
-      agentName:           (agentNode?.properties as Record<string, unknown> | undefined)?.name as string ?? 'Unknown',
+      agentName:           digestAgentName(agentNode),
       encounterId:         tug.encounterId,
-      encounterName:       'Missed Encounter',
+      encounterName:       (action && templateById.get(action.templateId)?.name) || MISSED_CHAPTER_NAME,
       encounterType:       'explore',
       reachPrimary:        tug.reachPrimary,
       tick:                tug.createdTick,
-      success:             true,  // auto-resolved at baseline
+      success:             settledOutcome ? digestEntryWon({ success: false, outcomeBand: settledOutcome }) : false,
+      ...(settledOutcome ? { outcomeBand: settledOutcome } : { unresolved: true }),
       significantOutcomes: [],
       capabilityChanges:   {},
       attachmentsGained:   [],
@@ -160,10 +172,6 @@ export function phaseAttention(
   //
   // Skip any encounter that already has an active tug (idempotent — prevents
   // re-curating the same encounter every tick until it resolves).
-
-  // Build a quick lookup map for templates
-  const templateById = new Map<string, UnifiedActionTemplate>();
-  for (const t of templates) templateById.set(t.id, t);
 
   // Set of actionIds that already have an active tug
   const tuggedActionIds = new Set<string>(activeTugs.map(t => t.actionId));
@@ -342,15 +350,17 @@ export function phaseAttention(
 
   for (const { candidate: c } of demoted) {
     const agentNode = state.graph.getNode(c.agentId);
+    const curatedAction = state.unifiedActions.find(a => a.actionId === c.actionId);
     const curatedOutEntry: DigestEntry = {
       agentId:             c.agentId,
-      agentName:           (agentNode?.properties as Record<string, unknown> | undefined)?.name as string ?? 'Unknown',
+      agentName:           digestAgentName(agentNode),
       encounterId:         c.encounterId,
-      encounterName:       'Curated Out',
+      encounterName:       (curatedAction && templateById.get(curatedAction.templateId)?.name) || MISSED_CHAPTER_NAME,
       encounterType:       'explore',
       reachPrimary:        c.reachPrimary as ReachDomain,
       tick:                state.tick,
-      success:             true,
+      success:             false, // THR-2055: not resolved yet — settled on resolution
+      unresolved:          true,
       significantOutcomes: [],
       capabilityChanges:   {},
       attachmentsGained:   [],

@@ -13,6 +13,7 @@
 import type { ReachDomain } from './traits';
 import type { EncounterType } from './encounter';
 import type { CourtPosition } from './influence';
+import type { UnifiedActionOutcome } from './unifiedAction';
 
 // ─── Attention Tiers ─────────────────────────────────────────────────
 
@@ -63,6 +64,18 @@ export interface DigestEntry {
    * single such beat is enough to tell a story (your hand is never dead air).
    */
   castLine?: string;
+  /**
+   * THR-2055 — the resolved action's outcome band, when the writer knew it. The
+   * digest line and Read the Threads read this before `success`, so a chapter
+   * the aftermath calls lost is never told as a win.
+   */
+  outcomeBand?: UnifiedActionOutcome;
+  /**
+   * THR-2055 — written before the action resolved (a tug that lapsed unattended,
+   * a curated-out candidate). Says nothing about how it went: `success` is false
+   * and meaningless until `settleDigestOutcome` fills in the band.
+   */
+  unresolved?: boolean;
 }
 
 // ─── Thread Tugs ─────────────────────────────────────────────────────
