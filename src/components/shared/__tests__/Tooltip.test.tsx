@@ -142,6 +142,36 @@ describe('Tooltip', () => {
     expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
   });
 
+  // THR-2057 — a click, or a closing panel handing focus back, is not keyboard
+  // focus; opening then left a popup over the next control, eating its click.
+  it('does not open on focus that is not :focus-visible', () => {
+    render(
+      <Tooltip label="Test Label">
+        <button>Click me</button>
+      </Tooltip>
+    );
+    const button = screen.getByText('Click me');
+    const matches = vi.spyOn(button, 'matches').mockImplementation((sel: string) => sel !== ':focus-visible');
+    act(() => { button.focus(); });
+    act(() => { vi.advanceTimersByTime(200); });
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+    matches.mockRestore();
+  });
+
+  it('opens on keyboard focus (:focus-visible)', () => {
+    render(
+      <Tooltip label="Test Label">
+        <button>Tab to me</button>
+      </Tooltip>
+    );
+    const button = screen.getByText('Tab to me');
+    const matches = vi.spyOn(button, 'matches').mockImplementation((sel: string) => sel === ':focus-visible');
+    act(() => { button.focus(); });
+    act(() => { vi.advanceTimersByTime(200); });
+    expect(screen.getByRole('tooltip')).toBeInTheDocument();
+    matches.mockRestore();
+  });
+
   it('hides on Escape key', () => {
     render(
       <Tooltip label="Test Label">

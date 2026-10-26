@@ -660,7 +660,9 @@ export function NudgePhaseShell({
             {nudgeHandMoreLine(cardsBelowBar)}
           </Button>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        {/* THR-2057 — in a narrow column the row wraps (the legend drops to its own
+            line) instead of crushing the count and the button to a word per line. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', rowGap: 8 }}>
           {/* Rounded down: promising essence the player cannot actually spend
               is worse than under-reporting a fraction of it. */}
           <Tooltip id="ui.nudge_essence">
@@ -671,7 +673,7 @@ export function NudgePhaseShell({
               data-testid="nudge-remaining-essence"
               {...(hand.budget ? { 'data-budget-sphere': hand.budget.sphere } : {})}
               data-paying-spheres={hand.payers.map((p) => p.sphere).join(',') || undefined}
-              style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER }}
+              style={{ fontSize: 'var(--text-xs)', color: TEXT_WHISPER, whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               {/* THR-1858 — every sphere the hand pays from, not the budget
                   sphere alone: a Chaos card's price must land on a number the
@@ -701,6 +703,8 @@ export function NudgePhaseShell({
               fontSize: 'var(--text-base)',
               letterSpacing: '0.06em',
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
             }}
           >
             {/* THR-1714 — the button names the act. With a hand staged it is
@@ -736,7 +740,7 @@ export function NudgePhaseShell({
               <Tooltip id="ui.nudge_glyphs">
                 <span
                   data-testid="nudge-glyph-legend"
-                  style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto', flexWrap: 'wrap' }}
                 >
                   {NUDGE_GLYPH_LEGEND.map((entry) => (
                     <span

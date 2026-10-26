@@ -52,6 +52,7 @@ import {
 import { FormativeTestBeat } from '../MeetTheFirst/FormativeTestBeat';
 import { SparkBeat } from '../MeetTheFirst/SparkBeat';
 import { BondBeat } from '../MeetTheFirst/BondBeat';
+import { personalizeBondTest } from '../../engine/bondTestVoice';
 import { buildMeetingNudgePhaseModel, meetingSpendRequests } from '../MeetTheFirst/buildMeetingNudgePhaseModel';
 import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
 import type { NudgeSpendRequest } from '../Game/encounter-stage/nudgeCommit';
@@ -373,20 +374,22 @@ function BondOnlyRite({
   onBondWithoutHand,
 }: BondOnlyRiteProps) {
   const [outcome, setOutcome] = useState<BondOutcome | null>(null);
+  // THR-2057: the bond test names this mortal and uses their pronouns.
+  const bondTest = useMemo(() => personalizeBondTest(RITE_BOND_ONLY_TEST, name, gender), [name, gender]);
   const phase = useMemo(() => buildMeetingNudgePhaseModel({
-    test: RITE_BOND_ONLY_TEST,
-    testId: RITE_BOND_ONLY_TEST.id,
+    test: bondTest,
+    testId: bondTest.id,
     stepIndex: BOND_ONLY_STEP_INDEX,
     essencePool,
     agentName: name,
     primarySphere,
-  }), [essencePool, name, primarySphere]);
+  }), [bondTest, essencePool, name, primarySphere]);
 
   const handleCommit = useCallback((nudgeIds: string[]) => {
-    const requests = meetingSpendRequests(RITE_BOND_ONLY_TEST, nudgeIds);
+    const requests = meetingSpendRequests(bondTest, nudgeIds);
     if (requests.length > 0) onSpendEssence?.(BOND_ONLY_STEP_INDEX, requests);
-    setOutcome(resolveBondTest(RITE_BOND_ONLY_TEST, nudgeIds, seed));
-  }, [seed, onSpendEssence]);
+    setOutcome(resolveBondTest(bondTest, nudgeIds, seed));
+  }, [bondTest, seed, onSpendEssence]);
 
   const fateLine = outcome ? selectBondFateLine(outcome, name) : null;
 

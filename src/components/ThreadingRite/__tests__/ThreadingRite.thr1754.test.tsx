@@ -109,7 +109,9 @@ describe('THR-1754 — ThreadingRite', () => {
     expect(screen.getByText('Your fourth thread')).toBeTruthy();
     const hand = screen.getByTestId('threading-rite-bond-only-hand');
     expect(hand.textContent).toContain('Still the room');
-    expect(hand.textContent).toContain('Say their name');
+    // THR-2057: the card names the mortal's own pronoun (Hadrel is male).
+    expect(hand.textContent).toContain('Say his name');
+    expect(hand.textContent).toContain('watched him this closely');
     expect(hand.textContent).not.toContain('Show the old debt');
     fireEvent.click(screen.getByTestId('threading-rite-without-hand'));
     expect(onBondWithoutHand).toHaveBeenCalledTimes(1);

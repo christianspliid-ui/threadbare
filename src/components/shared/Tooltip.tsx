@@ -63,6 +63,22 @@ const TOOLTIP_ARROW_SIZE = 6;
 /** Every mounted trigger wrapper — how a trigger recognises a nested one (THR-1774). */
 const TOOLTIP_TRIGGERS = new WeakSet<Element>();
 
+/**
+ * THR-2057 — whether a focus came from the keyboard (`:focus-visible`). Where the
+ * selector is unsupported, or the event is synthetic, it counts as keyboard focus,
+ * so focus never stops opening.
+ */
+function isKeyboardFocus(target: EventTarget | null): boolean {
+  // A focus event on an element that does not hold focus is synthetic (tests, a
+  // dispatched event): nothing to judge the modality by.
+  if (!(target instanceof Element) || target !== document.activeElement) return true;
+  try {
+    return target.matches(":focus-visible");
+  } catch {
+    return true;
+  }
+}
+
 /** Minimum distance (px) between any tooltip edge and the viewport edge. */
 const VIEWPORT_MARGIN = 8;
 
@@ -431,7 +447,12 @@ export const Tooltip = React.memo(function Tooltip({
       showTooltip();
     }
   };
-  const handleFocus = () => showTooltip();
+  // THR-2057 — open on keyboard focus only. Focus that follows a click, or that a
+  // closing panel hands back to its trigger, is not `:focus-visible`; opening then
+  // left a popup sitting over the next control, eating its first click.
+  const handleFocus = (e: React.FocusEvent) => {
+    if (isKeyboardFocus(e.target)) showTooltip();
+  };
   const handleBlur = () => hideTooltip();
 
   // Law 23 (THR-1884): an open tooltip is the topmost surface, so Escape closes it

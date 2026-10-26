@@ -159,6 +159,39 @@ export const WHISPER_NUDGE_TEMPLATES: Record<WhisperNudgeCategory, {
   },
 };
 
+/**
+ * THR-2057 — what a chosen whisper draws the mortal toward, as a noun phrase.
+ * The labels above are button text ("Seek the path of Veil"), which reads wrong
+ * after "is subtly drawn toward"; the confirmation and trace read this instead.
+ */
+export const WHISPER_NUDGE_DIRECTIONS: Record<WhisperNudgeCategory, string> = {
+  reach_bias: 'the way of {reachName}',
+  sphere_bias: 'the current of {sphereName}',
+  ambition_drift: 'a different purpose',
+  gather_strength: 'rest',
+  gather_courage: 'greater trials',
+};
+
+/** Capitalize a reach/sphere id for prose ("veil" → "Veil"). */
+function capitalizeWord(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * The noun phrase a whisper nudge draws toward ("the way of Veil").
+ * Fail-soft: an unknown category falls back to "a new direction".
+ */
+export function describeWhisperDirection(nudge: {
+  category: WhisperNudgeCategory;
+  targetReach?: string;
+  targetSphere?: string;
+}): string {
+  const template = WHISPER_NUDGE_DIRECTIONS[nudge.category] ?? 'a new direction';
+  return template
+    .replace(/\{reachName\}/g, nudge.targetReach ? capitalizeWord(nudge.targetReach) : 'an old craft')
+    .replace(/\{sphereName\}/g, nudge.targetSphere ? capitalizeWord(nudge.targetSphere) : 'an old power');
+}
+
 // ─── Ambition Dream Imagery ─────────────────────────────────────
 
 /** Ambition-colored dream fragments that can be woven into vignettes. */

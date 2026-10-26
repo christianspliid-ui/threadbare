@@ -34,7 +34,7 @@ import type { WheelSlot } from '../../engine/wheel';
 import type { PendingBeat, BeatKind } from '../../types/ascendantBeat';
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { getBeatDefinitionById } from '../../engine/ascendantBeat';
-import { SPINE_BEAT_PRESENTATION, fillSpineAvatarName, isSpineBeatId, type SpineBeatPresentation } from '../../data/ascendant-beat-content';
+import { SPINE_BEAT_PRESENTATION, fillSpineAvatarName, fillSpineSeatLine, isSpineBeatId, type SpineBeatPresentation, type SpineSeatPreview } from '../../data/ascendant-beat-content';
 import { Tooltip } from '../shared/Tooltip';
 import { DEEPENING_BEAT_PRESENTATION } from '../../data/ascendant-deepening-beats';
 import { MILESTONE_BEAT_PRESENTATION } from '../../data/ascendant-milestone-beats';
@@ -74,6 +74,8 @@ interface AscendantBeatModalProps {
   proseOverride?: { title: string; prose: string };
   /** The avatar's name, filled into authored spine prose (Beat 0 — THR-1609). */
   avatarName?: string;
+  /** THR-2057: the seat The Seat beat will take (`previewHomeSeat`), named in its prose. */
+  seatPreview?: SpineSeatPreview;
   /**
    * THR-1811: an offering's cards with what each costs the god now (`describeOffering`).
    * GameView computes it from live state, so the price words match `getGodProgression()`.
@@ -461,6 +463,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   onClose,
   proseOverride,
   avatarName,
+  seatPreview,
   offering,
   rungOpening,
   signatureGrantId,
@@ -487,7 +490,7 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   const title = isOffering
     ? OFFERING_COPY.title
     : proseOverride?.title ?? authored?.title ?? humanizeBeatId(pending.beatId);
-  const prose = proseOverride?.prose ?? fillSpineAvatarName(presentation.prose, avatarName);
+  const prose = proseOverride?.prose ?? fillSpineSeatLine(fillSpineAvatarName(presentation.prose, avatarName), seatPreview);
 
   // Backdrop / Esc → dismiss for optional beats; for spine (no onClose) it stays put.
   const handleClose = onClose ?? (() => { /* spine beats are not dismissable */ });

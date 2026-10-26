@@ -12,6 +12,7 @@ import { formatFirstPathBondLine } from '../../engine/firstPath';
 import { toHungerId } from '../../types/hunger';
 import type { StoredHungerId } from '../../types/hunger';
 import { MEETING_FORMATIVE_TEST_COUNT } from '../../data/meeting-nudge-constants';
+import { personalizeBondTest } from '../../engine/bondTestVoice';
 
 interface BondBeatProps {
   candidate: NarrativeCandidate;
@@ -67,7 +68,7 @@ export function BondBeat({
   vision,
   hungerId,
   primarySphere,
-  bondTest,
+  bondTest: authoredBondTest,
   essencePool,
   seed = 0,
   onSpendEssence,
@@ -78,6 +79,11 @@ export function BondBeat({
   continueLabel,
   onRevealed,
 }: BondBeatProps) {
+  // THR-2057: the bond test speaks of this mortal by name and pronoun, not "they".
+  const bondTest = useMemo(
+    () => (authoredBondTest ? personalizeBondTest(authoredBondTest, candidate.name, candidate.gender) : undefined),
+    [authoredBondTest, candidate.name, candidate.gender],
+  );
   const [stage, setStage] = useState<BondStage>(bondTest ? 'test' : 'bond');
   const [outcome, setOutcome] = useState<BondOutcome | null>(null);
   const [phase, setPhase] = useState(0);

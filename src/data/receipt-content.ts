@@ -223,6 +223,7 @@ export function fillCastInfluenceLine(line: string, target: string, pole: string
 export const INFLUENCE_CHIP_NOUNS: Readonly<Record<string, string>> = {
   dream: 'Dreaming',
   persuade: 'Compelled',
+  compel: 'Compelled',
 };
 
 /**
@@ -231,6 +232,9 @@ export const INFLUENCE_CHIP_NOUNS: Readonly<Record<string, string>> = {
  * `durationLabel` reading (Law 13: never ticks).
  */
 export const INFLUENCE_CHIP_HOVER = 'Your hand is on them: {pole} weighs more in their choices, fading in {duration}.';
+
+/** THR-2057: the hover for an influence that drives toward one named thing (a compulsion). `{cause}`, `{duration}`. */
+export const INFLUENCE_CHIP_HOVER_CAUSE = 'Your will drives them toward {cause}, fading in {duration}.';
 
 /** The receipt's change line for an influence that landed on the target. `{target}`, `{noun}`. */
 export const TARGET_INFLUENCE_CHANGE_TITLE = 'Your hand is on them';

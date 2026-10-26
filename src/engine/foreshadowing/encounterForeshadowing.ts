@@ -256,6 +256,7 @@ function mapInterventionTypeToKind(type: string | null): ForeshadowingInterventi
     case 'inspire_intervention': return 'bless';
     case 'coincidence': return 'nudge';
     case 'afflict_bless': return 'affliction';
+    case 'compel': return 'affliction';
     case 'supportive': return 'bless';
     case 'coercive': return 'affliction';
     case 'withdrawn': return 'nudge';

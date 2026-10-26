@@ -134,8 +134,10 @@ function findBondedFirstId(graph: GameState['graph'], ascendantId: string): stri
  * `setHomeSeat`'s deterministic default (capital → city → first location) when The First
  * or its location can't be resolved (director's call, per the THR-520 handoff).
  */
-function seedHomeSeat(state: GameState, ascendantId: string, turn: number): BeatSeedResult {
-  const graph = state.graph;
+function resolveHomeSeatTarget(
+  graph: GameState['graph'],
+  ascendantId: string,
+): { seatRef: string | undefined; seatRule: HomeSeatRule; firstId: string | null } {
   const firstId = findBondedFirstId(graph, ascendantId);
   let seatRef: string | undefined;
   let seatRule: HomeSeatRule = 'default';
@@ -164,6 +166,39 @@ function seedHomeSeat(state: GameState, ascendantId: string, turn: number): Beat
     }
   }
 
+  return { seatRef, seatRule, firstId };
+}
+
+/** THR-2057 — the seat the Seat beat will take, named before the player presses. */
+export interface HomeSeatPreview {
+  readonly placeName: string;
+  readonly firstName: string | undefined;
+  readonly seatRule: HomeSeatRule;
+}
+
+/**
+ * Which settlement `seedHomeSeat` will pick, read without writing — so the beat can
+ * say "Horseford, where Elara stands, becomes your seat" instead of offering a choice
+ * it never gives. Undefined when the rule would fall to `setHomeSeat`'s default (no
+ * First, or no location): the beat then reads its unnamed line. Fail-soft.
+ */
+export function previewHomeSeat(state: GameState, ascendantId: string | undefined): HomeSeatPreview | undefined {
+  if (!ascendantId) return undefined;
+  try {
+    const { seatRef, seatRule, firstId } = resolveHomeSeatTarget(state.graph, ascendantId);
+    if (!seatRef) return undefined;
+    const placeName = state.graph.getNode(seatRef)?.name;
+    if (!placeName) return undefined;
+    return { placeName, firstName: firstId ? state.graph.getNode(firstId)?.name : undefined, seatRule };
+  } catch {
+    return undefined;
+  }
+}
+
+/** Seed Beat 1 "The Seat" at the settlement `resolveHomeSeatTarget` names. */
+function seedHomeSeat(state: GameState, ascendantId: string, turn: number): BeatSeedResult {
+  const graph = state.graph;
+  const { seatRef, seatRule } = resolveHomeSeatTarget(graph, ascendantId);
   const result = setHomeSeat(graph, ascendantId, seatRef);
   if (!result.success || !result.locationId) {
     return EMPTY_SEED;
