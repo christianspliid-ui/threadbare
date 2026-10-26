@@ -14,6 +14,7 @@ import {
   gatherRippleTargets,
   applyReturnOutcome,
   applyCourtSlotCooldown,
+  intentReachOf,
 } from '../returnEngine';
 import type { MeetingChoiceRecord } from '../../types/meetingEncounter';
 import type { ThreadEdgeProperties } from '../../types/influence';
@@ -28,15 +29,12 @@ function makeMeetingRecord(overrides: Partial<MeetingChoiceRecord> = {}): Meetin
   return {
     encounterTick: 10,
     locationId: 'loc_1',
-    intentPrimaryReach: 'iron',
-    intentSecondaryReach: 'heart',
-    intentSphere: 'force',
     candidateIndex: 0,
     archetypeId: 'iron_heart',
     dilemmaChoices: [],
-    investmentChoice: 'inv_1',
-    sparkTraitId: 'trait_1',
-    shapePath: 'surprise',
+    sparkVisionId: 'vision.iron.warlord',
+    primaryReach: 'iron',
+    secondaryReach: 'heart',
     ascendantSphere: 'force',
     foundingGateTags: ['noble', 'heroic_origin'],
     ...overrides,
@@ -117,7 +115,8 @@ describe('Founding Gates', () => {
   it('sacrifice blocked by shadow intent reach', () => {
     const record = makeMeetingRecord({
       foundingGateTags: ['noble', 'sacrifice'],
-      intentPrimaryReach: 'shadow',
+      primaryReach: 'shadow',
+      sparkVisionId: 'vision.shadow.assassin',
     });
     expect(passesFoundingGate(record, 'sacrifice')).toBe(false);
   });
@@ -125,7 +124,8 @@ describe('Founding Gates', () => {
   it('sacrifice passes with noble tag and non-shadow reach', () => {
     const record = makeMeetingRecord({
       foundingGateTags: ['noble'],
-      intentPrimaryReach: 'iron',
+      primaryReach: 'iron',
+      sparkVisionId: 'vision.iron.warlord',
     });
     expect(passesFoundingGate(record, 'sacrifice')).toBe(true);
   });
@@ -133,13 +133,15 @@ describe('Founding Gates', () => {
   it('transcendence requires star/veil/eye intent reach', () => {
     const record = makeMeetingRecord({
       foundingGateTags: ['cosmic_touch'],
-      intentPrimaryReach: 'iron',
+      primaryReach: 'iron',
+      sparkVisionId: 'vision.iron.warlord',
     });
     expect(passesFoundingGate(record, 'transcendence')).toBe(false);
 
     const starRecord = makeMeetingRecord({
       foundingGateTags: ['cosmic_touch'],
-      intentPrimaryReach: 'star',
+      primaryReach: 'star',
+      sparkVisionId: 'vision.star.prophet',
     });
     expect(passesFoundingGate(starRecord, 'transcendence')).toBe(true);
   });
@@ -232,7 +234,8 @@ describe('resolveReturn', () => {
     // Create a record with very restrictive tags
     const record = makeMeetingRecord({
       foundingGateTags: [],
-      intentPrimaryReach: 'iron',
+      primaryReach: 'iron',
+      sparkVisionId: 'vision.iron.warlord',
     });
     const rel = makeRelState();
     const { outcome } = resolveReturn(record, 'scraped_through', rel, 'unknown_archetype', []);
@@ -243,7 +246,8 @@ describe('resolveReturn', () => {
   it('scraped_through keeps all eligible outcomes open', () => {
     const record = makeMeetingRecord({
       foundingGateTags: ['noble', 'dark', 'cunning', 'cosmic_touch'],
-      intentPrimaryReach: 'star',
+      primaryReach: 'star',
+      sparkVisionId: 'vision.star.prophet',
     });
     const rel = makeRelState();
     const { eligible } = resolveReturn(record, 'scraped_through', rel, 'star_star', []);
@@ -469,5 +473,61 @@ describe('applyCourtSlotCooldown', () => {
       expect(RETURN_COOLDOWN[outcome]).toBeDefined();
       expect(RETURN_COOLDOWN[outcome]).toBeGreaterThan(0);
     }
+  });
+});
+
+// ─── Intent reach (THR-2009) ───────────────────────────────────────
+
+describe('intent reach — who the mortal is, not the mark', () => {
+  it('a Star-family First with transcendence_seed passes transcendence', () => {
+    const record = makeMeetingRecord({
+      sparkVisionId: 'vision.star.prophet',
+      primaryReach: 'star',
+      foundingGateTags: ['transcendence_seed'],
+    });
+    expect(passesFoundingGate(record, 'transcendence')).toBe(true);
+  });
+
+  it('a Shadow-family First (assassin, mark Iron) with noble fails sacrifice', () => {
+    const record = makeMeetingRecord({
+      sparkVisionId: 'vision.shadow.assassin',
+      primaryReach: 'shadow',
+      foundingGateTags: ['noble'],
+    });
+    expect(passesFoundingGate(record, 'sacrifice')).toBe(false);
+  });
+
+  it('a Gold-family First on the powerbroker path (mark Shadow) with noble passes sacrifice', () => {
+    const record = makeMeetingRecord({
+      sparkVisionId: 'vision.gold.powerbroker',
+      primaryReach: 'gold',
+      foundingGateTags: ['noble'],
+    });
+    expect(passesFoundingGate(record, 'sacrifice')).toBe(true);
+  });
+
+  it('a legacy record with no primaryReach resolves through the spark vision family', () => {
+    const record = makeMeetingRecord({
+      sparkVisionId: 'vision.star.anchorite',
+      primaryReach: undefined,
+      foundingGateTags: ['cosmic_touch'],
+    });
+    expect(intentReachOf(record)).toEqual({ reach: 'star', source: 'vision' });
+    expect(passesFoundingGate(record, 'transcendence')).toBe(true);
+  });
+
+  it('an unknown reach matches no exclusion and fails a required-Reach gate', () => {
+    const record = makeMeetingRecord({
+      sparkVisionId: '',
+      primaryReach: undefined,
+      foundingGateTags: ['noble', 'cosmic_touch'],
+    });
+    expect(intentReachOf(record)).toEqual({ reach: undefined, source: 'none' });
+    expect(passesFoundingGate(record, 'sacrifice')).toBe(true);
+    expect(passesFoundingGate(record, 'transcendence')).toBe(false);
+  });
+
+  it('the record field wins over the vision', () => {
+    expect(intentReachOf(makeMeetingRecord())).toEqual({ reach: 'iron', source: 'record' });
   });
 });

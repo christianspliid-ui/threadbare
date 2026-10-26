@@ -474,6 +474,17 @@ export interface MeetingChoiceRecord {
   ascendantSphere: SphereName;
   foundingGateTags: string[];
 
+  // ── Candidate Reaches (THR-2009, additive) ──
+  /**
+   * The chosen candidate's primary Reach — who the mortal is, not the mark
+   * their path strengthened. The Return founding gates read it as the
+   * "intent reach". Absent on records bonded before THR-2009; the resolver
+   * (`intentReachOf`) falls back to the spark vision's family.
+   */
+  primaryReach?: ReachDomain;
+  /** The chosen candidate's secondary Reach (read by THR-2034). */
+  secondaryReach?: ReachDomain;
+
   // ── Nudge conversion (THR-868, additive) ──
   /**
    * Resolved formative tests. Absent on records written by the legacy choice

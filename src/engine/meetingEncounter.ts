@@ -1394,6 +1394,8 @@ export function buildNarrativeResult(input: NarrativeResultInput): MeetingEncoun
     sparkVisionId: vision.id,
     ascendantSphere,
     foundingGateTags,
+    primaryReach: candidate.primaryReach,
+    secondaryReach: candidate.secondaryReach,
   };
 
   return {
@@ -1618,6 +1620,8 @@ export function buildMeetingResult(
     sparkVisionId: state.sparkVisionId ?? '',
     ascendantSphere,
     foundingGateTags: gateTags,
+    primaryReach: candidate.primaryReach,
+    secondaryReach: candidate.secondaryReach,
   };
 
   return {

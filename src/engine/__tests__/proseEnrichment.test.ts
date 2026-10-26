@@ -294,7 +294,7 @@ describe('gatherNarrativeContext', () => {
       chosenCandidateId: 'agent_1',
       dilemmaChosen: 'test_dilemma',
       dilemmaOutcome: 'cooperate',
-      intentPrimaryReach: 'iron',
+      primaryReach: 'iron',
       archetypeId: 'rebel',
       foundingGateTags: ['showed_mercy'],
     };

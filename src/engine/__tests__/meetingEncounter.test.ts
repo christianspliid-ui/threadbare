@@ -374,9 +374,8 @@ describe('createAgentFromMeeting', () => {
       meetingChoiceRecord: {
         encounterTick: 10,
         locationId: 'loc_village',
-        intentPrimaryReach: 'iron',
-        intentSecondaryReach: 'heart',
-        intentSphere: 'force',
+        primaryReach: 'iron',
+        secondaryReach: 'heart',
         candidateIndex: 0,
         archetypeId: 'iron_heart',
         dilemmaChoices: [],
@@ -472,6 +471,9 @@ describe('buildMeetingResult', () => {
     expect(result!.foundingGateTags).toContain('mercy_shown');
     expect(result!.foundingGateTags).toContain('heroic_origin');
     expect(result!.axiologicalProfile.mercy_ruthlessness).toBeCloseTo(0.2);
+    // THR-2009: the record carries the candidate's Reaches for the Return gates.
+    expect(result!.meetingChoiceRecord.primaryReach).toBe('iron');
+    expect(result!.meetingChoiceRecord.secondaryReach).toBe('heart');
   });
 
   it('returns null for incomplete state', () => {

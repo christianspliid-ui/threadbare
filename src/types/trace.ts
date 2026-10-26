@@ -2969,6 +2969,10 @@ export interface ReturnResolutionTrace extends TraceBase {
   category: 'return_resolution';
   agentId: string;
   outcome: string;
+  /** The intent reach the founding gates read (THR-2009). */
+  intentReach?: string;
+  /** Where it came from: 'record' | 'vision' | 'none'. */
+  intentReachSource?: string;
   ordealOutcome: string;
   eligibleOutcomes: string[];
   scores: Record<string, number>;
