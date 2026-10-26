@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 18:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 19:58 local (18:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: the plan for salt, the good the smugglers carry, is merged** ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), via [#2609](https://github.com/christianspliid-ui/threadbare/pull/2609). Its four calls sit in the briefing's *Decided for you* until Tuesday 18:03 UTC.
 - **2026-10-26: three more fixes are live.** [A follow-up scene waits for its place](https://linear.app/threadbare/issue/THR-1929) ([#2605](https://github.com/christianspliid-ui/threadbare/pull/2605)), [a mortal's trade steers what they choose](https://linear.app/threadbare/issue/THR-2067) ([#2606](https://github.com/christianspliid-ui/threadbare/pull/2606)) and [tavern follow-ups can happen](https://linear.app/threadbare/issue/THR-2039) ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)).
 - **2026-10-26: six small round-5 faults are fixed, and the fix is live** ([THR-2057](https://linear.app/threadbare/issue/THR-2057)). Merged via [#2604](https://github.com/christianspliid-ui/threadbare/pull/2604).
 - **2026-10-26: Read the Threads now shows the mortal’s real name and how a missed chapter ended, and the fix is live** ([THR-2055](https://linear.app/threadbare/issue/THR-2055)). Merged via [#2601](https://github.com/christianspliid-ui/threadbare/pull/2601).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: a First's chapter no longer plays out unseen, and the fix is live** ([THR-2052](https://linear.app/threadbare/issue/THR-2052)). Merged via [#2597](https://github.com/christianspliid-ui/threadbare/pull/2597).
 - **2026-10-26: the First's own page now agrees she is bound to you, and the fix is live** ([THR-2054](https://linear.app/threadbare/issue/THR-2054)). Merged via [#2598](https://github.com/christianspliid-ui/threadbare/pull/2598).
 - **2026-10-26: round 5's two design findings are planned and on the build shelf.** [New things arrive one at a time](https://linear.app/threadbare/issue/THR-2060) and [Readouts say what they show](https://linear.app/threadbare/issue/THR-2061), from [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2058-one-thing-at-a-time.md) merged via [#2596](https://github.com/christianspliid-ui/threadbare/pull/2596). Its five calls sit in the briefing's *Decided for you* until Tuesday 11:38 UTC.
-- **2026-10-26: cold playtest round 5 is done.** 8 tickets are filed: 6 bugs ready to build, 2 for design. The builder took the Urgent one, [THR-2052](https://linear.app/threadbare/issue/THR-2052). See [the report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/cold-playtest-round-5.md).
 
 ---
 

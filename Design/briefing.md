@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 18:58 local (17:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 19:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,7 +18,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- **New** · [The path you chose doesn't steer what comes next](https://linear.app/threadbare/issue/THR-2059/the-path-you-chose-doesnt-steer-what-comes-next-an-unseen-blade-is): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2059-the-path-steers.md). Each can be vetoed on its own until Tuesday 14:30 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26d.md)*
+- **New** · [Salt: the good the smugglers carry does not exist](https://linear.app/threadbare/issue/THR-2069/plan-doc-salt-the-good-the-smugglers-carry-the-monopoly-scene-prices): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2069-salt.md#decisions). Each can be vetoed on its own until Tuesday 18:03 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26e.md)*
+  - **Salt becomes a real good.** The smuggling scenes, the monopoly and the embargo already talk about salt, so the world gets salt rather than the scenes being rewritten to carry fish or ore. *Veto:* "the smugglers should carry something we already have".
+  - **Salt is a trade good, not food.** A town short of salt is not hungry; its line reads *"Salt is dear here."* It is worth a little less than ore and more than stone. *Veto:* "salt should count as food".
+  - **Salt comes from the steppe, the high plateau, the deserts and the shore.** Not the mountains: mountain towns already have stone and ore, and salt there would be everywhere. On three test worlds, 14 to 21 towns have salt, and it rides 14 to 19 of about 60 roads. *Veto:* "salt should be mined in the mountains too".
+  - **The ford smugglers' salt reaches the hamlet.** When the salt train gets over the ford, the hamlet that was short of salt gains some. That small stock counts toward the region's salt, so smugglers can dent a rival's monopoly. The tannery-yard smuggling scene gets no salt, because its salt is sold outside the town. *Veto:* "smuggled salt should not count toward a monopoly".
+- [The path you chose doesn't steer what comes next](https://linear.app/threadbare/issue/THR-2059/the-path-you-chose-doesnt-steer-what-comes-next-an-unseen-blade-is): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2059-the-path-steers.md). Each can be vetoed on its own until Tuesday 14:30 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26d.md)*
   - **God's Will only offers work that becomes a chapter.** Chores (Forage, Take Stock, Shore Up Shelter) never appear as options. If fewer than two real choices are left, God's Will waits for the next decision. *Veto:* "God's Will may offer chores".
   - **Compelled work always says how it ended.** When the work you pushed her toward is done, one message says so, in the same word the chapter uses: *"Your will is done. The Haggle: Morthane held."* Today a compelled chore, like the round-5 dead drop, ends in silence. *Veto:* "the start message is enough".
   - **The path you chose leans her chapters.** Scenes in the path's two Reaches (about a third of all scenes) are half again as likely to be chosen, in her own choices and in what God's Will offers. It is a lean, not a filter. *Veto:* "the path should only lean God's Will" or "the lean should be stronger".
@@ -52,21 +57,18 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **A guild's errand pays the mortal who does it.** When a faction posts a commission, the coin it spends is now held on the posting. The first of its members **who makes choices** to finish any of its work is paid, and their Means rises one step. The aftermath says "— a commission their faction paid for." Unseen members still earn only standing. *Veto:* "any member, seen or unseen, can take a commission".
   - **The pay is one Means step for the 5 coin posted.** This is the border levy in reverse. *Veto:* "a commission should pay more than that".
   - **An errand nobody takes gives its coin back** to the faction's purse when it expires. Today that coin simply vanishes. *Veto:* "a lapsed commission's coin is spent anyway".
-- [Famine and glut draws](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-25-thr-2040-famine-and-glut-draws.md). Each can be vetoed on its own until 19:05 today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25f.md)*
-  - **A starving town tells hunger's stories.** In a hungry town, refugees, hard bartering, the merchant's granaries, the exchange bell and mending nets for work become likelier. Fairs and festivals there become rarer. *Veto:* "famine should mean a staple at the scarce tier".
-  - **Glut means grain with nowhere to go.** Only a town with a large spare harvest for three days running (food at least 1.75 times its need) leans toward the harvest bounty, the mill lease and the tithe-barn raid. *Veto:* "any town with spare food is in glut".
-  - **The granary riot keeps one cause.** Hunger and unrest already start it. Famine does not also make it likelier on the everyday board. *Veto:* "famine should also make the riot likelier".
-
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 ready, none being built.** All nine ready tickets are still inside their veto windows, so the builder's last three runs claimed nothing. That is by design, not a stall. The first window opens in a few minutes, and the next builder run should take [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws).
+**Healthy: 10 ready, 1 being built.** The builder took [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 18:13 UTC, as soon as its veto window closed, and is still working on it. Its calls have left *Decided for you*.
 
-- Next to open after that: [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday. Round 5's design tickets open Tuesday: [THR-2060](https://linear.app/threadbare/issue/THR-2060) and [THR-2061](https://linear.app/threadbare/issue/THR-2061) at 11:38 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30 UTC.
+- Next to open: [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday. Round 5's design tickets open Tuesday: [THR-2060](https://linear.app/threadbare/issue/THR-2060) and [THR-2061](https://linear.app/threadbare/issue/THR-2061) at 11:38 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30 UTC. Salt, [THR-2069](https://linear.app/threadbare/issue/THR-2069), opens Tuesday 18:03 UTC.
+- **New on the shelf:** [a town short of stone no longer "goes hungry"](https://linear.app/threadbare/issue/THR-2070), a small wording bug the design lane found. Nothing holds it.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site is serving the newest main ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 18:40) are healthy. No pull requests are open. Engine speed is normal: 143 ms a tick, 9% below the week's median.
+- **Engine speed reading is high:** "tick cost 198 ms/tick steady, 29% above the 7-day median (153, 105 rows since 04ed4c85); top phase agent_decision, 622 agents. Name the merges between 04ed4c85 and d72e5e23: git log --oneline --merges 04ed4c85..d72e5e23". The only change since the last reading (143 ms, an hour ago) is a plan doc, so this is most likely the builder's run loading the same machine. If the next reading stays high, it is the builder's to chase.
+- Everything else is green. The live site is up to date (only docs changed since the last game publish). Main's CI, the three scheduled background jobs, the nine scheduled lanes and the worktree reaper (last run 19:40) are healthy. No pull requests are open.
