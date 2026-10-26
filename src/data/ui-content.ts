@@ -741,7 +741,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.nudge_glyphs': {
     label: 'Reading a Card',
-    desc: 'A card marks three things. The framed gold token is its price in essence. The pip row under the effect is how far it moves the odds: more filled is stronger, and a hollow pip is room it does not reach. Red triangles are a setback the card brings with it.',
+    desc: 'The framed gold token is the price in essence. The pips under the effect move the odds: more filled is stronger, hollow is room unfilled. Red triangles are a setback the card brings.',
   },
 
   // ─── Aftermath chips (THR-1004) ───────────────────────────────────
