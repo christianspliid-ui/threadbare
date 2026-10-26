@@ -23,6 +23,8 @@ import type { GameScreenStore } from '../frame/GameScreenState';
 import type { InterruptResolution } from '../interruptRegistry';
 import type { DebugOpenHomedSurfaceResult, DebugStageState } from '../../../debug-bridge.d';
 import { isStageOpen } from './stageState';
+import { inMiddleBand } from '../../HexMapV2/camera/stageCamera';
+import { STAGE_CLOSE_CENTRE_BAND_FRACTION } from '../../../data/stage-content';
 import { getThreadsFrom } from '../../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../../types/influence';
 import { buildStateSnapshot, buildVignetteData, selectTemplate } from '../../../engine/journeyEngine';
@@ -112,6 +114,19 @@ export function useStageDebugBridge(args: {
         litHexScreen,
         litHexInWindow: inWindow,
         camera: open && stage.cameraMode && map ? { k: map.getCameraState().k, mode: stage.cameraMode } : null,
+        afterClose: !open && stage.closeCamera ? (() => {
+          const { hex, recentred } = stage.closeCamera;
+          const [col, row] = hex.split(',').map(Number);
+          const vp = map?.projectHex(col, row) ?? null;
+          const rect = map?.getCanvasRect() ?? null;
+          return {
+            hex,
+            recentred,
+            litHexScreen: vp ? { x: vp.x, y: vp.y } : null,
+            canvasRect: rect,
+            inMiddleThird: Boolean(vp && rect && inMiddleBand(vp, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION)),
+          };
+        })() : null,
         mapDim: map?.getStageFocusState() ?? null,
         folded: {
           inspector: open && !stage.inspectorOverStage,

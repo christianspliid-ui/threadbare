@@ -11,6 +11,13 @@ import { CAMERA_CONSTANTS } from './D3ZoomCamera';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
 import { STAGE_CAMERA_HEX_MAX_WINDOW_FRACTION, STAGE_CAMERA_KEEP_MIN_K } from '../../../data/stage-content';
 
+export interface ScreenRect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
 export interface CameraCentre {
   x: number;
   y: number;
@@ -60,22 +67,32 @@ export function centroid(points: readonly { x: number; y: number }[]): { x: numb
 }
 
 /**
- * On close: the smallest move that keeps a screen point inside the visible map, `margin`
- * pixels in from each edge. Null when it is already inside (the camera stays).
+ * THR-2056 — whether a screen point sits inside the middle band of a rect: `fraction` of its
+ * width and of its height, centred. With `fraction` 1/3 that is the middle third.
  */
-export function nudgeInside(
+export function inMiddleBand(point: { x: number; y: number }, rect: ScreenRect, fraction: number): boolean {
+  const w = rect.right - rect.left;
+  const h = rect.bottom - rect.top;
+  if (w <= 0 || h <= 0) return false;
+  const cx = rect.left + w / 2;
+  const cy = rect.top + h / 2;
+  return Math.abs(point.x - cx) <= (w * fraction) / 2 && Math.abs(point.y - cy) <= (h * fraction) / 2;
+}
+
+/**
+ * On close (THR-2056): where the lit place should go. The Stage eased it into the window at
+ * the map's right edge; left there, every chapter that opens by itself drifts the map further
+ * to the edge. A place outside the visible map's middle band goes to the map's centre; one
+ * already inside it stays (null — the camera does not move). Null for an empty rect.
+ */
+export function recentreOnClose(
   point: { x: number; y: number },
-  rect: { left: number; top: number; right: number; bottom: number },
-  margin: number,
+  rect: ScreenRect,
+  fraction: number,
 ): { x: number; y: number } | null {
-  const minX = rect.left + margin;
-  const maxX = rect.right - margin;
-  const minY = rect.top + margin;
-  const maxY = rect.bottom - margin;
-  if (minX > maxX || minY > maxY) return null;
-  const x = Math.max(minX, Math.min(maxX, point.x));
-  const y = Math.max(minY, Math.min(maxY, point.y));
-  return x === point.x && y === point.y ? null : { x, y };
+  if (rect.right - rect.left <= 0 || rect.bottom - rect.top <= 0) return null;
+  if (inMiddleBand(point, rect, fraction)) return null;
+  return { x: (rect.left + rect.right) / 2, y: (rect.top + rect.bottom) / 2 };
 }
 
 /**
