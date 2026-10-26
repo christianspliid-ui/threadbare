@@ -1935,6 +1935,8 @@ Every system should emit traces for inspectability (NFP #2). A trace category th
 
 **All categories emitted (TB-057, 2026-03-26).** `tick_health` and `tick_crash` emitted from `orchestrator.ts` (health check failures and unhandled exceptions respectively). `control_effect` emitted from `phaseControlEffects.ts`. `revelation` emitted from `revelationResolver.ts`.
 
+**Retired 2026-10-26:** `scripts/review/` (wrapper + API review client) and the `review:*` npm scripts were deleted — nothing called them since the `review-gate` skill (THR-1691) replaced the API client with in-session reviewer subagents. The `review-wrapper` row below is historical.
+
 **Review wrapper traces (THR-182, 2026-04-19):** Two new trace shapes written by the CC review surface — *not* engine traces, but structured logs persisted under `.cowork/review-traces/`:
 
 | Trace type | Written by | Location | Consumed by |
