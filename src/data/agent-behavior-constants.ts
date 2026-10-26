@@ -1141,7 +1141,9 @@ export const ROLE_SECONDARY_AFFINITY_BONUS = 0.15;
  * multiplies each encounter's score by `1 + (roleAffinityMultiplier − 1) × weight`
  * (`roleAffinityPull`). 1 = the scorer's full lean; 0 = the pre-THR-2067 board, where
  * the lean reached only `finalScore` (God's Will's ranking), never the mortal's choice.
- * Measured at 1 against 0 on a 600-tick seeded run (`npm run measure:role-lean`).
+ * Measured at 1 against 0 (seed 42 × 600 ticks, medium, `npm run measure:role-lean`):
+ * the undertaking share of non-idle board verdicts moved 5.6% → 5.5%, and 61 of 3036
+ * board winners carried a pull — so the full lean stands, unscaled.
  * @range 0–1 */
 export const ROLE_AFFINITY_BOARD_WEIGHT = 1;
 
