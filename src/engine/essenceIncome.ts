@@ -49,7 +49,7 @@ export function computeEssenceIncomeBreakdown(
   graph: WorldGraph,
   ascendantId: string,
   controlEffects?: readonly ControlEffect[],
-): { net: EssencePool; grossTotal: number } {
+): { net: EssencePool; grossTotal: number; drawnPerTick?: Partial<EssencePool> } {
   const node = graph.getNode(ascendantId);
   if (!node) return { net: emptyPool(), grossTotal: 0 };
 
@@ -134,5 +134,7 @@ export function computeEssenceIncomeBreakdown(
     }
   }
 
-  return { net, grossTotal };
+  // THR-2061 — what upkeep draws from the primary each tick, after the essence
+  // phase has clamped the pool to its cap: a pool held there reads full.
+  return { net, grossTotal, drawnPerTick: { [alignment.primary]: totalMaintenance } };
 }

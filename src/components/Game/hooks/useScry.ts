@@ -37,7 +37,8 @@ export function useScry({ gameState, setGameState, archetype, scryState, setScry
       if (newPool[primarySphere] >= cost) {
         newPool[primarySphere] -= cost;
       }
-      return { ...prev, ...withEssenceSpend(prev, newPool, 'other') };
+      // THR-2061 — a spend the player chose: files where the ▼ can see it.
+      return { ...prev, ...withEssenceSpend(prev, newPool, 'spend_other') };
     });
 
     setScryState(prev => assignAgentToPosition(prev, positionId, agentId, title, cost, gameState.tick));

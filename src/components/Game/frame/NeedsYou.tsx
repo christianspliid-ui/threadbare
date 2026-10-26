@@ -26,6 +26,7 @@ import {
   NEEDS_YOU_LABEL,
   NEEDS_YOU_LIST_ARIA,
   NEEDS_YOU_PILL_LABEL,
+  NEEDS_YOU_PILL_NEWS_ONLY_LABEL,
   countWords,
   needsYouNewsTooltipDesc,
 } from '../../../data/frame-content';
@@ -80,6 +81,7 @@ function listAttrs(vm: NeedsYouVM, capacity: number, foldedRows: number, open: b
   return {
     'data-needs-you-trimmed': trimmedAtCap,
     'data-needs-you-count': vm.count,
+    'data-needs-you-total': vm.total,
     'data-needs-you-waiting': vm.groups.waiting.length,
     'data-needs-you-held': vm.groups.held.length,
     'data-needs-you-news': vm.groups.news.length,
@@ -99,7 +101,9 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow, 
   const [rect, setRect] = useState<{ left: number; top: number; bottom: number } | null>(null);
   const [viewportH, setViewportH] = useState(() => (typeof window === 'undefined' ? 1080 : window.innerHeight));
 
-  const shown = vm.count > 0;
+  // THR-2061 (U8) — the pill shows while the list holds anything; its number
+  // counts only what waits (Waiting + Held), so with only News it shows no number.
+  const shown = vm.total > 0;
   const close = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   // The list closes when nothing waits any more.
@@ -178,7 +182,7 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow, 
   const capacity = needsYouCapacityRows(viewportH, rootPx(), Math.max(1, groupsShown));
   const folded = useMemo(() => foldNeedsYou(vm, capacity, expanded), [vm, capacity, expanded]);
 
-  const label = countWords(vm.count, NEEDS_YOU_PILL_LABEL);
+  const label = vm.count > 0 ? countWords(vm.count, NEEDS_YOU_PILL_LABEL) : NEEDS_YOU_PILL_NEWS_ONLY_LABEL;
   const desc = getUITooltip('ui.needs_you')?.desc;
   const pill = (
     <Chip
@@ -187,6 +191,7 @@ export function NeedsYou({ vm, open, onOpenChange, guarded, raised, onPressRow, 
       count={vm.count}
       icon="needs-you"
       word={NEEDS_YOU_LABEL}
+      showWhenZero
       label={label}
       desc={desc}
       tint="gold"

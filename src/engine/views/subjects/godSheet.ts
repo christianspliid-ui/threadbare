@@ -34,8 +34,9 @@ import {
   ESSENCE_FED_LEAD,
   ESSENCE_DRAWN_LEAD,
 } from '../../../data/ascendant-bar-content';
-import { readEssenceMovement, type EssenceMovementReading } from '../../../engine/essenceMovement';
-import { readEssenceRefill, type EssenceRefillBand } from '../essenceRefill';
+import { readEssenceMovement, type EssenceMovementReading, type EssenceMovementRecord } from '../../../engine/essenceMovement';
+import { readEssenceRefill, essenceDirection, type EssenceRefillBand } from '../essenceRefill';
+import { computeMaxEssence } from '../../../engine/influence';
 import {
   ESSENCE_REFILL_UPKEEP_HOVER,
   ESSENCE_REFILL_WORDS,
@@ -156,6 +157,12 @@ export interface EssenceRowView {
    * the ledger read gave no band (fail-soft: the row shows no word).
    */
   refill?: EssenceRowRefill;
+  /**
+   * THR-2061 (plan E4) — the sphere's movement record, passed through by
+   * reference so the row's ▼ can read the player's own spends between two
+   * renders (`playerSpendSince`). Absent ⇒ nothing has moved the pool yet.
+   */
+  movement?: EssenceMovementRecord;
 }
 
 export interface EssenceRowRefill {
@@ -216,6 +223,9 @@ export function selectEssenceRows(
   const foundation = new Set<SphereName>(FOUNDATION_SPHERE_NAMES);
   // THR-1985 — one ledger read for every row's refill band.
   const refill = readEssenceRefill(gameState.graph, gameState.ascendantId, gameState.controlEffects).spheres;
+  // THR-2061 (E3) — the cap the essence phase clamps to; a full pool reads steady.
+  let cap = Infinity;
+  try { cap = computeMaxEssence(gameState.graph, gameState.ascendantId); } catch { /* fail-soft: no cap ⇒ never "full" */ }
 
   const identity: SphereName[] = primary === secondary ? [primary] : [primary, secondary];
   const rest = SPHERE_NAMES.filter((sphere) => !identity.includes(sphere));
@@ -229,19 +239,24 @@ export function selectEssenceRows(
       const level = pool[sphere] ?? 0;
       const isPrimary = sphere === primary;
       const isSecondary = sphere === secondary && !isPrimary;
-      // THR-1713 — the arrow and the hover read one record, so they cannot disagree.
-      const reading = readEssenceMovement(gameState.essenceMovement?.[sphere], gameState.tick);
+      const movement = gameState.essenceMovement?.[sphere];
       const band = refill[sphere]?.band;
       const rowRefill: EssenceRowRefill | undefined = band ? { band, upkeep: isPrimary } : undefined;
+      // THR-2061 (E3) — the arrow follows the refill band, as the row's word
+      // does; the movement history keeps only the hover's feeds and draws. The
+      // hover's trend word reads the same direction, so the two cannot disagree.
+      const trend = essenceDirection(refill[sphere], level, cap);
+      const reading: EssenceMovementReading = { ...readEssenceMovement(movement, gameState.tick), trend };
       return {
         sphere,
         level,
-        trend: reading.trend,
+        trend,
         isPrimary,
         isSecondary,
         isElder: foundation.has(sphere) && !isPrimary && !isSecondary,
         hoverDesc: essenceRowHover(sphere, reading, rowRefill),
         ...(rowRefill ? { refill: rowRefill } : {}),
+        ...(movement ? { movement } : {}),
       };
     });
 }

@@ -602,12 +602,21 @@ if (import.meta.env.DEV) {
     getEssenceRefill: async () => {
       const state = _gameStateProvider?.();
       if (!state) return { error: 'no live game state' };
-      const { readEssenceRefill } = await import('./engine/views/essenceRefill');
+      const { readEssenceRefill, essenceDirection } = await import('./engine/views/essenceRefill');
+      const { computeMaxEssence } = await import('./engine/influence');
       const reading = readEssenceRefill(state.graph, state.ascendantId, state.controlEffects);
       const alignment = state.graph.getNode(state.ascendantId)?.properties.sphereAlignment as
         | { primary?: import('./types').SphereName }
         | undefined;
-      return { ...reading, upkeepSphere: alignment?.primary ?? null };
+      // THR-2061 (E3) — the direction each row's arrow shows, from the same band.
+      const cap = computeMaxEssence(state.graph, state.ascendantId);
+      const spheres = Object.fromEntries(
+        Object.entries(reading.spheres).map(([sphere, r]) => [
+          sphere,
+          { ...r, direction: essenceDirection(r, state.essencePool?.[sphere as import('./types').SphereName] ?? 0, cap) },
+        ]),
+      );
+      return { ...reading, spheres, upkeepSphere: alignment?.primary ?? null };
     },
 
     // THR-1768 — sphere bags per node kind: total / seeded / unseeded / non-integer / route.

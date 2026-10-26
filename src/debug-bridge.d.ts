@@ -2066,9 +2066,17 @@ export interface DebugBridge {
    * income as a share of the god's total gross income (`fast` ≥ 0.2, `steady`
    * ≥ 0.08, `slow` > 0, else `drains`). `upkeepSphere` is the deepest sphere,
    * which pays thread and source upkeep and carries "pays your upkeep".
+   * THR-2061 — each sphere also carries `direction`, the way its row's arrow
+   * points: `ebbing` when it drains, `rising` below the cap, else `steady`.
    */
   getEssenceRefill: () => Promise<
-    | (import('./engine/views/essenceRefill').EssenceRefillReading & {
+    | (Omit<import('./engine/views/essenceRefill').EssenceRefillReading, 'spheres'> & {
+        spheres: Partial<Record<
+          import('./types').SphereName,
+          import('./engine/views/essenceRefill').EssenceRefillSphere & {
+            direction: import('./engine/views/essenceRefill').EssenceDirection;
+          }
+        >>;
         upkeepSphere: import('./types').SphereName | null;
       })
     | { error: string }

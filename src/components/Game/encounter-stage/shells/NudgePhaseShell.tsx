@@ -22,7 +22,7 @@ import { CardFace, CARD_WIDTH_PX } from '../../../shared/CardFace';
 import { formatEssencePool, sphereWord } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
 import { resolveEncounterImagePath } from '../../../../data/encounterImageResolver';
-import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
+import { nudgeGlyphLegendForHand } from '../../../../data/nudge-card-display';
 import {
   NUDGE_BLOCKED_REASONS,
   NUDGE_COMMIT_LABEL,
@@ -742,13 +742,14 @@ export function NudgePhaseShell({
                   data-testid="nudge-glyph-legend"
                   style={{ display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto', flexWrap: 'wrap' }}
                 >
-                  {NUDGE_GLYPH_LEGEND.map((entry) => (
+                  {/* THR-2061 (U6) — only the pip shapes this hand carries, and ○ named. */}
+                  {nudgeGlyphLegendForHand(hand.cards.map((c) => c.forecastDelta)).map((entry) => (
                     <span
                       key={entry.id}
                       data-testid={`nudge-legend-${entry.id}`}
                       style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', color: TEXT_WHISPER, whiteSpace: 'nowrap' }}
                     >
-                      {/* THR-1985 — the odds entry is the whole pip ladder; it stays on one line. */}
+                      {/* The odds entry stays on one line. */}
                       <span aria-hidden="true" style={{ fontSize: LEGEND_GLYPH_PX, lineHeight: 1, whiteSpace: 'nowrap' }}>
                         {entry.glyph}
                       </span>

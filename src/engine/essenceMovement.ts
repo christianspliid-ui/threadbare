@@ -175,6 +175,56 @@ export function readEssenceMovement(
   return { trend, feeds, draws };
 }
 
+/**
+ * The causes the player's own spends file under — the only ones that light the ▼
+ * (THR-2061, plan E4). `premonition` is a player cause too: the
+ * `divine_premonition` phase only queues premonitions and never moves the pool,
+ * so every `premonition` movement is a whisper or compulsion the player paid for
+ * (GameView's premonition handlers).
+ */
+export const PLAYER_SPEND_CAUSES: readonly EssenceMovementCause[] = ['spend_nudge', 'spend_cast', 'spend_other', 'premonition'];
+
+/** What the player spent inside one window, as a positive magnitude (refunds net it down, never below 0). */
+function playerSpendIn(window: EssenceMovementWindow | undefined): number {
+  if (!window) return 0;
+  let net = 0;
+  for (const cause of PLAYER_SPEND_CAUSES) {
+    const v = window.byCause[cause];
+    if (typeof v === 'number' && Number.isFinite(v)) net += v;
+  }
+  return net < 0 ? -net : 0;
+}
+
+/**
+ * THR-2061 (plan E4) — how much the player spent from this pool between two
+ * reads of its record. Pure. Only {@link PLAYER_SPEND_CAUSES} count: income,
+ * upkeep and a sustained control never light the ▼.
+ *
+ * Same window → the growth of its spend. A window that opened after `prev` was
+ * read holds only new movement, so its whole spend counts (plus any growth of
+ * the window `prev` read, kept as `previous`). Anything else (no
+ * `next`, a record that went backwards) reads 0 — never a false ▼.
+ */
+export function playerSpendSince(
+  prev: EssenceMovementRecord | undefined,
+  next: EssenceMovementRecord | undefined,
+): number {
+  if (!next || prev === next) return 0;
+  if (!prev) return playerSpendIn(next.current);
+  if (next.current.fromTick === prev.current.fromTick) {
+    return Math.max(0, playerSpendIn(next.current) - playerSpendIn(prev.current));
+  }
+  if (next.current.fromTick > prev.current.fromTick) {
+    // The window `prev` read may have taken a spend before it closed; it is
+    // `next.previous` when it was kept.
+    const closedGrowth = next.previous?.fromTick === prev.current.fromTick
+      ? Math.max(0, playerSpendIn(next.previous) - playerSpendIn(prev.current))
+      : 0;
+    return closedGrowth + playerSpendIn(next.current);
+  }
+  return 0;
+}
+
 /** Spheres whose window rolled between two records, with the window that closed. */
 export function rolledWindows(
   before: EssenceMovementBySphere | undefined,

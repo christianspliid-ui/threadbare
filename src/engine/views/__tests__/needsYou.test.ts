@@ -60,7 +60,7 @@ describe('needsYou — the producer list (Law 58)', () => {
 });
 
 describe('needsYou — build', () => {
-  it('count equals the rows, and the VM is serialisable', () => {
+  it('count is what waits (Waiting + Held), total is every row, and the VM is serialisable', () => {
     const vm = buildNeedsYou(sources({
       beatOffer: { kind: 'gift', beatId: 'spine.seat', eyebrow: 'A Place to Stand', title: null, tick: 90 },
       receipts: [{ id: 'r1', headline: 'The fever breaks before dawn.', tick: 95 }],
@@ -70,8 +70,11 @@ describe('needsYou — build', () => {
     }));
     assertSerialisable(vm, 'needsYou');
     const rows = vm.groups.waiting.length + vm.groups.held.length + vm.groups.news.length;
-    expect(vm.count).toBe(rows);
-    expect(vm.count).toBe(6);
+    // THR-2061 (E5) — News stays in the list but is not counted.
+    expect(vm.total).toBe(rows);
+    expect(vm.total).toBe(6);
+    expect(vm.count).toBe(vm.groups.waiting.length + vm.groups.held.length);
+    expect(vm.count).toBe(4);
     expect(vm.groups.waiting.map(r => r.line)).toEqual([
       'A gift waits: A Place to Stand',
       'What your act bought: The fever breaks before dawn.',
@@ -103,7 +106,8 @@ describe('needsYou — build', () => {
     const vm = buildNeedsYou(sources({
       alerts: [alert('b1', 99, 'faction', 'First.'), alert('b2', 99, 'faction', 'Second.'), alert('b3', 99, 'faction', 'Third.'), alert('other', 99, 'death', 'A death.')],
     }));
-    expect(vm.count).toBe(2);
+    expect(vm.total).toBe(2);
+    expect(vm.count).toBe(0);
     const burst = vm.groups.news.find(r => r.burst);
     expect(burst?.line).toBe('Third. · and 2 more like it');
     expect(burst?.burst?.map(r => r.line)).toEqual(['Third.', 'Second.', 'First.']);
@@ -130,7 +134,7 @@ describe('needsYou — grow, then fold (Law 57)', () => {
   it('20 news rows fold to capacity − 1 rows and one "and N more" row; Waiting folds last', () => {
     const alerts = Array.from({ length: 20 }, (_, i) => alert(`n${i}`, 100 - i));
     const vm = buildNeedsYou(sources({ currentTick: 100, alerts }));
-    expect(vm.count).toBe(20);
+    expect(vm.total).toBe(20);
     const cap = needsYouCapacityRows(1080, 16, 1);
     const folded = foldNeedsYou(vm, cap);
     expect(folded.groups.news.rows).toHaveLength(cap - 1);
@@ -160,10 +164,11 @@ describe('needsYou — the seam (THR-1822)', () => {
     const { needsYouSelector } = await import('../needsYou');
     const src = sources({ alerts: [alert('a1', 99), alert('a2', 98, 'death')] });
     const viaScreen = needsYouSelector.build({} as never, { needsYouSources: src });
-    expect(viaScreen.count).toBe(2);
+    expect(viaScreen.total).toBe(2);
+    expect(viaScreen.count).toBe(0);
     const k1 = needsYouSelector.key({ needsYouSources: src });
     const k2 = needsYouSelector.key({ needsYouSources: sources({ alerts: [alert('a1', 99)] }) });
     expect(k1).not.toBe(k2);
-    expect(needsYouSelector.build({} as never, {}).count).toBe(0);
+    expect(needsYouSelector.build({} as never, {}).total).toBe(0);
   });
 });

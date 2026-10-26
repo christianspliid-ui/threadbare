@@ -42,6 +42,12 @@ export interface EssenceRefillSphere {
   netPerTick: number;
   share: number;
   band: EssenceRefillBand;
+  /**
+   * THR-2061 — what upkeep and sustained controls take from this pool each tick
+   * after the essence phase clamps it to its cap. A pool refilled to the cap
+   * every tick settles this far below it, and still reads full. Absent ⇒ 0.
+   */
+  drawnPerTick?: number;
 }
 
 export interface EssenceRefillReading {
@@ -60,7 +66,8 @@ export function readEssenceRefill(
   controlEffects?: readonly ControlEffect[],
 ): EssenceRefillReading {
   try {
-    const { net: ledgerNet, grossTotal } = computeEssenceIncomeBreakdown(graph, ascendantId, controlEffects);
+    const { net: ledgerNet, grossTotal, drawnPerTick } = computeEssenceIncomeBreakdown(graph, ascendantId, controlEffects);
+    const drawn: Partial<Record<SphereName, number>> = { ...drawnPerTick };
     // A sustained control's per-tick cost is charged from the pool by
     // phaseControlEffects (Step 3b) but is not part of the income mirror; the
     // band nets it out so a pool a control is draining reads "Drains". A cost a
@@ -70,19 +77,57 @@ export function readEssenceRefill(
       if (!effect.active || getUpkeepStatus(effect, graph) !== 'no_relic') continue;
       for (const [sphere, cost] of Object.entries(effect.perTickCost)) {
         const s = sphere as SphereName;
-        if (typeof cost === 'number' && cost > 0 && s in net) net[s] -= cost;
+        if (typeof cost === 'number' && cost > 0 && s in net) {
+          net[s] -= cost;
+          drawn[s] = (drawn[s] ?? 0) + cost;
+        }
       }
     }
     const spheres: Partial<Record<SphereName, EssenceRefillSphere>> = {};
     for (const sphere of SPHERE_NAMES) {
       const netPerTick = net[sphere] ?? 0;
       const band = essenceRefillBand(netPerTick, grossTotal);
-      if (band) spheres[sphere] = { netPerTick, share: netPerTick / grossTotal, band };
+      const drawnHere = drawn[sphere] ?? 0;
+      if (band) {
+        spheres[sphere] = {
+          netPerTick, share: netPerTick / grossTotal, band,
+          ...(drawnHere > 0 && Number.isFinite(drawnHere) ? { drawnPerTick: drawnHere } : {}),
+        };
+      }
     }
     return { grossTotalPerTick: grossTotal, spheres };
   } catch {
     return { grossTotalPerTick: 0, spheres: {} };
   }
+}
+
+export type EssenceDirection = 'rising' | 'steady' | 'ebbing';
+
+/** Float slack when comparing a pool to its full mark. */
+const ESSENCE_FULL_EPSILON = 1e-6;
+
+/**
+ * THR-2061 (plan E3) — which way the pool is moving **now**, read from the same
+ * refill band as the row's word, so the arrow and the word cannot disagree.
+ * `drains` → ebbing; any other band below its full mark → rising; a full pool,
+ * or no band at all (fail-soft) → steady. The two-window movement history no
+ * longer drives the arrow: it stays in the hover's "fed by / drawn by".
+ *
+ * The full mark is `cap − drawnPerTick`: the essence phase clamps the pool to
+ * the cap, then upkeep (and a sustained control) takes its share in the same
+ * tick, so a pool that is refilled to the cap every tick is read between ticks
+ * that far below it — full, not rising.
+ */
+export function essenceDirection(
+  refill: { band: EssenceRefillBand; drawnPerTick?: number } | undefined,
+  level: number,
+  cap: number,
+): EssenceDirection {
+  if (!refill) return 'steady';
+  if (refill.band === 'drains') return 'ebbing';
+  if (!Number.isFinite(level) || !Number.isFinite(cap)) return 'steady';
+  const drawn = Number.isFinite(refill.drawnPerTick) ? Math.max(0, refill.drawnPerTick ?? 0) : 0;
+  return level < cap - drawn - ESSENCE_FULL_EPSILON ? 'rising' : 'steady';
 }
 
 export interface PourRefillPreview {

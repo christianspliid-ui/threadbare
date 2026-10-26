@@ -356,7 +356,8 @@ export function DialogHost({
               newPool[s] = (newPool[s] ?? 0) - deduct;
               remaining -= deduct;
             }
-            return { ...prev, ...withEssenceSpend(prev, newPool, 'other') };
+            // THR-2061 — a spend the player chose: files where the ▼ can see it.
+            return { ...prev, ...withEssenceSpend(prev, newPool, 'spend_other') };
           });
         }}
       />

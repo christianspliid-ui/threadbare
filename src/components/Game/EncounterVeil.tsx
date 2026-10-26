@@ -53,6 +53,7 @@ import {
   lastStepAnswer,
 } from '../../data/nudge-stage-content';
 import { getDurationWord } from '../../data/domain-words';
+import { CONSEQUENCE_LEGEND_MEANINGS, CONSEQUENCE_LEGEND_SEPARATOR } from '../../data/aftermath-legend-words';
 import { Z_BAND } from '../shared/zBands';
 
 // ── Thread tier types ──────────────────────────────────────────────
@@ -332,11 +333,14 @@ const CONSEQUENCE_LEGEND_ENTRIES: readonly {
   category: EncounterStageConsequenceCategory;
   glyph: string;
   label: string;
+  /** THR-2061 (U7) — what the word means, beside it: "Scar · what it cost". */
+  meaning: string;
   tooltipId: string;
 }[] = CONSEQUENCE_CATEGORY_ORDER.map((category) => ({
   category,
   glyph: CONSEQUENCE_CATEGORY_GLYPHS[category],
   label: CONSEQUENCE_CATEGORY_LABELS[category],
+  meaning: CONSEQUENCE_LEGEND_MEANINGS[category],
   // THR-1136 — read from the shared map rather than rebuilt here. The chip tag
   // now draws the same tooltip, and an id spelled in two places is an id that
   // drifts in one of them.
@@ -1377,10 +1381,15 @@ export function EncounterVeil({
                       <span
                         className="focus-ring"
                         tabIndex={0}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                        data-testid={`consequence-legend-${entry.category}`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}
                       >
                         <span aria-hidden="true">{entry.glyph}</span>
                         {entry.label}
+                        {/* THR-2061 (U7) — the meaning, lower case after the word. */}
+                        <span style={{ textTransform: 'none', letterSpacing: '0.02em' }}>
+                          {`${CONSEQUENCE_LEGEND_SEPARATOR.trimEnd()} ${entry.meaning}`}
+                        </span>
                       </span>
                     </Tooltip>
                   ))}
@@ -1388,15 +1397,17 @@ export function EncounterVeil({
                       how much. Same dismissal as the categories (Law 51). */}
                   <span
                     data-testid="consequence-legend-delta"
-                    style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, textTransform: 'uppercase' }}
+                    // THR-2061 (U7) — the size words read lower case after their glyphs.
+                    style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 6, textTransform: 'none', letterSpacing: '0.02em' }}
                   >
                     <span style={{ whiteSpace: 'nowrap' }}>
                       <span aria-hidden="true">{DELTA_GAIN_GLYPH}</span> rose
                       {' · '}
                       <span aria-hidden="true">{DELTA_LOSS_GLYPH}</span> fell
                     </span>
-                    {CONSEQUENCE_LEGEND_DELTA_ENTRIES.map((entry) => (
+                    {CONSEQUENCE_LEGEND_DELTA_ENTRIES.map((entry, i) => (
                       <span key={entry.count} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
+                        {i > 0 && <span aria-hidden="true">{CONSEQUENCE_LEGEND_SEPARATOR.trim()}</span>}
                         <span aria-hidden="true">{entry.glyphs}</span>
                         <span>{entry.word}</span>
                       </span>

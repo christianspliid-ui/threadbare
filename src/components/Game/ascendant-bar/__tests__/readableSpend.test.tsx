@@ -31,6 +31,7 @@ import { TOOLTIP_SHOW_DELAY } from '../../../../types/tooltip';
 import { ActionCard } from '../../ActionCard';
 import { getEssencePreviewSphere } from '../essenceDisplay';
 import type { WheelSlot } from '../../../../engine/wheel';
+import { recordEssenceMovement, type EssenceMovementBySphere } from '../../../../engine/essenceMovement';
 
 const FORECAST_TIERS: readonly ForecastTier[] = ['doomed', 'perilous', 'uncertain', 'favorable', 'fated'];
 
@@ -48,8 +49,8 @@ function fullPool(level = INITIAL_ESSENCE_PER_SPHERE): Record<SphereName, number
   return Object.fromEntries(SPHERE_NAMES.map((s) => [s, level])) as Record<SphereName, number>;
 }
 
-function stateWith(pool: Partial<Record<SphereName, number>>): GameState {
-  return { essencePool: pool } as unknown as GameState;
+function stateWith(pool: Partial<Record<SphereName, number>>, essenceMovement?: EssenceMovementBySphere): GameState {
+  return { essencePool: pool, essenceMovement, tick: 10 } as unknown as GameState;
 }
 
 describe('registry — every new tooltip id resolves (Law 17)', () => {
@@ -140,8 +141,8 @@ describe('essenceFillPct — the bar scales to the starting pool (Law 47)', () =
 });
 
 describe('EssenceBlock', () => {
-  function rowsFor(pool: Record<SphereName, number>): EssenceRowView[] {
-    return selectEssenceRows(stateWith(pool), archetype('mind', 'spirit'));
+  function rowsFor(pool: Record<SphereName, number>, movement?: EssenceMovementBySphere): EssenceRowView[] {
+    return selectEssenceRows(stateWith(pool, movement), archetype('mind', 'spirit'));
   }
 
   it('shows each whole-number balance and keeps the Elder powers folded', () => {
@@ -163,7 +164,7 @@ describe('EssenceBlock', () => {
     const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
     expect(screen.queryByTestId('essence-spend-mind')).toBeNull();
     const spent = { ...pool, mind: pool.mind - 5 };
-    rerender(<EssenceBlock rows={rowsFor(spent)} />);
+    rerender(<EssenceBlock rows={rowsFor(spent, recordEssenceMovement(undefined, pool, spent, 'spend_nudge', 10))} />);
     expect(screen.getByTestId('essence-spend-mind')).toBeTruthy();
     expect(screen.getByTestId('essence-balance-mind').textContent).toBe(String(pool.mind - 5));
     act(() => { vi.advanceTimersByTime(ESSENCE_SPEND_FLASH_MS + 10); });
@@ -171,11 +172,39 @@ describe('EssenceBlock', () => {
     vi.useRealTimers();
   });
 
-  it('does not flash for a sub-measure upkeep drain', () => {
+  it('does not flash for a sub-measure spend', () => {
     const pool = fullPool();
+    const next = { ...pool, mind: pool.mind - 0.3 };
     const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
-    rerender(<EssenceBlock rows={rowsFor({ ...pool, mind: pool.mind - 0.3 })} />);
+    rerender(<EssenceBlock rows={rowsFor(next, recordEssenceMovement(undefined, pool, next, 'spend_nudge', 10))} />);
     expect(screen.queryByTestId('essence-spend-mind')).toBeNull();
+  });
+
+  // THR-2061 (E4/U5) — only the player's own spends light the ▼.
+  it("does not flash for a drop that is not the player's spend (upkeep, a control)", () => {
+    const pool = fullPool();
+    const next = { ...pool, mind: pool.mind - 6 };
+    const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    rerender(<EssenceBlock rows={rowsFor(next, recordEssenceMovement(undefined, pool, next, 'sustained', 10))} />);
+    expect(screen.queryByTestId('essence-spend-mind')).toBeNull();
+  });
+
+  it('a refill render after a spend does not cancel the flash timer (the stuck ▼)', () => {
+    vi.useFakeTimers();
+    const pool = fullPool();
+    const spent = { ...pool, mind: pool.mind - 5 };
+    const afterSpend = recordEssenceMovement(undefined, pool, spent, 'spend_cast', 10);
+    const { rerender } = render(<EssenceBlock rows={rowsFor(pool)} />);
+    rerender(<EssenceBlock rows={rowsFor(spent, afterSpend)} />);
+    expect(screen.getByTestId('essence-spend-mind')).toBeTruthy();
+    // A refill tick: the level rises and the record grows under `income`.
+    const refilled = { ...spent, mind: spent.mind + 1 };
+    act(() => { vi.advanceTimersByTime(ESSENCE_SPEND_FLASH_MS / 2); });
+    rerender(<EssenceBlock rows={rowsFor(refilled, recordEssenceMovement(afterSpend, spent, refilled, 'income', 11))} />);
+    expect(screen.getByTestId('essence-spend-mind')).toBeTruthy();
+    act(() => { vi.advanceTimersByTime(ESSENCE_SPEND_FLASH_MS / 2 + 10); });
+    expect(screen.queryByTestId('essence-spend-mind')).toBeNull();
+    vi.useRealTimers();
   });
 
   // THR-1858 (warm round 2): a Chaos price drained a pool hidden in the fold.

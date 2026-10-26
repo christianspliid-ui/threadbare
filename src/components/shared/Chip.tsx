@@ -96,6 +96,12 @@ export interface CountChipFullProps extends CountChipBase {
   onOpen?: () => void;
   /** THR-1875 — a visible word before the count ("Needs you 3"); the top bar's pill shows it. */
   word?: string;
+  /**
+   * THR-2061 — at a count of zero, draw the word alone instead of nothing. The
+   * needs-you pill stays (as "Needs you", no number) while its list holds only
+   * News, which is listed but not counted. Needs `word`.
+   */
+  showWhenZero?: boolean;
   /** THR-1875 — the tooltip's description under the spoken label (a registry entry's words). */
   desc?: string;
 }
@@ -328,8 +334,9 @@ function isCompactCount(props: CountChipFullProps | CountChipBadgeProps): props 
 
 function CountChip(props: CountChipFullProps | CountChipBadgeProps) {
   const n = shownCount(props.count);
-  if (n === null) return null;
-  const countAttrs = { 'data-count': n, 'data-count-of': props.of };
+  const wordOnly = n === null && !isCompactCount(props) && props.showWhenZero === true && !!props.word;
+  if (n === null && !wordOnly) return null;
+  const countAttrs = { 'data-count': n ?? 0, 'data-count-of': props.of };
 
   if (isCompactCount(props)) {
     const pinned: CSSProperties =
@@ -380,7 +387,7 @@ function CountChip(props: CountChipFullProps | CountChipBadgeProps) {
     >
       <Icon name={icon} size="chip" decorative />
       {word && <span aria-hidden="true" style={{ fontWeight: 700 }}>{word}</span>}
-      <span aria-hidden="true">{n}</span>
+      {n !== null && <span aria-hidden="true">{n}</span>}
     </Shell>
   );
   return <Tooltip label={label} desc={desc}>{chip}</Tooltip>;

@@ -3936,7 +3936,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [giftOtherInterrupts.length, hexMapRef, handleNotificationNavigate, handleDismissAlert]);
   // N answers only while the pill is on the bar (its reveal gate holds and something waits).
   needsYouKeyRef.current = () => {
-    if (needsYouVM.count > 0 && document.querySelector('[data-testid="needs-you-pill"] button')) setNeedsYouOpen(o => !o);
+    if (needsYouVM.total > 0 && document.querySelector('[data-testid="needs-you-pill"] button')) setNeedsYouOpen(o => !o);
   };
   useEffect(() => {
     if (!import.meta.env.DEV) return;

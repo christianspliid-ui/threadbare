@@ -154,6 +154,8 @@ export const HAND_PRICE_TIER_SCALED = 'A rarer target costs more.';
 export const NEEDS_YOU_LABEL = 'Needs you';
 /** The pill's aria and tooltip label: "1 thing needs you" / "3 things need you". */
 export const NEEDS_YOU_PILL_LABEL: CountPair = { one: '{n} thing needs you', other: '{n} things need you' };
+/** THR-2061 — the pill's aria and tooltip label when only News is in the list: nothing waits, so no number. */
+export const NEEDS_YOU_PILL_NEWS_ONLY_LABEL = 'Nothing waits on you; news to read';
 /** The list's group headers, followed by " · {n}". */
 export const NEEDS_YOU_GROUP_TITLES = {
   waiting: 'Waiting for you',

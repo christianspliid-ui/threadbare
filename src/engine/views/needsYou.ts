@@ -78,8 +78,14 @@ export interface NeedsYouRowVM {
 }
 
 export interface NeedsYouVM {
-  /** Rows in all three groups, folded rows included; a burst counts once. */
+  /**
+   * What waits on the player: Waiting and Held rows, folded rows included
+   * (THR-2061, plan E5). News stays in the list but is not counted unless
+   * {@link NEEDS_YOU_COUNT_INCLUDES_NEWS}. The pill's number.
+   */
   count: number;
+  /** Rows in all three groups; a burst counts once. The pill shows while this is above 0. */
+  total: number;
   groups: Record<NeedsYouGroup, NeedsYouRowVM[]>;
 }
 
@@ -293,6 +299,12 @@ export const NEEDS_YOU_PRODUCERS: readonly NeedsYouProducer[] = [
   { id: 'alert', group: 'news', order: 1, rows: newsRows },
 ];
 
+/**
+ * THR-2061 (plan E5) — whether News rows add to the pill's number. Off: news is
+ * something to read, not something that waits on the player.
+ */
+export const NEEDS_YOU_COUNT_INCLUDES_NEWS = false;
+
 /** Build the queue. Pure; a producer that throws contributes nothing (fail-soft). */
 export function buildNeedsYou(src: NeedsYouSources): NeedsYouVM {
   const groups: Record<NeedsYouGroup, NeedsYouRowVM[]> = { waiting: [], held: [], news: [] };
@@ -305,11 +317,13 @@ export function buildNeedsYou(src: NeedsYouSources): NeedsYouVM {
       // fail-soft: one producer's fault never empties the list
     }
   }
-  return { count: groups.waiting.length + groups.held.length + groups.news.length, groups };
+  const waits = groups.waiting.length + groups.held.length;
+  const total = waits + groups.news.length;
+  return { count: NEEDS_YOU_COUNT_INCLUDES_NEWS ? total : waits, total, groups };
 }
 
 export function emptyNeedsYou(): NeedsYouVM {
-  return { count: 0, groups: { waiting: [], held: [], news: [] } };
+  return { count: 0, total: 0, groups: { waiting: [], held: [], news: [] } };
 }
 
 // ─── Grow, then fold (Law 57; § F4) ───────────────────────────────

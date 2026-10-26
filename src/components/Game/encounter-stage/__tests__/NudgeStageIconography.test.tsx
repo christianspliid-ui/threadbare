@@ -29,7 +29,7 @@ import type {
 import {
   NUDGE_READING_LEGEND_ENTRIES,
 } from '../../../../data/nudge-stage-content';
-import { NUDGE_GLYPH_LEGEND } from '../../../../data/nudge-card-display';
+import { NUDGE_GLYPH_LEGEND, nudgeGlyphLegendForHand } from '../../../../data/nudge-card-display';
 import {
   FORECAST_TIER_PIPS,
   generateDifficultyScalesSvg,
@@ -350,7 +350,11 @@ describe('THR-972 · card iconography', () => {
     const legend = screen.getByTestId('nudge-glyph-legend');
     expect(NUDGE_GLYPH_LEGEND.length).toBe(3);
 
-    for (const entry of NUDGE_GLYPH_LEGEND) {
+    // THR-2061 (U6) — the legend is this hand's: its odds entry shows only the
+    // pip shapes the hand's cards carry.
+    const forHand = nudgeGlyphLegendForHand(phase.cards.map((c) => c.forecastDelta));
+    expect(forHand.length).toBeGreaterThan(0);
+    for (const entry of forHand) {
       const row = screen.getByTestId(`nudge-legend-${entry.id}`);
       expect(legend.contains(row)).toBe(true);
       expect(row.textContent).toContain(entry.label);

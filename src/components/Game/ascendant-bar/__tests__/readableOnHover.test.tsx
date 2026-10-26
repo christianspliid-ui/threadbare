@@ -34,7 +34,7 @@ import { recordEssenceMovement } from '../../../../engine/essenceMovement';
 import { NUDGE_CARD_TYPES } from '../../../../data/nudge-card-library';
 import { PIP_ODDS_TIERS, PIP_PENALTY_TIER } from '../../../../data/nudge-pip-vocabulary';
 import { FORECAST_TIER_WORDS, NUDGE_FACTOR_KIND_TAGS } from '../../../../data/nudge-stage-content';
-import { ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW } from '../../../../data/ascendant-bar-content';
+import { ASCENDANT_QUINTESSENCE_STRIP_SHOW_BELOW, ESSENCE_TREND_WORDS } from '../../../../data/ascendant-bar-content';
 import { TOOLTIP_SHOW_DELAY } from '../../../../types/tooltip';
 import { SPHERE_NAMES } from '../../../../types';
 import type { GameState } from '../../../../types/gameState';
@@ -91,16 +91,20 @@ function hover(target: Element): void {
 // ─── Done-when 1 — essence rows explain themselves ──────────────────────────
 
 describe('essence rows (D1, D2)', () => {
-  it('reads the movement record: arrow and hover agree with the sign of the net', () => {
+  // THR-2061 (E3) — the arrow follows the refill band, not the two-window net;
+  // the movement record still names what fed and drew the pool in the hover.
+  it("the hover names the movement record's causes; its trend word is the arrow's", () => {
     let rec = recordEssenceMovement(undefined, pool(), pool({ matter: 44 }), 'upkeep', 120);
     rec = recordEssenceMovement(rec, pool(), pool({ mind: 56 }), 'income', 121);
     const rows = selectEssenceRows(makeState(100, { essenceMovement: rec }), ARCHETYPE);
     const matter = rows.find((r) => r.sphere === 'matter')!;
     const mind = rows.find((r) => r.sphere === 'mind')!;
-    expect(matter.trend).toBe('ebbing');
-    expect(matter.hoverDesc).toMatch(/Ebbing\. Drawn by your threads' upkeep\./);
-    expect(mind.trend).toBe('rising');
-    expect(mind.hoverDesc).toMatch(/Rising\. Fed by the cosmos's flow\./);
+    expect(matter.hoverDesc).toMatch(/Drawn by your threads' upkeep\./);
+    expect(mind.hoverDesc).toMatch(/Fed by the cosmos's flow\./);
+    for (const row of rows) {
+      expect(row.hoverDesc, row.sphere).toContain(`${ESSENCE_TREND_WORDS[row.trend]}.`);
+      expect(row.movement, row.sphere).toBe(rec?.[row.sphere]);
+    }
   });
 
   it('never puts a numeral in the hover (Law 13 — the balance is the only number)', () => {
