@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 15:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 16:57 local (15:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -61,14 +61,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 10 ready.** One can be built now: [THR-1929](https://linear.app/threadbare/issue/THR-1929) (a follow-up scene waits for its place), whose veto window closed at 15:29. The rest are waiting out their veto windows.
+**Healthy: 10 ready, 1 being built.** The builder has been working on [THR-1929](https://linear.app/threadbare/issue/THR-1929) (a follow-up scene waits for its place) since 15:12 UTC. Nothing is pushed yet, which is normal for a run in progress.
 
-- **Two more round-5 fixes went live this hour.** Six small faults ([THR-2057](https://linear.app/threadbare/issue/THR-2057), [#2604](https://github.com/christianspliid-ui/threadbare/pull/2604)), and Read the Threads now shows the mortal's real name and how a missed chapter ended ([THR-2055](https://linear.app/threadbare/issue/THR-2055), [#2601](https://github.com/christianspliid-ui/threadbare/pull/2601)). That clears round 5's bug list.
-- **New on the shelf:** [God's Will offers story, the path leans](https://linear.app/threadbare/issue/THR-2068), buildable from Tuesday 14:30 UTC. Round 5's other design tickets ([THR-2060](https://linear.app/threadbare/issue/THR-2060), [THR-2061](https://linear.app/threadbare/issue/THR-2061)) open Tuesday 11:38 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26d.md)*
+- **New and buildable now:** [A mortal's trade never steers what they actually choose](https://linear.app/threadbare/issue/THR-2067). A healer's trade changes what God's Will offers, but not what she picks for herself. It goes before [THR-2068](https://linear.app/threadbare/issue/THR-2068), which touches the same code. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26f.md)*
+- **Also new on the shelf:** [God's Will offers story, the path leans](https://linear.app/threadbare/issue/THR-2068), buildable from Tuesday 14:30 UTC. Round 5's other design tickets ([THR-2060](https://linear.app/threadbare/issue/THR-2060), [THR-2061](https://linear.app/threadbare/issue/THR-2061)) open Tuesday 11:38 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26d.md)*
 - Next to open: [THR-2040](https://linear.app/threadbare/issue/THR-2040) at 19:05 today, [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site is serving the newest main ([#2604](https://github.com/christianspliid-ui/threadbare/pull/2604)); main's CI, the three scheduled background jobs, all 9 scheduled lanes and the worktree reaper (last run 15:54) are healthy. No pull requests are open. Engine speed is within its normal range (167 ms a tick, +7% on the week).
+All green. The live site is serving the newest main ([#2604](https://github.com/christianspliid-ui/threadbare/pull/2604)). Main's CI, the three scheduled background jobs, all 9 scheduled lanes and the worktree reaper (last run 16:40) are healthy. No pull requests are open. Engine speed is within its normal range: 189 ms a tick, +20% on the week's median, below the +25% line.
