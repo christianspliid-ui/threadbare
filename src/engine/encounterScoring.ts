@@ -77,7 +77,7 @@ import type { EligibilityFunnelCounters } from './kpi/gameplayKpi';
 import type { TraceBuffer } from './traceBuffer';
 import { computeBranchingCuratorMultiplier } from './encounter/branchingCurator';
 import { computeSurfaceKey, getSurfaceAxisValues } from './encounterSurface';
-import { computeEconomicContextBonus, resolveGoverningProsperity } from './economicContext';
+import { computeEconomicContextBonus, computeLarderContextBonus, readLarder, resolveGoverningProsperity } from './economicContext';
 import { computeLocationTraitBonus } from './locationTraitBonus';
 
 // ─── Constants (re-exported from central tuning file) ───────────
@@ -679,6 +679,10 @@ export interface ScoredCandidate {
   reputationBonus: number;
   /** Signed additive term from the settlement's boom/bust state and the template family's economic affinity (THR-725). 0 inside the neutral prosperity band or for families with no authored row. Already folded into finalScore's baseScore. */
   economicContextBonus: number;
+  /** Signed additive term from the settlement's larder — famine or glut — × the template family's famine/glut weight (THR-2040). 0 when the town is neither hungry nor glutted. Already folded into finalScore's baseScore. */
+  larderContextBonus: number;
+  /** The larder state behind `larderContextBonus` (THR-2040); null when the town is neither. */
+  larderState: 'famine' | 'glut' | null;
   /** Additive term from the place's location traits × the template's tags (THR-790; = computeLocationTraitBonus). 0 at an unmarked place. Already folded into finalScore's baseScore. */
   locationTraitBonus: number;
   /** Hex distance from the agent to the encounter location (THR-641); Infinity when unreachable. Receipt derives the `proximity` pull from it. */
@@ -1483,6 +1487,10 @@ export function scoreAndSelect(
         ? (locationNode.properties.prosperity as number)
         : resolveGoverningProsperity(graph, entry.locationId);
     const economicContextBonus = computeEconomicContextBonus(candidateProsperity, entry.templateId);
+    // 20b'. Larder (THR-2040) — a hungry town tells hunger's stories, a glutted one plenty's.
+    // A separate term from prosperity so the trace can tell poverty from hunger.
+    const larder = readLarder(graph, entry.locationId);
+    const larderContextBonus = computeLarderContextBonus(larder, entry.templateId);
 
     // 20c. Location traits (THR-790) — a welcoming town leans toward its markets and
     // common rooms, a lawless one toward the quiet work, thin or haunted ground toward
@@ -1491,7 +1499,7 @@ export function scoreAndSelect(
     const locationTraitBonus = computeLocationTraitBonus(graph, locationNode, entry.templateId);
 
     // 21. Final score — rarity + role affinity multipliers on baseScore (exploration/ruins/chain bonuses are fixed)
-    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + economicContextBonus + locationTraitBonus + resonance + globalResonance;
+    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + economicContextBonus + larderContextBonus + locationTraitBonus + resonance + globalResonance;
     // 22. Doom identity + omen bias — additive, applied after all multipliers (already capped at source)
     const identityBiasBonus = encounterTypeBias?.[entry.encounterType] ?? 0;
     // 23. Hidden mark reveal bonus — encounters matching an agent's marks score higher (THR-112)
@@ -1622,6 +1630,8 @@ export function scoreAndSelect(
       bondBonus,
       reputationBonus,
       economicContextBonus,
+      larderContextBonus,
+      larderState: larder.state,
       locationTraitBonus,
       hexDistanceToEntry: distance,
       intelBonus,
@@ -1713,6 +1723,9 @@ function buildTrace(
       identityBiasBonus: c.identityBiasBonus,
       // THR-725 — the economy's contribution, so "why did a famine town pick this?" is answerable.
       economicContextBonus: c.economicContextBonus,
+      // THR-2040 — the larder's contribution, so "was it the poverty or the hunger?" is answerable.
+      larderContextBonus: c.larderContextBonus,
+      ...(c.larderState ? { larderState: c.larderState } : {}),
       // THR-790 — the place's traits, so "why did a haunted town pick this?" is answerable too.
       locationTraitBonus: c.locationTraitBonus,
     })),

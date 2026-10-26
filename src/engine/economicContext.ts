@@ -1,7 +1,8 @@
 /**
  * Economic context — the world's story response to prosperity (THR-725).
  *
- * Pure, deterministic reads over settlement prosperity. Two consumers:
+ * Pure, deterministic reads over settlement prosperity — and, since THR-2040, over the
+ * settlement's larder (famine / glut, {@link readLarder}). Two consumers:
  *   - `encounterScoring.ts` — {@link computeEconomicContextBonus} bends which scenes fire.
  *   - `proseEnrichment.ts` — {@link resolveEconomicMood} colours how they read.
  *
@@ -12,12 +13,23 @@
 
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
+import { isHungryToday } from './unrestPressure/hunger';
+import { HUNGER_DAYS_PROP } from './unrestPressure/inputs';
+import { readResources } from './resourceEconomy';
+import { getResourceClass } from '../data/resource-classes';
 import {
   ECON_BOOM_THRESHOLD,
   ECON_BUST_THRESHOLD,
   ECON_SCORING_CAP,
   ECON_SCORING_WEIGHT,
   ECONOMIC_MOOD_VOCABULARY,
+  FAMINE_FULL_DAYS,
+  LARDER_SCORING_CAP,
+  LARDER_SCORING_WEIGHT,
+  PLENTY_BALANCE_FLOOR,
+  PLENTY_MIN_SURPLUS_DAYS,
+  STOCK_TIER_FAMINE_DEVIATION,
+  STOCK_TIER_GLUT_DEVIATION,
   getEconomicSceneAffinity,
 } from '../data/economic-scene-affinity';
 
@@ -128,6 +140,105 @@ export function computeEconomicContextBonus(
 
   const raw = ECON_SCORING_WEIGHT * reading.deviation * weight;
   return Math.max(-ECON_SCORING_CAP, Math.min(ECON_SCORING_CAP, raw));
+}
+
+// ─── Larder: famine and glut (THR-2040) ──────────────────────────────────────
+
+/** Which way a settlement's larder leans. `null` = neither hungry nor glutted. */
+export type LarderState = 'famine' | 'glut';
+
+/** A settlement's larder reading, normalized for use as a scoring input. */
+export interface LarderReading {
+  readonly state: LarderState | null;
+  /** Depth of the famine or glut, in [0, 1]. 0 whenever `state` is null. */
+  readonly deviation: number;
+}
+
+const NEUTRAL_LARDER: LarderReading = { state: null, deviation: 0 };
+
+function finiteNumber(raw: unknown): number | null {
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
+}
+
+/** Fallback glut test with no food store: any staple at the `surplus` stock tier. */
+function hasSurplusStaple(settlement: GraphNode): boolean {
+  return Object.entries(readResources(settlement.properties ?? {})).some(
+    ([rid, r]) => r.stockTier === 'surplus' && getResourceClass(rid).category === 'staple',
+  );
+}
+
+/**
+ * Read a settlement's larder (THR-2040).
+ *
+ * **Famine** is the town's existing hunger — `isHungryToday`, the same reading its Fortunes
+ * sentence and unrest use, so there is no second hunger test to disagree with them. With
+ * the settlement economy live, depth grows with `hungerDays`: 1/`FAMINE_FULL_DAYS` on the
+ * first day, 1 from the fifth. On the stock-tier fallback it is a fixed depth.
+ *
+ * **Glut** is grain with nowhere to go: a run of `PLENTY_MIN_SURPLUS_DAYS` surplus days at a
+ * food balance of at least `PLENTY_BALANCE_FLOOR`, grading in from 0 at the floor. Without a
+ * food store, a surplus staple reads as a fixed-depth glut.
+ *
+ * A sublocation reads its settlement through one `parentLocationId` hop, as
+ * {@link resolveGoverningProsperity} does. Pure, no PRNG; every missing-data path is neutral.
+ */
+export function readLarder(graph: WorldGraph, locationId: string | undefined): LarderReading {
+  if (!locationId) return NEUTRAL_LARDER;
+  let node = graph.getNode(locationId);
+  if (!node) return NEUTRAL_LARDER;
+  const parentId = node.properties?.parentLocationId;
+  if (typeof parentId === 'string' && parentId !== '') {
+    const parent = graph.getNode(parentId);
+    if (!parent) return NEUTRAL_LARDER;
+    node = parent;
+  }
+  return readSettlementLarder(node);
+}
+
+/** {@link readLarder} on an already-resolved settlement node. */
+export function readSettlementLarder(settlement: GraphNode): LarderReading {
+  const props = settlement.properties ?? {};
+  const hunger = isHungryToday(settlement);
+
+  if (hunger.source === 'settlement_economy') {
+    if (hunger.hungry) {
+      const days = Math.max(1, finiteNumber(props[HUNGER_DAYS_PROP]) ?? 0);
+      const deviation = FAMINE_FULL_DAYS > 0 ? Math.min(1, days / FAMINE_FULL_DAYS) : 1;
+      return { state: 'famine', deviation };
+    }
+    const surplusDays = finiteNumber(props.foodSurplusDays);
+    const balance = finiteNumber(props.foodBalance);
+    if (surplusDays === null || balance === null) return NEUTRAL_LARDER;
+    if (surplusDays < PLENTY_MIN_SURPLUS_DAYS || balance < PLENTY_BALANCE_FLOOR) return NEUTRAL_LARDER;
+    const span = 1 - PLENTY_BALANCE_FLOOR;
+    const deviation = span > 0 ? Math.min(1, (balance - PLENTY_BALANCE_FLOOR) / span) : 1;
+    return { state: 'glut', deviation };
+  }
+
+  // Stock-tier fallback: no numeric food store (settlement economy off, or an old save).
+  if (hunger.hungry) return { state: 'famine', deviation: STOCK_TIER_FAMINE_DEVIATION };
+  if (hasSurplusStaple(settlement)) return { state: 'glut', deviation: STOCK_TIER_GLUT_DEVIATION };
+  return NEUTRAL_LARDER;
+}
+
+/**
+ * The additive larder scoring term: how much this settlement's hunger or plenty wants
+ * *this* kind of scene. Mirrors {@link computeEconomicContextBonus}, but stays a separate
+ * term so the trace can tell poverty from hunger.
+ *
+ * Fail-soft: a neutral larder, or a family with no famine/glut weight → 0.
+ */
+export function computeLarderContextBonus(reading: LarderReading, templateId: string): number {
+  if (reading.state === null || reading.deviation <= 0) return 0;
+
+  const affinity = getEconomicSceneAffinity(templateId);
+  if (!affinity) return 0;
+
+  const weight = (reading.state === 'famine' ? affinity.famineWeight : affinity.glutWeight) ?? 0;
+  if (weight === 0) return 0;
+
+  const raw = LARDER_SCORING_WEIGHT * reading.deviation * weight;
+  return Math.max(-LARDER_SCORING_CAP, Math.min(LARDER_SCORING_CAP, raw));
 }
 
 // ─── Prose coloration ────────────────────────────────────────────────────────

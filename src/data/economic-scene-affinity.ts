@@ -57,6 +57,35 @@ export const ECON_BOOM_THRESHOLD = 70;
 /** Prosperity (0–100) below which a settlement reads as busting. Sits between Struggling (20) and Modest (40). */
 export const ECON_BUST_THRESHOLD = 30;
 
+// ─── Larder constants (THR-2040) ─────────────────────────────────────────────
+
+/**
+ * Global multiplier on the larder (famine/glut) scoring term — how loudly hunger and plenty
+ * speak. Matches {@link ECON_SCORING_WEIGHT}; the plan's kill criterion allows one raise to 0.3.
+ */
+export const LARDER_SCORING_WEIGHT = 0.15;
+
+/** Cap on the larder term's absolute contribution. */
+export const LARDER_SCORING_CAP = 0.5;
+
+/** Hungry days until a famine reads at full depth: the first day reads 1/5, the fifth and later 1. */
+export const FAMINE_FULL_DAYS = 5;
+
+/**
+ * Surplus days in a row before a town can read as glutted. A single surplus day is a settled
+ * town's normal state (42–67 % of town-days in the plan's census), so it is not enough alone.
+ */
+export const PLENTY_MIN_SURPLUS_DAYS = 3;
+
+/** Food balance (yield over need, −1…1) where glut starts to count; the term grades in from 0 here. */
+export const PLENTY_BALANCE_FLOOR = 0.75;
+
+/** Famine depth when the only reading is a scarce staple (no settlement-economy food store). */
+export const STOCK_TIER_FAMINE_DEVIATION = 1.0;
+
+/** Glut depth when the only reading is a surplus staple (no settlement-economy food store). */
+export const STOCK_TIER_GLUT_DEVIATION = 0.5;
+
 // ─── Shock-seeding constants ─────────────────────────────────────────────────
 
 /**
@@ -94,6 +123,10 @@ export interface EconomicSceneAffinity {
   readonly boomWeight: number;
   /** Applied as prosperity falls below {@link ECON_BUST_THRESHOLD}. */
   readonly bustWeight: number;
+  /** Applied while the settlement is hungry (THR-2040). Absent = the larder says nothing about this family. */
+  readonly famineWeight?: number;
+  /** Applied while the settlement has grain with nowhere to go (THR-2040). Absent = neutral. */
+  readonly glutWeight?: number;
 }
 
 // ─── The table ───────────────────────────────────────────────────────────────
@@ -106,40 +139,40 @@ export interface EconomicSceneAffinity {
  */
 export const ECONOMIC_SCENE_AFFINITY: Readonly<Record<string, EconomicSceneAffinity>> = {
   // ── Coin in motion makes its own occasions ──
-  'encounter.market_day_festival': { boomWeight: 1.0, bustWeight: -0.8 },
-  'encounter.festival_of_spheres': { boomWeight: 0.9, bustWeight: -0.8 },
+  'encounter.market_day_festival': { boomWeight: 1.0, bustWeight: -0.8, famineWeight: -1.0, glutWeight: 0.8 },
+  'encounter.festival_of_spheres': { boomWeight: 0.9, bustWeight: -0.8, famineWeight: -0.8, glutWeight: 0.5 },
   'encounter.market_haggle': { boomWeight: 0.9, bustWeight: -0.3 },
-  'encounter.harvest_bounty': { boomWeight: 0.9, bustWeight: -0.9 },
-  'encounter.foreign_trader': { boomWeight: 0.8, bustWeight: -0.4 },
+  'encounter.harvest_bounty': { boomWeight: 0.9, bustWeight: -0.9, famineWeight: -1.0, glutWeight: 1.0 },
+  'encounter.foreign_trader': { boomWeight: 0.8, bustWeight: -0.4, famineWeight: -0.2, glutWeight: 0.4 },
   'encounter.merchants_gambit': { boomWeight: 0.8, bustWeight: -0.2 },
-  'encounter.caravan_deal': { boomWeight: 0.8, bustWeight: -0.2 },
+  'encounter.caravan_deal': { boomWeight: 0.8, bustWeight: -0.2, glutWeight: 0.4 },
   'encounter.merchant_caravan': { boomWeight: 0.7, bustWeight: -0.3 },
   'encounter.master_craftsman_challenge': { boomWeight: 0.7, bustWeight: -0.4 },
   'encounter.mystic_trade': { boomWeight: 0.6, bustWeight: -0.1 },
   'encounter.guild_negotiation': { boomWeight: 0.6, bustWeight: 0.2 },
   'encounter.guild_initiation_trial': { boomWeight: 0.5, bustWeight: -0.3 },
-  'encounter.grand_tournament': { boomWeight: 0.7, bustWeight: -0.7 },
+  'encounter.grand_tournament': { boomWeight: 0.7, bustWeight: -0.7, famineWeight: -0.6, glutWeight: 0.4 },
   'encounter.library_expansion': { boomWeight: 0.6, bustWeight: -0.5 },
   'encounter.forge_construction': { boomWeight: 0.6, bustWeight: -0.4 },
   'encounter.harbor_construction': { boomWeight: 0.6, bustWeight: -0.4 },
   'encounter.bridge_engineering': { boomWeight: 0.5, bustWeight: -0.4 },
   'encounter.court_noble': { boomWeight: 0.5, bustWeight: -0.2 },
   'tavern.merchants_pitch': { boomWeight: 0.7, bustWeight: -0.2 },
-  'tavern.drinking_contest': { boomWeight: 0.5, bustWeight: -0.4 },
+  'tavern.drinking_contest': { boomWeight: 0.5, bustWeight: -0.4, famineWeight: -0.6, glutWeight: 0.5 },
   'tavern.bardic_performance': { boomWeight: 0.5, bustWeight: -0.3 },
 
   // ── Scarcity has its own economy ──
-  'encounter.pickpocket': { boomWeight: 0.3, bustWeight: 1.0 },
+  'encounter.pickpocket': { boomWeight: 0.3, bustWeight: 1.0, famineWeight: 0.4 },
   'encounter.debt_collection': { boomWeight: -0.3, bustWeight: 1.0 },
-  'encounter.barter_survival': { boomWeight: -0.5, bustWeight: 1.0 },
+  'encounter.barter_survival': { boomWeight: -0.5, bustWeight: 1.0, famineWeight: 0.9, glutWeight: -0.5 },
   'encounter.labor_dispute': { boomWeight: -0.2, bustWeight: 0.9 },
-  'encounter.aid_refugees': { boomWeight: -0.4, bustWeight: 0.9 },
-  'encounter.black_market_deal': { boomWeight: 0.1, bustWeight: 0.8 },
+  'encounter.aid_refugees': { boomWeight: -0.4, bustWeight: 0.9, famineWeight: 1.0 },
+  'encounter.black_market_deal': { boomWeight: 0.1, bustWeight: 0.8, famineWeight: 0.5 },
   'encounter.grave_robbery': { boomWeight: -0.3, bustWeight: 0.8 },
   'encounter.bandit_ambush': { boomWeight: 0.1, bustWeight: 0.7 },
   'encounter.plague_outbreak': { boomWeight: -0.3, bustWeight: 0.6 },
   'encounter.barter_supplies': { boomWeight: -0.3, bustWeight: 0.7 },
-  'encounter.forage_provisions': { boomWeight: -0.3, bustWeight: 0.6 },
+  'encounter.forage_provisions': { boomWeight: -0.3, bustWeight: 0.6, famineWeight: 0.6, glutWeight: -0.4 },
   'encounter.militia_aid': { boomWeight: -0.1, bustWeight: 0.5 },
   'encounter.night_watch': { boomWeight: -0.1, bustWeight: 0.4 },
   'encounter.local_gossip': { boomWeight: 0.1, bustWeight: 0.3 },
@@ -148,6 +181,16 @@ export const ECONOMIC_SCENE_AFFINITY: Readonly<Record<string, EconomicSceneAffin
   'tavern.brawl': { boomWeight: 0.0, bustWeight: 0.5 },
   'social.rob': { boomWeight: 0.3, bustWeight: 0.9 },
   'social.intimidate': { boomWeight: 0.0, bustWeight: 0.5 },
+
+  // ── The larder speaks where prosperity does not (THR-2040) ──
+  // Hunger and plenty only: these scenes have no boom/bust lean of their own. The granary
+  // riot is left out on purpose — the hunger-and-unrest seeding owns its famine draw.
+  'gold.famine.merchant_granaries': { boomWeight: 0, bustWeight: 0, famineWeight: 1.0, glutWeight: -0.5 },
+  'encounter.mend_fishing_nets': { boomWeight: 0, bustWeight: 0, famineWeight: 0.6 },
+  'encounter.town.bell_at_the_exchange': { boomWeight: 0, bustWeight: 0, famineWeight: 0.6 },
+  'encounter.town.mill_lease_auction': { boomWeight: 0, bustWeight: 0, famineWeight: -0.3, glutWeight: 0.6 },
+  'encounter.town.tithe_barn_raid': { boomWeight: 0, bustWeight: 0, famineWeight: 0.3, glutWeight: 0.6 },
+  'encounter.realm.crowns_reckoning': { boomWeight: 0, bustWeight: 0, glutWeight: 0.5 },
 
   // ── Whole families whose character is economic on its own ──
   // The roadside economy of a poor province: shakedowns, tolls, deserters, scavengers.

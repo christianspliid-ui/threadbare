@@ -202,6 +202,13 @@ export const DecisionBreakdown = React.memo(function DecisionBreakdown({
                     {' | '}econ: {c.economicContextBonus > 0 ? '+' : ''}{c.economicContextBonus.toFixed(3)}
                   </span>
                 )}
+                {/* THR-2040 — the larder (famine/glut), rendered only when it spoke. */}
+                {c.larderContextBonus != null && c.larderContextBonus !== 0 && (
+                  <span data-testid="larder-context-bonus">
+                    {' | '}larder: {c.larderContextBonus > 0 ? '+' : ''}{c.larderContextBonus.toFixed(3)}
+                    {c.larderState ? ` (${c.larderState})` : ''}
+                  </span>
+                )}
                 {/* THR-790 — the place's traits, rendered only when the place is marked. */}
                 {c.locationTraitBonus != null && c.locationTraitBonus !== 0 && (
                   <span data-testid="location-trait-bonus">

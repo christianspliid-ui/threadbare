@@ -2921,6 +2921,10 @@ export interface ScoringTrace extends TraceBase {
     surfaceKey?: string;
     /** Signed economic-context term from settlement boom/bust × template-family affinity (THR-725). 0 in the neutral band. */
     economicContextBonus?: number;
+    /** Signed famine/glut term from the settlement's larder × template-family weight (THR-2040). 0 when neutral. */
+    larderContextBonus?: number;
+    /** The larder state behind `larderContextBonus` (THR-2040); absent when the town is neither hungry nor glutted. */
+    larderState?: 'famine' | 'glut';
     /** Additive pool term from the place's location traits × the template's tags (THR-790). 0 at an unmarked place. */
     locationTraitBonus?: number;
   }>;

@@ -188,6 +188,34 @@ describe('DecisionBreakdown', () => {
     expect(screen.queryByTestId('location-trait-bonus')).toBeNull();
   });
 
+  // THR-2040 — the larder renders only when the town is hungry or glutted, and names which.
+  it('renders the larder bonus with its state, and omits it at zero', () => {
+    const candidate = {
+      templateId: 'encounter.aid_refugees',
+      locationId: 'ashford',
+      isLocal: true,
+      valuePerTick: 0.6,
+      desireMultiplier: 1.1,
+      finalScore: 0.7,
+      travelCost: 0,
+      completionProb: 0.6,
+    };
+    const hungry: TraceEntry[] = [
+      makeScoringTrace('agent-1', 5, {
+        topCandidates: [{ ...candidate, larderContextBonus: 0.15, larderState: 'famine' as const }],
+      }),
+    ];
+    const { unmount } = render(<DecisionBreakdown agentId="agent-1" traces={hungry} />);
+    expect(screen.getByTestId('larder-context-bonus').textContent).toContain('larder: +0.150 (famine)');
+    unmount();
+
+    const fed: TraceEntry[] = [
+      makeScoringTrace('agent-1', 5, { topCandidates: [{ ...candidate, larderContextBonus: 0 }] }),
+    ];
+    render(<DecisionBreakdown agentId="agent-1" traces={fed} />);
+    expect(screen.queryByTestId('larder-context-bonus')).toBeNull();
+  });
+
   it('omits the economic-context line for a neutral-economy candidate', () => {
     const traces: TraceEntry[] = [
       makeScoringTrace('agent-1', 5, {
