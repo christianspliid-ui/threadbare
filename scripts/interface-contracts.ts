@@ -6914,6 +6914,7 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/encounterVisibility.ts',
       'src/engine/encounterFilterPipeline.ts',
       'src/engine/threadedChapters.ts', // THR-1893: the ledger's default view and count, shared by the Ledger tab
+      'src/engine/openingReveal.ts', // THR-2060: only The First's non-routine chapters pace the opening arrivals
       'src/debug-bridge.ts',
     ],
   },

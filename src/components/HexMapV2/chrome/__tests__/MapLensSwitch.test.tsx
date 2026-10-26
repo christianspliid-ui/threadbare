@@ -25,6 +25,22 @@ describe('MapLensSwitch', () => {
     }
   });
 
+  it('THR-2060: shows only the lenses that have arrived, and is absent with none', () => {
+    const { rerender } = render(<MapLensSwitch active={null} onChange={() => {}} bandColors={{}} shownLenses={new Set(['dominion', 'trouble'])} />);
+    expect(screen.getByTestId('map-lens-dominion')).toBeTruthy();
+    expect(screen.getByTestId('map-lens-trouble')).toBeTruthy();
+    expect(screen.queryByTestId('map-lens-threads')).toBeNull();
+    expect(screen.queryByTestId('map-lens-trade')).toBeNull();
+    rerender(<MapLensSwitch active={null} onChange={() => {}} bandColors={{}} shownLenses={new Set()} />);
+    expect(screen.queryByTestId('map-lens-switch')).toBeNull();
+  });
+
+  it('THR-2060: each lens names the reveal surface that brings it', () => {
+    expect(Object.fromEntries(MAP_LENSES.map(l => [l.id, l.revealSurface]))).toEqual({
+      dominion: 'dominion', threads: 'lens_threads', trouble: 'doom', trade: 'lens_trade',
+    });
+  });
+
   it('radio, not stack: pressing Threads while Dominion is on asks for Threads; pressing the pressed one asks for none', () => {
     const onChange = vi.fn();
     const { rerender } = render(<MapLensSwitch active="dominion" onChange={onChange} bandColors={{}} />);

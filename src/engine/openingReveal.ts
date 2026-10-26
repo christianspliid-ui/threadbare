@@ -18,6 +18,13 @@
  * opening; the pre-bond screen is exactly THR-1648's. Every later row is hidden
  * with reason `pre_bond`.
  *
+ * THR-2060 (plan `2026-10-26-thr-2058-one-thing-at-a-time.md` E1–E2): a fired
+ * trigger makes a labelled row *ready*, not shown. With an arrival ledger
+ * (`opts.ledger`, held by the screen), a ready row shows once it has *arrived*:
+ * {@link releaseOpeningArrivals} lets one through per closed First chapter (or
+ * per `OPENING_REVEAL_ARRIVAL_IDLE_TICKS` running ticks), in table order. Without
+ * a ledger (CLI, fixtures) every ready row shows, as before.
+ *
  * ─── PRNG ────────────────────────────────────────────────────────
  * None. No graph writes. Derived on read; nothing runs per tick.
  *
@@ -30,6 +37,9 @@ import type { GameState } from '../types/gameState';
 import {
   OPENING_REVEAL_TABLE,
   OPENING_REVEAL_CEILING_TICKS,
+  OPENING_REVEAL_CHAPTERS_PER_ARRIVAL,
+  OPENING_REVEAL_ARRIVAL_IDLE_TICKS,
+  type OpeningArrivalLedger,
   type OpeningRevealRow,
   type OpeningRevealSurfaceId,
 } from '../data/opening-reveal-table';
@@ -46,6 +56,9 @@ export type OpeningRevealReason =
   | 'ceiling'
   | 'spine_done'
   | 'first_chapter'
+  | 'rival_acted'
+  /** THR-2060: ready and released by the arrival ledger. */
+  | 'queued'
   | 'no_beat_state'
   | 'unknown_beat'
   | `gift:${string}`
@@ -54,6 +67,8 @@ export type OpeningRevealReason =
 export interface OpeningRevealRowState {
   readonly revealed: boolean;
   readonly reason: OpeningRevealReason;
+  /** THR-2060: for a row the ledger holds or released, why it became ready. */
+  readonly readyReason?: OpeningRevealReason;
 }
 
 export type OpeningDirectionMode = 'chapter_waiting' | 'let_time_run';
@@ -71,11 +86,21 @@ export interface OpeningReveal {
   readonly showAll: boolean;
   readonly rows: Readonly<Record<OpeningRevealSurfaceId, OpeningRevealRowState>>;
   readonly direction: OpeningDirection;
+  /** THR-2060: ready rows still waiting for their arrival, in table order (empty without a ledger). */
+  readonly queued: readonly OpeningRevealSurfaceId[];
+  /** THR-2060: the arrival ledger the rows were read against, when one was given. */
+  readonly ledger?: OpeningArrivalLedger;
 }
+
+export type { OpeningArrivalLedger };
+
+export const EMPTY_ARRIVAL_LEDGER: OpeningArrivalLedger = { arrived: {}, lastArrivalTick: null };
 
 export interface SelectOpeningRevealOptions {
   /** The player's "Show every panel" setting. */
   readonly showAll?: boolean;
+  /** THR-2060: the screen's arrival ledger. Absent → every ready row shows (today's rule). */
+  readonly ledger?: OpeningArrivalLedger;
 }
 
 const SPINE_IDS: ReadonlySet<string> = new Set(ASCENDANT_SPINE.map(b => b.beatId));
@@ -94,7 +119,21 @@ function fullScreen(staged: boolean, showAll: boolean): OpeningReveal {
     showAll,
     rows: allRows({ revealed: true, reason: 'not_staged' }),
     direction: HIDDEN_DIRECTION,
+    queued: [],
   };
+}
+
+/** True once any rival has acted — an intervention landed or a scheme launched (moved from `firstScreenReveal.ts`, THR-2060). */
+export function hasRivalActed(state: GameState): boolean {
+  const states = state.rivalStates ?? [];
+  return states.some(
+    s => (s.interventionCount ?? 0) > 0 || (s.schemes?.length ?? 0) > 0 || s.lastSchemeLaunchTick != null,
+  );
+}
+
+/** A row that waits in the arrival queue: it has a label to announce and a trigger past the bond. */
+export function isQueuedRow(row: OpeningRevealRow): boolean {
+  return row.trigger.kind !== 'bond' && !!row.newLabel;
 }
 
 /** The First's live, non-routine chapter (an unresolved encounter she acts in), if any. */
@@ -109,9 +148,20 @@ function findOpenFirstChapter(state: GameState, firstId: string): string | null 
 
 /** True once The First has a non-routine chapter resolved at or after the bond. */
 function hasResolvedFirstChapter(state: GameState, firstId: string, bondTick: number): boolean {
-  return (state.chapterArchive ?? []).some(rec =>
-    rec.resolved && rec.actorId === firstId && !isRoutineChapter(rec) && rec.resolvedTick >= bondTick,
-  );
+  return firstChaptersClosedSince(state, firstId, bondTick - 1) > 0;
+}
+
+/**
+ * THR-2060 — The First's non-routine chapters resolved after `sinceTick` (the
+ * `hasResolvedFirstChapter` read, generalised). Fail-soft: no archive reads 0.
+ */
+export function firstChaptersClosedSince(state: GameState, firstId: string | null, sinceTick: number): number {
+  if (!firstId) return 0;
+  let n = 0;
+  for (const rec of state.chapterArchive ?? []) {
+    if (rec.resolved && rec.actorId === firstId && !isRoutineChapter(rec) && rec.resolvedTick > sinceTick) n++;
+  }
+  return n;
 }
 
 function rowState(
@@ -121,7 +171,16 @@ function rowState(
 ): OpeningRevealRowState {
   const t = row.trigger;
   if (t.kind === 'bond') return { revealed: true, reason: 'at_bond' };
+  // Rivals wait for a real act even past the ceiling: the top bar's Rivals item is
+  // gated on the same act (`useFirstScreenReveal`), so an earlier arrival would
+  // announce a panel that cannot show.
+  if (t.kind === 'rival_acted') {
+    return hasRivalActed(state)
+      ? { revealed: true, reason: 'rival_acted' }
+      : { revealed: false, reason: 'waiting:rival_acted' };
+  }
   if (ctx.ceilingPassed) return { revealed: true, reason: 'ceiling' };
+  if (t.kind === 'ceiling') return { revealed: false, reason: 'waiting:ceiling' };
   if (t.kind === 'first_chapter') {
     return ctx.firstChapter
       ? { revealed: true, reason: 'first_chapter' }
@@ -153,7 +212,7 @@ export function selectOpeningReveal(state: GameState, opts: SelectOpeningRevealO
       for (const row of OPENING_REVEAL_TABLE) {
         rows[row.surface] = { revealed: showAll || row.trigger.kind === 'bond', reason: showAll ? 'not_staged' : 'pre_bond' };
       }
-      return { staged, showAll, rows, direction: HIDDEN_DIRECTION };
+      return { staged, showAll, rows, direction: HIDDEN_DIRECTION, queued: [] };
     }
 
     // The bond is read from the edge; the doom wake only anchors the tick. For the
@@ -184,7 +243,8 @@ export function selectOpeningReveal(state: GameState, opts: SelectOpeningRevealO
       firstId,
       chapterActionId: openChapterId,
     };
-    return { staged, showAll, rows, direction };
+    const ready: OpeningReveal = { staged, showAll, rows, direction, queued: [] };
+    return opts.ledger && !showAll ? applyArrivalLedger(ready, opts.ledger) : ready;
   } catch {
     // Fail-soft (NFP #4): an unreadable state shows today's full screen.
     return fullScreen(staged, showAll);
@@ -194,8 +254,92 @@ export function selectOpeningReveal(state: GameState, opts: SelectOpeningRevealO
 /**
  * The toast key of a row that revealed: which trigger brought it. Rows that flip
  * on one render share one "New beside the map" line whatever their keys.
+ * THR-2060: a queued row's key is its own surface, so each arrival is its own toast.
  */
-export function revealTriggerKey(reason: OpeningRevealReason): string {
+export function revealTriggerKey(reason: OpeningRevealReason, surface?: OpeningRevealSurfaceId): string {
+  if (reason === 'queued' && surface) return `queued:${surface}`;
   if (reason.startsWith('gift:')) return reason.slice('gift:'.length);
   return reason;
+}
+
+// ─── THR-2060: the arrival queue ────────────────────────────────────
+
+/** The queued rows that are ready on this reveal (read without a ledger), in table order. */
+export function readyQueuedSurfaces(reveal: OpeningReveal): OpeningRevealSurfaceId[] {
+  if (!reveal.staged || reveal.showAll) return [];
+  const out: OpeningRevealSurfaceId[] = [];
+  for (const row of OPENING_REVEAL_TABLE) {
+    if (!isQueuedRow(row)) continue;
+    const r = reveal.rows[row.surface];
+    if (r.revealed && r.reason !== 'not_staged' && r.reason !== 'pre_bond') out.push(row.surface);
+  }
+  return out;
+}
+
+/**
+ * A ready reveal read against the ledger: a queued row shows only once it has
+ * arrived (reason `queued`); a ready row still waiting reads `waiting:queue`.
+ * Rows that do not queue are untouched. Pure.
+ */
+export function applyArrivalLedger(reveal: OpeningReveal, ledger: OpeningArrivalLedger): OpeningReveal {
+  if (!reveal.staged || reveal.showAll) return { ...reveal, ledger };
+  const ready = new Set(readyQueuedSurfaces(reveal));
+  const rows = { ...reveal.rows } as Record<OpeningRevealSurfaceId, OpeningRevealRowState>;
+  const queued: OpeningRevealSurfaceId[] = [];
+  for (const row of OPENING_REVEAL_TABLE) {
+    if (!ready.has(row.surface)) continue;
+    const readyReason = rows[row.surface].reason;
+    if (ledger.arrived[row.surface] !== undefined) {
+      rows[row.surface] = { revealed: true, reason: 'queued', readyReason };
+    } else {
+      rows[row.surface] = { revealed: false, reason: 'waiting:queue', readyReason };
+      queued.push(row.surface);
+    }
+  }
+  return { ...reveal, rows, queued, ledger };
+}
+
+/**
+ * Release at most one waiting row (plus any ready row that `arrivesWith` it). Pure;
+ * same inputs, same ledger. A row arrives when nothing has arrived yet, when
+ * `OPENING_REVEAL_CHAPTERS_PER_ARRIVAL` First chapters have closed since the last
+ * arrival, or when `OPENING_REVEAL_ARRIVAL_IDLE_TICKS` ticks have run since it.
+ */
+export function releaseOpeningArrivals(
+  ledger: OpeningArrivalLedger,
+  ready: readonly OpeningRevealSurfaceId[],
+  ctx: { tick: number; chaptersClosedSince: (tick: number) => number },
+): OpeningArrivalLedger {
+  const waiting = ready.filter(s => ledger.arrived[s] === undefined);
+  if (waiting.length === 0) return ledger;
+  const last = ledger.lastArrivalTick;
+  const due = last === null
+    || ctx.chaptersClosedSince(last) >= OPENING_REVEAL_CHAPTERS_PER_ARRIVAL
+    || ctx.tick - last >= OPENING_REVEAL_ARRIVAL_IDLE_TICKS;
+  if (!due) return ledger;
+
+  const partnerOf = new Map<OpeningRevealSurfaceId, OpeningRevealSurfaceId>();
+  for (const row of OPENING_REVEAL_TABLE) if (row.arrivesWith) partnerOf.set(row.surface, row.arrivesWith);
+  const waitingSet = new Set(waiting);
+  // A row whose partner is also waiting never leads: the partner brings it.
+  const head = waiting.find(s => {
+    const partner = partnerOf.get(s);
+    return !(partner && waitingSet.has(partner));
+  }) ?? waiting[0];
+  const arriving = [head, ...waiting.filter(s => s !== head && partnerOf.get(s) === head)];
+
+  const arrived = { ...ledger.arrived };
+  for (const s of arriving) arrived[s] = ctx.tick;
+  return { arrived, lastArrivalTick: ctx.tick };
+}
+
+/**
+ * The ledger the screen starts from: every row ready at its first render has
+ * already arrived (a reload is not an arrival — no toast, no ring).
+ */
+export function seedArrivalLedger(ready: readonly OpeningRevealSurfaceId[], tick: number): OpeningArrivalLedger {
+  if (ready.length === 0) return EMPTY_ARRIVAL_LEDGER;
+  const arrived: Partial<Record<OpeningRevealSurfaceId, number>> = {};
+  for (const s of ready) arrived[s] = tick;
+  return { arrived, lastArrivalTick: tick };
 }

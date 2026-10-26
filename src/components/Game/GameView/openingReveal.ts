@@ -12,18 +12,33 @@
  * - **Setting.** "Show every panel" lives in localStorage (try/catch; a throw
  *   reads as off and the toggle still works for the session). Turning it on
  *   reveals every row with no toast and no ring.
+ * - **Arrivals (THR-2060).** A ready row waits in a queue the hook holds (a ref):
+ *   one arrives per closed First chapter, or after an idle stretch, each with its
+ *   own toast whose second sentence is the panel's first-use caption. Rows ready
+ *   at the hook's first render have already arrived (a reload is not an arrival).
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GameState } from '../../../types/gameState';
-import { selectOpeningReveal, type OpeningReveal } from '../../../engine/openingReveal';
+import {
+  applyArrivalLedger,
+  firstChaptersClosedSince,
+  readyQueuedSurfaces,
+  releaseOpeningArrivals,
+  seedArrivalLedger,
+  selectOpeningReveal,
+  type OpeningArrivalLedger,
+  type OpeningReveal,
+} from '../../../engine/openingReveal';
 import {
   OPENING_REVEAL_TABLE,
   OPENING_REVEAL_HIGHLIGHT_MS,
   OPENING_REVEAL_SHOW_ALL_KEY,
+  publishOpeningArrivalLedger,
   type OpeningRevealSurfaceId,
 } from '../../../data/opening-reveal-table';
 import { formatOpeningRevealToast } from '../../../data/ui-content';
+import { getFirstUseCaptionText } from '../../../data/first-use-captions';
 
 export type OpeningRevealShow = Readonly<Record<OpeningRevealSurfaceId, boolean>>;
 
@@ -54,19 +69,49 @@ function writeOpeningRevealShowAll(on: boolean): void {
   }
 }
 
-/** The labels and ceiling flag of the rows that flipped, in table order. */
+/**
+ * The reveal line for the rows that flipped, in table order: their labels, the
+ * first one's caption (THR-2060), and "Nothing more is hidden" only when the
+ * ceiling brought them and nothing still waits in the queue.
+ */
 export function revealToastFor(
   flipped: ReadonlySet<OpeningRevealSurfaceId>,
   reveal: OpeningReveal,
 ): string | null {
   const labels: string[] = [];
+  let caption: string | null = null;
   let byCeiling = false;
   for (const row of OPENING_REVEAL_TABLE) {
     if (!flipped.has(row.surface) || !row.newLabel) continue;
     labels.push(row.newLabel);
-    if (reveal.rows[row.surface].reason === 'ceiling') byCeiling = true;
+    caption ??= getFirstUseCaptionText(row.surface);
+    const r = reveal.rows[row.surface];
+    if (r.reason === 'ceiling' || r.readyReason === 'ceiling') byCeiling = true;
   }
-  return formatOpeningRevealToast(labels, byCeiling);
+  // "Nothing more is hidden" only when no labelled row still waits (queued, or for Rivals' first act).
+  const stillHidden = OPENING_REVEAL_TABLE.some(row => row.newLabel && !reveal.rows[row.surface].revealed);
+  return formatOpeningRevealToast(labels, byCeiling && !stillHidden, caption);
+}
+
+/** Advance the ledger one render; a throw lets every ready row arrive (today's screen, fail-soft). */
+function nextLedger(
+  prev: OpeningArrivalLedger | null,
+  readiness: OpeningReveal,
+  gameState: GameState,
+): OpeningArrivalLedger {
+  const ready = readyQueuedSurfaces(readiness);
+  if (prev === null) return seedArrivalLedger(ready, gameState.tick);
+  try {
+    const firstId = readiness.direction.firstId;
+    return releaseOpeningArrivals(prev, ready, {
+      tick: gameState.tick,
+      chaptersClosedSince: (t) => firstChaptersClosedSince(gameState, firstId, t),
+    });
+  } catch {
+    const arrived = { ...prev.arrived };
+    for (const s of ready) arrived[s] ??= gameState.tick;
+    return { arrived, lastArrivalTick: gameState.tick };
+  }
 }
 
 export function useOpeningReveal(
@@ -80,14 +125,25 @@ export function useOpeningReveal(
     setShowAllState(on);
   }, []);
 
-  const reveal = useMemo(
+  // Readiness: which rows' triggers have fired. The queue below decides which show.
+  const readiness = useMemo(
     () => selectOpeningReveal(gameState, { showAll }),
     // The graph mutates in place; worldVersion covers the bond edge. The rest are
     // the arrays the selector reads.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [gameState.openingRevealStaged, gameState.tick, gameState.ascendantBeats, gameState.chapterArchive,
-      gameState.unifiedActions, gameState.doomClock, worldVersion, showAll],
+      gameState.unifiedActions, gameState.doomClock, gameState.rivalStates, worldVersion, showAll],
   );
+
+  // THR-2060 — the arrival ledger. Advanced during render (like the latch below):
+  // pure, and a re-render with the same inputs returns the same ledger object.
+  const ledgerRef = useRef<OpeningArrivalLedger | null>(null);
+  ledgerRef.current = nextLedger(ledgerRef.current, readiness, gameState);
+  const ledger = ledgerRef.current;
+  // Readers outside this hook (the inspector's Dominion row) read the same arrivals.
+  publishOpeningArrivalLedger(ledger);
+  useEffect(() => () => publishOpeningArrivalLedger(null), []);
+  const reveal = useMemo(() => applyArrivalLedger(readiness, ledger), [readiness, ledger]);
 
   // Latch, and note what flipped on this render.
   const latch = useRef<Partial<Record<OpeningRevealSurfaceId, boolean>> | null>(null);

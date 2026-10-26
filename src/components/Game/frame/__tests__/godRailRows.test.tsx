@@ -11,6 +11,7 @@ import { generateArchetypes } from '../../../../engine/ascendant';
 import { createBalancedCosmology } from '../../../../engine/cosmology';
 import type { GameState } from '../../../../types/gameState';
 import { GOD_RAIL_OPEN_ROWS_KEY } from '../../../../data/frame-registry';
+import { ATTENTION_GAUGE_SHOWN } from '../../../../data/opening-reveal-table';
 
 const archetype = generateArchetypes(4, 42)[0];
 const { state } = initializeGameState(archetype, 'Vess', createBalancedCosmology(), 42, 16, 12);
@@ -42,10 +43,11 @@ describe('the god rail from GOD_RAIL_SECTIONS', () => {
     expect(rail.getAttribute('aria-label')).toBe('Ascendant status');
   });
 
-  it('Attention sits under essence', () => {
+  // THR-2060 U4: the gauge leaves until something spends Attention (ATTENTION_GAUGE_SHOWN).
+  it('Attention sits under essence only while the gauge is shown', () => {
     renderBar();
     const essence = screen.getByTestId('god-rail').querySelector('[data-god-rail-section="essence"]')!;
-    expect(essence.querySelector('[data-testid="god-rail-attention"]')).toBeTruthy();
+    expect(!!essence.querySelector('[data-testid="god-rail-attention"]')).toBe(ATTENTION_GAUGE_SHOWN);
   });
 
   it('every folded row starts closed, opens in place, and the open set persists across a reload', () => {

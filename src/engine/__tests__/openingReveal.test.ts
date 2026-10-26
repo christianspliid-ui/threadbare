@@ -5,11 +5,25 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import type { GameState } from '../../types/gameState';
-import { selectOpeningReveal } from '../openingReveal';
+import {
+  selectOpeningReveal,
+  releaseOpeningArrivals,
+  readyQueuedSurfaces,
+  applyArrivalLedger,
+  seedArrivalLedger,
+  firstChaptersClosedSince,
+  EMPTY_ARRIVAL_LEDGER,
+  type OpeningArrivalLedger,
+} from '../openingReveal';
 import { getFirstId } from '../meetingEncounter';
 import {
   OPENING_REVEAL_TABLE,
   OPENING_REVEAL_CEILING_TICKS,
+  OPENING_REVEAL_ARRIVAL_IDLE_TICKS,
+  ATTENTION_GAUGE_SHOWN,
+  publishOpeningArrivalLedger,
+  readPublishedOpeningArrivalLedger,
+  type OpeningRevealSurfaceId,
 } from '../../data/opening-reveal-table';
 import { ASCENDANT_SPINE, SPINE_BEAT_PRESENTATION } from '../../data/ascendant-beat-content';
 import { isRoutineTemplate } from '../attentionCadence';
@@ -35,6 +49,7 @@ interface Opts {
   activeChapter?: boolean;
   resolvedChapter?: { tick: number; routine?: boolean };
   wokeAtTick?: number | null;
+  rivalActed?: boolean;
 }
 
 function makeState(o: Opts = {}): GameState {
@@ -69,13 +84,14 @@ function makeState(o: Opts = {}): GameState {
           openingProse: '', steps: [], routine: o.resolvedChapter.routine,
         }]
       : [],
+    rivalStates: o.rivalActed ? [{ interventionCount: 1 }] : [],
   } as unknown as GameState;
 }
 
 describe('OPENING_REVEAL_TABLE (THR-1837 C1)', () => {
-  it('has 18 rows, one per surface (World Pulse retired, THR-1893; Dominion added, THR-1986)', () => {
-    expect(OPENING_REVEAL_TABLE).toHaveLength(18);
-    expect(new Set(OPENING_REVEAL_TABLE.map(r => r.surface)).size).toBe(18);
+  it('has 21 rows, one per surface (World Pulse retired, THR-1893; Dominion added, THR-1986; Rivals and two lenses, THR-2060)', () => {
+    expect(OPENING_REVEAL_TABLE).toHaveLength(21);
+    expect(new Set(OPENING_REVEAL_TABLE.map(r => r.surface)).size).toBe(21);
   });
 
   it('every gift beatId is a real ASCENDANT_SPINE id', () => {
@@ -87,6 +103,8 @@ describe('OPENING_REVEAL_TABLE (THR-1837 C1)', () => {
 
   it('every staged row carries a label for the reveal line', () => {
     for (const row of OPENING_REVEAL_TABLE) {
+      // THR-2060: the hidden Attention gauge has nothing to announce.
+      if (row.surface === 'attention' && !ATTENTION_GAUGE_SHOWN) { expect(row.newLabel).toBeUndefined(); continue; }
       if (row.trigger.kind !== 'bond') expect(row.newLabel, row.surface).toBeTruthy();
     }
   });
@@ -178,7 +196,7 @@ describe('selectOpeningReveal (THR-1837 E1)', () => {
     expect(r.rows.dominion).toEqual({ revealed: true, reason: 'gift:beat.spine.a_path_opens' });
     expect(r.rows.reaches.revealed).toBe(true);
     expect(revealToastFor(new Set(['reaches', 'dominion', 'world_soul', 'omen']), r))
-      .toBe('New beside the map: your Reaches, Dominion, the World-Soul and Omens.');
+      .toBe('New beside the map: your Reaches, Dominion, the World-Soul and Omens. What you can do, and how well. Each Reach grows as you use it.');
   });
 
   it('spine_done reveals gift rows once the spine is finished by any route', () => {
@@ -241,19 +259,158 @@ describe('opening reveal copy (THR-1837 C2–C4)', () => {
 
   it('one merged reveal line per render, labels in table order', () => {
     const r = selectOpeningReveal(makeState({ activeChapter: true, resolvedBeats: ['beat.spine.opening', 'beat.spine.the_seat'] }));
-    expect(revealToastFor(new Set(['investiture', 'doom', 'mandate']), r)).toBe('New beside the map: Doom, Mandates and Investiture.');
+    expect(revealToastFor(new Set(['investiture', 'doom', 'mandate']), r))
+      .toBe("New beside the map: Doom, Mandates and Investiture. A slow clock toward the world's end. It cannot end the world early.");
     expect(revealToastFor(new Set(['chapter_ledger', 'doom', 'mandate', 'investiture']), r))
-      .toBe('New beside the map: the Chapter Ledger, Doom, Mandates and Investiture.');
+      .toBe('New beside the map: the Chapter Ledger, Doom, Mandates and Investiture. Every chapter The First has closed, kept to read again.');
+    // THR-2060: the hidden Attention gauge brings no label.
     expect(revealToastFor(new Set(['attention', 'chapter_ledger']), r))
-      .toBe('New beside the map: Attention and the Chapter Ledger.');
+      .toBe('New beside the map: the Chapter Ledger. Every chapter The First has closed, kept to read again.');
+    expect(formatOpeningRevealToast(['Doom'], false)).toBe('New beside the map: Doom.');
     expect(formatOpeningRevealToast([], false)).toBeNull();
   });
 
   it('a ceiling reveal says nothing more is hidden', () => {
-    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS }));
+    // THR-2060: Rivals wait for a rival's act even past the ceiling, so one has acted here.
+    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS, rivalActed: true }));
     expect(revealToastFor(new Set(['notables', 'reaches', 'world_soul', 'omen']), r))
-      .toBe('New beside the map: Notables, your Reaches, the World-Soul and Omens. Nothing more is hidden.');
+      .toBe('New beside the map: Notables, your Reaches, the World-Soul and Omens. The people this world talks about. Some may be worth a thread. Nothing more is hidden.');
   });
+
+  it('THR-2060: a queued ceiling arrival says nothing more is hidden only once the queue is empty', () => {
+    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS, rivalActed: true }));
+    const ready = readyQueuedSurfaces(r);
+    const partial = applyArrivalLedger(r, seedArrivalLedger(ready.slice(0, 1), 300));
+    expect(revealToastFor(new Set([ready[0]]), partial)).not.toContain('Nothing more is hidden');
+    const all = applyArrivalLedger(r, seedArrivalLedger(ready, 300));
+    expect(revealToastFor(new Set(['lens_trade']), all))
+      .toBe('New beside the map: the Trade lens. Lights the trade roads and what moves along them. Nothing more is hidden.');
+  });
+
+  it("THR-2060: each arrival toast ends with that row's caption", () => {
+    const r = selectOpeningReveal(makeState({ rivalActed: true }));
+    expect(revealToastFor(new Set(['doom']), r)).toBe("New beside the map: Doom. A slow clock toward the world's end. It cannot end the world early.");
+    expect(revealToastFor(new Set(['rivals']), r)).toBe('New beside the map: Rivals. Other gods at work in this world. They watch for your hand.');
+    expect(revealToastFor(new Set(['mandate']), r)).toBe('New beside the map: Mandates. What you are working toward. Win it before the doom runs out.');
+    expect(revealToastFor(new Set(['investiture']), r)).toBe('New beside the map: Investiture. Your divine court: the mortals you raise to act in your name.');
+    expect(revealToastFor(new Set(['lens_threads']), r)).toBe('New beside the map: the Threads lens. Lights where your threads run.');
+    expect(revealToastFor(new Set(['reaches', 'dominion']), r))
+      .toBe('New beside the map: your Reaches and Dominion. What you can do, and how well. Each Reach grows as you use it.');
+  });
+});
+
+describe('the arrival queue (THR-2060 E1–E2)', () => {
+  const at = (tick: number, chapters: number[] = []) => ({
+    tick,
+    chaptersClosedSince: (t: number) => chapters.filter(c => c > t).length,
+  });
+  const arrivedOf = (l: OpeningArrivalLedger) => Object.keys(l.arrived).sort();
+
+  it('three rows ready at once arrive on three successive chapter closes', () => {
+    const ready: OpeningRevealSurfaceId[] = ['doom', 'mandate', 'investiture'];
+    let l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(20));
+    expect(arrivedOf(l)).toEqual(['doom']);
+    expect(releaseOpeningArrivals(l, ready, at(21))).toBe(l);
+    l = releaseOpeningArrivals(l, ready, at(26, [25]));
+    expect(arrivedOf(l)).toEqual(['doom', 'mandate']);
+    expect(releaseOpeningArrivals(l, ready, at(27, [25]))).toBe(l);
+    l = releaseOpeningArrivals(l, ready, at(31, [25, 30]));
+    expect(l.arrived).toEqual({ doom: 20, mandate: 26, investiture: 31 });
+  });
+
+  it('with no chapter, the next row arrives after OPENING_REVEAL_ARRIVAL_IDLE_TICKS', () => {
+    const ready: OpeningRevealSurfaceId[] = ['doom', 'mandate'];
+    const l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(20));
+    expect(releaseOpeningArrivals(l, ready, at(20 + OPENING_REVEAL_ARRIVAL_IDLE_TICKS - 1))).toBe(l);
+    expect(arrivedOf(releaseOpeningArrivals(l, ready, at(20 + OPENING_REVEAL_ARRIVAL_IDLE_TICKS)))).toEqual(['doom', 'mandate']);
+  });
+
+  it('dominion arrives in the same step as reaches', () => {
+    const ready: OpeningRevealSurfaceId[] = ['reaches', 'dominion', 'world_soul'];
+    const l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(40));
+    expect(l.arrived).toEqual({ reaches: 40, dominion: 40 });
+    // Dominion never leads while its partner waits, whatever the list order.
+    expect(releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ['dominion', 'reaches'], at(40)).arrived).toEqual({ reaches: 40, dominion: 40 });
+  });
+
+  it('past the ceiling every row is ready, and they still arrive one per step', () => {
+    const r = selectOpeningReveal(makeState({ tick: BOND_TICK + OPENING_REVEAL_CEILING_TICKS }));
+    const ready = readyQueuedSurfaces(r);
+    // Rivals are not ready without a rival's act, ceiling or not (review-gate round 1).
+    expect(ready).toEqual(['chapter_ledger', 'notables', 'reaches', 'dominion', 'doom', 'mandate', 'investiture', 'lens_threads', 'world_soul', 'omen', 'lens_trade']);
+    expect(r.rows.rivals).toEqual({ revealed: false, reason: 'waiting:rival_acted' });
+    // With every other row arrived, Rivals still waiting means the ceiling line cannot claim nothing is hidden.
+    const allButRivals = applyArrivalLedger(r, seedArrivalLedger(ready, 300));
+    expect(revealToastFor(new Set(['lens_trade']), allButRivals)).not.toContain('Nothing more is hidden');
+    let l = releaseOpeningArrivals(EMPTY_ARRIVAL_LEDGER, ready, at(210));
+    expect(arrivedOf(l)).toEqual(['chapter_ledger']);
+    expect(releaseOpeningArrivals(l, ready, at(211))).toBe(l);
+    l = releaseOpeningArrivals(l, ready, at(212, [211]));
+    expect(arrivedOf(l)).toEqual(['chapter_ledger', 'notables']);
+    const read = applyArrivalLedger(r, l);
+    expect(read.rows.notables).toEqual({ revealed: true, reason: 'queued', readyReason: 'ceiling' });
+    expect(read.rows.omen).toEqual({ revealed: false, reason: 'waiting:queue', readyReason: 'ceiling' });
+    expect(read.queued[0]).toBe('reaches');
+  });
+
+  it('after the_seat resolves, doom, mandate and investiture are queued and arrive on separate chapter closes', () => {
+    const base = makeState({ activeChapter: true, resolvedBeats: ['beat.spine.opening', 'beat.spine.the_seat'] });
+    let l: OpeningArrivalLedger = seedArrivalLedger(['chapter_ledger'], BOND_TICK + 5);
+    const read = () => selectOpeningReveal(base, { ledger: l });
+    expect(read().queued).toEqual(['doom', 'mandate', 'investiture', 'lens_threads']);
+    expect(read().rows.doom).toEqual({ revealed: false, reason: 'waiting:queue', readyReason: 'gift:beat.spine.the_seat' });
+    const chapters: number[] = [];
+    for (let tick = BOND_TICK + 10; tick <= BOND_TICK + 20; tick += 5) {
+      chapters.push(tick - 1);
+      l = releaseOpeningArrivals(l, readyQueuedSurfaces(selectOpeningReveal(base)), at(tick, chapters));
+    }
+    expect(new Set([l.arrived.doom, l.arrived.mandate, l.arrived.investiture]).size).toBe(3);
+    expect(read().rows.investiture.reason).toBe('queued');
+    expect(read().queued).toEqual(['lens_threads']);
+  });
+
+  it('Rivals become ready only after a rival has acted', () => {
+    expect(selectOpeningReveal(makeState()).rows.rivals).toEqual({ revealed: false, reason: 'waiting:rival_acted' });
+    expect(selectOpeningReveal(makeState({ rivalActed: true })).rows.rivals).toEqual({ revealed: true, reason: 'rival_acted' });
+  });
+
+  it('the Trade lens waits for the ceiling alone', () => {
+    expect(selectOpeningReveal(makeState({ spineCursor: -1 })).rows.lens_trade).toEqual({ revealed: false, reason: 'waiting:ceiling' });
+  });
+
+  it('the published ledger lets readers outside the screen (the Dominion row) see arrival, not readiness', () => {
+    const s = makeState({ resolvedBeats: ['beat.spine.opening', 'beat.spine.a_path_opens'] });
+    expect(readPublishedOpeningArrivalLedger()).toBeNull();
+    publishOpeningArrivalLedger(seedArrivalLedger(['chapter_ledger'], BOND_TICK));
+    try {
+      const ledger = readPublishedOpeningArrivalLedger() ?? undefined;
+      expect(selectOpeningReveal(s, { ledger }).rows.dominion).toEqual({ revealed: false, reason: 'waiting:queue', readyReason: 'gift:beat.spine.a_path_opens' });
+    } finally {
+      publishOpeningArrivalLedger(null);
+    }
+    expect(selectOpeningReveal(s, { ledger: readPublishedOpeningArrivalLedger() ?? undefined }).rows.dominion.revealed).toBe(true);
+  });
+
+  it('a reload is not an arrival: rows ready at the first read have all arrived', () => {
+    expect(seedArrivalLedger(['doom', 'mandate'], 50)).toEqual({ arrived: { doom: 50, mandate: 50 }, lastArrivalTick: 50 });
+    expect(seedArrivalLedger([], 50)).toBe(EMPTY_ARRIVAL_LEDGER);
+  });
+
+  it('without a ledger, or with Show every panel, every ready row shows (CLI and fixtures unchanged)', () => {
+    const s = makeState({ resolvedBeats: ['beat.spine.opening', 'beat.spine.the_seat'] });
+    expect(selectOpeningReveal(s).rows.doom.revealed).toBe(true);
+    expect(selectOpeningReveal(s, { showAll: true, ledger: EMPTY_ARRIVAL_LEDGER }).rows.doom.revealed).toBe(true);
+    expect(selectOpeningReveal(s, { ledger: EMPTY_ARRIVAL_LEDGER }).rows.doom.revealed).toBe(false);
+  });
+
+  it("counts only The First's non-routine chapters closed after the tick", () => {
+    const s = makeState({ resolvedChapter: { tick: 30 } });
+    expect(firstChaptersClosedSince(s, 'elara', 29)).toBe(1);
+    expect(firstChaptersClosedSince(s, 'elara', 30)).toBe(0);
+    expect(firstChaptersClosedSince(s, null, 0)).toBe(0);
+    expect(firstChaptersClosedSince(makeState({ resolvedChapter: { tick: 30, routine: true } }), 'elara', 0)).toBe(0);
+  });
+
 });
 
 describe('the CLI tick-0 state is unchanged (THR-1837 E2)', () => {

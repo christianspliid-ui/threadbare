@@ -11,6 +11,9 @@
  * CONTENT MANAGER: one entry per surface (Law 58), ≤ 15 words, game prose.
  * `{name}` resolves to the mortal the panel is about at render — never write a
  * guessed pronoun. Table order is queue order.
+ * THR-2060: each text is also the second sentence of its panel's arrival toast
+ * ("New beside the map: Doom. {caption}"), so a panel with no mounted caption
+ * (mandate, investiture, rivals, notables, the lenses) still has one here.
  * ═══════════════════════════════════════════════════════════════════
  *
  * ─── Constants ───────────────────────────────────────────────────
@@ -30,7 +33,13 @@ export type FirstUseCaptionId =
   | 'world_soul'
   | 'omen'
   | 'elder_powers'
-  | 'stop_interruptions';
+  | 'stop_interruptions'
+  | 'mandate'
+  | 'investiture'
+  | 'rivals'
+  | 'notables'
+  | 'lens_threads'
+  | 'lens_trade';
 
 export interface FirstUseCaptionEntry {
   readonly id: FirstUseCaptionId;
@@ -51,6 +60,13 @@ export const FIRST_USE_CAPTIONS: readonly FirstUseCaptionEntry[] = [
   { id: 'omen', text: 'A passing sign of what presses on the world. It fades in days.' },
   { id: 'elder_powers', text: 'Old spheres you were not made of. Some cards still draw on them.' },
   { id: 'stop_interruptions', text: "{name}'s chapters still happen. This only stops them pausing the world." },
+  // THR-2060 — arrival-toast captions for panels that mount none of their own.
+  { id: 'mandate', text: 'What you are working toward. Win it before the doom runs out.' },
+  { id: 'investiture', text: 'Your divine court: the mortals you raise to act in your name.' },
+  { id: 'rivals', text: 'Other gods at work in this world. They watch for your hand.' },
+  { id: 'notables', text: 'The people this world talks about. Some may be worth a thread.' },
+  { id: 'lens_threads', text: 'Lights where your threads run.' },
+  { id: 'lens_trade', text: 'Lights the trade roads and what moves along them.' },
 ];
 
 /** Captions on screen at once; further captions wait in table order. */

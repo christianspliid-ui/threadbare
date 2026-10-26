@@ -11,6 +11,9 @@
  * The legend card (`LensLegend`, a glass Panel) sits under the bar while a lens is on.
  * Anchored top-left of the map canvas; THR-1831 keeps the bottom-right for the
  * control cluster.
+ *
+ * THR-2060: only lenses whose reveal surface has arrived get a button; with none,
+ * the bar is absent.
  */
 import { memo } from 'react';
 import { Tabs } from '../../shared/Tabs';
@@ -32,10 +35,14 @@ export interface MapLensSwitchProps {
   bandColors: Readonly<Record<string, string>>;
   /** The hex lens's legend words, from its view model; null for Dominion or no lens. */
   hexLegend?: HexLensLegendView | null;
+  /** THR-2060: which lenses are on the bar (all when absent). */
+  shownLenses?: ReadonlySet<MapLensId>;
 }
 
-export const MapLensSwitch = memo(function MapLensSwitch({ active, suppressed = false, onChange, bandColors, hexLegend = null }: MapLensSwitchProps) {
+export const MapLensSwitch = memo(function MapLensSwitch({ active, suppressed = false, onChange, bandColors, hexLegend = null, shownLenses }: MapLensSwitchProps) {
   const activeLens = mapLensById(active);
+  const lenses = shownLenses ? MAP_LENSES.filter(l => shownLenses.has(l.id)) : MAP_LENSES;
+  if (lenses.length === 0) return null;
   return (
     <div
       data-testid="map-lens-switch"
@@ -67,7 +74,7 @@ export const MapLensSwitch = memo(function MapLensSwitch({ active, suppressed = 
           padding: '0 4px',
         }}
       >
-        {MAP_LENSES.map(lens => {
+        {lenses.map(lens => {
           const pressedAndHeld = suppressed && lens.id === activeLens?.id;
           const desc = getUITooltip(lens.tooltipId)?.desc;
           return (

@@ -26,7 +26,7 @@ import { DIVINE_NATURE_PHRASES, essenceToProseDescriptor } from '../../../data/d
 import { INSPECTOR_WORDS } from '../../../data/view-content';
 import { dominionSheetVM } from '../../dominionViewModels';
 import { selectOpeningReveal } from '../../openingReveal';
-import { readOpeningRevealShowAllSetting } from '../../../data/opening-reveal-table';
+import { readOpeningRevealShowAllSetting, readPublishedOpeningArrivalLedger } from '../../../data/opening-reveal-table';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -271,7 +271,9 @@ function dominionResolverFor(withTend: boolean): SectionResolver {
     // read with; before then no page carries the row, unless the player chose "Show
     // every panel" (the same setting the rail reads). Fail-soft: the selector reveals
     // every row when it cannot tell.
-    if (ctx.state && !selectOpeningReveal(ctx.state, { showAll: readOpeningRevealShowAllSetting() }).rows.dominion?.revealed) return null;
+    // THR-2060: read against the screen's arrival ledger, so the row waits while Dominion is queued.
+    const ledger = readPublishedOpeningArrivalLedger() ?? undefined;
+    if (ctx.state && !selectOpeningReveal(ctx.state, { showAll: readOpeningRevealShowAllSetting(), ledger }).rows.dominion?.revealed) return null;
     const vm = dominionSheetVM(ctx.graph, ascendantId, ctx.nodeId, ctx.state?.controlEffects, withTend);
     if (!vm) return null;
     const rows: PanelRow[] = [
