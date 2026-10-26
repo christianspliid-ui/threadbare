@@ -3510,6 +3510,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
         tickEvents: [...s.tickEvents, ...pauseVis.events],
         encounterNotifications: [...(s.encounterNotifications ?? []), ...pauseVis.notifications],
       };
+      // THR-2052 — the opening step posted here waits for its god too.
+      const unifiedActions = s.unifiedActions ?? [];
+      const held = holdStepsForPostedBeats(unifiedActions, pauseVis.notifications, s.graph, s.tick);
+      if (held !== unifiedActions) s = { ...s, unifiedActions: [...held] };
     }
     phaseEventCounts['encounter_visibility_pause'] = pauseVis.notifications.length;
   }

@@ -6986,14 +6986,14 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: NARRATIVE,
     consumerSystem: ENCOUNTERS,
     intent:
-      'The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide".',
+      'The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". THR-2052: the engine also writes the hold the tick a pause-tier step\x27s beat is posted (holdStepsForPostedBeats, after both visibility passes), so a step whose veil never opened or was replaced waits too.',
     ulTerms: ['Encounter'],
     mechanism: {
       kind: 'state-field',
       symbols: ['playerHold', 'isPlayerHoldLive', 'progressActionsWithPlayerHolds'],
       module: 'src/engine/playerStepHold.ts',
     },
-    writeSites: ['src/components/Game/GameView.tsx', 'src/engine/playerStepHold.ts', 'src/engine/unifiedActionLifecycle.ts'],
+    writeSites: ['src/components/Game/GameView.tsx', 'src/engine/playerStepHold.ts', 'src/engine/unifiedActionLifecycle.ts', 'src/engine/orchestrator.ts'],
     readSites: [
       'src/engine/unifiedActionResolution.ts',
       'src/components/Game/GameView.tsx',
