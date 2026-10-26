@@ -2,7 +2,8 @@
  * THR-1892 — the Stage's camera math (plan THR-1877 § D6).
  */
 import { describe, it, expect } from 'vitest';
-import { centreForWorldAt, centroid, chooseStageFrame, chooseStageZoom, hexScreenWidth, nudgeInside } from '../stageCamera';
+import { centreForWorldAt, centroid, chooseStageFrame, chooseStageZoom, hexScreenWidth, inMiddleBand, recentreOnClose } from '../stageCamera';
+import { STAGE_CLOSE_CENTRE_BAND_FRACTION } from '../../../../data/stage-content';
 import { CAMERA_CONSTANTS } from '../D3ZoomCamera';
 
 describe('centreForWorldAt', () => {
@@ -40,20 +41,41 @@ describe('chooseStageZoom', () => {
   });
 });
 
-describe('centroid and nudgeInside', () => {
+describe('centroid and recentreOnClose', () => {
   it('centroid of none is null; of points, their mean', () => {
     expect(centroid([])).toBeNull();
     expect(centroid([{ x: 0, y: 0 }, { x: 4, y: 2 }])).toEqual({ x: 2, y: 1 });
   });
 
-  it('a point inside the margin stays; one past the right edge comes back by the least distance', () => {
-    const rect = { left: 320, top: 48, right: 1580, bottom: 1080 };
-    expect(nudgeInside({ x: 900, y: 500 }, rect, 48)).toBeNull();
-    expect(nudgeInside({ x: 1780, y: 564 }, rect, 48)).toEqual({ x: 1532, y: 564 });
+  // THR-2056 — the round-5 shape: a place eased into the Stage window at the right edge.
+  const rect = { left: 0, top: 48, right: 1305, bottom: 1080 };
+  const centre = { x: 652.5, y: 564 };
+
+  it('a place in the middle third stays; the camera does not move', () => {
+    expect(inMiddleBand(centre, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION)).toBe(true);
+    expect(recentreOnClose({ x: 700, y: 600 }, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION)).toBeNull();
   });
 
-  it('a rect too small for its margin moves nothing', () => {
-    expect(nudgeInside({ x: 0, y: 0 }, { left: 0, top: 0, right: 50, bottom: 50 }, 48)).toBeNull();
+  it('a place left at the right edge goes to the visible map centre, not 48 px inside the edge', () => {
+    expect(recentreOnClose({ x: 1256, y: 564 }, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION)).toEqual(centre);
+  });
+
+  it('a place past the canvas, or above or below the middle third, is centred too', () => {
+    expect(recentreOnClose({ x: 1780, y: 564 }, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION)).toEqual(centre);
+    expect(recentreOnClose({ x: 652, y: 100 }, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION)).toEqual(centre);
+  });
+
+  it('three closes in a row never drift: each lands in the middle third', () => {
+    let at = { x: 1256, y: 900 };
+    for (let i = 0; i < 3; i++) {
+      at = recentreOnClose(at, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION) ?? at;
+      expect(inMiddleBand(at, rect, STAGE_CLOSE_CENTRE_BAND_FRACTION)).toBe(true);
+      at = { x: at.x + 600, y: at.y }; // the next chapter eases it back into the right-edge window
+    }
+  });
+
+  it('an empty rect moves nothing', () => {
+    expect(recentreOnClose({ x: 0, y: 0 }, { left: 0, top: 0, right: 0, bottom: 50 }, STAGE_CLOSE_CENTRE_BAND_FRACTION)).toBeNull();
   });
 });
 
