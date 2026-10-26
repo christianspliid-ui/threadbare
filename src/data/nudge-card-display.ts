@@ -22,7 +22,7 @@ import {
   type NudgeCardTypeId,
 } from './nudge-card-library';
 import type { IconName } from './icons/iconRegistry';
-import { PIP_ODDS_TIERS } from './nudge-pip-vocabulary';
+import { PIP_ODDS_TIERS, oddsPips } from './nudge-pip-vocabulary';
 
 /** One essence pip. Cost is drawn, never counted out in digits. */
 export const ESSENCE_PIP_GLYPH = '✦';
@@ -125,12 +125,55 @@ export interface NudgeGlyphLegendEntry {
   readonly label: string;
 }
 
+/** THR-2061 — the odds entry's words: the hollow pip is named by what filling it means. */
+export const NUDGE_ODDS_LEGEND_LABEL = 'odds: more filled is stronger';
+
+/**
+ * The odds entry's glyphs for a set of tiers, weakest first: the weakest tier's
+ * filled and hollow shapes together (`●○`), then each stronger tier's filled
+ * shape. One hollow is enough to name ○ — a mixed hand's hollow is the lowest
+ * present tier's (plan grey zone). Empty for no tiers.
+ */
+export function nudgeOddsLegendGlyph(tierIndexes: readonly number[]): string {
+  const tiers = [...new Set(tierIndexes)]
+    .filter((i) => i >= 0 && i < PIP_ODDS_TIERS.length)
+    .sort((a, b) => a - b)
+    .map((i) => PIP_ODDS_TIERS[i]);
+  if (tiers.length === 0) return '';
+  const [lowest, ...rest] = tiers;
+  return [`${lowest.filledGlyph}${lowest.hollowGlyph}`, ...rest.map((t) => t.filledGlyph)].join(' ');
+}
+
+const PRICE_ENTRY: NudgeGlyphLegendEntry = { id: 'price', glyph: ESSENCE_PIP_GLYPH, label: 'price' };
+const SETBACK_ENTRY: NudgeGlyphLegendEntry = { id: 'setback', glyph: '▼', label: 'setback' };
+
+/** The full legend — every odds tier. A surface with a hand uses {@link nudgeGlyphLegendForHand}. */
 export const NUDGE_GLYPH_LEGEND: readonly NudgeGlyphLegendEntry[] = [
-  { id: 'price', glyph: ESSENCE_PIP_GLYPH, label: 'price' },
+  PRICE_ENTRY,
   // THR-1985 — the whole pip ladder, so ★ reads as the strongest odds, not the price.
-  { id: 'odds', glyph: PIP_ODDS_TIERS.map((t) => t.filledGlyph).join(' '), label: 'odds, weakest to strongest' },
-  { id: 'setback', glyph: '▼', label: 'setback' },
+  { id: 'odds', glyph: nudgeOddsLegendGlyph(PIP_ODDS_TIERS.map((_, i) => i)), label: NUDGE_ODDS_LEGEND_LABEL },
+  SETBACK_ENTRY,
 ];
+
+/**
+ * THR-2061 (plan U6) — the legend for this hand: the odds entry shows only the
+ * pip shapes the hand's cards actually carry (each card's `forecastDelta`, read
+ * through the same `oddsPips` the card face draws with). A hand whose cards move
+ * no positive odds shows price and setback only. Pure.
+ */
+export function nudgeGlyphLegendForHand(forecastDeltas: readonly number[]): NudgeGlyphLegendEntry[] {
+  const tierIndexes: number[] = [];
+  for (const delta of forecastDeltas) {
+    const reading = oddsPips(delta);
+    if (reading?.polarity !== 'gain') continue;
+    const index = PIP_ODDS_TIERS.indexOf(reading.tier);
+    if (index >= 0) tierIndexes.push(index);
+  }
+  const glyph = nudgeOddsLegendGlyph(tierIndexes);
+  return glyph
+    ? [PRICE_ENTRY, { id: 'odds', glyph, label: NUDGE_ODDS_LEGEND_LABEL }, SETBACK_ENTRY]
+    : [PRICE_ENTRY, SETBACK_ENTRY];
+}
 
 /** Cost channels beyond essence — the keys of `NudgeCostChannels`. */
 export type NudgeCostChannelId = 'detection' | 'doom';

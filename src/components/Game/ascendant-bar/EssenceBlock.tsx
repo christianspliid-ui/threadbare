@@ -36,6 +36,7 @@ import {
   essenceRefillAriaLabel,
 } from '../../../data/essence-refill-content';
 import type { SphereName } from '../../../types';
+import { playerSpendSince, type EssenceMovementRecord } from '../../../engine/essenceMovement';
 import type { EssenceRowView } from './selectors';
 import {
   ESSENCE_BAR_CEILING,
@@ -51,9 +52,8 @@ import styles from './styles.module.css';
 import { FirstUseCaption, FirstUseCaptionZone } from '../../shared/FirstUseCaption';
 
 /**
- * The smallest drop between two renders that counts as a spend worth flashing.
- * Sustained upkeep drains a pool by fractions every tick; flashing each of those
- * would turn the cue into noise. A cast costs whole measures.
+ * The smallest player spend between two renders that lights the ▼. A refund can
+ * leave a fraction behind; a hand or a cast costs whole measures.
  */
 export const ESSENCE_SPEND_FLASH_MIN_DROP = 1;
 
@@ -68,24 +68,37 @@ const TREND_ARROW: Record<string, string> = {
 };
 
 /**
- * Tracks a pool's spends and returns the drop still on show, or 0.
+ * Tracks the player's own spends from a pool and returns the spend still on
+ * show, or 0 (THR-2061, plan E4/U5).
  *
- * A drop of at least {@link ESSENCE_SPEND_FLASH_MIN_DROP} since the last render
- * starts (or extends) the flash; spends inside one window accumulate, so two
- * quick casts read as one bigger bite rather than the second hiding the first.
+ * Only `spend_nudge` and `spend_cast` in the movement record light it
+ * (`playerSpendSince`): income, upkeep or a sustained control never do. A
+ * spend of at least {@link ESSENCE_SPEND_FLASH_MIN_DROP} starts (or extends) the
+ * flash; spends inside one flash accumulate, so two quick casts read as one
+ * bigger bite. The timer lives in a ref and is cleared only by a new spend or
+ * the unmount — a refill tick re-rendering the row can no longer cancel it and
+ * leave the ▼ stuck (the round-5 fault).
  */
-function useSpendFlash(level: number): number {
-  const previous = useRef(level);
+export function useSpendFlash(movement: EssenceMovementRecord | undefined): number {
+  const previous = useRef(movement);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [shown, setShown] = useState(0);
 
   useEffect(() => {
-    const drop = previous.current - level;
-    previous.current = level;
-    if (!(drop >= ESSENCE_SPEND_FLASH_MIN_DROP)) return;
-    setShown((s) => s + drop);
-    const timer = setTimeout(() => setShown(0), ESSENCE_SPEND_FLASH_MS);
-    return () => clearTimeout(timer);
-  }, [level]);
+    const spent = playerSpendSince(previous.current, movement);
+    previous.current = movement;
+    if (!(spent >= ESSENCE_SPEND_FLASH_MIN_DROP)) return;
+    setShown((s) => s + spent);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      setShown(0);
+    }, ESSENCE_SPEND_FLASH_MS);
+  }, [movement]);
+
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
 
   return shown;
 }
@@ -136,7 +149,7 @@ function EssenceRow({ row, previewed }: EssenceRowProps) {
   const trendColor = TREND_COLOR[row.trend];
   const arrow = TREND_ARROW[row.trend];
   const fillPct = essenceFillPct(row.level);
-  const spent = useSpendFlash(row.level);
+  const spent = useSpendFlash(row.movement);
   const spendReading = spent > 0 ? sphereDeltaReading(-spent / ESSENCE_BAR_CEILING, label) : null;
 
   const refillWords = row.refill ? ESSENCE_REFILL_WORDS[row.refill.band] : null;

@@ -85,6 +85,26 @@ export function readEssenceRefill(
   }
 }
 
+export type EssenceDirection = 'rising' | 'steady' | 'ebbing';
+
+/**
+ * THR-2061 (plan E3) — which way the pool is moving **now**, read from the same
+ * refill band as the row's word, so the arrow and the word cannot disagree.
+ * `drains` → ebbing; any other band below the cap → rising; a full pool, or no
+ * band at all (fail-soft) → steady. The two-window movement history no longer
+ * drives the arrow: it stays in the hover's "fed by / drawn by".
+ */
+export function essenceDirection(
+  refill: { band: EssenceRefillBand } | undefined,
+  level: number,
+  cap: number,
+): EssenceDirection {
+  if (!refill) return 'steady';
+  if (refill.band === 'drains') return 'ebbing';
+  if (Number.isFinite(level) && Number.isFinite(cap) && level < cap) return 'rising';
+  return 'steady';
+}
+
 export interface PourRefillPreview {
   /** Each sphere's band for this pour, from the base income alone. */
   bands: Record<SphereName, EssenceRefillBand>;

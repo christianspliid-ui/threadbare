@@ -63,7 +63,10 @@ export interface DebugTopBarState {
 
 /** Needs you as drawn (THR-1875). */
 export interface DebugNeedsYouState {
+  /** THR-2061 — the pill's number: Waiting + Held rows (News not counted). */
   count: number;
+  /** THR-2061 — every row in the list, News included; the pill shows while this is above 0. */
+  total: number;
   groups: { waiting: number; held: number; news: number };
   open: boolean;
   /** Rows the list fits at this viewport (§ F4 formula). */
@@ -124,6 +127,7 @@ function readNeedsYou(doc: Document): DebugNeedsYouState {
   const n = (k: string) => Number(src?.getAttribute(k) ?? 0);
   return {
     count: n('data-needs-you-count'),
+    total: n('data-needs-you-total'),
     groups: { waiting: n('data-needs-you-waiting'), held: n('data-needs-you-held'), news: n('data-needs-you-news') },
     open: !!list,
     capacityRows: n('data-needs-you-capacity'),

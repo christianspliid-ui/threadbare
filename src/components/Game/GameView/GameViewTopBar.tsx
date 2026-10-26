@@ -302,7 +302,7 @@ export function GameViewTopBar({
     TOP_BAR_ITEMS.filter(gated).map(i => i.id).join(','),
     heldByShown ?? '', clockAnswerStatus ?? '', namedPause ?? '',
     omenRendered ? (frameFixture?.omenName ?? gameState.omenState?.primary?.name ?? '') : '',
-    needsYou?.count ? 'ny' : '', directionLine ? 'dir' : '', running ? 'r' : 'p', firstRunPrompt ? 'f' : '',
+    needsYou?.total ? 'ny' : '', directionLine ? 'dir' : '', running ? 'r' : 'p', firstRunPrompt ? 'f' : '',
   ].join('|');
   const yielded = useTopBarYield(barRef, contentKey);
   const y = new Set<TopBarYieldStep>(yielded);

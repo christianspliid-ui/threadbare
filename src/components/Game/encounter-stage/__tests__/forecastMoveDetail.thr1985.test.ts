@@ -70,7 +70,8 @@ describe('the odds legend sentence', () => {
 
   it('the card legend shows the whole pip ladder', () => {
     const odds = NUDGE_GLYPH_LEGEND.find((e) => e.id === 'odds')!;
-    expect(odds.glyph).toBe('● ■ ◆ ★');
-    expect(odds.label).toBe('odds, weakest to strongest');
+    // THR-2061 — the weakest tier's hollow pip rides with it, so ○ is named.
+    expect(odds.glyph).toBe('●○ ■ ◆ ★');
+    expect(odds.label).toBe('odds: more filled is stronger');
   });
 });
