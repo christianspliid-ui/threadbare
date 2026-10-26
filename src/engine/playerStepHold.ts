@@ -113,6 +113,16 @@ export function holdStepsForPostedBeats(
   return changed ? next : actions;
 }
 
+/**
+ * THR-2052 — an unattended harness (no player, e.g. the First-rhythm gate) models a
+ * god who lets every step play out: drop every hold so the world keeps moving, as it
+ * did before holds were set on post. Returns the input array when nothing is held.
+ */
+export function releaseAllPlayerHolds(actions: readonly UnifiedAction[]): readonly UnifiedAction[] {
+  if (!actions.some(a => a.playerHold !== undefined)) return actions;
+  return actions.map(a => (a.playerHold !== undefined ? releasePlayerHold(a) : a));
+}
+
 /** THR-2052 — the player has committed, chosen on, or dismissed the current step. */
 function stepIsDecided(action: UnifiedAction): boolean {
   if (action.activeNudges !== undefined) return true;

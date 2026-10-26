@@ -383,9 +383,16 @@ export function lastStepAnswer(
     .replace('{n}', String(current))
     .replace('{word}', previous.outcomeWord)
     + (choice ? CHAPTER_LAST_STEP_CHOICE_SUFFIX.replace('{choice}', `${choice}.`) : '');
-  const prose = previous.afterimage?.trim() || previous.replayNarrative?.trim() || null;
+  // The stage model writes a bare 'Succeeded' / 'Failed' when a step authored no
+  // afterimage; the line already says how it went, so the frozen narrative reads instead.
+  const afterimage = previous.afterimage?.trim();
+  const authored = afterimage && !LAST_STEP_BARE_STATUS_WORDS.has(afterimage) ? afterimage : undefined;
+  const prose = authored || previous.replayNarrative?.trim() || null;
   return { line, prose };
 }
+
+/** The stage model's no-prose afterimage fallback (`buildHistory`). Never shown as the answer's prose. */
+const LAST_STEP_BARE_STATUS_WORDS: ReadonlySet<string> = new Set(['Succeeded', 'Failed']);
 
 /** Fill `{chapter}` in a chapter-answer string; an unresolved name reads "this chapter". */
 export function chapterAnswerText(template: string, chapterName: string | null | undefined): string {

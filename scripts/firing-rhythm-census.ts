@@ -40,6 +40,7 @@
 import { initializeGameState, MAP_SIZE_PRESETS, devSeedTheFirst } from '../src/engine/gameInit';
 import type { MapSizePreset } from '../src/engine/gameInit';
 import { runTick, resetEventCounter } from '../src/engine/orchestrator';
+import { releaseAllPlayerHolds } from '../src/engine/playerStepHold';
 import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import { createSimulationRuntime, touchStructure } from '../src/engine/simulationRuntime';
@@ -51,6 +52,13 @@ import { enableTracing, getTraces, clearTraces } from '../src/engine/traceBuffer
 import type { RestlessRoadTrace } from '../src/types/trace';
 import { restlessRoadDue } from '../src/engine/restlessRoad';
 import { agentAppointmentSeeds } from '../src/engine/appointments';
+
+/** THR-2052 — no player here: a step held for the god plays out, as an unanswered veil once did. */
+const unattended = <S extends { unifiedActions?: readonly import('../src/types/unifiedAction').UnifiedAction[] }>(s: S): S => {
+  const held = s.unifiedActions ?? [];
+  const released = releaseAllPlayerHolds(held);
+  return released === held ? s : { ...s, unifiedActions: [...released] };
+};
 
 /**
  * Own-draw story chapters of The First per seed, 600 ticks, medium, on main
@@ -205,7 +213,7 @@ function runSeed(seed: number) {
 
   harvest();
   for (let i = 0; i < ticks; i++) {
-    state = runTick(state, [], runtime);
+    state = unattended(runTick(state, [], runtime));
     harvest();
   }
   for (const ch of chapters) {

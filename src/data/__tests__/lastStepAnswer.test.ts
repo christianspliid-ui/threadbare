@@ -34,6 +34,15 @@ describe('THR-2052 — lastStepAnswer', () => {
     expect(answer).toEqual({ line: 'Step 2 broke.', prose: 'It went badly.' });
   });
 
+  it('reads the frozen narrative over the stage model’s bare status fallback', () => {
+    const answer = lastStepAnswer([
+      resolved({ outcomeWord: 'held, at a cost', afterimage: 'Succeeded', replayNarrative: 'The ford gave way behind them.' }),
+      { status: 'current' },
+    ]);
+    expect(answer?.prose).toBe('The ford gave way behind them.');
+    expect(lastStepAnswer([resolved({ afterimage: 'Failed' }), { status: 'current' }])?.prose).toBeNull();
+  });
+
   it('does not double a choice that already ends in a stop', () => {
     const answer = lastStepAnswer([resolved({ choiceText: 'Stay your hand.' }), { status: 'current' }]);
     expect(answer?.line).toBe('Step 1 held. You: Stay your hand.');
