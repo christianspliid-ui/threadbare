@@ -90,6 +90,11 @@ export function ActOnRow({ actOn, targetName, onCast, compact = false }: {
                     {card.fate.word}
                   </span>
                 )}
+                {isArmed && card.odds && (
+                  <span data-act-odds={card.odds} style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-secondary)' }}>
+                    {INSPECTOR_WORDS.castOdds.replace('{word}', card.odds)}
+                  </span>
+                )}
                 {isArmed && (
                   <Button variant="primary" size="sm" onClick={() => press(card.actionId, true, null)} data-act-cast={card.actionId}>
                     {INSPECTOR_WORDS.castOn.replace('{name}', name)}

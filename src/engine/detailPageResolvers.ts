@@ -37,6 +37,7 @@ import { latestBloodshedRecord } from './battleRecord';
 import { BLOOD_SOAKED_WINDOW_TICKS } from '../data/location-trait-constants';
 import { TICKS_PER_DAY } from '../data/attention-constants';
 import {
+  ACTOR_BONDED_DISPOSITION_TEMPLATES,
   ACTOR_FALLBACK_TEMPLATES,
   EVENT_FALLBACK_TEMPLATES,
   FACTION_FALLBACK_TEMPLATES,
@@ -137,9 +138,14 @@ function hashString(s: string): number {
   return h >>> 0;
 }
 
-/** Compose the per-section seed from world seed + node + section type + tick. */
+/**
+ * Compose the per-section seed from world seed + node + section type. The tick
+ * is deliberately left out (THR-2054): a fallback line that re-rolled every
+ * tick read as four different facts about one mortal. A line changes when its
+ * pool changes, never because time passed.
+ */
 export function seedFor(ctx: SectionResolverContext, sectionTypeId: string): number {
-  return (ctx.seed ^ hashString(ctx.nodeId) ^ hashString(sectionTypeId) ^ (ctx.tick | 0)) >>> 0;
+  return (ctx.seed ^ hashString(ctx.nodeId) ^ hashString(sectionTypeId)) >>> 0;
 }
 
 function pickFrom<T>(items: readonly T[], seed: number): T | undefined {
@@ -228,6 +234,26 @@ export function membershipRankWord(edge: { properties?: Record<string, unknown> 
 
 // ─── Actor resolvers ──────────────────────────────────────────────────────────
 
+/**
+ * The Disposition line for a mortal the protagonist god has threaded (THR-2054),
+ * or undefined when no thread connects them. Reception comes from the thread
+ * edge's `bondReception`, else the newest `riteHistory` entry — the same fact
+ * the sheet's Rite line reads — so the two never disagree.
+ */
+function bondedDispositionProse(ctx: SectionResolverContext, node: GraphNode): string | undefined {
+  if (!ctx.protagonistId) return undefined;
+  const edge = ctx.graph.getOutgoingEdges(ctx.protagonistId, 'thread').find((e) => e.target === node.id);
+  if (!edge) return undefined;
+  const history = Array.isArray(node.properties?.riteHistory)
+    ? (node.properties.riteHistory as Array<{ reception?: string }>)
+    : [];
+  const reception = (edge.properties?.bondReception as string | undefined) ?? history[history.length - 1]?.reception;
+  const pools = ACTOR_BONDED_DISPOSITION_TEMPLATES as Record<string, readonly string[]>;
+  const pool = (reception && pools[reception]) || ACTOR_BONDED_DISPOSITION_TEMPLATES.bonded;
+  const tpl = pickFrom(pool, seedFor(ctx, 'portrait_with_disposition'));
+  return tpl ? fillPlaceholders(tpl, { Name: node.name }) : undefined;
+}
+
 const portraitWithDispositionResolver: SectionResolver = (ctx) => {
   const node = ctx.graph.getNode(ctx.nodeId);
   if (!node || node.type !== 'actor') return null;
@@ -237,7 +263,7 @@ const portraitWithDispositionResolver: SectionResolver = (ctx) => {
 
   // Disposition prose: try a stored disposition phrase first, then fall back.
   const dispositionPhrase = node.properties?.dispositionPhrase as string | undefined;
-  let bodyProse = dispositionPhrase;
+  let bodyProse = dispositionPhrase ?? bondedDispositionProse(ctx, node);
   if (!bodyProse) {
     const protagonist = ctx.protagonistId ? ctx.graph.getNode(ctx.protagonistId) : null;
     const hasShared = protagonist
@@ -1072,7 +1098,8 @@ export const actorPortraitFallback: SectionResolver = (ctx) => {
   const actor = ctx.graph.getNode(ctx.nodeId);
   if (!actor) return null;
   const sphere = topSphere(actor);
-  const tpl = pickFrom(ACTOR_FALLBACK_TEMPLATES.disposition_no_history, seedFor(ctx, 'portrait_with_disposition'));
+  const bonded = bondedDispositionProse(ctx, actor);
+  const tpl = bonded ? undefined : pickFrom(ACTOR_FALLBACK_TEMPLATES.disposition_no_history, seedFor(ctx, 'portrait_with_disposition'));
   const section: PortraitSection = {
     kind: 'portrait',
     typeId: 'portrait_with_disposition',
@@ -1081,7 +1108,7 @@ export const actorPortraitFallback: SectionResolver = (ctx) => {
     tier: 'routine',
     source: 'actorPortraitFallback',
     portraitRef: { subject: actor.name, sphere },
-    bodyProse: tpl ? fillPlaceholders(tpl, { Name: actor.name }) : actor.name,
+    bodyProse: bonded ?? (tpl ? fillPlaceholders(tpl, { Name: actor.name }) : actor.name),
   };
   return section;
 };

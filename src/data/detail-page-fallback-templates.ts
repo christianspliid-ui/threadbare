@@ -11,8 +11,49 @@
  * (5+ variants per slot) without touching engine code.
  */
 
+import type { BondReception } from './meeting-nudge-constants';
+
 /** Default number of variants authored per (pageKind, sectionTypeId) pool. */
 export const DETAIL_FALLBACK_PROSE_VARIANTS = 5;
+
+/**
+ * Disposition prose for a mortal who carries the god's thread (THR-2054). Keyed
+ * on the rite's reception, so the line agrees with the sheet's Rite line
+ * ("took your thread in devotion"). `bonded` is the pool for a thread with no
+ * recorded reception. A bonded mortal never reads a "not yet crossed paths" line.
+ */
+export const ACTOR_BONDED_DISPOSITION_TEMPLATES: Record<BondReception | 'bonded', readonly string[]> = {
+  awe: [
+    '{Name} carries your thread and still trembles at it.',
+    '{Name} holds your thread in awe.',
+    'Your thread runs through {Name}, and {Name} has not stopped marvelling.',
+  ],
+  devotion: [
+    '{Name} carries your thread in devotion.',
+    '{Name} is yours, and glad of it.',
+    'Your thread runs through {Name}, held close and gladly.',
+  ],
+  bargain: [
+    '{Name} carries your thread as a bargain kept.',
+    '{Name} took your thread on terms, and keeps them.',
+    'Your thread runs through {Name}. {Name} expects something for it.',
+  ],
+  doubt: [
+    '{Name} carries your thread, and doubts it still.',
+    '{Name} took your thread with a question unanswered.',
+    'Your thread runs through {Name}, held warily.',
+  ],
+  defiance: [
+    '{Name} carries your thread and resents its pull.',
+    '{Name} took your thread, but not your will.',
+    'Your thread runs through {Name}, pulled taut against you.',
+  ],
+  bonded: [
+    '{Name} carries your thread.',
+    'Your thread runs through {Name}.',
+    '{Name} is bound to you by thread.',
+  ],
+};
 
 // ─── Actor fallbacks ──────────────────────────────────────────────────────────
 

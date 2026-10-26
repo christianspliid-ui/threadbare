@@ -49,7 +49,7 @@ export const MOMENT_CARD_CONTENT: Readonly<Record<UndertakingMomentClass, Moment
     opening: '{actor} has begun {undertaking}.',
     consequence: 'Nothing stands yet. The first checkpoint comes within the day, and the work advances only when it goes well.',
   },
-  // `{band}` is a verb in the past tense ("held", "faltered", "collapsed" —
+  // `{band}` is a verb in the past tense ("held", "held at a cost", "collapsed" —
   // `OUTCOME_BAND_WORDS`), so the checkpoint is the subject that does it.
   at_cost: {
     title: 'Pressing On at a Cost',
