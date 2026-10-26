@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 22:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 23:57 local (22:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,7 +18,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- **New** · [A bounty is collected in a duel](https://linear.app/threadbare/issue/THR-2072): five calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2072-bounty-collected-in-a-duel.md#decisions-this-plan-builds-on). Each can be vetoed on its own until Tuesday 21:05 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26f.md)*
+- [A bounty is collected in a duel](https://linear.app/threadbare/issue/THR-2072): five calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2072-bounty-collected-in-a-duel.md#decisions-this-plan-builds-on). Each can be vetoed on its own until Tuesday 21:05 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26f.md)*
   - **A bounty is paid in a fight, not a scene.** When a guild puts a price on a cast-out member's head, the guild's own people who live near them may come for them in a duel. The three bounty scenes stay as they are; they come up about once a month and never name who is hunted. *Veto:* "a bounty should be a scene the hunter is drawn to".
   - **Any member of the guild can hunt, seen or unseen.** Mortals who make choices are near a hunted mortal for only 1 to 4 bounties a month, so if only they could hunt, almost no bounty would ever be paid. On three test worlds this gives about 6 to 15 bounty duels a month. *Veto:* "only mortals who make choices may hunt".
   - **The winner is paid, and the price is lifted.** If the hunter beats the hunted mortal, the coin the guild set aside goes to the hunter (a mortal who makes choices gets a little richer, the same as for a commission), and the mortal is no longer hunted. *Veto:* "a bounty should pay more than a commission".
@@ -57,15 +57,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 8 ready, 1 being built.** You waived the veto on [new things arrive one at a time](https://linear.app/threadbare/issue/THR-2058), so the builder took its first half, [THR-2060](https://linear.app/threadbare/issue/THR-2060), at 21:30 UTC and is in its review step now (run still working). The second half, [THR-2061](https://linear.app/threadbare/issue/THR-2061), is next. A [faction's commission paying the member who takes it up](https://linear.app/threadbare/issue/THR-2042) shipped and is live. The other seven ready tickets are still inside their veto windows.
+**Healthy: 7 ready, 1 being built.** The first half of [new things arrive one at a time](https://linear.app/threadbare/issue/THR-2060) merged ([#2614](https://github.com/christianspliid-ui/threadbare/pull/2614)) and is live. The second half, [readouts say what they show](https://linear.app/threadbare/issue/THR-2061), is built and waiting on its checks as [#2616](https://github.com/christianspliid-ui/threadbare/pull/2616); it merges itself when they pass. The seven ready tickets are all still inside their veto windows.
 
-- **Back on the shelf:** [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) was built but not shipped. Its own check found the shortage count did not move, so the builder put it back in Todo with the work kept on a branch. That is the builder's to rework, not yours.
-- Next to open, all on Tuesday: [THR-2046](https://linear.app/threadbare/issue/THR-2046) at 00:50, [THR-2031](https://linear.app/threadbare/issue/THR-2031) at 03:42, [THR-2048](https://linear.app/threadbare/issue/THR-2048) at 06:45, [THR-2051](https://linear.app/threadbare/issue/THR-2051) at 09:49, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30, salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)) at 18:03, and the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) at 21:05 UTC.
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
+- Next to open, all on Tuesday (UTC): [THR-2046](https://linear.app/threadbare/issue/THR-2046) at 00:50, [THR-2031](https://linear.app/threadbare/issue/THR-2031) at 03:42, [THR-2048](https://linear.app/threadbare/issue/THR-2048) at 06:45, [THR-2051](https://linear.app/threadbare/issue/THR-2051) at 09:49, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30, salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)) at 18:03, and the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) at 21:05.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). No branch or uncommitted work exists for it, so nothing is at risk. The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Engine speed jumped (the builder's to look at, not yours):** "tick cost 421 ms/tick steady, 166% above the 7-day median (159, 105 rows since 0adb75ce); top phase agent_decision, 620 agents. Name the merges between 0adb75ce and 7e75804c: git log --oneline --merges 0adb75ce..7e75804c". The previous hour read 174 ms on b5fbb824, so the jump sits between that commit and 7e75804c, which brings in only the [commission-pay change](https://github.com/christianspliid-ui/threadbare/pull/2613) and a plan doc. The builder was running tests on the same machine during this measurement, so part of it may be load; next hour's reading confirms or clears it.
-
-Everything else is green. The live site serves the latest main (7e75804c, the THR-2042 change). Main's CI, the three scheduled background jobs, the nine scheduled lanes and the worktree reaper are healthy. No pull requests are open.
+All green. Last hour's engine-speed jump has cleared: this hour reads 135 ms per tick, 15% under the weekly median, so it was most likely load from tests running at the same time. The live site serves the latest main (the THR-2060 change). Main's CI, the three scheduled background jobs, the nine scheduled lanes and the worktree reaper (last run 23:40) are healthy. The one open pull request, [#2616](https://github.com/christianspliid-ui/threadbare/pull/2616), is waiting on checks.
