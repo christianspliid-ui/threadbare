@@ -351,8 +351,6 @@ export const CHAPTER_ANSWER_TOAST_MS = 8000;
  * (`OUTCOME_BAND_WORDS`: "held", "broke" …).
  */
 export const CHAPTER_LAST_STEP_ANSWER_LINE = 'Step {n} {word}.';
-/** Appended when the player played on that step. `{choice}` is the hand or choice. */
-export const CHAPTER_LAST_STEP_CHOICE_SUFFIX = ' You: {choice}';
 
 /** The slice of a step-history entry the last-step answer reads. */
 export interface LastStepAnswerSource {
@@ -360,7 +358,6 @@ export interface LastStepAnswerSource {
   outcomeWord?: string;
   afterimage?: string;
   replayNarrative?: string;
-  choiceText?: string;
 }
 
 /**
@@ -376,11 +373,11 @@ export function lastStepAnswer(
   if (current <= 0) return null;
   const previous = history[current - 1];
   if (!previous || previous.status !== 'resolved' || !previous.outcomeWord) return null;
-  const choice = previous.choiceText?.trim().replace(/[.!?]+$/, '');
+  // No "what you played" clause: a step's `choiceText` can be the mortal's own
+  // decided branch ("They chose as they are."), which must not read as the god's.
   const line = CHAPTER_LAST_STEP_ANSWER_LINE
     .replace('{n}', String(current))
-    .replace('{word}', previous.outcomeWord)
-    + (choice ? CHAPTER_LAST_STEP_CHOICE_SUFFIX.replace('{choice}', `${choice}.`) : '');
+    .replace('{word}', previous.outcomeWord);
   const prose = previous.afterimage?.trim() || previous.replayNarrative?.trim() || null;
   return { line, prose };
 }
