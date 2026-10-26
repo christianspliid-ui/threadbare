@@ -114,6 +114,17 @@ describe('THR-2052 — holdStepsForPostedBeats', () => {
     expect(holdStepsForPostedBeats(actions, [beat()], graph, 10)).toBe(actions);
   });
 
+  it('never re-holds a step the player already decided when its beat is re-posted', () => {
+    const graph = makeGraph('pause');
+    const committedHand = [action({ activeNudges: [] } as Partial<UnifiedAction>)];
+    expect(holdStepsForPostedBeats(committedHand, [beat()], graph, 70)).toBe(committedHand);
+    const chosen = [action({ choiceHistory: [{ stepIndex: 1, stepId: 's2', choiceId: 'c', choiceText: 'Go', tick: 20 }] } as unknown as Partial<UnifiedAction>)];
+    expect(holdStepsForPostedBeats(chosen, [beat()], graph, 70)).toBe(chosen);
+    // A choice on an earlier step does not count for this one.
+    const earlier = [action({ choiceHistory: [{ stepIndex: 0, stepId: 's1', choiceId: 'c', choiceText: 'Go', tick: 5 }] } as unknown as Partial<UnifiedAction>)];
+    expect(holdStepsForPostedBeats(earlier, [beat()], graph, 70)[0].playerHold).toEqual({ stepIndex: 1, sinceTick: 70 });
+  });
+
   it('returns the same array when nothing was posted', () => {
     const actions = [action()];
     expect(holdStepsForPostedBeats(actions, [], makeGraph('pause'), 10)).toBe(actions);

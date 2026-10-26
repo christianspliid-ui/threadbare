@@ -98,6 +98,11 @@ export function holdStepsForPostedBeats(
   const next = actions.map((action) => {
     const stepIndex = stepsToHold.get(action.actionId);
     if (stepIndex === undefined || action.resolved || action.currentStep !== stepIndex) return action;
+    // A step the player already decided is never held again — its beat can be
+    // re-posted once the old record ages out of the retention trim. A committed
+    // hand (empty or not) leaves `activeNudges` until the step advances; an
+    // authored choice or a dismiss leaves a `choiceHistory` entry for the step.
+    if (stepIsDecided(action)) return action;
     if (!actorThreadIsPause(graph, action.actorId)) return action;
     const held = setPlayerHold(action, tick);
     if (held === action) return action;
@@ -106,6 +111,12 @@ export function holdStepsForPostedBeats(
     return held;
   });
   return changed ? next : actions;
+}
+
+/** THR-2052 — the player has committed, chosen on, or dismissed the current step. */
+function stepIsDecided(action: UnifiedAction): boolean {
+  if (action.activeNudges !== undefined) return true;
+  return (action.choiceHistory ?? []).some(entry => entry.stepIndex === action.currentStep);
 }
 
 /** Is the actor's thread a pause-mode (and not dormant) thread? Missing thread → false. */
