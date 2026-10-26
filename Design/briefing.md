@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 21:00 local (20:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 21:55 local (20:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -53,23 +53,17 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **Encounters can turn a road red, and clear it.** Beating off an ambush clears the road. A lost caravan escort, or a critical failure on a caravan or pirate raid, threatens it for about two days. A blockade is never lifted by a mortal's scene. *Veto:* "a lost caravan should not turn its road red".
   - **A struck toll goes to the faction that holds the town.** If no faction holds it, the mortal who struck it keeps it. A scene never takes a toll away from a mortal. *Veto:* "the mortal who strikes a toll should keep it".
   - **A lost ambush only thins the road.** Only a critical failure also costs the town some prosperity, because ambushes are lost 36 to 57 times a month on two test worlds. *Veto:* "every failed ambush should hurt the town".
-- [A faction's commission pays the member who takes it up](https://linear.app/threadbare/issue/THR-2042/plan-doc-a-factions-commission-pays-the-member-who-takes-it-up-the): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-25-thr-2042-faction-commission-pay.md). Each can be vetoed on its own until 21:53 today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25g.md)*
-  - **A guild's errand pays the mortal who does it.** When a faction posts a commission, the coin it spends is now held on the posting. The first of its members **who makes choices** to finish any of its work is paid, and their Means rises one step. The aftermath says "— a commission their faction paid for." Unseen members still earn only standing. *Veto:* "any member, seen or unseen, can take a commission".
-  - **The pay is one Means step for the 5 coin posted.** This is the border levy in reverse. *Veto:* "a commission should pay more than that".
-  - **An errand nobody takes gives its coin back** to the faction's purse when it expires. Today that coin simply vanishes. *Veto:* "a lapsed commission's coin is spent anyway".
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 9 ready, none being built right now.** Every ready ticket is still inside its veto window, so the builder is idle by design until the first one opens.
+**Healthy: 8 ready, 1 being built.** The veto window on [a faction's commission pays the member who takes it up](https://linear.app/threadbare/issue/THR-2042) closed at 21:53, and the builder picked it up straight away (run started 21:52, still working). The other eight are still inside their veto windows.
 
-- **Shipped this hour:** [a town short of stone no longer "goes hungry"](https://linear.app/threadbare/issue/THR-2070) is live ([#2611](https://github.com/christianspliid-ui/threadbare/pull/2611)).
 - **Back on the shelf:** [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) was built but not shipped. Its own check found the shortage count did not move, so the builder put it back in Todo with the work kept on a branch. That is the builder's to rework, not yours.
-
-- Next to open: [THR-2042](https://linear.app/threadbare/issue/THR-2042) at 21:53, then [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday. Round 5's design tickets open Tuesday: [THR-2060](https://linear.app/threadbare/issue/THR-2060) and [THR-2061](https://linear.app/threadbare/issue/THR-2061) at 11:38 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30 UTC. Salt, [THR-2069](https://linear.app/threadbare/issue/THR-2069), opens Tuesday 18:03 UTC.
+- Next to open: [THR-2046](https://linear.app/threadbare/issue/THR-2046), [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048) and [THR-2051](https://linear.app/threadbare/issue/THR-2051) on Tuesday. Round 5's design tickets open Tuesday: [THR-2060](https://linear.app/threadbare/issue/THR-2060) and [THR-2061](https://linear.app/threadbare/issue/THR-2061) at 11:38 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068) at 14:30 UTC. Salt, [THR-2069](https://linear.app/threadbare/issue/THR-2069), opens Tuesday 18:03 UTC.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (b5fbb824, the THR-2070 fix). Main's CI, the three scheduled background jobs, the nine scheduled lanes and the worktree reaper (last run 20:51) are healthy. No pull requests are open. Engine speed is back inside its band (184 ms/tick, 20% over the weekly median, under the 25% line), so last hour's high reading was the builder loading the machine.
+All green. The live site serves the latest main (b5fbb824, the THR-2070 fix). Main's CI, the three scheduled background jobs, the nine scheduled lanes and the worktree reaper (last run 21:40) are healthy. No pull requests are open. Engine speed is normal (174 ms/tick, 11% over the weekly median).
