@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 03:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: an earlier god's relic now lies at its place, and the fix is live** ([THR-2030](https://linear.app/threadbare/issue/THR-2030)). Its page, its site's connections and Dominion all find it. Merged via [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588).
 - **2026-10-26: the Toll Dispute can now fire, and the fix is live** ([THR-2047](https://linear.app/threadbare/issue/THR-2047/the-toll-dispute-never-fires-on-three-30-day-worlds-no-lane-had)). Its trigger now uses the shared enemy-faction rule, so a road between two hostile factions can start one. Merged via [#2585](https://github.com/christianspliid-ui/threadbare/pull/2585).
 - **2026-10-26: the plan for road encounters writing to their own road is merged** ([THR-2046](https://linear.app/threadbare/issue/THR-2046)), via [#2584](https://github.com/christianspliid-ui/threadbare/pull/2584). Its four calls sit in the briefing's *Decided for you* until Tuesday 00:50.
 - **2026-10-25: debts in the money encounters are merged and live** ([THR-2023](https://linear.app/threadbare/issue/THR-2023)): a debt collected is cleared, The Loan names a lender. Merged via [#2583](https://github.com/christianspliid-ui/threadbare/pull/2583) after three review cycles.

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 03:58 local (02:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 04:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,10 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [A relic left lying in the world can now be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2031-take-up-a-lying-relic.md#decisions). Each can be vetoed on its own until Tuesday 03:42. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26b.md); the design lane's own report did not publish ([impediment #1226](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/impediments.md))*
+  - **A relic is taken up as a mortal's work, not in a scene.** A mortal makes "take up a relic left lying" their undertaking, and when it completes they hold the relic. *Veto:* "it should be a scene the god can watch".
+  - **The work is done from wherever the mortal stands,** like founding a town. The journey is the work; distance only ranks the targets. *Veto:* "a mortal must stand at the place to pick it up".
+  - **Seekers and wanderers want it.** It is the payoff of their treasure hunt. Only a relic that lies somewhere can be taken up.
 - [A road's encounters write to that road](https://linear.app/threadbare/issue/THR-2046/plan-doc-a-roads-encounters-write-to-that-road-the-ambush-the-toll): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-25-thr-2046-encounter-lane-writes.md). Each can be vetoed on its own. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-25h.md)*
   - **A road event writes its own road.** When bandits, an embargo or a toll quarrel is stirred up on one road, the result lands on that road. Today it lands on the town's busiest road, which is the wrong road about half the time. *Veto:* "an encounter should always pick the town's busiest road".
   - **Encounters can turn a road red, and clear it.** Beating off an ambush clears the road. A lost caravan escort, or a critical failure on a caravan or pirate raid, threatens it for about two days. A blockade is never lifted by a mortal's scene. *Veto:* "a lost caravan should not turn its road red".
@@ -40,13 +44,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 ready, all waiting out their veto windows, and one in the build.**
+**Healthy: 6 ready, all waiting out their veto windows; the builder is idle by design until the first opens.**
 
-- **The builder is on [a seeded relic lies at its place](https://linear.app/threadbare/issue/THR-2030/a-seeded-relic-has-no-place-in-the-graph-its-site-is-only-a-property)** now that its veto window closed. Its pull request [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588) is open and the run is still going.
-- Next to open: [THR-2009](https://linear.app/threadbare/issue/THR-2009) at 06:22 this morning, [THR-1929](https://linear.app/threadbare/issue/THR-1929) at 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, and [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50.
+- **[A seeded relic lies at its place](https://linear.app/threadbare/issue/THR-2030/a-seeded-relic-has-no-place-in-the-graph-its-site-is-only-a-property) shipped** via [#2588](https://github.com/christianspliid-ui/threadbare/pull/2588) and is live. Its follow-up, taking the relic up ([THR-2031](https://linear.app/threadbare/issue/THR-2031)), joined the shelf.
+- Next to open: [THR-2009](https://linear.app/threadbare/issue/THR-2009) at 06:22 this morning, [THR-1929](https://linear.app/threadbare/issue/THR-1929) at 15:29, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut draws) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50, and [THR-2031](https://linear.app/threadbare/issue/THR-2031) (relic take-up) Tuesday at 03:42.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site is up to date (45feeb2f; later commits touched only docs). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 03:40) are healthy. Engine speed: 186 ms/tick, 21% above the 7-day median of 153, under the alarm line.
+All green. The live site serves the latest commit on main (9cfae007). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 04:47) are healthy; no pull requests are open. Engine speed: 185 ms/tick, 19% above the 7-day median of 155, under the alarm line.
