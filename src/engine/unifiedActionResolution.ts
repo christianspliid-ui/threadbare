@@ -4431,14 +4431,6 @@ export function phaseUnifiedActionProgress(
       appendDigestEntry(digestBuffer, digestEntry);
     }
 
-    // ── THR-2055: a chapter filed before it resolved learns how it went ──
-    // A tug that lapsed unattended (or a curated-out candidate) is filed by
-    // phaseAttention with `unresolved`, keyed by this action id; settle it now
-    // so Read the Threads and the story digest tell the real band.
-    if (updatedAction.resolved && updatedAction.outcome) {
-      settleDigestOutcome(digestBuffer, updatedAction.actionId, updatedAction.outcome);
-    }
-
     // ── THR-1606: the target's story remembers your hand ──
     // A player cast that changed its target files a digest entry under the
     // target's id, so `composeThreadStory(target)` tells it. Only a cast whose
@@ -4469,6 +4461,18 @@ export function phaseUnifiedActionProgress(
     );
 
     events.push(...stepEvents);
+  }
+
+  // ── THR-2055: a chapter filed before it resolved learns how it went ──
+  // A tug that lapsed unattended (or a curated-out candidate) is filed by
+  // phaseAttention with `unresolved`, keyed by the action id. Settled here,
+  // after both the contested and the uncontested loops, so a chapter that
+  // ended in a contest (contested_won / contested_lost) is settled too.
+  const completingIds = new Set(completing.map((a) => a.actionId));
+  for (const a of actions) {
+    if (completingIds.has(a.actionId) && a.resolved && a.outcome) {
+      settleDigestOutcome(digestBuffer, a.actionId, a.outcome);
+    }
   }
 
   return {
