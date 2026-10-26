@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-26 08:56 local (07:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-26 09:58 local (08:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-26: the plan for an oath sworn from tribute is merged** ([THR-2051](https://linear.app/threadbare/issue/THR-2051)), via [#2594](https://github.com/christianspliid-ui/threadbare/pull/2594). Its four calls sit in the briefing's *Decided for you* until Tuesday 09:49.
 - **2026-10-26: three settings that no longer changed anything are removed, and the change is live** ([THR-2050](https://linear.app/threadbare/issue/THR-2050/authored-knobs-with-no-reader-minwealthrequired-on-five-action)). Merged via [#2593](https://github.com/christianspliid-ui/threadbare/pull/2593).
 - **2026-10-26: eight pieces of old code the game no longer used are removed, and the change is live** ([THR-2049](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its)). Merged via [#2592](https://github.com/christianspliid-ui/threadbare/pull/2592).
 - **2026-10-26: the First's temperament now counts toward how its story ends, and the fix is live** ([THR-2034](https://linear.app/threadbare/issue/THR-2034/return-archetype-reads-never-match-the-usurper-bypass-and-the)). Merged via [#2591](https://github.com/christianspliid-ui/threadbare/pull/2591).
@@ -51,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: the plan for road encounters writing to their own road is merged** ([THR-2046](https://linear.app/threadbare/issue/THR-2046)), via [#2584](https://github.com/christianspliid-ui/threadbare/pull/2584). Its four calls sit in the briefing's *Decided for you* until Tuesday 00:50.
 - **2026-10-25: debts in the money encounters are merged and live** ([THR-2023](https://linear.app/threadbare/issue/THR-2023)): a debt collected is cleared, The Loan names a lender. Merged via [#2583](https://github.com/christianspliid-ui/threadbare/pull/2583) after three review cycles.
 - **2026-10-25: the plan for faction commissions paying their takers is merged** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)), via [#2582](https://github.com/christianspliid-ui/threadbare/pull/2582). Its three calls sit in the briefing's *Decided for you* until 21:53 today.
-- **2026-10-25: every measurement and census script now fits one 10-minute command with no flags** ([THR-2041](https://linear.app/threadbare/issue/THR-2041)). Merged via [#2581](https://github.com/christianspliid-ui/threadbare/pull/2581) and live.
 
 ---
 

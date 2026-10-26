@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 08:56 local (07:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [An oath from tribute](https://linear.app/threadbare/issue/THR-2051/plan-doc-an-oath-from-tribute-the-house-that-pays-tribute-in-a-crowns): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2051-oath-from-tribute.md#decisions). Each can be vetoed on its own until Tuesday 09:49. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26b.md)*
+  - **The mortal's own guild or company swears to the crown over the hall.** When a mortal wins The Tribute Exchange, their own guild, company or order (never a whole realm) swears fealty to the realm that holds that town. If a temple order holds the town and has sworn to a realm, it is that realm. *Veto:* "only a town a realm holds directly counts".
+  - **Every win swears; a loss swears nothing.** A clean win, a win and a costly win all swear. A loss still costs the tribute. *Veto:* "a costly win should pay without the oath".
+  - **A tribute that can bind nobody is still paid.** If the mortal has no guild that may swear, or no crown stands over the town, the coin is spent and nothing is sworn. *Veto:* "a tribute that buys no oath should be refunded".
+  - **The scene comes up as often as today.** It does not lean toward towns under a crown. So the oath is rare: on three test worlds, 2 of 32 tribute scenes had both a guild and a crown. *Veto:* "the tribute scene should only come up under a crown".
 - [A place held after success](https://linear.app/threadbare/issue/THR-2048/plan-doc-a-place-held-after-success-the-forge-a-mortal-builds-the-mill): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2048-place-held-after-success.md#decisions). Each can be vetoed on its own until Tuesday 06:45. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26a.md)*
   - **The forge a mortal builds is theirs.** When a forge-building scene succeeds, the town gets a forge and the builder holds it. It pays them a little every day, as any freehold does. The forge is not one of the town's own buildings. *Veto:* "the smiths, not the builder, should hold the forge".
   - **One forge per town, and one claim per place.** If a forge already stands and nobody holds it, the builder takes it. If someone holds it, the builder is paid for the work instead. A prospector holds the place's mine the same way, or stakes one if there is none. A held mine stays even when it is worked out.
@@ -48,14 +53,14 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready, all waiting out their veto windows; nothing is being built because nothing is free yet.**
+**Healthy: 7 ready, all waiting out their veto windows; nothing is being built because nothing is free yet.** The builder's last three runs each found nothing it could claim, which is correct while every ticket is on hold.
 
-- **Two cleanups shipped and are live:** [eight pieces of old code the game no longer used](https://linear.app/threadbare/issue/THR-2049/eight-modules-have-tests-but-no-production-caller-delete-each-with-its) are gone ([#2592](https://github.com/christianspliid-ui/threadbare/pull/2592)), and so are [three settings that no longer changed anything](https://linear.app/threadbare/issue/THR-2050/authored-knobs-with-no-reader-minwealthrequired-on-five-action) ([#2593](https://github.com/christianspliid-ui/threadbare/pull/2593)). Nothing changes on screen.
+- **New on the shelf:** [an oath from tribute](https://linear.app/threadbare/issue/THR-2051) (plan merged via [#2594](https://github.com/christianspliid-ui/threadbare/pull/2594)), opening Tuesday at 09:49.
 - Next to open: [THR-1929](https://linear.app/threadbare/issue/THR-1929) (sequels wait for their place) at 15:29 today, [THR-2040](https://linear.app/threadbare/issue/THR-2040) (famine and glut) at 19:05, [THR-2042](https://linear.app/threadbare/issue/THR-2042) (commission pay) at 21:53, [THR-2046](https://linear.app/threadbare/issue/THR-2046) (roads) Tuesday at 00:50, [THR-2031](https://linear.app/threadbare/issue/THR-2031) (relic take-up) Tuesday at 03:42, and [THR-2048](https://linear.app/threadbare/issue/THR-2048) (a place held after success) Tuesday at 06:45.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (11 days). The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **The long simulation checks after each merge are running out of time.** Runs since Friday keep getting cut off at the 45-minute limit or cancelled; the last four merge runs (latest 08:19) all ended "cancelled", and only the 04:36 nightly run passed. One is running now. They show as "cancelled", not red, so the red-main check does not catch them, and those merges went without full heavy coverage. This is CI work for an agent. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26c.md)*
-- Everything else is green. The live site serves the latest commit on main (3f54d0dd). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 08:40) are healthy; no pull requests are open. Engine speed: 125 ms/tick, 22% below the 7-day median of 159.
+- **The long simulation checks after each merge passed again.** The run on the latest game code (3f54d0dd, 08:45) finished green, after four earlier merge runs this morning ended "cancelled". Still worth an agent's look if the cancellations return. *— first raised by [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26c.md)*
+- Everything else is green. The live site is up to date (the newest commits on main are docs only). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 09:45) are healthy; no pull requests are open. Engine speed: 121 ms/tick, 24% below the 7-day median of 159.
