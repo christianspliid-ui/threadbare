@@ -66,8 +66,8 @@ function world(opts: { threaded: boolean; reception?: string; history?: boolean 
   } as unknown as GameState;
 }
 
-function disposition(s: GameState, tick = s.tick): string | undefined {
-  const rows: DetailSection[] = composeSections('actor', { nodeId: FIRST, pageKind: 'actor', graph: s.graph, seed: s.seed, tick, protagonistId: ASC, state: s });
+function disposition(s: GameState, tick = s.tick, protagonistId = ASC): string | undefined {
+  const rows: DetailSection[] = composeSections('actor', { nodeId: FIRST, pageKind: 'actor', graph: s.graph, seed: s.seed, tick, protagonistId, state: s });
   const row = rows.find(r => r.typeId === 'portrait_with_disposition') as { bodyProse?: string } | undefined;
   return row?.bodyProse;
 }
@@ -79,6 +79,13 @@ describe('THR-2054 — Disposition reads the bond', () => {
     const line = disposition(world({ threaded: true, reception: 'devotion' }));
     expect(fill(ACTOR_BONDED_DISPOSITION_TEMPLATES.devotion)).toContain(line);
     expect(fill(ACTOR_FALLBACK_TEMPLATES.disposition_no_history)).not.toContain(line);
+  });
+
+  it('reads the bond when the protagonist is the god\'s avatar (the hover-card path)', () => {
+    const s = world({ threaded: true, reception: 'devotion' });
+    s.graph.addNode({ id: 'avatar', type: 'actor', name: 'Avatar of Vara', properties: { actorType: 'individual' } });
+    s.graph.addEdge({ id: 'av1', source: 'avatar', target: ASC, type: 'avatar_of', properties: {} });
+    expect(fill(ACTOR_BONDED_DISPOSITION_TEMPLATES.devotion)).toContain(disposition(s, s.tick, 'avatar'));
   });
 
   it('falls back to the newest riteHistory reception when the edge has none', () => {

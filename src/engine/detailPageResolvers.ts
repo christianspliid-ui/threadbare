@@ -242,7 +242,10 @@ export function membershipRankWord(edge: { properties?: Record<string, unknown> 
  */
 function bondedDispositionProse(ctx: SectionResolverContext, node: GraphNode): string | undefined {
   if (!ctx.protagonistId) return undefined;
-  const edge = ctx.graph.getOutgoingEdges(ctx.protagonistId, 'thread').find((e) => e.target === node.id);
+  // The hover-card path passes the god's avatar as protagonist; threads leave the
+  // ascendant itself, so resolve through the avatar's `avatar_of` edge.
+  const godId = ctx.graph.getOutgoingEdges(ctx.protagonistId, 'avatar_of')[0]?.target ?? ctx.protagonistId;
+  const edge = ctx.graph.getOutgoingEdges(godId, 'thread').find((e) => e.target === node.id);
   if (!edge) return undefined;
   const history = Array.isArray(node.properties?.riteHistory)
     ? (node.properties.riteHistory as Array<{ reception?: string }>)
