@@ -34,7 +34,7 @@
 // Exits 1 when any seed fails the gate.
 import { initializeGameStateFromIdentity, devSeedTheFirst, devSeedAscendantTestPackage, DEV_ASCENDANT_IDENTITY } from '../src/engine/gameInit';
 import { runTick, resetEventCounter, resetDecisionCache } from '../src/engine/orchestrator';
-import { releaseAllPlayerHolds } from '../src/engine/playerStepHold';
+import { unattended } from '../src/engine/playerStepHold';
 import { deriveCosmologyFromIdentity } from '../src/engine/remembrance';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
@@ -52,12 +52,6 @@ export const FIRST_FIRST_ENCOUNTER_MAX_TICK = 30;
  */
 export const FIRST_ENCOUNTER_MAX_GAP_TICKS = 30;
 
-/** THR-2052 — no player here: a step held for the god plays out, as an unanswered veil once did. */
-const unattended = <S extends { unifiedActions?: readonly import('../src/types/unifiedAction').UnifiedAction[] }>(s: S): S => {
-  const held = s.unifiedActions ?? [];
-  const released = releaseAllPlayerHolds(held);
-  return released === held ? s : { ...s, unifiedActions: [...released] };
-};
 const encKind = CONTENT_OBJECT_KINDS.find(k => k.id === 'encounter_template');
 const isEncounter = (id: string) => !!encKind && encKind.idPrefixes.some(p => id.startsWith(p));
 

@@ -123,6 +123,17 @@ export function releaseAllPlayerHolds(actions: readonly UnifiedAction[]): readon
   return actions.map(a => (a.playerHold !== undefined ? releasePlayerHold(a) : a));
 }
 
+/**
+ * THR-2052 — {@link releaseAllPlayerHolds} on a state, for a no-player `runTick`
+ * loop: `state = unattended(runTick(state, [], runtime))`. Returns the input state
+ * when nothing is held.
+ */
+export function unattended<S extends { readonly unifiedActions?: readonly UnifiedAction[] }>(state: S): S {
+  const actions = state.unifiedActions ?? [];
+  const released = releaseAllPlayerHolds(actions);
+  return released === actions ? state : { ...state, unifiedActions: [...released] };
+}
+
 /** THR-2052 — the player has committed, chosen on, or dismissed the current step. */
 function stepIsDecided(action: UnifiedAction): boolean {
   if (action.activeNudges !== undefined) return true;
