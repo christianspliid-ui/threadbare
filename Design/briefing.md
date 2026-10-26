@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-26 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-26 05:58 local (04:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -53,4 +53,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The live site serves the latest commit on main (9cfae007). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 04:47) are healthy; no pull requests are open. Engine speed: 185 ms/tick, 19% above the 7-day median of 155, under the alarm line.
+All green. The live site serves the latest commit on main (9cfae007). Main's CI, the three scheduled background jobs, all 9 enabled scheduled lanes and the worktree reaper (last run 05:40) are healthy; no pull requests are open. Engine speed: 183 ms/tick, 17% above the 7-day median of 157, under the alarm line.
