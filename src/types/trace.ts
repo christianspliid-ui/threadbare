@@ -99,6 +99,8 @@ export type TraceCategory =
   | 'economy.world.shift'
   // THR-2048 — a scene leaves a mortal holding a place
   | 'encounter.place.held'
+  // THR-2077 — a scene leaves the town's guild holding a town building
+  | 'encounter.place.guild_held'
   // THR-2042 — a faction's commission taken up or lapsed
   | 'economy.commission'
   // THR-2072 — a faction's bounty collected in a duel or lapsed
@@ -765,7 +767,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
   'economy.means.birth', 'economy.means.shift', 'economy.world.shift',
-  'encounter.place.held',
+  'encounter.place.held', 'encounter.place.guild_held',
   'economy.founding.patron', 'economy.commission', 'economy.bounty',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'faction.embargo.laid', 'faction.embargo.lifted',
@@ -2132,6 +2134,25 @@ export interface EncounterPlaceHeldTrace extends TraceBase {
   heldBy?: string;
   /** `held_elsewhere` only: the Means actually paid for the work. */
   meansPaid?: number;
+}
+
+/**
+ * THR-2077 — a `guild_hold_place` outcome row ran: the town's guild raised a building,
+ * took up an unheld one, already held it, found it held by another faction, or nothing
+ * was written (no guild present, no free slot).
+ */
+export interface EncounterPlaceGuildHeldTrace extends TraceBase {
+  category: 'encounter.place.guild_held';
+  sourceTemplateId: string | null;
+  siteId: string;
+  buildingId: string;
+  result: 'raised' | 'taken_up' | 'already_theirs' | 'held_elsewhere' | 'no_fellowship' | 'no_room';
+  guildId: string | null;
+  affinity: string | null;
+  /** The building Place held (or found held); null when none was written. */
+  placeId: string | null;
+  /** `held_elsewhere` only: who holds it (a faction's `controls` or a freehold's `owns`). */
+  heldBy?: string;
 }
 
 /**
@@ -5303,7 +5324,10 @@ export interface AftermathTargetInvalidTrace extends TraceBase {
     // THR-2046 — a `lane_threat` clear asked of a blockaded lane (only the blockade verb
     // lifts a blockade), and a `lane_toll` with no faction and no mortal to hold it.
     | 'blockaded'
-    | 'no_holder';
+    | 'no_holder'
+    // THR-2077 — a `guild_hold_place` named no settlement or no known building.
+    | 'not_a_settlement'
+    | 'unknown_building';
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5472,6 +5496,7 @@ export type TraceEntry =
   | FoundingPatronTrace
   | WorldEconomyShiftTrace
   | EncounterPlaceHeldTrace
+  | EncounterPlaceGuildHeldTrace
   | CommissionTrace
   | BountyTrace
   | WarAimPickedTrace

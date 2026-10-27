@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 105 |
-| **Total** | **338** |
+| 🔵 UNVERIFIED-OK | 107 |
+| **Total** | **340** |
 
 ## Contracts by producing subsystem
 
@@ -209,7 +209,9 @@ remediation ticket or the build fails.
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
 | `encounter-brokers-oath-of-fealty` | A won Faction Unification or a won Warlord's Tribute demand fires the faction_broker_fealty aftermath effect from the band's outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm's own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord's company ($cast:warlord) or the best-standing present faction at the mortal's town (never the liege's enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason. THR-2051 adds a second liege source: a won Tribute Exchange (liegeFrom: scene_town) swears the actor's own house to the crown the scene's town answers to — getLocationHolder's realm holder (or its liege), else the realm its non-realm holder is sworn to (liegeOf). | edge: `sworn_to`, `faction_broker_fealty`, `brokerOath`, `swearBrokeredOath`, `brokeredBy`, `townLiegeOf`, `liegeFrom` | Factions & Succession | 🟢 LIVE | — |
 | `encounter-hex-lights-stage` | An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window. | property: `hexCol`, `hexRow` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `encounter-outcome-guild-holds-a-building` | The fellowship a scene names is a real faction. The `guild_hold_place` outcome effect (on *The Lease Sealed*) leaves the town's own guild — `pickTownGuild`: the first of `MILL_FELLOWSHIP_AFFINITIES` with a purse faction present, then most members standing there, then id; never a realm — holding the town building through a faction → Place `controls` edge (`role: 'guild_holding'`). It is the first encounter writer of a faction→Place `controls`. One per town: an unheld one is taken up, one held by another faction stays theirs, no guild present or no free slot writes nothing. The holding reads on the guild's page (Connections), in its purse (held-building dues) and in its war-aim defence list; a non-realm `controls` never moves a border (THR-2077). | function: `guild_hold_place`, `pickTownGuild`, `heldBuildingDuesOf` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcome-holds-a-place` | A scene whose prose promises a holding keeps the promise. The `hold_place` outcome effect leaves the actor holding one Place of a type at the scene's settlement or wild place — the forge they built, the claim they staked — through the two existing writers: `createSublocation` raises the Place when none stands, `grantHolding` writes the `owns` edge and its face. One per site: an unheld one is taken up and made permanent (so a conditional mine never dissolves under its holder), one held by someone else raises nothing and pays the actor for the work. A scene never takes a holding away. The freehold then pays through holding income and reads on the sheet, the notable line and home-ground scoring like any other (THR-2048). | function: `hold_place`, `createSublocation`, `grantHolding` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
+| `encounter-outcome-raises-settlement-building` | A scene can raise one of a town's buildings — the third raiser beside the settlement economy and undertakings. When `guild_hold_place` finds no building of its kind standing and the town has a free slot (`readBuildings` < `buildingSlotsOf`), it calls `raiseBuilding` and stamps the Place with `markMortalBuilding`, so it reads as adopted and stays a Place if the town later loses it. The settlement economy then counts it like any building: its food effect, its upkeep and its slot (THR-2077). | function: `raiseBuilding`, `markMortalBuilding`, `readBuildings` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-fill-faction-purse` | The coin a mortal pays in a money encounter goes somewhere: a levy or tithe to the realm the ground belongs to, a toll or fee to the mercenary company, a failed rescue out of a guild's purse. The outcome table's `purse` row moves the faction's treasury through applyTreasuryDelta, the purse's one funnel. | node-prop: `wealth`, `applyTreasuryDelta` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-move-the-town` | A money encounter moves the town it happened in by how the dice fell: the outcome table's `economy_shift` writes the settlement's prosperity, unrest or stock of a good, or the volume on its busiest lane, once at the roll, and the aftermath names the move in the town page's own words. | node-prop: `prosperity`, `unrest`, `resources`, `volume` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-write-mortal-means` | A money encounter pays or costs the mortal who took it by how the dice fell: the template's outcome table writes their Means once, at the roll, through the one funnel, and the sheet and the aftermath say what it did in words. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
@@ -346,7 +348,7 @@ remediation ticket or the build fails.
 | `economy-sustains-essence-sources` | A god's power is rooted in the land their people work: the goods of a source's own Sphere nurture or wither its sanctity, so an economy the player neglects quietly costs them essence. | node-prop: `stockTier` | Essence & Divine Economy | 🟢 LIVE | — |
 | `economy-verbs-answered` | The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4. | node-prop: `prosperity` | Encounters & Dilemmas | 🟢 LIVE | THR-725 |
 | `faction-purse-pays-armies` | A faction pays each army's upkeep from its purse every day, in army id order, whole armies only and never into debt; an army paid today carries armyState.paidThroughTick = today. Army attrition reads that: an army the purse has not paid for more than one pay day is underfunded, loses UNDERFUNDED_ATTRITION_PENALTY cohesion per tick and, at 0, deserts through the existing disband path. Raising an army from an ambition or agenda costs ARMY_CREATION_GOLD_COST, and the raise gate requires the cost plus a first day in hand. | node-prop: `paidThroughTick`, `checkUnderfunded`, `canAffordArmy`, `settleUpkeep` | War, Armies & Battles | 🟢 LIVE | — |
-| `faction-purse-pays-faction-holders` | Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm's border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town's tax holder takes LANDHOLDER_TAX_RATE). It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction's wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened. | node-prop: `runFactionPurse`, `readMeansBand`, `readPurseDay`, `applyTreasuryDelta` | Factions & Succession | 🟢 LIVE | — |
+| `faction-purse-pays-faction-holders` | Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm's border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town's tax holder takes LANDHOLDER_TAX_RATE). THR-2077: a held town building with a HELD_BUILDING_DUES row (the guild's mill) also pays its holder dues, keyed on the Place type and scaled by the town's prosperity, booked as place yield. It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction's wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened. | node-prop: `runFactionPurse`, `readMeansBand`, `readPurseDay`, `applyTreasuryDelta` | Factions & Succession | 🟢 LIVE | — |
 | `faction-purse-prices-war-aims` | An army marches on the enemy town worth most to its purse (THR-1933 S1). townValueFor composes the faction purse's own pure helpers — townTaxOf for the town, placeYieldOf for the town and each of its resource places, and an even share of each unheld resource location within WAR_AIM_FIELD_RADIUS_HEXES — never a second price; taxHolderOf names whose town it is. pickWarAim scores value × (1 + bonuses) ÷ (1 + hexes / WAR_AIM_HALF_VALUE_HEXES 10) over enemy towns the army has a march path to within WAR_AIM_MAX_REACH_HEXES (a supply line from the town is also required only while WAR_AIM_REQUIRE_SUPPLY_REACH is on — off since the plan kill criterion fired). With the purse off, prosperity ÷ 100 stands in and war.aim.value_fallback is traced. | module-export: `townValueFor`, `feedsLackingStaple`, `pickWarAim` | War, Armies & Battles | 🟢 LIVE | — |
 | `faction-purse-schism-strain` | A faction that has been Destitute for PURSE_SCHISM_GRACE_DAYS feels it at a schism: decideSchismOutcome adds SCHISM_WEIGHT_PURSE × purseStrain to split pressure. Bounded — alone it never splits a faction (the outcome is still the seeded draw against splitPressure); it tips one already strained. | function: `computePurseStrain`, `SCHISM_WEIGHT_PURSE`, `readMeansBand`, `readPurseDay` | Factions & Succession | 🟢 LIVE | — |
 | `faithful-sanctity-reads-staples` | A faithful town's faith rides its bread (THR-1935 S1). computeSanctitySustenance scores a faithfulCommunity source against the host's staple goods (category staple) whatever its sphere: fed holds it at the nurture ceiling, scarce drains it; the prayer phase removes the bag and the faith's own controls edge at FAITHFUL_LAPSE_SANCTITY 0, and Sanctify cannot raise it. | function: `scoreSphereAffinity`, `computeSanctitySustenance` | Essence & Divine Economy | 🟢 LIVE | — |
@@ -1093,10 +1095,10 @@ exit
 - **Intent:** A standing building gives its settlement a location trait (Iron Town, Walled …), and the land and market give Breadbasket and Market Town: fourteen rules in phaseLocationTraits read the buildings and the economy props. Each trait carries a small step term and a pool row.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Effects & Conditions
 - **UL terms:** *Settlement*, *Trait*
-- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
 - **Write sites:** `src/engine/settlementEconomy/building.ts`
 - **Read sites:** `src/engine/phaseLocationTraits.ts`, `src/engine/settlementEconomy/measures.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phases/settlementEconomy.ts`, `src/engine/undertakingEconomy.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/encounterAftermath.ts`, `src/engine/phases/settlementEconomy.ts`, `src/engine/undertakingEconomy.ts`
 - **Verdict:** Verified 2026-10-25: THR-1923. phaseLocationTraits.test.ts › every minted id is a location condition with a reader (the fourteen included); settlementEconomy.test.ts › every economic trait is a seeded location condition.
 
 ### `calling-derivation` — 🟢 LIVE
@@ -1780,6 +1782,18 @@ exit
 - **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +159 more
 - **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
 
+### `encounter-outcome-guild-holds-a-building` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The fellowship a scene names is a real faction. The `guild_hold_place` outcome effect (on *The Lease Sealed*) leaves the town's own guild — `pickTownGuild`: the first of `MILL_FELLOWSHIP_AFFINITIES` with a purse faction present, then most members standing there, then id; never a realm — holding the town building through a faction → Place `controls` edge (`role: 'guild_holding'`). It is the first encounter writer of a faction→Place `controls`. One per town: an unheld one is taken up, one held by another faction stays theirs, no guild present or no free slot writes nothing. The holding reads on the guild's page (Connections), in its purse (held-building dues) and in its war-aim defence list; a non-realm `controls` never moves a border (THR-2077).
+- **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
+- **UL terms:** *Faction*, *Place*
+- **Module:** `src/engine/encounterAftermath.ts`
+- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
+- **Write sites:** `src/data/encounters/mill-lease-sequels.ts`, `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/factionPurse/income.ts`
+- **Other hits:** `src/engine/factionPurse/townGuild.ts`, `src/types/trace.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `encounter-outcome-holds-a-place` — 🔵 UNVERIFIED-OK
 
 - **Intent:** A scene whose prose promises a holding keeps the promise. The `hold_place` outcome effect leaves the actor holding one Place of a type at the scene's settlement or wild place — the forge they built, the claim they staked — through the two existing writers: `createSublocation` raises the Place when none stands, `grantHolding` writes the `owns` edge and its face. One per site: an unheld one is taken up and made permanent (so a conditional mine never dissolves under its holder), one held by someone else raises nothing and pays the actor for the work. A scene never takes a holding away. The freehold then pays through holding income and reads on the sheet, the notable line and home-ground scoring like any other (THR-2048).
@@ -1790,6 +1804,18 @@ exit
 - **Write sites:** `src/data/encounter-content.ts`, `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/holdingIncome.ts`, `src/engine/sublocation.ts`
 - **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/binding/creationEffects.ts`, `src/engine/descent.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/hexActionBridge.ts` +9 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `encounter-outcome-raises-settlement-building` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A scene can raise one of a town's buildings — the third raiser beside the settlement economy and undertakings. When `guild_hold_place` finds no building of its kind standing and the town has a free slot (`readBuildings` < `buildingSlotsOf`), it calls `raiseBuilding` and stamps the Place with `markMortalBuilding`, so it reads as adopted and stays a Place if the town later loses it. The settlement economy then counts it like any building: its food effect, its upkeep and its slot (THR-2077).
+- **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
+- **UL terms:** *Place*, *Prosperity*
+- **Module:** `src/engine/settlementEconomy/building.ts`
+- **Production hits:** 7 total — 1 write, 2 read, 4 unclassified
+- **Write sites:** `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/phases/settlementEconomy.ts`, `src/engine/settlementEconomy/building.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phaseLocationTraits.ts`, `src/engine/settlementEconomy/measures.ts`, `src/engine/undertakingEconomy.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-fill-faction-purse` — 🔵 UNVERIFIED-OK
@@ -2000,7 +2026,7 @@ exit
 
 ### `faction-purse-pays-faction-holders` — 🟢 LIVE
 
-- **Intent:** Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm's border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town's tax holder takes LANDHOLDER_TAX_RATE). It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction's wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened.
+- **Intent:** Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm's border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town's tax holder takes LANDHOLDER_TAX_RATE). THR-2077: a held town building with a HELD_BUILDING_DUES row (the guild's mill) also pays its holder dues, keyed on the Place type and scaled by the town's prosperity, booked as place yield. It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction's wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Means*, *Prosperity*
 - **Module:** `src/engine/factionPurse.ts`
@@ -2372,10 +2398,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **UL terms:** *Settlement*, *Freehold*, *Faction*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 310 total — 2 write, 3 read, 305 unclassified
+- **Production hits:** 312 total — 2 write, 3 read, 307 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/factionPurse/income.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/placeRows.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +300 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +302 more
 - **Verdict:** Verified 2026-10-21: THR-1937. src/engine/__tests__/undertakingEconomy.test.ts: the founded hamlet never shares a hex with its site and nothing is founded when the neighbourhood is full; the higher-rank town-holding faction rules, a tie goes to the realm then the lower id, a lone founder rules; the ruler's controls and the founder's owns are written and computePurseIncome lists the town under the ruler's taxHolderOf; the place row reads Founded by with the founder linked.
 
 ### `founding-patron-pays-from-faction-purse` — 🟢 LIVE
@@ -3012,10 +3038,10 @@ exit
 - **Intent:** A building a mortal raises through the create × place undertaking (THR-1966, undertakings S2) is the town's own next building. The settlement economy's day writes its chooser's pick on the settlement (economyNextBuilding) while a slot is free, and removes it when the slots fill or the town raises it. The cell's eligibility refuses a settlement with no pick (no_building_slot); the lifecycle stores the pick on the project as plannedBuildingId at start and passes it back as params at completion, where pickRaisedBuilding re-checks it (still not standing, a slot free) or takes the current pick (repicked), else nothing is raised (no_room). The Place is createSublocation's, stamped by markMortalBuilding (isBuilding, buildingId, builtTick) and held by the builder through grantHolding; the settlement economy then counts it as a building. Pack Place types map onto the table through LEGACY_PLACE_TYPE_TO_BUILDING. A settlement the economy has not run on (no economyLastDay) raises as before.
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*
-- **Production hits:** 12 total — 4 write, 2 read, 6 unclassified
+- **Production hits:** 15 total — 4 write, 2 read, 9 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/phases/settlementEconomy.ts`, `src/engine/strategicActionLifecycle.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/settlementEconomy/building.ts`, `src/engine/settlementEconomy/describe.ts`
-- **Other hits:** `src/data/settlement-buildings.ts`, `src/data/undertaking-economy-constants.ts`, `src/engine/tooltipResolver.ts`, `src/engine/undertakingProse.ts`, `src/types/strategicAction.ts` +1 more
+- **Other hits:** `src/data/encounters/mill-lease-sequels.ts`, `src/data/settlement-buildings.ts`, `src/data/undertaking-economy-constants.ts`, `src/engine/encounterAftermath.ts`, `src/engine/tooltipResolver.ts` +4 more
 - **Verdict:** Verified 2026-10-25: THR-1966. undertakingEconomyS2.test.ts: on grassland, temperate forest and hills the raised building is the chooser's pick (and not the same building on all three), the builder holds it and the card reads "built by Kael Thornweaver"; full slots are refused and a work under way raises nothing with the no_room line; a planned building that still qualifies is raised; a lost mortal-raised building keeps its Place and freehold; the legacy table is complete and a pack warehouse becomes the storehouse.
 
 ### `nudge-card-cost-channels-detection-and-doom` — 🔴 LEAKED
@@ -3414,10 +3440,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 268 total — 2 write, 2 read, 264 unclassified
+- **Production hits:** 270 total — 2 write, 2 read, 266 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +259 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +261 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -3676,10 +3702,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 427 total — 1 write, 1 read, 425 unclassified
+- **Production hits:** 429 total — 1 write, 1 read, 427 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +420 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +422 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-economy-drives-tier` — 🟢 LIVE
@@ -3698,10 +3724,10 @@ exit
 - **Intent:** The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag.
 - **Producer → Consumer:** Mortal Economy & Prosperity → World Generation, Terrain & Places
 - **UL terms:** *Settlement*, *Location*
-- **Production hits:** 4 total — 1 write, 2 read, 1 unclassified
+- **Production hits:** 5 total — 1 write, 2 read, 2 unclassified
 - **Write sites:** `src/engine/settlementEconomy/building.ts`
 - **Read sites:** `src/engine/settlementEconomy/describe.ts`, `src/engine/views/connections.ts`
-- **Other hits:** `src/engine/undertakingProse.ts`
+- **Other hits:** `src/engine/encounterAftermath.ts`, `src/engine/undertakingProse.ts`
 - **Verdict:** Verified 2026-10-25: THR-1923. settlementEconomy.test.ts › a settlement raises buildings into its slots and its building Places say "built by the town".
 
 ### `settlement-economy-writes-resource-balance` — 🟢 LIVE
@@ -4018,10 +4044,10 @@ exit
 - **Intent:** A held town On the edge turns to a better lord (THR-1957 S2). Once a day the unrest phase weighs every faction that holds a settlement within DEFECTION_RADIUS_HEXES 8 (protection from the crown's offer term over this town, standing, fed, solvent); when the best beats the holder by DEFECTION_MARGIN 0.4 the holder's controls edges are retargeted to it with via defection and takenFrom, the old holder's relates_to toward it drops past the enemy line (DEFECTION_GRUDGE_SENTIMENT −0.35, defectionTick) and it adopts a revenge ambition whose grievanceSourceId / targetNodeId name the lord and the town. The crown's holding_lost reads takenFrom; war aims' isEnemyFaction reads the grudge.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*, *Ambition*
-- **Production hits:** 260 total — 2 write, 2 read, 256 unclassified
+- **Production hits:** 262 total — 2 write, 2 read, 258 unclassified
 - **Write sites:** `src/engine/factionAmbitions.ts`, `src/engine/unrestPressure/defection.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +251 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +253 more
 - **Verdict:** Verified 2026-10-20: THR-1957. src/engine/__tests__/unrestPressureS2.test.ts: a fed, solvent neighbour with a hall in the town beats a broke holder and the town defects on the next daily pass — controls moves (via defection, takenFrom), the grudge reads as enemies under isEnemyFaction, and the holder pursues revenge naming the town; a holder that feeds and pays keeps it; the cooldown holds.
 
 ### `trace-ring-to-incident-bundle` — 🟢 LIVE

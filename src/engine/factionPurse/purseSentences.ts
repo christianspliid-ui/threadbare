@@ -12,7 +12,8 @@ import type { GraphNode } from '../../types/graph';
 import type { PurseSourceKind } from './income';
 import { isSettlement } from './income';
 import { readResources } from '../resourceEconomy';
-import { ARMY_UPKEEP_PER_DAY } from '../../data/faction-purse-constants';
+import { ARMY_UPKEEP_PER_DAY, HELD_BUILDING_DUES, HELD_BUILDING_SOURCE_WORDS } from '../../data/faction-purse-constants';
+import { buildingForPlaceType } from '../../data/settlement-buildings';
 import type { ArmySizeCategory } from '../../types/army';
 import { readRegionalMonopolies } from '../regionalMonopoly';
 import { MONOPOLY_WORDS, fillMonopolyWords } from '../../data/regional-monopoly-words';
@@ -61,6 +62,14 @@ export function largestGood(place: GraphNode | undefined): string | null {
   return best;
 }
 
+/** THR-2077 — the noun of a Place whose building pays held dues ("mill"), or null. */
+function heldBuildingWord(place: GraphNode | undefined): string | null {
+  const typeId = place?.properties.sublocationTypeId;
+  const def = typeof typeId === 'string' ? buildingForPlaceType(typeId) : undefined;
+  if (!def || !HELD_BUILDING_DUES[def.id]) return null;
+  return HELD_BUILDING_SOURCE_WORDS[def.id] ?? def.cardName.toLowerCase();
+}
+
 function settlementWord(n: GraphNode): string {
   const sub = String(n.properties.locationSubtype ?? 'town');
   return sub === 'capital' ? 'city' : sub;
@@ -76,8 +85,16 @@ export function sourcePhrase(graph: WorldGraph, kind: PurseSourceKind, nodeId: s
       return n && isSettlement(n) ? [`the ${settlementWord(n)} of `, placeRef(graph, nodeId)] : [placeRef(graph, nodeId)];
     }
     case 'place': {
-      const good = largestGood(graph.getNode(nodeId));
-      return good ? [`the ${resourceWord(good)} of `, placeRef(graph, nodeId)] : [placeRef(graph, nodeId)];
+      const place = graph.getNode(nodeId);
+      const good = largestGood(place);
+      if (good) return [`the ${resourceWord(good)} of `, placeRef(graph, nodeId)];
+      // THR-2077 — a goods-less held building reads by its kind: "the mill at Ashford".
+      const held = heldBuildingWord(place);
+      const parentId = place?.properties.parentLocationId;
+      if (held && typeof parentId === 'string' && graph.getNode(parentId)) {
+        return [`the ${held} at `, placeRef(graph, parentId)];
+      }
+      return [placeRef(graph, nodeId)];
     }
     case 'guild':
       return ['its work in ', placeRef(graph, nodeId)];

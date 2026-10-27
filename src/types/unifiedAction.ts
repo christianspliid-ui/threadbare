@@ -642,6 +642,23 @@ export type EncounterAftermathReactionEffect =
     readonly when?: EffectPredicate;
   }
   | {
+    /**
+     * THR-2077 — the town's own guild holds a town building afterwards (the mill a sealed
+     * lease wins "for the fellowship"). The guild is `pickTownGuild`'s; none present writes
+     * nothing. An unheld standing building is taken up; none standing is raised when a
+     * building slot is free; one held by another faction stays theirs. Writes a faction →
+     * Place `controls` edge with `role: 'guild_holding'`, which the purse pays dues on.
+     */
+    readonly kind: 'guild_hold_place';
+    /** A building id from SETTLEMENT_BUILDINGS, e.g. 'mill'. */
+    readonly buildingId: string;
+    /** Guild affinities in preference order; default MILL_FELLOWSHIP_AFFINITIES. */
+    readonly affinities?: readonly string[];
+    /** The settlement; default the scene's own place (`$here`). */
+    readonly targetLocationId?: string;
+    readonly when?: EffectPredicate;
+  }
+  | {
     readonly kind: 'quintessence_shift';
     /** Negative = erosion, positive = recovery. Designer-facing only. */
     readonly delta: number;

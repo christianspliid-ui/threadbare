@@ -82,6 +82,8 @@ export const MILL_LEASE_SEALED: UnifiedActionTemplate = {
         effects: [
           { kind: 'reputation_with', targetLocationId: '$here', delta: 0.04 },
           { kind: 'bond_change', withAgentId: '$cast:cellarer', sentimentDelta: 0.06, trustDelta: 0.1 },
+          // THR-2077 — the fellowship is the town's own guild: it holds the mill afterwards.
+          { kind: 'guild_hold_place', buildingId: 'mill' },
         ],
       },
       failureMetadata: {

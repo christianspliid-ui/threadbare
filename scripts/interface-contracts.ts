@@ -5246,6 +5246,47 @@ export const CONTRACTS: readonly Contract[] = [
     ],
   },
   {
+    id: 'encounter-outcome-guild-holds-a-building',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: FACTIONS,
+    intent:
+      'The fellowship a scene names is a real faction. The `guild_hold_place` outcome effect (on *The Lease Sealed*) leaves the town\'s own guild — `pickTownGuild`: the first of `MILL_FELLOWSHIP_AFFINITIES` with a purse faction present, then most members standing there, then id; never a realm — holding the town building through a faction → Place `controls` edge (`role: \'guild_holding\'`). It is the first encounter writer of a faction→Place `controls`. One per town: an unheld one is taken up, one held by another faction stays theirs, no guild present or no free slot writes nothing. The holding reads on the guild\'s page (Connections), in its purse (held-building dues) and in its war-aim defence list; a non-realm `controls` never moves a border (THR-2077).',
+    ulTerms: ['Faction', 'Place'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['guild_hold_place', 'pickTownGuild', 'heldBuildingDuesOf'],
+      module: 'src/engine/encounterAftermath.ts',
+    },
+    writeSites: [
+      'src/engine/encounterAftermath.ts',
+      'src/data/encounters/mill-lease-sequels.ts',
+    ],
+    readSites: [
+      'src/engine/factionPurse/income.ts',
+      'src/engine/factionNetwork.ts',
+      'src/engine/warAims/defence.ts',
+      'src/engine/realmProjection.ts',
+    ],
+  },
+  {
+    id: 'encounter-outcome-raises-settlement-building',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A scene can raise one of a town\'s buildings — the third raiser beside the settlement economy and undertakings. When `guild_hold_place` finds no building of its kind standing and the town has a free slot (`readBuildings` < `buildingSlotsOf`), it calls `raiseBuilding` and stamps the Place with `markMortalBuilding`, so it reads as adopted and stays a Place if the town later loses it. The settlement economy then counts it like any building: its food effect, its upkeep and its slot (THR-2077).',
+    ulTerms: ['Place', 'Prosperity'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['raiseBuilding', 'markMortalBuilding', 'readBuildings'],
+      module: 'src/engine/settlementEconomy/building.ts',
+    },
+    writeSites: ['src/engine/encounterAftermath.ts'],
+    readSites: [
+      'src/engine/settlementEconomy/building.ts',
+      'src/engine/phases/settlementEconomy.ts',
+    ],
+  },
+  {
     id: 'one-namer-shared-primitives',
     producerSystem: AMBITIONS,
     consumerSystem: NARRATIVE,
@@ -7144,7 +7185,7 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ECONOMY,
     consumerSystem: FACTIONS,
     intent:
-      'Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm\'s border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town\'s tax holder takes LANDHOLDER_TAX_RATE). It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction\'s wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened.',
+      'Every faction gets a purse the land fills: once a day the faction_purse phase pays whoever holds each controls edge — town tax to ONE tax holder per settlement, place yield, land rent over a realm\'s border hexes, tolls on lanes it controls, and guild work in towns where it keeps a hall or members (the town\'s tax holder takes LANDHOLDER_TAX_RATE). THR-2077: a held town building with a HELD_BUILDING_DUES row (the guild\'s mill) also pays its holder dues, keyed on the Place type and scaled by the town\'s prosperity, booked as place yield. It writes wealth (through applyTreasuryDelta, 0–FACTION_TREASURY_CAP), meansBand and purseLastDay on the faction node. Before THR-1931 no code added to a faction\'s wealth, so every faction sheet read Destitute and the quest, bounty, warehouse and counting-house gates never opened.',
     ulTerms: ['Means', 'Prosperity'],
     mechanism: {
       kind: 'node-prop',

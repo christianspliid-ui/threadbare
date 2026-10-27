@@ -27,6 +27,10 @@
  * | LANDHOLDER_TAX_RATE            | the town's tax holder's cut of guild work there                  |
  * | GUILD_PLACE_AFFINITY           | what each guild type earns from                                  |
  * | DEFINITION_FACTION_AFFINITY    | definition faction → the affinity row it earns under             |
+ * | MILL_FELLOWSHIP_AFFINITIES     | guilds that may hold a leased mill, in preference order          |
+ * | GUILD_HOLDING_INFLUENCE        | a guild holding's `controls` influence (tie-break only)          |
+ * | HELD_BUILDING_DUES             | per faction-held building per day at the prosperity pivot        |
+ * | HELD_BUILDING_SOURCE_WORDS     | the building noun in the purse sentence                          |
  * | ARMY_UPKEEP_PER_DAY            | daily upkeep by army size                                        |
  * | MEANS_BANDS_DAYS               | Means bands in days of upkeep in hand                            |
  * | MEANS_BANDS_ABSOLUTE           | Means bands for a faction that fields no army                    |
@@ -119,6 +123,19 @@ export const GUILD_PLACE_AFFINITY: Readonly<Record<string, GuildAffinity>> = {
   temples:   { resources: [], sublocationTypes: ['temple-quarter', 'beacon-shrine', 'shadow-shrine', 'shrine', 'temple'], lanes: false, townTaxShare: false },
   builders:  { resources: ['stone', 'timber'], sublocationTypes: [], lanes: false, townTaxShare: false },
 };
+
+// ── Guild-held town buildings (THR-2077) ──
+/**
+ * Which guilds may hold a leased mill, in preference order (affinity keys). Temples are
+ * out (the abbey is the landlord, not the leaseholder); thieves do not bid under the abbey.
+ */
+export const MILL_FELLOWSHIP_AFFINITIES: readonly string[] = ['artisans', 'builders', 'merchants', 'traders', 'miners', 'bankers'];
+/** The guild's `controls` edge influence — only breaks ties in `taxHolderOf`. */
+export const GUILD_HOLDING_INFLUENCE = 0.5;
+/** What a faction-held building pays its holder each purse cycle at the prosperity pivot, by building id. */
+export const HELD_BUILDING_DUES: Readonly<Record<string, number>> = { mill: 0.2 };
+/** The noun in the purse sentence "the mill at Ashford", by building id. */
+export const HELD_BUILDING_SOURCE_WORDS: Readonly<Record<string, string>> = { mill: 'mill' };
 
 /** Definition factions (`factionDefId`) → the affinity row they earn under. Unlisted defs earn no guild work. */
 export const DEFINITION_FACTION_AFFINITY: Readonly<Record<string, string>> = {

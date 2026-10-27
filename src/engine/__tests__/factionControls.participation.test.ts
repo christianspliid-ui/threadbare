@@ -90,6 +90,10 @@ const INVENTORY: Record<string, { disposition: Disposition; why: string }> = {
     disposition: 'reads-only',
     why: 'names cultures; the literal appears in a read of who holds a settlement',
   },
+  'encounterAftermath.ts': {
+    disposition: 'bumps',
+    why: "THR-2077: guild_hold_place writes a guild's controls edge onto a town building Place and sets mutationSummary.touchedStructure, which both resolution callers turn into touchStructure; a guild is never a realm (pickTownGuild), so no border moves",
+  },
   'essenceSourceWrite.ts': {
     disposition: 'not-faction-sourced',
     why: 'THR-1935: the consecrate_source body, extracted — writes controls from the given actor (the god via the op or the prayer phase), never a faction',

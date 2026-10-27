@@ -43,8 +43,10 @@ import {
   GUILD_PLACE_AFFINITY,
   DEFINITION_FACTION_AFFINITY,
   PURSE_EXCLUDED_FACTION_TYPES,
+  HELD_BUILDING_DUES,
   type GuildAffinity,
 } from '../../data/faction-purse-constants';
+import { buildingForPlaceType } from '../../data/settlement-buildings';
 
 // ─── Shapes ───────────────────────────────────────────────────────────────
 
@@ -145,7 +147,7 @@ export function affinityOf(faction: GraphNode): GuildAffinity | undefined {
 }
 
 /** The affinity key (row name) — for keying same-affinity splits. */
-function affinityKeyOf(faction: GraphNode): string | undefined {
+export function affinityKeyOf(faction: GraphNode): string | undefined {
   const guildType = faction.properties.guildType;
   if (typeof guildType === 'string' && GUILD_PLACE_AFFINITY[guildType]) return guildType;
   const defId = faction.properties.factionDefId;
@@ -239,6 +241,24 @@ export function placeYieldOf(place: GraphNode, rentFor?: (resourceId: string) =>
     sum += (q / 100) * rate * mult * (rentFor ? rentFor(rid) : 1);
   }
   return sum;
+}
+
+/**
+ * THR-2077 — the dues a faction-held town building pays (`HELD_BUILDING_DUES`), scaled by
+ * its town's prosperity as town tax is. Keyed on the Place type, not the building stamp,
+ * so a mill taken up with no free slot pays the same. A ruined or missing town pays 0.
+ */
+export function heldBuildingDuesOf(graph: WorldGraph, place: GraphNode): number {
+  if (!isPlaceNode(place)) return 0;
+  const typeId = place.properties.sublocationTypeId;
+  const def = typeof typeId === 'string' ? buildingForPlaceType(typeId) : undefined;
+  const dues = def ? HELD_BUILDING_DUES[def.id] : undefined;
+  if (!dues) return 0;
+  const town = graph.getNode(String(place.properties.parentLocationId ?? ''));
+  if (!isSettlement(town)) return 0;
+  const prosperity = num(town.properties.prosperity) ?? TOWN_TAX_PROSPERITY_PIVOT;
+  if (prosperity <= RUINED_SETTLEMENT_PROSPERITY_FLOOR) return 0;
+  return dues * prosperity / TOWN_TAX_PROSPERITY_PIVOT;
 }
 
 /** Land rent over a realm's border hexes. Unknown terrain rents nothing. */
@@ -354,7 +374,8 @@ export function computePurseIncome(
       day.taxHolderOf.push(placeId);
       add(holder, 'town', placeId, tax);
     }
-    const yieldAmount = placeYieldOf(place, scarcityRentFor(graph, holder, place)) * blessing;
+    // THR-2077 — a held town building (the guild's mill) pays its dues beside the yield.
+    const yieldAmount = (placeYieldOf(place, scarcityRentFor(graph, holder, place)) + heldBuildingDuesOf(graph, place)) * blessing;
     if (yieldAmount > 0) {
       day.income.placeYield += yieldAmount;
       add(holder, isSettlement(place) ? 'town' : 'place', placeId, yieldAmount);
