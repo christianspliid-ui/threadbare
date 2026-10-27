@@ -3482,6 +3482,32 @@ export const CONTRACTS: readonly Contract[] = [
     // artifact with a bearer has no `lies_at`; the take-up verb (THR-2031) removes it.
   },
   {
+    id: 'claim-item-takes-up-a-lying-relic',
+    producerSystem: AMBITIONS,
+    consumerSystem: ATTACHMENTS,
+    intent:
+      "A seeker or a wanderer can make taking up a relic left lying their work: when it completes the relic no longer lies at its place, it is theirs, and from then on it leans with its bearer — a past god's relic finds a new hand and the world says so.",
+    ulTerms: ['Echo', 'Undertaking', 'Dominion'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['claim_item', 'lies_at', 'possesses', 'takenFrom'],
+      module: 'src/data/undertaking-objects.ts',
+    },
+    writeSites: ['src/data/undertaking-objects.ts'],
+    readSites: ['src/engine/dominion.ts', 'src/engine/views/connections.ts', 'src/engine/undertakingProse.ts', 'src/engine/strategicActionCandidates.ts'],
+    // THR-2031. The third `possesses` writer (beside `seize_item` and `mintMasterwork`)
+    // and the first `lies_at` remover: `claim × Item` removes every `lies_at` and writes
+    // `possesses { via: 'claimed', takenFrom }`. Refused `ineligible:not_lying_at_a_place`
+    // at proposal, `already_held` at completion. Dominion's `dominionObjectScores` then
+    // reads the relic through its bearer; the Inspector's `who` row names the holder.
+    // `{place}` in the cell's prose reads `lies_at` during the work and `takenFrom` after.
+    verifiedLive: {
+      date: '2026-10-27',
+      evidence:
+        'THR-2031. `check:undertaking-live -- cell.control_claim.item --seed 42 --seed 99 --account sample` proved on both seeds (`claim_item:ok` on `echo_relic_echo_sample_relic`). A 240-tick sample-account run took the Hollow Bell on day 10.8 (seed 42) and day 4.6 (seed 99), under its own name. Non-vacuous by `src/engine/__tests__/claimItem.test.ts`: `readThrough` is `unborne` before and `bearer` after, the borne relic fails `already_held` with the edge count unchanged, and a loose item is refused `not_lying_at_a_place`.',
+    },
+  },
+  {
     id: 'awake-hungers-gate-remembrance',
     producerSystem: NARRATIVE,
     consumerSystem: PROGRESSION,

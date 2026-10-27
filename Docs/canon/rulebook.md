@@ -412,6 +412,8 @@ The two clocks pressure each other. Pushing the Mandate harder consumes essence 
 
 **The world remembers.** When an age ends, a new world wakes. It is not the same map: it is a response to the one before, carrying the marks your god left — its monuments, its line, its relics — and leaning a little toward the spheres it drew on. Your next god starts as strong as your first. What grows is the world's memory and the choices open to you. The harvest names what your age leaves behind — the places you held most surely, the mortals you raised highest, the relics your chosen carried — and *Wake in a new world* ends this one [IMPL — THR-1813 slice 1: `computeHarvest` picks the divine echoes by rule, `concludeRun` folds the run into the account record, and the next world is built on a derived seed with the record's echoes and tilt, in [src/engine/accountRecord.ts](../../src/engine/accountRecord.ts) and [src/engine/cycleEnd.ts](../../src/engine/cycleEnd.ts). Christian's ruling on THR-1773, 2026-10-11. The echoes standing on the new map are slice 2 (THR-1843); the choices that widen are slice 3 (THR-1844)].
 
+A relic lies where the last age left it until a mortal takes it up. Seekers and wanderers make that their work, and from then on the relic leans with its bearer [IMPL — THR-2031: the `claim × Item` undertaking (`claim_item` in [src/data/undertaking-objects.ts](../../src/data/undertaking-objects.ts)) removes the relic's `lies_at` edge and writes the claimant's `possesses`; `ambition_uncover_secrets` and `ambition_chase_the_wonder` walk the cell].
+
 The World-Soul updates. The Fundament (coefficient ledger) shifts. The Resonance (memory fragments) absorbs what was vivid [IMPL — THR-1381: up to three memories each age, captured when it ends — how it ended, the sphere the world leaned to most, the god's greatest mark — written into the account record, fading over seven ages; ten kept. Showing them in the next world is THR-1971]. The next run draws from the soul — thematic content, biased generation, a world subtly shaped by every prior cycle [DESIGN — World-Soul persistence; next-cycle seeding [DESIGN — partial wiring].
 
 ```
@@ -688,6 +690,8 @@ When the next quarterly architecture-assessment runs, the deferred items (4, 5) 
 ---
 
 ## Last-reviewed
+
+2026-10-27 by Claude Code (THR-2031 — a relic left lying can be taken up. §8 *The world remembers* gains the take-up line `[IMPL]`. The quick-reference card gained the same sentence.)
 
 2026-10-25 by Claude Code (THR-1844 — choices widen across runs. §1 gains the hunger, court and sealed-power widening and the *The world remembers* step `[IMPL]`. The quick-reference card gained one sentence.)
 
