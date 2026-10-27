@@ -576,6 +576,21 @@ function resolveSeedOpposition(
   return opposingGroupId;
 }
 
+/**
+ * THR-2046 — re-validate a seed's lane at spawn time: the id if it is still a live
+ * `trades_with` edge, else undefined (the outcome table then falls back to the town's
+ * lanes, as for an organic draw).
+ */
+export function resolveSeedLane(
+  seed: PendingEncounterSeed,
+  graph: WorldGraph,
+): string | undefined {
+  const id = seed.laneEdgeId;
+  if (!id) return undefined;
+  const edge = graph.getEdge(id);
+  return edge && edge.type === 'trades_with' ? id : undefined;
+}
+
 export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () => number, runtime?: SimulationRuntime): GameState {
   const seeds = state.pendingEncounterSeeds ?? [];
   if (seeds.length === 0) return state;
@@ -930,9 +945,14 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
       // what `findOpposingBand` reads to pair the contest deliberately instead of
       // rediscovering an opponent by colocation.
       const opposingGroupId = resolveSeedOpposition(seed, state.graph);
-      const action = opposingGroupId
-        ? { ...withCausation, opposingGroupId }
-        : withCausation;
+      // THR-2046: and the seed's road, re-validated the same way (a lane can be severed
+      // between planting the ambush and the ambush firing).
+      const laneEdgeId = resolveSeedLane(seed, state.graph);
+      const action = {
+        ...withCausation,
+        ...(opposingGroupId ? { opposingGroupId } : {}),
+        ...(laneEdgeId ? { laneEdgeId } : {}),
+      };
       nextActions = [...nextActions, action];
 
       const spawnEvent: TickEvent = {
@@ -955,6 +975,7 @@ export function evaluateEncounterSeeds(state: GameState, tick: number, rng: () =
         ticksBetweenPlantAndTrigger: ticksSincePlant,
         resolvedTemplateId,
         outcome: 'fired',
+        ...(laneEdgeId ? { laneEdgeId } : {}),
         summary: `Seed fired: "${seed.seedLabel}" → ${resolvedTemplateId} for ${seed.targetAgentId}`,
       });
 

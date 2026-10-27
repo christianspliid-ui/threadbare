@@ -16,7 +16,7 @@ import type {
 import { emitTrace } from './traceBuffer';
 import { applyMeansShift, defaultMeansReason, meansBandStepAmount, type MeansShiftResult } from './mortalMeans';
 import { settleDebt } from './debtSettle';
-import { applyWorldEconomyShift, resolveShiftSettlement } from './economyShift';
+import { applyWorldEconomyShiftDetailed } from './economyShift';
 import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
 import { readWealth } from './wealth';
 import { applyReputationWithDelta } from './reputation';
@@ -1892,14 +1892,18 @@ export function applyEncounterAftermathReaction(
               : (effect.targetLocationId === undefined
                 ? resolveSceneHere(state.graph, actorAgentId, 'location') ?? undefined
                 : undefined));
-          const world = applyWorldEconomyShift(state.graph, {
+          // THR-2046 — a lane write lands on the encounter's own road (its seed's lane), and
+          // a struck toll with no faction at the town falls back to the actor.
+          const world = applyWorldEconomyShiftDetailed(state.graph, {
             quantity: effect.quantity,
             amount: effect.amount,
             good: effect.good,
             settlementId,
             factionId: effect.targetFactionId,
+            laneEdgeId: action?.laneEdgeId,
+            actorId: actorAgentId,
           }, tick);
-          if (!world) {
+          if (typeof world === 'string') {
             emitTrace({
               tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
               encounterId, reactionId: reaction.id, effectIndex: i,
@@ -1907,10 +1911,11 @@ export function applyEncounterAftermathReaction(
               attemptedTargetId: (effect.quantity === 'purse' ? effect.targetFactionId : settlementId) ?? '',
               attemptedTargetKind: effect.quantity === 'purse' ? 'faction' : 'location',
               // The target can exist and still not move (a clamp, a full lane, no lane, an
-              // excluded purse): say which, so the trace answers 'why did it not move?'.
-              reason: (effect.quantity === 'purse'
-                ? !!(effect.targetFactionId && state.graph.getNode(effect.targetFactionId))
-                : !!resolveShiftSettlement(state.graph, settlementId)) ? 'no_move' : 'target_node_missing',
+              // excluded purse, a blockade, no toll holder): say which, so the trace
+              // answers 'why did it not move?'.
+              reason: effect.quantity === 'purse'
+                ? (effect.targetFactionId && state.graph.getNode(effect.targetFactionId) ? 'no_move' : 'target_node_missing')
+                : world,
               summary: `economy_shift[${i}] ${effect.quantity}: nothing moved (${(effect.quantity === 'purse' ? effect.targetFactionId : settlementId) ?? 'no target'})`,
             });
             break;
@@ -1923,6 +1928,8 @@ export function applyEncounterAftermathReaction(
             quantity: world.quantity,
             nodeId: world.nodeId,
             ...(world.goods ? { goods: world.goods } : {}),
+            ...(world.laneSource ? { laneSource: world.laneSource } : {}),
+            ...(world.holderId ? { holderId: world.holderId } : {}),
             sourceTemplateId: action?.templateId ?? null,
             band: options.outcomeBand ?? null,
             amount: world.amount,

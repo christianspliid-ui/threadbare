@@ -585,13 +585,18 @@ export type EncounterAftermathReactionEffect =
      * - `stock` — the quantities of `good` at that settlement (0–100 abundance): a
      *   resource id, `'staple'` (every staple, as the harvest verbs do) or `'deposit'`
      *   (the mined goods, `STOCK_DEPOSIT_GOODS`). Staple amounts come from `harvestStockAmount(band)`.
-     * - `lane_volume` — the busiest `trades_with` lane at that settlement (the anchor
+     * - `lane_volume` — the encounter's own lane ({@link UnifiedAction.laneEdgeId},
+     *   THR-2046), else the busiest `trades_with` lane at that settlement (the anchor
      *   lane, as a toll or a sabotage reads it). An encounter never severs a lane.
+     * - `lane_threat` (THR-2046) — `+1` marks that lane threatened (it clears itself after
+     *   `ENCOUNTER_THREAT_CLEAR_TICKS`), `-1` clears it; a blockaded lane is never cleared.
+     * - `lane_toll` (THR-2046) — `+1` strikes a toll on that lane (`controlledBy`) for the
+     *   faction holding the town, else the acting mortal; never strips a mortal holder.
      * - `purse` — a faction's treasury, through `applyTreasuryDelta`; `targetFactionId`
      *   required (`$realm`, `$cast:<key>`, a definition id or a node id).
      */
     readonly kind: 'economy_shift';
-    readonly quantity: 'means' | 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse';
+    readonly quantity: 'means' | 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse' | 'lane_threat' | 'lane_toll';
     /** Signed, on the quantity's own scale; use the named steps (`MEANS_STEP` …, `ECONOMY_SHIFT_STEPS`). */
     readonly amount: number;
     /** THR-1953 — the settlement a world quantity lands on. Accepts `$here` / `$target`. */
@@ -1582,6 +1587,13 @@ export interface PendingEncounterSeed {
    * detector pairs on. Absent on every ordinary (uncontested) seed.
    */
   readonly opposingGroupId?: string;
+  /**
+   * THR-2046 — the `trades_with` lane this seed is about. Written by the route-event
+   * phase on every lane event it plants; carried onto the spawned action as
+   * {@link UnifiedAction.laneEdgeId} (re-validated at spawn), so the outcome table
+   * writes this road and not the town's busiest.
+   */
+  readonly laneEdgeId?: string;
   /**
    * THR-1479 — the appointment this seed is. Present only on a placed, timed seed:
    * `eligibleAfterTick` is the due tick, `locationId` is a Location or Place node
@@ -3283,6 +3295,12 @@ export interface UnifiedAction {
    * Additive/optional: an action without it takes the ordinary uncontested path.
    */
   readonly opposingGroupId?: string;
+  /**
+   * THR-2046 — the `trades_with` lane this encounter happens on, carried from its seed.
+   * Every lane write in its outcome table (`lane_volume`, `lane_threat`, `lane_toll`)
+   * lands here; absent (an organic draw), the write falls back to the town's lanes.
+   */
+  readonly laneEdgeId?: string;
   /**
    * THR-731 — set only on a *synthesized* band counter-action, naming the action
    * it answers. Its presence is what marks a side as the defender of a group

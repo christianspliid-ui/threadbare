@@ -508,7 +508,7 @@ export const BRINK_RESCUE_TEMPLATE: UnifiedActionTemplate = withEncounterContrac
 
   actorAffinities: ['individual'],
   // THR-1515: `settlement` dropped — no location carries that subtype, so it gated nothing.
-  locationSubtypes: ['town', 'village', 'docks', 'mine'],
+  locationSubtypes: ['town', 'hamlet', 'docks', 'mine'],
   motivations: ['mercy_ruthlessness', 'sacrifice_survival'],
 
   narrativeTemplates: {

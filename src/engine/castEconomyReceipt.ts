@@ -50,6 +50,7 @@ import { meansChangeSentence, MEANS_CHANGE_TOOLTIP_ID } from './mortalMeans';
 import {
   ECONOMY_RECEIPTS_ENABLED,
   ECONOMY_RECEIPT_LINES,
+  ECONOMY_LANE_TOLL_LINE,
   ECONOMY_RECEIPT_NOUNS,
   ECONOMY_RECEIPT_UP_IS_GAIN,
   ECONOMY_STAPLE_PLENTY_LINES,
@@ -73,6 +74,12 @@ import { DEPOSIT_YIELD_CHANNEL } from '../data/terrain-yields';
 export interface EconomyLaneSnapshot {
   readonly threatened: boolean;
   readonly volume: number;
+  /** THR-2046 — who tolls the lane (`controlledBy`), when anyone does. */
+  readonly controlledBy?: string;
+  /** The toll holder's name, for the toll row's `{holder}` (read with the snapshot). */
+  readonly controlledByName?: string;
+  /** Whether the holder is a faction (its page) or a mortal (theirs), for the link. */
+  readonly controlledByKind?: 'faction' | 'agent';
 }
 
 export interface EconomyStapleSnapshot {
@@ -173,7 +180,15 @@ function readLanes(graph: WorldGraph, locationId: string): Map<string, EconomyLa
   ];
   for (const edge of edges) {
     const p = (edge.properties ?? {}) as Record<string, unknown>;
-    lanes.set(edge.id, { threatened: p.threatened === true, volume: finite(p.volume) ?? 1 });
+    const by = typeof p.controlledBy === 'string' && p.controlledBy.length > 0 ? p.controlledBy : undefined;
+    const holder = by ? graph.getNode(by) : undefined;
+    lanes.set(edge.id, {
+      threatened: p.threatened === true,
+      volume: finite(p.volume) ?? 1,
+      ...(by ? { controlledBy: by } : {}),
+      ...(holder?.name ? { controlledByName: holder.name } : {}),
+      ...(holder ? { controlledByKind: holder.properties.actorType === 'faction' ? 'faction' as const : 'agent' as const } : {}),
+    });
   }
   return lanes;
 }
@@ -252,19 +267,23 @@ function placeChange(
   line: EconomyReceiptLine,
   slots: Readonly<Record<string, string | undefined>>,
   key: string,
+  /** THR-2046 — another name in the line that routes to its page (the toll's holder). */
+  extraConcept?: { text: string; entityId: string; visualKind: 'faction' | 'agent' },
 ): EncounterAftermathChange | null {
   const detail = fillEconomyReceiptLine(line.detail, { town: town.name, ...slots });
   if (!detail) return null;
+  // Law 21: the town's name routes to its page, and so does any other name the line carries.
+  const concepts = [
+    ...(detail.includes(town.name) ? [{ text: town.name, entityId: town.id, visualKind: 'location' as const }] : []),
+    ...(extraConcept && detail.includes(extraConcept.text) ? [extraConcept] : []),
+  ];
   return {
     id: `${ctx.idStem}:target:${ctx.targetId}:economy:${quantity}:${key}`,
     kind: 'economy',
     title: line.title,
     detail,
     ...rowFields(quantity, direction),
-    // Law 21: the town's name routes to its page.
-    ...(detail.includes(town.name)
-      ? { concepts: [{ text: town.name, entityId: town.id, visualKind: 'location' as const }] }
-      : {}),
+    ...(concepts.length > 0 ? { concepts } : {}),
     actorId: ctx.targetId,
     actorName: ctx.targetName,
     subjectId: ctx.targetId,
@@ -354,15 +373,28 @@ function laneChanges(
   let threatened = false;
   let volumeBefore = 0;
   let volumeAfter = 0;
+  const tolled: EconomyLaneSnapshot[] = [];
   for (const [edgeId, now] of after.lanes) {
     const was = before.lanes.get(edgeId);
     if (!was) continue;
     if (was.threatened && !now.threatened) freed = true;
     if (!was.threatened && now.threatened) threatened = true;
+    // THR-2046 — a lane whose toll holder changed to someone (a struck toll).
+    if (now.controlledBy && now.controlledBy !== was.controlledBy) tolled.push(now);
     volumeBefore += was.volume;
     volumeAfter += now.volume;
   }
   const out: EncounterAftermathChange[] = [];
+  // One toll row per newly tolled lane: who collects now, in the trade lens's own verb.
+  for (const lane of tolled) {
+    if (!lane.controlledBy || !lane.controlledByName) continue;
+    const c = placeChange(
+      ctx, town, 'lane', 'up', true, ECONOMY_LANE_TOLL_LINE,
+      { holder: lane.controlledByName }, `toll:${lane.controlledBy}`,
+      { text: lane.controlledByName, entityId: lane.controlledBy, visualKind: lane.controlledByKind ?? 'agent' },
+    );
+    if (c) out.push(c);
+  }
   const crossedRow = (direction: EconomyReceiptDirection) => {
     const c = placeChange(ctx, town, 'lane', direction, true, ECONOMY_RECEIPT_LINES.lane[direction].crossed, {}, `crossed:${direction}`);
     if (c) out.push(c);

@@ -2091,11 +2091,15 @@ export interface FoundingPatronTrace extends TraceBase {
  */
 export interface WorldEconomyShiftTrace extends TraceBase {
   category: 'economy.world.shift';
-  quantity: 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse';
+  quantity: 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse' | 'lane_threat' | 'lane_toll';
   /** The settlement, the lane's edge id, or the faction the write landed on. */
   nodeId: string;
   /** The goods a stock write moved (resource ids); absent for the other quantities. */
   goods?: readonly string[];
+  /** THR-2046 — lane quantities only: the encounter's own lane (`seed`) or the town's (`fallback`). */
+  laneSource?: 'seed' | 'fallback';
+  /** THR-2046 — `lane_toll` only: the faction or mortal now holding the toll. */
+  holderId?: string;
   sourceTemplateId: string | null;
   band: string | null;
   /** The signed amount actually applied after the clamp (summed across goods for stock). */
@@ -4409,6 +4413,8 @@ export interface EncounterSeedTriggeredTrace extends TraceBase {
   outcome: 'fired' | 'discarded';
   /** 'target_agent_missing' | 'no_template_or_family' | 'place_never_reached' (THR-1929) */
   discardReason?: string;
+  /** THR-2046 — the lane the spawned action carries (a route-event seed's, re-validated). */
+  laneEdgeId?: string;
 }
 
 /** Trace: hidden mark placed on an agent by aftermath reaction */
@@ -5235,7 +5241,11 @@ export interface AftermathTargetInvalidTrace extends TraceBase {
     | 'no_counterparty'
     // THR-1953 — a world `economy_shift` whose target exists but nothing moved: a clamp at
     // 0 or 100, a lane already full, no lane at the town, a switched-off or excluded purse.
-    | 'no_move';
+    | 'no_move'
+    // THR-2046 — a `lane_threat` clear asked of a blockaded lane (only the blockade verb
+    // lifts a blockade), and a `lane_toll` with no faction and no mortal to hold it.
+    | 'blockaded'
+    | 'no_holder';
 }
 
 // ═══════════════════════════════════════════════════════════════════

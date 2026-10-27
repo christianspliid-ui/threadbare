@@ -1430,7 +1430,17 @@ export interface DebugBridge {
     lastTraded: number;
     threatened: boolean;
     blockadedBy: string | null;
+    /** THR-2046 — the faction or mortal tolling the lane, or null. */
+    controlledBy: string | null;
+    /** THR-2046 — the tick the lane's threat was marked (back-dated for an encounter's), or null. */
+    threatenedSinceTick: number | null;
   }>>;
+
+  /**
+   * THR-2046: the `trades_with` lane an action carries from its seed
+   * (`UnifiedAction.laneEdgeId`), or null — an organic draw, or no such action.
+   */
+  getActionLane: (actionId: string) => string | null;
 
   /**
    * THR-401: inspect a location's THR-401 properties (health, presence,

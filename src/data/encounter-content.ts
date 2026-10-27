@@ -5893,7 +5893,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     // THR-1953 (S3): the world half of the outcome research row (THR-1872).
     outcomeEffects: {
       failure: [{ kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.step }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }],
-      critical_failure: [{ kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.big }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.step, good: 'staple' }],
+      // THR-2046 — a harbor stripped bare leaves its sea road threatened.
+      critical_failure: [{ kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.big }, { kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.step, good: 'staple' }, { kind: 'economy_shift', quantity: 'lane_threat', amount: 1 }],
     },
     stakes: {
       goal: 'drive the pirate raiders off the quay',
@@ -6283,6 +6284,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.toll_bridge',
     // THR-1953 (S3): the world half of the outcome research row (THR-1872).
     outcomeEffects: {
+      // THR-2046 — a toll the road calls fair is a toll on the road.
+      critical_success: [{ kind: 'economy_shift', quantity: 'lane_toll', amount: 1 }],
+      success: [{ kind: 'economy_shift', quantity: 'lane_toll', amount: 1 }],
       failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }],
     },
@@ -6632,6 +6636,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     outcomeEffects: {
       critical_success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
       success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
+      // THR-2046 — a caravan lost to the ambush leaves its road threatened.
+      failure: [{ kind: 'economy_shift', quantity: 'lane_threat', amount: 1 }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'lane_threat', amount: 1 }, { kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
     },
     stakes: {
       goal: 'bring the caravan through the treeline ambush',

@@ -598,7 +598,7 @@ export const LOREKEEPERS_COVENANT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] =
     reach: 'eye',
     crudType: 'read',
     scale: 'local',
-    locationSubtypes: ['town', 'city', 'capital', 'village'],
+    locationSubtypes: ['town', 'city', 'capital', 'hamlet'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.explore,

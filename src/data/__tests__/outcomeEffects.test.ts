@@ -276,4 +276,43 @@ describe('THR-1953 — the world rows', () => {
     }
     expect(bad).toEqual([]);
   });
+
+  // THR-2046 — a toll is struck, never unstruck, by an encounter: a negative `lane_toll`
+  // would be a silent no-op in `economyShift.ts`, so it is a content error here.
+  it('only ever strikes a toll (every lane_toll amount is positive)', () => {
+    const bad: string[] = [];
+    for (const t of templates) {
+      for (const { where, table } of tablesOf(t)) {
+        for (const [band, effects] of Object.entries(table)) {
+          for (const e of worldShifts(effects)) {
+            if (e.quantity === 'lane_toll' && !(e.amount > 0)) bad.push(`${where} ${band}: lane_toll ${e.amount}`);
+          }
+        }
+      }
+    }
+    expect(bad).toEqual([]);
+  });
+
+  // THR-2046 — `village` is not a `LocationSubtype`; a template gating on it never reaches a
+  // hamlet (the lane events did, research defect 6).
+  it('gates on real settlement subtypes only (no village)', () => {
+    const bad = templates
+      .filter(t => (t.locationSubtypes as readonly string[] | undefined)?.includes('village'))
+      .map(t => t.id);
+    expect(bad).toEqual([]);
+  });
+
+  it('writes the lane-event rows the THR-2046 plan names', () => {
+    const byId = new Map(templates.map(t => [t.id, t]));
+    const quantities = (id: string, band: string) =>
+      worldShifts((byId.get(id)?.outcomeEffects as Record<string, readonly EncounterAftermathReactionEffect[]> | undefined)?.[band])
+        .map(e => `${e.quantity}${e.amount > 0 ? '+' : '-'}`);
+    expect(quantities('encounter_route_ambush', 'success')).toContain('lane_threat-');
+    expect(quantities('encounter_route_ambush', 'critical_failure')).toEqual(['lane_volume-', 'prosperity-']);
+    expect(quantities('encounter_toll_dispute', 'success')).toEqual(['lane_toll+']);
+    expect(quantities('encounter.toll_bridge', 'success')).toEqual(['lane_toll+']);
+    expect(quantities('encounter.trade_caravan_escort', 'failure')).toEqual(['lane_threat+']);
+    expect(quantities('encounter.pirate_raid', 'critical_failure')).toContain('lane_threat+');
+    expect(quantities('encounter.town.overdue_caravan', 'critical_failure')).toContain('lane_threat+');
+  });
 });

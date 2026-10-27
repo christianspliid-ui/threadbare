@@ -84,8 +84,11 @@ function num(props: Record<string, unknown>, key: string): number | null {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
 }
 
-/** Whether a node is a mortal holder — an actor, and not a faction wearing the type. */
-function isMortalHolder(n: GraphNode | undefined): n is GraphNode {
+/**
+ * Whether a node is a mortal holder — an actor, and not a faction wearing the type.
+ * Exported for THR-2046: an encounter's struck toll falls back to the acting mortal.
+ */
+export function isMortalHolder(n: GraphNode | undefined): n is GraphNode {
   return n !== undefined && n.type === 'actor' && n.properties.actorType !== 'faction';
 }
 

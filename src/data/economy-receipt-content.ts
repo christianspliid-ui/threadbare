@@ -107,6 +107,17 @@ export const ECONOMY_STAPLE_PLENTY_LINES: Record<EconomyReceiptDirection, Econom
   down: { title: 'Stores run short', detail: '{town} no longer has {good} to spare.' },
 };
 
+/**
+ * THR-2046 — a road's toll was struck: who collects now. The trade lens says
+ * "Tolled by {holder}." (`regional-monopoly-words.ts`); the row uses the same verb and
+ * holder and adds the town, because an aftermath row has no road in view. `{holder}` is
+ * the faction or mortal now on `controlledBy`, linked to their page (Law 21).
+ */
+export const ECONOMY_LANE_TOLL_LINE: EconomyReceiptLine = {
+  title: 'A toll is set',
+  detail: 'The road from {town} is tolled by {holder}.',
+};
+
 /** Whether moving `up` is good for the place (sets polarity, category and direction). */
 export const ECONOMY_RECEIPT_UP_IS_GAIN: Record<EconomyReceiptQuantity, boolean> = {
   prosperity: true,
