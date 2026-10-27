@@ -1,0 +1,13 @@
+date	journeyVersion	deployedCommit	moment	status	words	interactive	smallTargets	offscreenControls	dialogs	coachMarks	fontSizes	consoleErrors
+2026-10-27	1	b1b18055	01-front-door	reached	21	5	0	0	0	0	3	0
+2026-10-27	1	b1b18055	02-first-thread	reached	120	3	0	0	1	0	5	0
+2026-10-27	1	b1b18055	03-opening	reached	222	45	2	0	0	2	6	0
+2026-10-27	1	b1b18055	04-first-encounter	reached	267	38	0	0	1	2	5	0
+2026-10-27	1	b1b18055	05-first-page	reached	247	51	0	0	0	2	8	0
+2026-10-27	1	b1b18055	06-your-page	reached	285	49	0	0	0	2	6	0
+2026-10-27	1	b1b18055	07-read-the-threads	reached	47	6	0	0	1	0	3	0
+2026-10-27	1	b1b18055	08-doom	reached	81	1	0	0	1	0	2	0
+2026-10-27	1	b1b18055	09-search	reached	225	45	2	0	0	2	6	0
+2026-10-27	1	b1b18055	10-mid-game	reached	76	2	0	0	1	0	4	0
+2026-10-27	1	b1b18055	11-mid-game-notables	not-reached	90	2	0	0	1	0	4	0
+2026-10-27	1	b1b18055	12-mid-game-chapter	reached	90	2	0	0	1	0	4	0

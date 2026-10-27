@@ -1,0 +1,239 @@
+{
+  "date": "2026-10-27",
+  "base": "https://threadbearer.co/",
+  "journeyVersion": 1,
+  "deployedCommit": "b1b18055d406fc61601ab0b0188d5cd73644cf91",
+  "capturedAt": "2026-10-27T10:43:06.393Z",
+  "moments": [
+    {
+      "id": "01-front-door",
+      "label": "Front door",
+      "what": "The title screen a new player lands on.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 21,
+        "interactive": 5,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 0,
+        "coachMarks": 0,
+        "fontSizes": 3,
+        "consoleErrors": 0
+      },
+      "ms": 6765
+    },
+    {
+      "id": "02-first-thread",
+      "label": "The First Thread",
+      "what": "The first-run beat that hands the player their first two cards (real new-player path).",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 120,
+        "interactive": 3,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 1,
+        "coachMarks": 0,
+        "fontSizes": 5,
+        "consoleErrors": 0
+      },
+      "ms": 2977
+    },
+    {
+      "id": "03-opening",
+      "label": "Opening table",
+      "what": "The main screen at tick 0 with The First bonded, clock paused.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 222,
+        "interactive": 45,
+        "smallTargets": 2,
+        "offscreenControls": 0,
+        "dialogs": 0,
+        "coachMarks": 2,
+        "fontSizes": 6,
+        "consoleErrors": 0
+      },
+      "ms": 5351
+    },
+    {
+      "id": "04-first-encounter",
+      "label": "First encounter",
+      "what": "The first chapter that opens once the clock runs.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 267,
+        "interactive": 38,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 1,
+        "coachMarks": 2,
+        "fontSizes": 5,
+        "consoleErrors": 0
+      },
+      "ms": 8753
+    },
+    {
+      "id": "05-first-page",
+      "label": "The First's page",
+      "what": "The page of the player's first bonded mortal, opened from the left rail.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 247,
+        "interactive": 51,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 0,
+        "coachMarks": 2,
+        "fontSizes": 8,
+        "consoleErrors": 0
+      },
+      "ms": 5359
+    },
+    {
+      "id": "06-your-page",
+      "label": "Your page",
+      "what": "The player's own god page.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 285,
+        "interactive": 49,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 0,
+        "coachMarks": 2,
+        "fontSizes": 6,
+        "consoleErrors": 0
+      },
+      "ms": 5280
+    },
+    {
+      "id": "07-read-the-threads",
+      "label": "Read the Threads",
+      "what": "The story-so-far reader from the top bar.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 47,
+        "interactive": 6,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 1,
+        "coachMarks": 0,
+        "fontSizes": 3,
+        "consoleErrors": 0
+      },
+      "ms": 5225
+    },
+    {
+      "id": "08-doom",
+      "label": "Doom clock",
+      "what": "The doom clock detail from the top bar.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 81,
+        "interactive": 1,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 1,
+        "coachMarks": 0,
+        "fontSizes": 2,
+        "consoleErrors": 0
+      },
+      "ms": 5235
+    },
+    {
+      "id": "09-search",
+      "label": "Search",
+      "what": "The Ctrl+K finder with a query typed.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 225,
+        "interactive": 45,
+        "smallTargets": 2,
+        "offscreenControls": 0,
+        "dialogs": 0,
+        "coachMarks": 2,
+        "fontSizes": 6,
+        "consoleErrors": 0
+      },
+      "ms": 5812
+    },
+    {
+      "id": "10-mid-game",
+      "label": "Mid-game table",
+      "what": "The main screen a few seasons in (warm start, 300 ticks).",
+      "status": "reached",
+      "marker": "[warm-start] done {\"requested\":300,\"advanced\":41,\"stoppedEarly\":\"phase\",\"ms\":40528,\"firstModeRestored\":\"pause\",\"momentsSettled\":0,\"pendingInterruptsAtArrival\":0,\"openingSettled\":[\"beat.spine.opening\",\"beat.spine.the_seat\",\"beat.spine.thing_left_behind\",\"beat.spine.the_first_word\"],\"openingSettleFailed\":null,\"openInterruptsAtArrival\":[\"AgeTwilightScreen\"]}",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 76,
+        "interactive": 2,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 1,
+        "coachMarks": 0,
+        "fontSizes": 4,
+        "consoleErrors": 0
+      },
+      "ms": 45461
+    },
+    {
+      "id": "11-mid-game-notables",
+      "label": "Mid-game notables",
+      "what": "The notables list a few seasons in.",
+      "status": "not-reached",
+      "error": "locator.click: Timeout 15000ms exceeded.",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 90,
+        "interactive": 2,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 1,
+        "coachMarks": 0,
+        "fontSizes": 4,
+        "consoleErrors": 0
+      },
+      "ms": 16052
+    },
+    {
+      "id": "12-mid-game-chapter",
+      "label": "Mid-game chapter",
+      "what": "A chapter that opens a few seasons in.",
+      "status": "reached",
+      "metrics": {
+        "viewport": "1920x1080",
+        "pageScrolls": false,
+        "words": 90,
+        "interactive": 2,
+        "smallTargets": 0,
+        "offscreenControls": 0,
+        "dialogs": 1,
+        "coachMarks": 0,
+        "fontSizes": 4,
+        "consoleErrors": 0
+      },
+      "ms": 2529
+    }
+  ]
+}
