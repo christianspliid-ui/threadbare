@@ -249,6 +249,9 @@ export function buildingNoun(def: SettlementBuildingDef): string {
  */
 export function markMortalBuilding(node: GraphNode, def: SettlementBuildingDef, tick: number): void {
   markAdopted(node, def, tick);
+  // THR-2077 — a Place `raiseBuilding` minted carries the economy's stamp; drop it so the
+  // Place reads as adopted and survives the building's loss (the guild-raised mill).
+  delete node.properties[BUILT_BY_PROP];
 }
 
 export interface RaiseResult {

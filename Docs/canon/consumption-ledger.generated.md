@@ -24,15 +24,15 @@ Settled at the attended sitting of 2026-08-17 ([THR-1161](https://linear.app/thr
 
 | Class | Effect kinds | GraphOps | Total |
 |---|---:|---:|---:|
-| ✅ acted-on | 47 | 47 | 94 |
+| ✅ acted-on | 48 | 47 | 95 |
 | 📒 bookkeeping | 1 | 0 | 1 |
 | 🌱 dormant-hook | 1 | 1 | 2 |
 | 🕳️ write-without-consumer | 0 | 0 | 0 |
-| **Total** | **49** | **48** | **97** |
+| **Total** | **50** | **48** | **98** |
 
 ## Aftermath effect kinds
 
-Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 49 members.
+Membership derived from `export type EncounterAftermathReactionEffect` in `src/types/unifiedAction.ts` — 50 members.
 
 | Member | Class | What it writes | Who reads it, and what they do |
 |---|---|---|---|
@@ -42,6 +42,7 @@ Membership derived from `export type EncounterAftermathReactionEffect` in `src/t
 | `encounter_seed` | 🌱 dormant-hook | a seed record in `pendingEncounterSeeds` | `src/engine/encounterSeeding.ts` → `evaluateEncounterSeeds` (spawns) |
 | `economy_shift` | ✅ acted-on | `wealth` and `lastWealthReason` on the target mortal, through `bankWealth` (THR-1936) | `src/engine/phaseEconomicTraits.ts` → `readWealth` (acts)<br/>`src/engine/decisionBoard.ts` → `readWealth` (acts) |
 | `hold_place` | ✅ acted-on | a Place (`createSublocation`) and the actor's `owns` edge plus its face (`grantHolding`); a held-elsewhere Place pays `wealth` instead (THR-2048) | `src/engine/holdingIncome.ts` → `collectHoldingPayments` (acts)<br/>`src/engine/resolutionModifiers.ts` → `ownsThisPlace` (acts) |
+| `guild_hold_place` | ✅ acted-on | a faction → Place `controls` edge (`role: 'guild_holding'`) from the town's guild (`pickTownGuild`), raising the building Place (`raiseBuilding` + `markMortalBuilding`) when none stands and a slot is free (THR-2077) | `src/engine/factionPurse/income.ts` → `heldBuildingDuesOf` (acts)<br/>`src/engine/factionPurse/purseSentences.ts` → `heldBuildingWord` (acts) |
 | `quintessence_shift` | ✅ acted-on | `quintessence` on the target actor | `src/engine/brokenState.ts` → `isBrokenMortal` (acts) |
 | `hidden_mark` | ✅ acted-on | a mark appended to `state.hiddenMarks` | `src/engine/encounterScoring.ts` → `hiddenMarks` (acts)<br/>`src/engine/effects/effectPredicates.ts` → `hiddenMarks` (acts) |
 | `intelligence` | ✅ acted-on | a record appended to `state.intelligenceRecords` | `src/engine/encounterScoring.ts` → `intelligenceRecords` (acts) |

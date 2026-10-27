@@ -90,7 +90,7 @@ interface HeldSeed {
  * (every faction is an `actor`) and not the name. A guild, order, cult or monster
  * faction holds towns too and must never be projected as a nation.
  */
-function isRealmNode(properties: Record<string, unknown>): boolean {
+export function isRealmNode(properties: Record<string, unknown>): boolean {
   return properties.actorType === 'faction' && properties.factionClass === REALM_FACTION_CLASS;
 }
 

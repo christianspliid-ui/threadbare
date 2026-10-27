@@ -183,6 +183,13 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
       acts('src/engine/resolutionModifiers.ts', 'ownsThisPlace'),
     ],
   },
+  guild_hold_place: {
+    writes: "a faction → Place `controls` edge (`role: 'guild_holding'`) from the town's guild (`pickTownGuild`), raising the building Place (`raiseBuilding` + `markMortalBuilding`) when none stands and a slot is free (THR-2077)",
+    consumers: [
+      acts('src/engine/factionPurse/income.ts', 'heldBuildingDuesOf'),
+      acts('src/engine/factionPurse/purseSentences.ts', 'heldBuildingWord'),
+    ],
+  },
   quintessence_shift: {
     writes: "`quintessence` on the target actor",
     consumers: [acts('src/engine/brokenState.ts', 'isBrokenMortal')],

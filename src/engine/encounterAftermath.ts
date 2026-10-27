@@ -186,6 +186,14 @@ import {
   SENTINEL_AREA,
 } from './sceneSentinels';
 import type { SceneSentinelField, SceneSentinelKind } from './sceneSentinels';
+// THR-2077 — the town's guild holds a town building (`guild_hold_place`).
+import { pickTownGuild } from './factionPurse/townGuild';
+import { isSettlement as isPurseSettlement } from './factionPurse/income';
+import { FACTION_PURSE_ENABLED, GUILD_HOLDING_INFLUENCE } from '../data/faction-purse-constants';
+import { getSettlementBuilding } from '../data/settlement-buildings';
+import {
+  IS_BUILDING_PROP, buildingSlotsOf, markMortalBuilding, raiseBuilding, readBuildings,
+} from './settlementEconomy/building';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -2105,6 +2113,102 @@ export function applyEncounterAftermathReaction(
         emitTrace({
           ...heldBase, result: 'taken_up', placeId: standing.id,
           summary: `hold_place: ${holderNode.name} took up ${standing.name} at ${siteId}`,
+        });
+        break;
+      }
+      case 'guild_hold_place': {
+        // THR-2077 — the fellowship a scene names is the town's own guild: it holds the
+        // building afterwards and the purse pays it dues. Never takes a holding away,
+        // never invents a faction, never raises a second building of the kind.
+        if (!FACTION_PURSE_ENABLED) break;
+        const siteId = effect.targetLocationId && !effect.targetLocationId.startsWith('$')
+          ? effect.targetLocationId
+          : resolveSceneHere(state.graph, actorAgentId, 'location');
+        const site = siteId ? state.graph.getNode(siteId) : undefined;
+        const def = getSettlementBuilding(effect.buildingId);
+        if (!siteId || !site || !isPurseSettlement(site) || !def) {
+          const reason = !siteId || !site ? 'target_node_missing' : !def ? 'unknown_building' : 'not_a_settlement';
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'guild_hold_place', attemptedTargetId: siteId ?? '',
+            attemptedTargetKind: 'location',
+            reason,
+            summary: `guild_hold_place[${i}] skipped: ${reason} (${siteId ?? 'no site'})`,
+          });
+          break;
+        }
+        const guildBase = {
+          tick, category: 'encounter.place.guild_held' as const, agentId: actorAgentId,
+          sourceTemplateId: action?.templateId ?? null,
+          siteId, buildingId: def.id,
+        };
+        const pick = pickTownGuild(state.graph, siteId, effect.affinities);
+        if (!pick) {
+          emitTrace({
+            ...guildBase, result: 'no_fellowship', guildId: null, affinity: null, placeId: null,
+            summary: `guild_hold_place: no guild present at ${siteId}; nobody holds the ${def.id}`,
+          });
+          break;
+        }
+        const guildRef = { ...guildBase, guildId: pick.guildId, affinity: pick.affinity };
+        const holdIt = (placeId: string): void => {
+          state.graph.addEdge({
+            id: `controls_${pick.guildId}_${placeId}_${tick}`,
+            type: 'controls', source: pick.guildId, target: placeId,
+            properties: { role: 'guild_holding', influence: GUILD_HOLDING_INFLUENCE, establishedTick: tick, via: 'encounter' },
+          });
+          // `fingerprintFactionControls` keys on faction `controls` edges.
+          mutationSummary.touchedStructure = true;
+        };
+        // Lowest id first, so the pick is deterministic with no draw (NFP #3).
+        const standing = state.graph.getOutgoingEdges(siteId, 'contains')
+          .map(e => state.graph.getNode(e.target))
+          .filter((n): n is NonNullable<typeof n> => !!n && n.properties.sublocationTypeId === def.sublocationTypeId)
+          .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
+        const slotFree = readBuildings(state.graph, siteId).length < buildingSlotsOf(site);
+
+        if (!standing) {
+          const raised = slotFree ? raiseBuilding(state.graph, site, def, tick) : null;
+          const placeNode = raised ? state.graph.getNode(raised.placeId) : undefined;
+          if (!raised || !placeNode) {
+            emitTrace({
+              ...guildRef, result: 'no_room', placeId: null,
+              summary: `guild_hold_place: no free building slot at ${siteId}; no ${def.id} raised`,
+            });
+            break;
+          }
+          // A guild-raised building reads as adopted: if the town later loses it, the Place stays.
+          markMortalBuilding(placeNode, def, tick);
+          holdIt(placeNode.id);
+          emitTrace({
+            ...guildRef, result: 'raised', placeId: placeNode.id,
+            summary: `guild_hold_place: ${pick.guildId} raised and holds ${placeNode.name}`,
+          });
+          break;
+        }
+
+        const holders = state.graph.getIncomingEdges(standing.id, 'controls')
+          .filter(e => state.graph.getNode(e.source)?.properties.actorType === 'faction');
+        if (holders.some(e => e.source === pick.guildId)) {
+          emitTrace({
+            ...guildRef, result: 'already_theirs', placeId: standing.id,
+            summary: `guild_hold_place: ${pick.guildId} already holds ${standing.id}`,
+          });
+          break;
+        }
+        if (holders.length > 0) {
+          emitTrace({
+            ...guildRef, result: 'held_elsewhere', placeId: standing.id, heldBy: holders[0].source,
+            summary: `guild_hold_place: ${standing.id} at ${siteId} is held by ${holders[0].source}`,
+          });
+          break;
+        }
+        if (standing.properties[IS_BUILDING_PROP] !== true && slotFree) markMortalBuilding(standing, def, tick);
+        holdIt(standing.id);
+        emitTrace({
+          ...guildRef, result: 'taken_up', placeId: standing.id,
+          summary: `guild_hold_place: ${pick.guildId} took up ${standing.name} at ${siteId}`,
         });
         break;
       }
