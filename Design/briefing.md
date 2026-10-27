@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 23:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 00:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,7 +19,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 ## Decided for you
 
 - [The world's own drift fills the Mandate with no god](https://linear.app/threadbare/issue/THR-2081): **only growth the god causes counts toward the Mandate.** The world keeps founding places and filling with newborn mortals, and every new one adds to every sphere's total, so the Mandate filled with nobody playing. Two of four test worlds ended their age that way. From now on, Mandate progress counts what the god's own hand puts into its spheres: deeds, holds, claims, answered prayers. Rivals and doom wearing those spheres down still pulls it back, so it stays a contest. *Veto:* "the world drifting toward my spheres is my doing" or "a mortal acting on my nudge should count". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27d.md)*
-- [The seeded world ends after 41 ticks](https://linear.app/threadbare/issue/THR-2080) — **this is a bug, not Mandate pacing.** The Mandate measures how much the god's spheres have grown since the world began. It took that starting point before the world's first tick, and tick 1 builds about 69 new places (caravan rests, mines, smugglers' dens). Their arrival counted as growth: more than half the Mandate filled on tick 2, and the age ended in "fulfilled" by tick 58–77 with the god doing nothing. The fix takes the starting point once the world has settled. In the measurement, the seeded world then plays on past tick 600. *Veto:* "growth from the world's own new buildings should count toward the Mandate". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27c.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -29,11 +28,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy but thin: 2 ready, 1 being built.** The bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) merged via [PR #2637](https://github.com/christianspliid-ui/threadbare/pull/2637) and is live. The builder is now on the mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)); its work is pushed to [the branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2077-mill-guild), last commit 23:42, with no pull request yet. Still on hold: the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071), until 23:45 UTC) and Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062), on hold until Wednesday 03:01 UTC).
+**Starved: 1 ready, 1 being built.** The mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)) merged via [PR #2638](https://github.com/christianspliid-ui/threadbare/pull/2638) and is live. The builder claimed the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:53 UTC, as soon as its hold lifted, and is starting on it. The one ready ticket, Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)), is on hold until Wednesday 03:01 UTC, so the builder will idle in between. That is by design, not a stall.
 
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). Agents can un-park it.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (a431183e), CI and the scheduled background jobs pass, no pull request is waiting to merge, the scheduled lanes and the worktree reaper (last run 23:40) are healthy, and the engine runs at 175 ms/tick, 3% over the 7-day median.
+All green. The live site serves the latest main (1dd9143f), CI and the scheduled background jobs pass, no pull request is waiting to merge, the scheduled lanes and the worktree reaper (last run 00:53) are healthy, and the engine runs at 186 ms/tick, 9% over the 7-day median.
