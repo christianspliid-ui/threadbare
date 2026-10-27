@@ -119,11 +119,12 @@ describe('FirstUseCaption', () => {
         <>
           <div data-first-use-caption-ground="" data-testid="map" />
           <div data-testid="inspector" />
-          <div style={{ position: 'relative' }}><FirstUseCaption id="doom" floating /></div>
+          <div data-testid="topbar"><div style={{ position: 'relative' }}><FirstUseCaption id="doom" floating /></div></div>
         </>,
       );
+      // The top bar the caption hangs from is skipped; what lies past it decides.
       let under: Element = getByTestId('inspector');
-      doc.elementsFromPoint = () => [under];
+      doc.elementsFromPoint = () => [getByTestId('topbar'), under];
       act(() => { vi.advanceTimersByTime(500); });
       expect(screen.queryByTestId('first-use-caption-doom')).toBeNull();
       // Still visible in the store: hidden, not dismissed.
@@ -133,9 +134,9 @@ describe('FirstUseCaption', () => {
       act(() => { vi.advanceTimersByTime(500); });
       expect(screen.getByTestId('first-use-caption-doom')).toBeTruthy();
 
-      expect(isOverCaptionGround({ top: 0, left: 0 })).toBe(true);
+      expect(isOverCaptionGround({ top: 0, left: 0 }, getByTestId('topbar').firstElementChild)).toBe(true);
       under = getByTestId('inspector');
-      expect(isOverCaptionGround({ top: 0, left: 0 })).toBe(false);
+      expect(isOverCaptionGround({ top: 0, left: 0 }, getByTestId('topbar').firstElementChild)).toBe(false);
     } finally {
       doc.elementsFromPoint = original;
       vi.useRealTimers();

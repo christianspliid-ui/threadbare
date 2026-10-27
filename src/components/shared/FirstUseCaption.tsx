@@ -64,7 +64,7 @@ function floatingSpot(anchor: { top: number; right: number }): FloatingSpot {
  * Fail-soft: without `elementsFromPoint` (jsdom) or with no marked ground on the
  * page, the caption shows as before.
  */
-export function isOverCaptionGround(spot: FloatingSpot): boolean {
+export function isOverCaptionGround(spot: FloatingSpot, anchor?: Element | null): boolean {
   if (typeof document === 'undefined' || typeof document.elementsFromPoint !== 'function') return true;
   if (!document.querySelector(`[${FIRST_USE_CAPTION_GROUND_ATTR}]`)) return true;
   const right = spot.left + FLOATING_WIDTH_PX - 1;
@@ -73,8 +73,10 @@ export function isOverCaptionGround(spot: FloatingSpot): boolean {
     [spot.left + 1, spot.top + 1], [right, spot.top + 1], [spot.left + 1, bottom], [right, bottom],
   ];
   return probes.every(([x, y]) => {
-    // The caption's own line is not what lies under it.
-    const hit = document.elementsFromPoint(x, y).find(el => !el.closest('[data-first-use-caption]'));
+    // The caption's own line is not what lies under it, and neither is the bar
+    // it hangs from: its top edge overlaps the anchor's row by design.
+    const hit = document.elementsFromPoint(x, y).find(el =>
+      !el.closest('[data-first-use-caption]') && !(anchor && el.contains(anchor)));
     return !!hit && !!hit.closest(`[${FIRST_USE_CAPTION_GROUND_ATTR}]`);
   });
 }
@@ -90,7 +92,7 @@ function useAnchorRect(active: boolean): [RefObject<HTMLSpanElement | null>, { t
       const r = ref.current?.getBoundingClientRect();
       if (r) {
         setRect(prev => (prev && prev.top === r.top && prev.right === r.right ? prev : { top: r.top, right: r.right }));
-        setOverGround(isOverCaptionGround(floatingSpot(r)));
+        setOverGround(isOverCaptionGround(floatingSpot(r), ref.current));
       }
     };
     read();
