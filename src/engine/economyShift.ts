@@ -26,8 +26,9 @@
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import { resolveToParentLocation, isLocationNode } from './sublocationShape';
-import { readResources } from './resourceEconomy';
-import { getResourceClass } from '../data/resource-classes';
+import { readResources, computeLocationDemand } from './resourceEconomy';
+import { getSublocationsAt } from './graphQueries';
+import { getResourceClass, STOCK_SCARCE_THRESHOLD } from '../data/resource-classes';
 import { readTradeRouteProps, TRADE_ROUTE_DEFAULT_TAX_RATE, TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
 import { busiestRouteAt } from './tradeRouteOps';
 import { applyTreasuryDelta, readWealth } from './wealth';
@@ -103,6 +104,16 @@ function goodsFor(resources: Record<string, ResourceInstance>, good: string, amo
   return resources[good] || amount > 0 ? [good] : [];
 }
 
+/** The least whole quantity of `id` whose balance reads above scarce at this settlement's demand. */
+function arrivalFloor(graph: WorldGraph, settlement: GraphNode, id: string): number {
+  const demand = computeLocationDemand(
+    settlement.properties as Record<string, unknown>,
+    getSublocationsAt(graph, settlement.id).length,
+  );
+  const need = (demand * getResourceClass(id).scarcitySensitivity + STOCK_SCARCE_THRESHOLD) * 100;
+  return Math.max(0, Math.floor(need) + 1);
+}
+
 function shiftStock(
   graph: WorldGraph,
   settlement: GraphNode,
@@ -118,7 +129,10 @@ function shiftStock(
   for (const id of goodsFor(resources, good, amount)) {
     const current = resources[id];
     const q0 = finite(current?.quantity) ?? 0;
-    const q1 = Math.max(0, Math.min(100, q0 + amount));
+    // A good brought into a town that lacks it arrives as a working stock: never below the
+    // quantity that reads adequate at this town's demand, so a delivery never reads as a shortage.
+    const floor = current ? 0 : arrivalFloor(graph, settlement, id);
+    const q1 = Math.max(0, Math.min(100, Math.max(q0 + amount, floor)));
     if (q1 === q0) continue;
     next[id] = current
       ? { ...current, quantity: q1 }

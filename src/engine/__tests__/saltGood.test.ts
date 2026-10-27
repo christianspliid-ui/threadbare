@@ -15,7 +15,9 @@ import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
 import { applyWorldEconomyShift } from '../economyShift';
 import { buildBearingIndex } from '../regionalMonopoly';
 import { WorldGraph } from '../graph';
+import { computeLocationDemand, computeResourceBalance, tierFromBalance } from '../resourceEconomy';
 import type { OutcomeEffectsTable } from '../../types/unifiedAction';
+import type { ResourceInstance } from '../../types/resource';
 
 type OutcomeEffect = NonNullable<OutcomeEffectsTable[keyof OutcomeEffectsTable]>[number];
 
@@ -59,5 +61,23 @@ describe('salt (THR-2069)', () => {
     const salt = (g.getNode('hamlet')!.properties.resources as Record<string, { quantity: number }>).salt;
     expect(salt.quantity).toBe(5);
     expect(buildBearingIndex(g).get('salt')?.map(p => p.id)).toEqual(['hamlet']);
+  });
+
+  it('salt smuggled into a busy town with none arrives as a working stock, never as a shortage', () => {
+    const g = new WorldGraph();
+    g.addNode({
+      id: 'city', type: 'location', name: 'Varn',
+      properties: { locationSubtype: 'city', terrain: 'plains', hexCol: 0, hexRow: 0, prosperity: 100, resources: {} },
+    });
+    for (let i = 0; i < 6; i++) {
+      g.addNode({ id: `city.q${i}`, type: 'location', name: `Quarter ${i}`, properties: { parentLocationId: 'city' } });
+      g.addEdge({ id: `e.city.q${i}`, source: 'city', target: `city.q${i}`, type: 'contains', properties: {} });
+    }
+    applyWorldEconomyShift(g, { quantity: 'stock', amount: W_STOCK.small, good: 'salt', settlementId: 'city' }, 10);
+    const node = g.getNode('city')!;
+    const salt = (node.properties.resources as Record<string, ResourceInstance>).salt;
+    expect(salt.quantity).toBeGreaterThan(W_STOCK.small);
+    const demand = computeLocationDemand(node.properties as Record<string, unknown>, 6);
+    expect(tierFromBalance(computeResourceBalance(salt, demand, 'salt'))).not.toBe('scarce');
   });
 });
