@@ -14626,11 +14626,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       won: 'staked the claim and entered it at the assay office',
       lost: 'paid the filing fee on a seam already filed',
     },
-    // THR-2048 — the claim staked is held; a failed stake stakes nothing and takes nothing.
+    // THR-2048 — the claim staked is held; a failed stake stakes nothing and never takes a
+    // claim away, but the filing fee the stakes name is spent (review gate round 1).
     outcomeEffects: {
       critical_success: [HOLD_CLAIM],
       success: [HOLD_CLAIM],
       success_at_cost: [HOLD_CLAIM],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'Prospect the Seam',

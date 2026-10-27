@@ -12,7 +12,7 @@ import { grantHolding } from '../holdings';
 import { WorldGraph } from '../graph';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
-import { MEANS_STEP } from '../../data/mortal-means-constants';
+import { MEANS_STEP, MEANS_STEP_SMALL } from '../../data/mortal-means-constants';
 import { W_PROSPERITY } from '../../data/economy-shift-constants';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import type { GameState } from '../../types/gameState';
@@ -186,7 +186,7 @@ describe('THR-2048 — the place-holding outcome tables', () => {
       const table = getUnifiedTemplateById(id)?.outcomeEffects ?? {};
       for (const effects of Object.values(table)) {
         for (const e of effects ?? []) {
-          if (e.kind === 'economy_shift') expect([MEANS_STEP, -MEANS_STEP, W_PROSPERITY.small, W_PROSPERITY.step]).toContain(e.amount);
+          if (e.kind === 'economy_shift') expect([MEANS_STEP, -MEANS_STEP, -MEANS_STEP_SMALL, W_PROSPERITY.small, W_PROSPERITY.step]).toContain(e.amount);
           if (e.kind === 'hold_place') expect([MEANS_STEP, 0]).toContain(e.heldElsewhereMeans);
         }
       }
