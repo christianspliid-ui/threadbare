@@ -42,6 +42,10 @@ A finding needs **all three**: a `file:line` in the diff, the check it breaks, a
 
 20. **A Game Design Law broken** — the diff breaks an [E] law in `Docs/game-design/laws.md`: a forecast that is not the roll (Law 18), a failure that lowers Reach (Law 24), an authored rate players do not get (Law 1). Authority: that book; precedents: THR-1575 (planner forecast ≠ roll), THR-1889 (Legendary set at 5%, paid 2.6%).
 
+## G. What the player sees
+
+21. **A UI Law broken** — the diff breaks an [E] law in `Docs/design-system/laws.md` in a way a player would meet. Judge only what CI does not already gate (the UI-debt ratchet, `styleguideSync`, the layout-contract and law-named tests cover hex colours, raw buttons, glyph icons, literal sizes, z-numbers, tooltip ids). The ones a diff shows and no gate catches: a magnitude rendered as a numeral or a raw internal key on a player surface (Laws 13, 14); a named subject rendered as plain text where it should link through the router (Law 21); a control that renders but does nothing (Law 25); a new per-kind panel, sheet or modal instead of a row on the subject's page (Laws 26, 58); a new always-visible element on the rails or top bar with no stated reason it earns the space (Law 53); a spend or a closed path on a single click (Law 48); an input with no visible acknowledgement (Law 47); an overlay that takes no focus or swallows Escape (Laws 23, 50). The failure scenario names the screen and what the player sees there. Precedents: THR-1004 (`${delta.toFixed(2)}` reached a chip), THR-1812 (a fix landed in a handler with no callers — Law 47 never held).
+
 ## Severity
 
 - **high** — wrong game state, data loss, a crash, or a silent no-op of the feature the PR claims to ship.

@@ -1,7 +1,7 @@
 ---
 name: review-gate
 description: The automatic code-review gate (THR-1691). Run before arming auto-merge on a code PR that touches src/engine/ or src/types/ or adds >400 non-test UI lines (THR-1949 scope) — a cold, suspicious reviewer subagent reviews the diff against the Threadbare rubric, a second subagent tries to refute each finding, the author fixes or rebuts what survives (max 2 rounds), and a receipt is written. The PreToolUse hook `.claude/hooks/review-gate.sh` denies `gh pr merge` on a code diff without a clean receipt. Triggers on "review gate", "code review before merge", "review receipt", "the merge was blocked by the review gate".
-last_validated_against: 2026-10-25
+last_validated_against: 2026-10-27
 ---
 
 # Review gate

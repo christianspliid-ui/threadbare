@@ -1,0 +1,145 @@
+{
+  "journeyVersion": 1,
+  "base": "https://threadbearer.co/",
+  "viewport": { "width": 1920, "height": 1080 },
+  "playwrightCore": "1.58.2",
+  "thumbWidth": 960,
+  "keepLocalRuns": 6,
+  "moments": [
+    {
+      "id": "01-front-door",
+      "label": "Front door",
+      "what": "The title screen a new player lands on.",
+      "steps": [{ "goto": "" }, { "wait": 5000 }]
+    },
+    {
+      "id": "02-first-thread",
+      "label": "The First Thread",
+      "what": "The first-run beat that hands the player their first two cards (real new-player path).",
+      "steps": [
+        { "goto": "?view=game&firstunmet&size=medium" },
+        { "waitFor": { "text": "The First Thread" }, "timeout": 45000 },
+        { "wait": 1500 }
+      ]
+    },
+    {
+      "id": "03-opening",
+      "label": "Opening table",
+      "what": "The main screen at tick 0 with The First bonded, clock paused.",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium" },
+        { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
+        { "wait": 4000 }
+      ]
+    },
+    {
+      "id": "04-first-encounter",
+      "label": "First encounter",
+      "what": "The first chapter that opens once the clock runs.",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium" },
+        { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
+        { "wait": 2000 },
+        { "press": "Space" },
+        { "waitFor": { "role": "dialog" }, "timeout": 90000 },
+        { "wait": 1500 }
+      ]
+    },
+    {
+      "id": "05-first-page",
+      "label": "The First's page",
+      "what": "The page of the player's first bonded mortal, opened from the left rail.",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium" },
+        { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
+        { "wait": 2000 },
+        { "click": { "role": "button", "nameRegex": " — open page$" } },
+        { "wait": 2000 }
+      ]
+    },
+    {
+      "id": "06-your-page",
+      "label": "Your page",
+      "what": "The player's own god page.",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium" },
+        { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
+        { "wait": 2000 },
+        { "click": { "role": "button", "name": "Open your page" } },
+        { "wait": 2000 }
+      ]
+    },
+    {
+      "id": "07-read-the-threads",
+      "label": "Read the Threads",
+      "what": "The story-so-far reader from the top bar.",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium" },
+        { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
+        { "wait": 2000 },
+        { "click": { "role": "button", "name": "Read the Threads" } },
+        { "wait": 2000 }
+      ]
+    },
+    {
+      "id": "08-doom",
+      "label": "Doom clock",
+      "what": "The doom clock detail from the top bar.",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium" },
+        { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
+        { "wait": 2000 },
+        { "click": { "role": "button", "name": "View doom clock details" } },
+        { "wait": 2000 }
+      ]
+    },
+    {
+      "id": "09-search",
+      "label": "Search",
+      "what": "The Ctrl+K finder with a query typed.",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium" },
+        { "waitFor": { "role": "button", "name": "Play simulation" }, "timeout": 45000 },
+        { "wait": 2000 },
+        { "press": "Control+K" },
+        { "wait": 800 },
+        { "type": "Kael" },
+        { "wait": 1500 }
+      ]
+    },
+    {
+      "id": "10-mid-game",
+      "label": "Mid-game table",
+      "what": "The main screen a few seasons in (warm start, 300 ticks).",
+      "steps": [
+        { "goto": "?view=game&seeded&size=medium&warm=300" },
+        { "waitFor": { "console": "[warm-start] done" }, "timeout": 240000 },
+        { "wait": 3000 }
+      ]
+    },
+    {
+      "id": "11-mid-game-notables",
+      "label": "Mid-game notables",
+      "what": "The notables list a few seasons in.",
+      "continue": true,
+      "steps": [
+        { "press": "Escape" },
+        { "wait": 800 },
+        { "click": { "role": "button", "nameRegex": "notables?$" } },
+        { "wait": 2000 }
+      ]
+    },
+    {
+      "id": "12-mid-game-chapter",
+      "label": "Mid-game chapter",
+      "what": "A chapter that opens a few seasons in.",
+      "continue": true,
+      "steps": [
+        { "press": "Escape" },
+        { "wait": 800 },
+        { "ensure": { "role": "dialog" }, "press": "Space", "timeout": 120000 },
+        { "wait": 1500 }
+      ]
+    }
+  ]
+}
