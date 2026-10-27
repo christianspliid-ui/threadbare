@@ -315,7 +315,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `dream` (1) | `dream.ts` | — |
 | `echo` (1) | `echo.ts` | — |
 | `economic` (2) | `economicChronicle.ts`, `economicContext.ts` | `THR-725` |
-| `economy` (1) | `economyShift.ts` | `THR-1931`, `THR-1953` |
+| `economy` (1) | `economyShift.ts` | `THR-1931`, `THR-1953`, `THR-2046` |
 | `effect` (6) | `effectAura.ts`, `effectExecutors.ts`, `effectResolver.ts`, `effectScope.ts`, `effectShellRuntime.ts`, `effectTick.ts` | `Phase 2`, `THR-53` |
 | `effects` (18) | `effects/actionTrigger.ts`, `effects/actionTriggerPayloads.ts`, `effects/actorClassification.ts`, `effects/castRelocation.ts`, `effects/conditionApplier.ts`, `effects/conditionProxyEvents.ts`, `effects/consumableCharges.ts`, `effects/effectEventDispatch.ts`, `effects/effectEvents.ts`, `effects/effectOverlayStore.ts`, `effects/effectPredicates.ts`, `effects/effectQueries.ts`, `effects/effectSuppression.ts`, `effects/effectWalker.ts`, `effects/index.ts`, `effects/reactiveWindow.ts`, `effects/resourceDelta.ts`, `effects/ruleOverrideConsumers.ts` | `Phase 3`, `Phase 5`, `TB-104`, `THR-1239`, `THR-1240`, `THR-1241`, `THR-1242`, `THR-1244`, `THR-1257`, `THR-1539`, `THR-1542`, `THR-1568`, `THR-1571`, `THR-1697`, `THR-719`, `THR-761` |
 | `elder` (1) | `elderEssenceReward.ts` | `TB-043`, `THR-153`, `THR-1753` |

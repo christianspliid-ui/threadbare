@@ -31,7 +31,7 @@ import type {
 import type { ActionStep, ActionStepOutcomeMetadata, StepCastRecord } from '../types/unifiedAction';
 import { applyEncounterAftermathReaction } from './encounterAftermath';
 import { buildMeansChange, selectOutcomeEffects, type MeansShiftResult } from './mortalMeans';
-import { resolveShiftSettlement } from './economyShift';
+import { isLaneQuantity, resolveLaneAnchor, resolveShiftSettlement } from './economyShift';
 import { snapshotCastEconomy, diffCastEconomy } from './castEconomyReceipt';
 import { resolveSceneHere } from './sceneHere';
 import { MORTAL_MEANS_ENABLED, COMMISSION_CAUSE_LINE } from '../data/mortal-means-constants';
@@ -3399,7 +3399,13 @@ function outcomeTableSettlements(
     const located = raw === undefined || raw === '$here'
       ? resolveSceneHere(state.graph, action.actorId, 'location') ?? undefined
       : (raw === '$target' ? action.targetId : raw);
-    const town = resolveShiftSettlement(state.graph, located);
+    // THR-2046 — a lane row, and any row left at `$here` on an encounter about a road, reads
+    // the town that road touches (the write's anchor), so the receipt and the write agree
+    // when the mortal has moved off the road.
+    const anchored = isLaneQuantity(e.quantity) || raw === undefined
+      ? resolveLaneAnchor(state.graph, action.laneEdgeId, located).settlementId
+      : located;
+    const town = resolveShiftSettlement(state.graph, anchored);
     if (town && !out.includes(town.id)) out.push(town.id);
   }
   return out;

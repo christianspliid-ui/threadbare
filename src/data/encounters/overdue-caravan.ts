@@ -82,7 +82,8 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     critical_success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.big }],
     success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }],
     failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
-    critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }],
+    // THR-2046 — a search party lost on the old road leaves that road threatened.
+    critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }, { kind: 'economy_shift', quantity: 'lane_threat', amount: 1 }],
   },
   stakes: {
     goal: 'find the overdue caravan on the old road',

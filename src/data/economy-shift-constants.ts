@@ -7,9 +7,13 @@
 // § Constants table (`HARVEST_BAND_SCALE`).
 
 import type { UnifiedActionOutcome } from '../types/unifiedAction';
+import { ROUTE_THREATENED_CLEAR_TICKS } from './route-event-config';
 
 /** The world quantities `economy_shift` writes besides a mortal's Means. */
-export type WorldEconomyQuantity = 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse';
+export type WorldEconomyQuantity =
+  | 'prosperity' | 'unrest' | 'stock' | 'lane_volume' | 'purse'
+  // THR-2046 — a road's encounters write to that road: mark or clear a threat, strike a toll.
+  | 'lane_threat' | 'lane_toll';
 
 /** A quantity's named steps: the research table's small, `+` and `++`. */
 export interface EconomyShiftSteps {
@@ -34,6 +38,8 @@ export interface EconomyShiftSteps {
  *   `small` is therefore one run, like `step`.
  * - **purse** (faction treasury, 0–`FACTION_TREASURY_CAP`): `+` is about two days of a
  *   regiment's upkeep (`ARMY_UPKEEP_PER_DAY.regiment` 2.5) — a levy, not a fortune.
+ * - **lane_threat** / **lane_toll** (THR-2046): a mark, not a scale. `+1` marks the road
+ *   threatened (or strikes a toll); `-1` clears the threat. Every step is 1.
  */
 export const ECONOMY_SHIFT_STEPS: Readonly<Record<WorldEconomyQuantity, EconomyShiftSteps>> = {
   prosperity: { small: 2, step: 4, big: 8 },
@@ -41,6 +47,8 @@ export const ECONOMY_SHIFT_STEPS: Readonly<Record<WorldEconomyQuantity, EconomyS
   stock: { small: 5, step: 10, big: 20 },
   lane_volume: { small: 1, step: 1, big: 2 },
   purse: { small: 2, step: 5, big: 10 },
+  lane_threat: { small: 1, step: 1, big: 1 },
+  lane_toll: { small: 1, step: 1, big: 1 },
 };
 
 /** Authoring shorthands: `amount: W_PROSPERITY.step` reads as the research table's `+`. */
@@ -105,8 +113,22 @@ export const STOCK_GOOD_DEPOSIT = 'deposit';
 export const STOCK_DEPOSIT_GOODS: ReadonlySet<string> = new Set(['stone', 'ore', 'gemstones', 'star_metal']);
 
 /**
- * A lane an encounter thins never drops below this volume. Severing a lane, or marking it
- * threatened, is the deferred lane-bound write (plan § Slices, Deferral); a money scene
- * slows a road, it does not close one.
+ * A lane an encounter thins never drops below this volume: a money scene slows a road, it
+ * does not close one. An encounter may mark a road threatened (`lane_threat`, THR-2046),
+ * which the route-event sweep clears again; it never severs one.
  */
 export const ENCOUNTER_LANE_VOLUME_FLOOR = 1;
+
+/**
+ * THR-2046 — rollback switch. Off, `lane_threat` and `lane_toll` write nothing and every
+ * lane write ignores the encounter's bound lane (`laneEdgeId`): today's busiest-lane guess.
+ */
+export const ENCOUNTER_LANE_WRITES_ENABLED = true;
+
+/**
+ * THR-2046 — how long an encounter-set threat lasts, in ticks. The route-event sweep clears
+ * a mark `ROUTE_THREATENED_CLEAR_TICKS` after `threatenedSinceTick`, so the write back-dates
+ * the stamp by the difference. Equal to the ambush's (24) by default; the kill criteria's
+ * lever (plan § Kill criteria: halve it if encounter threats starve a town).
+ */
+export const ENCOUNTER_THREAT_CLEAR_TICKS = ROUTE_THREATENED_CLEAR_TICKS;

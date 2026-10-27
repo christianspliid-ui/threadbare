@@ -2307,8 +2307,21 @@ if (import.meta.env.DEV) {
           lastTraded: typeof e.properties.lastTraded === 'number' ? e.properties.lastTraded : 0,
           threatened: e.properties.threatened === true,
           blockadedBy: typeof e.properties.blockadedBy === 'string' ? e.properties.blockadedBy : null,
+          // THR-2046 — who tolls the lane, and when its threat was marked.
+          controlledBy: typeof e.properties.controlledBy === 'string' ? e.properties.controlledBy : null,
+          threatenedSinceTick: typeof e.properties.threatenedSinceTick === 'number' ? e.properties.threatenedSinceTick : null,
         }))
         .sort((a, b) => a.edgeId.localeCompare(b.edgeId));
+    },
+
+    /**
+     * THR-2046: the `trades_with` lane an action carries from its seed
+     * (`UnifiedAction.laneEdgeId`), or null — an organic draw, or no such action.
+     */
+    getActionLane: (actionId: string) => {
+      const state = _gameStateProvider?.();
+      const action = state?.unifiedActions?.find(a => a.actionId === actionId);
+      return action?.laneEdgeId ?? null;
     },
 
     /**

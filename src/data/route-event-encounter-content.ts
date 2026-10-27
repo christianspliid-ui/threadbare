@@ -17,6 +17,8 @@
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import { withEncounterContract } from './encounter-contract-builder';
+import { W_LANE, W_PROSPERITY, W_STOCK, W_UNREST, harvestStockAmount } from './economy-shift-constants';
+import { MEANS_STEP } from './mortal-means-constants';
 
 const ROUTE_EVENT_DIFFICULTY = 0.3;
 const ROUTE_EVENT_STEP2_DIFFICULTY = 0.4;
@@ -31,13 +33,22 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       won: 'broke the ambushers and brought cargo home',
       lost: 'pulled back and left the road to the ambushers',
     },
+    // THR-2046 — the road this ambush happened on (its seed's lane) clears when the
+    // ambushers break, and thins when they hold it; only a rout costs the town.
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'lane_threat', amount: -1 }, { kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success: [{ kind: 'economy_shift', quantity: 'lane_threat', amount: -1 }, { kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'lane_threat', amount: -1 }],
+      failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }, { kind: 'economy_shift', quantity: 'prosperity', amount: -W_PROSPERITY.small }],
+    },
     name: 'Ambush on the Trade Road',
     rarityTier: 2,
     intrinsicTier: 'shaping',
     reach: 'iron',
     crudType: 'update',
     scale: 'local',
-    locationSubtypes: ['village', 'town', 'city', 'capital'],
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
@@ -162,13 +173,21 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       won: 'struck a toll rate both banners would take',
       lost: 'left the chain up and the wagons turning back',
     },
+    // THR-2046 — a struck rate is a toll on this road, for the banner that holds the town.
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'lane_toll', amount: 1 }],
+      success: [{ kind: 'economy_shift', quantity: 'lane_toll', amount: 1 }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'lane_toll', amount: 1 }],
+      failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: -W_LANE.step }],
+    },
     name: 'The Toll Dispute',
     rarityTier: 1,
     intrinsicTier: 'shaping',
     reach: 'gold',
     crudType: 'update',
     scale: 'local',
-    locationSubtypes: ['village', 'town', 'city', 'capital'],
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
@@ -268,13 +287,22 @@ export const ROUTE_EVENT_ENCOUNTER_TEMPLATES: UnifiedActionTemplate[] = [
       won: 'broke the grain embargo and got the wagons rolling',
       lost: 'left the granary with nothing coming in',
     },
+    // THR-2046 — the lifeline road carries more when the embargo breaks; the granary
+    // fills or runs short, and a town left hungry grows angry.
+    outcomeEffects: {
+      critical_success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }, { kind: 'economy_shift', quantity: 'stock', amount: harvestStockAmount('critical_success'), good: 'staple' }],
+      success: [{ kind: 'economy_shift', quantity: 'lane_volume', amount: W_LANE.step }, { kind: 'economy_shift', quantity: 'stock', amount: harvestStockAmount('success'), good: 'staple' }],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'stock', amount: harvestStockAmount('success_at_cost'), good: 'staple' }],
+      failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.small }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'stock', amount: -W_STOCK.small, good: 'staple' }, { kind: 'economy_shift', quantity: 'unrest', amount: W_UNREST.step }],
+    },
     name: 'The Grain Does Not Come',
     rarityTier: 2,
     intrinsicTier: 'shaping',
     reach: 'gold',
     crudType: 'update',
     scale: 'local',
-    locationSubtypes: ['village', 'town', 'city', 'capital'],
+    locationSubtypes: ['hamlet', 'town', 'city', 'capital'],
     apCost: 1,
     actorAffinities: ['individual'],
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,

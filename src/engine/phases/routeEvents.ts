@@ -215,6 +215,8 @@ export function phaseRouteEvents(state: GameState, _ctx: PhaseContext): PhaseRes
       priority: ROUTE_EVENT_SEED_PRIORITY,
       seedLabel: event.label,
       plantedTick: tick,
+      // THR-2046 — the seed remembers its road, so the outcome table writes this lane.
+      laneEdgeId: route.id,
     });
 
     if (event.kind === 'ambush') {
