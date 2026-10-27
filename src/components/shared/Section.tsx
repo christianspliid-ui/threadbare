@@ -457,34 +457,31 @@ function CardsSectionRenderer({ section }: { section: CardsSection }) {
 }
 
 function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
+  // THR-2079 — no art, no frame. The page header shows the subject through
+  // EntityVisual; an empty box with the name in it is a broken state (UI Law 4).
+  const url = section.portraitRef.url;
   return (
-    <div style={{ marginBottom: '20px', display: 'flex', gap: '16px' }}>
-      <div
-        style={{
-          width: 180,
-          height: 220,
-          flexShrink: 0,
-          background: 'var(--bg-deep)',
-          border: '1px solid var(--border-gold)',
-          borderRadius: '4px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden',
-        }}
-      >
-        {section.portraitRef.url ? (
+    <div style={{ marginBottom: '20px', display: 'flex', gap: '16px' }} data-testid="portrait-section">
+      {url && (
+        <div
+          data-testid="portrait-section-frame"
+          style={{
+            width: 180,
+            height: 220,
+            flexShrink: 0,
+            background: 'var(--bg-deep)',
+            border: '1px solid var(--border-gold)',
+            borderRadius: '4px',
+            overflow: 'hidden',
+          }}
+        >
           <img
-            src={section.portraitRef.url}
+            src={url}
             alt={section.portraitRef.subject}
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
-        ) : (
-          <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
-            {section.portraitRef.subject}
-          </span>
-        )}
-      </div>
+        </div>
+      )}
       <div style={{ flex: 1 }}>
         <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
         {section.bodyProse && (
