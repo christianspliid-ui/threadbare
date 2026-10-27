@@ -459,6 +459,16 @@ blocks' direct pushes admit it only when `isThreadedByPlayer` holds, tracing eac
 (`vassalAgentId: '$actor'`). The default `broker_realm` source and every read site are
 unchanged. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
 
+**Two contracts added and one extended by THR-2077 (2026-10-27), a sealed mill lease gives the
+town's mill to a guild** — `encounter-outcome-guild-holds-a-building` (Encounters → Factions):
+`guild_hold_place` writes the first encounter-made faction → Place `controls` edge
+(`role: 'guild_holding'`) from the town's guild (`pickTownGuild`, never a realm), read by the
+purse, the faction page's Connections, war-aim defence and the realm fingerprint (non-realms move
+no border). `encounter-outcome-raises-settlement-building` (Encounters → Economy): with none
+standing and a slot free it raises the building through `raiseBuilding` + `markMortalBuilding`.
+`faction-purse-pays-faction-holders` gains held-building dues (`heldBuildingDuesOf`, booked as
+place yield). Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
+
 Ambition display lives on the person page (`views/subjects/personRows.ts`); the older sheets
 (`AgentDetailPanel`, then `AgentProfileModal`) were deleted in THR-1492 and THR-1912.
 

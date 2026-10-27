@@ -281,7 +281,8 @@ describe('THR-2077 — the mill lease tables', () => {
   const kindsOf = (t: UnifiedActionTemplate): string[] => JSON.stringify(t).match(/"kind":"guild_hold_place"/g) ?? [];
 
   it('the sealed lease success carries guild_hold_place for the mill', () => {
-    const effects = MILL_LEASE_SEALED.steps[0]!.successMetadata?.effects ?? [];
+    const step = MILL_LEASE_SEALED.steps[0] as { successMetadata?: { effects?: readonly unknown[] } };
+    const effects = step.successMetadata?.effects ?? [];
     expect(effects).toContainEqual({ kind: 'guild_hold_place', buildingId: 'mill' });
     expect(kindsOf(MILL_LEASE_SEALED)).toHaveLength(1);
   });
