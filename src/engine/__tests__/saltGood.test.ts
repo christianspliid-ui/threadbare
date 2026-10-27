@@ -15,7 +15,9 @@ import { RESOURCE_DEFINITIONS } from '../../data/resource-content';
 import { applyWorldEconomyShift } from '../economyShift';
 import { buildBearingIndex } from '../regionalMonopoly';
 import { WorldGraph } from '../graph';
-import type { OutcomeEffect } from '../../types/unifiedAction';
+import type { OutcomeEffectsTable } from '../../types/unifiedAction';
+
+type OutcomeEffect = NonNullable<OutcomeEffectsTable[keyof OutcomeEffectsTable]>[number];
 
 type Band = 'critical_success' | 'success' | 'success_at_cost' | 'failure' | 'critical_failure';
 const BANDS: readonly Band[] = ['critical_success', 'success', 'success_at_cost', 'failure', 'critical_failure'];

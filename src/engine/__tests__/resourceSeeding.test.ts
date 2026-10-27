@@ -70,13 +70,20 @@ describe('seedLocationResources', () => {
     expect(resources.stone.renewable).toBe(false);
   });
 
-  it('assigns empty resources for desert terrain', () => {
-    const { graph, locationIds } = makeGraph(['desert']);
+  it('assigns empty resources for tundra terrain', () => {
+    const { graph, locationIds } = makeGraph(['tundra']);
     seedLocationResources(graph, locationIds, balancedCosmology(), mulberry32(42));
     const node = graph.getNode('loc_0')!;
     const resources = node.properties.resources as Record<string, ResourceInstance>;
     expect(resources).toBeDefined();
     expect(Object.keys(resources)).toHaveLength(0);
+  });
+
+  it('assigns salt, and only salt, to desert terrain (THR-2069)', () => {
+    const { graph, locationIds } = makeGraph(['desert']);
+    seedLocationResources(graph, locationIds, balancedCosmology(), mulberry32(42));
+    const resources = graph.getNode('loc_0')!.properties.resources as Record<string, ResourceInstance>;
+    expect(Object.keys(resources)).toEqual(['salt']);
   });
 
   it('is deterministic — same seed produces same resources', () => {
