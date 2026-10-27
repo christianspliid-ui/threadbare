@@ -7,7 +7,9 @@
  *
  * - **liege** — the realm the mortal serves: their realm membership with the highest
  *   derived rank, ties to the lower id. A realm that is itself sworn hands the oath to
- *   its own liege (one layer only: the mortal brokers for the crown they serve).
+ *   its own liege (one layer only: the mortal brokers for the crown they serve). With
+ *   `liegeFrom: 'scene_town'` (THR-2051, the tribute oath) it is instead the crown the
+ *   scene's town answers to — `townLiegeOf`.
  * - **vassal** — the faction a named agent belongs to (the Warlord's company: highest
  *   rank, ties to the lower id), or, with no agent named, the faction present at the
  *   mortal's town with the best standing toward the liege, then the higher day income,
@@ -29,9 +31,13 @@ import { isRealmFaction, liegeOf } from './crownView';
 import { getDerivedMembershipRank } from '../factionReputation';
 import { resolveSceneHere } from '../sceneHere';
 import { resolveToParentLocation } from '../sublocationShape';
+import { getLocationHolder } from '../realmHolder';
 import { BROKERED_OATH_ENABLED } from '../../data/crown-constants';
 
 export type BrokerOathRefusal = BrokeredOathRefusal | 'switch_off' | 'no_broker' | 'no_vassal';
+
+/** THR-2051 — where the liege comes from: the broker's realm (THR-1944) or the scene town's crown. */
+export type BrokerLiegeSource = 'broker_realm' | 'scene_town';
 
 export type BrokerOathResult =
   | { sworn: true; vassalId: string; liegeId: string; chronicle: ChronicleEntry[] }
@@ -81,11 +87,31 @@ function vassalOfAgent(graph: WorldGraph, agentId: string, liegeId: string, pref
   return preferred ?? topMembership(graph, agentId, id => swearable(id) && !isRealmFaction(graph.getNode(id)));
 }
 
+/** The town (place tier) the mortal's scene stands in, or null. */
+function sceneTownOf(graph: WorldGraph, brokerId: string): string | null {
+  const hereId = resolveSceneHere(graph, brokerId, 'location');
+  return hereId ? resolveToParentLocation(graph, graph.getNode(hereId))?.id ?? null : null;
+}
+
+/**
+ * THR-2051 — the crown the mortal's town answers to: its holder when that is a realm (or
+ * the realm's own liege, one layer, as `brokerLiegeOf`), else the realm its non-realm
+ * holder (a temple order, company or guild) is sworn to. Null with no town, no holder, or
+ * a holder sworn to no realm.
+ */
+export function townLiegeOf(state: GameState, brokerId: string): string | null {
+  const graph = state.graph;
+  const holder = getLocationHolder(graph, sceneTownOf(graph, brokerId) ?? undefined);
+  if (!holder) return null;
+  if (holder.isRealm) return liegeOf(graph, holder.id) ?? holder.id;
+  const liege = liegeOf(graph, holder.id);
+  return liege && isRealmFaction(graph.getNode(liege)) ? liege : null;
+}
+
 /** Decision 3 — the faction present at the mortal's town that swears to `liegeId`, or null. */
 export function presentVassalFor(state: GameState, brokerId: string, liegeId: string): string | null {
   const graph = state.graph;
-  const hereId = resolveSceneHere(graph, brokerId, 'location');
-  const town = hereId ? resolveToParentLocation(graph, graph.getNode(hereId))?.id ?? null : null;
+  const town = sceneTownOf(graph, brokerId);
   if (!town) return null;
   const world = buildCrownWorld(graph, state.tick, null);
   const picks = world.factions
@@ -105,13 +131,18 @@ export function presentVassalFor(state: GameState, brokerId: string, liegeId: st
  */
 export function brokerOath(
   state: GameState,
-  args: { brokerId: string; vassalAgentId?: string; vassalFactionDefId?: string; kind: OathKind; forcedBy?: OathForcedBy },
+  args: {
+    brokerId: string; vassalAgentId?: string; vassalFactionDefId?: string; kind: OathKind; forcedBy?: OathForcedBy;
+    liegeFrom?: BrokerLiegeSource;
+  },
   hooks: CrownHooks = {},
 ): BrokerOathResult {
   if (!BROKERED_OATH_ENABLED) return { sworn: false, reason: 'switch_off' };
   const graph = state.graph;
   if (!graph.getNode(args.brokerId)) return { sworn: false, reason: 'no_broker' };
-  const liegeId = brokerLiegeOf(graph, args.brokerId);
+  const liegeId = args.liegeFrom === 'scene_town'
+    ? townLiegeOf(state, args.brokerId)
+    : brokerLiegeOf(graph, args.brokerId);
   if (!liegeId) return { sworn: false, reason: 'no_realm' };
   const vassalId = args.vassalAgentId
     ? vassalOfAgent(graph, args.vassalAgentId, liegeId, args.vassalFactionDefId)
