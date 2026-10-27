@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 22:56 local (21:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 23:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,11 +29,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 ready, 1 being built.** The builder took the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) and has opened [PR #2637](https://github.com/christianspliid-ui/threadbare/pull/2637); it is not yet set to merge on its own, which the builder does once its review is done. Next up: the mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)), free to take since 20:56 UTC. Still on hold: the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071), until 23:45 UTC) and Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062), until Wednesday 03:01 UTC).
+**Healthy but thin: 2 ready, 1 being built.** The bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) merged via [PR #2637](https://github.com/christianspliid-ui/threadbare/pull/2637) and is live. The builder is now on the mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)); its work is pushed to [the branch](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2077-mill-guild), last commit 23:42, with no pull request yet. Still on hold: the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071), until 23:45 UTC) and Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062), on hold until Wednesday 03:01 UTC).
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (d2baba07), CI and the scheduled background jobs pass, the scheduled lanes and the worktree reaper are healthy, and the engine runs at 166 ms/tick, 3% under the 7-day median.
+All green. The live site serves the latest main (a431183e), CI and the scheduled background jobs pass, no pull request is waiting to merge, the scheduled lanes and the worktree reaper (last run 23:40) are healthy, and the engine runs at 175 ms/tick, 3% over the 7-day median.
