@@ -152,6 +152,17 @@ describe('THR-2031 — {place} names where the relic lies, never the relic', () 
     expect(after).toContain(place);
     expect(after.split('The Hollow Bell').length - 1).toBe(1);
   });
+
+  it('a seize aimed at a taken relic stands where its bearer stands, not where it lay', () => {
+    const state = world();
+    const [first, second] = state.graph.getNodesByType('actor').filter(isAutonomousDecisionActor).map(n => n.id).sort();
+    run(state, first, relicId);
+    const takenFrom = state.graph.getIncomingEdges(relicId, 'possesses')[0].properties.takenFrom;
+    const lateClaim = cellActivityProse(state.graph, project(second, relicId), 'control:claim').concepts.find(c => c.role === 'place');
+    expect(lateClaim?.id).toBe(takenFrom);
+    const seize = cellActivityProse(state.graph, project(second, relicId), 'control:seize').concepts.find(c => c.role === 'place');
+    expect(seize?.id).not.toBe(takenFrom);
+  });
 });
 
 describe('THR-2031 — the chronicle stops calling a taken relic unclaimed', () => {
