@@ -1050,6 +1050,12 @@ export type EncounterAftermathReactionEffect =
      * faction swears; a named agent never hands over a realm or the liege's enemy.
      */
     readonly vassalFactionDefId?: string;
+    /**
+     * THR-2051 — where the liege comes from. 'broker_realm' (default): the realm the broker
+     * serves (THR-1944). 'scene_town': the realm the scene's town answers to — its holder
+     * when a realm, else its holder's liege.
+     */
+    readonly liegeFrom?: 'broker_realm' | 'scene_town';
     /** The oath's kind (`kind` is the effect discriminator). */
     readonly oathKind: 'persuaded' | 'coerced';
     /** What forced a coerced oath; `demand` reads "forced by a demand". */

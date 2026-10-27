@@ -4065,6 +4065,7 @@ export function applyEncounterAftermathReaction(
           vassalFactionDefId: effect.vassalFactionDefId,
           kind: effect.oathKind,
           forcedBy: effect.oathKind === 'coerced' ? effect.forcedBy : undefined,
+          liegeFrom: effect.liegeFrom,
         }, {
           getProjection: () => ensureRealmProjection(runtime, state.graph, state.tiles, tick),
           onStructure: () => touchStructure(runtime),
@@ -4074,7 +4075,7 @@ export function applyEncounterAftermathReaction(
             tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
             encounterId, actionId, reactionId: reaction.id, effectIndex: i,
             effectKind: 'faction_broker_fealty',
-            effectDetail: { brokerAgentId: effect.brokerAgentId, vassalAgentId: effect.vassalAgentId, vassalId: fbf.vassalId, liegeId: fbf.liegeId, oathKind: effect.oathKind },
+            effectDetail: { brokerAgentId: effect.brokerAgentId, vassalAgentId: effect.vassalAgentId, vassalId: fbf.vassalId, liegeId: fbf.liegeId, oathKind: effect.oathKind, liegeFrom: effect.liegeFrom ?? 'broker_realm' },
             success: false, failReason: fbf.reason,
             summary: `faction_broker_fealty[${i}] skipped: ${fbf.reason}`,
           });
@@ -4106,7 +4107,7 @@ export function applyEncounterAftermathReaction(
           tick, category: 'encounter_aftermath_effect', agentId: actorAgentId,
           encounterId, actionId, reactionId: reaction.id, effectIndex: i,
           effectKind: 'faction_broker_fealty',
-          effectDetail: { brokerAgentId: effect.brokerAgentId, vassalId: fbf.vassalId, liegeId: fbf.liegeId, oathKind: effect.oathKind },
+          effectDetail: { brokerAgentId: effect.brokerAgentId, vassalId: fbf.vassalId, liegeId: fbf.liegeId, oathKind: effect.oathKind, liegeFrom: effect.liegeFrom ?? 'broker_realm' },
           success: true,
           summary: `faction_broker_fealty[${i}]: ${fbf.vassalId} swears to ${fbf.liegeId} (${effect.oathKind}), brokered by ${effect.brokerAgentId}`,
         });

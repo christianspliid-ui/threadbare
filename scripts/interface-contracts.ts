@@ -7219,11 +7219,11 @@ export const CONTRACTS: readonly Contract[] = [
     producerSystem: ENCOUNTERS,
     consumerSystem: FACTIONS,
     intent:
-      'A won Faction Unification or a won Warlord\'s Tribute demand fires the faction_broker_fealty aftermath effect from the band\'s outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm\'s own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord\'s company ($cast:warlord) or the best-standing present faction at the mortal\'s town (never the liege\'s enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason.',
+      'A won Faction Unification or a won Warlord\'s Tribute demand fires the faction_broker_fealty aftermath effect from the band\'s outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm\'s own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord\'s company ($cast:warlord) or the best-standing present faction at the mortal\'s town (never the liege\'s enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason. THR-2051 adds a second liege source: a won Tribute Exchange (liegeFrom: scene_town) swears the actor\'s own house to the crown the scene\'s town answers to — getLocationHolder\'s realm holder (or its liege), else the realm its non-realm holder is sworn to (liegeOf).',
     ulTerms: ['Realm', 'Faction', 'Encounter'],
     mechanism: {
       kind: 'edge',
-      symbols: ['sworn_to', 'faction_broker_fealty', 'brokerOath', 'swearBrokeredOath', 'brokeredBy'],
+      symbols: ['sworn_to', 'faction_broker_fealty', 'brokerOath', 'swearBrokeredOath', 'brokeredBy', 'townLiegeOf', 'liegeFrom'],
       module: 'src/engine/crown/brokeredOath.ts',
     },
     writeSites: ['src/engine/encounterAftermath.ts', 'src/engine/crown/brokeredOath.ts', 'src/engine/crown.ts'],
@@ -7235,7 +7235,7 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: {
       date: '2026-10-25',
       evidence:
-        'THR-1944. crownBrokeredOath.test.ts drives applyEncounterAftermathReaction with $actor and $cast:warlord bound: the demand writes sworn_to warlord\'s company → the mortal\'s realm, coerced, forcedBy demand, brokeredBy the mortal, loyalty 0.35; no realm, an already-sworn company and a cooled-down pair write nothing and trace no_realm / may_not_swear / cooldown; a sworn realm hands the oath to its liege; the unification picks the best-standing present faction and never a rival. crown.test.ts passes unchanged.',
+        'THR-1944. crownBrokeredOath.test.ts drives applyEncounterAftermathReaction with $actor and $cast:warlord bound: the demand writes sworn_to warlord\'s company → the mortal\'s realm, coerced, forcedBy demand, brokeredBy the mortal, loyalty 0.35; no realm, an already-sworn company and a cooled-down pair write nothing and trace no_realm / may_not_swear / cooldown; a sworn realm hands the oath to its liege; the unification picks the best-standing present faction and never a rival. crown.test.ts passes unchanged. THR-2051 (2026-10-27): crownTributeOath.test.ts — a town a sworn temple order holds swears the actor\'s guild to that order\'s realm; a realm-held town swears to that realm; an unheld or unsworn-company town traces no_realm; a realm-only actor traces no_vassal; without liegeFrom the THR-1944 source is unchanged.',
     },
   },
   {

@@ -289,7 +289,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `control` (2) | `controlContestationResolver.ts`, `controlEffectSpawn.ts` | `Phase 1`, `Phase 2`, `TB-045`, `THR-518`, `THR-662` |
 | `core` (2) | `core/coreConstants.ts`, `core/coreMechanics.ts` | `THR-542`, `THR-544` |
 | `cosmology` (1) | `cosmology.ts` | — |
-| `crown` (8) | `crown.ts`, `crown/brokeredOath.ts`, `crown/crownView.ts`, `crown/eligibility.ts`, `crown/fealtySentences.ts`, `crown/offer.ts`, `crown/types.ts`, `crown/wages.ts` | `THR-1917`, `THR-1932`, `THR-1934`, `THR-1939`, `THR-1944`, `THR-1974` |
+| `crown` (8) | `crown.ts`, `crown/brokeredOath.ts`, `crown/crownView.ts`, `crown/eligibility.ts`, `crown/fealtySentences.ts`, `crown/offer.ts`, `crown/types.ts`, `crown/wages.ts` | `THR-1917`, `THR-1932`, `THR-1934`, `THR-1939`, `THR-1944`, `THR-1974`, `THR-2051` |
 | `cultural` (4) | `culturalGravity.ts`, `culturalProse.ts`, `culturalTension.ts`, `culturalTraits.ts` | `THR-1798` |
 | `culture` (5) | `cultureFlag.ts`, `cultureFoundationPair.ts`, `cultureGenerator.ts`, `cultureMores.ts`, `culturePhonetics.ts` | `M20`, `M30`, `M50`, `M70`, `THR-15`, `THR-1623` |
 | `curator` (1) | `curator.ts` | `THR-1218` |

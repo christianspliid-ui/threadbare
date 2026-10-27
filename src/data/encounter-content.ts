@@ -28,6 +28,10 @@ const HOLD_FORGE: EncounterAftermathReactionEffect = {
 const HOLD_CLAIM: EncounterAftermathReactionEffect = {
   kind: 'hold_place', placeTypeId: 'sublocation-type.mine', nameNoun: 'claim', heldElsewhereMeans: 0,
 };
+/** THR-2051 — the tribute oath: the actor's own house swears to the crown the hall's town answers to. */
+export const TRIBUTE_OATH: EncounterAftermathReactionEffect = {
+  kind: 'faction_broker_fealty', brokerAgentId: '$actor', vassalAgentId: '$actor', liegeFrom: 'scene_town', oathKind: 'persuaded',
+};
 import {
   ENCOUNTER_TONE_ADJECTIVES,
   encounterToneTierForThreat,
@@ -3935,10 +3939,12 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'paid the tribute and lost the protection clause',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-2051 — the oath half: every success band swears the actor's house to the crown
+    // the hall's town answers to. Failure pays and swears nothing.
     outcomeEffects: {
-      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
-      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
-      success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
+      critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }, TRIBUTE_OATH],
+      success: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }, TRIBUTE_OATH],
+      success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }, TRIBUTE_OATH],
       failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_BIG }],
     },
