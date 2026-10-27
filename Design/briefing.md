@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 14:56 local (13:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 15:58 local (14:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,7 +25,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **The mill stands afterwards.** If the town has no mill and has room for a building, one is raised, and the town's harvest feeds more mouths. If there is no room, nothing is raised. *Veto:* "a lease should never raise a building".
   - **A scene never takes a mill from a guild that already holds it.**
   - **A held mill pays its guild a little each pay day**, about a quarter of what a middling town pays in tax. More in a rich town, nothing in a ruined one. *Veto:* "the mill should pay nothing".
-- [Attention is never spent](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so): five calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2062-attention-has-a-price.md#decisions). Each can be vetoed on its own until Wednesday 28 Oct 03:01 UTC (the build may start at **15:01 UTC today**). *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27a.md)*
+- [Attention is never spent](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so): five calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2062-attention-has-a-price.md#decisions). Each can be vetoed on its own until Wednesday 28 Oct 03:01 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27a.md)*
   - **Attention stays, and it becomes the price of looking in on a mortal who lives on without you.** Answering "the thread pulls" on such a mortal lets you see their chapter, and that costs Attention. *Veto:* "retire Attention".
   - **A mortal who asks you never costs Attention.** The First's chapters already stop the world for free. Until now she still raised pulls that charged for them. *Veto:* "The First's chapters should cost Attention too".
   - **News of a mortal's home is free, and comes once.** When their town runs short of, or has spare, grain, fish, grazing land or fresh water, you hear it once, and answering costs nothing. Today it repeats every few hours and charges each time. These pulls were two thirds of all pulls. *Veto:* "home news should cost Attention".
@@ -40,12 +40,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 ready.** Since the last brief, the builder fixed the red heavy tests ([THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to), merged via [#2633](https://github.com/christianspliid-ui/threadbare/pull/2633)) and the fix is live. Its next two runs (13:22 and 13:52 UTC) stood down by design: the five design tickets are all held behind their veto windows, the earliest ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opening 18:03 UTC.
+**Healthy: 6 ready.** The five design tickets are still held behind their veto windows; the first ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opens at 18:03 UTC. The builder's last three runs (14:12, 14:32, 14:52 UTC) each stood down for that reason, which is correct. The sixth, [THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge), was filed this hour (see Health) and can be claimed now.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree holds work for it. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Heavy simulation tests still read red on main (since 11:21 UTC), but the fix has merged.** [THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to) shipped via [#2633](https://github.com/christianspliid-ui/threadbare/pull/2633), and the heavy run on that merge ([run 40511962211](https://github.com/christianspliid-ui/threadbare/actions/runs/40511962211)) is still going. No new ticket while it runs; if it ends red, next hour's brief files one.
-- Everything else is green: the live site serves the latest main (c5e5a3f7), main's required CI, the scheduled lanes and the worktree reaper (last run 13:40 UTC) are healthy, no PRs are waiting to merge, and the engine runs at 143 ms/tick, 18% under the 7-day median.
+- **Heavy simulation tests red on main since 11:21 UTC; ticket [THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge) filed for the builder.** The check run on the [THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to) fix merge ([run 40511962211](https://github.com/christianspliid-ui/threadbare/actions/runs/40511962211)) failed no test. It hit its 45-minute limit while one test, the 90-day army test, was still running. So the fix is not yet confirmed, and that test needs to cost less or get a proper time limit.
+- Everything else is green: the live site serves the latest main (c5e5a3f7), main's required CI, the scheduled lanes and the worktree reaper (last run 14:40 UTC) are healthy, no PRs are waiting to merge, and the engine runs at 153 ms/tick, 13% under the 7-day median.
