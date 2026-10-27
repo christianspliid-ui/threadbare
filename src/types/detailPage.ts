@@ -323,6 +323,11 @@ export interface CardsSection extends SectionBase {
 
 export interface PortraitSection extends SectionBase {
   kind: 'portrait';
+  /**
+   * `url` absent → the section renders its prose with no frame (THR-2079). The
+   * inspector's header already shows the subject through `EntityVisual`, so a
+   * second, empty frame here is a broken state, not a fallback (UI Laws 3, 4).
+   */
   portraitRef: { url?: string; subject: string; sphere: string };
   /** Prose body rendered alongside the portrait. */
   bodyProse?: string;

@@ -262,7 +262,10 @@ const portraitWithDispositionResolver: SectionResolver = (ctx) => {
   if (!node || node.type !== 'actor') return null;
 
   const sphere = topSphere(node);
-  const portraitUrl = node.properties?.portraitUrl as string | undefined;
+  // THR-2079 — no url: the page header already shows this mortal through the one
+  // portrait resolver (`resolveEntityVisual`). Reading `properties.portraitUrl` here
+  // was a second resolver, and it is empty for the seeded First, so the section
+  // drew an empty frame one inch under his art (UI Laws 3, 4).
 
   // Disposition prose: try a stored disposition phrase first, then fall back.
   const dispositionPhrase = node.properties?.dispositionPhrase as string | undefined;
@@ -289,7 +292,7 @@ const portraitWithDispositionResolver: SectionResolver = (ctx) => {
     gold: true,
     tier: 'routine',
     source: 'portraitWithDispositionResolver',
-    portraitRef: { url: portraitUrl, subject: node.name, sphere },
+    portraitRef: { subject: node.name, sphere },
     bodyProse,
   };
   return section;
