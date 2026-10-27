@@ -4607,9 +4607,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.forge_construction',
     stakes: {
       goal: 'build a forge that survives its first firing',
-      risk: 'crack the hearth stone on the first firing and pay for the stone',
+      risk: 'crack the hearth stone and pay for the stone',
       won: 'built a forge that fired clean the first time',
-      lost: 'cracked the hearth stone on the first firing and paid for the stone',
+      lost: 'cracked the hearth stone and paid for the stone',
     },
     // THR-2048 — the place-holding row of the money-encounter outcome table (THR-1872).
     outcomeEffects: {
@@ -14622,9 +14622,9 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.prospect_the_seam',
     stakes: {
       goal: 'stake a claim on the seam before dark',
-      risk: 'find another prospector filed on it first and the filing fee gone',
+      risk: 'pay the filing fee on a seam already filed',
       won: 'staked the claim and entered it at the assay office',
-      lost: 'found another prospector had filed on it first, the filing fee paid for nothing',
+      lost: 'paid the filing fee on a seam already filed',
     },
     // THR-2048 — the claim staked is held; a failed stake stakes nothing and takes nothing.
     outcomeEffects: {
