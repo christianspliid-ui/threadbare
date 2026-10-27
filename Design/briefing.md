@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 06:58 local (05:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 07:58 local (06:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -53,11 +53,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready, all waiting out their veto windows, and one being built.** The builder took [a place held after success](https://linear.app/threadbare/issue/THR-2048/plan-doc-a-place-held-after-success-the-forge-a-mortal-builds-and-the) as soon as its veto window closed at 05:45 UTC; that run is working now. The rest open in this order through Wednesday: [THR-2051](https://linear.app/threadbare/issue/THR-2051) at 08:49 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
+**Healthy: 6 ready, all waiting out their veto windows; nothing is being built right now.** [A place held after success](https://linear.app/threadbare/issue/THR-2048/plan-doc-a-place-held-after-success-the-forge-a-mortal-builds-and-the) is built and live ([#2622](https://github.com/christianspliid-ui/threadbare/pull/2622)). The builder waits for the next window to close; it is idle by design, not stalled. The rest open in this order through Wednesday: [THR-2051](https://linear.app/threadbare/issue/THR-2051) at 08:49 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree names it, so nothing is at risk. The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (7ff2130f). Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 05:40 UTC) are healthy. No pull requests are open. Engine speed reads 147 ms per tick, 12% under the weekly median of 167.
+All green. The live site serves the latest main (5dfb0eb2). Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 06:40 UTC) are healthy. No pull requests are open. Engine speed reads 174 ms per tick, 5% over the weekly median of 167, inside the normal range.

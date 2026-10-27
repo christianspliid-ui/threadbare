@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-27 06:58 local (05:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-27 07:58 local (06:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-27: a place held after success (the forge a mortal builds) is live** ([THR-2048](https://linear.app/threadbare/issue/THR-2048)). Merged via [#2622](https://github.com/christianspliid-ui/threadbare/pull/2622).
 - **2026-10-27: a relic left lying can now be taken up, and the fix is live** ([THR-2031](https://linear.app/threadbare/issue/THR-2031)). Merged via [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621).
 - **2026-10-27: the plan for what attending a mortal costs is merged** ([THR-2062](https://linear.app/threadbare/issue/THR-2062)), via [#2620](https://github.com/christianspliid-ui/threadbare/pull/2620). Its five calls sit in the briefing's *Decided for you* until Wednesday 03:01 UTC.
 - **2026-10-26: readouts now say what they show, and the fix is live** ([THR-2061](https://linear.app/threadbare/issue/THR-2061)). Merged via [#2616](https://github.com/christianspliid-ui/threadbare/pull/2616). Both halves of "new things arrive one at a time" are now done.
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: a town short of stone, ore or timber no longer "goes hungry" in the chronicle, and the fix is live** ([THR-2070](https://linear.app/threadbare/issue/THR-2070)). Merged via [#2611](https://github.com/christianspliid-ui/threadbare/pull/2611).
 - **2026-10-26: the plan for salt, the good the smugglers carry, is merged** ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), via [#2609](https://github.com/christianspliid-ui/threadbare/pull/2609). Its four calls sit in the briefing's *Decided for you* until Tuesday 18:03 UTC.
 - **2026-10-26: three more fixes are live.** [A follow-up scene waits for its place](https://linear.app/threadbare/issue/THR-1929) ([#2605](https://github.com/christianspliid-ui/threadbare/pull/2605)), [a mortal's trade steers what they choose](https://linear.app/threadbare/issue/THR-2067) ([#2606](https://github.com/christianspliid-ui/threadbare/pull/2606)) and [tavern follow-ups can happen](https://linear.app/threadbare/issue/THR-2039) ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)).
-- **2026-10-26: six small round-5 faults are fixed, and the fix is live** ([THR-2057](https://linear.app/threadbare/issue/THR-2057)). Merged via [#2604](https://github.com/christianspliid-ui/threadbare/pull/2604).
 
 ---
 
