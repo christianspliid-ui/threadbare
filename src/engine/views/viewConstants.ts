@@ -41,8 +41,12 @@ export const INSPECTOR_VIEW_BUDGET_MS = 16;
  * hex-contents index at 4.5 ms and 7.6 ms (×1.7). The frame budget stays the product target
  * (each budget test logs it); the assertion uses the budget × this factor, so the lane fails
  * on a real regression (well over twice a frame) and not on runner load.
+ *
+ * THR-2084 — raised from 2: with no change to the armed-targets code, the worst card ran at
+ * 13.95 ms (998b05f0) and 32.96 ms (93f91e6b) two commits apart, and the untouched index at
+ * 3.56 ms to 11.12 ms across five runs (×3.1). The dev machine measures the worst card at 6.3 ms.
  */
-export const SHARED_RUNNER_SLOWDOWN = 2;
+export const SHARED_RUNNER_SLOWDOWN = 3;
 
 /** THR-1995 — the wall-clock ceiling the heavy budget tests assert: one frame on a slow runner. */
 export const INSPECTOR_VIEW_CI_CEILING_MS = INSPECTOR_VIEW_BUDGET_MS * SHARED_RUNNER_SLOWDOWN;
