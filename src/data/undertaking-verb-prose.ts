@@ -220,6 +220,8 @@ export const UNDERTAKING_CELL_DEEDS: Readonly<Record<string, string>> = {
   'cell.use.location': 'Drew the yield of',
   'cell.control_seize.agreement': 'Stole',
   'cell.use.standing': 'Called in',
+  // THR-2031 — a relic left lying is not *claimed*; it is taken up and carried away.
+  'cell.control_claim.item': 'Took up',
 };
 
 /** The ledger's word for a finished cell: its own if it has one, else its verb's. */
@@ -263,6 +265,8 @@ export const UNDERTAKING_CELL_PHRASES: Readonly<Record<string, string>> = {
   'cell.destroy.monster': 'Hunt a monster',
   // THR-1660 — "Create a pilgrim way" is machinery; the act is a consecration.
   'cell.create.pilgrim_way': 'Consecrate a pilgrim way',
+  // THR-2031 — "Claim an item" says nothing of where the thing was; it was left lying.
+  'cell.control_claim.item': 'Take up a relic left lying',
 };
 
 // ─── Per-cell line sets (THR-1429) ──────────────────────────────────
@@ -611,6 +615,19 @@ export const UNDERTAKING_CELL_PROSE: Readonly<Record<string, UndertakingVerbLine
     ],
     narration: '{Actor} has scouted {object}.',
   },
+  // THR-2031 — taking up a thing left lying. The claim set's "sets a mark on" and
+  // "answers to a new name" are wrong for something carried away from where it lay.
+  'cell.control_claim.item': {
+    activity: [
+      '{Actor} has set out for {place}, where {object} has lain since the last age.',
+      '{Actor} is on the road to {place}. Nobody has carried {object} out of it yet.',
+    ],
+    completion: [
+      '{Actor} came out of {place} carrying {object}.',
+      '{Object} no longer lies at {place}. {Actor} has it now.',
+    ],
+    narration: '{Actor} took {object} up from where it lay at {place}.',
+  },
 };
 
 /**
@@ -630,6 +647,10 @@ export const UNDERTAKING_CELL_OUTCOME_PROSE: Readonly<Record<string, Readonly<Re
     raised: ['{Actor} raises {object} in {place}, and it is theirs.'],
     // The slots filled, or nothing qualifies any more: nothing was raised, and the card says why (Law 22).
     no_room: ['{Actor} finds no room left in {place} for what they meant to build.'],
+  },
+  'cell.control_claim.item': {
+    // THR-2031: a past god's relic finding a bearer is told as that, not as any found thing.
+    echo: ['{Actor} takes up {object}, left by a god of the last age, and carries it out of {place}.'],
   },
 };
 

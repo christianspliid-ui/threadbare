@@ -595,8 +595,10 @@ function leadSurveyTargets(
  * resolves through its `located_at` target first — without that hop every actor-valued
  * target would read as unresolvable and the ordering would degrade to insertion order,
  * which is the defect this exists to fix.
+ *
+ * Exported for focused tests (NFP #2), as `orderTargetsByProximity` is.
  */
-function resolveTargetHex(graph: WorldGraph, node: GraphNode): { col: number; row: number } | null {
+export function resolveTargetHex(graph: WorldGraph, node: GraphNode): { col: number; row: number } | null {
   if (node.type === 'actor') {
     // A group-family node carries no `located_at` of its own — the groups system
     // derives a company's position from its leader, and failing that from any living
@@ -609,6 +611,18 @@ function resolveTargetHex(graph: WorldGraph, node: GraphNode): { col: number; ro
       ? getGroupPosition(graph, node.id)
       : getAgentLocationId(graph, node.id);
     return locId ? resolveLocationToHex(graph, locId) : null;
+  }
+  if (node.type === 'artifact') {
+    // THR-2031 — an artifact has no hex of its own: a borne one stands where its bearer
+    // stands, an unborne one where it lies (`lies_at`). Without this every item target
+    // sorted last, so `claim × Item` and `seize × Item` never ordered by distance.
+    const bearer = graph.getIncomingEdges(node.id, 'possesses')[0] ?? graph.getIncomingEdges(node.id, 'bonded_to')[0];
+    if (bearer) {
+      const holder = graph.getNode(bearer.source);
+      return holder ? resolveTargetHex(graph, holder) : null;
+    }
+    const lies = graph.getOutgoingEdges(node.id, 'lies_at')[0];
+    return lies ? resolveLocationToHex(graph, lies.target) : null;
   }
   return resolveLocationToHex(graph, node.id);
 }

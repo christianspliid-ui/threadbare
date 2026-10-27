@@ -2367,6 +2367,14 @@ const ITEM: UndertakingObjectType = {
   tierOf: itemTier,
   lexicon: 'item',
   harmOnDestroy: 'property_destroyed',
+  eligibility: {
+    // THR-2031 — only a thing that lies somewhere can be taken up. The cell's `unowned`
+    // rule already drops borne items; this drops the loose node with no place.
+    'control:claim': (graph, _actorId, handle) => {
+      const nodeId = nodeIdOf(handle);
+      return nodeId && graph.getOutgoingEdges(nodeId, 'lies_at').length > 0 ? null : 'not_lying_at_a_place';
+    },
+  },
   verbs: {
     // The masterwork op is the one item-minting undertaking the corpus has.
     create: (ctx) => mintMasterwork(
@@ -2397,6 +2405,34 @@ const ITEM: UndertakingObjectType = {
       // THR-1672 — a seized book teaches its new holder, once.
       onItemAcquired(ctx.graph, ctx.actorId, nodeId, ctx.tick, 'seized', Number(ctx.state?.seed ?? 0));
       return { success: true, op: 'seize_item', createdId: nodeId };
+    },
+    // THR-2031 — taking up a thing that lies at a place (a past god's seeded relic):
+    // the `lies_at` edge goes and a `possesses` edge comes, remembering where it lay.
+    'control:claim': (ctx) => {
+      const nodeId = nodeIdOf(ctx.handle);
+      const item = nodeId ? ctx.graph.getNode(nodeId) : undefined;
+      if (!nodeId || !item) return fail('claim_item', 'item_not_found');
+      if (!ctx.graph.getNode(ctx.actorId)) return fail('claim_item', 'actor_not_found');
+      // Someone got there first: two mortals worked the same relic and one finished.
+      const held = ctx.graph.getIncomingEdges(nodeId, 'possesses').length > 0
+        || ctx.graph.getIncomingEdges(nodeId, 'bonded_to').length > 0;
+      if (held) return fail('claim_item', 'already_held');
+      const lies = ctx.graph.getOutgoingEdges(nodeId, 'lies_at');
+      if (lies.length === 0) return fail('claim_item', 'not_lying_at_a_place');
+      const takenFrom = lies[0].target;
+      for (const edge of lies) ctx.graph.removeEdge(edge.id);
+      ctx.graph.addEdge({
+        id: `possesses_${nodeId}_${ctx.actorId}_${ctx.tick}`,
+        source: ctx.actorId,
+        target: nodeId,
+        type: 'possesses',
+        properties: { active: true, acquiredTick: ctx.tick, via: 'claimed', takenFrom },
+      });
+      onItemAcquired(ctx.graph, ctx.actorId, nodeId, ctx.tick, 'claimed', Number(ctx.state?.seed ?? 0));
+      return {
+        success: true, op: 'claim_item', createdId: nodeId, proseObjectId: nodeId,
+        ...(item.properties.echoOrigin === true ? { completionLine: 'echo' } : {}),
+      };
     },
     // Destroying an item is the removal funnel: the bearer edges, then the node.
     destroy: (ctx) => {

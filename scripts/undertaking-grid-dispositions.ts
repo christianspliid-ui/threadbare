@@ -183,6 +183,7 @@ export const LIVE_CELL_NOTES: Readonly<Partial<Record<WorldObjectKindId, Partial
   },
   item: {
     create: { op: 'mint_masterwork', note: 'A masterwork where the maker stands — made with an idea by the item generator since THR-1570 (a gen_masterwork_* item that does something and costs something); a chart is the same cell with the kind as a parameter.', retires: ['craft_masterwork'] },
+    'control:claim': { op: 'claim_item', note: 'Taking up an item that lies at a place (THR-2031) — in practice a past god\'s seeded relic: the `lies_at` edge goes and a `possesses` edge comes (`via: claimed`, `takenFrom` the place). Refused `not_lying_at_a_place` at proposal and `already_held` at completion; a seeded relic speaks its own echo completion line. The payoff of the treasure hunt — observe a ruin → clue → treasure map → delve → this.', readBy: 'The possession lifecycle: `possesses` is read by the attachment surfaces, the trait-while-held grant, and `treasureMapConsumption`; Dominion reads the relic through its bearer from then on, and the relic\'s Inspector page names its holder.' },
     'control:seize': { op: 'seize_item', note: 'The possesses edge moves; motive-gated. A seized book that teaches (`#arcane` / `#ancient`, or a generated forbidden book) teaches its new holder one spell, once (THR-1672, `onItemAcquired`).' },
     destroy: { op: 'destroy_item', note: 'The bearer edges, then the node.' },
   },
@@ -447,7 +448,6 @@ export const CELL_DISPOSITIONS: Readonly<Partial<Record<WorldObjectKindId, Parti
     'change:raise': L('Enchanting or refining waits until items carry a tier a work can move.'),
     'change:lower': L('Spoiling another\'s item waits with raise × Item.'),
     use: N('Its activated ability is one tick — an action, not a work.'),
-    'control:claim': W('Picking up an unowned item: the possesses edge, one line. Op needed: `claim_item`. The payoff of the treasure hunt — observe a ruin → clue → treasure map → delve → this — and the reason a found relic on the ground is reachable at all.', 'The possession lifecycle: `possesses` is read by the attachment surfaces, the trait-while-held grant, and `treasureMapConsumption` — the payoff step of the observe to clue to chart to delve climb that THR-1428 R1 and R2 opened.'),
     observe: L('Appraising what one holds waits until items carry hidden properties. Searching for treasure is not this cell: you cannot observe an item you do not hold — it is observe × Location / observe × Area with the treasure map as the guiding item.'),
   },
   power: {

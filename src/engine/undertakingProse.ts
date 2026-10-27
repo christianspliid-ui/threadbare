@@ -98,9 +98,31 @@ export function objectDisplayName(
   return subject;
 }
 
+/**
+ * THR-2031 — an artifact's place is never the artifact. While a relic lies, it is where
+ * it lies (`lies_at`); once taken up, the place it was taken from (`takenFrom` on the
+ * claimant's `possesses` edge); a borne one stands where its bearer stands. `undefined`
+ * for a non-artifact object, so the caller's own resolution runs.
+ */
+function artifactPlaceId(graph: WorldGraph, ctx: UndertakingProseContext): string | null | undefined {
+  const objectId = ctx.handle?.kind === 'node' ? ctx.handle.nodeId : undefined;
+  if (!objectId || graph.getNode(objectId)?.type !== 'artifact') return undefined;
+  const lies = graph.getOutgoingEdges(objectId, 'lies_at')[0];
+  if (lies) return lies.target;
+  const held = graph.getIncomingEdges(objectId, 'possesses');
+  const takenFrom = held.find(e => e.source === ctx.actorId)?.properties.takenFrom;
+  if (typeof takenFrom === 'string') return takenFrom;
+  const bearer = held[0]?.source;
+  // Left with nothing, the slot takes its neutral word rather than the relic's name.
+  return (bearer ? graph.getOutgoingEdges(bearer, 'located_at')[0]?.target : undefined) ?? null;
+}
+
 /** The place a work stands, resolved to the place tier for a room (its parent settlement carries the name people use). */
 function placeNameOf(graph: WorldGraph, ctx: UndertakingProseContext): { id: string; name: string } | undefined {
-  const placeId = ctx.targetNodeId ?? (ctx.handle ? objectPlaceNodeId(graph, ctx.handle) : null);
+  const artifactPlace = artifactPlaceId(graph, ctx);
+  const placeId = artifactPlace !== undefined
+    ? artifactPlace
+    : ctx.targetNodeId ?? (ctx.handle ? objectPlaceNodeId(graph, ctx.handle) : null);
   if (!placeId) return undefined;
   const node = graph.getNode(placeId);
   if (!node) return undefined;

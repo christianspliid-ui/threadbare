@@ -720,6 +720,9 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.destroy.network',
         'cell.use.agreement',
         'cell.destroy.agreement',
+        // THR-2031 — the treasure hunt's payoff: take up what the last age left lying.
+        // Ahead of `create.item` so the per-ambition cap cannot starve it.
+        'cell.control_claim.item',
         'cell.create.item',
         'cell.control_seize.item',
         // The seeker's road into the Powers seam (THR-1429, the division rule): what
@@ -1891,6 +1894,8 @@ export const EVENT_MINTED_AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
         'cell.observe.area',
         'cell.observe.location',
         'cell.create.companion',
+        // THR-2031 — a wanderer who finds a relic left lying carries it on.
+        'cell.control_claim.item',
         'cell.create.item',
         'cell.create.route',
         'cell.use.agreement',
