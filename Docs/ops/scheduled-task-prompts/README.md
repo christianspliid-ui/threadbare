@@ -40,6 +40,7 @@ Three reasons, all learned the hard way:
 | `tb-design-lane.md` | `tb-design-lane` | every 3 h ~:14 | Live — registered 2026-09-25 (THR-1611) |
 | `tb-weekly-review.md` | `tb-weekly-review` | Fri 17:00 (cron `0 17 * * 5`) | Live — registered 2026-10-25 (THR-1950). Replaces the five process-review lanes (`weekly-retro`, `weekly-workflow-retro`, `tb-cicd-review`, `weekly-project-hygiene`, `daily-backlog-grooming`), now disabled; their mirrors stay here so they can be restored |
 | `tb-cold-playtest.md` | `tb-cold-playtest` | Daily 10:37 (cron `37 10 * * *`) | **Mirror only — awaiting attended registration** (THR-1610). An attended session creates the task from this mirror and records its observed fire time |
+| `tb-ux-review.md` | `tb-ux-review` | Mon 07:33 (cron `33 7 * * 1`) | Live — registered 2026-10-27 (attended, Christian's ask); first fire pending |
 
 That is every registered task except one, named below.
 
