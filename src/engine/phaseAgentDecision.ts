@@ -1770,10 +1770,14 @@ export function phaseAgentDecision(
             // for it could only lapse — and it is not a steer at all. This check runs
             // before the Compulsion Override below, so the encounter about to start is
             // the board's pick *or* the held steer the override is about to take.
+            // THR-2068: a compelled journey's scene counts too — the arrival block
+            // below takes it this tick, after this offer is built.
             const heldTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
+            const heldJourneyId = actor.properties?.compelledJourneyTemplateId as string | undefined;
             const offerable = (c: ScoredCandidate): boolean =>
               c.entry.templateId !== decision.selected?.entry.templateId
-              && c.entry.templateId !== heldTargetId;
+              && c.entry.templateId !== heldTargetId
+              && c.entry.templateId !== heldJourneyId;
             // THR-2068: story only — the builder drops chores and fills from the
             // ranked list; below COMPULSION_MIN_STORY_OPTIONS it returns null and
             // the cooldown is not stamped.
