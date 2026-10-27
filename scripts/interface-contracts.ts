@@ -5211,6 +5211,30 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'encounter-outcome-holds-a-place',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A scene whose prose promises a holding keeps the promise. The `hold_place` outcome effect leaves the actor holding one Place of a type at the scene\'s settlement or wild place — the forge they built, the claim they staked — through the two existing writers: `createSublocation` raises the Place when none stands, `grantHolding` writes the `owns` edge and its face. One per site: an unheld one is taken up and made permanent (so a conditional mine never dissolves under its holder), one held by someone else raises nothing and pays the actor for the work. A scene never takes a holding away. The freehold then pays through holding income and reads on the sheet, the notable line and home-ground scoring like any other (THR-2048).',
+    ulTerms: ['Place'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['hold_place', 'createSublocation', 'grantHolding'],
+      module: 'src/engine/encounterAftermath.ts',
+    },
+    writeSites: [
+      'src/engine/encounterAftermath.ts',
+      'src/data/encounter-content.ts',
+    ],
+    readSites: [
+      'src/engine/holdingIncome.ts',
+      'src/engine/agentDetail.ts',
+      'src/engine/settlementNotable.ts',
+      'src/engine/resolutionModifiers.ts',
+      'src/engine/sublocation.ts',
+    ],
+  },
+  {
     id: 'one-namer-shared-primitives',
     producerSystem: AMBITIONS,
     consumerSystem: NARRATIVE,

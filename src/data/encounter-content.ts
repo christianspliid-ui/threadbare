@@ -18,6 +18,16 @@ import {
   MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL,
 } from './mortal-means-constants';
 import { W_LANE, W_PROSPERITY, W_PURSE, W_STOCK, W_UNREST, harvestStockAmount } from './economy-shift-constants';
+import type { EncounterAftermathReactionEffect } from '../types/unifiedAction';
+
+/** THR-2048 — the forge a mortal builds is theirs; held elsewhere, they are paid for the work. */
+const HOLD_FORGE: EncounterAftermathReactionEffect = {
+  kind: 'hold_place', placeTypeId: 'sublocation-type.forge', nameNoun: 'forge', heldElsewhereMeans: MEANS_STEP,
+};
+/** THR-2048 — the claim a prospector stakes is theirs; a claim held by another pays nothing. */
+const HOLD_CLAIM: EncounterAftermathReactionEffect = {
+  kind: 'hold_place', placeTypeId: 'sublocation-type.mine', nameNoun: 'claim', heldElsewhereMeans: 0,
+};
 import {
   ENCOUNTER_TONE_ADJECTIVES,
   encounterToneTierForThreat,
@@ -4597,9 +4607,17 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.forge_construction',
     stakes: {
       goal: 'build a forge that survives its first firing',
-      risk: 'crack the hearth stone on the first firing',
+      risk: 'crack the hearth stone and pay for the stone',
       won: 'built a forge that fired clean the first time',
-      lost: 'cracked the hearth stone on the first firing',
+      lost: 'cracked the hearth stone and paid for the stone',
+    },
+    // THR-2048 — the place-holding row of the money-encounter outcome table (THR-1872).
+    outcomeEffects: {
+      critical_success: [HOLD_FORGE, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.step }],
+      success: [HOLD_FORGE, { kind: 'economy_shift', quantity: 'prosperity', amount: W_PROSPERITY.small }],
+      success_at_cost: [HOLD_FORGE, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'The Forge Construction',
     locationTypes: ['town', 'castle', 'fort'],
@@ -4660,7 +4678,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           tierPromotionEligible: true,
         },
         onFailure: {
-          narrative: 'The first firing splits the hearth stone end to end. The forge will work. It will also need rebuilding before the year is out, and everyone standing there knows it.',
+          narrative: 'The first firing splits the hearth stone end to end. Whatever stands here now, it is not yet a forge.',
           reputationDelta: -0.08,
         },
       },
@@ -7456,7 +7474,11 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
       lost: 'spent a season and their coin on three dry shafts',
     },
     // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+    // THR-2048 — success stakes the claim (the place-holding row).
     outcomeEffects: {
+      critical_success: [HOLD_CLAIM],
+      success: [HOLD_CLAIM],
+      success_at_cost: [HOLD_CLAIM, { kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
       failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
       critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
@@ -14600,9 +14622,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.prospect_the_seam',
     stakes: {
       goal: 'stake a claim on the seam before dark',
-      risk: 'find another prospector filed on it first',
+      risk: 'pay the filing fee on a seam already filed',
       won: 'staked the claim and entered it at the assay office',
-      lost: 'found another prospector had filed on it first',
+      lost: 'paid the filing fee on a seam already filed',
+    },
+    // THR-2048 — the claim staked is held; a failed stake stakes nothing and never takes a
+    // claim away, but the filing fee the stakes name is spent (review gate round 1).
+    outcomeEffects: {
+      critical_success: [HOLD_CLAIM],
+      success: [HOLD_CLAIM],
+      success_at_cost: [HOLD_CLAIM],
+      failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP_SMALL }],
+      critical_failure: [{ kind: 'economy_shift', quantity: 'means', amount: -MEANS_STEP }],
     },
     name: 'Prospect the Seam',
     locationTypes: ['mining', 'wilderness', 'ruins'],

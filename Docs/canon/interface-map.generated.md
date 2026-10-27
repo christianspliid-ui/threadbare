@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 103 |
-| **Total** | **333** |
+| 🔵 UNVERIFIED-OK | 104 |
+| **Total** | **334** |
 
 ## Contracts by producing subsystem
 
@@ -209,6 +209,7 @@ remediation ticket or the build fails.
 | `decision-board-shadow-telemetry` | One ranking now decides what a mortal does with a free tick — encounter, undertaking, or nothing — and every decision it makes is on the record beside the encounter scorer’s own pick, so the decision mix the census gates is measured from behaviour rather than asserted (the shadow week that preceded the cutover was judged from the same trace, THR-1349). | event: `decision_board_comparison`, `decision_board_error`, `shadowWinnerFamily`, `shadowWinnerId`, `shadowAgreement`, `ambitionBoost` | Strategic Projects & Control | 🟢 LIVE | — |
 | `encounter-brokers-oath-of-fealty` | A won Faction Unification or a won Warlord's Tribute demand fires the faction_broker_fealty aftermath effect from the band's outcome table. It swears one faction to the realm the mortal serves (highest-ranked realm membership; that realm's own liege when it is sworn) through swearBrokeredOath, which applies every crown rule (crown on, maySwear, an unsworn realm liege, the re-swear cooldown) and writes through writeOath with brokeredBy and, for a demand, forcedBy:demand. The vassal is the warlord's company ($cast:warlord) or the best-standing present faction at the mortal's town (never the liege's enemy). The win replaces the offer score; no gift is paid. A refusal writes nothing and traces its reason. | edge: `sworn_to`, `faction_broker_fealty`, `brokerOath`, `swearBrokeredOath`, `brokeredBy` | Factions & Succession | 🟢 LIVE | — |
 | `encounter-hex-lights-stage` | An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window. | property: `hexCol`, `hexRow` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
+| `encounter-outcome-holds-a-place` | A scene whose prose promises a holding keeps the promise. The `hold_place` outcome effect leaves the actor holding one Place of a type at the scene's settlement or wild place — the forge they built, the claim they staked — through the two existing writers: `createSublocation` raises the Place when none stands, `grantHolding` writes the `owns` edge and its face. One per site: an unheld one is taken up and made permanent (so a conditional mine never dissolves under its holder), one held by someone else raises nothing and pays the actor for the work. A scene never takes a holding away. The freehold then pays through holding income and reads on the sheet, the notable line and home-ground scoring like any other (THR-2048). | function: `hold_place`, `createSublocation`, `grantHolding` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-fill-faction-purse` | The coin a mortal pays in a money encounter goes somewhere: a levy or tithe to the realm the ground belongs to, a toll or fee to the mercenary company, a failed rescue out of a guild's purse. The outcome table's `purse` row moves the faction's treasury through applyTreasuryDelta, the purse's one funnel. | node-prop: `wealth`, `applyTreasuryDelta` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-move-the-town` | A money encounter moves the town it happened in by how the dice fell: the outcome table's `economy_shift` writes the settlement's prosperity, unrest or stock of a good, or the volume on its busiest lane, once at the roll, and the aftermath names the move in the town page's own words. | node-prop: `prosperity`, `unrest`, `resources`, `volume` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-write-mortal-means` | A money encounter pays or costs the mortal who took it by how the dice fell: the template's outcome table writes their Means once, at the roll, through the one funnel, and the sheet and the aftermath say what it did in words. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
@@ -1739,6 +1740,18 @@ exit
 - **Read sites:** `src/components/Game/GameView.tsx`
 - **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +159 more
 - **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
+
+### `encounter-outcome-holds-a-place` — 🔵 UNVERIFIED-OK
+
+- **Intent:** A scene whose prose promises a holding keeps the promise. The `hold_place` outcome effect leaves the actor holding one Place of a type at the scene's settlement or wild place — the forge they built, the claim they staked — through the two existing writers: `createSublocation` raises the Place when none stands, `grantHolding` writes the `owns` edge and its face. One per site: an unheld one is taken up and made permanent (so a conditional mine never dissolves under its holder), one held by someone else raises nothing and pays the actor for the work. A scene never takes a holding away. The freehold then pays through holding income and reads on the sheet, the notable line and home-ground scoring like any other (THR-2048).
+- **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
+- **UL terms:** *Place*
+- **Module:** `src/engine/encounterAftermath.ts`
+- **Production hits:** 18 total — 2 write, 2 read, 14 unclassified
+- **Write sites:** `src/data/encounter-content.ts`, `src/engine/encounterAftermath.ts`
+- **Read sites:** `src/engine/holdingIncome.ts`, `src/engine/sublocation.ts`
+- **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/binding/creationEffects.ts`, `src/engine/descent.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/hexActionBridge.ts` +9 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-fill-faction-purse` — 🔵 UNVERIFIED-OK
 
