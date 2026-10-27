@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 05:58 local (04:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 06:58 local (05:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -49,22 +49,15 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **Every win swears; a loss swears nothing.** A clean win, a win and a costly win all swear. A loss still costs the tribute. *Veto:* "a costly win should pay without the oath".
   - **A tribute that can bind nobody is still paid.** If the mortal has no guild that may swear, or no crown stands over the town, the coin is spent and nothing is sworn. *Veto:* "a tribute that buys no oath should be refunded".
   - **The scene comes up as often as today.** It does not lean toward towns under a crown. So the oath is rare: on three test worlds, 2 of 32 tribute scenes had both a guild and a crown. *Veto:* "the tribute scene should only come up under a crown".
-- [A place held after success](https://linear.app/threadbare/issue/THR-2048/plan-doc-a-place-held-after-success-the-forge-a-mortal-builds-the-mill): four calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2048-place-held-after-success.md#decisions). Each can be vetoed on its own until Tuesday 06:45. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26a.md)*
-  - **The forge a mortal builds is theirs.** When a forge-building scene succeeds, the town gets a forge and the builder holds it. It pays them a little every day, as any freehold does. The forge is not one of the town's own buildings. *Veto:* "the smiths, not the builder, should hold the forge".
-  - **One forge per town, and one claim per place.** If a forge already stands and nobody holds it, the builder takes it. If someone holds it, the builder is paid for the work instead. A prospector holds the place's mine the same way, or stakes one if there is none. A held mine stays even when it is worked out.
-  - **A scene never takes a holding away.** A failed stake gains nothing, but it never loses a claim the mortal already holds. *Veto:* "a failed stake should lose the claim they had".
-  - **The mill lease stays the fellowship's.** The scene wins the lease for the millers' fellowship, and the mortal is paid a fee. So no one gets the mill yet. That row goes back on [the later-rows list](https://linear.app/threadbare/issue/THR-1954). *Veto:* "the mortal who wins the lease should hold the mill".
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 ready, all waiting out their veto windows.** The builder's last two runs correctly found nothing to take yet. They open in this order through Wednesday: [THR-2048](https://linear.app/threadbare/issue/THR-2048) at 05:45 UTC, [THR-2051](https://linear.app/threadbare/issue/THR-2051), [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
+**Healthy: 6 ready, all waiting out their veto windows, and one being built.** The builder took [a place held after success](https://linear.app/threadbare/issue/THR-2048/plan-doc-a-place-held-after-success-the-forge-a-mortal-builds-and-the) as soon as its veto window closed at 05:45 UTC; that run is working now. The rest open in this order through Wednesday: [THR-2051](https://linear.app/threadbare/issue/THR-2051) at 08:49 UTC, [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
 
-- **[A relic left lying can be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its) is merged and live** via [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621).
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree names it, so nothing is at risk. The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (7ff2130f). Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 04:40 UTC) are healthy. No pull requests are open. Engine speed reads 135 ms per tick, 19% under the weekly median of 167.
-
+All green. The live site serves the latest main (7ff2130f). Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 05:40 UTC) are healthy. No pull requests are open. Engine speed reads 147 ms per tick, 12% under the weekly median of 167.
