@@ -18,6 +18,7 @@ import { getAgentLocationId } from '../graphQueries';
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { buildConnections } from '../views/connections';
 import { buildEchoGroup, pastLineText } from '../worldPastWords';
+import { resolveUndertakingCompletion } from '../undertakingResolver';
 
 const ITEM = getUndertakingObjectType('item')!;
 const claim = ITEM.verbs['control:claim'] as ObjectVerbSemantic;
@@ -102,6 +103,21 @@ describe('THR-2031 — claim × Item takes up a relic that lies at a place', () 
     const again = run(state, second, relicId);
     expect(again).toMatchObject({ success: false, op: 'claim_item', error: 'already_held' });
     expect(state.graph.getAllEdges().length).toBe(edgesBefore);
+    expect(state.graph.getIncomingEdges(relicId, 'possesses').map(e => e.source)).toEqual([first]);
+  });
+
+  it('a raced claim refuses through the completion resolver — it never becomes a seize', () => {
+    const state = world();
+    const [first, second] = state.graph.getNodesByType('actor').filter(isAutonomousDecisionActor).map(n => n.id).sort();
+    const handle = { kind: 'node' as const, nodeId: relicId };
+    const complete = (actorId: string) => resolveUndertakingCompletion({
+      state, graph: state.graph, actorId, verb: 'control', variant: 'control:claim',
+      objectTypeId: 'item', handle, tick: 30, projectId: 'proj_claim', targetNodeId: relicId,
+    });
+    expect(complete(first).variant).toBe('control:claim');
+    const raced = complete(second);
+    expect(raced.variant).toBe('control:claim');
+    expect(raced.ops[0]).toMatchObject({ success: false, op: 'claim_item', error: 'already_held' });
     expect(state.graph.getIncomingEdges(relicId, 'possesses').map(e => e.source)).toEqual([first]);
   });
 
