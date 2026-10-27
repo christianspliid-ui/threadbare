@@ -88,6 +88,7 @@ export const RESOURCE_CLASSES: Readonly<Record<string, ResourceClass>> = {
   stone:   { id: 'stone',   category: 'strategic', primarySphere: 'matter',  baseValue: 0.8, scarcitySensitivity: 0.4 },
   ore:     { id: 'ore',     category: 'strategic', primarySphere: 'matter',  baseValue: 1.1, scarcitySensitivity: 0.5 },
   peat:    { id: 'peat',    category: 'strategic', primarySphere: 'entropy', baseValue: 0.5, scarcitySensitivity: 0.5 },
+  salt:    { id: 'salt',    category: 'strategic', primarySphere: 'matter',  baseValue: 1.0, scarcitySensitivity: 0.6 },
 
   // ── Luxuries (trade goods — glut-prone) ──
   gemstones:     { id: 'gemstones',     category: 'luxury', primarySphere: 'matter', baseValue: 1.4, scarcitySensitivity: 0.2 },
@@ -189,6 +190,11 @@ export const RESOURCE_TIER_PROSE: Readonly<Record<string, TierProse>> = {
     scarce: 'Good stone is hard to come by. Great works stall for want of it.',
     adequate: 'The quarries supply what the masons need.',
     surplus: 'Cut stone lies stacked and waiting. Walls rise fast in a place like this.',
+  },
+  salt: {
+    scarce: 'Salt is dear here. Meat goes uncured, and the butchers sell before it turns.',
+    adequate: 'There is salt enough to cure the winter\'s meat.',
+    surplus: 'Salt is cheap here. The pans give more than the town can use, and the carters take the rest.',
   },
 };
 
