@@ -36,6 +36,13 @@ export interface MovementState {
   /** Encounter template the agent intends to attempt on arrival */
   targetEncounterId?: string;
   /**
+   * THR-2068 — the god's paid compulsion chose this journey's encounter. Counts on
+   * arrival only while it still equals `targetEncounterId`, so a re-route to another
+   * encounter drops it without every rewriter having to clear it. The action started
+   * on arrival carries `compelledByGod`, so the archive raises its done line.
+   */
+  compelledGoalTemplateId?: string;
+  /**
    * THR-1669 — the appointment seed whose `departing` regime this journey was chosen
    * under. Set only on an encounter journey the board picked while the promise was
    * already competing (so the pick already fit the slack); the mid-journey promise

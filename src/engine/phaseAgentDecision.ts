@@ -921,6 +921,7 @@ export function phaseAgentDecision(
               ...movementState,
               targetEncounterId: undefined,
               targetSublocationId: undefined,
+              compelledGoalTemplateId: undefined,
               lastDecisionTick: state.tick,
             };
             graph.updateNode(agentId, {
@@ -1307,6 +1308,10 @@ export function phaseAgentDecision(
       // appended — otherwise the commitment could never reach it.
       let arrivalGoal: 'kept' | 'dropped' | undefined;
       let boardArrivalGoal: { templateId: string; locationId?: string } | undefined;
+      // THR-2068: a compelled journey's goal — the action it starts on arrival is compelled.
+      const compelledArrivalGoalId = journeyGoalId && arrivedState?.compelledGoalTemplateId === journeyGoalId
+        ? journeyGoalId
+        : undefined;
       if (journeyGoalId && arrivedState) {
         const goalId = journeyGoalId;
         // THR-1674: one instance only — the goal here, preferring the destination's.
@@ -1358,6 +1363,7 @@ export function phaseAgentDecision(
         // properties snapshot, which shares this movementState object.
         arrivedState.targetEncounterId = undefined;
         arrivedState.restlessRoad = undefined;
+        arrivedState.compelledGoalTemplateId = undefined;
       }
 
       // ── THR-1479: the regime — discount, drop, and the journey ─────────
@@ -2126,7 +2132,10 @@ export function phaseAgentDecision(
                 }),
                 effectiveTier: uaEffectiveTier,
                 // THR-2068 — the archive raises the done line for compelled work.
-                ...(compulsionOverrode ? { compelledByGod: true as const } : {}),
+                // A compelled journey's goal, started on arrival, counts too.
+                ...(compulsionOverrode || (compelledArrivalGoalId !== undefined && unifiedTemplate.id === compelledArrivalGoalId)
+                  ? { compelledByGod: true as const }
+                  : {}),
               };
               newUnifiedActions.push(action);
               // THR-1578: stamp what the mortal knew at commit — its proficiency on
@@ -2381,6 +2390,8 @@ export function phaseAgentDecision(
             // Attach encounter targeting fields
             movState.targetSublocationId = sel.entry.sublocationId ?? undefined;
             movState.targetEncounterId = sel.entry.templateId;
+            // THR-2068: a compelled scene that needs travel keeps its mark to arrival.
+            if (compulsionOverrode) movState.compelledGoalTemplateId = sel.entry.templateId;
             // THR-1669: chosen while departing — `sel` came off the regime-filtered
             // board, so it already fits the slack. Mark the journey so the moving
             // path's promise re-route lets the outvote stand to the end of the walk.

@@ -116,5 +116,15 @@ describe('THR-1781 — a compulsion paid mid-chapter holds until the next decisi
     for (const p of offeredAtSpend) {
       expect((p.compulsionCandidates ?? []).map(c => c.templateId)).not.toContain(paid!.templateId);
     }
+
+    // THR-2068: the compelled scene's action carries the mark — started here, or
+    // started on arrival when the scene needed travel (the journey keeps it).
+    const compelledAction = (s: GameState) =>
+      s.unifiedActions.find(a => a.actorId === FIRST_ID && a.templateId === paid!.templateId && a.startTick >= outcome!.tick);
+    for (let t = 0; t < MAX_TICKS && !compelledAction(state); t++) {
+      state = unattended(runTick(state, [], runtime));
+      clearTraces();
+    }
+    expect(compelledAction(state)?.compelledByGod).toBe(true);
   }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
 });
