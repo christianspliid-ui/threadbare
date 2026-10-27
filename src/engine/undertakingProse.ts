@@ -110,7 +110,8 @@ function artifactPlaceId(graph: WorldGraph, ctx: UndertakingProseContext): strin
   const lies = graph.getOutgoingEdges(objectId, 'lies_at')[0];
   if (lies) return lies.target;
   const held = graph.getIncomingEdges(objectId, 'possesses');
-  const takenFrom = held.find(e => e.source === ctx.actorId)?.properties.takenFrom;
+  // The claimant's own edge first; a claimant who arrived too late reads the winner's.
+  const takenFrom = (held.find(e => e.source === ctx.actorId) ?? held.find(e => typeof e.properties.takenFrom === 'string'))?.properties.takenFrom;
   if (typeof takenFrom === 'string') return takenFrom;
   const bearer = held[0]?.source;
   // Left with nothing, the slot takes its neutral word rather than the relic's name.

@@ -2416,7 +2416,8 @@ const ITEM: UndertakingObjectType = {
       // Someone got there first: two mortals worked the same relic and one finished.
       const held = ctx.graph.getIncomingEdges(nodeId, 'possesses').length > 0
         || ctx.graph.getIncomingEdges(nodeId, 'bonded_to').length > 0;
-      if (held) return fail('claim_item', 'already_held');
+      // Nothing is written, and the card says so (Law 22) rather than "came out carrying".
+      if (held) return { ...fail('claim_item', 'already_held'), completionLine: 'taken', proseObjectId: nodeId };
       const lies = ctx.graph.getOutgoingEdges(nodeId, 'lies_at');
       if (lies.length === 0) return fail('claim_item', 'not_lying_at_a_place');
       const takenFrom = lies[0].target;

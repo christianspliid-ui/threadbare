@@ -1185,7 +1185,10 @@ export function advanceStrategicProjects(
       // The deed by verb and object (THR-1434), named once here and carried on the
       // history entry and the completion event — the ledger and the chronicle read
       // the same reference.
-      const deed = describeDeed(graph, candidate, checked, christened?.nodeId);
+      // A completion whose every op failed did nothing (THR-2031 review: a relic someone
+      // else carried off first, no free ground, no room) — the ledger names no deed for it.
+      const nothingDone = ops.length > 0 && ops.every(o => !o.success);
+      const deed = nothingDone ? undefined : describeDeed(graph, candidate, checked, christened?.nodeId);
 
       // ── The capability rider (THR-1440) ──
       //

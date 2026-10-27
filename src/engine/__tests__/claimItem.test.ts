@@ -102,6 +102,14 @@ describe('THR-2031 — claim × Item takes up a relic that lies at a place', () 
     expect(again).toMatchObject({ success: false, op: 'claim_item', error: 'already_held' });
     expect(state.graph.getAllEdges().length).toBe(edgesBefore);
     expect(state.graph.getIncomingEdges(relicId, 'possesses').map(e => e.source)).toEqual([first]);
+    // The late claimant's card says nothing was taken, at the place it lay.
+    expect(again.completionLine).toBe('taken');
+    const text = cellCompletionProse(state.graph, project(second, relicId), 'control:claim', {
+      line: again.completionLine, objectId: again.proseObjectId,
+    }).text;
+    expect(text).toContain('too late');
+    expect(text).toContain(state.graph.getNode(hostId)!.name!);
+    expect(text).not.toContain('carrying');
   });
 
   it('refuses an unborne item that lies nowhere at proposal', () => {

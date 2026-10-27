@@ -651,6 +651,8 @@ export const UNDERTAKING_CELL_OUTCOME_PROSE: Readonly<Record<string, Readonly<Re
   'cell.control_claim.item': {
     // THR-2031: a past god's relic finding a bearer is told as that, not as any found thing.
     echo: ['{Actor} takes up {object}, left by a god of the last age, and carries it out of {place}.'],
+    // Someone else carried it off first: nothing was taken, and the card says why (Law 22).
+    taken: ['{Actor} reaches {place} too late. Someone else has carried {object} away.'],
   },
 };
 
