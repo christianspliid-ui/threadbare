@@ -128,7 +128,11 @@ describe('THR-2048 — hold_place', () => {
     const graph = buildGraph();
     graph.addNode({ id: 'forge-old', type: 'location', name: 'The Old Forge', properties: { parentLocationId: 'town-1', sublocationTypeId: FORGE, persistence: { type: 'permanent' } } });
     graph.addEdge({ id: 'contains-forge', source: 'town-1', target: 'forge-old', type: 'contains', properties: {} });
-    const state = run(buildState(graph), runtime, HOLD_FORGE);
+    const reaction: EncounterAftermathReaction = { id: 'r-hold', label: 'Outcome', effects: [HOLD_FORGE] };
+    const { state, mutationSummary } = applyEncounterAftermathReaction(
+      buildState(graph), makeAction(), reaction, TICK, runtime, { outcomeBand: 'success' });
+    // The owns edge and the holding face are structure, as on the raised branch.
+    expect(mutationSummary.touchedStructure).toBe(true);
     expect(placesOfType(state.graph, 'town-1', FORGE)).toHaveLength(1);
     expect(state.graph.getIncomingEdges('forge-old', 'owns')[0]).toMatchObject({ source: 'actor-1', properties: { via: 'grant' } });
     expect(heldTraces().map(t => t.result)).toEqual(['taken_up']);

@@ -2100,7 +2100,8 @@ export function applyEncounterAftermathReaction(
         // A held Place is a Work: a conditionally spawned mine would otherwise dissolve
         // under its holder when the ore runs out (`checkDissolutions` skips `permanent`).
         standing.properties.persistence = { type: 'permanent' };
-        mutationSummary.touchedWorld = true;
+        // grantHolding adds the owns edge and the holding face — structural, as on `raised`.
+        mutationSummary.touchedStructure = true;
         emitTrace({
           ...heldBase, result: 'taken_up', placeId: standing.id,
           summary: `hold_place: ${holderNode.name} took up ${standing.name} at ${siteId}`,
