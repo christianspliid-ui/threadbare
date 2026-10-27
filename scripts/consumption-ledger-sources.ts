@@ -176,6 +176,13 @@ export const EFFECT_ROWS: Readonly<Record<string, LedgerRow>> = {
       acts('src/engine/decisionBoard.ts', 'readWealth'),
     ],
   },
+  hold_place: {
+    writes: "a Place (`createSublocation`) and the actor's `owns` edge plus its face (`grantHolding`); a held-elsewhere Place pays `wealth` instead (THR-2048)",
+    consumers: [
+      acts('src/engine/holdingIncome.ts', 'collectHoldingPayments'),
+      acts('src/engine/resolutionModifiers.ts', 'ownsThisPlace'),
+    ],
+  },
   quintessence_shift: {
     writes: "`quintessence` on the target actor",
     consumers: [acts('src/engine/brokenState.ts', 'isBrokenMortal')],
