@@ -1750,7 +1750,14 @@ export function phaseAgentDecision(
       // Before committing, check if this agent is eligible for a Compulsion
       // premonition. If so, emit the event to the queue. The agent's decision
       // will be influenced by compulsionTargetTemplateId if the player acts.
-      if (decision.selected && decision.topCandidates.length > 1) {
+      // THR-2068: no new offer while a paid steer is still unresolved. A held steer
+      // spent at this decision may need travel and become a compelled journey (set
+      // below, after this offer is built); a second steer paid during that journey
+      // would take the arrival decision and the first would lapse with a false
+      // "beyond reach". One paid steer in flight at a time — the cooldown is not
+      // stamped, so the next decision may offer.
+      const heldTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
+      if (decision.selected && decision.topCandidates.length > 1 && !heldTargetId) {
         try {
           const compulsionActor = graph.getNode(agentId);
           // THR-1414: `window.__DEBUG.forcePremonition(agent, 'compulsion')` stamps a
@@ -1767,16 +1774,13 @@ export function phaseAgentDecision(
           ) {
             // THR-1781: never offer the encounter the mortal is about to start. By
             // the time a held steer is spent that encounter is on cooldown, so paying
-            // for it could only lapse — and it is not a steer at all. This check runs
-            // before the Compulsion Override below, so the encounter about to start is
-            // the board's pick *or* the held steer the override is about to take.
+            // for it could only lapse — and it is not a steer at all. (A held steer
+            // suppresses the offer outright, above.)
             // THR-2068: a compelled journey's scene counts too — the arrival block
             // below takes it this tick, after this offer is built.
-            const heldTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
             const heldJourneyId = actor.properties?.compelledJourneyTemplateId as string | undefined;
             const offerable = (c: ScoredCandidate): boolean =>
               c.entry.templateId !== decision.selected?.entry.templateId
-              && c.entry.templateId !== heldTargetId
               && c.entry.templateId !== heldJourneyId;
             // THR-2068: story only — the builder drops chores and fills from the
             // ranked list; below COMPULSION_MIN_STORY_OPTIONS it returns null and

@@ -114,13 +114,12 @@ describe('THR-1781 — a compulsion paid mid-chapter holds until the next decisi
     expect(receipt?.templateId).toBe(paid.templateId);
     // The player hears it: an outcome event reached the tick log.
     expect(state.tickEvents.some(e => e.type === 'divine_premonition' && e.actorId === FIRST_ID)).toBe(true);
-    // A compulsion offered at the decision that spends the steer never names the
-    // encounter the steer just started — paying for it again could only lapse.
+    // THR-2068: no compulsion is offered at the decision that spends the steer — the
+    // steer may become a compelled journey, and a second paid steer would take its
+    // arrival decision and lapse the first with a false "beyond reach".
     const offeredAtSpend = (state.premonitionQueue ?? [])
       .filter(p => p.type === 'compulsion' && p.agentId === FIRST_ID && p.tick === outcome.tick);
-    for (const p of offeredAtSpend) {
-      expect((p.compulsionCandidates ?? []).map(c => c.templateId)).not.toContain(paid.templateId);
-    }
+    expect(offeredAtSpend).toEqual([]);
 
     // THR-2068: the compelled scene's action carries the mark — started here, or
     // started on arrival when the scene needed travel (the journey keeps it).
