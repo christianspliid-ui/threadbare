@@ -3262,6 +3262,13 @@ export interface DebugBridge {
    * route). **Async** (`await` it).
    */
   getFirstPath: () => Promise<import('./engine/firstPath').FirstPath | null>;
+  /**
+   * THR-2068 — dev-only: stamp a spark vision onto The First's thread (`meetingChoiceRecord
+   * .sparkVisionId`), so the `?seeded` route can show the path lean and God's Will's
+   * "Fits the …" line. Returns the resolved path, or `null` (no First, unknown vision).
+   * **Async** (`await` it).
+   */
+  setFirstPath: (visionId: string) => Promise<import('./engine/firstPath').FirstPath | null>;
   /** THR-1986 — forget every caption dismissal, for repeat captures. **Async**. */
   resetFirstUseCaptions: () => Promise<void>;
 
