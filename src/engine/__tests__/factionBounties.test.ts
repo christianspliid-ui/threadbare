@@ -306,6 +306,26 @@ describe('collection at the fight end (bountyCollectBranch)', () => {
     }
   });
 
+  it('a double knockout collects nothing: a beaten hunter is never paid', () => {
+    for (const hunterFace of ['mauled', 'spared', 'slain'] as const) {
+      const g = world();
+      const id = issue(g);
+      const out = bountyCollectBranch(baseState(g), finishedDuel(FIGHT_DUEL_BOUNTY_ID, HUNTER, TARGET, { actor: hunterFace, opponent: 'mauled' }), ctx(120));
+      expect(g.getNode(id)!.properties.status).toBe('active');
+      expect(g.getIncomingEdges(id, 'collected')).toHaveLength(0);
+      expect(wealthOf(g, HUNTER)).toBe(30);
+      expect(out).toBeUndefined();
+    }
+  });
+
+  it('the stakes endings never claim a collection their band cannot guarantee', () => {
+    const hunter = getUnifiedTemplateById(FIGHT_DUEL_BOUNTY_ID)!.stakes!;
+    const hunted = getUnifiedTemplateById(FIGHT_DUEL_BOUNTY_DEFENCE_ID)!.stakes!;
+    expect(hunter.won).not.toMatch(/collected/);
+    expect(hunted.lost).not.toMatch(/run down|paid/);
+    for (const s of [hunter, hunted]) expect(`${s.won} ${s.lost}`).not.toMatch(/\{/);
+  });
+
   it('ignores a duel that is not a bounty duel', () => {
     const g = world();
     const id = issue(g);

@@ -37,13 +37,16 @@ export const bountyCollectBranch: FightEndBranch = (state, action, ctx) => {
   const graph = state.graph;
   try {
     const events: TickEvent[] = [];
-    const sides: Array<[string, string, FightEndingFace | undefined]> = [
-      [actorId, opponentId, opponentFace],
-      [opponentId, actorId, actorFace],
+    const sides: Array<[string, string, FightEndingFace | undefined, FightEndingFace | undefined]> = [
+      [actorId, opponentId, opponentFace, actorFace],
+      [opponentId, actorId, actorFace, opponentFace],
     ];
-    // A beaten side pays the bounty on them to the side that beat them.
-    for (const [winnerId, loserId, loserFace] of sides) {
+    // A beaten side pays the bounty on them to the side that beat them — never to a side
+    // that was itself beaten or ran (a double knockout collects nothing, so the hunter's
+    // own "the price still stands" line holds).
+    for (const [winnerId, loserId, loserFace, winnerFace] of sides) {
       if (!loserFace || !COLLECTING_FACES.has(loserFace)) continue;
+      if (winnerFace && (COLLECTING_FACES.has(winnerFace) || winnerFace === 'routed')) continue;
       const bounty = huntableBounty(graph, winnerId, loserId, ctx.tick);
       if (!bounty) continue;
       const collected = collectBounty(state, bounty.id, winnerId, ctx.tick);

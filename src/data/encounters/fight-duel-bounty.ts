@@ -110,7 +110,11 @@ export const FIGHT_DUEL_BOUNTY: UnifiedActionTemplate = {
     risk: 'be cut down by the one they came to collect',
     // The stakes builder fills only {actor}/{won}/{lost}, never a token inside them, so
     // these name the price without the target's name (the plan's `{target}` would leak).
-    won: 'collected the price on an old comrade\'s head',
+    // Each ending must hold for every result in its band (FIGHT_RESULT_ACTION_OUTCOME):
+    // `won` covers overcome (collected, or the target fled) and broke_off/bargained, so it
+    // never claims the price was paid — the chronicle line says that; `lost` covers
+    // yielded, routed and struck_down (a double knockout included), none of which collect.
+    won: 'came for an old comrade with a price on their head',
     lost: 'let the price on an old comrade\'s head go unpaid',
   },
   steps: HUNTER_STEPS,
@@ -139,8 +143,10 @@ export const FIGHT_DUEL_BOUNTY_DEFENCE: UnifiedActionTemplate = {
   stakes: {
     goal: 'send the hunter away unpaid',
     risk: 'be run down by the hunter who came for them',
+    // `won` covers overcome and broke_off/bargained, all unpaid; `lost` covers yielded and
+    // struck_down (collected) and routed (got away), so it says only who came off worse.
     won: 'sent the hunter away unpaid',
-    lost: 'was run down by the hunter who came for them',
+    lost: 'came off worse against the hunter who came for them',
   },
   steps: HUNTED_STEPS,
   narrativeTemplates: {
