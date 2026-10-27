@@ -14622,11 +14622,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.prospect_the_seam',
     stakes: {
       goal: 'stake a claim on the seam before dark',
-      risk: 'pay the filing fee on a seam already filed',
+      risk: 'find another prospector filed on it first',
       won: 'staked the claim and entered it at the assay office',
-      lost: 'paid the filing fee on a seam already filed',
+      lost: 'found another prospector had filed on it first',
+      lostBadly: 'paid the filing fee on a seam already filed',
     },
-    // THR-2048 — the claim staked is held; a failed stake stakes nothing and takes nothing.
+    // THR-2048 — the claim staked is held; a failed stake stakes nothing and takes
+    // nothing, and only a critical failure pays the fee (lostBadly names it).
     outcomeEffects: {
       critical_success: [HOLD_CLAIM],
       success: [HOLD_CLAIM],
