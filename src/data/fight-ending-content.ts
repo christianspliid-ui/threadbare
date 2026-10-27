@@ -69,3 +69,18 @@ export const FIGHT_CHRONICLE_NAMELESS_FOE = 'its foe';
 
 /** The name a line gives a place it cannot resolve. */
 export const FIGHT_CHRONICLE_NAMELESS_PLACE = 'the wilds';
+
+// ─── Bounties (THR-2072) ──────────────────────────────────────────────────────
+
+/**
+ * The chronicle line a collected bounty adds beside the duel's own face line. Names no
+ * faction, so no article is ever added to a faction name; an empty place reads
+ * `FIGHT_CHRONICLE_NAMELESS_PLACE`. The `economy.bounty` trace's summary is the same sentence.
+ */
+export const BOUNTY_CHRONICLE_LINE = '{hunter} collected the price on {target}\'s head at {place}.';
+
+/**
+ * The event-log line (routine, not the chronicle) when the hunter won because the target
+ * ran: the one case the hunter's `overcome` result line cannot tell.
+ */
+export const BOUNTY_ESCAPED_LINE = '{target} got away from {hunter} at {place}; the price on their head still stands.';

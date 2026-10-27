@@ -7519,6 +7519,64 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-2042. factionCommissions.test.ts: a lapsed posting refunds escrow to the purse exactly once, a taken one never lapses, a pre-THR-2042 posting refunds 0. npm run census:commissions: on seeds 42 / 99 / 7 escrow posted = paid + refunded + still held (250 = 20 + 230 + 0; 210 = 40 + 160 + 10; 330 = 50 + 265 + 15).',
     },
   },
+  // ── THR-2072 — a bounty is collected in a duel ───────────────────────────────────
+  {
+    id: 'bounty-licenses-duel',
+    producerSystem: FACTIONS,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'An open bounty licenses a duel (THR-2072). Issue Bounty posts a bounty event node (eventType bounty, status active, escrow BOUNTY_REWARD) on an individual mortal the faction holds hostile_to. runGrudgeDuels, for a co-located pair with no injury grudge, checks huntableBounty both ways: a member of the issuing faction may come for the target, rolling bountyDuelChance(hunter courage) on its own stream (BOUNTY_DUEL_STREAM_SALT), under the grudge trigger\'s busy, cooldown and never-duellist rules. A hit spawns fight.duel.bounty with the hunter as actor, or fight.duel.bounty_defence when only the hunted is threaded. Traced fight.trigger source bounty. Switch: FACTION_BOUNTIES_ENABLED.',
+    ulTerms: ['Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['huntableBounty', 'indexOpenBounties', 'bountyDuelChance', 'fight.duel.bounty', 'fight.duel.bounty_defence', 'FACTION_BOUNTIES_ENABLED'],
+      module: 'src/engine/fights/grudgeDuelTrigger.ts',
+    },
+    writeSites: ['src/engine/phaseFactionActions.ts', 'src/engine/factionBounties.ts'],
+    readSites: ['src/engine/fights/grudgeDuelTrigger.ts'],
+    verifiedLive: {
+      date: '2026-10-27',
+      evidence: 'THR-2072. factionBounties.test.ts: a member co-located with the target spawns fight.duel.bounty (forced roll) with the hunter as actor; the hunted acts in fight.duel.bounty_defence when only they are threaded; a non-member, the target alone, a dead target and a cooling pair never spawn; a pair with an injury grudge rolls the grudge only. npm run census:bounties (medium, 360 ticks): 22 / 11 / 25 bounty duels a month on seeds 42 / 99 / 7.',
+    },
+  },
+  {
+    id: 'bounty-pays-collector',
+    producerSystem: FACTIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A bounty pays the hunter who collects it (THR-2072). bountyCollectBranch (a FIGHT_END_BRANCHES entry after fighterEndingBranch) acts on the two bounty duels: when the target\'s face is yielded_to_mortal, spared, mauled or slain and the winner can hunt an open bounty on them, collectBounty marks it collected, moves escrow to escrowPaid, writes one collected edge (hunter → bounty), raises a decider hunter\'s Means by BOUNTY_MEANS_PAY (reason bounty, BOUNTY_CAUSE_LINE on the sheet), lifts hunted when no open bounty is left, and emits one notable chronicle line (BOUNTY_CHRONICLE_LINE). An unseen hunter collects with no Means. Traced economy.bounty (collected).',
+    ulTerms: ['Means', 'Faction'],
+    mechanism: {
+      kind: 'edge',
+      symbols: ['collected', 'collectBounty', 'bountyCollectBranch', 'BOUNTY_MEANS_PAY', 'BOUNTY_CAUSE_LINE'],
+      module: 'src/engine/factionBounties.ts',
+    },
+    writeSites: ['src/engine/factionBounties.ts', 'src/engine/fights/bountyCollect.ts'],
+    readSites: ['src/engine/agentDetail.ts', 'src/engine/views/subjects/personRows.ts', 'src/debug-bridge.ts'],
+    verifiedLive: {
+      date: '2026-10-27',
+      evidence: 'THR-2072. factionBounties.test.ts: a yielded, spared, mauled or slain target is collected once, with one collected edge passing EDGE_SCHEMA, a decider hunter\'s Means +BOUNTY_MEANS_PAY, an unseen hunter\'s none, and hunted lifted; a target who wins, flees or breaks off leaves it open. npm run census:bounties: collected 7 / 3 / 4 on seeds 42 / 99 / 7.',
+    },
+  },
+  {
+    id: 'lapsed-bounty-refunds-purse',
+    producerSystem: FACTIONS,
+    consumerSystem: ECONOMY,
+    intent:
+      'A bounty nobody collects pays back (THR-2072): closeBounties runs every tick in phaseFactionActions, right after lapseCommissions. An active bounty past its expiryTick, or whose target is gone or is not an individual mortal, is marked lapsed and its escrow returns to the issuing faction\'s wealth through applyTreasuryDelta (escrowRefunded on the bounty); hunted is lifted when no open bounty is left. A bounty whose faction is gone lapses with nothing refunded. Traced economy.bounty (lapsed). Read by the purse\'s own readWealth.',
+    ulTerms: ['Faction'],
+    mechanism: {
+      kind: 'node-prop',
+      symbols: ['closeBounties', 'escrow', 'escrowRefunded', 'applyTreasuryDelta', 'liftHuntedIfClear'],
+      module: 'src/engine/factionBounties.ts',
+    },
+    writeSites: ['src/engine/factionBounties.ts'],
+    readSites: ['src/engine/factionPurse.ts', 'src/engine/phaseFactionActions.ts'],
+    verifiedLive: {
+      date: '2026-10-27',
+      evidence: 'THR-2072. factionBounties.test.ts: a lapse refunds escrow once and lifts hunted; a dead target lapses at once (reason target_gone); a pre-THR-2072 bounty refunds 0. npm run census:bounties: escrow posted = paid + refunded + still held on every seed (570 = 70 + 430 + 70; 330 = 30 + 260 + 40; 540 = 40 + 450 + 50).',
+    },
+  },
   {
     id: 'trade-run-pays-means',
     producerSystem: AMBITIONS,
