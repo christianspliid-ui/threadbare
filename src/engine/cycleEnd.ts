@@ -272,6 +272,9 @@ export function pickDivineEchoes(
         ...graph.getOutgoingEdges(m.node.id, 'bonded_to'),
       ]) {
         const a = graph.getNode(e.target);
+        // THR-2031 — a relic seeded from an echo is already carried on the account;
+        // harvesting it again once a mortal takes it up would seed two copies next world.
+        if (a?.properties?.echoOrigin === true) continue;
         if (a?.type === 'artifact' || a?.type === 'artifact_legendary') relics.set(a.id, a);
       }
     }
