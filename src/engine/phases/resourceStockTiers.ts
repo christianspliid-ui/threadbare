@@ -222,6 +222,7 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
             hexCoords,
             sphere: cls.primarySphere,
             resourceCategory: cls.category,
+            resourceId,
           },
           tick,
           state.seed + hashString(loc.id + resourceId),
