@@ -222,6 +222,15 @@ export function compulsionOutcomeMessage(
   }
 }
 
+/**
+ * THR-2068: a compelled journey that arrived somewhere else — its road was re-routed
+ * (a company's heading, a movement re-check) while the scene still stands. "Beyond
+ * reach" would be false; the will was turned aside.
+ */
+export function compulsionJourneyDivertedMessage(agentName: string, encounterName: string): string {
+  return `Your will is turned aside: ${agentName} was drawn off the road to ${encounterName}.`;
+}
+
 // ─── Compulsion done line (THR-2068) ────────────────────────────
 
 /**
