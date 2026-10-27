@@ -741,10 +741,15 @@ export function phaseAgentDecision(
         // held the board's verdict for exactly one tick and sent one mortal on seed
         // 99 out and back 41 times. A journey begun before the regime turned — or
         // rewritten since by the reroute guard — carries no mark and is re-routed.
+        //
+        // THR-2068 — a compelled journey is the god's outvote: neither this re-route
+        // nor GUARD 3 below turns it aside, or the paid steer lapses at arrival.
+        const compelledJourneyHeld = !!movementState.targetEncounterId
+          && actor.properties?.compelledJourneyTemplateId === movementState.targetEncounterId;
         if (appointmentCtx?.regime === 'departing') {
           const destHex = resolveLocationToHex(graph, movementState.destinationId);
-          const outvoteStands = !!movementState.targetEncounterId
-            && movementState.appointmentOutvoteSeedId === appointmentCtx.seed.seedId;
+          const outvoteStands = compelledJourneyHeld || (!!movementState.targetEncounterId
+            && movementState.appointmentOutvoteSeedId === appointmentCtx.seed.seedId);
           const leaveBe = outvoteStands
             || (destHex ? hexDistance(destHex, appointmentCtx.slack.placeHex) === 0 : false);
           const fromId = getAgentLocationId(graph, agentId);
@@ -810,7 +815,7 @@ export function phaseAgentDecision(
             }
 
             // GUARD 3: Reroute threshold — alternative must be dramatically better
-            if (bestAltScore >= currentScore * REROUTE_SCORE_MULTIPLIER && bestAltLocationId) {
+            if (!compelledJourneyHeld && bestAltScore >= currentScore * REROUTE_SCORE_MULTIPLIER && bestAltLocationId) {
               // GUARD 4: Only allow queue_movement (moving agents can't start local/remote)
               // Pathfind from the NEXT graph node (movementQueue[0]), not agentLocId.
               // agentLocId is the located_at edge which is stale mid-road — using it
