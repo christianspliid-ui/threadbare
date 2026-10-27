@@ -17,6 +17,7 @@ import { resolveLocationToHex } from '../encounterAwareness';
 import { getAgentLocationId } from '../graphQueries';
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { buildConnections } from '../views/connections';
+import { buildEchoGroup, pastLineText } from '../worldPastWords';
 
 const ITEM = getUndertakingObjectType('item')!;
 const claim = ITEM.verbs['control:claim'] as ObjectVerbSemantic;
@@ -125,6 +126,18 @@ describe('THR-2031 — {place} names where the relic lies, never the relic', () 
     const after = cellCompletionProse(state.graph, project(actor, relicId), 'control:claim').text;
     expect(after).toContain(place);
     expect(after.split('The Hollow Bell').length - 1).toBe(1);
+  });
+});
+
+describe('THR-2031 — the chronicle stops calling a taken relic unclaimed', () => {
+  it('reads "lies … unclaimed" before the claim and "was taken up" after it', () => {
+    const state = world();
+    const relicLine = () => buildEchoGroup(state.graph, state.seededEchoes)!.lines
+      .map(pastLineText).find(t => t.startsWith('The Hollow Bell'))!;
+    expect(relicLine()).toContain('unclaimed');
+    run(state, mortal(state), relicId);
+    expect(relicLine()).not.toContain('unclaimed');
+    expect(relicLine()).toContain('was taken up from near');
   });
 });
 

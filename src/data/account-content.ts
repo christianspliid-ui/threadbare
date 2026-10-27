@@ -81,6 +81,9 @@ export const ECHO_CHRONICLE_LINES = {
   relic: { joiner: ' lies somewhere near ', end: ', unclaimed.' },
 } as const;
 
+/** The relic line once a mortal has taken the relic up (THR-2031): it no longer lies there. */
+export const ECHO_RELIC_TAKEN_LINE = { joiner: ' was taken up from near ', end: '.' } as const;
+
 /** The heir's sheet line under their name. */
 export const echoLineageLine = (name: string): string => `Of the line of ${name}`;
 

@@ -427,7 +427,11 @@ export function generateStrategicCandidates(
           continue;
         }
 
-        const targetHex = resolveLocationToHex(graph, target.id);
+        // THR-2031 — an artifact carries no hex of its own; read it through its bearer or
+        // `lies_at` so a far relic is priced by travel and shows on the project overlay.
+        const targetHex = target.type === 'artifact'
+          ? resolveTargetHex(graph, target)
+          : resolveLocationToHex(graph, target.id);
         const travelDist = actorHex && targetHex
           ? hexDistance(actorHex, targetHex)
           : 0;
