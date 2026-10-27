@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 222 |
+| 🟢 LIVE | 225 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 105 |
-| **Total** | **335** |
+| **Total** | **338** |
 
 ## Contracts by producing subsystem
 
@@ -299,6 +299,8 @@ remediation ticket or the build fails.
 
 | Contract | Intent | Mechanism | Consumer | Status | Ticket |
 |---|---|---|---|---|---|
+| `bounty-licenses-duel` | An open bounty licenses a duel (THR-2072). Issue Bounty posts a bounty event node (eventType bounty, status active, escrow BOUNTY_REWARD) on an individual mortal the faction holds hostile_to. runGrudgeDuels, for a co-located pair with no injury grudge, checks huntableBounty both ways: a member of the issuing faction may come for the target, rolling bountyDuelChance(hunter courage) on its own stream (BOUNTY_DUEL_STREAM_SALT), under the grudge trigger's busy, cooldown and never-duellist rules. A hit spawns fight.duel.bounty with the hunter as actor, or fight.duel.bounty_defence when only the hunted is threaded. Traced fight.trigger source bounty. Switch: FACTION_BOUNTIES_ENABLED. | node-prop: `huntableBounty`, `indexOpenBounties`, `bountyDuelChance`, `fight.duel.bounty`, `fight.duel.bounty_defence`, `FACTION_BOUNTIES_ENABLED` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `bounty-pays-collector` | A bounty pays the hunter who collects it (THR-2072). bountyCollectBranch (a FIGHT_END_BRANCHES entry after fighterEndingBranch) acts on the two bounty duels: when the target's face is yielded_to_mortal, spared, mauled or slain and the winner can hunt an open bounty on them, collectBounty marks it collected, moves escrow to escrowPaid, writes one collected edge (hunter → bounty), raises a decider hunter's Means by BOUNTY_MEANS_PAY (reason bounty, BOUNTY_CAUSE_LINE on the sheet), lifts hunted when no open bounty is left, and emits one notable chronicle line (BOUNTY_CHRONICLE_LINE). An unseen hunter collects with no Means. Traced economy.bounty (collected). | edge: `collected`, `collectBounty`, `bountyCollectBranch`, `BOUNTY_MEANS_PAY`, `BOUNTY_CAUSE_LINE` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `commission-pays-member` | The first faction → mortal coin write (THR-2042). Commission Quest holds COMMISSION_QUEST_COST on its faction_quest posting as escrow (status open). When a mortal who makes choices (isAutonomousDecisionActor) completes a faction encounter, processFactionEncounterReputation returns the faction it credited and executeStepResult calls takeUpCommission: the oldest open posting is taken only if applyMeansShift(COMMISSION_MEANS_PAY, reason commission) lands — then the posting reads taken, escrow moves to escrowPaid, a took_up edge (agent → posting) records the taker, and the aftermath carries one economy change ending "— a commission their faction paid for." (COMMISSION_CAUSE_LINE, the same phrase describeWealthSource shows on the sheet). Unseen members (faction member work) never take one. Switch: FACTION_COMMISSIONS_ENABLED. | edge: `took_up`, `takeUpCommission`, `openCommissionsOf`, `COMMISSION_MEANS_PAY`, `COMMISSION_CAUSE_LINE`, `FACTION_COMMISSIONS_ENABLED` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `congregation-sphere-reaches-faction-page` | Each culture's Temple congregation venerates its people's sphere, and its faction page says so in one line ("Venerates Light.") — the sphere a faith was founded on is something the player can read, not a hidden number. | node-prop: `veneratedSphere`, `formatCongregationSphereLine` | Factions & Succession | 🟢 LIVE | — |
 | `crown-liege-pays-vassal-wages` | On pay day, after loyalty and before the fealty tax, the crown phase pays the upkeep of each vassal army the vassal's own purse left unpaid (its purseLastDay.armiesUnpaid), in id order, whole armies only, from the liege's purse above LIEGE_WAGE_RESERVE_DAYS of its own upkeep. A covered army is stamped paidThroughTick and liegePaidTick; the wage is written beside the purse verdict (armiesPaidByLiege, wagesFromLiege on the vassal, wagesToVassals on the liege), never over it. While the stamp is fresh (LIEGE_COMMAND_WINDOW_TICKS) commanderFactionOf answers the liege for every army-level enemy question (objective, re-aim, defence, siege and battle start) and supplyFactionsOf adds the liege's towns; the liege is always read from the live sworn_to edge. A gift is priced on oathValueOf (max of income and the upkeep fielded, or would raise), so a free company is never free. The liege's Means counts yesterday's wages. THR-2020: after the wages, a sworn non-realm vassal that keeps a standing army (keepsStandingArmy), fields none and is refused a raise by its purse alone (armyRefusal = purse) gets one paid by the liege: spawnArmy with liegePaid (stamped liegePaidTick before it aims), the liege charged ARMY_CREATION_GOLD_COST and holding that plus a first day above the same reserve, at most once per LIEGE_RAISE_MIN_GAP_DAYS (sworn_to.liegeRaisedTick; LIEGE_RAISE_ENABLED). All behind CROWN_WAGES_ENABLED. | node-prop: `liegePaidTick`, `payingLiegeOf`, `commanderFactionOf`, `supplyFactionsOf`, `oathValueOf`, `wagesToVassals`, `armiesPaidByLiege` | War, Armies & Battles | 🟢 LIVE | — |
@@ -311,6 +313,7 @@ remediation ticket or the build fails.
 | `founding-patron-pays-from-faction-purse` | A founding the mortal cannot pay for is paid by their faction (THR-2008, decided on THR-2006) — read only while founding costs are on (MEANS_CELL_COST_ENABLED, off today) and FOUNDING_PATRON_ENABLED. The patron is the founder's highest-ranked purse faction (getDerivedMembershipRank over member_of, tie by faction id) whose treasury (wealth) covers the cost. The decision board keeps a costed cell the founder cannot afford when a patron exists (isFoundingUnaffordable); chargeFoundingCost charges the patron's treasury the whole cost through applyTreasuryDelta and the founder nothing, tracing economy.founding.patron. No patron at charge time charges nobody (fail-soft). | node-prop: `wealth`, `findFoundingPatron`, `isFoundingUnaffordable`, `chargeFoundingPatron`, `FOUNDING_PATRON_ENABLED` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `guild-rank-gates-senior-content` | A guild's senior and elite work reaches only members who have earned standing in that guild — a passer-by cannot take a captain's commission because they happened to be standing in the hall. | function: `minRank`, `meetsFactionRankRequirement`, `RANK_GATED_QUEST_TYPES`, `resolveMetaFactionDefId` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `guild-social-templates-reach-shared-members` | Two members of the same guild who meet are offered that guild's own social scenes — the Arcane Circle's lecture, the Mercenary Company's sparring ring — so belonging to a guild changes who a mortal spends an evening with and what they do there. | function: `getSharedFactionSocialTemplates`, `socialTemplateIds` | Encounters & Dilemmas | 🟢 LIVE | — |
+| `lapsed-bounty-refunds-purse` | A bounty nobody collects pays back (THR-2072): closeBounties runs every tick in phaseFactionActions, right after lapseCommissions. An active bounty past its expiryTick, or whose target is gone or is not an individual mortal, is marked lapsed and its escrow returns to the issuing faction's wealth through applyTreasuryDelta (escrowRefunded on the bounty); hunted is lifted when no open bounty is left. A bounty whose faction is gone lapses with nothing refunded. Traced economy.bounty (lapsed). Read by the purse's own readWealth. | node-prop: `closeBounties`, `escrow`, `escrowRefunded`, `applyTreasuryDelta`, `liftHuntedIfClear` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `lapsed-commission-refunds-purse` | A commission nobody takes before its expiryTick lapses (THR-2042): lapseCommissions runs every tick in phaseFactionActions, marks the posting lapsed and returns its escrow to the posting faction's wealth through applyTreasuryDelta (escrowRefunded on the posting), tracing economy.commission (lapsed). A posting whose faction is gone lapses with nothing refunded. Read by the purse's own readWealth (the next pay day, the action gates). | node-prop: `lapseCommissions`, `escrow`, `escrowRefunded`, `applyTreasuryDelta` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `realm-holdings-to-political-map` | The political map is derived, never stored. Every surface that draws or resolves a Realm's extent reads one projection of the `controls` edges it holds, so a town changing hands moves the border and nothing can hold a second per-hex political truth. | module-export: `buildRealmProjection`, `ensureRealmProjection`, `fingerprintFactionControls`, `stampRealmSeat` | World Generation, Terrain & Places | 🟢 LIVE | — |
 | `reputation-with-unified-read` | Reputation means one thing wherever the game asks it — the social score between a and b — so a standing earned in a town, a guild or a friendship reads in one vocabulary and moves the same things. | function: `getReputationWith`, `applyReputationWithDelta`, `meetsReputationWithRequirement`, `reputationLeverageTerm`, `getNotableStandings` | Encounters & Dilemmas | 🟢 LIVE | — |
@@ -567,10 +570,10 @@ remediation ticket or the build fails.
 - **Producer → Consumer:** Ambitions & Undertakings → Attention, Chronicle & Narrative
 - **UL terms:** *Agent*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 107 total — 2 write, 3 read, 102 unclassified
+- **Production hits:** 109 total — 2 write, 3 read, 104 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`, `src/engine/mentorshipOutcomes.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +97 more
+- **Other hits:** `src/data/agent-concept-tooltips.ts`, `src/data/army-encounter-content.ts`, `src/data/content-eval/aftermathPage.ts`, `src/data/content-eval/doctrineV2Checks.ts`, `src/data/content-eval/nudgeAuthoringConstants.ts` +99 more
 - **Verdict:** Verified 2026-09-02: Constructed proof (seed 42, medium): `writeGrudge(second, ind_0, cause "grievance_cooled")` — the cooling path's own writer — surfaced through `getAgentGrudges` as "There is blood between them and Oswen — an old wrong that never quite closed." The reader crosses the documented three-key provenance divergence (`cause`/`reason`/`basis`) and excludes collective actors, both pinned by src/engine/__tests__/agentDetail-grievance.test.ts; the rendered Blood section and its absence arm are pinned by src/components/Game/__tests__/grievance-surfaces.test.tsx.
 
 ### `alert-channel-to-chronicle` — 🔵 UNVERIFIED-OK
@@ -1049,6 +1052,30 @@ exit
 - **Other hits:** `src/debug-bridge.ts`, `src/engine/economyShift.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
+### `bounty-licenses-duel` — 🟢 LIVE
+
+- **Intent:** An open bounty licenses a duel (THR-2072). Issue Bounty posts a bounty event node (eventType bounty, status active, escrow BOUNTY_REWARD) on an individual mortal the faction holds hostile_to. runGrudgeDuels, for a co-located pair with no injury grudge, checks huntableBounty both ways: a member of the issuing faction may come for the target, rolling bountyDuelChance(hunter courage) on its own stream (BOUNTY_DUEL_STREAM_SALT), under the grudge trigger's busy, cooldown and never-duellist rules. A hit spawns fight.duel.bounty with the hunter as actor, or fight.duel.bounty_defence when only the hunted is threaded. Traced fight.trigger source bounty. Switch: FACTION_BOUNTIES_ENABLED.
+- **Producer → Consumer:** Factions & Succession → Encounters & Dilemmas
+- **UL terms:** *Faction*
+- **Module:** `src/engine/fights/grudgeDuelTrigger.ts`
+- **Production hits:** 7 total — 2 write, 1 read, 4 unclassified
+- **Write sites:** `src/engine/factionBounties.ts`, `src/engine/phaseFactionActions.ts`
+- **Read sites:** `src/engine/fights/grudgeDuelTrigger.ts`
+- **Other hits:** `src/data/encounters/fight-duel-bounty.ts`, `src/engine/fights/bountyCollect.ts`, `src/types/factionAction.ts`, `src/types/traces/fight-traces.ts`
+- **Verdict:** Verified 2026-10-27: THR-2072. factionBounties.test.ts: a member co-located with the target spawns fight.duel.bounty (forced roll) with the hunter as actor; the hunted acts in fight.duel.bounty_defence when only they are threaded; a non-member, the target alone, a dead target and a cooling pair never spawn; a pair with an injury grudge rolls the grudge only. npm run census:bounties (medium, 360 ticks): 22 / 11 / 25 bounty duels a month on seeds 42 / 99 / 7.
+
+### `bounty-pays-collector` — 🟢 LIVE
+
+- **Intent:** A bounty pays the hunter who collects it (THR-2072). bountyCollectBranch (a FIGHT_END_BRANCHES entry after fighterEndingBranch) acts on the two bounty duels: when the target's face is yielded_to_mortal, spared, mauled or slain and the winner can hunt an open bounty on them, collectBounty marks it collected, moves escrow to escrowPaid, writes one collected edge (hunter → bounty), raises a decider hunter's Means by BOUNTY_MEANS_PAY (reason bounty, BOUNTY_CAUSE_LINE on the sheet), lifts hunted when no open bounty is left, and emits one notable chronicle line (BOUNTY_CHRONICLE_LINE). An unseen hunter collects with no Means. Traced economy.bounty (collected).
+- **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
+- **UL terms:** *Means*, *Faction*
+- **Module:** `src/engine/factionBounties.ts`
+- **Production hits:** 47 total — 2 write, 2 read, 43 unclassified
+- **Write sites:** `src/engine/factionBounties.ts`, `src/engine/fights/bountyCollect.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/agentDetail.ts`
+- **Other hits:** `src/data/agreement-reward-catalog.ts`, `src/data/aspect-content.ts`, `src/data/backstory-content.ts`, `src/data/condition-trait-content.ts`, `src/data/core-origin-vignettes.ts` +38 more
+- **Verdict:** Verified 2026-10-27: THR-2072. factionBounties.test.ts: a yielded, spared, mauled or slain target is collected once, with one collected edge passing EDGE_SCHEMA, a decider hunter's Means +BOUNTY_MEANS_PAY, an unseen hunter's none, and hunted lifted; a target who wins, flees or breaks off leaves it open. npm run census:bounties: collected 7 / 3 / 4 on seeds 42 / 99 / 7.
+
 ### `branch-decision-writes-archetype-drift` — 🔴 LEAKED
 
 - **Intent:** A fork the mortal took becomes part of who they are: taking the cunning branch drifts them cunning, so a mortal the player keeps leaning one way visibly becomes that person instead of resetting each encounter.
@@ -1160,10 +1187,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Encounters & Dilemmas
 - **UL terms:** *Grudge*, *Duel*
 - **Module:** `src/engine/fights/grudgeDuelTrigger.ts`
-- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
+- **Production hits:** 13 total — 1 write, 1 read, 11 unclassified
 - **Write sites:** `src/engine/phaseColocationDetection.ts`
 - **Read sites:** `src/data/encounters/fight-duel-grudge.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/debug-bridge.ts`, `src/engine/fights/fightAdvantages.ts`, `src/engine/fights/grudgeDuelTrigger.ts`, `src/engine/monsters/lairArrivalTrigger.ts` +5 more
+- **Other hits:** `src/data/encounters/fight-duel-bounty.ts`, `src/data/fight-constants.ts`, `src/debug-bridge.ts`, `src/engine/fights/fightAdvantages.ts`, `src/engine/fights/grudgeDuelTrigger.ts` +6 more
 - **Verdict:** Verified 2026-09-25: THR-1558 E3. `npm run check:grudge-duels -- --inject 40` (seed 42 medium, 200 ticks, 40 `blood_drawn` pairs written at tick 0 through the real `writeGrudge`): the colocation phase traces `fight.trigger` source `grudge` spawned from tick 2 (`npc_198 → npc_200`, chance 0.050, roll 0.014, `ua_6`); 67 spawned duels across 33 pairs all ran to a `fight.end` (overcome 25, broke_off 19, yielded 14, struck_down 5, routed 4, separated 0); the most-duelled pair duelled 3 times, at `GRUDGE_DUEL_REPEAT_CEILING`. Natural play without injection spawns none: seeds 42 and 99 write no injury-class grudge between two individuals in 200 ticks (their `hostile_to` edges are excommunication, old quarrels, covet rivalries and group engagements). Non-vacuous by `src/engine/fights/__tests__/grudgeDuelTrigger.test.ts` (21).
 
 ### `commission-pays-member` — 🟢 LIVE
@@ -1452,10 +1479,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 89 total — 1 write, 3 read, 85 unclassified
+- **Production hits:** 90 total — 1 write, 3 read, 86 unclassified
 - **Write sites:** `src/engine/mortalMeans.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +80 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +81 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `decision-board-shadow-telemetry` — 🟢 LIVE
@@ -1599,10 +1626,10 @@ exit
 - **Producer → Consumer:** Personality & Emergent Traits → Encounters & Dilemmas
 - **UL terms:** *Struck down*, *Scarred*, *Grudge*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 99 total — 1 write, 1 read, 97 unclassified
+- **Production hits:** 100 total — 1 write, 1 read, 98 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/encounters/branchDecision.ts`
-- **Other hits:** `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts`, `src/data/ascendant-trap-encounters.ts` +92 more
+- **Other hits:** `src/data/action-template-content.ts`, `src/data/agenda-content.ts`, `src/data/agreement-reward-catalog.ts`, `src/data/ambition-templates.ts`, `src/data/ascendant-trap-encounters.ts` +93 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `echo-lift-reads-dominion` — 🔵 UNVERIFIED-OK
@@ -1771,10 +1798,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Factions & Succession
 - **UL terms:** *Means*
 - **Module:** `src/engine/economyShift.ts`
-- **Production hits:** 89 total — 2 write, 2 read, 85 unclassified
+- **Production hits:** 90 total — 2 write, 2 read, 86 unclassified
 - **Write sites:** `src/engine/economyShift.ts`, `src/engine/encounterAftermath.ts`
 - **Read sites:** `src/engine/factionPurse.ts`, `src/engine/views/subjects/factionRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +80 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +81 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-move-the-town` — 🔵 UNVERIFIED-OK
@@ -1795,10 +1822,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 89 total — 3 write, 2 read, 84 unclassified
+- **Production hits:** 90 total — 3 write, 2 read, 85 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +79 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +80 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-write-their-road` — 🔵 UNVERIFIED-OK
@@ -1977,10 +2004,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Means*, *Prosperity*
 - **Module:** `src/engine/factionPurse.ts`
-- **Production hits:** 16 total — 4 write, 4 read, 8 unclassified
+- **Production hits:** 17 total — 4 write, 4 read, 9 unclassified
 - **Write sites:** `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/debug-bridge.ts`, `src/engine/factionTopology.ts`, `src/engine/views/subjects/factionRows.ts`
-- **Other hits:** `src/engine/crown/eligibility.ts`, `src/engine/crown/fealtySentences.ts`, `src/engine/economyShift.ts`, `src/engine/factionCommissions.ts`, `src/engine/foundingPatron.ts` +3 more
+- **Other hits:** `src/engine/crown/eligibility.ts`, `src/engine/crown/fealtySentences.ts`, `src/engine/economyShift.ts`, `src/engine/factionBounties.ts`, `src/engine/factionCommissions.ts` +4 more
 - **Verdict:** Verified 2026-10-16: THR-1931. factionPurse.test.ts drives the real runFactionPurse against a graph: a realm holding two towns earns town tax at the pivot, rent per border hex and a held place's yield, and a miners' guild in its town hands it LANDHOLDER_TAX_RATE of its work; with a rival also controlling the town, only the border realm collects (the rival's townTax is 0 — nothing pays twice). A seed-42 medium headless run shows faction_0 at 121 coin by day 10 and every guild above its opening purse.
 
 ### `faction-purse-prices-war-aims` — 🟢 LIVE
@@ -2096,10 +2123,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Narrative Event*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Production hits:** 17 total — 1 write, 1 read, 15 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/uiColorPalette.ts` +9 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/fight-ending-content.ts`, `src/data/realm-content.ts`, `src/data/strategic-action-constants.ts`, `src/data/uiColorPalette.ts` +10 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-endings-show-as-chips` — 🟢 LIVE
@@ -2108,10 +2135,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Fight Clock*, *SCAR*, *BOND*, *BOON*, *PATH*
 - **Module:** `src/engine/views/stage/buildFightChanges.ts`
-- **Production hits:** 30 total — 3 write, 2 read, 25 unclassified
+- **Production hits:** 31 total — 3 write, 2 read, 26 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/fights/fightState.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/views/stage/buildFightChanges.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts`, `src/data/fight-screen-content.ts` +20 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildFightChanges.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts`, `src/data/fight-screen-content.ts` +21 more
 - **Verdict:** Verified 2026-09-25: THR-1553 F3. Review route `?view=game&seeded&size=medium`, ticked past 60, `spawnFight(Krenn, { clockFilled: 3, outcome: 'critical_success' })` (major lair), stepped through the veil with "Let fate decide": the aftermath rendered PATH · KRENN "Krenn was slain." ◆ slain and PATH · THE KINDLED WARREN "The Kindled Warren is cleared." ◆ cleared, plus BOON inspired and BOON Prayer Scroll (the trophy); every `getFightChips('ua_227')` sentence was in the DOM (`Docs/evidence/thr-1553/`). Non-vacuous by `src/components/Game/encounter-stage/adapters/__tests__/buildFightChanges.test.ts`: each chip is absent when its field is absent, and the adapter's aftermath carries the chips from a real `buildUnifiedEncounterStageModel`. THR-1561 (a duel's loser): `?view=game&seeded&size=medium&forceencounters`, tick 10, `spawnDuel('Corran', …, { courtPosition: 'the_first' })` → `ua_31`, where `opponentEnding` was spared with `grudgeWritten`; the aftermath drew BOND · NESRIN "Nesrin holds a grudge against Corran." ▼ (`Docs/evidence/thr-1561/`).
 
 ### `fight-fells-monster-clears-lair` — 🔵 UNVERIFIED-OK
@@ -2144,10 +2171,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Ambitions & Undertakings
 - **UL terms:** *Grudge*, *Struck down*, *Scarred*
 - **Module:** `src/engine/fights/fightEnding.ts`
-- **Production hits:** 37 total — 2 write, 3 read, 32 unclassified
+- **Production hits:** 39 total — 2 write, 3 read, 34 unclassified
 - **Write sites:** `src/engine/fights/fightEnding.ts`, `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/data/grievance-prose.ts`, `src/engine/agentDetail.ts`, `src/engine/undertakingMotive.ts`
-- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +27 more
+- **Other hits:** `src/data/fight-constants.ts`, `src/data/grievance-constants.ts`, `src/data/mentorship-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +29 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-raises-effect-events` — 🔵 UNVERIFIED-OK
@@ -2168,10 +2195,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *Fight Result*
 - **Module:** `src/engine/fights/fightState.ts`
-- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
+- **Production hits:** 8 total — 1 write, 1 read, 6 unclassified
 - **Write sites:** `src/engine/fights/fightState.ts`
 - **Read sites:** `src/engine/fights/fightOutcome.ts`
-- **Other hits:** `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fights/fightBlock.ts`, `src/data/monster-encounter-content.ts`, `src/testing/contentInvariants.ts`
+- **Other hits:** `src/data/encounters/fight-duel-bounty.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fights/fightBlock.ts`, `src/data/monster-encounter-content.ts` +1 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `fight-spends-favour-and-secret` — 🔵 UNVERIFIED-OK
@@ -2192,10 +2219,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Fight Clock*, *Opponent Card*
 - **Module:** `src/engine/views/stage/buildOpponentHeaderModel.ts`
-- **Production hits:** 36 total — 2 write, 2 read, 32 unclassified
+- **Production hits:** 37 total — 2 write, 2 read, 33 unclassified
 - **Write sites:** `src/engine/fights/fightClock.ts`, `src/engine/fights/fightState.ts`
 - **Read sites:** `src/components/Game/encounter-stage/OpponentHeader.tsx`, `src/engine/views/stage/buildOpponentHeaderModel.ts`
-- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts`, `src/data/fight-screen-content.ts` +27 more
+- **Other hits:** `src/components/Game/encounter-stage/adapters/buildOpponentHeaderModel.ts`, `src/data/encounters/fight-duel-grudge.ts`, `src/data/encounters/fight-lair-confront.ts`, `src/data/fight-constants.ts`, `src/data/fight-screen-content.ts` +28 more
 - **Verdict:** Verified 2026-09-25: THR-1551 F2. Review route `?view=game&seeded&size=medium`, `tick(60)`, `spawnFight('Ryx')` (major lair, blight family): `getOpponentHeaderModel('ua_116').name === 'Ryx'`, sentence "A walking rot that spreads where it goes. Fearsome to face, a fair match.", clock 4 square pips at 14px, word "untouched", no threat whisper, hand unscrolled at 1920×1080 (`Docs/evidence/thr-1551/`). Non-vacuous by `src/components/Game/encounter-stage/__tests__/opponentHeaderF2.test.tsx`: the nerve step's word equals the first exchange's after a real `executeStepResult` with a pending recovery (a raw read would say "failing"), and the word tracks `fightState.clockNow` once the fight exists.
 
 ### `fight-victory-draws-trophy` — 🔵 UNVERIFIED-OK
@@ -2321,10 +2348,10 @@ exit
 - **Intent:** A guild a mortal founds through the create × faction undertaking (THR-1937 S1) leans the way its founder does: the cell passes foundedGuildReachProfile (the founder's FOUNDED_GUILD_REACH_COUNT leading Reaches, domainCapabilities / 100) into foundFaction, and settleFoundedGuild writes guildType from FOUNDED_GUILD_TYPE_BY_REACH (leading Reach, else the second, else none) and opens the purse with what the founding cost through applyTreasuryDelta (0 while MEANS_CELL_COST has no create×faction row or costs are off). The faction purse's guild work reads guildType (affinityOf) and pays a founded guild like any town guild.
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **UL terms:** *Faction*
-- **Production hits:** 112 total — 2 write, 1 read, 109 unclassified
+- **Production hits:** 113 total — 2 write, 1 read, 110 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/factionPurse/income.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts` +104 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts` +105 more
 - **Verdict:** Verified 2026-10-21: THR-1937. undertakingEconomy.test.ts: every Reach has a FOUNDED_GUILD_TYPE_BY_REACH row and every calling is a GUILD_PLACE_AFFINITY row; a gold-led founder's guild is merchants with a gold/stone reach profile, opens at 0, and computePurseIncome pays it guild work in a town with a market district.
 
 ### `founded-lane-tolled-by-founder` — 🟢 LIVE
@@ -2356,10 +2383,10 @@ exit
 - **Intent:** A founding the mortal cannot pay for is paid by their faction (THR-2008, decided on THR-2006) — read only while founding costs are on (MEANS_CELL_COST_ENABLED, off today) and FOUNDING_PATRON_ENABLED. The patron is the founder's highest-ranked purse faction (getDerivedMembershipRank over member_of, tie by faction id) whose treasury (wealth) covers the cost. The decision board keeps a costed cell the founder cannot afford when a patron exists (isFoundingUnaffordable); chargeFoundingCost charges the patron's treasury the whole cost through applyTreasuryDelta and the founder nothing, tracing economy.founding.patron. No patron at charge time charges nobody (fail-soft).
 - **Producer → Consumer:** Factions & Succession → Ambitions & Undertakings
 - **UL terms:** *Faction*
-- **Production hits:** 89 total — 2 write, 1 read, 86 unclassified
+- **Production hits:** 90 total — 2 write, 1 read, 87 unclassified
 - **Write sites:** `src/engine/foundingPatron.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +81 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +82 more
 - **Verdict:** Verified 2026-10-24: THR-2008. foundingPatron.test.ts (costs mocked on): the pick takes the higher rank, skips a treasury below cost, ties by id; the board keeps the cell with a patron and drops it without one or with the rule off; the charge moves the cost from the patron's treasury, never the founder's, and emits economy.founding.patron; no patron charges nobody. npm run measure:founding-starvation measures the patron arm on seeds 42, 7 and 99.
 
 ### `freehold-income-pays-mortal-holders` — 🟢 LIVE
@@ -2368,10 +2395,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/holdingIncome.ts`
-- **Production hits:** 89 total — 2 write, 3 read, 84 unclassified
+- **Production hits:** 90 total — 2 write, 3 read, 85 unclassified
 - **Write sites:** `src/engine/holdingIncome.ts`, `src/engine/orchestrator.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/factionRows.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +79 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +80 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R3. The pass runs as the `holding_income` inline phase between `trade_route_decay` and `prosperity`, paying through `applyWealthDelta` and emitting `wealth_delta` with the new `'location_tithe'` reason; the read end is the **Means** tier word on the live agent sheet (`OverviewTab`) and the faction sheet, plus `__DEBUG.getHoldingIncome`. Non-vacuous by `src/engine/__tests__/holdingIncome.test.ts` (10 tests), which falsifies the mortals-only rule with a faction and a mortal each controlling an identical settlement in one world — a pass that paid everybody fails there rather than passing on an empty faction population. **Honest limit recorded on the row:** the *live* population is zero while `UNDERTAKING_MODEL === 'templates'` — measured on seed 42 medium at tick 150: 0 `owns` edges, 0 strategic `controls`, 0 seized routes, because nothing enumerates the cells that create holdings until the flip (THR-1403). The reader is correct and falsified; it has nothing to pay yet, and that is a supply fact about the producing cells, not a defect in this row.
 
 ### `generated-item-honest-vocabulary` — 🟢 LIVE
@@ -2472,10 +2499,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 95 total — 1 write, 2 read, 92 unclassified
+- **Production hits:** 97 total — 1 write, 2 read, 94 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +87 more
+- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +89 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -2700,16 +2727,28 @@ exit
 - **Other hits:** `src/data/monster-encounter-content.ts`, `src/engine/lairClearing.ts`, `src/engine/monsters/lairArrivalTrigger.ts`, `src/engine/monsters/monsterCard.ts`, `src/engine/monsters/monsterFelling.ts` +4 more
 - **Verdict:** Verified 2026-09-25: THR-1545 M2. Seed 42 medium, tick 55 (`lair_0` is major, `namedEliteId: elite_lair_0_50`), the hero placed at `lair_0`: CLI `spawn encounter @hero monster.hunt.named_elite` binds `beast` → `elite_lair_0_50`, and the fight reads it — `fight.step: monster.hunt.named_elite nerve vs elite_lair_0_50 (monsterState)`, `fight.end … → routed clock 0/4`. The same spawn with the hero off the lair binds nothing and ends `broke_off` / `no_opponent`, never the target. Non-vacuous by `src/engine/monsters/__tests__/monstersInScenes.test.ts`: the gate hides the hunt at a lair whose elite is dead or absent on both draw paths and offers it where the elite lives; `matchProperty` binds the living monster, never a deceased one, and never mints; both death windows end the fight `no_opponent` / `opponent_gone`.
 
+### `lapsed-bounty-refunds-purse` — 🟢 LIVE
+
+- **Intent:** A bounty nobody collects pays back (THR-2072): closeBounties runs every tick in phaseFactionActions, right after lapseCommissions. An active bounty past its expiryTick, or whose target is gone or is not an individual mortal, is marked lapsed and its escrow returns to the issuing faction's wealth through applyTreasuryDelta (escrowRefunded on the bounty); hunted is lifted when no open bounty is left. A bounty whose faction is gone lapses with nothing refunded. Traced economy.bounty (lapsed). Read by the purse's own readWealth.
+- **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
+- **UL terms:** *Faction*
+- **Module:** `src/engine/factionBounties.ts`
+- **Production hits:** 15 total — 1 write, 2 read, 12 unclassified
+- **Write sites:** `src/engine/factionBounties.ts`
+- **Read sites:** `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/economyShift.ts`, `src/engine/factionCommissions.ts` +7 more
+- **Verdict:** Verified 2026-10-27: THR-2072. factionBounties.test.ts: a lapse refunds escrow once and lifts hunted; a dead target lapses at once (reason target_gone); a pre-THR-2072 bounty refunds 0. npm run census:bounties: escrow posted = paid + refunded + still held on every seed (570 = 70 + 430 + 70; 330 = 30 + 260 + 40; 540 = 40 + 450 + 50).
+
 ### `lapsed-commission-refunds-purse` — 🟢 LIVE
 
 - **Intent:** A commission nobody takes before its expiryTick lapses (THR-2042): lapseCommissions runs every tick in phaseFactionActions, marks the posting lapsed and returns its escrow to the posting faction's wealth through applyTreasuryDelta (escrowRefunded on the posting), tracing economy.commission (lapsed). A posting whose faction is gone lapses with nothing refunded. Read by the purse's own readWealth (the next pay day, the action gates).
 - **Producer → Consumer:** Factions & Succession → Mortal Economy & Prosperity
 - **UL terms:** *Means*, *Faction*
 - **Module:** `src/engine/factionCommissions.ts`
-- **Production hits:** 14 total — 1 write, 2 read, 11 unclassified
+- **Production hits:** 15 total — 1 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/factionCommissions.ts`
 - **Read sites:** `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
-- **Other hits:** `src/debug-bridge.ts`, `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/economyShift.ts`, `src/engine/foundingPatron.ts` +6 more
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/economyShift.ts`, `src/engine/factionBounties.ts` +7 more
 - **Verdict:** Verified 2026-10-26: THR-2042. factionCommissions.test.ts: a lapsed posting refunds escrow to the purse exactly once, a taken one never lapses, a pre-THR-2042 posting refunds 0. npm run census:commissions: on seeds 42 / 99 / 7 escrow posted = paid + refunded + still held (250 = 20 + 230 + 0; 210 = 40 + 160 + 10; 330 = 50 + 265 + 15).
 
 ### `lawless-halves-town-tax` — 🟢 LIVE
@@ -2962,10 +3001,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Means*
 - **Module:** `src/engine/mortalMeans.ts`
-- **Production hits:** 139 total — 2 write, 2 read, 135 unclassified
+- **Production hits:** 140 total — 2 write, 2 read, 136 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`
 - **Read sites:** `src/engine/decisionBoard.ts`, `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/content/ruins/archetypes.ts` +130 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/hooks/useAgentInteraction.ts`, `src/content/ruins/archetypes.ts` +131 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mortal-raised-building-from-town-chooser` — 🟢 LIVE
@@ -3375,10 +3414,10 @@ exit
 - **Intent:** A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Settlement*, *Unrest*, *Faction*
-- **Production hits:** 267 total — 2 write, 2 read, 263 unclassified
+- **Production hits:** 268 total — 2 write, 2 read, 264 unclassified
 - **Write sites:** `src/engine/factionSplinter.ts`, `src/engine/unrestPressure/rising.ts`
 - **Read sites:** `src/engine/crown.ts`, `src/engine/warAims/enemy.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +258 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/BeatsDebugTab.tsx` +259 more
 - **Verdict:** Verified 2026-10-20: THR-1957. unrestPressureS2.test.ts: resident members split off, take the town and are hostile to the old holder (isEnemyFaction true); with no member resident a resident founds "The Free Town of Ferris", which takes the town; no resident leaves the holder in place; the phase writes the A Town Rises chronicle line.
 
 ### `rite-applies-outcomes` — 🔵 UNVERIFIED-OK
@@ -3637,10 +3676,10 @@ exit
 - **Intent:** THR-1286’s invariant — live `controls` edges equal active stances — has to survive a place changing hands, not only a place being neglected. A seized hold retires the loser’s stance instead of leaving them a live record over somewhere that is no longer theirs.
 - **Producer → Consumer:** Strategic Projects & Control → Strategic Projects & Control
 - **Module:** `src/engine/strategicActionLifecycle.ts`
-- **Production hits:** 426 total — 1 write, 1 read, 424 unclassified
+- **Production hits:** 427 total — 1 write, 1 read, 425 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/engine/strategicTelemetry.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +419 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/CMS/types.ts` +420 more
 - **Verdict:** Verified 2026-09-10: THR-1287, written as a pin first and found broken. `transferHolding` (`src/engine/holdings.ts`) resolves owners through `findOwnersOf`, which reads `owns` edges **only** — so a Location held through a `controls` stance reads as unowned to it and the seize took the “seize of the unowned is a claim” branch: the seizer got a fresh `owns` edge (correctly — a seized place is a Freehold, THR-1280) while the incumbent kept both a live `StrategicControlState` and a live `controls` edge over somewhere already handed on, then sat out a full grace-plus-degradation window before collapsing on it. `controlRenewal.test.ts` drives the real `control:seize × Location` semantic and asserts active stances equal live strategic `controls` edges afterwards, with a pre-seize guard so “no active stance for the loser” cannot pass vacuously; the assertion is red without `applySeizeRetirement`.
 
 ### `settlement-economy-drives-tier` — 🟢 LIVE
@@ -3855,10 +3894,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Agent Lifecycle
 - **UL terms:** *Spotlight tier*, *Ambition*
 - **Module:** `src/engine/spotlightPull.ts`
-- **Production hits:** 49 total — 3 write, 2 read, 44 unclassified
+- **Production hits:** 50 total — 3 write, 2 read, 45 unclassified
 - **Write sites:** `src/engine/npcGraduation.ts`, `src/engine/spotlightPull.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/phaseAgentDecision.ts`, `src/engine/strategicKindReachability.ts`
-- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +39 more
+- **Other hits:** `src/components/Game/debug/CommandTab.tsx`, `src/components/Game/hooks/useGameDebugLevers.ts`, `src/data/agent-behavior-constants.ts`, `src/data/strategic-action-constants.ts`, `src/data/undertaking-objects.ts` +40 more
 - **Verdict:** Verified 2026-09-28: THR-1348 landing census (`npm run census:reachability -- --seeds 42,99,7`, 40 ticks, medium): merchant-expansion reachable on 2 of 3 seeds (baseline 1 of 3) — seed 99 reaches it through `born_lc_10 ← ambition_dominate_trade` pulled at tick 3; pulls named per seed 2 / 2 / 2 (all net-additive within the allowance of 2) and refusals 6 / 20 / 24, all `budget`. `census:undertakings` 150 ticks: seed 42 3 pulled (1 swapped), seed 99 2 pulled; starts per mortal 6.0 / 5.2 (floor 4; baseline 5.7 / 4.1), verdict PASS both seeds (baseline and the pull-off arm both FAIL seed 99 variety). `measure:tick-cost` medium steady: 79→85 ms (seed 42), 111→122 ms (seed 99), under the +25 % criterion. Heavy `undertakingCapabilityGrowth.live` arm (small map) green at 19 growth-paying completions — it read 10 with a flat overflow of 2, which is why the overflow is a share of the deciding population. Unit: `spotlightPull.test.ts` (19), `spotlightPull-lever.test.ts`, `spotlightPull-capabilityPath.test.ts`, `ambitionAssignment-routing.test.ts` (5); hex-map admission asserted through `shouldRenderIndividualOnHexMap`. Re-verified 2026-09-24 under THR-1523 (unwatched builders step back): `census:undertakings` 150 ticks PASS both seeds — seed 42 3 pulled (1 swapped, 2 net-additive), 138 refusals across 116 mortals (was 215 per want), seed 99 4 pulled (1 swapped, 3 net-additive), 144 across 114 (was 235); at 300 ticks the class fires (seed 42 2 unwatched swaps, seed 99 1; 1 of 14 / 1 of 17 worldgen protagonists stepped back, kill criterion 30 %). `census:reachability -- --seeds 42,99,7` keeps merchant-expansion reachable on 2 of 3. `measure:tick-cost` medium steady within noise of main (seed 42 101 vs 109 ms, seed 99 152 vs 168 ms). Unit: `spotlightPullUnwatched.test.ts` (21). Re-verified 2026-09-28 under THR-1653 (graduation shares the budget): `readers/graduation-budget.ts 42,99 200` — deciders t0→t200 20→19 · 23→20, invariant bound 24 · 28 holds, 0 graduations on both arms (the curves are identical flag on and off); `readers/reach.ts 42,99 200` drawable fired 127 of 514 (floor 121); `readers/attended.ts 42,99 150` The First’s longest gap 25 · 21 ticks (ceiling 30), firing rows identical flag on and off. Unit: `npcGraduation.test.ts` THR-1653 block (4).
 
 ### `sunder-window-amplifies-company-decay` — 🟢 LIVE
@@ -4001,10 +4040,10 @@ exit
 - **Intent:** A trade run — the use × route undertaking (THR-1967, undertakings S3) — trades on the lane its Route names (conductTradeOnLane: volume + 1, lastTraded; never a lane picked from where the trader stands, which found no route whenever the trader was away from the lane's ends) and pays the trader on that lane: min(TRADE_RUN_PAY_MAX, TRADE_RUN_PAY_BASE + TRADE_RUN_PAY_PER_UNIT × carriedPerDay) Means (carriedPerDay is the per-lane figure of the settlement economy, THR-1923; nothing writes it yet, so every run pays the base until that build lands) through applyMeansShift → bankWealth with reason trade_success, at most once per trader per TRADE_RUN_PAY_COOLDOWN_TICKS (the trader's lastTradeRunPaidTick). The person sheet's Means tooltip reads the reason; the want (MEANS_EARNING_CELLS) already counts the cell as paying work.
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Means*, *Route*
-- **Production hits:** 91 total — 3 write, 2 read, 86 unclassified
+- **Production hits:** 92 total — 3 write, 2 read, 87 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/tradeRouteOps.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/mortalMeans.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +81 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +82 more
 - **Verdict:** Verified 2026-10-21: THR-1967. undertakingEconomyS3.test.ts: a run pays the base, a second run inside the day pays nothing, the next day pays again (reason trade_success); a trader standing away from both ends still trades the named lane and is paid; the per-unit term is unit-tested against a hand-set carriedPerDay only (no writer before THR-1923). measure:founding-starvation seed 42: one paid run in 600 ticks where every run failed "no route at anchor" before.
 
 ### `trait-predicate-resolution` — 🟢 LIVE
@@ -4312,10 +4351,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 310 total — 2 write, 6 read, 302 unclassified
+- **Production hits:** 312 total — 2 write, 6 read, 304 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +297 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +299 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
@@ -4335,9 +4374,9 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Freehold*, *Undertaking*
 - **Module:** `src/engine/yieldOps.ts`
-- **Production hits:** 142 total — 2 write, 3 read, 137 unclassified
+- **Production hits:** 143 total — 2 write, 3 read, 138 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/yieldOps.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +132 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +133 more
 - **Verdict:** Verified 2026-09-10: **THR-1450 — the producing half was dead on arrival and is now live.** For its whole life this row's harvest banked **zero**: `use × Location` is an instant cell, its completion carried no band, and `yieldBandScale` read that absence as the failure arm and multiplied the lump by 0 — so the town paid prosperity and the holder paid standing on every harvest, and the wealth this contract exists to move never moved. The unit test below did not catch it because it falsifies the *band* arm correctly and the defect was in what the *caller* passed. Fixed at the boundary (`INSTANT_COMPLETION_BAND`), and re-verified live as a controlled arm: identical seed-42 medium world, identical grants, 150 ticks, `use × location` completing 4 × either way — **5** `draw_yield` `wealth_delta` traces with the fix, **0** without. `drawYield` emits that trace only when `lump > 0`, so each one is a banked lump. THR-1439's original evidence, still true: `drawYield` banks its lump through `bankWealth` — the funnel extracted from `payHoldingIncome` in the same PR, so the active harvest and the passive tithe stamp one cause vocabulary rather than two — and emits `wealth_delta` with the new `'draw_yield'` reason, which `describeWealthSource` turns into the Means tooltip's *a tithe drawn by their own hand*. `raiseRouteVolume` writes `volume` and `lastTraded` on the lane's `trades_with` edge, which `collectHoldingPayments` reads to scale the toll and the decay clock reads to stay alive. Non-vacuous by `src/engine/__tests__/yieldOps.test.ts`, which falsifies the band arm by asserting a `failure` harvest moved prosperity and standing while moving no wealth — a semantic that paid on every band fails there rather than passing on an unexercised arm. **Honest limit, measured rather than inherited (THR-1450):** the population is not merely thin early, it is ~absent throughout. At tick 30 on seed 42 medium, 114 of 117 `controls` edges are faction-held and the 3 individual-held Locations are two wilderness hexes and a ruin — none carrying a `prosperity` value at all — while top prosperity anywhere is ~45 and the median is 10. `use` requires ownership `own` from the actor's side, so essentially no mortal is ever positioned to harvest a healthy town, and the live proof above had to reassign holdings to construct one. The reader is correct and now actually pays; what it still lacks is holders. That is the supply gap THR-1287's census recorded, not a defect in this row.
 
