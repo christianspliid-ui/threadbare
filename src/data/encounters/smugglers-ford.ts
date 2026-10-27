@@ -87,6 +87,7 @@
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { compileOpeningEnvelope, expandSettings } from '../settingClasses';
 import { MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from '../mortal-means-constants';
+import { W_STOCK } from '../economy-shift-constants';
 
 /**
  * The annotated literal: excess-property checking on the real type is this
@@ -461,10 +462,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
     variants: {
       negative: {
         // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+        // THR-2069 — the salt half: a train that gets over leaves salt in the hamlet; a failure brings none.
         outcomeEffects: {
-          critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }],
-          success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }],
-          success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
+          critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_BIG }, { kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.step, good: 'salt' }],
+          success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP }, { kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.small, good: 'salt' }],
+          success_at_cost: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }, { kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.small, good: 'salt' }],
         },
         overview: 'The salt train has met the ford, and the post has had its night.',
         changes: [],
@@ -705,8 +707,11 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       },
       positive: {
         // THR-1952 S2 — the Means half of this row of the money-encounter outcome table (THR-1872).
+        // THR-2069 — the salt half: a train that gets over leaves salt in the hamlet; a failure brings none.
         outcomeEffects: {
-          critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }],
+          critical_success: [{ kind: 'economy_shift', quantity: 'means', amount: MEANS_STEP_SMALL }, { kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.step, good: 'salt' }],
+          success: [{ kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.small, good: 'salt' }],
+          success_at_cost: [{ kind: 'economy_shift', quantity: 'stock', amount: W_STOCK.small, good: 'salt' }],
         },
         overview: '{cast:carrier} has the lead rope back, and {actor}\'s reading of the watch.',
         changes: [

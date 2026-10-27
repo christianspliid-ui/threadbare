@@ -85,7 +85,7 @@ Four design rules: (1) Path over adjective. (2) Moral axis is structural — eac
 
 ## The World at Work
 
-Locations hold **resource stocks** in named classes (staple / strategic / luxury / arcane), resolving to three tiers: **scarce · adequate · surplus**. Tier drives prosperity, and surfaces as a plain-prose **Livelihood** line — you read hunger or glut, never a number.
+Locations hold **resource stocks** in named classes (staple / strategic / luxury / arcane), resolving to three tiers: **scarce · adequate · surplus**. Tier drives prosperity, and surfaces as a plain-prose **Livelihood** line — you read hunger or glut, never a number. Salt comes from the pans and dry lakes of the steppe, the high plateau, the deserts and the shore. It is a trade good, not food, and smugglers bring it where the excise would not. `[IMPL — THR-2069]`
 
 **Unrest is pressure, not a spike.** It creeps (a few points a day) toward what a town lives through — hunger above all, then want, siege, sickness, its recent dead — and sudden blows fade back. **Restless** towns lose people to a fed, calm town nearby; **Lawless** towns riot over the granaries and pay half their tax. A town **On the edge** turns to a clearly better lord nearby, and its old lord wants it back; a town that **rises** throws its lord off and holds itself. The place page's **Fortunes** row says it in one sentence, never a number.
 

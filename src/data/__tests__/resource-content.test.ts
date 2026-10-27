@@ -3,8 +3,8 @@ import { TERRAIN_RESOURCE_TABLE, RESOURCE_DEFINITIONS, RESOURCE_PROSE, COSMOLOGY
 import { getAbundanceLabel, RESOURCE_ICONS } from '../../types/resource';
 
 describe('RESOURCE_DEFINITIONS', () => {
-  it('has definitions for all 8 resource types', () => {
-    const expected = ['timber', 'stone', 'ore', 'water', 'fish', 'grazing', 'grain', 'peat'];
+  it('has definitions for all 9 common resource types', () => {
+    const expected = ['timber', 'stone', 'ore', 'water', 'fish', 'grazing', 'grain', 'peat', 'salt'];
     for (const type of expected) {
       expect(RESOURCE_DEFINITIONS[type]).toBeDefined();
       expect(RESOURCE_DEFINITIONS[type].id).toBe(type);

@@ -81,6 +81,7 @@ export const RESOURCE_ICONS: Record<string, string> = {
   grazing: '🌾',
   grain: '🌽',
   peat: '🟤',
+  salt: '⚪',
   // Rare resources (anomaly-exclusive)
   gemstones: '💎',
   arcane_crystal: '🔮',
