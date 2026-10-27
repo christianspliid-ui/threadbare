@@ -1075,10 +1075,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 97 total — 4 write, 5 read, 88 unclassified
+- **Production hits:** 98 total — 4 write, 5 read, 89 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentDetail.ts`, `src/engine/strategicPresentation.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +83 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +84 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
@@ -1134,10 +1134,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Echo*, *Undertaking*, *Dominion*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 84 total — 1 write, 4 read, 79 unclassified
+- **Production hits:** 85 total — 1 write, 4 read, 80 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingProse.ts`, `src/engine/views/connections.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-expression-constants.ts` +74 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-expression-constants.ts` +75 more
 - **Verdict:** Verified 2026-10-27: THR-2031. `check:undertaking-live -- cell.control_claim.item --seed 42 --seed 99 --account sample` proved on both seeds (`claim_item:ok` on `echo_relic_echo_sample_relic`). A 240-tick sample-account run took the Hollow Bell on day 10.8 (seed 42) and day 4.6 (seed 99), under its own name. Non-vacuous by `src/engine/__tests__/claimItem.test.ts`: `readThrough` is `unborne` before and `bearer` after, the borne relic fails `already_held` with the edge count unchanged, and a loose item is refused `not_lying_at_a_place`.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
@@ -4024,10 +4024,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Attachments, Items & Possessions
 - **UL terms:** *Echo*, *Dominion*
 - **Module:** `src/engine/seedEchoes.ts`
-- **Production hits:** 16 total — 1 write, 3 read, 12 unclassified
+- **Production hits:** 17 total — 1 write, 3 read, 13 unclassified
 - **Write sites:** `src/engine/seedEchoes.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/views/connections.ts`, `src/engine/views/subjects/subjectPage.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/dominionViewModels.ts`, `src/engine/itemGenerator/worldContext.ts` +7 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/dominionViewModels.ts`, `src/engine/itemGenerator/worldContext.ts` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertaking-catalyst-resolves-by-query` — 🟢 LIVE
