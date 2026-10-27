@@ -24,6 +24,7 @@ import { emitTrace } from './traceBuffer';
 import {
   ECONOMIC_CHRONICLE_TEMPLATES,
   ECONOMIC_CHRONICLE_SIGNIFICANCE,
+  RESOURCE_OWN_CHRONICLE_TEMPLATES,
   RESOURCE_WANT_CHRONICLE_TEMPLATES,
   WEALTH_TIER_FLAVOR,
   GUILD_FOUNDING_FLAVOR,
@@ -107,6 +108,11 @@ export interface EconomicChronicleContext {
    * `'strategic'` draws the want-of-goods pool instead of the food (famine) pool.
    */
   resourceCategory?: ResourceClassCategory;
+  /**
+   * The resource's id (THR-2069). On `resource_scarcity` / `resource_glut`, a good with its
+   * own pool (`RESOURCE_OWN_CHRONICLE_TEMPLATES`, e.g. salt) draws that before its class pool.
+   */
+  resourceId?: string;
 }
 
 // ─── Fail-soft name resolution ──────────────────────────────────────────────
@@ -190,11 +196,15 @@ export function resolveEconomicChronicle(
   seed: number,
 ): EconomicChronicleResult | null {
   // THR-2070 — a strategic good's shortage is a want of goods, not a famine.
-  const wantPool = context.resourceCategory === 'strategic'
-    && (trigger === 'resource_scarcity' || trigger === 'resource_glut')
-    ? RESOURCE_WANT_CHRONICLE_TEMPLATES[trigger]
+  // THR-2069 — a good with its own words (salt is not a builder's good) speaks them first.
+  const stockTrigger = trigger === 'resource_scarcity' || trigger === 'resource_glut' ? trigger : null;
+  const ownPool = stockTrigger && context.resourceId
+    ? RESOURCE_OWN_CHRONICLE_TEMPLATES[context.resourceId]?.[stockTrigger]
     : undefined;
-  const templates = wantPool ?? ECONOMIC_CHRONICLE_TEMPLATES[trigger];
+  const wantPool = stockTrigger && context.resourceCategory === 'strategic'
+    ? RESOURCE_WANT_CHRONICLE_TEMPLATES[stockTrigger]
+    : undefined;
+  const templates = ownPool ?? wantPool ?? ECONOMIC_CHRONICLE_TEMPLATES[trigger];
   if (!templates || templates.length === 0) return null;
 
   const rng = mulberry32(seed);

@@ -129,6 +129,26 @@ export const RESOURCE_WANT_CHRONICLE_TEMPLATES: Record<'resource_scarcity' | 're
 };
 
 /**
+ * Stock crossings for a good whose class pool tells the wrong story (THR-2069). Salt is
+ * strategic, but a town short of it does not wait on builders: its meat goes uncured.
+ * Keyed by resource id; read before the class pool.
+ */
+export const RESOURCE_OWN_CHRONICLE_TEMPLATES: Readonly<Record<string, Record<'resource_scarcity' | 'resource_glut', string[]>>> = {
+  salt: {
+    resource_scarcity: [
+      'Salt has run short at {settlement}. The butchers sell before the meat turns, and the winter stores stay thin.',
+      'Word from {settlement}: salt is weighed out like silver now. What cannot be cured will not keep.',
+      '{settlement} has too little salt for the curing sheds. The meat goes uncured, and the winter will be lean.',
+    ],
+    resource_glut: [
+      'Salt piles up at {settlement} faster than the carters can take it. It sells for almost nothing.',
+      '{settlement} has more salt than it can use. The pans give and give, and the price falls with every load.',
+      'So much salt has come to {settlement} that no one will pay for it. The salters curse the plenty.',
+    ],
+  },
+};
+
+/**
  * Multiple template variants per trigger. The resolver picks one via PRNG.
  * Templates use {placeholder} syntax resolved from EconomicChronicleContext.
  */

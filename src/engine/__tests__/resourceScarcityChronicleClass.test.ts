@@ -13,6 +13,7 @@ import { resolveEconomicChronicle } from '../economicChronicle';
 import {
   ECONOMIC_CHRONICLE_TEMPLATES,
   RESOURCE_WANT_CHRONICLE_TEMPLATES,
+  RESOURCE_OWN_CHRONICLE_TEMPLATES,
 } from '../../data/economic-chronicle-content';
 import type { GameState } from '../../types/gameState';
 import type { ResourceInstance } from '../../types/resource';
@@ -65,6 +66,14 @@ describe('resource_scarcity chronicle by resource class (THR-2070)', () => {
     expect(prose).toContain('stone');
     expect(prose).not.toContain('Stone');
     expect(RESOURCE_WANT_CHRONICLE_TEMPLATES.resource_scarcity.map(t => t.replace('{resource}', 'stone').replace('{settlement}', 'Harrowmoor')))
+      .toContain(prose);
+  });
+
+  it('a salt shortage draws its own lines, not the builders\' (THR-2069)', () => {
+    const prose = scarcityProse('salt');
+    expect(prose).not.toMatch(HUNGER_WORDS);
+    expect(prose).not.toMatch(/builder/i);
+    expect(RESOURCE_OWN_CHRONICLE_TEMPLATES.salt.resource_scarcity.map(t => t.replace('{settlement}', 'Harrowmoor')))
       .toContain(prose);
   });
 
