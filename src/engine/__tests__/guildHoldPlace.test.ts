@@ -161,6 +161,19 @@ describe('THR-2077 — guild_hold_place', () => {
     expect(guildHeld()[0]).toMatchObject({ result: 'held_elsewhere', placeId: 'mill-1', heldBy: 'actor-1' });
   });
 
+  it('a held Place the building adopts (temple quarter for a shrine) is found and left with its holder', () => {
+    const graph = buildGraph();
+    addFaction(graph, 'guild-carvers', 'artisans');
+    addFaction(graph, 'order-1', 'temples');
+    addPlace(graph, 'tq-1', 'sublocation-type.temple-quarter');
+    graph.addEdge({ id: 'ctl-order', source: 'order-1', target: 'tq-1', type: 'controls', properties: {} });
+    const reaction: EncounterAftermathReaction = { id: 'r-shrine', label: 'Outcome', effects: [{ kind: 'guild_hold_place', buildingId: 'shrine' }] };
+    applyEncounterAftermathReaction(buildState(graph), makeAction(), reaction, TICK, runtime, { outcomeBand: 'success' });
+    expect(graph.getIncomingEdges('tq-1', 'controls').map(e => e.source)).toEqual(['order-1']);
+    expect(graph.getNode('tq-1')?.properties[IS_BUILDING_PROP]).toBeUndefined();
+    expect(guildHeld()[0]).toMatchObject({ result: 'held_elsewhere', placeId: 'tq-1', heldBy: 'order-1' });
+  });
+
   it('no guild present writes nothing (no_fellowship)', () => {
     const graph = buildGraph();
     const nodes = graph.getAllNodes().length;
@@ -240,6 +253,14 @@ describe('THR-2077 — pickTownGuild', () => {
     expect(pickTownGuild(graph, 'town-1')?.guildId).toBe('guild-b');
     addMember(graph, 'a-1', 'guild-a');
     expect(pickTownGuild(graph, 'town-1')?.guildId).toBe('guild-a');
+  });
+
+  it('a dissolved guild is never picked', () => {
+    const graph = buildGraph();
+    addFaction(graph, 'guild-carvers', 'artisans', { dissolved: true });
+    addFaction(graph, 'guild-gone', 'builders', { actorStatus: 'dissolved' });
+    addFaction(graph, 'guild-merchants', 'merchants');
+    expect(pickTownGuild(graph, 'town-1')?.guildId).toBe('guild-merchants');
   });
 
   it('a realm never holds', () => {

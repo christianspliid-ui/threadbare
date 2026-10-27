@@ -40,6 +40,8 @@ export function pickTownGuild(
 ): TownGuildPick | null {
   const candidates = graph.getNodesByType('actor').filter((f): f is GraphNode => {
     if (!isPurseFaction(f) || isRealmNode(f.properties)) return false;
+    // A dissolved faction keeps its node and home; it holds nothing new.
+    if (f.properties.dissolved || f.properties.actorStatus === 'dissolved') return false;
     const key = affinityKeyOf(f);
     return key !== undefined && affinities.includes(key);
   });

@@ -190,7 +190,7 @@ import type { SceneSentinelField, SceneSentinelKind } from './sceneSentinels';
 import { pickTownGuild } from './factionPurse/townGuild';
 import { isSettlement as isPurseSettlement } from './factionPurse/income';
 import { FACTION_PURSE_ENABLED, GUILD_HOLDING_INFLUENCE } from '../data/faction-purse-constants';
-import { getSettlementBuilding } from '../data/settlement-buildings';
+import { buildingForPlaceType, getSettlementBuilding } from '../data/settlement-buildings';
 import {
   IS_BUILDING_PROP, buildingSlotsOf, markMortalBuilding, raiseBuilding, readBuildings,
 } from './settlementEconomy/building';
@@ -2161,10 +2161,15 @@ export function applyEncounterAftermathReaction(
           // `fingerprintFactionControls` keys on faction `controls` edges.
           mutationSummary.touchedStructure = true;
         };
-        // Lowest id first, so the pick is deterministic with no draw (NFP #3).
+        // Lowest id first, so the pick is deterministic with no draw (NFP #3). Every Place the
+        // building stands for counts (its own type and its `adoptsTypes`), as `raiseBuilding`
+        // would adopt — so a held one is found here and never adopted out from under its holder.
         const standing = state.graph.getOutgoingEdges(siteId, 'contains')
           .map(e => state.graph.getNode(e.target))
-          .filter((n): n is NonNullable<typeof n> => !!n && n.properties.sublocationTypeId === def.sublocationTypeId)
+          .filter((n): n is NonNullable<typeof n> => {
+            const typeId = n?.properties.sublocationTypeId;
+            return typeof typeId === 'string' && buildingForPlaceType(typeId)?.id === def.id;
+          })
           .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
         const slotFree = readBuildings(state.graph, siteId).length < buildingSlotsOf(site);
 
