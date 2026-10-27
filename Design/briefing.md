@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 15:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 16:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,6 +31,10 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **News of a mortal's home is free, and comes once.** When their town runs short of, or has spare, grain, fish, grazing land or fresh water, you hear it once, and answering costs nothing. Today it repeats every few hours and charges each time. These pulls were two thirds of all pulls. *Veto:* "home news should cost Attention".
   - **No chapter is charged for stopping the world.** *Veto:* "every chapter should cost Attention".
   - **The Attention gauge comes back once you have a mortal on *Lives on*.** With only The First it stays hidden, because nothing could make it move. It speaks in words (Busy, Strained), never numbers. *Veto:* "always show the gauge".
+- [A town's economy never reaches the live board](https://linear.app/threadbare/issue/THR-2071/a-towns-economy-never-reaches-the-live-board-the-boombust-term-thr-725): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2071-board-reads-the-place.md#decisions-this-plan-builds-on). Each can be vetoed on its own until Tuesday 23:45 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26g.md)*
+  - **A mortal's own choice now feels where they stand and who they are.** A booming or ruined town, a haunted or lawless place, their reputation, their guild, the next step of a story they are in, and what they know all lean the scene they pick. Until now these only decided which five scenes were offered, and the mortal then chose as if they were not there. *Veto:* "a place should only shape what is offered, not what is chosen".
+  - **One lean for all of it, at the strength the scene scoring already gives it,** never more than double and never less than half. *Veto:* "the lean should be gentler" or "each system should have its own dial".
+  - **What the world chooses to offer stays an offer.** Wanderlust, the rules against repeats, the doom and omen bias and hidden-mark reveals keep deciding what comes up, as today, and do not lean the pick. *Veto:* "the doom should also lean the pick".
 
 Say "veto <title>" to reverse any of these.
 
@@ -40,12 +44,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready.** The five design tickets are still held behind their veto windows; the first ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opens at 18:03 UTC. The builder's last three runs (14:12, 14:32, 14:52 UTC) each stood down for that reason, which is correct. The sixth, [THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge), was filed this hour (see Health) and can be claimed now.
+**Healthy: 5 ready.** All five are design tickets still held behind their veto windows; the first ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opens at 18:03 UTC. The builder's 15:50 UTC run stood down for that reason, which is correct. The run before it shipped the heavy-test fix (see Health).
 
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree holds work for it. Agents can un-park it.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Heavy simulation tests red on main since 11:21 UTC; ticket [THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge) filed for the builder.** The check run on the [THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to) fix merge ([run 40511962211](https://github.com/christianspliid-ui/threadbare/actions/runs/40511962211)) failed no test. It hit its 45-minute limit while one test, the 90-day army test, was still running. So the fix is not yet confirmed, and that test needs to cost less or get a proper time limit.
-- Everything else is green: the live site serves the latest main (c5e5a3f7), main's required CI, the scheduled lanes and the worktree reaper (last run 14:40 UTC) are healthy, no PRs are waiting to merge, and the engine runs at 153 ms/tick, 13% under the 7-day median.
+- **Heavy simulation tests red on main since 11:21 UTC; ticket [THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge) is with the builder.** Its fix, [#2634](https://github.com/christianspliid-ui/threadbare/pull/2634) (the army test runs 45 days with its own 15-minute budget), is armed and waiting on checks. Main turns green once it merges and the heavy run passes.
+- Everything else is green: the live site serves the latest main (c5e5a3f7), main's required CI, the scheduled lanes and the worktree reaper (last run 15:40 UTC) are healthy, and the engine runs at 171 ms/tick, 2% under the 7-day median.
