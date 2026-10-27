@@ -145,9 +145,15 @@ describe('the ownership band on a generated world', () => {
     markMortalDead(s.graph, commander.id, s.tick, { cause: 'lifecycle', mode: 'retain' });
 
     expect(insider).toBeDefined();
-    const insiderBoard = boardFor(s, insider!.id, ['ambition_conquer_territory']);
-    expect(insiderBoard.candidates.some(c =>
-      c.templateId === 'cell.control_claim.army' && c.targetNodeId === army!.id)).toBe(true);
+    // Read across a rotation cycle, not at one tick — the same remedy as the company case
+    // (THR-1439). THR-2082: the insider's walked list puts the claim behind the per-actor
+    // ceiling for the first 6–9 ticks of its cycle, and which phase tick 30 lands on moves
+    // with the world (node-id counters are process-wide, so even test order moves it).
+    // The claim is that the faction-mate is offered the army, not on which tick.
+    const insiderOffered = Array.from({ length: ROTATION_CYCLE_TICKS }, (_, k) =>
+      boardFor(s, insider!.id, ['ambition_conquer_territory'], s.tick + k).candidates.some(c =>
+        c.templateId === 'cell.control_claim.army' && c.targetNodeId === army!.id));
+    expect(insiderOffered.some(Boolean)).toBe(true);
 
     // No outsider is ever offered it. Note the walk itself is per-calling (THR-1403),
     // so most outsiders never reach this cell at all — which is why the assertion that
