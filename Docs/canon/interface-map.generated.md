@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 101 |
-| **Total** | **330** |
+| 🔵 UNVERIFIED-OK | 103 |
+| **Total** | **332** |
 
 ## Contracts by producing subsystem
 
@@ -211,6 +211,7 @@ remediation ticket or the build fails.
 | `encounter-outcomes-fill-faction-purse` | The coin a mortal pays in a money encounter goes somewhere: a levy or tithe to the realm the ground belongs to, a toll or fee to the mercenary company, a failed rescue out of a guild's purse. The outcome table's `purse` row moves the faction's treasury through applyTreasuryDelta, the purse's one funnel. | node-prop: `wealth`, `applyTreasuryDelta` | Factions & Succession | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-move-the-town` | A money encounter moves the town it happened in by how the dice fell: the outcome table's `economy_shift` writes the settlement's prosperity, unrest or stock of a good, or the volume on its busiest lane, once at the roll, and the aftermath names the move in the town page's own words. | node-prop: `prosperity`, `unrest`, `resources`, `volume` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-outcomes-write-mortal-means` | A money encounter pays or costs the mortal who took it by how the dice fell: the template's outcome table writes their Means once, at the roll, through the one funnel, and the sheet and the aftermath say what it did in words. | node-prop: `wealth`, `lastWealthReason` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
+| `encounter-outcomes-write-their-road` | An encounter on a road writes that road: the outcome table's lane rows land on the lane its seed carried (else the town's busiest, or its first threatened lane for a clear), `lane_threat` marks it threatened or clears it (never a blockade), and `lane_toll` sets `controlledBy` to the faction that holds the town, else the acting mortal. Prosperity, the purse and holding tolls, army supply, lane traffic, the trade lens and the receipt read the result. | edge-prop: `threatened`, `threatenedSinceTick`, `controlledBy`, `volume` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
 | `encounter-scored-binder-optin` | An encounter template can opt its cast onto the same scored board undertakings use, one template at a time. Two things follow for a migrated template: casting stops being "the first body at this place whose job title matches" and starts weighing story ties, identity fit, distance and role scarcity; and its authored `must-persist` declarations finally reach the binding ledger, so housekeeping defers on that person and a reaper’s kill is traced as a severance instead of vanishing. The recon (THR-1289) measured `persistence` as written 60+ times across the corpus and read by zero consumers — this is the seam that starts retiring that, without a big-bang migration the un-migrated corpus would have to survive. | function: `useScoredBinder`, `EncounterBinderContext`, `prepareEncounterSupportBundle`, `resolveBinding` | Ambitions & Undertakings | 🟢 LIVE | — |
 | `encounter-seed-resolves-by-query` | An encounter plants its sequel by naming a family in game words — { kind: "encounter_template", tags: ["#circle_errand"] } — and the one content-query resolver finds it when the seed comes due, so a renamed template keeps its family and a newly authored one joins by carrying the tag. This replaces two rotting operands: a literal templateId, and encounterFamily, which was an id *prefix* and rotted the same way one level up. Measured before the change: of the 51 families the corpus authors, 41 matched no template at all, and seven seeds named templateIds that do not exist — so 48 kinds of promised follow-up had been withering on arrival, indistinguishable from a system that was never wired. The query travels on the seed rather than being drawn at plant time, so one site resolves and the family may have grown in the twenty ticks before the sequel is owed (THR-1488, slice 4 of THR-1481). | function: `seedContentQuery`, `ENCOUNTER_FAMILY_TAGS`, `validateEncounterSeedRefs`, `describeContentQuery` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `encounter-stakes-line-reaches-veil-ledger-badge-row` | An encounter is named by one formula sentence — "Passing through Sacred Grove, Vara must cross the rotten toll bridge — or go into the river with the pack." — and its ending by the same parts: "Vara went into the river with the pack." The veil, the Chapter Ledger, the encounter badge and the agent thread row all read the same line, so a story is called one thing everywhere. | function: `stampStakesContext`, `buildStakesLine`, `buildResultLine`, `stakesLineForAction`, `rememberedStakesLine` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
@@ -353,6 +354,7 @@ remediation ticket or the build fails.
 | `regional-monopoly-pays-rent` | A faction holds a regional monopoly on a good when, around an anchor place it holds, at least MONOPOLY_REGION_MIN_PLACES place-tier bearing places lie within MONOPOLY_REGION_RADIUS_HEXES and it holds MONOPOLY_CONTROL_FRACTION of them (THR-1955, war aims S2). phaseEconomicPower writes faction.regionalMonopolies ({ resourceId, anchorLocationId, share, placeIds, sinceTick }) and keeps faction.monopolies (resource ids) daily, chronicling "holds most of" lines de-duplicated by MONOPOLY_MIN_HOLD_DAYS. Readers: the purse's place yield pays MONOPOLY_SCARCITY_RENT on the held good (scarcityRentFor), the war-aim score's break/complete bonuses (monopolyAimFor), the embargo prerequisite, the Purse panel chip and the Trade lens monopoly line. | node-prop: `regionalMonopolies`, `monopolies`, `scarcityRentFor`, `monopolyAimFor` | Factions & Succession | 🟢 LIVE | — |
 | `restless-moves-people` | A Restless town loses people (THR-1934 S1). Every RESTLESS_LEAVE_DAYS 3 days of the restless trait, the nearest fed, calm settlement within MIGRATION_RADIUS_HEXES 6 (same tax holder first) gains a person and the town loses one — once the settlement economy counts population; before it, skipped and traced — and the town's most recent arrival gets a relocationIntent (source unrest) toward it, which the movement pull scores like any intent. | node-prop: `relocationIntent`, `population` | Movement & Colocation | 🟢 LIVE | — |
 | `rising-founds-rebel` | A held town at RISING_THRESHOLD 90 throws off its holder (THR-1957 S2). The holder's members who live there split off through the shared splinter writes (factionSplinter.ts, the new resident_of member selector); with none, the highest-ranked resident founds a free town through foundFaction. Either way the new faction takes the town's controls (via rising, takenFrom) and hostile_to is written both ways (reason rising), which war aims' enemy rule reads. No resident: no rising. | edge: `controls`, `hostile_to`, `member_of` | Factions & Succession | 🟢 LIVE | — |
+| `route-event-seed-carries-lane` | The route-event phase plants each lane event with the lane it is about (`PendingEncounterSeed.laneEdgeId`); seed evaluation re-checks the lane is still a live trades_with edge and puts it on the spawned action (`UnifiedAction.laneEdgeId`), which the outcome table writes. | state-field: `laneEdgeId`, `resolveSeedLane` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `scarcity-arc-seeds-granary-riot` | A hungry town's anger becomes the granary riot (THR-1934 S1). Under UNREST_PRESSURE_ENABLED the scarcity arc's unrest phase seeds encounter.town.granary_riot (was cg.quest) and adds no unrest jump (hunger carries it); the unrest phase seeds the same template the day a hungry town turns Lawless, at most once per RIOT_SEED_COOLDOWN_DAYS 10. | function: `GRANARY_RIOT_TEMPLATE_ID`, `encounter.town.granary_riot` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `settlement-economy-drives-tier` | The settlement economy writes targetTier (population plus seat: a city needs a seat that pulls, a capital a realm's seat). With SETTLEMENT_ECONOMY_DRIVES_TIER, phaseSettlementPromotion moves the subtype one step toward it after SETTLEMENT_PROMOTION_SUSTAIN_TICKS, a capital included; the prosperity trigger is the fallback. | node-prop: `targetTier` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `settlement-economy-raises-buildings` | The settlement economy raises buildings as Places (isBuilding, buildingId, a contains edge) from spare timber and stone, adopting a standing Place of the type rather than duplicating it, and loses them after IDLE_DAYS_TO_LOSE idle days. The Inspector Connections fact and the tooltip router read the flag. | node-prop: `IS_BUILDING_PROP`, `buildingFact` | World Generation, Terrain & Places | 🟢 LIVE | — |
@@ -655,10 +657,10 @@ remediation ticket or the build fails.
 - **Intent:** Four ambitions are met by the undertakings that serve them (THR-1967): Dominate Regional Trade adds agent_holds_lanes (DOMINATE_TRADE_LANES_MIN lanes tolled via controlledBy, founded via the Route node's constructed_by, or held via owns on the Route node; a decayed edge no longer counts) and agent_means_at_least (DOMINATE_TRADE_MEANS_TIER) and completes on DOMINATE_TRADE_COMPLETION (3 of 5); Found Something New asks for a settlement-tier town with a constructed_by edge back to the holder (agent_controls_location, foundedBySelf); Rebuild from Ashes for a settlement-tier town of any size; Protect the Home for city-walls in the home settlement (agent_home_has_place: residence origin, else position, climbed to a settlement).
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Ambition*, *Means*, *Route*, *Freehold*
-- **Production hits:** 199 total — 2 write, 2 read, 195 unclassified
+- **Production hits:** 200 total — 2 write, 2 read, 196 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/data/ambition-templates.ts`, `src/engine/graphConditions.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +190 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +191 more
 - **Verdict:** Verified 2026-10-21: THR-1967. undertakingEconomyS3.test.ts: a mortal who founds a town meets found_seat while a merely held town does not (it still meets rebuild_ground); two opened lanes plus Wealthy meet trade_lanes and trade_means; walls in another town do not meet protect_ward, walls at home do; the estate, camp and castle shapes are gone.
 
 ### `answered-prayer-pushes-dominion` — 🟢 LIVE
@@ -1038,10 +1040,10 @@ exit
 
 - **Intent:** A warlord who blockades a trade lane holds it rather than killing it: while the blockade stands the lane is suspended — no decay, volume sinking toward a trickle — and when the threat lifts it carries again. Without this read a blockade on a standing lane would be invisible to the lane rule (it would keep carrying at full traffic), and without the suspension a blockade would be an erasure the verb itself promises it is not ("suspended, not deleted"). The player reads it as the word "blockaded" on the lane in the hex tooltip.
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
-- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
 - **Write sites:** `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/tradeRoute.ts`
-- **Other hits:** `src/debug-bridge.ts`
+- **Other hits:** `src/debug-bridge.ts`, `src/engine/economyShift.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `branch-decision-writes-archetype-drift` — 🔴 LEAKED
@@ -1618,10 +1620,10 @@ exit
 - **Intent:** An army eats from the towns its faction holds, along the roads and trade routes that reach them. Sever the line — or let bandits settle on it, or let the far end fall into famine — and the host in the field starves without anyone fighting it. This is what makes cutting a supply route an economic act with a military consequence, and gives a Gold/Shadow god a way into a war that a god of Iron would not think to use.
 - **Producer → Consumer:** Mortal Economy & Prosperity → War, Armies & Battles
 - **UL terms:** *Stock Tier*
-- **Production hits:** 45 total — 3 write, 1 read, 41 unclassified
+- **Production hits:** 49 total — 3 write, 1 read, 45 unclassified
 - **Write sites:** `src/engine/phases/resourceStockTiers.ts`, `src/engine/phases/routeEvents.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/armySupply.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/HexMapV2/scene/HexLensLayer.ts`, `src/components/HexMapV2/scene/TradeRouteMesh.ts`, `src/data/action-technical-effects.ts`, `src/data/army-supply-config.ts` +36 more
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/HexMapV2/scene/HexLensLayer.ts`, `src/components/HexMapV2/scene/TradeRouteMesh.ts`, `src/data/action-technical-effects.ts`, `src/data/army-supply-config.ts` +40 more
 - **Verdict:** Verified 2026-08-05: THR-626: driven end-to-end in a real world, not a fixture. `--seed 42 --map medium`, tick 120: the one live army ("The Civic Guard — Host") resolves `supplyHostId: null` with larder 46/100 and tier `strained`; by tick 132 it is `starving` at 0/100 and the scan trace reads `army-supply scan: 1 armies, 1 cut off, 0 strained, 1 starving, 1 seeded`, planting `army.supply.siege_lifted` because that army is the attacker in an active siege. Browser-confirmed on the served bundle at 1920×1080: `__DEBUG.getArmies()` returns `supplyTier: "starving"`, `supply: 10`, `supplyHost: null`, with cohesion visibly dragged 90% → 47% by the coupled `unsupplied` attrition term. Values and the consequence, not just symbols.
 
 ### `economy-receipt-from-cast-snapshot` — 🔵 UNVERIFIED-OK
@@ -1651,10 +1653,10 @@ exit
 
 - **Intent:** The four granted economic verbs (bless_harvest, blight, open_markets, reveal_vein) get a visible story response — player-loop link 4.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
-- **Production hits:** 107 total — 1 write, 1 read, 105 unclassified
+- **Production hits:** 108 total — 1 write, 1 read, 106 unclassified
 - **Write sites:** `src/data/unified-action-templates.ts`
 - **Read sites:** `src/engine/economicContext.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/data/action-technical-effects.ts` +100 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/data/action-technical-effects.ts` +101 more
 - **Verdict:** Verified 2026-07-23: THR-725: end-to-end in the CLI (seed 42, medium) — applied `loc.blight`'s -10 prosperity write to Thornhaven at tick 20; tick 21 emitted `econ_shock_seeded` (bust, -10.0) planting `encounter.debt_collection` and `encounter.aid_refugees`; by tick 27 both had matured into live scenes on the seeded agents. The verb now produces story, not just a number.
 
 ### `effect-executor-overlay-persistence` — 🟢 LIVE
@@ -1743,10 +1745,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *Prosperity*, *Unrest*
 - **Module:** `src/engine/economyShift.ts`
-- **Production hits:** 224 total — 3 write, 4 read, 217 unclassified
+- **Production hits:** 225 total — 3 write, 4 read, 218 unclassified
 - **Write sites:** `src/engine/economyShift.ts`, `src/engine/encounterAftermath.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/castEconomyReceipt.ts`, `src/engine/phaseProsperity.ts`, `src/engine/phaseTradeRouteDecay.ts`, `src/engine/resourceEconomy.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +212 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +213 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-write-mortal-means` — 🔵 UNVERIFIED-OK
@@ -1759,6 +1761,18 @@ exit
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/mortalMeans.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
 - **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/content/ruins/archetypes.ts`, `src/data/action-technical-effects.ts` +79 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `encounter-outcomes-write-their-road` — 🔵 UNVERIFIED-OK
+
+- **Intent:** An encounter on a road writes that road: the outcome table's lane rows land on the lane its seed carried (else the town's busiest, or its first threatened lane for a clear), `lane_threat` marks it threatened or clears it (never a blockade), and `lane_toll` sets `controlledBy` to the faction that holds the town, else the acting mortal. Prosperity, the purse and holding tolls, army supply, lane traffic, the trade lens and the receipt read the result.
+- **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
+- **UL terms:** *Prosperity*
+- **Module:** `src/engine/economyShift.ts`
+- **Production hits:** 100 total — 1 write, 7 read, 92 unclassified
+- **Write sites:** `src/engine/economyShift.ts`
+- **Read sites:** `src/engine/armySupply.ts`, `src/engine/castEconomyReceipt.ts`, `src/engine/factionPurse/income.ts`, `src/engine/holdingIncome.ts`, `src/engine/phaseProsperity.ts` +2 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +87 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-scored-binder-optin` — 🟢 LIVE
@@ -2281,10 +2295,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Route*, *Freehold*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 218 total — 2 write, 3 read, 213 unclassified
+- **Production hits:** 220 total — 2 write, 3 read, 215 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/holdingIncome.ts`, `src/engine/phaseEconomicChronicle.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts` +208 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts` +210 more
 - **Verdict:** Verified 2026-10-21: THR-1937. undertakingEconomy.test.ts: after create × route the edge carries controlledBy = founder and taxRate 0.1, the identity node has constructed_by → founder and owns ← founder (a rival's control:claim is refused), collectHoldingPayments pays the founder a route_control toll, phaseEconomicChronicle writes a trade_route_established line naming both towns, and the line drops when either end is unnamed.
 
 ### `founded-town-has-ruler-and-founder` — 🟢 LIVE
@@ -3106,10 +3120,10 @@ exit
 
 - **Intent:** Trade roads and what they carry are a lens, not plain-map clutter (THR-1898 Lenses II, plan D4). The route producers write `trades_with` edges (volume, manifest, threatened); the Trade lens (`views/lenses/tradeLens.ts`) lights every explored hex on the cube line between a known route's ends (`hexLine`), draws the road in caravan gold or threat red with a mid-road badge, and tells the road words that left the plain hex tooltip, then each end's prosperity tier (`getProsperityTier`, `phaseProsperity`) and scarce goods (`stockTier`) as words, never a number.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Intelligence, Knowledge & Familiarity
-- **Production hits:** 112 total — 2 write, 1 read, 109 unclassified
+- **Production hits:** 113 total — 2 write, 1 read, 110 unclassified
 - **Write sites:** `src/engine/phaseProsperity.ts`, `src/engine/phases/resourceStockTiers.ts`
 - **Read sites:** `src/engine/views/lenses/tradeLens.ts`
-- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx` +104 more
+- **Other hits:** `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DecisionBreakdown.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx` +105 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `quintessence-threshold-gates-candidacy-and-movement` — 🟠 PARTIAL
@@ -3360,6 +3374,17 @@ exit
 - **Production hits:** 3 total — 2 write, 1 read, 0 unclassified
 - **Write sites:** `src/engine/phaseDominion.ts`, `src/engine/phaseSpherePressure.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `route-event-seed-carries-lane` — 🔵 UNVERIFIED-OK
+
+- **Intent:** The route-event phase plants each lane event with the lane it is about (`PendingEncounterSeed.laneEdgeId`); seed evaluation re-checks the lane is still a live trades_with edge and puts it on the spawned action (`UnifiedAction.laneEdgeId`), which the outcome table writes.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
+- **Module:** `src/engine/encounterSeeding.ts`
+- **Production hits:** 9 total — 2 write, 3 read, 4 unclassified
+- **Write sites:** `src/engine/encounterSeeding.ts`, `src/engine/phases/routeEvents.ts`
+- **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterAftermath.ts`, `src/engine/unifiedActionResolution.ts`
+- **Other hits:** `src/data/economy-shift-constants.ts`, `src/engine/economyShift.ts`, `src/types/trace.ts`, `src/types/unifiedAction.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `routine-flag-keeps-daily-life-off-notifications-and-ledger` — 🔵 UNVERIFIED-OK
@@ -4109,10 +4134,10 @@ exit
 
 - **Intent:** Unrest the player can raise shows where it is (THR-1898 Lenses II, plan D4, PC-6). `phaseUnrest` writes per-Location `unrest` (raised by Incite Unrest, doom cards and scarcity arcs) and `phaseLocationTraits` mints the Lawless condition from it; the Trouble lens lights a hex when a Location on it carries Lawless ("Unrest: Ferris is lawless.") or when its mood bucket — `deriveMoodBucket`, the average the hex survey reads — is agitated or worse, so the lens never disagrees with the chip or the survey. The conflict pulse (`computeLocationPulse`, tense/volatile) lights the same lens as Strife; rival schemes and drains (`buildRivalInfluenceMarkers`, consumer moved here from the retired `RivalInfluenceMesh`) name the rival.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Intelligence, Knowledge & Familiarity
-- **Production hits:** 76 total — 2 write, 1 read, 73 unclassified
+- **Production hits:** 77 total — 2 write, 1 read, 74 unclassified
 - **Write sites:** `src/engine/phaseLocationTraits.ts`, `src/engine/phaseUnrest.ts`
 - **Read sites:** `src/engine/views/lenses/troubleLens.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/composition-dsl/examples/event-winnowing-of-luck.recipe.ts` +68 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/composition-dsl/examples/event-winnowing-of-luck.recipe.ts` +69 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `unrest-pressure-inputs` — 🟢 LIVE
@@ -4249,10 +4274,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 307 total — 2 write, 6 read, 299 unclassified
+- **Production hits:** 309 total — 2 write, 6 read, 301 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +294 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +296 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

@@ -5404,6 +5404,59 @@ export const CONTRACTS: readonly Contract[] = [
     ],
   },
   {
+    // THR-2046 — a road's encounters write to that road. Extends the S3 lane row: the
+    // write lands on the encounter's own lane (its seed's), and two quantities mark or
+    // clear a threat and strike a toll on it.
+    id: 'encounter-outcomes-write-their-road',
+    producerSystem: ENCOUNTERS,
+    consumerSystem: ECONOMY,
+    intent:
+      "An encounter on a road writes that road: the outcome table's lane rows land on the lane its seed carried (else the town's busiest, or its first threatened lane for a clear), `lane_threat` marks it threatened or clears it (never a blockade), and `lane_toll` sets `controlledBy` to the faction that holds the town, else the acting mortal. Prosperity, the purse and holding tolls, army supply, lane traffic, the trade lens and the receipt read the result.",
+    ulTerms: ['Prosperity'],
+    mechanism: {
+      kind: 'edge-prop',
+      symbols: ['threatened', 'threatenedSinceTick', 'controlledBy', 'volume'],
+      module: 'src/engine/economyShift.ts',
+    },
+    writeSites: [
+      'src/engine/economyShift.ts',
+      'src/engine/encounterAftermath.ts',
+    ],
+    readSites: [
+      'src/engine/phaseProsperity.ts',
+      'src/engine/factionPurse/income.ts',
+      'src/engine/holdingIncome.ts',
+      'src/engine/armySupply.ts',
+      'src/engine/tradeRoute.ts',
+      'src/engine/views/lenses/tradeLens.ts',
+      'src/engine/castEconomyReceipt.ts',
+      'src/engine/unifiedActionResolution.ts',
+    ],
+  },
+  {
+    // THR-2046 — a route-event seed remembers its lane, re-validated at spawn.
+    id: 'route-event-seed-carries-lane',
+    producerSystem: ECONOMY,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'The route-event phase plants each lane event with the lane it is about (`PendingEncounterSeed.laneEdgeId`); seed evaluation re-checks the lane is still a live trades_with edge and puts it on the spawned action (`UnifiedAction.laneEdgeId`), which the outcome table writes.',
+    ulTerms: [],
+    mechanism: {
+      kind: 'state-field',
+      symbols: ['laneEdgeId', 'resolveSeedLane'],
+      module: 'src/engine/encounterSeeding.ts',
+    },
+    writeSites: [
+      'src/engine/phases/routeEvents.ts',
+      'src/engine/encounterSeeding.ts',
+    ],
+    readSites: [
+      'src/engine/encounterAftermath.ts',
+      'src/engine/unifiedActionResolution.ts',
+      'src/debug-bridge.ts',
+    ],
+  },
+  {
     // THR-1953 (mortal wealth S3) — the purse rows: coin a mortal pays reaches a faction.
     id: 'encounter-outcomes-fill-faction-purse',
     producerSystem: ENCOUNTERS,
