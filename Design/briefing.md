@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 19:56 local (18:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 20:58 local (19:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,11 +34,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 ready, 1 being built.** The builder has claimed salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069/plan-doc-salt-the-good-the-smugglers-carry-the-monopoly-scene-prices)) and is working on it now. Next in line: the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) and the mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077), after its veto window closes at 20:56 UTC).
+**Healthy: 4 ready, none being built.** Salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069/plan-doc-salt-the-good-the-smugglers-carry-the-monopoly-scene-prices)) merged and is live. All four ready tickets are inside their veto holds, so the builder's last three runs correctly stood down; the first hold, the mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)), opens at 20:56 UTC. Then: the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) and Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)).
 
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). Agents can un-park it.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No branch names it. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The heavy simulation tests pass on main again ([the run on the fix's merge](https://github.com/christianspliid-ui/threadbare/actions/runs/40551208332) succeeded), the live site serves the latest main (5faaf4c3), the scheduled lanes and the worktree reaper (last run 18:40 UTC) are healthy, and the engine runs at 181 ms/tick, 4% over the 7-day median.
+All green. The live site serves the latest main (d2baba07), CI and the heavy simulation tests pass on main, no PRs are waiting to merge, the scheduled lanes and the worktree reaper are healthy, and the engine runs at 160 ms/tick, 8% under the 7-day median.
