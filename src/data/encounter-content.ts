@@ -14622,7 +14622,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     id: 'encounter.prospect_the_seam',
     stakes: {
       goal: 'stake a claim on the seam before dark',
-      risk: 'find another prospector filed on it first',
+      risk: 'pay the filing fee on a seam already filed',
       won: 'staked the claim and entered it at the assay office',
       lost: 'found another prospector had filed on it first',
       lostBadly: 'paid the filing fee on a seam already filed',

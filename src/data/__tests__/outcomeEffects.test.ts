@@ -204,13 +204,17 @@ describe('THR-1936 — outcome tables', () => {
   it('names the loss in the stakes when a failure band costs the actor Means', () => {
     const bad: string[] = [];
     for (const t of templates) {
-      const costs = tablesOf(t).some(({ table }) =>
-        FAILURE_BANDS.some(band => meansShifts(table[band]).some(e =>
+      const costingBands = FAILURE_BANDS.filter(band => tablesOf(t).some(({ table }) =>
+        meansShifts(table[band]).some(e =>
           e.amount < 0 && (e.targetAgentId === undefined || e.targetAgentId === '$actor'))));
-      if (!costs) continue;
+      if (costingBands.length === 0) continue;
       if (!t.stakes) { bad.push(`${t.id}: no stakes`); continue; }
       if (!LOSS_WORDS.test(t.stakes.risk)) bad.push(`${t.id}: risk "${t.stakes.risk}"`);
-      if (!LOSS_WORDS.test(t.stakes.lost)) bad.push(`${t.id}: lost "${t.stakes.lost}"`);
+      // When only a critical failure costs, the cost is named on the line that
+      // band reads — lostBadly when authored (stakesLine.ts) — and lost stays
+      // free to describe a plain failure that costs nothing.
+      const line = costingBands.includes('failure') ? t.stakes.lost : (t.stakes.lostBadly ?? t.stakes.lost);
+      if (!LOSS_WORDS.test(line)) bad.push(`${t.id}: lost "${line}"`);
     }
     expect(bad).toEqual([]);
   });
