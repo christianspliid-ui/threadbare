@@ -43,6 +43,7 @@ import {
   BOUNTY_EXPIRY,
   BOUNTY_REWARD,
   FACTION_ACTION_HISTORY_MAX,
+  FACTION_BOUNTIES_ENABLED,
 } from '../types/factionAction';
 import { readWealth, applyTreasuryDelta } from './wealth';
 import { emitTrace } from './traceBuffer';
@@ -56,6 +57,7 @@ import {
 import { refreshFactionDerivedFlags, getFactionLeaderId, getAnointedLeaderId } from './factionNetwork';
 import { resolveFactionMemberWork } from './factionMemberWork';
 import { lapseCommissions } from './factionCommissions';
+import { closeBounties, hasOpenBountyFrom, isBountyTarget } from './factionBounties';
 import type { FactionStirDissentTrace } from '../types/factionAction';
 import { getFactionMembershipEdges } from './graphQueries';
 import {
@@ -741,19 +743,26 @@ function executeHoldConclave(
   };
 }
 
-function executeIssueBounty(
+/** Issue Bounty. Exported for its THR-2072 tests (target filter, one-per-target guard). */
+export function executeIssueBounty(
   state: GameState,
   faction: GraphNode,
   rng: () => number,
 ): FactionActionRecord | null {
-  // Find target: excommunicated members with hostile_to edge, or rival faction agents nearby
-  const hostileEdges = state.graph.getOutgoingEdges(faction.id, 'hostile_to');
+  // Find target: excommunicated members with hostile_to edge, or rival faction agents nearby.
+  // THR-2072 — only living individual mortals: the faction → faction edges a crown rebellion
+  // or a rising writes are filtered out before the pick, so a faction with mortal enemies
+  // still posts. Switched off, the pick is exactly as before.
+  const hostileEdges = state.graph.getOutgoingEdges(faction.id, 'hostile_to')
+    .filter(e => !FACTION_BOUNTIES_ENABLED || isBountyTarget(state.graph.getNode(e.target)));
   if (hostileEdges.length === 0) return null;
 
   // Pick target with some randomness
   const targetEdge = hostileEdges[Math.floor(rng() * hostileEdges.length)];
   const target = state.graph.getNode(targetEdge.target);
   if (!target) return null;
+  // THR-2072 — one open bounty per faction per target: the faction spends nothing.
+  if (FACTION_BOUNTIES_ENABLED && hasOpenBountyFrom(state.graph, faction.id, target.id, state.tick)) return null;
 
   // Create bounty node
   const bountyId = `bounty_${faction.id}_${target.id}_${state.tick}`;
@@ -765,7 +774,9 @@ function executeIssueBounty(
       eventType: 'bounty',
       issuingFactionId: faction.id,
       targetAgentId: target.id,
-      reward: BOUNTY_REWARD,
+      // THR-2072 — the coin is held on the bounty as its escrow, paid to the hunter who
+      // collects it or back to the purse when it lapses. The unread `reward` stamp is retired.
+      ...(FACTION_BOUNTIES_ENABLED ? { escrow: BOUNTY_REWARD } : { reward: BOUNTY_REWARD }),
       expiryTick: state.tick + BOUNTY_EXPIRY,
       createdTick: state.tick,
       status: 'active',
@@ -960,6 +971,14 @@ export function phaseFactionActions(state: GameState, runtime?: SimulationRuntim
   // Every tick, so a lapse is never late by a faction-action interval.
   try {
     lapseCommissions(state, state.tick);
+  } catch {
+    // Fail-soft: the faction phase goes on.
+  }
+
+  // THR-2072 — a bounty past its expiry, or whose target is gone, lapses and gives its
+  // escrow back to the purse; `hunted` is lifted when no open bounty is left.
+  try {
+    closeBounties(state, state.tick);
   } catch {
     // Fail-soft: the faction phase goes on.
   }

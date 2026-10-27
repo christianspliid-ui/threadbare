@@ -38,6 +38,14 @@
  *
  * Fail-soft: every missing piece reads as "no duel". A missing template traces
  * `no_template` once and stops spawning for the rest of the pass.
+ *
+ * **The bounty licence (THR-2072).** A pair with no injury grudge may still duel when
+ * one side has an open bounty on the other from a faction the first side belongs to
+ * (`huntableBounty`). Same busy, cooldown and never-duellist rules; its own stream
+ * (`BOUNTY_DUEL_STREAM_SALT`) and chance (`bountyDuelChance` on the hunter's courage).
+ * The hunter is the actor (`fight.duel.bounty`), unless only the hunted is threaded:
+ * then the hunted acts (`fight.duel.bounty_defence`), because the god's hand reaches only
+ * the actor. A pair with a grudge runs the grudge roll only.
  */
 
 import type { GameState } from '../../types/gameState';
@@ -46,12 +54,18 @@ import type { MovementState } from '../../types/movement';
 import type { UnifiedAction } from '../../types/unifiedAction';
 import type { FightTriggerGrudgeSkip, FightTriggerGrudgeTrace } from '../../types/traces/fight-traces';
 import {
+  BOUNTY_DUEL_CHANCE_BASE,
+  BOUNTY_DUEL_CHANCE_MAX,
+  BOUNTY_DUEL_STREAM_SALT,
   GRUDGE_DUEL_COOLDOWN_TICKS,
   GRUDGE_ESCALATION_BASE,
   GRUDGE_ESCALATION_MAX,
   GRUDGE_ESCALATION_STREAM_SALT,
 } from '../../data/fight-constants';
 import { FIGHT_DUEL_GRUDGE_ID } from '../../data/encounters/fight-duel-grudge';
+import { FIGHT_DUEL_BOUNTY_DEFENCE_ID, FIGHT_DUEL_BOUNTY_ID } from '../../data/encounters/fight-duel-bounty';
+import { FACTION_BOUNTIES_ENABLED } from '../../types/factionAction';
+import { huntableBounty, indexOpenBounties } from '../factionBounties';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { mulberry32 } from '../../lib/prng';
 import { getAvatarAscendant } from '../graphQueries';
@@ -79,6 +93,17 @@ function hashString(input: string): number {
 /** The pair's own escalation stream for this tick. */
 export function grudgeEscalationRng(seed: number, tick: number, pairKey: string): () => number {
   return mulberry32(((seed ?? 0) + tick * GRUDGE_ESCALATION_STREAM_SALT + hashString(pairKey)) >>> 0);
+}
+
+/** THR-2072 — the bounty licence's own stream for this pair and tick. */
+export function bountyDuelRng(seed: number, tick: number, pairKey: string): () => number {
+  return mulberry32(((seed ?? 0) + tick * BOUNTY_DUEL_STREAM_SALT + hashString(pairKey)) >>> 0);
+}
+
+/** THR-2072 — the hourly chance a hunter whose courage leans `hunterCourage` ∈ [−1, 1] comes for the target. */
+export function bountyDuelChance(hunterCourage: number): number {
+  const courage = Math.max(-1, Math.min(1, Number.isFinite(hunterCourage) ? hunterCourage : 0));
+  return Math.max(0, Math.min(BOUNTY_DUEL_CHANCE_MAX, BOUNTY_DUEL_CHANCE_BASE * (1 + courage)));
 }
 
 /** The escalation chance for a pair whose braver side leans `pairCourage` ∈ [−1, 1]. */
@@ -189,6 +214,78 @@ export function runGrudgeDuels(
   for (const a of baseActions) if (!a.resolved) busy.add(a.actorId);
   const pickedThisPass = new Set<string>();
   let templateMissing = false;
+  // THR-2072 — every open bounty, keyed by target, read once per pass.
+  let bountyTemplateMissing = false;
+  const bountyIndex = FACTION_BOUNTIES_ENABLED ? indexOpenBounties(graph, tick) : undefined;
+  const isBusy = (id: string, node: GraphNode): boolean =>
+    busy.has(id) || pickedThisPass.has(id) || hasMovementQueue(node);
+
+  /** The bounty licence for a pair with no grudge: spawns at most one bounty duel. */
+  const tryBountyDuel = (aId: string, bId: string): void => {
+    if (!bountyIndex || bountyIndex.size === 0 || bountyTemplateMissing) return;
+    if (!bountyIndex.has(aId) && !bountyIndex.has(bId)) return;
+    const aHunts = huntableBounty(graph, aId, bId, tick, bountyIndex);
+    const bounty = aHunts ?? huntableBounty(graph, bId, aId, tick, bountyIndex);
+    if (!bounty) return;
+    const [hunterId, huntedId] = aHunts ? [aId, bId] : [bId, aId];
+    const hunterNode = graph.getNode(hunterId);
+    const huntedNode = graph.getNode(huntedId);
+    if (isNeverDuellist(graph, hunterNode) || isNeverDuellist(graph, huntedNode)) return;
+
+    const pairKey = fightPairKey(hunterId, huntedId);
+    // The hunted acts only when the god has threaded them and not the hunter.
+    const defence = threadRank(state, huntedId) > 0 && threadRank(state, hunterId) === 0;
+    const [actorId, targetId] = defence ? [huntedId, hunterId] : [hunterId, huntedId];
+    const templateId = defence ? FIGHT_DUEL_BOUNTY_DEFENCE_ID : FIGHT_DUEL_BOUNTY_ID;
+    const chance = bountyDuelChance(readLiveAxisLean(state, hunterId, 'courage_prudence'));
+    const traceSkip = (skipped: FightTriggerGrudgeSkip, roll = -1): void => {
+      if (skipped !== 'no_template' && !isGrudgeSkipTraceTick(tick, pairKey)) return;
+      emitGrudgeTrace(state, { actorId, targetId, cause: 'bounty', chance, roll, skipped, bountyId: bounty.id });
+    };
+    if (isBusy(hunterId, hunterNode!) || isBusy(huntedId, huntedNode!)) {
+      traceSkip('busy');
+      return;
+    }
+    if (isFightPairOnCooldown(fightCooldowns, pairKey, tick)) {
+      traceSkip('cooldown');
+      return;
+    }
+    const rng = bountyDuelRng(state.seed, tick, pairKey);
+    const roll = rng();
+    if (roll >= chance) return;
+    // Fail-soft re-read: the bounty must still be open at the instant of the spawn.
+    if (huntableBounty(graph, hunterId, huntedId, tick)?.id !== bounty.id) {
+      traceSkip('bounty_gone', roll);
+      return;
+    }
+    const template = getUnifiedTemplateById(templateId);
+    if (!template) {
+      bountyTemplateMissing = true;
+      traceSkip('no_template', roll);
+      return;
+    }
+    let action: UnifiedAction;
+    try {
+      action = createUnifiedAction({
+        actorId,
+        templateId,
+        targetId,
+        scale: template.scale,
+        source: 'system',
+        tick,
+        template,
+        rng,
+        targetProperties: graph.getNode(targetId)?.properties,
+      });
+    } catch {
+      return;
+    }
+    spawned.push(action);
+    pickedThisPass.add(hunterId);
+    pickedThisPass.add(huntedId);
+    fightCooldowns = writeFightCooldown(fightCooldowns, pairKey, tick + GRUDGE_DUEL_COOLDOWN_TICKS, tick);
+    emitGrudgeTrace(state, { actorId, targetId, cause: 'bounty', chance, roll, actionId: action.actionId, bountyId: bounty.id });
+  };
 
   for (const [, agentIds] of locationAgents) {
     if (agentIds.length < 2) continue;
@@ -197,7 +294,14 @@ export function runGrudgeDuels(
         const aId = agentIds[i];
         const bId = agentIds[j];
         const cause = pairGrudgeCause(state, aId, bId);
-        if (!cause) continue;
+        if (!cause) {
+          try {
+            tryBountyDuel(aId, bId);
+          } catch {
+            // Fail-soft: a bounty licence that throws spawns nothing; the pass goes on.
+          }
+          continue;
+        }
         const aNode = graph.getNode(aId);
         const bNode = graph.getNode(bId);
         if (isNeverDuellist(graph, aNode) || isNeverDuellist(graph, bNode)) continue;
@@ -214,8 +318,6 @@ export function runGrudgeDuels(
           emitGrudgeTrace(state, { actorId, targetId, cause, chance, roll, skipped });
         };
 
-        const isBusy = (id: string, node: GraphNode): boolean =>
-          busy.has(id) || pickedThisPass.has(id) || hasMovementQueue(node);
         if (isBusy(aId, aNode!) || isBusy(bId, bNode!)) {
           traceSkip('busy');
           continue;
@@ -284,10 +386,31 @@ function emitGrudgeTrace(
     roll: number;
     skipped?: FightTriggerGrudgeSkip;
     actionId?: string;
+    /** THR-2072 — set when an open bounty, not a grudge, licensed the duel. */
+    bountyId?: string;
   },
 ): void {
   const actorName = state.graph.getNode(t.actorId)?.name ?? t.actorId;
   const targetName = state.graph.getNode(t.targetId)?.name ?? t.targetId;
+  if (t.bountyId) {
+    emitTrace({
+      category: 'fight.trigger',
+      tick: state.tick,
+      source: 'bounty',
+      bountyId: t.bountyId,
+      aggressorId: t.actorId,
+      targetId: t.targetId,
+      grudgeCause: t.cause,
+      chance: t.chance,
+      roll: t.roll,
+      ...(t.skipped ? { skipped: t.skipped } : {}),
+      ...(t.actionId ? { actionId: t.actionId } : {}),
+      summary: t.skipped
+        ? `${actorName} and ${targetName}: a price stands between them — no duel (${t.skipped})`
+        : `${actorName} and ${targetName} fight over the price on a head`,
+    } as FightTriggerGrudgeTrace & { summary: string });
+    return;
+  }
   emitTrace({
     category: 'fight.trigger',
     tick: state.tick,

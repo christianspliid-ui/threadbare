@@ -2664,6 +2664,16 @@ if (import.meta.env.DEV) {
       return readFactionCommissions(state.graph, factionId);
     },
     /**
+     * THR-2072 — every bounty (or one faction's), oldest first: status, escrow still
+     * held, and who collected it (from the `collected` edge).
+     */
+    getBounties: async (factionId?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return [];
+      const { readBounties } = await import('./engine/factionBounties');
+      return readBounties(state.graph, factionId);
+    },
+    /**
      * THR-1936 — one mortal's Means: wealth, band word, last reason. `want` is null
      * until S2 ships the want. Null when the id is not an actor.
      */

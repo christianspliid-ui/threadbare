@@ -108,7 +108,8 @@ function networkSizeWord(count: number): string {
 import { getStrategicTemplate } from './strategicActionCandidates';
 import { describeWorkProgress } from './workProgress';
 import { readStoredCalling } from './calling';
-import { COMMISSION_CAUSE_LINE } from '../data/mortal-means-constants';
+import { BOUNTY_CAUSE_LINE, COMMISSION_CAUSE_LINE } from '../data/mortal-means-constants';
+import { bountiesOnTarget } from './factionBounties';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -492,6 +493,11 @@ export interface AgentInfoCardData {
    * would tell the player who someone hates before they know who they trust.
    */
   grudges?: GrudgeSummary[];
+  /**
+   * THR-2072 — each faction with an open price on this mortal's head, oldest posting
+   * first, one entry per faction. Set only while one is open; the Blood row reads it.
+   */
+  bountiesOn?: { factionId: string; factionName: string }[];
   /**
    * Live marks and favours between this agent and others (THR-1439), gated with
    * `topBonds` and `grudges` at `known`+ for the same reason: what somebody holds over
@@ -1036,6 +1042,8 @@ function describeWealthSource(reason: string | undefined): string | undefined {
     case 'divine_ruin': return 'a run of ruin no one could explain';
     // THR-2042 — the same constant the aftermath change's cause reads.
     case 'commission': return COMMISSION_CAUSE_LINE;
+    // THR-2072 — a bounty collected in a duel.
+    case 'bounty': return BOUNTY_CAUSE_LINE;
     default: return undefined;
   }
 }
@@ -1764,6 +1772,16 @@ export function getAgentInfoCard(
     }
 
     if (domainRows.length > 0) card.domains = domainRows;
+  }
+
+  // THR-2072 — the factions with an open price on this mortal. Not gated on knowledge: a
+  // bounty is a posted price anyone can hear of, unlike a private grudge. Set only while
+  // one is open (Law 56), so the Blood row line goes when the bounty does.
+  try {
+    const bountiesOn = bountiesOnTarget(graph, agentId, tick);
+    if (bountiesOn.length > 0) card.bountiesOn = bountiesOn;
+  } catch {
+    // Fail-soft: no line rather than no sheet.
   }
 
   // Known+: key bonds and 1 quote

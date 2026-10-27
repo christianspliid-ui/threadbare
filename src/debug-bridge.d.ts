@@ -1752,6 +1752,21 @@ export interface DebugBridge {
     takenBy?: string;
     takenTick?: number;
   }>>;
+  /**
+   * THR-2072 — every bounty, or one faction's, oldest first. `escrow` is the coin still
+   * held (0 once collected or lapsed); `collectedBy` is derived from the `collected` edge.
+   */
+  getBounties: (factionId?: string) => Promise<Array<{
+    id: string;
+    factionId: string;
+    targetId: string;
+    status: 'active' | 'collected' | 'lapsed';
+    escrow: number;
+    createdTick: number;
+    expiryTick: number;
+    collectedBy?: string;
+    collectedTick?: number;
+  }>>;
   /** THR-1931 — every faction's last pay day, keyed by faction id (empty before tick 12). */
   getPurseLedger: () => Promise<Record<string, unknown>>;
   /**

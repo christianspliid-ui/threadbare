@@ -78,6 +78,8 @@ import { moveDebugAgent, spawnDebugBand, spawnDebugCompanion } from '../src/engi
 import { mulberry32 as fightSpawnRng } from '../src/lib/prng';
 import { FIGHT_LAIR_CONFRONT_ID } from '../src/data/encounters/fight-lair-confront';
 import { FIGHT_DUEL_GRUDGE_ID } from '../src/data/encounters/fight-duel-grudge';
+import { FIGHT_DUEL_BOUNTY_ID } from '../src/data/encounters/fight-duel-bounty';
+import { postDebugBounty } from '../src/engine/factionBounties';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { describeAppointments } from '../src/engine/appointments';
 import { describeLocationTraits, readBloodshed } from '../src/engine/phaseLocationTraits';
@@ -1590,6 +1592,7 @@ function printHelp(): void {
   console.log(`  ${BOLD}spawn encounter${RESET} <agent|@hero> <templateId>  Spawn an encounter on an agent`);
   console.log(`  ${BOLD}spawn fight${RESET} <agent|@hero> --target <actor>  Stage fight.lair.confront against a named opponent (moves the fighter to them)`);
   console.log(`  ${BOLD}spawn duel${RESET} <a> --with <b>  Stage fight.duel.grudge: b is moved to a, then both roll (THR-1556)`);
+  console.log(`  ${BOLD}spawn duel${RESET} <a> --with <b> --bounty  a hunts b: post a's faction's bounty on b and stage fight.duel.bounty (THR-2072)`);
   console.log(`  ${BOLD}spawn undertaking${RESET} <agent|@first> <templateId> [--target <location|actor>] [--band <band>]  Start an undertaking for review (THR-1300)`);
   console.log(`  ${BOLD}undertakings${RESET} [agent|@first]  Active undertakings, with the review pin's verdict when one is set`);
   console.log(`  ${BOLD}objects${RESET} [kind]          World-object kinds with their live counts in this world, and the write-time guard's warnings (THR-1394)`);
@@ -2366,8 +2369,11 @@ function handleSpawnFight(fighterQuery: string, targetQuery: string): void {
  * names): the CLI twin of `__DEBUG.spawnDuel`. Moves `b` to `a`'s location (a
  * duel whose sides no longer share a hex ends `separated`), then stages
  * `fight.duel.grudge` with `a` as the actor and `b` as the opponent. Both roll.
+ *
+ * THR-2072 — `--bounty`: `a` is the hunter. Posts a bounty from `a`'s first faction on
+ * `b` if none is open, then stages `fight.duel.bounty` instead.
  */
-function handleSpawnDuel(aQuery: string, bQuery: string): void {
+function handleSpawnDuel(aQuery: string, bQuery: string, bounty = false): void {
   const a = resolveAgentNode(aQuery);
   const b = resolveAgentNode(bQuery);
   if (!a || !b) {
@@ -2378,7 +2384,7 @@ function handleSpawnDuel(aQuery: string, bQuery: string): void {
     console.log(`${RED}A duellist cannot duel themself.${RESET}`);
     return;
   }
-  const template = getUnifiedTemplateById(FIGHT_DUEL_GRUDGE_ID);
+  const template = getUnifiedTemplateById(bounty ? FIGHT_DUEL_BOUNTY_ID : FIGHT_DUEL_GRUDGE_ID);
   const aLocation = state.graph.getOutgoingEdges(a.id, 'located_at')[0]?.target;
   if (!template || !aLocation) {
     console.log(`${RED}Cannot stage the duel: ${!template ? 'template missing' : 'the first duellist has no location'}${RESET}`);
@@ -2388,6 +2394,15 @@ function handleSpawnDuel(aQuery: string, bQuery: string): void {
   if (!moved.success) {
     console.log(`${RED}Could not move the second duellist: ${moved.message}${RESET}`);
     return;
+  }
+  if (bounty) {
+    const factionId = state.graph.getOutgoingEdges(a.id, 'member_of')[0]?.target;
+    const bountyId = factionId ? postDebugBounty(state, factionId, b.id, state.tick) : null;
+    if (!bountyId) {
+      console.log(`${RED}Cannot post the bounty: ${!factionId ? 'the hunter belongs to no faction' : 'the target cannot carry one'}${RESET}`);
+      return;
+    }
+    console.log(`  bounty:   ${bountyId}`);
   }
   const action = createUnifiedAction({
     actorId: a.id,
@@ -2872,9 +2887,11 @@ function handleCommand(line: string): boolean {
         const targetIndex = subParts.indexOf('--target');
         handleSpawnFight(subParts.slice(1, targetIndex).join(' '), subParts.slice(targetIndex + 1).join(' '));
       } else if (subParts[0] === 'duel' && subParts.includes('--with')) {
-        // THR-1556 — `spawn duel <a...> --with <b...>`.
-        const withIndex = subParts.indexOf('--with');
-        handleSpawnDuel(subParts.slice(1, withIndex).join(' '), subParts.slice(withIndex + 1).join(' '));
+        // THR-1556 — `spawn duel <a...> --with <b...>`; THR-2072 — `--bounty` anywhere.
+        const bountyFlag = subParts.includes('--bounty');
+        const parts = subParts.filter(p => p !== '--bounty');
+        const withIndex = parts.indexOf('--with');
+        handleSpawnDuel(parts.slice(1, withIndex).join(' '), parts.slice(withIndex + 1).join(' '), bountyFlag);
       } else if (subParts[0] === 'duel' && subParts.length === 3) {
         handleSpawnDuel(subParts[1], subParts[2]);
       } else if (subParts[0] === 'undertaking' && subParts.length >= 3) {

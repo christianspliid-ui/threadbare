@@ -146,6 +146,7 @@ export type EdgeType =
   | 'commissions'      // faction → event(faction_quest): faction posts a quest (phaseFactionActions:302)
   | 'took_up'          // actor → event(faction_quest): a decider member took up a commission (THR-2042, factionCommissions)
   | 'issues'           // faction → event(bounty): faction issues a bounty (phaseFactionActions:649)
+  | 'collected'        // actor → event(bounty): a hunter beat the bounty's target in a duel and collected it (THR-2072, factionBounties)
   // Pilgrimage routes (THR-1177) — content-minted by zealotStrategicPack via
   // `createRelationEdge`, which accepted any string as an edge type. Registered rather
   // than rejected: see the EDGE_SCHEMA row for the reasoning.
