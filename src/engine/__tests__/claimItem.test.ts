@@ -155,13 +155,15 @@ describe('THR-2031 — {place} names where the relic lies, never the relic', () 
 });
 
 describe('THR-2031 — the chronicle stops calling a taken relic unclaimed', () => {
-  it('reads "lies … unclaimed" before the claim and "was taken up" after it', () => {
+  it('reads "lies … unclaimed" before the claim, names the bearer after it, and "was taken up" once no one bears it', () => {
     const state = world();
     const relicLine = () => buildEchoGroup(state.graph, state.seededEchoes)!.lines
       .map(pastLineText).find(t => t.startsWith('The Hollow Bell'))!;
     expect(relicLine()).toContain('unclaimed');
     run(state, mortal(state), relicId);
     expect(relicLine()).not.toContain('unclaimed');
+    expect(relicLine()).toContain('carried now by');
+    for (const e of state.graph.getIncomingEdges(relicId, 'possesses')) state.graph.removeEdge(e.id);
     expect(relicLine()).toContain('was taken up from near');
   });
 });
