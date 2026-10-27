@@ -28,7 +28,7 @@ import type { GraphNode } from '../types/graph';
 import { resolveToParentLocation, isLocationNode } from './sublocationShape';
 import { readResources } from './resourceEconomy';
 import { getResourceClass } from '../data/resource-classes';
-import { readTradeRouteProps, TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
+import { readTradeRouteProps, TRADE_ROUTE_DEFAULT_TAX_RATE, TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
 import { busiestRouteAt } from './tradeRouteOps';
 import { applyTreasuryDelta, readWealth } from './wealth';
 import { FACTION_PURSE_ENABLED } from '../data/faction-purse-constants';
@@ -166,13 +166,22 @@ export function resolveLaneAnchor(
   return { lane: edge, settlementId: touches ? town.id : edge.source, source: 'seed' };
 }
 
-/** The lowest-id threatened lane at a settlement: what a clear with no bound lane frees. */
+function isBlockaded(lane: GraphEdge): boolean {
+  const by = lane.properties.blockadedBy;
+  return typeof by === 'string' && by.length > 0;
+}
+
+/**
+ * The lowest-id threatened lane at a settlement that an encounter may clear: what a clear
+ * with no bound lane frees. A blockaded lane is skipped (only the blockade verb lifts it),
+ * so a second, ambushed road is still freed (review gate, THR-2046).
+ */
 function firstThreatenedRouteAt(graph: WorldGraph, settlementId: string): GraphEdge | undefined {
   return [
     ...graph.getOutgoingEdges(settlementId, 'trades_with'),
     ...graph.getIncomingEdges(settlementId, 'trades_with'),
   ]
-    .filter(e => e.properties.threatened === true)
+    .filter(e => e.properties.threatened === true && !isBlockaded(e))
     .sort((a, b) => a.id.localeCompare(b.id))[0];
 }
 
@@ -222,8 +231,7 @@ function shiftLaneThreat(
   if (!lane) return 'no_move';
   const was = lane.properties.threatened === true;
   if (was === mark) return 'no_move';
-  const blockadedBy = lane.properties.blockadedBy;
-  if (!mark && typeof blockadedBy === 'string' && blockadedBy.length > 0) return 'blockaded';
+  if (!mark && isBlockaded(lane)) return 'blockaded';
   graph.updateEdge(lane.id, {
     properties: mark
       ? {
@@ -267,7 +275,11 @@ function shiftLaneToll(
   const current = readTradeRouteProps(lane.properties as Record<string, unknown>).controlledBy;
   if (current === holder) return 'no_move';
   if (current && isMortalHolder(graph.getNode(current))) return 'no_move';
-  graph.updateEdge(lane.id, { properties: { ...lane.properties, controlledBy: holder } });
+  // The rate every other toll writer stamps (`stampToll`), so the purse's and holding
+  // income's toll lines pay an encounter's toll exactly as a seized one (review gate).
+  graph.updateEdge(lane.id, {
+    properties: { ...lane.properties, controlledBy: holder, taxRate: TRADE_ROUTE_DEFAULT_TAX_RATE },
+  });
   return {
     quantity: 'lane_toll', nodeId: lane.id, amount: 1, before: current ? 1 : 0, after: 1,
     laneSource: anchor.source, holderId: holder,

@@ -3399,9 +3399,10 @@ function outcomeTableSettlements(
     const located = raw === undefined || raw === '$here'
       ? resolveSceneHere(state.graph, action.actorId, 'location') ?? undefined
       : (raw === '$target' ? action.targetId : raw);
-    // THR-2046 — a lane row reads the town its own road touches (the write's anchor), so
-    // the receipt and the write agree when the mortal has moved off the road.
-    const anchored = isLaneQuantity(e.quantity)
+    // THR-2046 — a lane row, and any row left at `$here` on an encounter about a road, reads
+    // the town that road touches (the write's anchor), so the receipt and the write agree
+    // when the mortal has moved off the road.
+    const anchored = isLaneQuantity(e.quantity) || raw === undefined
       ? resolveLaneAnchor(state.graph, action.laneEdgeId, located).settlementId
       : located;
     const town = resolveShiftSettlement(state.graph, anchored);

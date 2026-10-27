@@ -16,7 +16,7 @@ import type {
 import { emitTrace } from './traceBuffer';
 import { applyMeansShift, defaultMeansReason, meansBandStepAmount, type MeansShiftResult } from './mortalMeans';
 import { settleDebt } from './debtSettle';
-import { applyWorldEconomyShiftDetailed } from './economyShift';
+import { applyWorldEconomyShiftDetailed, resolveLaneAnchor } from './economyShift';
 import { MORTAL_MEANS_ENABLED } from '../data/mortal-means-constants';
 import { readWealth } from './wealth';
 import { applyReputationWithDelta } from './reputation';
@@ -1890,7 +1890,11 @@ export function applyEncounterAftermathReaction(
             : (effect.targetLocationId && !effect.targetLocationId.startsWith('$')
               ? effect.targetLocationId
               : (effect.targetLocationId === undefined
-                ? resolveSceneHere(state.graph, actorAgentId, 'location') ?? undefined
+                // THR-2046 — on an encounter about a road, `$here` is the town that road
+                // touches (the actor's own when it is one end), so a lost ambush costs the
+                // road's town, not wherever the mortal has wandered since (review gate).
+                ? resolveLaneAnchor(state.graph, action?.laneEdgeId,
+                  resolveSceneHere(state.graph, actorAgentId, 'location') ?? undefined).settlementId
                 : undefined));
           // THR-2046 — a lane write lands on the encounter's own road (its seed's lane), and
           // a struck toll with no faction at the town falls back to the actor.

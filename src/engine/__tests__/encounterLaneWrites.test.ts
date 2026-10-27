@@ -19,6 +19,7 @@ import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceB
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import { resetUnifiedActionCounter } from '../unifiedActionLifecycle';
 import { ROUTE_THREATENED_CLEAR_TICKS } from '../../data/route-event-config';
+import { TRADE_ROUTE_DEFAULT_TAX_RATE } from '../tradeRoute';
 import { ENCOUNTER_THREAT_CLEAR_TICKS, W_LANE } from '../../data/economy-shift-constants';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import type { GameState } from '../../types/gameState';
@@ -131,6 +132,15 @@ describe('THR-2046 — lane_threat', () => {
     expect(lane(g, 'lane-quiet').threatened).toBe(true);
   });
 
+  it('a fallback clear skips a blockaded lane and frees the ambushed one', () => {
+    const g = buildGraph();
+    g.updateEdge('lane-busy', { properties: { ...lane(g, 'lane-busy'), threatened: true, threatenedSinceTick: TICK, blockadedBy: 'faction-1' } });
+    g.updateEdge('lane-quiet', { properties: { ...lane(g, 'lane-quiet'), threatened: true, threatenedSinceTick: TICK } });
+    expect(applyWorldEconomyShiftDetailed(g, { quantity: 'lane_threat', amount: -1, settlementId: 'square-1' }, TICK))
+      .toMatchObject({ nodeId: 'lane-quiet' });
+    expect(lane(g, 'lane-busy').threatened).toBe(true);
+  });
+
   it('never clears a blockaded lane', () => {
     const g = buildGraph();
     g.updateEdge('lane-quiet', { properties: { ...lane(g, 'lane-quiet'), threatened: true, threatenedSinceTick: TICK, blockadedBy: 'faction-1' } });
@@ -146,6 +156,8 @@ describe('THR-2046 — lane_toll', () => {
     const r = applyWorldEconomyShiftDetailed(g, { quantity: 'lane_toll', amount: 1, settlementId: 'square-1', laneEdgeId: 'lane-quiet', actorId: 'actor-1' }, TICK);
     expect(r).toMatchObject({ quantity: 'lane_toll', nodeId: 'lane-quiet', holderId: 'faction-1', laneSource: 'seed' });
     expect(lane(g, 'lane-quiet').controlledBy).toBe('faction-1');
+    // The rate every other toll writer stamps, so the toll lines pay it like a seized lane.
+    expect(lane(g, 'lane-quiet').taxRate).toBe(TRADE_ROUTE_DEFAULT_TAX_RATE);
     // Already the holder's: no move.
     expect(applyWorldEconomyShiftDetailed(g, { quantity: 'lane_toll', amount: 1, settlementId: 'square-1', laneEdgeId: 'lane-quiet', actorId: 'actor-1' }, TICK)).toBe('no_move');
   });
@@ -235,6 +247,20 @@ describe('THR-2046 — the rows through the executor and the receipt', () => {
     expect(lane(next.graph, 'lane-busy').threatened).toBeUndefined();
     const trace = getTraces().find(t => t.category === 'economy.world.shift') as unknown as { laneSource: string; quantity: string };
     expect(trace).toMatchObject({ quantity: 'lane_threat', laneSource: 'seed' });
+  });
+
+  it('a routed ambush costs the road\'s town, not the town the mortal has moved to', () => {
+    const state = buildState();
+    // Kael has wandered to Brennock; the ambush was on the Carrow — Ashford road.
+    state.graph.removeEdge('at-1');
+    state.graph.addEdge({ id: 'at-2', source: 'actor-1', target: 'town-2', type: 'located_at', properties: {} });
+    const template = oneStep('encounter_route_ambush');
+    const { updatedAction } = executeStepResult(makeAction(template.id, 'lane-quiet'), template, 'critical_failure', [], state, fixedRng, TICK, undefined, runtime);
+    expect(state.graph.getNode('town-3')!.properties.prosperity).toBeLessThan(40);
+    expect(state.graph.getNode('town-2')!.properties.prosperity).toBe(40);
+    expect(lane(state.graph, 'lane-quiet').volume).toBeLessThan(3);
+    const towns = new Set((updatedAction.aftermathSummary?.changes ?? []).filter(c => c.kind === 'economy').map(c => c.subjectId));
+    expect([...towns]).toEqual(['town-3']);
   });
 
   it('a won ambush on its threatened road gives a Roads clear row', () => {
