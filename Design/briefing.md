@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 17:58 local (16:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 18:58 local (17:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,7 +18,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [The seeded world ends after 41 ticks](https://linear.app/threadbare/issue/THR-2080) — **this is a bug, not Mandate pacing.** The Mandate measures how much the god's spheres have grown since the world began. It took that starting point before the world's first tick, and tick 1 builds about 69 new places (caravan rests, mines, smugglers' dens). Their arrival counted as growth: more than half the Mandate filled on tick 2, and the age ended in "fulfilled" by tick 58–77 with the god doing nothing. The fix takes the starting point once the world has settled. In the measurement, the seeded world then plays on past tick 600. *Veto:* "growth from the world's own new buildings should count toward the Mandate". Open until about 23:43 UTC today. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27c.md)*
+- [The seeded world ends after 41 ticks](https://linear.app/threadbare/issue/THR-2080) — **this is a bug, not Mandate pacing.** The Mandate measures how much the god's spheres have grown since the world began. It took that starting point before the world's first tick, and tick 1 builds about 69 new places (caravan rests, mines, smugglers' dens). Their arrival counted as growth: more than half the Mandate filled on tick 2, and the age ended in "fulfilled" by tick 58–77 with the god doing nothing. The fix takes the starting point once the world has settled. In the measurement, the seeded world then plays on past tick 600. *Veto:* "growth from the world's own new buildings should count toward the Mandate". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27c.md)*
 - [A sealed mill lease gives the town's mill to a guild](https://linear.app/threadbare/issue/THR-2077): five calls in [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2077-mill-lease-guild.md#decisions). Each can be vetoed on its own until Tuesday 27 Oct 20:56 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27b.md)*
   - **The "fellowship" that wins the mill is the town's own guild.** When the lease is sealed, the craft guild in town holds the mill (failing that the merchants, then the miners or bankers). The temple is left out because the abbey is the landlord. *Veto:* "the abbey should keep the mill" or "the mortal's own faction should hold it".
   - **No guild in town, no holder.** About half of towns have none. There the lease is sealed and the fee paid as today, and nobody holds the mill. *Veto:* "always find someone to hold it".
@@ -34,12 +34,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready.** Five are design tickets held behind their veto windows; the first ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opens at 18:03 UTC. The sixth is the new heavy-test fix ticket ([THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)), which the builder can take on its next run. The builder's last three runs stood down because every ticket was held, which is correct.
+**Healthy: 5 ready.** All five are held behind their veto windows; the first ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opens at 18:03 UTC, a few minutes from now. The builder's last two runs stood down for that reason, which is correct; the run before them fixed the heavy-test budget ([THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)).
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Heavy simulation tests still red on main since 11:21 UTC; ticket [THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured) filed for the builder.** The army-test fix ([#2634](https://github.com/christianspliid-ui/threadbare/pull/2634)) worked, but in the [run on its merge](https://github.com/christianspliid-ui/threadbare/actions/runs/40536310315) a different test missed: lighting up targets for one card took 32.96 ms against a 32 ms limit.
-- Everything else is green: the live site serves the latest main (93f91e6b), main's required CI, the scheduled lanes and the worktree reaper (last run 16:40 UTC) are healthy, and the engine runs at 168 ms/tick, 4% under the 7-day median.
+- **Heavy simulation tests: the fix is merged and its check is running.** Main has been red since 11:21 UTC. The fix for the last miss ([THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured), [#2635](https://github.com/christianspliid-ui/threadbare/pull/2635)) merged, and [the run on its merge](https://github.com/christianspliid-ui/threadbare/actions/runs/40551208332) started at 17:30 UTC and is still going. No new ticket yet: if that run fails, next hour's brief files one.
+- Everything else is green: the live site serves the latest main (5faaf4c3), main's required CI, the scheduled lanes and the worktree reaper (last run 17:51 UTC) are healthy, and the engine runs at 161 ms/tick, 8% under the 7-day median.

@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-27 17:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-27 18:58 local (17:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-27: a fix for the heavy-test timing miss (lighting up a card's targets measured against a noisy runner) is merged and live** ([THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)), via [#2635](https://github.com/christianspliid-ui/threadbare/pull/2635). The heavy-test run on that merge is still going.
 - **2026-10-27: the army heavy test now fits its time limit, and the fix is merged** ([THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge)), via [#2634](https://github.com/christianspliid-ui/threadbare/pull/2634). The heavy tests are still red for a different reason; the builder has that as [THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured).
 - **2026-10-27: a fix for the red heavy tests (an army whose commander dies was no longer offered to a faction-mate) is merged and live** ([THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to)), via [#2633](https://github.com/christianspliid-ui/threadbare/pull/2633).
 - **2026-10-27: the seeded world no longer ends after 41 ticks, and the fix is live** ([THR-2080](https://linear.app/threadbare/issue/THR-2080)). Merged via [#2632](https://github.com/christianspliid-ui/threadbare/pull/2632).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-27: God's Will offers story and the path leans, and it is live** ([THR-2068](https://linear.app/threadbare/issue/THR-2068)). Merged via [#2625](https://github.com/christianspliid-ui/threadbare/pull/2625).
 - **2026-10-27: taking over an empty forge or mine now fully registers, and the fix is live** ([THR-2076](https://linear.app/threadbare/issue/THR-2076)). Merged via [#2623](https://github.com/christianspliid-ui/threadbare/pull/2623).
 - **2026-10-27: a place held after success (the forge a mortal builds) is live** ([THR-2048](https://linear.app/threadbare/issue/THR-2048)). Merged via [#2622](https://github.com/christianspliid-ui/threadbare/pull/2622).
-- **2026-10-27: a relic left lying can now be taken up, and the fix is live** ([THR-2031](https://linear.app/threadbare/issue/THR-2031)). Merged via [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621).
 
 ---
 
