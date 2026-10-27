@@ -427,7 +427,9 @@ export function generateStrategicCandidates(
           continue;
         }
 
-        const targetHex = resolveLocationToHex(graph, target.id);
+        // THR-2031 — an artifact has no hex of its own; it is as far as where it lies or
+        // who bears it, so the travel penalty prices the trip to a far relic.
+        const targetHex = target.type === 'artifact' ? resolveTargetHex(graph, target) : resolveLocationToHex(graph, target.id);
         const travelDist = actorHex && targetHex
           ? hexDistance(actorHex, targetHex)
           : 0;

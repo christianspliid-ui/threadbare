@@ -17,6 +17,8 @@ import { resolveLocationToHex } from '../encounterAwareness';
 import { getAgentLocationId } from '../graphQueries';
 import { isAutonomousDecisionActor } from '../strategicKindReachability';
 import { buildConnections } from '../views/connections';
+import { buildEchoGroup } from '../worldPastWords';
+import { getAgentArc } from '../agentArc';
 
 const ITEM = getUndertakingObjectType('item')!;
 const claim = ITEM.verbs['control:claim'] as ObjectVerbSemantic;
@@ -144,5 +146,31 @@ describe('THR-2031 — a lying relic is as far away as its place', () => {
     const actor = mortal(state);
     run(state, actor, relicId);
     expect(resolveTargetHex(state.graph, relic)).toEqual(resolveLocationToHex(state.graph, getAgentLocationId(state.graph, actor)!));
+  });
+});
+
+describe('THR-2031 — the surfaces that read the take-up', () => {
+  it('the echoes chronicle names the bearer once the relic is taken up', () => {
+    const state = world();
+    const actor = mortal(state);
+    const before = buildEchoGroup(state.graph, state.seededEchoes)!.lines.find(l => l.id.startsWith('echo:') && l.segments.some(s => s.text.includes('unclaimed')));
+    expect(before).toBeDefined();
+    run(state, actor, relicId);
+    const text = buildEchoGroup(state.graph, state.seededEchoes)!.lines.map(l => l.segments.map(s => s.text).join('')).join(' | ');
+    expect(text).toContain(`The Hollow Bell is carried now by ${state.graph.getNode(actor)!.name}.`);
+    expect(text).not.toContain('Hollow Bell lies somewhere');
+  });
+
+  it('a completion whose every op failed reads as coming to nothing on the arc', () => {
+    const state = world();
+    const base = { actorId: 'a1', templateId: 'cell.control_claim.item', ambitionId: 'x', verb: 'control', behaviorFamily: 'scholar-seeker', displayName: 'Take up a relic left lying', outcome: 'completed', catalystSeeded: false } as const;
+    const arcState = { ...state, strategicState: { ...state.strategicState!, history: [
+      { ...base, tick: 5, graphOps: ['claim_item:already_held'] },
+      { ...base, tick: 6, graphOps: ['claim_item:ok'], deed: { verb: 'control:claim', word: 'Took up', objectName: 'The Hollow Bell', phrase: 'Took up The Hollow Bell' } },
+    ] } } as unknown as GameState;
+    const lines = getAgentArc(arcState, state.graph, 'a1').map(e => e.line);
+    expect(lines).toContain('Take up a relic left lying came to nothing.');
+    expect(lines).toContain('Took up The Hollow Bell.');
+    expect(lines.some(l => l.startsWith('Finished'))).toBe(false);
   });
 });

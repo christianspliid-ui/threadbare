@@ -439,6 +439,16 @@ export function buildEchoGroup(graph: WorldGraph, summary: SeededEchoesSummary |
         { text: words.joiner }, personSeg(graph, e.nodeId), { text: words.end },
       ] });
     } else {
+      // THR-2031 — a relic someone took up no longer lies anywhere: name its bearer.
+      const bearerId = graph.getIncomingEdges(e.nodeId, 'possesses')[0]?.source;
+      if (bearerId && graph.getNode(bearerId)) {
+        const held = ECHO_CHRONICLE_LINES.relicHeld;
+        lines.push({ id: `echo:${e.echoId}`, segments: [
+          { text: name, ref: { kind: 'agent', id: bearerId } },
+          { text: held.joiner }, personSeg(graph, bearerId), { text: held.end },
+        ] });
+        continue;
+      }
       if (!graph.getNode(e.hostId)) continue;
       lines.push({ id: `echo:${e.echoId}`, segments: [
         { text: name, ref: { kind: 'location', id: e.hostId } },
