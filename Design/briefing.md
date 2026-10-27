@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 08:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,6 +18,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [A sealed mill lease gives the town's mill to a guild](https://linear.app/threadbare/issue/THR-2077): five calls in [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2077-mill-lease-guild.md#decisions). Each can be vetoed on its own until Tuesday 27 Oct 20:56 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27b.md)*
+  - **The "fellowship" that wins the mill is the town's own guild.** When the lease is sealed, the craft guild in town holds the mill (failing that the merchants, then the miners or bankers). The temple is left out because the abbey is the landlord. *Veto:* "the abbey should keep the mill" or "the mortal's own faction should hold it".
+  - **No guild in town, no holder.** About half of towns have none. There the lease is sealed and the fee paid as today, and nobody holds the mill. *Veto:* "always find someone to hold it".
+  - **The mill stands afterwards.** If the town has no mill and has room for a building, one is raised, and the town's harvest feeds more mouths. If there is no room, nothing is raised. *Veto:* "a lease should never raise a building".
+  - **A scene never takes a mill from a guild that already holds it.**
+  - **A held mill pays its guild a little each pay day**, about a quarter of what a middling town pays in tax. More in a rich town, nothing in a ruined one. *Veto:* "the mill should pay nothing".
 - [Attention is never spent](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so): five calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2062-attention-has-a-price.md#decisions). Each can be vetoed on its own until Wednesday 28 Oct 03:01 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27a.md)*
   - **Attention stays, and it becomes the price of looking in on a mortal who lives on without you.** Answering "the thread pulls" on such a mortal lets you see their chapter, and that costs Attention. *Veto:* "retire Attention".
   - **A mortal who asks you never costs Attention.** The First's chapters already stop the world for free. Until now she still raised pulls that charged for them. *Veto:* "The First's chapters should cost Attention too".
@@ -39,12 +45,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 ready, all waiting out their veto windows; one job is being built.** [God's Will offers story, the path leans](https://linear.app/threadbare/issue/THR-2068/gods-will-offers-story-compelled-work-answers-the-path-leans-no-chores) is being built now (the builder started at 07:42 UTC). The rest open in this order: [an oath from tribute](https://linear.app/threadbare/issue/THR-2051) at 08:49 UTC, salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) at 21:05 UTC, the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
+**Healthy: 6 ready, one job being built.** [God's Will offers story, the path leans](https://linear.app/threadbare/issue/THR-2068/gods-will-offers-story-compelled-work-answers-the-path-leans-no-chores) is in review: its pull request ([#2625](https://github.com/christianspliid-ui/threadbare/pull/2625)) passes its checks and is going through another review round before the builder arms it. [An oath from tribute](https://linear.app/threadbare/issue/THR-2051) left its veto window at 08:49 UTC and is next once the build slot frees. The rest open in this order: salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)) at 20:56 UTC, the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) at 21:05 UTC, the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
 
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch, open pull request or local worktree holds work for it, so nothing is at risk. Agents can un-park it.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree holds work for it, so nothing is at risk. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Engine speed:** tick cost 354 ms/tick steady, 110% above the 7-day median (168, 105 rows since a452c380); top phase agent_decision, 622 agents. Name the merges between a452c380 and b22026e7: git log --oneline --merges a452c380..b22026e7. Last hour read 174, and the only change since is a one-line fix ([#2623](https://github.com/christianspliid-ui/threadbare/pull/2623)), so this reading most likely comes from the builder running on the same computer at the same time. The next hour's reading will confirm or clear it. This is the builder's to chase, not yours.
-- Everything else is green. The live site serves the latest main (b22026e7). Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 07:40 UTC) are healthy. No pull requests are waiting to merge.
+All green. Last hour's slow engine reading cleared: 188 ms/tick, 12% above the 7-day median, within the normal range. The live site serves the latest main (b22026e7; the mill-lease plan merge is docs only). Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 08:40 UTC) are healthy.
