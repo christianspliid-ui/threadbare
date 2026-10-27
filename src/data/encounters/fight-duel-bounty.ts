@@ -12,7 +12,8 @@
  * - `fight.duel.bounty_defence` — the hunted is the actor, used only when the hunted is
  *   threaded and the hunter is not: the god's hand reaches only the actor.
  *
- * Every result line agrees with whether the bounty was collected. From the hunter's
+ * No result line claims a collection its result cannot guarantee (a double knockout
+ * collects nothing; a bounty can lapse mid-duel). From the hunter's
  * side a beaten target and a fled target both read `overcome`, and only the first
  * collects, so the hunter's `overcome` line does not say whether the price was paid —
  * the chronicle line (`BOUNTY_CHRONICLE_LINE`) or the escaped line says it.
@@ -69,8 +70,10 @@ const HUNTER_RESULT_LINES: Readonly<Record<FightResult, string>> = {
 /** The hunted's side (actor = hunted). */
 const HUNTED_RESULT_LINES: Readonly<Record<FightResult, string>> = {
   overcome: '{name} beat {target} and sent the hunter away unpaid.',
-  struck_down: '{target} cut {name} down and collected the price on {name}\'s head.',
-  yielded: '{name} gave way to {target}, and the price on {name}\'s head is paid.',
+  // Neither line says the price was paid: a double knockout also ends `struck_down` and
+  // collects nothing, and a bounty can lapse mid-duel. The chronicle line says it when it is.
+  struck_down: '{target} cut {name} down.',
+  yielded: '{name} gave way to {target}.',
   routed: '{name} ran from {target}, and got away. The price on {name}\'s head still stands.',
   broke_off: 'Neither of them was beaten. The price on {name}\'s head still stands.',
   bargained: '{name} and {target} came to terms. The price still stands.',

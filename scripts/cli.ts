@@ -80,6 +80,7 @@ import { FIGHT_LAIR_CONFRONT_ID } from '../src/data/encounters/fight-lair-confro
 import { FIGHT_DUEL_GRUDGE_ID } from '../src/data/encounters/fight-duel-grudge';
 import { FIGHT_DUEL_BOUNTY_ID } from '../src/data/encounters/fight-duel-bounty';
 import { postDebugBounty } from '../src/engine/factionBounties';
+import { getFactionMembershipEdges } from '../src/engine/graphQueries';
 import { readStoredRelocationIntent, resolveAgentHex } from '../src/engine/relocationIntent';
 import { describeAppointments } from '../src/engine/appointments';
 import { describeLocationTraits, readBloodshed } from '../src/engine/phaseLocationTraits';
@@ -2396,7 +2397,8 @@ function handleSpawnDuel(aQuery: string, bQuery: string, bounty = false): void {
     return;
   }
   if (bounty) {
-    const factionId = state.graph.getOutgoingEdges(a.id, 'member_of')[0]?.target;
+    // A faction membership only: member_of also points at companies and bands.
+    const factionId = getFactionMembershipEdges(state.graph, a.id)[0]?.target;
     const bountyId = factionId ? postDebugBounty(state, factionId, b.id, state.tick) : null;
     if (!bountyId) {
       console.log(`${RED}Cannot post the bounty: ${!factionId ? 'the hunter belongs to no faction' : 'the target cannot carry one'}${RESET}`);
