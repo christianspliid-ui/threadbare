@@ -99,6 +99,7 @@ import { recordBoardDecision, recordIdleDecision, stampEngagementCommit, demande
 import { computeCapability } from './domainCapability';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
 import { applyWhisperPull, anchorHeldWhispers, whisperLapseMessage, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
+import { applyFirstPathPull, getFirstPathFor } from './firstPath';
 import { getDivineInfluences } from './interventionEffects';
 import type { CompulsionOutcomeTrace } from '../types/trace';
 import type { PremonitionEvent } from '../types/premonition';
@@ -1281,6 +1282,16 @@ export function phaseAgentDecision(
         // Fail-soft: the whisper is a lean, never a reason to drop the decision.
       }
 
+      // ── THR-2068: The First's chosen path leans her chapters ──────────
+      // A scene whose main Reach is one of the path's two carries `firstPathPull`
+      // (×(1 + FIRST_PATH_PULL)) and a scaled `finalScore`, so the live board and the
+      // God's Will ranking agree. The First only, and only after the bond.
+      try {
+        applyFirstPathPull(decision, getFirstPathFor(graph, state.ascendantId, agentId), IDLE_SCORE_THRESHOLD);
+      } catch {
+        // Fail-soft: the path is a lean, never a reason to drop the decision.
+      }
+
       // ── THR-1639: a journey keeps its goal on arrival ─────────────────
       // A finished journey (empty queue) that still names the encounter it was
       // walking to gets one committed decision: that encounter scores
@@ -1644,6 +1655,7 @@ export function phaseAgentDecision(
               ...(e.appointmentDiscount !== undefined ? { appointmentDiscount: e.appointmentDiscount } : {}),
               ...(e.whisperPull !== undefined ? { whisperPull: e.whisperPull } : {}),
               ...(e.roleAffinityPull !== undefined ? { roleAffinityPull: e.roleAffinityPull } : {}),
+              ...(e.firstPathPull !== undefined ? { firstPathPull: e.firstPathPull } : {}),
               ...(e.meansMultiplier !== undefined ? { meansMultiplier: e.meansMultiplier } : {}),
               ...(e.thievesGuildOffer !== undefined ? { thievesGuildOffer: e.thievesGuildOffer } : {}),
             })),
@@ -1759,12 +1771,17 @@ export function phaseAgentDecision(
             // before the Compulsion Override below, so the encounter about to start is
             // the board's pick *or* the held steer the override is about to take.
             const heldTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
+            const offerable = (c: ScoredCandidate): boolean =>
+              c.entry.templateId !== decision.selected?.entry.templateId
+              && c.entry.templateId !== heldTargetId;
+            // THR-2068: story only — the builder drops chores and fills from the
+            // ranked list; below COMPULSION_MIN_STORY_OPTIONS it returns null and
+            // the cooldown is not stamped.
             const compulsionEvent = buildCompulsionEvent(
               state, agentId, actor.name,
-              decision.topCandidates.filter(c =>
-                c.entry.templateId !== decision.selected?.entry.templateId
-                && c.entry.templateId !== heldTargetId),
+              decision.topCandidates.filter(offerable),
               rng,
+              decision.rankedCandidates.filter(offerable),
             );
             if (compulsionEvent) {
               newPremonitions.push(compulsionEvent);
@@ -2108,6 +2125,8 @@ export function phaseAgentDecision(
                   )?.properties,
                 }),
                 effectiveTier: uaEffectiveTier,
+                // THR-2068 — the archive raises the done line for compelled work.
+                ...(compulsionOverrode ? { compelledByGod: true as const } : {}),
               };
               newUnifiedActions.push(action);
               // THR-1578: stamp what the mortal knew at commit — its proficiency on

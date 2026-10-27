@@ -89,6 +89,8 @@ export interface ChapterRecord {
   readonly outcome?: UnifiedActionOutcome;
   /** Whether the actor was threaded (bonded to the ascendant) at resolution time. */
   readonly threaded: boolean;
+  /** THR-2068 — the god's paid compulsion chose this chapter (`UnifiedAction.compelledByGod`). */
+  readonly compelled?: true;
   /** Support cast/places, snapshotted — enables the per-entity Chapters tab. */
   readonly participants: readonly ChapterParticipant[];
   /**

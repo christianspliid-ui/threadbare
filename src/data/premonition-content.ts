@@ -236,6 +236,18 @@ export const AMBITION_DREAM_IMAGERY: Record<AmbitionProseCategory, string[]> = {
  */
 export const COMPULSION_UNNAMED_ENCOUNTER_NOUN = 'a task nearby';
 
+/**
+ * THR-2068 — the line raised when compelled work resolves. `{word}` is the chapter's
+ * own band word (`stepOutcomeWord`, the one band lexicon); `{lead}` is one of the two
+ * leads below, chosen by whether the band is a success.
+ */
+export const COMPULSION_DONE_LINE = '{lead} {encounter}: {name} {word}.';
+export const COMPULSION_DONE_LEAD_SUCCESS = 'Your will is done.';
+export const COMPULSION_DONE_LEAD_FAILURE = 'Your will was not enough.';
+
+/** THR-2068 — the God's Will option line when the scene fits The First's path. `{path}` via `firstPathInLine`. */
+export const FIRST_PATH_FIT_LINE = 'Fits {path}.';
+
 // ─── Compulsion Vignette Templates ──────────────────────────────
 
 export const COMPULSION_VIGNETTE_TEMPLATES: Record<QuintessenceProseTier, string[]> = {

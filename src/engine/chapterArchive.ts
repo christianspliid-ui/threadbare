@@ -160,6 +160,8 @@ export function buildChapterRecord(
     resolved: action.resolved,
     outcome: action.outcome,
     threaded: isActorThreaded(graph, action.actorId, state.ascendantId),
+    // THR-2068 — the god compelled this chapter; the archive raises its done line.
+    ...(action.compelledByGod ? { compelled: true as const } : {}),
     participants,
     eventNodeId: action.eventNodeId,
     aftermathProse: action.aftermathSummary?.overview,
