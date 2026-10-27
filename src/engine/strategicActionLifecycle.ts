@@ -273,6 +273,9 @@ export function resolveAnchorName(
   return undefined;
 }
 
+/** Ops whose `createdId` is a pre-existing node changing hands, never a made one (THR-2031). */
+const TAKES_AN_EXISTING_NODE_OPS: ReadonlySet<string> = new Set(['claim_item', 'seize_item']);
+
 /**
  * Christen a completed work, returning the name given — or undefined when this
  * undertaking produced nothing nameable.
@@ -306,14 +309,22 @@ function christenCompletedWork(
   // say something untrue; and for a *shared* definition node it does so for every
   // mortal in the world at once. Powers and conditions only began reaching this site
   // with THR-1429's create cells, so nothing shipped changes behaviour here.
-  const createdId = ops.find(o => {
+  const createdOp = ops.find(o => {
     if (!o.success || !o.createdId) return false;
     const node = graph.getNode(o.createdId);
     return node !== undefined && node.type !== 'trait';
-  })?.createdId;
+  });
+  const createdId = createdOp?.createdId;
   if (!createdId) return undefined;
   const created = graph.getNode(createdId);
   if (!created) return undefined;
+
+  // THR-2031 — an op that hands over a thing that already existed (a relic taken up, an
+  // item seized) made nothing: the thing keeps its own name. Renaming the Hollow Bell to
+  // a work-name would make its page, its Remembrance card and its trace disagree.
+  if (createdOp && TAKES_AN_EXISTING_NODE_OPS.has(createdOp.op) && created.name) {
+    return { nodeId: createdId, name: created.name };
+  }
 
   // A generated item is already christened (THR-1570): the item generator named it from
   // its core, its maker and its story — "The Unquiet Blade" — and that name is what its
@@ -1174,7 +1185,10 @@ export function advanceStrategicProjects(
       // The deed by verb and object (THR-1434), named once here and carried on the
       // history entry and the completion event — the ledger and the chronicle read
       // the same reference.
-      const deed = describeDeed(graph, candidate, checked, christened?.nodeId);
+      // A completion whose every op failed did nothing (THR-2031 review: a relic someone
+      // else carried off first, no free ground, no room) — the ledger names no deed for it.
+      const nothingDone = ops.length > 0 && ops.every(o => !o.success);
+      const deed = nothingDone ? undefined : describeDeed(graph, candidate, checked, christened?.nodeId);
 
       // ── The capability rider (THR-1440) ──
       //

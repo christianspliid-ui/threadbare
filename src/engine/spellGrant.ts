@@ -364,7 +364,7 @@ export function pickTomeSpell(graph: WorldGraph, item: GraphNode, readerId: stri
   }
 }
 
-export type ItemAcquiredVia = 'reward' | 'minted' | 'seized';
+export type ItemAcquiredVia = 'reward' | 'minted' | 'seized' | 'claimed';
 
 export interface ItemAcquiredTeaching {
   readonly spellId: string;

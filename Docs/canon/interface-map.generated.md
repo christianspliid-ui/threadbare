@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 221 |
+| 🟢 LIVE | 222 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 103 |
-| **Total** | **332** |
+| **Total** | **333** |
 
 ## Contracts by producing subsystem
 
@@ -47,6 +47,7 @@ remediation ticket or the build fails.
 | `binder-decision-traced` | Every casting decision an undertaking makes reaches the narrative surface: the trace answers "why is this moment generic?" after the fact (it fires on a slot that bound nobody as loudly as on one that bound somebody), and a lost must-persist cast member is carried into the checkpoint moment by name — "loses Old Maerin" rather than the anonymous "hits serious trouble" the complication class produced before. | trace: `binding_decision`, `resolveBinding`, `runBindPass` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | THR-1297 |
 | `binder-mint-valve` | When an undertaking needs a person the world does not have, that person is born the way every other mortal is born — through the lifecycle’s one-per-tick gate — instead of appearing on the spot. An unmetered spawn path is how a large map reached ~1010 agents by tick 72 (THR-814/THR-162), and the budget is what stops the binder becoming a second one. | state-field: `mintQueue`, `drainMintQueue`, `BINDER_MINT_BUDGET_PER_TICK`, `binder_mint` | Agent Lifecycle | 🟢 LIVE | — |
 | `blockade-suspends-lane-traffic` | A warlord who blockades a trade lane holds it rather than killing it: while the blockade stands the lane is suspended — no decay, volume sinking toward a trickle — and when the threat lifts it carries again. Without this read a blockade on a standing lane would be invisible to the lane rule (it would keep carrying at full traffic), and without the suspension a blockade would be an erasure the verb itself promises it is not ("suspended, not deleted"). The player reads it as the word "blockaded" on the lane in the hex tooltip. | edge-prop: `blockadedBy` | Mortal Economy & Prosperity | 🔵 UNVERIFIED-OK | — |
+| `claim-item-takes-up-a-lying-relic` | A seeker or a wanderer can make taking up a relic left lying their work: when it completes the relic no longer lies at its place, it is theirs, and from then on it leans with its bearer — a past god's relic finds a new hand and the world says so. | edge: `claim_item`, `lies_at`, `possesses`, `takenFrom` | Attachments, Items & Possessions | 🟢 LIVE | — |
 | `colocated-grudge-spawns-duel` | Two mortals who share a grudge born of a real injury, standing in the same place and neither busy, may come to blows: the colocation phase rolls for it on the pair's own stream and spawns Old Blood between them. An old quarrel never does, the god's avatar never duels, a threaded mortal is always the actor, and a pair waits `GRUDGE_DUEL_COOLDOWN_TICKS` between duels. | state-field: `runGrudgeDuels`, `isInjuryProvenance`, `fightCooldowns`, `fight.duel.grudge` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `consecrated-pilgrim-way-pools-pilgrimage` | A faith-spreading mortal who finishes consecrating a pilgrim way makes that town a pilgrim's destination: the way runs from the congregation of the town's own culture, and the pilgrimage encounter can happen there from the same tick. | edge: `sacred_route`, `consecratePilgrimWay`, `createRelationEdge`, `sacredRouteDestinationTemplates` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `faction-ambitions-drive-action` | Faction ambitions drive faction action and render on the faction sheet. | function: `factionAmbitions` | Factions & Succession | 🟢 LIVE | — |
@@ -1074,10 +1075,10 @@ exit
 - **Intent:** A mortal has a readable name for what they do — Trader, Reaver, Mender — that follows their deeds rather than a stat, and every surface that names them says the same word.
 - **Producer → Consumer:** Strategic Projects & Control → Attention, Chronicle & Narrative
 - **Module:** `src/engine/calling.ts`
-- **Production hits:** 97 total — 4 write, 5 read, 88 unclassified
+- **Production hits:** 98 total — 4 write, 5 read, 89 unclassified
 - **Write sites:** `src/engine/ambitionTick.ts`, `src/engine/calling.ts`, `src/engine/orchestrator.ts`, `src/engine/strategicActionLifecycle.ts`
 - **Read sites:** `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/ThreadsPanel.tsx`, `src/engine/agentDetail.ts`, `src/engine/strategicPresentation.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +83 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/CMS/undertaking-package/UndertakingPackageViewer.tsx`, `src/components/Codex/undertakingCodex.ts`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useNotificationNavigation.ts` +84 more
 - **Verdict:** Verified 2026-09-02: THR-1299 slice 5. `recomputeCalling` runs at three event sites — ambition assignment/completion/abandonment (`ambitionTick.ts`), undertaking completion (`strategicActionLifecycle.ts`), reach tier promotion (`orchestrator.ts`) — never per tick, and writes the title onto the agent node behind a two-gate hysteresis (`CALLING_MIN_HOLD_TICKS`, `CALLING_SCORE_MARGIN`). Every reader goes through `getCallingPresentation`, which falls back to the persisted `behaviorFamily`’s seed title, so the four former family render sites swapped in one edit. Non-vacuous by `src/engine/__tests__/calling.test.ts` (deterministic argmax, each hysteresis gate shown to block a change that would otherwise fire and to admit one past both, the legacy map total over `BehaviorFamily`) and by `npm run telemetry:calling`, the narratable-band instrument recorded on the closing PR.
 
 ### `capability-thresholds-read-the-reach-share` — 🟢 LIVE
@@ -1126,6 +1127,18 @@ exit
 - **Read sites:** `src/engine/strategicPresentation.ts`, `src/engine/strategicTelemetry.ts`
 - **Other hits:** `src/audio/audioConstants.ts`, `src/components/Game/debug/AccountDebugTab.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/ReadTheThreadsPanel.tsx` +29 more
 - **Verdict:** Verified 2026-09-10: THR-1287. `renewControlStance` is the only code path in `src/` that ever writes `neglectTicks: 0` outside stance creation, or lowers `degradation` at all — before it, every stance collapsed at grace(10) + 20 degrading ticks whatever its holder did. Non-vacuous on a **generated** world by `controlRenewalReach.test.ts` (heavy lane): a small seed-42 world warmed 20 ticks, two mortals claimed onto two unheld Locations they actually stand at through the world’s own `claimControl`, then driven 45 ticks with the *only* difference being that one holder harvests every 5 ticks — the worked hold is still `active` past the collapse window with its `controls` edge intact, the unworked twin is gone and its edge released. The band rule is falsified rather than asserted in `controlRenewal.test.ts`: every one of the six `STEP_OUTCOMES` is swept and renewal tracks ladder rank against the constant exactly, with `near_miss` — the band `isStepSuccess` would have wrongly admitted — pinned as renewing nothing. An instant cell (`use`, duration [0,0,0]) renews on completion alone, matching `executeInstantMutation`’s own documented contract that a bandless instant completion takes the plain-success row; a *checkpointed* cell that lost its band still renews nothing, and both arms are pinned. **Updated by THR-1450:** such a cell no longer *reaches* the resolver bandless — the instant arm now stamps `INSTANT_COMPLETION_BAND` at the call site, because leaving the convention to each reader had already cost the harvest its entire payout. This row is unmoved either way: `renewControlStance` skips the rank test outright when `checkpointed` is false, so it never consulted the band on this path.
+
+### `claim-item-takes-up-a-lying-relic` — 🟢 LIVE
+
+- **Intent:** A seeker or a wanderer can make taking up a relic left lying their work: when it completes the relic no longer lies at its place, it is theirs, and from then on it leans with its bearer — a past god's relic finds a new hand and the world says so.
+- **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
+- **UL terms:** *Echo*, *Undertaking*, *Dominion*
+- **Module:** `src/data/undertaking-objects.ts`
+- **Production hits:** 86 total — 1 write, 4 read, 81 unclassified
+- **Write sites:** `src/data/undertaking-objects.ts`
+- **Read sites:** `src/engine/dominion.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingProse.ts`, `src/engine/views/connections.ts`
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-expression-constants.ts` +76 more
+- **Verdict:** Verified 2026-10-27: THR-2031. `check:undertaking-live -- cell.control_claim.item --seed 42 --seed 99 --account sample` proved on both seeds (`claim_item:ok` on `echo_relic_echo_sample_relic`). A 240-tick sample-account run took the Hollow Bell on day 10.8 (seed 42) and day 4.6 (seed 99), under its own name. Non-vacuous by `src/engine/__tests__/claimItem.test.ts`: `readThrough` is `unborne` before and `bearer` after, the borne relic fails `already_held` with the edge count unchanged, and a loose item is refused `not_lying_at_a_place`.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
 
@@ -1272,10 +1285,10 @@ exit
 - **Producer → Consumer:** War, Armies & Battles → Factions & Succession
 - **UL terms:** *Realm*, *Location*
 - **Module:** `src/engine/battleAftermath.ts`
-- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
+- **Production hits:** 7 total — 1 write, 1 read, 5 unclassified
 - **Write sites:** `src/engine/battleAftermath.ts`
 - **Read sites:** `src/engine/crown.ts`
-- **Other hits:** `src/engine/unrestPressure/defection.ts`, `src/engine/unrestPressure/rising.ts`, `src/engine/warAims/enemy.ts`
+- **Other hits:** `src/data/undertaking-objects.ts`, `src/engine/undertakingProse.ts`, `src/engine/unrestPressure/defection.ts`, `src/engine/unrestPressure/rising.ts`, `src/engine/warAims/enemy.ts`
 - **Verdict:** Verified 2026-10-16: THR-1932. crown.test.ts: a controls edge with via conquest, takenFrom faction_1 and establishedTick 100 puts faction_1 in faction_0's coerce pool through tick 160 and out of it at tick 161.
 
 ### `consecrated-pilgrim-way-pools-pilgrimage` — 🟢 LIVE
@@ -3864,10 +3877,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Undertaking*
 - **Module:** `src/engine/strategicGraphOps.ts`
-- **Production hits:** 123 total — 2 write, 4 read, 117 unclassified
+- **Production hits:** 124 total — 2 write, 4 read, 118 unclassified
 - **Write sites:** `src/engine/strategicActionLifecycle.ts`, `src/engine/strategicGraphOps.ts`
 - **Read sites:** `src/engine/agentAttachments.ts`, `src/engine/ruins/clueLifecycle.ts`, `src/engine/socialLeverage.ts`, `src/engine/treasureMapConsumption.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts` +112 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Codex/CodexDetailPanel.tsx`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/data/action-technical-effects.ts` +113 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 5. Six ops carry the five T1 kinds' objects, and each writes a shape an existing system consumes rather than a property only the producer reads. `mintLeverageMark` is a dedicated op rather than a `create_relation_edge` call precisely because that primitive stamps only `establishedTick` while `knows_secret_of` declares five required properties — a mark routed through the generic maker would warn on the schema every time and arrive without the fields the economy presses. Proven live on seed 99 at 150 ticks, the whole arc organically: cultivate 8 completed → 5 marks minted → press 7 completed → 6 `owes_favor` debts → burn 7; plus 4 treasure maps and 2 clues from the chart arc and 18 cache exposures. Non-vacuous by `src/engine/__tests__/undertakingT1Kinds.test.ts` (21 tests), which asserts every property each edge's schema row declares required rather than merely that an edge appeared — falsified 2-of-19 red by dropping `revealed` from the mark and by stubbing `pressTheMark`'s no-mark guard, and 1-of-21 by restoring a non-canonical `subcategory`. **Two findings recorded on the row because they are the reason it is worded around destinations.** Both artifact writers first shipped `subcategory: 'tool'` with a string `tier`; neither value exists (`PossessionSubcategory` has seven members, `AttachmentTier` is numeric 1–4), nothing threw, and `getAttachmentArtUrl` simply returned `null` forever — the items would have rendered as blank plates on every possession surface, and the seeded-world coverage test caught it only because that world happened to mint a chart and no masterwork. And `press_the_mark` completed 3 times against 3 strangers minting 0 debts, because its target rule selected on role while its resolution required a held mark: selection and resolution disagreeing silently, fixed by a `withEdgeFromActor` filter on the target rule. Full suite 18713 green; ratchet 2973 unchanged; build 10.44s; 30-tick seed-42 smoke reached tick 30, 377 agents.
 
 ### `thread-destination-on-threads-lens` — 🔵 UNVERIFIED-OK
@@ -4011,10 +4024,10 @@ exit
 - **Producer → Consumer:** World Generation, Terrain & Places → Attachments, Items & Possessions
 - **UL terms:** *Echo*, *Dominion*
 - **Module:** `src/engine/seedEchoes.ts`
-- **Production hits:** 13 total — 1 write, 3 read, 9 unclassified
+- **Production hits:** 17 total — 1 write, 3 read, 13 unclassified
 - **Write sites:** `src/engine/seedEchoes.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/views/connections.ts`, `src/engine/views/subjects/subjectPage.ts`
-- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/debug-bridge.ts`, `src/engine/dominionViewModels.ts`, `src/engine/itemGenerator/worldContext.ts`, `src/engine/phaseDominion.ts` +4 more
+- **Other hits:** `src/components/Game/debug/SphereStateTabContent.tsx`, `src/data/undertaking-objects.ts`, `src/debug-bridge.ts`, `src/engine/dominionViewModels.ts`, `src/engine/itemGenerator/worldContext.ts` +8 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `undertaking-catalyst-resolves-by-query` — 🟢 LIVE
@@ -4274,10 +4287,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 309 total — 2 write, 6 read, 301 unclassified
+- **Production hits:** 310 total — 2 write, 6 read, 302 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +296 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +297 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE

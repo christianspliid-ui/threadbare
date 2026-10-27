@@ -79,7 +79,12 @@ export const ECHO_CHRONICLE_LINES = {
   monument: { joiner: ' still stands near ', end: '.' },
   legacy: { joiner: ' lives on in ', end: '.' },
   relic: { joiner: ' lies somewhere near ', end: ', unclaimed.' },
+  // THR-2031 — once a mortal has taken it up, the line names who carries it.
+  relicHeld: { joiner: ' is carried now by ', end: '.' },
 } as const;
+
+/** The relic line once a mortal has taken the relic up (THR-2031): it no longer lies there. */
+export const ECHO_RELIC_TAKEN_LINE = { joiner: ' was taken up from near ', end: '.' } as const;
 
 /** The heir's sheet line under their name. */
 export const echoLineageLine = (name: string): string => `Of the line of ${name}`;

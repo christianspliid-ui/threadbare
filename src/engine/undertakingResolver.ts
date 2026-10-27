@@ -92,6 +92,11 @@ export function resolveVerbVariant(
     // admits — the same refusal the candidate walk makes at proposal.
     const controllingOwn = proposed.startsWith('control') && actual === 'own';
     if (!controllingOwn && ownershipSatisfies(rule, actual)) return proposed;
+    // THR-2031: a relic claim that raced — another mortal took it up while the work
+    // ran — never escalates to a seize the mortal did not propose; `claim_item`
+    // refuses it `already_held`. Item only: Company/Army claim (`takeCommand`) does
+    // not refuse a held seat, so those keep the ladder's coup/mutiny with its costs.
+    if (proposed === 'control:claim' && actual === 'other' && type.id === 'item') return proposed;
   }
   if (verb === 'change') {
     // Raise what is one's own (or nobody's); lower another's — the hostile mirror.

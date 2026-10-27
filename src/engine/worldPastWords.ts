@@ -19,7 +19,7 @@
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
 import type { SeededEchoesSummary } from '../types/echo';
-import { ECHO_CHRONICLE_LINES, echoDisplayName } from '../data/account-content';
+import { ECHO_CHRONICLE_LINES, ECHO_RELIC_TAKEN_LINE, echoDisplayName } from '../data/account-content';
 import type {
   ElderRuinArchetype,
   WorldPastEmpire,
@@ -439,10 +439,24 @@ export function buildEchoGroup(graph: WorldGraph, summary: SeededEchoesSummary |
         { text: words.joiner }, personSeg(graph, e.nodeId), { text: words.end },
       ] });
     } else {
+      // THR-2031 — a relic someone took up no longer lies anywhere: name its bearer.
+      const bearerId = graph.getIncomingEdges(e.nodeId, 'possesses')[0]?.source;
+      if (bearerId && graph.getNode(bearerId)) {
+        const held = ECHO_CHRONICLE_LINES.relicHeld;
+        lines.push({ id: `echo:${e.echoId}`, segments: [
+          { text: name, ref: { kind: 'agent', id: bearerId } },
+          { text: held.joiner }, personSeg(graph, bearerId), { text: held.end },
+        ] });
+        continue;
+      }
       if (!graph.getNode(e.hostId)) continue;
+      // THR-2031 — `claim_item` removes the relic's `lies_at`; once taken up the line
+      // must stop calling it unclaimed.
+      const stillLies = graph.getOutgoingEdges(e.nodeId, 'lies_at').length > 0;
+      const relicWords = stillLies ? words : ECHO_RELIC_TAKEN_LINE;
       lines.push({ id: `echo:${e.echoId}`, segments: [
         { text: name, ref: { kind: 'location', id: e.hostId } },
-        { text: words.joiner }, placeSeg(graph, e.hostId), { text: words.end },
+        { text: relicWords.joiner }, placeSeg(graph, e.hostId), { text: relicWords.end },
       ] });
     }
   }

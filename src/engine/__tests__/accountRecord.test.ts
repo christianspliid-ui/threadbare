@@ -89,6 +89,17 @@ describe('THR-1813 — concludeRun on a seed-42 harvest', () => {
     expect(picks.some(e => e.echoType === 'relic' && e.originNodeId === 'test_legend_blade')).toBe(true);
   });
 
+  it('never re-harvests a relic that was itself seeded from an echo (THR-2031 review)', () => {
+    const world = newWorld();
+    devSeedTheFirst(world);
+    const bearer = world.graph.getOutgoingEdges(world.ascendantId, 'thread')[0]?.target;
+    expect(bearer).toBeDefined();
+    world.graph.addNode({ id: 'test_echo_relic', type: 'artifact', name: 'Echo Relic', properties: { echoOrigin: true } });
+    world.graph.addEdge({ id: 'e.bearer.echo', source: bearer!, target: 'test_echo_relic', type: 'possesses', properties: {} });
+    const picks = pickDivineEchoes(world, 3, new Map([['test_echo_relic', 1]]), [DEV_ASCENDANT_IDENTITY.sphereAlignment.primary, DEV_ASCENDANT_IDENTITY.sphereAlignment.secondary]);
+    expect(picks.some(e => e.originNodeId === 'test_echo_relic')).toBe(false);
+  });
+
   it('carries the god\'s bought pair on every echo it picks (Decided 5)', () => {
     const pair = harvest.cosmicEchoCandidates[0]?.echoDefinition.sphereAffinities ?? [];
     expect(pair).toHaveLength(2);

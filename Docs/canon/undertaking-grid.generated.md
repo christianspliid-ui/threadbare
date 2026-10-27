@@ -2,7 +2,7 @@
 
 # Undertakings × world objects — the grid
 
-> Every world-object kind × every undertaking verb. **63 live cells** (the registry declares a semantic; 0 of them still owe a decided consequence nothing reads, 33 have theirs), **2 wanted cells** (decided yes, the operation named, not yet built), **7 later cells** (decided, waiting on a named precondition), **0 open cells** (the model admits it, nobody has decided), the rest not an object of undertakings with the reason. 15 of 34 kinds carry a cell. Verbs: create · change · use · control · destroy · observe; change and control split into raise | lower and claim | seize. Regenerate: `npm run generate-undertaking-grid`; the generator fails by name on a live cell without a note, a non-live cell without a disposition, a verdict without its decider, or a stale disposition.
+> Every world-object kind × every undertaking verb. **64 live cells** (the registry declares a semantic; 0 of them still owe a decided consequence nothing reads, 34 have theirs), **1 wanted cells** (decided yes, the operation named, not yet built), **7 later cells** (decided, waiting on a named precondition), **0 open cells** (the model admits it, nobody has decided), the rest not an object of undertakings with the reason. 15 of 34 kinds carry a cell. Verbs: create · change · use · control · destroy · observe; change and control split into raise | lower and claim | seize. Regenerate: `npm run generate-undertaking-grid`; the generator fails by name on a live cell without a note, a non-live cell without a disposition, a verdict without its decider, or a stale disposition.
 
 ## The grid
 
@@ -25,7 +25,7 @@
 | **Network** `network` | 🟢 `found_ring` | 🟢 `reinforce_group` | ⏳ later | 🟢 `run_ring` | · | ⏳ later | 🟢 `disband_group` | · |
 | **Battle** `battle` | · | · | · | · | · | · | · | · |
 | **Companion** `companion` | 🟢 `mint_companion` | · | · | · | · | · | 🟢 `remove_companion` | · |
-| **Item** `item` | 🟢 `mint_masterwork` | ⏳ later | ⏳ later | · | 🔵 wanted | 🟢 `seize_item` | 🟢 `destroy_item` | ⏳ later |
+| **Item** `item` | 🟢 `mint_masterwork` | ⏳ later | ⏳ later | · | 🟢 `claim_item` | 🟢 `seize_item` | 🟢 `destroy_item` | ⏳ later |
 | **Legendary artifact** `legendary_artifact` | · | · | · | · | · | · | · | · |
 | **Holding** `holding` | · | · | · | · | · | · | · | · |
 | **Power** `power` | 🟢 `learn_spell` | · | · | 🟢 `activate_spell` | · | · | 🟢 `seal_power` | · |
@@ -62,7 +62,7 @@
 | **Personality & Emergent Traits** | `trait` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
 | **Mortal Economy & Prosperity** | `route` | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | 🟢 live | · | 🟢 live | LIVE-TOUCHED | Omens & Atmospheric Pressure · Mortal Economy & Prosperity · War, Armies & Battles · Attention, Chronicle & Narrative |
 | **Ambitions & Undertakings** | `ambition`, `undertaking` | · | · | · | · | · | · | · | · | REACHED-BY-OP | — |
-| **Attachments, Items & Possessions** | `companion`, `item`, `legendary_artifact`, `holding`, `power` | 🟢 live | ⏳ later | ⏳ later | 🟢 live | 🔵 wanted | 🟢 live | 🟢 live | ⏳ later | LIVE-TOUCHED | Omens & Atmospheric Pressure · Attachments, Items & Possessions · Spheres & Quintessence · Encounters & Dilemmas · Effects & Conditions · Factions & Succession |
+| **Attachments, Items & Possessions** | `companion`, `item`, `legendary_artifact`, `holding`, `power` | 🟢 live | ⏳ later | ⏳ later | 🟢 live | 🟢 live | 🟢 live | 🟢 live | ⏳ later | LIVE-TOUCHED | Omens & Atmospheric Pressure · Attachments, Items & Possessions · Spheres & Quintessence · Encounters & Dilemmas · Effects & Conditions · Factions & Succession |
 | **Ruins, Clues & Delves** | _none_ | · | · | · | · | · | · | · | · | READS | — |
 | **Stealth, Detection & Hidden Marks** | _none_ | · | · | · | · | · | · | · | · | UNTOUCHED | — |
 | **Attention, Chronicle & Narrative** | `event` | · | · | · | · | · | · | · | · | READS | — |
@@ -295,6 +295,7 @@ _Rules that bind every cell rather than one._
 - **Create × companion** — `mint_companion` — Recruit a companion — the op the aftermath effects reach, as a work.
 - **Destroy × companion** — `remove_companion` — Turn another's companion — motive-gated against the mortal they walk beside, who holds them through `accompanies` (THR-1436). Dismissing one's own companion is not a work: it stays the story's and the expiry phase's (`removeCompanion`, `expireCompanions`).
 - **Create × item** — `mint_masterwork` — A masterwork where the maker stands — made with an idea by the item generator since THR-1570 (a gen_masterwork_* item that does something and costs something); a chart is the same cell with the kind as a parameter. _(absorbs: craft_masterwork)_
+- **Claim × item** — `claim_item` — Taking up an item that lies at a place (THR-2031) — in practice a past god's seeded relic: the `lies_at` edge goes and a `possesses` edge comes (`via: claimed`, `takenFrom` the place). Refused `not_lying_at_a_place` at proposal and `already_held` at completion; a seeded relic speaks its own echo completion line. The payoff of the treasure hunt — observe a ruin → clue → treasure map → delve → this. **Read by:** The possession lifecycle: `possesses` is read by the attachment surfaces, the trait-while-held grant, and `treasureMapConsumption`; Dominion reads the relic through its bearer from then on, and the relic's Inspector page names its holder.
 - **Seize × item** — `seize_item` — The possesses edge moves; motive-gated. A seized book that teaches (`#arcane` / `#ancient`, or a generated forbidden book) teaches its new holder one spell, once (THR-1672, `onItemAcquired`).
 - **Destroy × item** — `destroy_item` — The bearer edges, then the node.
 - **Create × power** — `learn_spell` — A scholar learns a spell — the first writer of `knows_spell` (since THR-1672 every channel writes it through the one grant seam, `grantSpell`, with edges unchanged), and the cell that gave the Power kind the node shape the world-object registry deferred (THR-1429): one shared `spell`-subcategory trait definition per template, minted at seeding, per-bearer state on the edge. Known is unlimited (the biography); wielded is a `has_trait` edge to the same node under `SLOT_CAPS.spell`, so learning past the cap is known-and-not-carried rather than a refusal. Caster gate: a spell-weaver mastery trait, a caster `npcRole`, or Veil at `LEARN_SPELL_CASTER_VEIL_FLOOR` (raw 0–100) — checked at proposal (THR-1617), so a non-caster is refused on the board as `ineligible:not_a_caster` rather than after ~40 ticks of study; the completion-time check stays as the backstop. Since THR-1572 the shelf is the caster's own tradition library first (lowest tier, the tradition read off their seeded `knows_spell` edge or derived by `casterTraditionOf`), then the authored sphere shelf; another tradition's generated spells never reach it. **Read by:** use × Power enumerates wielded powers of either class and casts through `resolveCast` (THR-1571); seeded knowing at worldgen (`seedSpellKnowing`) asks the same caster predicate (`engine/casterIdentity.ts`) and gives every caster their first spell; the sheet's attachments strand shows the class word and a Knows row for what is learned and not carried; `__DEBUG.getPowers` and CLI `agent` report known / wielded / sealed.
@@ -317,7 +318,6 @@ _Rules that bind every cell rather than one._
 ## Wanted cells — decided yes, not yet built
 
 - **Lower × company** — Desertion as work — the mirror of the mutiny, reading the same cohesion number; the cheap hostile verb that thins a band before it ever meets you. Op needed: `thin_group` (reinforce with a negative roster delta), motive-gated. **Reader:** The cohesion system, which already tracks the number `thin_group` moves, and the group-collapse path that reads it. _(THR-1397, Christian in chat, 2026-09-03)_
-- **Claim × item** — Picking up an unowned item: the possesses edge, one line. Op needed: `claim_item`. The payoff of the treasure hunt — observe a ruin → clue → treasure map → delve → this — and the reason a found relic on the ground is reachable at all. **Reader:** The possession lifecycle: `possesses` is read by the attachment surfaces, the trait-while-held grant, and `treasureMapConsumption` — the payoff step of the observe to clue to chart to delve climb that THR-1428 R1 and R2 opened. _(THR-1397, Christian in chat, 2026-09-03)_
 
 ## Later — decided, waiting on a precondition
 

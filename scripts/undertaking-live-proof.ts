@@ -47,10 +47,12 @@
  *   npm run check:undertaking-live -- <id> --seed 99 --band success_at_cost --json
  *   npm run check:undertaking-live -- <id> <id2> --seed 42 --seed 99     # matrix
  *   npm run check:undertaking-live -- <id> --band none                   # dice as rolled
+ *   npm run check:undertaking-live -- <id> --account sample              # a world the sample account shaped (THR-2031)
  *
  * Exit codes: 0 every run proved · 1 any run failed or vacuous · 2 bad arguments.
  */
-import { initializeGameState, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
+import { DEV_ASCENDANT_IDENTITY, initializeGameState, initializeGameStateFromIdentity, MAP_SIZE_PRESETS } from '../src/engine/gameInit';
+import { sampleAccount } from '../src/engine/accountStore';
 import type { MapSizePreset } from '../src/engine/gameInit';
 import { runTick } from '../src/engine/orchestrator';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
@@ -135,11 +137,17 @@ export function computeVerdict(claims: readonly Claim[]): ProofVerdict {
 
 // ─── World ────────────────────────────────────────────────────────
 
-function buildWorld(seed: number, map: MapSizePreset): { state: GameState; runtime: ReturnType<typeof createSimulationRuntime> } {
+/** The account a world is shaped by: none (today's world), or the sample account's echoes (THR-2031). */
+export type ProofAccount = 'none' | 'sample';
+
+function buildWorld(seed: number, map: MapSizePreset, account: ProofAccount = 'none'): { state: GameState; runtime: ReturnType<typeof createSimulationRuntime> } {
   const runtime = createSimulationRuntime();
-  const archetype = generateArchetypes(4, seed)[0];
   const preset = MAP_SIZE_PRESETS[map];
-  const { state: initial } = initializeGameState(archetype, 'LiveProof', createBalancedCosmology(), seed, preset.cols, preset.rows);
+  // A seeded relic, monument and heir stand only in a world an account shaped, so a
+  // cell whose object is an echo (claim × Item) is proved with `--account sample`.
+  const { state: initial } = account === 'sample'
+    ? initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, seed, undefined, map, undefined, sampleAccount())
+    : initializeGameState(generateArchetypes(4, seed)[0], 'LiveProof', createBalancedCosmology(), seed, preset.cols, preset.rows);
   let state = initial;
   for (let t = 0; t < WARMUP_TICKS; t++) state = runTick(state, [], runtime);
   return { state, runtime };
@@ -147,14 +155,14 @@ function buildWorld(seed: number, map: MapSizePreset): { state: GameState; runti
 
 // ─── One run ──────────────────────────────────────────────────────
 
-export function proveTemplate(templateId: string, seed: number, map: MapSizePreset, band?: StepOutcome): ProofRun {
+export function proveTemplate(templateId: string, seed: number, map: MapSizePreset, band?: StepOutcome, account: ProofAccount = 'none'): ProofRun {
   const template = getStrategicTemplate(templateId);
   if (!template) {
     return { templateId, seed, ticksRun: 0, claims: [{ name: 'started', status: 'fail', detail: `unknown template ${templateId}` }], verdict: 'failed' };
   }
   const writes = undertakingWriteSet(template);
   const claims: Claim[] = [];
-  const { state: world, runtime } = buildWorld(seed, map);
+  const { state: world, runtime } = buildWorld(seed, map, account);
   let state = world;
 
   enableTracing();
@@ -606,27 +614,30 @@ function parseArgs(argv: readonly string[]) {
   let map: MapSizePreset = DEFAULT_MAP;
   let band: StepOutcome | undefined = DEFAULT_PINNED_BAND;
   let json = false;
+  let account: ProofAccount = 'none';
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--seed') { seeds.push(Number(argv[++i])); continue; }
     if (a === '--map') { map = argv[++i] as MapSizePreset; continue; }
     if (a === '--band') { const b = argv[++i]; band = b === 'none' ? undefined : (b as StepOutcome); continue; }
     if (a === '--json') { json = true; continue; }
+    if (a === '--account') { account = argv[++i] as ProofAccount; continue; }
     if (a.startsWith('--')) { console.error(`unknown flag ${a}`); process.exit(2); }
     ids.push(a);
   }
-  if (ids.length === 0) { console.error('Usage: npm run check:undertaking-live -- <templateId>... [--seed N]... [--map small|medium|large] [--band <outcome>] [--json]'); process.exit(2); }
+  if (ids.length === 0) { console.error('Usage: npm run check:undertaking-live -- <templateId>... [--seed N]... [--map small|medium|large] [--band <outcome>] [--account none|sample] [--json]'); process.exit(2); }
   if (seeds.some(s => !Number.isFinite(s))) { console.error('--seed needs a number'); process.exit(2); }
   if (band && !BANDS.includes(band)) { console.error(`--band must be one of ${BANDS.join(', ')}`); process.exit(2); }
   if (!(map in MAP_SIZE_PRESETS)) { console.error(`--map must be one of ${Object.keys(MAP_SIZE_PRESETS).join(', ')}`); process.exit(2); }
-  return { ids, seeds: seeds.length ? seeds : [DEFAULT_SEED], map, band, json };
+  if (account !== 'none' && account !== 'sample') { console.error('--account must be none or sample'); process.exit(2); }
+  return { ids, seeds: seeds.length ? seeds : [DEFAULT_SEED], map, band, json, account };
 }
 
 const isMain = typeof process !== 'undefined' && process.argv[1] !== undefined && /undertaking-live-proof/.test(process.argv[1]);
 if (isMain) {
-  const { ids, seeds, map, band, json } = parseArgs(process.argv.slice(2));
+  const { ids, seeds, map, band, json, account } = parseArgs(process.argv.slice(2));
   const runs: ProofRun[] = [];
-  for (const id of ids) for (const seed of seeds) runs.push(proveTemplate(id, seed, map, band));
+  for (const id of ids) for (const seed of seeds) runs.push(proveTemplate(id, seed, map, band, account));
   const catalystGap = catalystCorpusGap();
   if (json) {
     console.log(JSON.stringify({ runs, catalystGap }, null, 2));
