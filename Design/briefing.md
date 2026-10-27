@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 20:58 local (19:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 21:58 local (20:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,13 +18,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [The world's own drift fills the Mandate with no god](https://linear.app/threadbare/issue/THR-2081): **only growth the god causes counts toward the Mandate.** The world keeps founding places and filling with newborn mortals, and every new one adds to every sphere's total, so the Mandate filled with nobody playing. Two of four test worlds ended their age that way. From now on, Mandate progress counts what the god's own hand puts into its spheres: deeds, holds, claims, answered prayers. Rivals and doom wearing those spheres down still pulls it back, so it stays a contest. *Veto:* "the world drifting toward my spheres is my doing" or "a mortal acting on my nudge should count". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27d.md)*
 - [The seeded world ends after 41 ticks](https://linear.app/threadbare/issue/THR-2080) — **this is a bug, not Mandate pacing.** The Mandate measures how much the god's spheres have grown since the world began. It took that starting point before the world's first tick, and tick 1 builds about 69 new places (caravan rests, mines, smugglers' dens). Their arrival counted as growth: more than half the Mandate filled on tick 2, and the age ended in "fulfilled" by tick 58–77 with the god doing nothing. The fix takes the starting point once the world has settled. In the measurement, the seeded world then plays on past tick 600. *Veto:* "growth from the world's own new buildings should count toward the Mandate". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27c.md)*
-- [A sealed mill lease gives the town's mill to a guild](https://linear.app/threadbare/issue/THR-2077): five calls in [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2077-mill-lease-guild.md#decisions). Each can be vetoed on its own until Tuesday 27 Oct 20:56 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27b.md)*
-  - **The "fellowship" that wins the mill is the town's own guild.** When the lease is sealed, the craft guild in town holds the mill (failing that the merchants, then the miners or bankers). The temple is left out because the abbey is the landlord. *Veto:* "the abbey should keep the mill" or "the mortal's own faction should hold it".
-  - **No guild in town, no holder.** About half of towns have none. There the lease is sealed and the fee paid as today, and nobody holds the mill. *Veto:* "always find someone to hold it".
-  - **The mill stands afterwards.** If the town has no mill and has room for a building, one is raised, and the town's harvest feeds more mouths. If there is no room, nothing is raised. *Veto:* "a lease should never raise a building".
-  - **A scene never takes a mill from a guild that already holds it.**
-  - **A held mill pays its guild a little each pay day**, about a quarter of what a middling town pays in tax. More in a rich town, nothing in a ruined one. *Veto:* "the mill should pay nothing".
 
 Say "veto <title>" to reverse any of these.
 
@@ -34,11 +29,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 ready, none being built.** Salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069/plan-doc-salt-the-good-the-smugglers-carry-the-monopoly-scene-prices)) merged and is live. All four ready tickets are inside their veto holds, so the builder's last three runs correctly stood down; the first hold, the mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)), opens at 20:56 UTC. Then: the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) and Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)).
+**Healthy: 4 ready, none being built.** The mill lease's veto hold ([THR-2077](https://linear.app/threadbare/issue/THR-2077)) closed at 20:56 UTC with no veto, so the builder's next run (about 21:10 UTC) can take it. The last six runs correctly stood down because every ready ticket was still on hold. Still on hold: the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071), until 23:45 UTC), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)) and Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062), until Wednesday 03:01 UTC).
 
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No branch names it. Agents can un-park it.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No branch or local worktree holds work for it. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (d2baba07), CI and the heavy simulation tests pass on main, no PRs are waiting to merge, the scheduled lanes and the worktree reaper are healthy, and the engine runs at 160 ms/tick, 8% under the 7-day median.
+All green. The live site serves the latest main (d2baba07), CI and the scheduled background jobs pass, no PRs are waiting to merge, the scheduled lanes and the worktree reaper are healthy, and the engine runs at 157 ms/tick, 9% under the 7-day median.
