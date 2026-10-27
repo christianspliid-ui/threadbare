@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-27 11:00 local (10:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-27 12:00 local (11:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-27: an oath from tribute is live.** The house that pays tribute in a crown's hall now swears to that crown ([THR-2051](https://linear.app/threadbare/issue/THR-2051)). Merged via [#2627](https://github.com/christianspliid-ui/threadbare/pull/2627).
+- **2026-10-27: God's Will offers story and the path leans, and it is live** ([THR-2068](https://linear.app/threadbare/issue/THR-2068)). Merged via [#2625](https://github.com/christianspliid-ui/threadbare/pull/2625).
 - **2026-10-27: taking over an empty forge or mine now fully registers, and the fix is live** ([THR-2076](https://linear.app/threadbare/issue/THR-2076)). Merged via [#2623](https://github.com/christianspliid-ui/threadbare/pull/2623).
 - **2026-10-27: a place held after success (the forge a mortal builds) is live** ([THR-2048](https://linear.app/threadbare/issue/THR-2048)). Merged via [#2622](https://github.com/christianspliid-ui/threadbare/pull/2622).
 - **2026-10-27: a relic left lying can now be taken up, and the fix is live** ([THR-2031](https://linear.app/threadbare/issue/THR-2031)). Merged via [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621).
@@ -46,8 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: new things now arrive one at a time (first half), and the fix is live** ([THR-2060](https://linear.app/threadbare/issue/THR-2060)). Merged via [#2614](https://github.com/christianspliid-ui/threadbare/pull/2614).
 - **2026-10-26: a faction's commission now pays the member who takes it up, and an untaken one goes back to the purse; the fix is live** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)). Merged via [#2613](https://github.com/christianspliid-ui/threadbare/pull/2613).
 - **2026-10-26: you waived the veto on "new things arrive one at a time".** Its first half is being built now ([THR-2060](https://linear.app/threadbare/issue/THR-2060)); the readouts half ([THR-2061](https://linear.app/threadbare/issue/THR-2061)) is next in line. The plan for a bounty collected in a duel is merged too ([THR-2072](https://linear.app/threadbare/issue/THR-2072), [#2612](https://github.com/christianspliid-ui/threadbare/pull/2612)); its calls sit in the briefing's *Decided for you* until Tuesday 21:05 UTC.
-- **2026-10-26: a town short of stone, ore or timber no longer "goes hungry" in the chronicle, and the fix is live** ([THR-2070](https://linear.app/threadbare/issue/THR-2070)). Merged via [#2611](https://github.com/christianspliid-ui/threadbare/pull/2611).
-- **2026-10-26: the plan for salt, the good the smugglers carry, is merged** ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), via [#2609](https://github.com/christianspliid-ui/threadbare/pull/2609). Its four calls sit in the briefing's *Decided for you* until Tuesday 18:03 UTC.
 
 ---
 
