@@ -7,7 +7,7 @@
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, cleanup, act } from '@testing-library/react';
-import { FirstUseCaption, FirstUseCaptionZone } from '../FirstUseCaption';
+import { FirstUseCaption, FirstUseCaptionZone, isOverCaptionGround } from '../FirstUseCaption';
 import {
   getFirstUseCaptionSnapshot,
   resetFirstUseCaptions,
@@ -107,6 +107,40 @@ describe('FirstUseCaption', () => {
     fireEvent.click(inner);
     expect(getFirstUseCaptionSnapshot().dismissed).toEqual(['asks_you']);
     expect(screen.getByTestId('first-use-caption-threads')).toBeTruthy();
+  });
+
+  // THR-2078 — the Doom hint landed on the Inspector's header once a page opened.
+  it('a floating caption yields while a surface covers its spot, and returns when it closes', () => {
+    vi.useFakeTimers();
+    const doc = document as Document & { elementsFromPoint?: (x: number, y: number) => Element[] };
+    const original = doc.elementsFromPoint;
+    try {
+      const { getByTestId } = render(
+        <>
+          <div data-first-use-caption-ground="" data-testid="map" />
+          <div data-testid="inspector" />
+          <div data-testid="topbar"><div style={{ position: 'relative' }}><FirstUseCaption id="doom" floating /></div></div>
+        </>,
+      );
+      // The top bar the caption hangs from is skipped; what lies past it decides.
+      let under: Element = getByTestId('inspector');
+      doc.elementsFromPoint = () => [getByTestId('topbar'), under];
+      act(() => { vi.advanceTimersByTime(500); });
+      expect(screen.queryByTestId('first-use-caption-doom')).toBeNull();
+      // Still visible in the store: hidden, not dismissed.
+      expect(getFirstUseCaptionSnapshot().visible).toContain('doom');
+
+      under = getByTestId('map');
+      act(() => { vi.advanceTimersByTime(500); });
+      expect(screen.getByTestId('first-use-caption-doom')).toBeTruthy();
+
+      expect(isOverCaptionGround({ top: 0, left: 0 }, getByTestId('topbar').firstElementChild)).toBe(true);
+      under = getByTestId('inspector');
+      expect(isOverCaptionGround({ top: 0, left: 0 }, getByTestId('topbar').firstElementChild)).toBe(false);
+    } finally {
+      doc.elementsFromPoint = original;
+      vi.useRealTimers();
+    }
   });
 
   it('a dismissal survives a reload (fresh store module, same localStorage)', async () => {

@@ -37,6 +37,9 @@ export interface FirstUseCaptionProps {
    * whose row has no room for a second line and clips what overflows it (Law 33).
    * The anchor must be `position: relative`; the line is portalled to the body at
    * the anchor's lower right, over the map edge, never over a control (Law 25).
+   * It yields while anything but the map's ground sits under that spot — the
+   * Inspector, a Stage, a dialog — and comes back when that surface closes
+   * (THR-2078).
    */
   readonly floating?: boolean;
 }
@@ -46,15 +49,51 @@ export function useFirstUseCaptionVisible(id: string): boolean {
   return snap.visible.includes(id);
 }
 
+/** Marks the map's root: the only ground a floating caption may sit over (THR-2078). */
+export const FIRST_USE_CAPTION_GROUND_ATTR = 'data-first-use-caption-ground';
+
+interface FloatingSpot { readonly top: number; readonly left: number }
+
+function floatingSpot(anchor: { top: number; right: number }): FloatingSpot {
+  return { top: anchor.top + FLOATING_GAP_PX, left: Math.max(FLOATING_EDGE_PX, anchor.right - FLOATING_WIDTH_PX) };
+}
+
+/**
+ * True while the caption's box lies over the map's ground. Any other surface
+ * under one of its corners — the Inspector, a Stage, a dialog — and it yields.
+ * Fail-soft: without `elementsFromPoint` (jsdom) or with no marked ground on the
+ * page, the caption shows as before.
+ */
+export function isOverCaptionGround(spot: FloatingSpot, anchor?: Element | null): boolean {
+  if (typeof document === 'undefined' || typeof document.elementsFromPoint !== 'function') return true;
+  if (!document.querySelector(`[${FIRST_USE_CAPTION_GROUND_ATTR}]`)) return true;
+  const right = spot.left + FLOATING_WIDTH_PX - 1;
+  const bottom = spot.top + FLOATING_PROBE_HEIGHT_PX;
+  const probes: ReadonlyArray<readonly [number, number]> = [
+    [spot.left + 1, spot.top + 1], [right, spot.top + 1], [spot.left + 1, bottom], [right, bottom],
+  ];
+  return probes.every(([x, y]) => {
+    // The caption's own line is not what lies under it, and neither is the bar
+    // it hangs from: its top edge overlaps the anchor's row by design.
+    const hit = document.elementsFromPoint(x, y).find(el =>
+      !el.closest('[data-first-use-caption]') && !(anchor && el.contains(anchor)));
+    return !!hit && !!hit.closest(`[${FIRST_USE_CAPTION_GROUND_ATTR}]`);
+  });
+}
+
 /** Where a floating caption's anchor sits on screen, re-read on resize. */
-function useAnchorRect(active: boolean): [RefObject<HTMLSpanElement | null>, { top: number; right: number } | null] {
+function useAnchorRect(active: boolean): [RefObject<HTMLSpanElement | null>, { top: number; right: number } | null, boolean] {
   const ref = useRef<HTMLSpanElement | null>(null);
   const [rect, setRect] = useState<{ top: number; right: number } | null>(null);
+  const [overGround, setOverGround] = useState(true);
   useLayoutEffect(() => {
     if (!active) return;
     const read = () => {
       const r = ref.current?.getBoundingClientRect();
-      if (r) setRect(prev => (prev && prev.top === r.top && prev.right === r.right ? prev : { top: r.top, right: r.right }));
+      if (r) {
+        setRect(prev => (prev && prev.top === r.top && prev.right === r.right ? prev : { top: r.top, right: r.right }));
+        setOverGround(isOverCaptionGround(floatingSpot(r), ref.current));
+      }
     };
     read();
     // The top bar re-lays itself out without a window resize (a yield step hides a
@@ -66,7 +105,7 @@ function useAnchorRect(active: boolean): [RefObject<HTMLSpanElement | null>, { t
       window.removeEventListener('resize', read);
     };
   }, [active]);
-  return [ref, rect];
+  return [ref, rect, overGround];
 }
 
 export function FirstUseCaption({ id, name, floating = false }: FirstUseCaptionProps) {
@@ -74,7 +113,7 @@ export function FirstUseCaption({ id, name, floating = false }: FirstUseCaptionP
   const visible = useFirstUseCaptionVisible(id);
   const dismiss = useCallback(() => dismissFirstUseCaption(id), [id]);
   const text = visible ? getFirstUseCaptionText(id, name) : null;
-  const [anchorRef, anchor] = useAnchorRect(floating && !!text);
+  const [anchorRef, anchor, overGround] = useAnchorRect(floating && !!text);
   if (!text) return null;
   const line = (
     <div
@@ -82,9 +121,7 @@ export function FirstUseCaption({ id, name, floating = false }: FirstUseCaptionP
       data-first-use-caption={id}
       style={{
         ...(floating ? FLOATING_STYLE : null),
-        ...(floating && anchor
-          ? { top: anchor.top + 4, left: Math.max(8, anchor.right - FLOATING_WIDTH_PX) }
-          : null),
+        ...(floating && anchor ? floatingSpot(anchor) : null),
         display: 'flex',
         alignItems: 'baseline',
         gap: 8,
@@ -113,12 +150,21 @@ export function FirstUseCaption({ id, name, floating = false }: FirstUseCaptionP
   return (
     <>
       <span ref={anchorRef} aria-hidden style={{ position: 'absolute', top: '100%', right: 0, width: 0, height: 0 }} />
-      {anchor && typeof document !== 'undefined' ? createPortal(line, document.body) : null}
+      {anchor && overGround && typeof document !== 'undefined' ? createPortal(line, document.body) : null}
     </>
   );
 }
 
 const FLOATING_WIDTH_PX = 260;
+
+/** Gap between the anchor's lower edge and the floating line. */
+const FLOATING_GAP_PX = 4;
+
+/** The floating line never starts closer than this to the window's left edge. */
+const FLOATING_EDGE_PX = 8;
+
+/** How far down the ground probe reaches: about a two-line caption's height. */
+const FLOATING_PROBE_HEIGHT_PX = 44;
 
 /** How often a floating caption re-reads its anchor while it is on screen. */
 const FLOATING_REREAD_MS = 400;

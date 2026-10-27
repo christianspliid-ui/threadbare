@@ -2283,6 +2283,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     return (
       <div
         ref={containerRef}
+        // The ground a floating first-use caption may sit over (THR-2078).
+        data-first-use-caption-ground=""
         style={{
           position: 'relative',
           width:    '100%',
