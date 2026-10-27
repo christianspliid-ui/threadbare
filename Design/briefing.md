@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 02:57 local (01:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 03:57 local (02:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -48,20 +48,17 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **One forge per town, and one claim per place.** If a forge already stands and nobody holds it, the builder takes it. If someone holds it, the builder is paid for the work instead. A prospector holds the place's mine the same way, or stakes one if there is none. A held mine stays even when it is worked out.
   - **A scene never takes a holding away.** A failed stake gains nothing, but it never loses a claim the mortal already holds. *Veto:* "a failed stake should lose the claim they had".
   - **The mill lease stays the fellowship's.** The scene wins the lease for the millers' fellowship, and the mortal is paid a fee. So no one gets the mill yet. That row goes back on [the later-rows list](https://linear.app/threadbare/issue/THR-1954). *Veto:* "the mortal who wins the lease should hold the mill".
-- [A relic left lying in the world can now be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2031-take-up-a-lying-relic.md#decisions). Each can be vetoed on its own until Tuesday 03:42. *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-10-26b.md)*
-  - **A relic is taken up as a mortal's work, not in a scene.** A mortal makes "take up a relic left lying" their undertaking, and when it completes they hold the relic. *Veto:* "it should be a scene the god can watch".
-  - **The work is done from wherever the mortal stands,** like founding a town. The journey is the work; distance only ranks the targets. *Veto:* "a mortal must stand at the place to pick it up".
-  - **Seekers and wanderers want it.** It is the payoff of their treasure hunt. Only a relic that lies somewhere can be taken up.
 Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 ready, none being built.** [A road's encounters write to that road](https://linear.app/threadbare/issue/THR-2046) merged ([#2618](https://github.com/christianspliid-ui/threadbare/pull/2618)) and is live. The builder is idle on purpose: its last three runs each found all seven ready tickets still inside their veto windows. The first ([THR-2031](https://linear.app/threadbare/issue/THR-2031)) opens at 02:42 UTC, and the run after that should take it.
+**Healthy: 6 ready, 1 being built.** The builder took [a relic left lying can be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its) at 02:52 UTC, ten minutes after its veto window closed. The other six open in this order through Tuesday: [THR-2048](https://linear.app/threadbare/issue/THR-2048), [THR-2051](https://linear.app/threadbare/issue/THR-2051), [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), and the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC.
 
-- They open in this order through Tuesday: [THR-2031](https://linear.app/threadbare/issue/THR-2031), [THR-2048](https://linear.app/threadbare/issue/THR-2048), [THR-2051](https://linear.app/threadbare/issue/THR-2051), [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), and the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC.
+- **The design lane is writing the plan for what attending a mortal should cost** ([Attention is never spent](https://linear.app/threadbare/issue/THR-2062), plan [#2619](https://github.com/christianspliid-ui/threadbare/pull/2619), opened 02:55 UTC). Its calls will appear under *Decided for you* once its report lands.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No branch or local worktree exists for it, so nothing is at risk. The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest commit on main (b6b9533a). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 02:45) are healthy. No pull request is waiting to merge. Engine speed reads 155 ms per tick, 3% under the weekly median.
+All green. The live site serves the latest commit on main (b6b9533a). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 03:40) are healthy. No pull request is armed to merge; the one open is the plan above, minutes old. Engine speed reads 186 ms per tick, 17% over the weekly median of 160 — inside the 25% line, but worth a look if it climbs again.
+
