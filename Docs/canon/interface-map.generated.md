@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 104 |
-| **Total** | **334** |
+| 🔵 UNVERIFIED-OK | 105 |
+| **Total** | **335** |
 
 ## Contracts by producing subsystem
 
@@ -285,6 +285,7 @@ remediation ticket or the build fails.
 | `answered-prayer-pushes-dominion` | Answering a prayer widens the god's ground (THR-1935 S1). A successful player cast of a card flagged answers_prayer (Bless the Harvest, Open the Markets) on a praying town writes participated_in god → prayer and queues ANSWERED_PRAYER_DOMINION_PRESSURE 2 on pendingSpherePressures, split by bought points (source prayer_answered); on a hungry town off the god's ground it queues UNBIDDEN_AID_DOMINION_PRESSURE 1 (source unbidden_aid) and sets the cooldown. | state-field: `pendingSpherePressures`, `prayer_answered`, `unbidden_aid` | Spheres & Quintessence | 🟢 LIVE | — |
 | `blessed-holding-multiplies-yield` | Bless the Holding funds what a place holds (THR-1969, THR-1935 S3). Its bless_holding op writes the god's blessed edge (kind holding_yield, untilTick = cast + BLESS_HOLDING_DAYS days, mult BLESS_HOLDING_YIELD_MULT 1.5) on a place a faction controls or a mortal owns; a recast extends, never stacks; an unheld place is refused. While it lives the faction purse's town tax and place yield and holding income's freehold and tithe on that place pay ×1.5; the purse day sweeps it at untilTick. | function: `holdingBlessingMult`, `blessHolding`, `sweepExpiredHoldingBlessings` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `cast-influence-shifts-target-values` | A god's dream or compulsion changes what the mortal chooses (THR-1651). `divine.dream` and `divine.persuade` carry a `valueDriftRule` the `apply_influence` executor resolves against the caster's primary reach and the target's lean (`resolveCastValueDrift`), writing one signed `valueDrifts` entry on the target's `divineInfluences`. `buildValueOverlay` folds it into the agent re-score (`agentSelection`, `encounterScoring.resolveProfile`) and the motive receipt's divine term; the receipt phase re-resolves the same rule to name the pole. Before this, both verbs wrote an entry with no drift and changed nothing. | node-prop: `divineInfluences`, `valueDrifts`, `valueDriftRule`, `resolveCastValueDrift` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `compelled-work-answers-at-archive` | Compelled work always says how it ended (THR-2068). When the decision takes a paid compulsion, the created action carries `compelledByGod`; `buildChapterRecord` copies it onto the `ChapterRecord` as `compelled`, and the orchestrator's archive loop raises one `divine_steer_done_*` toast ("Your will is done. The Haggle: Morthane held.", in the chapter's own band word) via `buildCompulsionDoneEvents`. Before, a compelled chore ran as daily life and no line ever said how it ended. | node-prop: `compelledByGod` | Attention, Chronicle & Narrative | 🔵 UNVERIFIED-OK | — |
 | `essence-earned-attunes-god-spheres` | Drawing essence through a bought sphere grows the god in it (THR-1748, THR-1765). Each `DOMINION_ATTUNEMENT_MARKS` mark crossed by the run-long essence-earned counter pushes progress into the god's own score through the pressure path (source `attunement`), resolved by `phaseSpherePressure`; the god's power on the Dominion read follows, capped at 2.0. THR-1811's rungs read `getAttunementMarksCrossed`. | function: `ATTUNEMENT_SPHERE_PROGRESS`, `dominionPowerRaw` | Spheres & Quintessence | 🔵 UNVERIFIED-OK | — |
 | `essence-movement-explains-the-bar` | An essence row says why it moved (THR-1713). Every phase's pool diff is filed by cause (`income`, `upkeep`, `places`, …) at the same phase-merge seam as `essenceEarnedBySphere`, and every out-of-tick spend (a played hand, an authored choice, a cast, a boost or peek, a premonition whisper or compulsion, a delve-abort refund) files itself through `withEssenceSpend` / `recordEssenceMovement` in the same state update that writes the pool. `selectEssenceRows` reads the record into a real trend arrow and the row's hover ("Ebbing. Drawn by your threads' upkeep.") — words, never rates (Law 13). Before this the arrow was a hard-coded placeholder and nothing recorded a cause. | state-field: `essenceMovement` | Spheres & Quintessence | 🟢 LIVE | — |
 | `god-verb-land-shock` | Blight, Bless the Harvest, Sour Mine and Reveal Vein each append a landShocks record on the target settlement's best food or stone hex, fading over SHOCK_DAYS; their existing writes stand. The phase's land yields, the cast receipt's land line and the livelihood line read it. | node-prop: `appendLandShock`, `readLandShocks` | Mortal Economy & Prosperity | 🟢 LIVE | — |
@@ -1244,6 +1245,17 @@ exit
 - **Other hits:** `src/components/Game/debug/CompaniesTabContent.tsx`, `src/data/undertaking-objects.ts`, `src/engine/binding/remoteAnchor.ts`, `src/engine/groups/bandOpposition.ts`, `src/engine/groups/groupFormation.ts` +3 more
 - **Verdict:** Verified 2026-07-24: Company nodes carry no located_at edge; locked by src/engine/groups/__tests__/groupLifecycle.test.ts § "never attaches a located_at edge to the company node".
 
+### `compelled-work-answers-at-archive` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Compelled work always says how it ended (THR-2068). When the decision takes a paid compulsion, the created action carries `compelledByGod`; `buildChapterRecord` copies it onto the `ChapterRecord` as `compelled`, and the orchestrator's archive loop raises one `divine_steer_done_*` toast ("Your will is done. The Haggle: Morthane held.", in the chapter's own band word) via `buildCompulsionDoneEvents`. Before, a compelled chore ran as daily life and no line ever said how it ended.
+- **Producer → Consumer:** Essence & Divine Economy → Attention, Chronicle & Narrative
+- **UL terms:** *Agent*, *Encounter*
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/phaseAgentDecision.ts`
+- **Read sites:** `src/engine/chapterArchive.ts`
+- **Other hits:** `src/types/chapterRecord.ts`, `src/types/unifiedAction.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `compulsion-card-plants-agent-decision-bias` — 🔴 LEAKED
 
 - **Intent:** A god can steer one mortal without seizing them: the card plants an urge, and that mortal's own next decision leans toward it — you steered them, they still chose.
@@ -1357,10 +1369,10 @@ exit
 - **Intent:** Losing a fight reads differently from merely failing — a contested loss says so in the chronicle and the receipt.
 - **Producer → Consumer:** Companies & Group Travel → Encounters & Dilemmas
 - **UL terms:** *Company*
-- **Production hits:** 15 total — 2 write, 2 read, 11 unclassified
+- **Production hits:** 16 total — 2 write, 2 read, 12 unclassified
 - **Write sites:** `src/engine/groups/bandOpposition.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/components/Game/ChapterView.tsx`, `src/engine/playerReceipts.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/economy-shift-constants.ts`, `src/data/encounters/apotheosis-ascension.ts` +6 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/data/content-eval/compositionContract.ts`, `src/data/content-eval/encounterPackage.ts`, `src/data/economy-shift-constants.ts`, `src/data/encounters/apotheosis-ascension.ts` +7 more
 - **Verdict:** Verified 2026-07-25: contested_won/contested_lost shipped with TB-044 and had display strings in ChapterView, a playerReceipts severity mapping, and an isActionSuccess branch — with ZERO producers until this PR (grep at implementation time: the only non-declaration hits were the consumer-side switch arms). phaseUnifiedActionProgress now stamps the band on both sides of a resolved group contest, so the vocabulary the UI was already built to speak finally gets spoken. Locked by bandOpposition.test.ts § "gives the contested outcome band its first production producer".
 
 ### `control-effects-tend-god-turf` — 🔵 UNVERIFIED-OK
@@ -3192,10 +3204,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 465 total — 1 write, 1 read, 463 unclassified
+- **Production hits:** 467 total — 1 write, 1 read, 465 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +458 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +460 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3419,10 +3431,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Daily life*, *Chapter Ledger*
 - **Module:** `src/engine/attentionCadence.ts`
-- **Production hits:** 14 total — 1 write, 5 read, 8 unclassified
+- **Production hits:** 15 total — 1 write, 5 read, 9 unclassified
 - **Write sites:** `src/engine/chapterArchive.ts`
 - **Read sites:** `src/debug-bridge.ts`, `src/engine/encounterFilterPipeline.ts`, `src/engine/encounterVisibility.ts`, `src/engine/openingReveal.ts`, `src/engine/threadedChapters.ts`
-- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseAttention.ts`, `src/engine/restlessRoad.ts` +3 more
+- **Other hits:** `src/engine/attentionCadence.ts`, `src/engine/firstPath.ts`, `src/engine/phaseAgentDecision.ts`, `src/engine/phaseAttention.ts`, `src/engine/premonitionCompulsion.ts` +4 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `ruined-settlement-joins-delve-layer` — 🟢 LIVE

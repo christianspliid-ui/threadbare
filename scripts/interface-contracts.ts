@@ -2081,6 +2081,17 @@ export const CONTRACTS: readonly Contract[] = [
     },
   },
   {
+    id: 'compelled-work-answers-at-archive',
+    producerSystem: 'Essence & Divine Economy',
+    consumerSystem: NARRATIVE,
+    intent:
+      'Compelled work always says how it ended (THR-2068). When the decision takes a paid compulsion, the created action carries `compelledByGod`; `buildChapterRecord` copies it onto the `ChapterRecord` as `compelled`, and the orchestrator\'s archive loop raises one `divine_steer_done_*` toast ("Your will is done. The Haggle: Morthane held.", in the chapter\'s own band word) via `buildCompulsionDoneEvents`. Before, a compelled chore ran as daily life and no line ever said how it ended.',
+    ulTerms: ['Agent', 'Encounter'],
+    mechanism: { kind: 'node-prop', symbols: ['compelledByGod'] },
+    writeSites: ['src/engine/phaseAgentDecision.ts'],
+    readSites: ['src/engine/chapterArchive.ts'],
+  },
+  {
     id: 'player-action-receipts-queue',
     producerSystem: ENCOUNTERS,
     consumerSystem: 'Attention, Chronicle & Narrative',
