@@ -63,7 +63,10 @@ export function getAgentArc(
 
   for (const h of state.strategicState?.history ?? []) {
     if (h.actorId !== agentId) continue;
-    if (h.outcome === 'completed') {
+    // A completion whose every op failed (a relic someone else took first, no free
+    // ground, no room) did nothing, and the arc says so rather than "Finished" (THR-2031).
+    const didNothing = h.outcome === 'completed' && h.graphOps.length > 0 && h.graphOps.every(o => !o.endsWith(':ok'));
+    if (h.outcome === 'completed' && !didNothing) {
       entries.push({
         id: `hist_${h.templateId}_${h.tick}`,
         kind: 'undertaking_completed',
