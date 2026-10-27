@@ -143,6 +143,7 @@ export type TraceCategory =
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
+  | 'mandate_baseline_settled' // THR-2080
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
@@ -795,6 +796,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'encounter_scoring', 'road_hex_transition', 'agent_reroute',
   'return_resolution', 'ripple_consequence', 'control_effect',
   'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
+  'mandate_baseline_settled',
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
@@ -3069,6 +3071,16 @@ export interface MandateMilestoneProseTrace extends TraceBase {
   transition: string;
   /** False when no line was authored for this mandate and the fallback stood in. */
   authored: boolean;
+}
+
+/** Trace: a sphere-growth Mandate re-took its baseline from the settled world (THR-2080). */
+export interface MandateBaselineSettledTrace extends TraceBase {
+  category: 'mandate_baseline_settled';
+  mandateId: string;
+  oldPrimaryBaseline?: number;
+  newPrimaryBaseline: number;
+  oldSecondaryBaseline?: number;
+  newSecondaryBaseline: number;
 }
 
 /** Trace: control effect ticked (per-tick drain, income, threshold check) */
@@ -5511,6 +5523,7 @@ export type TraceEntry =
   | DoomCardTrace
   | MandateCheckpointTrace
   | MandateMilestoneProseTrace
+  | MandateBaselineSettledTrace
   | ControlEffectTickTrace
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace

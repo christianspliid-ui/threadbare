@@ -86,6 +86,15 @@ export const MANDATE_CHECKPOINT_THRESHOLDS = [0.40, 0.60, 0.80, 1.00] as const;
 export const MANDATE_COUNTER_OMEN_MARGIN = 0.02;
 
 /**
+ * Tick at which a sphere-growth Mandate re-takes its starting point (THR-2080).
+ * Init measures the baseline before tick 1, which mints ~70 sublocations whose
+ * sphere bags `phaseSphereAggregation` first sees on tick 2 — read as growth,
+ * that filled over half the Mandate with no god acting. No progress or checkpoint
+ * counts before this tick.
+ */
+export const MANDATE_BASELINE_SETTLE_TICK = 2;
+
+/**
  * Significance of the tick event a mandate stage advance emits (THR-1197).
  * Below completion (1.0) and failure (0.95) — the spine turning, not the spine ending.
  */

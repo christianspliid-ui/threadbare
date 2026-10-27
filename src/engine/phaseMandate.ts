@@ -21,6 +21,7 @@ import {
   MANDATE_COUNTER_OMEN_MARGIN,
   MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
   MANDATE_FAILURE_EVENT_SIGNIFICANCE,
+  MANDATE_BASELINE_SETTLE_TICK,
 } from '../data/game-config';
 import {
   resolveMilestoneProse,
@@ -193,23 +194,61 @@ function hydrateSphereGrowthDefinition(
 }
 
 function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
-  const definition = state.mandateDefinition;
-  const mandateState = state.mandateState;
+  const initialDefinition = state.mandateDefinition;
+  const initialMandateState = state.mandateState;
   const aggregate = state.worldSoul.aggregate;
 
   if (
-    !definition ||
-    !mandateState ||
-    definition.runtimeKind !== 'sphere_growth' ||
+    !initialDefinition ||
+    !initialMandateState ||
+    initialDefinition.runtimeKind !== 'sphere_growth' ||
     !aggregate ||
-    !definition.primarySphere ||
-    !definition.secondarySphere
+    !initialDefinition.primarySphere ||
+    !initialDefinition.secondarySphere
   ) {
     return {};
   }
 
-  const primaryCurrent = aggregate.totalBySphere[definition.primarySphere] ?? 0;
-  const secondaryCurrent = aggregate.totalBySphere[definition.secondarySphere] ?? 0;
+  const primaryCurrent = aggregate.totalBySphere[initialDefinition.primarySphere] ?? 0;
+  const secondaryCurrent = aggregate.totalBySphere[initialDefinition.secondarySphere] ?? 0;
+
+  // THR-2080 — the init baseline predates tick 1's sublocation mints, so the world
+  // settling read as Mandate growth. Nothing counts until the world has settled.
+  if (initialMandateState.baselineSettledTick == null && state.tick < MANDATE_BASELINE_SETTLE_TICK) {
+    return {
+      mandateState: {
+        ...initialMandateState,
+        progress: 0,
+        primaryCurrent,
+        secondaryCurrent,
+        primaryDelta: 0,
+        secondaryDelta: 0,
+      },
+    };
+  }
+
+  let definition = initialDefinition;
+  let mandateState = initialMandateState;
+  if (mandateState.baselineSettledTick == null) {
+    const oldPrimary = definition.primaryBaseline;
+    const oldSecondary = definition.secondaryBaseline;
+    definition = { ...definition, primaryBaseline: primaryCurrent, secondaryBaseline: secondaryCurrent };
+    mandateState = { ...mandateState, baselineSettledTick: state.tick };
+    emitTrace({
+      category: 'mandate_baseline_settled',
+      tick: state.tick,
+      agentId: state.ascendantId,
+      summary:
+        `Mandate "${definition.name}" takes its starting point from the settled world: ` +
+        `${definition.primarySphere} ${(oldPrimary ?? 0).toFixed(1)} → ${primaryCurrent.toFixed(1)}, ` +
+        `${definition.secondarySphere} ${(oldSecondary ?? 0).toFixed(1)} → ${secondaryCurrent.toFixed(1)}.`,
+      mandateId: definition.id,
+      oldPrimaryBaseline: oldPrimary,
+      newPrimaryBaseline: primaryCurrent,
+      oldSecondaryBaseline: oldSecondary,
+      newSecondaryBaseline: secondaryCurrent,
+    });
+  }
   const primaryDelta = computeSphereDelta(primaryCurrent, definition.primaryBaseline ?? 0);
   const secondaryDelta = computeSphereDelta(secondaryCurrent, definition.secondaryBaseline ?? 0);
   const primaryTargetDelta = definition.primaryTargetDelta ?? 0;
