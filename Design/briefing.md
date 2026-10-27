@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 05:58 local (04:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -58,13 +58,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 7 ready, 1 built and waiting to merge.** The other seven open in this order through Wednesday: [THR-2048](https://linear.app/threadbare/issue/THR-2048), [THR-2051](https://linear.app/threadbare/issue/THR-2051), [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
+**Healthy: 7 ready, all waiting out their veto windows.** The builder's last two runs correctly found nothing to take yet. They open in this order through Wednesday: [THR-2048](https://linear.app/threadbare/issue/THR-2048) at 05:45 UTC, [THR-2051](https://linear.app/threadbare/issue/THR-2051), [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
 
-- **[A relic left lying can be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its) is built and fully checked in [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621), but not yet set to merge,** and the ticket has no owner. Two builder runs overlapped on it; one stood down. A builder run is active now (since 03:42 UTC) and arming it is the builder's job.
+- **[A relic left lying can be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its) is merged and live** via [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621).
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree names it, so nothing is at risk. The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site is current: commits since b6b9533a only touched docs. Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 03:40 UTC) are healthy. One pull request is open and not armed ([#2621](https://github.com/christianspliid-ui/threadbare/pull/2621), above). Engine speed reads 169 ms per tick, 4% over the weekly median of 162.
+All green. The live site serves the latest main (7ff2130f). Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 04:40 UTC) are healthy. No pull requests are open. Engine speed reads 135 ms per tick, 19% under the weekly median of 167.
 
