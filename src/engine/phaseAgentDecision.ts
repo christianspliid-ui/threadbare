@@ -1431,7 +1431,11 @@ export function phaseAgentDecision(
           appointmentWorkBudget = budget;
           const journeyScore = scoreMovementCandidate(APPOINTMENT_JOURNEY_PULL, slack.travelTicks);
           const bestRemaining = decision.rankedCandidates[0]?.finalScore ?? -Infinity;
-          if (journeyScore > bestRemaining
+          // THR-2068 — a compelled scene waiting here is taken first (the arrival block
+          // below); the promise's journey sets out at the next decision instead.
+          const heldSteerId = actor.properties?.compelledJourneyTemplateId as string | undefined;
+          const compelledSceneHere = !!heldSteerId && boardArrivalGoal?.templateId === heldSteerId;
+          if (!compelledSceneHere && journeyScore > bestRemaining
             && queueAppointmentJourney(graph, agentId, actor, locationId, appointmentCtx, state.tiles, state.tick)) {
             appointmentJourneyQueued = true;
           }
