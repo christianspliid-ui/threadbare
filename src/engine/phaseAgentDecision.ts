@@ -97,7 +97,7 @@ import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
 import { recordBoardDecision, recordIdleDecision, stampEngagementCommit, demandedDifficultyOf } from './kpi/engagementKpi';
 import { computeCapability } from './domainCapability';
-import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG } from './premonitionCompulsion';
+import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG, resolveCompulsionEncounterName } from './premonitionCompulsion';
 import { applyWhisperPull, anchorHeldWhispers, whisperLapseMessage, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
 import { applyFirstPathPull, getFirstPathFor } from './firstPath';
 import { getDivineInfluences } from './interventionEffects';
@@ -921,7 +921,6 @@ export function phaseAgentDecision(
               ...movementState,
               targetEncounterId: undefined,
               targetSublocationId: undefined,
-              compelledGoalTemplateId: undefined,
               lastDecisionTick: state.tick,
             };
             graph.updateNode(agentId, {
@@ -1308,10 +1307,6 @@ export function phaseAgentDecision(
       // appended — otherwise the commitment could never reach it.
       let arrivalGoal: 'kept' | 'dropped' | undefined;
       let boardArrivalGoal: { templateId: string; locationId?: string } | undefined;
-      // THR-2068: a compelled journey's goal — the action it starts on arrival is compelled.
-      const compelledArrivalGoalId = journeyGoalId && arrivedState?.compelledGoalTemplateId === journeyGoalId
-        ? journeyGoalId
-        : undefined;
       if (journeyGoalId && arrivedState) {
         const goalId = journeyGoalId;
         // THR-1674: one instance only — the goal here, preferring the destination's.
@@ -1363,7 +1358,6 @@ export function phaseAgentDecision(
         // properties snapshot, which shares this movementState object.
         arrivedState.targetEncounterId = undefined;
         arrivedState.restlessRoad = undefined;
-        arrivedState.compelledGoalTemplateId = undefined;
       }
 
       // ── THR-1479: the regime — discount, drop, and the journey ─────────
@@ -1882,6 +1876,60 @@ export function phaseAgentDecision(
         }
       }
 
+      // ── THR-2068: a compelled journey answers at arrival ────────────────
+      // A compelled scene that needed travel was held on the mortal
+      // (`compelledJourneyTemplateId`). Moving mortals skip this decision, so this is
+      // the arrival: the scene is taken here — overriding the board as the
+      // compulsion did — or, if it is not here (gone, re-routed, never reached), the
+      // steer lapses aloud. Either way the paid steer is never silent.
+      const compelledJourneyId = actor.properties?.compelledJourneyTemplateId as string | undefined;
+      if (compelledJourneyId) {
+        try {
+          const here = !compulsionOverrode && boardArrivalGoal?.templateId === compelledJourneyId
+            ? decision.rankedCandidates.find(c => c.entry.templateId === compelledJourneyId
+              && c.entry.locationId === boardArrivalGoal?.locationId)
+            : undefined;
+          if (here) {
+            decision.selected = here;
+            if (!decision.topCandidates.includes(here)) decision.topCandidates = [...decision.topCandidates, here];
+            compulsionOverrode = true;
+            strategicWinner = null;
+            decisionFamily = 'encounter';
+          } else {
+            const encounterName = resolveCompulsionEncounterName(compelledJourneyId);
+            const message = compulsionOutcomeMessage(actor.name, encounterName, { kind: 'lapsed', reason: 'unavailable' });
+            if (message) {
+              emitTrace({
+                category: 'divine_premonition',
+                subtype: 'compulsion_outcome',
+                tick: state.tick,
+                agentId,
+                agentName: actor.name,
+                templateId: compelledJourneyId,
+                outcome: 'lapsed_unavailable',
+                heldTicks: 0,
+                summary: message,
+              });
+              newEvents.push({
+                id: `divine_steer_journey_${agentId}_${state.tick}`,
+                tick: state.tick,
+                type: 'divine_premonition',
+                message,
+                significance: 0.6,
+                isInterventionBeat: true,
+                actorId: agentId,
+                notification: { channel: 'toast' },
+              });
+            }
+          }
+        } catch {
+          // Fail-soft: a broken steer never blocks the decision.
+        }
+        for (const handle of [graph.getNode(agentId), actor]) {
+          if (handle) handle.properties.compelledJourneyTemplateId = undefined;
+        }
+      }
+
       const ft = filterResult.trace;
       const topScore = decision.topCandidates.length > 0
         ? decision.topCandidates[0].finalScore
@@ -2132,10 +2180,7 @@ export function phaseAgentDecision(
                 }),
                 effectiveTier: uaEffectiveTier,
                 // THR-2068 — the archive raises the done line for compelled work.
-                // A compelled journey's goal, started on arrival, counts too.
-                ...(compulsionOverrode || (compelledArrivalGoalId !== undefined && unifiedTemplate.id === compelledArrivalGoalId)
-                  ? { compelledByGod: true as const }
-                  : {}),
+                ...(compulsionOverrode ? { compelledByGod: true as const } : {}),
               };
               newUnifiedActions.push(action);
               // THR-1578: stamp what the mortal knew at commit — its proficiency on
@@ -2390,8 +2435,13 @@ export function phaseAgentDecision(
             // Attach encounter targeting fields
             movState.targetSublocationId = sel.entry.sublocationId ?? undefined;
             movState.targetEncounterId = sel.entry.templateId;
-            // THR-2068: a compelled scene that needs travel keeps its mark to arrival.
-            if (compulsionOverrode) movState.compelledGoalTemplateId = sel.entry.templateId;
+            // THR-2068: a compelled scene that needs travel is held on the mortal until
+            // her next full decision (the arrival), where it is taken or lapses aloud.
+            if (compulsionOverrode) {
+              for (const handle of [graph.getNode(agentId), actor]) {
+                if (handle) handle.properties.compelledJourneyTemplateId = sel.entry.templateId;
+              }
+            }
             // THR-1669: chosen while departing — `sel` came off the regime-filtered
             // board, so it already fits the slack. Mark the journey so the moving
             // path's promise re-route lets the outvote stand to the end of the walk.

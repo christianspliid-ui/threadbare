@@ -41,90 +41,116 @@ function isMidEncounter(state: GameState): boolean {
   return state.unifiedActions.some(a => a.actorId === FIRST_ID && !a.resolved);
 }
 
+/** Seed 42: pay a compulsion mid-chapter and tick until it resolves at the next decision. */
+function driveToTaken() {
+  resetEventCounter(); resetReputationTraitInit(); clearTraces(); enableTracing();
+  const runtime = createSimulationRuntime();
+  let { state } = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, 42, createBalancedCosmology(), 'medium');
+  devSeedTheFirst(state);
+  // Pay with an unlimited purse — the test is about the steer, not the economy.
+  for (const sphere of Object.keys(state.essencePool) as Array<keyof typeof state.essencePool>) {
+    state.essencePool[sphere] = 1000;
+  }
+
+  let lastBoard: Array<{ templateId: string; locationId: string }> = [];
+  let paid: { templateId: string; tick: number } | null = null;
+  let outcome: PremonitionTraceLike | null = null;
+
+  for (let t = 0; t < MAX_TICKS && !outcome; t++) {
+    state = unattended(runTick(state, [], runtime)); // THR-2052: no player answers
+    for (const tr of getTraces() as ReadonlyArray<ScoringTraceLike & PremonitionTraceLike>) {
+      if (tr.agentId !== FIRST_ID) continue;
+      if (tr.category === 'encounter_scoring' && (tr.topCandidates?.length ?? 0) > 1) {
+        lastBoard = tr.topCandidates!;
+      }
+      if (paid && tr.category === 'divine_premonition' && tr.outcome) outcome = tr;
+    }
+    clearTraces();
+
+    if (!paid && lastBoard.length > 1 && isMidEncounter(state)) {
+      // Steer toward the runner-up of the last board — something it did not pick.
+      const target = lastBoard[1];
+      const pick: CompulsionCandidate = {
+        templateId: target.templateId,
+        // THR-1852 — the real name, as the builder resolves it; never the id.
+        encounterName: resolveCompulsionEncounterName(target.templateId),
+        encounterHook: '',
+        encounterType: 'explore',
+        reach: 'iron',
+        sphere: 'force',
+        threatRating: 'moderate',
+        hexDistance: 0,
+        score: 0,
+        essenceCost: 3,
+        locationId: target.locationId,
+        locationName: '',
+      };
+      const result = applyCompulsionChoice(state, FIRST_ID, 'The First', pick);
+      expect(result.success).toBe(true);
+      paid = { templateId: target.templateId, tick: state.tick };
+    }
+
+    // While the chapter runs, the paid steer must still be held.
+    if (paid && !outcome && isMidEncounter(state)) {
+      expect(state.graph.getNode(FIRST_ID)?.properties.compulsionTargetTemplateId).toBe(paid.templateId);
+    }
+  }
+  return { state, runtime, paid: paid!, outcome: outcome! };
+}
+
 describe('THR-1781 — a compulsion paid mid-chapter holds until the next decision', () => {
   afterAll(() => { disableTracing(); clearTraces(); });
 
   it('chooses the compelled template at The First\'s next decision after the encounter ends', () => {
-    resetEventCounter(); resetReputationTraitInit(); clearTraces(); enableTracing();
-    const runtime = createSimulationRuntime();
-    let { state } = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, 42, createBalancedCosmology(), 'medium');
-    devSeedTheFirst(state);
-    // Pay with an unlimited purse — the test is about the steer, not the economy.
-    for (const sphere of Object.keys(state.essencePool) as Array<keyof typeof state.essencePool>) {
-      state.essencePool[sphere] = 1000;
-    }
-
-    let lastBoard: Array<{ templateId: string; locationId: string }> = [];
-    let paid: { templateId: string; tick: number } | null = null;
-    let outcome: PremonitionTraceLike | null = null;
-
-    for (let t = 0; t < MAX_TICKS && !outcome; t++) {
-      state = unattended(runTick(state, [], runtime)); // THR-2052: no player answers
-      for (const tr of getTraces() as ReadonlyArray<ScoringTraceLike & PremonitionTraceLike>) {
-        if (tr.agentId !== FIRST_ID) continue;
-        if (tr.category === 'encounter_scoring' && (tr.topCandidates?.length ?? 0) > 1) {
-          lastBoard = tr.topCandidates!;
-        }
-        if (paid && tr.category === 'divine_premonition' && tr.outcome) outcome = tr;
-      }
-      clearTraces();
-
-      if (!paid && lastBoard.length > 1 && isMidEncounter(state)) {
-        // Steer toward the runner-up of the last board — something it did not pick.
-        const target = lastBoard[1];
-        const pick: CompulsionCandidate = {
-          templateId: target.templateId,
-          // THR-1852 — the real name, as the builder resolves it; never the id.
-          encounterName: resolveCompulsionEncounterName(target.templateId),
-          encounterHook: '',
-          encounterType: 'explore',
-          reach: 'iron',
-          sphere: 'force',
-          threatRating: 'moderate',
-          hexDistance: 0,
-          score: 0,
-          essenceCost: 3,
-          locationId: target.locationId,
-          locationName: '',
-        };
-        const result = applyCompulsionChoice(state, FIRST_ID, 'The First', pick);
-        expect(result.success).toBe(true);
-        paid = { templateId: target.templateId, tick: state.tick };
-      }
-
-      // While the chapter runs, the paid steer must still be held.
-      if (paid && !outcome && isMidEncounter(state)) {
-        expect(state.graph.getNode(FIRST_ID)?.properties.compulsionTargetTemplateId).toBe(paid.templateId);
-      }
-    }
-
+    let { state, runtime, paid, outcome } = driveToTaken();
     expect(paid).not.toBeNull();
     expect(outcome).not.toBeNull();
     // The old window was three ticks; the chapter outlasted it.
-    expect(outcome!.tick - paid!.tick).toBeGreaterThan(3);
-    expect(outcome!.outcome).toBe('taken');
+    expect(outcome.tick - paid.tick).toBeGreaterThan(3);
+    expect(outcome.outcome).toBe('taken');
     const receipt = state.graph.getNode(FIRST_ID)?.properties.motiveReceipt as
       { templateId: string; decidedAtTick: number } | undefined;
-    expect(receipt?.decidedAtTick).toBe(outcome!.tick);
-    expect(receipt?.templateId).toBe(paid!.templateId);
+    expect(receipt?.decidedAtTick).toBe(outcome.tick);
+    expect(receipt?.templateId).toBe(paid.templateId);
     // The player hears it: an outcome event reached the tick log.
     expect(state.tickEvents.some(e => e.type === 'divine_premonition' && e.actorId === FIRST_ID)).toBe(true);
     // A compulsion offered at the decision that spends the steer never names the
     // encounter the steer just started — paying for it again could only lapse.
     const offeredAtSpend = (state.premonitionQueue ?? [])
-      .filter(p => p.type === 'compulsion' && p.agentId === FIRST_ID && p.tick === outcome!.tick);
+      .filter(p => p.type === 'compulsion' && p.agentId === FIRST_ID && p.tick === outcome.tick);
     for (const p of offeredAtSpend) {
-      expect((p.compulsionCandidates ?? []).map(c => c.templateId)).not.toContain(paid!.templateId);
+      expect((p.compulsionCandidates ?? []).map(c => c.templateId)).not.toContain(paid.templateId);
     }
 
     // THR-2068: the compelled scene's action carries the mark — started here, or
     // started on arrival when the scene needed travel (the journey keeps it).
     const compelledAction = (s: GameState) =>
-      s.unifiedActions.find(a => a.actorId === FIRST_ID && a.templateId === paid!.templateId && a.startTick >= outcome!.tick);
+      s.unifiedActions.find(a => a.actorId === FIRST_ID && a.templateId === paid.templateId && a.startTick >= outcome.tick);
     for (let t = 0; t < MAX_TICKS && !compelledAction(state); t++) {
       state = unattended(runTick(state, [], runtime));
       clearTraces();
     }
     expect(compelledAction(state)?.compelledByGod).toBe(true);
+  }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
+
+  it('THR-2068 — a compelled journey whose scene is gone on arrival lapses aloud', () => {
+    let { state, runtime, paid } = driveToTaken();
+    // The seed-42 target needs travel: the steer is held on the mortal for the journey.
+    expect(state.graph.getNode(FIRST_ID)?.properties.compelledJourneyTemplateId).toBe(paid.templateId);
+    // The scene vanishes mid-journey (GUARD 5's target_invalid shape): the goal is cleared.
+    const ms = state.graph.getNode(FIRST_ID)?.properties.movementState as { targetEncounterId?: string } | undefined;
+    expect(ms?.targetEncounterId).toBe(paid.templateId);
+    ms!.targetEncounterId = undefined;
+    let lapse: string | undefined;
+    for (let t = 0; t < MAX_TICKS && state.graph.getNode(FIRST_ID)?.properties.compelledJourneyTemplateId; t++) {
+      state = unattended(runTick(state, [], runtime));
+      lapse ??= state.tickEvents.find(e => e.id.startsWith('divine_steer_journey_') && e.actorId === FIRST_ID)?.message;
+      clearTraces();
+    }
+    expect(state.graph.getNode(FIRST_ID)?.properties.compelledJourneyTemplateId).toBeUndefined();
+    const firstName = state.graph.getNode(FIRST_ID)?.name;
+    expect(lapse).toBe(`Your will finds no purchase: ${resolveCompulsionEncounterName(paid.templateId)} is beyond ${firstName}'s reach now.`);
+    // No action of the paid scene carries the mark.
+    expect(state.unifiedActions.some(a => a.actorId === FIRST_ID && a.compelledByGod)).toBe(false);
   }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
 });

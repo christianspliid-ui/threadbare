@@ -268,8 +268,6 @@ export function tickMovement(
           targetSublocationId: state.targetSublocationId,
           targetEncounterId: state.targetEncounterId,
           ...(state.restlessRoad ? { restlessRoad: true } : {}),
-          // THR-2068: a compelled journey keeps its mark to arrival.
-          ...(state.compelledGoalTemplateId ? { compelledGoalTemplateId: state.compelledGoalTemplateId } : {}),
           motivationPull: state.motivationPull,
           roadSegments: state.roadSegments,
           currentHexPosition: { col: nextHex.col, row: nextHex.row },
@@ -346,8 +344,6 @@ export function tickMovement(
       targetSublocationId: state.targetSublocationId,
       targetEncounterId: state.targetEncounterId,
       ...(state.restlessRoad ? { restlessRoad: true } : {}),
-      // THR-2068: a compelled journey keeps its mark to arrival.
-      ...(state.compelledGoalTemplateId ? { compelledGoalTemplateId: state.compelledGoalTemplateId } : {}),
       motivationPull: state.motivationPull,
       roadSegments: state.roadSegments,
     };
