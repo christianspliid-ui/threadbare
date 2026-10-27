@@ -1,7 +1,7 @@
 ---
 name: design-lane
 description: The unattended design lane (tb-design-lane, four runs a day). Progresses agreed design work without Christian present — decides a wayfinder map's frontier ticket under the 2026-09-11 delegation with outputs attached and a veto invited, closes a cleared map with its carve-up, or authors, gates and hands off one plan doc for agreed-but-undesigned work. Never charts a map, never picks direction, never touches a ticket reserved for Christian. Christian's ruling 2026-09-25 (THR-1611).
-last_validated_against: 2026-10-24
+last_validated_against: 2026-10-27
 ---
 
 # Design lane
@@ -84,7 +84,7 @@ Everything else is decided **as made, with an invitation to veto**, never as a b
 |---|---|---|
 | `DESIGN_LANE_CRON` | `14 2,8,14,20 * * *` | Four runs a day, clear of the pickup (`:00`, jitter to ~`:11`) and orchestrator (`:25`) |
 | `DESIGN_LANE_SHELF_FLOOR` | `4` | Non-`Deferral` items in `Ready for Dev` below which a plan doc outranks a map decision |
-| `DESIGN_LANE_VETO_WINDOW_HOURS` | `24` | A plan doc may not **start** while any decision it draws on was made by this lane less than this long ago |
+| `DESIGN_LANE_VETO_WINDOW_HOURS` | `12` | A plan doc may not **start** while any decision it draws on was made by this lane less than this long ago (cut from 24 by Christian in chat, 2026-10-27: a shelf made only of lane work sat fully held for hours) |
 | `DESIGN_LANE_MAX_CHECKPOINTS` | `3` | Checkpoint comments on one ticket without a finish before the lane recommends a split and releases it |
 | `DESIGN_LANE_REPORT_DIR` | `Docs/ops/` | `design-lane-YYYY-MM-DD[letter].md`, published to the `ops` branch, one file per run |
 
@@ -128,7 +128,7 @@ Build the candidate set, then take the first that applies:
 **Plan-doc candidates**, in this order: tickets named in a closed map's carve-up; items the orchestrator's T2
 staged into `In Design` (unassigned, design-request comment); `Todo` tickets whose Done-when is a plan doc in
 `Docs/plans/`. Skip a candidate whose inputs include a lane-made decision younger than
-`DESIGN_LANE_VETO_WINDOW_HOURS` — Christian gets a day to veto before anything is built on it.
+`DESIGN_LANE_VETO_WINDOW_HOURS` — Christian gets that long to veto before anything is built on it.
 
 ### Step 3a — Decide a map's frontier ticket
 
