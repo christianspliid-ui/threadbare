@@ -98,7 +98,7 @@ import { createUnifiedAction } from './unifiedActionLifecycle';
 import { recordBoardDecision, recordIdleDecision, stampEngagementCommit, demandedDifficultyOf } from './kpi/engagementKpi';
 import { computeCapability } from './domainCapability';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG, resolveCompulsionEncounterName } from './premonitionCompulsion';
-import { applyWhisperPull, anchorHeldWhispers, whisperLapseMessage, resolveCompulsion, compulsionOutcomeMessage, compulsionJourneyDivertedMessage } from './premonitionSteer';
+import { applyWhisperPull, anchorHeldWhispers, whisperLapseMessage, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
 import { applyFirstPathPull, getFirstPathFor } from './firstPath';
 import { getDivineInfluences } from './interventionEffects';
 import type { CompulsionOutcomeTrace } from '../types/trace';
@@ -1923,14 +1923,7 @@ export function phaseAgentDecision(
             });
           } else {
             const encounterName = resolveCompulsionEncounterName(compelledJourneyId);
-            // Diverted, not gone: the scene still stands on the ranked list, so the
-            // road was re-routed (a company's heading, a movement re-check) and the
-            // line says so — "beyond reach" would be false.
-            const diverted = !compulsionOverrode
-              && decision.rankedCandidates.some(c => c.entry.templateId === compelledJourneyId);
-            const message = diverted
-              ? compulsionJourneyDivertedMessage(actor.name, encounterName)
-              : compulsionOutcomeMessage(actor.name, encounterName, { kind: 'lapsed', reason: 'unavailable' });
+            const message = compulsionOutcomeMessage(actor.name, encounterName, { kind: 'lapsed', reason: 'unavailable' });
             if (message) {
               emitTrace({
                 category: 'divine_premonition',

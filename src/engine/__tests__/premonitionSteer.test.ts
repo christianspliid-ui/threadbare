@@ -12,7 +12,6 @@ import {
   applyWhisperPull,
   resolveCompulsion,
   compulsionOutcomeMessage,
-  compulsionJourneyDivertedMessage,
   whisperMatchesEntry,
   anchorHeldWhispers,
   isWhisperHeld,
@@ -179,11 +178,6 @@ describe('held compulsion (THR-1781)', () => {
     expect(compulsionOutcomeMessage('Kael', 'Duel', gone)).toMatch(/Kael/);
     expect(compulsionOutcomeMessage('Kael', 'Duel', stale)).toMatch(/Duel/);
     expect(compulsionOutcomeMessage('Kael', 'Duel', { kind: 'none' })).toBeNull();
-    // THR-2068: a diverted journey never claims the scene is beyond reach.
-    const diverted = compulsionJourneyDivertedMessage('Kael', 'Duel');
-    expect(diverted).toMatch(/Kael/);
-    expect(diverted).toMatch(/Duel/);
-    expect(diverted).not.toMatch(/beyond/);
   });
 
   it('prefers the paid instance when the template sits at two places', () => {
