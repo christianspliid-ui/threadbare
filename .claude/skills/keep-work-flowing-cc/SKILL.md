@@ -1,7 +1,7 @@
 ---
 name: keep-work-flowing-cc
 description: Hourly headless Claude Code PM brief — reads Christian's Discord replies, scans the Linear queue, runs the health probes, and rewrites Design/briefing.md + Design/user-actions.md on the ops branch. The briefing leads with ONE ask. Simplified 2026-08-10 on Christian's direction (THR-1077, THR-954); rule rationale lives in this file's git history and the tickets it names.
-last_validated_against: 2026-10-14
+last_validated_against: 2026-10-27
 ---
 
 # Keep Work Flowing (CC)
@@ -75,7 +75,7 @@ Standing declines: nightly-shaped **and weekend-shaped** `recovered` gaps in lan
 
 **Sibling fold:** newest `orchestrator-*` / `backlog-grooming-*` / `weekly-hygiene-*` / `design-lane-*` / `cold-playtest-round-*` / `warm-playtest-round-*` report **per producing task** from `origin/ops` (`git ls-tree -r --name-only origin/ops -- Docs/ops/`; the working-tree copies are a frozen pre-cutover archive), ≤36 h old. Fold each `## Needs Christian` section in **verbatim with attribution** (`— from daily-backlog-grooming`), dedupe against your own items, skip empty states. A gap in a sibling's reports is not a fault — no-op runs write no file.
 
-**Veto fold (THR-1611).** `design-lane-*` reports also carry `## Decided for you` — decisions the unattended design lane made under process.md rule 4. Collect those lines from **every** design-lane report ≤ `DESIGN_LANE_VETO_WINDOW_HOURS` (24 h) old (not only the newest) into the briefing's `## Decided for you` section, verbatim with their links. **They are not asks:** they never enter the lead, never count in *Also waiting*, never get an ask key, and never ring the Discord doorbell (step 7). They exist so a veto is one chat message away — a decision older than the window has had its day and drops off.
+**Veto fold (THR-1611).** `design-lane-*` reports also carry `## Decided for you` — decisions the unattended design lane made under process.md rule 4. Collect those lines from **every** design-lane report ≤ `DESIGN_LANE_VETO_WINDOW_HOURS` (12 h) old (not only the newest) into the briefing's `## Decided for you` section, verbatim with their links. **They are not asks:** they never enter the lead, never count in *Also waiting*, never get an ask key, and never ring the Discord doorbell (step 7). They exist so a veto is one chat message away — a decision older than the window has had its chance and drops off.
 
 ### 3b. Incident tickets: a red main or a stalled builder (Christian, 2026-10-14)
 
