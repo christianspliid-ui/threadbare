@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-27 03:57 local (02:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-27 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-27: the plan for what attending a mortal costs is merged** ([THR-2062](https://linear.app/threadbare/issue/THR-2062)), via [#2620](https://github.com/christianspliid-ui/threadbare/pull/2620). Its five calls sit in the briefing's *Decided for you* until Wednesday 03:01 UTC.
 - **2026-10-26: readouts now say what they show, and the fix is live** ([THR-2061](https://linear.app/threadbare/issue/THR-2061)). Merged via [#2616](https://github.com/christianspliid-ui/threadbare/pull/2616). Both halves of "new things arrive one at a time" are now done.
 - **2026-10-26: new things now arrive one at a time (first half), and the fix is live** ([THR-2060](https://linear.app/threadbare/issue/THR-2060)). Merged via [#2614](https://github.com/christianspliid-ui/threadbare/pull/2614).
 - **2026-10-26: a faction's commission now pays the member who takes it up, and an untaken one goes back to the purse; the fix is live** ([THR-2042](https://linear.app/threadbare/issue/THR-2042)). Merged via [#2613](https://github.com/christianspliid-ui/threadbare/pull/2613).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-26: three more fixes are live.** [A follow-up scene waits for its place](https://linear.app/threadbare/issue/THR-1929) ([#2605](https://github.com/christianspliid-ui/threadbare/pull/2605)), [a mortal's trade steers what they choose](https://linear.app/threadbare/issue/THR-2067) ([#2606](https://github.com/christianspliid-ui/threadbare/pull/2606)) and [tavern follow-ups can happen](https://linear.app/threadbare/issue/THR-2039) ([#2607](https://github.com/christianspliid-ui/threadbare/pull/2607)).
 - **2026-10-26: six small round-5 faults are fixed, and the fix is live** ([THR-2057](https://linear.app/threadbare/issue/THR-2057)). Merged via [#2604](https://github.com/christianspliid-ui/threadbare/pull/2604).
 - **2026-10-26: Read the Threads now shows the mortal’s real name and how a missed chapter ended, and the fix is live** ([THR-2055](https://linear.app/threadbare/issue/THR-2055)). Merged via [#2601](https://github.com/christianspliid-ui/threadbare/pull/2601).
-- **2026-10-26: the plan for making the chosen path steer her chapters is merged** ([THR-2059](https://linear.app/threadbare/issue/THR-2059)), via [#2603](https://github.com/christianspliid-ui/threadbare/pull/2603). Its build ticket is [THR-2068](https://linear.app/threadbare/issue/THR-2068); its four calls sit in the briefing’s *Decided for you* until Tuesday 14:30 UTC.
 
 ---
 

@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 03:57 local (02:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 04:58 local (03:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -18,6 +18,12 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Attention is never spent](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so): five calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2062-attention-has-a-price.md#decisions). Each can be vetoed on its own until Wednesday 28 Oct 03:01 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27a.md)*
+  - **Attention stays, and it becomes the price of looking in on a mortal who lives on without you.** Answering "the thread pulls" on such a mortal lets you see their chapter, and that costs Attention. *Veto:* "retire Attention".
+  - **A mortal who asks you never costs Attention.** The First's chapters already stop the world for free. Until now she still raised pulls that charged for them. *Veto:* "The First's chapters should cost Attention too".
+  - **News of a mortal's home is free, and comes once.** When their town runs short of, or has spare, grain, fish, grazing land or fresh water, you hear it once, and answering costs nothing. Today it repeats every few hours and charges each time. These pulls were two thirds of all pulls. *Veto:* "home news should cost Attention".
+  - **No chapter is charged for stopping the world.** *Veto:* "every chapter should cost Attention".
+  - **The Attention gauge comes back once you have a mortal on *Lives on*.** With only The First it stays hidden, because nothing could make it move. It speaks in words (Busy, Strained), never numbers. *Veto:* "always show the gauge".
 - [A town's economy never reaches the live board](https://linear.app/threadbare/issue/THR-2071/a-towns-economy-never-reaches-the-live-board-the-boombust-term-thr-725): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2071-board-reads-the-place.md#decisions-this-plan-builds-on). Each can be vetoed on its own until Tuesday 23:45 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26g.md)*
   - **A mortal's own choice now feels where they stand and who they are.** A booming or ruined town, a haunted or lawless place, their reputation, their guild, the next step of a story they are in, and what they know all lean the scene they pick. Until now these only decided which five scenes were offered, and the mortal then chose as if they were not there. *Veto:* "a place should only shape what is offered, not what is chosen".
   - **One lean for all of it, at the strength the scene scoring already gives it,** never more than double and never less than half. *Veto:* "the lean should be gentler" or "each system should have its own dial".
@@ -52,13 +58,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready, 1 being built.** The builder took [a relic left lying can be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its) at 02:52 UTC, ten minutes after its veto window closed. The other six open in this order through Tuesday: [THR-2048](https://linear.app/threadbare/issue/THR-2048), [THR-2051](https://linear.app/threadbare/issue/THR-2051), [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), and the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC.
+**Healthy: 7 ready, 1 built and waiting to merge.** The other seven open in this order through Wednesday: [THR-2048](https://linear.app/threadbare/issue/THR-2048), [THR-2051](https://linear.app/threadbare/issue/THR-2051), [THR-2068](https://linear.app/threadbare/issue/THR-2068), salt ([THR-2069](https://linear.app/threadbare/issue/THR-2069)), the bounty duel ([THR-2072](https://linear.app/threadbare/issue/THR-2072)), the board reads the place ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:45 UTC, and attention has a price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) on Wednesday 03:01 UTC.
 
-- **The design lane is writing the plan for what attending a mortal should cost** ([Attention is never spent](https://linear.app/threadbare/issue/THR-2062), plan [#2619](https://github.com/christianspliid-ui/threadbare/pull/2619), opened 02:55 UTC). Its calls will appear under *Decided for you* once its report lands.
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No branch or local worktree exists for it, so nothing is at risk. The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
+- **[A relic left lying can be taken up](https://linear.app/threadbare/issue/THR-2031/nothing-can-take-up-an-unclaimed-artifact-a-seeded-relic-lies-at-its) is built and fully checked in [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621), but not yet set to merge,** and the ticket has no owner. Two builder runs overlapped on it; one stood down. A builder run is active now (since 03:42 UTC) and arming it is the builder's job.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree names it, so nothing is at risk. The [weekly review](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/weekly-review-2026-10-25.md) agrees that agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest commit on main (b6b9533a). Main's CI, the three scheduled background jobs, the scheduled lanes and the worktree reaper (last run 03:40) are healthy. No pull request is armed to merge; the one open is the plan above, minutes old. Engine speed reads 186 ms per tick, 17% over the weekly median of 160 — inside the 25% line, but worth a look if it climbs again.
+All green. The live site is current: commits since b6b9533a only touched docs. Main's CI, the three scheduled background jobs, every scheduled lane and the worktree reaper (last run 03:40 UTC) are healthy. One pull request is open and not armed ([#2621](https://github.com/christianspliid-ui/threadbare/pull/2621), above). Engine speed reads 169 ms per tick, 4% over the weekly median of 162.
 
