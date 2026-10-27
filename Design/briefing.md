@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 13:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 14:56 local (13:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -40,12 +40,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 6 ready.** Since the last brief, [the seeded world ending after 41 ticks](https://linear.app/threadbare/issue/THR-2080) is fixed and live ([#2632](https://github.com/christianspliid-ui/threadbare/pull/2632)): the Mandate now takes its starting point once the world has settled. The builder's last two runs (12:32 and 12:52 UTC) stood down by design: the five design tickets are all held behind their veto windows, the earliest ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opening 18:03 UTC. The new red-main fix ([THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to)) has no veto window, so the next builder run can take it.
+**Healthy: 5 ready.** Since the last brief, the builder fixed the red heavy tests ([THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to), merged via [#2633](https://github.com/christianspliid-ui/threadbare/pull/2633)) and the fix is live. Its next two runs (13:22 and 13:52 UTC) stood down by design: the five design tickets are all held behind their veto windows, the earliest ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opening 18:03 UTC.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). No pushed branch or local worktree holds work for it. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Heavy simulation tests red on main since 11:21 UTC** (two runs, one failing test: an army whose commander dies is no longer offered to a faction-mate); ticket [THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to) filed for the builder.
-- Everything else is green: the live site serves the latest main (998b05f0), main's required CI, the scheduled lanes and the worktree reaper (last run 12:40 UTC) are healthy, no PRs are waiting to merge, and the engine runs at 138 ms/tick, 21% under the 7-day median.
+- **Heavy simulation tests still read red on main (since 11:21 UTC), but the fix has merged.** [THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to) shipped via [#2633](https://github.com/christianspliid-ui/threadbare/pull/2633), and the heavy run on that merge ([run 40511962211](https://github.com/christianspliid-ui/threadbare/actions/runs/40511962211)) is still going. No new ticket while it runs; if it ends red, next hour's brief files one.
+- Everything else is green: the live site serves the latest main (c5e5a3f7), main's required CI, the scheduled lanes and the worktree reaper (last run 13:40 UTC) are healthy, no PRs are waiting to merge, and the engine runs at 143 ms/tick, 18% under the 7-day median.

@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-27 13:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-27 14:56 local (13:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-27: the red heavy tests (an army whose commander dies was no longer offered to a faction-mate) are fixed, and the fix is live** ([THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to)). Merged via [#2633](https://github.com/christianspliid-ui/threadbare/pull/2633).
 - **2026-10-27: the seeded world no longer ends after 41 ticks, and the fix is live** ([THR-2080](https://linear.app/threadbare/issue/THR-2080)). Merged via [#2632](https://github.com/christianspliid-ui/threadbare/pull/2632).
 - **2026-10-27: The First's page no longer shows an empty portrait box, and the fix is live** ([THR-2079](https://linear.app/threadbare/issue/THR-2079)). Merged via [#2630](https://github.com/christianspliid-ui/threadbare/pull/2630).
 - **2026-10-27: the Doom and Omen hints no longer float over the Inspector, and the fix is live** ([THR-2078](https://linear.app/threadbare/issue/THR-2078)). Merged via [#2629](https://github.com/christianspliid-ui/threadbare/pull/2629).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-27: a place held after success (the forge a mortal builds) is live** ([THR-2048](https://linear.app/threadbare/issue/THR-2048)). Merged via [#2622](https://github.com/christianspliid-ui/threadbare/pull/2622).
 - **2026-10-27: a relic left lying can now be taken up, and the fix is live** ([THR-2031](https://linear.app/threadbare/issue/THR-2031)). Merged via [#2621](https://github.com/christianspliid-ui/threadbare/pull/2621).
 - **2026-10-27: the plan for what attending a mortal costs is merged** ([THR-2062](https://linear.app/threadbare/issue/THR-2062)), via [#2620](https://github.com/christianspliid-ui/threadbare/pull/2620). Its five calls sit in the briefing's *Decided for you* until Wednesday 03:01 UTC.
-- **2026-10-26: readouts now say what they show, and the fix is live** ([THR-2061](https://linear.app/threadbare/issue/THR-2061)). Merged via [#2616](https://github.com/christianspliid-ui/threadbare/pull/2616). Both halves of "new things arrive one at a time" are now done.
 
 ---
 
