@@ -76,6 +76,8 @@ describe('remembered objective runtime', () => {
       checkpointResults: [],
       counterOmensEarned: 0,
       doomSeverityPenalties: 0,
+      // THR-2080 — a world past its first ticks; the baseline above is the settled one.
+      baselineSettledTick: 2,
     });
 
     const state = {
@@ -122,6 +124,8 @@ describe('remembered objective runtime', () => {
       checkpointResults: [],
       counterOmensEarned: 0,
       doomSeverityPenalties: 0,
+      // THR-2080 — a world past its first ticks; the baseline above is the settled one.
+      baselineSettledTick: 2,
     });
 
     const state = {

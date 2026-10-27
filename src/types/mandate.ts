@@ -126,4 +126,9 @@ export interface MandateState {
   /** Accumulated rewards and penalties handed to the doom clock. */
   counterOmensEarned?: number;
   doomSeverityPenalties?: number;
+  /**
+   * Tick the sphere-growth baseline was re-taken from the settled world (THR-2080).
+   * Unset until then; progress and checkpoints do not count before it.
+   */
+  baselineSettledTick?: number;
 }

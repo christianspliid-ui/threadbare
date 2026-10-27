@@ -2913,7 +2913,9 @@ export function phaseInfluenceTierPromotion(
 export function phaseDoomExpiry(state: GameState): Partial<GameState> {
   // THR-1381 E3 — finishing the Mandate ends the age (rulebook §8, Law 32). Checked
   // before doom, so a run where both are true ends in triumph. No floor: Law 31
-  // limits doom, and the Mandate cannot complete before its own stages anyway.
+  // limits doom. Nothing gates completion behind the stages (the evaluator derives
+  // the stage *from* completion) — what keeps it from ending a fresh world is the
+  // settled baseline in phaseMandate (THR-2080).
   // The completion line is already in the Chronicle (phaseMandate's alert).
   if (state.mandateState?.completed && state.phase === 'playing') {
     const mandateName = state.mandateDefinition?.name?.trim() || MANDATE_FALLBACK_NAME;
