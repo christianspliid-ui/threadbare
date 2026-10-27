@@ -6,7 +6,7 @@ description: >
   "UI", "frontend", "panel", "layout", "accessibility", "styleguide", "CSS",
   "responsive", "interaction", or when the task involves visual presentation.
   Also load when designing the **UI pillar** of any feature.
-last_validated_against: 2026-10-25
+last_validated_against: 2026-10-27
 validated_doctrine: ui-laws@1
 ---
 
@@ -83,31 +83,33 @@ Ground truth: `src/index.css` `:root` block. Deep dive: `Docs/design-system/toke
 
 Full decision tree: `Docs/design-system/component-selection.md`. Here are the most common decisions:
 
-### Show entity details
+### Show a subject (any person, place, faction, item, card…)
 
-| Need | Component | Trigger |
-|------|-----------|---------|
-| Quick agent summary | `AgentInfoCard` | Inline embed |
-| Agent detail with traits/activity | `AgentDetailPanel` | Click agent |
-| Full agent deep-dive (6 tabs) | `AgentProfileModal` | Button from detail panel |
-| Location contents | `HexDetailView` | Click hex |
-| Faction/army/artifact sheet | `FactionSheet` / `ArmySheet` / `ArtifactSheet` | Click entity |
-| Inline entity reference | `IdentityChip` | Always visible |
+There is **one detail surface, the Inspector** (`Game/inspector/InspectorHost.tsx` + `InspectorPage`, THR-1876). Never build a per-kind sheet, panel or profile modal — the old ones (`AgentProfileModal`, `AgentDetailPanel`, `HexDetailView`, `FactionSheet`, `ArmySheet`, `ArtifactSheet`, the Action Drawer) were deleted in THR-1492 and THR-1912.
+
+| Need | How |
+|------|-----|
+| Open any world object or content reference | `useRefRouterContext()?.open(ref)` — `src/data/surface-registry.ts` decides the surface by kind (Law 21) |
+| A subject's page | a row in the page-layout table (`DETAIL_PAGE_REGISTRY`), never a new panel |
+| Name a subject inline | `EntityLink` (hovers into a `HoverCard`), or `Chip role="identity"` |
+| A live encounter | plays on the **Stage** (`Game/stage/Stage.tsx`, `StageHost`) |
 
 ### Show a list
 
 | Need | Component |
 |------|-----------|
 | Interactive row with title/subtitle | `ListRow` (shared primitive) — compound: Title, Subtitle, Leading |
-| Narrative threads | `ThreadsPanel` |
-| Agents in retinue | `RetinuePanel` |
+| Grouped, collapsible list with counts | `Section` + `ListRow` (Law 36) |
+| Narrative threads | `ThreadsPanel` (Ledger rail) |
 
 ### Show a card or panel
 
 | Need | Component |
 |------|-----------|
 | Generic content wrapper | `Card` (shared primitive) — Header, Body, Footer. Variants: surface, raised, glass |
-| Entity card for sidebar | `EntityCard` — structured blocks: member_list, keyword_cloud, trait_grid, etc. |
+| A titled region of a rail or page | `Panel` |
+| A small pill: names a thing, says how it is, counts what waits, tags a kind | `Chip` (roles `identity` / `state` / `count` / `keyword`, THR-1885) — never a local pill |
+| An action card face | `CardFace` |
 | Rarity-accented wrapper | `RarityBorderBox` — wraps any content with left-border accent by tier |
 
 ### Show a modal
@@ -120,82 +122,66 @@ Full decision tree: `Docs/design-system/component-selection.md`. Here are the mo
 
 | Need | Component |
 |------|-----------|
-| Transient alert | `AlertBar` |
-| Event result popup | `EventPopup` (toast-style) |
-| Progress toward goal | `ProgressBar` / `StepDots` |
+| A notification the player can follow | `ToastStack` — every toast opens a page in the Inspector (THR-1911); bursts coalesce (Law 49) |
+| A decision waiting for the player | the top bar's **Needs you** (`Game/frame/NeedsYou.tsx`) |
+| Event result popup | `EventPopup` — decides its own tier (ceremonial `RevealCard` vs compact) |
+| Progress toward goal | `ProgressBar` / `ProgressBand` / `StepDots` (see component-selection.md for which) |
 | Rarity tier label | `RarityBadge` |
 
 ---
 
 ## 4. Layout Zones — "Where does new UI go?"
 
-Full reference: `Docs/design-system/layout-zones.md`. The game fills one viewport at 2560×1440 (primary) and 1920×1080 (floor) — nothing scrolls, nothing renders below the fold.
+Full reference: `Docs/design-system/layout-zones.md` (its diagram is current; a few of its table rows still name retired components — trust the code over a row). The game fills one viewport at 2560×1440 (primary) and 1920×1080 (floor) — nothing scrolls, nothing renders below the fold. The "map is the table" frame (THR-1823, carve-up THR-1875..1881):
 
 ```
-+------------------------------------------------------------------+
-|                        Top Bar (48px)                        z:30 |
-+------+-------------------------------------------+---------------+
-| God  |                                           |   Ledger      |
-| rail |           Hex Map Canvas                  |   rail        |
-| 320  |           (Three.js / flex-1)             |  (340px @FHD, |
-| @FHD |                                           |   420 @QHD)   |
-| 400  |                                           |               |
-+------+-------------------------------------------+---------------+
-|                   Action Drawer (~142px)                    z:40 |
-+------------------------------------------------------------------+
++------------------------------------------------------------------------------+
+|        Top bar (--topbar-height): clock · find (Ctrl K) · doom · Needs you · Read the Threads · Settings |
++------+-----------------------------------+---------------------+-------------+
+| God  |                                   |  Inspector          |   Ledger    |
+| rail:|        Hex map (Three.js)         |  (--inspector-w,    |   rail      |
+| god, |        lenses: Dominion / Threads |   only while a      |  Threads +  |
+| hand |        / Trouble / Trade          |   subject is open)  |  Chronicle  |
++------+-----------------------------------+---------------------+-------------+
+  The Stage (encounters) and the ceremonies open over the map region.
 ```
 
-### Z-index stacking (bottom to top)
+Frame components live in `src/components/Game/frame/` (`GodRail`, `HandSection`, `LedgerRail`, `LedgerStrip`, `NeedsYou`); what opens over the map is mounted by the hosts in `src/components/Game/hosts/` (`StageHost`, `DialogHost`, `CeremonyHost`). `GameView` lays them out; do not add new surfaces to it directly.
 
-| Z | Layer | Component(s) |
-|---|-------|-------------|
-| 0 | Map canvas | `HexMapV2` |
-| 10 | Map overlays | `HexTooltip`, `LocationLabelOverlay` |
-| 20 | HUD elements | `AvatarHUD` |
-| 30 | Top bar | Top bar container |
-| 40 | Action card hand | `ActionDrawer` |
-| 45 | Debug panel | `DebugPanel` |
-| 50 | Focused overlays | ActionDrawer backdrop, `EncounterVeil`, `WarmStartOverlay` (Settings, the court and the Codex are `Modal`s at 60 since THR-1880) |
-| 60 | Modals | `Modal` (shared) |
-| 70+ | Tooltips | `Tooltip` (70 + nesting depth) |
-| 9999 | Portaled menus | `Dropdown` |
+### Z-index stacking
+
+Never write a z-index number. Name a band from `src/components/shared/zBands.ts` (`Z_BAND`, Law 35): `mapOverlay` 10 · `hud` 20 · `topBar` 30 · `drawer` 40 (the Inspector at full size) · `debug` 45 · `focused` / `stage` 50 (ceremonies, the encounter Stage) · `modal` 60 · `modalAboveInterrupt` 65 · `tooltip` 70+ · `menu` 9999. Full-screen layers use the `Overlay` primitive with an `OverlayBand`.
 
 ### Insertion point quick reference
 
-| "I need to add..." | Place it | Z-index |
-|--------------------|----------|---------|
-| Top-bar indicator | Inside top bar flex row | Inherits 30 |
-| Sidebar section | Inside right sidebar scroll area | None needed |
-| Map overlay (HTML) | Sibling of HexTooltip | 10–20 |
-| Modal dialog | Use `Modal` primitive in GameView | 60 (auto) |
-| Toast/alert | `AlertBar` / `EventPopup` | Highest |
-| Full-screen overlay | Sibling of modals in GameView | 50–60 |
-| Bottom-area control | Inside/alongside ActionDrawer | 40–51 |
+| "I need to add..." | Place it |
+|--------------------|----------|
+| A fact about a subject | a row on its Inspector page (`DETAIL_PAGE_REGISTRY`), not a new panel |
+| Something always visible | justify it against Law 53 (the HUD is a budget) first; then the god rail, Ledger rail or top bar |
+| Map overlay (HTML) | a sibling of `HexTooltip` at `Z_BAND.mapOverlay` |
+| A dialog | `Modal` at a size tier, mounted through `DialogHost` |
+| A notification | a toast through `ToastStack`, or a Needs-you entry if the player must decide |
+| A full-screen moment | `Overlay` at `focused`, mounted through `CeremonyHost` |
 
 ---
 
 ## 5. Shared Primitives — "Use these, don't reinvent"
 
-All live in `src/components/shared/`. Full spec: `Docs/design-system/primitives.md`.
+All live in `src/components/shared/`; every one renders at `?view=styleguide` (Law 29, enforced by `styleguideSync.test.ts`). Full spec: `Docs/design-system/primitives.md`. The ones reached for most:
 
 | Primitive | Purpose |
 |-----------|---------|
-| `Button` | 4 variants (primary, secondary, ghost, danger), 3 sizes |
-| `IconButton` | Icon-only compact button. Has badge slot. |
-| `Card` | Content wrapper. Compound: Header, Body, Footer |
-| `Modal` | Dialog overlay. Escape/backdrop close. max-height `var(--modal-max-h)` = 85vh |
-| `Tooltip` | Smart-positioned hover info. Viewport-aware, nested hover support |
-| `Dropdown` | Portal-based menu. Escape/outside-click close |
-| `ListRow` | Interactive list item. Compound: Title, Subtitle, Leading |
-| `ProgressBar` | Horizontal 0–1 progress with glow |
-| `StepDots` | Discrete step indicators |
-| `EntityCard` | Structured entity display with flexible block sections |
-| `RarityBorderBox` | Left-border accent wrapper by rarity tier |
-| `RarityBadge` | Inline colored tag for rarity tier |
-| `SphereIcon` | Sphere symbol. SVG primary, PNG fallback |
-| `SectionHeading` | Heading with optional count and ornamental rules |
-| `AnimateMount` | Mount/unmount animation wrapper |
-| `GameErrorBoundary` | Error fallback — wrap any subtree that might crash |
+| `Button` / `IconButton` | every clickable control (raw `<button>` is UI debt) |
+| `Card` / `CardFace` / `Panel` / `Section` | content wrappers; `Section` groups and collapses lists |
+| `Modal` / `Overlay` | dialogs at a size tier / full-screen layers in a z-band |
+| `Tooltip` / `HoverCard` / `EntityLink` | hover summary, hover preview of a subject, inline subject link |
+| `Chip` / `DeltaCluster` / `OddsPips` | pills, signed changes, odds and price pips (Law 15) |
+| `EntityVisual` / `Medallion` / `Icon` / `SphereIcon` | the subject's image, framed emblems, the icon vocabularies (Law 9) |
+| `ListRow` / `Tabs` / `Dropdown` | list rows, tab strips, portal menus |
+| `ProgressBar` / `ProgressBand` / `StepDots` | progress forms |
+| `SheetColumns` | a subject beside its record in an L dialog |
+| `RevealCard` / `FirstUseCaption` | ceremonial reveal; the one first-contact hint (the "got it" line — at most `FIRST_USE_CAPTIONS_MAX_VISIBLE` at once) |
+| `AnimateMount` / `GameErrorBoundary` | mount animation; crash containment around any subtree |
 
 **Rule:** Do not write one-off button, card, modal, or list implementations. Use the primitives. If a primitive doesn't fit, extend it — don't bypass it.
 
@@ -220,8 +206,8 @@ Full reference: `Docs/design-system/interactions.md` and `Docs/ui-patterns.md`.
 
 ### Established patterns
 
-- **Eye-icon zoom:** Sidebar items with map-located entities get `&#x1F441;` eye button → `onZoomToLocation(locationId)`. Color: `--accent-gold-dim`, size: `--text-xs`. Always `e.stopPropagation()`.
-- **Progressive disclosure:** Tooltip (Tier 1 hover) → AgentInfoCard (Tier 2 click) → AgentProfileModal (Tier 3 deep dive).
+- **Show on map:** Listed map-located entities carry the zoom-to-map affordance (Law 22) → `onZoomToLocation(locationId)`. Always `e.stopPropagation()`.
+- **Progressive disclosure (Law 20):** `Tooltip` / `HoverCard` (Tier 1 hover) → the subject's Inspector page (Tier 2 click) → its wide sheet or Codex entry (Tier 3, `open(ref, 'sheet')`).
 - **Overlay mutual exclusion:** Only one panel-level overlay open at a time. Backdrop click closes. Escape key closes topmost.
 - **Hover via JS:** Dynamic base colors (sphere, tier) → use `onMouseEnter`/`onMouseLeave` style mutation, not CSS classes. Simple buttons with static colors may use Tailwind hover.
 
@@ -255,13 +241,14 @@ Full reference: `Docs/design-system/interactions.md` and `Docs/ui-patterns.md`.
 - [ ] **Responsive behavior?** — How does it adapt at 1920 / 2560 / 3440 (the three tier blocks)? Below 1920 must not break.
 - [ ] **Debug visibility?** — Can the debug panel inspect the relevant state/traces?
 - [ ] **HexMap presence?** — If spatial, does it need a map signifier, overlay, or label?
-- [ ] **Notification surface?** — Does the system produce events the player should see? AlertBar toast? EventPopup? Chronicle entry?
+- [ ] **Notification surface?** — Does the system produce events the player should see? A toast (`ToastStack`)? A Needs-you entry? `EventPopup`? A Chronicle entry?
+- [ ] **What does it cost the whole screen?** — Name the moment of the UX-review journey (`scripts/ux-review/journey.json`) where this appears and what it adds there. Something new on an always-visible surface must say what it displaces or why it earns the space (Law 53).
 
 ---
 
 ## 8. Anti-Patterns
 
-- **Don't use `EntityCard` for simple text** — use `Card` for generic content.
+- **Don't add a panel to show a fact about a subject** — add a row to its Inspector page (Law 58).
 - **Don't create a new modal component** when `Modal` with custom body works.
 - **Don't put HTML directly in the Three.js canvas** — use the HTML overlay layer.
 - **Don't nest `Card` inside `Card`** — use `SectionHeading` to divide.
@@ -288,7 +275,7 @@ Load these only when doing specialized work in that domain:
 | All CSS tokens | `Docs/design-system/tokens.md` |
 | Typography scale | `Docs/design-system/typography.md` |
 | Animation/motion | `Docs/design-system/motion.md` |
-| Full component inventory | `Docs/design-system/components.md` |
+| The weekly whole-screen review (journey, contact sheets) | `.claude/skills/ux-review/SKILL.md` |
 | Full interaction patterns | `Docs/design-system/interactions.md` |
 | React UI patterns | `Docs/ui-patterns.md` |
 | Primitives spec | `Docs/design-system/primitives.md` |
@@ -316,9 +303,10 @@ browser_console_messages()
 Pass `filename` as an **absolute** path inside the session worktree — a bare filename writes
 outside the repo and is unrecoverable (impediment #199c).
 
-For WebGL/Three.js content (HexMap), use Claude in Chrome instead — Playwright cannot see WebGL
-canvas content. Note that Claude-in-Chrome's `resize_window` is **inert**: it reports success
-while the viewport does not move (THR-796). Measure `innerWidth`/`innerHeight` in the same pass
-and report those actual numbers; never present such a capture as 1920×1080.
+The hex map is WebGL. Headless Chrome renders it with software WebGL: `scripts/ux-review/capture.mjs`
+does exactly that at a true 1920×1080 (flags `--use-angle=swiftshader --enable-unsafe-swiftshader`),
+so use the same launch when a script needs a real-render capture of the map. Claude-in-Chrome's
+`resize_window` is **inert** (THR-796) — if you capture there, measure `innerWidth`/`innerHeight`
+in the same pass and report those numbers; never present such a capture as 1920×1080.
 
 Check: nothing scrolls, nothing renders below the fold, all interaction states work, keyboard navigation functional, debug panel shows relevant traces.
