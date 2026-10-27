@@ -97,6 +97,8 @@ export type TraceCategory =
   | 'economy.founding.patron'
   // THR-1953 — money encounters change the world
   | 'economy.world.shift'
+  // THR-2048 — a scene leaves a mortal holding a place
+  | 'encounter.place.held'
   // THR-2042 — a faction's commission taken up or lapsed
   | 'economy.commission'
   // THR-1933 — war aims
@@ -760,6 +762,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'trade_route_volume_change', 'trade_route_dissolved', 'trade_route_upkeep',
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
   'economy.means.birth', 'economy.means.shift', 'economy.world.shift',
+  'encounter.place.held',
   'economy.founding.patron', 'economy.commission',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'faction.embargo.laid', 'faction.embargo.lifted',
@@ -2106,6 +2109,25 @@ export interface WorldEconomyShiftTrace extends TraceBase {
   amount: number;
   before: number;
   after: number;
+}
+
+/**
+ * THR-2048 — a `hold_place` outcome row ran: the actor raised a Place, took up an unheld
+ * one, already held it, or found it held by someone else (and was paid for the work).
+ */
+export interface EncounterPlaceHeldTrace extends TraceBase {
+  category: 'encounter.place.held';
+  sourceTemplateId: string | null;
+  band: string | null;
+  siteId: string;
+  placeTypeId: string;
+  result: 'raised' | 'taken_up' | 'already_theirs' | 'held_elsewhere';
+  /** The Place held (or found held); null when a raise failed. */
+  placeId: string | null;
+  /** `held_elsewhere` only: who holds it. */
+  heldBy?: string;
+  /** `held_elsewhere` only: the Means actually paid for the work. */
+  meansPaid?: number;
 }
 
 /**
@@ -5413,6 +5435,7 @@ export type TraceEntry =
   | MeansShiftTrace
   | FoundingPatronTrace
   | WorldEconomyShiftTrace
+  | EncounterPlaceHeldTrace
   | CommissionTrace
   | WarAimPickedTrace
   | WarAimDefendTrace

@@ -1,5 +1,6 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import { grantHolding } from './holdings';
+import { createSublocation } from './strategicGraphOps';
 import { getFactionMembershipEdges } from './graphQueries';
 import { splinterFaction, residesIn } from './factionSplinter';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
@@ -190,6 +191,15 @@ import type { SceneSentinelField, SceneSentinelKind } from './sceneSentinels';
 
 /** Initial reputationScore on a faction node when first read (matches DEFAULT_REPUTATION for agents). */
 export const DEFAULT_FACTION_REPUTATION = 0.5;
+
+/**
+ * THR-2048 — who a `hold_place` Place is named after when the holder has no name:
+ * "A builder's forge", "A prospector's claim". Keyed by the effect's `nameNoun`.
+ */
+export const HOLD_PLACE_ANONYMOUS_HOLDER: Readonly<Record<string, string>> = {
+  forge: 'builder',
+  claim: 'prospector',
+};
 
 // `CONDITION_DEFAULT_INTENSITY` / `CONDITION_DEFAULT_DURATION_TICKS` moved with
 // the condition writer to `effects/conditionApplier.ts` (THR-1542); re-exported above.
@@ -1984,6 +1994,117 @@ export function applyEncounterAftermathReaction(
           summary: `${meansNode.name}'s Means ${shift.wealthBefore} → ${shift.wealthAfter} (${shift.reason})`,
         });
         options.onMeansShift?.(resolvedId, shift);
+        break;
+      }
+      case 'hold_place': {
+        // THR-2048 — the forge a mortal builds and the claim they stake are theirs
+        // afterwards. One Place of the type per site: hold the one that stands, raise
+        // one when none does, and never raise beside (or take) someone else's.
+        if (!MORTAL_MEANS_ENABLED) break;
+        const siteId = effect.targetLocationId && !effect.targetLocationId.startsWith('$')
+          ? effect.targetLocationId
+          : resolveSceneHere(state.graph, actorAgentId, 'location');
+        const holderNode = actorAgentId ? state.graph.getNode(actorAgentId) : undefined;
+        if (!siteId || !state.graph.getNode(siteId) || !actorAgentId || !holderNode) {
+          emitTrace({
+            tick, category: 'aftermath_target_invalid', agentId: actorAgentId,
+            encounterId, reactionId: reaction.id, effectIndex: i,
+            effectKind: 'hold_place', attemptedTargetId: siteId ?? '',
+            attemptedTargetKind: 'location',
+            reason: 'target_node_missing',
+            summary: `hold_place[${i}] skipped: no site or holder (${siteId ?? 'no site'})`,
+          });
+          break;
+        }
+        const heldBase = {
+          tick, category: 'encounter.place.held' as const, agentId: actorAgentId,
+          sourceTemplateId: action?.templateId ?? null,
+          band: options.outcomeBand ?? null,
+          siteId, placeTypeId: effect.placeTypeId,
+        };
+        // Lowest id first, so the pick is deterministic with no draw (NFP #3).
+        const standing = state.graph.getOutgoingEdges(siteId, 'contains')
+          .map(e => state.graph.getNode(e.target))
+          .filter((n): n is NonNullable<typeof n> => !!n && n.properties.sublocationTypeId === effect.placeTypeId)
+          .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))[0];
+        const holderOf = (placeId: string): string | undefined =>
+          state.graph.getIncomingEdges(placeId, 'owns')[0]?.source;
+        const payForTheWork = (placeId: string, heldBy: string): void => {
+          let meansPaid: number | undefined;
+          if (effect.heldElsewhereMeans) {
+            const shift = applyMeansShift(
+              holderNode.properties as Record<string, unknown>,
+              effect.heldElsewhereMeans,
+              'paid_work',
+            );
+            if (shift) {
+              mutationSummary.touchedWorld = true;
+              meansPaid = shift.amount;
+              emitTrace({
+                tick, category: 'economy.means.shift', agentId: actorAgentId,
+                sourceTemplateId: action?.templateId ?? null,
+                band: options.outcomeBand ?? null,
+                amount: shift.amount,
+                wealthBefore: shift.wealthBefore, wealthAfter: shift.wealthAfter,
+                bandBefore: shift.bandBefore, bandAfter: shift.bandAfter,
+                reason: shift.reason,
+                summary: `${holderNode.name}'s Means ${shift.wealthBefore} → ${shift.wealthAfter} (${shift.reason})`,
+              });
+              options.onMeansShift?.(actorAgentId, shift);
+            }
+          }
+          emitTrace({
+            ...heldBase, result: 'held_elsewhere', placeId, heldBy,
+            ...(meansPaid !== undefined ? { meansPaid } : {}),
+            summary: `hold_place: ${placeId} at ${siteId} is held by ${heldBy}; ${holderNode.name} was paid for the work`,
+          });
+        };
+
+        if (!standing) {
+          const placeName = holderNode.name
+            ? `${holderNode.name}'s ${effect.nameNoun}`
+            : `A ${HOLD_PLACE_ANONYMOUS_HOLDER[effect.nameNoun] ?? 'builder'}'s ${effect.nameNoun}`;
+          const raised = createSublocation(state.graph, siteId, actorAgentId, placeName, effect.placeTypeId, tick);
+          const placeId = raised.success ? raised.createdId ?? null : null;
+          if (placeId) {
+            grantHolding(state.graph, actorAgentId, placeId, { tick, verb: 'create' }, 'creation');
+            mutationSummary.touchedStructure = true;
+          }
+          emitTrace({
+            ...heldBase, result: 'raised', placeId,
+            summary: placeId
+              ? `hold_place: ${holderNode.name} raised ${placeName} at ${siteId}`
+              : `hold_place: raising ${effect.placeTypeId} at ${siteId} failed (${raised.error ?? 'unknown'})`,
+          });
+          break;
+        }
+
+        const heldBy = holderOf(standing.id);
+        if (heldBy === actorAgentId) {
+          emitTrace({
+            ...heldBase, result: 'already_theirs', placeId: standing.id,
+            summary: `hold_place: ${holderNode.name} already holds ${standing.id}`,
+          });
+          break;
+        }
+        if (heldBy) {
+          payForTheWork(standing.id, heldBy);
+          break;
+        }
+        const granted = grantHolding(state.graph, actorAgentId, standing.id, { tick, verb: 'control' }, 'grant');
+        if (!granted.success) {
+          // A race: another owner appeared between the read and the write.
+          payForTheWork(standing.id, holderOf(standing.id) ?? '');
+          break;
+        }
+        // A held Place is a Work: a conditionally spawned mine would otherwise dissolve
+        // under its holder when the ore runs out (`checkDissolutions` skips `permanent`).
+        standing.properties.persistence = { type: 'permanent' };
+        mutationSummary.touchedWorld = true;
+        emitTrace({
+          ...heldBase, result: 'taken_up', placeId: standing.id,
+          summary: `hold_place: ${holderNode.name} took up ${standing.name} at ${siteId}`,
+        });
         break;
       }
       case 'quintessence_shift': {

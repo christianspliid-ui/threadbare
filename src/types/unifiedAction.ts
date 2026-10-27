@@ -622,6 +622,26 @@ export type EncounterAftermathReactionEffect =
     readonly when?: EffectPredicate;
   }
   | {
+    /**
+     * THR-2048 — the actor holds a Place of `placeTypeId` at the site afterwards (the
+     * forge they built, the claim they staked). One per site: an unheld one standing is
+     * taken up (and made permanent, so a conditional mine never dissolves under its
+     * holder); none standing raises one, named "{Actor}'s {nameNoun}"; one held by
+     * someone else raises nothing and pays `heldElsewhereMeans` instead. Never takes a
+     * holding away. Writes through `createSublocation` + `grantHolding`.
+     */
+    readonly kind: 'hold_place';
+    /** The Place type held or raised, e.g. 'sublocation-type.forge'. */
+    readonly placeTypeId: string;
+    /** The noun the raised Place is named with: "{Actor}'s {noun}". */
+    readonly nameNoun: string;
+    /** Settlement or wild place; default the scene's own place (`$here`). */
+    readonly targetLocationId?: string;
+    /** When the Place stands and is held by someone else: this Means shift instead. */
+    readonly heldElsewhereMeans?: number;
+    readonly when?: EffectPredicate;
+  }
+  | {
     readonly kind: 'quintessence_shift';
     /** Negative = erosion, positive = recovery. Designer-facing only. */
     readonly delta: number;
