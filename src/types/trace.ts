@@ -4209,6 +4209,11 @@ export interface EngagementDecisionTrace extends TraceBase {
   reason: 'in_window' | 'best_available' | 'idle';
 }
 
+/** THR-2071 — the scorer context terms the live board reads (`boardContextSum`). */
+export type BoardContextTerm =
+  | 'economic' | 'locationTrait' | 'resonance' | 'globalResonance'
+  | 'reputation' | 'faction' | 'chain' | 'intel';
+
 export interface DecisionBoardComparisonTrace extends TraceBase {
   category: 'decision_board_comparison';
   agentId: string;
@@ -4257,6 +4262,10 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     roleAffinityPull?: number;
     /** THR-2068 — The First's chosen path's lean on an encounter of its two Reaches (already in `score`). */
     firstPathPull?: number;
+    /** THR-2071 — the scorer's context lean on an encounter (already in `score`); absent when 1. */
+    contextPull?: number;
+    /** THR-2071 — the non-zero context terms behind `contextPull`, by name; present even at weight 0. */
+    contextTerms?: Partial<Record<BoardContextTerm, number>>;
     /** THR-1969 — Open the Markets' thieves' guild boost on `create × faction` (already in `temperamentWeight`). */
     thievesGuildOffer?: number;
     /** THR-1952 — the Means want's multiplier on paying work (already in `score`). */

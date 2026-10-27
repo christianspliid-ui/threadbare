@@ -1147,6 +1147,26 @@ export const ROLE_SECONDARY_AFFINITY_BONUS = 0.15;
  * @range 0–1 */
 export const ROLE_AFFINITY_BOARD_WEIGHT = 1;
 
+/** THR-2071 — the share of the scorer's context terms (boom/bust, place traits,
+ * resonance, reputation, faction, chain next-step, intel — `boardContextSum`) the live
+ * decision board applies. The board multiplies each encounter's score by
+ * `(base + weight × context) / base`, clamped to [MIN, MAX] (`contextPull`), so a term
+ * worth a quarter of a scene's value in the scorer is worth a quarter in the pick.
+ * 0 = the pre-THR-2071 board, where these terms reached only `finalScore` (the
+ * shortlist gate and God's Will), never the mortal's own choice (kill switch).
+ * @range 0–1 */
+export const BOARD_CONTEXT_WEIGHT = 1;
+
+/** THR-2071 — the most the context pull can multiply a scene on the board. Stops a
+ * tiny-value scene with one bonus from swamping the board.
+ * @range 1–4 */
+export const BOARD_CONTEXT_PULL_MAX = 2;
+
+/** THR-2071 — the least the context pull can multiply a scene on the board; a bust
+ * town's negative economic row never zeroes a scene.
+ * @range 0.1–1 */
+export const BOARD_CONTEXT_PULL_MIN = 0.5;
+
 // ═══════════════════════════════════════════════════════════════════
 // REPUTATION TRAITS — Reach-polarity reputation accumulation (phaseReputationTraits.ts)
 // ═══════════════════════════════════════════════════════════════════
