@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-27 16:56 local (15:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-27 17:58 local (16:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -25,16 +25,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
   - **The mill stands afterwards.** If the town has no mill and has room for a building, one is raised, and the town's harvest feeds more mouths. If there is no room, nothing is raised. *Veto:* "a lease should never raise a building".
   - **A scene never takes a mill from a guild that already holds it.**
   - **A held mill pays its guild a little each pay day**, about a quarter of what a middling town pays in tax. More in a rich town, nothing in a ruined one. *Veto:* "the mill should pay nothing".
-- [Attention is never spent](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so): five calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-27-thr-2062-attention-has-a-price.md#decisions). Each can be vetoed on its own until Wednesday 28 Oct 03:01 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27a.md)*
-  - **Attention stays, and it becomes the price of looking in on a mortal who lives on without you.** Answering "the thread pulls" on such a mortal lets you see their chapter, and that costs Attention. *Veto:* "retire Attention".
-  - **A mortal who asks you never costs Attention.** The First's chapters already stop the world for free. Until now she still raised pulls that charged for them. *Veto:* "The First's chapters should cost Attention too".
-  - **News of a mortal's home is free, and comes once.** When their town runs short of, or has spare, grain, fish, grazing land or fresh water, you hear it once, and answering costs nothing. Today it repeats every few hours and charges each time. These pulls were two thirds of all pulls. *Veto:* "home news should cost Attention".
-  - **No chapter is charged for stopping the world.** *Veto:* "every chapter should cost Attention".
-  - **The Attention gauge comes back once you have a mortal on *Lives on*.** With only The First it stays hidden, because nothing could make it move. It speaks in words (Busy, Strained), never numbers. *Veto:* "always show the gauge".
-- [A town's economy never reaches the live board](https://linear.app/threadbare/issue/THR-2071/a-towns-economy-never-reaches-the-live-board-the-boombust-term-thr-725): three calls inside [the plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-26-thr-2071-board-reads-the-place.md#decisions-this-plan-builds-on). Each can be vetoed on its own until Tuesday 23:45 UTC. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-26g.md)*
-  - **A mortal's own choice now feels where they stand and who they are.** A booming or ruined town, a haunted or lawless place, their reputation, their guild, the next step of a story they are in, and what they know all lean the scene they pick. Until now these only decided which five scenes were offered, and the mortal then chose as if they were not there. *Veto:* "a place should only shape what is offered, not what is chosen".
-  - **One lean for all of it, at the strength the scene scoring already gives it,** never more than double and never less than half. *Veto:* "the lean should be gentler" or "each system should have its own dial".
-  - **What the world chooses to offer stays an offer.** Wanderlust, the rules against repeats, the doom and omen bias and hidden-mark reveals keep deciding what comes up, as today, and do not lean the pick. *Veto:* "the doom should also lean the pick".
 
 Say "veto <title>" to reverse any of these.
 
@@ -44,12 +34,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 5 ready.** All five are design tickets still held behind their veto windows; the first ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opens at 18:03 UTC. The builder's 15:50 UTC run stood down for that reason, which is correct. The run before it shipped the heavy-test fix (see Health).
+**Healthy: 6 ready.** Five are design tickets held behind their veto windows; the first ([salt, THR-2069](https://linear.app/threadbare/issue/THR-2069)) opens at 18:03 UTC. The sixth is the new heavy-test fix ticket ([THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured)), which the builder can take on its next run. The builder's last three runs stood down because every ticket was held, which is correct.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (12 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Heavy simulation tests red on main since 11:21 UTC; ticket [THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge) is with the builder.** Its fix, [#2634](https://github.com/christianspliid-ui/threadbare/pull/2634) (the army test runs 45 days with its own 15-minute budget), is armed and waiting on checks. Main turns green once it merges and the heavy run passes.
-- Everything else is green: the live site serves the latest main (c5e5a3f7), main's required CI, the scheduled lanes and the worktree reaper (last run 15:40 UTC) are healthy, and the engine runs at 171 ms/tick, 2% under the 7-day median.
+- **Heavy simulation tests still red on main since 11:21 UTC; ticket [THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured) filed for the builder.** The army-test fix ([#2634](https://github.com/christianspliid-ui/threadbare/pull/2634)) worked, but in the [run on its merge](https://github.com/christianspliid-ui/threadbare/actions/runs/40536310315) a different test missed: lighting up targets for one card took 32.96 ms against a 32 ms limit.
+- Everything else is green: the live site serves the latest main (93f91e6b), main's required CI, the scheduled lanes and the worktree reaper (last run 16:40 UTC) are healthy, and the engine runs at 168 ms/tick, 4% under the 7-day median.
