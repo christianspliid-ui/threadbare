@@ -2149,7 +2149,7 @@ export interface EncounterPlaceGuildHeldTrace extends TraceBase {
   affinity: string | null;
   /** The building Place held (or found held); null when none was written. */
   placeId: string | null;
-  /** `held_elsewhere` only: the faction that holds it. */
+  /** `held_elsewhere` only: who holds it (a faction's `controls` or a freehold's `owns`). */
   heldBy?: string;
 }
 

@@ -2188,8 +2188,12 @@ export function applyEncounterAftermathReaction(
           break;
         }
 
-        const holders = state.graph.getIncomingEdges(standing.id, 'controls')
-          .filter(e => state.graph.getNode(e.source)?.properties.actorType === 'faction');
+        // Held is any faction `controls` or any freehold `owns` (a mortal's mill stays theirs).
+        const holders = [
+          ...state.graph.getIncomingEdges(standing.id, 'controls')
+            .filter(e => state.graph.getNode(e.source)?.properties.actorType === 'faction'),
+          ...state.graph.getIncomingEdges(standing.id, 'owns'),
+        ];
         if (holders.some(e => e.source === pick.guildId)) {
           emitTrace({
             ...guildRef, result: 'already_theirs', placeId: standing.id,

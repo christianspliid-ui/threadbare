@@ -9,6 +9,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { WorldGraph } from '../graph';
+import { grantHolding } from '../holdings';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../traceBuffer';
 import { createSimulationRuntime, type SimulationRuntime } from '../simulationRuntime';
 import { pickTownGuild } from '../factionPurse/townGuild';
@@ -148,6 +149,16 @@ describe('THR-2077 — guild_hold_place', () => {
     expect(edgeCount(graph)).toBe(before);
     expect(graph.getIncomingEdges('mill-1', 'controls').map(e => e.source)).toEqual(['guild-other']);
     expect(guildHeld()[0]).toMatchObject({ result: 'held_elsewhere', placeId: 'mill-1', heldBy: 'guild-other' });
+  });
+
+  it('a mill a mortal holds as a freehold stays theirs (held_elsewhere)', () => {
+    const graph = buildGraph();
+    addFaction(graph, 'guild-carvers', 'artisans');
+    addPlace(graph, 'mill-1', MILL, { [IS_BUILDING_PROP]: true, buildingId: 'mill' });
+    grantHolding(graph, 'actor-1', 'mill-1', { tick: 1 }, 'creation');
+    run(graph, runtime);
+    expect(graph.getIncomingEdges('mill-1', 'controls')).toHaveLength(0);
+    expect(guildHeld()[0]).toMatchObject({ result: 'held_elsewhere', placeId: 'mill-1', heldBy: 'actor-1' });
   });
 
   it('no guild present writes nothing (no_fellowship)', () => {
