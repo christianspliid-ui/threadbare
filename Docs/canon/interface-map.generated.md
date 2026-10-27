@@ -1134,10 +1134,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Echo*, *Undertaking*, *Dominion*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 85 total — 1 write, 4 read, 80 unclassified
+- **Production hits:** 86 total — 1 write, 4 read, 81 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/dominion.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/undertakingProse.ts`, `src/engine/views/connections.ts`
-- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-expression-constants.ts` +75 more
+- **Other hits:** `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/data/action-technical-effects.ts`, `src/data/agenda-consequence-templates.ts`, `src/data/ascendant-expression-constants.ts` +76 more
 - **Verdict:** Verified 2026-10-27: THR-2031. `check:undertaking-live -- cell.control_claim.item --seed 42 --seed 99 --account sample` proved on both seeds (`claim_item:ok` on `echo_relic_echo_sample_relic`). A 240-tick sample-account run took the Hollow Bell on day 10.8 (seed 42) and day 4.6 (seed 99), under its own name. Non-vacuous by `src/engine/__tests__/claimItem.test.ts`: `readThrough` is `unborne` before and `bearer` after, the borne relic fails `already_held` with the edge count unchanged, and a loose item is refused `not_lying_at_a_place`.
 
 ### `claim-resource-pays-good-sphere` — 🟢 LIVE
