@@ -386,7 +386,11 @@ export function phaseMovement(state: GameState): Partial<GameState> {
       }
 
       // --- Mid-path re-evaluation (skip for avatar — player controls destination) ---
-      if (!isAvatar &&
+      // THR-2068: skip a compelled journey too — the god chose its destination, and a
+      // re-route would lapse the paid steer at arrival.
+      const compelledJourneyHeld = !!result.updatedState.targetEncounterId
+        && actor.properties?.compelledJourneyTemplateId === result.updatedState.targetEncounterId;
+      if (!isAvatar && !compelledJourneyHeld &&
           result.updatedState.movementQueue.length > 0 &&
           (state.tick - (result.updatedState.lastDecisionTick ?? 0) >= DECISION_REEVALUATION_TICKS)) {
         // Get current location for re-evaluation
