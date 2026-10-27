@@ -29,6 +29,8 @@ import type { MeetingChoiceRecord } from '../types/meetingEncounter';
 import type { UnifiedAction } from '../types/unifiedAction';
 import { SPARK_VISION_CATALOG } from '../data/spark-vision-catalog';
 import { FIRST_PATH_BOND_LINE, FIRST_PATH_RECALL_LINE } from '../data/meeting-narrative-prose';
+import { FIRST_PATH_PULL } from '../data/premonition-constants';
+import { FIRST_PATH_FIT_LINE } from '../data/premonition-content';
 import { isEncounterAction, isRoutineChapter } from './chapterArchive';
 import { isRoutineTemplate } from './attentionCadence';
 import { emitTrace } from './traceBuffer';
@@ -39,6 +41,12 @@ export interface FirstPath {
   readonly title: string;
   /** The Reach the path strengthened (and The First's mark). */
   readonly reach: ReachDomain;
+  /**
+   * THR-2068 — the vision's `requiredPrimaryReach`: who she is, beside `reach`, what
+   * she becomes. A path is these two Reaches. Falls back to `reach` when the vision
+   * names none.
+   */
+  readonly requiredReach: ReachDomain;
 }
 
 /** The god's `the_first` thread edge, or undefined before the bond. */
@@ -53,7 +61,12 @@ export function firstPathFromRecord(record: MeetingChoiceRecord | null | undefin
   if (!record?.sparkVisionId) return null;
   const vision = SPARK_VISION_CATALOG.find(v => v.id === record.sparkVisionId);
   if (!vision?.title) return null;
-  return { visionId: vision.id, title: vision.title, reach: vision.reachInvestment };
+  return {
+    visionId: vision.id,
+    title: vision.title,
+    reach: vision.reachInvestment,
+    requiredReach: vision.requiredPrimaryReach ?? vision.reachInvestment,
+  };
 }
 
 /** The path the god chose for The First at the bond, or null. Pure. */
@@ -167,4 +180,62 @@ export function firstPathRecallFor(
   } catch {
     return null;
   }
+}
+
+// ─── The path leans (THR-2068) ───────────────────────────────────
+
+/** ×(1 + FIRST_PATH_PULL) when the scene's main Reach is one of the path's two; else 1. Pure. */
+export function firstPathPullFor(path: FirstPath | null, entryReach: ReachDomain | undefined): number {
+  if (!path || !entryReach) return 1;
+  return entryReach === path.reach || entryReach === path.requiredReach ? 1 + FIRST_PATH_PULL : 1;
+}
+
+/** "Fits the unseen blade." — the God's Will option line for a scene that fits the path. */
+export function formatFirstPathFitLine(title: string): string {
+  return FIRST_PATH_FIT_LINE.replace('{path}', () => firstPathInLine(title));
+}
+
+interface PathPullCandidate {
+  readonly entry: { readonly reachPrimary: ReachDomain };
+  finalScore: number;
+  firstPathPull?: number;
+}
+
+interface PathPullDecision<C extends PathPullCandidate> {
+  rankedCandidates: C[];
+  topCandidates: C[];
+  selected: C | null;
+}
+
+/**
+ * Fold the path's lean into The First's decision, in place — the same steps
+ * `applyWhisperPull` takes: matching candidates get `firstPathPull` and a scaled
+ * `finalScore`, the ranked list is re-sorted and the top list re-cut at its size, and
+ * a legacy selection follows the new leader when it clears `idleThreshold`. The live
+ * board multiplies `firstPathPull` in (it never reads `finalScore`).
+ * Returns how many candidates were pulled; 0 with no path.
+ */
+export function applyFirstPathPull<C extends PathPullCandidate>(
+  decision: PathPullDecision<C>,
+  path: FirstPath | null,
+  idleThreshold: number,
+): number {
+  if (!path) return 0;
+  let pulled = 0;
+  const reweigh = (c: C): C => {
+    const pull = firstPathPullFor(path, c.entry.reachPrimary);
+    if (pull <= 1) return c;
+    pulled++;
+    return { ...c, finalScore: c.finalScore * pull, firstPathPull: pull };
+  };
+  const ranked = decision.rankedCandidates.map(reweigh).sort((a, b) => b.finalScore - a.finalScore);
+  if (pulled === 0) return 0;
+  const topSize = decision.topCandidates.length;
+  decision.rankedCandidates = ranked;
+  decision.topCandidates = ranked.slice(0, topSize);
+  if (decision.selected) {
+    const top = ranked[0] ?? null;
+    decision.selected = top && top.finalScore >= idleThreshold ? top : decision.selected;
+  }
+  return pulled;
 }

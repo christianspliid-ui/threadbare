@@ -73,6 +73,17 @@ export const COMPULSION_SCORE_BOOST = 5.0;
  * @range 3–5 */
 export const COMPULSION_CANDIDATE_COUNT = 4;
 
+/** THR-2068 — below this many story options (routine chores never count), God's Will
+ * makes no offer at that decision and the cooldown is not stamped.
+ * @range 1–3 */
+export const COMPULSION_MIN_STORY_OPTIONS = 2;
+
+/** THR-2068 — the chosen path's lean on The First's scenes whose main Reach is one of
+ * the path's two Reaches: ×(1 + FIRST_PATH_PULL) on the live board and `finalScore`.
+ * Below the trade's lean plus arrival commitment, far below a paid whisper.
+ * @range 0.2–1.0 */
+export const FIRST_PATH_PULL = 0.5;
+
 /** THR-1781 — how long a paid Compulsion waits for the mortal's next real decision.
  * The mortal is often mid-chapter when the player pays (the popup shows
  * PREMONITION_DISPLAY_DELAY_TICKS after the decision it was built from), so the

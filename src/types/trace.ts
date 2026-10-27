@@ -4200,6 +4200,8 @@ export interface DecisionBoardComparisonTrace extends TraceBase {
     whisperPull?: number;
     /** THR-2067 — the trade's lean on an encounter of the mortal's role reach (already in `score`). */
     roleAffinityPull?: number;
+    /** THR-2068 — The First's chosen path's lean on an encounter of its two Reaches (already in `score`). */
+    firstPathPull?: number;
     /** THR-1969 — Open the Markets' thieves' guild boost on `create × faction` (already in `temperamentWeight`). */
     thievesGuildOffer?: number;
     /** THR-1952 — the Means want's multiplier on paying work (already in `score`). */
@@ -5940,9 +5942,12 @@ export interface CompulsionOutcomeTrace extends TraceBase {
   agentName: string;
   /** The template the player paid to compel. */
   templateId: string;
-  outcome: 'taken' | 'lapsed_expired' | 'lapsed_unavailable';
-  /** Ticks between the payment and this decision. */
+  /** THR-2068 — `done`: the compelled scene resolved and archived. */
+  outcome: 'taken' | 'lapsed_expired' | 'lapsed_unavailable' | 'done';
+  /** Ticks between the payment and this decision (on `done`: start to resolution). */
   heldTicks: number;
+  /** The compelled scene's band, on `done` only. */
+  band?: UnifiedActionOutcome;
 }
 
 /**

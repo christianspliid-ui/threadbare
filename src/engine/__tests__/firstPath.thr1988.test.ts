@@ -90,7 +90,7 @@ describe('spark vision titles (THR-1988 content)', () => {
 
 describe('getFirstPath (THR-1988 resolver)', () => {
   it('resolves the stored spark vision to its title and Reach', () => {
-    expect(getFirstPath(makeState())).toEqual({ visionId: VISION_ID, title: 'Warden of the walls', reach: 'stone' });
+    expect(getFirstPath(makeState())).toEqual({ visionId: VISION_ID, title: 'Warden of the walls', reach: 'stone', requiredReach: 'veil' });
   });
 
   it('returns null with no meeting record, an unknown vision, or before the bond', () => {

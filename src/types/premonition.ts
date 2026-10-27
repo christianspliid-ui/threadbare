@@ -65,6 +65,11 @@ export interface CompulsionCandidate {
   locationId: string;
   /** Location name for display */
   locationName: string;
+  /**
+   * THR-2068 — the scene's main Reach is one of The First's chosen path's two
+   * (`firstPathPull` > 1). Backs the "Fits the …" line (Law 56). Absent otherwise.
+   */
+  fitsPath?: true;
 }
 
 // ─── Premonition Event ──────────────────────────────────────────
@@ -85,6 +90,11 @@ export interface PremonitionEvent {
   whisperOptions?: WhisperNudge[];
   /** Compulsion encounter candidates (for type === 'compulsion') */
   compulsionCandidates?: CompulsionCandidate[];
+  /**
+   * THR-2068 — The First's chosen path title ("Unseen blade"), set when at least one
+   * compulsion option `fitsPath`; the modal renders "Fits the unseen blade." from it.
+   */
+  firstPathTitle?: string;
 }
 
 // ─── Premonition Trace ──────────────────────────────────────────

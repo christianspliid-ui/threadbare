@@ -3304,6 +3304,13 @@ export interface UnifiedAction {
   // Resources (already deducted on creation)
   readonly essencePaid?: number;
 
+  /**
+   * THR-2068 — the god's paid compulsion chose this action (the override in
+   * `phaseAgentDecision`). Copied onto the archived `ChapterRecord` as `compelled`,
+   * where the archive raises the "Your will is done" line. Absent on a free choice.
+   */
+  readonly compelledByGod?: true;
+
   // Contestation
   readonly contestedWith?: string; // actionId of opposing action
   /**

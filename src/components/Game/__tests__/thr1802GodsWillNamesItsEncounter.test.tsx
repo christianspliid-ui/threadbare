@@ -73,18 +73,19 @@ const CONFIDENCE_PHRASES = [
 describe('God\'s Will options name their encounter (THR-1802)', () => {
   it('the built event carries each template\'s display name, not a fragment', () => {
     const event = buildCompulsionEvent(makeState(), AGENT_ID, AGENT_NAME, [
-      scored('encounter.rest_and_recover', 'trivial', 0.9),
+      scored('encounter.town.oath_breaker_rite', 'trivial', 0.9),
       scored('encounter.deep_descent', 'hard', 0.5),
     ], seqRng());
     expect(event?.compulsionCandidates?.map(c => c.encounterName)).toEqual([
-      'Rest and Recover',
+      // THR-2068: God's Will offers only story, so a chore (Rest and Recover) no longer serves as a fixture.
+      "The Oath-Breaker's Rite",
       getAnyEncounterById('encounter.deep_descent')?.name,
     ]);
   });
 
   it('every option shows its encounter name, and the chosen one\'s toast names the same encounter', () => {
     const event = buildCompulsionEvent(makeState(), AGENT_ID, AGENT_NAME, [
-      scored('encounter.rest_and_recover', 'trivial', 0.9),
+      scored('encounter.town.oath_breaker_rite', 'trivial', 0.9),
       scored('encounter.deep_descent', 'hard', 0.5),
     ], seqRng())!;
     const onCompulsionChoice = vi.fn();
@@ -112,7 +113,7 @@ describe('God\'s Will options name their encounter (THR-1802)', () => {
 
   it('drops the threat clause when every offer shares one tier', () => {
     const event = buildCompulsionEvent(makeState(), AGENT_ID, AGENT_NAME, [
-      scored('encounter.rest_and_recover', 'trivial', 0.9),
+      scored('encounter.town.oath_breaker_rite', 'trivial', 0.9),
       scored('encounter.deep_descent', 'trivial', 0.5),
     ], seqRng())!;
     for (const c of event.compulsionCandidates!) {
@@ -123,7 +124,7 @@ describe('God\'s Will options name their encounter (THR-1802)', () => {
 
   it('FALSIFICATION — keeps the threat clause when tiers differ', () => {
     const event = buildCompulsionEvent(makeState(), AGENT_ID, AGENT_NAME, [
-      scored('encounter.rest_and_recover', 'trivial', 0.9),
+      scored('encounter.town.oath_breaker_rite', 'trivial', 0.9),
       scored('encounter.deep_descent', 'hard', 0.5),
     ], seqRng())!;
     const hooks = event.compulsionCandidates!.map(c => c.encounterHook);

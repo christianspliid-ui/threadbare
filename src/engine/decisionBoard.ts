@@ -277,6 +277,11 @@ export interface BoardEntry {
    */
   readonly roleAffinityPull?: number;
   /**
+   * THR-2068 — The First's chosen path's lean (`firstPathPull`, ×1.5 on a scene in one
+   * of the path's two Reaches), already folded into `score`; absent when it is 1.
+   */
+  readonly firstPathPull?: number;
+  /**
    * THR-1952 — the Means want's multiplier on paying work (`1 + MEANS_WANT_WEIGHT ×
    * want`), already folded into `score` (an undertaking's into `temperamentWeight`);
    * absent on an entry that is not paying work or on a board with no want.
@@ -683,11 +688,13 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const whisperPull = candidate.whisperPull;
     // THR-2067 — the trade leans the board toward encounters of the mortal's role reach.
     const roleAffinityPull = roleAffinityBoardPull(candidate.roleAffinityMultiplier);
+    // THR-2068 — The First's chosen path leans the board toward its two Reaches.
+    const firstPathPull = candidate.firstPathPull;
     // THR-1952 — an encounter whose outcome table pays its actor is paying work.
     const encEarning = input.paysActor?.(candidate.entry.templateId) ?? false;
     const encMeans = encEarning ? payingMultiplier : 1;
     const score = candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
-      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * encMeans;
+      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * (firstPathPull ?? 1) * encMeans;
     // THR-2036: only a goal she would still take ranks first — one refused on arrival
     // (fit 0) or otherwise under the floor sorts by its score, so it cannot idle her.
     const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE
@@ -706,6 +713,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(appointmentDiscount !== undefined ? { appointmentDiscount } : {}),
       ...(whisperPull !== undefined ? { whisperPull } : {}),
       ...(roleAffinityPull !== 1 ? { roleAffinityPull } : {}),
+      ...(firstPathPull !== undefined ? { firstPathPull } : {}),
       candidateIndex: index,
       forecast: candidate.engagementForecast,
       forecastFit,

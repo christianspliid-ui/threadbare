@@ -638,6 +638,12 @@ export interface ScoredCandidate {
    * board. Absent when no whisper leans this way.
    */
   whisperPull?: number;
+  /**
+   * THR-2068 — The First's chosen path's lean on this candidate (`firstPathPullFor`),
+   * already folded into `finalScore` and read by the live board. Absent when the
+   * scene's main Reach is neither of the path's two, and on every other mortal.
+   */
+  firstPathPull?: number;
   /** Phase 4: Estimated benefit of pushing (Q spend for better odds), 0 if not applicable */
   pushBenefit: number;
   /** Phase 4: Estimated benefit of resist option, 0 if not applicable */

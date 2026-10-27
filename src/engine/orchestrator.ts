@@ -200,6 +200,7 @@ import {
   emitChapterArchivedTrace,
   isEncounterAction,
 } from './chapterArchive';
+import { buildCompulsionDoneEvents } from './premonitionCompulsion';
 import { pruneResolvedActions } from './resolvedActionRetention';
 import { recordStoryChapterEnd } from './attentionCadence';
 import { noteFirstPathRecall } from './firstPath';
@@ -4338,6 +4339,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       emitChapterArchivedTrace(rec, s.tick, nextArchive?.length ?? 0);
     }
     s = { ...s, chapterArchive: nextArchive, unifiedActions: stamped };
+    // THR-2068: compelled work always says how it ended — one toast per archived
+    // compelled chapter, in the chapter's own band word.
+    try {
+      const doneEvents = buildCompulsionDoneEvents(newlyArchived, s.tick);
+      if (doneEvents.length > 0) s = { ...s, tickEvents: [...s.tickEvents, ...doneEvents] };
+    } catch {
+      // fail-soft: a missing done line must not stop the tick
+    }
     // THR-571 C1: every newly-resolved failure/critical_failure must leave ≥1 story artifact
     // (a fallback hidden mark when none is present) and count toward failure_story_rate.
     // Runs at the same newly-resolved transition as the branching counter, before the prune,

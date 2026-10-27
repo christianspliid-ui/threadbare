@@ -8,7 +8,8 @@
  * @see Docs/plans/2026-04-04-divine-premonition-design.md
  */
 
-import type { GameState } from '../types/gameState';
+import type { GameState, TickEvent } from '../types/gameState';
+import type { ChapterRecord } from '../types/chapterRecord';
 import type { PremonitionEvent, CompulsionCandidate } from '../types/premonition';
 import type { ScoredCandidate } from './encounterScoring';
 import type { WorldGraph } from './graph';
@@ -16,6 +17,7 @@ import type { GraphNode } from '../types/graph';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import {
   COMPULSION_CANDIDATE_COUNT,
+  COMPULSION_MIN_STORY_OPTIONS,
   COMPULSION_COOLDOWN_TICKS,
   COMPULSION_ESSENCE_COST_MIN,
   COMPULSION_ESSENCE_COST_MAX,
@@ -32,6 +34,10 @@ import {
 } from '../data/premonition-content';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
+import { isRoutineTemplate } from './attentionCadence';
+import { compulsionDoneMessage } from './premonitionSteer';
+import { getFirstPathFor } from './firstPath';
+import { emitTrace } from './traceBuffer';
 
 // ─── Helper: seeded pick from array ─────────────────────────────
 
@@ -141,12 +147,20 @@ export function shouldEmitCompulsion(
 
 // ─── Build Compulsion Event ─────────────────────────────────────
 
+/**
+ * THR-2068 — God's Will offers only work that becomes a chapter. Routine templates
+ * (`isRoutineTemplate`) never appear; options fill from `topCandidates`, then from
+ * `rankedCandidates` in ranked order, deduplicated by template, up to
+ * `COMPULSION_CANDIDATE_COUNT`. Fewer than `COMPULSION_MIN_STORY_OPTIONS` → null (no
+ * offer; the caller stamps no cooldown).
+ */
 export function buildCompulsionEvent(
   state: GameState,
   agentId: string,
   agentName: string,
   topCandidates: ScoredCandidate[],
   rng: () => number,
+  rankedCandidates: readonly ScoredCandidate[] = [],
 ): PremonitionEvent | null {
   if (topCandidates.length === 0) return null;
 
@@ -157,14 +171,17 @@ export function buildCompulsionEvent(
   const quintessence = (agentNode.properties?.quintessence as number | undefined) ?? 1.0;
   if (quintessence <= 0) return null;
 
-  // Take top N candidates, dedup by templateId (keep highest-scored)
+  // Story scenes only, top list first then the ranked list; dedup by templateId
+  // (keep the first — highest-scored — instance).
   const seen = new Set<string>();
-  const deduped = topCandidates.filter(c => {
-    if (seen.has(c.entry.templateId)) return false;
+  const candidates: ScoredCandidate[] = [];
+  for (const c of [...topCandidates, ...rankedCandidates]) {
+    if (candidates.length >= COMPULSION_CANDIDATE_COUNT) break;
+    if (seen.has(c.entry.templateId) || isRoutineTemplate(c.entry.templateId)) continue;
     seen.add(c.entry.templateId);
-    return true;
-  });
-  const candidates = deduped.slice(0, COMPULSION_CANDIDATE_COUNT);
+    candidates.push(c);
+  }
+  if (candidates.length < COMPULSION_MIN_STORY_OPTIONS) return null;
 
   // Resolve agent hex once for distance computation
   const agentLocationId = graph.getOutgoingEdges(agentId, 'located_at')[0]?.target ?? null;
@@ -218,6 +235,7 @@ export function buildCompulsionEvent(
       essenceCost,
       locationId: c.entry.locationId,
       locationName,
+      ...((c.firstPathPull ?? 1) > 1 ? { fitsPath: true as const } : {}),
     };
   });
 
@@ -225,6 +243,11 @@ export function buildCompulsionEvent(
   const proseTier = getQuintessenceProseTier(quintessence);
   const vignetteTemplate = seededPick(COMPULSION_VIGNETTE_TEMPLATES[proseTier], rng);
   const vignetteProse = resolveAgentPronouns(vignetteTemplate, agentName);
+
+  // THR-2068 — the path title backs the option's "Fits the …" line.
+  const firstPathTitle = compulsionCandidates.some(c => c.fitsPath)
+    ? getFirstPathFor(graph, state.ascendantId, agentId)?.title
+    : undefined;
 
   const showAfterTick = state.tick + PREMONITION_DISPLAY_DELAY_TICKS;
   return {
@@ -237,5 +260,49 @@ export function buildCompulsionEvent(
     eligibleUntilTick: showAfterTick + PREMONITION_EXPIRY_TICKS,
     vignetteProse,
     compulsionCandidates,
+    ...(firstPathTitle ? { firstPathTitle } : {}),
   };
+}
+
+// ─── Compulsion done line (THR-2068) ────────────────────────────
+
+/**
+ * One toast per newly archived compelled chapter: "Your will is done. The Haggle:
+ * Morthane held." — in the chapter's own band word — plus a `compulsion_outcome`
+ * `done` trace carrying the band. A paid steer is never silent, routine work included.
+ * Never throws per record: a broken record is skipped.
+ */
+export function buildCompulsionDoneEvents(records: readonly ChapterRecord[], tick: number): TickEvent[] {
+  const events: TickEvent[] = [];
+  for (const rec of records) {
+    if (!rec.compelled) continue;
+    try {
+      const message = compulsionDoneMessage(rec.actorName, resolveCompulsionEncounterName(rec.templateId), rec.outcome);
+      emitTrace({
+        category: 'divine_premonition',
+        subtype: 'compulsion_outcome',
+        tick,
+        agentId: rec.actorId,
+        agentName: rec.actorName,
+        templateId: rec.templateId,
+        outcome: 'done',
+        heldTicks: rec.resolvedTick - rec.startTick,
+        ...(rec.outcome ? { band: rec.outcome } : {}),
+        summary: message,
+      });
+      events.push({
+        id: `divine_steer_done_${rec.actionId}`,
+        tick,
+        type: 'divine_premonition',
+        message,
+        significance: 0.6,
+        isInterventionBeat: true,
+        actorId: rec.actorId,
+        notification: { channel: 'toast' },
+      });
+    } catch {
+      // Fail-soft: one broken record never drops the others' lines.
+    }
+  }
+  return events;
 }

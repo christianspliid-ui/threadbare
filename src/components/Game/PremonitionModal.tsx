@@ -29,6 +29,7 @@ import { resolveTooltip, type TooltipResolverContext } from '../../engine/toolti
 import { SPHERE_COLORS, QUINTESSENCE_COLOR, REACH_TO_SPHERE } from '../../data/premonition-constants';
 import { PREMONITION_REACH_SPHERE_NOTE } from '../../data/premonition-content';
 import { reachDisplayName } from '../../engine/aftermathWords';
+import { formatFirstPathFitLine } from '../../engine/firstPath';
 import type { ReachDomain } from '../../types/traits';
 import { formatEssence, sphereWord } from '../shared/formatEssence';
 import { sphereTint } from '../shared/sphereTint';
@@ -237,12 +238,15 @@ function CompulsionOptionRow({
   onClick,
   onHoverChange,
   lightsPlace,
+  fitLine,
 }: {
   candidate: CompulsionCandidate;
   affordable: boolean;
   onClick: () => void;
   /** The option's place is ringed on the map while it is hovered or focused. */
   lightsPlace?: boolean;
+  /** THR-2068 — "Fits the unseen blade." when the scene fits The First's path (`fitsPath`). */
+  fitLine?: string | null;
 } & OptionHoverProps) {
   const color = getSphereColor(candidate.sphere);
 
@@ -274,6 +278,13 @@ function CompulsionOptionRow({
       <div className="text-sm leading-relaxed italic mt-1" style={{ color: fullText(false) }}>
         {candidate.encounterHook}
       </div>
+      {/* THR-2068 — the path the player chose at the bond, named on the option it
+          leans toward. Backed by `fitsPath` (Law 56); muted, no new hue (Law 17). */}
+      {fitLine && (
+        <div className="text-xs mt-1" style={{ color: dimText(false) }} data-testid="compulsion-option-fits-path">
+          {fitLine}
+        </div>
+      )}
       {/* Mechanical footer — encounter kind and distance are information. */}
       <div className="flex justify-between items-center mt-2">
         <span className="text-xs" style={{ color: dimText(false) }}>
@@ -460,6 +471,9 @@ export function PremonitionModal({
             onClick={() => onCompulsionChoice(candidate)}
             onHoverChange={hoverFor(i)}
             lightsPlace={hexForOption(i) !== null}
+            fitLine={candidate.fitsPath && premonition.firstPathTitle
+              ? formatFirstPathFitLine(premonition.firstPathTitle)
+              : null}
           />
         ))}
       </div>

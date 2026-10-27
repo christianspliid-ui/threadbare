@@ -3525,6 +3525,20 @@ if (import.meta.env.DEV) {
       return getFirstPath(state);
     },
 
+    /** THR-2068 — see `debug-bridge.d.ts`. */
+    setFirstPath: async (visionId: string) => {
+      const state = _gameStateProvider?.();
+      if (!state?.ascendantId) return null;
+      const { firstPathFromRecord, getFirstPath } = await import('./engine/firstPath');
+      if (!firstPathFromRecord({ sparkVisionId: visionId } as never)) return null;
+      const thread = state.graph.getOutgoingEdges(state.ascendantId, 'thread')
+        .find(e => e.properties.courtPosition === 'the_first');
+      if (!thread) return null;
+      const prior = (thread.properties.meetingChoiceRecord ?? {}) as Record<string, unknown>;
+      state.graph.updateEdge(thread.id, { properties: { meetingChoiceRecord: { ...prior, sparkVisionId: visionId } } });
+      return getFirstPath(state);
+    },
+
     resetFirstUseCaptions: async () => {
       const { resetFirstUseCaptions } = await import('./components/shared/firstUseCaptionStore');
       resetFirstUseCaptions();

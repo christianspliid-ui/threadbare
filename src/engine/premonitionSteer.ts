@@ -21,7 +21,14 @@ import type { DivineInfluenceEntry } from '../types/dream';
 import type { EncounterCacheEntry } from './encounterCache';
 import type { ScoredCandidate } from './encounterScoring';
 import { getCurrentStrength } from './decayCurve';
+import type { StepOutcome, UnifiedActionOutcome } from '../types/unifiedAction';
 import { WHISPER_PULL_SCALE, COMPULSION_HOLD_MAX_TICKS, WHISPER_HOLD_MAX_TICKS } from '../data/premonition-constants';
+import {
+  COMPULSION_DONE_LINE,
+  COMPULSION_DONE_LEAD_SUCCESS,
+  COMPULSION_DONE_LEAD_FAILURE,
+} from '../data/premonition-content';
+import { stepOutcomeWord } from '../data/outcome-band-content';
 
 // ─── Whisper pull ───────────────────────────────────────────────
 
@@ -213,4 +220,36 @@ export function compulsionOutcomeMessage(
     default:
       return null;
   }
+}
+
+// ─── Compulsion done line (THR-2068) ────────────────────────────
+
+/**
+ * The band word's lookup key for an action outcome. `contested_won` / `contested_lost`
+ * are action outcomes `StepOutcome` lacks, so they read as success / failure.
+ */
+export function compulsionDoneStepOutcome(outcome: UnifiedActionOutcome | undefined): StepOutcome | undefined {
+  if (outcome === 'contested_won') return 'success';
+  if (outcome === 'contested_lost') return 'failure';
+  return outcome;
+}
+
+const DONE_FAILURE_OUTCOMES: ReadonlySet<StepOutcome> = new Set(['failure', 'critical_failure']);
+
+/**
+ * The line raised when compelled work resolves: "Your will is done. The Haggle: Morthane
+ * held." The word is the chapter's own band word; a missing outcome reads "unfolded".
+ */
+export function compulsionDoneMessage(
+  agentName: string,
+  encounterName: string,
+  outcome: UnifiedActionOutcome | undefined,
+): string {
+  const step = compulsionDoneStepOutcome(outcome);
+  const lead = step && DONE_FAILURE_OUTCOMES.has(step) ? COMPULSION_DONE_LEAD_FAILURE : COMPULSION_DONE_LEAD_SUCCESS;
+  return COMPULSION_DONE_LINE
+    .replace('{lead}', () => lead)
+    .replace('{encounter}', () => encounterName)
+    .replace('{name}', () => agentName)
+    .replace('{word}', () => stepOutcomeWord(step));
 }

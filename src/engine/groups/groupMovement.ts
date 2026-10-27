@@ -266,6 +266,12 @@ function writeMemberRoute(state: GameState, member: GraphNode, destinationId: st
   // THR-1686 — a member waiting at its appointment is not walked off on a trip it
   // cannot be back from; the company goes on without it (same test as the decision hold).
   if (holdsWaitingMemberAtPlace(state, member.id, destinationId, state.tick, 'company')) return false;
+  // THR-2068 — a member on a compelled journey keeps the god's heading; the company
+  // goes on without it, or the paid steer lapses at arrival with a false "beyond reach".
+  const memberProps = member.properties as Record<string, unknown>;
+  const compelledJourneyId = memberProps.compelledJourneyTemplateId as string | undefined;
+  const heading = memberProps.movementState as MovementState | undefined;
+  if (compelledJourneyId && heading?.targetEncounterId === compelledJourneyId) return false;
 
   let path: ReturnType<typeof findShortestPath> = null;
   try {
