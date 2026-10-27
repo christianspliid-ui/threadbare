@@ -126,11 +126,17 @@ describe('THR-1781 — a compulsion paid mid-chapter holds until the next decisi
     // started on arrival when the scene needed travel (the journey keeps it).
     const compelledAction = (s: GameState) =>
       s.unifiedActions.find(a => a.actorId === FIRST_ID && a.templateId === paid.templateId && a.startTick >= outcome.tick);
+    let arrivalTake: PremonitionTraceLike | undefined;
     for (let t = 0; t < MAX_TICKS && !compelledAction(state); t++) {
       state = unattended(runTick(state, [], runtime));
+      arrivalTake ??= (getTraces() as ReadonlyArray<PremonitionTraceLike & { agentId?: string; templateId?: string }>)
+        .find(tr => tr.agentId === FIRST_ID && tr.category === 'divine_premonition'
+          && tr.outcome === 'taken' && tr.templateId === paid.templateId);
       clearTraces();
     }
     expect(compelledAction(state)?.compelledByGod).toBe(true);
+    // The seed-42 target needs travel: the arrival override is traced, not silent.
+    expect(arrivalTake).toBeDefined();
   }, MULTI_WORLD_SIM_TEST_TIMEOUT_MS);
 
   it('THR-2068 — a compelled journey whose scene is gone on arrival lapses aloud', () => {

@@ -1895,6 +1895,19 @@ export function phaseAgentDecision(
             compulsionOverrode = true;
             strategicWinner = null;
             decisionFamily = 'encounter';
+            // Trace-only: the player was told when the journey was queued. This records
+            // that the arrival override replaced the board's own pick.
+            emitTrace({
+              category: 'divine_premonition',
+              subtype: 'compulsion_outcome',
+              tick: state.tick,
+              agentId,
+              agentName: actor.name,
+              templateId: compelledJourneyId,
+              outcome: 'taken',
+              heldTicks: 0,
+              summary: `${actor.name} arrives and answers the compelled ${resolveCompulsionEncounterName(compelledJourneyId)}, over the board's own pick.`,
+            });
           } else {
             const encounterName = resolveCompulsionEncounterName(compelledJourneyId);
             const message = compulsionOutcomeMessage(actor.name, encounterName, { kind: 'lapsed', reason: 'unavailable' });
