@@ -24,7 +24,7 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 14 · trait 5 · omen 4 · power 4 · agreement 1 | 189 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 14 · trait 5 · omen 4 · power 4 · agreement 1 | 191 |  |
 | `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 10 · trait 8 · agreement 2 · omen 2 · power 1 | 132 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 130 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 129 |  |
@@ -46,7 +46,7 @@ The twelve Spheres. **Derived** from `SPHERE_NAMES`. Projected from `sphereAffin
 | `#light` | Sworn to Light — it reveals, warms, and is hard to hide behind. | — | 0 | **DEAD** |
 | `#darkness` | Sworn to Darkness — it conceals, and asks nothing about what it hides. | — | 2 |  |
 | `#force` | Of Force — it pushes, strikes, or refuses to be moved. | item 1 | 17 |  |
-| `#matter` | Of Matter — solid, worked, and stubbornly itself. | — | 26 |  |
+| `#matter` | Of Matter — solid, worked, and stubbornly itself. | — | 28 |  |
 | `#energy` | Of Energy — it burns, quickens, or spends itself to act. | — | 3 |  |
 | `#life` | Of Life — it grows, heals, or wants to keep growing. | item 1 | 12 |  |
 | `#mind` | Of Mind — it thinks, remembers, or leans on the thoughts of others. | — | 22 |  |

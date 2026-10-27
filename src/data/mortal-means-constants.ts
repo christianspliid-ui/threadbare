@@ -151,3 +151,11 @@ export const MEANS_COMFORT_PACE_TARGET_TICKS = 120;
  * sheet's Means tooltip read this same constant, so the two surfaces cannot drift.
  */
 export const COMMISSION_CAUSE_LINE = 'a commission their faction paid for';
+
+// ─── Bounties (THR-2072) ────────────────────────────────────────────
+
+/**
+ * The one phrase a collected bounty's pay is named by on the hunter's sheet Means
+ * tooltip (`describeWealthSource`).
+ */
+export const BOUNTY_CAUSE_LINE = 'a price their faction paid for';

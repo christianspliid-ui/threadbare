@@ -118,7 +118,10 @@ export const CONCLAVE_BASE_FREQUENCY_TICKS = 180;
 /** Max agents invited to a conclave */
 export const CONCLAVE_MAX_PARTICIPANTS = 6;
 
-/** Wealth reward for completing a bounty */
+/**
+ * The coin a bounty holds for its collector. THR-2072: written onto the bounty as its
+ * `escrow`, paid out to the hunter who collects it, or back to the purse when it lapses.
+ */
 export const BOUNTY_REWARD = 10;
 
 /** Treasury cost to issue a bounty (reward + overhead) */
@@ -126,6 +129,19 @@ export const BOUNTY_COST = 12;
 
 /** Ticks before a bounty expires */
 export const BOUNTY_EXPIRY = 40;
+
+/**
+ * THR-2072 — Means a bounty pays the decider hunter who collects it: the same step a
+ * commission pays (THR-2042 decision 2). An unseen hunter holds no Means.
+ */
+export const BOUNTY_MEANS_PAY = MEANS_STEP;
+
+/**
+ * THR-2072 — rollback switch. Off: a bounty is posted exactly as before (any `hostile_to`
+ * target, no escrow, no one-per-target guard), no bounty duel is licensed, nothing is
+ * collected and nothing is refunded.
+ */
+export const FACTION_BOUNTIES_ENABLED = true;
 
 /** Reputation-based scoring bonus for faction quests */
 export const FACTION_QUEST_LOYALTY_MULTIPLIER = 0.3;

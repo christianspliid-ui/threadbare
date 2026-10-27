@@ -30,6 +30,7 @@ import { withFightResultMemory } from './fightState';
 import { monsterLairBranch } from '../monsters/monsterFelling';
 import { fighterEndingBranch } from './fightEnding';
 import { fightRecordBranch } from './fightRecord';
+import { bountyCollectBranch } from './bountyCollect';
 
 /** What a dispatcher branch is handed (plan doc §6). */
 export interface FightEndContext {
@@ -77,11 +78,14 @@ export interface FightEndedResult {
  *   opponent-side branches, so the fighter's record is written before they read the action.
  * - `monsterLairBranch` (THR-1546): felling or driving off a lair's monster.
  *
+ * - `bountyCollectBranch` (THR-2072): a bounty duel's beaten side pays the price on
+ *   their head to the hunter. After `fighterEndingBranch`, because it reads both faces.
+ *
  * A duel's other side (THR-1557) is not a branch of its own: the victor's mercy fork
  * and the opponent's face are decided inside `fighterEndingBranch`, which returns both
  * `ending` and `opponentEnding`, so one `fight.ending` trace carries the whole fork.
  */
-export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [fightRecordBranch, fighterEndingBranch, monsterLairBranch];
+export const DEFAULT_FIGHT_END_BRANCHES: readonly FightEndBranch[] = [fightRecordBranch, fighterEndingBranch, monsterLairBranch, bountyCollectBranch];
 
 /** The live branch list `onFightEnded` runs by default. Tests may push onto it. */
 export const FIGHT_END_BRANCHES: FightEndBranch[] = [...DEFAULT_FIGHT_END_BRANCHES];

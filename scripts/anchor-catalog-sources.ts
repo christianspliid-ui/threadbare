@@ -420,6 +420,11 @@ export const EDGE_TYPE_ROWS: Readonly<Record<string, AnchorRow>> = {
     'Anchor the mortal, not the posting: the player reads "a commission their faction paid for" '
     + 'on the taker. The edge carries only `tick` (THR-2042).',
   ),
+  collected: RELATIONAL(
+    'The hunter\'s Means tooltip, and the chronicle line that the price was collected',
+    'Anchor the hunter, not the bounty: the player reads "a price their faction paid for" '
+    + 'on the hunter. The edge carries only `tick` (THR-2072).',
+  ),
   issues: RELATIONAL(
     'The faction sheet posted-work list, and the bounty itself',
     'Anchor the faction and the bounty event node; the edge carries only `expiryTick`.',

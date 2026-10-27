@@ -50,6 +50,13 @@ export const PERSON_ROW_LABELS = {
 /** THR-1992 — one Blood line per grudge, BondsTab's words: "There is blood between them and {name} — {cause}." */
 export const BLOOD_LINE = { lead: 'There is blood between them and ', joiner: ' — ', tail: '.' } as const;
 
+/**
+ * THR-2072 — one Blood line per faction with an open price on this mortal: "{faction} has
+ * put a price on their head." The faction name leads verbatim (faction names carry their
+ * own "The"), so `lead` is empty.
+ */
+export const BOUNTY_BLOOD_LINE = { lead: '', tail: ' has put a price on their head.' } as const;
+
 /** Facts-row left words (the `panel` shape's `left`). */
 export const PERSON_FACT_WORDS = {
   archetype: 'Archetype',

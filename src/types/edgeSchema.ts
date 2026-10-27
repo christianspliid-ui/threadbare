@@ -524,6 +524,15 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: ['expiryTick'],
     description: 'Faction issues a bounty. Source = faction actor, target = event node with eventType "bounty" (phaseFactionActions).',
   },
+  collected: {
+    type: 'collected',
+    sourceNodeType: 'actor',
+    targetNodeType: 'event',
+    direction: 'directed',
+    cardinality: 'one-to-many',
+    requiredProperties: ['tick'],
+    description: 'THR-2072 — a member of the issuing faction beat the bounty\'s target in a duel and collected it. Source = individual actor (the hunter), target = event node with eventType "bounty"; at most one per bounty (factionBounties).',
+  },
 
   // ── Pilgrimage routes (THR-1177) ──────────────────────────────────────────
   sacred_route: {

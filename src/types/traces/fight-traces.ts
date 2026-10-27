@@ -195,7 +195,7 @@ export interface FightEndingTrace extends TraceBase {
 }
 
 /** Why a grudge pair did not duel this tick (THR-1558). */
-export type FightTriggerGrudgeSkip = 'cooldown' | 'busy' | 'no_template' | 'grudge_gone';
+export type FightTriggerGrudgeSkip = 'cooldown' | 'busy' | 'no_template' | 'grudge_gone' | 'bounty_gone';
 
 /**
  * The grudge boil-over trigger (THR-1558, plan doc `2026-09-23-mortal-duels.md` §6):
@@ -203,10 +203,16 @@ export type FightTriggerGrudgeSkip = 'cooldown' | 'busy' | 'no_template' | 'grud
  * was spawned and `actionId` names it. Skips are bounded to once per pair per
  * `GRUDGE_DUEL_COOLDOWN_TICKS` window, so a co-located feud never floods the buffer;
  * a roll that misses is not traced at all.
+ *
+ * THR-2072 — `source: 'bounty'` is the same trigger licensed by an open bounty instead
+ * of a grudge: `bountyId` names it, `grudgeCause` reads `'bounty'`, and the spawned
+ * template is `fight.duel.bounty` or `fight.duel.bounty_defence`.
  */
 export interface FightTriggerGrudgeTrace extends TraceBase {
   category: 'fight.trigger';
-  source: 'grudge';
+  source: 'grudge' | 'bounty';
+  /** THR-2072 — the bounty that licensed the duel (`source: 'bounty'` only). */
+  bountyId?: string;
   /** The duel's actor (the side the actor rule picked). */
   aggressorId: string;
   targetId: string;

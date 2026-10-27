@@ -103,6 +103,8 @@ export type TraceCategory =
   | 'encounter.place.guild_held'
   // THR-2042 — a faction's commission taken up or lapsed
   | 'economy.commission'
+  // THR-2072 — a faction's bounty collected in a duel or lapsed
+  | 'economy.bounty'
   // THR-1933 — war aims
   | 'war.aim.picked' | 'war.aim.defend' | 'war.aim.hold' | 'war.aim.reaim' | 'war.aim.value_fallback'
   // THR-1955 — regional monopolies and embargo
@@ -766,7 +768,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'economy.purse.day', 'economy.purse.band_change', 'economy.purse.army_raised',
   'economy.means.birth', 'economy.means.shift', 'economy.world.shift',
   'encounter.place.held', 'encounter.place.guild_held',
-  'economy.founding.patron', 'economy.commission',
+  'economy.founding.patron', 'economy.commission', 'economy.bounty',
   'war.aim.picked', 'war.aim.defend', 'war.aim.hold', 'war.aim.reaim', 'war.aim.value_fallback',
   'faction.embargo.laid', 'faction.embargo.lifted',
   'undertaking.economy.found_town', 'undertaking.economy.found_town_refused',
@@ -2167,6 +2169,26 @@ export interface CommissionTrace extends TraceBase {
   /** Taken only. */
   wealthBefore?: number;
   wealthAfter?: number;
+}
+
+/**
+ * THR-2072 — a faction's bounty was collected by the hunter who beat its target in a duel
+ * (the escrow paid out), or lapsed uncollected (the escrow back to the purse).
+ */
+export interface BountyTrace extends TraceBase {
+  category: 'economy.bounty';
+  action: 'collected' | 'lapsed';
+  bountyId: string;
+  factionId: string;
+  targetId: string;
+  /** The escrow paid out (collected) or refunded (lapsed). */
+  escrow: number;
+  /** Lapsed only. */
+  reason?: 'expired' | 'target_gone';
+  /** Collected only. */
+  hunterId?: string;
+  /** Collected only: false for an unseen hunter or a clamped shift. */
+  meansPaid?: boolean;
 }
 
 /** THR-1937 — a mortal founded a town: who rules it and why. */
@@ -5476,6 +5498,7 @@ export type TraceEntry =
   | EncounterPlaceHeldTrace
   | EncounterPlaceGuildHeldTrace
   | CommissionTrace
+  | BountyTrace
   | WarAimPickedTrace
   | WarAimDefendTrace
   | WarAimHoldTrace

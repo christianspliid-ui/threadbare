@@ -13,9 +13,13 @@
 
 import type { UnifiedActionTemplate } from '../../types/unifiedAction';
 import { FIGHT_DUEL_GRUDGE } from '../encounters/fight-duel-grudge';
+import { FIGHT_DUEL_BOUNTY, FIGHT_DUEL_BOUNTY_DEFENCE } from '../encounters/fight-duel-bounty';
 
 export const FIGHT_ENCOUNTER_TEMPLATES: readonly UnifiedActionTemplate[] = [
   FIGHT_DUEL_GRUDGE,
+  // THR-2072 — a bounty collected in a duel (spawn-only, the bounty licence).
+  FIGHT_DUEL_BOUNTY,
+  FIGHT_DUEL_BOUNTY_DEFENCE,
 ];
 
 export function getFightEncounterById(id: string): UnifiedActionTemplate | undefined {

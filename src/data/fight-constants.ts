@@ -526,6 +526,29 @@ export const GRUDGE_ESCALATION_STREAM_SALT = 6263;
  */
 export const GRUDGE_DUEL_COOLDOWN_TICKS = 80;
 
+// ─── A bounty is collected in a duel (THR-2072, plan doc `2026-10-26-thr-2072-…`) ────
+
+/**
+ * Chance per co-located hour that a member of a bounty's issuing faction comes for its
+ * target, before courage scaling: `min(BOUNTY_DUEL_CHANCE_MAX, BASE × (1 + courage))`,
+ * where `courage` is the hunter's live `courage_prudence` lean. Kill criteria: outside
+ * 3–25 a month on any seed, halve or double this once. The plan's 0.02 measured
+ * 25 / 17 / 27 bounty duels a month on seeds 42 / 99 / 7 (build census, 2026-10-27:
+ * a refunded purse posts more bounties than the design census saw), so it was halved once.
+ * At 0.01: 22 / 11 / 25 a month (`npm run census:bounties`). The pair's 80-tick fight
+ * cooldown, not this chance, is what mostly bounds the count.
+ */
+export const BOUNTY_DUEL_CHANCE_BASE = 0.01;
+
+/** The clamp on the scaled bounty-duel chance (= 2 × base at full courage). */
+export const BOUNTY_DUEL_CHANCE_MAX = 0.02;
+
+/**
+ * Salt for the bounty-duel sub-stream, `mulberry32(seed + tick × salt + hash(pairKey))`.
+ * Distinct from `GRUDGE_ESCALATION_STREAM_SALT`, so neither roll moves the other.
+ */
+export const BOUNTY_DUEL_STREAM_SALT = 7019;
+
 /**
  * Kill-criterion ceiling: grudge duels per pair in a 200-tick run. More means the
  * cooldown or the eligibility is leaking. Read by the CLI check, never by the engine.

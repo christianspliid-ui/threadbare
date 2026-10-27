@@ -69,6 +69,7 @@ import { CANONICAL_AXES, signedToCanonical01 } from '../../../types/axisRegistry
 import { linkedProseSection, type ProsePart } from './linkedProse';
 import {
   BLOOD_LINE,
+  BOUNTY_BLOOD_LINE,
   CHAPTER_UNDER_WAY,
   COHESION_SENTENCE,
   DESIGN_OUTCOME_WORD,
@@ -671,15 +672,25 @@ const disposition: SectionResolver = (ctx) => {
  * Blood (THR-1992): BondsTab's Blood section, restored — one line per standing grudge,
  * the other party's name a link (Law 21). `card.grudges` is set only when blood exists,
  * so a mortal who has wronged nobody gets no row at all (Law 25).
+ *
+ * THR-2072 — then one line per faction with an open price on their head, the faction's
+ * name verbatim as a link: "The Adventurers Guild has put a price on their head."
+ * `card.bountiesOn` is set only while a bounty is open (Law 56).
  */
 const blood: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
   const grudges = s?.card.grudges ?? [];
-  if (grudges.length === 0) return null;
+  const bounties = s?.card.bountiesOn ?? [];
+  if (grudges.length === 0 && bounties.length === 0) return null;
   const parts: ProsePart[] = [];
   grudges.forEach((g, i) => {
     if (i > 0) parts.push('\n\n');
     parts.push(BLOOD_LINE.lead, { text: g.targetName, ref: { kind: 'agent', id: g.targetId } }, `${BLOOD_LINE.joiner}${g.causeClause}${BLOOD_LINE.tail}`);
+  });
+  bounties.forEach((b, i) => {
+    if (grudges.length > 0 || i > 0) parts.push('\n\n');
+    if (BOUNTY_BLOOD_LINE.lead) parts.push(BOUNTY_BLOOD_LINE.lead);
+    parts.push({ text: b.factionName, ref: { kind: 'faction', id: b.factionId } }, BOUNTY_BLOOD_LINE.tail);
   });
   return linkedProseSection('blood', PERSON_ROW_LABELS.blood, parts, 'personRows.blood');
 };
