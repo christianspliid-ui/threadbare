@@ -451,6 +451,14 @@ blocks' direct pushes admit it only when `isThreadedByPlayer` holds, tracing eac
 `chronicle.intake.skipped`). `message` is preserved for every existing reader. Per-row evidence:
 [`interface-map.generated.md`](interface-map.generated.md).
 
+**One contract extended by THR-2051 (2026-10-27), an oath from tribute** —
+`encounter-brokers-oath-of-fealty` gains a second liege source. With `liegeFrom: 'scene_town'`
+(*The Tribute Exchange*'s winning bands) the liege is the crown the scene's town answers to:
+`getLocationHolder`'s realm holder (or that realm's liege), else the realm its non-realm holder
+(a temple order, company or guild) is sworn to (`liegeOf`). The vassal is the actor's own house
+(`vassalAgentId: '$actor'`). The default `broker_realm` source and every read site are
+unchanged. Per-row evidence: [`interface-map.generated.md`](interface-map.generated.md).
+
 Ambition display lives on the person page (`views/subjects/personRows.ts`); the older sheets
 (`AgentDetailPanel`, then `AgentProfileModal`) were deleted in THR-1492 and THR-1912.
 
