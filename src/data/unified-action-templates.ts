@@ -51,7 +51,7 @@ import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
 import { FIGHT_ENCOUNTER_TEMPLATES } from './fights/fight-templates';
 import { BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
-import { INTERVENTION_DEFINITIONS, DREAM_VALUE_DRIFT, COMPULSION_VALUE_DRIFT, INSPIRE_VALUE_DRIFT } from './dream-content';
+import { INTERVENTION_DEFINITIONS, DREAM_VALUE_DRIFT, COMPULSION_VALUE_DRIFT, INSPIRE_VALUE_DRIFT, KINDLE_SPARK_ESSENCE_COST, KINDLE_SPARK_VALUE_DRIFT } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
 import { ROUTE_EVENT_ENCOUNTER_TEMPLATES } from './route-event-encounter-content';
 import {
@@ -68,6 +68,8 @@ import {
   LOC_BLIGHT_HEALTH_DELTA,
   LOC_OPEN_MARKETS_PROSPERITY_DELTA,
   LOC_OPEN_MARKETS_UNREST_DELTA,
+  LOC_STOKE_FORGES_PROSPERITY_DELTA,
+  LOC_STOKE_FORGES_UNREST_DELTA,
   LOC_SANCTIFY_MAGSAT_DELTA,
   LOC_SANCTIFY_DIVINE_PRESENCE_DELTA,
   LOC_AWAKEN_SPIRIT_PRESENCE_DELTA,
@@ -618,6 +620,48 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'kindles divine fire within a mortal spirit',
       success: 'the mortal burns with sudden, inexplicable purpose',
       failure: 'the spark finds no purchase in this cold heart',
+    },
+  },
+  {
+    id: 'divine.kindle_spark',
+    // THR-2086: an energy card a god can cast — Kindle, Wander and Illuminate had none.
+    progression: { tier: 1, offer: 'market', generic: false },
+    name: 'Kindle a Spark',
+    spellName: 'The Struck Match',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Strikes a spark in a mortal and fans whatever already burns there. What they half-wanted, they now want hotly, for a while.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [{
+        op: 'apply_influence',
+        target: '$target',
+        influence: {
+          interventionType: 'inspire_intervention',
+          sphere: 'energy',
+          ...DECAY_CONSTANTS.inspire_intervention,
+          // THR-2086: the spark deepens the lean the mortal already has on the value
+          // pair bound to the god's primary reach — hotter than Inspire's calling.
+          valueDriftRule: { direction: 'own_lean', magnitude: KINDLE_SPARK_VALUE_DRIFT },
+        },
+      }],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: KINDLE_SPARK_ESSENCE_COST,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'energy',
+    motivations: [],
+    narrativeTemplates: {
+      initiation: 'strikes a spark against a mortal\'s spirit',
+      success: 'the mortal is on their feet before they know why',
+      failure: 'the spark falls on wet ground and gutters out',
     },
   },
   {
@@ -2220,6 +2264,47 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'reaches into the empty square and unfolds it like a market awning, inviting commerce in',
       success: 'by third bell, two new stalls; by dusk, six — and for now, no one is collecting taxes',
       failure: 'the square stays empty; the merchants called on this morning have not yet learned to listen',
+    },
+  },
+
+  {
+    id: 'loc.stoke_forges',
+    // THR-2086: an energy place card — prosperity up like Open the Markets, but the
+    // square heats instead of calming. +6 crosses ECON_SHOCK_DELTA, so the boom plants
+    // scenes on the town's mortals.
+    progression: { tier: 1, offer: 'market', generic: false },
+    name: 'Stoke the Forges',
+    spellName: 'The Banked Coal Wakes',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Breathes fire into a town\'s hearths and forges. Smiths work past dark, mills turn faster, and coin moves. The heat does not stay in the forge: tempers run short and the streets grow loud.',
+    reach: 'gold',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'gold',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          prosperity: `+${LOC_STOKE_FORGES_PROSPERITY_DELTA}`,
+          unrest: `+${LOC_STOKE_FORGES_UNREST_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'energy',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital', 'tradehub'],
+    motivations: ['preservation_transformation', 'courage_prudence'],
+    narrativeTemplates: {
+      initiation: 'breathes on the banked coals of the town\'s forges',
+      success: 'every hearth in the town flares at once, and the hammers start before dawn',
+      failure: 'the coals glow and settle; the town sleeps as it always has',
     },
   },
 

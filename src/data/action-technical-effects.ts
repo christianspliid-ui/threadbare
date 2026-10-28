@@ -134,6 +134,8 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     'Applies a divine influence (interventionType `intimidate`, Force sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.inspire':
     "Applies a decaying divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent carrying a `valueDrifts` entry of `INSPIRE_VALUE_DRIFT` on the value pair bound to the caster's primary reach, in the direction the target already leans (THR-2088). `buildValueOverlay` feeds it into the agent re-score and the motive receipt until it lapses. A target at exactly 0 on that pair gets no entry (`influence.no_lean` trace).",
+  'divine.kindle_spark':
+    "Applies a decaying divine influence (interventionType `inspire_intervention`, Energy sphere, on Inspire's decay curve) to the target agent carrying a `valueDrifts` entry of `KINDLE_SPARK_VALUE_DRIFT` on the value pair bound to the caster's primary reach, in the direction the target already leans (THR-1651 `own_lean`, THR-2086). A target at exactly 0 on that pair gets no entry (`influence.no_lean` trace).",
   'action.means.fortunes_favour':
     "On success, an `economy_shift` with `bandStep: 1` moves the target mortal's Means up to the next band's floor (clamped at 100).",
   'action.means.ruin':
@@ -249,6 +251,8 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "On success, drains every non-staple resource deposit at the location by LOC_SOUR_MINE_STOCK_DELTA (staples untouched) — the strategic/luxury inverse of Blight; the stock tier re-derives next tick. THR-1923: also lays a land shock on the settlement's best stone hex (×SHOCK_BLIGHT_FACTOR, fading over SHOCK_DAYS).",
   'loc.open_markets':
     "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*), and stamps `marketsOpenedTick`: from LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS later, for THIEVES_GUILD_OFFER_DAYS, a Shadow-led resident's `create × faction` is boosted ×THIEVES_GUILD_OFFER_WANT while prosperity holds at LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD.",
+  'loc.stoke_forges':
+    "On success, raises the location's `prosperity` by LOC_STOKE_FORGES_PROSPERITY_DELTA and its `unrest` by LOC_STOKE_FORGES_UNREST_DELTA (THR-2086). A rise of ECON_SHOCK_DELTA or more plants boom seeds on mortals present. Pushes energy pressure on the town.",
   'loc.bless_holding':
     "On success, writes the god's `blessed` edge (kind `holding_yield`) on a place a faction controls or a mortal owns: its town tax, freehold and tithe pay ×BLESS_HOLDING_YIELD_MULT until BLESS_HOLDING_DAYS have passed. A recast extends; a place no one holds takes nothing.",
   'loc.sanctify_square':

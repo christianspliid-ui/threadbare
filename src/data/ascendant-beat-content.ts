@@ -687,6 +687,9 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // source verbs above, `reach: 'gold'` is its cosmic-energy axis, not a `requiresReach`
   // gate: it surfaces for every run once unlocked, which is the point of a *breadth* card.
   'loc.open_markets': { bucket: 'unlockable-generic' },
+  // THR-2086: the energy cards, offered by the market at tier 1.
+  'loc.stoke_forges': { bucket: 'unlockable-generic' },
+  'divine.kindle_spark': { bucket: 'unlockable-generic' },
   // THR-1747: the four held-ground cards, granted by the held-ground milestone
   // (`beat.milestone.the_held_ground`) at two flowering sources. They shipped with no
   // grant path. `reach` is each card's cosmic-energy axis, not a `requiresReach` gate.

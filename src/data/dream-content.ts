@@ -234,3 +234,14 @@ export const COMPULSION_VALUE_DRIFT = 0.15;
  * compulsion's 0.105.
  */
 export const INSPIRE_VALUE_DRIFT = 0.10;
+
+/** Kindle a Spark's essence price (THR-2086) — equal to Inspire's and the dream's base cost. */
+export const KINDLE_SPARK_ESSENCE_COST = 2;
+
+/**
+ * Kindle a Spark's drift on the same pair, **in the direction the target already
+ * leans** (THR-2086) — energy fans what already burns, hotter than Inspire's
+ * calling, still short of the compulsion because the god does not choose the pole.
+ * Rides Inspire's decay curve.
+ */
+export const KINDLE_SPARK_VALUE_DRIFT = 0.12;
