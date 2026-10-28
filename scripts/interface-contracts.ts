@@ -7964,6 +7964,21 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-1934. economicPower.test.ts: the arc\'s unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.',
     },
   },
+  {
+    id: 'larder-seeds-hunger-stories',
+    producerSystem: ECONOMY,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Hunger\'s stories are planted (THR-2040). In the unrest daily pass, after the riot, a town\'s larder reads hungerDays (famine) and foodSurplusDays / foodBalance (glut: 3 surplus days at a balance of at least 0.75). On hungry day FAMINE_SEED_DAY 2 it plants one famine row (FAMINE_SEED_ROWS) for a resident; on a glut run\'s first day one plenty row (PLENTY_SEED_ROWS). At most one per town per LARDER_SEED_COOLDOWN_DAYS 10 (larderLastSeedTick); none on a riot day or within the cooldown of a scarcity-arc move. The row fits the town\'s subtype or Places and asks no hold; the pick is a stable hash, no PRNG draw. Seeds join the riot\'s pendingEncounterSeeds write.',
+    ulTerms: ['Settlement', 'Encounter'],
+    mechanism: { kind: 'node-prop', symbols: ['hungerDays', 'foodSurplusDays', 'foodBalance', 'larderLastSeedTick', 'larderWasGlut'] },
+    writeSites: ['src/engine/larderSeeds.ts'],
+    readSites: ['src/engine/larderSeeds.ts'],
+    verifiedLive: {
+      date: '2026-10-28',
+      evidence: 'THR-2040. larderSeeds.test.ts (11): famine plants on day 2 only, glut on a run\'s first day only, the cooldown / riot / scarcity-arc / no-resident / disabled guards, a stable pick. npm run census:larder (seeds 42,99,7,1,2,3 × 360, medium), off vs on: hungry spells with a famine scene 10/48 (20.8%) → 35/47 (74.5%); glut runs with a plenty scene 38/91 (41.8%) → 92/100 (92.0%); fed towns famine 4.9% → 5.0%, plenty 3.3% → 3.3%; 131 seeds planted, 118 (90.1%) taken up.',
+    },
+  },
   // ── THR-1957 S2 — the town turns ──────────────────────────────────────
   {
     id: 'town-defection-moves-controls',
