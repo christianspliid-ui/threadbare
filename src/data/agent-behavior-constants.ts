@@ -1167,6 +1167,13 @@ export const BOARD_CONTEXT_PULL_MAX = 2;
  * @range 0.1–1 */
 export const BOARD_CONTEXT_PULL_MIN = 0.5;
 
+/** THR-2071 — divide each board's encounter context pulls by their geometric mean, so
+ * the lean picks *which* scene a mortal takes without moving the encounter-vs-undertaking
+ * share. Off, the raw pull moved the undertaking share of non-idle verdicts 8.2 % → 5.7 %
+ * at cap 2 (seeds 42/99/7 × 240, `npm run census:board-context`), past the plan's
+ * 1-point kill line. See `boardContextPulls`. */
+export const BOARD_CONTEXT_NORMALIZE = true;
+
 // ═══════════════════════════════════════════════════════════════════
 // REPUTATION TRAITS — Reach-polarity reputation accumulation (phaseReputationTraits.ts)
 // ═══════════════════════════════════════════════════════════════════

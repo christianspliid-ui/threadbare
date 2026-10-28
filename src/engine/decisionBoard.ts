@@ -116,6 +116,7 @@ import {
   BOARD_CONTEXT_WEIGHT,
   BOARD_CONTEXT_PULL_MAX,
   BOARD_CONTEXT_PULL_MIN,
+  BOARD_CONTEXT_NORMALIZE,
 } from '../data/agent-behavior-constants';
 import type { BoardContextTerm } from '../types/trace';
 import {
@@ -232,6 +233,32 @@ export function boardContextPull(base: number, contextSum: number): number {
   if (!(base > 0) || !Number.isFinite(base) || !Number.isFinite(contextSum) || BOARD_CONTEXT_WEIGHT === 0) return 1;
   const raw = (base + BOARD_CONTEXT_WEIGHT * contextSum) / base;
   return Math.min(BOARD_CONTEXT_PULL_MAX, Math.max(BOARD_CONTEXT_PULL_MIN, raw));
+}
+
+/**
+ * THR-2071 — every encounter's context pull on one board, divided by their geometric
+ * mean while `BOARD_CONTEXT_NORMALIZE`.
+ *
+ * Context terms are mostly positive (reputation sits on two shortlisted scenes in
+ * three), so the raw pull lifts encounters as a family and undertakings lose the board
+ * without any reason of their own: measured at cap 2, the undertaking share of non-idle
+ * verdicts fell 8.2 % → 5.7 % (seeds 42/99/7 × 240, `npm run census:board-context`),
+ * and still 6.3 % at cap 1.5 — past the plan's 1-point kill line. Normalizing keeps
+ * the ratio between any two encounters exactly (the scorer's proportion, decision 2)
+ * while the board's average encounter stays at ×1, so a place leans which scene a
+ * mortal takes, not whether they take a scene or an undertaking. A lone encounter
+ * therefore reads ×1. Fail-soft: an empty list → []; a non-positive mean → raw pulls.
+ */
+export function boardContextPulls(
+  candidates: readonly Pick<ScoredCandidate, 'valuePerTick' | 'desireMultiplier'>[],
+): number[] {
+  const raw = candidates.map(c => boardContextPull(
+    c.valuePerTick * c.desireMultiplier, boardContextSum(c as Partial<BoardContextSource>),
+  ));
+  if (!BOARD_CONTEXT_NORMALIZE || raw.length === 0) return raw;
+  const mean = Math.exp(raw.reduce((s, p) => s + Math.log(p), 0) / raw.length);
+  if (!(mean > 0) || !Number.isFinite(mean)) return raw;
+  return raw.map(p => p / mean);
 }
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -759,7 +786,11 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // THR-1674: only the goal's instance at `locationId` carries it. A copy of the
   // template elsewhere is a different encounter — committing to it walked The
   // First back to the town it had just left. No `locationId` → every instance.
+  //
+  // THR-2071: the context pull leans encounters against each other, not against
+  // undertakings — see `boardContextPulls`.
   const goal = input.arrivalGoal;
+  const contextPulls = boardContextPulls(input.encounterCandidates);
   for (const [index, candidate] of input.encounterCandidates.entries()) {
     const forecastFit = Number.isFinite(candidate.engagementFit) ? candidate.engagementFit : 1;
     const isGoal = goal !== undefined
@@ -776,9 +807,7 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const firstPathPull = candidate.firstPathPull;
     // THR-2071 — where the mortal stands and who they are lean the pick, in the scorer's proportion.
     const contextTerms = boardContextTerms(candidate);
-    const contextPull = boardContextPull(
-      candidate.valuePerTick * candidate.desireMultiplier, boardContextSum(candidate),
-    );
+    const contextPull = contextPulls[index];
     // THR-1952 — an encounter whose outcome table pays its actor is paying work.
     const encEarning = input.paysActor?.(candidate.entry.templateId) ?? false;
     const encMeans = encEarning ? payingMultiplier : 1;

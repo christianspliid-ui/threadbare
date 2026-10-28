@@ -19,6 +19,7 @@ vi.mock('../../data/agent-behavior-constants', async (importOriginal) => {
 
 import {
   boardContextPull,
+  boardContextPulls,
   boardContextSum,
   boardContextTerms,
   scoreUnifiedBoard,
@@ -67,6 +68,27 @@ describe('boardContextPull (THR-2071)', () => {
   });
 });
 
+describe('boardContextPulls (THR-2071)', () => {
+  it('divides by the geometric mean, keeping every ratio', () => {
+    const cs = [
+      { valuePerTick: 0.4, desireMultiplier: 1, reputationBonus: 0.1 },
+      { valuePerTick: 0.4, desireMultiplier: 1, reputationBonus: 0.2 },
+      { valuePerTick: 0.4, desireMultiplier: 1 },
+    ] as never[];
+    const p = boardContextPulls(cs);
+    expect(p[0] * p[1] * p[2]).toBeCloseTo(1, 10);
+    expect(p[1] / p[2]).toBeCloseTo(boardContextPull(0.4, 0.2), 10);
+    expect(p[0] / p[2]).toBeCloseTo(boardContextPull(0.4, 0.1), 10);
+  });
+
+  it('returns [] for an empty board and all-1 at weight 0', () => {
+    expect(boardContextPulls([])).toEqual([]);
+    weight.value = 0;
+    const p = boardContextPulls([{ valuePerTick: 0.4, desireMultiplier: 1, reputationBonus: 0.3 }] as never[]);
+    expect(p).toEqual([1]);
+  });
+});
+
 describe('boardContextSum / boardContextTerms (THR-2071)', () => {
   it('sums the eight Board terms and names only the non-zero ones', () => {
     const c = {
@@ -106,17 +128,17 @@ describe('scoreUnifiedBoard — context pull (THR-2071)', () => {
   it('ranks the festival above an equal-value candidate in a booming town', () => {
     expect(boom).toBeGreaterThan(0);
     const b = board();
-    const pull = boardContextPull(0.4, boom);
-    expect(pull).toBeGreaterThan(1);
-    expect(b.winner?.id).toBe('encounter.market_day_festival');
-    expect(b.winner?.score).toBeCloseTo(0.4 * pull, 10);
-    expect(b.winner?.contextPull).toBeCloseTo(pull, 10);
-    expect(b.winner?.contextTerms).toEqual({ economic: boom });
-    // No context → no keys, so the trace shows the pull only where it acted.
+    const raw = boardContextPull(0.4, boom);
+    expect(raw).toBeGreaterThan(1);
+    // Normalized by the board's geometric mean (sqrt(raw × 1)): the ratio between the
+    // two is the scorer's proportion exactly, and the board's average encounter reads ×1.
+    const festival = b.entries.find(e => e.id === 'encounter.market_day_festival')!;
     const plain = b.entries.find(e => e.id === 'encounter.plain_errand')!;
-    expect(plain.contextPull).toBeUndefined();
+    expect(b.winner?.id).toBe('encounter.market_day_festival');
+    expect(festival.score / plain.score).toBeCloseTo(raw, 10);
+    expect(festival.contextPull! * plain.contextPull!).toBeCloseTo(1, 10);
+    expect(festival.contextTerms).toEqual({ economic: boom });
     expect(plain.contextTerms).toBeUndefined();
-    expect(plain.score).toBeCloseTo(0.4, 10);
   });
 
   it('ties the two at weight 0 — today\'s board', () => {
@@ -125,6 +147,17 @@ describe('scoreUnifiedBoard — context pull (THR-2071)', () => {
     const [x, y] = b.entries;
     expect(x.score).toBeCloseTo(y.score, 12);
     expect(b.entries.every(e => e.contextPull === undefined)).toBe(true);
+  });
+
+  it('reads a lone encounter as ×1 — the lean is among scenes, not against undertakings', () => {
+    const b = scoreUnifiedBoard({
+      graph: emptyGraph, agentId: 'a', tick: 1,
+      encounterCandidates: [mk('encounter.market_day_festival', { economicContextBonus: boom })],
+      strategicCandidates: [],
+    });
+    expect(b.winner?.score).toBeCloseTo(0.4, 10);
+    expect(b.winner?.contextPull).toBeUndefined();
+    expect(b.winner?.contextTerms).toEqual({ economic: boom });
   });
 
   it('leaves a candidate scored before THR-2071 (no context fields) unchanged', () => {
