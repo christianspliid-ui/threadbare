@@ -87,7 +87,7 @@ function driveToTaken() {
     }
     clearTraces();
 
-    const target = !paid && lastBoard.length > 1 && isMidEncounter(state)
+    const target: { templateId: string; locationId: string } | undefined = !paid && lastBoard.length > 1 && isMidEncounter(state)
       ? pickTravelTarget(state, lastBoard) : undefined;
     if (target) {
       // Steer toward a lower-ranked scene of the last board — something it did not
