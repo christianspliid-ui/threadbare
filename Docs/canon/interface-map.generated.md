@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 107 |
-| **Total** | **343** |
+| 🔵 UNVERIFIED-OK | 108 |
+| **Total** | **344** |
 
 ## Contracts by producing subsystem
 
@@ -440,6 +440,7 @@ remediation ticket or the build fails.
 | `place-sphere-reaches-encounter-opening` | Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon. | node-prop: `seedLocationSphereAffinity`, `getNodeSphereAffinity`, `sphereShareOf`, `SPHERE_FACTS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 | `rung-reads-attunement-marks` | The god's rung on the card ladder is the sum of attunement marks over the spheres it bought (`getAttunementMarksCrossed`, THR-1765), read each tick by `rungMarks`. Read only: spending on offerings writes `offeringSpentBySphere`, never `essenceEarnedBySphere`, so taking up a card never lowers the rung (THR-1811). | function: `getAttunementMarksCrossed` | Ascendant Beats & Progression | 🟢 LIVE | — |
+| `sphere-pressure-credits-mandate` | Only the god's own hand fills the Mandate (THR-2081). `phaseSpherePressure` credits the god's magnitude share of each level-up in the Mandate's two spheres (a push is the god's by `causedBy`, a god-only source, or the scene of a mortal the god threads) and the rival/doom share of an erosion, weighted as the world total weighs the entity, into `pendingMandateCredits`; `phaseMandate` folds them into `mandateState.godLedger`, a debit taking back at most what the god holds there. | function: `mandateCreditsFor`, `applyMandateCredits` | Mandate | 🔵 UNVERIFIED-OK | — |
 | `world-tilt-shapes-cosmology` | Each new world leans a little toward the spheres earlier gods drew on, and drifts back toward balance over time. | function: `tiltCosmology`, `worldTiltFactors` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 
 ### Strategic Projects & Control
@@ -679,10 +680,10 @@ remediation ticket or the build fails.
 - **Intent:** Answering a prayer widens the god's ground (THR-1935 S1). A successful player cast of a card flagged answers_prayer (Bless the Harvest, Open the Markets) on a praying town writes participated_in god → prayer and queues ANSWERED_PRAYER_DOMINION_PRESSURE 2 on pendingSpherePressures, split by bought points (source prayer_answered); on a hungry town off the god's ground it queues UNBIDDEN_AID_DOMINION_PRESSURE 1 (source unbidden_aid) and sets the cooldown.
 - **Producer → Consumer:** Essence & Divine Economy → Spheres & Quintessence
 - **UL terms:** *Dominion*, *Sphere*, *Settlement*
-- **Production hits:** 17 total — 2 write, 1 read, 14 unclassified
+- **Production hits:** 18 total — 2 write, 1 read, 15 unclassified
 - **Write sites:** `src/engine/prayers.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/phaseSpherePressure.ts`
-- **Other hits:** `src/engine/battleAftermath.ts`, `src/engine/essenceEarned.ts`, `src/engine/lairEscalation.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +9 more
+- **Other hits:** `src/engine/battleAftermath.ts`, `src/engine/essenceEarned.ts`, `src/engine/lairEscalation.ts`, `src/engine/mandateLedger.ts`, `src/engine/notableAgendas.ts` +10 more
 - **Verdict:** Verified 2026-10-17: THR-1935. prayers.test.ts: Bless the Harvest on a praying town writes participated_in and pushes summing to 2 split mind 0.6 / spirit 0.4; a failed cast and an unflagged card do nothing; a hungry Foreign town pushes 1 once inside the cooldown.
 
 ### `appointment-discount-reaches-board` — 🟢 LIVE
@@ -2877,10 +2878,10 @@ exit
 - **Intent:** Finishing the Mandate ends the age in triumph, at once, instead of play running on until doom ends it anyway.
 - **Producer → Consumer:** Ascendant Beats & Progression → Doom Clock & Journey
 - **UL terms:** *Mandate*, *Doom Clock*, *Run*
-- **Production hits:** 14 total — 1 write, 1 read, 12 unclassified
+- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
 - **Write sites:** `src/engine/phaseMandate.ts`
 - **Read sites:** `src/engine/orchestrator.ts`
-- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/engine/cycleEnd.ts`, `src/engine/gameInit.ts` +7 more
+- **Other hits:** `src/components/Game/GameView.tsx`, `src/components/Game/hosts/DialogHost.tsx`, `src/data/ia-manifest.ts`, `src/engine/cycleEnd.ts`, `src/engine/gameInit.ts` +9 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `mandate-milestone-prose-narrates-transitions` — 🟢 LIVE
@@ -3890,6 +3891,18 @@ exit
 - **Write sites:** `src/engine/ascendant.ts`
 - **Read sites:** `src/engine/essenceIncome.ts`, `src/engine/influence.ts`
 - **Other hits:** `src/App.tsx`, `src/components/CMS/registry.ts`, `src/components/Remembrance/RemembranceFlow.tsx`, `src/components/Remembrance/RevealBeat.tsx`, `src/components/Remembrance/sphereBuy.ts` +18 more
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
+### `sphere-pressure-credits-mandate` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Only the god's own hand fills the Mandate (THR-2081). `phaseSpherePressure` credits the god's magnitude share of each level-up in the Mandate's two spheres (a push is the god's by `causedBy`, a god-only source, or the scene of a mortal the god threads) and the rival/doom share of an erosion, weighted as the world total weighs the entity, into `pendingMandateCredits`; `phaseMandate` folds them into `mandateState.godLedger`, a debit taking back at most what the god holds there.
+- **Producer → Consumer:** Spheres & Quintessence → Mandate
+- **UL terms:** *Victory Mandate*, *Sphere*
+- **Module:** `src/engine/mandateLedger.ts`
+- **Production hits:** 3 total — 1 write, 1 read, 1 unclassified
+- **Write sites:** `src/engine/phaseSpherePressure.ts`
+- **Read sites:** `src/engine/phaseMandate.ts`
+- **Other hits:** `src/engine/mandateLedger.ts`
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `spotlight-mortal-joins-guild` — 🟢 LIVE
