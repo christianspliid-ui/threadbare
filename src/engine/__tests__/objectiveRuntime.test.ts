@@ -136,6 +136,12 @@ describe('remembered objective runtime', () => {
       mandateState,
       tickEvents: [],
       pendingSpherePressures: [],
+      // THR-2081 — the god's own hand, well past the First Omen's share of 80 / 20 points
+      // over a baseline of 100 (needs 32 + margin / 8 + margin).
+      pendingMandateCredits: [
+        { entityId: 'loc', sphere: 'mind', points: 40, cause: 'god', sources: ['claim'] },
+        { entityId: 'loc', sphere: 'spirit', points: 12, cause: 'god', sources: ['claim'] },
+      ],
       doomClock: {
         ...createDoomClockState('breach', 200),
         currentTick: 90,
