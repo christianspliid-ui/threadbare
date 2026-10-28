@@ -135,4 +135,17 @@ describe('phaseResourceStockTiers', () => {
     const again = phaseResourceStockTiers(state, {});
     expect((again.activeThreadTugs ?? []).filter(t => t.createdTick === 40)).toHaveLength(1);
   });
+
+  it('THR-2062: a famine that began before anyone was bonded still reaches the first bonded mortal', () => {
+    const state = buildState(10);
+    state.graph.removeEdge('thread_e');
+    expect(phaseResourceStockTiers(state, {}).activeThreadTugs ?? []).toHaveLength(0);
+    const resources = (state.graph.getNode('loc1')!.properties as Record<string, unknown>).resources as Record<string, ResourceInstance>;
+    expect(resources.grain.livelihoodPulledTier).toBeUndefined();
+
+    state.graph.addEdge({ id: 'thread_e', type: 'thread', source: 'asc', target: 'mortal', properties: { courtPosition: 'retinue' } });
+    (state as { tick: number }).tick = 6;
+    const later = phaseResourceStockTiers(state, {});
+    expect((later.activeThreadTugs ?? []).filter(t => t.agentId === 'mortal')).toHaveLength(1);
+  });
 });
