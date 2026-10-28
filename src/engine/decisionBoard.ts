@@ -113,7 +113,12 @@ import {
   PERSONALITY_SCORE_EXPONENT,
   PERSONALITY_SELECTION_WEIGHT,
   ROLE_AFFINITY_BOARD_WEIGHT,
+  BOARD_CONTEXT_WEIGHT,
+  BOARD_CONTEXT_PULL_MAX,
+  BOARD_CONTEXT_PULL_MIN,
+  BOARD_CONTEXT_NORMALIZE,
 } from '../data/agent-behavior-constants';
+import type { BoardContextTerm } from '../types/trace';
 import {
   BOARD_SCORE_FLOOR,
   BOARD_TRACE_TOP_N,
@@ -156,6 +161,120 @@ import { isFoundingUnaffordable } from './foundingPatron';
 export function roleAffinityBoardPull(roleAffinityMultiplier: number | undefined): number {
   if (typeof roleAffinityMultiplier !== 'number' || !Number.isFinite(roleAffinityMultiplier)) return 1;
   return 1 + (roleAffinityMultiplier - 1) * ROLE_AFFINITY_BOARD_WEIGHT;
+}
+
+/**
+ * THR-2071 — which of the scorer's additive terms reach the mortal's own pick.
+ *
+ * `scoreAndSelect` adds these into `baseScore`; before THR-2071 they shaped only
+ * `finalScore` — the shortlist gate and God's Will — so a boom town, a haunted place
+ * or a mortal's reputation decided which scenes were *offered* and played no part in
+ * which one was *taken*. The test for a Board term: does it describe where the mortal
+ * stands or who the mortal is? (Plan: `Docs/plans/2026-10-26-thr-2071-board-reads-the-place.md`.)
+ *
+ * Board (summed here):
+ * - `economicContextBonus`, `locationTraitBonus`, `resonance`, `globalResonance` — the place
+ * - `reputationBonus`, `factionScoringBoost` — who the mortal is known as and sworn to
+ * - `chainBonus`, `intelBonus` — the mortal's own story and knowledge (Law 44)
+ *
+ * Shortlist only (what the world chooses to offer; the board has its own variety
+ * penalty, `BOARD_VARIETY_PENALTY_WEIGHT`):
+ * - `explorationBonus`, `familiarityPenalty`, novelty / share ceilings / curator,
+ *   `rarityMultiplier` — variety and pacing
+ * - `identityBiasBonus` (doom and omen), `markRevealBonus` — the world arranging what comes up
+ *
+ * Deferred to THR-2073 (zero on all three headless census worlds, so nothing could size
+ * them; the god verbs need a census with the verb cast): `attractionBonus`,
+ * `convergenceBonus`, `hunchBonus`, `relocationBonus`, `appointmentBonus`,
+ * `brokenDriftBonus`, `ruinsBonus`, `anomalyBonus`.
+ *
+ * Already on the board as their own factors: role affinity (THR-2067), whisper pull
+ * (THR-1781), engagement fit (THR-1582), appointment discount (THR-1686), arrival
+ * commitment (THR-1668).
+ */
+type BoardContextSource = Pick<ScoredCandidate,
+  'economicContextBonus' | 'locationTraitBonus' | 'resonance' | 'globalResonance'
+  | 'reputationBonus' | 'factionScoringBoost' | 'chainBonus' | 'intelBonus'>;
+
+const BOARD_CONTEXT_FIELDS: ReadonlyArray<readonly [BoardContextTerm, keyof BoardContextSource]> = [
+  ['economic', 'economicContextBonus'],
+  ['locationTrait', 'locationTraitBonus'],
+  ['resonance', 'resonance'],
+  ['globalResonance', 'globalResonance'],
+  ['reputation', 'reputationBonus'],
+  ['faction', 'factionScoringBoost'],
+  ['chain', 'chainBonus'],
+  ['intel', 'intelBonus'],
+];
+
+/** THR-2071 — the non-zero Board terms on a candidate, by name. Non-finite or missing terms are dropped. */
+export function boardContextTerms(c: Partial<BoardContextSource>): Partial<Record<BoardContextTerm, number>> {
+  const out: Partial<Record<BoardContextTerm, number>> = {};
+  for (const [name, field] of BOARD_CONTEXT_FIELDS) {
+    const v = c[field];
+    if (typeof v === 'number' && Number.isFinite(v) && v !== 0) out[name] = v;
+  }
+  return out;
+}
+
+/** THR-2071 — the sum of the eight Board terms; a missing or non-finite term reads 0. */
+export function boardContextSum(c: Partial<BoardContextSource>): number {
+  let sum = 0;
+  for (const v of Object.values(boardContextTerms(c))) sum += v ?? 0;
+  return sum;
+}
+
+/**
+ * THR-2071 — the board's context lean: `(base + BOARD_CONTEXT_WEIGHT × sum) / base`,
+ * clamped to [`BOARD_CONTEXT_PULL_MIN`, `BOARD_CONTEXT_PULL_MAX`]. Keeps the scorer's
+ * proportion. Fail-soft: base ≤ 0 or non-finite, a non-finite sum, or weight 0 → 1.
+ */
+export function boardContextPull(base: number, contextSum: number): number {
+  if (!(base > 0) || !Number.isFinite(base) || !Number.isFinite(contextSum) || (BOARD_CONTEXT_WEIGHT as number) === 0) return 1;
+  const raw = (base + BOARD_CONTEXT_WEIGHT * contextSum) / base;
+  return Math.min(BOARD_CONTEXT_PULL_MAX, Math.max(BOARD_CONTEXT_PULL_MIN, raw));
+}
+
+/**
+ * THR-2071 — every encounter's context pull on one board, divided by their geometric
+ * mean while `BOARD_CONTEXT_NORMALIZE`.
+ *
+ * Context terms are mostly positive (reputation sits on two shortlisted scenes in
+ * three), so the raw pull lifts encounters as a family and undertakings lose the board
+ * without any reason of their own: measured at cap 2, the undertaking share of non-idle
+ * verdicts fell 8.2 % → 5.7 % (seeds 42/99/7 × 240, `npm run census:board-context`),
+ * and still 6.3 % at cap 1.5 — past the plan's 1-point kill line. Normalizing keeps
+ * the ratio between any two encounters exactly (the scorer's proportion, decision 2)
+ * while the board's average encounter stays at ×1, so a place leans which scene a
+ * mortal takes, not whether they take a scene or an undertaking. A lone encounter
+ * therefore reads ×1. The normalized pull is clamped to [MIN, MAX] again, so the cap
+ * holds on the final factor (ratios hold exactly only between unclamped scenes).
+ * Fail-soft: an empty list → []; a non-positive mean → raw pulls.
+ */
+export function boardContextPulls(
+  candidates: readonly (Pick<ScoredCandidate, 'valuePerTick' | 'desireMultiplier'>
+    & Partial<Pick<ScoredCandidate, 'engagementFit'>>)[],
+): number[] {
+  const raw = candidates.map(c => boardContextPull(
+    c.valuePerTick * c.desireMultiplier, boardContextSum(c as Partial<BoardContextSource>),
+  ));
+  if (!BOARD_CONTEXT_NORMALIZE || raw.length === 0) return raw;
+  // The mean runs over scenes the board can take: one refused on its forecast (fit 0)
+  // or with no value (base ≤ 0) scores ≤ 0 whatever its pull, so it must not move the
+  // viable scenes' level against undertakings.
+  const viable = raw.filter((_, i) => {
+    const c = candidates[i];
+    const base = c.valuePerTick * c.desireMultiplier;
+    if (!(base > 0) || !Number.isFinite(base)) return false;
+    const fit = c.engagementFit;
+    return !(typeof fit === 'number' && Number.isFinite(fit) && fit <= 0);
+  });
+  if (viable.length === 0) return raw;
+  const mean = Math.exp(viable.reduce((s, p) => s + Math.log(p), 0) / viable.length);
+  if (!(mean > 0) || !Number.isFinite(mean)) return raw;
+  // Clamp again after normalizing: dividing by a mean below 1 (a board of penalized
+  // scenes) would otherwise lift its best scene past the cap against every undertaking.
+  return raw.map(p => Math.min(BOARD_CONTEXT_PULL_MAX, Math.max(BOARD_CONTEXT_PULL_MIN, p / mean)));
 }
 
 // ─── Contract ───────────────────────────────────────────────────
@@ -281,6 +400,14 @@ export interface BoardEntry {
    * of the path's two Reaches), already folded into `score`; absent when it is 1.
    */
   readonly firstPathPull?: number;
+  /**
+   * THR-2071 — the scorer's context lean (`boardContextPull`: boom/bust, place traits,
+   * resonance, reputation, faction, chain, intel), already folded into `score`; absent
+   * when it is 1. These terms used to scale only `finalScore`, which this board never reads.
+   */
+  readonly contextPull?: number;
+  /** THR-2071 — the non-zero context terms behind `contextPull`, by name; present even at weight 0. */
+  readonly contextTerms?: Partial<Record<BoardContextTerm, number>>;
   /**
    * THR-1952 — the Means want's multiplier on paying work (`1 + MEANS_WANT_WEIGHT ×
    * want`), already folded into `score` (an undertaking's into `temperamentWeight`);
@@ -675,7 +802,11 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
   // THR-1674: only the goal's instance at `locationId` carries it. A copy of the
   // template elsewhere is a different encounter — committing to it walked The
   // First back to the town it had just left. No `locationId` → every instance.
+  //
+  // THR-2071: the context pull leans encounters against each other, not against
+  // undertakings — see `boardContextPulls`.
   const goal = input.arrivalGoal;
+  const contextPulls = boardContextPulls(input.encounterCandidates);
   for (const [index, candidate] of input.encounterCandidates.entries()) {
     const forecastFit = Number.isFinite(candidate.engagementFit) ? candidate.engagementFit : 1;
     const isGoal = goal !== undefined
@@ -690,11 +821,15 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
     const roleAffinityPull = roleAffinityBoardPull(candidate.roleAffinityMultiplier);
     // THR-2068 — The First's chosen path leans the board toward its two Reaches.
     const firstPathPull = candidate.firstPathPull;
+    // THR-2071 — where the mortal stands and who they are lean the pick, in the scorer's proportion.
+    const contextTerms = boardContextTerms(candidate);
+    const contextPull = contextPulls[index];
     // THR-1952 — an encounter whose outcome table pays its actor is paying work.
     const encEarning = input.paysActor?.(candidate.entry.templateId) ?? false;
     const encMeans = encEarning ? payingMultiplier : 1;
     const score = candidate.valuePerTick * candidate.desireMultiplier * forecastFit * arrivalCommitment
-      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * (firstPathPull ?? 1) * encMeans;
+      * (appointmentDiscount ?? 1) * (whisperPull ?? 1) * roleAffinityPull * (firstPathPull ?? 1)
+      * contextPull * encMeans;
     // THR-2036: only a goal she would still take ranks first — one refused on arrival
     // (fit 0) or otherwise under the floor sorts by its score, so it cannot idle her.
     const roadGoal = isGoal && goal.restlessRoad === true && RESTLESS_ROAD_ARRIVAL_PRECEDENCE
@@ -714,6 +849,9 @@ export function scoreUnifiedBoard(input: BoardInput): BoardResult {
       ...(whisperPull !== undefined ? { whisperPull } : {}),
       ...(roleAffinityPull !== 1 ? { roleAffinityPull } : {}),
       ...(firstPathPull !== undefined ? { firstPathPull } : {}),
+      ...(contextPull !== 1 ? { contextPull } : {}),
+      // Terms ride even at weight 0, so the census can measure the off arm.
+      ...(Object.keys(contextTerms).length > 0 ? { contextTerms } : {}),
       candidateIndex: index,
       forecast: candidate.engagementForecast,
       forecastFit,

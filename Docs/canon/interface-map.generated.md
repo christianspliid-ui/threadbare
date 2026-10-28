@@ -1664,10 +1664,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
 - **UL terms:** *Encounter*
 - **Module:** `src/engine/economicContext.ts`
-- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Production hits:** 5 total — 1 write, 1 read, 3 unclassified
 - **Write sites:** `src/engine/economicContext.ts`
 - **Read sites:** `src/engine/encounterScoring.ts`
-- **Other hits:** `src/components/Game/debug/DecisionBreakdown.tsx`, `src/types/trace.ts`
+- **Other hits:** `src/components/Game/debug/DecisionBreakdown.tsx`, `src/engine/decisionBoard.ts`, `src/types/trace.ts`
 - **Verdict:** Verified 2026-07-23: THR-725: 120-tick standard run (seed 42, medium, unforced) produced 184 nonzero `economicContextBonus` contributions on `encounter_scoring` traces — e.g. `encounter.bandit_ambush econ=+0.0700 final=0.950` at a bust settlement and `encounter.grand_tournament econ=-0.0006` penalised for the same reason. Values, not just symbols: the term moves finalScore.
 
 ### `economy-provisions-armies` — 🟢 LIVE

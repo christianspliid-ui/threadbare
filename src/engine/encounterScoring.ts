@@ -683,6 +683,8 @@ export interface ScoredCandidate {
   bondBonus: number;
   /** Additive reputation/personality scoring term for the encounter's reach (THR-641; = computeReputationScoringBonus). Already folded into finalScore's baseScore. */
   reputationBonus: number;
+  /** THR-2071 — the faction's per-template scoring boost (`getScoringBoost`), already folded into finalScore's baseScore; carried so the live board can read it. Optional: fixtures built before THR-2071 read it as 0. */
+  factionScoringBoost?: number;
   /** Signed additive term from the settlement's boom/bust state and the template family's economic affinity (THR-725). 0 inside the neutral prosperity band or for families with no authored row. Already folded into finalScore's baseScore. */
   economicContextBonus: number;
   /** Additive term from the place's location traits × the template's tags (THR-790; = computeLocationTraitBonus). 0 at an unmarked place. Already folded into finalScore's baseScore. */
@@ -1627,6 +1629,7 @@ export function scoreAndSelect(
       divineOverlayBonus,
       bondBonus,
       reputationBonus,
+      factionScoringBoost,
       economicContextBonus,
       locationTraitBonus,
       hexDistanceToEntry: distance,

@@ -1665,6 +1665,8 @@ export function phaseAgentDecision(
               ...(e.whisperPull !== undefined ? { whisperPull: e.whisperPull } : {}),
               ...(e.roleAffinityPull !== undefined ? { roleAffinityPull: e.roleAffinityPull } : {}),
               ...(e.firstPathPull !== undefined ? { firstPathPull: e.firstPathPull } : {}),
+              ...(e.contextPull !== undefined ? { contextPull: e.contextPull } : {}),
+              ...(e.contextTerms !== undefined ? { contextTerms: e.contextTerms } : {}),
               ...(e.meansMultiplier !== undefined ? { meansMultiplier: e.meansMultiplier } : {}),
               ...(e.thievesGuildOffer !== undefined ? { thievesGuildOffer: e.thievesGuildOffer } : {}),
             })),
