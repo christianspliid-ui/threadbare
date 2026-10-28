@@ -22,7 +22,7 @@
  * | OPENING_REVEAL_CEILING_TICKS | 200       | Ticks after the bond when every row is ready (THR-2060: they still arrive one at a time) |
  * | OPENING_REVEAL_CHAPTERS_PER_ARRIVAL | 1   | Closed First chapters between two arrivals (THR-2060) |
  * | OPENING_REVEAL_ARRIVAL_IDLE_TICKS   | 36  | Running ticks after which the next arrival comes without a chapter |
- * | ATTENTION_GAUGE_SHOWN        | false     | The Attention gauge shows only once something spends Attention |
+ * | ATTENTION_GAUGE_SHOWN        | true      | Master switch; the gauge shows while `attentionCanBeSpent` holds (THR-2062) |
  * | OPENING_REVEAL_HIGHLIGHT_MS  | 6000      | Gold ring on a newly revealed panel (0 = off) |
  * | OPENING_REVEAL_SHOW_ALL_KEY  | localStorage key for "Show every panel" |
  */
@@ -74,11 +74,11 @@ export interface OpeningRevealRow {
 }
 
 /**
- * Hides the Attention gauge until something spends Attention (THR-2060 U4). Nothing
- * calls `spendAttention` in production today, so a shown gauge always sits full.
- * TODO(THR-2062): wire a spend (or retire the pool), then set this back to true.
+ * Master switch for the Attention gauge (THR-2060 U4). THR-2062: answering a Thread
+ * Tug spends Attention (`attendThreadTug`), and the gauge renders only while
+ * `attentionCanBeSpent` holds — a mortal on *Lives on* is in the court.
  */
-export const ATTENTION_GAUGE_SHOWN = false;
+export const ATTENTION_GAUGE_SHOWN = true;
 
 const BOND = { kind: 'bond' } as const;
 const gift = (beatId: string): OpeningRevealTrigger => ({ kind: 'gift', beatId });
@@ -97,7 +97,9 @@ export const OPENING_REVEAL_TABLE: readonly OpeningRevealRow[] = [
   { surface: 'settings', trigger: BOND },
   { surface: 'read_threads', trigger: BOND },
   // While the gauge is hidden it has nothing to announce, so it does not queue.
-  { surface: 'attention', trigger: { kind: 'first_chapter' }, ...(ATTENTION_GAUGE_SHOWN ? { newLabel: 'Attention' } : {}) },
+  // THR-2062: no newLabel — the gauge appears with its first-use caption once a mortal
+  // on *Lives on* gives it something to show, and never takes an arrival slot.
+  { surface: 'attention', trigger: { kind: 'first_chapter' } },
   { surface: 'chapter_ledger', trigger: { kind: 'first_chapter' }, newLabel: 'the Chapter Ledger' },
   { surface: 'notables', trigger: gift('beat.spine.the_first_word'), newLabel: 'Notables' },
   { surface: 'reaches', trigger: gift('beat.spine.a_path_opens'), newLabel: 'your Reaches' },

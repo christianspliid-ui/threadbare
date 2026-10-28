@@ -50,7 +50,7 @@ import {
 } from '../../../engine/strands';
 import { useInterventionAudio } from './useInterventionAudio';
 import { getSphereColor } from '../../../data/sphereIcons';
-import { ATTENTION_BASE_CAPACITY } from '../../../data/attention-constants';
+import { attendThreadTug as attendThreadTugInEngine } from '../../../engine/attentionPool';
 import type { ThreadTugBadgeModel } from '../threadTugBadgeModel';
 
 interface UseAgentInteractionParams {
@@ -790,19 +790,18 @@ export function useAgentInteraction({
    *
    * Selecting the agent always happens; the spend is skipped when the pool cannot
    * cover it, matching the badge's `affordable === false` state.
+   *
+   * THR-2062 E4: the engine's `attendThreadTug` is the single writer of the spend
+   * (and its `attention_pool` trace); this hook only selects, touches and commits.
    */
   const attendThreadTug = useCallback((badge: ThreadTugBadgeModel) => {
     handleThreadNodeSelect(badge.agentId, 'agent');
 
-    const ascNode = gameState.graph.getNode(gameState.ascendantId);
-    if (!ascNode) return;
+    const result = attendThreadTugInEngine(gameState, badge.primary.id);
+    if (!result) return;
 
-    const currentPool = (ascNode.properties.attentionPool as number) ?? ATTENTION_BASE_CAPACITY;
-    if (currentPool < badge.attendCost) return;
-
-    // In-place property mutation — same pattern as graph mutations, so it must
-    // participate in the version system or the pool readout serves a stale value.
-    ascNode.properties.attentionPool = currentPool - badge.attendCost;
+    // The engine wrote the pool onto the ascendant node in place, so the version
+    // system must hear of it or the pool readout serves a stale value.
     if (runtime) touchWorld(runtime);
 
     // Mark the tug attended via a new array so useMemo deps detect the change.

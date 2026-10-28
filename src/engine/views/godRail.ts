@@ -29,7 +29,7 @@ import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { isActionRevealed } from '../actionUnlock';
 import { playerFacingTemplateName } from '../unifiedActionResolution';
 import { dominionScaledCost, dominionScaledEssenceCost } from '../dominion';
-import { getAttentionVisualState } from '../attentionPool';
+import { attentionCanBeSpent, getAttentionVisualState } from '../attentionPool';
 import { ATTENTION_BASE_CAPACITY, ATTENTION_BASE_REGEN } from '../../data/attention-constants';
 import { DOMINION_BAND_LINES, DOMINION_BAND_WORDS, DOMINION_PAR_BAND } from '../../data/dominion-content';
 import { DOMINION_CAST_CLAUSE } from '../../data/dominion-ui-content';
@@ -105,6 +105,11 @@ export interface GodRailAttention {
   /** The pool balance and its cap, for the meter's tooltip (Law 13's pool-balance exception). */
   pool: number;
   capacity: number;
+  /**
+   * THR-2062 E5: true when a Thread Tug can cost the god anything — a mortal on
+   * *Lives on* is in the court. The gauge renders only then.
+   */
+  spendable: boolean;
 }
 
 export interface HandCardVM {
@@ -267,7 +272,8 @@ function readAttention(state: GameState): GodRailAttention {
   const regen = Number.isFinite(props.attentionRegen as number) ? (props.attentionRegen as number) : ATTENTION_BASE_REGEN;
   const visual = getAttentionVisualState({ attentionPool: pool, attentionCapacity: capacity, attentionRegen: regen });
   const fill = capacity > 0 ? Math.max(0, Math.min(1, pool / capacity)) : 0;
-  return { state: visual, word: ATTENTION_WORD[visual], fill, pool, capacity };
+  const spendable = attentionCanBeSpent(state.graph, state.ascendantId);
+  return { state: visual, word: ATTENTION_WORD[visual], fill, pool, capacity, spendable };
 }
 
 // ─── Build ───────────────────────────────────────────────────────────
@@ -283,6 +289,8 @@ export function godRailStamp(state: GameState): string {
     (state.unifiedActions ?? []).length,
     (state.pendingControlReleases ?? []).length,
     Math.round(((asc.attentionPool as number) ?? 0) * 100),
+    // THR-2062: the attention-mode toggle writes the thread edge without touchWorld.
+    attentionCanBeSpent(state.graph, state.ascendantId) ? 1 : 0,
     state.mandateState?.currentStage ?? '',
     Math.round((state.mandateState?.progress ?? 0) * 100),
   ].join('|');
@@ -353,7 +361,7 @@ export function emptyGodRail(): GodRailVM {
   return {
     identity: null,
     essence: { rows: [], primary: null, seat: null },
-    attention: { state: 'focused', word: '', fill: 1, pool: ATTENTION_BASE_CAPACITY, capacity: ATTENTION_BASE_CAPACITY },
+    attention: { state: 'focused', word: '', fill: 1, pool: ATTENTION_BASE_CAPACITY, capacity: ATTENTION_BASE_CAPACITY, spendable: false },
     hand: { coreVerbs: ['move', 'investiture'], cards: [], sphereOrder: [] },
     rows: {
       reaches: row('reaches', true),

@@ -140,14 +140,35 @@ describe('selectThreadTugBadges', () => {
     expect(badge.accentColor).toBe(TUG_DEFAULT_ACCENT);
   });
 
-  it('states the attention cost in the tooltip and the aria-label', () => {
-    const tug = makeTug();
-    const badge = selectThreadTugBadges([tug], RICH_POOL).get('agent-1')!;
+  it('says what looking in leaves you, in words, never the cost figure (THR-2062 C2)', () => {
+    const tug = makeTug({ threatLevel: 'hard' });
     const cost = tugAttendCost(tug);
+    // Pool 3 of 6, pays 1.5 → 1.5 of 6 = 0.25, which the gauge calls Strained.
+    const badge = selectThreadTugBadges([tug], 3, 6).get('agent-1')!;
 
     expect(badge.attendCost).toBe(cost);
-    expect(badge.meta).toContain(`${formatAttendCost(cost)} attention`);
-    expect(badge.ariaLabel).toContain(`${formatAttendCost(cost)} attention`);
+    expect(badge.meta).toBe('hard · look in, leaves you Strained');
+    expect(badge.ariaLabel).toBe('The thread pulls, hard — look in, leaves you Strained');
+    expect(badge.meta).not.toContain(formatAttendCost(cost));
+    expect(badge.meta).not.toMatch(/[0-9]/);
+  });
+
+  it('says only "look in" when the pool stays Focused after paying', () => {
+    const badge = selectThreadTugBadges([makeTug()], 6, 6).get('agent-1')!;
+    expect(badge.meta).toBe('moderate · look in');
+  });
+
+  it('a livelihood tug names the home and the good, and is free (THR-2062)', () => {
+    const scarce = makeTug({ kind: 'livelihood', livelihoodResourceId: 'fresh_water', livelihoodTier: 'scarce' });
+    const surplus = makeTug({ kind: 'livelihood', livelihoodResourceId: 'fish', livelihoodTier: 'surplus' });
+    const short = selectThreadTugBadges([scarce], 0, 6).get('agent-1')!;
+    const spare = selectThreadTugBadges([surplus], 0, 6).get('agent-1')!;
+
+    expect(short.attendCost).toBe(0);
+    expect(short.affordable).toBe(true);
+    expect(short.meta).toMatch(/^their home is short of /);
+    expect(short.ariaLabel).toMatch(/^The thread pulls — their home is short of /);
+    expect(spare.meta).toMatch(/^their home has .+ to spare$/);
   });
 
   it('never shows float noise in the stated cost', () => {
@@ -166,7 +187,7 @@ describe('selectThreadTugBadges', () => {
     const badge = selectThreadTugBadges([makeTug()], cost).get('agent-1')!;
 
     expect(badge.affordable).toBe(true);
-    expect(badge.meta).not.toContain('not enough attention');
+    expect(badge.meta).not.toContain('cannot spare');
   });
 
   it('marks a tug unaffordable when the pool falls short, and says so', () => {
@@ -174,8 +195,8 @@ describe('selectThreadTugBadges', () => {
     const badge = selectThreadTugBadges([makeTug()], cost - 1).get('agent-1')!;
 
     expect(badge.affordable).toBe(false);
-    expect(badge.meta).toContain('not enough attention');
-    expect(badge.ariaLabel).toContain('not enough attention');
+    expect(badge.meta).toBe('moderate · you cannot spare the attention');
+    expect(badge.ariaLabel).toBe('The thread pulls, moderate — you cannot spare the attention');
   });
 
   it('is deterministic — same input, same output', () => {

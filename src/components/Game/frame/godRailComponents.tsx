@@ -97,8 +97,9 @@ function EssenceBody({ vm, shown, newly, onCenterOnSeat }: GodRailBag): ReactEle
         <FirstUseCaption id="essence" />
       </FirstUseCaptionZone>
       {/* THR-1894 — Attention moved here from the top bar, under the essence it spends beside.
-          THR-2060 — hidden while nothing spends Attention (a gauge that never moves); the rail closes the gap. */}
-      {ATTENTION_GAUGE_SHOWN && shown('attention') && (
+          THR-2060 — hidden while nothing spends Attention (a gauge that never moves); the rail closes the gap.
+          THR-2062 — shown once a mortal on *Lives on* is in the court, the only tug that costs Attention. */}
+      {ATTENTION_GAUGE_SHOWN && shown('attention') && att.spendable && (
         <div
           data-testid="god-rail-attention"
           {...(newly('attention') ? { 'data-newly-revealed': 'true', style: NEWLY_REVEALED_STYLE } : {})}

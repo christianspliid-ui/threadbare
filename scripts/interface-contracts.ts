@@ -8164,6 +8164,43 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-1969. godsStake.test.ts: the card stamps the tick; the offer opens at the delay and closes after the offer days or below prosperity 75; a Shadow-led resident\'s create × faction entry carries thievesGuildOffer 1.5 and temperamentWeight × 1.5, a Gold-led one none.',
     },
   },
+  // ── THR-2062 — Attention has a price ──────────────────────────────────
+  {
+    id: 'thread-tug-spend-single-writer',
+    producerSystem: NARRATIVE,
+    consumerSystem: NARRATIVE,
+    intent:
+      'Answering a Thread Tug spends Attention through one engine writer. attendThreadTug (attentionPool.ts) prices the tug (tugAttendCost: a livelihood tug costs LIVELIHOOD_TUG_ATTEND_COST 0, a chapter tug threat × court), refuses when the pool cannot pay, writes attentionPool on the ascendant and traces attention_pool with cause attend_tug. The badge\'s hook only selects the mortal, touches the world and commits the attended flag; it no longer writes the pool itself. The god rail\'s gauge renders only while attentionCanBeSpent holds (a mortal on Lives on is in the court).',
+    ulTerms: ['Thread Tug'],
+    mechanism: { kind: 'function', symbols: ['attendThreadTug', 'attentionCanBeSpent'], module: 'src/engine/attentionPool.ts' },
+    writeSites: ['src/engine/attentionPool.ts'],
+    readSites: [
+      'src/components/Game/hooks/useAgentInteraction.ts',
+      'src/engine/views/godRail.ts',
+      'scripts/census-attention.ts',
+    ],
+    verifiedLive: {
+      date: '2026-10-28',
+      evidence:
+        'THR-2062. attentionPool.test.ts pins the spend, the refusal, the four null cases and the free livelihood answer; npm run census:attention (seeds 42/99/7 × 360 ticks, a greedy player spending through attendThreadTug) shows a First-alone pool that never leaves full and a 3-retinue Lives-on pool below half on 25 % · 40 % · 80 % of ticks; grep "properties.attentionPool =" src/components is empty.',
+    },
+  },
+  {
+    id: 'livelihood-tug-once-per-crossing',
+    producerSystem: ECONOMY,
+    consumerSystem: NARRATIVE,
+    intent:
+      'A bonded mortal\'s home in famine or glut pulls one livelihood Thread Tug per crossing (THR-2062 E2, narrowing THR-615): the resource instance remembers livelihoodPulledTier and clears it when the good returns to adequate. The tug carries kind livelihood with the good and tier, so the badge names the good in resourceWord\'s word and answering it is free. A pause-mode thread raises no chapter tug at all (phaseAttention traces curator_decision skipped / pause_mode_thread).',
+    ulTerms: ['Thread Tug', 'Settlement'],
+    mechanism: { kind: 'property', symbols: ['livelihoodPulledTier', 'livelihoodResourceId'] },
+    writeSites: ['src/engine/phases/resourceStockTiers.ts'],
+    readSites: ['src/components/Game/threadTugBadgeModel.ts', 'scripts/census-attention.ts'],
+    verifiedLive: {
+      date: '2026-10-28',
+      evidence:
+        'THR-2062. phaseResourceStockTiers.test.ts: a lasting famine pulls once and not again after its tug lapses; recovery to adequate clears the marker and a second fall pulls again. Census: zero livelihood repeats inside a crossing on seeds 42/99/7.',
+    },
+  },
 ];
 
 /** A malformed row — surfaced in the generated output rather than thrown (NFP #4). */

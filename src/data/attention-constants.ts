@@ -47,6 +47,12 @@ export const ATTEND_COST_STORY_PHASE = 0.5;
 /** Attention cost to acknowledge a Notable event thread tug. */
 export const ATTEND_COST_NOTABLE = 0.5;
 
+/**
+ * THR-2062: cost of answering a livelihood tug — news that a bonded mortal's home
+ * is in famine or glut. Free: nothing is bought, the click only selects the mortal.
+ */
+export const LIVELIHOOD_TUG_ATTEND_COST = 0;
+
 /** Cost multiplier for attending the first agent in your court. */
 export const COURT_COST_MULTIPLIER_FIRST = 0.5;
 

@@ -16,9 +16,10 @@
  * Pure and deterministic: same tugs + pool in, same badge map out.
  */
 
-import type { ThreadTug } from '../../types/attention';
-import type { CourtPosition } from '../../types/influence';
-import { computeAttendCost } from '../../engine/attentionPool';
+import type { AttentionVisualState, ThreadTug } from '../../types/attention';
+import { getAttentionVisualState, spendAttention, tugAttendCost } from '../../engine/attentionPool';
+import { resourceWord } from '../../engine/phases/regionalMonopolies';
+import { ATTENTION_BASE_CAPACITY } from '../../data/attention-constants';
 import type { IconName } from '../../data/icons/iconRegistry';
 import { ICON_FOR_THREAD_ROW_MARK } from '../../data/icons/conceptIcons';
 
@@ -45,10 +46,18 @@ export const TUG_THREAT_ACCENT: Record<string, string> = {
 export const TUG_DEFAULT_ACCENT = 'var(--accent-near-miss)';
 
 /**
- * Court position used when a tug somehow carries `dormant`.
- * Dormant agents should not generate tugs; `computeAttendCost` rejects the type.
+ * THR-2062 C2: the gauge's own word for the pool after paying (one ladder, Law 43).
+ * Focused has no word, so a look-in that leaves the god Focused says only "look in".
  */
-const TUG_FALLBACK_COURT_POSITION: Exclude<CourtPosition, 'dormant'> = 'retinue';
+export const TUG_AFTER_STATE_WORD: Record<AttentionVisualState, string> = {
+  focused:     '',
+  busy:        'Busy',
+  strained:    'Strained',
+  overwhelmed: 'Overwhelmed',
+};
+
+/** THR-2062 C2: the badge's reason when the pool cannot pay, before the click. */
+export const TUG_UNAFFORDABLE_PHRASE = 'you cannot spare the attention';
 
 // ─── Model ─────────────────────────────────────────────────────────
 
@@ -71,20 +80,42 @@ export interface ThreadTugBadgeModel {
   countLabel?: string;
   /** Tooltip heading. */
   label: string;
-  /** Tooltip body — threat and the attention price. */
+  /** Tooltip body — threat and what looking in leaves you (words, no numerals). */
   meta: string;
-  /** Screen-reader label; includes the cost, since the badge glyph is aria-hidden. */
+  /** Screen-reader label; carries the same words, since the badge glyph is aria-hidden. */
   ariaLabel: string;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
-/** Attention cost of attending one tug, fail-soft on a dormant court position. */
-export function tugAttendCost(tug: ThreadTug): number {
-  const safePosition = tug.courtPosition !== 'dormant'
-    ? tug.courtPosition
-    : TUG_FALLBACK_COURT_POSITION;
-  return computeAttendCost(tug.threatLevel, safePosition);
+/**
+ * Attention cost of attending one tug. THR-2062: the engine owns the price
+ * (`attentionPool.tugAttendCost`) so the badge and the spend never disagree.
+ */
+export { tugAttendCost };
+
+/**
+ * THR-2062 C2: what a livelihood tug says — the home's news, in the good's own word
+ * (the famine and glut chronicle lines use the same `resourceWord`).
+ */
+export function livelihoodTugPhrase(tug: ThreadTug): string {
+  const good = resourceWord(tug.livelihoodResourceId ?? 'goods');
+  return tug.livelihoodTier === 'surplus'
+    ? `their home has ${good} to spare`
+    : `their home is short of ${good}`;
+}
+
+/**
+ * THR-2062 C2: what looking in on a chapter leaves the god, in the gauge's words.
+ * "look in, leaves you Strained", or "look in" when the pool stays Focused.
+ */
+export function lookInPhrase(attentionPool: number, attentionCapacity: number, cost: number): string {
+  const after = spendAttention(
+    { attentionPool, attentionCapacity, attentionRegen: 0 },
+    cost,
+  );
+  const word = TUG_AFTER_STATE_WORD[getAttentionVisualState(after)];
+  return word ? `look in, leaves you ${word}` : 'look in';
 }
 
 /**
@@ -117,12 +148,14 @@ export function isTugBadgeWorthy(tug: ThreadTug): boolean {
  * Urgency is the curator's own score, so the badge agrees with the engine about
  * which tug matters; newest wins ties for a deterministic pick.
  *
- * @param tugs          `gameState.activeThreadTugs`.
- * @param attentionPool Current pool, used to mark unaffordable tugs.
+ * @param tugs              `gameState.activeThreadTugs`.
+ * @param attentionPool     Current pool, used to mark unaffordable tugs.
+ * @param attentionCapacity Pool cap, for the gauge word the pool is left at.
  */
 export function selectThreadTugBadges(
   tugs: readonly ThreadTug[] | undefined,
   attentionPool: number,
+  attentionCapacity: number = ATTENTION_BASE_CAPACITY,
 ): Map<string, ThreadTugBadgeModel> {
   const byAgent = new Map<string, ThreadTug[]>();
 
@@ -152,10 +185,18 @@ export function selectThreadTugBadges(
       ? (count > TUG_BADGE_COUNT_DISPLAY_MAX ? `${TUG_BADGE_COUNT_DISPLAY_MAX}+` : String(count))
       : undefined;
     const others = count > 1 ? ` and ${count - 1} more` : '';
-    const costPhrase = `attend for ${formatAttendCost(attendCost)} attention`;
-    const meta = affordable
-      ? `${primary.threatLevel} · ${costPhrase}`
-      : `${primary.threatLevel} · ${costPhrase} · not enough attention`;
+    // THR-2062 C2: words, never the cost figure (Law 13). A livelihood tug is news
+    // of the home and free; a chapter tug says what looking in leaves the god.
+    const isLivelihood = primary.kind === 'livelihood';
+    const phrase = isLivelihood
+      ? livelihoodTugPhrase(primary)
+      : affordable
+        ? lookInPhrase(attentionPool, attentionCapacity, attendCost)
+        : TUG_UNAFFORDABLE_PHRASE;
+    const meta = isLivelihood ? phrase : `${primary.threatLevel} · ${phrase}`;
+    const ariaLabel = isLivelihood
+      ? `The thread pulls${others} — ${phrase}`
+      : `The thread pulls, ${primary.threatLevel}${others} — ${phrase}`;
 
     badges.set(agentId, {
       agentId,
@@ -168,9 +209,7 @@ export function selectThreadTugBadges(
       countLabel,
       label: 'The thread pulls',
       meta,
-      ariaLabel: affordable
-        ? `The thread pulls, ${primary.threatLevel}${others} — ${costPhrase}`
-        : `The thread pulls, ${primary.threatLevel}${others} — ${costPhrase}, not enough attention`,
+      ariaLabel,
     });
   }
 

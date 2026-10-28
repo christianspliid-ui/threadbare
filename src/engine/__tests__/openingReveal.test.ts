@@ -20,7 +20,6 @@ import {
   OPENING_REVEAL_TABLE,
   OPENING_REVEAL_CEILING_TICKS,
   OPENING_REVEAL_ARRIVAL_IDLE_TICKS,
-  ATTENTION_GAUGE_SHOWN,
   publishOpeningArrivalLedger,
   readPublishedOpeningArrivalLedger,
   type OpeningRevealSurfaceId,
@@ -103,8 +102,9 @@ describe('OPENING_REVEAL_TABLE (THR-1837 C1)', () => {
 
   it('every staged row carries a label for the reveal line', () => {
     for (const row of OPENING_REVEAL_TABLE) {
-      // THR-2060: the hidden Attention gauge has nothing to announce.
-      if (row.surface === 'attention' && !ATTENTION_GAUGE_SHOWN) { expect(row.newLabel).toBeUndefined(); continue; }
+      // THR-2060 / THR-2062: the Attention gauge never takes an arrival slot — it appears
+      // with its first-use caption once a mortal on Lives on gives it something to show.
+      if (row.surface === 'attention') { expect(row.newLabel).toBeUndefined(); continue; }
       if (row.trigger.kind !== 'bond') expect(row.newLabel, row.surface).toBeTruthy();
     }
   });

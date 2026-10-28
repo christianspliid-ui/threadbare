@@ -88,7 +88,7 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
   const activeLivelihoodKeys = new Set<string>();
   for (const t of existingTugs) {
     if (t.expiresTick <= tick) continue;
-    const dedup = (t as ThreadTug & { livelihoodKey?: string }).livelihoodKey;
+    const dedup = t.livelihoodKey;
     if (dedup) activeLivelihoodKeys.add(dedup);
   }
 
@@ -165,16 +165,29 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
       const firstDerivation = prevTier === undefined;
       const genuineCrossing = !firstDerivation && prevTier !== newTier;
 
+      // THR-2062 E2: back to adequate ends the crossing, spotlit or not.
+      if (newTier === 'adequate' && instance.livelihoodPulledTier !== undefined) {
+        delete instance.livelihoodPulledTier;
+        anyChange = true;
+      }
+
       if (!fullDetail) continue; // coarse: tier stored, no events
 
       const cls = getResourceClass(resourceId);
       const isStaple = cls.category === 'staple';
 
-      // ── Livelihood thread tug (state-based, deduped) ──────────────────
+      // ── Livelihood thread tug (once per crossing) ─────────────────────
       // A bonded mortal's home in famine (scarce staple) or glut (surplus staple)
       // pulls a thread the player can attend. Fires on first derivation too, so an
-      // already-starving home surfaces immediately; deduped so it fires once.
-      if (isStaple && (newTier === 'scarce' || newTier === 'surplus')) {
+      // already-starving home surfaces immediately. THR-2062 E2: once per crossing —
+      // `livelihoodPulledTier` remembers the tier already told, and clears when the
+      // good returns to adequate; the live-tug key below stays as a same-tick guard.
+      // The marker is stamped only when a tug was actually raised, so a famine that
+      // began before anyone was bonded (or while they were away), or a glut that
+      // follows a famine while the famine's tug still lingers, is still told — once.
+      let pulledThisTier = false;
+      if (isStaple && (newTier === 'scarce' || newTier === 'surplus')
+        && instance.livelihoodPulledTier !== newTier) {
         for (const resident of threadedHere) {
           const key = livelihoodTugKey(resident.agentId, resourceId);
           if (activeLivelihoodKeys.has(key)) continue;
@@ -183,13 +196,17 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
             resident.agentId, resident.courtPosition, loc.id, resourceId,
             newTier, derived.balance, tick, key, tugCounter++,
           ));
+          pulledThisTier = true;
+        }
+        if (pulledThisTier) {
+          instance.livelihoodPulledTier = newTier;
+          anyChange = true;
         }
       }
 
       if (!genuineCrossing) continue; // traces/chronicle only on real crossings
 
-      const emittedTug = isStaple && (newTier === 'scarce' || newTier === 'surplus')
-        && threadedHere.length > 0;
+      const emittedTug = pulledThisTier;
 
       emitTrace({
         category: 'resource_stock_tier_change',
@@ -307,7 +324,7 @@ function buildLivelihoodTug(
   tick: number,
   key: string,
   counter: number,
-): ThreadTug & { livelihoodKey: string } {
+): ThreadTug {
   return {
     id: `livelihood_tug_${tick}_${counter}`,
     agentId,
@@ -319,6 +336,10 @@ function buildLivelihoodTug(
     expiresTick: tick + THREAD_TUG_LINGER,
     attended: false,
     curationScore: Math.min(1, Math.abs(balance)),
+    // THR-2062 E3: news of the home, not a chapter — answering it is free.
+    kind: 'livelihood',
+    livelihoodResourceId: resourceId,
+    livelihoodTier: tier === 'scarce' ? 'scarce' : 'surplus',
     // Carry the dedup key so the next tick's phase can skip re-pulling.
     livelihoodKey: key,
   };

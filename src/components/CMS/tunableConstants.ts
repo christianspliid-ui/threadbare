@@ -1390,6 +1390,10 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Attention cost multiplier for watched (observed) agents. Higher = more taxing to surveil.',
         'src/data/attention-constants.ts', [1.0, 3.0],
         'attentionPool → court cost scaling'),
+      n('LIVELIHOOD_TUG_ATTEND_COST', attn.LIVELIHOOD_TUG_ATTEND_COST,
+        'Attention cost of answering news of the home of a bonded mortal (famine or glut). THR-2062.',
+        'src/data/attention-constants.ts', [0, 2.0],
+        'attentionPool → livelihood tug cost'),
       // Thread tugs
       n('THREAD_TUG_LINGER', attn.THREAD_TUG_LINGER,
         'Ticks a thread tug lingers before expiring if not attended.',

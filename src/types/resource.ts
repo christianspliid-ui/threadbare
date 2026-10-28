@@ -29,6 +29,11 @@ export interface ResourceInstance {
    * Absent until the first derivation runs; readers treat absent as 'adequate'.
    */
   stockTier?: StockTier;
+  /**
+   * THR-2062: the tier a livelihood tug was last pulled for at this place. A famine
+   * or glut pulls once per crossing; cleared when the tier returns to adequate.
+   */
+  livelihoodPulledTier?: StockTier;
 }
 
 /** Static definition of a resource type — lives in content data. */
