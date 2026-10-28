@@ -4,9 +4,10 @@
  * A town's larder plants one of its scenes for a resident: on a town's
  * `FAMINE_SEED_DAY`-th hungry day a famine story, on the first day of a glut run a
  * plenty story. At most one per town every `LARDER_SEED_COOLDOWN_DAYS`. The granary
- * riot keeps its own seed and comes first: on a day it planted, the larder waits. A
+ * riot keeps its own seed and comes first: on a day it planted, or within the cooldown
+ * after, the larder waits (the riot itself never yields to the larder). A
  * town whose scarcity arc moved within the cooldown waits too, and the arc's hoarding
- * seed waits on a recent larder plant (`phases/economicPower.ts`), so one shortage never
+ * seed waits on a recent famine plant (`phases/economicPower.ts`), so one shortage never
  * plants two hunger stories.
  *
  * Called once a day per settlement from `unrestPressure.ts` `dailyPass`, right after
@@ -29,6 +30,7 @@ import type { GraphNode } from '../types/graph';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
 import { templateAcceptsWhereTheyStand } from './encounterSeeding';
+import { LAST_RIOT_SEED_PROP } from './unrestPressure/inputs';
 import { pickTargetAgent } from './phases/routeEvents';
 import { hashString, mulberry32 } from '../lib/prng';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
@@ -139,17 +141,27 @@ export function plantLarderSeed(
   const tick = state.tick;
   const props = town.properties;
   const larder = readLarder(town, hungry).state;
-  const wasGlut = props[LARDER_WAS_GLUT_PROP] === true;
-  if ((larder === 'glut') !== wasGlut) props[LARDER_WAS_GLUT_PROP] = larder === 'glut';
+  const rawWasGlut = props[LARDER_WAS_GLUT_PROP];
+  // A town's first larder read (a fresh world after its settling run, or a save from
+  // before the larder) only records the state: a glut already under way is not a run
+  // seen starting, so it plants nothing.
+  const firstRead = typeof rawWasGlut !== 'boolean';
+  const wasGlut = rawWasGlut === true;
+  // Once a glut run is open it lasts while the grain still has nowhere to go
+  // (`foodSurplusDays`), so one day's balance under the floor does not re-arm it.
+  const glutNow = larder === 'glut'
+    || (wasGlut && larder === null && (num(props.foodSurplusDays) ?? 0) >= PLENTY_MIN_SURPLUS_DAYS);
+  if (firstRead || glutNow !== wasGlut) props[LARDER_WAS_GLUT_PROP] = glutNow;
 
   const trigger: LarderState | null =
     larder === 'famine' && hungerDays === FAMINE_SEED_DAY ? 'famine'
-      : larder === 'glut' && !wasGlut ? 'glut'
+      : glutNow && !wasGlut && !firstRead ? 'glut'
         : null;
   if (!trigger) return;
 
   const cooldownTicks = LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
   const lastSeed = num(props[LARDER_LAST_SEED_PROP]);
+  const lastRiot = num(props[LAST_RIOT_SEED_PROP]);
   const arc = props.scarcityArc as { phaseSinceTick?: number; sinceTick?: number } | undefined;
   const arcMoved = num(arc?.phaseSinceTick) ?? num(arc?.sinceTick);
 
@@ -157,7 +169,8 @@ export function plantLarderSeed(
   let templateId: string | null = null;
   let targetAgentId: string | null = null;
   if (!isLarderSeedsEnabled()) skipped = 'disabled';
-  else if (riotPlanted) skipped = 'riot';
+  // A riot today, or one within the cooldown, already told this shortage's story.
+  else if (riotPlanted || (lastRiot !== undefined && tick - lastRiot < cooldownTicks)) skipped = 'riot';
   else if (lastSeed !== undefined && tick - lastSeed < cooldownTicks) skipped = 'cooldown';
   else if (arcMoved !== undefined && tick - arcMoved < cooldownTicks) skipped = 'scarcity_arc';
   else {

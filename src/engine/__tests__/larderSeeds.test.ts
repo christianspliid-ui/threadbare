@@ -94,7 +94,8 @@ describe('the famine trigger', () => {
 describe('the glut trigger', () => {
   it("plants on a glut run's first day only", () => {
     const graph = new WorldGraph();
-    const town = addTown(graph, 'a', GLUT);
+    // Read fed the day before, so today is a glut run seen starting.
+    const town = addTown(graph, 'a', { ...GLUT, [LARDER_WAS_GLUT_PROP]: false });
     addMortal(graph, 'm1', 'a');
     const first = plant(graph, town, 0, false, 0);
     expect(first).toHaveLength(1);
@@ -110,6 +111,27 @@ describe('the glut trigger', () => {
     expect(town.properties[LARDER_WAS_GLUT_PROP]).toBe(false);
     town.properties.foodSurplusDays = 3;
     expect(plant(graph, town, (LARDER_SEED_COOLDOWN_DAYS + 3) * TICKS_PER_DAY, false, 0)).toHaveLength(1);
+  });
+
+  it("a town's first larder read records a glut already under way and plants nothing", () => {
+    const graph = new WorldGraph();
+    const town = addTown(graph, 'a', GLUT);
+    addMortal(graph, 'm1', 'a');
+    expect(plant(graph, town, 0, false, 0)).toHaveLength(0);
+    expect(town.properties[LARDER_WAS_GLUT_PROP]).toBe(true);
+    expect(larderTraces()).toHaveLength(0);
+  });
+
+  it('one day under the balance floor does not re-arm an open glut run', () => {
+    const graph = new WorldGraph();
+    const town = addTown(graph, 'a', { ...GLUT, [LARDER_WAS_GLUT_PROP]: false });
+    addMortal(graph, 'm1', 'a');
+    expect(plant(graph, town, 0, false, 0)).toHaveLength(1);
+    town.properties.foodBalance = 0.6;
+    plant(graph, town, (LARDER_SEED_COOLDOWN_DAYS + 1) * TICKS_PER_DAY, false, 0);
+    expect(town.properties[LARDER_WAS_GLUT_PROP]).toBe(true);
+    town.properties.foodBalance = 0.8;
+    expect(plant(graph, town, (LARDER_SEED_COOLDOWN_DAYS + 2) * TICKS_PER_DAY, false, 0)).toHaveLength(0);
   });
 });
 
@@ -131,6 +153,17 @@ describe('the guards', () => {
     addMortal(graph, 'm1', 'a');
     expect(plant(graph, town, 0, true, FAMINE_SEED_DAY, true)).toHaveLength(0);
     expect(larderTraces().at(-1)).toMatchObject({ skipped: 'riot' });
+  });
+
+  it('a riot planted on an earlier day within the cooldown blocks it too (review gate)', () => {
+    const graph = new WorldGraph();
+    const tick = 20 * TICKS_PER_DAY;
+    const town = addTown(graph, 'a', { unrestLastRiotSeedTick: tick - TICKS_PER_DAY });
+    addMortal(graph, 'm1', 'a');
+    expect(plant(graph, town, tick, true, FAMINE_SEED_DAY)).toHaveLength(0);
+    expect(larderTraces().at(-1)).toMatchObject({ skipped: 'riot' });
+    town.properties.unrestLastRiotSeedTick = tick - LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
+    expect(plant(graph, town, tick, true, FAMINE_SEED_DAY)).toHaveLength(1);
   });
 
   it('a scarcity-arc move within the cooldown blocks it', () => {
