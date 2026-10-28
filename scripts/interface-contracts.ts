@@ -7971,8 +7971,8 @@ export const CONTRACTS: readonly Contract[] = [
     intent:
       'Hunger\'s stories are planted (THR-2040). In the unrest daily pass, after the riot, a town\'s larder reads hungerDays (famine) and foodSurplusDays / foodBalance (glut: 3 surplus days at a balance of at least 0.75). On hungry day FAMINE_SEED_DAY 2 it plants one famine row (FAMINE_SEED_ROWS) for a resident; on a glut run\'s first day one plenty row (PLENTY_SEED_ROWS). At most one per town per LARDER_SEED_COOLDOWN_DAYS 10 (larderLastSeedTick); none within the cooldown of a riot seed (unrestLastRiotSeedTick) or a scarcity-arc move. The row must be accepted where the chosen resident stands (templateAcceptsWhereTheyStand) and asks no hold; the pick is a stable hash, no PRNG draw. Seeds join the riot\'s pendingEncounterSeeds write.',
     ulTerms: ['Settlement', 'Encounter'],
-    mechanism: { kind: 'node-prop', symbols: ['hungerDays', 'foodSurplusDays', 'foodBalance', 'larderLastSeedTick', 'larderWasGlut'] },
-    writeSites: ['src/engine/larderSeeds.ts'],
+    mechanism: { kind: 'node-prop', symbols: ['hungerDays', 'foodSurplusDays', 'foodBalance'] },
+    writeSites: ['src/engine/unrestPressure.ts', 'src/engine/phases/settlementEconomy.ts'],
     readSites: ['src/engine/larderSeeds.ts'],
     verifiedLive: {
       date: '2026-10-28',
