@@ -252,13 +252,21 @@ export function boardContextPull(base: number, contextSum: number): number {
  * Fail-soft: an empty list → []; a non-positive mean → raw pulls.
  */
 export function boardContextPulls(
-  candidates: readonly Pick<ScoredCandidate, 'valuePerTick' | 'desireMultiplier'>[],
+  candidates: readonly (Pick<ScoredCandidate, 'valuePerTick' | 'desireMultiplier'>
+    & Partial<Pick<ScoredCandidate, 'engagementFit'>>)[],
 ): number[] {
   const raw = candidates.map(c => boardContextPull(
     c.valuePerTick * c.desireMultiplier, boardContextSum(c as Partial<BoardContextSource>),
   ));
   if (!BOARD_CONTEXT_NORMALIZE || raw.length === 0) return raw;
-  const mean = Math.exp(raw.reduce((s, p) => s + Math.log(p), 0) / raw.length);
+  // The mean runs over scenes the board can take: one refused on its forecast (fit 0)
+  // scores 0 whatever its pull, so its context must not push the viable scenes down.
+  const viable = raw.filter((_, i) => {
+    const fit = candidates[i].engagementFit;
+    return !(typeof fit === 'number' && Number.isFinite(fit) && fit <= 0);
+  });
+  if (viable.length === 0) return raw;
+  const mean = Math.exp(viable.reduce((s, p) => s + Math.log(p), 0) / viable.length);
   if (!(mean > 0) || !Number.isFinite(mean)) return raw;
   // Clamp again after normalizing: dividing by a mean below 1 (a board of penalized
   // scenes) would otherwise lift its best scene past the cap against every undertaking.
