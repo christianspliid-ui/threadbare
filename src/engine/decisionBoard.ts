@@ -260,9 +260,13 @@ export function boardContextPulls(
   ));
   if (!BOARD_CONTEXT_NORMALIZE || raw.length === 0) return raw;
   // The mean runs over scenes the board can take: one refused on its forecast (fit 0)
-  // scores 0 whatever its pull, so its context must not push the viable scenes down.
+  // or with no value (base ≤ 0) scores ≤ 0 whatever its pull, so it must not move the
+  // viable scenes' level against undertakings.
   const viable = raw.filter((_, i) => {
-    const fit = candidates[i].engagementFit;
+    const c = candidates[i];
+    const base = c.valuePerTick * c.desireMultiplier;
+    if (!(base > 0) || !Number.isFinite(base)) return false;
+    const fit = c.engagementFit;
     return !(typeof fit === 'number' && Number.isFinite(fit) && fit <= 0);
   });
   if (viable.length === 0) return raw;
