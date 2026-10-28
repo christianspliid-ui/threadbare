@@ -2471,8 +2471,8 @@
       "beatGranted": true,
       "bucket": "unlockable-generic",
       "bucketDeclared": true,
-      "description": "Kindles divine fire within a mortal spirit, igniting a sense of calling and passionate purpose that seems to come from within. The inspired mortal pursues their goals with extraordinary energy and conviction. The flame sustains itself as long as the mortal's belief remains unchallenged.",
-      "technicalEffect": "Applies a divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent, biasing their decision-making until the influence decays.",
+      "description": "Kindles divine fire within a mortal spirit, igniting a sense of calling and passionate purpose that seems to come from within. The inspired mortal pursues what they already care for with extraordinary energy and conviction. The flame burns down over time as ordinary doubt returns.",
+      "technicalEffect": "Applies a decaying divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent carrying a `valueDrifts` entry of `INSPIRE_VALUE_DRIFT` on the value pair bound to the caster's primary reach, in the direction the target already leans (THR-2088). `buildValueOverlay` feeds it into the agent re-score and the motive receipt until it lapses. A target at exactly 0 on that pair gets no entry (`influence.no_lean` trace).",
       "effectSource": "template-ops"
     },
     {
