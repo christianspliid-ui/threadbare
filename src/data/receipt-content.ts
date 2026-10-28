@@ -195,7 +195,10 @@ export const CAST_INFLUENCE_AT_COST_BANDS: readonly OutcomeBand[] = ['strained']
  * The toast shows only the first sentence (`receiptToastSentence`), so the first
  * sentence of every landed line names both the mortal and the pole.
  */
-export const CAST_INFLUENCE_RECEIPT_LINES: Record<'dream' | 'persuade', Record<CastInfluenceReceiptCase, string>> = {
+/** The intervention types whose casts carry a `valueDriftRule` (THR-1651, THR-2088). */
+export type CastInfluenceReceiptType = 'dream' | 'persuade' | 'inspire_intervention';
+
+export const CAST_INFLUENCE_RECEIPT_LINES: Record<CastInfluenceReceiptType, Record<CastInfluenceReceiptCase, string>> = {
   dream: {
     clean: '{target} dreams of who they already are, and wakes leaning harder toward {pole}. The dream will fade; for now it weighs in every choice.',
     at_cost: '{target} sleeps badly, but the dream holds: {pole} weighs more in what they choose now. They wake tired and do not know why.',
@@ -205,6 +208,12 @@ export const CAST_INFLUENCE_RECEIPT_LINES: Record<'dream' | 'persuade', Record<C
     clean: 'A certainty settles on {target} that was not there before: {pole} is the only sensible course. They think the thought is their own.',
     at_cost: '{target} fights the conviction and loses, and now {pole} pulls at every choice they make. The struggle left them raw.',
     found_nothing: 'Your conviction finds no purchase in {target}. They go on as they were.',
+  },
+  // THR-2088: Breath of Purpose — the calling deepens the mortal's own lean.
+  inspire_intervention: {
+    clean: 'A sudden purpose kindles in {target}, and they turn toward {pole} with fierce resolve. The flame will burn down; for now it drives every choice.',
+    at_cost: '{target} catches the spark unevenly, but it holds: {pole} burns brighter in what they choose now. The heat leaves them restless.',
+    found_nothing: 'The spark finds nothing in {target} to catch on. They go on as they were.',
   },
 };
 

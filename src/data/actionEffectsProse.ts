@@ -54,7 +54,7 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
   'divine.omen':
     'Sets a sign in the world for mortals to read, pulling those who heed it toward your intent.',
   'divine.inspire':
-    'Kindles sudden purpose in a mortal, driving them to pursue a calling with fierce resolve.',
+    'Kindles sudden purpose in a mortal: whichever way they already lean on the question your reach asks, they pursue it with fierce resolve.',
 
   // — Per-graph expression verbs (imbue / consecrate / bestow / anoint) —
   'action.imbue':
