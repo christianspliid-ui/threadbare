@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 227 |
+| 🟢 LIVE | 228 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 107 |
-| **Total** | **342** |
+| **Total** | **343** |
 
 ## Contracts by producing subsystem
 
@@ -356,6 +356,7 @@ remediation ticket or the build fails.
 | `food-balance-sets-famine-tier` | On a settlement the economy has reached, its foodBalance sets the stock tier of every food staple (grain, grazing, fish, water), so a fed town reads adequate and a starving one scarce; the scarcity arcs and the livelihood tug read the tier. The unrest hunger counter reads foodStore / foodBalance directly. | node-prop: `foodBalance` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `happiness-term-into-unrest` | The settlement economy writes economyContentment daily: -UNREST_FROM_HAPPINESS × happiness (buildings, a route, crowding; hunger left out, it is its own input), bounded ±UNREST_HAPPINESS_MAX. The unrest target reads it as its contentment input (THR-1934's switch). | node-prop: `economyContentment` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `hungry-town-prays-on-gods-ground` | A hungry town on the god's own ground prays (THR-1935 S1). The daily prayer phase (after location_trait) opens a prayer event (eventKind prayer, occurred_at → the town) when a settlement bears the restless trait, hunger is its largest unrestInputs term, it reads Touched or better on the player god's Dominion and its 30-day cooldown is clear. The place page and the chronicle say it; the town keeps lastPrayerTick and activePrayerId. | function: `placePrayerView`, `listPrayers` | Essence & Divine Economy | 🟢 LIVE | — |
+| `larder-seeds-hunger-stories` | Hunger's stories are planted (THR-2040). In the unrest daily pass, after the riot, a town's larder reads hungerDays (famine) and foodSurplusDays / foodBalance (glut: 3 surplus days at a balance of at least 0.75). On hungry day FAMINE_SEED_DAY 2 it plants one famine row (FAMINE_SEED_ROWS) for a resident; on a glut run's first day one plenty row (PLENTY_SEED_ROWS). At most one per town per LARDER_SEED_COOLDOWN_DAYS 10 (larderLastSeedTick); none on a riot day or within the cooldown of a scarcity-arc move. The reverse guard: the scarcity arc's hoarding seed (phases/economicPower.ts) waits while larderLastFamineSeedTick (written by famine plants only) is within the cooldown, so one shortage plants one hunger story; the withheld seed is named in the arc's phase trace. The row fits the town's subtype or Places and asks no hold; the pick is a stable hash, no PRNG draw. Seeds join the riot's pendingEncounterSeeds write. | node-prop: `hungerDays`, `foodSurplusDays`, `foodBalance`, `larderLastSeedTick`, `larderLastFamineSeedTick`, `larderWasGlut` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `livelihood-tug-once-per-crossing` | A bonded mortal's home in famine or glut pulls one livelihood Thread Tug per crossing (THR-2062 E2, narrowing THR-615): the resource instance remembers livelihoodPulledTier and clears it when the good returns to adequate. The tug carries kind livelihood with the good and tier, so the badge names the good in resourceWord's word and answering it is free. A pause-mode thread raises no chapter tug at all (phaseAttention traces curator_decision skipped / pause_mode_thread). | property: `livelihoodPulledTier`, `livelihoodResourceId` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `mortal-means-steers-board` | A poor or greedy mortal leans toward work that pays: the decision board multiplies an encounter whose outcome table pays its actor, and an earning undertaking cell, by the mortal's Means want; a Wealthy mortal who is not greedy turns away from it. | node-prop: `wealth`, `axiologicalProfile`, `meansMultiplier`, `meansWant` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `prosperity-on-trade-lens` | Trade roads and what they carry are a lens, not plain-map clutter (THR-1898 Lenses II, plan D4). The route producers write `trades_with` edges (volume, manifest, threatened); the Trade lens (`views/lenses/tradeLens.ts`) lights every explored hex on the cube line between a known route's ends (`hexLine`), draws the road in caravan gold or threat red with a mid-road badge, and tells the road words that left the plain hex tooltip, then each end's prosperity tier (`getProsperityTier`, `phaseProsperity`) and scarce goods (`stockTier`) as words, never a number. | node-prop: `prosperity`, `stockTier` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
@@ -1838,10 +1839,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Mortal Economy & Prosperity
 - **UL terms:** *Prosperity*, *Unrest*
 - **Module:** `src/engine/economyShift.ts`
-- **Production hits:** 225 total — 3 write, 4 read, 218 unclassified
+- **Production hits:** 226 total — 3 write, 4 read, 219 unclassified
 - **Write sites:** `src/engine/economyShift.ts`, `src/engine/encounterAftermath.ts`, `src/engine/unifiedActionResolution.ts`
 - **Read sites:** `src/engine/castEconomyReceipt.ts`, `src/engine/phaseProsperity.ts`, `src/engine/phaseTradeRouteDecay.ts`, `src/engine/resourceEconomy.ts`
-- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +213 more
+- **Other hits:** `src/audio/BackgroundChannel.ts`, `src/audio/MusicChannel.ts`, `src/audio/UiChannel.ts`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +214 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `encounter-outcomes-write-mortal-means` — 🔵 UNVERIFIED-OK
@@ -2353,10 +2354,10 @@ exit
 - **Intent:** On a settlement the economy has reached, its foodBalance sets the stock tier of every food staple (grain, grazing, fish, water), so a fed town reads adequate and a starving one scarce; the scarcity arcs and the livelihood tug read the tier. The unrest hunger counter reads foodStore / foodBalance directly.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Mortal Economy & Prosperity
 - **UL terms:** *Settlement*
-- **Production hits:** 8 total — 1 write, 2 read, 5 unclassified
+- **Production hits:** 9 total — 1 write, 2 read, 6 unclassified
 - **Write sites:** `src/engine/phases/settlementEconomy.ts`
 - **Read sites:** `src/engine/phases/resourceStockTiers.ts`, `src/engine/unrestPressure/hunger.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/castEconomyReceipt.ts`, `src/engine/phases/index.ts`, `src/engine/settlementEconomy/describe.ts`, `src/types/trace.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/castEconomyReceipt.ts`, `src/engine/larderSeeds.ts`, `src/engine/phases/index.ts`, `src/engine/settlementEconomy/describe.ts` +1 more
 - **Verdict:** Verified 2026-10-25: THR-1923. The stock-tier phase derives the food staples from tierFromBalance(foodBalance) when the settlement carries one; hunger.ts reads foodStore and foodBalance (THR-1934, built against this plan).
 
 ### `found-lead-becomes-known-place` — 🟢 LIVE
@@ -2610,10 +2611,10 @@ exit
 - **Producer → Consumer:** Strategic Projects & Control → Factions & Succession
 - **UL terms:** *hold*, *Realm*, *Faction*
 - **Module:** `src/engine/factionQuestGeneration.ts`
-- **Production hits:** 16 total — 1 write, 1 read, 14 unclassified
+- **Production hits:** 18 total — 1 write, 1 read, 16 unclassified
 - **Write sites:** `src/engine/factionQuestGeneration.ts`
 - **Read sites:** `src/engine/phaseAgentDecision.ts`
-- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/crowns-reckoning.ts`, `src/data/encounters/keepers-petition.ts`, `src/data/faction-encounter-content.ts` +9 more
+- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/crowns-reckoning.ts`, `src/data/encounters/keepers-petition.ts`, `src/data/faction-encounter-content.ts` +11 more
 - **Verdict:** Verified 2026-09-22: THR-1448. The decayed-*stranger* arm, falsified not asserted (`holdStandingGates.test.ts`): a keeper at reputation 0.05 (below *subject* 0.15) is supplied both town-keeper rows and none of the three court rows; a non-keeper member at the same reputation is supplied neither (the pre-fix arm); a keeper at *subject* gets the court rows through the allowlist and each keeper row exactly once; the arm keys on the Realm the standing names, so a member of Brenn keeping a town on Aldmark’s ground gets nothing from Brenn; without a reader the path is what it was. Repeated on a generated world in `holdStandingReach.test.ts` by dropping the keeper’s edge below the ladder’s subject floor.
 
 ### `holdings-single-writer-owns-edge` — 🟢 LIVE
@@ -2778,6 +2779,17 @@ exit
 - **Read sites:** `src/engine/factionPurse.ts`, `src/engine/phaseFactionActions.ts`
 - **Other hits:** `src/debug-bridge.ts`, `src/engine/armySpawning.ts`, `src/engine/crown.ts`, `src/engine/economyShift.ts`, `src/engine/factionBounties.ts` +7 more
 - **Verdict:** Verified 2026-10-26: THR-2042. factionCommissions.test.ts: a lapsed posting refunds escrow to the purse exactly once, a taken one never lapses, a pre-THR-2042 posting refunds 0. npm run census:commissions: on seeds 42 / 99 / 7 escrow posted = paid + refunded + still held (250 = 20 + 230 + 0; 210 = 40 + 160 + 10; 330 = 50 + 265 + 15).
+
+### `larder-seeds-hunger-stories` — 🟢 LIVE
+
+- **Intent:** Hunger's stories are planted (THR-2040). In the unrest daily pass, after the riot, a town's larder reads hungerDays (famine) and foodSurplusDays / foodBalance (glut: 3 surplus days at a balance of at least 0.75). On hungry day FAMINE_SEED_DAY 2 it plants one famine row (FAMINE_SEED_ROWS) for a resident; on a glut run's first day one plenty row (PLENTY_SEED_ROWS). At most one per town per LARDER_SEED_COOLDOWN_DAYS 10 (larderLastSeedTick); none on a riot day or within the cooldown of a scarcity-arc move. The reverse guard: the scarcity arc's hoarding seed (phases/economicPower.ts) waits while larderLastFamineSeedTick (written by famine plants only) is within the cooldown, so one shortage plants one hunger story; the withheld seed is named in the arc's phase trace. The row fits the town's subtype or Places and asks no hold; the pick is a stable hash, no PRNG draw. Seeds join the riot's pendingEncounterSeeds write.
+- **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
+- **UL terms:** *Settlement*, *Encounter*
+- **Production hits:** 18 total — 1 write, 1 read, 16 unclassified
+- **Write sites:** `src/engine/larderSeeds.ts`
+- **Read sites:** `src/engine/phases/economicPower.ts`
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/data/larder-seed-config.ts`, `src/engine/castEconomyReceipt.ts`, `src/engine/phases/index.ts`, `src/engine/phases/resourceStockTiers.ts` +11 more
+- **Verdict:** Verified 2026-10-28: THR-2040. economicPower.test.ts: a town with a fresh larderLastFamineSeedTick gets no hoarding seed (traced) while its arc still moves; a plenty-only stamp withholds nothing. larderSeeds.test.ts (11): famine plants on day 2 only, glut on a run's first day only, the cooldown / riot / scarcity-arc / no-resident / disabled guards, a stable pick. npm run census:larder (seeds 42,99,7,1,2,3 × 360, medium), off vs on: hungry spells with a famine scene 10/48 (20.8%) → 35/47 (74.5%); glut runs with a plenty scene 38/91 (41.8%) → 92/100 (92.0%); fed towns famine 4.9% → 5.0%, plenty 3.3% → 3.3%; 131 seeds planted, 118 (90.1%) taken up.
 
 ### `lawless-halves-town-tax` — 🟢 LIVE
 
@@ -3363,10 +3375,10 @@ exit
 - **Producer → Consumer:** Encounters & Dilemmas → Encounters & Dilemmas
 - **UL terms:** *hold*, *Realm*, *Encounter*
 - **Module:** `src/engine/encounterFilterPipeline.ts`
-- **Production hits:** 17 total — 2 write, 1 read, 14 unclassified
+- **Production hits:** 19 total — 2 write, 1 read, 16 unclassified
 - **Write sites:** `src/data/encounters/crowns-reckoning.ts`, `src/data/encounters/keepers-petition.ts`
 - **Read sites:** `src/engine/encounterFilterPipeline.ts`
-- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/company-drama.ts`, `src/data/faction-encounter-content.ts`, `src/data/realm-content.ts` +9 more
+- **Other hits:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/data/content-tags.ts`, `src/data/encounters/company-drama.ts`, `src/data/faction-encounter-content.ts`, `src/data/larder-seed-config.ts` +11 more
 - **Verdict:** Verified 2026-09-22: THR-1448. `holdStandingGates.test.ts`: the keeper of the encounter’s Realm is admitted and a stranger in the same town is hidden; a keeper of a *different* Realm is hidden (the encounter’s ground decides); a keeper whose town is in the wilds is hidden; no reader, an unresolvable template id, and a location the map cannot place each fail open for the keeper while the stranger stays hidden; the court’s own rows are untouched. Repeated on a generated world in `holdStandingReach.test.ts`.
 
 ### `resolved-actions-feed-band-kpi` — 🟢 LIVE
@@ -3521,10 +3533,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 140 total — 1 write, 1 read, 138 unclassified
+- **Production hits:** 141 total — 1 write, 1 read, 139 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +133 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +134 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE
@@ -3568,10 +3580,10 @@ exit
 - **Producer → Consumer:** Mortal Economy & Prosperity → Encounters & Dilemmas
 - **UL terms:** *Settlement*, *Encounter*
 - **Module:** `src/data/unrest-pressure-constants.ts`
-- **Production hits:** 5 total — 2 write, 1 read, 2 unclassified
+- **Production hits:** 6 total — 2 write, 1 read, 3 unclassified
 - **Write sites:** `src/engine/phases/economicPower.ts`, `src/engine/unrestPressure.ts`
 - **Read sites:** `src/data/encounters/granary-riot.ts`
-- **Other hits:** `src/data/content-eval/plotHooks.ts`, `src/data/unrest-pressure-constants.ts`
+- **Other hits:** `src/data/content-eval/plotHooks.ts`, `src/data/larder-seed-config.ts`, `src/data/unrest-pressure-constants.ts`
 - **Verdict:** Verified 2026-10-17: THR-1934. economicPower.test.ts: the arc's unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.
 
 ### `sealed-cards-gate-the-offering` — 🔵 UNVERIFIED-OK
@@ -4262,10 +4274,10 @@ exit
 
 - **Intent:** Unrest the player can raise shows where it is (THR-1898 Lenses II, plan D4, PC-6). `phaseUnrest` writes per-Location `unrest` (raised by Incite Unrest, doom cards and scarcity arcs) and `phaseLocationTraits` mints the Lawless condition from it; the Trouble lens lights a hex when a Location on it carries Lawless ("Unrest: Ferris is lawless.") or when its mood bucket — `deriveMoodBucket`, the average the hex survey reads — is agitated or worse, so the lens never disagrees with the chip or the survey. The conflict pulse (`computeLocationPulse`, tense/volatile) lights the same lens as Strife; rival schemes and drains (`buildRivalInfluenceMarkers`, consumer moved here from the retired `RivalInfluenceMesh`) name the rival.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Intelligence, Knowledge & Familiarity
-- **Production hits:** 77 total — 2 write, 1 read, 74 unclassified
+- **Production hits:** 78 total — 2 write, 1 read, 75 unclassified
 - **Write sites:** `src/engine/phaseLocationTraits.ts`, `src/engine/phaseUnrest.ts`
 - **Read sites:** `src/engine/views/lenses/troubleLens.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/composition-dsl/examples/event-winnowing-of-luck.recipe.ts` +69 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/DoomClockDetail.tsx`, `src/components/HexMapV2/HexMapV2.tsx`, `src/composition-dsl/examples/event-winnowing-of-luck.recipe.ts` +70 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `unrest-pressure-inputs` — 🟢 LIVE
@@ -4273,10 +4285,10 @@ exit
 - **Intent:** Unrest is pressure toward a daily target (THR-1934 S1). The unrest phase writes each settlement's unrestTarget, its six unrestInputs (hunger, poverty, siege, sickness, deathSite, contentment) and hungerDays; a Restless town's leaver takes up Flee the Ravaged Land when hunger is the largest input, and the place page's Fortunes sentence names the band and its largest input. The god's stake (THR-1935) reads the same props later.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Settlement*, *Unrest*, *Ambition*
-- **Production hits:** 10 total — 1 write, 1 read, 8 unclassified
+- **Production hits:** 12 total — 1 write, 1 read, 10 unclassified
 - **Write sites:** `src/engine/unrestPressure.ts`
 - **Read sites:** `src/engine/unrestPressure/describe.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/phases/settlementEconomy.ts`, `src/engine/prayers.ts`, `src/engine/unrestPressure/inputs.ts`, `src/engine/unrestPressure/leave.ts` +3 more
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/data/larder-seed-config.ts`, `src/engine/larderSeeds.ts`, `src/engine/phases/settlementEconomy.ts`, `src/engine/prayers.ts` +5 more
 - **Verdict:** Verified 2026-10-17: THR-1934. src/engine/__tests__/unrestPressure.test.ts (17): each term's rule and cap; one scarce staple reaches Restless within 10 days and falls below it within 10 once adequate; the leaver takes up Flee when hunger drives the town; the Fortunes sentences. npm run measure:unrest (600 ticks, medium): 99 / 96 / 43 leaves on seeds 42 / 99 / 7, Flee minted 21 / 22 / 4.
 
 ### `war-aim-targets-faction-ambitions` — 🟢 LIVE
