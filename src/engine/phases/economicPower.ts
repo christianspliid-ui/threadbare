@@ -57,7 +57,7 @@ import { resolveRegionalMonopolies, type ChroniclePush } from './regionalMonopol
 import { realmBorderMap } from '../realmBorderMap';
 import { UNREST_PRESSURE_ENABLED, GRANARY_RIOT_TEMPLATE_ID } from '../../data/unrest-pressure-constants';
 import type { PendingEncounterSeed } from '../../types/unifiedAction';
-import { LARDER_LAST_SEED_PROP } from '../larderSeeds';
+import { LARDER_LAST_FAMINE_SEED_PROP } from '../larderSeeds';
 import { LARDER_SEED_COOLDOWN_DAYS } from '../../data/larder-seed-config';
 
 /**
@@ -270,11 +270,13 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
         }
       : undefined;
     // THR-2040 — the larder's guard runs the other way too: a town that was just handed
-    // a famine story (`larderLastSeedTick`) does not get the hoarding story on top of it.
-    const larderSeedTick = loc.properties[LARDER_LAST_SEED_PROP];
-    const larderJustPlanted = typeof larderSeedTick === 'number'
-      && tick - larderSeedTick < LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
-    if (nextPhase === 'hoarding' && seedBase && !larderJustPlanted) {
+    // a famine story (`larderLastFamineSeedTick`) does not get the hoarding story on top of
+    // it. A plenty story does not count: it is not a hunger story.
+    const famineSeedTick = loc.properties[LARDER_LAST_FAMINE_SEED_PROP];
+    const hoardingWithheld = nextPhase === 'hoarding' && seedBase !== undefined
+      && typeof famineSeedTick === 'number'
+      && tick - famineSeedTick < LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
+    if (nextPhase === 'hoarding' && seedBase && !hoardingWithheld) {
       newSeeds.push({ ...seedBase, encounterFamily: 'mct.quest', seedLabel: `Hoarding takes hold at ${loc.name} — someone is sitting on the ${arc.resourceId}` });
     } else if (nextPhase === 'unrest') {
       // THR-1934 — under the pressure model hunger carries the anger (the unrest
@@ -306,7 +308,9 @@ export function phaseEconomicPower(state: GameState, ctx: PhaseContext): PhaseRe
     emitEconTrace({
       category: 'scarcity_arc_phase' as const,
       tick,
-      summary: `Scarcity arc at ${loc.name}: ${arc.phase} to ${nextPhase}`,
+      summary: hoardingWithheld
+        ? `Scarcity arc at ${loc.name}: ${arc.phase} to ${nextPhase} (hoarding seed withheld: larder famine story at tick ${famineSeedTick})`
+        : `Scarcity arc at ${loc.name}: ${arc.phase} to ${nextPhase}`,
       locationId: loc.id,
       resourceId: arc.resourceId,
       phase: nextPhase,

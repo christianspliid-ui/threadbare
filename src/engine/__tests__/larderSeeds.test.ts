@@ -11,6 +11,7 @@ import {
   readLarder,
   setLarderSeedsEnabledOverride,
   LARDER_LAST_SEED_PROP,
+  LARDER_LAST_FAMINE_SEED_PROP,
   LARDER_WAS_GLUT_PROP,
 } from '../larderSeeds';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
@@ -84,6 +85,7 @@ describe('the famine trigger', () => {
     expect(seeds[0]).toMatchObject({ targetAgentId: 'm1', sourceEncounterId: 'larder', sourceReactionId: 'famine', seedLabel: 'Town a has gone hungry' });
     expect(FAMINE_IDS.has(seeds[0].templateId!)).toBe(true);
     expect(town.properties[LARDER_LAST_SEED_PROP]).toBe(TICKS_PER_DAY);
+    expect(town.properties[LARDER_LAST_FAMINE_SEED_PROP]).toBe(TICKS_PER_DAY);
     expect(larderTraces()).toHaveLength(1);
     expect(larderTraces()[0]).toMatchObject({ state: 'famine', targetAgentId: 'm1' });
   });
@@ -99,6 +101,7 @@ describe('the glut trigger', () => {
     expect(first[0]).toMatchObject({ sourceReactionId: 'glut', seedLabel: "Town a's granaries are full" });
     expect(PLENTY_IDS.has(first[0].templateId!)).toBe(true);
     expect(town.properties[LARDER_WAS_GLUT_PROP]).toBe(true);
+    expect(town.properties[LARDER_LAST_FAMINE_SEED_PROP]).toBeUndefined();
     // Still glutted the next day (and past the cooldown): not a first day.
     expect(plant(graph, town, (LARDER_SEED_COOLDOWN_DAYS + 1) * TICKS_PER_DAY, false, 0)).toHaveLength(0);
     // The run ends, then a new one begins past the cooldown: plants again.

@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GRANARY_RIOT_TEMPLATE_ID } from '../../../data/unrest-pressure-constants';
 import { WorldGraph } from '../../graph';
 import { phaseEconomicPower } from '../economicPower';
-import { LARDER_LAST_SEED_PROP } from '../../larderSeeds';
+import { LARDER_LAST_SEED_PROP, LARDER_LAST_FAMINE_SEED_PROP } from '../../larderSeeds';
 import { computeRawScore } from '../../domainCapability';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../../traceBuffer';
 import {
@@ -176,9 +176,29 @@ describe('phaseEconomicPower (THR-617)', () => {
 
     phaseEconomicPower(makeState(SCAN, graph), ctx);
     graph.getNode('a')!.properties[LARDER_LAST_SEED_PROP] = SCAN;
+    graph.getNode('a')!.properties[LARDER_LAST_FAMINE_SEED_PROP] = SCAN;
+    clearTraces();
+    enableTracing();
     const result = phaseEconomicPower(makeState(SCAN * 2, graph), ctx);
+    const summaries = getTraces().map(t => (t as { summary?: string }).summary ?? '');
+    disableTracing();
     expect((graph.getNode('a')!.properties.scarcityArc as { phase: string }).phase).toBe('hoarding');
     expect(result.pendingEncounterSeeds ?? []).toHaveLength(0);
+    expect(summaries.some(s => s.includes('hoarding seed withheld'))).toBe(true);
+  });
+
+  it('a recent larder plenty story does not withhold the hoarding seed (THR-2040)', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'a', 'Aford', {
+      resources: { grain: { resourceId: 'grain', quantity: 2, stockTier: 'scarce' } },
+    });
+    graph.addNode({ id: 'ag1', type: 'actor', name: 'Local', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e_ag1', source: 'ag1', target: 'a', type: 'located_at', properties: {} });
+
+    phaseEconomicPower(makeState(SCAN, graph), ctx);
+    graph.getNode('a')!.properties[LARDER_LAST_SEED_PROP] = SCAN; // plenty plant: no famine stamp
+    const result = phaseEconomicPower(makeState(SCAN * 2, graph), ctx);
+    expect(result.pendingEncounterSeeds?.[0]?.encounterFamily).toBe('mct.quest');
   });
 
   it('a flashpoint held SCARCITY_ARC_FLASHPOINT_HOLD_DAYS is spent and frees its slot for a fourth scarce town (THR-1919)', () => {

@@ -47,6 +47,8 @@ import {
 
 /** Settlement prop: the tick the last larder story was planted (famine and glut share it). */
 export const LARDER_LAST_SEED_PROP = 'larderLastSeedTick';
+/** Settlement prop: the tick the last larder *famine* story was planted (the scarcity arc's hoarding seed reads it). */
+export const LARDER_LAST_FAMINE_SEED_PROP = 'larderLastFamineSeedTick';
 /** Settlement prop: the town read as glutted at the last daily pass (to see a glut run's first day). */
 export const LARDER_WAS_GLUT_PROP = 'larderWasGlut';
 
@@ -188,6 +190,7 @@ export function plantLarderSeed(
           seedLabel: trigger === 'famine' ? `${town.name} has gone hungry` : `${town.name}'s granaries are full`,
         });
         props[LARDER_LAST_SEED_PROP] = tick;
+        if (trigger === 'famine') props[LARDER_LAST_FAMINE_SEED_PROP] = tick;
       }
     }
   }
