@@ -143,6 +143,7 @@
     "check:cast-targets": "esbuild scripts/check-cast-targets.ts --bundle --platform=node --format=esm --outfile=.cache/check-cast-targets.mjs --external:fs --external:path --external:process --external:url && node .cache/check-cast-targets.mjs",
     "census:rhythm": "esbuild scripts/firing-rhythm-census.ts --bundle --platform=node --format=esm --outfile=.cache/firing-rhythm-census.mjs --external:fs --external:path && node .cache/firing-rhythm-census.mjs",
     "census:lanes": "esbuild scripts/lane-event-census.ts --bundle --platform=node --format=esm --outfile=.cache/lane-event-census.mjs --external:fs --external:path && node .cache/lane-event-census.mjs",
+    "census:larder": "esbuild scripts/larder-census.ts --bundle --platform=node --format=esm --outfile=.cache/larder-census.mjs --external:fs --external:path && node .cache/larder-census.mjs",
     "census:debts": "esbuild scripts/debt-census.ts --bundle --platform=node --format=esm --outfile=.cache/debt-census.mjs --external:fs --external:path && node .cache/debt-census.mjs",
     "census:bounties": "esbuild scripts/bounty-census.ts --bundle --platform=node --format=esm --outfile=.cache/bounty-census.mjs --external:fs --external:path --external:child_process && node .cache/bounty-census.mjs",
     "census:commissions": "esbuild scripts/commission-census.ts --bundle --platform=node --format=esm --outfile=.cache/commission-census.mjs --external:fs --external:path --external:child_process && node .cache/commission-census.mjs",

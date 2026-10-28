@@ -17,6 +17,8 @@
  * - **Lawless** (`lawless` trait): on the day a hungry town turns Lawless, a granary
  *   riot is seeded for a resident (at most once per `RIOT_SEED_COOLDOWN_DAYS`). The
  *   tax half lives in `factionPurse/income.ts` (`townTaxOf`).
+ * - **Larder** (THR-2040, `larderSeeds.ts`): after the riot, a hungry town's second
+ *   day plants a hunger story for a resident, and a glut's first day a plenty story.
  *
  * **S2 (THR-1957)** — after every settlement's daily pass, `runTownTurns`
  * (`unrestPressure/turns.ts`): a held town **On the edge** may turn to a better lord
@@ -75,6 +77,7 @@ import { pickLeaveDestination, pickLeaningMortal } from './unrestPressure/leave'
 import { taxHolderOf } from './factionPurse/income';
 import { SIEGED_BY_PROP } from './unrestPressure/defection';
 import { runTownTurns, fullDetailIds, noteEmptied, type TurnHooks, type TurnOutput } from './unrestPressure/turns';
+import { plantLarderSeed } from './larderSeeds';
 
 export { homeIsRestless } from './unrestPressure/bands';
 
@@ -196,6 +199,7 @@ function dailyPass(
   const lawless = isLawlessPlace(graph, town.id);
   const turnedLawless = lawless && props[WAS_LAWLESS_PROP] !== true;
   if (lawless !== (props[WAS_LAWLESS_PROP] === true)) props[WAS_LAWLESS_PROP] = lawless;
+  let riotPlanted = false;
   if (turnedLawless && hungerDays > 0) {
     const lastRiot = num(props[LAST_RIOT_SEED_PROP]);
     if (lastRiot === undefined || tick - lastRiot >= RIOT_SEED_COOLDOWN_DAYS * TICKS_PER_DAY) {
@@ -214,6 +218,7 @@ function dailyPass(
           seedLabel: `${town.name} turns lawless on an empty belly`,
         });
         props[LAST_RIOT_SEED_PROP] = tick;
+        riotPlanted = true;
       }
       emitTrace({
         tick,
@@ -226,6 +231,13 @@ function dailyPass(
         seeded: !!targetAgentId,
       });
     }
+  }
+
+  // THR-2040 — the larder plants a hunger or plenty story; the riot comes first.
+  try {
+    plantLarderSeed(state, town, hunger.hungry, hungerDays, riotPlanted, pendingSeedIds, seeds);
+  } catch (err) {
+    console.warn(`[unrest] larder seed failed at ${town.id}; the day's unrest stands`, err);
   }
 }
 
