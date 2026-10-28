@@ -81,6 +81,18 @@ describe('boardContextPulls (THR-2071)', () => {
     expect(p[0] / p[2]).toBeCloseTo(boardContextPull(0.4, 0.1), 10);
   });
 
+  it('holds the cap after normalizing a board of penalized scenes', () => {
+    // Raw [2, 0.5, 0.5] → geometric mean ≈ 0.794 → the top scene would read ≈ 2.52.
+    const cs = [
+      { valuePerTick: 0.1, desireMultiplier: 1, reputationBonus: 5 },
+      { valuePerTick: 0.1, desireMultiplier: 1, reputationBonus: -5 },
+      { valuePerTick: 0.1, desireMultiplier: 1, reputationBonus: -5 },
+    ] as never[];
+    const p = boardContextPulls(cs);
+    expect(Math.max(...p)).toBe(BOARD_CONTEXT_PULL_MAX);
+    expect(Math.min(...p)).toBeGreaterThanOrEqual(BOARD_CONTEXT_PULL_MIN);
+  });
+
   it('returns [] for an empty board and all-1 at weight 0', () => {
     expect(boardContextPulls([])).toEqual([]);
     weight.value = 0;

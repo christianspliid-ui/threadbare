@@ -247,7 +247,9 @@ export function boardContextPull(base: number, contextSum: number): number {
  * the ratio between any two encounters exactly (the scorer's proportion, decision 2)
  * while the board's average encounter stays at ×1, so a place leans which scene a
  * mortal takes, not whether they take a scene or an undertaking. A lone encounter
- * therefore reads ×1. Fail-soft: an empty list → []; a non-positive mean → raw pulls.
+ * therefore reads ×1. The normalized pull is clamped to [MIN, MAX] again, so the cap
+ * holds on the final factor (ratios hold exactly only between unclamped scenes).
+ * Fail-soft: an empty list → []; a non-positive mean → raw pulls.
  */
 export function boardContextPulls(
   candidates: readonly Pick<ScoredCandidate, 'valuePerTick' | 'desireMultiplier'>[],
@@ -258,7 +260,9 @@ export function boardContextPulls(
   if (!BOARD_CONTEXT_NORMALIZE || raw.length === 0) return raw;
   const mean = Math.exp(raw.reduce((s, p) => s + Math.log(p), 0) / raw.length);
   if (!(mean > 0) || !Number.isFinite(mean)) return raw;
-  return raw.map(p => p / mean);
+  // Clamp again after normalizing: dividing by a mean below 1 (a board of penalized
+  // scenes) would otherwise lift its best scene past the cap against every undertaking.
+  return raw.map(p => Math.min(BOARD_CONTEXT_PULL_MAX, Math.max(BOARD_CONTEXT_PULL_MIN, p / mean)));
 }
 
 // ─── Contract ───────────────────────────────────────────────────
