@@ -1174,6 +1174,17 @@ export const BOARD_CONTEXT_PULL_MIN = 0.5;
  * 1-point kill line. See `boardContextPulls`. */
 export const BOARD_CONTEXT_NORMALIZE = true;
 
+/** THR-2073 — the share of the scorer's late additive pulls the live board's context
+ * lean carries, on top of `BOARD_CONTEXT_WEIGHT`: the god's steering verbs (Mark the
+ * Ground `attractionBonus`, Draw Together `convergenceBonus`, Whisper Intuition
+ * `hunchBonus`), the mortal's movement leans (`relocationBonus`, `appointmentBonus`,
+ * `brokenDriftBonus`) and the seeker's draws (`ruinsBonus`, `anomalyBonus`). They sum
+ * into the same `contextPull`, so the same clamp and per-board normalization hold.
+ * 0 = the pre-THR-2073 board, where a god verb could put a scene on a mortal's
+ * shortlist but never make the mortal prefer it (kill switch).
+ * @range 0–1 */
+export const BOARD_LATE_PULL_WEIGHT = 1;
+
 // ═══════════════════════════════════════════════════════════════════
 // REPUTATION TRAITS — Reach-polarity reputation accumulation (phaseReputationTraits.ts)
 // ═══════════════════════════════════════════════════════════════════

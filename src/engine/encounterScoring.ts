@@ -666,6 +666,12 @@ export interface ScoredCandidate {
   resonance: number;
   globalResonance: number;
   ruinsBonus: number;
+  /** THR-2073 — Eye/Veil pull toward an undiscovered anomaly (`computeAnomalyDiscoveryBonus`), already folded into finalScore; carried so the live board can read it. Optional: older fixtures read it as 0. */
+  anomalyBonus?: number;
+  /** THR-2073 — pull toward a live relocation intent's destination (THR-1142), already folded into finalScore; carried for the board. Optional: older fixtures read it as 0. */
+  relocationBonus?: number;
+  /** THR-2073 — a broken mortal's homeward drift (THR-773), already folded into finalScore; carried for the board. Optional: older fixtures read it as 0. */
+  brokenDriftBonus?: number;
   attractionBonus: number;
   /** Draw Together convergence pull toward the anchor hex (THR-74); 0 when no window. */
   convergenceBonus: number;
@@ -1618,6 +1624,9 @@ export function scoreAndSelect(
       resonance,
       globalResonance,
       ruinsBonus,
+      anomalyBonus,
+      relocationBonus,
+      brokenDriftBonus,
       attractionBonus,
       convergenceBonus,
       appointmentBonus,
