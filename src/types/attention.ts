@@ -113,7 +113,21 @@ export interface ThreadTug {
   attended: boolean;
   /** Curator priority score used to select which tugs surface first. */
   curationScore: number;
+  /**
+   * THR-2062: what raised the tug. Absent reads as `chapter` (an old save).
+   * A `livelihood` tug is news of the mortal's home and costs nothing to answer.
+   */
+  kind?: ThreadTugKind;
+  /** THR-2062: the good a livelihood tug is about (`kind: 'livelihood'` only). */
+  livelihoodResourceId?: string;
+  /** THR-2062: whether the home is short of the good or has it to spare. */
+  livelihoodTier?: 'scarce' | 'surplus';
+  /** Dedup key `${agentId}::${resourceId}` on a livelihood tug (THR-615). */
+  livelihoodKey?: string;
 }
+
+/** THR-2062: what raised a Thread Tug — a mortal's chapter, or news of their home. */
+export type ThreadTugKind = 'chapter' | 'livelihood';
 
 // ─── Story Beats ──────────────────────────────────────────────────────
 
@@ -196,7 +210,8 @@ export interface EncounterPromotionTrace extends TraceBase {
 export interface CuratorDecisionTrace extends TraceBase {
   category: 'curator_decision';
   encounterId: string;
-  decision: 'kept' | 'curated_out';
+  /** THR-2062: `skipped` — no tug raised (a pause-mode thread's chapter is already free). */
+  decision: 'kept' | 'curated_out' | 'skipped';
   curationScore: number;
   reason: string;
   // THR-16: curator metadata signals
@@ -214,6 +229,10 @@ export interface AttentionPoolTrace extends TraceBase {
   capacity: number;
   delta: number;
   cause: string;
+  /** THR-2062: the tug that was answered (`cause: 'attend_tug'`). */
+  tugId?: string;
+  /** THR-2062: the answered tug's kind. */
+  tugKind?: ThreadTugKind;
 }
 
 /** Trace emitted when a story beat enters or exits the queue. */

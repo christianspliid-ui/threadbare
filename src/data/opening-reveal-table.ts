@@ -74,11 +74,11 @@ export interface OpeningRevealRow {
 }
 
 /**
- * Hides the Attention gauge until something spends Attention (THR-2060 U4). Nothing
- * calls `spendAttention` in production today, so a shown gauge always sits full.
- * TODO(THR-2062): wire a spend (or retire the pool), then set this back to true.
+ * Master switch for the Attention gauge (THR-2060 U4). THR-2062: answering a Thread
+ * Tug spends Attention (`attendThreadTug`), and the gauge renders only while
+ * `attentionCanBeSpent` holds — a mortal on *Lives on* is in the court.
  */
-export const ATTENTION_GAUGE_SHOWN = false;
+export const ATTENTION_GAUGE_SHOWN = true;
 
 const BOND = { kind: 'bond' } as const;
 const gift = (beatId: string): OpeningRevealTrigger => ({ kind: 'gift', beatId });

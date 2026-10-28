@@ -1439,8 +1439,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   // happen" signal. Replaces the map's tug vibration, which no player perceived.
   // Depends on the pool so an unaffordable tug renders as such.
   const tugBadges = useMemo(
-    () => selectThreadTugBadges(gameState.activeThreadTugs, attentionPool),
-    [gameState.activeThreadTugs, attentionPool],
+    () => selectThreadTugBadges(gameState.activeThreadTugs, attentionPool, attentionCapacity),
+    [gameState.activeThreadTugs, attentionPool, attentionCapacity],
   );
 
   // THR-666: and the same treatment for a threaded agent's own beats — becomings,

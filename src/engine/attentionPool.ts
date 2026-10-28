@@ -6,9 +6,21 @@
  * Design doc: Docs/plans/2026-04-05-attention-tier-model-design.md
  */
 
-import type { AscendantAttentionState, AttentionVisualState } from '../types/attention';
-import type { CourtPosition } from '../types/influence';
+import type {
+  AscendantAttentionState,
+  AttentionPoolTrace,
+  AttentionVisualState,
+  ThreadTug,
+} from '../types/attention';
+import type { CourtPosition, ThreadEdgeProperties } from '../types/influence';
+import type { TraceEntry } from '../types/trace';
+import type { WorldGraph } from './graph';
+import { resolveAttentionMode } from './attentionCadence';
+import { emitTrace } from './traceBuffer';
 import {
+  ATTENTION_BASE_CAPACITY,
+  ATTENTION_BASE_REGEN,
+  LIVELIHOOD_TUG_ATTEND_COST,
   ATTENTION_POOL_FOCUSED_THRESHOLD,
   ATTENTION_POOL_BUSY_THRESHOLD,
   ATTENTION_POOL_STRAINED_THRESHOLD,
@@ -102,4 +114,117 @@ export function computeAttendCost(
   const base = THREAT_BASE_COST[threatLevel] ?? ATTEND_COST_MODERATE;
   const multiplier = COURT_MULTIPLIER[courtPosition] ?? COURT_COST_MULTIPLIER_RETINUE;
   return base * multiplier;
+}
+
+// ─── tugAttendCost ────────────────────────────────────────────────────────────
+
+/**
+ * Court position used when a tug somehow carries `dormant`.
+ * Dormant agents should not generate tugs; `computeAttendCost` rejects the type.
+ */
+const TUG_FALLBACK_COURT_POSITION: Exclude<CourtPosition, 'dormant'> = 'retinue';
+
+/**
+ * Attention cost of answering one Thread Tug (THR-2062: moved here from the badge
+ * model so the engine's single writer and the badge price a tug the same way).
+ * A livelihood tug is news, not a purchase: `LIVELIHOOD_TUG_ATTEND_COST`.
+ */
+export function tugAttendCost(tug: ThreadTug): number {
+  if (tug.kind === 'livelihood') return LIVELIHOOD_TUG_ATTEND_COST;
+  const safePosition = tug.courtPosition !== 'dormant'
+    ? tug.courtPosition
+    : TUG_FALLBACK_COURT_POSITION;
+  return computeAttendCost(tug.threatLevel, safePosition);
+}
+
+// ─── attendThreadTug ──────────────────────────────────────────────────────────
+
+/** What `attendThreadTug` reads: the graph, the ascendant, the live tugs, the tick. */
+export interface AttendThreadTugInput {
+  graph: WorldGraph;
+  ascendantId: string;
+  activeThreadTugs?: readonly ThreadTug[];
+  tick: number;
+}
+
+export interface AttendThreadTugResult {
+  /** The tug list with the answered tug marked attended (a new array). */
+  activeThreadTugs: ThreadTug[];
+  /** What the answer cost. */
+  cost: number;
+  /** The pool after paying. */
+  pool: number;
+}
+
+/**
+ * THR-2062 E4 — answer a Thread Tug: the single writer of an Attention spend.
+ *
+ * Finds the live, unattended tug, prices it (`tugAttendCost`), refuses when the
+ * pool cannot cover it, writes the paid pool onto the ascendant node (graph
+ * convention: props mutated in place — the caller owns `touchWorld`), and emits an
+ * `attention_pool` trace with `cause: 'attend_tug'`.
+ *
+ * Fail-soft: an unknown, lapsed or already-answered tug, a missing ascendant, or a
+ * pool that cannot pay → `null`, and nothing is spent.
+ */
+export function attendThreadTug(
+  input: AttendThreadTugInput,
+  tugId: string,
+): AttendThreadTugResult | null {
+  const tugs = input.activeThreadTugs ?? [];
+  const tug = tugs.find(t => t.id === tugId);
+  if (!tug || tug.attended || tug.expiresTick <= input.tick) return null;
+
+  const ascendant = input.graph.getNode(input.ascendantId);
+  if (!ascendant) return null;
+  const props = ascendant.properties as Record<string, unknown>;
+  const prev: AscendantAttentionState = {
+    attentionPool:     Number.isFinite(props.attentionPool as number) ? props.attentionPool as number : ATTENTION_BASE_CAPACITY,
+    attentionCapacity: Number.isFinite(props.attentionCapacity as number) ? props.attentionCapacity as number : ATTENTION_BASE_CAPACITY,
+    attentionRegen:    Number.isFinite(props.attentionRegen as number) ? props.attentionRegen as number : ATTENTION_BASE_REGEN,
+  };
+
+  const cost = tugAttendCost(tug);
+  if (prev.attentionPool < cost) return null;
+
+  const next = spendAttention(prev, cost);
+  props.attentionPool = next.attentionPool;
+
+  emitTrace({
+    category: 'attention_pool',
+    tick:     input.tick,
+    agentId:  tug.agentId,
+    summary:  `attention spent -${cost.toFixed(2)} → ${next.attentionPool.toFixed(2)}/${next.attentionCapacity} answering tug ${tug.id}`,
+    previous: prev.attentionPool,
+    current:  next.attentionPool,
+    capacity: next.attentionCapacity,
+    delta:    -cost,
+    cause:    'attend_tug',
+    tugId:    tug.id,
+    tugKind:  tug.kind ?? 'chapter',
+  } satisfies Omit<AttentionPoolTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
+
+  return {
+    activeThreadTugs: tugs.map(t => (t.id === tug.id ? { ...t, attended: true } : t)),
+    cost,
+    pool: next.attentionPool,
+  };
+}
+
+// ─── attentionCanBeSpent ──────────────────────────────────────────────────────
+
+/**
+ * THR-2062 E5 — can a Thread Tug cost the god anything? True when the court holds a
+ * non-dormant thread set to *Lives on* (`auto_resolve`). A mortal who asks you
+ * (`pause`) raises no chapter tug, and livelihood tugs are free, so with only those
+ * the gauge has nothing to show.
+ */
+export function attentionCanBeSpent(graph: WorldGraph, ascendantId: string): boolean {
+  for (const edge of graph.getOutgoingEdges(ascendantId, 'thread')) {
+    const props = (edge.properties ?? {}) as unknown as ThreadEdgeProperties;
+    if ((props.courtPosition as string | undefined) === 'dormant') continue;
+    if (!props.courtPosition) continue;
+    if (resolveAttentionMode(props) === 'auto_resolve') return true;
+  }
+  return false;
 }

@@ -43,6 +43,17 @@ const STATE_LABEL: Record<AttentionVisualState, string> = {
 };
 
 /**
+ * THR-2062 U2: the gauge's tooltip in words — the state word and how full the pool
+ * is, never `pool / capacity` figures (Law 13). Figures stay on the trace.
+ */
+export const ATTENTION_TOOLTIP_TEXT: Record<AttentionVisualState, string> = {
+  focused:     'Attention: most of your notice is free.',
+  busy:        'Attention: Busy. Some of your notice is free.',
+  strained:    'Attention: Strained. Little of your notice is free.',
+  overwhelmed: 'Attention: Overwhelmed. Almost none of your notice is free.',
+};
+
+/**
  * Compact attention pool indicator for the top bar.
  *
  * Shows a 40×4 px progress bar whose colour and opacity reflect the
@@ -81,19 +92,12 @@ export function AttentionPoolIndicator({
   const opacity = STATE_OPACITY[visualState];
   const label   = STATE_LABEL[visualState];
 
-  const poolDisplay  = attentionState.attentionPool.toFixed(1);
-  const capDisplay   = attentionState.attentionCapacity.toFixed(1);
-  const stateLabel   = visualState.charAt(0).toUpperCase() + visualState.slice(1);
-
   /*
-   * THR-1426 (Shape 2): the pool *balance* stays as figures under Law 13's ratified
-   * persistent-chrome exception (2026-08-06, THR-890) — the same carve-out the essence
-   * counter sits under. The exception covers balances, not rates: `regen 1.5/tick` was a
-   * per-tick rate in an engine unit the player never sees named (Law 14), and it is
-   * derivable by watching the bar move, so it is dropped from the bar and this tooltip
-   * rather than banded. The figure stays on the trace.
+   * THR-1426 dropped the per-tick rate; THR-2062 (U2) drops the balance figures too.
+   * The bar shows how full the pool is and the words say it, so the tooltip needs no
+   * number (Law 13; the taste profile's "no numbers visible"). Figures stay on the trace.
    */
-  const tooltipTitle = `Attention: ${poolDisplay} / ${capDisplay} (${stateLabel})`;
+  const tooltipTitle = ATTENTION_TOOLTIP_TEXT[visualState];
 
   if (placement === 'rail') {
     return (

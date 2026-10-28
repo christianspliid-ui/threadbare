@@ -44,7 +44,8 @@ import {
   STORY_BEAT_QUEUE_OVERFLOW_DEMOTE,
 } from '../data/attention-constants';
 import { emitTrace } from './traceBuffer';
-import { isRoutineTemplate } from './attentionCadence';
+import { isRoutineTemplate, resolveAttentionMode } from './attentionCadence';
+import type { ThreadEdgeProperties } from '../types/influence';
 import type { TraceEntry } from '../types/trace';
 import { classifyChainStage, getChainProgress } from './encounterChains';
 import { agentPursuesReach } from './encounterScoring';
@@ -82,6 +83,31 @@ function nextTugId(tick: number): string {
 export function resetTugCounter(): void {
   tugCounter = 0;
   tugCounterTick = -1;
+}
+
+// ─── Pause-mode skip (THR-2062 E1) ──────────────────────────────────────────
+
+/**
+ * A mortal who asks you (`attentionMode: 'pause'`) raises no chapter tug: their
+ * chapters already stop the world for free (`encounterVisibility` bypasses the
+ * attended-tug gate for a pause-mode thread), so a tug would only charge for what
+ * is free. Traced as a `curator_decision` so "why no pull?" has an answer.
+ */
+function skipPauseModeThread(
+  threadProps: Record<string, unknown> | undefined,
+  tick: number,
+  agentId: string,
+  encounterId: string,
+): boolean {
+  if (!threadProps) return false;
+  if (resolveAttentionMode(threadProps as unknown as ThreadEdgeProperties) !== 'pause') return false;
+  emitTrace({
+    category: 'curator_decision', tick, agentId,
+    summary: `no tug for ${encounterId}: ${agentId} asks you (pause-mode thread)`,
+    encounterId, decision: 'skipped', curationScore: 0, reason: 'pause_mode_thread',
+    isChainStage: false, isFinalChainStage: false, factionThreadCount: 0, matchesAmbition: false,
+  } satisfies Omit<CuratorDecisionTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
+  return true;
 }
 
 // ─── Phase entry point ────────────────────────────────────────────────────────
@@ -207,6 +233,9 @@ export function phaseAttention(
     // on a beat whose notification the visibility phase will never build.
     if (isRoutineTemplate(ua.templateId)) continue;
 
+    // THR-2062 E1: a pause-mode thread's chapter is already free — no tug.
+    if (skipPauseModeThread(threadEdge?.properties as Record<string, unknown> | undefined, state.tick, ua.actorId, ua.actionId)) continue;
+
     // Look up the template for reach domain and threat rating
     const template = templateById.get(ua.templateId);
     const reachPrimary: string = template?.reach ?? 'combat';
@@ -271,6 +300,9 @@ export function phaseAttention(
       ?.courtPosition as CurationCandidate['courtPosition'] | undefined;
 
     if (!courtPosition || (courtPosition as string) === 'dormant') continue;
+
+    // THR-2062 E1 (same rule as the unified path).
+    if (skipPauseModeThread(threadEdge?.properties as Record<string, unknown> | undefined, state.tick, ep.actorId, ep.encounterId)) continue;
 
     // Faction thread relevance (same walk as unified path)
     let legacyFactionThreadCount = 0;
@@ -350,6 +382,7 @@ export function phaseAttention(
     expiresTick:   state.tick + THREAD_TUG_LINGER,
     attended:      false,
     curationScore: score,
+    kind:          'chapter',
   }));
 
   // ── 6b. Digest entries for demoted (curated-out) candidates ──────────────

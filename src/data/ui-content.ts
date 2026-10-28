@@ -163,7 +163,7 @@ export const UI_TOOLTIPS: Record<string, TooltipContent> = {
   },
   'ui.attention': {
     label: 'Attention',
-    desc: 'How much of your notice is free. Attending a moment draws on it, and it refills on its own as time passes. Nothing to click: it is a gauge.',
+    desc: 'How much of your notice is free. Looking in on a mortal who lives on draws on it, and it refills on its own as time passes. Nothing to click: it is a gauge.',
   },
   // THR-1750 — Dominion on screen: the term, its five bands, the lens, the chip, the drop badge.
   'ui.dominion': {
