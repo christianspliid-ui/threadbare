@@ -230,7 +230,7 @@ export function boardContextSum(c: Partial<BoardContextSource>): number {
  * proportion. Fail-soft: base ≤ 0 or non-finite, a non-finite sum, or weight 0 → 1.
  */
 export function boardContextPull(base: number, contextSum: number): number {
-  if (!(base > 0) || !Number.isFinite(base) || !Number.isFinite(contextSum) || BOARD_CONTEXT_WEIGHT === 0) return 1;
+  if (!(base > 0) || !Number.isFinite(base) || !Number.isFinite(contextSum) || (BOARD_CONTEXT_WEIGHT as number) === 0) return 1;
   const raw = (base + BOARD_CONTEXT_WEIGHT * contextSum) / base;
   return Math.min(BOARD_CONTEXT_PULL_MAX, Math.max(BOARD_CONTEXT_PULL_MIN, raw));
 }
