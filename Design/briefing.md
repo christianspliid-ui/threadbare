@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 15:58 local (14:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 16:56 local (15:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,11 +30,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 ready, 1 being built.** The builder is still on hunger and plenty stories ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)); a pickup run has been working since 14:08 UTC and its branches are pushed. The loan-collection plan ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)) is out of its veto window and next in line. Still in veto windows: the god-caused Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)) until 21:00 UTC, the energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)) until 23:42 UTC, and the new hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)) until 02:39 UTC tomorrow.
+**Healthy: 4 ready, 1 being built.** Hunger and plenty stories ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)) are built and waiting in [#2648](https://github.com/christianspliid-ui/threadbare/pull/2648). Two of its checks failed at 15:34 UTC, and the pickup run that started at 15:31 UTC is still working on it (see Health). The loan-collection plan ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)) is out of its veto window and next in line. Still in veto windows: the god-caused Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)) until 21:00 UTC, the energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)) until 23:42 UTC, and the new hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)) until 02:39 UTC tomorrow.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest game build (a2e88585; everything merged since, including the hex-card plan [#2647](https://github.com/christianspliid-ui/threadbare/pull/2647), is docs only), CI and the background jobs pass (the heavy tests stay green on main), no PRs are waiting to merge, all 9 scheduled lanes are on time and the builder is mid-run, the worktree reaper is running, and the engine runs at 201 ms/tick, 19% above the 7-day median (168) — under the 25% line that would flag it.
+- **[#2648](https://github.com/christianspliid-ui/threadbare/pull/2648) (hunger stories, [THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)) will not merge yet.** Two checks failed on its newest push ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/40717375100)): *Generated artifact freshness* and *Test · Typecheck · Build*. All four test shards passed, so a generated file is probably out of date. Auto-merge is not armed. This is builder work. The pickup run on it is still active.
+- Everything else is green. The live site serves the latest game build (a2e88585; everything merged since then is docs only). CI and the background jobs pass, and the heavy tests stay green on main. All 9 scheduled lanes are on time. The worktree reaper ran at 16:40. The engine runs at 193 ms/tick, 14% above the 7-day median (169).
