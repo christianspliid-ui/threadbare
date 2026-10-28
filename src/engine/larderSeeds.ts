@@ -34,6 +34,7 @@ import { LAST_RIOT_SEED_PROP } from './unrestPressure/inputs';
 import { pickTargetAgent } from './phases/routeEvents';
 import { hashString, mulberry32 } from '../lib/prng';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { PROTAGONIST_ROLE_FIT_ENABLED } from '../data/npc-role-words';
 import { TICKS_PER_DAY } from '../data/attention-constants';
 import { SCARCITY_ARC_SEED_DELAY_TICKS, SCARCITY_ARC_SEED_PRIORITY } from '../data/economic-power-config';
 import {
@@ -107,10 +108,16 @@ export function pickLarderRow(
   tick: number,
   targetAgentId: string,
 ): string | null {
+  // The seed path skips the draw's role-fit stage (THR-1982), so a job-cast row is
+  // judged here: fail-open for a roleless resident or a row with no role list.
+  const role = state.graph.getNode(targetAgentId)?.properties.npcRole;
   const fit = rows.filter(r => {
     if (!(r.weight > 0)) return false;
     const t = getUnifiedTemplateById(r.templateId);
     if (!t || t.requiresHold) return false;
+    const allowed = t.protagonistRoles as readonly string[] | undefined;
+    if (PROTAGONIST_ROLE_FIT_ENABLED && typeof role === 'string' && role
+      && allowed && allowed.length > 0 && !allowed.includes(role)) return false;
     return templateAcceptsWhereTheyStand(state.graph, targetAgentId, t);
   });
   if (fit.length === 0) return null;

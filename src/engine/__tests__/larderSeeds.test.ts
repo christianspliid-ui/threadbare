@@ -201,11 +201,25 @@ describe('the guards', () => {
     // In the planter, the market-standing resident is never handed the tavern scene.
     for (let d = 0; d < 40; d++) {
       const g2 = new WorldGraph();
-      const t2 = addTown(g2, 'a', GLUT);
+      const t2 = addTown(g2, 'a', { ...GLUT, [LARDER_WAS_GLUT_PROP]: false });
       g2.addNode({ id: 'a_market', type: 'location', name: 'Market', properties: { parentLocationId: 'a', sublocationTypeId: 'sublocation-type.market-district' } });
       addMortal(g2, 'm1', 'a_market');
       for (const s of plant(g2, t2, d * TICKS_PER_DAY, false, 0)) expect(s.templateId).not.toBe('tavern.drinking_contest');
     }
+  });
+
+  it("a job-cast row goes only to a resident of that trade; a roleless resident passes (review gate)", () => {
+    const graph = new WorldGraph();
+    const town = addTown(graph, 'a');
+    addMortal(graph, 'smith', 'a');
+    graph.getNode('smith')!.properties.npcRole = 'blacksmith';
+    addMortal(graph, 'trader', 'a');
+    graph.getNode('trader')!.properties.npcRole = 'merchant';
+    addMortal(graph, 'nobody', 'a');
+    const granaries = [{ templateId: 'gold.famine.merchant_granaries', weight: 1 }];
+    expect(pickLarderRow(granaries, state(graph, 0), town, 0, 'smith')).toBeNull();
+    expect(pickLarderRow(granaries, state(graph, 0), town, 0, 'trader')).toBe('gold.famine.merchant_granaries');
+    expect(pickLarderRow(granaries, state(graph, 0), town, 0, 'nobody')).toBe('gold.famine.merchant_granaries');
   });
 
   it('the kill switch plants nothing and traces disabled', () => {
