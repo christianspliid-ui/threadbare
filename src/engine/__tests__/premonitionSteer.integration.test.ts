@@ -21,8 +21,6 @@ import { resetReputationTraitInit } from '../phaseReputationTraits';
 import { enableTracing, disableTracing, getTraces, clearTraces } from '../traceBuffer';
 import { applyCompulsionChoice } from '../premonitionActions';
 import { resolveCompulsionEncounterName } from '../premonitionCompulsion';
-import { getAgentLocationId } from '../graphQueries';
-import { resolveToParentLocation } from '../sublocationShape';
 import { MULTI_WORLD_SIM_TEST_TIMEOUT_MS } from '../../testing/testTimeouts';
 import type { GameState } from '../../types/gameState';
 import type { CompulsionCandidate } from '../../types/premonition';
@@ -34,8 +32,10 @@ interface ScoringTraceLike {
   category: string;
   agentId?: string;
   tick: number;
-  topCandidates?: Array<{ templateId: string; locationId: string }>;
+  topCandidates?: BoardEntry[];
 }
+/** `isLocal` is the scorer's own verdict: the scene is on The First's hex (`start_local`). */
+interface BoardEntry { templateId: string; locationId: string; isLocal?: boolean }
 interface PremonitionTraceLike { category: string; agentId?: string; outcome?: string; tick: number }
 
 /** Mid-chapter: The First holds an unresolved encounter action — the decision phase skips it. */
@@ -43,22 +43,17 @@ function isMidEncounter(state: GameState): boolean {
   return state.unifiedActions.some(a => a.actorId === FIRST_ID && !a.resolved);
 }
 
-/** The place-tier location a node sits in (a sublocation resolves to its parent). */
-function placeOf(state: GameState, locationId: string | undefined): string | undefined {
-  const node = locationId ? state.graph.getNode(locationId) : undefined;
-  return resolveToParentLocation(state.graph, node)?.id ?? locationId;
-}
-
 /**
- * THR-2085: the steer target is a scene on the last board that is NOT where The First
- * stands, so the compelled choice needs travel and exercises the journey + arrival
- * path. Picking the bare runner-up let a board-context change (THR-2071) move the
- * premise silently — the runner-up landed in The First's own town and the tests failed
- * as `undefined` instead of on the precondition.
+ * THR-2085: the steer target is a lower-ranked scene on the last board that is NOT on
+ * The First's hex, so the compelled choice needs travel and exercises the journey +
+ * arrival path. Picking the bare runner-up let a board-context change (THR-2071) move
+ * the premise silently — the runner-up landed in The First's own town and the tests
+ * failed as `undefined` instead of on the precondition. A remote-attempt entry (no
+ * presence needed) can still pass this filter; the named premise assertion in
+ * `driveToTaken` catches that case loudly.
  */
-function pickTravelTarget(state: GameState, board: Array<{ templateId: string; locationId: string }>) {
-  const here = placeOf(state, getAgentLocationId(state.graph, FIRST_ID));
-  return board.slice(1).find(c => placeOf(state, c.locationId) !== here);
+function pickTravelTarget(board: BoardEntry[]): BoardEntry | undefined {
+  return board.slice(1).find(c => c.isLocal === false);
 }
 
 /** Seed 42: pay a compulsion mid-chapter and tick until it resolves at the next decision. */
@@ -72,8 +67,8 @@ function driveToTaken() {
     state.essencePool[sphere] = 1000;
   }
 
-  let lastBoard: Array<{ templateId: string; locationId: string }> = [];
-  let paid: { templateId: string; locationId: string; tick: number } | null = null;
+  let lastBoard: BoardEntry[] = [];
+  let paid: { templateId: string; tick: number } | null = null;
   let outcome: PremonitionTraceLike | null = null;
 
   for (let t = 0; t < MAX_TICKS && !outcome; t++) {
@@ -87,8 +82,8 @@ function driveToTaken() {
     }
     clearTraces();
 
-    const target: { templateId: string; locationId: string } | undefined = !paid && lastBoard.length > 1 && isMidEncounter(state)
-      ? pickTravelTarget(state, lastBoard) : undefined;
+    const target: BoardEntry | undefined = !paid && lastBoard.length > 1 && isMidEncounter(state)
+      ? pickTravelTarget(lastBoard) : undefined;
     if (target) {
       // Steer toward a lower-ranked scene of the last board — something it did not
       // pick — in another place, so the steer must travel (THR-2085).
@@ -109,13 +104,20 @@ function driveToTaken() {
       };
       const result = applyCompulsionChoice(state, FIRST_ID, 'The First', pick);
       expect(result.success).toBe(true);
-      paid = { templateId: target.templateId, locationId: target.locationId, tick: state.tick };
+      paid = { templateId: target.templateId, tick: state.tick };
     }
 
     // While the chapter runs, the paid steer must still be held.
     if (paid && !outcome && isMidEncounter(state)) {
       expect(state.graph.getNode(FIRST_ID)?.properties.compulsionTargetTemplateId).toBe(paid.templateId);
     }
+  }
+  // THR-2085 premise, by name: both tests need the steer spent on a journey. If a
+  // trajectory change makes the seed-42 target start in place or remotely, fail here.
+  expect(paid, 'premise: a travel-needing steer target was found mid-encounter').not.toBeNull();
+  if (outcome?.outcome === 'taken') {
+    expect(state.graph.getNode(FIRST_ID)?.properties.compelledJourneyTemplateId,
+      'premise: the seed-42 steer target needs travel (compelled journey held)').toBe(paid!.templateId);
   }
   return { state, runtime, paid: paid!, outcome: outcome! };
 }
@@ -142,11 +144,6 @@ describe('THR-1781 — a compulsion paid mid-chapter holds until the next decisi
     const offeredAtSpend = (state.premonitionQueue ?? [])
       .filter(p => p.type === 'compulsion' && p.agentId === FIRST_ID && p.tick === outcome.tick);
     expect(offeredAtSpend).toEqual([]);
-
-    // THR-2085 precondition: the steer target is in another place, so the steer was
-    // spent on a journey. A moved premise fails here, by name.
-    expect(placeOf(state, paid.locationId)).not.toBe(placeOf(state, getAgentLocationId(state.graph, FIRST_ID)));
-    expect(state.graph.getNode(FIRST_ID)?.properties.compelledJourneyTemplateId).toBe(paid.templateId);
 
     // THR-2068: the compelled scene's action carries the mark — started here, or
     // started on arrival when the scene needed travel (the journey keeps it).
