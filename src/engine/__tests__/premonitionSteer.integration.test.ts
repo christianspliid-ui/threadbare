@@ -32,13 +32,28 @@ interface ScoringTraceLike {
   category: string;
   agentId?: string;
   tick: number;
-  topCandidates?: Array<{ templateId: string; locationId: string }>;
+  topCandidates?: BoardEntry[];
 }
+/** `isLocal` is the scorer's own verdict: the scene is on The First's hex (`start_local`). */
+interface BoardEntry { templateId: string; locationId: string; isLocal?: boolean }
 interface PremonitionTraceLike { category: string; agentId?: string; outcome?: string; tick: number }
 
 /** Mid-chapter: The First holds an unresolved encounter action — the decision phase skips it. */
 function isMidEncounter(state: GameState): boolean {
   return state.unifiedActions.some(a => a.actorId === FIRST_ID && !a.resolved);
+}
+
+/**
+ * THR-2085: the steer target is a lower-ranked scene on the last board that is NOT on
+ * The First's hex, so the compelled choice needs travel and exercises the journey +
+ * arrival path. Picking the bare runner-up let a board-context change (THR-2071) move
+ * the premise silently — the runner-up landed in The First's own town and the tests
+ * failed as `undefined` instead of on the precondition. A remote-attempt entry (no
+ * presence needed) can still pass this filter; the named premise assertion in
+ * `driveToTaken` catches that case loudly.
+ */
+function pickTravelTarget(board: BoardEntry[]): BoardEntry | undefined {
+  return board.slice(1).find(c => c.isLocal === false);
 }
 
 /** Seed 42: pay a compulsion mid-chapter and tick until it resolves at the next decision. */
@@ -52,7 +67,7 @@ function driveToTaken() {
     state.essencePool[sphere] = 1000;
   }
 
-  let lastBoard: Array<{ templateId: string; locationId: string }> = [];
+  let lastBoard: BoardEntry[] = [];
   let paid: { templateId: string; tick: number } | null = null;
   let outcome: PremonitionTraceLike | null = null;
 
@@ -67,9 +82,11 @@ function driveToTaken() {
     }
     clearTraces();
 
-    if (!paid && lastBoard.length > 1 && isMidEncounter(state)) {
-      // Steer toward the runner-up of the last board — something it did not pick.
-      const target = lastBoard[1];
+    const target: BoardEntry | undefined = !paid && lastBoard.length > 1 && isMidEncounter(state)
+      ? pickTravelTarget(lastBoard) : undefined;
+    if (target) {
+      // Steer toward a lower-ranked scene of the last board — something it did not
+      // pick — in another place, so the steer must travel (THR-2085).
       const pick: CompulsionCandidate = {
         templateId: target.templateId,
         // THR-1852 — the real name, as the builder resolves it; never the id.
@@ -94,6 +111,13 @@ function driveToTaken() {
     if (paid && !outcome && isMidEncounter(state)) {
       expect(state.graph.getNode(FIRST_ID)?.properties.compulsionTargetTemplateId).toBe(paid.templateId);
     }
+  }
+  // THR-2085 premise, by name: both tests need the steer spent on a journey. If a
+  // trajectory change makes the seed-42 target start in place or remotely, fail here.
+  expect(paid, 'premise: a travel-needing steer target was found mid-encounter').not.toBeNull();
+  if (outcome?.outcome === 'taken') {
+    expect(state.graph.getNode(FIRST_ID)?.properties.compelledJourneyTemplateId,
+      'premise: the seed-42 steer target needs travel (compelled journey held)').toBe(paid!.templateId);
   }
   return { state, runtime, paid: paid!, outcome: outcome! };
 }
