@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 10:58 local (09:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 11:58 local (10:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,4 +37,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The live site serves the latest game build (a2e88585; the one commit since, the Mandate plan [#2645](https://github.com/christianspliid-ui/threadbare/pull/2645), is docs only), CI and the background jobs pass, no PRs are waiting to merge, all 9 scheduled lanes are on time, the worktree reaper last ran 10:40 local, and the engine runs at 125 ms/tick, 26% below the 7-day median (169).
+All green. The live site serves the latest game build (a2e88585; the one commit since, the Mandate plan [#2645](https://github.com/christianspliid-ui/threadbare/pull/2645), is docs only), CI and the background jobs pass, no PRs are waiting to merge, all 9 scheduled lanes are on time, the worktree reaper last ran 11:40 local, and the engine runs at 127 ms/tick, 24% below the 7-day median (169).
