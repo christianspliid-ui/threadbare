@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { GRANARY_RIOT_TEMPLATE_ID } from '../../../data/unrest-pressure-constants';
 import { WorldGraph } from '../../graph';
 import { phaseEconomicPower } from '../economicPower';
+import { LARDER_LAST_SEED_PROP } from '../../larderSeeds';
 import { computeRawScore } from '../../domainCapability';
 import { clearTraces, enableTracing, disableTracing, getTraces } from '../../traceBuffer';
 import {
@@ -163,6 +164,21 @@ describe('phaseEconomicPower (THR-617)', () => {
     expect((graph.getNode('a')!.properties.scarcityArc as { phase: string }).phase).toBe('flashpoint');
     expect(result.pendingEncounterSeeds?.[0]?.templateId).toBe('encounter_route_embargo');
     expect(result.chronicleEntries?.some((c) => c.title.startsWith('Flashpoint'))).toBe(true);
+  });
+
+  it('a town just handed a larder famine story gets no hoarding seed, but its arc still moves (THR-2040)', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'a', 'Aford', {
+      resources: { grain: { resourceId: 'grain', quantity: 2, stockTier: 'scarce' } },
+    });
+    graph.addNode({ id: 'ag1', type: 'actor', name: 'Local', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e_ag1', source: 'ag1', target: 'a', type: 'located_at', properties: {} });
+
+    phaseEconomicPower(makeState(SCAN, graph), ctx);
+    graph.getNode('a')!.properties[LARDER_LAST_SEED_PROP] = SCAN;
+    const result = phaseEconomicPower(makeState(SCAN * 2, graph), ctx);
+    expect((graph.getNode('a')!.properties.scarcityArc as { phase: string }).phase).toBe('hoarding');
+    expect(result.pendingEncounterSeeds ?? []).toHaveLength(0);
   });
 
   it('a flashpoint held SCARCITY_ARC_FLASHPOINT_HOLD_DAYS is spent and frees its slot for a fourth scarce town (THR-1919)', () => {

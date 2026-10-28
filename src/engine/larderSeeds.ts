@@ -5,8 +5,9 @@
  * `FAMINE_SEED_DAY`-th hungry day a famine story, on the first day of a glut run a
  * plenty story. At most one per town every `LARDER_SEED_COOLDOWN_DAYS`. The granary
  * riot keeps its own seed and comes first: on a day it planted, the larder waits. A
- * town whose scarcity arc moved within the cooldown waits too, so one shortage never
- * plants two stories.
+ * town whose scarcity arc moved within the cooldown waits too, and the arc's hoarding
+ * seed waits on a recent larder plant (`phases/economicPower.ts`), so one shortage never
+ * plants two hunger stories.
  *
  * Called once a day per settlement from `unrestPressure.ts` `dailyPass`, right after
  * `hungerDays` is written and the riot has had its turn. The seed is the riot's shape

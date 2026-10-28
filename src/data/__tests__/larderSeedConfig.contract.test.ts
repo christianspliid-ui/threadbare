@@ -12,14 +12,18 @@ import {
 } from '../unified-action-templates';
 import { GRANARY_RIOT_TEMPLATE_ID } from '../unrest-pressure-constants';
 
-const ALL_IDS = [...UNIFIED_ACTION_TEMPLATES, ...CACHE_REGISTERED_REGIONAL_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES].map(t => t.id);
+// The registries overlap by design (the regional list is a view onto the unified one; the
+// location-branching list holds equal copies of templates the unified list also carries),
+// so "one live template" means every definition of the id is the same content.
+const ALL_TEMPLATES = [...UNIFIED_ACTION_TEMPLATES, ...CACHE_REGISTERED_REGIONAL_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES];
 const ROWS = [...FAMINE_SEED_ROWS, ...PLENTY_SEED_ROWS];
 
 describe('larder seed rows', () => {
   it.each(ROWS.map(r => [r.templateId, r.weight] as const))('%s resolves to one live template with no hold', (id, weight) => {
     const t = getUnifiedTemplateById(id);
     expect(t, `${id} resolves to no template`).toBeDefined();
-    expect(new Set(ALL_IDS.filter(x => x === id)).size).toBe(1);
+    const definitions = new Set(ALL_TEMPLATES.filter(x => x.id === id).map(x => JSON.stringify(x)));
+    expect(definitions.size, `${id} has conflicting definitions`).toBe(1);
     expect(t!.requiresHold).toBeUndefined();
     expect(weight).toBeGreaterThan(0);
   });
