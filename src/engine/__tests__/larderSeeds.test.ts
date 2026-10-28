@@ -148,7 +148,28 @@ describe('the guards', () => {
     expect(larderTraces().at(-1)).toMatchObject({ skipped: 'no_resident', targetAgentId: null });
     expect(town.properties[LARDER_LAST_SEED_PROP]).toBeUndefined();
 
-    expect(pickLarderRow([{ templateId: 'encounter.no_such_scene', weight: 1 }], state(graph, 0), town, 0)).toBeNull();
+    addMortal(graph, 'm1', 'a');
+    expect(pickLarderRow([{ templateId: 'encounter.no_such_scene', weight: 1 }], state(graph, 0), town, 0, 'm1')).toBeNull();
+  });
+
+  it("a Place-gated row is judged where the chosen resident stands, not anywhere in town (review gate)", () => {
+    const graph = new WorldGraph();
+    const town = addTown(graph, 'a', GLUT);
+    graph.addNode({ id: 'a_tavern', type: 'location', name: 'Tavern', properties: { parentLocationId: 'a', sublocationTypeId: 'sublocation-type.tavern' } });
+    graph.addNode({ id: 'a_market', type: 'location', name: 'Market', properties: { parentLocationId: 'a', sublocationTypeId: 'sublocation-type.market-district' } });
+    addMortal(graph, 'm1', 'a_market');
+    const tavernOnly = [{ templateId: 'tavern.drinking_contest', weight: 1 }];
+    expect(pickLarderRow(tavernOnly, state(graph, 0), town, 0, 'm1')).toBeNull();
+    addMortal(graph, 'm0', 'a_tavern');
+    expect(pickLarderRow(tavernOnly, state(graph, 0), town, 0, 'm0')).toBe('tavern.drinking_contest');
+    // In the planter, the market-standing resident is never handed the tavern scene.
+    for (let d = 0; d < 40; d++) {
+      const g2 = new WorldGraph();
+      const t2 = addTown(g2, 'a', GLUT);
+      g2.addNode({ id: 'a_market', type: 'location', name: 'Market', properties: { parentLocationId: 'a', sublocationTypeId: 'sublocation-type.market-district' } });
+      addMortal(g2, 'm1', 'a_market');
+      for (const s of plant(g2, t2, d * TICKS_PER_DAY, false, 0)) expect(s.templateId).not.toBe('tavern.drinking_contest');
+    }
   });
 
   it('the kill switch plants nothing and traces disabled', () => {
@@ -165,10 +186,11 @@ describe('the pick', () => {
   it('is the same for the same town and tick, and spreads across rows over ticks', () => {
     const graph = new WorldGraph();
     const town = addTown(graph, 'a');
+    addMortal(graph, 'm1', 'a');
     const s = state(graph, 0);
-    expect(pickLarderRow(FAMINE_SEED_ROWS, s, town, 120)).toBe(pickLarderRow(FAMINE_SEED_ROWS, s, town, 120));
+    expect(pickLarderRow(FAMINE_SEED_ROWS, s, town, 120, 'm1')).toBe(pickLarderRow(FAMINE_SEED_ROWS, s, town, 120, 'm1'));
     const seen = new Set<string | null>();
-    for (let d = 0; d < 60; d++) seen.add(pickLarderRow(FAMINE_SEED_ROWS, s, town, d * TICKS_PER_DAY));
+    for (let d = 0; d < 60; d++) seen.add(pickLarderRow(FAMINE_SEED_ROWS, s, town, d * TICKS_PER_DAY, 'm1'));
     expect(seen.size).toBeGreaterThanOrEqual(3);
   });
 });
