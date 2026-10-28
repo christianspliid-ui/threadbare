@@ -1,0 +1,4 @@
+import { UNIFIED_ACTION_TEMPLATES, CACHE_REGISTERED_REGIONAL_TEMPLATES, LOCATION_BRANCHING_ENCOUNTER_TEMPLATES } from '../src/data/unified-action-templates';
+const all = [...new Set([...UNIFIED_ACTION_TEMPLATES, ...CACHE_REGISTERED_REGIONAL_TEMPLATES, ...LOCATION_BRANCHING_ENCOUNTER_TEMPLATES].map(t => t.id))];
+for (const r of ['encounter.aid_refugees','encounter.barter_survival','encounter.mend_fishing_nets','encounter.town.bell_at_the_exchange','gold.famine.merchant_granaries','encounter.forage_provisions','encounter.black_market_deal','encounter.pickpocket','encounter.harvest_bounty','encounter.market_day_festival','encounter.festival_of_spheres','encounter.grand_tournament','tavern.drinking_contest','encounter.town.mill_lease_auction','encounter.town.tithe_barn_raid','encounter.realm.crowns_reckoning','encounter.caravan_deal','encounter.foreign_trader'])
+  console.log(r, all.filter(id => id === r || id.startsWith(r + '.')).join(','));
