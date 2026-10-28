@@ -1143,6 +1143,11 @@ export function runFilterPipeline(
   }
 
   // Capture initial template set for funnel (lazy — only when funnel is active)
+  // PROTO (THR-2040 pool presence) — never merged.
+  const __g = globalThis as unknown as { __poolProbe?: unknown; __lastFilterStages?: Record<string, string[]> | null };
+  const __st: Record<string, string[]> | null = __g.__poolProbe ? {} : null;
+  __g.__lastFilterStages = __st;
+  const __stage = (k: string, cur: readonly EncounterCacheEntry[]) => { if (__st) __st[k] = cur.map(e => e.templateId); };
   const funnel = runtime?.eligibilityFunnel ?? null;
   const s0 = funnel ? templateIdSet(allEntries) : null;
 
@@ -1155,6 +1160,7 @@ export function runFilterPipeline(
   }
   const afterAwareness = current.length;
   const s1 = (funnel && s0) ? templateIdSet(current) : null;
+  __stage("awareness", current);
 
   // Stage 2: Visibility
   try {
@@ -1164,6 +1170,7 @@ export function runFilterPipeline(
   }
   const afterVisibility = current.length;
   const s2 = (funnel && s0) ? templateIdSet(current) : null;
+  __stage("visibility", current);
 
   // Stage 3: Prerequisites + Reputation Gates + Outgrowth Lock
   try {
@@ -1182,6 +1189,7 @@ export function runFilterPipeline(
     // Keep previous stage's output
   }
   const afterPrerequisites = current.length;
+  __stage("prereq", current);
 
   // Stage 3b: Story breath (THR-1715). Counted inside the prerequisites funnel
   // bucket — it is an eligibility gate, and the funnel's gate set is fixed.
@@ -1202,6 +1210,7 @@ export function runFilterPipeline(
   }
   const afterStoryBreath = current.length;
   const s3 = (funnel && s0) ? templateIdSet(current) : null;
+  __stage("breath_role", current);
 
   // Stage 4: Threat
   try {
@@ -1211,6 +1220,7 @@ export function runFilterPipeline(
   }
   const afterThreat = current.length;
   const s4 = (funnel && s0) ? templateIdSet(current) : null;
+  __stage("threat", current);
 
   // Stage 5: Performance Cap
   const beforeCap = current;
@@ -1227,6 +1237,7 @@ export function runFilterPipeline(
     ? Math.max(0, distinctTemplateCount(beforeCap) - distinctTemplateCount(current))
     : 0;
   const s5 = (funnel && s0) ? templateIdSet(current) : null;
+  __stage("cap", current);
 
   // Update funnel counters (only when all snapshots are available)
   if (funnel && s0 && s1 && s2 && s3 && s4 && s5) {

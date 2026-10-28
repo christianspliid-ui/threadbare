@@ -100,6 +100,7 @@ import { computeCapability } from './domainCapability';
 import { isCompulsionEligible, buildCompulsionEvent, shouldEmitCompulsion, FORCE_COMPULSION_FLAG, resolveCompulsionEncounterName } from './premonitionCompulsion';
 import { applyWhisperPull, anchorHeldWhispers, whisperLapseMessage, resolveCompulsion, compulsionOutcomeMessage } from './premonitionSteer';
 import { applyFirstPathPull, getFirstPathFor } from './firstPath';
+import { isHungryToday } from './unrestPressure/hunger'; // PROTO
 import { getDivineInfluences } from './interventionEffects';
 import type { CompulsionOutcomeTrace } from '../types/trace';
 import type { PremonitionEvent } from '../types/premonition';
@@ -1296,6 +1297,47 @@ export function phaseAgentDecision(
       } catch {
         // Fail-soft: the path is a lean, never a reason to drop the decision.
       }
+      // PROTO (THR-2040 larder pull) — never merged. Weight from env LARDER_PULL (0 = off).
+      try {
+        const W = Number(process.env.LARDER_PULL ?? 0);
+        if (W > 0) {
+          const ROWS: Record<string, [number, number]> = {
+            'encounter.aid_refugees': [1, 0], 'encounter.barter_survival': [0.9, -0.5], 'gold.famine.merchant_granaries': [1, -0.5],
+            'encounter.mend_fishing_nets': [0.6, 0], 'encounter.town.bell_at_the_exchange': [0.6, 0], 'encounter.forage_provisions': [0.6, -0.4],
+            'encounter.black_market_deal': [0.5, 0], 'encounter.pickpocket': [0.4, 0], 'encounter.harvest_bounty': [-1, 1],
+            'encounter.market_day_festival': [-1, 0.8], 'encounter.festival_of_spheres': [-0.8, 0.5], 'encounter.grand_tournament': [-0.6, 0.4],
+            'tavern.drinking_contest': [-0.6, 0.5], 'encounter.town.mill_lease_auction': [-0.3, 0.6], 'encounter.town.tithe_barn_raid': [0.3, 0.6],
+            'encounter.realm.crowns_reckoning': [0, 0.5], 'encounter.caravan_deal': [0, 0.4], 'encounter.foreign_trader': [-0.2, 0.4],
+          };
+          const SET = ['hamlet', 'town', 'city', 'capital'];
+          const reading = (locId: string): [number, number] => {
+            let n = graph.getNode(locId);
+            if (n && !SET.includes(n.properties.locationSubtype as string) && n.properties.parentLocationId) n = graph.getNode(n.properties.parentLocationId as string);
+            if (!n || !SET.includes(n.properties.locationSubtype as string)) return [0, 0];
+            const p = n.properties;
+            if (isHungryToday(n).hungry) return [Math.min(1, Math.max(1, Number(p.hungerDays) || 0) / 5), 0];
+            const fb = Number(p.foodBalance) || 0;
+            if ((Number(p.foodSurplusDays) || 0) >= 3 && fb >= 0.75) return [0, Math.min(1, (fb - 0.75) / 0.25)];
+            return [0, 0];
+          };
+          let pulled = 0;
+          const ranked = decision.rankedCandidates.map(c => {
+            const key = Object.keys(ROWS).find(r => c.entry.templateId === r || c.entry.templateId.startsWith(r + '.'));
+            if (!key) return c;
+            const [fd, gd] = reading(c.entry.locationId);
+            const pull = Math.min(2, Math.max(0.5, 1 + W * (ROWS[key][0] * fd + ROWS[key][1] * gd)));
+            if (pull === 1) return c;
+            pulled++;
+            return { ...c, finalScore: c.finalScore * pull, firstPathPull: (c.firstPathPull ?? 1) * pull };
+          }).sort((a, b) => b.finalScore - a.finalScore);
+          if (pulled > 0) {
+            const n5 = decision.topCandidates.length;
+            decision.rankedCandidates = ranked;
+            decision.topCandidates = ranked.slice(0, n5);
+            if (decision.selected) decision.selected = ranked[0] && ranked[0].finalScore >= IDLE_SCORE_THRESHOLD ? ranked[0] : decision.selected;
+          }
+        }
+      } catch { /* proto */ }
 
       // ── THR-1639: a journey keeps its goal on arrival ─────────────────
       // A finished journey (empty queue) that still names the encounter it was
@@ -1583,6 +1625,17 @@ export function phaseAgentDecision(
             paysActor: (templateId: string) => templatePaysActor(
               templateId, runtime?.meansPaysActorCache, getUnifiedTemplateById,
             ),
+          });
+          // PROTO (THR-2040 pool presence) — never merged.
+          (globalThis as unknown as { __poolProbe?: (r: unknown) => void }).__poolProbe?.({
+            agentId, locationId, tick: state.tick,
+            merged: mergedEntries.map(e => e.templateId),
+            filtered: rawCandidates.map(c => c.templateId),
+            drawable: candidates.map(c => c.templateId),
+            shortlist: decision.topCandidates.map(c => c.entry.templateId),
+            ranked: decision.rankedCandidates.map(c => [c.entry.templateId, c.finalScore, c.engagementZone ?? null, c.entry.locationId, c.firstPathPull ?? 1]),
+            winner: board.winner?.id ?? null, winnerFamily: board.winner?.family ?? null,
+            stages: (globalThis as unknown as { __lastFilterStages?: unknown }).__lastFilterStages ?? null,
           });
 
           // An empty board is a real verdict, not a missing one: it is what the
