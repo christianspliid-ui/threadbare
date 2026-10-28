@@ -8,6 +8,8 @@ import { DeltaCluster } from '../shared/DeltaCluster';
 import { Tooltip } from '../shared/Tooltip';
 import { Icon } from '../shared/Icon';
 import { sphereWord } from '../shared/formatEssence';
+import type { SphereName } from '../../types';
+import { sphereHasAscendantCard } from '../../engine/views/subjects/godSheet';
 
 interface MandateDetailProps {
   open: boolean;
@@ -119,6 +121,8 @@ function MetricTrack({
   delta,
   target,
   color,
+  sphere,
+  byGodHand,
 }: {
   label: string;
   current: number | undefined;
@@ -126,6 +130,9 @@ function MetricTrack({
   delta: number | undefined;
   target: number | undefined;
   color: string;
+  sphere?: SphereName;
+  /** THR-2081: the bar counts only the god's own doing, so the world totals no longer move it. */
+  byGodHand: boolean;
 }) {
   const progress = target && target > 0 ? clamp01((delta ?? 0) / target) : 0;
 
@@ -160,7 +167,11 @@ function MetricTrack({
         fontSize: 'var(--text-xs)',
         color: 'var(--text-muted)',
       }}>
-        Baseline {formatMetricValue(baseline)} → Current {formatMetricValue(current)}
+        {byGodHand
+          ? sphere && !sphereHasAscendantCard(sphere)
+            ? `${label} rises only slowly, through your bond with the land; none of your cards carries it yet.`
+            : 'Raised by your own hand'
+          : <>Baseline {formatMetricValue(baseline)} → Current {formatMetricValue(current)}</>}
       </div>
     </div>
   );
@@ -459,6 +470,8 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                     delta={state.primaryDelta}
                     target={definition.primaryTargetDelta}
                     color={color}
+                    sphere={definition.primarySphere}
+                    byGodHand={definition.primaryTargetPoints != null}
                   />
                   <MetricTrack
                     label={definition.secondarySphere ? sphereWord(definition.secondarySphere) : 'Secondary'}
@@ -467,6 +480,8 @@ export function MandateDetail({ open, onClose, definition, state, currentTick }:
                     delta={state.secondaryDelta}
                     target={definition.secondaryTargetDelta}
                     color="var(--text-secondary)"
+                    sphere={definition.secondarySphere}
+                    byGodHand={definition.secondaryTargetPoints != null}
                   />
                 </div>
 

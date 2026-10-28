@@ -78,6 +78,24 @@ function actorTypeWeight(actorType: string | undefined): number | null {
   }
 }
 
+/**
+ * The weight a node's sphere scores carry in the world total, or null when the world
+ * total skips it (THR-2081: the Mandate ledger weighs a credit the same way). Location
+ * 1.0, artifact 0.3, actors by `actorType`.
+ */
+export function entityAggregateWeight(node: { type: string; properties?: Record<string, unknown> }): number | null {
+  switch (node.type) {
+    case 'location':
+      return ENTITY_AGGREGATE_WEIGHT.location;
+    case 'artifact':
+      return ENTITY_AGGREGATE_WEIGHT.artifact;
+    case 'actor':
+      return actorTypeWeight(node.properties?.actorType as string | undefined);
+    default:
+      return null;
+  }
+}
+
 // ─── Normalization ────────────────────────────────────────────────────
 
 /**
@@ -135,43 +153,19 @@ export function computeSphereAggregate(graph: GameState['graph']): SphereAggrega
   for (const s of SPHERE_NAMES) totals[s] = 0;
   let entityCount = 0;
 
-  // ── Location nodes ────────────────────────────────────────────────
-  const locationNodes = graph.getNodesByType('location');
-  for (const node of locationNodes) {
-    const raw = getNodeSphereAffinity(node);
-    if (!isValidSphereAffinity(raw)) continue; // skip nodes without proper SphereAffinity
-    const weight = ENTITY_AGGREGATE_WEIGHT.location;
-    entityCount++;
-    for (const s of SPHERE_NAMES) {
-      totals[s] += (raw.scores[s] ?? 0) * weight;
-    }
-  }
-
-  // ── Actor nodes ────────────────────────────────────────────────────
-  const actorNodes = graph.getNodesByType('actor');
-  for (const node of actorNodes) {
-    const raw = getNodeSphereAffinity(node);
-    if (!isValidSphereAffinity(raw)) continue;
-    const actorType = node.properties?.actorType as string | undefined;
-    const weight = actorTypeWeight(actorType);
-    if (weight === null) continue; // unknown actor type — skip
-    entityCount++;
-    for (const s of SPHERE_NAMES) {
-      totals[s] += (raw.scores[s] ?? 0) * weight;
-    }
-  }
-
-  // ── Artifact nodes ─────────────────────────────────────────────────
+  // Location, actor and artifact nodes, each weighted by entityAggregateWeight.
   // Note: Some legacy artifacts store a bare SphereName string in sphereAffinity
   // (from worldSeed.ts). These are skipped by isValidSphereAffinity.
-  const artifactNodes = graph.getNodesByType('artifact');
-  for (const node of artifactNodes) {
-    const raw = getNodeSphereAffinity(node);
-    if (!isValidSphereAffinity(raw)) continue;
-    const weight = ENTITY_AGGREGATE_WEIGHT.artifact;
-    entityCount++;
-    for (const s of SPHERE_NAMES) {
-      totals[s] += (raw.scores[s] ?? 0) * weight;
+  for (const type of ['location', 'actor', 'artifact'] as const) {
+    for (const node of graph.getNodesByType(type)) {
+      const raw = getNodeSphereAffinity(node);
+      if (!isValidSphereAffinity(raw)) continue; // skip nodes without proper SphereAffinity
+      const weight = entityAggregateWeight(node);
+      if (weight === null) continue; // unknown actor type — skip
+      entityCount++;
+      for (const s of SPHERE_NAMES) {
+        totals[s] += (raw.scores[s] ?? 0) * weight;
+      }
     }
   }
 

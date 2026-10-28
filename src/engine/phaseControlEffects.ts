@@ -379,6 +379,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
           magnitude: inf.magnitude,
           source: 'control_effect',
           sourceId: effect.effectId,
+          causedBy: effect.ownerId,
         });
       }
     }
@@ -454,6 +455,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
             magnitude: CONTROL_PRESSURE_PER_TICK,
             source: 'control_effect',
             sourceId: effect.effectId,
+            causedBy: effect.ownerId,
           });
         }
       }
@@ -490,6 +492,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
             magnitude: leak.entropyPressure,
             source: 'control_effect',
             sourceId: effect.effectId,
+            causedBy: effect.ownerId,
           });
         }
 

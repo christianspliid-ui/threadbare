@@ -150,6 +150,7 @@ export type TraceCategory =
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'doom_card' | 'mandate_checkpoint' | 'mandate_milestone_prose'
   | 'mandate_baseline_settled' // THR-2080
+  | 'mandate_ledger_credit' // THR-2081
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
@@ -804,6 +805,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'return_resolution', 'ripple_consequence', 'control_effect',
   'doom_card', 'mandate_checkpoint', 'mandate_milestone_prose',
   'mandate_baseline_settled',
+  'mandate_ledger_credit',
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
@@ -3138,6 +3140,19 @@ export interface MandateBaselineSettledTrace extends TraceBase {
   newPrimaryBaseline: number;
   oldSecondaryBaseline?: number;
   newSecondaryBaseline: number;
+}
+
+/** Trace: one change to the Mandate's god ledger (THR-2081, `mandateLedger.ts`). */
+export interface MandateLedgerCreditTrace extends TraceBase {
+  category: 'mandate_ledger_credit';
+  entityId: string;
+  sphere: SphereName;
+  /** Signed weighted points: + the god's growth, − opposition taking back held points. */
+  points: number;
+  cause: 'god' | 'opposition';
+  /** The writers netted into the sphere-pressure trace this credit came from. */
+  sources: string[];
+  ledgerAfter: number;
 }
 
 /** Trace: control effect ticked (per-tick drain, income, threshold check) */
@@ -5598,6 +5613,7 @@ export type TraceEntry =
   | MandateCheckpointTrace
   | MandateMilestoneProseTrace
   | MandateBaselineSettledTrace
+  | MandateLedgerCreditTrace
   | ControlEffectTickTrace
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace

@@ -54,6 +54,26 @@ export interface SpherePressureEvent {
   magnitude: number;
   source: PressureSource;
   sourceId: string;
+  /**
+   * The actor whose act made this push (THR-2081). The Mandate counts a push as the
+   * god's by who acted, not by `source`: `divine_action` fires for every actor's
+   * resolved action. Absent reads as not the god's.
+   */
+  causedBy?: string;
+}
+
+/**
+ * One signed change to the Mandate's god ledger (THR-2081), made by `phaseSpherePressure`
+ * from a resolved score change: + the god's share of a level-up, − the opposition's
+ * share of an erosion. Weighted as the world total weighs the entity.
+ */
+export interface MandateCredit {
+  entityId: string;
+  sphere: SphereName;
+  points: number;
+  cause: 'god' | 'opposition';
+  /** The writers netted into the trace this credit came from. */
+  sources: PressureSource[];
 }
 
 // ─── Scale Constants (NFP #1: Tunability) ────────────────────────

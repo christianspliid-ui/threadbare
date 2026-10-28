@@ -22,7 +22,11 @@ import {
   MANDATE_MILESTONE_EVENT_SIGNIFICANCE,
   MANDATE_FAILURE_EVENT_SIGNIFICANCE,
   MANDATE_BASELINE_SETTLE_TICK,
+  MANDATE_GOD_LEDGER_ENABLED,
+  MANDATE_PRIMARY_TARGET_POINTS,
+  MANDATE_SECONDARY_TARGET_POINTS,
 } from '../data/game-config';
+import { applyMandateCredits } from './mandateLedger';
 import {
   resolveMilestoneProse,
   transitionForStageChange,
@@ -224,6 +228,7 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
         primaryDelta: 0,
         secondaryDelta: 0,
       },
+      pendingMandateCredits: [],
     };
   }
 
@@ -249,8 +254,61 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
       newSecondaryBaseline: secondaryCurrent,
     });
   }
-  const primaryDelta = computeSphereDelta(primaryCurrent, definition.primaryBaseline ?? 0);
-  const secondaryDelta = computeSphereDelta(secondaryCurrent, definition.secondaryBaseline ?? 0);
+  // THR-2081 — only the god's own hand fills the Mandate. The targets become points of
+  // the god's making, written once (at the settle, or the first tick a pre-build save is
+  // read); the relative target and checkpoint deltas are rescaled to them so every
+  // reader of `primaryDelta` / `primaryTargetDelta` stays correct.
+  if (MANDATE_GOD_LEDGER_ENABLED && definition.primaryTargetPoints == null) {
+    const primaryTargetDelta = MANDATE_PRIMARY_TARGET_POINTS / Math.max(1, definition.primaryBaseline ?? 0);
+    const secondaryTargetDelta = MANDATE_SECONDARY_TARGET_POINTS / Math.max(1, definition.secondaryBaseline ?? 0);
+    definition = {
+      ...definition,
+      primaryTargetPoints: MANDATE_PRIMARY_TARGET_POINTS,
+      secondaryTargetPoints: MANDATE_SECONDARY_TARGET_POINTS,
+      primaryTargetDelta,
+      secondaryTargetDelta,
+      checkpoints: definition.checkpoints?.map((checkpoint) => ({
+        ...checkpoint,
+        requiredPrimaryDelta: primaryTargetDelta * checkpoint.doomProgressThreshold,
+        requiredSecondaryDelta: secondaryTargetDelta * checkpoint.doomProgressThreshold,
+      })),
+    };
+  }
+
+  let primaryDelta: number;
+  let secondaryDelta: number;
+  if (MANDATE_GOD_LEDGER_ENABLED) {
+    const folded = applyMandateCredits(
+      mandateState.godLedger ?? { primary: 0, secondary: 0 },
+      mandateState.godHeld ?? {},
+      state.pendingMandateCredits ?? [],
+      definition.primarySphere!,
+      definition.secondarySphere!,
+    );
+    for (const credit of folded.applied) {
+      emitTrace({
+        category: 'mandate_ledger_credit',
+        tick: state.tick,
+        agentId: state.ascendantId,
+        summary:
+          `Mandate ${credit.sphere} ${credit.applied >= 0 ? '+' : ''}${credit.applied.toFixed(2)} ` +
+          `(${credit.cause}) at ${credit.entityId} from ${[...new Set(credit.sources)].join(', ')}; ` +
+          `ledger ${credit.ledgerAfter.toFixed(2)}`,
+        entityId: credit.entityId,
+        sphere: credit.sphere,
+        points: credit.applied,
+        cause: credit.cause,
+        sources: credit.sources,
+        ledgerAfter: credit.ledgerAfter,
+      });
+    }
+    mandateState = { ...mandateState, godLedger: folded.ledger, godHeld: folded.held };
+    primaryDelta = folded.ledger.primary / Math.max(1, definition.primaryBaseline ?? 0);
+    secondaryDelta = folded.ledger.secondary / Math.max(1, definition.secondaryBaseline ?? 0);
+  } else {
+    primaryDelta = computeSphereDelta(primaryCurrent, definition.primaryBaseline ?? 0);
+    secondaryDelta = computeSphereDelta(secondaryCurrent, definition.secondaryBaseline ?? 0);
+  }
   const primaryTargetDelta = definition.primaryTargetDelta ?? 0;
   const secondaryTargetDelta = definition.secondaryTargetDelta ?? 0;
   const primaryRatio = primaryTargetDelta > 0 ? primaryDelta / primaryTargetDelta : 0;
@@ -459,6 +517,7 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
     },
     tickEvents: [...state.tickEvents, ...events],
     pendingSpherePressures: pressures,
+    pendingMandateCredits: [],
   };
 }
 

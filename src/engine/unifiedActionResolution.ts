@@ -4102,6 +4102,7 @@ export function phaseUnifiedActionProgress(
         magnitude: isActionSuccess(atkResolved.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
         source: 'divine_action',
         sourceId: attacker.actionId,
+        causedBy: attacker.actorId,
       });
     }
     if (defResolved.resolved && defTemplate.sphereAffinity && defender.targetId) {
@@ -4111,6 +4112,7 @@ export function phaseUnifiedActionProgress(
         magnitude: isActionSuccess(defResolved.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
         source: 'divine_action',
         sourceId: defender.actionId,
+        causedBy: defender.actorId,
       });
     }
 
@@ -4380,6 +4382,7 @@ export function phaseUnifiedActionProgress(
           magnitude: DOMINION_BREAK_PRESSURE,
           source: 'divine_action',
           sourceId: completing_action.actionId,
+          causedBy: completing_action.actorId,
         });
       }
     }
@@ -4420,6 +4423,7 @@ export function phaseUnifiedActionProgress(
         magnitude,
         source: 'divine_action',
         sourceId: completing_action.actionId,
+        causedBy: completing_action.actorId,
       });
     }
 

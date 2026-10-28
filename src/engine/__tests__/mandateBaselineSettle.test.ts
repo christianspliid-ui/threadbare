@@ -101,13 +101,23 @@ describe('THR-2080 — Mandate baseline settles after the first ticks', () => {
     expect(traces[0]).toMatchObject({ oldPrimaryBaseline: 100, newPrimaryBaseline: 160, tick: 2 });
   });
 
-  it('counts growth after the settle tick against the settled baseline', () => {
+  it('counts the god\'s growth after the settle tick against the settled baseline', () => {
     let state = makeState(0, makeAggregate(100, 100));
     state = step(state, MANDATE_BASELINE_SETTLE_TICK, makeAggregate(160, 160));
     const target = state.mandateDefinition!.primaryTargetDelta!;
-    state = step(state, 50, makeAggregate(160 * (1 + target / 2), 160));
+    // THR-2081: the world growing by itself counts nothing...
+    state = step(state, 40, makeAggregate(400, 400));
+    expect(state.mandateState?.progress).toBe(0);
+    // ...the god's own credits do, as points over the settled baseline.
+    const half = state.mandateDefinition!.primaryTargetPoints! / 2;
+    state = {
+      ...state,
+      pendingMandateCredits: [{ entityId: 'town', sphere: 'mind', points: half, cause: 'god', sources: ['claim'] }],
+    } as GameState;
+    state = step(state, 50, makeAggregate(400, 400));
 
     expect(state.mandateState?.primaryDelta).toBeCloseTo(target / 2, 6);
+    expect(state.mandateState?.godLedger?.primary).toBeCloseTo(half, 6);
     expect(state.mandateState?.progress).toBeGreaterThan(0);
     // The baseline is taken once — a later tick does not move it again.
     expect(state.mandateDefinition?.primaryBaseline).toBe(160);

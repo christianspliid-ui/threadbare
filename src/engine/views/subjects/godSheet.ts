@@ -332,6 +332,22 @@ export interface MandateRowView {
   trend: 'rising' | 'steady' | 'ebbing';
 }
 
+/**
+ * Does any card a god can cast carry this sphere (THR-2081)? Same filter as the
+ * Mandate census: an essence price, `ascendant` among its actors, `sphereAffinity`
+ * equal to the sphere. False for energy until THR-2086 lands, which is when the
+ * Mandate detail says that half rises only through the god's bond with the land.
+ */
+export function sphereHasAscendantCard(
+  sphere: SphereName,
+  templates: ReadonlyArray<{ essenceCost?: number; actorAffinities?: readonly string[]; sphereAffinity?: SphereName }> = UNIFIED_ACTION_TEMPLATES,
+): boolean {
+  return templates.some(t =>
+    (t.essenceCost ?? 0) > 0 &&
+    (t.actorAffinities ?? []).includes('ascendant') &&
+    t.sphereAffinity === sphere);
+}
+
 export function selectMandateRow(gameState: GameState): MandateRowView | null {
   const { mandateDefinition: def, mandateState: state } = gameState;
   if (!def || !state) return null;

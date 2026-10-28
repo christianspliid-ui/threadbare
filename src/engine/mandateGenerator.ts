@@ -54,10 +54,6 @@ function formatSphereName(sphere: SphereName): string {
   return sphere.charAt(0).toUpperCase() + sphere.slice(1);
 }
 
-function formatPercent(value: number): string {
-  return `${Math.round(value * 100)}%`;
-}
-
 function ensureSentence(text: string): string {
   const trimmed = text.trim();
   if (!trimmed) return trimmed;
@@ -120,7 +116,7 @@ export function generateRememberedMandate({
   }));
   const mandateDirection = ensureSentence(
     identity?.mandateDirection ??
-      `Raise the global strength of ${formatSphereName(primarySphere)} and ${formatSphereName(secondarySphere)} before the doom clock closes`,
+      `Raise ${formatSphereName(primarySphere)} and ${formatSphereName(secondarySphere)} in the world by your own hand before the doom clock closes`,
   );
 
   return {
@@ -132,7 +128,9 @@ export function generateRememberedMandate({
     name: identity?.hungerName
       ? `${identity.hungerName} Ascendancy`
       : `${formatSphereName(primarySphere)} Ascendancy`,
-    description: `${mandateDirection} Increase ${formatSphereName(primarySphere)} by ${formatPercent(MANDATE_PRIMARY_TARGET_DELTA)} and ${formatSphereName(secondarySphere)} by ${formatPercent(MANDATE_SECONDARY_TARGET_DELTA)} before doom expires.`,
+    // THR-2081: the target is points of the god's own making, set at the settle; the
+    // words name the rule (only the god's doing counts), never a percentage.
+    description: mandateDirection,
     stages: [
       {
         stage: 'setup',
@@ -140,11 +138,11 @@ export function generateRememberedMandate({
         conditions: [
           {
             type: 'custom',
-            description: `By ${formatPercent(checkpoints[0].doomProgressThreshold)} doom: ${formatSphereName(primarySphere)} +${formatPercent(checkpoints[0].requiredPrimaryDelta)}.`,
+            description: `By the ${checkpoints[0].label}: ${formatSphereName(primarySphere)} raised by your hand, on pace.`,
           },
           {
             type: 'custom',
-            description: `By ${formatPercent(checkpoints[0].doomProgressThreshold)} doom: ${formatSphereName(secondarySphere)} +${formatPercent(checkpoints[0].requiredSecondaryDelta)}.`,
+            description: `By the ${checkpoints[0].label}: ${formatSphereName(secondarySphere)} raised by your hand, on pace.`,
           },
         ],
       },
@@ -154,11 +152,11 @@ export function generateRememberedMandate({
         conditions: [
           {
             type: 'custom',
-            description: `By ${formatPercent(checkpoints[1].doomProgressThreshold)} doom: ${formatSphereName(primarySphere)} +${formatPercent(checkpoints[1].requiredPrimaryDelta)} and ${formatSphereName(secondarySphere)} +${formatPercent(checkpoints[1].requiredSecondaryDelta)}.`,
+            description: `By the ${checkpoints[1].label}: ${formatSphereName(primarySphere)} and ${formatSphereName(secondarySphere)} raised by your hand, on pace.`,
           },
           {
             type: 'custom',
-            description: `By ${formatPercent(checkpoints[2].doomProgressThreshold)} doom: ${formatSphereName(primarySphere)} +${formatPercent(checkpoints[2].requiredPrimaryDelta)} and ${formatSphereName(secondarySphere)} +${formatPercent(checkpoints[2].requiredSecondaryDelta)}.`,
+            description: `By the ${checkpoints[2].label}: ${formatSphereName(primarySphere)} and ${formatSphereName(secondarySphere)} raised by your hand, on pace.`,
           },
         ],
       },
@@ -168,11 +166,11 @@ export function generateRememberedMandate({
         conditions: [
           {
             type: 'custom',
-            description: `Raise global ${formatSphereName(primarySphere)} strength by ${formatPercent(MANDATE_PRIMARY_TARGET_DELTA)}.`,
+            description: `Your hand has raised ${formatSphereName(primarySphere)} far enough.`,
           },
           {
             type: 'custom',
-            description: `Raise global ${formatSphereName(secondarySphere)} strength by ${formatPercent(MANDATE_SECONDARY_TARGET_DELTA)}.`,
+            description: `Your hand has raised ${formatSphereName(secondarySphere)} far enough.`,
           },
         ],
       },
