@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 05:56 local (04:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 06:58 local (05:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,4 +37,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The heavy simulation tests pass on main again: [the run on THR-2085's fix](https://github.com/christianspliid-ui/threadbare/actions/runs/40627110730) succeeded. The live site serves the latest commit (a2e88585), CI passes, no PRs are waiting, the scheduled lanes and the worktree reaper (last run 05:53 local) are healthy, and the engine runs at 159 ms/tick, 9% below the 7-day median.
+All green. The heavy simulation tests pass on main again: [the run on THR-2085's fix](https://github.com/christianspliid-ui/threadbare/actions/runs/40627110730) succeeded. The live site serves the latest commit (a2e88585), CI passes, no PRs are waiting, the scheduled lanes and the worktree reaper (last run 06:40 local) are healthy, and the engine runs at 158 ms/tick, 9% below the 7-day median.
