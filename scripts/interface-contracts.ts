@@ -7964,6 +7964,21 @@ export const CONTRACTS: readonly Contract[] = [
       evidence: 'THR-1934. economicPower.test.ts: the arc\'s unrest phase seeds the granary riot template and leaves unrest unmoved; unrestPressure.test.ts: one riot seed the day a hungry town turns Lawless, none the next day. measure:unrest: 0 arc jumps, 6 / 5 / 2 Lawless riot seeds on seeds 42 / 99 / 7.',
     },
   },
+  {
+    id: 'larder-seeds-hunger-stories',
+    producerSystem: ECONOMY,
+    consumerSystem: ENCOUNTERS,
+    intent:
+      'Hunger\'s stories are planted (THR-2040). In the unrest daily pass, after the riot, a town\'s larder reads hungerDays (famine) and foodSurplusDays / foodBalance (glut: 3 surplus days at a balance of at least 0.75). On hungry day FAMINE_SEED_DAY 2 it plants one famine row (FAMINE_SEED_ROWS) for a resident; once per glut run, on its first day the guards allow, one plenty row (PLENTY_SEED_ROWS; larderGlutRunTold; a town glutted at its first read gets a hash-staggered cooldown). At most one per town per LARDER_SEED_COOLDOWN_DAYS 10 (larderLastSeedTick); none within the cooldown of a riot seed (unrestLastRiotSeedTick) or a scarcity-arc move. The reverse guard: the scarcity arc\'s hoarding seed (phases/economicPower.ts) waits while larderLastFamineSeedTick (written by famine plants only) is within the cooldown, so one shortage plants one hunger story; the withheld seed is named in the arc\'s phase trace. The row must be accepted where the chosen resident stands (templateAcceptsWhereTheyStand) and asks no hold; the pick is a stable hash, no PRNG draw. Seeds join the riot\'s pendingEncounterSeeds write.',
+    ulTerms: ['Settlement', 'Encounter'],
+    mechanism: { kind: 'node-prop', symbols: ['hungerDays', 'foodSurplusDays', 'foodBalance', 'larderLastSeedTick', 'larderLastFamineSeedTick', 'larderWasGlut'] },
+    writeSites: ['src/engine/larderSeeds.ts'],
+    readSites: ['src/engine/larderSeeds.ts', 'src/engine/phases/economicPower.ts'],
+    verifiedLive: {
+      date: '2026-10-28',
+      evidence: 'THR-2040. economicPower.test.ts: a town with a fresh larderLastFamineSeedTick gets no hoarding seed (traced) while its arc still moves; a plenty-only stamp withholds nothing. larderSeeds.test.ts (17): famine plants on day 2 only; a glut run tells one story on its first day the guards allow; a town glutted at its first read plants on a staggered day; the cooldown / riot / scarcity-arc / no-resident / disabled guards; a Place-gated row judged at the resident; a job-cast row only for its trade; a stable pick. npm run census:larder (seeds 42,99,7,1,2,3 × 360, medium), off vs on: hungry spells with a famine scene 10/52 (19.2%) → 40/48 (83.3%); glut runs with a plenty scene 39/99 (39.4%) → 87/98 (88.8%); fed towns famine 5.0% → 4.5%, plenty 3.3% → 3.1%; 122 seeds planted, 121 taken up.',
+    },
+  },
   // ── THR-1957 S2 — the town turns ──────────────────────────────────────
   {
     id: 'town-defection-moves-controls',
