@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 00:58 local (23:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 01:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,11 +28,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 1 ready, 1 being built.** The mill lease ([THR-2077](https://linear.app/threadbare/issue/THR-2077)) merged via [PR #2638](https://github.com/christianspliid-ui/threadbare/pull/2638) and is live. The builder claimed the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071)) at 23:53 UTC, as soon as its hold lifted, and is starting on it. The one ready ticket, Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)), is on hold until Wednesday 03:01 UTC, so the builder will idle in between. That is by design, not a stall.
+**Starved: 1 ready, 1 being built.** The builder is working on the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071)); its pull request [#2639](https://github.com/christianspliid-ui/threadbare/pull/2639) is open and not yet set to merge, so the work is still in progress. The one ready ticket, Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)), is on hold until 03:01 UTC today, so short builder runs in between are by design, not a stall.
 
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). Agents can un-park it.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). No branch and no local worktree hold work for it. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (1dd9143f), CI and the scheduled background jobs pass, no pull request is waiting to merge, the scheduled lanes and the worktree reaper (last run 00:53) are healthy, and the engine runs at 186 ms/tick, 9% over the 7-day median.
+All green. The live site serves the latest main (1dd9143f), CI and the scheduled background jobs pass, the scheduled lanes and the worktree reaper (last run 01:40) are healthy, and the engine runs at 175 ms/tick, 1% over the 7-day median.
