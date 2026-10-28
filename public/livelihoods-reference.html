@@ -37,7 +37,8 @@
     good name (THR-2070).
   - Livelihood tug: a bonded, non-dormant mortal whose home settlement holds a
     staple in scarce (Famine) or surplus (Glut) pulls a Gold-reach thread tug on the
-    existing attention system (phaseAttention machinery). State-based + deduped.
+    existing attention system (phaseAttention machinery). Once per crossing
+    (livelihoodPulledTier, THR-2062); free to answer (kind: 'livelihood').
   - Honest scope: P1 activates the decorative layer. Trade cargo manifests, route
     events, faction control, sphere drift, and divine economic verbs are P2–P4
     (flagged DESIGN below) — do not describe them as shipped.
@@ -333,7 +334,7 @@
 
       <h3>Livelihood thread tug <span class="flag impl">IMPL</span></h3>
       <ul>
-        <li>When a bonded, non-dormant mortal's home settlement holds a <em>staple</em> in <code>scarce</code> or <code>surplus</code>, the phase pushes a <code>ThreadTug</code> (reach <code>gold</code>; threat <code>hard</code> for Famine, <code>moderate</code> for Glut) onto <code>state.activeThreadTugs</code>, riding the existing attention machinery (<code>phaseAttention</code> preserves it; <code>useAgentInteraction</code> attends it — it resolves by <code>agentId</code>, so no backing encounter is needed). Residents are grouped by their home <em>resourced</em> location, walking sublocation → parent so a mortal in a settlement's inn still counts. State-based and deduped by a <code>${agentId}::${resourceId}</code> key carried on the tug, so a persistent famine tugs once, not every tick.</li>
+        <li>When a bonded, non-dormant mortal's home settlement holds a <em>staple</em> in <code>scarce</code> or <code>surplus</code>, the phase pushes a <code>ThreadTug</code> (reach <code>gold</code>; threat <code>hard</code> for Famine, <code>moderate</code> for Glut) onto <code>state.activeThreadTugs</code>, riding the existing attention machinery (<code>phaseAttention</code> preserves it; <code>useAgentInteraction</code> attends it — it resolves by <code>agentId</code>, so no backing encounter is needed). Residents are grouped by their home <em>resourced</em> location, walking sublocation → parent so a mortal in a settlement's inn still counts. Deduped by a <code>${agentId}::${resourceId}</code> key carried on the tug, and — since THR-2062 (2026-10-28) — <strong>once per crossing</strong>: the resource instance records <code>livelihoodPulledTier</code> when a tug is actually raised and clears it when the good returns to <code>adequate</code>, so a lasting famine tugs once, not every three ticks. The tug carries <code>kind: 'livelihood'</code>, its good and tier; the badge says <em>"their home is short of grain"</em> and answering it costs no Attention.</li>
       </ul>
 
       <h3>The essence bridge — economy → divine economy <span class="flag impl">IMPL</span></h3>

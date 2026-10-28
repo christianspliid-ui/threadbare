@@ -15,13 +15,13 @@ remediation ticket or the build fails.
 
 | Badge | Count |
 |---|---|
-| 🟢 LIVE | 225 |
+| 🟢 LIVE | 227 |
 | 🟠 PARTIAL | 1 |
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
 | 🔵 UNVERIFIED-OK | 107 |
-| **Total** | **340** |
+| **Total** | **342** |
 
 ## Contracts by producing subsystem
 
@@ -129,6 +129,7 @@ remediation ticket or the build fails.
 | `minimised-step-hold` | The player sets a pause-tier encounter step down (Escape, or Show on map) and it waits for them: the minimise writes a per-step hold on the unified action, and Phase 1 of the unified-action pipeline does not advance a step whose hold is live. A commit or a dismiss clears it; the engine releases it when the step changes, the thread is switched to Lives on, or the action ends. Without it a minimise is a second, accidental "let fate decide". THR-2052: the engine also writes the hold the tick a pause-tier step's beat is posted (holdStepsForPostedBeats, after both visibility passes), so a step whose veil never opened or was replaced waits too. | state-field: `playerHold`, `isPlayerHoldLive`, `progressActionsWithPlayerHolds` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `sealed-cards-gate-the-offering` | Some powers are sealed when the first world wakes; each age unseals two, leaning to the spheres the last god drew on, and the world never offers a sealed one. | state-field: `sealedCardIds` | Ascendant Beats & Progression | 🔵 UNVERIFIED-OK | — |
 | `story-breath-anchor-paces-pause-mode-chapters` | The First is born asking: her story chapters stop the world. When one ends, her thread records the tick, and for PAUSED_STORY_BREATH_TICKS she starts no new story chapter (about two days of ordinary life), so halting for every moment that matters never becomes a drumbeat. | edge-prop: `lastStoryChapterEndTick` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
+| `thread-tug-spend-single-writer` | Answering a Thread Tug spends Attention through one engine writer. attendThreadTug (attentionPool.ts) prices the tug (tugAttendCost: a livelihood tug costs LIVELIHOOD_TUG_ATTEND_COST 0, a chapter tug threat × court), refuses when the pool cannot pay, writes attentionPool on the ascendant and traces attention_pool with cause attend_tug. The badge's hook only selects the mortal, touches the world and commits the attended flag; it no longer writes the pool itself. The god rail's gauge renders only while attentionCanBeSpent holds (a mortal on Lives on is in the court). | function: `attendThreadTug`, `attentionCanBeSpent` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `twilight-harvest-preserves-defining-card` | A god who dies is not wholly gone: the trick they were known for survives the age and turns up in the next god's hand, whole after a triumph and scarred after a defeat. | function: `selectEchoCard`, `buildCardEcho`, `echoCardsFromDefinitions` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | — |
 | `world-ref-opens-one-card` | Anything the game names opens the same way. One router dispatches on WorldRefKind; the surface registry says what each kind opens; a kind with no row is a build failure, not a dead link (THR-1490, Law 21 as amended). | function: `SURFACE_BY_WORLD_REF`, `useRefRouter` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 
@@ -355,6 +356,7 @@ remediation ticket or the build fails.
 | `food-balance-sets-famine-tier` | On a settlement the economy has reached, its foodBalance sets the stock tier of every food staple (grain, grazing, fish, water), so a fed town reads adequate and a starving one scarce; the scarcity arcs and the livelihood tug read the tier. The unrest hunger counter reads foodStore / foodBalance directly. | node-prop: `foodBalance` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `happiness-term-into-unrest` | The settlement economy writes economyContentment daily: -UNREST_FROM_HAPPINESS × happiness (buildings, a route, crowding; hunger left out, it is its own input), bounded ±UNREST_HAPPINESS_MAX. The unrest target reads it as its contentment input (THR-1934's switch). | node-prop: `economyContentment` | Mortal Economy & Prosperity | 🟢 LIVE | — |
 | `hungry-town-prays-on-gods-ground` | A hungry town on the god's own ground prays (THR-1935 S1). The daily prayer phase (after location_trait) opens a prayer event (eventKind prayer, occurred_at → the town) when a settlement bears the restless trait, hunger is its largest unrestInputs term, it reads Touched or better on the player god's Dominion and its 30-day cooldown is clear. The place page and the chronicle say it; the town keeps lastPrayerTick and activePrayerId. | function: `placePrayerView`, `listPrayers` | Essence & Divine Economy | 🟢 LIVE | — |
+| `livelihood-tug-once-per-crossing` | A bonded mortal's home in famine or glut pulls one livelihood Thread Tug per crossing (THR-2062 E2, narrowing THR-615): the resource instance remembers livelihoodPulledTier and clears it when the good returns to adequate. The tug carries kind livelihood with the good and tier, so the badge names the good in resourceWord's word and answering it is free. A pause-mode thread raises no chapter tug at all (phaseAttention traces curator_decision skipped / pause_mode_thread). | property: `livelihoodPulledTier`, `livelihoodResourceId` | Attention, Chronicle & Narrative | 🟢 LIVE | — |
 | `mortal-means-steers-board` | A poor or greedy mortal leans toward work that pays: the decision board multiplies an encounter whose outcome table pays its actor, and an earning undertaking cell, by the mortal's Means want; a Wealthy mortal who is not greedy turns away from it. | node-prop: `wealth`, `axiologicalProfile`, `meansMultiplier`, `meansWant` | Ambitions & Undertakings | 🔵 UNVERIFIED-OK | — |
 | `prosperity-on-trade-lens` | Trade roads and what they carry are a lens, not plain-map clutter (THR-1898 Lenses II, plan D4). The route producers write `trades_with` edges (volume, manifest, threatened); the Trade lens (`views/lenses/tradeLens.ts`) lights every explored hex on the cube line between a known route's ends (`hexLine`), draws the road in caravan gold or threat red with a mid-road badge, and tells the road words that left the plain hex tooltip, then each end's prosperity tier (`getProsperityTier`, `phaseProsperity`) and scarce goods (`stockTier`) as words, never a number. | node-prop: `prosperity`, `stockTier` | Intelligence, Knowledge & Familiarity | 🔵 UNVERIFIED-OK | — |
 | `recovered-town-keeps-faith` | A town that recovers keeps faith (THR-1935 S1). An answered prayer whose town loses the restless chip within PRAYER_RECOVERY_WINDOW_DAYS 30 becomes a faithfulCommunity essence source (the god's primary by bought points, sanctity 0.5) with the god's controls edge, written through the extracted consecrate helper; at most FAITHFUL_COMMUNITY_MAX 4 per god, one bag per host. computeSourceIncome pays it, chargeSourceUpkeep charges it, the Covenants list shows its faith line. | node-prop: `essenceSource`, `faithfulCommunity` | Essence & Divine Economy | 🟢 LIVE | — |
@@ -665,10 +667,10 @@ remediation ticket or the build fails.
 - **Intent:** Four ambitions are met by the undertakings that serve them (THR-1967): Dominate Regional Trade adds agent_holds_lanes (DOMINATE_TRADE_LANES_MIN lanes tolled via controlledBy, founded via the Route node's constructed_by, or held via owns on the Route node; a decayed edge no longer counts) and agent_means_at_least (DOMINATE_TRADE_MEANS_TIER) and completes on DOMINATE_TRADE_COMPLETION (3 of 5); Found Something New asks for a settlement-tier town with a constructed_by edge back to the holder (agent_controls_location, foundedBySelf); Rebuild from Ashes for a settlement-tier town of any size; Protect the Home for city-walls in the home settlement (agent_home_has_place: residence origin, else position, climbed to a settlement).
 - **Producer → Consumer:** Mortal Economy & Prosperity → Ambitions & Undertakings
 - **UL terms:** *Ambition*, *Means*, *Route*, *Freehold*
-- **Production hits:** 200 total — 2 write, 2 read, 196 unclassified
+- **Production hits:** 202 total — 2 write, 2 read, 198 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/data/ambition-templates.ts`, `src/engine/graphConditions.ts`
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +191 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx` +193 more
 - **Verdict:** Verified 2026-10-21: THR-1967. undertakingEconomyS3.test.ts: a mortal who founds a town meets found_seat while a merely held town does not (it still meets rebuild_ground); two opened lanes plus Wealthy meet trade_lanes and trade_means; walls in another town do not meet protect_ward, walls at home do; the estate, camp and castle shapes are gone.
 
 ### `answered-prayer-pushes-dominion` — 🟢 LIVE
@@ -2386,10 +2388,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Mortal Economy & Prosperity
 - **UL terms:** *Route*, *Freehold*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 220 total — 2 write, 3 read, 215 unclassified
+- **Production hits:** 222 total — 2 write, 3 read, 217 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/engine/holdingIncome.ts`, `src/engine/phaseEconomicChronicle.ts`
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts` +210 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts` +212 more
 - **Verdict:** Verified 2026-10-21: THR-1937. undertakingEconomy.test.ts: after create × route the edge carries controlledBy = founder and taxRate 0.1, the identity node has constructed_by → founder and owns ← founder (a rival's control:claim is refused), collectHoldingPayments pays the founder a route_control toll, phaseEconomicChronicle writes a trade_route_established line naming both towns, and the line drops when either end is unnamed.
 
 ### `founded-town-has-ruler-and-founder` — 🟢 LIVE
@@ -2398,10 +2400,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Factions & Succession
 - **UL terms:** *Settlement*, *Freehold*, *Faction*
 - **Module:** `src/engine/undertakingEconomy.ts`
-- **Production hits:** 312 total — 2 write, 3 read, 307 unclassified
+- **Production hits:** 314 total — 2 write, 3 read, 309 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`, `src/engine/undertakingEconomy.ts`
 - **Read sites:** `src/engine/factionPurse/income.ts`, `src/engine/holdingIncome.ts`, `src/engine/views/subjects/placeRows.ts`
-- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +302 more
+- **Other hits:** `src/components/CMS/types.ts`, `src/components/Game/ascendant-bar/CovenantsBlock.tsx`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/debugPanelStyles.ts` +304 more
 - **Verdict:** Verified 2026-10-21: THR-1937. src/engine/__tests__/undertakingEconomy.test.ts: the founded hamlet never shares a hex with its site and nothing is founded when the neighbourhood is full; the higher-rank town-holding faction rules, a tie goes to the realm then the lower id, a lone founder rules; the ruler's controls and the founder's owns are written and computePurseIncome lists the town under the ruler's taxHolderOf; the place row reads Founded by with the founder linked.
 
 ### `founding-patron-pays-from-faction-purse` — 🟢 LIVE
@@ -2620,10 +2622,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Attachments, Items & Possessions
 - **UL terms:** *Attachment*, *Undertaking*
 - **Module:** `src/engine/holdings.ts`
-- **Production hits:** 186 total — 3 write, 7 read, 176 unclassified
+- **Production hits:** 188 total — 3 write, 7 read, 178 unclassified
 - **Write sites:** `src/engine/encounterAftermath.ts`, `src/engine/graphOpExecutor.ts`, `src/engine/holdings.ts`
 - **Read sites:** `src/engine/effects/effectPredicates.ts`, `src/engine/graphConditions.ts`, `src/engine/graphQueries.ts`, `src/engine/notableAgendas.ts`, `src/engine/orchestrator.ts` +2 more
-- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx`, `src/components/Game/EncounterVeil.tsx` +171 more
+- **Other hits:** `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/debug/debugPanelStyles.ts`, `src/components/Game/encounter-stage/nudgeCommit.ts`, `src/components/Game/encounter-stage/shells/NudgePhaseShell.tsx`, `src/components/Game/EncounterVeil.tsx` +173 more
 - **Verdict:** Verified 2026-08-27: THR-1297 slice 3. `owns` ships as a NEW edge beside `controls` rather than a reuse, on the inventory's measured ground: exactly one of ~30 production `controls` read sites discriminates by any property (`releaseControl`'s `controlType === 'strategic'` filter), `influence` is write-only, and reuse would have broken seven faction-territory consumers outright plus five `[0]?.source` sites that would have become nondeterministic (NFP #3) — including `battleAftermath`'s power vacuum, which would have deleted an agent's holdings on a razing. Both un-flagged agent writers migrated: `encounterAftermath`'s `spawn_unique_location` (`via: 'creation'`) and the two authored `add_edge` templates `action.iron.conquer` / `action.shadow.establish-network`, the latter routed through `grantHolding` from inside `executeAddEdge` so content-authored ownership obeys the single writer too — a raw `addEdge` there would have produced an `owns` edge violating its own `requiredProperties` and carrying no bearer-side face at all. Seize is one atomic call built on a new `WorldGraph.retargetEdgeSource`, because `updateEdge` rewrites the edge record without touching the `outgoing`/`incoming` adjacency maps and would have silently orphaned the edge (~30 existing `updateEdge` callers all pass `properties` only, so nothing depended on that). Non-vacuous by `src/engine/__tests__/holdings.test.ts` (18 tests) and `holdingsIntegration.test.ts` (9): the atomicity test wraps every graph mutator and asserts the place is never ownerless and never faceless at ANY observed instant, not just at the endpoints — falsified 2-of-18 red by replacing the atomic body with a release-then-grant, which is exactly the implementation the plan's kill criterion forbids and which the first draft of this module actually had. Home-ground scoring on your own holding ships as the handoff specified (Christian's veto invited, not exercised), paired with its negative: a non-owner in the same place gets no bonus, and an owner's title now overrides a hostile faction verdict on the same hex — the gap where an owner read as an enemy on their own land. Full suite 18601 green; 30-tick seed-42 smoke reached tick 30.
 
 ### `hunger-resonance-weighs-the-meeting-deal` — 🟢 LIVE
@@ -2800,6 +2802,17 @@ exit
 - **Read sites:** `src/data/undertaking-objects.ts`, `src/engine/ruins/delveVariant.ts`, `src/engine/strategicActionCandidates.ts`
 - **Other hits:** `src/engine/ruins/clueLifecycle.ts`, `src/engine/ruins/leadVisit.ts`
 - **Verdict:** Verified 2026-10-06: THR-1702. `foundLeadsEndTheClimb.test.ts`: `delveRoadOf` returns now / later / never on an elder ruin, a fresh and a settled mortal ruin, a worldgen `ruins`, a shipwreck and a healing spring; `heldLeadRuinIds` drops a located wonder lead and keeps a narrowed lead on the same wonder. The existing delve-admission tests (`delveVariant.test.ts`) pass unchanged through the `isDelvableRuin` wrapper.
+
+### `livelihood-tug-once-per-crossing` — 🟢 LIVE
+
+- **Intent:** A bonded mortal's home in famine or glut pulls one livelihood Thread Tug per crossing (THR-2062 E2, narrowing THR-615): the resource instance remembers livelihoodPulledTier and clears it when the good returns to adequate. The tug carries kind livelihood with the good and tier, so the badge names the good in resourceWord's word and answering it is free. A pause-mode thread raises no chapter tug at all (phaseAttention traces curator_decision skipped / pause_mode_thread).
+- **Producer → Consumer:** Mortal Economy & Prosperity → Attention, Chronicle & Narrative
+- **UL terms:** *Thread Tug*, *Settlement*
+- **Production hits:** 4 total — 1 write, 1 read, 2 unclassified
+- **Write sites:** `src/engine/phases/resourceStockTiers.ts`
+- **Read sites:** `src/components/Game/threadTugBadgeModel.ts`
+- **Other hits:** `src/types/attention.ts`, `src/types/resource.ts`
+- **Verdict:** Verified 2026-10-28: THR-2062. phaseResourceStockTiers.test.ts: a lasting famine pulls once and not again after its tug lapses; recovery to adequate clears the marker and a second fall pulls again. Census: zero livelihood repeats inside a crossing on seeds 42/99/7.
 
 ### `local-omen-on-trouble-lens` — 🔵 UNVERIFIED-OK
 
@@ -3291,10 +3304,10 @@ exit
 - **Intent:** A faction whose active ambition is resource_acquisition and that holds any regionalMonopolies entry (war aims S2's record) has met it (isFactionAmbitionMet, THR-1967). phaseFactionAmbitions closes it the way an abandonment does (the ambition node and its pursues edges go, trace undertaking.economy.ambition_met) and the next pick is defensive_consolidation, skipping the weighted draw, so the holder guards what it won.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Faction*
-- **Production hits:** 18 total — 1 write, 2 read, 15 unclassified
+- **Production hits:** 19 total — 1 write, 2 read, 16 unclassified
 - **Write sites:** `src/engine/phases/regionalMonopolies.ts`
 - **Read sites:** `src/engine/factionAmbitions.ts`, `src/engine/undertakingEconomy.ts`
-- **Other hits:** `src/engine/ambitionShape.ts`, `src/engine/armySpawning.ts`, `src/engine/embargo.ts`, `src/engine/factionGovernanceVerbs.ts`, `src/engine/notableAgendas.ts` +10 more
+- **Other hits:** `src/components/Game/threadTugBadgeModel.ts`, `src/engine/ambitionShape.ts`, `src/engine/armySpawning.ts`, `src/engine/embargo.ts`, `src/engine/factionGovernanceVerbs.ts` +11 more
 - **Verdict:** Verified 2026-10-21: THR-1967. undertakingEconomyS3.test.ts: a resource_acquisition faction with a regional monopoly switches to defensive_consolidation on its next review; without one it keeps pursuing; no other ambition type reads as met.
 
 ### `regional-monopoly-pays-rent` — 🟢 LIVE
@@ -3302,10 +3315,10 @@ exit
 - **Intent:** A faction holds a regional monopoly on a good when, around an anchor place it holds, at least MONOPOLY_REGION_MIN_PLACES place-tier bearing places lie within MONOPOLY_REGION_RADIUS_HEXES and it holds MONOPOLY_CONTROL_FRACTION of them (THR-1955, war aims S2). phaseEconomicPower writes faction.regionalMonopolies ({ resourceId, anchorLocationId, share, placeIds, sinceTick }) and keeps faction.monopolies (resource ids) daily, chronicling "holds most of" lines de-duplicated by MONOPOLY_MIN_HOLD_DAYS. Readers: the purse's place yield pays MONOPOLY_SCARCITY_RENT on the held good (scarcityRentFor), the war-aim score's break/complete bonuses (monopolyAimFor), the embargo prerequisite, the Purse panel chip and the Trade lens monopoly line.
 - **Producer → Consumer:** Mortal Economy & Prosperity → Factions & Succession
 - **UL terms:** *Faction*, *Settlement*
-- **Production hits:** 17 total — 1 write, 4 read, 12 unclassified
+- **Production hits:** 18 total — 1 write, 4 read, 13 unclassified
 - **Write sites:** `src/engine/phases/regionalMonopolies.ts`
 - **Read sites:** `src/engine/embargo.ts`, `src/engine/factionPurse/income.ts`, `src/engine/views/lenses/tradeLens.ts`, `src/engine/warAims/townValue.ts`
-- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/data/economic-chronicle-content.ts`, `src/data/regional-monopoly-constants.ts`, `src/data/regional-monopoly-words.ts`, `src/data/war-aims-constants.ts` +7 more
+- **Other hits:** `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/threadTugBadgeModel.ts`, `src/data/economic-chronicle-content.ts`, `src/data/regional-monopoly-constants.ts`, `src/data/regional-monopoly-words.ts` +8 more
 - **Verdict:** Verified 2026-10-20: THR-1955. src/engine/__tests__/regionalMonopoly.test.ts (11): a 3-of-4 region holds at 0.75, a far place is another market, the record clears the day the share drops, a loss inside the hold window is traced not chronicled, rent multiplies the held good, the break and complete bonuses fire. npm run measure:monopolies, seeds 42/99/7: 4 / 8 / 9 regional monopolies at day 10.
 
 ### `relocation-intent-steers-agent-movement` — 🔵 UNVERIFIED-OK
@@ -3994,6 +4007,18 @@ exit
 - **Read sites:** `src/engine/fights/opposedRoll.ts`, `src/engine/rewardPool.ts`, `src/engine/undertakingCheckpoints.ts`, `src/engine/unifiedActionResolution.ts`
 - **Verdict:** Verified 2026-10-14: Seeds 42 and 7 (medium, the First bonded by devSeedTheFirst), 300 ticks: the First's d100 was dealt from its bag 71 and 113 times (`luck.bag_roll` traces; `properties.luck.bagDraws` agrees), and on seed 7 a Legendary cycle closed naturally after 12 wins against a deadline of 45 (`luck.legendary_cycle`, tick 188). Every traced bag roll belonged to the First, the one threaded mortal.
 
+### `thread-tug-spend-single-writer` — 🟢 LIVE
+
+- **Intent:** Answering a Thread Tug spends Attention through one engine writer. attendThreadTug (attentionPool.ts) prices the tug (tugAttendCost: a livelihood tug costs LIVELIHOOD_TUG_ATTEND_COST 0, a chapter tug threat × court), refuses when the pool cannot pay, writes attentionPool on the ascendant and traces attention_pool with cause attend_tug. The badge's hook only selects the mortal, touches the world and commits the attended flag; it no longer writes the pool itself. The god rail's gauge renders only while attentionCanBeSpent holds (a mortal on Lives on is in the court).
+- **Producer → Consumer:** Attention, Chronicle & Narrative → Attention, Chronicle & Narrative
+- **UL terms:** *Thread Tug*
+- **Module:** `src/engine/attentionPool.ts`
+- **Production hits:** 6 total — 1 write, 2 read, 3 unclassified
+- **Write sites:** `src/engine/attentionPool.ts`
+- **Read sites:** `src/components/Game/hooks/useAgentInteraction.ts`, `src/engine/views/godRail.ts`
+- **Other hits:** `src/components/Game/frame/LedgerRail.tsx`, `src/components/Game/GameView.tsx`, `src/data/opening-reveal-table.ts`
+- **Verdict:** Verified 2026-10-28: THR-2062. attentionPool.test.ts pins the spend, the refusal, the four null cases and the free livelihood answer; npm run census:attention (seeds 42/99/7 × 360 ticks, a greedy player spending through attendThreadTug) shows a First-alone pool that never leaves full and a 3-retinue Lives-on pool below half on 25 % · 40 % · 80 % of ticks; grep "properties.attentionPool =" src/components is empty.
+
 ### `thread-write-resolves-first` — 🔵 UNVERIFIED-OK
 
 - **Intent:** Whoever the god threads first becomes The First: when the god holds no First, the Agent Thread card writes its thread at `the_first` with the journey fields the meeting writes, so every First perk — shaping attention, the journey, the doom wake, the gold thread — follows with no per-perk change.
@@ -4377,10 +4402,10 @@ exit
 - **Intent:** Worldgen seeds what the systems need on tick 0 — more protagonists (`AGENT_COUNT_BY_MAP_SIZE`), trade routes with identity nodes, freeholds, possessions, standing quarrels, marks and capital garrisons — and, since THR-1630, the people web (a kin, a friend and a rival per named hero among their neighbours, membership in the Realm that holds their home, a favour owed inside their faction, secrets counted per hero) and, since THR-1654, one notable per settlement with a holding, an old quarrel and a secret or favour tied to a decider — each behind a named constant in `src/data/worldgen-living-constants.ts`, so the economy phases, the toll and the tithe, the motive gate and the leverage cells have objects to read before any undertaking makes one.
 - **Producer → Consumer:** World Generation, Terrain & Places → Ambitions & Undertakings
 - **Module:** `src/engine/seedLivingWorld.ts`
-- **Production hits:** 312 total — 2 write, 6 read, 304 unclassified
+- **Production hits:** 314 total — 2 write, 6 read, 306 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`, `src/engine/worldSeed.ts`
 - **Read sites:** `src/engine/armySupply.ts`, `src/engine/holdingIncome.ts`, `src/engine/socialLeverage.ts`, `src/engine/strategicActionCandidates.ts`, `src/engine/tradeRouteOps.ts` +1 more
-- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +299 more
+- **Other hits:** `src/components/CMS/tunableConstants.ts`, `src/components/CMS/undertaking-package/buildUndertakingPackage.ts`, `src/components/Game/ascendant-bar/essenceDisplay.ts`, `src/components/Game/ascendant-bar/HooksBlock.tsx`, `src/components/Game/debug/ArmiesTabContent.tsx` +301 more
 - **Verdict:** Verified 2026-09-08: THR-1437. `npm run census:seeded-world` on medium at tick 0, seed 42 · 99: spotlight mortals 21 · 21 (18 protagonists + 3 captains; was 14 · 14), route identity nodes 6 · 6 (was 0), armies 5 · 5 (was 2), `owns` 8 · 4 (was 0), `possesses` 23 · 21, `hostile_to` 16 · 14 (was 0), `knows_secret_of` 1 · 2 (was 0), Standing objects 72 · 72 (was 56 · 59). Determinism, the round-robin equivalence and the rivalry-not-grudge reading of a seeded quarrel are pinned in `seedLivingWorld.test.ts` (12) on a generated small world; `mintRouteIdentity.test.ts` pins one identity node per lane. Tick cost (`measure:tick-cost`, medium, steady ms/tick): seed 42 80 → 91, seed 99 98 → 130 after the protagonist band stepped down to 14–20 under the plan’s +25% criterion (18–24 measured 101 · 136).
 
 ### `worldgen-ties-reach-ambition-and-grief` — 🟢 LIVE
