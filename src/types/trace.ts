@@ -4212,7 +4212,10 @@ export interface EngagementDecisionTrace extends TraceBase {
 /** THR-2071 — the scorer context terms the live board reads (`boardContextSum`). */
 export type BoardContextTerm =
   | 'economic' | 'locationTrait' | 'resonance' | 'globalResonance'
-  | 'reputation' | 'faction' | 'chain' | 'intel';
+  | 'reputation' | 'faction' | 'chain' | 'intel'
+  // THR-2073 — the scorer's late additive pulls, scaled by BOARD_LATE_PULL_WEIGHT.
+  | 'attraction' | 'convergence' | 'hunch' | 'relocation' | 'appointment'
+  | 'brokenDrift' | 'ruins' | 'anomaly';
 
 export interface DecisionBoardComparisonTrace extends TraceBase {
   category: 'decision_board_comparison';

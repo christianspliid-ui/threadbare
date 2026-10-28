@@ -117,6 +117,7 @@ import {
   BOARD_CONTEXT_PULL_MAX,
   BOARD_CONTEXT_PULL_MIN,
   BOARD_CONTEXT_NORMALIZE,
+  BOARD_LATE_PULL_WEIGHT,
 } from '../data/agent-behavior-constants';
 import type { BoardContextTerm } from '../types/trace';
 import {
@@ -183,10 +184,16 @@ export function roleAffinityBoardPull(roleAffinityMultiplier: number | undefined
  *   `rarityMultiplier` — variety and pacing
  * - `identityBiasBonus` (doom and omen), `markRevealBonus` — the world arranging what comes up
  *
- * Deferred to THR-2073 (zero on all three headless census worlds, so nothing could size
- * them; the god verbs need a census with the verb cast): `attractionBonus`,
- * `convergenceBonus`, `hunchBonus`, `relocationBonus`, `appointmentBonus`,
- * `brokenDriftBonus`, `ruinsBonus`, `anomalyBonus`.
+ * Late pulls (THR-2073, summed here × `BOARD_LATE_PULL_WEIGHT`) — the scorer adds
+ * these after its multipliers, so before THR-2073 a god verb could put a scene on a
+ * mortal's shortlist but never make the mortal prefer it:
+ * - `attractionBonus` (Mark the Ground), `convergenceBonus` (Draw Together),
+ *   `hunchBonus` (Whisper Intuition) — the god's steering verbs
+ * - `relocationBonus`, `appointmentBonus`, `brokenDriftBonus` — where the mortal means
+ *   to go. `appointmentDiscount` (below) is not the same channel: it discounts a scene
+ *   that would outlast the slack; this pulls toward the promised place.
+ * - `ruinsBonus`, `anomalyBonus` — who the mortal is (a ruin-seeker, an Eye-skilled seer)
+ * Census with the verbs cast: `npm run census:board-late-pulls`.
  *
  * Already on the board as their own factors: role affinity (THR-2067), whisper pull
  * (THR-1781), engagement fit (THR-1582), appointment discount (THR-1686), arrival
@@ -194,7 +201,9 @@ export function roleAffinityBoardPull(roleAffinityMultiplier: number | undefined
  */
 type BoardContextSource = Pick<ScoredCandidate,
   'economicContextBonus' | 'locationTraitBonus' | 'resonance' | 'globalResonance'
-  | 'reputationBonus' | 'factionScoringBoost' | 'chainBonus' | 'intelBonus'>;
+  | 'reputationBonus' | 'factionScoringBoost' | 'chainBonus' | 'intelBonus'
+  | 'attractionBonus' | 'convergenceBonus' | 'hunchBonus' | 'relocationBonus'
+  | 'appointmentBonus' | 'brokenDriftBonus' | 'ruinsBonus' | 'anomalyBonus'>;
 
 const BOARD_CONTEXT_FIELDS: ReadonlyArray<readonly [BoardContextTerm, keyof BoardContextSource]> = [
   ['economic', 'economicContextBonus'],
@@ -207,20 +216,36 @@ const BOARD_CONTEXT_FIELDS: ReadonlyArray<readonly [BoardContextTerm, keyof Boar
   ['intel', 'intelBonus'],
 ];
 
-/** THR-2071 — the non-zero Board terms on a candidate, by name. Non-finite or missing terms are dropped. */
+/** THR-2073 — the scorer's late additive pulls, scaled by `BOARD_LATE_PULL_WEIGHT`. */
+const BOARD_LATE_PULL_FIELDS: ReadonlyArray<readonly [BoardContextTerm, keyof BoardContextSource]> = [
+  ['attraction', 'attractionBonus'],
+  ['convergence', 'convergenceBonus'],
+  ['hunch', 'hunchBonus'],
+  ['relocation', 'relocationBonus'],
+  ['appointment', 'appointmentBonus'],
+  ['brokenDrift', 'brokenDriftBonus'],
+  ['ruins', 'ruinsBonus'],
+  ['anomaly', 'anomalyBonus'],
+];
+
+const BOARD_LATE_PULL_TERMS: ReadonlySet<BoardContextTerm> = new Set(BOARD_LATE_PULL_FIELDS.map(([name]) => name));
+
+/** THR-2071 — the non-zero Board terms on a candidate, by name (THR-2073: late pulls included, unweighted). Non-finite or missing terms are dropped. */
 export function boardContextTerms(c: Partial<BoardContextSource>): Partial<Record<BoardContextTerm, number>> {
   const out: Partial<Record<BoardContextTerm, number>> = {};
-  for (const [name, field] of BOARD_CONTEXT_FIELDS) {
+  for (const [name, field] of [...BOARD_CONTEXT_FIELDS, ...BOARD_LATE_PULL_FIELDS]) {
     const v = c[field];
     if (typeof v === 'number' && Number.isFinite(v) && v !== 0) out[name] = v;
   }
   return out;
 }
 
-/** THR-2071 — the sum of the eight Board terms; a missing or non-finite term reads 0. */
+/** THR-2071 — the sum of the Board terms, the late pulls × `BOARD_LATE_PULL_WEIGHT` (THR-2073); a missing or non-finite term reads 0. */
 export function boardContextSum(c: Partial<BoardContextSource>): number {
   let sum = 0;
-  for (const v of Object.values(boardContextTerms(c))) sum += v ?? 0;
+  for (const [name, v] of Object.entries(boardContextTerms(c)) as [BoardContextTerm, number][]) {
+    sum += BOARD_LATE_PULL_TERMS.has(name) ? BOARD_LATE_PULL_WEIGHT * v : v;
+  }
   return sum;
 }
 

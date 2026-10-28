@@ -164,6 +164,7 @@
     "measure:monopolies": "esbuild scripts/measure-monopolies.ts --bundle --platform=node --format=esm --outfile=.cache/measure-monopolies.mjs --external:fs --external:path && node .cache/measure-monopolies.mjs",
     "measure:unrest": "esbuild scripts/measure-unrest.ts --bundle --platform=node --format=esm --outfile=.cache/measure-unrest.mjs --external:fs --external:path && node .cache/measure-unrest.mjs",
     "measure:prayers": "esbuild scripts/measure-prayers.ts --bundle --platform=node --format=esm --outfile=.cache/measure-prayers.mjs --external:fs --external:path && node .cache/measure-prayers.mjs",
+    "census:board-late-pulls": "esbuild scripts/board-late-pulls-census.ts --bundle --platform=node --format=esm --outfile=.cache/board-late-pulls-census.mjs --external:fs --external:path && node .cache/board-late-pulls-census.mjs",
     "census:board-context": "esbuild scripts/board-context-census.ts --bundle --platform=node --format=esm --outfile=.cache/board-context-census.mjs --external:fs --external:path && node .cache/board-context-census.mjs",
     "measure:role-lean": "esbuild scripts/role-lean-board-share.ts --bundle --platform=node --format=esm --outfile=.cache/role-lean-board-share.mjs --external:fs --external:path && node .cache/role-lean-board-share.mjs",
     "measure:means": "esbuild scripts/means-comfort-pace.ts --bundle --platform=node --format=esm --outfile=.cache/means-comfort-pace.mjs --external:fs --external:path && node .cache/means-comfort-pace.mjs",
