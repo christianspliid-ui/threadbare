@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-28 03:58 local (02:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-28 04:58 local (03:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-28: a fix for the red heavy tests (a compulsion paid mid-encounter no longer steered The First) is merged** ([THR-2085](https://linear.app/threadbare/issue/THR-2085/heavy-simulation-tests-red-on-main-a-compulsion-paid-mid-encounter-no)), via [#2643](https://github.com/christianspliid-ui/threadbare/pull/2643). The check on its merge is still running.
 - **2026-10-28: the god's steering powers now reach a mortal's own final choice, and it is live** ([THR-2073](https://linear.app/threadbare/issue/THR-2073/the-gods-steering-verbs-and-a-mortals-movement-leans-may-stop-at-the)). Merged via [#2641](https://github.com/christianspliid-ui/threadbare/pull/2641).
 - **2026-10-28: the town economy now reaches the mortal's final choice, and it is live** ([THR-2071](https://linear.app/threadbare/issue/THR-2071)). Merged via [#2639](https://github.com/christianspliid-ui/threadbare/pull/2639).
 - **2026-10-27: a sealed mill lease now gives the town's mill to its guild, and it is live** ([THR-2077](https://linear.app/threadbare/issue/THR-2077)). Merged via [#2638](https://github.com/christianspliid-ui/threadbare/pull/2638).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-27: the army heavy test now fits its time limit, and the fix is merged** ([THR-2083](https://linear.app/threadbare/issue/THR-2083/heavy-simulation-tests-red-on-main-the-run-on-the-thr-2082-fix-merge)), via [#2634](https://github.com/christianspliid-ui/threadbare/pull/2634). The heavy tests are still red for a different reason; the builder has that as [THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured).
 - **2026-10-27: a fix for the red heavy tests (an army whose commander dies was no longer offered to a faction-mate) is merged and live** ([THR-2082](https://linear.app/threadbare/issue/THR-2082/heavy-simulation-tests-red-on-main-the-ownership-band-army-offered-to)), via [#2633](https://github.com/christianspliid-ui/threadbare/pull/2633).
 - **2026-10-27: the seeded world no longer ends after 41 ticks, and the fix is live** ([THR-2080](https://linear.app/threadbare/issue/THR-2080)). Merged via [#2632](https://github.com/christianspliid-ui/threadbare/pull/2632).
-- **2026-10-27: The First's page no longer shows an empty portrait box, and the fix is live** ([THR-2079](https://linear.app/threadbare/issue/THR-2079)). Merged via [#2630](https://github.com/christianspliid-ui/threadbare/pull/2630).
 
 ---
 
