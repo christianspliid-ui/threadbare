@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 04:58 local (03:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 05:56 local (04:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,12 +30,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Thin: 2 ready, 1 being built.** The builder is working on Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so)), whose veto window closed at 03:01 UTC. The fix for the red heavy tests ([THR-2085](https://linear.app/threadbare/issue/THR-2085/heavy-simulation-tests-red-on-main-a-compulsion-paid-mid-encounter-no)) merged at 03:30 UTC via [#2643](https://github.com/christianspliid-ui/threadbare/pull/2643). Hunger and plenty stories ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)) wait in their veto window until 13:30 UTC. The loan-collection plan ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)) becomes claimable at 14:48 UTC.
+**Thin: 2 ready, nothing being built.** Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so)) merged via [#2644](https://github.com/christianspliid-ui/threadbare/pull/2644) and is live. Both ready tickets sit in their veto windows, so the builder is idle by design: hunger and plenty stories ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)) until 13:30 UTC, the loan-collection plan ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)) until 14:48 UTC.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-- **Heavy simulation tests: the fix is merged, and the check on it is still running.** The last two finished runs on main failed ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/40612850994), [run](https://github.com/christianspliid-ui/threadbare/actions/runs/40619338870)); [the run on the fix's merge](https://github.com/christianspliid-ui/threadbare/actions/runs/40627110730) started at 03:30 UTC. Ticket [THR-2085](https://linear.app/threadbare/issue/THR-2085/heavy-simulation-tests-red-on-main-a-compulsion-paid-mid-encounter-no) is closed, so no new ticket this hour. If that run fails, next hour files one.
-- Everything else is green. The live site serves the latest commit (0a97476a), CI passes, no PRs are stuck, the scheduled lanes and the worktree reaper (last run 04:51 local) are healthy, and the engine runs at 178 ms/tick, 3% above the 7-day median.
+All green. The heavy simulation tests pass on main again: [the run on THR-2085's fix](https://github.com/christianspliid-ui/threadbare/actions/runs/40627110730) succeeded. The live site serves the latest commit (a2e88585), CI passes, no PRs are waiting, the scheduled lanes and the worktree reaper (last run 05:53 local) are healthy, and the engine runs at 159 ms/tick, 9% below the 7-day median.
