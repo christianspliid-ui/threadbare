@@ -113,13 +113,35 @@ describe('the glut trigger', () => {
     expect(plant(graph, town, (LARDER_SEED_COOLDOWN_DAYS + 3) * TICKS_PER_DAY, false, 0)).toHaveLength(1);
   });
 
-  it("a town's first larder read records a glut already under way and plants nothing", () => {
+  it("a glut already under way at a town's first read tells its story on a staggered day, not day one", () => {
     const graph = new WorldGraph();
-    const town = addTown(graph, 'a', GLUT);
+    const start = 100 * TICKS_PER_DAY;
+    const plantedOn = new Set<number>();
+    for (const id of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']) {
+      const town = addTown(graph, id, GLUT);
+      addMortal(graph, `m_${id}`, id);
+      let day = -1;
+      for (let d = 0; d <= LARDER_SEED_COOLDOWN_DAYS; d++) {
+        if (plant(graph, town, start + d * TICKS_PER_DAY, false, 0).length > 0) { day = d; break; }
+      }
+      expect(town.properties[LARDER_WAS_GLUT_PROP]).toBe(true);
+      expect(day).toBeGreaterThanOrEqual(1);
+      plantedOn.add(day);
+    }
+    expect(plantedOn.size).toBeGreaterThan(1);
+  });
+
+  it('a glut run whose first day is blocked tells its story once the guard lifts, and only once', () => {
+    const graph = new WorldGraph();
+    const town = addTown(graph, 'a', { ...GLUT, [LARDER_WAS_GLUT_PROP]: false, [LARDER_LAST_SEED_PROP]: 0 });
     addMortal(graph, 'm1', 'a');
-    expect(plant(graph, town, 0, false, 0)).toHaveLength(0);
-    expect(town.properties[LARDER_WAS_GLUT_PROP]).toBe(true);
-    expect(larderTraces()).toHaveLength(0);
+    expect(plant(graph, town, TICKS_PER_DAY, false, 0)).toHaveLength(0);
+    expect(larderTraces().at(-1)).toMatchObject({ skipped: 'cooldown' });
+    // Still waiting the next day: no second trace.
+    expect(plant(graph, town, 2 * TICKS_PER_DAY, false, 0)).toHaveLength(0);
+    expect(larderTraces()).toHaveLength(1);
+    expect(plant(graph, town, LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY, false, 0)).toHaveLength(1);
+    expect(plant(graph, town, (2 * LARDER_SEED_COOLDOWN_DAYS + 1) * TICKS_PER_DAY, false, 0)).toHaveLength(0);
   });
 
   it('one day under the balance floor does not re-arm an open glut run', () => {

@@ -2,7 +2,7 @@
  * Hunger's stories are planted (THR-2040).
  *
  * A town's larder plants one of its scenes for a resident: on a town's
- * `FAMINE_SEED_DAY`-th hungry day a famine story, on the first day of a glut run a
+ * `FAMINE_SEED_DAY`-th hungry day a famine story, once per glut run, on its first day the guards allow, a
  * plenty story. At most one per town every `LARDER_SEED_COOLDOWN_DAYS`. The granary
  * riot keeps its own seed and comes first: on a day it planted, or within the cooldown
  * after, the larder waits (the riot itself never yields to the larder). A
@@ -52,8 +52,10 @@ import {
 export const LARDER_LAST_SEED_PROP = 'larderLastSeedTick';
 /** Settlement prop: the tick the last larder *famine* story was planted (the scarcity arc's hoarding seed reads it). */
 export const LARDER_LAST_FAMINE_SEED_PROP = 'larderLastFamineSeedTick';
-/** Settlement prop: the town read as glutted at the last daily pass (to see a glut run's first day). */
+/** Settlement prop: the town read as glutted at the last daily pass (to see a glut run open and close). */
 export const LARDER_WAS_GLUT_PROP = 'larderWasGlut';
+/** Settlement prop: the current glut run has told its plenty story (each run tells one). */
+export const LARDER_GLUT_TOLD_PROP = 'larderGlutRunTold';
 
 export type LarderState = 'famine' | 'glut';
 export type LarderSkip = 'disabled' | 'cooldown' | 'riot' | 'scarcity_arc' | 'no_row' | 'no_resident';
@@ -148,25 +150,33 @@ export function plantLarderSeed(
   const tick = state.tick;
   const props = town.properties;
   const larder = readLarder(town, hungry).state;
+  const cooldownTicks = LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
   const rawWasGlut = props[LARDER_WAS_GLUT_PROP];
-  // A town's first larder read (a fresh world after its settling run, or a save from
-  // before the larder) only records the state: a glut already under way is not a run
-  // seen starting, so it plants nothing.
   const firstRead = typeof rawWasGlut !== 'boolean';
   const wasGlut = rawWasGlut === true;
   // Once a glut run is open it lasts while the grain still has nowhere to go
   // (`foodSurplusDays`), so one day's balance under the floor does not re-arm it.
   const glutNow = larder === 'glut'
     || (wasGlut && larder === null && (num(props.foodSurplusDays) ?? 0) >= PLENTY_MIN_SURPLUS_DAYS);
+  const runOpens = glutNow && !wasGlut;
   if (firstRead || glutNow !== wasGlut) props[LARDER_WAS_GLUT_PROP] = glutNow;
+  if (glutNow !== wasGlut) props[LARDER_GLUT_TOLD_PROP] = false;
+  // A town already glutted at its first larder read (a fresh world after its settling
+  // run, or an older save) has its cooldown staggered by a stable hash, so the world's
+  // open glut runs tell their stories over the next LARDER_SEED_COOLDOWN_DAYS rather
+  // than all on day one.
+  if (firstRead && glutNow && num(props[LARDER_LAST_SEED_PROP]) === undefined) {
+    const offsetDays = (hashString(town.id) % LARDER_SEED_COOLDOWN_DAYS) + 1;
+    props[LARDER_LAST_SEED_PROP] = tick - cooldownTicks + offsetDays * TICKS_PER_DAY;
+  }
 
+  // Each glut run tells one plenty story, on its first day the guards allow.
   const trigger: LarderState | null =
     larder === 'famine' && hungerDays === FAMINE_SEED_DAY ? 'famine'
-      : glutNow && !wasGlut && !firstRead ? 'glut'
+      : glutNow && props[LARDER_GLUT_TOLD_PROP] !== true ? 'glut'
         : null;
   if (!trigger) return;
 
-  const cooldownTicks = LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
   const lastSeed = num(props[LARDER_LAST_SEED_PROP]);
   const lastRiot = num(props[LAST_RIOT_SEED_PROP]);
   const arc = props.scarcityArc as { phaseSinceTick?: number; sinceTick?: number } | undefined;
@@ -201,10 +211,13 @@ export function plantLarderSeed(
         });
         props[LARDER_LAST_SEED_PROP] = tick;
         if (trigger === 'famine') props[LARDER_LAST_FAMINE_SEED_PROP] = tick;
+        else props[LARDER_GLUT_TOLD_PROP] = true;
       }
     }
   }
 
+  // A glut run waiting on its guards is traced on the day it opens only, not daily.
+  if (skipped && trigger === 'glut' && !runOpens) return;
   const what = trigger === 'famine' ? 'is hungry' : 'has grain to spare';
   emitTrace({
     tick,
