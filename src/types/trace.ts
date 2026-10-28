@@ -132,6 +132,8 @@ export type TraceCategory =
   | 'hex_state' | 'unrest_tick' | 'saturation_tick' | 'location_trait' | 'artifact_trait'
   // THR-1934 — unrest as pressure
   | 'unrest.target' | 'unrest.leave' | 'unrest.leave.none' | 'unrest.leave.skipped' | 'unrest.riot_seed'
+  // THR-2040 — a town's famine or glut plants one of its scenes for a resident
+  | 'larder.seed'
   // THR-1935 — prayers and the faithful
   | 'prayer.opened' | 'prayer.answered' | 'prayer.unbidden' | 'prayer.closed'
   | 'prayer.faith_lapsed' | 'prayer.faith_starved' | 'prayer.slight_landed'
@@ -787,6 +789,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'journey.choice_applied',
   'hex_state', 'unrest_tick', 'saturation_tick', 'location_trait', 'artifact_trait',
   'unrest.target', 'unrest.leave', 'unrest.leave.none', 'unrest.leave.skipped', 'unrest.riot_seed',
+  'larder.seed',
   'prayer.opened', 'prayer.answered', 'prayer.unbidden', 'prayer.closed',
   'prayer.faith_lapsed', 'prayer.faith_starved', 'prayer.slight_landed',
   'prayer.blessed_holding', 'prayer.claim_income',
@@ -2658,6 +2661,17 @@ export interface UnrestRiotSeedTrace extends TraceBase {
   locationId: string;
   targetAgentId: string | null;
   seeded: boolean;
+}
+
+/** THR-2040 — a town's famine or glut tried to plant one of its scenes for a resident. */
+export interface LarderSeedTrace extends TraceBase {
+  category: 'larder.seed';
+  locationId: string;
+  state: 'famine' | 'glut';
+  /** null when nothing was picked (disabled, guarded, or no row fits). */
+  templateId: string | null;
+  targetAgentId: string | null;
+  skipped?: 'disabled' | 'cooldown' | 'riot' | 'scarcity_arc' | 'no_row' | 'no_resident';
 }
 
 /** THR-1957 — one lord's view as a town on the edge sees it (the defection trace's parts). */
@@ -5785,6 +5799,7 @@ export type TraceEntry =
   | UnrestTargetTrace
   | UnrestLeaveTrace
   | UnrestRiotSeedTrace
+  | LarderSeedTrace
   | UnrestDefectTrace
   | UnrestRisingTrace
   // Prayers and the faithful (THR-1935)
