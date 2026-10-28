@@ -182,15 +182,12 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
       // already-starving home surfaces immediately. THR-2062 E2: once per crossing —
       // `livelihoodPulledTier` remembers the tier already told, and clears when the
       // good returns to adequate; the live-tug key below stays as a same-tick guard.
-      // The marker is stamped only when a bonded mortal was there to be told, so a
-      // famine that began before anyone was bonded (or while they were away) still
-      // reaches the first bonded mortal found at home — once.
+      // The marker is stamped only when a tug was actually raised, so a famine that
+      // began before anyone was bonded (or while they were away), or a glut that
+      // follows a famine while the famine's tug still lingers, is still told — once.
       let pulledThisTier = false;
       if (isStaple && (newTier === 'scarce' || newTier === 'surplus')
-        && instance.livelihoodPulledTier !== newTier && threadedHere.length > 0) {
-        instance.livelihoodPulledTier = newTier;
-        anyChange = true;
-        pulledThisTier = true;
+        && instance.livelihoodPulledTier !== newTier) {
         for (const resident of threadedHere) {
           const key = livelihoodTugKey(resident.agentId, resourceId);
           if (activeLivelihoodKeys.has(key)) continue;
@@ -199,6 +196,11 @@ export function phaseResourceStockTiers(state: GameState, ctx: PhaseContext): Ph
             resident.agentId, resident.courtPosition, loc.id, resourceId,
             newTier, derived.balance, tick, key, tugCounter++,
           ));
+          pulledThisTier = true;
+        }
+        if (pulledThisTier) {
+          instance.livelihoodPulledTier = newTier;
+          anyChange = true;
         }
       }
 

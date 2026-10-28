@@ -148,4 +148,26 @@ describe('phaseResourceStockTiers', () => {
     const later = phaseResourceStockTiers(state, {});
     expect((later.activeThreadTugs ?? []).filter(t => t.agentId === 'mortal')).toHaveLength(1);
   });
+
+  it('THR-2062: a glut that follows a famine while its tug still lingers is told once the tug lapses', () => {
+    const state = buildState(10);
+    const first = phaseResourceStockTiers(state, {});
+    state.activeThreadTugs = first.activeThreadTugs ?? []; // famine tug, live until tick 8
+    const loc = state.graph.getNode('loc1')!.properties as Record<string, unknown>;
+    const resources = loc.resources as Record<string, ResourceInstance>;
+    loc.prosperity = 0;
+    resources.grain.quantity = 95; // straight to surplus
+    (state as { tick: number }).tick = 6;
+    const during = phaseResourceStockTiers(state, {});
+    expect(resources.grain.stockTier).toBe('surplus');
+    expect((during.activeThreadTugs ?? []).filter(t => t.createdTick === 6)).toHaveLength(0);
+    expect(resources.grain.livelihoodPulledTier).toBe('scarce');
+
+    state.activeThreadTugs = []; // the famine tug lapsed
+    (state as { tick: number }).tick = 9;
+    const after = phaseResourceStockTiers(state, {});
+    const glut = (after.activeThreadTugs ?? []).filter(t => t.createdTick === 9);
+    expect(glut).toHaveLength(1);
+    expect(glut[0].livelihoodTier).toBe('surplus');
+  });
 });
