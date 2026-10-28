@@ -1,6 +1,6 @@
 # THR-2081 census b — raw output (design lane, run 2026-10-28b; never merge)
 
-Built with `npx esbuild scripts/_scratch-2081b.ts --bundle --platform=node --format=esm --outfile=.cache/s2081d.mjs --external:fs --external:path --external:child_process`; run `node .cache/s2081d.mjs 900 <seeded|kindle|cli42|cli99|cli7> <idle|godloc|godlochalf|godlocclaim>`. `main` @ a2e88585. Earlier arms (`god`, `godclaim`) ran before the world-total rule was neutralised and ended on drift; only the `d-` arms below are cited.
+Built with `npx esbuild scripts/_scratch-2081b.ts --bundle --platform=node --format=esm --outfile=.cache/s2081d.mjs --external:fs --external:path --external:child_process`; run `node .cache/s2081d.mjs 900 <seeded|kindle|cli42|cli99|cli7> <idle|godloc|godlochalf|godlocclaim>`. `main` @ a2e88585. Only the `d-` arms below are cited (earlier arms ran before the world-total rule was neutralised and ended on drift). Hexes are weighted 0 in this census.
 
 ## d-cli42-idle
 ```
@@ -12,6 +12,7 @@ cli42 t200 worldProgress=0.001 godP=0.000 godS=0.000 godProgress=0.000 doom=0.00
 cli42 t300 worldProgress=0.002 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=19.4 baseS=472.4 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 cli42 t450 worldProgress=0.002 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=19.4 baseS=472.4 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 cli42 t600 worldProgress=0.003 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=19.4 baseS=472.4 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
+cli42 t750 worldProgress=0.003 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=19.4 baseS=472.4 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 ```
 ## d-cli7-godloc
 ```
@@ -22,6 +23,7 @@ cli7 t150 worldProgress=0.001 godP=0.013 godS=0.000 godProgress=0.035 doom=0.000
 cli7 t200 worldProgress=0.002 godP=0.014 godS=0.000 godProgress=0.039 doom=0.000 casts=29 claims=0 spent=116 baseP=287.5 baseS=142.2 godPtsP=4.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=4.00 heldPtsS=0.00
 cli7 t300 worldProgress=0.002 godP=0.018 godS=0.000 godProgress=0.050 doom=0.000 casts=38 claims=0 spent=152 baseP=287.5 baseS=142.2 godPtsP=5.20 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=5.20 heldPtsS=0.00
 cli7 t450 worldProgress=0.002 godP=0.025 godS=0.000 godProgress=0.070 doom=0.000 casts=51 claims=0 spent=204 baseP=287.5 baseS=142.2 godPtsP=7.20 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=7.20 heldPtsS=0.00
+cli7 t600 worldProgress=0.002 godP=0.027 godS=0.000 godProgress=0.075 doom=0.000 casts=65 claims=0 spent=260 baseP=287.5 baseS=142.2 godPtsP=7.80 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=7.80 heldPtsS=0.00
 ```
 ## d-cli7-idle
 ```
@@ -32,6 +34,7 @@ cli7 t150 worldProgress=0.001 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000
 cli7 t200 worldProgress=0.002 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=287.5 baseS=142.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 cli7 t300 worldProgress=0.002 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=287.5 baseS=142.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 cli7 t450 worldProgress=0.002 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=287.5 baseS=142.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
+cli7 t600 worldProgress=0.003 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=287.5 baseS=142.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 ```
 ## d-cli99-idle
 ```
@@ -43,6 +46,7 @@ cli99 t200 worldProgress=0.001 godP=0.000 godS=0.000 godProgress=0.000 doom=0.00
 cli99 t300 worldProgress=0.002 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=800.4 baseS=405.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 cli99 t450 worldProgress=0.002 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=800.4 baseS=405.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 cli99 t600 worldProgress=0.003 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=800.4 baseS=405.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
+cli99 t750 worldProgress=0.003 godP=0.000 godS=0.000 godProgress=0.000 doom=0.000 casts=0 claims=0 spent=0 baseP=800.4 baseS=405.2 godPtsP=0.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 ```
 ## d-kindle-godlocclaim
 ```
@@ -54,6 +58,7 @@ kindle42 t200 worldProgress=0.001 godP=-0.066 godS=-0.457 godProgress=0.000 doom
 kindle42 t300 worldProgress=0.001 godP=-0.102 godS=-0.455 godProgress=0.000 doom=0.318 casts=40 claims=9 spent=193 baseP=468.6 baseS=892.0 godPtsP=-48.00 godPtsS=-406.30 thrEncP=0.000 thrEncS=0.000 heldPtsP=1.00 heldPtsS=7.20
 kindle42 t450 worldProgress=0.001 godP=-0.140 godS=-0.841 godProgress=0.000 doom=0.499 casts=55 claims=10 spent=257 baseP=468.6 baseS=892.0 godPtsP=-65.80 godPtsS=-750.30 thrEncP=0.000 thrEncS=0.000 heldPtsP=2.20 heldPtsS=7.20
 kindle42 t600 worldProgress=0.001 godP=-0.190 godS=-0.876 godProgress=0.000 doom=0.712 casts=70 claims=11 spent=330 baseP=468.6 baseS=892.0 godPtsP=-88.80 godPtsS=-781.30 thrEncP=0.000 thrEncS=0.000 heldPtsP=3.20 heldPtsS=5.20
+kindle42 t750 worldProgress=0.001 godP=-0.211 godS=-0.892 godProgress=0.000 doom=0.888 casts=85 claims=13 spent=406 baseP=468.6 baseS=892.0 godPtsP=-98.80 godPtsS=-795.30 thrEncP=0.000 thrEncS=0.000 heldPtsP=3.20 heldPtsS=5.20
 ```
 ## d-kindle-idle
 ```
@@ -65,6 +70,7 @@ kindle42 t200 worldProgress=0.001 godP=-0.055 godS=-0.470 godProgress=0.000 doom
 kindle42 t300 worldProgress=0.001 godP=-0.102 godS=-0.470 godProgress=0.000 doom=0.323 casts=0 claims=0 spent=0 baseP=468.6 baseS=892.0 godPtsP=-48.00 godPtsS=-419.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=1.00 heldPtsS=0.00
 kindle42 t450 worldProgress=0.001 godP=-0.147 godS=-0.866 godProgress=0.000 doom=0.500 casts=0 claims=0 spent=0 baseP=468.6 baseS=892.0 godPtsP=-68.80 godPtsS=-772.17 thrEncP=0.000 thrEncS=0.000 heldPtsP=1.20 heldPtsS=0.00
 kindle42 t600 worldProgress=0.001 godP=-0.185 godS=-0.898 godProgress=0.000 doom=0.697 casts=0 claims=0 spent=0 baseP=468.6 baseS=892.0 godPtsP=-86.80 godPtsS=-801.17 thrEncP=0.000 thrEncS=0.000 heldPtsP=2.20 heldPtsS=0.00
+kindle42 t750 worldProgress=0.002 godP=-0.209 godS=-0.924 godProgress=0.000 doom=0.872 casts=0 claims=0 spent=0 baseP=468.6 baseS=892.0 godPtsP=-97.80 godPtsS=-824.17 thrEncP=0.000 thrEncS=0.000 heldPtsP=3.20 heldPtsS=0.00
 ```
 ## d-seeded-godloc
 ```
@@ -76,6 +82,7 @@ seeded42 t200 worldProgress=0.002 godP=0.050 godS=0.044 godProgress=0.359 doom=0
 seeded42 t300 worldProgress=0.002 godP=0.025 godS=0.053 godProgress=0.336 doom=0.319 casts=125 claims=0 spent=167 baseP=159.2 baseS=323.2 godPtsP=4.00 godPtsS=17.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=78.00 heldPtsS=17.20
 seeded42 t450 worldProgress=0.003 godP=-0.011 godS=0.059 godProgress=0.297 doom=0.503 casts=138 claims=0 spent=189 baseP=159.2 baseS=323.2 godPtsP=-1.80 godPtsS=19.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=84.20 heldPtsS=19.20
 seeded42 t600 worldProgress=0.004 godP=0.039 godS=0.075 godProgress=0.483 doom=0.703 casts=152 claims=0 spent=215 baseP=159.2 baseS=323.2 godPtsP=6.20 godPtsS=24.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=94.20 heldPtsS=24.20
+seeded42 t750 worldProgress=0.005 godP=0.045 godS=0.081 godProgress=0.531 doom=0.875 casts=165 claims=0 spent=240 baseP=159.2 baseS=323.2 godPtsP=7.20 godPtsS=26.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=100.20 heldPtsS=26.20
 ```
 ## d-seeded-godlochalf
 ```
@@ -87,6 +94,7 @@ seeded42 t200 worldProgress=0.002 godP=0.038 godS=0.041 godProgress=0.309 doom=0
 seeded42 t300 worldProgress=0.002 godP=0.006 godS=0.050 godProgress=0.268 doom=0.325 casts=122 claims=0 spent=158 baseP=159.2 baseS=323.2 godPtsP=1.00 godPtsS=16.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=73.00 heldPtsS=16.20
 seeded42 t450 worldProgress=0.003 godP=-0.030 godS=0.059 godProgress=0.297 doom=0.518 casts=135 claims=0 spent=180 baseP=159.2 baseS=323.2 godPtsP=-4.80 godPtsS=19.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=79.20 heldPtsS=19.20
 seeded42 t600 worldProgress=0.004 godP=-0.011 godS=0.072 godProgress=0.359 doom=0.714 casts=151 claims=0 spent=208 baseP=159.2 baseS=323.2 godPtsP=-1.80 godPtsS=23.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=86.20 heldPtsS=23.20
+seeded42 t750 worldProgress=0.005 godP=-0.011 godS=0.081 godProgress=0.405 doom=0.882 casts=165 claims=0 spent=234 baseP=159.2 baseS=323.2 godPtsP=-1.80 godPtsS=26.20 thrEncP=0.000 thrEncS=0.000 heldPtsP=93.20 heldPtsS=26.20
 ```
 ## d-seeded-idle
 ```
@@ -98,4 +106,5 @@ seeded42 t200 worldProgress=0.001 godP=-0.352 godS=0.000 godProgress=0.000 doom=
 seeded42 t300 worldProgress=0.001 godP=-0.433 godS=0.000 godProgress=0.000 doom=0.320 casts=0 claims=0 spent=0 baseP=159.2 baseS=323.2 godPtsP=-69.00 godPtsS=0.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.00 heldPtsS=0.00
 seeded42 t450 worldProgress=0.002 godP=-0.533 godS=0.003 godProgress=0.015 doom=0.502 casts=0 claims=0 spent=0 baseP=159.2 baseS=323.2 godPtsP=-84.80 godPtsS=1.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.20 heldPtsS=1.00
 seeded42 t600 worldProgress=0.002 godP=-0.558 godS=0.003 godProgress=0.015 doom=0.710 casts=0 claims=0 spent=0 baseP=159.2 baseS=323.2 godPtsP=-88.80 godPtsS=1.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.20 heldPtsS=1.00
+seeded42 t750 worldProgress=0.003 godP=-0.583 godS=0.006 godProgress=0.031 doom=0.886 casts=0 claims=0 spent=0 baseP=159.2 baseS=323.2 godPtsP=-92.80 godPtsS=2.00 thrEncP=0.000 thrEncS=0.000 heldPtsP=0.20 heldPtsS=2.00
 ```
