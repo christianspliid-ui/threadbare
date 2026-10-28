@@ -28,7 +28,7 @@ import type { GameState } from '../types/gameState';
 import type { GraphNode } from '../types/graph';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
-import { getPlaceNodes } from './sublocationShape';
+import { templateAcceptsWhereTheyStand } from './encounterSeeding';
 import { pickTargetAgent } from './phases/routeEvents';
 import { hashString, mulberry32 } from '../lib/prng';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
@@ -89,37 +89,27 @@ export function readLarder(settlement: GraphNode, hungry: boolean): { state: Lar
   return { state: null };
 }
 
-/** The town's own subtype and the Place types of its sublocations — what a row's gate may name. */
-function townPlaceKinds(state: GameState, town: GraphNode): Set<string> {
-  const kinds = new Set<string>();
-  const own = (town.properties.locationSubtype ?? town.properties.locationType) as string | undefined;
-  if (own) kinds.add(own);
-  for (const place of getPlaceNodes(state.graph)) {
-    if (place.properties.parentLocationId !== town.id) continue;
-    const t = place.properties.sublocationTypeId;
-    if (typeof t === 'string') kinds.add(t);
-  }
-  return kinds;
-}
-
 /**
- * The row a town plants, or null when none fits. A row fits when its template exists,
- * asks no hold, and its `locationSubtypes` gate is empty or names the town's subtype or
- * one of its Places. The pick is weighted and stable for the same town and tick.
+ * The row a town plants for its chosen resident, or null when none fits. A row fits when
+ * its template exists, asks no hold, and accepts the place that resident stands right
+ * now (`templateAcceptsWhereTheyStand`, the very test seeding applies when the seed
+ * ripens): an ungated row fits anywhere, a tavern row only a mortal in a tavern Place.
+ * Judged at the resident, not the whole town, so a seed is never handed to someone a
+ * town's other Place would have suited and then withers waiting. The pick is weighted
+ * and stable for the same town and tick.
  */
 export function pickLarderRow(
   rows: readonly LarderSeedRow[],
   state: GameState,
   town: GraphNode,
   tick: number,
+  targetAgentId: string,
 ): string | null {
-  const kinds = townPlaceKinds(state, town);
   const fit = rows.filter(r => {
     if (!(r.weight > 0)) return false;
     const t = getUnifiedTemplateById(r.templateId);
     if (!t || t.requiresHold) return false;
-    const gate = t.locationSubtypes;
-    return !gate || gate.length === 0 || gate.some(g => kinds.has(g));
+    return templateAcceptsWhereTheyStand(state.graph, targetAgentId, t);
   });
   if (fit.length === 0) return null;
   const total = fit.reduce((a, r) => a + r.weight, 0);
@@ -171,12 +161,12 @@ export function plantLarderSeed(
   else if (lastSeed !== undefined && tick - lastSeed < cooldownTicks) skipped = 'cooldown';
   else if (arcMoved !== undefined && tick - arcMoved < cooldownTicks) skipped = 'scarcity_arc';
   else {
-    templateId = pickLarderRow(trigger === 'famine' ? FAMINE_SEED_ROWS : PLENTY_SEED_ROWS, state, town, tick);
-    if (!templateId) skipped = 'no_row';
+    const seedId = `larder_${trigger}_${town.id}_${tick}`;
+    targetAgentId = (pendingSeedIds.has(seedId) ? undefined : pickTargetAgent(state, [town.id])) ?? null;
+    if (!targetAgentId) skipped = 'no_resident';
     else {
-      const seedId = `larder_${trigger}_${town.id}_${tick}`;
-      targetAgentId = (pendingSeedIds.has(seedId) ? undefined : pickTargetAgent(state, [town.id])) ?? null;
-      if (!targetAgentId) skipped = 'no_resident';
+      templateId = pickLarderRow(trigger === 'famine' ? FAMINE_SEED_ROWS : PLENTY_SEED_ROWS, state, town, tick, targetAgentId);
+      if (!templateId) skipped = 'no_row';
       else {
         seeds.push({
           seedId,
