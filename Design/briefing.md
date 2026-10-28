@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 23:04 local (22:04 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 23:56 local (22:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -29,11 +29,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 2 ready, 2 being built.** The god-caused Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)) left its veto window and is being built now: its local worktree committed a fix at 23:01 local, with closeout notes already written. [THR-2088](https://linear.app/threadbare/issue/THR-2088/inspire-changes-nothing-a-mortal-decides-its-card-writes-an-influence) (Inspire changes nothing a mortal decides) is also In Dev since 21:29 UTC; no pushed branch names it yet. The energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)) open to the builder at 23:42 UTC and the hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)) at 02:39 UTC tomorrow.
+**Healthy: 2 ready, none being built.** Both of the last hour's builds shipped: only the god's own hand now fills the Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world), [#2651](https://github.com/christianspliid-ui/threadbare/pull/2651)), and Inspire now changes what a mortal decides ([THR-2088](https://linear.app/threadbare/issue/THR-2088/inspire-changes-nothing-a-mortal-decides-its-card-writes-an-influence), [#2650](https://github.com/christianspliid-ui/threadbare/pull/2650)). The builder is idle by design until the veto windows close: the energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)) open at 23:42 UTC tonight and the hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)) at 02:39 UTC tomorrow.
 
-- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). No branch or local worktree holds work for it. Agents can un-park it.
+- **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). A pushed branch `pr/1947` exists, with no open PR and no local worktree holding uncommitted work. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest commit on main (60990c79). CI and the background jobs pass, and no PRs are waiting to merge. All 9 scheduled lanes are on time. The worktree reaper ran at 22:40. The engine runs at 195 ms/tick, 16% above the 7-day median (169) — inside the 25% drift line.
+All green. The live site serves the latest commit on main (92b66a8f). CI and the background jobs pass, and no PRs are waiting to merge. All 9 scheduled lanes are on time. The worktree reaper ran at 23:40. The engine runs at 149 ms/tick, 12% below the 7-day median (170).

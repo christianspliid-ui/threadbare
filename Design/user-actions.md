@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-28 23:04 local (22:04 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-28 23:56 local (22:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,8 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-28: only the god's own hand now fills the Mandate, and it is live** ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)). Merged via [#2651](https://github.com/christianspliid-ui/threadbare/pull/2651).
+- **2026-10-28: Inspire now changes what a mortal decides, and it is live** ([THR-2088](https://linear.app/threadbare/issue/THR-2088/inspire-changes-nothing-a-mortal-decides-its-card-writes-an-influence)). Merged via [#2650](https://github.com/christianspliid-ui/threadbare/pull/2650).
 - **2026-10-28: a loan now brings its lender back to collect, and it is live** ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)). Merged via [#2649](https://github.com/christianspliid-ui/threadbare/pull/2649).
 - **2026-10-28: hunger and plenty stories are live** ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)). Merged via [#2648](https://github.com/christianspliid-ui/threadbare/pull/2648).
 - **2026-10-28: Attention now has a price, and it is live** ([THR-2062](https://linear.app/threadbare/issue/THR-2062/attention-is-never-spent-spendattention-has-no-production-caller-so)). Merged via [#2644](https://github.com/christianspliid-ui/threadbare/pull/2644).
@@ -46,8 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-28: the town economy now reaches the mortal's final choice, and it is live** ([THR-2071](https://linear.app/threadbare/issue/THR-2071)). Merged via [#2639](https://github.com/christianspliid-ui/threadbare/pull/2639).
 - **2026-10-27: a sealed mill lease now gives the town's mill to its guild, and it is live** ([THR-2077](https://linear.app/threadbare/issue/THR-2077)). Merged via [#2638](https://github.com/christianspliid-ui/threadbare/pull/2638).
 - **2026-10-27: the bounty duel is live** ([THR-2072](https://linear.app/threadbare/issue/THR-2072)). Merged via [#2637](https://github.com/christianspliid-ui/threadbare/pull/2637).
-- **2026-10-27: salt, the good the smugglers carry, is live** ([THR-2069](https://linear.app/threadbare/issue/THR-2069/plan-doc-salt-the-good-the-smugglers-carry-the-monopoly-scene-prices)). Merged via [#2636](https://github.com/christianspliid-ui/threadbare/pull/2636).
-- **2026-10-27: the heavy simulation tests pass on main again.** The fix for the timing miss ([THR-2084](https://linear.app/threadbare/issue/THR-2084/heavy-simulation-tests-red-on-main-armed-targets-frame-budget-measured), [#2635](https://github.com/christianspliid-ui/threadbare/pull/2635)) is merged, and [the run on its merge](https://github.com/christianspliid-ui/threadbare/actions/runs/40551208332) succeeded.
 
 ---
 
