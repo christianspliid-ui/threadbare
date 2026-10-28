@@ -33,7 +33,8 @@ import {
   LOCATION_BRANCHING_ENCOUNTER_TEMPLATES,
   UNIFIED_ACTION_TEMPLATES,
 } from '../unified-action-templates';
-import { MEANS_NAMED_STEPS } from '../mortal-means-constants';
+import { LOAN_COLLECTION_SEED_DELAY_TICKS, MEANS_NAMED_STEPS } from '../mortal-means-constants';
+import { AGREEMENT_REWARD_TEMPLATES } from '../agreement-reward-catalog';
 import { economyShiftNamedSteps, STOCK_GOOD_DEPOSIT, STOCK_GOOD_STAPLE, type WorldEconomyQuantity } from '../economy-shift-constants';
 import { RESOURCE_DEFINITIONS } from '../resource-content';
 import { FACTION_DEFINITIONS } from '../faction-definitions';
@@ -314,5 +315,28 @@ describe('THR-1953 — the world rows', () => {
     expect(quantities('encounter.trade_caravan_escort', 'failure')).toEqual(['lane_threat+']);
     expect(quantities('encounter.pirate_raid', 'critical_failure')).toContain('lane_threat+');
     expect(quantities('encounter.town.overdue_caravan', 'critical_failure')).toContain('lane_threat+');
+  });
+});
+
+describe('THR-2044 — a loan plants its own collection', () => {
+  const loan = UNIFIED_ACTION_TEMPLATES.find(t => t.id === 'encounter.the_loan');
+
+  it('every band of The Loan plants one Debt Collection seed on its lender', () => {
+    expect(loan?.outcomeEffects).toBeDefined();
+    for (const band of ['critical_success', 'success', 'success_at_cost', 'failure', 'critical_failure'] as const) {
+      const seeds = (loan!.outcomeEffects![band] ?? []).filter(e => e.kind === 'encounter_seed');
+      expect(seeds, band).toHaveLength(1);
+      expect(seeds[0], band).toMatchObject({
+        templateId: 'encounter.debt_collection',
+        delayTicks: LOAN_COLLECTION_SEED_DELAY_TICKS,
+      });
+      expect((seeds[0] as { targetAgentId?: string }).targetAgentId, band).toBeUndefined();
+    }
+  });
+
+  it('the collection ripens inside the debt term', () => {
+    const term = AGREEMENT_REWARD_TEMPLATES.find(t => t.id === 'agreement.debt.minor')?.ticksRemaining;
+    expect(term).toBeTypeOf('number');
+    expect(LOAN_COLLECTION_SEED_DELAY_TICKS).toBeLessThan(term!);
   });
 });

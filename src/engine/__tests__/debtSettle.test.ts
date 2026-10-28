@@ -7,7 +7,7 @@
  * `applyEncounterAftermathReaction`, and assert the graph afterwards.
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorldGraph } from '../graph';
 import { applyEncounterAftermathReaction } from '../encounterAftermath';
 import { createSimulationRuntime } from '../simulationRuntime';
@@ -17,7 +17,7 @@ import { getAgentAttachments, agreementLine } from '../agentAttachments';
 import { readAgreement } from '../agreementShape';
 import { clearTraces, enableTracing, getTraces } from '../traceBuffer';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
-import { DEBT_REPAY_MEANS, LOAN_PRINCIPAL_MEANS, MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from '../../data/mortal-means-constants';
+import { DEBT_REPAY_MEANS, LOAN_COLLECTION_SEED_DELAY_TICKS, LOAN_PRINCIPAL_MEANS, MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL } from '../../data/mortal-means-constants';
 import { AGREEMENT_REWARD_TEMPLATES } from '../../data/agreement-reward-catalog';
 import { instantiateAgreementReward } from '../rewardPool';
 import type { GameState } from '../../types/gameState';
@@ -396,3 +396,37 @@ function relSentiment(graph: WorldGraph): number | undefined {
   if (!edge) return undefined;
   return (edge.properties.sentiment as number | undefined) ?? 0;
 }
+
+describe("THR-2044 The Loan plants its lender's collection", () => {
+  it('a resolved loan plants one Debt Collection seed on the lender at tick + delay', () => {
+    let state = buildState(10);
+    state = runBand(state, 'encounter.the_loan', 'success', { bindings: [bind('borrower', BORROWER)] });
+    const seeds = (state.pendingEncounterSeeds ?? []).filter(s => s.sourceEncounterId === 'encounter.the_loan');
+    expect(seeds).toHaveLength(1);
+    expect(seeds[0]).toMatchObject({
+      templateId: 'encounter.debt_collection',
+      targetAgentId: LENDER,
+      plantedTick: 10,
+      eligibleAfterTick: 10 + LOAN_COLLECTION_SEED_DELAY_TICKS,
+      seedLabel: 'The loan falls due',
+    });
+  });
+
+  it('with LOAN_COLLECTION_SEED_ENABLED false the loan plants none', async () => {
+    vi.resetModules();
+    vi.doMock('../../data/mortal-means-constants', async importOriginal => ({
+      ...(await importOriginal<typeof import('../../data/mortal-means-constants')>()),
+      LOAN_COLLECTION_SEED_ENABLED: false,
+    }));
+    try {
+      const fresh = await import('../../data/unified-action-templates');
+      const loan = fresh.getUnifiedTemplateById('encounter.the_loan') as UnifiedActionTemplate;
+      const effects = Object.values(loan.outcomeEffects ?? {}).flatMap(rows => rows ?? []);
+      expect(effects.length).toBeGreaterThan(0);
+      expect(effects.filter(e => e.kind === 'encounter_seed')).toEqual([]);
+    } finally {
+      vi.doUnmock('../../data/mortal-means-constants');
+      vi.resetModules();
+    }
+  });
+});
