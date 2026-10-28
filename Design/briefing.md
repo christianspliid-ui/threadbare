@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 19:56 local (18:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 20:56 local (19:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,7 +30,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 3 ready, none being built.** The loan-collection fix ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)) merged via [#2649](https://github.com/christianspliid-ui/threadbare/pull/2649) and is live. The three ready tickets are all in veto windows: the god-caused Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)) until 21:00 UTC, the energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)) until 23:42 UTC, and the hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)) until 02:39 UTC tomorrow. The builder's last three runs stood down for that reason; it is idle by design until 21:00 UTC.
+**Healthy: 3 ready, none being built.** The three ready tickets are all in veto windows: the god-caused Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)) until 21:00 UTC, the energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)) until 23:42 UTC, and the hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)) until 02:39 UTC tomorrow. The builder's last six runs stood down for that reason; it is idle by design until 21:00 UTC.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
@@ -38,4 +38,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The live site serves the latest commit on main (60990c79). CI and the background jobs pass, the heavy tests stay green on main, and no PRs are waiting to merge. All 9 scheduled lanes are on time. The worktree reaper ran at 19:45. The engine runs at 129 ms/tick, 25% below the 7-day median (171).
+All green. The live site serves the latest commit on main (60990c79). CI and the background jobs pass, the heavy tests stay green on main, and no PRs are waiting to merge. All 9 scheduled lanes are on time. The worktree reaper ran at 20:40. The engine runs at 128 ms/tick, 25% below the 7-day median (170).
