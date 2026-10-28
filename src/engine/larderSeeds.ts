@@ -166,7 +166,8 @@ export function plantLarderSeed(
   // open glut runs tell their stories over the next LARDER_SEED_COOLDOWN_DAYS rather
   // than all on day one.
   if (firstRead && glutNow && num(props[LARDER_LAST_SEED_PROP]) === undefined) {
-    const offsetDays = (hashString(town.id) % LARDER_SEED_COOLDOWN_DAYS) + 1;
+    // `>>> 0`: hashString is signed, and a negative remainder would void the stagger.
+    const offsetDays = ((hashString(town.id) >>> 0) % LARDER_SEED_COOLDOWN_DAYS) + 1;
     props[LARDER_LAST_SEED_PROP] = tick - cooldownTicks + offsetDays * TICKS_PER_DAY;
   }
 

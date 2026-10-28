@@ -16,6 +16,7 @@ import {
 } from '../larderSeeds';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../traceBuffer';
 import { TICKS_PER_DAY } from '../../data/attention-constants';
+import { hashString } from '../../lib/prng';
 import { LOCATION_TRAIT_IDS } from '../../data/location-trait-constants';
 import { GRANARY_RIOT_TEMPLATE_ID } from '../../data/unrest-pressure-constants';
 import {
@@ -117,7 +118,10 @@ describe('the glut trigger', () => {
     const graph = new WorldGraph();
     const start = 100 * TICKS_PER_DAY;
     const plantedOn = new Set<number>();
-    for (const id of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']) {
+    // Long, world-shaped ids: their hashes go negative, which single letters never do.
+    const ids = ['a', 'b', 'c', 'd', 'settlement_aford', 'settlement_brackenmoor', 'loc_town_17', 'loc_town_42'];
+    expect(ids.some(id => hashString(id) < 0)).toBe(true);
+    for (const id of ids) {
       const town = addTown(graph, id, GLUT);
       addMortal(graph, `m_${id}`, id);
       let day = -1;
