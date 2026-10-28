@@ -14,6 +14,7 @@ import { compileOpeningEnvelope, expandSettings, type SettingClass } from './set
 import { compileOpeningColoration } from '../engine/fragmentResolution';
 import { DEAL_DEFAULT_COUNT } from './nudge-constants';
 import {
+  LOAN_COLLECTION_SEED_DELAY_TICKS, LOAN_COLLECTION_SEED_ENABLED,
   LOAN_PRINCIPAL_MEANS, LOAN_RESENTMENT_SENTIMENT, LOAN_RESENTMENT_SENTIMENT_CRIT,
   MEANS_STEP, MEANS_STEP_BIG, MEANS_STEP_SMALL,
 } from './mortal-means-constants';
@@ -66,6 +67,14 @@ function theLoanBand(
     { kind: 'attachment_grant', templateId: 'agreement.debt.minor', targetAgentId: '$cast:borrower', counterpartyId: '$actor' },
     { kind: 'economy_shift', quantity: 'means', amount: -LOAN_PRINCIPAL_MEANS, targetAgentId: '$actor' },
     { kind: 'economy_shift', quantity: 'means', amount: LOAN_PRINCIPAL_MEANS, targetAgentId: '$cast:borrower' },
+    // THR-2044 — the lender comes back for what they are owed, inside the debt's term.
+    // No targetAgentId (defaults to the acting lender); Debt Collection has no cast to inherit.
+    ...(LOAN_COLLECTION_SEED_ENABLED ? [{
+      kind: 'encounter_seed' as const,
+      templateId: 'encounter.debt_collection',
+      delayTicks: LOAN_COLLECTION_SEED_DELAY_TICKS,
+      seedLabel: 'The loan falls due',
+    }] : []),
   ];
 }
 

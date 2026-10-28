@@ -52,6 +52,18 @@ export const LOAN_RESENTMENT_SENTIMENT = -0.1;
 /** The same on critical failure. */
 export const LOAN_RESENTMENT_SENTIMENT_CRIT = -0.2;
 
+/**
+ * THR-2044 — every band of The Loan plants a Debt Collection seed on its lender.
+ * `false` restores the pre-THR-2044 loan exactly (no seed row).
+ */
+export const LOAN_COLLECTION_SEED_ENABLED = true;
+/**
+ * Ticks from the loan to the lender's collection scene: half the `agreement.debt.minor`
+ * term (48), so the debt is still live when the seed ripens (prototype p90 fire latency 29).
+ * Must stay below that term.
+ */
+export const LOAN_COLLECTION_SEED_DELAY_TICKS = 24;
+
 /** Getting by's floor. Below it a mortal is poor and a loss is scaled down. */
 export const MEANS_POOR_LINE = WEALTH_TIER_GETTING_BY;
 

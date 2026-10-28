@@ -5,7 +5,9 @@
  * ring is too small for 600 ticks), how debts end and begin in the money encounters:
  *   - `agreement_settled` by settlement (paid / written off), and `debt_settle_noop` by reason;
  *   - how many debts The Loan created (successful `attachment_grant` traces on its actions);
- *   - how often The Loan and Debt Collection resolved (unified actions harvested on resolve).
+ *   - how often The Loan and Debt Collection resolved (unified actions harvested on resolve);
+ *   - THR-2044: the fate of the Debt Collection seeds The Loan plants on its lender
+ *     (planted / fired / withered waiting for a counting house / otherwise discarded).
  *
  * Kill criteria (plan § Kill criteria) are reported, not gated: `no_debt_owed` above 90% of
  * Debt Collection's settles, or The Loan resolving less than half as often as on `main`
@@ -47,6 +49,10 @@ interface DebtTally {
   collectionNoDebt: number;
   loanDebts: number;
   resolved: Map<string, number>;
+  seedsPlanted: number;
+  seedsFired: number;
+  seedsWithered: number;
+  seedsOtherDiscard: number;
 }
 
 function runSeed(seed: number): DebtTally {
@@ -61,7 +67,9 @@ function runSeed(seed: number): DebtTally {
 
   const tally: DebtTally = {
     paid: 0, writtenOff: 0, noop: new Map(), collectionSettles: 0, collectionNoDebt: 0, loanDebts: 0, resolved: new Map(),
+    seedsPlanted: 0, seedsFired: 0, seedsWithered: 0, seedsOtherDiscard: 0,
   };
+  const loanSeeds = new Set<string>();
   const counted = new Set<string>();
   const harvest = () => {
     for (const raw of getTraces()) {
@@ -76,6 +84,13 @@ function runSeed(seed: number): DebtTally {
           tally.collectionSettles++;
           if (reason === 'no_debt_owed') tally.collectionNoDebt++;
         }
+      } else if (t.category === 'encounter_seed_planted' && t.sourceEncounterId === LOAN) {
+        tally.seedsPlanted++;
+        loanSeeds.add(String(t.seedId));
+      } else if (t.category === 'encounter_seed_triggered' && loanSeeds.has(String(t.seedId))) {
+        if (t.outcome !== 'discarded') tally.seedsFired++;
+        else if (t.discardReason === 'place_never_reached') tally.seedsWithered++;
+        else tally.seedsOtherDiscard++;
       } else if (t.category === 'encounter_aftermath_effect' && t.effectKind === 'attachment_grant'
         && t.success === true && t.encounterId === LOAN) {
         tally.loanDebts++;
@@ -107,4 +122,5 @@ for (const seed of seeds) {
   console.log(`  debt_settle_noop    ${[...t.noop].map(([r, n]) => `${r} ${n}`).join('   ') || 'none'}`);
   console.log(`  Debt Collection     resolved ${t.resolved.get(COLLECTION) ?? 0}   settles ${t.collectionSettles}   no_debt_owed ${t.collectionNoDebt} (${share}%)`);
   console.log(`  The Loan            resolved ${t.resolved.get(LOAN) ?? 0}   debts created ${t.loanDebts}`);
+  console.log(`  Loan → collection   seeds planted ${t.seedsPlanted}   fired ${t.seedsFired}   withered ${t.seedsWithered}   other discard ${t.seedsOtherDiscard}`);
 }
