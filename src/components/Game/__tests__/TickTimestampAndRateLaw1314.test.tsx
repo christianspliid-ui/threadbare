@@ -122,7 +122,7 @@ describe('THR-1426 — tick timestamps and per-tick rates', () => {
   // ── Shape 2: AttentionPoolIndicator — the rate is dropped, the balance kept ──
 
   describe('AttentionPoolIndicator (Shape 2)', () => {
-    it('drops the regen rate from the bar and its tooltip, keeping the pool balance', () => {
+    it('drops the regen rate from the bar and its tooltip, and says the balance in words', () => {
       const { container } = render(
         <AttentionPoolIndicator attentionPool={12} attentionCapacity={20} attentionRegen={1.5} />,
       );
@@ -132,10 +132,11 @@ describe('THR-1426 — tick timestamps and per-tick rates', () => {
       expect(container.textContent).not.toMatch(/regen/i);
       expect(container.innerHTML).not.toMatch(/tick/i);
 
-      // The balance stays — Law 13's persistent-chrome exception covers it, and an arm that
-      // only checked "no ticks" would also pass if the whole indicator had been deleted.
+      // THR-2062 U2: the balance is said in words, not figures — and an arm that only
+      // checked "no ticks" would also pass if the whole indicator had been deleted.
       const labelled = container.querySelector('[aria-label]');
-      expect(labelled?.getAttribute('aria-label')).toContain('12.0 / 20.0');
+      expect(labelled?.getAttribute('aria-label')).toBe('Attention: Busy. Some of your notice is free.');
+      expect(labelled?.getAttribute('aria-label')).not.toMatch(/[0-9]/);
     });
   });
 

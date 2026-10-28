@@ -47,7 +47,23 @@ describe('the god rail from GOD_RAIL_SECTIONS', () => {
   it('Attention sits under essence only while the gauge is shown', () => {
     renderBar();
     const essence = screen.getByTestId('god-rail').querySelector('[data-god-rail-section="essence"]')!;
-    expect(!!essence.querySelector('[data-testid="god-rail-attention"]')).toBe(ATTENTION_GAUGE_SHOWN);
+    // THR-2062: no mortal on Lives on, so no tug can cost anything — no gauge.
+    expect(essence.querySelector('[data-testid="god-rail-attention"]')).toBeNull();
+  });
+
+  it('THR-2062: the gauge appears once a mortal on Lives on is in the court', () => {
+    const mortal = world.graph.getNodesByType('actor').find(n => n.properties.actorType === 'individual')!;
+    world.graph.addEdge({
+      id: 'thr2062_thread', source: world.ascendantId, target: mortal.id, type: 'thread',
+      properties: { courtPosition: 'retinue', attentionMode: 'auto_resolve' },
+    } as never);
+    try {
+      renderBar();
+      const essence = screen.getByTestId('god-rail').querySelector('[data-god-rail-section="essence"]')!;
+      expect(!!essence.querySelector('[data-testid="god-rail-attention"]')).toBe(ATTENTION_GAUGE_SHOWN);
+    } finally {
+      world.graph.removeEdge('thr2062_thread');
+    }
   });
 
   it('every folded row starts closed, opens in place, and the open set persists across a reload', () => {

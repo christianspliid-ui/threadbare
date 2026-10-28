@@ -106,7 +106,7 @@ function skipPauseModeThread(
     summary: `no tug for ${encounterId}: ${agentId} asks you (pause-mode thread)`,
     encounterId, decision: 'skipped', curationScore: 0, reason: 'pause_mode_thread',
     isChainStage: false, isFinalChainStage: false, factionThreadCount: 0, matchesAmbition: false,
-  } satisfies Omit<CuratorDecisionTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
+  } satisfies Omit<CuratorDecisionTrace, 'id' | 'timestamp'>);
   return true;
 }
 

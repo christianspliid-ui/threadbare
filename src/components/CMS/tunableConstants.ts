@@ -1391,7 +1391,7 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'src/data/attention-constants.ts', [1.0, 3.0],
         'attentionPool → court cost scaling'),
       n('LIVELIHOOD_TUG_ATTEND_COST', attn.LIVELIHOOD_TUG_ATTEND_COST,
-        'Attention cost of answering news of a bonded mortal's home (famine or glut). THR-2062.',
+        'Attention cost of answering news of the home of a bonded mortal (famine or glut). THR-2062.',
         'src/data/attention-constants.ts', [0, 2.0],
         'attentionPool → livelihood tug cost'),
       // Thread tugs

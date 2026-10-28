@@ -13,7 +13,6 @@ import type {
   ThreadTug,
 } from '../types/attention';
 import type { CourtPosition, ThreadEdgeProperties } from '../types/influence';
-import type { TraceEntry } from '../types/trace';
 import type { WorldGraph } from './graph';
 import { resolveAttentionMode } from './attentionCadence';
 import { emitTrace } from './traceBuffer';
@@ -202,7 +201,7 @@ export function attendThreadTug(
     cause:    'attend_tug',
     tugId:    tug.id,
     tugKind:  tug.kind ?? 'chapter',
-  } satisfies Omit<AttentionPoolTrace, 'id' | 'timestamp'> as Omit<TraceEntry, 'id' | 'timestamp'>);
+  } satisfies Omit<AttentionPoolTrace, 'id' | 'timestamp'>);
 
   return {
     activeThreadTugs: tugs.map(t => (t.id === tug.id ? { ...t, attended: true } : t)),

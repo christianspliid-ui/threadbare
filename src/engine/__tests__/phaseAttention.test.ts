@@ -170,7 +170,7 @@ describe('phaseAttention curator metadata wiring (THR-16)', () => {
 
     const graph = new WorldGraph();
     addAscendant(graph);
-    addThreadedAgent(graph, 'agent_chain', 'the_first', {
+    addThreadedAgent(graph, 'agent_chain', 'retinue', {
       // no chainProgress → stage 0 is always the next stage
     });
 
@@ -195,7 +195,7 @@ describe('phaseAttention curator metadata wiring (THR-16)', () => {
 
     const graph = new WorldGraph();
     addAscendant(graph);
-    addThreadedAgent(graph, 'agent_final', 'the_first', {
+    addThreadedAgent(graph, 'agent_final', 'retinue', {
       chainProgress: {
         completed: { 'chain.scholars_path': chain.stages.length - 2 },
       },
@@ -219,7 +219,7 @@ describe('phaseAttention curator metadata wiring (THR-16)', () => {
 
     const graph = new WorldGraph();
     addAscendant(graph);
-    addThreadedAgent(graph, 'agent_faction', 'the_first');
+    addThreadedAgent(graph, 'agent_faction', 'retinue');
 
     // Add a faction
     graph.addNode({ id: 'faction_1', type: 'faction', name: 'Test Faction', properties: {} });
@@ -261,7 +261,7 @@ describe('phaseAttention curator metadata wiring (THR-16)', () => {
 
     const graph = new WorldGraph();
     addAscendant(graph);
-    addThreadedAgent(graph, 'agent_ambition', 'the_first');
+    addThreadedAgent(graph, 'agent_ambition', 'retinue');
 
     // Ambition with iron reachAffinity
     graph.addNode({
@@ -293,7 +293,7 @@ describe('phaseAttention curator metadata wiring (THR-16)', () => {
   it('leaves all four fields at default for an agent with no chain/faction/ambition', () => {
     const graph = new WorldGraph();
     addAscendant(graph);
-    addThreadedAgent(graph, 'plain_agent', 'the_first');
+    addThreadedAgent(graph, 'plain_agent', 'retinue');
 
     const templates = [makeMinimalTemplate('plain_encounter', 'iron')];
     const ua = makeUnifiedAction('ua_plain_1', 'plain_agent', 'plain_encounter');
@@ -308,5 +308,37 @@ describe('phaseAttention curator metadata wiring (THR-16)', () => {
     expect(plainTrace!.isFinalChainStage).toBe(false);
     expect(plainTrace!.factionThreadCount).toBe(0);
     expect(plainTrace!.matchesAmbition).toBe(false);
+  });
+});
+
+describe('phaseAttention pause-mode threads (THR-2062 E1)', () => {
+  it('raises no tug for a mortal who asks you, and traces the skip', () => {
+    const graph = new WorldGraph();
+    addAscendant(graph);
+    addThreadedAgent(graph, 'first_agent', 'the_first'); // no attentionMode → pause by position
+    const templates = [makeMinimalTemplate('first_encounter', 'iron')];
+    const state = makeBaseState(graph, [makeUnifiedAction('ua_first_1', 'first_agent', 'first_encounter')]);
+
+    const result = phaseAttention(state, templates, seededRng());
+
+    expect((result.activeThreadTugs ?? []).filter(t => t.agentId === 'first_agent')).toHaveLength(0);
+    const skip = getCuratorTraces(getTraces()).find(t => t.encounterId === 'ua_first_1');
+    expect(skip?.decision).toBe('skipped');
+    expect(skip?.reason).toBe('pause_mode_thread');
+  });
+
+  it('still raises a chapter tug when The First is set to Lives on', () => {
+    const graph = new WorldGraph();
+    addAscendant(graph);
+    addThreadedAgent(graph, 'first_agent', 'the_first');
+    graph.updateEdge('thread_first_agent', { properties: { attentionMode: 'auto_resolve' } });
+    const templates = [makeMinimalTemplate('first_encounter', 'iron')];
+    const state = makeBaseState(graph, [makeUnifiedAction('ua_first_2', 'first_agent', 'first_encounter')]);
+
+    const result = phaseAttention(state, templates, seededRng());
+
+    const tugs = (result.activeThreadTugs ?? []).filter(t => t.agentId === 'first_agent');
+    expect(tugs).toHaveLength(1);
+    expect(tugs[0].kind).toBe('chapter');
   });
 });

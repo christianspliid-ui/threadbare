@@ -99,4 +99,40 @@ describe('phaseResourceStockTiers', () => {
     const newOnes = secondTugs.filter(t => t.createdTick === 6);
     expect(newOnes.length).toBe(0);
   });
+
+  it('THR-2062: a lasting famine pulls once, not again after its tug lapses', () => {
+    const state = buildState(10);
+    const first = phaseResourceStockTiers(state, {});
+    expect(first.activeThreadTugs?.[0].kind).toBe('livelihood');
+    expect(first.activeThreadTugs?.[0].livelihoodResourceId).toBe('grain');
+    expect(first.activeThreadTugs?.[0].livelihoodTier).toBe('scarce');
+    // The tug lapses (THREAD_TUG_LINGER), the famine goes on.
+    state.activeThreadTugs = [];
+    (state as { tick: number }).tick = 20;
+    const second = phaseResourceStockTiers(state, {});
+    expect(second.activeThreadTugs ?? []).toHaveLength(0);
+  });
+
+  it('THR-2062: pulls again after the good returns to adequate and falls once more', () => {
+    const state = buildState(10);
+    phaseResourceStockTiers(state, {});
+    const resources = (state.graph.getNode('loc1')!.properties as Record<string, unknown>).resources as Record<string, ResourceInstance>;
+    expect(resources.grain.livelihoodPulledTier).toBe('scarce');
+
+    // Recover: enough grain for the town reads adequate and clears the marker.
+    state.activeThreadTugs = [];
+    let q = 10;
+    for (; q <= 100 && resources.grain.stockTier !== 'adequate'; q += 5) {
+      resources.grain.quantity = q;
+      phaseResourceStockTiers(state, {});
+    }
+    expect(resources.grain.stockTier).toBe('adequate');
+    expect(resources.grain.livelihoodPulledTier).toBeUndefined();
+
+    // Fall again.
+    resources.grain.quantity = 10;
+    (state as { tick: number }).tick = 40;
+    const again = phaseResourceStockTiers(state, {});
+    expect((again.activeThreadTugs ?? []).filter(t => t.createdTick === 40)).toHaveLength(1);
+  });
 });

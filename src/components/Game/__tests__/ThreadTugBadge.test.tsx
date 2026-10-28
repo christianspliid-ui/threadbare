@@ -40,13 +40,13 @@ describe('ThreadTugBadge', () => {
     expect(el.getAttribute('data-tug-badge-threat')).toBe('hard');
   });
 
-  it('names the attention cost in its aria-label', () => {
+  it('says what looking in leaves you in its aria-label, without the cost figure', () => {
     const tug = makeTug();
     render(<ThreadTugBadge badge={badgeFor(tug, 9999)} onAttend={vi.fn()} />);
 
-    expect(
-      screen.getByTestId('thread-tug-badge').getAttribute('aria-label'),
-    ).toContain(`${tugAttendCost(tug)} attention`);
+    const aria = screen.getByTestId('thread-tug-badge').getAttribute('aria-label') ?? '';
+    expect(aria).toContain('look in');
+    expect(aria).not.toContain(`${tugAttendCost(tug)} attention`);
   });
 
   it('calls onAttend with its badge when clicked', () => {
