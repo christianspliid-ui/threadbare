@@ -630,6 +630,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
             magnitude: ENCOUNTER_PRESSURE_PER_STEP,
             source: 'encounter',
             sourceId: progress.encounterId,
+            causedBy: progress.actorId,
           });
         }
       }
@@ -4178,6 +4179,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // is defined in this file and depends on module-local `nextEventId`.
   s = runRegisteredPhases(s, phaseCtx, 'post-narrative', PHASE_PLAN);
   prevEventCount = s.tickEvents.length;
+  // THR-2081: mandate folds this tick's ledger credits; drop any it did not read
+  // (no Mandate, or one already ended) so they never carry into the next tick.
+  if (s.pendingMandateCredits?.length) s = { ...s, pendingMandateCredits: [] };
 
 
   // ─── Victory & Defeat ──────────────────────────────────────────────────────────

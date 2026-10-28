@@ -1367,6 +1367,17 @@ export const CONTRACTS: readonly Contract[] = [
     verifiedLive: { date: '2026-07-23', evidence: `15-tick cadence; milestone events observed firing. ${AUDIT_EVIDENCE}` },
   },
   {
+    id: 'sphere-pressure-credits-mandate',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'Mandate',
+    intent:
+      'Only the god\'s own hand fills the Mandate (THR-2081). `phaseSpherePressure` credits the god\'s magnitude share of each level-up in the Mandate\'s two spheres (a push is the god\'s by `causedBy`, a god-only source, or the scene of a mortal the god threads) and the rival/doom share of an erosion, weighted as the world total weighs the entity, into `pendingMandateCredits`; `phaseMandate` folds them into `mandateState.godLedger`, a debit taking back at most what the god holds there.',
+    ulTerms: ['Victory Mandate', 'Sphere'],
+    mechanism: { kind: 'function', symbols: ['mandateCreditsFor', 'applyMandateCredits'], module: 'src/engine/mandateLedger.ts' },
+    writeSites: ['src/engine/phaseSpherePressure.ts'],
+    readSites: ['src/engine/phaseMandate.ts'],
+  },
+  {
     id: 'mandate-milestone-prose-narrates-transitions',
     producerSystem: 'Mandate',
     consumerSystem: NARRATIVE,

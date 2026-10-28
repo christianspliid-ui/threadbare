@@ -117,6 +117,7 @@ export function resolveOverchannel(
     magnitude: overchannelCost,
     source: 'overchannel',
     sourceId: `overchannel-${agentId}-${sphere}`,
+    causedBy: agentId,
   };
 }
 

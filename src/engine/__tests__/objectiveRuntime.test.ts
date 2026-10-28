@@ -6,6 +6,7 @@ import { phaseMandate } from '../phaseMandate';
 import { generateDoomClock, createDoomClockState } from '../doomClock';
 import { phaseDoom } from '../phaseDoom';
 import type { SphereAggregate } from '../../types/worldSoul';
+import { MANDATE_PRIMARY_TARGET_POINTS, MANDATE_SECONDARY_TARGET_POINTS } from '../../data/game-config';
 
 function makeAggregate(total = 100): SphereAggregate {
   return {
@@ -136,6 +137,14 @@ describe('remembered objective runtime', () => {
       mandateState,
       tickEvents: [],
       pendingSpherePressures: [],
+      // THR-2081 — the god's own hand, well past the First Omen's share of the point
+      // targets over a baseline of 100. The First Omen needs 0.4 of each target; the
+      // counter-omen margin keeps its share of the target (0.02 of 0.18 / 0.10), so it
+      // needs above ~0.51 / 0.6 of the targets. 0.6 / 0.8 clear both.
+      pendingMandateCredits: [
+        { entityId: 'loc', sphere: 'mind', points: MANDATE_PRIMARY_TARGET_POINTS * 0.6, cause: 'god', sources: ['claim'] },
+        { entityId: 'loc', sphere: 'spirit', points: MANDATE_SECONDARY_TARGET_POINTS * 0.8, cause: 'god', sources: ['claim'] },
+      ],
       doomClock: {
         ...createDoomClockState('breach', 200),
         currentTick: 90,

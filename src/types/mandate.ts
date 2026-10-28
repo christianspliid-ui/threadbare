@@ -83,6 +83,14 @@ export interface MandateDefinition {
   primaryTargetDelta?: number;
   /** Supporting percentage increase over the secondary baseline. */
   secondaryTargetDelta?: number;
+  /**
+   * Weighted points the god's own hand must raise in the primary sphere (THR-2081).
+   * Written at the baseline settle when the god ledger is on; `primaryTargetDelta`
+   * and the checkpoints are then rescaled to it so every relative reader stays correct.
+   */
+  primaryTargetPoints?: number;
+  /** The same for the secondary sphere. */
+  secondaryTargetPoints?: number;
   /** Optional remembrance court shape that authored this mandate. */
   courtType?: MandateCourtType;
   /** One-line remembrance-derived intent text. */
@@ -131,4 +139,11 @@ export interface MandateState {
    * Unset until then; progress and checkpoints do not count before it.
    */
   baselineSettledTick?: number;
+  /**
+   * Weighted points the god's own hand has raised in the two Mandate spheres since the
+   * settle, net of rival and doom wear on that same ground (THR-2081, `mandateLedger.ts`).
+   */
+  godLedger?: { primary: number; secondary: number };
+  /** Points the god holds per `entityId|sphere` — the most opposition wear can take back there. */
+  godHeld?: Record<string, number>;
 }

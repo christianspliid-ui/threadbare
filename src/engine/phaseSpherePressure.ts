@@ -36,6 +36,10 @@ import type { QuintessenceEvent } from '../types/quintessence';
 import { QUINTESSENCE_OVERCHANNEL_EROSION } from '../types/quintessence';
 import { buildTendingIndex, dominionOf, isTended } from './dominion';
 import { DOMINION_TENDED_RAID_ABSORB } from '../data/dominion-content';
+import type { MandateCredit } from '../types/sphereAffinity';
+import { MANDATE_GOD_LEDGER_ENABLED } from '../data/game-config';
+import { isGodCausedPush, mandateCreditsFor } from './mandateLedger';
+import { entityAggregateWeight } from './phaseSphereAggregation';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity
@@ -469,6 +473,16 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
   const allTraces: SpherePressureTrace[] = [];
   const quintessenceEvents: QuintessenceEvent[] = [];
 
+  // THR-2081: the Mandate's god ledger is credited here, where each entity's pushes and
+  // the score change they made are both in hand. Only the Mandate's two spheres.
+  const mandateCredits: MandateCredit[] = [];
+  const def = state.mandateDefinition;
+  const ledgerSpheres = MANDATE_GOD_LEDGER_ENABLED && def?.runtimeKind === 'sphere_growth'
+    && def.primarySphere && def.secondarySphere && state.mandateState && !state.mandateState.completed
+    ? new Set<SphereName>([def.primarySphere, def.secondarySphere])
+    : null;
+  const isGod = (p: SpherePressureEvent) => isGodCausedPush(p, graph, state.ascendantId);
+
   for (const [entityId, entityPressures] of byEntity) {
     const node = updatedGraph.getNode(entityId);
     if (!node) continue; // fail-soft: unknown entity
@@ -501,6 +515,15 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
       });
     }
 
+    if (ledgerSpheres) {
+      try {
+        const weight = entityAggregateWeight(node) ?? 0;
+        mandateCredits.push(...mandateCreditsFor(entityId, weight, entityPressures, tickedTraces, isGod, ledgerSpheres));
+      } catch {
+        // Fail-soft: this entity credits nothing this tick.
+      }
+    }
+
     // Write updated affinity back to graph
     updatedGraph.updateNode(entityId, {
       properties: { sphereAffinity: updated },
@@ -521,6 +544,9 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
   return {
     graph: updatedGraph,
     pendingSpherePressures: [],
+    ...(mandateCredits.length > 0
+      ? { pendingMandateCredits: [...(state.pendingMandateCredits ?? []), ...mandateCredits] }
+      : {}),
     ...(quintessenceEvents.length > 0
       ? { pendingQuintessenceEvents: [...(state.pendingQuintessenceEvents ?? []), ...quintessenceEvents] }
       : {}),

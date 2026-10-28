@@ -82,6 +82,25 @@ export const MANDATE_SECONDARY_TARGET_DELTA = 0.10;
 /** Doom progress checkpoints where the mandate feeds back into omen severity. */
 export const MANDATE_CHECKPOINT_THRESHOLDS = [0.40, 0.60, 0.80, 1.00] as const;
 
+/**
+ * THR-2081 kill switch. On: the Mandate counts only what the god's own hand raised in
+ * its two spheres (`mandateLedger.ts`), against the point targets below. Off: the
+ * world-total rule against the relative targets above.
+ */
+export const MANDATE_GOD_LEDGER_ENABLED = true;
+
+/**
+ * Weighted points the god's hand must raise in its first sphere (place 1.0, mortal 0.2).
+ * Fitted on the seeded Witness route only (`npm run census:mandate -- godfit`): a scripted
+ * god spending every essence on the cheapest place cards holds 82.2 at doom 0.50 and
+ * 87.2 at doom 0.60, so it completes near doom 0.6. Refit 80 → 87 by THR-2081's build;
+ * the plan's proto census read 84.2 at 0.50 and suggested 80.
+ */
+export const MANDATE_PRIMARY_TARGET_POINTS = 87;
+
+/** The same for the second sphere (20.2 at doom 0.50, 23.2 at 0.60 on the same run). */
+export const MANDATE_SECONDARY_TARGET_POINTS = 23;
+
 /** How far ahead of a checkpoint target the player must be to earn a counter-omen. */
 export const MANDATE_COUNTER_OMEN_MARGIN = 0.02;
 

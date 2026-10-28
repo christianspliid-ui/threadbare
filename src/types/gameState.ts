@@ -24,7 +24,7 @@ import type { ControlEffect } from './controlEffect';
 import type { AscendantIdentity } from './remembrance';
 import type { AscendantBeatState, GodProgressionState } from './ascendantBeat';
 import type { HexRevelation } from './unifiedAction';
-import type { SpherePressureEvent } from './sphereAffinity';
+import type { SpherePressureEvent, MandateCredit } from './sphereAffinity';
 import type { QuintessenceEvent } from './quintessence';
 
 export type { ChronicleEntry };
@@ -443,6 +443,10 @@ export interface GameState {
 
   // Pending sphere pressure events — accumulated by action/encounter/doom phases, consumed by phaseSpherePressure
   pendingSpherePressures?: SpherePressureEvent[];
+
+  // Mandate ledger credits from this tick's sphere pressure (THR-2081) — written by
+  // phaseSpherePressure, folded and cleared by phaseMandate the same tick
+  pendingMandateCredits?: MandateCredit[];
 
   // Pending quintessence events — accumulated by overchannel/encounter failure phases, consumed by phaseQuintessence
   pendingQuintessenceEvents?: QuintessenceEvent[];
