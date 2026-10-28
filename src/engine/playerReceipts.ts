@@ -70,6 +70,7 @@ import {
   CAST_INFLUENCE_AT_COST_BANDS,
   fillCastInfluenceLine,
 } from '../data/receipt-content';
+import type { CastInfluenceReceiptType } from '../data/receipt-content';
 import { resolveCastValueDrift, valuePoleWord, findValueDriftInfluence } from './castInfluenceDrift';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { targetSideChanges } from './castTargetChanges';
@@ -235,7 +236,7 @@ export function castInfluenceReceiptLine(
   const payload = findValueDriftInfluence(template);
   const rule = payload?.valueDriftRule;
   if (!payload || !rule || !action.targetId) return undefined;
-  const lines = CAST_INFLUENCE_RECEIPT_LINES[payload.interventionType as 'dream' | 'persuade'];
+  const lines = CAST_INFLUENCE_RECEIPT_LINES[payload.interventionType as CastInfluenceReceiptType];
   if (!lines) return undefined;
 
   const resolved = resolveCastValueDrift(state.graph, action.actorId, action.targetId, rule);

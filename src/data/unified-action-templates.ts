@@ -51,7 +51,7 @@ import { MONSTER_ENCOUNTER_TEMPLATES } from './monster-encounter-content';
 import { FIGHT_ENCOUNTER_TEMPLATES } from './fights/fight-templates';
 import { BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
-import { INTERVENTION_DEFINITIONS, DREAM_VALUE_DRIFT, COMPULSION_VALUE_DRIFT } from './dream-content';
+import { INTERVENTION_DEFINITIONS, DREAM_VALUE_DRIFT, COMPULSION_VALUE_DRIFT, INSPIRE_VALUE_DRIFT } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
 import { ROUTE_EVENT_ENCOUNTER_TEMPLATES } from './route-event-encounter-content';
 import {
@@ -586,7 +586,7 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     spellName: 'Breath of Purpose',
     rarityTier: 1,
     intrinsicTier: 'background',
-    description: 'Kindles divine fire within a mortal spirit, igniting a sense of calling and passionate purpose that seems to come from within. The inspired mortal pursues their goals with extraordinary energy and conviction. The flame sustains itself as long as the mortal\'s belief remains unchallenged.',
+    description: 'Kindles divine fire within a mortal spirit, igniting a sense of calling and passionate purpose that seems to come from within. The inspired mortal pursues what they already care for with extraordinary energy and conviction. The flame burns down over time as ordinary doubt returns.',
     reach: 'heart',
     crudType: 'update',
     scale: 'cosmic',
@@ -601,6 +601,9 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
           interventionType: 'inspire_intervention',
           sphere: 'life',
           ...DECAY_CONSTANTS.inspire_intervention,
+          // THR-2088: the calling deepens the lean the mortal already has on the
+          // value pair bound to the god's primary reach.
+          valueDriftRule: { direction: 'own_lean', magnitude: INSPIRE_VALUE_DRIFT },
         },
       }],
       onFailure: [],

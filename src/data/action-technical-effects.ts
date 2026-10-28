@@ -133,7 +133,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'divine.intimidate':
     'Applies a divine influence (interventionType `intimidate`, Force sphere) to the target agent, biasing their decision-making until the influence decays.',
   'divine.inspire':
-    'Applies a divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent, biasing their decision-making until the influence decays.',
+    "Applies a decaying divine influence (interventionType `inspire_intervention`, Life sphere) to the target agent carrying a `valueDrifts` entry of `INSPIRE_VALUE_DRIFT` on the value pair bound to the caster's primary reach, in the direction the target already leans (THR-2088). `buildValueOverlay` feeds it into the agent re-score and the motive receipt until it lapses. A target at exactly 0 on that pair gets no entry (`influence.no_lean` trace).",
   'action.means.fortunes_favour':
     "On success, an `economy_shift` with `bandStep: 1` moves the target mortal's Means up to the next band's floor (clamped at 100).",
   'action.means.ruin':

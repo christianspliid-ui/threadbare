@@ -223,3 +223,14 @@ export const DREAM_VALUE_DRIFT = 0.08;
  * chooses the direction. Scaled by the persuade decay strength (starts 0.70).
  */
 export const COMPULSION_VALUE_DRIFT = 0.15;
+
+/**
+ * Breath of Purpose's drift on the same pair, **in the direction the target
+ * already leans** (THR-2088) — the calling "seems to come from within", so the
+ * mortal pursues what they already care for, harder. Stronger than the dream
+ * (Inspire costs 2 essence to the dream's 1), weaker than the compulsion
+ * because the god does not choose the pole. Scaled by the inspire decay
+ * strength (starts 0.80): peak ≈ 0.08 against the dream's 0.04 and the
+ * compulsion's 0.105.
+ */
+export const INSPIRE_VALUE_DRIFT = 0.10;
