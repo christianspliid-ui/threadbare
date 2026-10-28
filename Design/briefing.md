@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 13:57 local (12:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -31,7 +31,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Healthy: 4 ready, nothing being built.** All four sit in their veto windows, so the builder is idle by design (its last six runs each reported nothing claimable): hunger and plenty stories ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)) until 13:30 UTC, the loan-collection plan ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)) until 14:48 UTC, the god-caused Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)), decided this morning, and the energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)), handed off at 11:42 UTC.
+**Healthy: 4 ready, nothing being built.** All four sit in their veto windows, so the builder is idle by design (its last six runs each reported nothing claimable): hunger and plenty stories ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)) until 13:30 UTC, so the next builder run should take it; the loan-collection plan ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)) until 14:48 UTC; the god-caused Mandate ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)) until 21:00 UTC; and the energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)) until 23:42 UTC.
 - The design lane filed two bugs on the way: [hex cards' sphere pressure goes nowhere](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row) and [Inspire changes nothing a mortal decides](https://linear.app/threadbare/issue/THR-2088/inspire-changes-nothing-a-mortal-decides-its-card-writes-an-influence). Neither is ready to build yet.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). Agents can un-park it.
@@ -39,4 +39,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The live site serves the latest game build (a2e88585; the commits since, the Mandate plan [#2645](https://github.com/christianspliid-ui/threadbare/pull/2645) and the energy-cards plan [#2646](https://github.com/christianspliid-ui/threadbare/pull/2646), are docs only), CI and the background jobs pass, no PRs are waiting to merge, all 9 scheduled lanes are on time, the worktree reaper last ran 12:40 local, and the engine runs at 126 ms/tick, 26% below the 7-day median (169).
+All green. The live site serves the latest game build (a2e88585; the commits since, the Mandate plan [#2645](https://github.com/christianspliid-ui/threadbare/pull/2645) and the energy-cards plan [#2646](https://github.com/christianspliid-ui/threadbare/pull/2646), are docs only), CI and the background jobs pass, no PRs are waiting to merge, all 9 scheduled lanes are on time, the worktree reaper last ran 13:40 local, and the engine runs at 127 ms/tick, 25% below the 7-day median (168).
