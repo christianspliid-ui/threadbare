@@ -4,7 +4,8 @@
  * A town's larder plants one of its scenes for a resident: on a town's
  * `FAMINE_SEED_DAY`-th hungry day a famine story, on the first day of a glut run a
  * plenty story. At most one per town every `LARDER_SEED_COOLDOWN_DAYS`. The granary
- * riot keeps its own seed and comes first: on a day it planted, the larder waits. A
+ * riot keeps its own seed and comes first: on a day it planted, or within the cooldown
+ * after, the larder waits (the riot itself never yields to the larder). A
  * town whose scarcity arc moved within the cooldown waits too, so one shortage never
  * plants two stories.
  *
@@ -28,6 +29,7 @@ import type { GraphNode } from '../types/graph';
 import type { PendingEncounterSeed } from '../types/unifiedAction';
 import { emitTrace } from './traceBuffer';
 import { templateAcceptsWhereTheyStand } from './encounterSeeding';
+import { LAST_RIOT_SEED_PROP } from './unrestPressure/inputs';
 import { pickTargetAgent } from './phases/routeEvents';
 import { hashString, mulberry32 } from '../lib/prng';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
@@ -147,6 +149,7 @@ export function plantLarderSeed(
 
   const cooldownTicks = LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
   const lastSeed = num(props[LARDER_LAST_SEED_PROP]);
+  const lastRiot = num(props[LAST_RIOT_SEED_PROP]);
   const arc = props.scarcityArc as { phaseSinceTick?: number; sinceTick?: number } | undefined;
   const arcMoved = num(arc?.phaseSinceTick) ?? num(arc?.sinceTick);
 
@@ -154,7 +157,8 @@ export function plantLarderSeed(
   let templateId: string | null = null;
   let targetAgentId: string | null = null;
   if (!isLarderSeedsEnabled()) skipped = 'disabled';
-  else if (riotPlanted) skipped = 'riot';
+  // A riot today, or one within the cooldown, already told this shortage's story.
+  else if (riotPlanted || (lastRiot !== undefined && tick - lastRiot < cooldownTicks)) skipped = 'riot';
   else if (lastSeed !== undefined && tick - lastSeed < cooldownTicks) skipped = 'cooldown';
   else if (arcMoved !== undefined && tick - arcMoved < cooldownTicks) skipped = 'scarcity_arc';
   else {

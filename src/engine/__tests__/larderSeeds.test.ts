@@ -130,6 +130,17 @@ describe('the guards', () => {
     expect(larderTraces().at(-1)).toMatchObject({ skipped: 'riot' });
   });
 
+  it('a riot planted on an earlier day within the cooldown blocks it too (review gate)', () => {
+    const graph = new WorldGraph();
+    const tick = 20 * TICKS_PER_DAY;
+    const town = addTown(graph, 'a', { unrestLastRiotSeedTick: tick - TICKS_PER_DAY });
+    addMortal(graph, 'm1', 'a');
+    expect(plant(graph, town, tick, true, FAMINE_SEED_DAY)).toHaveLength(0);
+    expect(larderTraces().at(-1)).toMatchObject({ skipped: 'riot' });
+    town.properties.unrestLastRiotSeedTick = tick - LARDER_SEED_COOLDOWN_DAYS * TICKS_PER_DAY;
+    expect(plant(graph, town, tick, true, FAMINE_SEED_DAY)).toHaveLength(1);
+  });
+
   it('a scarcity-arc move within the cooldown blocks it', () => {
     const graph = new WorldGraph();
     const tick = 20 * TICKS_PER_DAY;
