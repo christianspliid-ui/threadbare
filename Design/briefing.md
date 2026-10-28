@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 09:00 local (08:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,6 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 - [Debt Collection is rarely drawn by a mortal who is owed](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of): **a loan now brings its lender back to collect.** About two days after a mortal lends coin at the counting house, that lender gets a Debt Collection scene, while the debt still stands. Today almost nobody who collects is owed anything (86–100% of collections found no debt), so loans just lapsed and the lender's coin vanished. In a test run, planted collections found their debt, and the share that finds nothing fell to 36–48%. *Veto:* "a lender shouldn't always come back, only sometimes", or "the collection should come at the end of the loan, not halfway". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-28a.md)*
 - [Plan doc: famine and glut draws](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a) — **a hungry town now plants a hunger story instead of nudging the odds.** On a town's second hungry day, one person living there is handed a fitting scene: refugees, barter, the merchant's granaries, the exchange bell. When a town's granaries first overflow, someone gets a plenty scene: the harvest bounty, the market festival, the mill lease. It happens at most once per town every 10 days, and the granary riot still comes first. The first design, a small lean on the scene scores, shipped nothing because its own test failed. Even a much stronger lean barely moved anything this run. Planting moved it from about 1 in 5 hungry spells with a hunger story to 2 in 3. "Fairs grow rarer in a famine" is dropped, because a planted story adds a scene and cannot remove one. *Veto:* "famine should only make hunger stories likelier, not hand one out", or "a starving town should also hold fewer festivals". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27e.md)*
-- [The world's own drift fills the Mandate with no god](https://linear.app/threadbare/issue/THR-2081): **only growth the god causes counts toward the Mandate.** The world keeps founding places and filling with newborn mortals, and every new one adds to every sphere's total, so the Mandate filled with nobody playing. Two of four test worlds ended their age that way. From now on, Mandate progress counts what the god's own hand puts into its spheres: deeds, holds, claims, answered prayers. Rivals and doom wearing those spheres down still pulls it back, so it stays a contest. Veto open until 08:30 UTC today. *Veto:* "the world drifting toward my spheres is my doing" or "a mortal acting on my nudge should count". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27d.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -37,4 +36,4 @@ Say "veto <title>" to reverse any of these.
 
 ## Health
 
-All green. The live site serves the latest commit (a2e88585), CI and the background jobs pass, no PRs are waiting, all 9 scheduled lanes are on time, the worktree reaper last ran 08:40 local, and the engine runs at 126 ms/tick, 26% below the 7-day median (171).
+All green. The live site serves the latest commit (a2e88585), CI and the background jobs pass, one plan-doc PR ([#2645](https://github.com/christianspliid-ui/threadbare/pull/2645), the god-caused Mandate plan) is waiting on checks and will merge on green, all 9 scheduled lanes are on time, the worktree reaper last ran 09:40 local, and the engine runs at 127 ms/tick, 25% below the 7-day median (170).
