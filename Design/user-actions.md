@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-28 01:58 local (00:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-28 02:58 local (01:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -38,6 +38,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-28: the town economy now reaches the mortal's final choice, and it is live** ([THR-2071](https://linear.app/threadbare/issue/THR-2071)). Merged via [#2639](https://github.com/christianspliid-ui/threadbare/pull/2639).
 - **2026-10-27: a sealed mill lease now gives the town's mill to its guild, and it is live** ([THR-2077](https://linear.app/threadbare/issue/THR-2077)). Merged via [#2638](https://github.com/christianspliid-ui/threadbare/pull/2638).
 - **2026-10-27: the bounty duel is live** ([THR-2072](https://linear.app/threadbare/issue/THR-2072)). Merged via [#2637](https://github.com/christianspliid-ui/threadbare/pull/2637).
 - **2026-10-27: salt, the good the smugglers carry, is live** ([THR-2069](https://linear.app/threadbare/issue/THR-2069/plan-doc-salt-the-good-the-smugglers-carry-the-monopoly-scene-prices)). Merged via [#2636](https://github.com/christianspliid-ui/threadbare/pull/2636).
@@ -47,7 +48,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-27: the seeded world no longer ends after 41 ticks, and the fix is live** ([THR-2080](https://linear.app/threadbare/issue/THR-2080)). Merged via [#2632](https://github.com/christianspliid-ui/threadbare/pull/2632).
 - **2026-10-27: The First's page no longer shows an empty portrait box, and the fix is live** ([THR-2079](https://linear.app/threadbare/issue/THR-2079)). Merged via [#2630](https://github.com/christianspliid-ui/threadbare/pull/2630).
 - **2026-10-27: the Doom and Omen hints no longer float over the Inspector, and the fix is live** ([THR-2078](https://linear.app/threadbare/issue/THR-2078)). Merged via [#2629](https://github.com/christianspliid-ui/threadbare/pull/2629).
-- **2026-10-27: an oath from tribute is live.** The house that pays tribute in a crown's hall now swears to that crown ([THR-2051](https://linear.app/threadbare/issue/THR-2051)). Merged via [#2627](https://github.com/christianspliid-ui/threadbare/pull/2627).
 
 ---
 

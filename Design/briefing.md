@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-28 01:58 local (00:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-28 02:58 local (01:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -19,6 +19,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 ## Decided for you
 
 - [The world's own drift fills the Mandate with no god](https://linear.app/threadbare/issue/THR-2081): **only growth the god causes counts toward the Mandate.** The world keeps founding places and filling with newborn mortals, and every new one adds to every sphere's total, so the Mandate filled with nobody playing. Two of four test worlds ended their age that way. From now on, Mandate progress counts what the god's own hand puts into its spheres: deeds, holds, claims, answered prayers. Rivals and doom wearing those spheres down still pulls it back, so it stays a contest. *Veto:* "the world drifting toward my spheres is my doing" or "a mortal acting on my nudge should count". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27d.md)*
+- [Plan doc: famine and glut draws](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a) — **a hungry town now plants a hunger story instead of nudging the odds.** On a town's second hungry day, one person living there is handed a fitting scene: refugees, barter, the merchant's granaries, the exchange bell. When a town's granaries first overflow, someone gets a plenty scene: the harvest bounty, the market festival, the mill lease. It happens at most once per town every 10 days, and the granary riot still comes first. The first design, a small lean on the scene scores, shipped nothing because its own test failed. Even a much stronger lean barely moved anything this run. Planting moved it from about 1 in 5 hungry spells with a hunger story to 2 in 3. "Fairs grow rarer in a famine" is dropped, because a planted story adds a scene and cannot remove one. *Veto:* "famine should only make hunger stories likelier, not hand one out", or "a starving town should also hold fewer festivals". *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-27e.md)*
 
 Say "veto <title>" to reverse any of these.
 
@@ -28,11 +29,12 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: 1 ready, 1 being built.** The builder is working on the town economy reaching the live board ([THR-2071](https://linear.app/threadbare/issue/THR-2071)); its pull request [#2639](https://github.com/christianspliid-ui/threadbare/pull/2639) is open and not yet set to merge, so the work is still in progress. The one ready ticket, Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)), is on hold until 03:01 UTC today, so short builder runs in between are by design, not a stall.
+**Healthy but thin: 2 ready, 1 being built.** The town economy now reaches the live board and is live ([THR-2071](https://linear.app/threadbare/issue/THR-2071), [#2639](https://github.com/christianspliid-ui/threadbare/pull/2639)). The builder is now working on whether the god's steering powers reach a mortal's final choice ([THR-2073](https://linear.app/threadbare/issue/THR-2073/the-gods-steering-verbs-and-a-mortals-movement-leans-may-stop-at-the)), on branch [claude/thr-2073-board-late-pulls](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2073-board-late-pulls). The two ready tickets — hunger and plenty stories ([THR-2040](https://linear.app/threadbare/issue/THR-2040/plan-doc-famine-and-glut-draws-a-hungry-town-tells-hungers-stories-a)) and Attention's price ([THR-2062](https://linear.app/threadbare/issue/THR-2062)) — are both inside their veto windows, so they wait by design.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (13 days). No branch and no local worktree hold work for it. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest main (1dd9143f), CI and the scheduled background jobs pass, the scheduled lanes and the worktree reaper (last run 01:40) are healthy, and the engine runs at 175 ms/tick, 1% over the 7-day median.
+- **Heavy simulation tests went red on main at 01:05 UTC**, on the town-economy merge ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/40612850994)). Two checks in `premonitionSteer.integration.test.ts` fail: a compulsion paid mid-encounter no longer steers The First's next choice. It has been red 51 minutes; if it is still red at the next brief, a ticket goes to the builder.
+- Everything else is green. The live site serves the latest game build (d6d5a7e8), CI passes, the scheduled lanes and the worktree reaper (last run 02:40) are healthy, and the engine runs at 178 ms/tick, 2% over the 7-day median.
