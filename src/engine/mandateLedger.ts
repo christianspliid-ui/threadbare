@@ -29,17 +29,21 @@ export const OPPOSITION_SOURCES: ReadonlySet<PressureSource> = new Set<PressureS
 
 type Graph = GameState['graph'];
 
+/** Writers whose push counts when the actor is a mortal the god holds a thread to. */
+const THREADED_SCENE_SOURCES: ReadonlySet<PressureSource> = new Set<PressureSource>(['encounter', 'divine_action']);
+
 /**
  * Was this push the god's doing? A god-only writer, a push the god itself caused, or
- * an encounter step of a mortal the god holds a thread to (plan Decision 2). A push
- * without `causedBy` from any other writer is never the god's (fail-soft: an unlisted
- * writer cannot inflate the Mandate).
+ * the scene of a mortal the god holds a thread to (plan Decision 2). A live scene
+ * resolves as a unified action, so its push is `divine_action`; the legacy encounter
+ * step is `encounter`. A push without `causedBy` from any other writer is never the
+ * god's (fail-soft: an unlisted writer cannot inflate the Mandate).
  */
 export function isGodCausedPush(p: SpherePressureEvent, graph: Graph, ascendantId: string): boolean {
   if (GOD_ONLY_SOURCES.has(p.source)) return true;
   if (!p.causedBy || !ascendantId) return false;
   if (p.causedBy === ascendantId) return true;
-  if (p.source !== 'encounter') return false;
+  if (!THREADED_SCENE_SOURCES.has(p.source)) return false;
   try {
     return graph.getOutgoingEdges(ascendantId, 'thread').some(e => e.target === p.causedBy);
   } catch {

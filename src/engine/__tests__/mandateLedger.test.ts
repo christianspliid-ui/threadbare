@@ -59,11 +59,14 @@ describe('THR-2081 — isGodCausedPush', () => {
     expect(isGodCausedPush(push({ causedBy: ASC }), graph, ASC)).toBe(true);
     expect(isGodCausedPush(push({ source: 'encounter', causedBy: 'threaded' }), graph, ASC)).toBe(true);
   });
+  it('counts a threaded mortal\'s live scene, which resolves as a unified action', () => {
+    expect(isGodCausedPush(push({ causedBy: 'threaded' }), graph, ASC)).toBe(true);
+    expect(isGodCausedPush(push({ source: 'control_effect', causedBy: 'threaded' }), graph, ASC)).toBe(false);
+  });
   it('never counts an unattributed push, a mortal\'s own act, or a threaded mortal\'s non-encounter act', () => {
     expect(isGodCausedPush(push({}), graph, ASC)).toBe(false);
     expect(isGodCausedPush(push({ causedBy: 'mortal' }), graph, ASC)).toBe(false);
     expect(isGodCausedPush(push({ source: 'encounter', causedBy: 'mortal' }), graph, ASC)).toBe(false);
-    expect(isGodCausedPush(push({ causedBy: 'threaded' }), graph, ASC)).toBe(false);
     expect(isGodCausedPush(push({ source: 'control_effect', causedBy: 'rival' }), graph, ASC)).toBe(false);
     expect(isGodCausedPush(push({ source: 'overchannel', causedBy: 'mortal' }), graph, ASC)).toBe(false);
   });

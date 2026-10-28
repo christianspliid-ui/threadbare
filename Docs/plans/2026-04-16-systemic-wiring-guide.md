@@ -3596,7 +3596,7 @@ the god remembers or from a named campaign the world offers. Until that lands,
 authoring more prose against the template ids adds no player-visible text —
 check THR-1198's state before starting.
 
-**Writing a new sphere-pressure writer? Set `causedBy` (THR-2081).** The Mandate counts only pressure the god caused. A `SpherePressureEvent` counts toward it when its `source` is god-only (claim, seat, carry, attunement, prayer_answered, unbidden_aid), when `causedBy` is the ascendant, or when it is an `encounter` step of a mortal the god holds a thread to. A push without `causedBy` from any other writer never fills the Mandate, so name the actor whose act made it.
+**Writing a new sphere-pressure writer? Set `causedBy` (THR-2081).** The Mandate counts only pressure the god caused. A `SpherePressureEvent` counts toward it when its `source` is god-only (claim, seat, carry, attunement, prayer_answered, unbidden_aid), when `causedBy` is the ascendant, or when it is the scene of a mortal the god holds a thread to (an `encounter` step, or the `divine_action` its live scene resolves as). A push without `causedBy` from any other writer never fills the Mandate, so name the actor whose act made it.
 
 ### Capability 23: Terrain Overlays and Rule Overrides — Effects That Outlive the Scene (THR-1240, THR-1241)
 

@@ -25,6 +25,8 @@ import {
   MANDATE_GOD_LEDGER_ENABLED,
   MANDATE_PRIMARY_TARGET_POINTS,
   MANDATE_SECONDARY_TARGET_POINTS,
+  MANDATE_PRIMARY_TARGET_DELTA,
+  MANDATE_SECONDARY_TARGET_DELTA,
 } from '../data/game-config';
 import { applyMandateCredits } from './mandateLedger';
 import {
@@ -315,6 +317,16 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
   const secondaryRatio = secondaryTargetDelta > 0 ? secondaryDelta / secondaryTargetDelta : 0;
   const progress = clamp01((clamp01(primaryRatio) + clamp01(secondaryRatio)) / 2);
 
+  // THR-2081 review: the counter-omen margin keeps its share of the target when the
+  // targets are rescaled to points, so a big or sparse sphere neither forbids nor gifts
+  // a counter-omen (0.02 of 0.18 / 0.10 under the world-total rule).
+  const primaryMargin = definition.primaryTargetPoints != null
+    ? MANDATE_COUNTER_OMEN_MARGIN * (primaryTargetDelta / MANDATE_PRIMARY_TARGET_DELTA)
+    : MANDATE_COUNTER_OMEN_MARGIN;
+  const secondaryMargin = definition.secondaryTargetPoints != null
+    ? MANDATE_COUNTER_OMEN_MARGIN * (secondaryTargetDelta / MANDATE_SECONDARY_TARGET_DELTA)
+    : MANDATE_COUNTER_OMEN_MARGIN;
+
   const checkpointResults = [...(mandateState.checkpointResults ?? [])];
   const events: TickEvent[] = [];
   const pressures: SpherePressureEvent[] = [...(state.pendingSpherePressures ?? [])];
@@ -330,8 +342,8 @@ function evaluateSphereGrowthMandate(state: GameState): Partial<GameState> {
       secondaryDelta >= checkpoint.requiredSecondaryDelta;
     const exceeded =
       passed &&
-      primaryDelta >= checkpoint.requiredPrimaryDelta + MANDATE_COUNTER_OMEN_MARGIN &&
-      secondaryDelta >= checkpoint.requiredSecondaryDelta + MANDATE_COUNTER_OMEN_MARGIN;
+      primaryDelta >= checkpoint.requiredPrimaryDelta + primaryMargin &&
+      secondaryDelta >= checkpoint.requiredSecondaryDelta + secondaryMargin;
 
     checkpointResults.push({
       index: checkpoint.index,

@@ -91,13 +91,15 @@ export const MANDATE_GOD_LEDGER_ENABLED = true;
 
 /**
  * Weighted points the god's hand must raise in its first sphere (place 1.0, mortal 0.2).
- * Fitted on the seeded Witness route only: a scripted god spending every essence on the
- * cheapest place cards holds 84.2 at doom 0.50 (plan 2026-10-28-thr-2081).
+ * Fitted on the seeded Witness route only (`npm run census:mandate -- godfit`): a scripted
+ * god spending every essence on the cheapest place cards holds 82.2 at doom 0.50 and
+ * 87.2 at doom 0.60, so it completes near doom 0.6. Refit 80 → 87 by THR-2081's build;
+ * the plan's proto census read 84.2 at 0.50 and suggested 80.
  */
-export const MANDATE_PRIMARY_TARGET_POINTS = 80;
+export const MANDATE_PRIMARY_TARGET_POINTS = 87;
 
-/** The same for the second sphere (19.2 at doom 0.50 on the same run). */
-export const MANDATE_SECONDARY_TARGET_POINTS = 20;
+/** The same for the second sphere (20.2 at doom 0.50, 23.2 at 0.60 on the same run). */
+export const MANDATE_SECONDARY_TARGET_POINTS = 23;
 
 /** How far ahead of a checkpoint target the player must be to earn a counter-omen. */
 export const MANDATE_COUNTER_OMEN_MARGIN = 0.02;
