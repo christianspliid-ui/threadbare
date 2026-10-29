@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-29 00:56 local (23:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-29 01:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -28,11 +28,11 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved but working: 1 ready, 1 being built.** The energy cards' veto window closed at 23:42 UTC and the builder took them straight away: [THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot) (Stoke the Forges, Kindle a Spark) has been in build since 23:51. The only other ready job, the hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)), opens at 02:39 UTC. The design lane runs next at about 02:17 and refills the shelf.
+**Starved: 1 ready, nothing in build.** The energy cards ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot), Stoke the Forges and Kindle a Spark) merged at 00:16 UTC and are live. The only ready job, the hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)), opens to the builder at 02:39 UTC when its veto window closes. The design lane runs next at about 02:17 UTC and refills the shelf. The builder's two short runs since 00:30 are correct: nothing was claimable.
 
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947) has been parked with no owner since 15 Oct (14 days). No open PR and no local worktree holds uncommitted work for it. Agents can un-park it.
 - Warm playtest round 3 cannot start yet. Its gate waits on two round-2 tickets ([THR-1859](https://linear.app/threadbare/issue/THR-1859), [THR-1860](https://linear.app/threadbare/issue/THR-1860)). The playtest lane owns that gate.
 
 ## Health
 
-All green. The live site serves the latest commit on main (92b66a8f). CI and the background jobs pass, and no PRs are waiting to merge. All 9 scheduled lanes are on time. The worktree reaper ran at 00:40. The engine runs at 151 ms/tick, 10% below the 7-day median (169).
+All green. The live site serves the latest commit on main (9c6fc808). CI and the background jobs pass, and no PRs are waiting to merge. All 9 scheduled lanes are on time, with no silence over 6 hours in the last 7 days. The worktree reaper ran at 01:40. The engine runs at 128 ms/tick, 24% below the 7-day median (168).
