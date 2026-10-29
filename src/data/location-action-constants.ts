@@ -61,6 +61,18 @@ export const LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS = 8;
 // LOC_OPEN_MARKETS_TRADE_RANGE_HEXES (4) was deleted by THR-1969: no reader ever
 // searched for a trade partner, and the god's-stake plan gives it none.
 
+// ─── Stoke the Forges (THR-2086) ───────────────────────────────────────────
+
+/**
+ * Prosperity gain on a successful Stoke the Forges. Matches Open the Markets; at or
+ * above `ECON_SHOCK_DELTA` (5) the swing reads as a boom shock and plants scenes on
+ * the town's mortals.
+ */
+export const LOC_STOKE_FORGES_PROSPERITY_DELTA = 6;
+
+/** Unrest gain on a successful Stoke the Forges — energy drives and frays; a quarter of Incite Unrest's. */
+export const LOC_STOKE_FORGES_UNREST_DELTA = 5;
+
 // ─── Sanctify the Square ───────────────────────────────────────────────────
 
 /** Magical saturation gain on a successful Sanctify the Square. */

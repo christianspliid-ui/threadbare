@@ -55,6 +55,8 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Sets a sign in the world for mortals to read, pulling those who heed it toward your intent.',
   'divine.inspire':
     'Kindles sudden purpose in a mortal: whichever way they already lean on the question your reach asks, they pursue it with fierce resolve.',
+  'divine.kindle_spark':
+    'Strikes a spark in a mortal: whichever way they already lean on the question your reach asks, they lean harder, hotly and briefly.',
 
   // — Per-graph expression verbs (imbue / consecrate / bestow / anoint) —
   'action.imbue':
@@ -184,6 +186,8 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
   // — Place: the settlement verbs —
   'loc.open_markets':
     'Draws trade through a settlement\'s square, lifting its prosperity and easing its unrest.',
+  'loc.stoke_forges':
+    'Stokes a town\'s forges and hearths: its prosperity rises, and so does its unrest.',
   'loc.bless_holding':
     'For a year, whoever holds this place draws half again from it.',
   'loc.reveal_vein':

@@ -355,6 +355,10 @@
     "catalog": "divine",
     "codex": "divine"
   },
+  "divine.kindle_spark": {
+    "catalog": "divine",
+    "codex": "divine"
+  },
   "divine.intimidate": {
     "catalog": "divine",
     "codex": "divine"
@@ -696,6 +700,10 @@
     "codex": "location"
   },
   "loc.open_markets": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.stoke_forges": {
     "catalog": "location",
     "codex": "location"
   },

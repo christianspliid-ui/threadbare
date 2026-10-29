@@ -25,6 +25,7 @@ export const ACTION_ART: Record<string, string> = {
   'divine.deceive': '/assets/actions/veil-of-falsehood.jpg',
   'divine.intimidate': '/assets/actions/wrath-descending.jpg',
   'divine.inspire': '/assets/actions/breath-of-purpose.jpg',
+  'divine.kindle_spark': '/assets/actions/the-struck-match.jpg',
   'divine.coincidence': '/assets/actions/thread-of-fate.jpg',
   'divine.omen': '/assets/actions/starfall-omen.jpg',
   'divine.afflict_bless': '/assets/actions/aegis-of-grace.jpg',
@@ -49,6 +50,7 @@ export const ACTION_ART: Record<string, string> = {
   'loc.incite_unrest': '/assets/actions/seeds-of-discord.jpg',
   'loc.fortify': '/assets/actions/iron-bulwark.jpg',
   'loc.open_markets': '/assets/actions/awning-unfurled.jpg',
+  'loc.stoke_forges': '/assets/actions/the-banked-coal-wakes.jpg',
 
   // ─── Sublocation actions (sub.*) ───────────────────────────────────
   'sub.sanctify': '/assets/actions/sacred-ground.jpg',
