@@ -1,38 +1,38 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 183,
+    "total": 185,
     "byCategory": {
       "action": 69,
       "artifact": 5,
       "company": 4,
-      "divine": 20,
+      "divine": 21,
       "hex": 49,
-      "location": 24,
+      "location": 25,
       "threads": 12
     },
     "byReach": {
       "iron": 12,
-      "gold": 23,
+      "gold": 24,
       "shadow": 23,
       "veil": 23,
-      "heart": 29,
+      "heart": 30,
       "eye": 28,
       "stone": 10,
       "star": 34,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 180,
+      "unlockable-generic": 182,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 115,
+      "template-ops": 117,
       "aftermath-only": 6,
       "control-spec": 19,
       "engine-bridge": 43
     },
-    "beatGranted": 35,
+    "beatGranted": 37,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -2476,6 +2476,34 @@
       "effectSource": "template-ops"
     },
     {
+      "id": "divine.kindle_spark",
+      "name": "Kindle a Spark",
+      "spellName": "The Struck Match",
+      "category": "divine",
+      "reach": "heart",
+      "sphereAffinity": "energy",
+      "crudType": "update",
+      "scale": "cosmic",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 2,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [],
+      "targetSubtypes": [],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Strikes a spark in a mortal and fans whatever already burns there. What they half-wanted, they now want hotly, for a while.",
+      "technicalEffect": "Applies a decaying divine influence (interventionType `inspire_intervention`, Energy sphere, on Inspire's decay curve) to the target agent carrying a `valueDrifts` entry of `KINDLE_SPARK_VALUE_DRIFT` on the value pair bound to the caster's primary reach, in the direction the target already leans (THR-1651 `own_lean`, THR-2086). A target at exactly 0 on that pair gets no entry (`influence.no_lean` trace).",
+      "effectSource": "template-ops"
+    },
+    {
       "id": "divine.persuade",
       "name": "Persuade",
       "spellName": "Divine Compulsion",
@@ -4568,6 +4596,43 @@
       "bucketDeclared": true,
       "description": "Catalyses trade through a settlement's public square. Stalls multiply by the hour; merchants who never knew each other shake hands. The risk is that a thieves' guild has been waiting for the square to wake up too.",
       "technicalEffect": "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*), and stamps `marketsOpenedTick`: from LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS later, for THIEVES_GUILD_OFFER_DAYS, a Shadow-led resident's `create × faction` is boosted ×THIEVES_GUILD_OFFER_WANT while prosperity holds at LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.stoke_forges",
+      "name": "Stoke the Forges",
+      "spellName": "The Banked Coal Wakes",
+      "category": "location",
+      "reach": "gold",
+      "sphereAffinity": "energy",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 3,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital",
+        "tradehub"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Breathes fire into a town's hearths and forges. Smiths work past dark, mills turn faster, and coin moves. The heat does not stay in the forge: tempers run short and the streets grow loud.",
+      "technicalEffect": "On success, raises the location's `prosperity` by LOC_STOKE_FORGES_PROSPERITY_DELTA and its `unrest` by LOC_STOKE_FORGES_UNREST_DELTA (THR-2086). A rise of ECON_SHOCK_DELTA or more plants boom seeds on mortals present. Pushes energy pressure on the town.",
       "effectSource": "template-ops"
     },
     {
