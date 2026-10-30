@@ -1780,10 +1780,10 @@ exit
 - **Intent:** An encounter lights its own place on the Stage (THR-1895, plan THR-1877 § D9; THR-1822 D16 step 5). Every encounter adapter (unified, simple, gate duty) writes the notification hexCol / hexRow into the stage model header; GameView hands it to the stage selector, and resolveMomentHexes lights that hex first (litSource beat), else the Location of the mortal, so the camera eases the place into the Stage window.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
 - **UL terms:** *Encounter*, *Location*
-- **Production hits:** 168 total — 3 write, 1 read, 164 unclassified
+- **Production hits:** 169 total — 3 write, 1 read, 165 unclassified
 - **Write sites:** `src/engine/views/stage/buildGateDutyEncounterStageModel.ts`, `src/engine/views/stage/buildSimpleEncounterStageModel.ts`, `src/engine/views/stage/buildUnifiedEncounterStageModel.ts`
 - **Read sites:** `src/components/Game/GameView.tsx`
-- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +159 more
+- **Other hits:** `src/components/Game/debug/BeatsDebugTab.tsx`, `src/components/Game/debug/BondOverlay.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/EncounterVeil.tsx`, `src/components/Game/hooks/useAgentInteraction.ts` +160 more
 - **Verdict:** Verified 2026-10-20: THR-1895. On ?view=game&seeded&size=medium&forceencounters at 1920x1080, getStage() reported the encounter with vm.litSource beat and litHex 16,12 inside the 280 px window (litHexInWindow true); buildGateDutyEncounterStageModel.test.ts pins the gate-duty header hex.
 
 ### `encounter-outcome-guild-holds-a-building` — 🔵 UNVERIFIED-OK

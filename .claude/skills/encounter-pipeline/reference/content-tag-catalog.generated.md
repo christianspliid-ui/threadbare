@@ -47,7 +47,7 @@ The twelve Spheres. **Derived** from `SPHERE_NAMES`. Projected from `sphereAffin
 | `#darkness` | Sworn to Darkness — it conceals, and asks nothing about what it hides. | — | 2 |  |
 | `#force` | Of Force — it pushes, strikes, or refuses to be moved. | item 1 | 17 |  |
 | `#matter` | Of Matter — solid, worked, and stubbornly itself. | — | 28 |  |
-| `#energy` | Of Energy — it burns, quickens, or spends itself to act. | — | 5 |  |
+| `#energy` | Of Energy — it burns, quickens, or spends itself to act. | — | 9 |  |
 | `#life` | Of Life — it grows, heals, or wants to keep growing. | item 1 | 12 |  |
 | `#mind` | Of Mind — it thinks, remembers, or leans on the thoughts of others. | — | 22 |  |
 | `#spirit` | Of Spirit — it answers to devotion rather than to hands. | item 1 | 32 |  |
