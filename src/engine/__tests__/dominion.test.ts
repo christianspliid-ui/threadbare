@@ -36,9 +36,9 @@ import {
 import {
   afterSpherePressure,
   composeDominionChronicle,
-  readDominionLedger,
   phaseDominion,
   raidAllowanceLeft,
+  readDominionLedger,
   recordRaidLanding,
   recordSeededScores,
   relaxTowardSeed,
@@ -536,15 +536,12 @@ describe('THR-1748 Dominion — chronicle', () => {
   });
 });
 
-describe('THR-2087 Dominion — a hex cast is recorded as a cast', () => {
-  it('anchors a hex-aimed divine push on its place for the band-change cause', () => {
+describe("THR-2087 Dominion — a hex cast is the cause on the place it lands on", () => {
+  it("credits a divine_action push aimed at hex_1_1 to the place on that hex as a cast", () => {
     const g = makeGraph();
-    addPlace(g, 'loc.hexed', { mind: 1 });
-    const push = {
-      targetEntityId: 'hex_1_1', sphere: 'mind', magnitude: 3,
-      source: 'divine_action', sourceId: GOD, tick: 1,
-    } as unknown as SpherePressureEvent;
+    addPlace(g, "loc.town", { mind: 1 });
+    const push = { targetEntityId: "hex_1_1", sphere: "energy" as SphereName, magnitude: 3, source: "divine_action" as const, sourceId: "act_1", causedBy: GOD };
     phaseDominion(stateOf(g, { pendingSpherePressures: [push] }));
-    expect(readDominionLedger(g, GOD).causes['loc.hexed']).toBe('cast');
+    expect(readDominionLedger(g, GOD).causes["loc.town"]).toBe("cast");
   });
 });

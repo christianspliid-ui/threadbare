@@ -346,11 +346,8 @@ export function phaseDominion(state: GameState): Partial<GameState> {
     }
 
     // (c) This tick's writers, per top-level place, for the band-change cause.
-    // THR-2087: a hex-aimed push is anchored on its place the same way phaseSpherePressure
-    // will land it, so a hex cast is recorded as 'cast'.
-    const writers = resolveHexPressureTargets(
-      graph, [...(state.pendingSpherePressures ?? []), ...pressures], state.tick,
-    ).pressures;
+    // THR-2087: a hex-aimed push is credited to the place it will land on.
+    const writers = resolveHexPressureTargets(graph, [...(state.pendingSpherePressures ?? []), ...pressures], state.tick).pressures;
     for (const p of writers) {
       const place = placeOf(graph, p.targetEntityId);
       if (!place) continue;
