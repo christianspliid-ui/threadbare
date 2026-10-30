@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-30 21:58 local (20:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-30 22:57 local (21:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,13 +34,13 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: one ticket ready, and it is held.** [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (cheap place cards for force, matter and time) can be picked up from 07:03 UTC Saturday, after the veto window on the decisions above. The builder's last three runs stood down for exactly that reason, which is correct.
+**Starved: one ticket ready, and it is held.** [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (cheap place cards for force, matter and time) can be picked up from 07:03 UTC Saturday, after the veto window on the decisions above. The builder's runs since 19:31 UTC stood down for exactly that reason, which is correct.
 
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place, because distance is measured on the wrong hex layout) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket still sits in Idea, so no builder run will take it. The orchestrator can move it to Ready for Dev; it is not your call.
-- **The paperwork-cut ticket stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has been parked with no owner since 20 Oct (10 days), with no open PR. Agents can un-park it.
+- **The paperwork-cut ticket stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has been parked with no owner since 20 Oct (10 days). No branch, PR or worktree is named for it. Agents can un-park it.
 
 ## Health
 
 - The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
 
-Everything else is green. The engine speed is normal (135 ms per tick, below the weekly median of 168). The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, the worktree reaper ran at 21:40, and all 9 enabled scheduled tasks are on time.
+Everything else is green. The engine speed is normal (128 ms per tick, below the weekly median of 167). The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, the worktree reaper ran at 22:40, and all 9 enabled scheduled tasks are on time.
