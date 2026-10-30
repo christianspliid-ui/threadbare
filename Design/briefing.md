@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-30 19:57 local (18:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-30 20:57 local (19:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,20 +17,30 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+*— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-30a.md)*
+
+- [Only Mind has a cheap place card](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12): **cards, not a different Mandate price per Hunger.** Every sphere a Hunger can name gets a cheap card (2 essence) that a god can buy from the market at the start and cast on a town. Without one, a Reshape god cannot cast on its first sphere at all. A lower target for that Hunger would not change that. Veto: "price the Mandate per Hunger instead."
+- Same ticket: **2 essence, not 1.** Mind's 1-essence Vision only looks; a card that changes the world costs what Dream and Kindle a Spark cost. Veto: "make them 1."
+- Same ticket: **three new cards first.** *Steel the Walls* (force: a town's walls hold longer under siege), *Lay the Footings* (matter: the town's next building rises sooner) and *Keep the Stores* (time: the town's grain keeps for lean days). Spirit, life and entropy follow in [slice 2](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life). Veto any card by name.
+- Same ticket: **Steel the Walls and Fortify do the same thing to different places.** Steel works on towns at 2; Fortify works on strongholds at 4. Today Fortify cannot be cast anywhere in the seeded world (it asks for keeps, and the world makes forts and towers), so it gains those two words. Veto: "leave Fortify as it is."
+
+Say "veto <title>" to reverse any of these.
+
 ## This week's screens
 
 [Contact sheet — the twelve screens of the fixed journey](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-10-27/contact-sheet.jpg) — first week, so there is nothing to compare yet. The opening holds up. Opening a page brings two visible faults, and the mid-game cannot be reached because the seeded world ends after 41 ticks.
 
 ## Queue
 
-**Starved: nothing ready, one builder run in progress.** The hex-card fix ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)) shipped in [#2653](https://github.com/christianspliid-ui/threadbare/pull/2653) and is live. The design lane is refilling the shelf: its plan for cheap place cards for force, matter and time is queued to merge as [#2655](https://github.com/christianspliid-ui/threadbare/pull/2655). No design-lane decision is inside its veto window.
+**Starved: one ticket ready, and it is held.** [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (cheap place cards for force, matter and time) can be picked up from 07:03 UTC Saturday, after the veto window on the decisions above. The builder's last three runs stood down for that reason, which is correct.
 
+- **A finished fix is waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place, because distance is measured on the wrong hex layout) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket sits in Idea, so no builder run will take it. The duplicate PR that blocked it ([#2654](https://github.com/christianspliid-ui/threadbare/pull/2654)) is now closed. The orchestrator can move it to Ready for Dev; it is not your call.
 - **The paperwork-cut question stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has been parked with no owner since 20 Oct (10 days). No pushed branch or open PR holds work for it. Agents can un-park it.
 
 ## Health
 
-- **A duplicate build is waiting to merge.** Two builder runs (18:12 and 18:21 UTC) both built THR-2087. The first merged as [#2653](https://github.com/christianspliid-ui/threadbare/pull/2653). The second, [#2654](https://github.com/christianspliid-ui/threadbare/pull/2654), is still set to merge itself and now conflicts with main in `phaseDominion.ts`, its test and the THR-2087 paperwork. The builder's unstick duty owns it, and the right fix is to close it, not to resolve the conflict and merge a second copy.
-- **The engine is slower:** "tick cost 362 ms/tick steady, 116% above the 7-day median (168, 121 rows since 0e14a188); top phase agent_decision, 616 agents. Name the merges between 0e14a188 and 76999104: git log --oneline --merges 0e14a188..76999104". The previous hour measured 136 ms/tick on 9c6fc808, and the only merge between the two runs is [#2653](https://github.com/christianspliid-ui/threadbare/pull/2653) (THR-2087). A builder run was working on the same machine during this measurement, so next hour's reading will tell whether the slowdown is real.
-- The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above. The worktree reaper is back: it last ran at 18:54 UTC.
+- The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above. The worktree reaper is running again (last run 20:48 local).
 
-Everything else is green. The live site serves the latest commit on main (76999104). CI and the background jobs pass, and all 9 enabled scheduled tasks are on time.
+Everything else is green. The engine speed is back to normal (136 ms per tick, below the weekly median of 168), so last hour's slowdown reading was the builder sharing the machine. The duplicate THR-2087 PR is closed. The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, and all 9 enabled scheduled tasks are on time.
