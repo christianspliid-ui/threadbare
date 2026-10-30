@@ -27,6 +27,7 @@ import type { SphereAffinity, SpherePressureEvent, PressureSource } from '../typ
 import { MAX_SPHERE_SCORE, triangleCost } from '../types/sphereAffinity';
 import type { DominionBandChangeCause } from '../types/traces/dominion-traces';
 import { getLocationNodes } from './sublocationShape';
+import { resolveHexPressureTargets } from './hexPressureTarget';
 import { isValidSphereAffinity } from './sphereAffinity';
 import { emitTrace } from './traceBuffer';
 import { getSpherePoints, rankSpherePoints, type SpherePoints } from './spherePoints';
@@ -345,7 +346,9 @@ export function phaseDominion(state: GameState): Partial<GameState> {
     }
 
     // (c) This tick's writers, per top-level place, for the band-change cause.
-    for (const p of [...(state.pendingSpherePressures ?? []), ...pressures]) {
+    // THR-2087: a hex-aimed push is credited to the place it will land on.
+    const writers = resolveHexPressureTargets(graph, [...(state.pendingSpherePressures ?? []), ...pressures], state.tick).pressures;
+    for (const p of writers) {
       const place = placeOf(graph, p.targetEntityId);
       if (!place) continue;
       const cause = CAUSE_BY_SOURCE[p.source] ?? 'other';
