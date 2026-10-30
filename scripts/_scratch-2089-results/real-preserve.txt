@@ -1,0 +1,119 @@
+
+## sweep:preserve (time/spirit) arm=godloc mandate="Preserve Ascendancy" P=time (divine.coincidence) S=spirit (action.consecrate)
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+sweep:preserve (time/spirit) t50 doom=0.051 progress=0.214 ledger=3.2/87 9.0/23 casts=27 time=16 spirit=11
+sweep:preserve (time/spirit) t100 doom=0.106 progress=0.217 ledger=3.8/87 9.0/23 casts=30 time=19 spirit=11
+sweep:preserve (time/spirit) t150 doom=0.163 progress=0.242 ledger=4.2/87 10.0/23 casts=32 time=21 spirit=11
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+sweep:preserve (time/spirit) t300 doom=0.336 progress=0.319 ledger=5.6/87 13.2/23 casts=42 time=28 spirit=14
+sweep:preserve (time/spirit) doom>=0.5 t427 ledger=6.2/14.2 progress=0.344
+sweep:preserve (time/spirit) t450 doom=0.532 progress=0.344 ledger=6.2/87 14.2/23 casts=47 time=30 spirit=17
+sweep:preserve (time/spirit) doom>=0.55 t464 ledger=6.2/16.2 progress=0.388
+sweep:preserve (time/spirit) doom>=0.6 t501 ledger=6.4/16.2 progress=0.389
+sweep:preserve (time/spirit) doom>=0.65 t539 ledger=6.6/16.2 progress=0.390
+sweep:preserve (time/spirit) doom>=0.7 t576 ledger=6.6/17.2 progress=0.412
+sweep:preserve (time/spirit) t600 doom=0.735 progress=0.435 ledger=6.8/87 18.2/23 casts=54 time=33 spirit=21
+sweep:preserve (time/spirit) doom>=0.75 t612 ledger=6.8/18.2 progress=0.435
+sweep:preserve (time/spirit) FINAL t612 doom=0.751 progress=0.435 ledger=6.8/18.2
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:preserve (time/spirit) | 612 | 0.75 | 0.435 | 6.8 / 18.2 | — |

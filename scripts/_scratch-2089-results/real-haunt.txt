@@ -1,0 +1,119 @@
+
+## sweep:haunt (spirit/entropy) arm=godloc mandate="Haunt Ascendancy" P=spirit (action.consecrate) S=entropy (loc.blight)
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+sweep:haunt (spirit/entropy) t50 doom=0.051 progress=0.198 ledger=8.0/87 7.0/23 casts=25 spirit=9 entropy=16
+sweep:haunt (spirit/entropy) t100 doom=0.104 progress=0.253 ledger=10.0/87 9.0/23 casts=31 spirit=11 entropy=20
+sweep:haunt (spirit/entropy) t150 doom=0.156 progress=0.291 ledger=9.0/87 11.0/23 casts=36 spirit=12 entropy=24
+sweep:haunt (spirit/entropy) t300 doom=0.329 progress=0.463 ledger=8.0/87 19.2/23 casts=55 spirit=17 entropy=38
+sweep:haunt (spirit/entropy) doom>=0.5 t433 ledger=10.2/31.0 progress=0.559
+sweep:haunt (spirit/entropy) t450 doom=0.525 progress=0.570 ledger=12.2/87 32.0/23 casts=75 spirit=20 entropy=55
+sweep:haunt (spirit/entropy) doom>=0.55 t469 ledger=12.2/32.0 progress=0.570
+sweep:haunt (spirit/entropy) doom>=0.6 t503 ledger=12.2/33.0 progress=0.570
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+sweep:haunt (spirit/entropy) doom>=0.65 t540 ledger=12.2/36.0 progress=0.570
+sweep:haunt (spirit/entropy) doom>=0.7 t576 ledger=13.2/37.0 progress=0.576
+sweep:haunt (spirit/entropy) t600 doom=0.737 progress=0.576 ledger=13.2/87 39.0/23 casts=94 spirit=22 entropy=72
+sweep:haunt (spirit/entropy) doom>=0.75 t608 ledger=13.2/39.0 progress=0.576
+sweep:haunt (spirit/entropy) FINAL t608 doom=0.751 progress=0.576 ledger=13.2/39.0
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:haunt (spirit/entropy) | 608 | 0.75 | 0.576 | 13.2 / 39.0 | — |

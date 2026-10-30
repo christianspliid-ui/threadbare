@@ -1,0 +1,339 @@
+
+## sweep:preserve (time/spirit) arm=godloc mandate="Preserve Ascendancy" P=time (synth.time) S=spirit (synth.spirit)
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+sweep:preserve (time/spirit) t50 doom=0.050 progress=0.598 ledger=17.0/87 26.0/23 casts=64 time=32 spirit=32
+sweep:preserve (time/spirit) t100 doom=0.106 progress=0.621 ledger=21.0/87 31.0/23 casts=78 time=38 spirit=40
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+sweep:preserve (time/spirit) t150 doom=0.158 progress=0.638 ledger=24.0/87 39.0/23 casts=92 time=43 spirit=49
+sweep:preserve (time/spirit) t300 doom=0.328 progress=0.690 ledger=33.0/87 59.2/23 casts=130 time=55 spirit=75
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+sweep:preserve (time/spirit) doom>=0.5 t434 ledger=36.2/83.2 progress=0.708
+sweep:preserve (time/spirit) t450 doom=0.523 progress=0.714 ledger=37.2/87 86.2/23 casts=165 time=60 spirit=105
+sweep:preserve (time/spirit) doom>=0.55 t469 ledger=37.2/89.2 progress=0.714
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/synth.mjs:302994:18
+sweep:preserve (time/spirit) doom>=0.6 t506 ledger=39.2/95.2 progress=0.725
+sweep:preserve (time/spirit) doom>=0.65 t540 ledger=40.2/100.2 progress=0.731
+sweep:preserve (time/spirit) doom>=0.7 t576 ledger=41.2/107.2 progress=0.737
+sweep:preserve (time/spirit) t600 doom=0.736 progress=0.743 ledger=42.2/87 111.2/23 casts=200 time=65 spirit=135
+sweep:preserve (time/spirit) doom>=0.75 t611 ledger=42.2/112.2 progress=0.743
+sweep:preserve (time/spirit) FINAL t611 doom=0.751 progress=0.743 ledger=42.2/112.2
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:preserve (time/spirit) | 611 | 0.75 | 0.743 | 42.2 / 112.2 | — |

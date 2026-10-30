@@ -1,0 +1,39 @@
+
+## sweep:reshape (force/matter) arm=godloc mandate="Reshape Ascendancy" P=force (loc.fortify) S=matter (loc.reveal_vein)
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+    at WorldGraph.addNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:246774:13)
+    at createUnifiedActionEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:236815:11)
+    at recordStepEventNode (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244825:30)
+    at executeStepResult (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:244512:17)
+    at phaseUnifiedActionProgress (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:245220:63)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:68
+    at runInlinePhase (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301775:17)
+    at runTick (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:301884:17)
+    at run (file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302931:24)
+    at file:///C:/Users/chris/Dev/Projects/tb-wt-dl-20261030T1819/.cache/real.mjs:302994:18
+sweep:reshape (force/matter) t50 doom=0.054 progress=0.152 ledger=0.0/87 7.0/23 casts=13 force=0 matter=13
+sweep:reshape (force/matter) t100 doom=0.108 progress=0.174 ledger=0.0/87 8.0/23 casts=16 force=0 matter=16
+sweep:reshape (force/matter) t150 doom=0.161 progress=0.196 ledger=0.0/87 9.0/23 casts=20 force=0 matter=20
+sweep:reshape (force/matter) t300 doom=0.329 progress=0.330 ledger=0.0/87 15.2/23 casts=31 force=0 matter=31
+sweep:reshape (force/matter) doom>=0.5 t440 ledger=0.2/22.2 progress=0.484
+sweep:reshape (force/matter) t450 doom=0.515 progress=0.484 ledger=0.2/87 22.2/23 casts=44 force=0 matter=44
+sweep:reshape (force/matter) doom>=0.55 t476 ledger=0.2/24.2 progress=0.501
+sweep:reshape (force/matter) doom>=0.6 t516 ledger=0.2/26.2 progress=0.501
+sweep:reshape (force/matter) doom>=0.65 t554 ledger=0.2/29.2 progress=0.501
+sweep:reshape (force/matter) doom>=0.7 t593 ledger=0.2/31.2 progress=0.501
+sweep:reshape (force/matter) t600 doom=0.710 progress=0.501 ledger=0.2/87 32.2/23 casts=57 force=0 matter=57
+sweep:reshape (force/matter) doom>=0.75 t629 ledger=0.2/34.2 progress=0.501
+sweep:reshape (force/matter) FINAL t629 doom=0.751 progress=0.501 ledger=0.2/34.2
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:reshape (force/matter) | 629 | 0.75 | 0.501 | 0.2 / 34.2 | — |
