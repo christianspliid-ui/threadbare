@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-29 02:57 local (01:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-30 19:57 local (18:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-30: a god's push onto a hex now lands on the place it falls on, and it is live** ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)). Merged via [#2653](https://github.com/christianspliid-ui/threadbare/pull/2653).
 - **2026-10-29: energy gods now have two cards of their own, Stoke the Forges and Kindle a Spark, and they are live** ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)). Merged via [#2652](https://github.com/christianspliid-ui/threadbare/pull/2652).
 - **2026-10-28: only the god's own hand now fills the Mandate, and it is live** ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)). Merged via [#2651](https://github.com/christianspliid-ui/threadbare/pull/2651).
 - **2026-10-28: Inspire now changes what a mortal decides, and it is live** ([THR-2088](https://linear.app/threadbare/issue/THR-2088/inspire-changes-nothing-a-mortal-decides-its-card-writes-an-influence)). Merged via [#2650](https://github.com/christianspliid-ui/threadbare/pull/2650).
@@ -51,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-28: the heavy simulation tests pass on main again.** The fix (a compulsion paid mid-encounter no longer steered The First, [THR-2085](https://linear.app/threadbare/issue/THR-2085/heavy-simulation-tests-red-on-main-a-compulsion-paid-mid-encounter-no), [#2643](https://github.com/christianspliid-ui/threadbare/pull/2643)) is merged, and [the run on its merge](https://github.com/christianspliid-ui/threadbare/actions/runs/40627110730) succeeded.
 - **2026-10-28: the god's steering powers now reach a mortal's own final choice, and it is live** ([THR-2073](https://linear.app/threadbare/issue/THR-2073/the-gods-steering-verbs-and-a-mortals-movement-leans-may-stop-at-the)). Merged via [#2641](https://github.com/christianspliid-ui/threadbare/pull/2641).
 - **2026-10-28: the town economy now reaches the mortal's final choice, and it is live** ([THR-2071](https://linear.app/threadbare/issue/THR-2071)). Merged via [#2639](https://github.com/christianspliid-ui/threadbare/pull/2639).
-- **2026-10-27: a sealed mill lease now gives the town's mill to its guild, and it is live** ([THR-2077](https://linear.app/threadbare/issue/THR-2077)). Merged via [#2638](https://github.com/christianspliid-ui/threadbare/pull/2638).
 
 ---
 
