@@ -36,6 +36,7 @@ import {
 import {
   afterSpherePressure,
   composeDominionChronicle,
+  readDominionLedger,
   phaseDominion,
   raidAllowanceLeft,
   recordRaidLanding,
@@ -532,5 +533,18 @@ describe('THR-1748 Dominion — chronicle', () => {
   it('rises speak for Held and Sovereign only; power lines use sphere words', () => {
     const lines = composeDominionChronicle({ dayDrops: [], dayRises: { c: 'held', a: 'touched' }, daySpheres: ['life'] }, name);
     expect(lines).toEqual(['Thornwall is Held now.', 'Your hold on the green deepens.']);
+  });
+});
+
+describe('THR-2087 Dominion — a hex cast is recorded as a cast', () => {
+  it('anchors a hex-aimed divine push on its place for the band-change cause', () => {
+    const g = makeGraph();
+    addPlace(g, 'loc.hexed', { mind: 1 });
+    const push = {
+      targetEntityId: 'hex_1_1', sphere: 'mind', magnitude: 3,
+      source: 'divine_action', sourceId: GOD, tick: 1,
+    } as unknown as SpherePressureEvent;
+    phaseDominion(stateOf(g, { pendingSpherePressures: [push] }));
+    expect(readDominionLedger(g, GOD).causes['loc.hexed']).toBe('cast');
   });
 });
