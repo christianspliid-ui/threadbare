@@ -277,7 +277,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.survey':
     "Engine bridge (read): on success, reveals the `land` and `people` narrative layers of the hex (hexRevelation map) and uncovers any hidden sublocations on it. No tile mutation.",
   'hex.seed_life':
-    "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_SEED_INFLUENCE_DELTA. No effect on failure.",
+    "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_SEED_INFLUENCE_DELTA. No effect on failure. Pushes life pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
   'hex.raise_landmark':
     "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_RAISE_LANDMARK_INFLUENCE_DELTA. No effect on failure.",
   'hex.dowse_resources':
@@ -289,7 +289,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.rend_earth':
     "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_REND_EARTH_CORRUPTION_DELTA (the heaviest one-shot corruption delta). No effect on failure.",
   'hex.attune_leyline':
-    "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA. No effect on failure.",
+    "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA. No effect on failure. Pushes energy pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
   'hex.forge_seer_token':
     "Engine bridge: on success, spawns a divination-focus `artifact` node ('Seer's Token') and binds it to the actor via a `possesses` edge (actor → artifact).",
   'hex.read_currents':
@@ -297,7 +297,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.shift_dominion':
     "Dominion (THR-1748): targets a place. On success, pushes DOMINION_BREAK_PRESSURE of the god's bought sphere whose opposing pole weighs most there (points × pair weight × opposite score) — breaking that pole so a Claim can take root.",
   'hex.amplify_flow':
-    "Engine bridge: on success, raises `magicalSaturation` on every location on the hex by AMPLIFY_FLOW_SATURATION_BOOST.",
+    "Engine bridge: on success, raises `magicalSaturation` on every location on the hex by AMPLIFY_FLOW_SATURATION_BOOST. Pushes energy pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
   'hex.sever_flow':
     "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_SEVER_FLOW_CORRUPTION_DELTA. No effect on failure.",
   'hex.dispel_wild':
@@ -313,7 +313,7 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.summon_congregation':
     "Engine bridge: on success, applies a short `summon_congregation` Spirit influence (SUMMON_CONGREGATION_STRENGTH) to every agent on the hex, tagging them `summoned`.",
   'hex.bestow_vision':
-    "Engine bridge: on success, applies a strong `bestow_vision` Mind influence (BESTOW_VISION_STRENGTH, drift toward courage) to the first agent on the hex.",
+    "Engine bridge: on success, applies a strong `bestow_vision` Mind influence (BESTOW_VISION_STRENGTH, drift toward courage) to the first agent on the hex. Pushes mind pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
   'hex.scatter':
     "Engine bridge: on success, raises the hex-tile's `corruption` by HEX_SCATTER_CORRUPTION_DELTA. No effect on failure.",
   'hex.smite':
@@ -347,13 +347,13 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
   'hex.claim_resource':
     'Sustained: `ControlEffect` binding the most abundant deposit on the hex — generates per-tick income in that good\'s sphere (CLAIM_RESOURCE_BASE_INCOME × CLAIM_RESOURCE_TIER_MULT by its stock tier; a good with no class pays 0.5 Matter) at a per-tick Matter cost. Persists until it lapses, is usurped (Gold ≥ t2), or destroyed (Stone ≥ t1).',
   'hex.anchor_sphere':
-    "Sustained: `ControlEffect` locking the hex's dominant sphere in place (blocks rival Shift Dominion) at a per-tick Spirit cost, held only while the hex's `divineInfluence` stays above its sustain threshold. Usurp Veil ≥ t3 / destroy Veil ≥ t2.",
+    "Sustained: `ControlEffect` locking the hex's dominant sphere in place (blocks rival Shift Dominion) at a per-tick Spirit cost, held only while the hex's `divineInfluence` stays above its sustain threshold. Usurp Veil ≥ t3 / destroy Veil ≥ t2. Pushes energy pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
   'hex.tap_source':
     'Sustained: `ControlEffect` siphoning a sphere-aligned source — generates per-tick Spirit income at a smaller per-tick Spirit cost. Persists until it lapses, is usurped (Veil ≥ t2, Spirit-aligned), or destroyed (Iron ≥ t2).',
   'hex.attune_thread':
     "Sustained: `ControlEffect` on the threaded agent granting passive sphere-perception wherever they walk, at a per-tick Spirit cost. Persists until it lapses or is destroyed (Veil ≥ t2).",
   'hex.channel_current':
-    'Sustained: `ControlEffect` redirecting sphere influence from adjacent hexes toward this one via a per-tick `divineInfluence` mutation, at a per-tick Spirit cost. Usurp Veil ≥ t3 / destroy Veil ≥ t2.',
+    'Sustained: `ControlEffect` redirecting sphere influence from adjacent hexes toward this one via a per-tick `divineInfluence` mutation, at a per-tick Spirit cost. Usurp Veil ≥ t3 / destroy Veil ≥ t2. Pushes energy pressure on the hex’s place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).',
   'hex.shepherd_flock':
     'Sustained: `ControlEffect` applying steady conversion pressure — agents on the hex drift toward worship of the ascendant’s sphere — at a per-tick Spirit cost. Usurp Heart ≥ t2 (Spirit-aligned) / destroy Shadow ≥ t2.',
   'hex.install_champion':

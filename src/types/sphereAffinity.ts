@@ -83,6 +83,11 @@ export const MAX_SPHERE_SCORE = 10;
 
 /** Pressure applied to target on successful divine action */
 export const ACTION_PRESSURE_SUCCESS = 3;
+/**
+ * How far (hexes) a push aimed at an empty hex looks for a place to land on (THR-2087).
+ * 2 reaches 99.4% of land hexes on the seeded medium world; 1 reaches 87%.
+ */
+export const HEX_PRESSURE_FALLBACK_RADIUS = 2;
 /** Pressure applied to target on failed divine action */
 export const ACTION_PRESSURE_FAILURE = 1;
 /**

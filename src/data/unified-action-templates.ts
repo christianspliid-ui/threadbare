@@ -3877,6 +3877,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 5,
     actorAffinities: ['ascendant'],
+    sphereAffinity: 'energy', // THR-2087: an energy-priced card grows energy
     targetCategories: ['hex'],
     narrativeLayer: 'soul',
     bypassRevelationGate: true,
@@ -4009,6 +4010,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 3,
     actorAffinities: ['ascendant'],
+    sphereAffinity: 'energy', // THR-2087: an energy-priced card grows energy
     targetCategories: ['hex'],
     narrativeLayer: 'soul',
     motivations: ['sacrifice_survival'],
@@ -4838,6 +4840,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 6,
     actorAffinities: ['ascendant'],
+    sphereAffinity: 'energy', // THR-2087: an energy-priced card grows energy
     targetCategories: ['hex'],
     narrativeLayer: 'soul',
     durationMode: 'sustained',
@@ -4976,6 +4979,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     apCost: 1,
     essenceCost: 5,
     actorAffinities: ['ascendant'],
+    sphereAffinity: 'energy', // THR-2087: an energy-priced card grows energy
     targetCategories: ['hex'],
     narrativeLayer: 'soul',
     durationMode: 'sustained',

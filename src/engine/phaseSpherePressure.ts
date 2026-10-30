@@ -40,6 +40,7 @@ import type { MandateCredit } from '../types/sphereAffinity';
 import { MANDATE_GOD_LEDGER_ENABLED } from '../data/game-config';
 import { isGodCausedPush, mandateCreditsFor } from './mandateLedger';
 import { entityAggregateWeight } from './phaseSphereAggregation';
+import { resolveHexPressureTargets } from './hexPressureTarget';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity
@@ -404,6 +405,7 @@ export function absorbTendedRaid(pressures: SpherePressureEvent[], absorb: numbe
  * - For location nodes: finds agents present via located_at edges and includes their
  *   sphere affinities in the defense threshold computation
  * - Clears pendingSpherePressures after processing
+ * - Hex target ids (`hex_COL_ROW`) are first anchored on a place (THR-2087)
  * - Fails soft: unknown entity IDs and nodes without sphereAffinity are skipped
  *
  * Returns: Partial<GameState> with updated graph + empty pendingSpherePressures.
@@ -420,9 +422,19 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
     // Fail-soft: a failed sweep costs this tick's seeds only.
   }
 
-  const pressures = state.pendingSpherePressures ?? [];
+  let pressures = state.pendingSpherePressures ?? [];
   if (pressures.length === 0) {
     return {};
+  }
+
+  // THR-2087: a push aimed at a hex id (a hex card's target) lands on that hex's place,
+  // or the nearest within HEX_PRESSURE_FALLBACK_RADIUS; no graph node carries a hex id.
+  try {
+    const resolved = resolveHexPressureTargets(state.graph, pressures, state.tick);
+    pressures = resolved.pressures;
+    for (const t of resolved.traces) emitTrace(t);
+  } catch {
+    // Fail-soft: hex pushes stay unanchored and are skipped below, as before.
   }
 
   // Group pressures by target entity
