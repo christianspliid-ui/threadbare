@@ -3129,7 +3129,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Pours concentrated vital essence into barren or depleted ground, kick-starting ecological recovery where none should be possible. Greenery takes root and spreads, transforming hostile terrain into land capable of supporting life. The process takes time and the new growth requires protection while it establishes itself.",
-      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_SEED_INFLUENCE_DELTA. No effect on failure.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_SEED_INFLUENCE_DELTA. No effect on failure. Pushes life pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
       "effectSource": "engine-bridge"
     },
     {
@@ -3318,7 +3318,7 @@
       "spellName": "Current Surge",
       "category": "hex",
       "reach": "veil",
-      "sphereAffinity": null,
+      "sphereAffinity": "energy",
       "crudType": "update",
       "scale": "regional",
       "rarityTier": 3,
@@ -3339,7 +3339,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Feeds divine essence into the ambient magical currents of a hex, intensifying the power already flowing through it. Every location in the territory experiences a surge of magical saturation that heightens their existing properties. The amplification is temporary but can tip a balanced location into significant magical activity.",
-      "technicalEffect": "Engine bridge: on success, raises `magicalSaturation` on every location on the hex by AMPLIFY_FLOW_SATURATION_BOOST.",
+      "technicalEffect": "Engine bridge: on success, raises `magicalSaturation` on every location on the hex by AMPLIFY_FLOW_SATURATION_BOOST. Pushes energy pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
       "effectSource": "engine-bridge"
     },
     {
@@ -3348,7 +3348,7 @@
       "spellName": "Sphere Anchoring",
       "category": "hex",
       "reach": "veil",
-      "sphereAffinity": null,
+      "sphereAffinity": "energy",
       "crudType": "update",
       "scale": "regional",
       "rarityTier": 3,
@@ -3369,7 +3369,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Drives divine will into the magical substrate of a hex, anchoring the dominant sphere in place against natural drift and rival interference. As long as the anchor holds, the sphere influence cannot shift and competing Shift Dominion attempts are blocked. The anchor requires sustained spirit essence to maintain its grip on the flow.",
-      "technicalEffect": "Sustained: `ControlEffect` locking the hex's dominant sphere in place (blocks rival Shift Dominion) at a per-tick Spirit cost, held only while the hex's `divineInfluence` stays above its sustain threshold. Usurp Veil ≥ t3 / destroy Veil ≥ t2.",
+      "technicalEffect": "Sustained: `ControlEffect` locking the hex's dominant sphere in place (blocks rival Shift Dominion) at a per-tick Spirit cost, held only while the hex's `divineInfluence` stays above its sustain threshold. Usurp Veil ≥ t3 / destroy Veil ≥ t2. Pushes energy pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
       "effectSource": "control-spec"
     },
     {
@@ -3378,7 +3378,7 @@
       "spellName": "Leyline Forging",
       "category": "hex",
       "reach": "veil",
-      "sphereAffinity": null,
+      "sphereAffinity": "energy",
       "crudType": "create",
       "scale": "regional",
       "rarityTier": 2,
@@ -3399,7 +3399,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Reaches into the magical substrate of a hex and weaves new pathways for sphere energy where none existed before. The freshly ignited leyline begins channeling power through the territory, changing the local magical ecology. The new pathway is fragile at first and must be established against the resistance of existing flows.",
-      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA. No effect on failure.",
+      "technicalEffect": "Engine bridge: on success, raises the hex-tile's `divineInfluence` by HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA. No effect on failure. Pushes energy pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
       "effectSource": "engine-bridge"
     },
     {
@@ -3438,7 +3438,7 @@
       "spellName": "Current Channeling",
       "category": "hex",
       "reach": "veil",
-      "sphereAffinity": null,
+      "sphereAffinity": "energy",
       "crudType": "update",
       "scale": "regional",
       "rarityTier": 3,
@@ -3459,7 +3459,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Bends the sphere currents flowing through adjacent hexes, redirecting their flow toward a specific territory and increasing its magical saturation over time. The sustained channel creates a growing concentration of divine influence that raises the territory's sphere score above what natural flow would produce. Rival divine action can seize or shatter the channel entirely.",
-      "technicalEffect": "Sustained: `ControlEffect` redirecting sphere influence from adjacent hexes toward this one via a per-tick `divineInfluence` mutation, at a per-tick Spirit cost. Usurp Veil ≥ t3 / destroy Veil ≥ t2.",
+      "technicalEffect": "Sustained: `ControlEffect` redirecting sphere influence from adjacent hexes toward this one via a per-tick `divineInfluence` mutation, at a per-tick Spirit cost. Usurp Veil ≥ t3 / destroy Veil ≥ t2. Pushes energy pressure on the hex’s place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
       "effectSource": "control-spec"
     },
     {
@@ -3879,7 +3879,7 @@
       "bucket": "unlockable-generic",
       "bucketDeclared": false,
       "description": "Reaches through a divine thread to plant a vivid vision of purpose in a mortal mind, shaping their ambitions and drawing their attention toward a specific goal the deity wishes pursued. The agent wakes with a burning conviction and a clear image of what they must accomplish. Minds with strong resistance dismiss the vision as nightmare.",
-      "technicalEffect": "Engine bridge: on success, applies a strong `bestow_vision` Mind influence (BESTOW_VISION_STRENGTH, drift toward courage) to the first agent on the hex.",
+      "technicalEffect": "Engine bridge: on success, applies a strong `bestow_vision` Mind influence (BESTOW_VISION_STRENGTH, drift toward courage) to the first agent on the hex. Pushes mind pressure on the hex's place (or the nearest within HEX_PRESSURE_FALLBACK_RADIUS).",
       "effectSource": "engine-bridge"
     },
     {

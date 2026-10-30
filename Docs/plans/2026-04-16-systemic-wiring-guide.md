@@ -2910,6 +2910,10 @@ Authoring that encounter is what turns the lever on. `doomDelta` pushes the doom
 Channels **sum across the committed hand** before they are charged, which is what lets a
 player pair The Veil against The Heavy Hand and net off. A net-zero channel is not charged.
 
+### Hex-aimed sphere pressure lands on a place (THR-2087)
+
+A writer may queue a `SpherePressureEvent` whose `targetEntityId` is a hex id (`hex_COL_ROW`, a hex card's target). `phaseSpherePressure` anchors it first (`resolveHexPressureTargets`, `src/engine/hexPressureTarget.ts`): the lowest-id place on the hex at full strength, else the nearest place within `HEX_PRESSURE_FALLBACK_RADIUS`, else dropped with a `sphere_pressure.hex_unanchored` trace. A hex card with `sphereAffinity` therefore grows that sphere on the land's place.
+
 ### The Signature — sphere discount
 
 A card whose `sphere` the ascendant is aligned to costs `SPHERE_DISCOUNT` (1) less, floored at

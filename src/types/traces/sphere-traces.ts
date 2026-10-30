@@ -53,6 +53,22 @@ export interface SphereSeededTrace extends TraceBase {
   counts?: Record<string, number>;
 }
 
+/**
+ * A push aimed at a hex id (`hex_COL_ROW`) rewritten onto a place, or dropped because no
+ * place stands within `HEX_PRESSURE_FALLBACK_RADIUS` (THR-2087).
+ */
+export interface HexPressureTrace extends TraceBase {
+  category: 'sphere_pressure.hex_resolved' | 'sphere_pressure.hex_unanchored';
+  hexId: string;
+  sphere: SphereName;
+  source: PressureSource;
+  sourceId: string;
+  /** The place id the push landed on (resolved only). */
+  resolvedTo?: string;
+  /** 0 on the hex, else 1..radius (resolved only). */
+  distance?: number;
+}
+
 /** Why a bought sphere vector was rejected (THR-1749). */
 export type SpherePointsInvalidReason = 'foundation_sphere' | 'over_cap' | 'not_whole' | 'wrong_total' | 'both_poles';
 
