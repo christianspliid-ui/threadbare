@@ -81,7 +81,7 @@ describe('THR-2095 — the prize pool never deals harm', () => {
     let badFlips = 0;
     for (let seed = 1; seed <= 300; seed++) {
       const graph = catalogGraph();
-      graph.addNode({ id: 'agent.hesper', type: 'agent', name: 'Hesper', properties: {} });
+      graph.addNode({ id: 'agent.hesper', type: 'actor', name: 'Hesper', properties: {} });
       const draw = drawSeededReward(graph, {
         recipe: BOUNTY_RECIPE,
         outcomeType: 'success',
