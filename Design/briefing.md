@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 23:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 01:00 local (00:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,9 +20,14 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Cheap place cards plateau](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26): when a god works a town, its sphere push lands in the town's quietest Place (the inn, granary or gatehouse holding least of that sphere). The card still changes the town as it says. A Reshape god then reaches 66 of 87 instead of 34; the trade is that rivals rarely reach those Places. Veto line: "the push should stay on the town". Window closes about 10:10 tomorrow morning.
+- [Art-led pass, slice 3 — the god rail and the top bar](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (new tonight): the god's face at the top of the rail stays its current size, so your cards are not pushed down on a 1080p screen. Veto line: "make the god's face bigger". Window closes about 12:45 today.
+- Same ticket: The First, a mortal under a covenant, and a mortal you have a vow with show their face beside their name in the rail. Places and factions keep their words. Veto line: "names only in the rail".
+- Same ticket: the rail's headings (Essence, Your cards, Mandate, Signatures, Hooks) get their carved shapes. Reaches and Covenants wait for [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "no icons on the rail headings".
+- Same ticket: the Seat line shows its town's shape and still centres the map when clicked. The doom bar opens with the doom shape; the omen keeps its own mark. Veto line: "no doom icon".
+- Same ticket: a "Needs you" row about a mortal shows that mortal's face after the row's icon. Veto line: "no faces in Needs you".
+- [Cheap place cards plateau](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26): when a god works a town, its sphere push lands in the town's quietest Place (the inn, granary or gatehouse holding least of that sphere). The card still changes the town as it says. A Reshape god then reaches 66 of 87 instead of 34; the trade is that rivals rarely reach those Places. Veto line: "the push should stay on the town". Window closes about 10:10 this morning.
 - Same ticket: a card that changes the world pushes twice what a look pushes. Vision (it only looks) stays at 3; every card costing 2 essence or more pushes 6. All three town-card gods then clear half their Mandate. Veto line: "keep every push at 3".
-- [Art-led pass, slice 2 — every other Inspector page](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions): towns and cities show their own landscape in the page header instead of today's placeholder mark (all 235 places in a seeded world have one). Veto line: "places keep the placeholder". Window closes about 06:45 tomorrow morning.
+- [Art-led pass, slice 2 — every other Inspector page](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions): towns and cities show their own landscape in the page header instead of today's placeholder mark (all 235 places in a seeded world have one). Veto line: "places keep the placeholder". Window closes about 06:45 this morning.
 - Same ticket: the Mandate is the god page's one highlighted line, in words ("Rising." and the current objective); the progress bar stays on the god rail. Veto line: "put the Mandate bar on the god page".
 - Same ticket: lists of strengths become chips ("Might · Strong"), one-fact rows become sentences ("Here you are Accepted."), and the bars beside single words drop. Veto line: "keep the bars".
 - Same ticket: relics lying at a place or held by a faction show as painted tiles, like The First's carried relics. Veto line: "no relic gallery on places and factions".
@@ -31,7 +36,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: the Swollen Ford example card lines, which you approved on 9 August under the older rules, lose "A small help." / "A real help." and the "You…". The newer rules ban both. The factory copies that example, so 121 card lines picked up the habit. Veto line: "keep the Swollen Ford cards as approved".
 - Same ticket: the board's background people stay unnamed for now ("the trader"). Naming them needs proper cast slots across 168 encounters, so it would be its own job. Veto line: "name the board's people".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([afternoon report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md), [evening report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31c.md), [late report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31d.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([afternoon report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md), [evening report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31c.md), [late report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31d.md), [midnight report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31e.md))*
 
 ## This week's screens
 
@@ -39,14 +44,14 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([afternoo
 
 ## Queue
 
-**Shipped and live: spirit, life and entropy gods now have cheap town cards.** [THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life) merged via [#2668](https://github.com/christianspliid-ui/threadbare/pull/2668) and the live site serves it. The builder is now idle by design: both ready tickets are inside their veto windows. [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable about 03:50 tonight; [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (art-led Inspector pages, slice 2) about 06:45 tomorrow.
+**Healthy: three tickets ready, all inside their veto windows, so the builder is idle by design.** The design lane handed off [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (art-led god rail and top bar) tonight via [its plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2099-art-led-god-rail.md). Claimable in order: [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) about 03:50, [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages, slice 2) about 06:45, THR-2099 about 12:45.
 
-- **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) has its plan merged and no longer waits on THR-2090; only its veto window (about 10:10 tomorrow) holds it.
+- **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 10:10).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (11 days). No branch or local worktree holds work for it. Agents can un-park it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days). No pushed branch or local worktree holds work for it. Agents can un-park it.
 
 ## Health
 
-All green. The live site is current (7d617d2a, the THR-2090 merge), the PR checks and scheduled background jobs pass, no pull request is waiting, and the enabled scheduled tasks are on time. Engine speed is back to normal: 172 ms/tick, 8% above the 7-day median, so last hour's 41% reading was load from the builder sharing the machine. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site is current (only docs merged since 7d617d2a), the PR checks and scheduled background jobs pass, no pull request is waiting, and all nine enabled scheduled tasks are on time. Engine speed is normal: 179 ms/tick, 12% above the 7-day median. The 40-hour silence on 29–30 Oct is on your list above.
