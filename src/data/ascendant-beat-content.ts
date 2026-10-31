@@ -690,6 +690,10 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   // THR-2086: the energy cards, offered by the market at tier 1.
   'loc.stoke_forges': { bucket: 'unlockable-generic' },
   'divine.kindle_spark': { bucket: 'unlockable-generic' },
+  // THR-2089: the cheap force / matter / time place cards, offered by the market at tier 1.
+  'loc.steel_walls': { bucket: 'unlockable-generic' },
+  'loc.lay_footings': { bucket: 'unlockable-generic' },
+  'loc.keep_stores': { bucket: 'unlockable-generic' },
   // THR-1747: the four held-ground cards, granted by the held-ground milestone
   // (`beat.milestone.the_held_ground`) at two flowering sources. They shipped with no
   // grant path. `reach` is each card's cosmic-energy axis, not a `requiresReach` gate.
