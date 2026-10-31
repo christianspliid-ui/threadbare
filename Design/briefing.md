@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 12:58 local (11:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 13:58 local (12:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,10 +30,9 @@ Say "veto <title>" to reverse any of these. The window closes about 21:52 tonigh
 
 ## Queue
 
-**One ticket ready, and the builder will take it next.** Your yes on the character-page mock is now a build ticket: [THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the), the first slice of the art-led pass (portrait-led person page, relic tiles, carved icons, temper bars). Its plan is [the art-led UI pass](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-31-art-led-ui-pass.md). The later layers follow as their own slices.
+**Starved — one ticket ready, and it is a repair for agents.** The builder took the art-led person page ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the), work on [branch `claude/thr-2097-art-led-person-page`](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2097-art-led-person-page)). The only ready ticket is this run's heavy-tests fix ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey), see Health).
 
-- **Just shipped and live:** "Faction Bounty" and the other faction set-pieces now name the faction they are about ([THR-2096](https://linear.app/threadbare/issue/THR-2096/faction-bounty-names-no-faction-the-eight-generic-faction-set-pieces), [#2661](https://github.com/christianspliid-ui/threadbare/pull/2661)).
-- **Next after that:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become ready when their veto window closes, about 21:52 tonight.
+- **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become ready when their veto window closes, about 21:52 tonight.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -41,6 +40,8 @@ Two items for agents, not you:
 
 ## Health
 
+- **Heavy tests red on main since 12:37 local; ticket [THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey) filed for the builder.** One test of 285 fails after the faction set-piece merge ([#2661](https://github.com/christianspliid-ui/threadbare/pull/2661)): a compelled journey no longer finds its forage scene ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/41197611019)).
+- **Engine speed:** tick cost 227 ms/tick steady, 42% above the 7-day median (160, 127 rows since 81dce35c); top phase agent_decision, 639 agents. Name the merges between 81dce35c and 4295d33d: git log --oneline --merges 81dce35c..4295d33d. (Last hour measured 142, so this one reading may be machine load; next hour's row will tell.)
 - The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
 
-Everything else is green. The live site is current (the only change since its last build, 3f35dd85, is a plan doc). CI and the background jobs pass, no pull request is waiting, the worktree reaper ran at 12:40, the enabled scheduled tasks are on time, and engine speed is normal (142 ms per tick, 12% below the weekly median).
+Everything else is green. The live site is current (only a plan doc since its last build, 3f35dd85). The PR checks pass, no pull request is waiting, the worktree reaper ran at 13:40, and the enabled scheduled tasks are on time.
