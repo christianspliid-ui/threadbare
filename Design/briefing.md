@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 18:56 local (17:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 19:58 local (18:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -39,7 +39,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([morning 
 
 ## Queue
 
-**Thin — two tickets ready, both waiting on their veto windows.** [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable about 03:47 tonight; [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (art-led Inspector pages, slice 2, new this evening) about 06:45 tomorrow. The builder's last six runs correctly stood down on these holds; that is idle by design, not a stall.
+**Thin — two tickets ready, both waiting on their veto windows.** [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable about 03:47 tonight; [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (art-led Inspector pages, slice 2, new this evening) about 06:45 tomorrow. The builder's last ten runs (since 16:51) correctly stood down on these holds; that is idle by design, not a stall.
 
 - **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) can move to Ready for Dev when their window closes, about 21:52 tonight.
 
@@ -49,6 +49,6 @@ Two items for agents, not you:
 
 ## Health
 
-All green. The live site is current (126665db; later commits were docs only). The PR checks and the scheduled background jobs pass, no pull request is waiting, the worktree reaper ran at 18:51, the enabled scheduled tasks are on time, and engine speed is normal (158 ms/tick, level with the 7-day median).
+All green. The live site is current (126665db; later commits were docs only). The PR checks and the scheduled background jobs pass, no pull request is waiting, the worktree reaper ran at 19:50, the enabled scheduled tasks are on time, and engine speed is normal (159 ms/tick, level with the 7-day median).
 
 The 40-hour silence on 29–30 Oct is on your list above.
