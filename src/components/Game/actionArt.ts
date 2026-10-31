@@ -53,7 +53,7 @@ export const ACTION_ART: Record<string, string> = {
   'loc.stoke_forges': '/assets/actions/the-banked-coal-wakes.jpg',
   'loc.steel_walls': '/assets/actions/iron-in-the-mortar.jpg',
   'loc.lay_footings': '/assets/actions/the-cornerstone-set.jpg',
-  'loc.keep_stores': '/assets/actions/grain-that-does-not-spoil.jpg',
+  'loc.keep_stores': '/assets/actions/grain-that-never-spoils.jpg',
 
   // ─── Sublocation actions (sub.*) ───────────────────────────────────
   'sub.sanctify': '/assets/actions/sacred-ground.jpg',

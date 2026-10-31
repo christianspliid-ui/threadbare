@@ -2393,7 +2393,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: 'loc.keep_stores',
     progression: { tier: 1, offer: 'market', generic: false },
     name: 'Keep the Stores',
-    spellName: 'Grain That Does Not Spoil',
+    spellName: 'Grain That Never Spoils',
     rarityTier: 1,
     intrinsicTier: 'background',
     description: 'Holds back time in a town\'s granaries and cellars. What was stored keeps, and the town has a little more to eat when the lean days come.',
