@@ -296,6 +296,34 @@ export interface AssembledRewardPool {
 }
 
 /**
+ * The harm marker on a reward template's tags (THR-2095). Same string as
+ * `HARMFUL_CONDITION_TAG` in `effects/conditionProxyEvents.ts` — kept as a local copy
+ * because that module's dispatch imports this one, so importing it back would cycle.
+ * `rewardPool-harm.test.ts` pins the two equal.
+ */
+export const REWARD_HARM_TAG = '#negative';
+
+/** True when the template node is tagged harmful. Fail-soft: no node or no tags reads as harmless. */
+export function isHarmfulRewardTemplate(graph: WorldGraph, templateId: string): boolean {
+  const tags = graph.getNode(templateId)?.properties?.tags;
+  return Array.isArray(tags) && tags.includes(REWARD_HARM_TAG);
+}
+
+/** The bad-outcome table a flipped draw uses — one shape for both draw routes. */
+export function toBadOutcomeRecipe(resolved: ResolvedRewardRecipe): ResolvedRewardRecipe {
+  // The harm table drops the recipe's bearer-trait term along with its tag filter: the
+  // term says who may be dealt the *prize*, and a mortal who lacks it is not thereby
+  // spared the wound (THR-1520).
+  return {
+    ...resolved,
+    categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS,
+    tagFilters: undefined,
+    requiresBearerTrait: undefined,
+    admitsHarm: true,
+  };
+}
+
+/**
  * Assemble a weighted pool. Each candidate's weight = categoryWeight × tierCurve[tier].
  * Agreement candidates come from the agreement catalog (edge-backed, not nodes).
  */
@@ -367,6 +395,9 @@ export function assembleRewardPoolDetailed(
     for (const id of dropped) if (!excludedIds.includes(id)) excludedIds.push(id);
 
     for (const candidate of candidates) {
+      // THR-2095 — a prize draw never deals a wound. Filtered here, in the pool, so
+      // every recipe that weights `condition` on success is covered at once.
+      if (!recipe.admitsHarm && isHarmfulRewardTemplate(graph, candidate.id)) continue;
       const tierWeight = recipe.tierCurve[candidate.tier as AttachmentTier] ?? 0;
       const weight = categoryWeight * tierWeight;
       if (weight > 0) {
@@ -896,12 +927,7 @@ export function drawSeededReward(
   // the same prize.
   const badRoll = rng();
   const isBadOutcome = badRoll < resolved.badOutcomeChance;
-  // The harm table drops the recipe's bearer-trait term along with its tag filter: the
-  // term says who may be dealt the *prize*, and a mortal who lacks it is not thereby
-  // spared the wound (THR-1520).
-  const effectiveRecipe = isBadOutcome
-    ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined, requiresBearerTrait: undefined }
-    : resolved;
+  const effectiveRecipe = isBadOutcome ? toBadOutcomeRecipe(resolved) : resolved;
 
   // `recipientId` feeds the companion cap/unique filters (THR-1096); every other
   // category ignores it.

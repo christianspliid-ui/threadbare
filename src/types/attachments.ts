@@ -242,6 +242,12 @@ export interface RewardPoolRecipe {
    * authoring-time gate ignores it (it is bearer-blind by design).
    */
   requiresBearerTrait?: TraitPredicate;
+  /**
+   * THR-2095 — true only on the bad-outcome table. Absent, the pool drops every
+   * candidate tagged `#negative`: a prize draw never deals a wound. Harm comes from
+   * the bad-outcome flip alone, which sets this.
+   */
+  admitsHarm?: boolean;
 }
 
 /**

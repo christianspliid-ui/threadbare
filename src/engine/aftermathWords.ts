@@ -891,6 +891,38 @@ export function rewardSentence(args: {
 }
 
 /**
+ * THR-2095 — why a reward draw left a scar, keyed on the drawn template's tags.
+ *
+ * First matching row wins, so the order runs specific to general. Each row has a
+ * won line and a lost line: a won step that still scars reads as a cost of winning
+ * ("not cleanly"), never against the band's "went well". Short on purpose — the
+ * chip's cause and change share a 15-word budget (`NUDGE_WORD_BUDGETS.chipSentence`).
+ */
+export const REWARD_HARM_CAUSE_LINES: readonly {
+  readonly tag: string | null;
+  readonly won: string;
+  readonly lost: string;
+}[] = [
+  { tag: '#combat', won: 'Not cleanly: a blow landed in the struggle', lost: 'A blow landed as it went wrong' },
+  { tag: '#disease', won: 'Not cleanly: something caught along the way', lost: 'Something caught as it went wrong' },
+  { tag: '#curse', won: 'Not cleanly: something followed them out', lost: 'Something followed them out of it' },
+  { tag: '#fear', won: 'Not cleanly: it shook them on the way', lost: 'It shook them as it went wrong' },
+  { tag: '#reputation', won: 'Not cleanly: word of the methods spread', lost: 'Word of the failure spread' },
+  { tag: '#physical', won: 'Not cleanly: the body paid for it', lost: 'The body paid for the failure' },
+  { tag: '#wound', won: 'Not cleanly: the body paid for it', lost: 'The body paid for the failure' },
+  { tag: null, won: 'It went well, but not cleanly', lost: 'It went wrong and left a mark' },
+];
+
+export function rewardHarmCauseClause(args: {
+  readonly tags: readonly string[];
+  readonly stepWon: boolean;
+}): string {
+  const row = REWARD_HARM_CAUSE_LINES.find(r => r.tag === null || args.tags.includes(r.tag))
+    ?? REWARD_HARM_CAUSE_LINES[REWARD_HARM_CAUSE_LINES.length - 1];
+  return args.stepWon ? row.won : row.lost;
+}
+
+/**
  * The ending's one-line overview. Counts are spelled out — "one reward, three
  * skill shifts" — because a numeral on this line is the same violation as a
  * numeral on a chip, and it was the line Christian quoted first.

@@ -53,6 +53,7 @@ import {
   overviewHighlightPhrase,
   reachDisplayName,
   reputationSentence,
+  rewardHarmCauseClause,
   rewardSentence,
   traitGrantedSentence,
 } from './aftermathWords';
@@ -187,7 +188,7 @@ import {
   findActionableIntelligence,
   reliabilityDescriptor,
 } from './intelligence';
-import { drawSeededReward } from './rewardPool';
+import { drawSeededReward, isHarmfulRewardTemplate } from './rewardPool';
 import { drawLuckRoll } from './luck';
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
@@ -1642,6 +1643,13 @@ interface ResolvedUnifiedReward {
   readonly instanceId: string;
   /** THR-1672 — the spell a teaching book taught its holder on the way in. */
   readonly taughtSpellName?: string;
+  /**
+   * THR-2095 — the draw dealt harm: a bad-outcome flip, or a template tagged
+   * `#negative`. A harmful reward reaches the aftermath as a SCAR, never a BOON.
+   */
+  readonly harmful?: boolean;
+  /** THR-2095 — the drawn template's tags, so the scar row can say why. */
+  readonly tags?: readonly string[];
 }
 
 function resolveUnifiedReward(
@@ -1742,10 +1750,14 @@ function resolveUnifiedReward(
     });
   }
 
+  const harmful = isBadOutcome || isHarmfulRewardTemplate(state.graph, templateId);
+  const templateTags = state.graph.getNode(templateId)?.properties?.tags;
   return {
     displayName: instantiation.displayName,
     instanceId: instantiation.instanceId,
     ...(instantiation.taughtSpellName ? { taughtSpellName: instantiation.taughtSpellName } : {}),
+    ...(harmful ? { harmful: true } : {}),
+    ...(harmful && Array.isArray(templateTags) ? { tags: templateTags.filter((t): t is string => typeof t === 'string') } : {}),
   };
 }
 
@@ -2916,21 +2928,32 @@ export function executeStepResult(
   const actorNode = state.graph.getNode(action.actorId);
   const currentActorName = actorNode?.name ?? actorName;
   if (resolvedReward) {
+    // THR-2095 — a harmful draw is a scar on any band: never "gained", never a boon,
+    // and it says why, so a won step that still scars reads as a cost of winning.
+    const harmful = resolvedReward.harmful === true;
+    const gained = isStepSuccess(outcome) && !harmful;
     const sentence = rewardSentence({
       actorName: currentActorName,
       rewardName: resolvedReward.displayName,
       rewardId: resolvedReward.instanceId,
-      gained: isStepSuccess(outcome),
+      gained,
       ...(resolvedReward.taughtSpellName ? { learnedSpellName: resolvedReward.taughtSpellName } : {}),
     });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:item:${rewardName}`,
       kind: 'item',
-      title: isStepSuccess(outcome) ? 'A reward changed hands' : 'The scene cost something tangible',
+      title: gained ? 'A reward changed hands' : 'The scene cost something tangible',
       detail: sentence.detail,
       concepts: sentence.concepts,
       ...derivedFields(sentence),
-      polarity: isStepSuccess(outcome) ? 'gain' : 'loss',
+      polarity: gained ? 'gain' : 'loss',
+      ...(harmful
+        ? {
+          harmful: true,
+          category: 'scar' as const,
+          causeClause: rewardHarmCauseClause({ tags: resolvedReward.tags ?? [], stepWon: isStepSuccess(outcome) }),
+        }
+        : {}),
       actorId: action.actorId,
       actorName: currentActorName,
     });

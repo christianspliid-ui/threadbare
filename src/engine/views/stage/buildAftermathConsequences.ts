@@ -320,6 +320,21 @@ function warnOnceOutOfRange(ladder: string, band: number): void {
   );
 }
 
+/**
+ * THR-2095 — a change flagged `harmful` reads as a cost however its producer
+ * declared it: `loss` polarity, a falling cluster, and the SCAR category. Identity
+ * for every other change (NFP #6).
+ */
+export function asHarmIfHarmful(change: EncounterAftermathChange): EncounterAftermathChange {
+  if (!change.harmful) return change;
+  return {
+    ...change,
+    polarity: 'loss',
+    category: 'scar',
+    ...(change.direction && change.direction !== 'loss' ? { direction: 'loss' as const } : {}),
+  };
+}
+
 /** A change polarity that means the bearer gave something up. */
 function isCost(polarity: EncounterAftermathChangePolarity): boolean {
   return polarity === 'loss' || polarity === 'mixed';
@@ -735,8 +750,10 @@ export function buildAftermathConsequences(
   const { changes, reactions, enrich, link, resolveIcon, resolveAnchor, placeNameFor, anchorNameFor } = args;
   const chips: EncounterStageConsequenceChipModel[] = [];
 
-  for (const change of changes) {
-    const kind = classifyChangeKind(change.kind, change.polarity);
+  for (const declared of changes) {
+    // THR-2095 — harm is a scar whatever the wire says: cost polarity, SCAR, WOUND.
+    const change = asHarmIfHarmful(declared);
+    const kind = declared.harmful ? 'wound' : classifyChangeKind(change.kind, change.polarity);
     // THR-1082 — the producer's declared category wins; absent, it is derived
     // from the wire kind exactly as the display always did. That is what lets
     // every pre-existing authored change render unmodified (NFP #6).
