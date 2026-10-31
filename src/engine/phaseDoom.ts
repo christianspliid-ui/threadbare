@@ -414,13 +414,15 @@ export function phaseDoom(state: GameState): Partial<GameState> {
         },
       });
 
-      const locationNodes = state.graph.getNodesByType('location');
+      // proto THR-2090: NOSTAGE=1 drops the stage push; STAGEFREE=1 keeps it but tags it
+      // 'notable' so the Mandate ledger does not count it as opposition.
+      const locationNodes = process.env.NOSTAGE === '1' ? [] : state.graph.getNodesByType('location');
       for (const locNode of locationNodes) {
         pressures.push({
           targetEntityId: locNode.id,
           sphere: 'entropy',
           magnitude: DOOM_PRESSURE_PER_TIER,
-          source: 'doom',
+          source: process.env.STAGEFREE === '1' ? 'notable' : 'doom',
           sourceId: `doom-tier-${stage}`,
         });
       }

@@ -1,0 +1,59 @@
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 7.4%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 8 · routes 6 · freeholds 5 · possessions 9 · ties kin 14/friend 14/rival 14 (no pool 0) · home-realm moves 3 · favours 9 · quarrels 4 · marks 4 · notables 47 (no holding 7 / no quarrel 0 / no secret-or-favour 2 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 112/112 casters wield a spell (112 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 192 spells across 32 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +111 settlement-authored NPCs
+[WorldGen] Settlement economy: 100-day settling run over 38 settlements in 74 ms
+[worldgen] past: elder war 1, living wars 2, founded 54, dead 2+3+4, descent 115/488, 2 war(s) without a burned town, ambitions 4 minted / 2 skipped (5 ms)
+
+## sweep:sever (entropy/mind) arm=godloc mandate="Sever Ascendancy" P=entropy (synth.entropy) S=mind (synth.mind)
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_3_0: Error: Duplicate node ID: evt_asc.hunger.sever_3_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_4_0: Error: Duplicate node ID: evt_asc.hunger.sever_4_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_5_0: Error: Duplicate node ID: evt_asc.hunger.sever_5_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_6_0: Error: Duplicate node ID: evt_asc.hunger.sever_6_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_7_0: Error: Duplicate node ID: evt_asc.hunger.sever_7_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_8_0: Error: Duplicate node ID: evt_asc.hunger.sever_8_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_9_0: Error: Duplicate node ID: evt_asc.hunger.sever_9_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_10_0: Error: Duplicate node ID: evt_asc.hunger.sever_10_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_11_0: Error: Duplicate node ID: evt_asc.hunger.sever_11_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_12_0: Error: Duplicate node ID: evt_asc.hunger.sever_12_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_13_0: Error: Duplicate node ID: evt_asc.hunger.sever_13_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_14_0: Error: Duplicate node ID: evt_asc.hunger.sever_14_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_15_0: Error: Duplicate node ID: evt_asc.hunger.sever_15_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_16_0: Error: Duplicate node ID: evt_asc.hunger.sever_16_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_17_0: Error: Duplicate node ID: evt_asc.hunger.sever_17_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_18_0: Error: Duplicate node ID: evt_asc.hunger.sever_18_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_19_0: Error: Duplicate node ID: evt_asc.hunger.sever_19_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_20_0: Error: Duplicate node ID: evt_asc.hunger.sever_20_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_21_0: Error: Duplicate node ID: evt_asc.hunger.sever_21_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_22_0: Error: Duplicate node ID: evt_asc.hunger.sever_22_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_23_0: Error: Duplicate node ID: evt_asc.hunger.sever_23_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_24_0: Error: Duplicate node ID: evt_asc.hunger.sever_24_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_25_0: Error: Duplicate node ID: evt_asc.hunger.sever_25_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_26_0: Error: Duplicate node ID: evt_asc.hunger.sever_26_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_27_0: Error: Duplicate node ID: evt_asc.hunger.sever_27_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_28_0: Error: Duplicate node ID: evt_asc.hunger.sever_28_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_29_0: Error: Duplicate node ID: evt_asc.hunger.sever_29_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_30_0: Error: Duplicate node ID: evt_asc.hunger.sever_30_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_31_0: Error: Duplicate node ID: evt_asc.hunger.sever_31_0
+sweep:sever (entropy/mind) t50 doom=0.053 progress=0.469 ledger=21.0/87 16.0/23 casts=63 entropy=31 mind=32 pool={"chaos":52.41999999999997,"order":52.41999999999997,"light":52.41999999999997,"darkness":52.41999999999997,"force":52.41999999999997,"matter":52.41999999999997,"energy":52.41999999999997,"life":52.41999999999997,"mind":1.0040000000000326,"spirit":52.41999999999997,"time":52.41999999999997,"entropy":1.2960000000000045}
+sweep:sever (entropy/mind) t100 doom=0.107 progress=0.606 ledger=26.0/87 21.0/23 casts=77 entropy=37 mind=40 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":55,"life":55,"mind":1.1240000000000319,"spirit":55,"time":55,"entropy":2.176000000000004}
+sweep:sever (entropy/mind) t150 doom=0.160 progress=0.661 ledger=28.0/87 28.0/23 casts=91 entropy=42 mind=49 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":55,"life":55,"mind":0.3600000000000311,"spirit":55,"time":55,"entropy":2.1400000000000046}
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_201_0: Error: Duplicate node ID: evt_asc.hunger.sever_201_0
+sweep:sever (entropy/mind) t300 doom=0.334 progress=0.720 ledger=38.2/87 46.2/23 casts=132 entropy=57 mind=75 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":55,"life":55,"mind":2.300000000000031,"spirit":55,"time":55,"entropy":1.2000000000000082}
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_346_0: Error: Duplicate node ID: evt_asc.hunger.sever_346_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_377_0: Error: Duplicate node ID: evt_asc.hunger.sever_377_0
+sweep:sever (entropy/mind) doom>=0.5 t435 ledger=41.2/64.2 progress=0.737
+sweep:sever (entropy/mind) t450 doom=0.519 progress=0.748 ledger=43.2/87 67.2/23 casts=167 entropy=62 mind=105 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":55,"life":55,"mind":1.7440000000000007,"spirit":55,"time":55,"entropy":0.6800000000000255}
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.sever_472_0: Error: Duplicate node ID: evt_asc.hunger.sever_472_0
+sweep:sever (entropy/mind) doom>=0.55 t474 ledger=44.2/70.2 progress=0.754
+sweep:sever (entropy/mind) doom>=0.6 t513 ledger=45.2/75.2 progress=0.760
+sweep:sever (entropy/mind) doom>=0.65 t551 ledger=47.2/82.2 progress=0.771
+sweep:sever (entropy/mind) doom>=0.7 t591 ledger=48.2/87.2 progress=0.777
+sweep:sever (entropy/mind) t600 doom=0.715 progress=0.783 ledger=49.2/87 88.2/23 casts=202 entropy=67 mind=135 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":55,"life":55,"mind":1.264000000000001,"spirit":55,"time":55,"entropy":0.16000000000004344}
+sweep:sever (entropy/mind) doom>=0.75 t627 ledger=49.2/90.2 progress=0.783
+sweep:sever (entropy/mind) FINAL t627 doom=0.751 progress=0.783 ledger=49.2/90.2
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:sever (entropy/mind) | 627 | 0.75 | 0.783 | 49.2 / 90.2 | — |

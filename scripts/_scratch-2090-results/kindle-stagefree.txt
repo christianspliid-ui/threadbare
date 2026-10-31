@@ -1,0 +1,58 @@
+[WorldGen] Validation errors: [ 'Ocean fraction too low: 7.4%' ]
+[WorldGen] Living world: realm edges dropped at guild halls 8 · routes 6 · freeholds 7 · possessions 8 · ties kin 14/friend 14/rival 14 (no pool 0) · home-realm moves 2 · favours 10 · quarrels 4 · marks 4 · notables 47 (no holding 6 / no quarrel 0 / no secret-or-favour 0 / no resident 0) · garrisons 3
+[WorldGen] Seeded knowing: 119/119 casters wield a spell (119 from a tradition library, 0 via the fallback)
+[WorldGen] Spell libraries: 192 spells across 32 traditions, 0 empty slots
+[WorldGen] Genome NPC top-up: +112 settlement-authored NPCs
+[WorldGen] Settlement economy: 100-day settling run over 38 settlements in 103 ms
+[worldgen] past: elder war 1, living wars 2, founded 54, dead 2+3+4, descent 115/490, 2 war(s) without a burned town, ambitions 4 minted / 2 skipped (6 ms)
+
+## sweep:kindle (energy/life) arm=godloc mandate="Kindle Ascendancy" P=energy (synth.energy) S=life (synth.life)
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_3_0: Error: Duplicate node ID: evt_asc.hunger.kindle_3_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_4_0: Error: Duplicate node ID: evt_asc.hunger.kindle_4_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_5_0: Error: Duplicate node ID: evt_asc.hunger.kindle_5_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_6_0: Error: Duplicate node ID: evt_asc.hunger.kindle_6_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_7_0: Error: Duplicate node ID: evt_asc.hunger.kindle_7_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_8_0: Error: Duplicate node ID: evt_asc.hunger.kindle_8_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_9_0: Error: Duplicate node ID: evt_asc.hunger.kindle_9_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_10_0: Error: Duplicate node ID: evt_asc.hunger.kindle_10_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_11_0: Error: Duplicate node ID: evt_asc.hunger.kindle_11_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_12_0: Error: Duplicate node ID: evt_asc.hunger.kindle_12_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_13_0: Error: Duplicate node ID: evt_asc.hunger.kindle_13_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_14_0: Error: Duplicate node ID: evt_asc.hunger.kindle_14_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_15_0: Error: Duplicate node ID: evt_asc.hunger.kindle_15_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_16_0: Error: Duplicate node ID: evt_asc.hunger.kindle_16_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_17_0: Error: Duplicate node ID: evt_asc.hunger.kindle_17_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_18_0: Error: Duplicate node ID: evt_asc.hunger.kindle_18_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_19_0: Error: Duplicate node ID: evt_asc.hunger.kindle_19_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_20_0: Error: Duplicate node ID: evt_asc.hunger.kindle_20_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_21_0: Error: Duplicate node ID: evt_asc.hunger.kindle_21_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_22_0: Error: Duplicate node ID: evt_asc.hunger.kindle_22_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_23_0: Error: Duplicate node ID: evt_asc.hunger.kindle_23_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_24_0: Error: Duplicate node ID: evt_asc.hunger.kindle_24_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_25_0: Error: Duplicate node ID: evt_asc.hunger.kindle_25_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_26_0: Error: Duplicate node ID: evt_asc.hunger.kindle_26_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_27_0: Error: Duplicate node ID: evt_asc.hunger.kindle_27_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_28_0: Error: Duplicate node ID: evt_asc.hunger.kindle_28_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_29_0: Error: Duplicate node ID: evt_asc.hunger.kindle_29_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_30_0: Error: Duplicate node ID: evt_asc.hunger.kindle_30_0
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_31_0: Error: Duplicate node ID: evt_asc.hunger.kindle_31_0
+sweep:kindle (energy/life) t50 doom=0.052 progress=0.567 ledger=23.0/87 20.0/23 casts=64 energy=32 life=32 pool={"chaos":52.41999999999997,"order":52.41999999999997,"light":52.41999999999997,"darkness":52.41999999999997,"force":52.41999999999997,"matter":52.41999999999997,"energy":0.2960000000000046,"life":1.0040000000000326,"mind":52.41999999999997,"spirit":52.41999999999997,"time":52.41999999999997,"entropy":52.41999999999997}
+sweep:kindle (energy/life) t100 doom=0.106 progress=0.661 ledger=28.0/87 27.0/23 casts=78 energy=38 life=40 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":1.1760000000000044,"life":1.1240000000000319,"mind":55,"spirit":55,"time":55,"entropy":55}
+sweep:kindle (energy/life) t150 doom=0.156 progress=0.690 ledger=33.0/87 33.0/23 casts=92 energy=43 life=49 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":1.140000000000005,"life":0.3600000000000311,"mind":55,"spirit":55,"time":55,"entropy":55}
+sweep:kindle (energy/life) t300 doom=0.315 progress=0.753 ledger=44.0/87 48.2/23 casts=130 energy=55 life=75 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":1.200000000000009,"life":2.300000000000031,"mind":55,"spirit":55,"time":55,"entropy":55}
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_346_0: Error: Duplicate node ID: evt_asc.hunger.kindle_346_0
+sweep:kindle (energy/life) t450 doom=0.491 progress=0.789 ledger=50.2/87 56.2/23 casts=165 energy=60 life=105 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":0.6800000000000264,"life":1.8200000000000314,"mind":55,"spirit":55,"time":55,"entropy":55}
+sweep:kindle (energy/life) doom>=0.5 t459 ledger=50.2/58.2 progress=0.789
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_472_0: Error: Duplicate node ID: evt_asc.hunger.kindle_472_0
+sweep:kindle (energy/life) doom>=0.55 t496 ledger=51.2/59.7 progress=0.794
+sweep:kindle (energy/life) doom>=0.6 t536 ledger=52.2/62.7 progress=0.800
+sweep:kindle (energy/life) doom>=0.65 t575 ledger=53.2/62.7 progress=0.806
+[EncounterEventNode] Failed to create unified event node evt_asc.hunger.kindle_599_0: Error: Duplicate node ID: evt_asc.hunger.kindle_599_0
+sweep:kindle (energy/life) t600 doom=0.684 progress=0.817 ledger=55.2/87 62.7/23 casts=200 energy=65 life=135 pool={"chaos":55,"order":55,"light":55,"darkness":55,"force":55,"matter":55,"energy":0.16000000000004433,"life":1.0464000000000007,"mind":55,"spirit":55,"time":55,"entropy":55}
+sweep:kindle (energy/life) doom>=0.7 t613 ledger=55.2/62.7 progress=0.817
+sweep:kindle (energy/life) doom>=0.75 t652 ledger=55.2/62.7 progress=0.817
+sweep:kindle (energy/life) FINAL t652 doom=0.750 progress=0.817 ledger=55.2/62.7
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:kindle (energy/life) | 652 | 0.75 | 0.817 | 55.2 / 62.7 | — |
