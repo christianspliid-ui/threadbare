@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 18:02 local (17:02 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 18:56 local (17:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,13 +20,18 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Art-led pass, slice 2 — every other Inspector page](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (new): towns and cities show their own landscape in the page header instead of today's placeholder mark (all 235 places in a seeded world have one). Veto line: "places keep the placeholder". Window closes about 06:45 tomorrow morning.
+- Same ticket: the Mandate is the god page's one highlighted line, in words ("Rising." and the current objective); the progress bar stays on the god rail. Veto line: "put the Mandate bar on the god page".
+- Same ticket: lists of strengths become chips ("Might · Strong"), one-fact rows become sentences ("Here you are Accepted."), and the bars beside single words drop. Veto line: "keep the bars".
+- Same ticket: relics lying at a place or held by a faction show as painted tiles, like The First's carried relics. Veto line: "no relic gallery on places and factions".
+- Same ticket: headings with no fitting icon draw none and join [your icon pick](https://linear.app/threadbare/issue/THR-2104) once the build merges, including the god page's own Overview tab. Veto line: "pick a near icon instead".
 - [Spirit, life and entropy get a cheap place card](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life): Doom's rising tide still darkens the whole world, but it no longer wipes a god's Mandate. Doom's own works and rivals still take back what the god built. Without this, a life god (Gather) could never fill its Mandate: 1.2 of 87 points, against 30 with the change. Veto line: "doom should wear a life god down everywhere". Window closes about 21:52 tonight.
 - Same ticket: three cheap town cards at 2 essence. *Tend the Sick* (life) heals a town, *Let the Damp In* (entropy) slowly sickens one, *Keep the Vigil* (spirit) calms unrest by mourning the dead. *Stoke the Forges* drops from 3 to 2 essence, so every Hunger's sphere now has a cheap town card.
 - [Story text, slice 1](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets): the everyday board encounters get the full three-paragraph opening (who arrives where, what has gone wrong, the one problem), like the newer encounters. Where they can happen does not change. Veto line: "board encounters should stay short". Window closes about 03:50 tonight.
 - Same ticket: the Swollen Ford example card lines, which you approved on 9 August under the older rules, lose "A small help." / "A real help." and the "You…". The newer rules ban both. The factory copies that example, so 121 card lines picked up the habit. Veto line: "keep the Swollen Ford cards as approved".
 - Same ticket: the board's background people stay unnamed for now ("the trader"). Naming them needs proper cast slots across 168 encounters, so it would be its own job. Veto line: "name the board's people".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([morning report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31a.md), [afternoon report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([morning report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31a.md), [afternoon report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md), [evening report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31c.md))*
 
 ## This week's screens
 
@@ -34,16 +39,16 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([morning 
 
 ## Queue
 
-**Starved — one ticket ready, and it waits on its veto window.** [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable after about 03:50 tonight, with your card-lean answer (B, effect only) attached. The builder's last six runs correctly stood down on it; that is idle by design, not a stall.
+**Thin — two tickets ready, both waiting on their veto windows.** [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable about 03:47 tonight; [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (art-led Inspector pages, slice 2, new this evening) about 06:45 tomorrow. The builder's last six runs correctly stood down on these holds; that is idle by design, not a stall.
 
-- **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become claimable when their window closes, about 21:52 tonight.
+- **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) can move to Ready for Dev when their window closes, about 21:52 tonight.
 
 Two items for agents, not you:
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the queue empty, this is the cheapest work on the board.
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the queue held, this is the cheapest work on the board.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (11 days). Agents can un-park it.
 
 ## Health
 
-All green. The live site is current (126665db; later commits were docs only). The PR checks and the scheduled background jobs pass, no pull request is waiting, the worktree reaper ran at 17:40, the enabled scheduled tasks are on time, and engine speed is normal (142 ms/tick, 11% under the 7-day median).
+All green. The live site is current (126665db; later commits were docs only). The PR checks and the scheduled background jobs pass, no pull request is waiting, the worktree reaper ran at 18:51, the enabled scheduled tasks are on time, and engine speed is normal (158 ms/tick, level with the 7-day median).
 
 The 40-hour silence on 29–30 Oct is on your list above.
