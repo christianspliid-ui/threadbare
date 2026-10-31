@@ -1,0 +1,35 @@
+
+## sweep:consume (entropy/force) arm=godloc mandate="Consume Ascendancy" P=entropy (loc.blight) S=force (loc.steel_walls)
+sweep:consume (entropy/force) t50 doom=0.052 progress=0.474 ledger=3.0/87 21.0/23 casts=45
+   entropy: casts=14 poorTicks=37 essence=4.1 legal=38 placesScanned=38 heldEntities=3 scoreHist={"0":26,"1":2,"2":9,"3":1}
+   force: casts=31 poorTicks=21 essence=2.0 legal=25 placesScanned=25 heldEntities=12 scoreHist={"0":9,"1":8,"2":7,"7":1}
+sweep:consume (entropy/force) t100 doom=0.103 progress=0.529 ledger=5.0/87 23.0/23 casts=53
+   entropy: casts=18 poorTicks=87 essence=0.8 legal=38 placesScanned=38 heldEntities=5 scoreHist={"0":25,"1":4,"2":8,"3":1}
+   force: casts=35 poorTicks=33 essence=10.1 legal=25 placesScanned=25 heldEntities=12 scoreHist={"0":9,"1":9,"2":3,"3":3,"7":1}
+sweep:consume (entropy/force) t150 doom=0.155 progress=0.540 ledger=7.0/87 23.0/23 casts=55
+   entropy: casts=20 poorTicks=137 essence=2.7 legal=38 placesScanned=40 heldEntities=7 scoreHist={"0":25,"1":5,"2":9,"3":1}
+   force: casts=35 poorTicks=33 essence=27.4 legal=25 placesScanned=27 heldEntities=12 scoreHist={"0":11,"1":9,"2":3,"3":3,"7":1}
+sweep:consume (entropy/force) t300 doom=0.320 progress=0.569 ledger=12.0/87 23.2/23 casts=66
+   entropy: casts=27 poorTicks=287 essence=1.8 legal=42 placesScanned=42 heldEntities=9 scoreHist={"0":12,"1":14,"2":12,"3":2,"4":1,"5":1}
+   force: casts=39 poorTicks=33 essence=55.0 legal=28 placesScanned=29 heldEntities=12 scoreHist={"0":10,"1":13,"2":3,"3":1,"4":1,"7":1}
+sweep:consume (entropy/force) doom>=0.5 t442 ledger=13.2/24.2 progress=0.576
+sweep:consume (entropy/force) t450 doom=0.511 progress=0.582 ledger=14.2/87 24.2/23 casts=69
+   entropy: casts=30 poorTicks=437 essence=1.3 legal=48 placesScanned=48 heldEntities=12 scoreHist={"0":8,"1":9,"2":11,"3":14,"4":5,"5":1}
+   force: casts=39 poorTicks=33 essence=55.0 legal=28 placesScanned=34 heldEntities=13 scoreHist={"0":14,"1":14,"2":3,"3":1,"4":1,"7":1}
+sweep:consume (entropy/force) doom>=0.55 t477 ledger=14.2/23.2 progress=0.582
+sweep:consume (entropy/force) doom>=0.6 t513 ledger=15.2/23.2 progress=0.587
+sweep:consume (entropy/force) doom>=0.65 t549 ledger=15.2/23.2 progress=0.587
+sweep:consume (entropy/force) doom>=0.7 t587 ledger=15.2/23.2 progress=0.587
+sweep:consume (entropy/force) t600 doom=0.721 progress=0.587 ledger=15.2/87 23.2/23 casts=71
+   entropy: casts=32 poorTicks=587 essence=3.7 legal=50 placesScanned=50 heldEntities=12 scoreHist={"0":6,"1":4,"2":10,"3":10,"4":15,"5":4,"6":1}
+   force: casts=39 poorTicks=33 essence=55.0 legal=28 placesScanned=36 heldEntities=12 scoreHist={"0":15,"1":16,"2":2,"3":1,"4":1,"7":1}
+sweep:consume (entropy/force) doom>=0.75 t621 ledger=16.2/23.2 progress=0.593
+   FINAL entropy: casts=33 poorTicks=608 essence=2.1 legal=50 placesScanned=50 heldEntities=13 scoreHist={"0":6,"1":4,"2":10,"3":9,"4":16,"5":4,"6":1}
+   force: casts=39 poorTicks=33 essence=55.0 legal=28 placesScanned=36 heldEntities=12 scoreHist={"0":17,"1":15,"2":1,"3":1,"4":1,"7":1}
+   refused={}
+   CREDITS entropy: godPoints=16.2 over 20 level-ups (mean share 0.81) oppositionPoints=0.0 over 0 debits
+sweep:consume (entropy/force) FINAL t621 doom=0.750 progress=0.593 ledger=16.2/23.2
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:consume (entropy/force) | 621 | 0.75 | 0.593 | 16.2 / 23.2 | — |

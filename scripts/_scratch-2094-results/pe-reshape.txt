@@ -1,0 +1,35 @@
+
+## sweep:reshape (force/matter) arm=godloc mandate="Reshape Ascendancy" P=force (loc.steel_walls) S=matter (loc.lay_footings)
+sweep:reshape (force/matter) t50 doom=0.053 progress=0.615 ledger=20.0/87 23.0/23 casts=60
+   force: casts=32 poorTicks=20 essence=0.3 legal=25 placesScanned=25 heldEntities=15 scoreHist={"0":5,"1":13,"2":5,"3":2}
+   matter: casts=28 poorTicks=0 essence=9.0 legal=2 placesScanned=38 heldEntities=4 scoreHist={"0":20,"2":1,"3":14,"6":1,"7":1,"10":1}
+sweep:reshape (force/matter) t100 doom=0.105 progress=0.644 ledger=25.0/87 23.0/23 casts=66
+   force: casts=38 poorTicks=70 essence=1.2 legal=27 placesScanned=27 heldEntities=15 scoreHist={"0":7,"1":13,"2":2,"3":4,"4":1}
+   matter: casts=28 poorTicks=0 essence=25.1 legal=2 placesScanned=40 heldEntities=4 scoreHist={"0":21,"2":1,"3":15,"6":1,"7":1,"10":1}
+sweep:reshape (force/matter) t150 doom=0.157 progress=0.655 ledger=27.0/87 23.0/23 casts=71
+   force: casts=43 poorTicks=120 essence=1.1 legal=28 placesScanned=28 heldEntities=17 scoreHist={"0":6,"1":14,"2":3,"3":4,"4":1}
+   matter: casts=28 poorTicks=0 essence=42.4 legal=2 placesScanned=41 heldEntities=4 scoreHist={"0":21,"2":1,"3":16,"6":1,"7":1,"10":1}
+sweep:reshape (force/matter) t300 doom=0.317 progress=0.701 ledger=35.0/87 23.4/23 casts=83
+   force: casts=55 poorTicks=270 essence=1.2 legal=31 placesScanned=31 heldEntities=18 scoreHist={"0":9,"1":11,"2":3,"3":5,"4":2,"5":1}
+   matter: casts=28 poorTicks=0 essence=55.0 legal=2 placesScanned=43 heldEntities=6 scoreHist={"0":19,"1":1,"2":1,"3":19,"6":1,"7":1,"10":1}
+sweep:reshape (force/matter) t450 doom=0.499 progress=0.714 ledger=37.2/87 23.8/23 casts=88
+   force: casts=60 poorTicks=420 essence=0.7 legal=33 placesScanned=33 heldEntities=18 scoreHist={"0":11,"1":12,"2":2,"3":4,"4":3,"5":1}
+   matter: casts=28 poorTicks=0 essence=55.0 legal=2 placesScanned=46 heldEntities=6 scoreHist={"0":19,"2":2,"3":22,"6":1,"7":1,"10":1}
+sweep:reshape (force/matter) doom>=0.5 t451 ledger=37.2/23.8 progress=0.714
+sweep:reshape (force/matter) doom>=0.55 t487 ledger=38.2/23.8 progress=0.720
+sweep:reshape (force/matter) doom>=0.6 t523 ledger=39.2/23.8 progress=0.725
+sweep:reshape (force/matter) doom>=0.65 t559 ledger=40.2/23.8 progress=0.731
+sweep:reshape (force/matter) doom>=0.7 t596 ledger=41.2/23.8 progress=0.737
+sweep:reshape (force/matter) t600 doom=0.707 progress=0.743 ledger=42.2/87 23.8/23 casts=93
+   force: casts=65 poorTicks=570 essence=0.2 legal=36 placesScanned=36 heldEntities=20 scoreHist={"0":11,"1":14,"2":3,"3":3,"4":3,"5":2}
+   matter: casts=28 poorTicks=0 essence=55.0 legal=2 placesScanned=48 heldEntities=6 scoreHist={"0":21,"2":1,"3":23,"6":1,"7":1,"10":1}
+sweep:reshape (force/matter) doom>=0.75 t632 ledger=42.2/23.8 progress=0.743
+   FINAL force: casts=66 poorTicks=602 essence=0.2 legal=36 placesScanned=36 heldEntities=20 scoreHist={"0":12,"1":12,"2":4,"3":3,"4":3,"5":2}
+   matter: casts=28 poorTicks=0 essence=55.0 legal=2 placesScanned=48 heldEntities=6 scoreHist={"0":21,"2":1,"3":23,"6":1,"7":1,"10":1}
+   refused={}
+   CREDITS force: godPoints=55.2 over 56 level-ups (mean share 0.99) oppositionPoints=-13.0 over 11 debits
+sweep:reshape (force/matter) FINAL t632 doom=0.751 progress=0.743 ledger=42.2/23.8
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:reshape (force/matter) | 632 | 0.75 | 0.743 | 42.2 / 23.8 | — |

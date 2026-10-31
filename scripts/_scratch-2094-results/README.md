@@ -9,4 +9,4 @@ Switches (proto, in `src/engine/unifiedActionResolution.ts` and the scratch cens
 - `PERESSENCE=1 PECAP=2` — the god's push = 3 x min(essenceCost, 2).
 - `DISTRICT=1` — a god push aimed at a town-card target lands on that town's district with the lowest score in the sphere (the town if none).
 
-Files: r-*/p-*/b-* today (r-wide/r-sub breadth arms), pe-* per-essence uncapped, pc-* per-essence cap 2, d-* district, dp-* district + cap-2 push, *-witness Witness reference.
+Files (.txt; *.log is gitignored): r-*/p-*/b-* today (r-wide/r-sub breadth arms), pe-* per-essence uncapped, pc-* per-essence cap 2, d-* district, dp-* district + cap-2 push, *-witness Witness reference.

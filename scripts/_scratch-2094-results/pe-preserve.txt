@@ -1,0 +1,32 @@
+
+## sweep:preserve (time/spirit) arm=godloc mandate="Preserve Ascendancy" P=time (loc.keep_stores) S=spirit (action.consecrate)
+sweep:preserve (time/spirit) t50 doom=0.050 progress=0.603 ledger=18.0/87 23.0/23 casts=41
+   time: casts=32 poorTicks=20 essence=0.3 legal=38 placesScanned=38 heldEntities=16 scoreHist={"0":20,"1":10,"2":7,"3":1}
+   spirit: casts=9 poorTicks=1 essence=11.3 legal=8 placesScanned=8 heldEntities=7 scoreHist={"1":1,"4":6,"6":1}
+sweep:preserve (time/spirit) t100 doom=0.107 progress=0.626 ledger=22.0/87 23.0/23 casts=47
+   time: casts=38 poorTicks=70 essence=1.2 legal=40 placesScanned=40 heldEntities=19 scoreHist={"0":18,"1":15,"2":5,"3":2}
+   spirit: casts=9 poorTicks=1 essence=27.4 legal=8 placesScanned=8 heldEntities=7 scoreHist={"1":1,"4":6,"6":1}
+sweep:preserve (time/spirit) t150 doom=0.161 progress=0.655 ledger=27.0/87 23.0/23 casts=52
+   time: casts=43 poorTicks=120 essence=1.1 legal=43 placesScanned=43 heldEntities=20 scoreHist={"0":20,"1":15,"2":3,"3":5}
+   spirit: casts=9 poorTicks=1 essence=44.7 legal=8 placesScanned=8 heldEntities=7 scoreHist={"1":1,"4":6,"6":1}
+sweep:preserve (time/spirit) t300 doom=0.342 progress=0.695 ledger=34.0/87 24.0/23 casts=64
+   time: casts=55 poorTicks=270 essence=1.2 legal=43 placesScanned=45 heldEntities=23 scoreHist={"0":20,"1":14,"2":5,"3":5,"4":1}
+   spirit: casts=9 poorTicks=1 essence=55.0 legal=8 placesScanned=8 heldEntities=8 scoreHist={"1":1,"4":6,"6":1}
+sweep:preserve (time/spirit) doom>=0.5 t420 ledger=36.2/24.0 progress=0.708
+sweep:preserve (time/spirit) t450 doom=0.542 progress=0.697 ledger=34.2/87 24.0/23 casts=69
+   time: casts=60 poorTicks=420 essence=0.7 legal=48 placesScanned=48 heldEntities=23 scoreHist={"0":24,"1":13,"2":5,"3":4,"4":2}
+   spirit: casts=9 poorTicks=1 essence=55.0 legal=8 placesScanned=8 heldEntities=8 scoreHist={"0":1,"4":6,"6":1}
+sweep:preserve (time/spirit) doom>=0.55 t455 ledger=34.2/24.0 progress=0.697
+sweep:preserve (time/spirit) doom>=0.6 t491 ledger=34.2/25.0 progress=0.697
+sweep:preserve (time/spirit) doom>=0.65 t528 ledger=34.2/25.0 progress=0.697
+sweep:preserve (time/spirit) doom>=0.7 t563 ledger=35.2/25.0 progress=0.702
+sweep:preserve (time/spirit) doom>=0.75 t596 ledger=36.2/25.0 progress=0.708
+   FINAL time: casts=64 poorTicks=566 essence=1.9 legal=51 placesScanned=52 heldEntities=24 scoreHist={"0":29,"1":12,"2":4,"3":5,"4":2}
+   spirit: casts=9 poorTicks=1 essence=55.0 legal=8 placesScanned=8 heldEntities=8 scoreHist={"0":1,"4":6,"6":1}
+   refused={}
+   CREDITS time: godPoints=43.2 over 44 level-ups (mean share 0.98) oppositionPoints=-7.0 over 6 debits
+sweep:preserve (time/spirit) FINAL t596 doom=0.750 progress=0.708 ledger=36.2/25.0
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:preserve (time/spirit) | 596 | 0.75 | 0.708 | 36.2 / 25.0 | — |

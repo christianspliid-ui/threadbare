@@ -1,0 +1,35 @@
+
+## sweep:kindle (energy/life) arm=godloc mandate="Kindle Ascendancy" P=energy (loc.stoke_forges) S=life (loc.bless_harvest)
+sweep:kindle (energy/life) t50 doom=0.056 progress=0.414 ledger=19.0/87 14.0/23 casts=40
+   energy: casts=23 poorTicks=29 essence=0.3 legal=37 placesScanned=37 heldEntities=18 scoreHist={"0":16,"1":12,"2":5,"3":4}
+   life: casts=17 poorTicks=35 essence=3.0 legal=37 placesScanned=37 heldEntities=13 scoreHist={"0":9,"1":9,"2":7,"3":9,"4":3}
+sweep:kindle (energy/life) t100 doom=0.109 progress=0.551 ledger=24.0/87 19.0/23 casts=48
+   energy: casts=27 poorTicks=79 essence=3.2 legal=37 placesScanned=37 heldEntities=18 scoreHist={"0":17,"1":9,"2":4,"3":7}
+   life: casts=21 poorTicks=85 essence=4.1 legal=37 placesScanned=37 heldEntities=15 scoreHist={"0":9,"1":8,"2":6,"3":10,"4":3,"5":1}
+sweep:kindle (energy/life) t150 doom=0.160 progress=0.638 ledger=24.0/87 23.0/23 casts=58
+   energy: casts=31 poorTicks=129 essence=3.1 legal=38 placesScanned=37 heldEntities=17 scoreHist={"0":19,"1":9,"2":2,"3":6,"4":1}
+   life: casts=27 poorTicks=135 essence=1.4 legal=37 placesScanned=37 heldEntities=17 scoreHist={"0":7,"1":11,"2":5,"3":9,"4":4,"6":1}
+sweep:kindle (energy/life) t300 doom=0.331 progress=0.661 ledger=28.0/87 23.2/23 casts=71
+   energy: casts=40 poorTicks=279 essence=2.2 legal=39 placesScanned=39 heldEntities=18 scoreHist={"0":21,"1":9,"2":2,"3":5,"4":2}
+   life: casts=31 poorTicks=137 essence=41.3 legal=38 placesScanned=39 heldEntities=16 scoreHist={"0":13,"1":6,"2":6,"3":8,"4":3,"5":2,"6":1}
+sweep:kindle (energy/life) doom>=0.5 t434 ledger=25.2/23.2 progress=0.645
+sweep:kindle (energy/life) t450 doom=0.522 progress=0.651 ledger=26.2/87 23.2/23 casts=81
+   energy: casts=44 poorTicks=429 essence=0.7 legal=39 placesScanned=39 heldEntities=18 scoreHist={"0":24,"1":7,"2":1,"3":5,"4":2}
+   life: casts=37 poorTicks=137 essence=55.0 legal=39 placesScanned=39 heldEntities=16 scoreHist={"0":16,"1":5,"2":3,"3":9,"4":3,"5":2,"6":1}
+sweep:kindle (energy/life) doom>=0.55 t472 ledger=25.2/23.2 progress=0.645
+sweep:kindle (energy/life) doom>=0.6 t510 ledger=25.2/22.2 progress=0.627
+sweep:kindle (energy/life) doom>=0.65 t545 ledger=25.2/23.2 progress=0.645
+sweep:kindle (energy/life) doom>=0.7 t581 ledger=26.2/23.2 progress=0.651
+sweep:kindle (energy/life) t600 doom=0.727 progress=0.651 ledger=26.2/87 23.2/23 casts=87
+   energy: casts=48 poorTicks=579 essence=1.2 legal=43 placesScanned=43 heldEntities=18 scoreHist={"0":30,"1":6,"3":4,"4":3}
+   life: casts=39 poorTicks=137 essence=55.0 legal=41 placesScanned=43 heldEntities=15 scoreHist={"0":17,"1":7,"2":4,"3":7,"4":5,"5":1,"6":2}
+sweep:kindle (energy/life) doom>=0.75 t617 ledger=26.2/23.2 progress=0.651
+   FINAL energy: casts=48 poorTicks=596 essence=2.2 legal=43 placesScanned=43 heldEntities=18 scoreHist={"0":30,"1":6,"2":2,"3":2,"4":3}
+   life: casts=39 poorTicks=137 essence=55.0 legal=41 placesScanned=43 heldEntities=15 scoreHist={"0":17,"1":7,"2":4,"3":7,"4":5,"5":1,"6":2}
+   refused={}
+   CREDITS energy: godPoints=42.2 over 43 level-ups (mean share 0.98) oppositionPoints=-16.0 over 13 debits
+sweep:kindle (energy/life) FINAL t617 doom=0.751 progress=0.651 ledger=26.2/23.2
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| sweep:kindle (energy/life) | 617 | 0.75 | 0.651 | 26.2 / 23.2 | — |

@@ -1,0 +1,35 @@
+
+## seeded42 arm=godloc mandate="Witness Ascendancy" P=mind (sub.vision) S=spirit (action.consecrate)
+seeded42 t50 doom=0.051 progress=0.678 ledger=31.0/87 23.0/23 casts=57
+   mind: casts=48 poorTicks=0 essence=16.3 legal=914 placesScanned=280 heldEntities=31 scoreHist={"0":214,"1":20,"2":46}
+   spirit: casts=9 poorTicks=1 essence=11.3 legal=8 placesScanned=8 heldEntities=7 scoreHist={"1":1,"4":6,"6":1}
+seeded42 t100 doom=0.103 progress=0.782 ledger=49.0/87 23.0/23 casts=85
+   mind: casts=76 poorTicks=30 essence=1.2 legal=921 placesScanned=294 heldEntities=48 scoreHist={"0":235,"1":19,"2":40}
+   spirit: casts=9 poorTicks=1 essence=27.4 legal=8 placesScanned=8 heldEntities=7 scoreHist={"1":1,"4":6,"6":1}
+seeded42 t150 doom=0.155 progress=0.822 ledger=56.0/87 23.0/23 casts=95
+   mind: casts=86 poorTicks=80 essence=1.1 legal=924 placesScanned=305 heldEntities=55 scoreHist={"0":255,"1":19,"2":31}
+   spirit: casts=9 poorTicks=1 essence=44.7 legal=8 placesScanned=8 heldEntities=7 scoreHist={"1":1,"4":6,"6":1}
+seeded42 t300 doom=0.314 progress=0.902 ledger=70.0/87 24.0/23 casts=120
+   mind: casts=111 poorTicks=230 essence=0.2 legal=941 placesScanned=318 heldEntities=67 scoreHist={"0":290,"1":17,"2":11}
+   spirit: casts=9 poorTicks=1 essence=55.0 legal=8 placesScanned=8 heldEntities=8 scoreHist={"1":1,"4":6,"6":1}
+seeded42 t450 doom=0.489 progress=0.949 ledger=78.2/87 25.0/23 casts=129
+   mind: casts=120 poorTicks=380 essence=0.7 legal=958 placesScanned=324 heldEntities=75 scoreHist={"0":301,"1":17,"2":6}
+   spirit: casts=9 poorTicks=1 essence=55.0 legal=8 placesScanned=8 heldEntities=8 scoreHist={"1":1,"4":6,"6":1}
+seeded42 doom>=0.5 t459 ledger=78.2/25.0 progress=0.949
+seeded42 doom>=0.55 t499 ledger=80.2/25.0 progress=0.961
+seeded42 doom>=0.6 t534 ledger=80.2/25.0 progress=0.961
+seeded42 doom>=0.65 t571 ledger=82.2/25.0 progress=0.972
+seeded42 t600 doom=0.688 progress=0.978 ledger=83.2/87 25.0/23 casts=139
+   mind: casts=130 poorTicks=530 essence=0.2 legal=992 placesScanned=344 heldEntities=80 scoreHist={"0":324,"1":17,"2":3}
+   spirit: casts=9 poorTicks=1 essence=55.0 legal=8 placesScanned=8 heldEntities=8 scoreHist={"1":1,"4":6,"6":1}
+seeded42 doom>=0.7 t608 ledger=83.2/25.0 progress=0.978
+seeded42 doom>=0.75 t648 ledger=85.2/25.0 progress=0.990
+   FINAL mind: casts=133 poorTicks=578 essence=0.2 legal=997 placesScanned=344 heldEntities=81 scoreHist={"0":325,"1":17,"2":2}
+   spirit: casts=9 poorTicks=1 essence=55.0 legal=8 placesScanned=8 heldEntities=8 scoreHist={"1":1,"4":6,"6":1}
+   refused={}
+   CREDITS mind: godPoints=85.2 over 86 level-ups (mean share 0.99) oppositionPoints=0.0 over 0 debits
+seeded42 FINAL t648 doom=0.751 progress=0.990 ledger=85.2/25.0
+
+| run | tick | doom | progress | ledger P / S | ended |
+|---|---|---|---|---|---|
+| seeded42 | 648 | 0.75 | 0.990 | 85.2 / 25.0 | — |
