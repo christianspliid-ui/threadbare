@@ -4483,9 +4483,7 @@
       "targetSubtypes": [
         "settlement",
         "hamlet",
-        "town",
-        "city",
-        "capital"
+        "town"
       ],
       "requiresReach": null,
       "starter": false,
