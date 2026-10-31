@@ -43,7 +43,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 ## Resolved this period
 
 - **2026-10-31: a won encounter no longer hands out a wound and calls it a boon, and it is live** ([THR-2095](https://linear.app/threadbare/issue/THR-2095/a-won-encounter-hands-out-a-wound-and-calls-it-a-boon-hesper-won)). Merged via [#2660](https://github.com/christianspliid-ui/threadbare/pull/2660).
-
 - **2026-10-31: the meeting's test text and its helps/hinders panel now sit on a dark backing, and it is live** ([THR-2093](https://linear.app/threadbare/issue/THR-2093/the-meetings-test-prose-and-its-helpshinders-panel-sit-bare-on-the)). Merged via [#2659](https://github.com/christianspliid-ui/threadbare/pull/2659).
 - **2026-10-31: the origin and drive pictures are no longer see-through, and it is live** ([THR-2092](https://linear.app/threadbare/issue/THR-2092/the-origin-and-drive-choice-pictures-are-see-through-at-rest-the-void)). Merged via [#2658](https://github.com/christianspliid-ui/threadbare/pull/2658).
 - **2026-10-31: force, matter and time gods now have cheap town cards (Steel the Walls, Lay the Footings, Keep the Stores), and they are live** ([THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12)). Merged via [#2656](https://github.com/christianspliid-ui/threadbare/pull/2656).
