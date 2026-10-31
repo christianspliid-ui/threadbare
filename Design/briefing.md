@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 02:58 local (01:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 03:57 local (02:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -34,7 +34,7 @@ Say "veto <title>" to reverse any of these.
 
 ## Queue
 
-**Starved: one ticket ready, and it is held.** [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (cheap place cards for force, matter and time) can be picked up from 07:03 UTC Saturday, after the veto window on the decisions above. The builder's runs since 19:31 UTC all stood down for exactly that reason, which is correct.
+**Starved: one ticket ready, and it is held.** [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (cheap place cards for force, matter and time) can be picked up from 07:03 UTC Saturday, after the veto window on the decisions above. The builder's runs since 19:31 UTC Friday all stood down for exactly that reason, which is correct.
 
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place, because distance is measured on the wrong hex layout) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), and its worktree is clean, but the ticket is not in Ready for Dev, so no builder run will take it. The orchestrator can move it; it is not your call.
 - **The paperwork-cut ticket stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has been parked with no owner since 20 Oct (11 days). No worktree holds uncommitted work for it. Agents can un-park it.
@@ -43,4 +43,4 @@ Say "veto <title>" to reverse any of these.
 
 - The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
 
-Everything else is green. The engine speed is normal (134 ms per tick, below the weekly median of 161). The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, the worktree reaper ran at 02:40, and all 9 enabled scheduled tasks are on time.
+Everything else is green. The engine speed is normal (127 ms per tick, below the weekly median of 161). The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, the worktree reaper ran at 03:40, and all 9 enabled scheduled tasks are on time.
