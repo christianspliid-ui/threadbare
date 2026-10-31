@@ -2633,7 +2633,7 @@ export interface CardProgression {
 }
 
 /** THR-2096 — how a template binds the faction it is about (`factionEncounterBinding.ts`). */
-export type FactionBindingMode = 'posting' | 'rival';
+export type FactionBindingMode = 'posting' | 'member' | 'rival';
 
 export interface UnifiedActionTemplate {
   // Identity
@@ -2768,7 +2768,8 @@ export interface UnifiedActionTemplate {
   /**
    * The scene is about one named faction (THR-2096) — the generic `fa.*` set-pieces.
    * `'posting'`: the actor's own faction present at the location, else the faction
-   * present there. `'rival'`: the actor's own faction and a declared rival of it.
+   * present there. `'member'`: the actor's own faction present there, no fallback (a
+   * scene only a member can be in). `'rival'`: the actor's own faction and a declared rival.
    * Resolved by `factionEncounterBinding.ts`; it fills `{faction}` / `{rival_faction}`
    * in the prose and `nameTemplate`. Like `requiresLiveMonster`, the gate only hides
    * content: with no faction to bind the template is not offered.

@@ -11,6 +11,8 @@
  *    when it keeps a presence at this location (a `located_at` guild hall or an
  *    `owns` holding); else the faction present here. "A bounty is posted where the
  *    faction keeps a presence."
+ *  - `'member'` — the actor's own faction present at this location, with no
+ *    fallback: a loyalty examination or a conclave seats only its own members.
  *  - `'rival'` — the actor's own faction and one it is declared rival to
  *    (`areFactionsHostile`). An actor with no faction, or a faction with no rival,
  *    has no rivalry to act out.
@@ -104,8 +106,9 @@ export function resolveFactionEncounterBinding(
     const present = getFactionsPresentAt(graph, locationId);
     const presentIds = new Set(present.map(f => f.id));
 
-    if (mode === 'posting') {
-      const poster = own.find(f => presentIds.has(f.id)) ?? present[0];
+    if (mode === 'posting' || mode === 'member') {
+      const ownHere = own.find(f => presentIds.has(f.id));
+      const poster = mode === 'member' ? ownHere : ownHere ?? present[0];
       if (!poster) return undefined;
       return {
         factionId: poster.id,

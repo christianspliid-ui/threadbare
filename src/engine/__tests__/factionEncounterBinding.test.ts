@@ -74,9 +74,21 @@ describe('resolveFactionEncounterBinding (THR-2096)', () => {
     expect(resolveFactionEncounterBinding(graph, 'posting', 'hero', 'empty')).toBeUndefined();
     for (const template of FACTION_ACTION_ENCOUNTER_TEMPLATES) {
       expect(template.bindsFaction, template.id).toBeDefined();
-      if (template.bindsFaction === 'posting') {
+      if (template.bindsFaction !== 'rival') {
         expect(factionBindingAllows(graph, template.bindsFaction, 'hero', 'empty'), template.id).toBe(false);
       }
+    }
+  });
+
+  it('member: only the actor\'s own faction present here, never another', () => {
+    const graph = buildGraph();
+    expect(resolveFactionEncounterBinding(graph, 'member', 'hero', 'hall')).toBeUndefined();
+    join(graph, 'f_rangers'); // a member, but no Rangers hall in Ashford
+    expect(resolveFactionEncounterBinding(graph, 'member', 'hero', 'hall')).toBeUndefined();
+    join(graph, 'f_temple');
+    expect(resolveFactionEncounterBinding(graph, 'member', 'hero', 'hall')?.factionId).toBe('f_temple');
+    for (const id of ['fa.loyalty_test', 'fa.conclave_debate']) {
+      expect(getUnifiedTemplateById(id)?.bindsFaction, id).toBe('member');
     }
   });
 

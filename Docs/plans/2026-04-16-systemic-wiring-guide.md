@@ -1570,6 +1570,7 @@ stakes: {
 **What it does:** a template about *a* faction (a posted bounty, a conclave, a rival watched across the square) declares which one, and the engine finds it from the world:
 
 - `bindsFaction: 'posting'` — the actor's own faction when it keeps a presence at the location (a guild hall `located_at` it, or an `owns` holding); else the faction present there.
+- `bindsFaction: 'member'` — the actor's own faction present at the location, with no fallback: a scene only a member can be in (a loyalty examination, a conclave).
 - `bindsFaction: 'rival'` — the actor's own faction and one it is declared rival to (`relates_to` with `isRival`).
 
 With no faction to bind, the template is **not offered** — both draw paths gate on it, like `requiresLiveMonster`. The bound name fills `{faction}` / `{rival_faction}` in step prose, afterimages and the opening line. `nameTemplate` carries the tokened title ("The {faction}'s Bounty" → "The Merchant Consortium's Bounty") on the veil header, the aftermath, the clock's "held by" and the chronicle; `name` stays the token-free fallback every other surface reads, so write it without the system word ("A Posted Bounty", not "Faction Bounty"). `{?has_faction_membership}` is true when the actor belongs to the bound faction.
