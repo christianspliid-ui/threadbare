@@ -1,13 +1,15 @@
 # Briefing
-**Generated:** 2026-10-31 14:57 local (13:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 15:58 local (14:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
-**Set the Claude app to open when Windows starts.** It happened again: every lane stopped at about 02:57 Thursday morning and came back together at 19:12 Friday evening. That is 40 hours with nothing built. The worktree reaper, which runs on its own Windows timer, stopped at the same time, so the computer was probably off or asleep. Turning on "open at login" for the Claude app closes these gaps. Only you can change that setting. Say "done" and the next silence check confirms it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
+**Set the Claude app to open when Windows starts.** Every lane stopped at about 02:57 Thursday morning and came back together at 19:12 Friday evening: 40 hours with nothing built. The worktree reaper, which runs on its own Windows timer, stopped at the same time, so the computer was probably off or asleep. Turning on "open at login" for the Claude app closes these gaps. Only you can change that setting. Say "done" and the next silence check confirms it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
-## Also waiting (7)
+## Also waiting (9)
 
-- **Thursday 29 to Friday 30 Oct:** "The scheduled lanes went silent for 40.3h (2026-10-29T01:56:50.000Z → 2026-10-30T18:17:35.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." Was the computer off or the app closed, or was this a pause?
+- **New — card lean sentence: A, B or C?** Cards on a choice step often end by saying which way they lean ("*It argues for the honest way.*"). Keep it (A), effect only (B), or fold it into the line (C)? If you say nothing, A stays. The builder starts on this encounter text after about 03:50 tonight. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md)*
+- **New — your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) reviewed every writing check against real lines, which is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. *— from the design lane*
+- **Thursday 29 to Friday 30 Oct:** the lanes were silent for 40 hours and no pause was recorded. Was the computer off or the app closed, or was this a pause?
 - **Wednesday night to Friday night (21–23 Oct):** the lanes were silent for 48 hours and no pause was recorded. Was the app closed or the computer off, or was this a pause?
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours and no pause was recorded. Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
@@ -19,10 +21,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Spirit, life and entropy get a cheap place card](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life): Doom's rising tide still darkens the whole world, but it no longer wipes a god's Mandate. Doom's own works and rivals still take back what the god built. Without this, a life god (Gather) could never fill its Mandate: 1.2 of 87 points, against 30 with the change. Veto line: "doom should wear a life god down everywhere".
+- [Spirit, life and entropy get a cheap place card](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life): Doom's rising tide still darkens the whole world, but it no longer wipes a god's Mandate. Doom's own works and rivals still take back what the god built. Without this, a life god (Gather) could never fill its Mandate: 1.2 of 87 points, against 30 with the change. Veto line: "doom should wear a life god down everywhere". Window closes about 21:52 tonight.
 - Same ticket: three cheap town cards at 2 essence. *Tend the Sick* (life) heals a town, *Let the Damp In* (entropy) slowly sickens one, *Keep the Vigil* (spirit) calms unrest by mourning the dead. *Stoke the Forges* drops from 3 to 2 essence, so every Hunger's sphere now has a cheap town card.
+- [Story text, slice 1](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets): the everyday board encounters get the full three-paragraph opening (who arrives where, what has gone wrong, the one problem), like the newer encounters. Where they can happen does not change. Veto line: "board encounters should stay short". Window closes about 03:50 tonight.
+- Same ticket: the Swollen Ford example card lines, which you approved on 9 August under the older rules, lose "A small help." / "A real help." and the "You…". The newer rules ban both. The factory copies that example, so 121 card lines picked up the habit. Veto line: "keep the Swollen Ford cards as approved".
+- Same ticket: the board's background people stay unnamed for now ("the trader"). Naming them needs proper cast slots across 168 encounters, so it would be its own job. Veto line: "name the board's people".
 
-Say "veto <title>" to reverse any of these. The window closes about 21:52 tonight. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31a.md)*
+Say "veto <title>" to reverse any of these. *— from the design lane ([morning report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31a.md), [afternoon report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md))*
 
 ## This week's screens
 
@@ -30,9 +35,9 @@ Say "veto <title>" to reverse any of these. The window closes about 21:52 tonigh
 
 ## Queue
 
-**Starved — nothing is ready to build.** The builder finished the art-led person page ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the), live) and the heavy-tests fix ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey), merged via [#2664](https://github.com/christianspliid-ui/threadbare/pull/2664)). Its last runs stood down correctly on an empty queue.
+**Starved — one ticket ready, and it waits on its veto window.** [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) moved to Ready for Dev at 15:47; the builder correctly leaves it until the window closes (about 03:50). The builder's recent runs stood down on an empty queue, which is correct.
 
-- **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become ready when their veto window closes, about 21:52 tonight. Their blocker, [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12), is live.
+- **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become claimable when their window closes, about 21:52 tonight.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the queue empty, this is the cheapest work on the board.
@@ -40,7 +45,6 @@ Two items for agents, not you:
 
 ## Health
 
-- **Heavy tests:** still red on main from before the fix ([last red run](https://github.com/christianspliid-ui/threadbare/actions/runs/41203837564)). The fix ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey)) merged at 126665db, and the [run on that commit](https://github.com/christianspliid-ui/threadbare/actions/runs/41205792173) is in progress. No new ticket; next hour files one if that run is red.
-- The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
+All green. Heavy tests are green on main again since the [THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey) fix. The live site is current (126665db; later commits were docs only). The PR checks pass, no pull request is waiting, the worktree reaper ran at 15:40, the enabled scheduled tasks are on time, and engine speed is normal (158 ms/tick, 1% under the 7-day median).
 
-Everything else is green. The live site is current (126665db). The PR checks pass, no pull request is waiting, the worktree reaper ran at 14:40, the enabled scheduled tasks are on time, and engine speed is back to normal (157 ms/tick, 2% under the 7-day median — last hour's 227 was machine load).
+The 40-hour silence on 29–30 Oct is on your list above.
