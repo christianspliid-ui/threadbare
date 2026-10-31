@@ -65,7 +65,7 @@ function FirstBadge({ firstOf }: { firstOf: NonNullable<SubjectHeaderVM['firstOf
       style={{
         position: 'absolute', left: '50%', bottom: 0, transform: 'translate(-50%, 50%)',
         display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap',
-        padding: '2px 10px 2px 2px', borderRadius: '999px',
+        padding: '2px 10px 2px 2px', borderRadius: 'var(--radius-chip)',
         background: 'var(--bg-raised)', border: '1px solid var(--border-subtle)',
         color: 'var(--text-primary)', fontSize: 'var(--text-xs)', fontWeight: 700,
       }}

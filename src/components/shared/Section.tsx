@@ -16,6 +16,7 @@ import type {
 } from '../../types/detailPage';
 import { Chip } from './Chip';
 import { Icon } from './Icon';
+import { Button } from './Button';
 import { EntityLink } from './EntityLink';
 import { BondStrip } from './BondStrip';
 import { ENTITY_VISUAL_HERO_ASPECT } from './EntityVisual';
@@ -198,7 +199,8 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
         padding: '3px 8px',
         borderRadius: '4px',
         // THR-2097 (rule R7): the leading trait reads first — primary text, a heavier border.
-        border: `${chip.lead ? 2 : 1}px solid var(--sphere-${chip.sphere ?? 'force'}-bright, var(--border-gold))`,
+        // A chip with no sphere draws a neutral edge — the force red read as a warning (THR-2097).
+        border: `${chip.lead ? 2 : 1}px solid ${chip.sphere ? `var(--sphere-${chip.sphere}-bright, var(--border-gold))` : 'var(--border-medium, var(--border-gold))'}`,
         color: chip.sentiment === 'negative'
           ? 'var(--sphere-force-bright, #c0392b)'
           : chip.sentiment === 'positive'
@@ -528,12 +530,13 @@ function TileArt({ tile }: { tile: CardsSection['tiles'][number] }) {
   if (!image) return null;
   const target = tile.ref;
   const picture = <img src={image.src} alt={image.alt} loading="lazy" style={{ width: '100%', aspectRatio: ENTITY_VISUAL_HERO_ASPECT, objectFit: 'cover', display: 'block' }} />;
-  const bleed = { display: 'block', width: 'calc(100% + 20px)', margin: '-8px -10px 6px', padding: 0, border: 'none', background: 'var(--bg-deep)', borderRadius: 'var(--radius-panel) var(--radius-panel) 0 0', overflow: 'hidden' } as const;
+  // The tile clips its corners (overflow hidden), so the band bleeds to its edges square.
+  const bleed = { display: 'block', width: 'calc(100% + 20px)', height: 'auto', margin: '-8px -10px 6px', padding: 0, border: 'none', background: 'var(--bg-deep)', overflow: 'hidden' } as const;
   if (!target || !router) return <div data-tile-art="" style={bleed}>{picture}</div>;
   return (
-    <button type="button" data-tile-art="" aria-label={tile.title} onClick={() => router.open(target, 'card', { via: 'detail-link' })} style={{ ...bleed, cursor: 'pointer' }}>
+    <Button variant="ghost" data-tile-art="" aria-label={tile.title} onClick={() => router.open(target, 'card', { via: 'detail-link' })} style={{ ...bleed, cursor: 'pointer' }}>
       {picture}
-    </button>
+    </Button>
   );
 }
 
