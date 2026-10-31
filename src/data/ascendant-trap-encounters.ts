@@ -73,11 +73,13 @@ export const TRAP_SPRUNG_TEMPLATE: UnifiedActionTemplate = {
       failBehavior: 'fail_action',
       onSuccess: [],
       onFailure: [],
+      // THR-2095 — the snare marks them on either band ("marked but moving"), so
+      // both recipes admit harm; a win band's pool would otherwise drop it.
       successMetadata: {
-        rewardPool: { categoryWeights: { condition: 1.0 } },
+        rewardPool: { categoryWeights: { condition: 1.0 }, admitsHarm: true },
       },
       failureMetadata: {
-        rewardPool: { categoryWeights: { condition: 1.0 } },
+        rewardPool: { categoryWeights: { condition: 1.0 }, admitsHarm: true },
         reputationDelta: -0.03,
       },
       narrativeTemplate:

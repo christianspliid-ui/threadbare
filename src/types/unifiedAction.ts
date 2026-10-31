@@ -373,6 +373,13 @@ export interface EncounterAftermathChange {
    */
   readonly category?: EncounterAftermathCategory;
   /**
+   * THR-2095 — the change dealt harm (a reward draw that landed a `#negative`
+   * attachment, or a bad-outcome flip). The adapter folds it to SCAR with cost
+   * polarity whatever its wire kind or declared polarity, so a wound can never
+   * render as a BOON ▲. Absent on every other change (NFP #6).
+   */
+  readonly harmful?: boolean;
+  /**
    * The one concept that *is* the changed state — the reach that grew, the
    * faction whose measure moved, the item that changed hands. Distinct from
    * `concepts`, which decorates the sentence: this one drives the icon tile and
