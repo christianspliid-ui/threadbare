@@ -27,6 +27,7 @@ import type {
   NarrativeCandidate,
 } from '../../types/meetingEncounter';
 import { ComicPanel } from './ComicPanel';
+import { READING_BACKING } from '../shared/readingBacking';
 import { FORMATIVE_TOP_SPACER, useFitToParentHeight } from './fitToViewport';
 import { NudgePhaseShell } from '../Game/encounter-stage/shells/NudgePhaseShell';
 import { buildMeetingNudgePhaseModel, meetingSpendRequests } from './buildMeetingNudgePhaseModel';
@@ -44,6 +45,13 @@ import {
 const SCENE_BG = '#0a0a0f';
 const GOLD = '#d4af37';
 const FONT_PROSE = 'var(--font-prose)';
+
+/** THR-2093 — inner padding of the backed reading block (god voice + setup). */
+const READING_BLOCK_PADDING = '12px 16px';
+/** THR-2093 — corner radius of the reading block. */
+const READING_BLOCK_RADIUS_PX = 8;
+/** THR-2093 — space between the reading block and the test panel below it. */
+const READING_BLOCK_GAP_PX = 8;
 
 /** Milliseconds the opening line holds before the first test appears. */
 const TRANSITION_IN_MS = 1500;
@@ -224,6 +232,20 @@ export function FormativeTestBeat({
                 paddingRight: characterPosition === 'left' ? '8vw' : '38vw',
               }}
             >
+              {/* THR-2093 — the god voice and the setup read as one block: a
+                  dark backing over the scene art, capped at the prose measure
+                  so the lines stop growing with the window. The hand below
+                  keeps the column's full width. */}
+              <div
+                data-testid="formative-reading-block"
+                style={{
+                  ...READING_BACKING,
+                  maxWidth: 'var(--measure-prose)',
+                  padding: READING_BLOCK_PADDING,
+                  borderRadius: READING_BLOCK_RADIUS_PX,
+                  marginBottom: READING_BLOCK_GAP_PX,
+                }}
+              >
               {/* God voice — diegetic framing only (verdict 10: no UI tutorials). */}
               <p
                 style={{
@@ -247,12 +269,12 @@ export function FormativeTestBeat({
                   fontFamily: FONT_PROSE,
                   fontSize: '1rem',
                   color: 'rgba(200,190,170,0.85)',
-                  marginBottom: 8,
                   lineHeight: 1.7,
                 }}
               >
                 {fillProse(current.instance.setup, candidate.name, locationName)}
               </p>
+              </div>
 
               {/* ── Deciding: the WS2 shell, consumed whole ──
                   THR-1732 — its hand bar is `position: sticky`; since THR-1804
