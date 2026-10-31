@@ -24,7 +24,7 @@ import type {
   EncounterStageNarrativeParagraph,
   EncounterStageResolutionCheckModel,
 } from './types';
-import { enrichProse, gatherNarrativeContext } from '../../proseEnrichment';
+import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from '../../proseEnrichment';
 import type { NarrativeContext } from '../../proseEnrichment';
 import { computeCapability } from '../../domainCapability';
 import { computeResolutionModifiers } from '../../resolutionModifiers';
@@ -304,6 +304,7 @@ export function buildSimpleEncounterStageModel(
       // for every template that declares no fragments.
       contextFragments: template.contextFragments,
       contextFragmentTemplateId: template.id,
+      bindsFaction: template.bindsFaction,
       templateReach: template.reach, // THR-1635 — the {frag:place_fact} line
     },
   );
@@ -396,7 +397,7 @@ export function buildSimpleEncounterStageModel(
 
   return {
     header: {
-      title: template.name,
+      title: resolveEncounterTitle(template, narrativeCtx), // THR-2096
       locationLabel: resolveAgentLocationLabel(graph, agentId),
       ...(onFightStep
         ? {}

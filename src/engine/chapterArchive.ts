@@ -44,7 +44,7 @@ import {
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { isBranchingTemplate, isFactoryEncounterTemplate } from './kpi/gameplayKpi';
-import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
+import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './proseEnrichment';
 import { resolveStepDefinition } from './unifiedActionLifecycle';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { emitTrace } from './traceBuffer';
@@ -195,6 +195,7 @@ export function buildChapterRecord(
         // `{frag:place_fact}` coloration line). Without them every slot stripped here.
         contextFragments: template.contextFragments,
         contextFragmentTemplateId: template.id,
+        bindsFaction: template.bindsFaction,
         templateReach: template.reach,
       },
     );
@@ -229,6 +230,8 @@ export function buildChapterRecord(
         ? { aftermathProse: aftermath.overview, aftermathSummary: aftermath }
         : {}),
       ...(stakesLine ? { stakesLine } : {}),
+      // THR-2096 — the chapter keeps the name the veil showed ("The Merchant Consortium's Bounty").
+      templateName: resolveEncounterTitle(template, ctx),
       openingProse,
       steps,
     };

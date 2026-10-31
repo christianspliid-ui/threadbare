@@ -12,7 +12,7 @@
 import type { WorldGraph } from '../../graph';
 import type { GameState } from '../../../types/gameState';
 import type { SphereName } from '../../../types/index';
-import { enrichProse, gatherNarrativeContext } from '../../proseEnrichment';
+import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from '../../proseEnrichment';
 import type { NarrativeContext } from '../../proseEnrichment';
 import type { SimulationRuntime } from '../../simulationRuntime';
 import { stepOutcomeToOutcomeBand, stepOutcomeWord } from '../../../data/outcome-band-content';
@@ -276,7 +276,8 @@ function buildHeader(
   }
 
   return {
-    title: template.name,
+    // THR-2096 — a faction set-piece names its faction ("The Merchant Consortium's Bounty").
+    title: resolveEncounterTitle(template, ctx),
     ...(stakesLine ? { stakesLine } : { subtitle: enrichProse(rawSubtitle, ctx) }),
     locationLabel: resolveLocationLabel(graph, activeAction.targetId),
     // THR-1551 (fight on screen F2) — a fight step states how hard it is once, in
@@ -978,6 +979,7 @@ export function buildUnifiedEncounterStageModel(
       // not enough if the surface that shows it cannot resolve the token.
       contextFragments: args.template.contextFragments,
       contextFragmentTemplateId: args.template.id,
+      bindsFaction: args.template.bindsFaction,
       templateReach: args.template.reach, // THR-1635 — the {frag:place_fact} line
     },
   );

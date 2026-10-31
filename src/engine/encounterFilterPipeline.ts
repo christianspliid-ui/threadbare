@@ -56,6 +56,7 @@ import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { livingGroupMemberCount } from './groups/groupQueries';
 import { hasOpposingBand } from './groups/bandOpposition';
 import { hasLiveLairMonsterAt } from './monsters/liveMonster';
+import { factionBindingAllows } from './factionEncounterBinding';
 import { liveHuntFavourAtLocation } from './monsters/hunts';
 import { collectGrantedTraits, GRANTED_TRAIT_EFFECTIVE_LEVEL } from './effects/effectQueries';
 import { collectBearerTraitRefs, bearerMatchesPredicate } from './traitRefIndex';
@@ -388,6 +389,8 @@ export function filterByPrerequisites(
     // THR-1560: nor to a hunter waiting at the den with a live hunt appointment — the
     // appointment's confront is the fight they came for, and it is the only one.
     if (template?.requiresLiveMonster && liveHuntFavourAtLocation(graph, agentId, entry.locationId)) continue;
+    // Faction gate (THR-2096): a scene about a named faction is not offered where none binds.
+    if (template?.bindsFaction && !factionBindingAllows(graph, template.bindsFaction, agentId, entry.locationId)) continue;
     if (template?.requiredTraits && template.requiredTraits.length > 0) {
       // THR-786: one shared resolver, ANY-match on trait refs (node id, short id,
       // display name, tag). `every()` across the declared predicates is unchanged —

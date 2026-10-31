@@ -47,7 +47,8 @@ import {
   getAgentLocation,
 } from './graphQueries';
 import type { EncounterSupportBinding, EncounterSupportBundle } from '../types/encounter';
-import type { ContextFragmentSet } from '../types/unifiedAction';
+import type { ContextFragmentSet, FactionBindingMode } from '../types/unifiedAction';
+import { resolveFactionEncounterBinding } from './factionEncounterBinding';
 import {
   COLORATION_FRAGMENT_SLOT,
   resolveFragment,
@@ -199,6 +200,16 @@ export interface NarrativeContext {
   primaryReach: ReachDomain;
 
   factionRank?: { factionName: string; rank: string };
+  /**
+   * THR-2096 — what `{faction}` names: the faction a `bindsFaction` template bound,
+   * else the actor's own faction at any rank (not only senior, as `factionRank` is).
+   * Absent → `{faction}` falls back to `factionRank`, then "their people".
+   */
+  factionName?: string;
+  /** THR-2096 — the rival a `bindsFaction: 'rival'` scene bound; fills `{rival_faction}`. */
+  rivalFactionName?: string;
+  /** THR-2096 — the actor belongs to the bound faction (`{?has_faction_membership}`). */
+  boundFactionMember?: boolean;
   rulerOf?: { locationName: string };
   titles: string[];
 
@@ -518,6 +529,8 @@ export function gatherNarrativeContext(
     templateId?: string;
     /** THR-1635 — the rendering template's reach, for the `{frag:place_fact}` line. */
     templateReach?: string;
+    /** THR-2096 — the rendering template's `bindsFaction`, for `{faction}` / `{rival_faction}`. */
+    bindsFaction?: FactionBindingMode;
   },
 ): NarrativeContext {
   const agentNode = graph.getNode(agentId);
@@ -572,6 +585,11 @@ export function gatherNarrativeContext(
     ? { factionName: leaderMembership.group.name, rank: (leaderMembership.edge.properties.role as string) ?? 'member' }
     : undefined;
 
+  // THR-2096 — the faction a `bindsFaction` scene is about, from the same resolver the
+  // draw gate used; else the actor's own faction at any rank.
+  const factionBinding = resolveFactionEncounterBinding(graph, opts?.bindsFaction, agentId, location?.id);
+  const factionName = factionBinding?.factionName ?? leaderMembership?.group.name ?? memberships[0]?.group.name;
+
   // Titles from traits.
   // Reads `subcategory` — the canonical field on `TraitDefinitionProperties`. Every shipped
   // reputation definition (`reputation-trait-content.ts`, `economic-trait-content.ts`) stores
@@ -617,6 +635,9 @@ export function gatherNarrativeContext(
     cultureName,
     primaryReach: (props.primaryReach as ReachDomain) ?? 'iron',
     factionRank,
+    ...(factionName ? { factionName } : {}),
+    ...(factionBinding?.rivalFactionName ? { rivalFactionName: factionBinding.rivalFactionName } : {}),
+    ...(factionBinding ? { boundFactionMember: factionBinding.actorIsMember } : {}),
     titles,
     notableArtifacts,
     strongAllies,
@@ -773,6 +794,24 @@ function resolveColorationSlot(ctx: NarrativeContext): string {
 // ─── Placeholder Resolution ────────────────────────────────────────
 
 /**
+ * THR-2096 — an encounter's title as the player reads it: `nameTemplate` enriched
+ * against the scene's context ("The {faction}'s Bounty" → "The Merchant Consortium's
+ * Bounty"), else `name`. Fail-soft: a throw or an unresolved token reads `name`.
+ */
+export function resolveEncounterTitle(
+  template: { readonly name: string; readonly nameTemplate?: string },
+  ctx: NarrativeContext | undefined,
+): string {
+  if (!template.nameTemplate || !ctx) return template.name;
+  try {
+    const title = enrichProse(template.nameTemplate, ctx).trim();
+    return title && !title.includes('{') ? title : template.name;
+  } catch {
+    return template.name;
+  }
+}
+
+/**
  * Resolve all placeholders in a prose template using narrative context.
  *
  * opts.runtime — SimulationRuntime holding the per-actor phrase dedup history.
@@ -891,7 +930,8 @@ export function enrichProse(
 
   // Faction
   result = substituteFactionName(result,
-    ctx.factionRank?.factionName ?? 'their people');
+    ctx.factionName ?? ctx.factionRank?.factionName ?? 'their people');
+  result = substituteFactionName(result, ctx.rivalFactionName ?? 'their rivals', 'rival_faction');
 
   // Scene target (THR-694) — the entity the encounter is *with*. Every token carries a
   // fallback so absence reads as absence ("the other party") and no raw token leaks.
@@ -1095,6 +1135,17 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     no_rival: ctx.rivals.length === 0,
     has_faction: ctx.factionRank != null,
     no_faction: ctx.factionRank == null,
+    // THR-2096 — the actor belongs to the faction the scene bound.
+    has_faction_membership: ctx.boundFactionMember === true,
+    no_faction_membership: ctx.boundFactionMember !== true,
+    // THR-2096 — authored in the `fa.*` set-pieces and never resolved, so the raw
+    // markers reached the veil. Loyalty reads membership of the bound faction; the
+    // dominant-reach trio reads the actor's primary reach.
+    loyalty_high: ctx.boundFactionMember === true,
+    loyalty_low: ctx.boundFactionMember !== true,
+    iron_dominant: ctx.primaryReach === 'iron',
+    shadow_dominant: ctx.primaryReach === 'shadow',
+    other_dominant: ctx.primaryReach !== 'iron' && ctx.primaryReach !== 'shadow',
     has_title: ctx.titles.length > 0,
     no_title: ctx.titles.length === 0,
     // Scene target (THR-694). A location-kind target is present (has_target true) but

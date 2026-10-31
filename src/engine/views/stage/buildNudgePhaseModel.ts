@@ -514,6 +514,7 @@ export function buildNudgePhaseModel(
         supportBindings: activeAction.supportBindings,
         contextFragments: template.contextFragments,
         contextFragmentTemplateId: template.id,
+        bindsFaction: template.bindsFaction,
         templateReach: template.reach, // THR-1635 — the {frag:place_fact} line
       },
     );
