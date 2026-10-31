@@ -17,6 +17,7 @@ import { getUnifiedTemplateById } from '../unified-action-templates';
 import {
   LOC_LAY_FOOTINGS_BUILD_DELTA, LOC_KEEP_STORES_FOOD_DELTA,
   LOC_TEND_SICK_HEALTH_DELTA, LOC_LET_DAMP_IN_HEALTH_DELTA, LOC_KEEP_VIGIL_UNREST_DELTA,
+  LOC_HEALTH_DEFAULT_BASELINE, LOC_BLESS_HARVEST_HEALTH_DELTA,
 } from '../location-action-constants';
 import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../../types/battle';
 import { ACTION_PRESSURE_SUCCESS } from '../../types/sphereAffinity';
@@ -116,6 +117,22 @@ describe('THR-2089 — the three cards', () => {
     const graph = townGraph();
     executeGraphOps(graph, successOps('loc.let_damp_in'), { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 5 });
     expect(graph.getNode(TOWN)!.properties.populationHealth).toBe(50 - LOC_LET_DAMP_IN_HEALTH_DELTA);
+  });
+
+  it('on a town with no populationHealth (the worldgen shape), Tend and Damp move it from the 80 baseline (THR-2090 review gate)', () => {
+    for (const [id, want] of [
+      ['loc.tend_sick', LOC_HEALTH_DEFAULT_BASELINE + LOC_TEND_SICK_HEALTH_DELTA],
+      ['loc.let_damp_in', LOC_HEALTH_DEFAULT_BASELINE - LOC_LET_DAMP_IN_HEALTH_DELTA],
+      ['loc.bless_harvest', LOC_HEALTH_DEFAULT_BASELINE + LOC_BLESS_HARVEST_HEALTH_DELTA],
+    ] as const) {
+      resetOpCounter();
+      const graph = townGraph();
+      delete (graph.getNode(TOWN)!.properties as Record<string, unknown>).populationHealth;
+      expect(graph.getNode(TOWN)!.properties.populationHealth).toBeUndefined();
+      const ops = successOps(id).filter((o) => o.op === 'update_node');
+      executeGraphOps(graph, ops, { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 5 });
+      expect(graph.getNode(TOWN)!.properties.populationHealth, id).toBe(want);
+    }
   });
 
   it('Keep the Vigil eases the town\'s unrest (THR-2090)', () => {

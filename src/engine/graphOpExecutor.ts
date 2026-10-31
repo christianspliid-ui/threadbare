@@ -48,6 +48,7 @@ import {
   LOC_REVEAL_VEIN_BOOST,
   LOC_GUIDE_CARAVAN_VOLUME_DELTA,
   LOC_SOUR_MINE_STOCK_DELTA,
+  LOC_HEALTH_DEFAULT_BASELINE,
 } from '../data/location-action-constants';
 import { RESOURCE_DEFINITIONS } from '../data/resource-content';
 import { TRADE_ROUTE_MAX_VOLUME } from './tradeRoute';
@@ -534,6 +535,21 @@ function isMisshapenNumericChange(previous: unknown, value: unknown): boolean {
  * written but reported. Both paths warn — before THR-1456 only the string path did,
  * which is why the object corruption sat on `main` silently.
  */
+/**
+ * THR-2090 review gate: a relative change to a property no writer seeds starts from the
+ * value its readers already assume when it is absent, not 0. `populationHealth` is never
+ * seeded at worldgen and every reader treats absent as LOC_HEALTH_DEFAULT_BASELINE, so a
+ * `'+10'` on a fresh town used to write 10 — the healing card made the town sick.
+ */
+export const RELATIVE_CHANGE_ABSENT_DEFAULTS: Readonly<Record<string, number>> = {
+  populationHealth: LOC_HEALTH_DEFAULT_BASELINE,
+};
+
+function relativeBase(current: unknown, key: string): number {
+  if (typeof current === 'number') return current;
+  return RELATIVE_CHANGE_ABSENT_DEFAULTS[key] ?? 0;
+}
+
 function applyNodeChanges(
   current: Record<string, unknown>,
   changes: Record<string, unknown>,
@@ -546,17 +562,18 @@ function applyNodeChanges(
         console.warn(`[graphOpExecutor] applyNodeChanges: non-numeric relative change "${value}" for key "${key}" — skipped`);
         continue;
       }
-      const prev = typeof result[key] === 'number' ? (result[key] as number) : 0;
+      const prev = relativeBase(result[key], key);
       result[key] = prev + delta;
       continue;
     }
 
     const objectDelta = asRelativeDeltaObject(value);
     if (objectDelta !== null) {
-      // Same `prev` rule as the string branch: a non-number current value counts as 0.
+      // Same `prev` rule as the string branch: a non-number current value counts as 0
+      // (or its RELATIVE_CHANGE_ABSENT_DEFAULTS baseline).
       // The original number is unrecoverable once corrupted, but the corruption does not
       // survive the next delta that touches the key.
-      const prev = typeof result[key] === 'number' ? (result[key] as number) : 0;
+      const prev = relativeBase(result[key], key);
       result[key] = prev + objectDelta;
       continue;
     }
