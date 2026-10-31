@@ -89,9 +89,11 @@ function run(label: string, mk: () => any, opts: { god: boolean; doomStop?: numb
             ? state.graph.getNodesByType('location').filter((n: any) => typeof n.properties?.parentLocationId === 'string')
             : state.graph.getNodesByType('actor').filter((n: any) => n.properties?.actorType === 'individual' && n.properties?.alive !== false);
         const subs: string[] = t.targetSubtypes ?? [];
-        const legal = subs.length > 0
+        const req = Object.entries(t.requiredNodeProperties ?? {});
+        const legal = (subs.length > 0
           ? getLocationNodes(state.graph).filter((n: any) => subs.includes(n.properties?.locationSubtype ?? n.properties?.locationType))
-          : pool;
+          : pool
+        ).filter((n: any) => req.every(([k, v]) => (v === undefined ? n.properties?.[k] != null : n.properties?.[k] === v)));
         if (legal.length === 0) continue;
         const target = legal[(state.tick * 7919 + casts) % legal.length];
         try {

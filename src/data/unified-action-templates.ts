@@ -2383,6 +2383,10 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'matter',
     targetCategories: ['location'],
     targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    // Offered only while the town has a next building picked (`economyNextBuilding`, which the
+    // settlement economy writes only while a slot is free): on a full town buildProgress is
+    // never spent, so the cast would buy nothing and pile up (review gate).
+    requiredNodeProperties: { economyNextBuilding: undefined },
     motivations: ['preservation_transformation', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'presses the earth flat where the town means to build',

@@ -18,6 +18,7 @@ import { LOC_LAY_FOOTINGS_BUILD_DELTA, LOC_KEEP_STORES_FOOD_DELTA } from '../loc
 import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../../types/battle';
 import { ACTION_PRESSURE_SUCCESS } from '../../types/sphereAffinity';
 import { isActionStepBranch } from '../../types/unifiedAction';
+import { NEXT_BUILDING_PROP } from '../../engine/settlementEconomy/building';
 import type { GraphOp } from '../../types/graphOp';
 import type { GameState } from '../../types/gameState';
 
@@ -80,6 +81,13 @@ describe('THR-2089 — the three cards', () => {
     const graph = townGraph();
     executeGraphOps(graph, successOps('loc.lay_footings'), { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 5 });
     expect(graph.getNode(TOWN)!.properties.buildProgress).toBe(3 + LOC_LAY_FOOTINGS_BUILD_DELTA);
+  });
+
+  it('Lay the Footings is offered only while the town has a free slot (review gate)', () => {
+    // The settlement economy writes this property only while a building slot is free;
+    // on a full town buildProgress is never spent, so the card must not be offered there.
+    expect(getUnifiedTemplateById('loc.lay_footings')!.requiredNodeProperties)
+      .toEqual({ [NEXT_BUILDING_PROP]: undefined });
   });
 
   it('Keep the Stores adds food to the store', () => {
