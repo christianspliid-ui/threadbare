@@ -68,6 +68,15 @@ export interface AscendantIdentityView {
   secondarySphere: SphereName;
 }
 
+/**
+ * The god's face (THR-2097): its origin portrait, or null. The one portrait read — the rail's
+ * identity view and the person page's Your First badge both call it (Law 3).
+ */
+export function ascendantPortraitSrc(gameState: Pick<GameState, 'ascendantIdentity'>): string | null {
+  const id = gameState.ascendantIdentity?.originFragmentId;
+  return id ? getOriginPortraitUrl(id) : null;
+}
+
 export function selectAscendantIdentityView(
   gameState: GameState,
   archetype: AscendantArchetype,
@@ -77,9 +86,7 @@ export function selectAscendantIdentityView(
   const primary = archetype.sphereAlignment.primary;
   const secondary = archetype.sphereAlignment.secondary;
 
-  const portraitSrc = identity?.originFragmentId
-    ? getOriginPortraitUrl(identity.originFragmentId)
-    : null;
+  const portraitSrc = ascendantPortraitSrc(gameState);
 
   return {
     divineName: identity?.divineName ?? avatarName,

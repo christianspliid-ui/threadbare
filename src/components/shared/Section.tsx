@@ -11,9 +11,16 @@ import type {
   PortraitSection,
   ProseSection,
   Section as DetailSection,
+  SentencePart,
   TriggersSection,
 } from '../../types/detailPage';
 import { Chip } from './Chip';
+import { Icon } from './Icon';
+import { EntityLink } from './EntityLink';
+import { BondStrip } from './BondStrip';
+import { ENTITY_VISUAL_HERO_ASPECT } from './EntityVisual';
+import { useRefRouterContext } from '../../contexts/RefRouterContext';
+import type { IconName } from '../../data/icons/iconRegistry';
 import { OddsPips } from './OddsPips';
 import {
   useDetailPageOpener,
@@ -23,12 +30,12 @@ import { Tooltip } from './Tooltip';
 import { StepDots } from './StepDots';
 import { FIGHT_CLOCK_PIP_SIZE, FIGHT_TOOLTIP_IDS } from '../../data/fight-screen-content';
 
-function SectionLabel({ label, gold, tier, tooltipId }: { label: string; gold: boolean; tier?: string; tooltipId?: string }) {
+function SectionLabel({ label, gold, tier, tooltipId, icon }: { label: string; gold: boolean; tier?: string; tooltipId?: string; icon?: IconName }) {
   // THR-1909: a label that names a concept explains itself on hover (Law 17).
   if (tooltipId) {
     return (
       <Tooltip id={tooltipId}>
-        <SectionLabel label={label} gold={gold} tier={tier} />
+        <SectionLabel label={label} gold={gold} tier={tier} icon={icon} />
       </Tooltip>
     );
   }
@@ -47,9 +54,56 @@ function SectionLabel({ label, gold, tier, tooltipId }: { label: string; gold: b
         borderBottom:
           gold || decorate ? '1px solid var(--accent-gold-dim, var(--border-gold))' : 'none',
         paddingBottom: gold || decorate ? '2px' : 0,
+        // THR-2097 (rule R2): the concept's carved idea before the label, in the label's colour.
+        ...(icon ? { display: 'flex', alignItems: 'center', gap: '6px' } : {}),
       }}
+      {...(icon ? { 'data-section-icon': icon } : {})}
     >
-      {label}
+      {icon && <Icon name={icon} size="chip" decorative />}
+      {icon ? <span>{label}</span> : label}
+    </div>
+  );
+}
+
+/** Every section's label, with its icon and tooltip — one call so no renderer drops either. */
+function LabelOf({ section, label }: { section: DetailSection; label?: string }) {
+  return <SectionLabel label={label ?? section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} icon={section.icon} />;
+}
+
+/**
+ * THR-2097 (rule R6) — a composed sentence: each fact a term that links (Law 21) or
+ * explains itself on hover (Law 17), the rest plain text.
+ */
+function SentenceParts({ parts }: { parts: readonly SentencePart[] }) {
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (typeof part === 'string') return <Fragment key={i}>{part}</Fragment>;
+        if (part.ref) return <EntityLink key={i} id={part.ref.id} name={part.text} entityRef={part.ref} />;
+        const term = <span className="term" data-sentence-term="">{part.text}</span>;
+        return part.tooltipId ? <Tooltip key={i} id={part.tooltipId}>{term}</Tooltip> : <Fragment key={i}>{term}</Fragment>;
+      })}
+    </>
+  );
+}
+
+/**
+ * THR-2097 (rule R5) — the surface's one highlighted line: the icon in gold, a display-font
+ * headline, the sentence under it. The page's one gold emphasis (Law 31).
+ */
+function HighlightBlock({ highlight, children }: { highlight: NonNullable<ProseSection['highlight']>; children?: ReactNode }) {
+  return (
+    <div
+      data-highlight=""
+      style={{ background: 'var(--bg-raised)', border: '1px solid var(--accent-gold-dim, var(--border-gold))', borderRadius: 'var(--radius-panel)', padding: '10px 12px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}
+    >
+      <span style={{ color: 'var(--accent-gold)', display: 'inline-flex', flexShrink: 0 }}>
+        <Icon name={highlight.icon} size="list" decorative />
+      </span>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', color: 'var(--text-primary)', lineHeight: 1.2 }}>{highlight.headline}</div>
+        {children}
+      </div>
     </div>
   );
 }
@@ -87,20 +141,35 @@ function ProseSectionRenderer({ section }: { section: ProseSection }) {
     fontSize: variant === 'lede' ? 'var(--text-base)' : '0.9rem',
     fontStyle: variant === 'quote' ? ('italic' as const) : undefined,
   };
+  let text: ReactNode;
+  if (section.parts) {
+    text = <div style={style}><SentenceParts parts={section.parts} /></div>;
+  } else if (section.highlight && section.prose === escapeText(section.highlight.headline)) {
+    // The headline already says it: the name is not said twice.
+    text = null;
+  } else if (paragraphs.length === 1) {
+    text = <div onClick={handleClick} style={style} dangerouslySetInnerHTML={{ __html: section.prose }} />;
+  } else {
+    text = (
+      <div onClick={handleClick} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {paragraphs.map((para, index) => (
+          <p key={index} style={style} dangerouslySetInnerHTML={{ __html: para }} />
+        ))}
+      </div>
+    );
+  }
+  if (section.highlight) text = <HighlightBlock highlight={section.highlight}>{text}</HighlightBlock>;
+  if (section.bond) text = <BondStrip bond={section.bond}>{text}</BondStrip>;
   return (
     <div style={{ marginBottom: '20px' }} data-section-shape="prose">
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
-      {paragraphs.length === 1 ? (
-        <div onClick={handleClick} style={style} dangerouslySetInnerHTML={{ __html: section.prose }} />
-      ) : (
-        <div onClick={handleClick} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {paragraphs.map((para, index) => (
-            <p key={index} style={style} dangerouslySetInnerHTML={{ __html: para }} />
-          ))}
-        </div>
-      )}
+      <LabelOf section={section} />
+      {text}
     </div>
   );
+}
+
+function escapeText(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | undefined }) {
@@ -124,15 +193,17 @@ function ChipPill({ chip, open }: { chip: ChipDescriptor; open: OpenByRef | unde
             }
           : undefined
       }
+      {...(chip.lead ? { 'data-chip-lead': '' } : {})}
       style={{
         padding: '3px 8px',
         borderRadius: '4px',
-        border: `1px solid var(--sphere-${chip.sphere ?? 'force'}-bright, var(--border-gold))`,
+        // THR-2097 (rule R7): the leading trait reads first — primary text, a heavier border.
+        border: `${chip.lead ? 2 : 1}px solid var(--sphere-${chip.sphere ?? 'force'}-bright, var(--border-gold))`,
         color: chip.sentiment === 'negative'
           ? 'var(--sphere-force-bright, #c0392b)'
           : chip.sentiment === 'positive'
             ? 'var(--sphere-life-bright, var(--accent-gold))'
-            : 'var(--text-secondary)',
+            : chip.lead ? 'var(--text-primary)' : 'var(--text-secondary)',
         fontSize: '0.75rem',
         fontFamily: 'var(--font-body)',
         fontWeight: 700,
@@ -160,7 +231,7 @@ function ChipsSectionRenderer({ section }: { section: ChipsSection }) {
   const open = useDetailPageOpener();
   return (
     <div style={{ marginBottom: '20px' }}>
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+      <LabelOf section={section} />
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
         {section.chips.map((chip, index) => (
           <ChipPill key={`${chip.label}-${index}`} chip={chip} open={open} />
@@ -174,7 +245,7 @@ function ChipsSectionRenderer({ section }: { section: ChipsSection }) {
 function EventListRenderer({ section, entries }: { section: EventCardSection; entries: NonNullable<EventCardSection['entries']> }) {
   return (
     <div style={{ marginBottom: '20px' }} data-section-shape="event-list">
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+      <LabelOf section={section} />
       {entries.length === 0 ? (
         section.prose && <p style={{ color: 'var(--text-tertiary)', fontStyle: 'italic', margin: 0, fontSize: 'var(--text-sm)' }}>{section.prose}</p>
       ) : (
@@ -225,7 +296,7 @@ function EventCardSectionRenderer({ section }: { section: EventCardSection }) {
         cursor: clickable ? 'pointer' : 'default',
       }}
     >
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+      <LabelOf section={section} />
       <div
         style={{
           fontSize: 'var(--text-xs)',
@@ -261,9 +332,11 @@ function PanelSectionRenderer({ section }: { section: PanelSection }) {
 
   return (
     <div style={{ marginBottom: '20px' }}>
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+      <LabelOf section={section} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        {section.rows.map((row, index) => (
+        {section.rows.map((row, index) => row.poles && row.meter != null && Number.isFinite(row.meter) ? (
+          <PoleBarRow key={`${row.left}-${index}`} row={row} poles={row.poles} meter={row.meter} />
+        ) : (
           <div
             key={`${row.left}-${index}`}
             style={{
@@ -281,6 +354,38 @@ function PanelSectionRenderer({ section }: { section: PanelSection }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Width of a two-pole bar's track (NFP #1, THR-2097). */
+export const POLE_BAR_TRACK_W = '8rem';
+
+/**
+ * A scale between two words (THR-2097, rule R7): the left word, a track with a marker at the
+ * row's position, the right word — then the leaning word, kept visible (THR-1876 § D6: "the
+ * word is always there"). Never a numeral (Law 13). The leaning word is also the bar's name.
+ */
+function PoleBarRow({ row, poles, meter }: { row: PanelRow; poles: [string, string]; meter: number }) {
+  const at = Math.max(0, Math.min(1, meter));
+  return (
+    <div
+      data-pole-bar=""
+      style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 0', fontSize: '0.8rem', minWidth: 0, flexWrap: 'wrap' }}
+    >
+      <span style={{ color: 'var(--text-tertiary)', minWidth: '5.5rem', textAlign: 'right' }}>{poles[0]}</span>
+      <span
+        role="img"
+        aria-label={row.right}
+        style={{ position: 'relative', width: POLE_BAR_TRACK_W, height: '4px', borderRadius: 'var(--radius-control)', background: 'var(--bg-deep)', flexShrink: 0 }}
+      >
+        <span
+          data-pole-marker=""
+          style={{ position: 'absolute', top: '50%', left: `${at * 100}%`, width: '10px', height: '10px', borderRadius: '50%', background: 'var(--text-secondary)', transform: 'translate(-50%, -50%)' }}
+        />
+      </span>
+      <span style={{ color: 'var(--text-tertiary)', minWidth: '5.5rem' }}>{poles[1]}</span>
+      <span style={{ color: 'var(--text-primary)', fontStyle: 'italic' }}>{row.right}</span>
     </div>
   );
 }
@@ -322,7 +427,7 @@ function LinksSectionRenderer({ section }: { section: LinksSection }) {
   const groups = section.groups ?? [{ label: '', rows: section.rows, total: section.rows.length }];
   return (
     <div style={{ marginBottom: '20px' }} data-section-shape="links">
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+      <LabelOf section={section} />
       {groups.map((group, gi) => (
         <div key={`${group.label}-${gi}`} style={{ marginBottom: '8px' }}>
           {group.label && (
@@ -410,16 +515,41 @@ function TileByLine({ byLine }: { byLine: NonNullable<CardsSection['tiles'][numb
 }
 
 /** Cards — small tiles for conditions, works and powers (THR-1876 § D6). */
-function CardsSectionRenderer({ section }: { section: CardsSection }) {
+/** Art tiles per row in the Inspector's aside gallery (NFP #1, THR-2097). */
+export const INSPECTOR_GALLERY_COLUMNS = 2;
+
+/**
+ * THR-2097 (rule R3) — a tile's own art as a 16:9 band over its name. With a ref it opens the
+ * thing through the router (Law 21); without a router (the styleguide) it is a picture.
+ */
+function TileArt({ tile }: { tile: CardsSection['tiles'][number] }) {
+  const router = useRefRouterContext();
+  const image = tile.image;
+  if (!image) return null;
+  const target = tile.ref;
+  const picture = <img src={image.src} alt={image.alt} loading="lazy" style={{ width: '100%', aspectRatio: ENTITY_VISUAL_HERO_ASPECT, objectFit: 'cover', display: 'block' }} />;
+  const bleed = { display: 'block', width: 'calc(100% + 20px)', margin: '-8px -10px 6px', padding: 0, border: 'none', background: 'var(--bg-deep)', borderRadius: 'var(--radius-panel) var(--radius-panel) 0 0', overflow: 'hidden' } as const;
+  if (!target || !router) return <div data-tile-art="" style={bleed}>{picture}</div>;
+  return (
+    <button type="button" data-tile-art="" aria-label={tile.title} onClick={() => router.open(target, 'card', { via: 'detail-link' })} style={{ ...bleed, cursor: 'pointer' }}>
+      {picture}
+    </button>
+  );
+}
+
+function CardsSectionRenderer({ section, inAside = false }: { section: CardsSection; inAside?: boolean }) {
+  const columns = inAside ? `repeat(${INSPECTOR_GALLERY_COLUMNS}, minmax(0, 1fr))` : 'repeat(auto-fill, minmax(10rem, 1fr))';
   return (
     <div style={{ marginBottom: '20px' }} data-section-shape="cards">
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(10rem, 1fr))', gap: '8px' }}>
+      <LabelOf section={section} />
+      <div style={{ display: 'grid', gridTemplateColumns: columns, gap: '8px' }}>
         {section.tiles.map((tile, index) => (
           <div
             key={`${tile.title}-${index}`}
-            style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: '8px 10px', background: 'var(--bg-raised)', minWidth: 0 }}
+            {...(tile.image ? { 'data-art-tile': '' } : {})}
+            style={{ border: '1px solid var(--border-gold)', borderRadius: 'var(--radius-panel)', padding: '8px 10px', background: 'var(--bg-raised)', minWidth: 0, overflow: 'hidden' }}
           >
+            <TileArt tile={tile} />
             <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 700 }}>
               {tile.kindWordTooltipId ? <Tooltip id={tile.kindWordTooltipId}><span>{tile.kindWord}</span></Tooltip> : tile.kindWord}
             </div>
@@ -483,7 +613,7 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
         </div>
       )}
       <div style={{ flex: 1 }}>
-        <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+        <LabelOf section={section} />
         {section.bodyProse && (
           <p style={{ color: 'var(--text-primary)', lineHeight: 1.7, margin: 0, fontSize: '0.9rem' }}>
             {section.bodyProse}
@@ -504,7 +634,7 @@ function PortraitSectionRenderer({ section }: { section: PortraitSection }) {
 function TriggersSectionRenderer({ section }: { section: TriggersSection }) {
   return (
     <div style={{ marginBottom: '20px' }}>
-      <SectionLabel label={section.label} gold={section.gold} tier={section.tier} tooltipId={section.labelTooltipId} />
+      <LabelOf section={section} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }} data-testid="trigger-block">
         {section.triggers.map((trigger, index) => (
           <div key={`${trigger.condition}-${index}`} style={{ fontSize: '0.8rem' }}>
@@ -532,7 +662,11 @@ function TriggersSectionRenderer({ section }: { section: TriggersSection }) {
   );
 }
 
-export function Section({ section }: { section: DetailSection }) {
+/**
+ * One section. `inAside`: the Inspector draws it in the wide/Full aside (THR-2097,
+ * `placement: 'aside'`) — a cards section then lays its tiles out as the gallery.
+ */
+export function Section({ section, inAside = false }: { section: DetailSection; inAside?: boolean }) {
   switch (section.kind) {
     case 'prose':
       return <ProseSectionRenderer section={section} />;
@@ -549,7 +683,7 @@ export function Section({ section }: { section: DetailSection }) {
     case 'links':
       return <LinksSectionRenderer section={section} />;
     case 'cards':
-      return <CardsSectionRenderer section={section} />;
+      return <CardsSectionRenderer section={section} inAside={inAside} />;
   }
 }
 

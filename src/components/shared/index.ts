@@ -69,6 +69,8 @@ export { ProgressBar } from './ProgressBar';
 export { RarityBadge } from './RarityBadge';
 export { RarityBorderBox } from './RarityBorderBox';
 export { RivalIcon } from './RivalIcon';
+export { BondStrip, BOND_STRIP_MEDALLION } from './BondStrip';
+export { QuietSlot } from './QuietSlot';
 export { SectionHeading } from './SectionHeading';
 export { Section } from './Section';
 export { SphereIcon, REACH_TO_SPHERE, sphereFromReach } from './SphereIcon';

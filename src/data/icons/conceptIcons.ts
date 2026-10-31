@@ -425,6 +425,18 @@ export function iconForSublocation(typeId: string, parentSubtype?: LocationSubty
   return 'place-within';
 }
 
+/**
+ * THR-2097 — note a fallback a surface drew without going through `iconForKey` (an Inspector
+ * section whose row names an idea the registry lacks), so `getIconReport().fallbacksDrawn`
+ * sees it. Once per class and key, like `iconForKey`.
+ */
+export function recordFallbackDrawn(classId: string, key: string): void {
+  const seenKey = `${classId}\u0000${key}`;
+  if (warnedKeys.has(seenKey)) return;
+  warnedKeys.add(seenKey);
+  fallbacksDrawn.push({ classId, key });
+}
+
 /** Keys that drew the fallback since load, in first-seen order (`getIconReport`). */
 export function getFallbacksDrawn(): readonly { classId: string; key: string }[] {
   return fallbacksDrawn;

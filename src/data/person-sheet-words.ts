@@ -89,6 +89,50 @@ export const PERSON_FACT_WORDS = {
   spellKind: 'Spell',
 } as const;
 
+/** THR-2097 — a section label that carries its count: "What they carry · 4". */
+export const PERSON_COUNTED_LABEL = '{label} · {n}';
+
+/**
+ * THR-2097 (rule R6) — Who they are, told as one or two sentences instead of label-and-value
+ * rows. One clause per fact, in this order; a missing fact drops its clause. `{x}` is the
+ * fact's own word, drawn as a linked or tooltipped term; `{name}` is the person's name.
+ * `opener` replaces the archetype clause when there is no archetype ("Kael works as…").
+ */
+export const WHO_THEY_ARE_CLAUSES = {
+  archetype: '{A} {x}',
+  trade: ' who works as {a} {x}',
+  /** Trade with no archetype before it: the sentence opens on the name. */
+  tradeOpener: '{name} works as {a} {x}',
+  calling: ', and {a} {x} by calling.',
+  /** Calling with nothing before it. */
+  callingOpener: '{name} is {a} {x} by calling.',
+  means: ' {name} {x}.',
+  godMark: ' Your mark is on them: {x} — {line}',
+  path: ' {name} walks {x}.',
+  /** The rite line is already a whole sentence ("Bound in spring, … ."). */
+  rite: ' {x}',
+  knowsTheWayTo: ' {name} knows the way to {x}.',
+  knowsTheWayToLead: ' {name} knows the way to {x} — {lead}.',
+} as const;
+
+/** THR-2097 — the means clause's verb phrase per wealth tier ("Kael gets by."). */
+export const WHO_THEY_ARE_MEANS: Readonly<Record<'Destitute' | 'Getting by' | 'Comfortable' | 'Wealthy' | 'Magnate', string>> = {
+  Destitute: 'has nothing',
+  'Getting by': 'gets by',
+  Comfortable: 'lives in comfort',
+  Wealthy: 'is wealthy',
+  Magnate: 'is rich beyond counting',
+};
+
+/** "a" or "an" before a word — the clause templates' `{a}` / `{A}`. */
+export function personArticle(word: string, capital = false): string {
+  const a = /^[aeiou]/i.test(word) ? 'an' : 'a';
+  return capital ? a.charAt(0).toUpperCase() + a.slice(1) : a;
+}
+
+/** THR-2097 (rule R7) — the leading nature chip: "{word} above all". */
+export const NATURE_LEAD = '{word} above all';
+
 /** The empty and gated lines a row says instead of going blank (Law 4). */
 export const PERSON_EMPTY_LINES = {
   natureHidden: "You haven't observed {name} closely enough to read their character.",

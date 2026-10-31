@@ -23,7 +23,11 @@ import type {
   PanelRow,
   PanelSection,
   ProseSection,
+  SentencePart,
 } from '../../../types/detailPage';
+import type { WorldRef } from '../../../types/worldRef';
+import { getAttachmentArtUrl } from '../../../data/artifact-category-art';
+import { ICON_CLASSES, iconForKey } from '../../../data/icons/conceptIcons';
 import type { GameState } from '../../../types/gameState';
 import type { KnowledgeLevel } from '../../../types/familiarity';
 import type { SectionResolver, SectionResolverContext } from '../../detailPageResolvers';
@@ -75,7 +79,12 @@ import {
   DESIGN_OUTCOME_WORD,
   DISPOSITION_LABEL_MAP,
   LOCKED_STRATUM_TEXT,
+  NATURE_LEAD,
+  PERSON_COUNTED_LABEL,
   PERSON_EMPTY_LINES,
+  WHO_THEY_ARE_CLAUSES,
+  WHO_THEY_ARE_MEANS,
+  personArticle,
   PERSON_FACT_WORDS,
   PERSON_ROW_LABELS,
   RELIABILITY_WORD,
@@ -300,8 +309,23 @@ function tierName(tier: unknown): string {
 /** THR-2023 — the debt's tooltip: what a debt is and how it ends. */
 export const DEBT_TOOLTIP_ID = 'ui.debt_owed';
 
-/** One attachment as a card tile — the profile's vignette, words only. */
-function attachmentTile(entry: AttachmentFullEntry, kindWord?: string): CardTile {
+/**
+ * THR-2097 — the page a carried thing opens through the router (Law 21): an artifact node
+ * is an artifact, any other node an attachment. No node, no ref — never a dead link.
+ */
+function carriedRef(graph: GameState['graph'] | undefined, entry: AttachmentFullEntry): WorldRef | undefined {
+  const node = graph?.getNode(entry.id);
+  if (!node) return undefined;
+  const kind = node.type === 'artifact' || node.type === 'artifact_legendary' ? 'artifact' : 'attachment';
+  return { kind, id: node.id, name: entry.name };
+}
+
+/**
+ * One attachment as a card tile — the profile's vignette. THR-2097 (rule R3): with a graph
+ * the tile carries its art (bespoke plate, else the category plate, `getAttachmentArtUrl`)
+ * and the ref that opens it; without one it stays words only.
+ */
+function attachmentTile(entry: AttachmentFullEntry, kindWord?: string, graph?: GameState['graph']): CardTile {
   const lines: string[] = [];
   const cls = entry.powerClass === 'spell' ? 'Spell' : entry.powerClass === 'bestowal' ? 'Bestowal' : entry.powerClass === 'innate' ? 'Innate' : '';
   if (entry.sealed) lines.push('Sealed — bound, and it will not answer');
@@ -325,7 +349,11 @@ function attachmentTile(entry: AttachmentFullEntry, kindWord?: string): CardTile
   }
   if (entry.active === false && entry.inactiveReason) lines.push(`Inactive: ${entry.inactiveReason}`);
   const timed = entry.ticksRemaining != null && entry.totalTicks != null && entry.totalTicks > 0;
+  const art = graph ? getAttachmentArtUrl(entry.id, entry.subcategory) : null;
+  const ref = carriedRef(graph, entry);
   return {
+    ...(ref ? { ref } : {}),
+    ...(art ? { image: { src: art, alt: entry.name } } : {}),
     title: entry.name,
     kindWord: kindWord ?? [cls, tierName(entry.tier)].filter(Boolean).join(' · '),
     ...(entry.agreementType === 'debt' ? { kindWordTooltipId: DEBT_TOOLTIP_ID } : {}),
@@ -398,36 +426,121 @@ const leadingAmbition: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
   const want = s ? visibleJourneyIntents(s.card, s.knowledge)[0] : undefined;
   if (!want) return null;
-  return prose('leading_ambition', PERSON_ROW_LABELS.leadingAmbition, [want.displayName], { labelTooltipId: 'ui.thread_want_most' });
+  // THR-2097 (rule R5): the page's one highlighted line — the ambition's own idea and name
+  // as the headline, its authored flavour line under it. With no flavour line the headline
+  // is the whole of it; the renderer does not say the name twice.
+  const icon = iconForKey(ICON_CLASSES.ambition, want.category);
+  return prose('leading_ambition', PERSON_ROW_LABELS.leadingAmbition, [want.flavorText ?? want.displayName], {
+    labelTooltipId: 'ui.thread_want_most',
+    icon,
+    highlight: { icon, headline: want.displayName },
+  });
 };
+
+/** A fact word drawn as a term, with its tooltip (Law 17). */
+interface WhoFact {
+  word: string;
+  tooltipId?: string;
+}
+
+/** Everything Who they are can say — the same facts the retired panel listed (THR-2097). */
+export interface WhoTheyAreFacts {
+  archetype?: WhoFact;
+  trade?: WhoFact;
+  calling?: WhoFact;
+  /** The wealth tier word (`getWealthTier`). */
+  means?: keyof typeof WHO_THEY_ARE_MEANS;
+  godMark?: { name: string; line: string };
+  path?: WhoFact;
+  /** Already a whole sentence (`riteSheetLine`). */
+  rite?: string;
+  knows?: readonly { id: string; name: string; lead?: string }[];
+}
+
+/**
+ * Who they are as one or two sentences (THR-2097, rule R6; plan § S1.7). Pure: the facts in,
+ * the sentence parts out. A missing fact drops its clause; a fact whose word is blank is
+ * dropped too (Law 14), never printed as a key. Zero facts → null, and the row hides.
+ */
+export function composeWhoTheyAre(facts: WhoTheyAreFacts, name: string): { parts: SentencePart[]; text: string } | null {
+  const parts: SentencePart[] = [];
+  const word = (f: WhoFact | undefined) => (f && f.word.trim() ? f : undefined);
+  /** Fill one clause template: `{x}` becomes the term, the rest plain text. */
+  const clause = (template: string, x: SentencePart | null, extra: Record<string, string> = {}) => {
+    const plain = (t: string) => t.replace(/\{(\w+)\}/g, (m, k: string) => (k === 'name' ? name : extra[k] ?? m));
+    for (const piece of template.split(/(\{x\})/)) {
+      if (piece === '{x}') {
+        if (x) parts.push(x);
+      } else if (piece) {
+        parts.push(plain(piece));
+      }
+    }
+  };
+  const term = (f: WhoFact, lower = true): SentencePart => ({ text: lower ? f.word.toLowerCase() : f.word, ...(f.tooltipId ? { tooltipId: f.tooltipId } : {}) });
+
+  const archetype = word(facts.archetype);
+  const trade = word(facts.trade);
+  const calling = word(facts.calling);
+  if (archetype) clause(WHO_THEY_ARE_CLAUSES.archetype, term(archetype), { A: personArticle(archetype.word, true) });
+  if (trade) clause(archetype ? WHO_THEY_ARE_CLAUSES.trade : WHO_THEY_ARE_CLAUSES.tradeOpener, term(trade), { a: personArticle(trade.word) });
+  if (calling) {
+    clause(parts.length > 0 ? WHO_THEY_ARE_CLAUSES.calling : WHO_THEY_ARE_CLAUSES.callingOpener, term(calling), { a: personArticle(calling.word) });
+  } else if (parts.length > 0) {
+    parts.push('.');
+  }
+  if (facts.means && WHO_THEY_ARE_MEANS[facts.means]) clause(WHO_THEY_ARE_CLAUSES.means, WHO_THEY_ARE_MEANS[facts.means]);
+  if (facts.godMark && facts.godMark.name.trim()) {
+    // The line runs on after the dash, so it opens lower case: "Heartfire — their resolve holds…".
+    const raw = facts.godMark.line.trim();
+    const line = raw.charAt(0).toLowerCase() + raw.slice(1);
+    clause(WHO_THEY_ARE_CLAUSES.godMark, { text: facts.godMark.name }, { line: /[.!?]$/.test(line) ? line : `${line}.` });
+  }
+  const path = word(facts.path);
+  if (path) clause(WHO_THEY_ARE_CLAUSES.path, term(path, false));
+  if (facts.rite && facts.rite.trim()) clause(WHO_THEY_ARE_CLAUSES.rite, facts.rite.trim());
+  for (const place of facts.knows ?? []) {
+    if (!place.name.trim()) continue;
+    const x: SentencePart = { text: place.name, ref: { kind: 'location', id: place.id, name: place.name } };
+    if (place.lead) clause(WHO_THEY_ARE_CLAUSES.knowsTheWayToLead, x, { lead: place.lead });
+    else clause(WHO_THEY_ARE_CLAUSES.knowsTheWayTo, x);
+  }
+  if (parts.length === 0) return null;
+  // A sentence that opens on a later clause drops that clause's leading space.
+  if (typeof parts[0] === 'string') parts[0] = parts[0].trimStart();
+  const text = parts.map(p => (typeof p === 'string' ? p : p.text)).join('');
+  return { parts, text };
+}
 
 const whoTheyAre: SectionResolver = (ctx) => {
   const s = sheetOf(ctx);
   if (!s) return null;
   const { card } = s;
-  const rows: PanelRow[] = [];
-  if (atLeast(s, 'recognised') && card.archetypeLabel) {
-    rows.push({ left: PERSON_FACT_WORDS.archetype, right: card.archetypeLabel, ...(card.archetypeId ? { tooltipId: `archetype.${card.archetypeId}` } : {}) });
-  }
-  // THR-1982: the trade the god met them in — between the archetype and the calling.
-  if (atLeast(s, 'recognised') && card.tradeWord) rows.push({ left: PERSON_FACT_WORDS.trade, right: card.tradeWord, tooltipId: 'ui.trade' });
-  if (atLeast(s, 'recognised') && card.calling) rows.push({ left: PERSON_FACT_WORDS.calling, right: card.calling.title, tooltipId: 'ui.calling' });
-  if (card.wealth != null) rows.push({ left: PERSON_FACT_WORDS.means, right: getWealthTier(card.wealth) });
-  if (card.godMark) rows.push({ left: PERSON_FACT_WORDS.godMark, right: `${card.godMark.name} — ${card.godMark.line}` });
+  const recognised = atLeast(s, 'recognised');
   // THR-1988: the path the god chose at the bond, beside the mark it set. Ungated like the mark.
   const path = getFirstPathFor(s.state.graph, s.state.ascendantId, ctx.nodeId);
-  if (path) rows.push({ left: PERSON_FACT_WORDS.path, right: path.title, tooltipId: `ui.first.path.${path.reach}` });
-  if (card.riteLine) rows.push({ left: PERSON_FACT_WORDS.rite, right: card.riteLine });
-  for (const place of card.knownPlaces ?? []) {
-    // A skill, not a relation (brainstorm § Field inventories): a facts row with the place
-    // as a link, and the stage of the finding beside the label when there is a lead.
-    rows.push({
-      left: place.lead ? `${PERSON_FACT_WORDS.knowsTheWayTo} — ${place.lead}` : PERSON_FACT_WORDS.knowsTheWayTo,
-      right: place.name,
-      ref: { kind: 'location', id: place.id, name: place.name },
-    });
-  }
-  return panel('who_they_are', PERSON_ROW_LABELS.whoTheyAre, rows);
+  const composed = composeWhoTheyAre({
+    ...(recognised && card.archetypeLabel ? { archetype: { word: card.archetypeLabel, ...(card.archetypeId ? { tooltipId: `archetype.${card.archetypeId}` } : {}) } } : {}),
+    // THR-1982: the trade the god met them in — between the archetype and the calling.
+    ...(recognised && card.tradeWord ? { trade: { word: card.tradeWord, tooltipId: 'ui.trade' } } : {}),
+    ...(recognised && card.calling ? { calling: { word: card.calling.title, tooltipId: 'ui.calling' } } : {}),
+    ...(card.wealth != null ? { means: getWealthTier(card.wealth) } : {}),
+    ...(card.godMark ? { godMark: { name: card.godMark.name, line: card.godMark.line } } : {}),
+    ...(path ? { path: { word: path.title, tooltipId: `ui.first.path.${path.reach}` } } : {}),
+    ...(card.riteLine ? { rite: card.riteLine } : {}),
+    // A skill, not a relation (brainstorm § Field inventories): the place as a link.
+    ...(card.knownPlaces && card.knownPlaces.length > 0 ? { knows: card.knownPlaces } : {}),
+  }, card.name);
+  if (!composed) return null;
+  return {
+    kind: 'prose',
+    typeId: 'who_they_are',
+    label: PERSON_ROW_LABELS.whoTheyAre,
+    gold: false,
+    tier: 'routine',
+    source: 'personRows.who_they_are',
+    prose: escapeHtml(composed.text),
+    parts: composed.parts,
+  };
 };
 
 const allegiance: SectionResolver = (ctx) => {
@@ -474,12 +587,12 @@ const nature: SectionResolver = (ctx) => {
   const byLevel = atLeast(s, 'recognised') ? all : [];
   const values = byLevel.length > byKnowledge.length ? byLevel : byKnowledge;
   if (values.length === 0) {
-    return panel('nature', PERSON_ROW_LABELS.nature, [{ left: PERSON_ROW_LABELS.nature, right: personLine(PERSON_EMPTY_LINES.natureHidden, { name: s.card.name }) }]);
+    return prose('nature', PERSON_ROW_LABELS.nature, [personLine(PERSON_EMPTY_LINES.natureHidden, { name: s.card.name })]);
   }
-  return panel('nature', PERSON_ROW_LABELS.nature, values.map((v, i) => ({
-    left: i === 0 ? PERSON_FACT_WORDS.natureFirst : PERSON_FACT_WORDS.natureNext,
-    right: v.word,
-  })));
+  // THR-2097 (rule R7): a trait list is chips; the first leads — "Loyal above all".
+  return chips('nature', PERSON_ROW_LABELS.nature, values.map((v, i) => (
+    i === 0 ? { label: personLine(NATURE_LEAD, { word: v.word }), lead: true } : { label: v.word }
+  )));
 };
 
 const core: SectionResolver = (ctx) => {
@@ -487,7 +600,7 @@ const core: SectionResolver = (ctx) => {
   if (!profile) return null;
   return panel('core', PERSON_ROW_LABELS.core, CORE_CONTINUA.map(c => {
     const value = Math.max(0, Math.min(1, profile[c.continuumId as keyof typeof profile] ?? CORE_NEUTRAL));
-    return { left: `${c.virtue.word} · ${c.vice.word}`, right: leaningWord(value, c.virtue.word, c.vice.word), meter: value };
+    return { left: `${c.virtue.word} · ${c.vice.word}`, right: leaningWord(value, c.virtue.word, c.vice.word), meter: value, poles: [c.vice.word, c.virtue.word] as [string, string] };
   }));
 };
 
@@ -506,7 +619,7 @@ const personality: SectionResolver = (ctx) => {
     const signed = card.axiologicalProfile?.[axis.valuePair] ?? 0;
     if (Math.abs(signed) < PERSON_AXIS_SIGNAL_EPSILON && !byAxis.has(axis.axisId)) continue;
     const v = signedToCanonical01(signed);
-    rows.push({ left: `${axis.virtue.word} · ${axis.vice.word}`, right: leaningWord(v, axis.virtue.word, axis.vice.word), meter: v });
+    rows.push({ left: `${axis.virtue.word} · ${axis.vice.word}`, right: leaningWord(v, axis.virtue.word, axis.vice.word), meter: v, poles: [axis.vice.word, axis.virtue.word] });
     for (const c of byAxis.get(axis.axisId) ?? []) {
       rows.push({ left: c.source === 'origin' ? PERSON_FACT_WORDS.origin : PERSON_FACT_WORDS.mark, right: c.text });
     }
@@ -635,9 +748,10 @@ const slots: SectionResolver = (ctx) => {
     // The "(n/cap)" numeral retires (Law 13): the group's tiles sit together, so the count
     // is what the player sees, and the cap is a rule of the slot, not a fact about them.
     const name = SLOT_TAG_DISPLAY_NAMES[tag] ?? humanizeKeySegment(tag);
-    for (const item of items) tiles.push(attachmentTile(item, `${name}${tierName(item.tier) ? ` · ${tierName(item.tier)}` : ''}`));
+    for (const item of items) tiles.push(attachmentTile(item, `${name}${tierName(item.tier) ? ` · ${tierName(item.tier)}` : ''}`, s.state.graph));
   }
-  return cards('slots', PERSON_ROW_LABELS.slots, tiles);
+  // THR-2097: the gallery label carries its count — "What they carry · 4" (rule R3).
+  return cards('slots', personLine(PERSON_COUNTED_LABEL, { label: PERSON_ROW_LABELS.slots, n: String(tiles.length) }), tiles);
 };
 
 const knows: SectionResolver = (ctx) => {

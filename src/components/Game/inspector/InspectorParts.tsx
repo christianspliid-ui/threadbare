@@ -7,6 +7,7 @@ import type { ActOnVM, ConnectionsVM, LandIndexVM } from '../../../engine/views/
 import type { SphereName } from '../../../types';
 import { Chip } from '../../shared/Chip';
 import { Button } from '../../shared/Button';
+import { QuietSlot } from '../../shared/QuietSlot';
 import { LinkRows, SectionLabel } from '../../shared/Section';
 import { INSPECTOR_WORDS } from '../../../data/view-content';
 import { bandAccentColor } from '../outcomeBandAccent';
@@ -62,12 +63,14 @@ export function ActOnRow({ actOn, targetName, onCast, compact = false }: {
     if (!result.cast && result.reason) setSaid({ id: actionId, reason: result.reason });
   };
 
+  // THR-2097 (rule R8): nothing castable is one quiet line in a dashed frame — no gold heading over nothing.
+  if (actOn.cards.length === 0) {
+    return <QuietSlot data-inspector-act="" label={actOn.heading}>{actOn.emptyLine}</QuietSlot>;
+  }
   return (
     <section data-inspector-act="" style={blockStyle} aria-label={actOn.heading}>
       {!compact && <SectionLabel label={actOn.heading} gold={true} />}
-      {actOn.cards.length === 0 ? (
-        <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>{actOn.emptyLine}</p>
-      ) : (
+      {(
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {actOn.cards.map(card => {
             const tint = card.sphere ? { sphere: card.sphere as SphereName } : ('neutral' as const);

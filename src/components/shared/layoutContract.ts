@@ -146,6 +146,12 @@ export const FRAME_TOKENS_PX: Record<LayoutTier, FrameTokens> = {
   },
 };
 
+/**
+ * THR-2097 — the Inspector's person portrait width at wide and Full (`--inspector-portrait-w`),
+ * in rem per tier, restated in every tier block of `index.css`.
+ */
+export const INSPECTOR_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { base: 15, fhd: 15, qhd: 18, uwqhd: 18 };
+
 /** Text-container widths in rem, declared once in `:root`, so they follow the root step-up. */
 export const TEXT_TOKENS_REM = {
   tooltipMaxW: 17.5,

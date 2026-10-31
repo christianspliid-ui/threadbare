@@ -15,6 +15,7 @@ import {
   FRAME_MAP_SHARE_MIN,
   FRAME_MAP_SHARE_MIN_INSPECTOR,
   FRAME_TOKENS_PX,
+  INSPECTOR_PORTRAIT_W_REM,
   LAYOUT_BREAKPOINTS_PX,
   MEASURE_PROSE_EM,
   MODAL_MAX_HEIGHT_VH,
@@ -82,6 +83,12 @@ describe('layoutContract — CSS ↔ TS parity', () => {
       }
     });
   }
+
+  it('the Inspector portrait width matches index.css at every tier (THR-2097)', () => {
+    for (const tier of TIERS) {
+      expect(decl(rootBlock(tier), '--inspector-portrait-w'), tier).toBe(`${INSPECTOR_PORTRAIT_W_REM[tier]}rem`);
+    }
+  });
 
   it('text-container tokens, the prose measure and the modal cap match', () => {
     const base = rootBlock('base');

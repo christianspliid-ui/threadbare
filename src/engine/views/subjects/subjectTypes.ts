@@ -11,6 +11,12 @@ import type { SphereName } from '../../../types';
 import type { HexKey } from '../../hexActorIndex';
 import type { ConnectionGroupId, LandIndexRowId } from '../../../data/view-content';
 import type { RefRow } from '../types';
+import type { IconName } from '../../../data/icons/iconRegistry';
+
+/** A where-line link: the place, and its carved idea (THR-2097, rule R2). */
+export interface WhereRowVM extends RefRow {
+  icon?: IconName;
+}
 
 /** One named row in Connections or *In this land*: a link plus its one plain fact. */
 export interface LinkRowVM extends RefRow {
@@ -43,7 +49,13 @@ export interface SubjectHeaderVM {
    */
   mortalShape: { godTitleLine: string } | null;
   /** Containment, innermost first: Temple Quarter → The Bone Coast. */
-  whereLine: RefRow[];
+  whereLine: WhereRowVM[];
+  /**
+   * THR-2097 (rule R1): this person is the god's First — the Your First badge on the
+   * portrait, with the god's face (`ascendantPortraitSrc`; null draws the words only).
+   * The standing row then does not repeat the chip. Absent on every other page.
+   */
+  firstOf?: { godName: string; godPortraitSrc: string | null };
   /**
    * What `EntityVisual` draws: the subject's kind and id, and the Law 8 portrait gate.
    * `src` is art the page already chose (the land page's hero, THR-1916); it wins over

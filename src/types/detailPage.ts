@@ -5,6 +5,7 @@
 import type { ProseLayer } from './prose';
 import type { AnyRef } from './contentRef';
 import type { WorldRef } from './worldRef';
+import type { IconName } from '../data/icons/iconRegistry';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────────────────
 
@@ -157,6 +158,11 @@ export interface ChipDescriptor {
    * — the label is the word the player reads (Law 14).
    */
   dataKey?: { attribute: string; value: string };
+  /**
+   * THR-2097 (additive, rule R7): the trait that leads — drawn in primary text with a heavier
+   * border. The resolver words it ("Loyal above all"); at most one per section.
+   */
+  lead?: boolean;
 }
 
 /** One row of a `triggers` section: what fires, how likely, and what it does. */
@@ -198,6 +204,34 @@ export interface SectionBase {
    * `ui.intention.*`). Absent = a plain label.
    */
   labelTooltipId?: string;
+  /**
+   * THR-2097 (additive, rule R2): the concept the heading names, drawn before the label.
+   * Copied from the registry row's `icon` (Law 58) unless the resolver set a more specific
+   * one (`leading_ambition` reads `ICON_FOR_AMBITION`).
+   */
+  icon?: IconName;
+  /**
+   * THR-2097 (additive, rule R3): `'aside'` = at wide and Full the Inspector draws this
+   * section in its aside, under the Act row, not in its tab. Docked keeps it in its tab.
+   */
+  placement?: 'aside';
+}
+
+/**
+ * THR-2097 (rule R6) — one run of a composed sentence: plain text, or a fact drawn as a term
+ * that links (`ref`, Law 21) or explains itself on hover (`tooltipId`, Law 17).
+ */
+export type SentencePart = string | { text: string; ref?: WorldRef; tooltipId?: string };
+
+/** THR-2097 — a drawn tie (rule R4): the god's face, the bond mark, the person's face. */
+export interface BondStripVM {
+  /** The god: its name and its face (`ascendantPortraitSrc`; null → the words only). */
+  left: { name: string; src: string | null };
+  /**
+   * The person: their face as `resolveEntityVisual` gave it at the god's knowledge level, so
+   * the gate holds (Law 8). Null = no art, or not yet known: the strip draws the person mark.
+   */
+  right: { name: string; id: string; src: string | null };
 }
 
 export interface ProseSection extends SectionBase {
@@ -214,6 +248,19 @@ export interface ProseSection extends SectionBase {
    * blank line (`\n\n`) and render as one `<p>` each.
    */
   variant?: 'body' | 'quote' | 'lede';
+  /**
+   * THR-2097 (additive, rule R5): the surface's one highlighted line — an icon and a
+   * display-font headline over the prose. At most one per page (Law 31's one gold).
+   */
+  highlight?: { icon: IconName; headline: string };
+  /** THR-2097 (additive, rule R4): drawn only while the engine holds the thread to the god. */
+  bond?: BondStripVM;
+  /**
+   * THR-2097 (additive, rule R6): the sentence as parts, so each fact keeps its link and its
+   * tooltip. Present = the renderer draws the parts; `prose` then holds the same words as
+   * plain text for every reader that wants a string (the hover card, tests).
+   */
+  parts?: SentencePart[];
 }
 
 export interface ChipsSection extends SectionBase {
@@ -263,6 +310,12 @@ export interface PanelRow {
    * Only where a retiring surface draws that bar today; never on a new field.
    */
   meter?: number;
+  /**
+   * THR-2097 (additive, rule R7): the scale's two words, left and right. With `meter` the
+   * row draws as a two-pole bar — both words, a marker, and the leaning word kept visible
+   * after it (THR-1876 § D6). Never a numeral (Law 13).
+   */
+  poles?: [string, string];
 }
 
 export interface PanelSection extends SectionBase {
@@ -313,6 +366,11 @@ export interface CardTile {
   clock?: { size: number; filled: number; word: string; wordTooltipId?: string; ariaLabel: string };
   /** THR-1992 (additive): a closing "{lead}{name}" whose name links (Law 21) — "slain by Vara". */
   byLine?: { lead: string; name: string; ref: WorldRef };
+  /**
+   * THR-2097 (additive, rule R3): the thing's own art, drawn as a 16:9 band over its name.
+   * Absent = the words-only tile.
+   */
+  image?: { src: string; alt: string };
 }
 
 /** A row of small cards — conditions, works, powers (THR-1876 § D6, new shape). */
