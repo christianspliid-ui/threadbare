@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 16:58 local (15:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 18:02 local (17:02 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -8,7 +8,7 @@
 ## Also waiting (8)
 
 - **Your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) reviewed every writing check against real lines, which is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. *— from the design lane*
-- **Thursday 29 to Friday 30 Oct:** the lanes were silent for 40 hours and no pause was recorded. Was the computer off or the app closed, or was this a pause?
+- **Thursday 29 to Friday 30 Oct:** "The scheduled lanes went silent for 40.3h (2026-10-29T01:56:50.000Z → 2026-10-30T18:17:35.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." *— silence check*
 - **Wednesday night to Friday night (21–23 Oct):** the lanes were silent for 48 hours and no pause was recorded. Was the app closed or the computer off, or was this a pause?
 - **Sunday evening to Monday evening (18–19 Oct):** the lanes were silent for 23 hours and no pause was recorded. Was the app closed, or was this a pause?
 - **Should "Fated" be gold instead of grey?** If you say nothing, it stays grey. ([the plan's section](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-10-18-thr-1980-words-teach-themselves.md#needs-christian-reserved-not-decided))
@@ -32,22 +32,18 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([morning 
 
 [Contact sheet — the twelve screens of the fixed journey](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-10-27/contact-sheet.jpg) — first week, so there is nothing to compare yet. The opening holds up. Opening a page brings two visible faults, and the mid-game cannot be reached because the seeded world ends after 41 ticks.
 
-## From Christian
-
-- **15:58 local, card lean sentence: "B".** This answers the design lane's A/B/C question. Cards on a choice step drop the lean sentence ("*It argues for the honest way.*") and keep only the effect: "Set the full price of being caught plainly before them, in coin and in name." **For the builder of [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1):** this replaces the plan's default of A. Apply B to every card line the slice touches. Receipt sent on Discord.
-
 ## Queue
 
-**Starved — one ticket ready, and it waits on its veto window.** [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable after about 03:50 tonight. The builder's last four runs correctly stood down on it. Its card-lean question is now answered: B (see § From Christian).
+**Starved — one ticket ready, and it waits on its veto window.** [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable after about 03:50 tonight, with your card-lean answer (B, effect only) attached. The builder's last six runs correctly stood down on it; that is idle by design, not a stall.
 
 - **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become claimable when their window closes, about 21:52 tonight.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the queue empty, this is the cheapest work on the board.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (11 days). No branch or local worktree names it. Agents can un-park it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (11 days). Agents can un-park it.
 
 ## Health
 
-All green. The live site is current (126665db; later commits were docs only). The PR checks and the scheduled background jobs pass, no pull request is waiting, the worktree reaper ran at 16:40, the enabled scheduled tasks are on time, and engine speed is normal (156 ms/tick, 2% under the 7-day median).
+All green. The live site is current (126665db; later commits were docs only). The PR checks and the scheduled background jobs pass, no pull request is waiting, the worktree reaper ran at 17:40, the enabled scheduled tasks are on time, and engine speed is normal (142 ms/tick, 11% under the 7-day median).
 
 The 40-hour silence on 29–30 Oct is on your list above.
