@@ -84,6 +84,14 @@ describe('the person page dressing (THR-2097)', () => {
     expect(bond?.bond?.right.id).toBe('kael');
   });
 
+  it('a threaded person with no relates_to edge (bonded through Meet the First) still gets the strip', () => {
+    const state = world();
+    state.graph.removeEdge('rel1');
+    const bond = sections(state).find(s => s.typeId === 'what_she_is_to_him') as ProseSection | undefined;
+    expect(bond?.bond?.right.id).toBe('kael');
+    expect(bond?.prose).toBe('Kael is bound to you by thread.');
+  });
+
   it('an unthreaded person gets the sentence but no strip', () => {
     const bond = sections(world({ threaded: false })).find(s => s.typeId === 'what_she_is_to_him') as ProseSection | undefined;
     expect(bond?.kind).toBe('prose');
@@ -104,7 +112,8 @@ describe('the person page dressing (THR-2097)', () => {
     for (const row of DETAIL_PAGE_REGISTRY.actor) {
       if (row.icon) expect(row.icon in ICON_REGISTRY, row.typeId).toBe(true);
     }
-    for (const icon of Object.values(INSPECTOR_TAB_ICONS)) expect(icon in ICON_REGISTRY).toBe(true);
+    // A tab with no pick draws nothing — never the 'Not yet drawn' fallback (Law 4).
+    for (const icon of Object.values(INSPECTOR_TAB_ICONS)) if (icon) expect(icon in ICON_REGISTRY && icon !== 'fallback').toBe(true);
     expect(DETAIL_PAGE_REGISTRY.actor.find(r => r.typeId === 'slots')?.placement).toBe('aside');
   });
 

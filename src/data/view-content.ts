@@ -26,18 +26,19 @@ export const INSPECTOR_TAB_LABELS: Readonly<Record<InspectorTabId, string>> = {
 /**
  * Tab icons (THR-2097, dressing rule R2). Total over every tab but Overview, which draws the
  * page kind's own idea (`ICON_FOR_WORLD_REF_KIND`). `prowess` is provisional (THR-2104);
- * `here_now`, `story` and `reaches` draw the fallback mark until THR-2104 picks them.
+ * `here_now`, `story` and `reaches` draw no icon until THR-2104 picks them — never the
+ * "Not yet drawn" mark, which reads as unfinished (Law 4).
  */
-export const INSPECTOR_TAB_ICONS: Readonly<Record<Exclude<InspectorTabId, 'overview'>, IconName>> = {
+export const INSPECTOR_TAB_ICONS: Readonly<Record<Exclude<InspectorTabId, 'overview'>, IconName | null>> = {
   prowess: 'prowess',
   attachments: 'attachment',
   bonds: 'bond',
   journey: 'journey',
   chronicle: 'chronicle',
   chapters: 'chapter-ledger',
-  here_now: 'fallback',
-  story: 'fallback',
-  reaches: 'fallback',
+  here_now: null,
+  story: null,
+  reaches: null,
 };
 
 /** The Connections block's six groups, in their fixed order (THR-1827 call 8; THR-1822 § D8). */

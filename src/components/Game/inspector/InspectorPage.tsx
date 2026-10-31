@@ -63,14 +63,15 @@ export interface InspectorDressingReport {
 interface TabGroup {
   id: InspectorTabId;
   label: string;
-  /** THR-2097 (rule R2): the tab's carved idea; Overview draws the page kind's own. */
-  icon: IconName;
+  /** THR-2097 (rule R2): the tab's carved idea; Overview draws the page kind's own. Null = none picked yet. */
+  icon: IconName | null;
   sections: DetailSection[];
 }
 
 /** The idea the Overview tab draws: the subject kind's own (a person page draws `person`). */
-export function overviewIconFor(kind: SubjectHeaderVM['visual']['kind']): IconName {
-  return (ICON_FOR_WORLD_REF_KIND as Readonly<Record<string, IconName>>)[kind] ?? FALLBACK_ICON_NAME;
+export function overviewIconFor(kind: SubjectHeaderVM['visual']['kind']): IconName | null {
+  // A kind with no world-ref idea (god, land, content, record) draws no icon until slice 2 picks one.
+  return (ICON_FOR_WORLD_REF_KIND as Readonly<Record<string, IconName>>)[kind] ?? null;
 }
 
 /** Whether this size draws a section in the aside rather than its tab (THR-2097). */
@@ -83,7 +84,7 @@ function drawsFallback(icon: IconName | undefined): boolean {
 }
 
 /** The visible sections at this size, grouped into tabs in table order. */
-export function tabsAt(body: readonly DetailSection[], size: InspectorSize, overviewIcon: IconName = FALLBACK_ICON_NAME): TabGroup[] {
+export function tabsAt(body: readonly DetailSection[], size: InspectorSize, overviewIcon: IconName | null = null): TabGroup[] {
   const groups: TabGroup[] = [];
   for (const section of body) {
     if (!sectionVisibleAt(section, size) || inAsideAt(section, size)) continue;
@@ -128,7 +129,7 @@ function Body({ tabs, tabsLabel }: { tabs: TabGroup[]; tabsLabel: string }) {
       {/* A tab row never scrolls sideways (THR-1821): the person's seven tabs wrap to a
           second line in the wide size's body column rather than overflow it (THR-1909). */}
       <Tabs kind="tabs" value={tabs.some(t => t.id === tab) ? tab : tabs[0].id} onChange={setTab} label={tabsLabel} style={{ flexWrap: 'wrap' }}>
-        {tabs.map(t => <Tabs.Tab key={t.id} value={t.id} label={t.label} icon={t.icon} />)}
+        {tabs.map(t => <Tabs.Tab key={t.id} value={t.id} label={t.label} icon={t.icon ?? undefined} />)}
         {tabs.map(t => (
           <Tabs.Panel key={t.id} value={t.id}>
             <div style={{ paddingTop: '10px' }}>{renderSections(t.sections)}</div>

@@ -335,7 +335,13 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   const related = [...out, ...incoming].find(
     (e) => e.source === protagonist.id || e.target === protagonist.id,
   );
-  if (!related) return null;
+  // THR-2097: a mortal the god holds by a thread but with no `relates_to` edge (a First bonded
+  // through Meet the First) still gets the row, so the bond strip draws for every held thread.
+  if (!related) {
+    const bond = bondOf(ctx, actor);
+    if (!bond.bond) return null;
+    return { kind: 'prose', typeId: 'what_she_is_to_him', label: 'What she is to him', gold: false, tier: 'routine', source: 'whatSheIsToHimResolver', prose: `${actor.name} is bound to you by thread.`, ...bond };
+  }
 
   const basis = wordedBasis(related.properties?.basis as string | undefined) ?? 'a thread between you';
   const sentiment = (related.properties?.sentiment as number | undefined) ?? 0;
