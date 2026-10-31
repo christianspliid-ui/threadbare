@@ -60,7 +60,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{trade}` | The actor's trade word, lower-cased (`tradeWord`, else its `npcRole` word), or "person" when it has none (THR-1982). Prose that must not claim a trade guards with `{?has_trade}…{/has_trade}` | "the {trade} counts the coins" → "the cooper counts the coins" |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
-| `{faction}` | Agent's faction name | "The Weavers' Circle" |
+| `{faction}` | The faction a `bindsFaction` template bound (Capability 35), else the agent's faction at any rank (THR-2096), else "their people". `{rival_faction}` names a `'rival'` binding's rival, else "their rivals" | "The Weavers' Circle" |
 | `{group}` | Caller-bound subject group (THR-522) — an Ascendant introduction beat's Director-bound culture/faction | "Children of the Shadow-Kept Timberlands" |
 | `{title}` | First reputation trait | "the Resolute" |
 | `{artifact:weapon}` | Notable weapon (tier ≥ storied) | "Ashenmourne" |
@@ -1564,6 +1564,22 @@ stakes: {
 **How to tell whether yours landed.** `npx vitest run src/data/encounters/__tests__/encounterStakes.validator.test.ts` fails a malformed block and lists templates still without one. In the browser, `await window.__DEBUG.getEncounterStakes()` returns the built line, the rendered line and `hasStakes`.
 
 **Where to find the implementation:** `src/engine/encounters/stakesLine.ts` (builders and the tick-path stamp); tables in `src/data/nudge-stage-content.ts` (`STAKES_LEAD_VARIANTS`, `STAKES_RESULT_FORMS`). Plan: `Docs/plans/2026-10-04-thr-1727-encounter-stakes-line.md`.
+
+### Capability 35: A Faction Scene Names Its Faction — `bindsFaction` and `nameTemplate` (THR-2096)
+
+**What it does:** a template about *a* faction (a posted bounty, a conclave, a rival watched across the square) declares which one, and the engine finds it from the world:
+
+- `bindsFaction: 'posting'` — the actor's own faction when it keeps a presence at the location (a guild hall `located_at` it, or an `owns` holding); else the faction present there.
+- `bindsFaction: 'member'` — the actor's own faction present at the location, with no fallback: a scene only a member can be in (a loyalty examination, a conclave).
+- `bindsFaction: 'rival'` — the actor's own faction and one it is declared rival to (`relates_to` with `isRival`).
+
+With no faction to bind, the template is **not offered** — both draw paths gate on it, like `requiresLiveMonster`. The bound name fills `{faction}` / `{rival_faction}` in step prose, afterimages and the opening line. `nameTemplate` carries the tokened title ("The {faction}'s Bounty" → "The Merchant Consortium's Bounty") on the veil header, the aftermath, the clock's "held by" and the chronicle; `name` stays the token-free fallback every other surface reads, so write it without the system word ("A Posted Bounty", not "Faction Bounty"). `{?has_faction_membership}` is true when the actor belongs to the bound faction.
+
+**Rules:** keep `stakes` and `narrativeTemplates.success` / `failure` token-free — the ledger rows read them unenriched. Never write "the faction" in player prose; a scene that cannot name its faction should not be offered.
+
+**How to tell whether yours landed:** `npx vitest run src/engine/__tests__/factionEncounterBinding.test.ts` builds every `fa.*` stage model on a seeded world and fails on a raw token or a bare "faction".
+
+**Where to find the implementation:** `src/engine/factionEncounterBinding.ts` (resolver and gate), `resolveEncounterTitle` in `src/engine/proseEnrichment.ts`; content in `src/data/faction-action-encounters.ts`.
 
 ---
 

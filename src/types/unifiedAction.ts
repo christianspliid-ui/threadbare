@@ -2632,6 +2632,9 @@ export interface CardProgression {
   readonly flags?: readonly string[];
 }
 
+/** THR-2096 — how a template binds the faction it is about (`factionEncounterBinding.ts`). */
+export type FactionBindingMode = 'posting' | 'member' | 'rival';
+
 export interface UnifiedActionTemplate {
   // Identity
   readonly id: string;
@@ -2662,6 +2665,13 @@ export interface UnifiedActionTemplate {
    */
   readonly protagonistRoles?: readonly NpcRole[];
   readonly name: string;
+  /**
+   * THR-2096 — the title with tokens (`{faction}`, `{rival_faction}`), enriched against
+   * the scene's context where an encounter is shown by name (veil header, aftermath,
+   * the clock's "held by", the chronicle). `name` stays the token-free fallback every
+   * other surface reads. Resolve through `resolveEncounterTitle`.
+   */
+  readonly nameTemplate?: string;
   readonly reach: ReachDomain;
   readonly crudType: 'create' | 'read' | 'update' | 'delete';
   /**
@@ -2755,6 +2765,16 @@ export interface UnifiedActionTemplate {
    * skip the draw filters; they carry the beast through `inheritContext` instead.
    */
   readonly requiresLiveMonster?: boolean;
+  /**
+   * The scene is about one named faction (THR-2096) — the generic `fa.*` set-pieces.
+   * `'posting'`: the actor's own faction present at the location, else the faction
+   * present there. `'member'`: the actor's own faction present there, no fallback (a
+   * scene only a member can be in). `'rival'`: the actor's own faction and a declared rival.
+   * Resolved by `factionEncounterBinding.ts`; it fills `{faction}` / `{rival_faction}`
+   * in the prose and `nameTemplate`. Like `requiresLiveMonster`, the gate only hides
+   * content: with no faction to bind the template is not offered.
+   */
+  readonly bindsFaction?: FactionBindingMode;
   /**
    * A decisive loss in a group contest on this template never kills (THR-731).
    *

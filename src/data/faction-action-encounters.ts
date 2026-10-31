@@ -9,6 +9,11 @@
  * have personalities — and those personalities collide with human lives.
  * Benchmark: "The Arcane Circle decided something. Kael Thornweaver is in the blast radius."
  *
+ * THR-2096: every template here binds the faction it is about (`bindsFaction`) and
+ * names it — `{faction}` / `{rival_faction}` in step prose, afterimages and the
+ * opening line, `nameTemplate` in the title. `stakes` and the outcome lines stay
+ * token-free: the ledger rows read them unenriched.
+ *
  * Design doc: Docs/plans/2026-04-14-faction-agency-implementation.md
  * Quality gate: Docs/plans/2026-04-18-faction-agency-quality-gate.md
  */
@@ -20,12 +25,14 @@ import type { UnifiedActionTemplate } from '../types/unifiedAction';
 export const FA_QUEST_BOARD_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.quest_board',
   stakes: {
-    goal: 'finish the faction\'s posted commission',
-    risk: 'leave the job half-done for the faction to remember',
-    won: 'finished the faction\'s posted commission',
+    goal: 'finish the commission posted at the hall',
+    risk: 'leave the job half-done for the hall to remember',
+    won: 'finished the commission posted at the hall',
     lost: 'left the commission unfinished on the board',
   },
-  name: 'Faction Quest Board',
+  name: 'A Posted Commission',
+  nameTemplate: 'The {faction}\'s Commission',
+  bindsFaction: 'posting',
   rarityTier: 1,
   intrinsicTier: 'shaping',
   reach: 'iron',
@@ -35,8 +42,8 @@ export const FA_QUEST_BOARD_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
   narrativeTemplates: {
-    initiation: 'takes a commission from the faction\'s notice board',
-    success: 'the work is done; the faction\'s coffers and confidence grow slightly',
+    initiation: 'takes a commission from the {faction}\'s notice board',
+    success: 'the work is done; the hall\'s coffers and confidence grow slightly',
     failure: 'the commission goes unfinished — the notice yellows on the board',
   },
   steps: [
@@ -48,12 +55,12 @@ export const FA_QUEST_BOARD_TEMPLATE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       narrativeTemplate:
-        'The notice board at {location} has a new posting — faction work, not guild rumor. ' +
+        'The notice board at {location} has a new posting from the {faction}, not guild rumor. ' +
         '{name} reads it twice. The task is specific and the reward is fair. ' +
         '{?has_faction_membership}The seal at the bottom is one {name} recognize{s}. ' +
         'It carries weight.{/has_faction_membership}' +
-        '{?no_faction_membership}The posting is for members only. {name} is not ' +
-        'a member — but the door to the guildhall is open, and inside someone ' +
+        '{?no_faction_membership}The posting is for members of the {faction} only. {name} is not ' +
+        'one — but the door to their hall is open, and inside someone ' +
         'could be convinced.{/no_faction_membership}',
       successAfterimage: 'The commission is taken. Someone is counting on this.',
       failureAfterimage: 'The notice goes unclaimed. The board fills with other work.',
@@ -77,13 +84,13 @@ export const FA_QUEST_BOARD_TEMPLATE: UnifiedActionTemplate = {
       },
       narrativeTemplate:
         'The commission is harder than the posting made it sound — they always are. ' +
-        '{name} works through it at {location}: the specific thing the faction needed done, ' +
+        '{name} works through it at {location}: the specific thing the {faction} needed done, ' +
         'the obstacle that wasn\'t listed, the moment where the job became real rather than theoretical. ' +
         '{?has_ally}Having {ally} nearby makes the difference. Two people working the same ' +
         'problem from different angles.{/has_ally}' +
         '{?has_artifact}{artifact:any} earns its place on this job.{/has_artifact}',
-      successAfterimage: 'Done. The faction will notice the work was good.',
-      failureAfterimage: 'The job outgrew the person. It happens. The faction will not forget.',
+      successAfterimage: 'Done. The {faction} will notice the work was good.',
+      failureAfterimage: 'The job outgrew the person. It happens. The {faction} will not forget.',
     },
   ],
 };
@@ -93,12 +100,14 @@ export const FA_QUEST_BOARD_TEMPLATE: UnifiedActionTemplate = {
 export const FA_RIVALRY_CONFRONTATION_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.rivalry_confrontation',
   stakes: {
-    goal: 'stare down the rival faction\'s member',
-    risk: 'give ground to the rival faction in public',
-    won: 'stared down the rival faction\'s member',
-    lost: 'gave ground to the rival faction in public',
+    goal: 'stare down a sworn rival in public',
+    risk: 'give ground to the rivals in public',
+    won: 'stared down a sworn rival in public',
+    lost: 'gave ground to the rivals in public',
   },
-  name: 'Rival Faction Confrontation',
+  name: 'Face-Off with a Rival',
+  nameTemplate: 'Face-Off with the {rival_faction}',
+  bindsFaction: 'rival',
   rarityTier: 2,
   intrinsicTier: 'shaping',
   reach: 'iron',
@@ -108,9 +117,9 @@ export const FA_RIVALRY_CONFRONTATION_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['mercy_ruthlessness', 'courage_prudence'],
   narrativeTemplates: {
-    initiation: 'encounters a member of a rival faction at close quarters',
-    success: 'stands their ground; the rival faction loses a small advantage',
-    failure: 'the confrontation ends badly — the rival faction has demonstrated its reach',
+    initiation: 'meets a member of the {rival_faction} at close quarters',
+    success: 'stands their ground; the rivals lose a small advantage',
+    failure: 'the confrontation ends badly — the rivals have shown their reach',
   },
   steps: [
     {
@@ -122,9 +131,9 @@ export const FA_RIVALRY_CONFRONTATION_TEMPLATE: UnifiedActionTemplate = {
       onFailure: [],
       narrativeTemplate:
         'At {location}, {name} recognize{s} the other person a moment before the other person ' +
-        'recognizes {them}. The faction emblem is subtle — a pin, a colored scarf, the particular ' +
+        'recognizes {them}. The {rival_faction} emblem is subtle — a pin, a colored scarf, the particular ' +
         'way they stand near the door — but {name} has been watching for this. ' +
-        'The rivalry is new. No one has been given instructions on what to do when they meet.',
+        'The {faction} and the {rival_faction} are at odds, and no one has said what to do when their people meet.',
       successAfterimage: 'Recognized and ready. {name} has the first advantage.',
       failureAfterimage: 'Recognized first. The situation is already tilted.',
     },
@@ -156,8 +165,8 @@ export const FA_RIVALRY_CONFRONTATION_TEMPLATE: UnifiedActionTemplate = {
         '{?other_dominant}through words, through reputation, through the simple fact ' +
         'of refusing to be moved.{/other_dominant}' +
         'The rival backs down — or {name} does. Either way, the rivalry is no longer theoretical.',
-      successAfterimage: 'The rival faction understands the terrain has changed.',
-      failureAfterimage: 'The rival faction has demonstrated what a rivalry costs.',
+      successAfterimage: 'The {rival_faction} understands the terrain has changed.',
+      failureAfterimage: 'The {rival_faction} has shown what a rivalry costs.',
     },
   ],
 };
@@ -167,12 +176,14 @@ export const FA_RIVALRY_CONFRONTATION_TEMPLATE: UnifiedActionTemplate = {
 export const FA_LOYALTY_TEST_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.loyalty_test',
   stakes: {
-    goal: 'answer the faction\'s questions and keep their place',
-    risk: 'leave the room with the faction cold to them',
-    won: 'answered the faction\'s questions and kept their place',
-    lost: 'left the room with the faction cold to them',
+    goal: 'answer the elders\' questions and keep their place',
+    risk: 'leave the room with the elders cold to them',
+    won: 'answered the elders\' questions and kept their place',
+    lost: 'left the room with the elders cold to them',
   },
   name: 'Loyalty Examination',
+  nameTemplate: 'The {faction} Asks Questions',
+  bindsFaction: 'member',
   rarityTier: 2,
   intrinsicTier: 'shaping',
   reach: 'heart',
@@ -182,9 +193,9 @@ export const FA_LOYALTY_TEST_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['loyalty_ambition', 'revelation_discretion'],
   narrativeTemplates: {
-    initiation: 'is called before the faction to answer for their loyalties',
-    success: 'answers the faction\'s questions with enough conviction to stay',
-    failure: 'the faction is not satisfied — the relationship is now formal and cold',
+    initiation: 'is called before the {faction} to answer for their loyalties',
+    success: 'answers the elders\' questions with enough conviction to stay',
+    failure: 'the elders are not satisfied — the relationship is now formal and cold',
   },
   steps: [
     {
@@ -205,16 +216,16 @@ export const FA_LOYALTY_TEST_TEMPLATE: UnifiedActionTemplate = {
         rewardPool: { categoryWeights: { condition: 1.0 } },
       },
       narrativeTemplate:
-        'The room is too quiet when {name} walks in. The faction\'s senior members are arranged ' +
+        'The room is too quiet when {name} walks in. The senior members of the {faction} are arranged ' +
         'with the specific formality that means this matters. Someone has made tea. No one is drinking it. ' +
         'The questions come slowly: Where were you? Who did you speak to? What did you tell them? ' +
         '{name} answer{s}. Some answers are easy. Some require {them} to decide, in the middle of ' +
-        'speaking, what the truth actually is. The faction is listening for the shape of the answers ' +
+        'speaking, what the truth actually is. The {faction} is listening for the shape of the answers ' +
         'as much as the content — they are looking for the sound of a person who still belongs here. ' +
         '{?loyalty_high}The conviction in {their} voice is real. Even the suspicious ones can hear it.{/loyalty_high}' +
-        '{?loyalty_low}{name}\'s answers are technically accurate. The faction notices ' +
+        '{?loyalty_low}{name}\'s answers are technically accurate. The {faction} notices ' +
         'they have stopped short of several things that would have been easy to say.{/loyalty_low}',
-      successAfterimage: 'The faction is satisfied — this time. {name} is still here.',
+      successAfterimage: 'The {faction} is satisfied — this time. {name} is still here.',
       failureAfterimage: 'The door closes behind {name} with a particular finality.',
     },
   ],
@@ -225,12 +236,14 @@ export const FA_LOYALTY_TEST_TEMPLATE: UnifiedActionTemplate = {
 export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.bounty_hunt',
   stakes: {
-    goal: 'track down and collect the faction\'s bounty',
+    goal: 'track down and collect the posted bounty',
     risk: 'let the target slip away, warned',
-    won: 'tracked down and collected the faction\'s bounty',
+    won: 'tracked down and collected the posted bounty',
     lost: 'let the target slip away, now warned of the hunt',
   },
-  name: 'Faction Bounty',
+  name: 'A Posted Bounty',
+  nameTemplate: 'The {faction}\'s Bounty',
+  bindsFaction: 'posting',
   rarityTier: 2,
   intrinsicTier: 'story_beat',
   reach: 'shadow',
@@ -245,9 +258,9 @@ export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['honesty_cunning', 'mercy_ruthlessness'],
   narrativeTemplates: {
-    initiation: 'takes a bounty commission from the faction',
+    initiation: 'takes a bounty commission from the {faction}',
     success: 'the bounty is collected; the target pays a price they didn\'t know was coming',
-    failure: 'the target escapes, the faction is out its coin, and the target now knows they\'re being hunted',
+    failure: 'the target escapes, the posters are out their coin, and the target now knows they\'re being hunted',
   },
   steps: [
     {
@@ -259,7 +272,7 @@ export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
       onFailure: [],
       narrativeTemplate:
         '{name} begins where every hunt begins: with information. Who is the target? ' +
-        'Where do they sleep? Who do they trust? The faction\'s posting was thin on detail — ' +
+        'Where do they sleep? Who do they trust? The {faction}\'s posting was thin on detail — ' +
         'intentionally, probably. The things that actually matter are not on paper. ' +
         '{name} asks around at {location}, carefully, in the way that doesn\'t announce ' +
         'what the asking is for. This part of the work is patient and unglamorous and ' +
@@ -289,12 +302,12 @@ export const FA_BOUNTY_HUNT_TEMPLATE: UnifiedActionTemplate = {
         'the decision made. The thing about bounty work — the thing they don\'t say in ' +
         'the posting — is that it is not theoretical once you are looking at the person. ' +
         'They are doing something ordinary: reading, eating, talking to someone they trust. ' +
-        'The faction\'s reasons for wanting them found are abstract. The person in front of ' +
+        'The {faction}\'s reasons for wanting them found are abstract. The person in front of ' +
         '{name} is not abstract.' +
         '{?has_ally}Having {ally} here changes the calculation. Another set of hands, ' +
         'another angle on the problem.{/has_ally}' +
         '{name} does what {name} came to do, or {name} does not.',
-      successAfterimage: 'The bounty is collected. The faction\'s ledger balances. Someone\'s life doesn\'t.',
+      successAfterimage: 'The bounty is collected. The {faction}\'s ledger balances. Someone\'s life doesn\'t.',
       failureAfterimage: 'The target got away. They know now. That makes everything harder.',
     },
   ],
@@ -311,6 +324,8 @@ export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
     lost: 'watched the ceremony stall with no concordat',
   },
   name: 'Alliance Concordat',
+  nameTemplate: 'The {faction}\'s Concordat',
+  bindsFaction: 'posting',
   rarityTier: 2,
   intrinsicTier: 'shaping',
   reach: 'heart',
@@ -323,7 +338,7 @@ export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
   narrativeTemplates: {
-    initiation: 'witnesses the factions\' alliance concordat',
+    initiation: 'witnesses the {faction} sign an alliance concordat',
     success: 'the alliance is formalized; new doors open for both sides',
     failure: 'the ceremony stalls on terms that seem minor and prove not to be',
   },
@@ -346,7 +361,7 @@ export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
         rewardPool: { categoryWeights: { condition: 0.80, possession: 0.20 } },
       },
       narrativeTemplate:
-        'The ceremony at {location} is brief by design — both factions have learned ' +
+        'The ceremony at {location} is brief by design — the {faction} and its new ally have both learned ' +
         'not to trust lengthy ceremonies. Two leaders, a document, a room of people ' +
         'watching to see if the handshake looks real. ' +
         '{name} is here because someone with rank thought it mattered that {they} be here. ' +
@@ -354,10 +369,10 @@ export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
         'The concordat is signed. The room exhales. From this moment, what was separate is joined — ' +
         'not merged, not identical, but connected by a line of mutual interest that will take years ' +
         'to either strengthen or snap. ' +
-        'The tea is poured. {name} stands with people from both factions in the same room for the ' +
+        'The tea is poured. {name} stands with people of the {faction} and their new allies in the same room for the ' +
         'first time, learning what it sounds like when their different vocabularies try to share a language.',
       successAfterimage: 'The alliance is real now. The work of making it matter begins.',
-      failureAfterimage: 'The ceremony produced no concordat. The factions leave with what they brought.',
+      failureAfterimage: 'The ceremony produced no concordat. The {faction} leaves with what it brought.',
     },
   ],
 };
@@ -367,12 +382,14 @@ export const FA_ALLIANCE_CEREMONY_TEMPLATE: UnifiedActionTemplate = {
 export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.rivalry_subterfuge',
   stakes: {
-    goal: 'learn the rival faction\'s plans unseen',
-    risk: 'get caught watching the rival faction',
-    won: 'learned the rival faction\'s plans unseen',
-    lost: 'got caught watching the rival faction',
+    goal: 'learn the rivals\' plans unseen',
+    risk: 'get caught watching the rivals',
+    won: 'learned the rivals\' plans unseen',
+    lost: 'got caught watching the rivals',
   },
   name: 'Rival Espionage',
+  nameTemplate: 'Watching the {rival_faction}',
+  bindsFaction: 'rival',
   rarityTier: 2,
   intrinsicTier: 'shaping',
   reach: 'shadow',
@@ -382,9 +399,9 @@ export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['honesty_cunning', 'revelation_discretion'],
   narrativeTemplates: {
-    initiation: 'infiltrates a rival faction\'s operations',
-    success: 'extracts useful intelligence about the rival faction\'s plans',
-    failure: 'the operation is compromised — the rival faction now knows it was being watched',
+    initiation: 'infiltrates the {rival_faction}\'s operations',
+    success: 'extracts useful intelligence about the rivals\' plans',
+    failure: 'the operation is compromised — the rivals now know they were being watched',
   },
   steps: [
     {
@@ -406,16 +423,16 @@ export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
         rewardPool: { categoryWeights: { condition: 0.90, possession: 0.10 } },
       },
       narrativeTemplate:
-        'The rival faction\'s operations at {location} are not secret exactly — they operate ' +
+        'The {rival_faction}\'s operations at {location} are not secret exactly — they operate ' +
         'openly enough that secrecy isn\'t the protection. The protection is that no one is ' +
         'looking carefully enough. {name} is looking carefully. ' +
         '{?has_artifact}{artifact:shadow} makes this easier. ' +
         'The right tools for the right kind of looking.{/has_artifact}' +
-        'The rival faction has a meeting schedule, a set of contacts, a pattern of where their ' +
+        'The {rival_faction} has a meeting schedule, a set of contacts, a pattern of where their ' +
         'members go and what they do when they get there. Learning that pattern is not dramatic. ' +
         'It is patient and methodical and it produces something useful when the patience holds.',
-      successAfterimage: 'The intelligence is good. The rival faction is less opaque than it was.',
-      failureAfterimage: 'The operation burned. The rival faction knows it had a watcher inside.',
+      successAfterimage: 'The intelligence is good. The {rival_faction} is less opaque than it was.',
+      failureAfterimage: 'The operation burned. The {rival_faction} knows it had a watcher inside.',
     },
   ],
 };
@@ -425,12 +442,14 @@ export const FA_RIVALRY_SUBTERFUGE_TEMPLATE: UnifiedActionTemplate = {
 export const FA_DEFECTION_PITCH_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.defection_pitch',
   stakes: {
-    goal: 'plant doubt in a rival faction member',
-    risk: 'tip off the rival faction to the pitch',
-    won: 'planted doubt in a rival faction member',
-    lost: 'tipped off the rival faction to the pitch',
+    goal: 'plant doubt in one of the rivals\' own',
+    risk: 'tip off the rivals to the pitch',
+    won: 'planted doubt in one of the rivals\' own',
+    lost: 'tipped off the rivals to the pitch',
   },
   name: 'Recruit from Rival',
+  nameTemplate: 'Recruiting from the {rival_faction}',
+  bindsFaction: 'rival',
   rarityTier: 2,
   intrinsicTier: 'shaping',
   reach: 'heart',
@@ -440,9 +459,9 @@ export const FA_DEFECTION_PITCH_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['loyalty_ambition', 'honesty_cunning'],
   narrativeTemplates: {
-    initiation: 'approaches a member of the rival faction with a proposition',
+    initiation: 'approaches a member of the {rival_faction} with a proposition',
     success: 'plants doubt in a rival member\'s mind — or confirms their departure',
-    failure: 'the pitch fails; the rival faction now knows they\'re being recruited against',
+    failure: 'the pitch fails; the rivals now know they\'re being recruited against',
   },
   steps: [
     {
@@ -465,14 +484,14 @@ export const FA_DEFECTION_PITCH_TEMPLATE: UnifiedActionTemplate = {
       narrativeTemplate:
         'At {location}, {name} finds the person they came to find and sits down across from them ' +
         'without preamble. The pitch is not about defection — no one says that word. ' +
-        'It is about opportunity, about what the rival faction has stopped offering that used to matter, ' +
+        'It is about opportunity, about what the {rival_faction} has stopped offering that used to matter, ' +
         'about what happens when loyalty becomes a habit rather than a choice. ' +
         'The person listens. They are here, which means they had enough curiosity to come. ' +
         'Whether they have enough dissatisfaction to act is something {name} cannot know until ' +
         'they speak, and then cannot be certain of even then. ' +
         'People are complicated about where they belong.',
       successAfterimage: 'The seed is planted. Whether it grows is not in {name}\'s hands anymore.',
-      failureAfterimage: 'The pitch failed — and now the rival faction knows their member was approached.',
+      failureAfterimage: 'The pitch failed — and now the {rival_faction} knows their member was approached.',
     },
   ],
 };
@@ -482,12 +501,14 @@ export const FA_DEFECTION_PITCH_TEMPLATE: UnifiedActionTemplate = {
 export const FA_CONCLAVE_DEBATE_TEMPLATE: UnifiedActionTemplate = {
   id: 'fa.conclave_debate',
   stakes: {
-    goal: 'sway the faction conclave to their side',
+    goal: 'sway the conclave to their side',
     risk: 'speak and have the vote go the other way',
-    won: 'swayed the faction conclave to their side',
+    won: 'swayed the conclave to their side',
     lost: 'spoke and saw the vote go the other way',
   },
-  name: 'Faction Conclave',
+  name: 'The Conclave',
+  nameTemplate: 'The {faction} in Conclave',
+  bindsFaction: 'member',
   rarityTier: 3,
   intrinsicTier: 'story_beat',
   reach: 'heart',
@@ -500,7 +521,7 @@ export const FA_CONCLAVE_DEBATE_TEMPLATE: UnifiedActionTemplate = {
   actorAffinities: ['individual'],
   motivations: ['preservation_transformation', 'loyalty_ambition'],
   narrativeTemplates: {
-    initiation: 'participates in a faction conclave',
+    initiation: 'takes a seat at the {faction}\'s conclave',
     success: 'their voice shapes the conclave\'s direction',
     failure: 'the conclave reaches its conclusion without being moved by what {name} said',
   },
@@ -513,9 +534,9 @@ export const FA_CONCLAVE_DEBATE_TEMPLATE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       narrativeTemplate:
-        'The faction convenes in the inner room — not the hall they use for visitors, ' +
+        'The {faction} convenes in the inner room — not the hall they use for visitors, ' +
         'the room they use for themselves. The question has been posted: what does ' +
-        'the faction do about the thing that has been gathering since the last meeting. ' +
+        'the {faction} do about the thing that has been gathering since the last meeting. ' +
         '{name} has read the question. {name} has been thinking about it, in the way ' +
         'you think about things that are also thinking about you. ' +
         'The others arrive one by one. Some are ready to speak. Some have come to listen. ' +
@@ -559,15 +580,15 @@ export const FA_CONCLAVE_DEBATE_TEMPLATE: UnifiedActionTemplate = {
         rewardPool: { categoryWeights: { condition: 1.0 } },
       },
       narrativeTemplate:
-        'The vote is called. In this faction, votes are not always formal — sometimes the ' +
+        'The vote is called. In the {faction}, votes are not always formal — sometimes the ' +
         'vote is whoever speaks last and most clearly when the room is tired of speaking. ' +
         '{name} makes {their} final statement, which is either the thing {they} have been ' +
         'building toward since the first step of this, or a recognition that the building ' +
         'has gone somewhere {name} did not intend. ' +
-        'The faction decides. The conclave closes. What was open is now settled — ' +
+        'The {faction} decides. The conclave closes. What was open is now settled — ' +
         'for now, which is the only kind of settled that ever lasts.',
-      successAfterimage: 'The faction\'s direction has shifted toward what {name} argued for.',
-      failureAfterimage: 'The faction decided. {name}\'s voice was heard and not persuasive.',
+      successAfterimage: 'The {faction}\'s direction has shifted toward what {name} argued for.',
+      failureAfterimage: 'The {faction} decided. {name}\'s voice was heard and not persuasive.',
     },
   ],
 };

@@ -17,18 +17,20 @@
 /** Matches a leading definite article on a name: "The X" / "the X". */
 const LEADING_ARTICLE = /^the\s+/i;
 
-/** Template article directly before the token: "The {faction}" / "the {faction}". */
-const ARTICLE_BEFORE_TOKEN = /\b([Tt]he) \{faction\}/g;
-
-const BARE_TOKEN = /\{faction\}/g;
-
-export function substituteFactionName(text: string, factionName: string): string {
+/**
+ * `token` is the placeholder without braces — `faction` by default. THR-2096 adds
+ * `rival_faction`, the rival a `bindsFaction: 'rival'` scene names; same article rule.
+ */
+export function substituteFactionName(text: string, factionName: string, token = 'faction'): string {
   const withoutArticle = factionName.replace(LEADING_ARTICLE, '');
+  // Template article directly before the token: "The {faction}" / "the {faction}".
+  const articleBeforeToken = new RegExp(`\\b([Tt]he) \\{${token}\\}`, 'g');
+  const bareToken = new RegExp(`\\{${token}\\}`, 'g');
   const out = text
-    .replace(ARTICLE_BEFORE_TOKEN, (_m, article: string) => `${article} ${withoutArticle}`)
-    .replace(BARE_TOKEN, factionName);
+    .replace(articleBeforeToken, (_m, article: string) => `${article} ${withoutArticle}`)
+    .replace(bareToken, factionName);
   // A sentence-initial bare token with a lowercase fallback name.
-  if (text.startsWith('{faction}') && out.length > 0) {
+  if (text.startsWith(`{${token}}`) && out.length > 0) {
     return out.charAt(0).toUpperCase() + out.slice(1);
   }
   return out;

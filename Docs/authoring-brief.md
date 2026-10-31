@@ -1,8 +1,8 @@
 # Authoring Brief
 
-> **Generated:** 2026-10-30 by scripts/build-authoring-brief.ts
+> **Generated:** 2026-10-31 by scripts/build-authoring-brief.ts
 > **Sources:**
->   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 25a8c2b0391637ccb44f5ab72a8655b8c916d3e6)
+>   - Docs/plans/2026-04-16-systemic-wiring-guide.md (sha1: 7f88942a6999b133a2c4c706fac90958cba94abd)
 >   - Docs/plans/2026-04-16-game-design-direction.md (sha1: aa88a60fc3cbc554497f62d8faa9a09bd5f3e580)
 >   - .claude/skills/encounter-pipeline/SKILL.md (sha1: 636abd2bb126e15b1b9fcb29c291c2e5496f5811)
 >   - Docs/canon/undertakings.md (sha1: 82864d81fb2bdf16adb80eb0874b4a65400500ee)
@@ -66,7 +66,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{trade}` | The actor's trade word, lower-cased (`tradeWord`, else its `npcRole` word), or "person" when it has none (THR-1982). Prose that must not claim a trade guards with `{?has_trade}…{/has_trade}` | "the {trade} counts the coins" → "the cooper counts the coins" |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
-| `{faction}` | Agent's faction name | "The Weavers' Circle" |
+| `{faction}` | The faction a `bindsFaction` template bound (Capability 35), else the agent's faction at any rank (THR-2096), else "their people". `{rival_faction}` names a `'rival'` binding's rival, else "their rivals" | "The Weavers' Circle" |
 | `{group}` | Caller-bound subject group (THR-522) — an Ascendant introduction beat's Director-bound culture/faction | "Children of the Shadow-Kept Timberlands" |
 | `{title}` | First reputation trait | "the Resolute" |
 | `{artifact:weapon}` | Notable weapon (tier ≥ storied) | "Ashenmourne" |

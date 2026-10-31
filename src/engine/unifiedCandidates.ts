@@ -23,6 +23,7 @@ import { getActionGates } from './effects/effectQueries';
 import { livingGroupMemberCount } from './groups/groupQueries';
 import { hasOpposingBand } from './groups/bandOpposition';
 import { hasLiveLairMonsterAt } from './monsters/liveMonster';
+import { factionBindingAllows } from './factionEncounterBinding';
 import { liveHuntFavourAtLocation } from './monsters/hunts';
 import { GROUP_MIN_MEMBERS } from '../data/group-constants';
 
@@ -165,6 +166,10 @@ export function generateUnifiedCandidates(
     // THR-1560: a hunter holding a live hunt appointment at this den waits for its
     // confront; the encounter hunt is not offered on top of it.
     if (template.requiresLiveMonster && liveHuntFavourAtLocation(graph, actorId, locationId)) {
+      continue;
+    }
+    // Faction gate (THR-2096): a scene about a named faction (`fa.*`) needs one to name.
+    if (template.bindsFaction && !factionBindingAllows(graph, template.bindsFaction, actorId, locationId)) {
       continue;
     }
 
