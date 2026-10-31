@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 09:00 local (08:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,13 +17,20 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
+## Decided for you
+
+- [Spirit, life and entropy get a cheap place card](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life) — Doom's rising tide still darkens the whole world, but it no longer wipes a god's Mandate. Doom's own works and rivals still take back what the god built. Without this, a life god (Gather) could never fill its Mandate: 1.2 of 87 points, against 30 with the change. Veto line: "doom should wear a life god down everywhere".
+- Same ticket — three cheap town cards at 2 essence: *Tend the Sick* (life) heals a town, *Let the Damp In* (entropy) slowly sickens one, *Keep the Vigil* (spirit) calms unrest by mourning the dead. *Stoke the Forges* drops from 3 to 2 essence, so every Hunger's sphere now has a cheap town card.
+
+Say "veto <title>" to reverse any of these. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31a.md)*
+
 ## This week's screens
 
 [Contact sheet — the twelve screens of the fixed journey](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-10-27/contact-sheet.jpg) — first week, so there is nothing to compare yet. The opening holds up. Opening a page brings two visible faults, and the mid-game cannot be reached because the seeded world ends after 41 ticks.
 
 ## Queue
 
-**Healthy: four tickets ready, and the builder is working.** The veto window on the cheap place cards closed at 08:03 with no veto, and the builder took [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (*Steel the Walls*, *Lay the Footings*, *Keep the Stores*). It is built and up for review as [pull request #2656](https://github.com/christianspliid-ui/threadbare/pull/2656), with its checks still running.
+**Healthy: four tickets ready, and the builder is working.** The cheap force, matter and time cards ([THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12): *Steel the Walls*, *Lay the Footings*, *Keep the Stores*) are built and every check passes on [pull request #2656](https://github.com/christianspliid-ui/threadbare/pull/2656). It is not yet queued to merge, because engine changes pass a code review first; a builder run is on it now. The spirit, life and entropy cards (above) follow it from about 21:52 tonight.
 
 Ready next, all from this morning and all first-run faults:
 - [THR-2095](https://linear.app/threadbare/issue/THR-2095/a-won-encounter-hands-out-a-wound-and-calls-it-a-boon-hesper-won): a won encounter hands out a wound (Cracked Ribs) and calls it a boon.
@@ -38,7 +45,6 @@ Two items for agents, not you:
 ## Health
 
 - The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
-- Engine speed: "tick cost 398 ms/tick steady, 149% above the 7-day median (160, 127 rows since 4f587922); top phase agent_decision, 616 agents. Name the merges between 4f587922 and 87b5295d: git log --oneline --merges 4f587922..87b5295d" The code has not changed since the last three readings (128–136 ms on the same commit), so this is very likely the machine being busy with the builder's checks, not a slowdown in the game. Next hour's reading will tell. Nothing for you.
-- The orchestrator's rank/reach coverage sweep was cut off at its time limit this morning, so that coverage is not measured today. The orchestrator is tracking it; nothing for you.
+- Engine speed is back to normal: 168 ms per tick, 5% above the weekly median. Last hour's 398 ms reading was the machine being busy, as expected.
 
 Everything else is green. The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, the worktree reaper is running, and all 9 enabled scheduled tasks are on time.
