@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-31 15:58 local (14:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-31 16:58 local (15:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -9,15 +9,6 @@
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
 Recent gaps: 12–13 Oct overnight (03:57–13:57), Thursday 15 Oct (14:50–20:44), Friday 16 into Saturday 17 Oct (18:31–11:34, 21 jobs ready), Sunday 18 into Monday 19 Oct (20:26 Sunday – about 19:42 Monday, 25 jobs ready), **Wednesday 21 into Friday 23 Oct (about 23:07 Wednesday – 23:11 Friday, 48 hours, 20 jobs ready)**, and **Thursday 29 into Friday 30 Oct (about 02:57 Thursday – 19:12 Friday, 40 hours)**.
-
-### Card lean sentence: A, B or C? (new 31 Oct)
-
-Cards on a choice step often end by saying which way they lean. The doctrine does not say whether they should. Which do you want? (If you say nothing, A stays.)
-- **A**, keep the lean sentence: "Set the full price of being caught plainly before them, in coin and in name. *It argues for the honest way.*"
-- **B**, effect only: "Set the full price of being caught plainly before them, in coin and in name."
-- **C**, fold it in: "Make them see the full price of being caught, so the honest way looks cheaper."
-
-The builder starts on [story text, slice 1](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) after about 03:50 tonight. *— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md)*
 
 ### Your writing-checks conversation can start (new 31 Oct)
 
@@ -55,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-31: card lean sentence — you chose B, effect only** ("B", Discord 15:58). Cards on a choice step drop "It argues for the honest way." and keep the effect line. Passed to the builder of [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) via the briefing.
 - **2026-10-31: heavy simulation tests are green on main again** ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey)). Merged via [#2664](https://github.com/christianspliid-ui/threadbare/pull/2664).
 - **2026-10-31: a person’s page now leads with their art, and it is live** ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the)). Merged via [#2663](https://github.com/christianspliid-ui/threadbare/pull/2663).
 - **2026-10-31: the faction set-pieces now name the faction they are about, and it is live** ([THR-2096](https://linear.app/threadbare/issue/THR-2096/faction-bounty-names-no-faction-the-eight-generic-faction-set-pieces)). Merged via [#2661](https://github.com/christianspliid-ui/threadbare/pull/2661).
@@ -64,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-31: force, matter and time gods now have cheap town cards (Steel the Walls, Lay the Footings, Keep the Stores), and they are live** ([THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12)). Merged via [#2656](https://github.com/christianspliid-ui/threadbare/pull/2656).
 - **2026-10-30: a god's push onto a hex now lands on the place it falls on, and it is live** ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)). Merged via [#2653](https://github.com/christianspliid-ui/threadbare/pull/2653).
 - **2026-10-29: energy gods now have two cards of their own, Stoke the Forges and Kindle a Spark, and they are live** ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)). Merged via [#2652](https://github.com/christianspliid-ui/threadbare/pull/2652).
-- **2026-10-28: only the god's own hand now fills the Mandate, and it is live** ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)). Merged via [#2651](https://github.com/christianspliid-ui/threadbare/pull/2651).
 
 ---
 
