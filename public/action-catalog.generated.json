@@ -1,38 +1,38 @@
 {
   "schemaVersion": 3,
   "totals": {
-    "total": 188,
+    "total": 191,
     "byCategory": {
       "action": 69,
       "artifact": 5,
       "company": 4,
       "divine": 21,
       "hex": 49,
-      "location": 28,
+      "location": 31,
       "threads": 12
     },
     "byReach": {
       "iron": 13,
       "gold": 25,
-      "shadow": 23,
+      "shadow": 24,
       "veil": 23,
-      "heart": 30,
+      "heart": 32,
       "eye": 28,
       "stone": 11,
       "star": 34,
       "life": 1
     },
     "byBucket": {
-      "unlockable-generic": 185,
+      "unlockable-generic": 188,
       "generic": 3
     },
     "byEffectSource": {
-      "template-ops": 120,
+      "template-ops": 123,
       "aftermath-only": 6,
       "control-spec": 19,
       "engine-bridge": 43
     },
-    "beatGranted": 40,
+    "beatGranted": 43,
     "starters": 0,
     "unauthoredEffects": 0
   },
@@ -4683,7 +4683,7 @@
       "rarityName": "Mundane",
       "intrinsicTier": "background",
       "apCost": 1,
-      "essenceCost": 3,
+      "essenceCost": 2,
       "durationMode": "instant",
       "hasControlSpec": false,
       "aftermathReactionCount": 0,
@@ -4808,6 +4808,42 @@
       "bucketDeclared": false,
       "description": "Stirs whispers of grievance through a settlement, amplifying existing frustrations and fanning them into open discontent. Tensions rise as the people begin to question those who rule them and challenge the established order. Unrest that goes unaddressed can spiral into open rebellion.",
       "technicalEffect": "On success, raises the target location's `unrest` by a named delta, pushing it toward defection/sacking thresholds read elsewhere.",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.let_damp_in",
+      "name": "Let the Damp In",
+      "spellName": "Cough in the Walls",
+      "category": "location",
+      "reach": "shadow",
+      "sphereAffinity": "entropy",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 2,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Lets the damp into a town's walls and wells. Nothing falls at once. The children cough, the old take to their beds, and a town worn thin enough grows restless with its sickness.",
+      "technicalEffect": "Subtracts LOC_LET_DAMP_IN_HEALTH_DELTA from `populationHealth`; under SICK_HEALTH_LINE the town's unrest gains the sickness term. Pushes entropy pressure (THR-2090).",
       "effectSource": "template-ops"
     },
     {
@@ -5012,6 +5048,78 @@
       "bucketDeclared": false,
       "description": "Stirs the spirit of the settlement itself into present awareness. The place remembers — its founders, its lost laws, its half-forgotten customs. Your presence settles hard into the streets, and the ground keeps the mark of it.",
       "technicalEffect": "On success, raises the location's `divinePresence` by a named delta (LOC_AWAKEN_SPIRIT_PRESENCE_DELTA).",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.keep_vigil",
+      "name": "Keep the Vigil",
+      "spellName": "Lamps for the Dead",
+      "category": "location",
+      "reach": "heart",
+      "sphereAffinity": "spirit",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 2,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Lights the lamps on a town's graves and lets the living mourn properly. Old grievances lose their edge, and the streets are quieter for a while.",
+      "technicalEffect": "Subtracts LOC_KEEP_VIGIL_UNREST_DELTA from `unrest` (clamped at 0 on the next unrest tick). Pushes spirit pressure (THR-2090).",
+      "effectSource": "template-ops"
+    },
+    {
+      "id": "loc.tend_sick",
+      "name": "Tend the Sick",
+      "spellName": "The Fever Breaks",
+      "category": "location",
+      "reach": "heart",
+      "sphereAffinity": "life",
+      "crudType": "update",
+      "scale": "local",
+      "rarityTier": 1,
+      "rarityName": "Mundane",
+      "intrinsicTier": "background",
+      "apCost": 1,
+      "essenceCost": 2,
+      "durationMode": "instant",
+      "hasControlSpec": false,
+      "aftermathReactionCount": 0,
+      "targetCategories": [
+        "location"
+      ],
+      "targetSubtypes": [
+        "settlement",
+        "hamlet",
+        "town",
+        "city",
+        "capital"
+      ],
+      "requiresReach": null,
+      "starter": false,
+      "beatGranted": true,
+      "bucket": "unlockable-generic",
+      "bucketDeclared": true,
+      "description": "Walks unseen through a town's sickrooms. Fevers break, wounds close clean, and the coughing in the lower streets goes quiet. A healthy town has little to gain from it.",
+      "technicalEffect": "Adds LOC_TEND_SICK_HEALTH_DELTA to `populationHealth`; health above LOC_HEALTH_DEFAULT_BASELINE eases back 1 a tick. Pushes life pressure (THR-2090).",
       "effectSource": "template-ops"
     },
     {
