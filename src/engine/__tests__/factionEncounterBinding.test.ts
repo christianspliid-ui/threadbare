@@ -21,6 +21,7 @@ import { getAgentLocationId } from '../graphQueries';
 import { getFactionNodes } from '../factionNetwork';
 import { buildUnifiedEncounterStageModel } from '../../components/Game/encounter-stage/adapters/buildUnifiedEncounterStageModel';
 import { buildChapterRecord } from '../chapterArchive';
+import { playerFacingEncounterTitle } from '../unifiedActionResolution';
 
 // ─── Hand-built fixture ──────────────────────────────────────────────────────
 
@@ -110,9 +111,23 @@ describe('{faction} prose (THR-2096)', () => {
     expect(resolveEncounterTitle(bounty, ctx)).toBe('The Merchant Consortium\'s Bounty');
   });
 
-  it('falls back to the token-free name when no context is given', () => {
+  it('the aftermath ending sentence uses the same title (playerFacingEncounterTitle)', () => {
+    const graph = buildGraph();
+    const bounty = getUnifiedTemplateById('fa.bounty_hunt')!;
+    expect(playerFacingEncounterTitle(graph, bounty, 'hero')).toBe('The Merchant Consortium\'s Bounty');
+  });
+
+  it('falls back to the token-free name when no context is given or nothing binds', () => {
     const bounty = getUnifiedTemplateById('fa.bounty_hunt')!;
     expect(resolveEncounterTitle(bounty, undefined)).toBe(bounty.name);
+    const graph = buildGraph();
+    graph.removeEdge('e3');
+    graph.addEdge({ id: 'e4', source: 'hero', target: 'empty', type: 'located_at', properties: {} });
+    const ctx = gatherNarrativeContext(graph, 'hero', undefined, undefined, undefined, undefined, undefined,
+      { bindsFaction: 'posting' });
+    expect(resolveEncounterTitle(bounty, ctx)).toBe(bounty.name);
+    const espionage = getUnifiedTemplateById('fa.rivalry_subterfuge')!;
+    expect(resolveEncounterTitle(espionage, ctx)).toBe(espionage.name);
     expect(bounty.name).not.toMatch(/\bfaction\b|\{/i);
   });
 });

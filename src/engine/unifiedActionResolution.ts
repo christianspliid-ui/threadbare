@@ -16,6 +16,7 @@
 
 import { buildTierUpProse } from './chronicleGrowth';
 import type { GameState, TickEvent } from '../types/gameState';
+import type { WorldGraph } from './graph';
 import type { SphereName } from '../types/index';
 import type {
   AftermathVariant,
@@ -98,7 +99,7 @@ import { SCHISM_PENDING_DURATION_TICKS } from '../data/game-config';
 import { GATE_DUTY_NUDGE_IDS } from '../data/civic-guard-encounter-content';
 import { emitTrace } from './traceBuffer';
 import { progressActionsWithPlayerHolds } from './playerStepHold';
-import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
+import { enrichProse, gatherNarrativeContext, resolveEncounterTitle } from './proseEnrichment';
 import { stepOutcomeToOutcomeBand } from '../data/outcome-band-content';
 import { STEP_PROSE_HISTORY_MAX, type StepProseRecord } from '../types/stepProseRecord';
 import {
@@ -1116,6 +1117,26 @@ function resolveTemplateAftermathVariant(
  */
 export function playerFacingTemplateName(template: Pick<UnifiedActionTemplate, 'name' | 'spellName'>): string {
   return template.spellName ?? template.name;
+}
+
+/**
+ * THR-2096 — the name the veil showed, for the ending sentence and the event line:
+ * a template with a `nameTemplate` ("The {faction}'s Bounty") enriched against the
+ * actor's scene, else {@link playerFacingTemplateName}. Fail-soft to the plain name.
+ */
+export function playerFacingEncounterTitle(
+  graph: WorldGraph,
+  template: UnifiedActionTemplate,
+  actorId: string,
+): string {
+  if (!template.nameTemplate) return playerFacingTemplateName(template);
+  try {
+    const ctx = gatherNarrativeContext(graph, actorId, undefined, undefined, undefined, undefined, undefined,
+      { bindsFaction: template.bindsFaction });
+    return resolveEncounterTitle(template, ctx);
+  } catch {
+    return template.name;
+  }
 }
 
 /**
@@ -3089,11 +3110,12 @@ export function executeStepResult(
   );
   finalAction = withResolvedAftermathSummary(
     finalAction, action, template, currentActorName, consequence.narrativeTag,
+    playerFacingEncounterTitle(state.graph, template, action.actorId),
   );
   if (finalAction.resolved) {
     // Phase 3: outcome-differentiated event messages
     // THR-1964 — the same ending words the aftermath uses ("won …, at a price").
-    const endingClause = outcomeClause(currentActorName, playerFacingTemplateName(template), finalAction.outcome);
+    const endingClause = outcomeClause(currentActorName, playerFacingEncounterTitle(state.graph, template, action.actorId), finalAction.outcome);
     const baseSignificance = isActionSuccess(finalAction.outcome) ? 0.6 : 0.4;
     // Phase 3: critical_success gets hardcoded 0.8; other tiers get base + consequence boost
     const significance = finalAction.outcome === 'critical_success'
@@ -3216,13 +3238,14 @@ function executeFightNoRollEnd(
   finalAction = appendAftermathChanges(finalAction, aftermathChanges, []);
 
   const actorName = state.graph.getNode(action.actorId)?.name ?? 'An agent';
-  finalAction = withResolvedAftermathSummary(finalAction, action, template, actorName, undefined);
+  finalAction = withResolvedAftermathSummary(finalAction, action, template, actorName, undefined,
+    playerFacingEncounterTitle(state.graph, template, action.actorId));
 
   events.push({
     id: `ua_${action.actionId}_resolved`,
     tick,
     type: 'agent_action_resolved',
-    message: outcomeSentence(actorName, playerFacingTemplateName(template), finalAction.outcome),
+    message: outcomeSentence(actorName, playerFacingEncounterTitle(state.graph, template, action.actorId), finalAction.outcome),
     significance: isActionSuccess(finalAction.outcome) ? 0.6 : 0.4,
     actorId: action.actorId,
   });
@@ -3539,6 +3562,8 @@ function withResolvedAftermathSummary(
   template: UnifiedActionTemplate,
   currentActorName: string,
   narrativeTag: EncounterAftermathSummary['narrativeTag'],
+  /** THR-2096 — the encounter's player-facing title (`playerFacingEncounterTitle`). */
+  title: string = playerFacingTemplateName(template),
 ): UnifiedAction {
   if (finalAction.resolved && finalAction.outcome) {
     const changes = finalAction.aftermathChanges ?? [];
@@ -3566,7 +3591,7 @@ function withResolvedAftermathSummary(
     // THR-1964 — the first line says what decided the ending, authored or derived.
     const causeLine = buildAftermathCauseLine({
       actorName: currentActorName,
-      templateName: playerFacingTemplateName(template),
+      templateName: title,
       outcome: finalAction.outcome,
       steps: causeLineSteps(finalAction, template),
     });
@@ -3589,7 +3614,7 @@ function withResolvedAftermathSummary(
         ? `${causeLine} ${aftermathVariant.overview}`
         : buildEncounterAftermathOverview(
           currentActorName,
-          playerFacingTemplateName(template),
+          title,
           finalAction.outcome,
           changes,
           godTouchedEncounter(finalAction),

@@ -803,6 +803,11 @@ export function resolveEncounterTitle(
   ctx: NarrativeContext | undefined,
 ): string {
   if (!template.nameTemplate || !ctx) return template.name;
+  // A title token with nothing bound would read its prose fallback ("The their
+  // people's Bounty"); the token-free name is the honest title then. Reachable where
+  // the draw gate is skipped (a seed or `?spawn=` staging the template by id).
+  if (template.nameTemplate.includes('{faction}') && !ctx.factionName && !ctx.factionRank) return template.name;
+  if (template.nameTemplate.includes('{rival_faction}') && !ctx.rivalFactionName) return template.name;
   try {
     const title = enrichProse(template.nameTemplate, ctx).trim();
     return title && !title.includes('{') ? title : template.name;

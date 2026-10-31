@@ -60,8 +60,7 @@ Every `narrative` field in steps and outcomes supports dynamic text substitution
 | `{trade}` | The actor's trade word, lower-cased (`tradeWord`, else its `npcRole` word), or "person" when it has none (THR-1982). Prose that must not claim a trade guards with `{?has_trade}…{/has_trade}` | "the {trade} counts the coins" → "the cooper counts the coins" |
 | `{location}` | Current location name | "Thornhaven Market" |
 | `{culture}` | Agent's culture | "Coastfolk" |
-| `{faction}` | The faction a `bindsFaction` template bound (Capability 35), else the agent's faction at any rank (THR-2096; it read senior members only before), else "their people" | "The Weavers' Circle" |
-| `{rival_faction}` | The rival a `bindsFaction: 'rival'` template bound (THR-2096), else "their rivals" | "The Rangers Brotherhood" |
+| `{faction}` | The faction a `bindsFaction` template bound (Capability 35), else the agent's faction at any rank (THR-2096), else "their people". `{rival_faction}` names a `'rival'` binding's rival, else "their rivals" | "The Weavers' Circle" |
 | `{group}` | Caller-bound subject group (THR-522) — an Ascendant introduction beat's Director-bound culture/faction | "Children of the Shadow-Kept Timberlands" |
 | `{title}` | First reputation trait | "the Resolute" |
 | `{artifact:weapon}` | Notable weapon (tier ≥ storied) | "Ashenmourne" |
