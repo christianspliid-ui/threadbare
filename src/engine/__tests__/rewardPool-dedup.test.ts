@@ -117,7 +117,8 @@ describe('reward pool dedup against what the bearer holds (THR-1520)', () => {
   });
 
   it('a definition held directly on a has_trait edge is excluded too — conditions and powers, not only prizes', () => {
-    const conditionRecipe = possessionRecipe({ categoryWeights: { condition: 1 } });
+    // THR-2095 — the fixture is a `#negative` wound, which only the harm table may deal.
+    const conditionRecipe = possessionRecipe({ categoryWeights: { condition: 1 }, admitsHarm: true });
     expect(poolIds(graph, conditionRecipe, 'agent_a')).toEqual(['trait.condition.test_wound']);
     assignTrait(graph, 'agent_a', 'trait.condition.test_wound', { tick: 1, source: 'test' });
     expect(poolIds(graph, conditionRecipe, 'agent_a')).toEqual([]);

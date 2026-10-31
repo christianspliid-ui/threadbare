@@ -54,6 +54,7 @@ import {
   overviewHighlightPhrase,
   reachDisplayName,
   reputationSentence,
+  rewardHarmCauseClause,
   rewardSentence,
   traitGrantedSentence,
 } from './aftermathWords';
@@ -188,7 +189,7 @@ import {
   findActionableIntelligence,
   reliabilityDescriptor,
 } from './intelligence';
-import { drawSeededReward } from './rewardPool';
+import { REWARD_POSITIVE_TAG, drawSeededReward, isHarmfulRewardTemplate } from './rewardPool';
 import { drawLuckRoll } from './luck';
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
@@ -1199,8 +1200,9 @@ export function buildEncounterAftermathOverview(
   godTouched: boolean,
   causeLine?: string,
 ): string {
-  const rewardCount = changes.filter(change => change.kind === 'item').length;
-  const traitCount = changes.filter(change => change.kind === 'trait').length;
+  // THR-2095 — a harmful draw is a wound on the bearer, not a reward left behind.
+  const rewardCount = changes.filter(change => change.kind === 'item' && !change.harmful).length;
+  const traitCount = changes.filter(change => change.kind === 'trait' || (change.kind === 'item' && change.harmful)).length;
   const growthCount = changes.filter(change => change.kind === 'growth').length;
   const hookCount = changes.filter(change => change.kind === 'future_hook' || change.kind === 'shell_state').length;
   // THR-1004 — counts are spelled out. A numeral on the overview line is the
@@ -1663,6 +1665,13 @@ interface ResolvedUnifiedReward {
   readonly instanceId: string;
   /** THR-1672 — the spell a teaching book taught its holder on the way in. */
   readonly taughtSpellName?: string;
+  /**
+   * THR-2095 — the draw dealt harm: a bad-outcome flip, or a template tagged
+   * `#negative`. A harmful reward reaches the aftermath as a SCAR, never a BOON.
+   */
+  readonly harmful?: boolean;
+  /** THR-2095 — the drawn template's tags, so the scar row can say why. */
+  readonly tags?: readonly string[];
 }
 
 function resolveUnifiedReward(
@@ -1763,10 +1772,18 @@ function resolveUnifiedReward(
     });
   }
 
+  // THR-2095 — harm is read off the drawn template. A bad-outcome draw counts too,
+  // unless it picked a `#positive` template: the bad table weights `blessing`, and
+  // a blessing applied as a buff must not read as a scar.
+  const templateTags = state.graph.getNode(templateId)?.properties?.tags;
+  const markedPositive = Array.isArray(templateTags) && templateTags.includes(REWARD_POSITIVE_TAG);
+  const harmful = isHarmfulRewardTemplate(state.graph, templateId) || (isBadOutcome && !markedPositive);
   return {
     displayName: instantiation.displayName,
     instanceId: instantiation.instanceId,
     ...(instantiation.taughtSpellName ? { taughtSpellName: instantiation.taughtSpellName } : {}),
+    ...(harmful ? { harmful: true } : {}),
+    ...(harmful && Array.isArray(templateTags) ? { tags: templateTags.filter((t): t is string => typeof t === 'string') } : {}),
   };
 }
 
@@ -2938,21 +2955,32 @@ export function executeStepResult(
   const actorNode = state.graph.getNode(action.actorId);
   const currentActorName = actorNode?.name ?? actorName;
   if (resolvedReward) {
+    // THR-2095 — a harmful draw is a scar on any band: never "gained", never a boon,
+    // and it says why, so a won step that still scars reads as a cost of winning.
+    const harmful = resolvedReward.harmful === true;
+    const gained = isStepSuccess(outcome) && !harmful;
     const sentence = rewardSentence({
       actorName: currentActorName,
       rewardName: resolvedReward.displayName,
       rewardId: resolvedReward.instanceId,
-      gained: isStepSuccess(outcome),
+      gained,
       ...(resolvedReward.taughtSpellName ? { learnedSpellName: resolvedReward.taughtSpellName } : {}),
     });
     aftermathChanges.push({
       id: `${action.actionId}:step:${action.currentStep}:item:${rewardName}`,
       kind: 'item',
-      title: isStepSuccess(outcome) ? 'A reward changed hands' : 'The scene cost something tangible',
+      title: gained ? 'A reward changed hands' : 'The scene cost something tangible',
       detail: sentence.detail,
       concepts: sentence.concepts,
       ...derivedFields(sentence),
-      polarity: isStepSuccess(outcome) ? 'gain' : 'loss',
+      polarity: gained ? 'gain' : 'loss',
+      ...(harmful
+        ? {
+          harmful: true,
+          category: 'scar' as const,
+          causeClause: rewardHarmCauseClause({ tags: resolvedReward.tags ?? [], stepWon: isStepSuccess(outcome) }),
+        }
+        : {}),
       actorId: action.actorId,
       actorName: currentActorName,
     });

@@ -758,7 +758,8 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
       const isBadOutcome = badRoll < resolved.badOutcomeChance;
 
       const effectiveRecipe = isBadOutcome
-        ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined }
+        // THR-2095 — `admitsHarm`: only the bad-outcome table may deal a `#negative` template.
+        ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined, admitsHarm: true }
         : resolved;
 
       // bearerId feeds the companion cap/unique filters (THR-1096); other

@@ -1022,6 +1022,40 @@ describe('aftermath mode', () => {
     expect(onSelectEntity).toHaveBeenCalledWith('trait.condition.wounded', 'attachment');
   });
 
+  // THR-2095 — the reported ending, as composed: Hesper won the step and the draw
+  // dealt Cracked Ribs. It used to read BOON · CRACKED RIBS ▲ "Hesper gained Cracked
+  // Ribs." It must read SCAR with a falling mark and say why.
+  it('a harmful reward on a won step renders under SCAR with ▼ and a cause line, never BOON', () => {
+    const consequences = buildAftermathConsequences({
+      changes: [{
+        id: 'a1:step:0:item:Cracked Ribs',
+        kind: 'item',
+        title: 'The scene cost something tangible',
+        detail: 'Hesper came away marked by Cracked Ribs.',
+        polarity: 'gain',
+        direction: 'gain',
+        stateNoun: { text: 'Cracked Ribs', visualKind: 'artifact', visualName: 'Cracked Ribs' },
+        harmful: true,
+        causeClause: 'Not cleanly: a blow landed in the struggle',
+      }],
+      reactions: [],
+      enrich: (text: string) => text,
+      link: (id: string, text: string) => ({ id, segments: [{ text }] }),
+    });
+    const model: EncounterStageModel = {
+      ...aftermathModel,
+      aftermath: { ...aftermathModel.aftermath!, consequences },
+    };
+    render(<EncounterVeil {...defaultProps} model={model} />);
+
+    const chip = within(screen.getByTestId('consequence-chip-wound'));
+    expect(chip.getByText('SCAR')).toBeInTheDocument();
+    expect(chip.queryByText('BOON')).not.toBeInTheDocument();
+    expect(chip.getByTestId('delta-cluster')).toHaveAttribute('data-direction', 'loss');
+    expect(chip.getByText(/Not cleanly: a blow landed in the struggle/)).toBeInTheDocument();
+    expect(screen.queryByTestId('consequence-chip-prize')).not.toBeInTheDocument();
+  });
+
   it('leaves the grant as plain text when the host cannot open one', () => {
     // Fail-open, the rule NarrativeSegments already states for every kind: a
     // dead affordance that looks live is worse than no affordance.
