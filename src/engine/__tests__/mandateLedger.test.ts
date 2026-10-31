@@ -9,8 +9,10 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import { phaseSpherePressure } from '../phaseSpherePressure';
-import { applyMandateCredits, heldKey, isGodCausedPush, mandateCreditsFor } from '../mandateLedger';
-import { createDefaultSphereAffinity } from '../../types/sphereAffinity';
+import {
+  applyMandateCredits, heldKey, isGodCausedPush, isMandateOpposition, mandateCreditsFor, MANDATE_DOOM_STAGE_PUSH_EXEMPT,
+} from '../mandateLedger';
+import { createDefaultSphereAffinity, DOOM_PRESSURE_PER_TIER, DOOM_STAGE_PUSH_SOURCE_PREFIX } from '../../types/sphereAffinity';
 import type { MandateCredit, SpherePressureEvent } from '../../types/sphereAffinity';
 import type { SpherePressureTrace } from '../phaseSpherePressure';
 import type { GameState } from '../../types/gameState';
@@ -148,5 +150,46 @@ describe('THR-2081 — opposition takes back only what the god built', () => {
     expect(folded.ledger).toEqual({ primary: 0, secondary: 2 });
     expect(folded.held[heldKey('town', 'spirit')]).toBe(2);
     expect(folded.applied[0]).toMatchObject({ applied: 2, ledgerAfter: 2 });
+  });
+});
+
+describe('THR-2090 — doom\'s stage tide no longer takes back the god\'s life', () => {
+  function lifeErosion(): SpherePressureTrace {
+    return {
+      category: 'sphere_pressure', tick: 1, entityId: 'town', sphere: 'life', outcome: 'eroded',
+      incomingPressure: 4, threshold: 1, previousScore: 3, newScore: 1, progressFilled: 0, progressRequired: 1,
+      source: 'doom', sources: ['doom'], sourceIds: ['x'],
+    };
+  }
+  // Life's opposite (entropy) carries each push.
+  const entropy = (source: SpherePressureEvent['source'], sourceId: string): SpherePressureEvent =>
+    push({ sphere: 'entropy', source, sourceId, magnitude: DOOM_PRESSURE_PER_TIER });
+  const tide = entropy('doom', `${DOOM_STAGE_PUSH_SOURCE_PREFIX}1`);
+
+  it('an erosion whose only opposite push is the stage tide debits nothing', () => {
+    expect(MANDATE_DOOM_STAGE_PUSH_EXEMPT).toBe(true);
+    expect(mandateCreditsFor('town', 1, [tide], [lifeErosion()], () => false)).toEqual([]);
+  });
+
+  it('a doom archetype card or a rival push still debits', () => {
+    for (const p of [entropy('doom', 'doom-stage-card-blight'), entropy('rival', 'r')]) {
+      const debits = mandateCreditsFor('town', 1, [p], [lifeErosion()], () => false);
+      expect(debits).toHaveLength(1);
+      expect(debits[0]).toMatchObject({ sphere: 'life', points: -2, cause: 'opposition' });
+    }
+  });
+
+  it('the tide still dilutes the opposition share (denominator unchanged)', () => {
+    const debits = mandateCreditsFor('town', 1, [tide, entropy('rival', 'r')], [lifeErosion()], () => false);
+    expect(debits[0].points).toBe(-1);
+  });
+
+  it('a doom push with no sourceId is not the tide', () => {
+    expect(isMandateOpposition({ ...tide, sourceId: undefined } as unknown as SpherePressureEvent)).toBe(true);
+  });
+
+  it('with the exemption off, the tide is opposition as before', () => {
+    expect(isMandateOpposition(tide, false)).toBe(true);
+    expect(isMandateOpposition(tide)).toBe(false);
   });
 });

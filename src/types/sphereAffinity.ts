@@ -100,6 +100,11 @@ export const CONTROL_PRESSURE_PER_TICK = 0.03;
 export const ENCOUNTER_PRESSURE_PER_STEP = 1;
 /** Pressure per doom tier escalation */
 export const DOOM_PRESSURE_PER_TIER = 4;
+/**
+ * `sourceId` prefix of doom's flat per-stage entropy push (`phaseDoom`), so the Mandate
+ * ledger can tell the tide from the archetype's own stage cards (THR-2090).
+ */
+export const DOOM_STAGE_PUSH_SOURCE_PREFIX = 'doom-tier-';
 /** Pressure from a rival probe landing on the god's turf. 2 → 4 (THR-1748 / THR-1763). */
 export const RIVAL_PRESSURE_MAGNITUDE = 4;
 /** Weight applied to max agentAwareness when computing effective hostility for rival action selection */

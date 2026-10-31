@@ -719,6 +719,18 @@
     "catalog": "location",
     "codex": "location"
   },
+  "loc.tend_sick": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.let_damp_in": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.keep_vigil": {
+    "catalog": "location",
+    "codex": "location"
+  },
   "loc.place_of_power": {
     "catalog": "location",
     "codex": "location"

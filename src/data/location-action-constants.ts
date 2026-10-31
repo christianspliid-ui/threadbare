@@ -88,6 +88,28 @@ export const LOC_LAY_FOOTINGS_BUILD_DELTA = 5;
  */
 export const LOC_KEEP_STORES_FOOD_DELTA = 12;
 
+// ─── THR-2090: cheap life / entropy / spirit place cards ───────────────────
+
+/**
+ * Health a successful Tend the Sick adds to `populationHealth`. A sick town (under 40)
+ * needs a few casts, or one cast and a few ticks' recovery; above the 80 baseline the
+ * gain eases back 1 a tick.
+ */
+export const LOC_TEND_SICK_HEALTH_DELTA = 10;
+
+/**
+ * Health a successful Let the Damp In removes from `populationHealth`. From the 80
+ * baseline, five casts against +1 a tick of recovery bring a town under 40. Sicken the
+ * Wells (tier 2, 6 essence) is the fast, loud form.
+ */
+export const LOC_LET_DAMP_IN_HEALTH_DELTA = 8;
+
+/**
+ * Unrest a successful Keep the Vigil removes; a quarter of Incite Unrest's, and under
+ * Open the Markets' 10 (a 3-essence gift).
+ */
+export const LOC_KEEP_VIGIL_UNREST_DELTA = 4;
+
 // ─── Sanctify the Square ───────────────────────────────────────────────────
 
 /** Magical saturation gain on a successful Sanctify the Square. */
