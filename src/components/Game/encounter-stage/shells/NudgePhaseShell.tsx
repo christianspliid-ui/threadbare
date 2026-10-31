@@ -18,6 +18,7 @@ import { EntityVisual } from '../../../shared/EntityVisual';
 import { Tooltip } from '../../../shared/Tooltip';
 import { Button } from '../../../shared/Button';
 import { CostPips } from '../../../shared/OddsPips';
+import { READING_BACKING } from '../../../shared/readingBacking';
 import { CardFace, CARD_WIDTH_PX } from '../../../shared/CardFace';
 import { formatEssencePool, sphereWord } from '../../../shared/formatEssence';
 import { gradientIndexForId } from '../../../../data/entity-visual-fallbacks';
@@ -489,7 +490,9 @@ export function NudgePhaseShell({
             padding: '14px 16px',
             borderRadius: 10,
             border: '1px solid rgb(var(--veil-gold-rgb) / 0.15)',
-            background: 'rgba(255, 255, 255, 0.015)',
+            // THR-2093 — this panel only renders standalone, over a meeting
+            // beat's scene art; the shared backing keeps every line readable.
+            ...READING_BACKING,
           }}
         >
           {/* THR-972 directive 1, option (a): the slot is the *agent's*
