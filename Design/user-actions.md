@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-31 13:58 local (12:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-31 14:57 local (13:57 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -42,6 +42,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-31: a person’s page now leads with their art, and it is live** ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the)). Merged via [#2663](https://github.com/christianspliid-ui/threadbare/pull/2663).
 - **2026-10-31: the faction set-pieces now name the faction they are about, and it is live** ([THR-2096](https://linear.app/threadbare/issue/THR-2096/faction-bounty-names-no-faction-the-eight-generic-faction-set-pieces)). Merged via [#2661](https://github.com/christianspliid-ui/threadbare/pull/2661).
 - **2026-10-31: a won encounter no longer hands out a wound and calls it a boon, and it is live** ([THR-2095](https://linear.app/threadbare/issue/THR-2095/a-won-encounter-hands-out-a-wound-and-calls-it-a-boon-hesper-won)). Merged via [#2660](https://github.com/christianspliid-ui/threadbare/pull/2660).
 - **2026-10-31: the meeting's test text and its helps/hinders panel now sit on a dark backing, and it is live** ([THR-2093](https://linear.app/threadbare/issue/THR-2093/the-meetings-test-prose-and-its-helpshinders-panel-sit-bare-on-the)). Merged via [#2659](https://github.com/christianspliid-ui/threadbare/pull/2659).
@@ -51,7 +52,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-29: energy gods now have two cards of their own, Stoke the Forges and Kindle a Spark, and they are live** ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)). Merged via [#2652](https://github.com/christianspliid-ui/threadbare/pull/2652).
 - **2026-10-28: only the god's own hand now fills the Mandate, and it is live** ([THR-2081](https://linear.app/threadbare/issue/THR-2081/the-worlds-own-drift-fills-the-mandate-with-no-god-an-unattended-world)). Merged via [#2651](https://github.com/christianspliid-ui/threadbare/pull/2651).
 - **2026-10-28: Inspire now changes what a mortal decides, and it is live** ([THR-2088](https://linear.app/threadbare/issue/THR-2088/inspire-changes-nothing-a-mortal-decides-its-card-writes-an-influence)). Merged via [#2650](https://github.com/christianspliid-ui/threadbare/pull/2650).
-- **2026-10-28: a loan now brings its lender back to collect, and it is live** ([THR-2044](https://linear.app/threadbare/issue/THR-2044/debt-collection-is-rarely-drawn-by-a-mortal-who-is-owed-93percent-of)). Merged via [#2649](https://github.com/christianspliid-ui/threadbare/pull/2649).
 
 ---
 

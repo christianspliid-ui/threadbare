@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 13:58 local (12:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 14:57 local (13:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -30,18 +30,17 @@ Say "veto <title>" to reverse any of these. The window closes about 21:52 tonigh
 
 ## Queue
 
-**Starved — one ticket ready, and it is a repair for agents.** The builder took the art-led person page ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the), work on [branch `claude/thr-2097-art-led-person-page`](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2097-art-led-person-page)). The only ready ticket is this run's heavy-tests fix ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey), see Health).
+**Starved — nothing is ready to build.** The builder finished the art-led person page ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the), live) and the heavy-tests fix ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey), merged via [#2664](https://github.com/christianspliid-ui/threadbare/pull/2664)). Its last runs stood down correctly on an empty queue.
 
-- **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become ready when their veto window closes, about 21:52 tonight.
+- **Next:** the spirit, life and entropy cards ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)) become ready when their veto window closes, about 21:52 tonight. Their blocker, [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12), is live.
 
 Two items for agents, not you:
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it. With the queue empty, this is the cheapest work on the board.
 - **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (11 days). No branch or local worktree names it. Agents can un-park it.
 
 ## Health
 
-- **Heavy tests red on main since 12:37 local; ticket [THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey) filed for the builder.** One test of 285 fails after the faction set-piece merge ([#2661](https://github.com/christianspliid-ui/threadbare/pull/2661)): a compelled journey no longer finds its forage scene ([run](https://github.com/christianspliid-ui/threadbare/actions/runs/41197611019)).
-- **Engine speed:** tick cost 227 ms/tick steady, 42% above the 7-day median (160, 127 rows since 81dce35c); top phase agent_decision, 639 agents. Name the merges between 81dce35c and 4295d33d: git log --oneline --merges 81dce35c..4295d33d. (Last hour measured 142, so this one reading may be machine load; next hour's row will tell.)
+- **Heavy tests:** still red on main from before the fix ([last red run](https://github.com/christianspliid-ui/threadbare/actions/runs/41203837564)). The fix ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey)) merged at 126665db, and the [run on that commit](https://github.com/christianspliid-ui/threadbare/actions/runs/41205792173) is in progress. No new ticket; next hour files one if that run is red.
 - The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
 
-Everything else is green. The live site is current (only a plan doc since its last build, 3f35dd85). The PR checks pass, no pull request is waiting, the worktree reaper ran at 13:40, and the enabled scheduled tasks are on time.
+Everything else is green. The live site is current (126665db). The PR checks pass, no pull request is waiting, the worktree reaper ran at 14:40, the enabled scheduled tasks are on time, and engine speed is back to normal (157 ms/tick, 2% under the 7-day median — last hour's 227 was machine load).
