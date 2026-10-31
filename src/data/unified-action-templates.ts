@@ -2482,7 +2482,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     id: 'loc.let_damp_in',
     progression: { tier: 1, offer: 'market', generic: false },
     name: 'Let the Damp In',
-    spellName: 'The Cough in the Walls',
+    spellName: 'Cough in the Walls',
     rarityTier: 1,
     intrinsicTier: 'background',
     description: 'Lets the damp into a town\'s walls and wells. Nothing falls at once. The children cough, the old take to their beds, and a town worn thin enough grows restless with its sickness.',
@@ -2517,7 +2517,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
   {
     id: 'loc.keep_vigil',
-    progression: { tier: 1, offer: 'market', generic: false },
+    // Calms a town's unrest, so it answers a prayer like Open the Markets (THR-1935).
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['answers_prayer'] },
     name: 'Keep the Vigil',
     spellName: 'Lamps for the Dead',
     rarityTier: 1,
