@@ -54,6 +54,9 @@ export const ACTION_ART: Record<string, string> = {
   'loc.steel_walls': '/assets/actions/iron-in-the-mortar.jpg',
   'loc.lay_footings': '/assets/actions/the-cornerstone-set.jpg',
   'loc.keep_stores': '/assets/actions/grain-that-never-spoils.jpg',
+  'loc.tend_sick': '/assets/actions/the-fever-breaks.jpg',
+  'loc.let_damp_in': '/assets/actions/the-cough-in-the-walls.jpg',
+  'loc.keep_vigil': '/assets/actions/lamps-for-the-dead.jpg',
 
   // ─── Sublocation actions (sub.*) ───────────────────────────────────
   'sub.sanctify': '/assets/actions/sacred-ground.jpg',

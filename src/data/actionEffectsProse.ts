@@ -194,6 +194,12 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Sets the footings of a town\'s next building: it rises sooner.',
   'loc.keep_stores':
     'Keeps a town\'s stores from spoiling: it has more put by for lean days, up to what its granaries hold.',
+  'loc.tend_sick':
+    'Heals a town\'s sick: a sickly town grows well again, and its unrest stops climbing on sickness.',
+  'loc.let_damp_in':
+    'Sickens a town slowly: worn thin enough, it grows restless with its sickness.',
+  'loc.keep_vigil':
+    'Lets a town mourn its dead: its unrest eases.',
   'loc.bless_holding':
     'For a year, whoever holds this place draws half again from it.',
   'loc.reveal_vein':
