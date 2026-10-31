@@ -13,7 +13,7 @@
  */
 import { describe, it, expect, afterAll } from 'vitest';
 import { initializeGameStateFromIdentity, devSeedTheFirst, DEV_ASCENDANT_IDENTITY } from '../gameInit';
-import { runTick, resetEventCounter } from '../orchestrator';
+import { runTick, resetEventCounter, resetDecisionCache } from '../orchestrator';
 import { unattended } from '../playerStepHold';
 import { createBalancedCosmology } from '../cosmology';
 import { createSimulationRuntime } from '../simulationRuntime';
@@ -58,6 +58,9 @@ function pickTravelTarget(board: BoardEntry[]): BoardEntry | undefined {
 
 /** Seed 42: pay a compulsion mid-chapter and tick until it resolves at the next decision. */
 function driveToTaken() {
+  // THR-2107: both tests build a world in one process — reset the run-scoped id
+  // counters (npc_N et al.) so the second world is the first one, not an offset of it.
+  resetDecisionCache();
   resetEventCounter(); resetReputationTraitInit(); clearTraces(); enableTracing();
   const runtime = createSimulationRuntime();
   let { state } = initializeGameStateFromIdentity(DEV_ASCENDANT_IDENTITY, 42, createBalancedCosmology(), 'medium');
