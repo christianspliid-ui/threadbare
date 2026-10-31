@@ -57,11 +57,12 @@ import { getFortificationModifier } from './siegeResolution';
  * THR-2089: a stored `fortificationMultiplier` (written by `fortify_location` or a siege
  * breach) shadows the subtype base in siege resolution. On promotion, lift a stored value
  * below the new tier's base up to that base, so a town fortified by a god does not defend
- * below an unfortified city once it grows into one. Demotion keeps the stored value.
+ * below an unfortified city once it grows into one. Demotion keeps the stored value, and so
+ * do breached walls (`fortificationBreached`): growth does not repair a breach (review gate).
  */
 function liftStoredFortification(loc: GraphNode, to: string): void {
   const stored = loc.properties.fortificationMultiplier;
-  if (typeof stored !== 'number') return;
+  if (typeof stored !== 'number' || loc.properties.fortificationBreached === true) return;
   const base = getFortificationModifier(to);
   if (stored < base) loc.properties.fortificationMultiplier = base;
 }

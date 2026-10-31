@@ -157,6 +157,18 @@ describe('phaseSettlementPromotion', () => {
     expect(props.fortificationMultiplier).toBe(getFortificationModifier('city'));
   });
 
+  it('THR-2089: promotion does not repair breached walls', () => {
+    addSettlement(graph, 'loc.town', 'town', SETTLEMENT_PROMOTION_PROSPERITY, {
+      prosperitySustainAboveTicks: SETTLEMENT_PROMOTION_SUSTAIN_TICKS - 1,
+      fortificationMultiplier: 3,
+      fortificationBreached: true,
+    });
+    phaseSettlementPromotion(makeState(graph, 5));
+    const props = graph.getNode('loc.town')!.properties;
+    expect(props.locationSubtype).toBe('city');
+    expect(props.fortificationMultiplier).toBe(3);
+  });
+
   it('THR-2089: promotion leaves no stored fortification where none was set', () => {
     addSettlement(graph, 'loc.town', 'town', SETTLEMENT_PROMOTION_PROSPERITY, {
       prosperitySustainAboveTicks: SETTLEMENT_PROMOTION_SUSTAIN_TICKS - 1,
