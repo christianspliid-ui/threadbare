@@ -267,6 +267,8 @@ export const ICON_REGISTRY = {
   undertow: { meaning: 'Undertow: an ugly method that shifts values', ...carved('big-wave') },
   stumble: { meaning: 'Stumble: weakens the opposition', ...carved('foot-trip') },
   ambition: { meaning: 'An ambition', ...carved('holy-grail') },
+  // THR-2097: provisional — THR-2104 holds the pick.
+  prowess: { meaning: 'Prowess: what a mortal can do', ...carved('sword-brandish') },
   cache: { meaning: 'Cache: leaves something to find', ...carved('spade', { author: 'lorc' }) },
   balm: { meaning: 'Balm: removes a condition', ...carved('cloth-jar') },
   veil: { meaning: 'Veil: help that no one sees', ...carved('cloak') },

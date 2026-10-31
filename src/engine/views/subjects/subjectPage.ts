@@ -49,7 +49,10 @@ import { humanizeKeySegment } from '../../aftermathWords';
 import { ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
 import { REALM_FACTION_CLASS, REALM_HEADWORD } from '../../../data/realm-content';
 import { avatarGodTitleLine } from '../../../data/avatar-framing';
-import { getOriginPortraitUrl } from '../../../data/avatar-portrait-assets';
+import { ascendantPortraitSrc } from './godSheet';
+import { ICON_CLASSES, ICON_FOR_WORLD_REF_KIND, iconForKey, iconForSublocation } from '../../../data/icons/conceptIcons';
+import type { IconName } from '../../../data/icons/iconRegistry';
+import type { LocationSubtype } from '../../../types';
 import type {
   ContentCardVM,
   GenericSubjectPageVM,
@@ -57,6 +60,7 @@ import type {
   StateChipVM,
   SubjectHeaderVM,
   SubjectPageVM,
+  WhereRowVM,
 } from './subjectTypes';
 import type { RefRow } from '../types';
 import { CONNECTIONS_DOCKED_FOLD_AFTER } from '../viewConstants';
@@ -124,13 +128,32 @@ function hexOfNode(graph: WorldGraph, node: GraphNode): string | null {
   return col != null && row != null ? toHexKey(col, row) : null;
 }
 
-function whereOf(state: GameState, node: GraphNode): RefRow[] {
+/**
+ * A where chip's carved idea (THR-2097, rule R2): a place within a place reads its own type
+ * (else its parent's shape), a place its subtype, anything else its kind. Unknown keys draw
+ * the fallback mark and warn once (`iconForKey`).
+ */
+function whereIcon(graph: WorldGraph, ref: WorldRef): IconName {
+  const node = graph.getNode(ref.id);
+  if (node && isPlaceNode(node)) {
+    const parent = resolveToParentLocation(graph, node);
+    const typeId = typeof node.properties.sublocationTypeId === 'string' ? node.properties.sublocationTypeId : '';
+    return iconForSublocation(typeId, parent?.properties.locationSubtype as LocationSubtype | undefined);
+  }
+  if (node && ref.kind === 'location' && typeof node.properties.locationSubtype === 'string') {
+    return iconForKey(ICON_CLASSES.place, node.properties.locationSubtype);
+  }
+  return ICON_FOR_WORLD_REF_KIND[ref.kind] ?? 'fallback';
+}
+
+function whereOf(state: GameState, node: GraphNode): WhereRowVM[] {
   const graph = state.graph;
-  if (node.type === 'location') return containmentRows(graph, state, node, false).map(r => ({ ref: r.ref, name: r.name }));
+  const dress = (rows: RefRow[]): WhereRowVM[] => rows.map(r => ({ ref: r.ref, name: r.name, icon: whereIcon(graph, r.ref) }));
+  if (node.type === 'location') return dress(containmentRows(graph, state, node, false));
   // An unborne artifact has no `located_at`; it lies at its place (THR-2030).
   const at = graph.getOutgoingEdges(node.id, 'located_at')[0]
     ?? (node.type === 'artifact' || node.type === 'artifact_legendary' ? graph.getOutgoingEdges(node.id, 'lies_at')[0] : undefined);
-  return containmentRows(graph, state, at ? graph.getNode(at.target) : undefined, true).map(r => ({ ref: r.ref, name: r.name }));
+  return dress(containmentRows(graph, state, at ? graph.getNode(at.target) : undefined, true));
 }
 
 /** The body for a graph page kind, from the table, with the god as the protagonist. */
@@ -224,7 +247,13 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
       ? { godTitleLine: avatarGodTitleLine(identity?.divineName, undefined, identity?.hungerName) }
       : null;
     const standing: StateChipVM[] = [];
-    if (thread?.properties.courtPosition === 'the_first') standing.push({ label: INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your') });
+    // THR-2097: The First's chip moves onto the portrait as the Your First badge (rule R1).
+    const isFirst = thread?.properties.courtPosition === 'the_first';
+    const firstOf = isFirst
+      ? { godName: identity?.divineName ?? graph.getNode(state.ascendantId)?.name ?? '', godPortraitSrc: ascendantPortraitSrc(state) }
+      : undefined;
+    // Docked still says it as a chip; the wide header draws the badge and drops this chip.
+    if (isFirst) standing.push({ label: INSPECTOR_WORDS.factFirst.replace(/^your/, 'Your') });
     if (!isAvatar) standing.push({ label: sentenceCase(level), tooltipId: `knowledge.${level}` });
     standing.push(...dominionChip(state, node.id));
     // The trade word first (THR-1982), so the header and the sheet's trade row agree.
@@ -238,9 +267,10 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
         kindLabel: role || sentenceCase(subtitleForNode(node, 'actor')),
         mortalShape,
         visual: isAvatar
-          ? { kind: ref.kind, id: node.id, portraitGate: 'shown', src: identity?.originFragmentId ? getOriginPortraitUrl(identity.originFragmentId) : null }
+          ? { kind: ref.kind, id: node.id, portraitGate: 'shown', src: ascendantPortraitSrc(state) }
           : { kind: ref.kind, id: node.id, portraitGate: level === 'stranger' ? 'silhouette' : 'shown' },
         standing,
+        ...(firstOf ? { firstOf } : {}),
         follow: true,
       },
       actOn: buildActOn(state, { kind: 'agent', id: node.id }, node.name),

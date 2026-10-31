@@ -7,7 +7,7 @@
  * They read `GameState` stores, so they need `ctx.state`; without it (the hover card,
  * graph-only tests) they return null and the section is skipped (§ Fail-soft).
  */
-import type { PanelRow, PanelSection, ProseSection, Section } from '../../../types/detailPage';
+import type { PanelRow, PanelSection, ProseSection, Section, SentencePart } from '../../../types/detailPage';
 import type { SectionResolver, SectionResolverContext } from '../../detailPageResolvers';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile, SphereName } from '../../../types';
@@ -263,6 +263,12 @@ export const recordFallback: SectionResolver = (ctx): Section | null => {
 // ─── Dominion (one row on every page that has a band) ────────────────────────
 
 
+/** A line's first letter raised, so a clause the VM words in lower case opens a sentence. */
+function sentenceCaseLine(text: string): string {
+  const t = text.trim();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
 function dominionResolverFor(withTend: boolean): SectionResolver {
   return (ctx) => {
     // The god is read off the state only: a legacy caller's `protagonistId` may be a mortal.
@@ -276,12 +282,13 @@ function dominionResolverFor(withTend: boolean): SectionResolver {
     if (ctx.state && !selectOpeningReveal(ctx.state, { showAll: readOpeningRevealShowAllSetting(), ledger }).rows.dominion?.revealed) return null;
     const vm = dominionSheetVM(ctx.graph, ascendantId, ctx.nodeId, ctx.state?.controlEffects, withTend);
     if (!vm) return null;
-    const rows: PanelRow[] = [
-      { left: INSPECTOR_WORDS.dominionHold, right: vm.word, tooltipId: vm.tooltipId },
-      { left: INSPECTOR_WORDS.dominionMeaning, right: vm.line },
-    ];
-    if (vm.tendLine) rows.push({ left: INSPECTOR_WORDS.dominionTended, right: vm.tendLine });
-    const section: PanelSection = { kind: 'panel', typeId: 'dominion', label: 'Dominion', gold: false, tier: 'routine', source: 'dominionSheetVM', rows };
+    // THR-2097 (rule R6): one line, not label-and-value rows — "Foreign ground. Neither yours
+    // nor set against you." The hold word keeps its tooltip (Law 17).
+    const sentence = (t: string) => { const w = t.trim(); return w && !/[.!?]$/.test(w) ? `${w}.` : w; };
+    const parts: SentencePart[] = [{ text: sentence(vm.word), tooltipId: vm.tooltipId }, ` ${sentence(sentenceCaseLine(vm.line))}`];
+    if (vm.tendLine) parts.push(` ${sentence(sentenceCaseLine(vm.tendLine))}`);
+    const text = parts.map(p => (typeof p === 'string' ? p : p.text)).join('');
+    const section: ProseSection = { kind: 'prose', typeId: 'dominion', label: 'Dominion', gold: false, tier: 'routine', source: 'dominionSheetVM', prose: escapeHtml(text), parts };
     return section;
   };
 }

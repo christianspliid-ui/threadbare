@@ -58,6 +58,9 @@ import {
   getArmySupplyWord,
 } from '../data/army-words';
 import { armyAimView } from './warAims/sheetView';
+import { ascendantPortraitSrc } from './views/subjects/godSheet';
+import { getFamiliarity, getKnowledgeLevel } from './familiarity';
+import { resolveEntityVisual } from './views/entityVisualResolver';
 import { fillSlots, linkedProseSection } from './views/subjects/linkedProse';
 
 import type { RealmProjection } from './realmProjection';
@@ -298,6 +301,28 @@ const portraitWithDispositionResolver: SectionResolver = (ctx) => {
   return section;
 };
 
+/**
+ * THR-2097 (rule R4) — the drawn tie: the god's face, the bond mark, the person's face. Only
+ * while the engine holds a thread from the god to this person; no thread, no strip. The
+ * person's face is gated by what the god knows of them (Law 8).
+ */
+function bondOf(ctx: SectionResolverContext, actor: GraphNode): Pick<ProseSection, 'bond'> {
+  const state = ctx.state;
+  if (!state?.ascendantId) return {};
+  const threaded = ctx.graph.getOutgoingEdges(state.ascendantId, 'thread').some(e => e.target === actor.id);
+  if (!threaded) return {};
+  const fam = state.familiarityMap;
+  const level = getKnowledgeLevel(fam && typeof fam.get === 'function' ? getFamiliarity(fam, actor.id) : 0);
+  const face = resolveEntityVisual({ id: actor.id, kind: 'agent', name: actor.name }, ctx.graph, { knowledgeLevel: level });
+  const godName = state.ascendantIdentity?.divineName ?? ctx.graph.getNode(state.ascendantId)?.name ?? '';
+  return {
+    bond: {
+      left: { name: godName, src: ascendantPortraitSrc(state) },
+      right: { name: actor.name, id: actor.id, src: face.tier === 'art' && face.src ? face.src : null },
+    },
+  };
+}
+
 const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   if (!ctx.protagonistId) return null;
   const actor = ctx.graph.getNode(ctx.nodeId);
@@ -310,7 +335,13 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
   const related = [...out, ...incoming].find(
     (e) => e.source === protagonist.id || e.target === protagonist.id,
   );
-  if (!related) return null;
+  // THR-2097: a mortal the god holds by a thread but with no `relates_to` edge (a First bonded
+  // through Meet the First) still gets the row, so the bond strip draws for every held thread.
+  if (!related) {
+    const bond = bondOf(ctx, actor);
+    if (!bond.bond) return null;
+    return { kind: 'prose', typeId: 'what_she_is_to_him', label: 'What she is to him', gold: false, tier: 'routine', source: 'whatSheIsToHimResolver', prose: `${actor.name} is bound to you by thread.`, ...bond };
+  }
 
   const basis = wordedBasis(related.properties?.basis as string | undefined) ?? 'a thread between you';
   const sentiment = (related.properties?.sentiment as number | undefined) ?? 0;
@@ -331,6 +362,7 @@ const whatSheIsToHimResolver: SectionResolver = (ctx) => {
     tier: 'routine',
     source: 'whatSheIsToHimResolver',
     prose,
+    ...bondOf(ctx, actor),
   };
   return section;
 };

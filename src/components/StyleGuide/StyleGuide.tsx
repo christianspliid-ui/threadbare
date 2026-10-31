@@ -34,6 +34,8 @@ import { glowShadow } from '../shared/sphereTint';
 import { dialogContextClass, type DialogContext } from '../shared/dialogContext';
 import { FRAME_TOKENS_PX, TYPE_SCALE_REM, layoutTierFor, remToPx, rootFontPx } from '../shared/layoutContract';
 import { Medallion } from '../shared/Medallion';
+import { BondStrip } from '../shared/BondStrip';
+import { QuietSlot } from '../shared/QuietSlot';
 import { FlavorQuote } from '../shared/FlavorQuote';
 import { RevealCard } from '../shared/RevealCard';
 import { REVEAL_CATEGORY_TITLES, REVEAL_KINDS, pickFallbackFlavor } from '../../data/reveal-content';
@@ -141,6 +143,8 @@ const SECTIONS = [
   { id: 'stage', label: 'Stage frame (THR-1892)' },
   { id: 'dialog-contexts', label: 'Dialogue contexts (THR-1586)' },
   { id: 'medallion', label: 'Medallion (THR-799)' },
+  { id: 'bondstrip', label: 'BondStrip (THR-2097)' },
+  { id: 'quietslot', label: 'QuietSlot (THR-2097)' },
   { id: 'flavorquote', label: 'FlavorQuote (THR-799)' },
   { id: 'revealcard', label: 'RevealCard (THR-799)' },
   { id: 'tooltip', label: 'Tooltip' },
@@ -950,6 +954,8 @@ function ChipSection() {
             <Chip key={size} role="identity" size={size} target={STUB_ROUTE_TARGET} label="Shutash" visual={STUB_IDENTITY_VISUAL} />
           ))}
           <Chip role="identity" target={null} label="The Drowned Abbot" visual={STUB_IDENTITY_VISUAL} />
+          {/* THR-2097 — a where-line place chip: the place's carved idea where there is no image. */}
+          <Chip role="identity" target={STUB_ROUTE_TARGET} label="Temple Quarter" icon="place-town" />
         </Row>
         <code data-testid="chip-router-readout" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
           opened: {opened}
@@ -1410,6 +1416,33 @@ export default function StyleGuide() {
                   <Medallion size="md" accentColor="#c87533" title="md — custom accentColor" />
                 </Row>
                 <Label>No children → the fallback glyph, never an empty disc (fail-soft).</Label>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── BondStrip (THR-2097) ───────────────────────────── */}
+          <section id="section-bondstrip" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>BondStrip (THR-2097)</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px' }}>
+              <GameErrorBoundary>
+                <Label>
+                  A tie between two parties, drawn (rule R4): face, the bond mark, face, the sentence under it.
+                  Drawn only while the engine holds the tie. A missing face draws its kind's mark.
+                </Label>
+                <BondStrip bond={{ left: { name: 'Vael the Unbound', src: null }, right: { name: 'Kael Thornweaver', id: 'sample', src: null } }}>
+                  <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.9rem' }}>Kael is bound to you by thread.</p>
+                </BondStrip>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── QuietSlot (THR-2097) ───────────────────────────── */}
+          <section id="section-quietslot" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>QuietSlot (THR-2097)</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px' }}>
+              <GameErrorBoundary>
+                <Label>An empty state (rule R8): one quiet line in a dashed frame, never a heading over nothing. No gold.</Label>
+                <QuietSlot label="Act on Kael">None of your cards works on Kael.</QuietSlot>
               </GameErrorBoundary>
             </div>
           </section>

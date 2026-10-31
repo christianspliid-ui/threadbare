@@ -4335,6 +4335,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
           sectionsShown: r?.sectionsShown ?? [],
           foldedGroups: r?.foldedGroups ?? [],
           hiddenForWidth: r?.hiddenForWidth ?? [],
+          dressing: r?.dressing ?? null,
           actCards,
           rowCounts,
           trayOpen: trayEl?.dataset.rowTray ?? null,

@@ -211,7 +211,7 @@ function personSections(state: GameState, extra: Record<string, unknown> = {}): 
 /** Player-facing strings of a section — every string leaf except ids, refs and tooltip ids. */
 function playerText(section: Section): string[] {
   const out: string[] = [];
-  const skip = new Set(['typeId', 'source', 'tab', 'visibleAt', 'ref', 'clickRef', 'eventRef', 'tooltipId', 'labelTooltipId', 'sphere', 'tier', 'kind', 'dataKey', 'termRefs', 'layers']);
+  const skip = new Set(['typeId', 'source', 'tab', 'visibleAt', 'ref', 'clickRef', 'eventRef', 'tooltipId', 'labelTooltipId', 'sphere', 'tier', 'kind', 'dataKey', 'termRefs', 'layers', 'icon', 'placement', 'src', 'id']);
   const walk = (v: unknown, key: string) => {
     if (skip.has(key)) return;
     if (typeof v === 'string') out.push(v);
@@ -293,17 +293,20 @@ describe('the person rows resolve in the engine (THR-1909)', () => {
 
   it('who they are, nature words, disposition and the empty Journey lines read for a person', () => {
     const byId = new Map(personSections(world()).map(s => [s.typeId, s]));
+    // THR-2097 (rule R6): Who they are is one sentence, not label-and-value rows (Law 16).
     const who = byId.get('who_they_are');
-    expect(who?.kind).toBe('panel');
-    expect(JSON.stringify(who)).toContain('Means');
+    expect(who?.kind).toBe('prose');
+    expect(who && who.kind === 'prose' ? who.parts?.length : 0).toBeGreaterThan(0);
     expect(byId.get('disposition')?.kind).toBe('panel');
     expect(JSON.stringify(byId.get('disposition'))).toContain('Forgives slowly');
     expect(JSON.stringify(byId.get('the_work'))).toContain('No long work under way.');
     expect(byId.get('arc_so_far')?.kind).toBe('event-card');
     expect(byId.get('arc_so_far')?.labelTooltipId).toBe('ui.arc_strip');
     // The core row draws a bar beside its word (a retiring surface drew one) — never a numeral.
+    // THR-2097 (rule R7): it draws as a two-pole bar, both words named.
     const core = byId.get('core');
     expect(core?.kind).toBe('panel');
+    expect(core && core.kind === 'panel' ? core.rows.every(r => r.poles?.length === 2) : false).toBe(true);
   });
 
   it('the work and the leading ambition come from the engine\'s one work resolver', () => {

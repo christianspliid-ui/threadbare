@@ -15,6 +15,7 @@
  */
 
 import type { InspectorTabId, PageLayoutKind, PageSurface, GraphPageKind } from '../types/detailPage';
+import type { IconName } from './icons/iconRegistry';
 import type { SectionResolver } from '../engine/detailPageResolvers';
 import {
   ACTOR_RESOLVERS,
@@ -86,6 +87,10 @@ export interface SectionSchemaEntry {
   visibleAt?: readonly PageSurface[];
   /** Which Inspector tab it sits in (THR-1876). Absent = 'overview'. */
   tab?: InspectorTabId;
+  /** THR-2097 (rule R2): the carved idea its heading draws. Absent = no icon, never an invented one. */
+  icon?: IconName;
+  /** THR-2097 (rule R3): `'aside'` = drawn in the wide/Full aside, under the Act row. */
+  placement?: 'aside';
 }
 
 /** Full per-kind registry. Total over `PageLayoutKind`: a kind without rows is a type error. */
@@ -94,8 +99,14 @@ export type DetailPageRegistry = Record<PageLayoutKind, SectionSchemaEntry[]>;
 // ─── Per-kind schemas ─────────────────────────────────────────────────────────
 
 /** A person row ported from the profile (THR-1909, S2a): engine-resolved, never mandatory. */
-function personRow(typeId: keyof typeof PERSON_RESOLVERS, order: number, tab: InspectorTabId, visibleAt: readonly PageSurface[]): SectionSchemaEntry {
-  return { typeId, order, mandatory: false, defaultResolver: PERSON_RESOLVERS[typeId], showcaseOverridable: false, visibleAt, tab };
+function personRow(
+  typeId: keyof typeof PERSON_RESOLVERS,
+  order: number,
+  tab: InspectorTabId,
+  visibleAt: readonly PageSurface[],
+  dress: Pick<SectionSchemaEntry, 'icon' | 'placement'> = {},
+): SectionSchemaEntry {
+  return { typeId, order, mandatory: false, defaultResolver: PERSON_RESOLVERS[typeId], showcaseOverridable: false, visibleAt, tab, ...dress };
 }
 
 /**
@@ -121,8 +132,9 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
   personRow('under_your_hand', 30, 'overview', DWF),
   personRow('intention', 35, 'overview', DWF),
   personRow('current_work', 36, 'overview', DWF),
-  personRow('leading_ambition', 37, 'overview', DWF),
-  personRow('who_they_are', 40, 'overview', DWF),
+  // The resolver sets the ambition's own idea (ICON_FOR_AMBITION); this is its fallback.
+  personRow('leading_ambition', 37, 'overview', DWF, { icon: 'ambition' }),
+  personRow('who_they_are', 40, 'overview', DWF, { icon: 'person' }),
   {
     typeId: 'dominion',
     order: 42,
@@ -131,42 +143,45 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: false,
     visibleAt: DWF,
     tab: 'overview',
+    icon: 'lens-dominion',
   },
   personRow('allegiance', 45, 'overview', DWF),
   personRow('company', 50, 'overview', WF),
-  personRow('nature', 55, 'overview', DWF),
-  personRow('core', 60, 'overview', WF),
-  personRow('personality', 65, 'overview', WF),
+  personRow('nature', 55, 'overview', DWF, { icon: 'trait' }),
+  personRow('core', 60, 'overview', WF, { icon: 'trait' }),
+  personRow('personality', 65, 'overview', WF, { icon: 'trait' }),
   personRow('reputation', 70, 'overview', DWF),
   personRow('words', 75, 'overview', WF),
   personRow('origin', 80, 'overview', WF),
   personRow('domains', 100, 'prowess', DWF),
   personRow('conditions', 110, 'prowess', DWF),
   personRow('bestowed_powers', 120, 'prowess', DWF),
-  personRow('slots', 200, 'attachments', DWF),
+  personRow('slots', 200, 'attachments', DWF, { icon: 'attachment', placement: 'aside' }),
   personRow('knows', 210, 'attachments', DWF),
   personRow('inactive', 220, 'attachments', WF),
   personRow('disposition', 320, 'bonds', DWF),
   personRow('blood', 330, 'bonds', DWF),
-  personRow('the_work', 400, 'journey', DWF),
-  personRow('designs', 410, 'journey', DWF),
-  personRow('ambitions', 420, 'journey', DWF),
+  personRow('the_work', 400, 'journey', DWF, { icon: 'work' }),
+  personRow('designs', 410, 'journey', DWF, { icon: 'ambition' }),
+  personRow('ambitions', 420, 'journey', DWF, { icon: 'ambition' }),
   personRow('arc_so_far', 430, 'journey', DWF),
-  personRow('their_story', 500, 'chronicle', WF),
-  personRow('timeline', 510, 'chronicle', WF),
-  personRow('full_account', 520, 'chronicle', WF),
-  personRow('interaction_record', 530, 'chronicle', WF),
-  personRow('completed_ambitions', 540, 'chronicle', WF),
-  personRow('intelligence', 550, 'chronicle', WF),
-  personRow('chapters', 600, 'chapters', WF),
+  personRow('their_story', 500, 'chronicle', WF, { icon: 'chronicle' }),
+  personRow('timeline', 510, 'chronicle', WF, { icon: 'chronicle' }),
+  personRow('full_account', 520, 'chronicle', WF, { icon: 'chronicle' }),
+  personRow('interaction_record', 530, 'chronicle', WF, { icon: 'chronicle' }),
+  personRow('completed_ambitions', 540, 'chronicle', WF, { icon: 'chronicle' }),
+  personRow('intelligence', 550, 'chronicle', WF, { icon: 'chronicle' }),
+  personRow('chapters', 600, 'chapters', WF, { icon: 'chapter-ledger' }),
+  // THR-2097 (rule R4): the tie to the god opens the Overview — the bond strip, first in the main column.
   {
     typeId: 'what_she_is_to_him',
-    order: 300,
+    order: 11,
     mandatory: false,
     defaultResolver: ACTOR_RESOLVERS.what_she_is_to_him,
     showcaseOverridable: true,
     visibleAt: ALL,
-    tab: 'bonds',
+    tab: 'overview',
+    icon: 'bond',
   },
   {
     typeId: 'threads_between_them',

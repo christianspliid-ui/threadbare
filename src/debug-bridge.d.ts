@@ -523,6 +523,22 @@ export interface DebugInspectorLabCell {
   overflowX: boolean;
   /** Raw ids or numerals found in the cell's text (counts in group headers and folds excepted). */
   leaks: string[];
+  /** THR-2097 — what the art-led dressing drew in this cell. */
+  dressing: DebugInspectorDressing;
+}
+
+/** THR-2097 — the art-led dressing a page drew (plan 2026-10-31-art-led-ui-pass § Debug inspection). */
+export interface DebugInspectorDressing {
+  /** Section typeIds drawn in the wide/Full aside (`placement: 'aside'`). */
+  asideSections: string[];
+  /** The bond strip drew (the person is threaded to the god). */
+  bondStrip: boolean;
+  /** The Your First badge drew on the portrait. */
+  firstBadge: boolean;
+  /** Art tiles drawn. */
+  galleryTiles: number;
+  /** Section typeIds whose icon drew the fallback mark. */
+  iconFallbacks: string[];
 }
 
 /** Result of `getInspectorState()` (THR-1911). Null before a game is running. */
@@ -541,6 +557,8 @@ export interface DebugInspectorState {
   sectionsShown: string[];
   foldedGroups: string[];
   hiddenForWidth: string[];
+  /** THR-2097 — what the art-led dressing drew; null when nothing is open. */
+  dressing: DebugInspectorDressing | null;
   /** The Act row's card ids, as the page shows them. */
   actCards: string[];
   /** THR-1913 — every rendered row's card count (`row` is `kind:id`); rows with no card are absent. */

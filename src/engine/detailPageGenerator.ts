@@ -206,13 +206,16 @@ export function composeSections(
   return sections;
 }
 
-/** Copy a row's width and tab onto its section — only when the row declares them. */
+/** Copy a row's width, tab, icon and placement onto its section — only when the row declares them. */
 function stampRow(section: Section, entry: SectionSchemaEntry): Section {
-  if (!entry.visibleAt && !entry.tab) return section;
+  if (!entry.visibleAt && !entry.tab && !entry.icon && !entry.placement) return section;
   return {
     ...section,
     ...(entry.visibleAt ? { visibleAt: entry.visibleAt } : {}),
     ...(entry.tab ? { tab: entry.tab } : {}),
+    // THR-2097: a resolver's more specific idea (the ambition's own) wins over the row's.
+    ...(entry.icon && !section.icon ? { icon: entry.icon } : {}),
+    ...(entry.placement ? { placement: entry.placement } : {}),
   };
 }
 

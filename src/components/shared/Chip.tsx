@@ -60,6 +60,11 @@ export interface IdentityChipProps extends ChipCommon {
   label: string;
   /** The leading tile, when the kind has an entity-visual family (Laws 1, 3). */
   visual?: EntityVisualDescriptor | null;
+  /**
+   * THR-2097: the kind's carved idea, drawn before the name when there is no `visual` —
+   * a where-line place chip carries its place shape (dressing rule R2).
+   */
+  icon?: IconName;
   /** Tooltip registry id (Law 17). */
   tooltipId?: string;
 }
@@ -260,7 +265,7 @@ function Shell({
 
 // ─── Roles ───────────────────────────────────────────────────────────────────
 
-function IdentityChip({ target, label, visual, tooltipId, size = 'sm', className, style }: IdentityChipProps) {
+function IdentityChip({ target, label, visual, icon, tooltipId, size = 'sm', className, style }: IdentityChipProps) {
   const router = useRefRouterContext();
   const anchorRef = useRef<HTMLButtonElement | null>(null);
   // Law 21 fail-open: a dead target, or no router in scope (styleguide, isolated preview),
@@ -288,6 +293,8 @@ function IdentityChip({ target, label, visual, tooltipId, size = 'sm', className
       descriptor={visual}
       style={{ width: `${ICON_SIZE_REM.chip}rem`, height: `${ICON_SIZE_REM.chip}rem`, marginLeft: '-0.25rem' }}
     />
+  ) : icon ? (
+    <Icon name={icon} size="chip" decorative />
   ) : null;
 
   const chip = (

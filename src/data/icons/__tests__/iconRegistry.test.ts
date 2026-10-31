@@ -131,4 +131,4 @@ describe('the shipped registry', () => {
 });
 
 /** Appendix A of the THR-1879 plan: 229 ideas, one shape each. */
-const CARVED_IDEA_COUNT = 229;
+const CARVED_IDEA_COUNT = 230;

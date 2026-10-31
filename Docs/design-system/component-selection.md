@@ -139,6 +139,7 @@ the accessibility channel, colour is secondary (Law 11).
 |------|-----------|-------|
 | Any entity's art, anywhere | `EntityVisual` | The single resolver path. Pick `hero` (16:9 — places, scenes, banners), `portrait` (3:4 — people), or `chip` (40px — secondary entities inline). A fourth size is a design decision, not an implementation choice. |
 | A ringed icon disc around an already-resolved visual | `Medallion` | Frames what `EntityVisual` resolved — never a second art path. |
+| A tie between two parties, drawn (face, bond mark, face, sentence) | `BondStrip` | THR-2097 rule R4. Only while the engine holds the tie. Faces come resolved from the VM (`ascendantPortraitSrc`, `resolveEntityVisual`) — never a second art path. |
 
 Person imagery is knowledge-gated (Law 8): below `recognised` a person renders the silhouette
 fallback even when art exists. Places, items, and encounters are never gated. The gate fails open
@@ -187,6 +188,8 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `Modal` | Dialog overlay | Any centered overlay dialog. Escape to close, backdrop click. |
 | `RevealCard` | Ceremonial reveal surface | A minor element the player just gained, with nothing to decide. Composed on Modal. Use `RevealCard.Frame` inside an existing modal. |
 | `Medallion` | Circular icon frame | Ringed, clipping icon disc. sm 40 / md 64 / lg 96. Frames an already-resolved visual — never a second art path. |
+| `BondStrip` | A drawn tie | Two `Medallion` faces and the `bond` icon over a sentence (THR-2097, rule R4). Drawn only for a tie the engine holds. |
+| `QuietSlot` | Quiet empty state | One quiet line in a dashed `--border-subtle` frame (THR-2097, rule R8). Replaces a heading over nothing; no gold. |
 | `FlavorQuote` | Inset quote well | Flavor prose above mechanical text. Renders nothing when empty. |
 | `Tooltip` | Hover information | Progressive disclosure Tier 1. Smart-positioned, viewport-aware, supports nested hover. |
 | `Dropdown` | Menu picker | Portal-based, escape/outside-click to close. Compound: Dropdown.Item. |

@@ -19,7 +19,10 @@ import type { SubjectPageVM } from '../../../engine/views/subjects/subjectTypes'
 import type { WorldGraph } from '../../../engine/graph';
 import type { InspectorTabId, PageSurface, Section as DetailSection } from '../../../types/detailPage';
 import { sectionVisibleAt } from '../../../types/detailPage';
-import { INSPECTOR_TAB_LABELS } from '../../../data/view-content';
+import { INSPECTOR_TAB_ICONS, INSPECTOR_TAB_LABELS } from '../../../data/view-content';
+import { ICON_FOR_WORLD_REF_KIND, recordFallbackDrawn } from '../../../data/icons/conceptIcons';
+import { FALLBACK_ICON_NAME, ICON_REGISTRY, type IconName } from '../../../data/icons/iconRegistry';
+import type { SubjectHeaderVM } from '../../../engine/views/subjects/subjectTypes';
 import { Section } from '../../shared/Section';
 import { Tabs } from '../../shared/Tabs';
 import { Panel } from '../../shared/Panel';
@@ -41,22 +44,53 @@ export interface InspectorPageReport {
   sectionsShown: string[];
   foldedGroups: string[];
   hiddenForWidth: string[];
+  /** THR-2097 — what the art-led dressing drew (`getInspectorLab()`, `getInspectorState()`). */
+  dressing: InspectorDressingReport;
+}
+
+/** THR-2097 — the dressing a page drew (plan § Debug inspection). */
+export interface InspectorDressingReport {
+  /** Section typeIds drawn in the aside (`placement: 'aside'`, wide and Full). */
+  asideSections: string[];
+  bondStrip: boolean;
+  firstBadge: boolean;
+  /** Art tiles drawn (tiles with an image), across every shown section. */
+  galleryTiles: number;
+  /** Section typeIds whose icon drew the fallback mark. */
+  iconFallbacks: string[];
 }
 
 interface TabGroup {
   id: InspectorTabId;
   label: string;
+  /** THR-2097 (rule R2): the tab's carved idea; Overview draws the page kind's own. Null = none picked yet. */
+  icon: IconName | null;
   sections: DetailSection[];
 }
 
+/** The idea the Overview tab draws: the subject kind's own (a person page draws `person`). */
+export function overviewIconFor(kind: SubjectHeaderVM['visual']['kind']): IconName | null {
+  // A kind with no world-ref idea (god, land, content, record) draws no icon until slice 2 picks one.
+  return (ICON_FOR_WORLD_REF_KIND as Readonly<Record<string, IconName>>)[kind] ?? null;
+}
+
+/** Whether this size draws a section in the aside rather than its tab (THR-2097). */
+export function inAsideAt(section: DetailSection, size: InspectorSize): boolean {
+  return section.placement === 'aside' && size !== 'docked';
+}
+
+function drawsFallback(icon: IconName | undefined): boolean {
+  return icon != null && (icon === FALLBACK_ICON_NAME || !(icon in ICON_REGISTRY));
+}
+
 /** The visible sections at this size, grouped into tabs in table order. */
-export function tabsAt(body: readonly DetailSection[], size: InspectorSize): TabGroup[] {
+export function tabsAt(body: readonly DetailSection[], size: InspectorSize, overviewIcon: IconName | null = null): TabGroup[] {
   const groups: TabGroup[] = [];
   for (const section of body) {
-    if (!sectionVisibleAt(section, size)) continue;
+    if (!sectionVisibleAt(section, size) || inAsideAt(section, size)) continue;
     const id = (section.tab ?? 'overview') as InspectorTabId;
     let g = groups.find(t => t.id === id);
-    if (!g) groups.push((g = { id, label: INSPECTOR_TAB_LABELS[id], sections: [] }));
+    if (!g) groups.push((g = { id, label: INSPECTOR_TAB_LABELS[id], icon: id === 'overview' ? overviewIcon : INSPECTOR_TAB_ICONS[id], sections: [] }));
     g.sections.push(section);
   }
   return groups;
@@ -71,6 +105,7 @@ export function tabsAt(body: readonly DetailSection[], size: InspectorSize): Tab
  */
 export function hiddenForWidth(body: readonly DetailSection[], size: InspectorSize): string[] {
   const shownTabs = new Set(tabsAt(body, size).map(t => t.id));
+  // A section the wider sizes draw in the aside is still in its tab here; it is not hidden.
   const tabs: string[] = [];
   const sections: string[] = [];
   for (const section of body) {
@@ -94,7 +129,7 @@ function Body({ tabs, tabsLabel }: { tabs: TabGroup[]; tabsLabel: string }) {
       {/* A tab row never scrolls sideways (THR-1821): the person's seven tabs wrap to a
           second line in the wide size's body column rather than overflow it (THR-1909). */}
       <Tabs kind="tabs" value={tabs.some(t => t.id === tab) ? tab : tabs[0].id} onChange={setTab} label={tabsLabel} style={{ flexWrap: 'wrap' }}>
-        {tabs.map(t => <Tabs.Tab key={t.id} value={t.id} label={t.label} />)}
+        {tabs.map(t => <Tabs.Tab key={t.id} value={t.id} label={t.label} icon={t.icon ?? undefined} />)}
         {tabs.map(t => (
           <Tabs.Panel key={t.id} value={t.id}>
             <div style={{ paddingTop: '10px' }}>{renderSections(t.sections)}</div>
@@ -122,7 +157,9 @@ interface InspectorPageProps {
 }
 
 export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, onCast, headingRef }: InspectorPageProps) {
-  const tabs = useMemo(() => tabsAt(page.body, size), [page.body, size]);
+  const overviewIcon = overviewIconFor(page.header.visual.kind);
+  const tabs = useMemo(() => tabsAt(page.body, size, overviewIcon), [page.body, size, overviewIcon]);
+  const asideSections = useMemo(() => page.body.filter(s => sectionVisibleAt(s, size) && inAsideAt(s, size)), [page.body, size]);
   const hidden = useMemo(() => hiddenForWidth(page.body, size), [page.body, size]);
   const [opened, setOpened] = useState<ReadonlySet<string>>(new Set());
   const [folded, setFolded] = useState<ReadonlySet<string>>(new Set());
@@ -157,12 +194,23 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
   }, [planKey, size, page.connections.groups, opened]);
 
   useLayoutEffect(() => {
+    const shown = [...tabs.flatMap(t => t.sections), ...asideSections];
+    const iconFallbacks = shown.filter(s => drawsFallback(s.icon)).map(s => s.typeId);
+    // The same misses feed `getIconReport().fallbacksDrawn` (plan § Debug inspection).
+    for (const typeId of iconFallbacks) recordFallbackDrawn('inspector-section', typeId);
     onReport?.({
-      sectionsShown: tabs.flatMap(t => t.sections.map(s => s.typeId)),
+      sectionsShown: shown.map(s => s.typeId),
       foldedGroups: [...folded].filter(id => !opened.has(id)),
       hiddenForWidth: hidden,
+      dressing: {
+        asideSections: asideSections.map(s => s.typeId),
+        bondStrip: shown.some(s => s.kind === 'prose' && s.bond != null),
+        firstBadge: page.header.firstOf != null && size !== 'docked',
+        galleryTiles: shown.reduce((n, s) => n + (s.kind === 'cards' ? s.tiles.filter(t => t.image).length : 0), 0),
+        iconFallbacks,
+      },
     });
-  }, [onReport, tabs, folded, opened, hidden]);
+  }, [onReport, tabs, asideSections, folded, opened, hidden, page.header.firstOf, size]);
 
   const showAll = (id: string) => setOpened(prev => new Set([...prev, id]));
   const effectiveFolded = new Set([...folded].filter(id => !opened.has(id)));
@@ -170,6 +218,10 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
 
   // Focus lands on the heading when a page opens (Law 50); the host owns the ref.
   const header = <div ref={headingRef} tabIndex={-1} data-inspector-heading=""><SubjectHeader header={page.header} graph={graph} compact={size === 'docked'} /></div>;
+  // THR-2097 (rule R3): what the wide and Full aside draws under the Act row — the gallery.
+  const asideBody = asideSections.length > 0
+    ? <div data-inspector-aside-sections="">{asideSections.map(s => <Section key={s.typeId} section={s} inAside />)}</div>
+    : null;
   const act = page.actOn ? <ActOnRow key={page.subjectKey} actOn={page.actOn} targetName={page.header.name} onCast={onCast} /> : null;
   const land = isLand ? <InThisLand index={page.inThisLand} /> : null;
   const body = <Body key={planKey} tabs={tabs} tabsLabel={page.header.name} />;
@@ -202,6 +254,7 @@ export function InspectorPage({ page, size, graph, onWiden, onReport, toolbar, o
         {header}
         {land}
         {act}
+        {asideBody}
       </div>
     );
     content = (
