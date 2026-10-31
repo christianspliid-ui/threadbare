@@ -188,6 +188,12 @@ export const ACTION_EFFECTS_PROSE: Record<string, string> = {
     'Draws trade through a settlement\'s square, lifting its prosperity and easing its unrest.',
   'loc.stoke_forges':
     'Stokes a town\'s forges and hearths: its prosperity rises, and so does its unrest.',
+  'loc.steel_walls':
+    'Strengthens a town\'s walls: a siege against it goes harder for the attacker.',
+  'loc.lay_footings':
+    'Sets the footings of a town\'s next building: it rises sooner.',
+  'loc.keep_stores':
+    'Keeps a town\'s stores from spoiling: it has more put by for lean days, up to what its granaries hold.',
   'loc.bless_holding':
     'For a year, whoever holds this place draws half again from it.',
   'loc.reveal_vein':

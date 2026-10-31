@@ -9,11 +9,25 @@
  * with `giftBy`, or a gift without one; a non-generic market card with no sphere to be
  * priced in; spine / milestone / signature grant drift against `giftBy`.
  * Warns on: a `giftBy: 'spine'` card no spine beat grants (it reaches the god some
- * other way); sphere × tier holes in the market.
+ * other way); sphere × tier holes in the market; a Hunger sphere with no cheap
+ * (≤ CHEAP_PLACE_CARD_MAX_COST) tier-1 market place card (THR-2089).
  */
 
 import { CREATION_SPHERE_NAMES, SPHERE_NAMES } from '../types/index';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import { HUNGER_CATALOG } from '../data/hunger-catalog';
+
+/**
+ * THR-2089: the price at or under which a tier-1 market place card counts as its
+ * sphere's cheap card — the card a god can cast on a town often enough to raise its
+ * Mandate half by its own hand.
+ */
+export const CHEAP_PLACE_CARD_MAX_COST = 2;
+
+/** Every sphere a Hunger can name (primary or secondary) — the Mandate's spheres. */
+export const HUNGER_SPHERES: readonly string[] = [
+  ...new Set(HUNGER_CATALOG.flatMap(h => [h.sphereAlignment.primary, h.sphereAlignment.secondary])),
+];
 
 export interface GodCardGrantSources {
   /** Card ids any spine beat grants. */
@@ -116,6 +130,16 @@ export function checkGodCardProgression(
       if (!any) missing.push(tier);
     }
     if (missing.length > 0) warnings.push(`hole: no ${sphere} market card at tier ${missing.join(', ')}`);
+  }
+
+  // THR-2089: a Hunger sphere with no cheap tier-1 market card a god can cast on a town.
+  for (const sphere of HUNGER_SPHERES) {
+    const any = cards.some(c => c.progression?.offer === 'market' && c.progression.tier === 1
+      && c.sphereAffinity === sphere
+      && (c.essenceCost ?? Infinity) <= CHEAP_PLACE_CARD_MAX_COST
+      && (c.targetCategories ?? []).some(cat => cat === 'location' || cat === 'sublocation')
+      && (!c.targetSubtypes || c.targetSubtypes.length === 0 || c.targetSubtypes.includes('town')));
+    if (!any) warnings.push(`hole: no cheap ${sphere} place card`);
   }
 
   return { cardCount: cards.length, failures, warnings, counts, flags };

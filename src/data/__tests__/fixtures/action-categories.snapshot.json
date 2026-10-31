@@ -707,6 +707,18 @@
     "catalog": "location",
     "codex": "location"
   },
+  "loc.steel_walls": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.lay_footings": {
+    "catalog": "location",
+    "codex": "location"
+  },
+  "loc.keep_stores": {
+    "catalog": "location",
+    "codex": "location"
+  },
   "loc.place_of_power": {
     "catalog": "location",
     "codex": "location"

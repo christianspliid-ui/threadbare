@@ -70,6 +70,8 @@ import {
   LOC_OPEN_MARKETS_UNREST_DELTA,
   LOC_STOKE_FORGES_PROSPERITY_DELTA,
   LOC_STOKE_FORGES_UNREST_DELTA,
+  LOC_LAY_FOOTINGS_BUILD_DELTA,
+  LOC_KEEP_STORES_FOOD_DELTA,
   LOC_SANCTIFY_MAGSAT_DELTA,
   LOC_SANCTIFY_DIVINE_PRESENCE_DELTA,
   LOC_AWAKEN_SPIRIT_PRESENCE_DELTA,
@@ -2018,7 +2020,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'force',
     targetCategories: ['location'],
-    targetSubtypes: ['keep', 'fortress', 'stronghold', 'watchtower', 'garrison'],
+    // THR-2089: `fort` and `tower` are the defended subtypes the world generator emits;
+    // without them Fortify had no legal target on the seeded world.
+    targetSubtypes: ['keep', 'fortress', 'stronghold', 'watchtower', 'garrison', 'fort', 'tower'],
     motivations: ['courage_prudence', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'breathes martial purpose into the walls of this fortification',
@@ -2305,6 +2309,120 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'breathes on the banked coals of the town\'s forges',
       success: 'every hearth in the town flares at once, and the hammers start before dawn',
       failure: 'the coals glow and settle; the town sleeps as it always has',
+    },
+  },
+
+  // ─── THR-2089: cheap place cards for force, matter and time ──────────
+  // Each sphere a Hunger can name gets a tier-1 market card a god can cast on a town
+  // for 2 essence, so its Mandate half can be raised by the god's own hand.
+
+  {
+    id: 'loc.steel_walls',
+    // Same op as Fortify; Fortify is the strongholds card at 4, this the towns card at 2.
+    progression: { tier: 1, offer: 'market', generic: false },
+    name: 'Steel the Walls',
+    spellName: 'Iron in the Mortar',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Puts strength into a town\'s walls and gates. Timbers that were rotting hold, and the watch stands straighter. The next army to come against it pays more for every yard.',
+    reach: 'iron',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'iron',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'fortify_location', nodeId: '$target' },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'force',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'lays a hand on the town\'s gate and leans',
+      success: 'the walls stand a hand\'s breadth taller, though no mason touched them',
+      failure: 'the gate creaks and settles; the walls stay as they were',
+    },
+  },
+
+  {
+    id: 'loc.lay_footings',
+    progression: { tier: 1, offer: 'market', generic: false },
+    name: 'Lay the Footings',
+    spellName: 'The Cornerstone Set',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Sets stone for a town\'s next building before anyone has dug for it. Whatever the town was going to raise next, it raises sooner.',
+    reach: 'stone',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'stone',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.20,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          buildProgress: `+${LOC_LAY_FOOTINGS_BUILD_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'matter',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['preservation_transformation', 'tradition_novelty'],
+    narrativeTemplates: {
+      initiation: 'presses the earth flat where the town means to build',
+      success: 'the footings are dug and set by morning, square and level',
+      failure: 'the ground shifts under the lines and the stakes fall',
+    },
+  },
+
+  {
+    id: 'loc.keep_stores',
+    progression: { tier: 1, offer: 'market', generic: false },
+    name: 'Keep the Stores',
+    spellName: 'Grain That Does Not Spoil',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Holds back time in a town\'s granaries and cellars. What was stored keeps, and the town has a little more to eat when the lean days come.',
+    reach: 'gold',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'gold',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.20,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          foodStore: `+${LOC_KEEP_STORES_FOOD_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'time',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['preservation_transformation', 'courage_prudence'],
+    narrativeTemplates: {
+      initiation: 'breathes cold into the town\'s granaries',
+      success: 'the grain in the jars is as sound as the day it was cut',
+      failure: 'the cellar air stays warm; the mould keeps its own time',
     },
   },
 

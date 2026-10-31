@@ -16,6 +16,10 @@
 //             reach after the settle), so the ledger can be read at doom 0.5 / 0.75 to fit
 //             the point constants (Done-when 2).
 //
+// THR-2089: the god casts only where a player could — a card with `targetSubtypes` draws its
+// targets from the place tier filtered to those subtypes — and stops casting on a sphere
+// once that half's ledger meets its target (a player would move the essence).
+//
 // Usage: npm run census:mandate -- [idle|godloc|sweep] [seeded|cli42|cli99|cli7|all] [hungerId]
 import {
   initializeGameStateFromIdentity, devSeedTheFirst, DEV_ASCENDANT_IDENTITY, initializeGameState,
@@ -30,7 +34,7 @@ import { generateArchetypes } from '../src/engine/ascendant';
 import { UNIFIED_ACTION_TEMPLATES } from '../src/data/unified-action-templates';
 import { HUNGER_CATALOG } from '../src/data/hunger-catalog';
 import { preparePlayerCast, commitPlayerCast } from '../src/engine/playerCastDispatch';
-import { getPlaceNodes } from '../src/engine/sublocationShape';
+import { getPlaceNodes, getLocationNodes } from '../src/engine/sublocationShape';
 import { MANDATE_PRIMARY_TARGET_POINTS, MANDATE_SECONDARY_TARGET_POINTS } from '../src/data/game-config';
 
 const arm = process.argv[2] ?? 'idle';
@@ -70,8 +74,13 @@ function run(label: string, mk: () => any, opts: { god: boolean; doomStop?: numb
   let last: RunResult = { label, tick: 0, doom: 0, progress: 0, ledgerP: 0, ledgerS: 0, ended: null };
   for (let i = 0; i < opts.ticks; i++) {
     if (opts.god && state.tick >= 2) {
+      const ledger = state.mandateState?.godLedger ?? {};
+      const met: Record<string, boolean> = {
+        [P]: (ledger.primary ?? 0) >= MANDATE_PRIMARY_TARGET_POINTS,
+        [S]: (ledger.secondary ?? 0) >= MANDATE_SECONDARY_TARGET_POINTS,
+      };
       for (const sp of [P, S]) {
-        const t = tpl[sp]; if (!t) continue;
+        const t = tpl[sp]; if (!t || met[sp]) continue;
         if ((state.essencePool[sp] ?? 0) < t.essenceCost) continue;
         const cats: string[] = t.targetCategories ?? ['actor'];
         const pool = cats.includes('location')
@@ -79,8 +88,12 @@ function run(label: string, mk: () => any, opts: { god: boolean; doomStop?: numb
           : cats.includes('sublocation')
             ? state.graph.getNodesByType('location').filter((n: any) => typeof n.properties?.parentLocationId === 'string')
             : state.graph.getNodesByType('actor').filter((n: any) => n.properties?.actorType === 'individual' && n.properties?.alive !== false);
-        if (pool.length === 0) continue;
-        const target = pool[(state.tick * 7919 + casts) % pool.length];
+        const subs: string[] = t.targetSubtypes ?? [];
+        const legal = subs.length > 0
+          ? getLocationNodes(state.graph).filter((n: any) => subs.includes(n.properties?.locationSubtype ?? n.properties?.locationType))
+          : pool;
+        if (legal.length === 0) continue;
+        const target = legal[(state.tick * 7919 + casts) % legal.length];
         try {
           const cast = preparePlayerCast({ graph: state.graph, ascendantId: state.ascendantId, template: t, templateId: t.id, targetId: target.id, tick: state.tick, seed: 2081 + casts * 13, sphere: sp, runtime: rt });
           state = commitPlayerCast(state, { cast });
