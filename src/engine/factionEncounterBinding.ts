@@ -40,6 +40,21 @@ export interface FactionEncounterBinding {
   readonly rivalFactionName?: string;
   /** The actor is a member of `factionId` — drives `{?has_faction_membership}`. */
   readonly actorIsMember: boolean;
+  /** The actor's `member_of.reputation` with `factionId` (0–1); 0 for a non-member. */
+  readonly actorStanding: number;
+}
+
+/**
+ * A member at or above this standing (`member_of.reputation`, 0–1) answers a loyalty
+ * examination with conviction (`{?loyalty_high}`); below it, or an outsider, reads
+ * `{?loyalty_low}`. 0.5 is the reputation ladder's "Accepted" rung.
+ */
+export const FACTION_LOYALTY_HIGH_STANDING = 0.5;
+
+function standingWith(graph: WorldGraph, actorId: string, factionId: string): number {
+  const edge = getAgentMemberships(graph, actorId).find(m => m.group.id === factionId)?.edge;
+  const rep = edge?.properties.reputation;
+  return typeof rep === 'number' && Number.isFinite(rep) ? rep : 0;
 }
 
 function isLiveFaction(node: GraphNode | undefined): node is GraphNode {
@@ -96,6 +111,7 @@ export function resolveFactionEncounterBinding(
         factionId: poster.id,
         factionName: poster.name,
         actorIsMember: own.some(f => f.id === poster.id),
+        actorStanding: standingWith(graph, actorId, poster.id),
       };
     }
 
@@ -112,6 +128,7 @@ export function resolveFactionEncounterBinding(
           rivalFactionId: rival.id,
           rivalFactionName: rival.name,
           actorIsMember: true,
+          actorStanding: standingWith(graph, actorId, faction.id),
         };
       }
     }

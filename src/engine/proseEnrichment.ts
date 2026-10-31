@@ -48,7 +48,7 @@ import {
 } from './graphQueries';
 import type { EncounterSupportBinding, EncounterSupportBundle } from '../types/encounter';
 import type { ContextFragmentSet, FactionBindingMode } from '../types/unifiedAction';
-import { resolveFactionEncounterBinding } from './factionEncounterBinding';
+import { FACTION_LOYALTY_HIGH_STANDING, resolveFactionEncounterBinding } from './factionEncounterBinding';
 import {
   COLORATION_FRAGMENT_SLOT,
   resolveFragment,
@@ -210,6 +210,8 @@ export interface NarrativeContext {
   rivalFactionName?: string;
   /** THR-2096 — the actor belongs to the bound faction (`{?has_faction_membership}`). */
   boundFactionMember?: boolean;
+  /** THR-2096 — the actor's standing with the bound faction, 0–1 (`{?loyalty_high}`). */
+  boundFactionStanding?: number;
   rulerOf?: { locationName: string };
   titles: string[];
 
@@ -637,7 +639,9 @@ export function gatherNarrativeContext(
     factionRank,
     ...(factionName ? { factionName } : {}),
     ...(factionBinding?.rivalFactionName ? { rivalFactionName: factionBinding.rivalFactionName } : {}),
-    ...(factionBinding ? { boundFactionMember: factionBinding.actorIsMember } : {}),
+    ...(factionBinding
+      ? { boundFactionMember: factionBinding.actorIsMember, boundFactionStanding: factionBinding.actorStanding }
+      : {}),
     titles,
     notableArtifacts,
     strongAllies,
@@ -1130,6 +1134,9 @@ export function enrichProse(
 function resolveConditionals(prose: string, ctx: NarrativeContext): string {
   let result = prose;
 
+  const loyaltyHigh = ctx.boundFactionMember === true
+    && (ctx.boundFactionStanding ?? 0) >= FACTION_LOYALTY_HIGH_STANDING;
+
   // Build condition map
   const conditions: Record<string, boolean> = {
     has_artifact: ctx.notableArtifacts.length > 0,
@@ -1144,10 +1151,10 @@ function resolveConditionals(prose: string, ctx: NarrativeContext): string {
     has_faction_membership: ctx.boundFactionMember === true,
     no_faction_membership: ctx.boundFactionMember !== true,
     // THR-2096 — authored in the `fa.*` set-pieces and never resolved, so the raw
-    // markers reached the veil. Loyalty reads membership of the bound faction; the
-    // dominant-reach trio reads the actor's primary reach.
-    loyalty_high: ctx.boundFactionMember === true,
-    loyalty_low: ctx.boundFactionMember !== true,
+    // markers reached the veil. Loyalty reads the member's standing with the bound
+    // faction; the dominant-reach trio reads the actor's primary reach.
+    loyalty_high: loyaltyHigh,
+    loyalty_low: !loyaltyHigh,
     iron_dominant: ctx.primaryReach === 'iron',
     shadow_dominant: ctx.primaryReach === 'shadow',
     other_dominant: ctx.primaryReach !== 'iron' && ctx.primaryReach !== 'shadow',

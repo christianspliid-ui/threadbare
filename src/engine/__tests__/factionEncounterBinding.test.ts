@@ -111,6 +111,19 @@ describe('{faction} prose (THR-2096)', () => {
     expect(resolveEncounterTitle(bounty, ctx)).toBe('The Merchant Consortium\'s Bounty');
   });
 
+  it('loyalty reads the member\'s standing, not membership alone', () => {
+    const text = '{?loyalty_high}HIGH{/loyalty_high}{?loyalty_low}LOW{/loyalty_low}';
+    const opts = { bindsFaction: 'posting' as const };
+    for (const [reputation, expected] of [[0.03, 'LOW'], [0.8, 'HIGH']] as const) {
+      const graph = buildGraph();
+      graph.addEdge({
+        id: 'm', source: 'hero', target: 'f_temple', type: 'member_of', properties: { rank: 0, reputation },
+      });
+      const ctx = gatherNarrativeContext(graph, 'hero', undefined, undefined, undefined, undefined, undefined, opts);
+      expect(enrichProse(text, ctx), String(reputation)).toBe(expected);
+    }
+  });
+
   it('the aftermath ending sentence uses the same title (playerFacingEncounterTitle)', () => {
     const graph = buildGraph();
     const bounty = getUnifiedTemplateById('fa.bounty_hunt')!;
