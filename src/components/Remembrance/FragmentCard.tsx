@@ -8,6 +8,17 @@ import { CHOICE_ATTR } from './remembranceChoice';
  */
 export const FRAGMENT_CAPTION_REST_COLOR = 'rgba(206,196,182,0.86)';
 
+/**
+ * THR-2092: the picture's brightness per state. The picture stays opaque in every
+ * state — rest 0.45 ≈ the old 0.55 opacity × 0.75 brightness on a black ground,
+ * without letting the origin backdrop bleed through the art.
+ */
+export const FRAGMENT_IMAGE_BRIGHTNESS = {
+  selected: 1.15,
+  hovered: 1.05,
+  rest: 0.45,
+} as const;
+
 interface FragmentCardProps {
   prose: string;
   imageAssetPath: string;
@@ -60,10 +71,14 @@ export function FragmentCard({
           WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 95%), linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
           WebkitMaskComposite: 'source-in',
           // THR-1989: only the picture dims at rest (was the whole card, words too).
-          opacity: selected ? 1 : hovered ? 0.9 : 0.55,
-          filter: selected ? 'brightness(1.15)' : hovered ? 'brightness(1.05)' : 'brightness(0.75)',
+          // THR-2092: it dims by brightness, not opacity, so a backdrop never shows through it.
+          filter: selected
+            ? `brightness(${FRAGMENT_IMAGE_BRIGHTNESS.selected})`
+            : hovered
+              ? `brightness(${FRAGMENT_IMAGE_BRIGHTNESS.hovered})`
+              : `brightness(${FRAGMENT_IMAGE_BRIGHTNESS.rest})`,
           // THR-1716: narrowed from `transition-all` (Law 41).
-          transition: 'opacity 0.5s ease, filter 0.5s ease',
+          transition: 'filter 0.5s ease',
         }}
       />
 
