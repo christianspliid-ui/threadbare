@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-10-31 22:58 local (21:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-10-31 23:58 local (22:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-10-31: spirit, life and entropy gods now have cheap town cards (Tend the Sick, Let the Damp In, Keep the Vigil), and they are live** ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)). Merged via [#2668](https://github.com/christianspliid-ui/threadbare/pull/2668).
 - **2026-10-31: card lean sentence — you chose B, effect only** ("B", Discord 15:58). Cards on a choice step drop "It argues for the honest way." and keep the effect line. Passed to the builder of [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) via the briefing.
 - **2026-10-31: heavy simulation tests are green on main again** ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey)). Merged via [#2664](https://github.com/christianspliid-ui/threadbare/pull/2664).
 - **2026-10-31: a person’s page now leads with their art, and it is live** ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the)). Merged via [#2663](https://github.com/christianspliid-ui/threadbare/pull/2663).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-31: the origin and drive pictures are no longer see-through, and it is live** ([THR-2092](https://linear.app/threadbare/issue/THR-2092/the-origin-and-drive-choice-pictures-are-see-through-at-rest-the-void)). Merged via [#2658](https://github.com/christianspliid-ui/threadbare/pull/2658).
 - **2026-10-31: force, matter and time gods now have cheap town cards (Steel the Walls, Lay the Footings, Keep the Stores), and they are live** ([THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12)). Merged via [#2656](https://github.com/christianspliid-ui/threadbare/pull/2656).
 - **2026-10-30: a god's push onto a hex now lands on the place it falls on, and it is live** ([THR-2087](https://linear.app/threadbare/issue/THR-2087/hex-cards-sphere-pressure-goes-nowhere-a-push-onto-a-hex-col-row)). Merged via [#2653](https://github.com/christianspliid-ui/threadbare/pull/2653).
-- **2026-10-29: energy gods now have two cards of their own, Stoke the Forges and Kindle a Spark, and they are live** ([THR-2086](https://linear.app/threadbare/issue/THR-2086/energy-has-no-card-a-god-can-cast-kindle-wander-and-illuminate-cannot)). Merged via [#2652](https://github.com/christianspliid-ui/threadbare/pull/2652).
 
 ---
 

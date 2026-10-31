@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 22:58 local (21:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 23:58 local (22:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,8 +20,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Cheap place cards plateau](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (new): when a god works a town, its sphere push lands in the town's quietest Place (the inn, granary or gatehouse holding least of that sphere). The card still changes the town as it says. A Reshape god then reaches 66 of 87 instead of 34; the trade is that rivals rarely reach those Places. Veto line: "the push should stay on the town". Window closes about 10:10 tomorrow morning.
-- Same ticket (new): a card that changes the world pushes twice what a look pushes. Vision (it only looks) stays at 3; every card costing 2 essence or more pushes 6. All three town-card gods then clear half their Mandate. Veto line: "keep every push at 3".
+- [Cheap place cards plateau](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26): when a god works a town, its sphere push lands in the town's quietest Place (the inn, granary or gatehouse holding least of that sphere). The card still changes the town as it says. A Reshape god then reaches 66 of 87 instead of 34; the trade is that rivals rarely reach those Places. Veto line: "the push should stay on the town". Window closes about 10:10 tomorrow morning.
+- Same ticket: a card that changes the world pushes twice what a look pushes. Vision (it only looks) stays at 3; every card costing 2 essence or more pushes 6. All three town-card gods then clear half their Mandate. Veto line: "keep every push at 3".
 - [Art-led pass, slice 2 — every other Inspector page](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions): towns and cities show their own landscape in the page header instead of today's placeholder mark (all 235 places in a seeded world have one). Veto line: "places keep the placeholder". Window closes about 06:45 tomorrow morning.
 - Same ticket: the Mandate is the god page's one highlighted line, in words ("Rising." and the current objective); the progress bar stays on the god rail. Veto line: "put the Mandate bar on the god page".
 - Same ticket: lists of strengths become chips ("Might · Strong"), one-fact rows become sentences ("Here you are Accepted."), and the bars beside single words drop. Veto line: "keep the bars".
@@ -39,9 +39,9 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([afternoo
 
 ## Queue
 
-**Building again — two tickets ready, both waiting on their veto windows.** The builder claimed [THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life) (spirit, life and entropy cards) at about 22:31 after the orchestrator promoted it; that run is still working. [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable about 03:47 tonight; [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (art-led Inspector pages, slice 2) about 06:45 tomorrow.
+**Shipped and live: spirit, life and entropy gods now have cheap town cards.** [THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life) merged via [#2668](https://github.com/christianspliid-ui/threadbare/pull/2668) and the live site serves it. The builder is now idle by design: both ready tickets are inside their veto windows. [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) becomes claimable about 03:50 tonight; [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (art-led Inspector pages, slice 2) about 06:45 tomorrow.
 
-- **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) has its plan merged and waits on THR-2090 plus its veto window (about 10:10 tomorrow).
+- **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) has its plan merged and no longer waits on THR-2090; only its veto window (about 10:10 tomorrow) holds it.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -49,6 +49,4 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed:** tick cost 223 ms/tick steady, 41% above the 7-day median (159, 128 rows since 8ad288e1); top phase agent_decision, 639 agents. Name the merges between 8ad288e1 and 11c77fb5: git log --oneline --merges 8ad288e1..11c77fb5. The measurement ran while the builder's THR-2090 session was busy on the same machine, and the previous hour measured 152 on the same commit, so this may be load rather than a slowdown; next hour's reading will tell.
-
-Everything else is green: the live site is current (126665db; later commits were docs only), the PR checks and scheduled background jobs pass, no pull request is waiting, the worktree reaper ran at 22:40, and the enabled scheduled tasks are on time. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site is current (7d617d2a, the THR-2090 merge), the PR checks and scheduled background jobs pass, no pull request is waiting, and the enabled scheduled tasks are on time. Engine speed is back to normal: 172 ms/tick, 8% above the 7-day median, so last hour's 41% reading was load from the builder sharing the machine. The 40-hour silence on 29–30 Oct is on your list above.
