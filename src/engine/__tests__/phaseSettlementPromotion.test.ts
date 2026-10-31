@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { phaseSettlementPromotion } from '../phaseSettlementPromotion';
+import { getFortificationModifier } from '../siegeResolution';
 import {
   SETTLEMENT_PROMOTION_PROSPERITY,
   SETTLEMENT_PROMOTION_SUSTAIN_TICKS,
@@ -143,6 +144,25 @@ describe('phaseSettlementPromotion', () => {
     const state = makeState(graph, 5);
     phaseSettlementPromotion(state);
     expect(graph.getNode('loc.town')!.properties.locationSubtype).toBe('city');
+  });
+
+  it('THR-2089: a fortified town promoted to city defends at least at the city base', () => {
+    addSettlement(graph, 'loc.town', 'town', SETTLEMENT_PROMOTION_PROSPERITY, {
+      prosperitySustainAboveTicks: SETTLEMENT_PROMOTION_SUSTAIN_TICKS - 1,
+      fortificationMultiplier: 20,
+    });
+    phaseSettlementPromotion(makeState(graph, 5));
+    const props = graph.getNode('loc.town')!.properties;
+    expect(props.locationSubtype).toBe('city');
+    expect(props.fortificationMultiplier).toBe(getFortificationModifier('city'));
+  });
+
+  it('THR-2089: promotion leaves no stored fortification where none was set', () => {
+    addSettlement(graph, 'loc.town', 'town', SETTLEMENT_PROMOTION_PROSPERITY, {
+      prosperitySustainAboveTicks: SETTLEMENT_PROMOTION_SUSTAIN_TICKS - 1,
+    });
+    phaseSettlementPromotion(makeState(graph, 5));
+    expect(graph.getNode('loc.town')!.properties.fortificationMultiplier).toBeUndefined();
   });
 
   it('does not promote city beyond city (no city→something higher)', () => {
