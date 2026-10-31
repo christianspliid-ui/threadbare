@@ -6,7 +6,7 @@
 import type { GameState, ProsperityShock, TickEvent } from '../types/gameState';
 import type { DoomEscalationEvent, DoomResolvedEvent } from '../types/doomClock';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
-import { DOOM_PRESSURE_PER_TIER } from '../types/sphereAffinity';
+import { DOOM_PRESSURE_PER_TIER, DOOM_STAGE_PUSH_SOURCE_PREFIX } from '../types/sphereAffinity';
 import type { HexMutation } from '../types/hexMutation';
 import { advanceDoomClock } from './doomClock';
 import { isFirstBonded } from './meetingEncounter';
@@ -421,7 +421,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
           sphere: 'entropy',
           magnitude: DOOM_PRESSURE_PER_TIER,
           source: 'doom',
-          sourceId: `doom-tier-${stage}`,
+          sourceId: `${DOOM_STAGE_PUSH_SOURCE_PREFIX}${stage}`,
         });
       }
 

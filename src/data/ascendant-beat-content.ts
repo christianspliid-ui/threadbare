@@ -694,6 +694,10 @@ export const ASCENDANT_ACTION_BUCKETS: Readonly<Record<string, ActionBucketEntry
   'loc.steel_walls': { bucket: 'unlockable-generic' },
   'loc.lay_footings': { bucket: 'unlockable-generic' },
   'loc.keep_stores': { bucket: 'unlockable-generic' },
+  // THR-2090: the cheap life / entropy / spirit place cards, offered by the market at tier 1.
+  'loc.tend_sick': { bucket: 'unlockable-generic' },
+  'loc.let_damp_in': { bucket: 'unlockable-generic' },
+  'loc.keep_vigil': { bucket: 'unlockable-generic' },
   // THR-1747: the four held-ground cards, granted by the held-ground milestone
   // (`beat.milestone.the_held_ground`) at two flowering sources. They shipped with no
   // grant path. `reach` is each card's cosmic-energy axis, not a `requiresReach` gate.

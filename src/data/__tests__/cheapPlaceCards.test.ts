@@ -14,7 +14,11 @@ import { getFortificationModifier } from '../../engine/siegeResolution';
 import { offerableCards, priceSphere, godCards } from '../../engine/godProgression';
 import { checkGodCardProgression, CHEAP_PLACE_CARD_MAX_COST } from '../../engine/godCardProgressionCheck';
 import { getUnifiedTemplateById } from '../unified-action-templates';
-import { LOC_LAY_FOOTINGS_BUILD_DELTA, LOC_KEEP_STORES_FOOD_DELTA } from '../location-action-constants';
+import {
+  LOC_LAY_FOOTINGS_BUILD_DELTA, LOC_KEEP_STORES_FOOD_DELTA,
+  LOC_TEND_SICK_HEALTH_DELTA, LOC_LET_DAMP_IN_HEALTH_DELTA, LOC_KEEP_VIGIL_UNREST_DELTA,
+  LOC_HEALTH_DEFAULT_BASELINE, LOC_BLESS_HARVEST_HEALTH_DELTA,
+} from '../location-action-constants';
 import { FORTIFY_MULTIPLIER_BONUS, FORTIFY_MULTIPLIER_MAX } from '../../types/battle';
 import { ACTION_PRESSURE_SUCCESS } from '../../types/sphereAffinity';
 import { isActionStepBranch } from '../../types/unifiedAction';
@@ -29,6 +33,10 @@ const CARDS = [
   { id: 'loc.steel_walls', sphere: 'force' },
   { id: 'loc.lay_footings', sphere: 'matter' },
   { id: 'loc.keep_stores', sphere: 'time' },
+  // THR-2090 (slice 2)
+  { id: 'loc.tend_sick', sphere: 'life' },
+  { id: 'loc.let_damp_in', sphere: 'entropy' },
+  { id: 'loc.keep_vigil', sphere: 'spirit' },
 ] as const;
 
 function successOps(id: string): GraphOp[] {
@@ -41,7 +49,7 @@ function townGraph(): WorldGraph {
   graph.addNode({ id: GOD, type: 'actor', name: 'God', properties: { actorType: 'ascendant', domainCapabilities: {} } });
   graph.addNode({
     id: TOWN, type: 'location', name: 'Hollowmere',
-    properties: { locationSubtype: 'town', buildProgress: 3, foodStore: 20 },
+    properties: { locationSubtype: 'town', buildProgress: 3, foodStore: 20, populationHealth: 50, unrest: 30 },
   });
   return graph;
 }
@@ -97,6 +105,47 @@ describe('THR-2089 — the three cards', () => {
     expect(graph.getNode(TOWN)!.properties.foodStore).toBe(20 + LOC_KEEP_STORES_FOOD_DELTA);
   });
 
+  it('Tend the Sick heals the town (THR-2090)', () => {
+    resetOpCounter();
+    const graph = townGraph();
+    executeGraphOps(graph, successOps('loc.tend_sick'), { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 5 });
+    expect(graph.getNode(TOWN)!.properties.populationHealth).toBe(50 + LOC_TEND_SICK_HEALTH_DELTA);
+  });
+
+  it('Let the Damp In sickens the town (THR-2090)', () => {
+    resetOpCounter();
+    const graph = townGraph();
+    executeGraphOps(graph, successOps('loc.let_damp_in'), { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 5 });
+    expect(graph.getNode(TOWN)!.properties.populationHealth).toBe(50 - LOC_LET_DAMP_IN_HEALTH_DELTA);
+  });
+
+  it('on a town with no populationHealth (the worldgen shape), Tend and Damp move it from the 80 baseline (THR-2090 review gate)', () => {
+    for (const [id, want] of [
+      ['loc.tend_sick', LOC_HEALTH_DEFAULT_BASELINE + LOC_TEND_SICK_HEALTH_DELTA],
+      ['loc.let_damp_in', LOC_HEALTH_DEFAULT_BASELINE - LOC_LET_DAMP_IN_HEALTH_DELTA],
+      ['loc.bless_harvest', LOC_HEALTH_DEFAULT_BASELINE + LOC_BLESS_HARVEST_HEALTH_DELTA],
+    ] as const) {
+      resetOpCounter();
+      const graph = townGraph();
+      delete (graph.getNode(TOWN)!.properties as Record<string, unknown>).populationHealth;
+      expect(graph.getNode(TOWN)!.properties.populationHealth).toBeUndefined();
+      const ops = successOps(id).filter((o) => o.op === 'update_node');
+      executeGraphOps(graph, ops, { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 5 });
+      expect(graph.getNode(TOWN)!.properties.populationHealth, id).toBe(want);
+    }
+  });
+
+  it('Keep the Vigil eases the town\'s unrest (THR-2090)', () => {
+    resetOpCounter();
+    const graph = townGraph();
+    executeGraphOps(graph, successOps('loc.keep_vigil'), { actorId: GOD, targetId: TOWN, locationId: TOWN, tick: 5 });
+    expect(graph.getNode(TOWN)!.properties.unrest).toBe(30 - LOC_KEEP_VIGIL_UNREST_DELTA);
+  });
+
+  it('Stoke the Forges costs 2, like every Hunger sphere\'s cheap place card (THR-2090)', () => {
+    expect(getUnifiedTemplateById('loc.stoke_forges')!.essenceCost).toBe(2);
+  });
+
   it.each(CARDS)('a resolved $id pushes $sphere pressure on the town', ({ id, sphere }) => {
     const graph = townGraph();
     const tpl = { ...getUnifiedTemplateById(id)! };
@@ -150,11 +199,9 @@ describe('THR-2089 — the cheap-place-card hole', () => {
     }
   });
 
-  it('still warns for slice 2\'s spheres (THR-2090)', () => {
+  it('no longer warns for any sphere once slice 2 lands (THR-2090)', () => {
     const warnings = checkGodCardProgression(godCards(), sources).warnings;
-    for (const sphere of ['spirit', 'life', 'entropy']) {
-      expect(warnings).toContain(`hole: no cheap ${sphere} place card`);
-    }
+    expect(warnings.filter((w) => w.startsWith('hole: no cheap '))).toEqual([]);
   });
 
   it('a card over the price, or off the town, does not count', () => {

@@ -259,6 +259,12 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "Adds LOC_LAY_FOOTINGS_BUILD_DELTA to the settlement's `buildProgress`; the next building rises when progress meets its cost. Pushes matter pressure (THR-2089).",
   'loc.keep_stores':
     "Adds LOC_KEEP_STORES_FOOD_DELTA to `foodStore`, clamped to STORE_DAYS of need on the next economy tick. Pushes time pressure (THR-2089).",
+  'loc.tend_sick':
+    "Adds LOC_TEND_SICK_HEALTH_DELTA to `populationHealth`; health above LOC_HEALTH_DEFAULT_BASELINE eases back 1 a tick. Pushes life pressure (THR-2090).",
+  'loc.let_damp_in':
+    "Subtracts LOC_LET_DAMP_IN_HEALTH_DELTA from `populationHealth`; under SICK_HEALTH_LINE the town's unrest gains the sickness term. Pushes entropy pressure (THR-2090).",
+  'loc.keep_vigil':
+    "Subtracts LOC_KEEP_VIGIL_UNREST_DELTA from `unrest` (clamped at 0 on the next unrest tick). Pushes spirit pressure (THR-2090).",
   'loc.bless_holding':
     "On success, writes the god's `blessed` edge (kind `holding_yield`) on a place a faction controls or a mortal owns: its town tax, freehold and tithe pay ×BLESS_HOLDING_YIELD_MULT until BLESS_HOLDING_DAYS have passed. A recast extends; a place no one holds takes nothing.",
   'loc.sanctify_square':

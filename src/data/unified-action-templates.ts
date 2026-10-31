@@ -72,6 +72,9 @@ import {
   LOC_STOKE_FORGES_UNREST_DELTA,
   LOC_LAY_FOOTINGS_BUILD_DELTA,
   LOC_KEEP_STORES_FOOD_DELTA,
+  LOC_TEND_SICK_HEALTH_DELTA,
+  LOC_LET_DAMP_IN_HEALTH_DELTA,
+  LOC_KEEP_VIGIL_UNREST_DELTA,
   LOC_SANCTIFY_MAGSAT_DELTA,
   LOC_SANCTIFY_DIVINE_PRESENCE_DELTA,
   LOC_AWAKEN_SPIRIT_PRESENCE_DELTA,
@@ -2299,7 +2302,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       failBehavior: 'fail_action',
     }],
     apCost: 1,
-    essenceCost: 3,
+    // THR-2090: 3 → 2, the price every Hunger sphere's cheap place card carries (THR-2089 Decision 1).
+    essenceCost: 2,
     actorAffinities: ['ascendant'],
     sphereAffinity: 'energy',
     targetCategories: ['location'],
@@ -2429,6 +2433,123 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       initiation: 'breathes cold into the town\'s granaries',
       success: 'the grain in the jars is as sound as the day it was cut',
       failure: 'the cellar air stays warm; the mould keeps its own time',
+    },
+  },
+
+  // ─── THR-2090: cheap place cards for life, entropy and spirit ────────
+  // Slice 2: the last Hunger spheres get a tier-1, 2-essence town card. Tend and Damp
+  // pull the same rope (life ↔ entropy); Vigil calms where Stoke the Forges heats
+  // (spirit ↔ energy).
+
+  {
+    id: 'loc.tend_sick',
+    progression: { tier: 1, offer: 'market', generic: false },
+    name: 'Tend the Sick',
+    spellName: 'The Fever Breaks',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Walks unseen through a town\'s sickrooms. Fevers break, wounds close clean, and the coughing in the lower streets goes quiet. A healthy town has little to gain from it.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.20,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          populationHealth: `+${LOC_TEND_SICK_HEALTH_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'life',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'passes down the street where the sick are kept',
+      success: 'by morning the fevers have broken, and the healers take the credit',
+      failure: 'the fever holds; the sick turn in their beds as before',
+    },
+  },
+
+  {
+    id: 'loc.let_damp_in',
+    progression: { tier: 1, offer: 'market', generic: false },
+    name: 'Let the Damp In',
+    spellName: 'Cough in the Walls',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Lets the damp into a town\'s walls and wells. Nothing falls at once. The children cough, the old take to their beds, and a town worn thin enough grows restless with its sickness.',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.25,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          populationHealth: `-${LOC_LET_DAMP_IN_HEALTH_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'entropy',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
+    narrativeTemplates: {
+      initiation: 'breathes along the town\'s wet stones',
+      success: 'black mould blooms on the whitewash, and the first cough starts in the lower streets',
+      failure: 'the walls dry in the wind; the damp does not take',
+    },
+  },
+
+  {
+    id: 'loc.keep_vigil',
+    // Calms a town's unrest, so it answers a prayer like Open the Markets (THR-1935).
+    progression: { tier: 1, offer: 'market', generic: false, flags: ['answers_prayer'] },
+    name: 'Keep the Vigil',
+    spellName: 'Lamps for the Dead',
+    rarityTier: 1,
+    intrinsicTier: 'background',
+    description: 'Lights the lamps on a town\'s graves and lets the living mourn properly. Old grievances lose their edge, and the streets are quieter for a while.',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.20,
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: {
+          unrest: `-${LOC_KEEP_VIGIL_UNREST_DELTA}`,
+        } },
+      ],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['location'],
+    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    motivations: ['tradition_novelty', 'mercy_ruthlessness'],
+    narrativeTemplates: {
+      initiation: 'kneels among the town\'s graves at dusk',
+      success: 'a lamp burns on every grave by nightfall, and the streets are quiet',
+      failure: 'the lamps gutter out; the dead stay unmourned',
     },
   },
 

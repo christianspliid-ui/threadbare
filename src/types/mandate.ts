@@ -141,7 +141,8 @@ export interface MandateState {
   baselineSettledTick?: number;
   /**
    * Weighted points the god's own hand has raised in the two Mandate spheres since the
-   * settle, net of rival and doom wear on that same ground (THR-2081, `mandateLedger.ts`).
+   * settle, net of rival and doom wear on that same ground, not doom's tide (THR-2081,
+   * THR-2090, `mandateLedger.ts`).
    */
   godLedger?: { primary: number; secondary: number };
   /** Points the god holds per `entityId|sphere` — the most opposition wear can take back there. */

@@ -440,7 +440,7 @@ remediation ticket or the build fails.
 | `place-sphere-reaches-encounter-opening` | Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon. | node-prop: `seedLocationSphereAffinity`, `getNodeSphereAffinity`, `sphereShareOf`, `SPHERE_FACTS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
 | `rung-reads-attunement-marks` | The god's rung on the card ladder is the sum of attunement marks over the spheres it bought (`getAttunementMarksCrossed`, THR-1765), read each tick by `rungMarks`. Read only: spending on offerings writes `offeringSpentBySphere`, never `essenceEarnedBySphere`, so taking up a card never lowers the rung (THR-1811). | function: `getAttunementMarksCrossed` | Ascendant Beats & Progression | 🟢 LIVE | — |
-| `sphere-pressure-credits-mandate` | Only the god's own hand fills the Mandate (THR-2081). `phaseSpherePressure` credits the god's magnitude share of each level-up in the Mandate's two spheres (a push is the god's by `causedBy`, a god-only source, or the scene of a mortal the god threads) and the rival/doom share of an erosion, weighted as the world total weighs the entity, into `pendingMandateCredits`; `phaseMandate` folds them into `mandateState.godLedger`, a debit taking back at most what the god holds there. | function: `mandateCreditsFor`, `applyMandateCredits` | Mandate | 🔵 UNVERIFIED-OK | — |
+| `sphere-pressure-credits-mandate` | Only the god's own hand fills the Mandate (THR-2081). `phaseSpherePressure` credits the god's magnitude share of each level-up in the Mandate's two spheres (a push is the god's by `causedBy`, a god-only source, or the scene of a mortal the god threads) and the rival/doom share of an erosion (not doom's world-wide stage tide: THR-2090 `isMandateOpposition`), weighted as the world total weighs the entity, into `pendingMandateCredits`; `phaseMandate` folds them into `mandateState.godLedger`, a debit taking back at most what the god holds there. | function: `mandateCreditsFor`, `applyMandateCredits` | Mandate | 🔵 UNVERIFIED-OK | — |
 | `world-tilt-shapes-cosmology` | Each new world leans a little toward the spheres earlier gods drew on, and drifts back toward balance over time. | function: `tiltCosmology`, `worldTiltFactors` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 
 ### Strategic Projects & Control
@@ -2529,10 +2529,10 @@ exit
 - **Producer → Consumer:** Companies & Group Travel → Attention, Chronicle & Narrative
 - **UL terms:** *Company*
 - **Module:** `src/engine/agentDetail.ts`
-- **Production hits:** 99 total — 1 write, 2 read, 96 unclassified
+- **Production hits:** 100 total — 1 write, 2 read, 97 unclassified
 - **Write sites:** `src/engine/grievance/grudgeEdge.ts`
 - **Read sites:** `src/engine/agentDetail.ts`, `src/engine/views/subjects/personRows.ts`
-- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +91 more
+- **Other hits:** `src/components/Game/frame/frameDebugState.ts`, `src/components/Game/GameView/firstScreenReveal.ts`, `src/components/Game/GameView/GameViewTopBar.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/RivalsButton.tsx` +92 more
 - **Verdict:** Verified 2026-07-25: Live CLI run, seed 42 medium: a company relocated into a Great Silverhold guild hall resolved encounter.confront_guild_falls against a colocated Arcane Circle defender band at t61 — company cohesion 0.54 → 0.70, band 0.70 → 0.46 — and the contest wrote mutual grudges, read straight off the graph: "The Watch of the Nameless Road -> The Errant Keys of The Arcane Circle since t61 (group_engagement)" and the reverse. agentDetail reads both edge directions off the group node and dedupes the mutual pair; OverviewTab renders it as one sentence with no numbers and no `since` tick. Locked by src/engine/groups/__tests__/bandDebugSurfaces.test.ts § "Company panel — Rivals" (7 tests: absent when no grudge, outgoing, incoming-only, mutual-dedupe, dangling-target drop, deterministic multi-rival order).
 
 ### `guild-rank-gates-senior-content` — 🟢 LIVE
@@ -3717,10 +3717,10 @@ exit
 - **Intent:** A tie seeded at worldgen never makes a decider: `phaseNpcGraduation` counts only `relates_to` edges whose `origin` is not `worldgen` toward `SPOTLIGHT_MIN_EDGES`, so the people web adds edges without widening the deciding headcount (THR-1592 measured +87–115% tick cost when dense seeded ties crossed the threshold). Ties earned in play still count.
 - **Producer → Consumer:** World Generation, Terrain & Places → Agent Lifecycle
 - **Module:** `src/engine/npcGraduation.ts`
-- **Production hits:** 123 total — 1 write, 1 read, 121 unclassified
+- **Production hits:** 124 total — 1 write, 1 read, 122 unclassified
 - **Write sites:** `src/engine/seedLivingWorld.ts`
 - **Read sites:** `src/engine/npcGraduation.ts`
-- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +116 more
+- **Other hits:** `src/App.tsx`, `src/components/CMS/tunableConstants.ts`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/hooks/useSimulation.ts`, `src/components/HexMapV2/HexMapV2.tsx` +117 more
 - **Verdict:** Verified 2026-09-28: THR-1630. `npcGraduation.test.ts` pins both arms (a notable with SPOTLIGHT_MIN_EDGES worldgen ties stays notable; the same ties unstamped graduate). Same-session 200-tick runs, medium: deciders at t200 seed 42 · 99 base 22 · 21, after 21 · 21.
 
 ### `seize-retires-losers-control-stance` — 🟢 LIVE
@@ -3895,7 +3895,7 @@ exit
 
 ### `sphere-pressure-credits-mandate` — 🔵 UNVERIFIED-OK
 
-- **Intent:** Only the god's own hand fills the Mandate (THR-2081). `phaseSpherePressure` credits the god's magnitude share of each level-up in the Mandate's two spheres (a push is the god's by `causedBy`, a god-only source, or the scene of a mortal the god threads) and the rival/doom share of an erosion, weighted as the world total weighs the entity, into `pendingMandateCredits`; `phaseMandate` folds them into `mandateState.godLedger`, a debit taking back at most what the god holds there.
+- **Intent:** Only the god's own hand fills the Mandate (THR-2081). `phaseSpherePressure` credits the god's magnitude share of each level-up in the Mandate's two spheres (a push is the god's by `causedBy`, a god-only source, or the scene of a mortal the god threads) and the rival/doom share of an erosion (not doom's world-wide stage tide: THR-2090 `isMandateOpposition`), weighted as the world total weighs the entity, into `pendingMandateCredits`; `phaseMandate` folds them into `mandateState.godLedger`, a debit taking back at most what the god holds there.
 - **Producer → Consumer:** Spheres & Quintessence → Mandate
 - **UL terms:** *Victory Mandate*, *Sphere*
 - **Module:** `src/engine/mandateLedger.ts`

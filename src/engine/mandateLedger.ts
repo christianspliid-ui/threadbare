@@ -4,7 +4,8 @@
  * The Mandate used to compare the world's whole total of the god's two spheres against
  * a baseline, so new towns, newborn mortals and trade drift filled it with no god
  * acting. It now counts the score the god's own pushes raised, weighted as the world
- * total weighs the entity, net of rival and doom wear on that same ground.
+ * total weighs the entity, net of rival and doom wear on that same ground — but not
+ * doom's world-wide stage tide (THR-2090, `MANDATE_DOOM_STAGE_PUSH_EXEMPT`).
  *
  * Credits are computed in `phaseSpherePressure`, where each entity's pushes and the
  * score change they made are both in hand; `phaseMandate` folds them into
@@ -16,6 +17,7 @@
 import type { SphereName } from '../types/index';
 import type { GameState } from '../types/gameState';
 import type { MandateCredit, PressureSource, SpherePressureEvent } from '../types/sphereAffinity';
+import { DOOM_STAGE_PUSH_SOURCE_PREFIX } from '../types/sphereAffinity';
 import type { SpherePressureTrace } from './phaseSpherePressure';
 import { SPHERE_OPPOSITES } from './cosmology';
 
@@ -26,6 +28,31 @@ export const GOD_ONLY_SOURCES: ReadonlySet<PressureSource> = new Set<PressureSou
 
 /** Writers whose erosion takes back what the god built. */
 export const OPPOSITION_SOURCES: ReadonlySet<PressureSource> = new Set<PressureSource>(['rival', 'doom']);
+
+/**
+ * THR-2090 Decision 1: doom's flat per-stage entropy push lands on every location of
+ * every world, so it took back exactly one sphere (life) regardless of archetype. When
+ * true, that tide still lands but is not opposition; doom's archetype stage cards and
+ * rivals still are. `false` restores the THR-2081 ledger byte for byte.
+ */
+export const MANDATE_DOOM_STAGE_PUSH_EXEMPT = true;
+
+/**
+ * Does this push take back what the god built? A rival or doom writer, except doom's
+ * stage tide while the exemption holds. A push with no `sourceId` is not the tide.
+ */
+export function isMandateOpposition(
+  p: SpherePressureEvent,
+  exemptTide: boolean = MANDATE_DOOM_STAGE_PUSH_EXEMPT,
+): boolean {
+  if (!OPPOSITION_SOURCES.has(p.source)) return false;
+  return !(
+    exemptTide
+    && p.source === 'doom'
+    && typeof p.sourceId === 'string'
+    && p.sourceId.startsWith(DOOM_STAGE_PUSH_SOURCE_PREFIX)
+  );
+}
 
 type Graph = GameState['graph'];
 
@@ -90,7 +117,7 @@ export function mandateCreditsFor(
     } else if (delta < 0) {
       const opp = SPHERE_OPPOSITES[t.sphere];
       if (!opp) continue;
-      const oppShare = share(pressures, opp, p => OPPOSITION_SOURCES.has(p.source));
+      const oppShare = share(pressures, opp, p => isMandateOpposition(p));
       const points = delta * weight * oppShare;
       if (points < 0) credits.push({ entityId, sphere: t.sphere, points, cause: 'opposition', sources: t.sources });
     }
