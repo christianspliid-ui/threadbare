@@ -24,13 +24,13 @@ The eight Reaches. **Derived** from `REACH_DOMAINS` — never restate them here.
 
 | Tag | What it means | Bearers | Matched | |
 |---|---|---|---|---|
-| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 14 · trait 5 · omen 4 · power 4 · agreement 1 | 191 |  |
-| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 10 · trait 8 · agreement 2 · omen 2 · power 1 | 133 |  |
+| `#iron` | Of force and arms — a thing meant for the fight, or marked by one. | item 31 · condition 14 · trait 5 · omen 4 · power 4 · agreement 1 | 192 |  |
+| `#gold` | Of trade and worth — a thing bought, bartered, or counted. | item 12 · condition 10 · trait 8 · agreement 2 · omen 2 · power 1 | 134 |  |
 | `#shadow` | Of stealth and secrets — a thing that keeps quiet, or keeps something quiet. | item 16 · condition 11 · trait 6 · power 4 · omen 2 · agreement 1 | 130 |  |
 | `#veil` | Of the unseen — a thing touched by what lies behind the world. | item 25 · omen 11 · condition 9 · trait 5 · power 4 · agreement 2 · legendary 1 | 129 |  |
 | `#heart` | Of bonds and feeling — a thing that moves people, or is moved by them. | condition 12 · item 11 · trait 8 · power 5 · omen 4 · agreement 1 · legendary 1 | 154 |  |
 | `#eye` | Of watching and knowing — a thing that sees further than it should. | item 16 · condition 7 · omen 6 · trait 5 · power 4 · agreement 1 | 166 |  |
-| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · condition 7 · trait 6 · power 2 · legendary 1 | 110 |  |
+| `#stone` | Of craft and endurance — a thing built to last, or built to build. | item 16 · omen 9 · condition 7 · trait 6 · power 2 · legendary 1 | 111 |  |
 | `#star` | Of lore and the far pattern — a thing that answers to what is written above. | item 23 · condition 9 · omen 6 · trait 5 · power 4 · agreement 1 | 129 |  |
 
 ## sphere
@@ -45,13 +45,13 @@ The twelve Spheres. **Derived** from `SPHERE_NAMES`. Projected from `sphereAffin
 | `#order` | Sworn to Order — it holds its shape, and holds others to theirs. | item 1 · power 1 | 6 |  |
 | `#light` | Sworn to Light — it reveals, warms, and is hard to hide behind. | — | 0 | **DEAD** |
 | `#darkness` | Sworn to Darkness — it conceals, and asks nothing about what it hides. | — | 2 |  |
-| `#force` | Of Force — it pushes, strikes, or refuses to be moved. | item 1 | 17 |  |
-| `#matter` | Of Matter — solid, worked, and stubbornly itself. | — | 28 |  |
+| `#force` | Of Force — it pushes, strikes, or refuses to be moved. | item 1 | 18 |  |
+| `#matter` | Of Matter — solid, worked, and stubbornly itself. | — | 29 |  |
 | `#energy` | Of Energy — it burns, quickens, or spends itself to act. | — | 9 |  |
 | `#life` | Of Life — it grows, heals, or wants to keep growing. | item 1 | 12 |  |
 | `#mind` | Of Mind — it thinks, remembers, or leans on the thoughts of others. | — | 22 |  |
 | `#spirit` | Of Spirit — it answers to devotion rather than to hands. | item 1 | 32 |  |
-| `#time` | Of Time — it wears, waits, or keeps a reckoning of its own. | condition 1 | 7 |  |
+| `#time` | Of Time — it wears, waits, or keeps a reckoning of its own. | condition 1 | 8 |  |
 | `#entropy` | Of Entropy — it unmakes, and is patient about it. | item 1 | 18 |  |
 
 ## form

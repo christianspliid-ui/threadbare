@@ -51,6 +51,21 @@ import {
 import { stepToward, tierRank } from './settlementEconomy/tier';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
+import { getFortificationModifier } from './siegeResolution';
+
+/**
+ * THR-2089: a stored `fortificationMultiplier` (written by `fortify_location` or a siege
+ * breach) shadows the subtype base in siege resolution. On promotion, lift a stored value
+ * below the new tier's base up to that base, so a town fortified by a god does not defend
+ * below an unfortified city once it grows into one. Demotion keeps the stored value, and so
+ * do breached walls (`fortificationBreached`): growth does not repair a breach (review gate).
+ */
+function liftStoredFortification(loc: GraphNode, to: string): void {
+  const stored = loc.properties.fortificationMultiplier;
+  if (typeof stored !== 'number' || loc.properties.fortificationBreached === true) return;
+  const base = getFortificationModifier(to);
+  if (stored < base) loc.properties.fortificationMultiplier = base;
+}
 
 /** Settlement counters for the economy-driven tier (THR-1923): ticks the tier has disagreed with `targetTier`. */
 export const TIER_SUSTAIN_UP_PROP = 'tierSustainUpTicks';
@@ -124,6 +139,7 @@ function applyTierChange(
   runtime?: SimulationRuntime,
 ): void {
   loc.properties.locationSubtype = to;
+  if (direction === 'promotion') liftStoredFortification(loc, to);
   loc.properties.prosperitySustainAboveTicks = 0;
   loc.properties.prosperitySustainBelowTicks = 0;
   if (runtime) {
@@ -254,6 +270,7 @@ export function phaseSettlementPromotion(state: GameState, runtime?: SimulationR
     const promotionTarget = PROMOTION_ELIGIBLE[subtype];
     if (promotionTarget && aboveTicks >= SETTLEMENT_PROMOTION_SUSTAIN_TICKS) {
       loc.properties.locationSubtype = promotionTarget;
+      liftStoredFortification(loc, promotionTarget);
       loc.properties.prosperitySustainAboveTicks = 0;
       loc.properties.prosperitySustainBelowTicks = 0;
 

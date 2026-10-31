@@ -253,6 +253,12 @@ export const ACTION_TECHNICAL_EFFECTS: Readonly<Record<string, string>> = {
     "On success, raises the location's `prosperity` and lowers its `unrest` by named deltas (LOC_OPEN_MARKETS_*), and stamps `marketsOpenedTick`: from LOC_OPEN_MARKETS_THIEVES_DELAY_TICKS later, for THIEVES_GUILD_OFFER_DAYS, a Shadow-led resident's `create × faction` is boosted ×THIEVES_GUILD_OFFER_WANT while prosperity holds at LOC_OPEN_MARKETS_THIEVES_GUILD_THRESHOLD.",
   'loc.stoke_forges':
     "On success, raises the location's `prosperity` by LOC_STOKE_FORGES_PROSPERITY_DELTA and its `unrest` by LOC_STOKE_FORGES_UNREST_DELTA (THR-2086). A rise of ECON_SHOCK_DELTA or more plants boom seeds on mortals present. Pushes energy pressure on the town.",
+  'loc.steel_walls':
+    "Raises the location's `fortificationMultiplier` by FORTIFY_MULTIPLIER_BONUS (capped at FORTIFY_MULTIPLIER_MAX); read by siege resolution. Pushes force pressure on the town (THR-2089).",
+  'loc.lay_footings':
+    "Adds LOC_LAY_FOOTINGS_BUILD_DELTA to the settlement's `buildProgress`; the next building rises when progress meets its cost. Pushes matter pressure (THR-2089).",
+  'loc.keep_stores':
+    "Adds LOC_KEEP_STORES_FOOD_DELTA to `foodStore`, clamped to STORE_DAYS of need on the next economy tick. Pushes time pressure (THR-2089).",
   'loc.bless_holding':
     "On success, writes the god's `blessed` edge (kind `holding_yield`) on a place a faction controls or a mortal owns: its town tax, freehold and tithe pay ×BLESS_HOLDING_YIELD_MULT until BLESS_HOLDING_DAYS have passed. A recast extends; a place no one holds takes nothing.",
   'loc.sanctify_square':

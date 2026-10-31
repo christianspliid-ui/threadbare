@@ -73,6 +73,21 @@ export const LOC_STOKE_FORGES_PROSPERITY_DELTA = 6;
 /** Unrest gain on a successful Stoke the Forges — energy drives and frays; a quarter of Incite Unrest's. */
 export const LOC_STOKE_FORGES_UNREST_DELTA = 5;
 
+// ─── Lay the Footings / Keep the Stores (THR-2089) ─────────────────────────
+
+/**
+ * Build progress a successful Lay the Footings adds to a settlement's `buildProgress`
+ * — a third of the cheapest building's cost (15, `settlement-buildings.ts`).
+ */
+export const LOC_LAY_FOOTINGS_BUILD_DELTA = 5;
+
+/**
+ * Food a successful Keep the Stores adds to a settlement's `foodStore` before the next
+ * economy tick clamps it to STORE_DAYS of need — about one day's need for a town of 8
+ * (`FOOD_PER_PERSON` 1.5).
+ */
+export const LOC_KEEP_STORES_FOOD_DELTA = 12;
+
 // ─── Sanctify the Square ───────────────────────────────────────────────────
 
 /** Magical saturation gain on a successful Sanctify the Square. */

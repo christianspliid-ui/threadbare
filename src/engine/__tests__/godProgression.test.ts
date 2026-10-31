@@ -106,12 +106,13 @@ describe('THR-1811 — the data on the cards', () => {
     expect(report.failures).toEqual([]);
     // The THR-1794 first-pass table, copied onto the templates, plus THR-1969's three
     // tier-2 market rows (Fortune's Favour, Ruin, Bless the Holding), plus THR-2086's
-    // two tier-1 energy market cards (Stoke the Forges, Kindle a Spark).
-    expect(report.cardCount).toBe(148);
-    expect(report.counts.market).toBe(98);
+    // two tier-1 energy market cards (Stoke the Forges, Kindle a Spark), plus THR-2089's
+    // three tier-1 cheap place cards (Steel the Walls, Lay the Footings, Keep the Stores).
+    expect(report.cardCount).toBe(151);
+    expect(report.counts.market).toBe(101);
     expect(report.counts.gift).toBe(50);
     expect(report.counts.generic).toBe(32);
-    expect(report.counts.byTier).toEqual({ 1: 46, 2: 63, 3: 28, 4: 11 });
+    expect(report.counts.byTier).toEqual({ 1: 49, 2: 63, 3: 28, 4: 11 });
   });
 
   describe('the gate fails on each kind of drift', () => {
