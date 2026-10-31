@@ -1179,8 +1179,9 @@ export function buildEncounterAftermathOverview(
   godTouched: boolean,
   causeLine?: string,
 ): string {
-  const rewardCount = changes.filter(change => change.kind === 'item').length;
-  const traitCount = changes.filter(change => change.kind === 'trait').length;
+  // THR-2095 — a harmful draw is a wound on the bearer, not a reward left behind.
+  const rewardCount = changes.filter(change => change.kind === 'item' && !change.harmful).length;
+  const traitCount = changes.filter(change => change.kind === 'trait' || (change.kind === 'item' && change.harmful)).length;
   const growthCount = changes.filter(change => change.kind === 'growth').length;
   const hookCount = changes.filter(change => change.kind === 'future_hook' || change.kind === 'shell_state').length;
   // THR-1004 — counts are spelled out. A numeral on the overview line is the

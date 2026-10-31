@@ -27,6 +27,7 @@ import { HARMFUL_CONDITION_TAG } from '../effects/conditionProxyEvents';
 import { REWARD_CONDITIONS, REWARD_POSSESSIONS } from '../../data/reward-attachment-catalog';
 import { REWARD_HARM_CAUSE_LINES, rewardHarmCauseClause, rewardSentence } from '../aftermathWords';
 import { buildAftermathConsequences } from '../views/stage/buildAftermathConsequences';
+import { buildEncounterAftermathOverview } from '../unifiedActionResolution';
 import { NUDGE_WORD_BUDGETS } from '../../data/content-eval/nudgeAuthoringConstants';
 import type { EncounterAftermathChange } from '../../types/unifiedAction';
 import type { RewardPoolRecipe } from '../../types/attachments';
@@ -164,6 +165,14 @@ describe('THR-2095 — a harmful change is never a boon', () => {
       });
       expect(chip.category).toBe('scar');
     }
+  });
+
+  it('the overview line counts a harmful draw as a trait change, never as a reward', () => {
+    const overview = buildEncounterAftermathOverview('Hesper', 'Faction Bounty', 'success', [harmfulRewardChange()], false);
+    expect(overview).not.toMatch(/reward/);
+    expect(overview).toMatch(/trait change/);
+    const unflagged = buildEncounterAftermathOverview('Hesper', 'Faction Bounty', 'success', [harmfulRewardChange({ harmful: undefined })], false);
+    expect(unflagged).toMatch(/one reward/);
   });
 
   it('falsifying arm: the same change without the flag still reads BOON (the reported bug)', () => {
