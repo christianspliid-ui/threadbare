@@ -29,7 +29,9 @@ import { REWARD_HARM_CAUSE_LINES, rewardHarmCauseClause, rewardSentence } from '
 import { buildAftermathConsequences } from '../views/stage/buildAftermathConsequences';
 import { NUDGE_WORD_BUDGETS } from '../../data/content-eval/nudgeAuthoringConstants';
 import type { EncounterAftermathChange } from '../../types/unifiedAction';
+import type { RewardPoolRecipe } from '../../types/attachments';
 import type { OutcomeType } from '../../types/resolution';
+import { TRAP_SPRUNG_TEMPLATE } from '../../data/ascendant-trap-encounters';
 
 /** `fa.bounty_hunt`'s Shadow step weights `condition: 0.30` on success — the reported shape. */
 const BOUNTY_RECIPE = { categoryWeights: { possession: 0.7, condition: 0.3 } };
@@ -68,6 +70,25 @@ describe('THR-2095 — the prize pool never deals harm', () => {
       expect(pool.some(e => isHarmfulRewardTemplate(graph, e.nodeId))).toBe(true);
     });
   }
+
+  // Review round 1: the filter must not reach recipes authored as harm.
+  for (const outcome of ['failure', 'critical_failure'] as const satisfies readonly OutcomeType[]) {
+    it(`a ${outcome} recipe authored as a wound still deals one with no flip`, () => {
+      const graph = catalogGraph();
+      const recipe = resolveRewardRecipe({ categoryWeights: { condition: 1 }, tagFilters: ['#wound'] }, outcome);
+      expect(recipe.admitsHarm).toBe(true);
+      const pool = assembleRewardPool(graph, recipe);
+      expect(pool.length).toBeGreaterThan(0);
+      expect(pool.every(e => isHarmfulRewardTemplate(graph, e.nodeId))).toBe(true);
+    });
+  }
+
+  it('the sprung trap marks its mortal on a won escape too — its recipe admits harm by design', () => {
+    const graph = catalogGraph();
+    const snare = TRAP_SPRUNG_TEMPLATE.steps[TRAP_SPRUNG_TEMPLATE.steps.length - 1] as { successMetadata?: { rewardPool?: RewardPoolRecipe } };
+    const recipe = resolveRewardRecipe(snare.successMetadata!.rewardPool!, 'success');
+    expect(assembleRewardPool(graph, recipe).some(e => isHarmfulRewardTemplate(graph, e.nodeId))).toBe(true);
+  });
 
   it('the bad-outcome table admits harm', () => {
     const graph = catalogGraph();

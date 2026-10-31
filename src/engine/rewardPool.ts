@@ -303,6 +303,9 @@ export interface AssembledRewardPool {
  */
 export const REWARD_HARM_TAG = '#negative';
 
+/** THR-2095 — the boon marker; a bad-outcome draw of a `#positive` template is not harm. */
+export const REWARD_POSITIVE_TAG = '#positive';
+
 /** True when the template node is tagged harmful. Fail-soft: no node or no tags reads as harmless. */
 export function isHarmfulRewardTemplate(graph: WorldGraph, templateId: string): boolean {
   const tags = graph.getNode(templateId)?.properties?.tags;
@@ -699,12 +702,20 @@ export function resolveRewardRecipe(
   tierBonus = 0,
 ): ResolvedRewardRecipe {
   const { tierCurve, badOutcomeChance } = getTierCurveForOutcome(outcomeType);
+  // THR-2095 — only a win band's prize pool is kept free of harm. A failure-band
+  // recipe (`failureMetadata`, often authored as `tagFilters: ['#wound']`) still
+  // deals the harm its author wrote whether or not the flip fires.
+  const admitsHarm = templateRecipe.admitsHarm === true || !REWARD_WIN_OUTCOMES.has(outcomeType);
   return {
     ...templateRecipe,
     tierCurve: shiftTierCurve(tierCurve, tierBonus),
     badOutcomeChance,
+    ...(admitsHarm ? { admitsHarm: true } : {}),
   };
 }
+
+/** THR-2095 — the bands whose prize pool never holds a `#negative` template. */
+export const REWARD_WIN_OUTCOMES: ReadonlySet<OutcomeType> = new Set<OutcomeType>(['success', 'critical_success']);
 
 /**
  * Slide a tier curve's weight up (or down) the ladder by `bonus` bands (THR-1241).

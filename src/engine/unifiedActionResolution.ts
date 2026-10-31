@@ -188,7 +188,7 @@ import {
   findActionableIntelligence,
   reliabilityDescriptor,
 } from './intelligence';
-import { drawSeededReward, isHarmfulRewardTemplate } from './rewardPool';
+import { REWARD_POSITIVE_TAG, drawSeededReward, isHarmfulRewardTemplate } from './rewardPool';
 import { drawLuckRoll } from './luck';
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
@@ -1750,8 +1750,12 @@ function resolveUnifiedReward(
     });
   }
 
-  const harmful = isBadOutcome || isHarmfulRewardTemplate(state.graph, templateId);
+  // THR-2095 — harm is read off the drawn template. A bad-outcome draw counts too,
+  // unless it picked a `#positive` template: the bad table weights `blessing`, and
+  // a blessing applied as a buff must not read as a scar.
   const templateTags = state.graph.getNode(templateId)?.properties?.tags;
+  const markedPositive = Array.isArray(templateTags) && templateTags.includes(REWARD_POSITIVE_TAG);
+  const harmful = isHarmfulRewardTemplate(state.graph, templateId) || (isBadOutcome && !markedPositive);
   return {
     displayName: instantiation.displayName,
     instanceId: instantiation.instanceId,

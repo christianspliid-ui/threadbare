@@ -243,9 +243,10 @@ export interface RewardPoolRecipe {
    */
   requiresBearerTrait?: TraitPredicate;
   /**
-   * THR-2095 — true only on the bad-outcome table. Absent, the pool drops every
-   * candidate tagged `#negative`: a prize draw never deals a wound. Harm comes from
-   * the bad-outcome flip alone, which sets this.
+   * THR-2095 — the pool may deal `#negative` templates. Absent on a win band's
+   * recipe, the pool drops them: a prize draw never deals a wound. Set by the
+   * bad-outcome table, by `resolveRewardRecipe` on every non-win band, and by an
+   * author whose win-band recipe is harm by design (a sprung trap).
    */
   admitsHarm?: boolean;
 }
