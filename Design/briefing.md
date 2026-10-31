@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 00:58 local (23:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 01:58 local (00:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -43,4 +43,4 @@ Say "veto <title>" to reverse any of these.
 
 - The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
 
-Everything else is green. The engine speed is normal (132 ms per tick, below the weekly median of 166). The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, the worktree reaper ran at 00:51, and all 9 enabled scheduled tasks are on time.
+Everything else is green. The engine speed is normal (133 ms per tick, below the weekly median of 162). The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, the worktree reaper ran at 01:40, and all 9 enabled scheduled tasks are on time.
