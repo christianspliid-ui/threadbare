@@ -4471,10 +4471,20 @@ export function phaseUnifiedActionProgress(
       const magnitude = isActionSuccess(updatedAction.outcome)
         ? ACTION_PRESSURE_SUCCESS
         : ACTION_PRESSURE_FAILURE;
+      // PROTO THR-2094 (never merge): push scales with the essence the god spent.
+      const protoDistrict = (tid: string): string => {
+        if (typeof process === 'undefined' || !process.env?.DISTRICT || completing_action.actorId !== state.ascendantId || !(template.targetSubtypes?.length)) return tid;
+        const sp = template.sphereAffinity as string;
+        const kids = state.graph.getNodesByType('location').filter((n: any) => n.properties?.parentLocationId === tid);
+        if (kids.length === 0) return tid;
+        kids.sort((x: any, y: any) => ((x.properties?.sphereAffinity?.scores?.[sp] ?? 0) - (y.properties?.sphereAffinity?.scores?.[sp] ?? 0)) || (x.id < y.id ? -1 : 1));
+        return kids[0].id;
+      };
+      const protoScale = (typeof process !== 'undefined' && process.env?.PERESSENCE && completing_action.actorId === state.ascendantId) ? Math.min(Number(process.env.PECAP ?? 99), Math.max(1, template.essenceCost ?? 1)) : 1;
       spherePressures.push({
-        targetEntityId: completing_action.targetId,
+        targetEntityId: protoDistrict(completing_action.targetId),
         sphere: template.sphereAffinity,
-        magnitude,
+        magnitude: magnitude * protoScale,
         source: 'divine_action',
         sourceId: completing_action.actionId,
         causedBy: completing_action.actorId,
