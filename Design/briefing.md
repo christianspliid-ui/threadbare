@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-10-31 07:58 local (06:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-10-31 09:00 local (08:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -17,30 +17,28 @@
 
 Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadbare/blob/ops/Design/user-actions.md).
 
-## Decided for you
-
-*— from [the design lane](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-30a.md)*
-
-- [Only Mind has a cheap place card](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12): **cards, not a different Mandate price per Hunger.** Every sphere a Hunger can name gets a cheap card (2 essence) that a god can buy from the market at the start and cast on a town. Without one, a Reshape god cannot cast on its first sphere at all. A lower target for that Hunger would not change that. Veto: "price the Mandate per Hunger instead."
-- Same ticket: **2 essence, not 1.** Mind's 1-essence Vision only looks; a card that changes the world costs what Dream and Kindle a Spark cost. Veto: "make them 1."
-- Same ticket: **three new cards first.** *Steel the Walls* (force: a town's walls hold longer under siege), *Lay the Footings* (matter: the town's next building rises sooner) and *Keep the Stores* (time: the town's grain keeps for lean days). Spirit, life and entropy follow in [slice 2](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life). Veto any card by name.
-- Same ticket: **Steel the Walls and Fortify do the same thing to different places.** Steel works on towns at 2; Fortify works on strongholds at 4. Today Fortify cannot be cast anywhere in the seeded world (it asks for keeps, and the world makes forts and towers), so it gains those two words. Veto: "leave Fortify as it is."
-
-Say "veto <title>" to reverse any of these. The veto window closes at 08:03 local (07:03 UTC) today, a few minutes from now. After that, the builder starts on the ticket.
-
 ## This week's screens
 
 [Contact sheet — the twelve screens of the fixed journey](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-10-27/contact-sheet.jpg) — first week, so there is nothing to compare yet. The opening holds up. Opening a page brings two visible faults, and the mid-game cannot be reached because the seeded world ends after 41 ticks.
 
 ## Queue
 
-**Starved: one ticket ready, and it is held for a few more minutes.** [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (cheap place cards for force, matter and time) can be picked up from 07:03 UTC. The builder's runs since 03:51 UTC all stood down for exactly that reason, which is correct; the 07:11 UTC run should take it.
+**Healthy: four tickets ready, and the builder is working.** The veto window on the cheap place cards closed at 08:03 with no veto, and the builder took [THR-2089](https://linear.app/threadbare/issue/THR-2089/only-mind-has-a-cheap-place-card-under-the-god-caused-mandate-10-of-12) (*Steel the Walls*, *Lay the Footings*, *Keep the Stores*). It is built and up for review as [pull request #2656](https://github.com/christianspliid-ui/threadbare/pull/2656), with its checks still running.
 
-- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place, because distance is measured on the wrong hex layout) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, not Ready for Dev, so no builder run will take it. The orchestrator can move it; it is not your call.
-- **The paperwork-cut ticket stays off your list.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has been parked with no owner since 20 Oct (11 days). Agents can un-park it.
+Ready next, all from this morning and all first-run faults:
+- [THR-2095](https://linear.app/threadbare/issue/THR-2095/a-won-encounter-hands-out-a-wound-and-calls-it-a-boon-hesper-won): a won encounter hands out a wound (Cracked Ribs) and calls it a boon.
+- [THR-2096](https://linear.app/threadbare/issue/THR-2096/faction-bounty-names-no-faction-the-eight-generic-faction-set-pieces): "Faction Bounty" says "the faction" instead of naming the faction that posted the work.
+- [THR-2092](https://linear.app/threadbare/issue/THR-2092/the-origin-and-drive-choice-pictures-are-see-through-at-rest-the-void): the origin and drive pictures are see-through, so the backdrop muddies them.
+- [THR-2093](https://linear.app/threadbare/issue/THR-2093/the-meetings-test-prose-and-its-helpshinders-panel-sit-bare-on-the): the meeting's test text sits bare on the scene art, and its opening paragraph stretches with the window.
+
+Two items for agents, not you:
+- **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built, tested and reviewed on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (11 days). Agents can un-park it.
 
 ## Health
 
 - The lanes were silent for 40 hours (02:57 Thursday to 19:12 Friday local). That question is on your list above.
+- Engine speed: "tick cost 398 ms/tick steady, 149% above the 7-day median (160, 127 rows since 4f587922); top phase agent_decision, 616 agents. Name the merges between 4f587922 and 87b5295d: git log --oneline --merges 4f587922..87b5295d" The code has not changed since the last three readings (128–136 ms on the same commit), so this is very likely the machine being busy with the builder's checks, not a slowdown in the game. Next hour's reading will tell. Nothing for you.
+- The orchestrator's rank/reach coverage sweep was cut off at its time limit this morning, so that coverage is not measured today. The orchestrator is tracking it; nothing for you.
 
-Everything else is green. The engine speed is normal (129 ms per tick, below the weekly median of 160). The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, nothing is waiting to merge, the worktree reaper ran at 07:40, and all 9 enabled scheduled tasks are on time.
+Everything else is green. The live site is up to date (the only commits since the last publish are docs). CI and the background jobs pass, the worktree reaper is running, and all 9 enabled scheduled tasks are on time.
