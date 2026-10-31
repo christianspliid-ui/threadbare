@@ -10,6 +10,7 @@ import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../engine/graph';
 import { executeGraphOps, resetOpCounter } from '../../engine/graphOpExecutor';
 import { phaseUnifiedActionProgress } from '../../engine/unifiedActionResolution';
+import { getFortificationModifier } from '../../engine/siegeResolution';
 import { offerableCards, priceSphere, godCards } from '../../engine/godProgression';
 import { checkGodCardProgression, CHEAP_PLACE_CARD_MAX_COST } from '../../engine/godCardProgressionCheck';
 import { getUnifiedTemplateById } from '../unified-action-templates';
@@ -66,6 +67,12 @@ describe('THR-2089 — the three cards', () => {
     expect(result.allSucceeded).toBe(true);
     expect(graph.getNode(TOWN)!.properties.fortificationMultiplier)
       .toBe(Math.min(FORTIFY_MULTIPLIER_MAX, 1 + FORTIFY_MULTIPLIER_BONUS));
+  });
+
+  it('Steel the Walls lists only subtypes that start below the fortify cap', () => {
+    for (const subtype of getUnifiedTemplateById('loc.steel_walls')!.targetSubtypes ?? []) {
+      expect(getFortificationModifier(subtype), subtype).toBeLessThan(FORTIFY_MULTIPLIER_MAX);
+    }
   });
 
   it('Lay the Footings adds build progress', () => {

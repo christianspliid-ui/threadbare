@@ -2343,7 +2343,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'force',
     targetCategories: ['location'],
-    targetSubtypes: ['settlement', 'hamlet', 'town', 'city', 'capital'],
+    // Not city / capital: they seed at FORTIFICATION_GRAND, which is the fortify cap,
+    // so the cast would change nothing on an unbreached one.
+    targetSubtypes: ['settlement', 'hamlet', 'town'],
     motivations: ['courage_prudence', 'loyalty_ambition'],
     narrativeTemplates: {
       initiation: 'lays a hand on the town\'s gate and leans',
