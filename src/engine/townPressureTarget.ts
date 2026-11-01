@@ -19,7 +19,7 @@
 import type { WorldGraph } from './graph';
 import type { SphereAffinity, SpherePressureEvent } from '../types/sphereAffinity';
 import {
-  GOD_PUSH_LANDS_IN_SUBLOCATION, GOD_PUSH_TOWN_KEEPS_ECHO, GOD_PUSH_TOWN_SUBTYPES,
+  GOD_PUSH_LANDS_IN_SUBLOCATION, GOD_PUSH_TOWN_KEEPS_ECHO, GOD_PUSH_TOWN_SUBTYPES, triangleTotal,
 } from '../types/sphereAffinity';
 import type { TownPressureTrace } from '../types/traces/sphere-traces';
 import { getPlaceNodes } from './sublocationShape';
@@ -132,4 +132,60 @@ export function resolveTownPressureTargets(
     // Fail-soft: pushes stay on their towns, no trace.
     return { pressures, traces: [] };
   }
+}
+
+// ─── The copy's banked progress (review cycle 4) ─────────────────────
+
+/**
+ * Node property: progress a town copy (`townEcho`) left on the town short of a level,
+ * per sphere. The Mandate credit re-resolve starts without it, so a later seat, claim or
+ * carry push that tips the town over that level is not credited for what the copy filled.
+ * Its own key, not a field of `sphereAffinity`, so other affinity writers keep it.
+ */
+export const TOWN_ECHO_BANK_KEY = 'townEchoBank';
+
+export type TownEchoBank = Partial<Record<SpherePressureEvent['sphere'], number>>;
+
+/** The town's bank, each sphere capped at the progress it still holds; null when empty. */
+export function readTownEchoBank(
+  props: Record<string, unknown> | undefined,
+  affinity: SphereAffinity,
+): TownEchoBank | null {
+  const raw = props?.[TOWN_ECHO_BANK_KEY];
+  if (!raw || typeof raw !== 'object') return null;
+  const bank: TownEchoBank = {};
+  for (const [sphere, value] of Object.entries(raw as Record<string, unknown>)) {
+    const held = affinity.progress[sphere as keyof SphereAffinity['progress']];
+    if (typeof value !== 'number' || !(value > 0) || typeof held !== 'number') continue;
+    const capped = Math.min(value, held);
+    if (capped > 0) bank[sphere as keyof TownEchoBank] = capped;
+  }
+  return Object.keys(bank).length > 0 ? bank : null;
+}
+
+/** The town as if no copy had ever reached it: its progress less the bank. */
+export function withoutTownEchoBank(affinity: SphereAffinity, bank: TownEchoBank | null): SphereAffinity {
+  if (!bank) return affinity;
+  const progress = { ...affinity.progress };
+  for (const [sphere, value] of Object.entries(bank)) {
+    const key = sphere as keyof typeof progress;
+    progress[key] = Math.max(0, progress[key] - (value ?? 0));
+  }
+  return { scores: affinity.scores, progress };
+}
+
+/**
+ * The bank after this tick: how far the real town got past the copy-free one, in total
+ * investment (`triangleTotal(score) + progress`), capped at the progress the real town
+ * holds — a level the copy alone filled was never credited, so only leftover is banked.
+ */
+export function townEchoBankAfter(real: SphereAffinity, copyFree: SphereAffinity): TownEchoBank | null {
+  const bank: TownEchoBank = {};
+  for (const sphere of Object.keys(real.progress) as Array<keyof SphereAffinity['progress']>) {
+    const lead = (triangleTotal(real.scores[sphere]) + real.progress[sphere])
+      - (triangleTotal(copyFree.scores[sphere] ?? 0) + (copyFree.progress[sphere] ?? 0));
+    const banked = Math.min(lead, real.progress[sphere]);
+    if (banked > 0) bank[sphere] = banked;
+  }
+  return Object.keys(bank).length > 0 ? bank : null;
 }

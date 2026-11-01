@@ -9,7 +9,12 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { resolveTownPressureTargets } from '../townPressureTarget';
+import {
+  TOWN_ECHO_BANK_KEY,
+  readTownEchoBank,
+  resolveTownPressureTargets,
+  townEchoBankAfter,
+} from '../townPressureTarget';
 import { isGodCausedPush } from '../mandateLedger';
 import { phaseSpherePressure } from '../phaseSpherePressure';
 import { godPushScale, phaseUnifiedActionProgress } from '../unifiedActionResolution';
@@ -278,6 +283,57 @@ describe('phaseSpherePressure re-aims the god\'s town push (THR-2094)', () => {
     const { townScore, townCredit } = seatBesideCard(0.5);
     expect(townScore).toBe(1);
     expect(townCredit).toEqual([]);
+  });
+
+  // The copy's progress short of a level stays banked: a later seat push that tips the town
+  // over earns only what it would have from the copy-free town (cycle 4 finding).
+  function seatAfterCard(withCard: boolean) {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_a', 'town');
+    const aff = graph.getNode('town')!.properties!.sphereAffinity as ReturnType<typeof createDefaultSphereAffinity>;
+    aff.scores.force = 3;
+    aff.progress.force = 0.8;
+    const mandate = {
+      mandateDefinition: { runtimeKind: 'sphere_growth', primarySphere: 'force', secondarySphere: 'matter' },
+      mandateState: { completed: false },
+    };
+    const seat: SpherePressureEvent = {
+      targetEntityId: 'town', sphere: 'force', magnitude: 0.25, source: 'seat', sourceId: 'seat_1',
+    };
+    if (withCard) {
+      phaseSpherePressure({
+        tick: 4, graph, tiles: [], ascendantId: ASC, pendingSpherePressures: [godPush('town')], ...mandate,
+      } as unknown as GameState);
+    }
+    const bank = graph.getNode('town')!.properties!.townEchoBank;
+    const result = phaseSpherePressure({
+      tick: 5, graph, tiles: [], ascendantId: ASC, pendingSpherePressures: [seat], ...mandate,
+    } as unknown as GameState);
+    const after = graph.getNode('town')!.properties!.sphereAffinity as typeof aff;
+    return {
+      bank,
+      townScore: after.scores.force,
+      townCredit: (result.pendingMandateCredits ?? []).filter(c => c.entityId === 'town'),
+    };
+  }
+
+  it('does not credit a later seat push for the level the copy filled', () => {
+    const { bank, townScore, townCredit } = seatAfterCard(true);
+    expect((bank as { force: number }).force).toBeCloseTo(ACTION_PRESSURE_SUCCESS);
+    expect(townScore).toBe(4);
+    expect(townCredit).toEqual([]);
+    expect(seatAfterCard(false).townCredit).toEqual([]);
+  });
+
+  it('caps the bank at the progress the town still holds', () => {
+    const real = affinityWith('force', 3);
+    real.progress.force = 1;
+    expect(readTownEchoBank({ [TOWN_ECHO_BANK_KEY]: { force: 5 } }, real)).toEqual({ force: 1 });
+    expect(readTownEchoBank({ [TOWN_ECHO_BANK_KEY]: null }, real)).toBeNull();
+    const copyFree = affinityWith('force', 3);
+    expect(townEchoBankAfter(real, copyFree)).toEqual({ force: 1 });
+    expect(townEchoBankAfter(copyFree, copyFree)).toBeNull();
   });
 
   // A rival push the copy cancelled wore nothing, so it debits nothing (cycle 3 finding).

@@ -41,7 +41,13 @@ import { MANDATE_GOD_LEDGER_ENABLED } from '../data/game-config';
 import { isGodCausedPush, mandateCreditsFor } from './mandateLedger';
 import { entityAggregateWeight } from './phaseSphereAggregation';
 import { resolveHexPressureTargets } from './hexPressureTarget';
-import { resolveTownPressureTargets } from './townPressureTarget';
+import {
+  TOWN_ECHO_BANK_KEY,
+  readTownEchoBank,
+  resolveTownPressureTargets,
+  townEchoBankAfter,
+  withoutTownEchoBank,
+} from './townPressureTarget';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity
@@ -544,22 +550,34 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
       });
     }
 
+    // THR-2094: a re-aimed push's town copy (`townEcho`) moves the town but earns
+    // nothing — its Place copy carries the credit. The town is credited as if no copy had
+    // ever reached it: re-resolved without this tick's copies, from its progress less what
+    // earlier copies banked (`TOWN_ECHO_BANK_KEY`), so a copy neither dilutes a seat, claim
+    // or carry push's share nor lends them a level-up it filled, this tick or later.
+    const creditPressures = entityPressures.filter(p => !p.townEcho);
+    let copyFree: { updated: SphereAffinity; traces: SpherePressureTrace[] } | null = null;
+    try {
+      const echoBank = readTownEchoBank(node.properties, entityAffinity);
+      if (echoBank || creditPressures.length < entityPressures.length) {
+        copyFree = resolveSpherePressure(withoutTownEchoBank(entityAffinity, echoBank), creditPressures, presentAgents);
+      }
+    } catch {
+      // Fail-soft: credit the real resolve, keep the old bank.
+    }
+
     if (ledgerSpheres) {
       try {
         const weight = entityAggregateWeight(node) ?? 0;
-        // THR-2094: a re-aimed push's town copy (`townEcho`) moves the town but earns
-        // nothing — its Place copy carries the credit. The town is credited as if the copy
-        // were absent: re-resolved without it, so the copy neither dilutes a seat, claim or
-        // carry push's share nor lends them a level-up it caused. Only gains come from that
-        // re-resolve, and only up to what the town really gained; wear is debited from the
-        // real resolve, so an opposition push the copy cancelled debits nothing.
-        const creditPressures = entityPressures.filter(p => !p.townEcho);
-        if (creditPressures.length === entityPressures.length) {
+        // Only gains come from the copy-free resolve, and only up to what the town really
+        // gained; wear is debited from the real resolve, so an opposition push a copy
+        // cancelled debits nothing.
+        if (!copyFree) {
           mandateCredits.push(...mandateCreditsFor(entityId, weight, entityPressures, tickedTraces, isGod, ledgerSpheres));
         } else {
           const realRise = new Map<SphereName, number>();
           for (const t of tickedTraces) realRise.set(t.sphere, t.newScore - t.previousScore);
-          const gainTraces = resolveSpherePressure(entityAffinity, creditPressures, presentAgents).traces
+          const gainTraces = copyFree.traces
             .map(t => {
               const rise = Math.min(t.newScore - t.previousScore, realRise.get(t.sphere) ?? 0);
               return { ...t, newScore: t.previousScore + Math.max(0, rise) };
@@ -577,7 +595,10 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
 
     // Write updated affinity back to graph
     updatedGraph.updateNode(entityId, {
-      properties: { sphereAffinity: updated },
+      properties: {
+        sphereAffinity: updated,
+        ...(copyFree ? { [TOWN_ECHO_BANK_KEY]: townEchoBankAfter(updated, copyFree.updated) } : {}),
+      },
     });
 
     // Emit QuintessenceEvent for overchannel pressure — each overchannel event erodes the caster's quintessence
