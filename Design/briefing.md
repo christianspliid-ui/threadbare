@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 05:00 local (04:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 05:57 local (04:57 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -33,7 +33,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: a "Needs you" row about a mortal shows that mortal's face after the row's icon. Veto line: "no faces in Needs you".
 - [Cheap place cards plateau](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26): when a god works a town, its sphere push lands in the town's quietest Place (the inn, granary or gatehouse holding least of that sphere). The card still changes the town as it says. A Reshape god then reaches 66 of 87 instead of 34; the trade is that rivals rarely reach those Places. Veto line: "the push should stay on the town". Window closes about 10:10 this morning.
 - Same ticket: a card that changes the world pushes twice what a look pushes. Vision (it only looks) stays at 3; every card costing 2 essence or more pushes 6. All three town-card gods then clear half their Mandate. Veto line: "keep every push at 3".
-- [Art-led pass, slice 2 — every other Inspector page](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions): towns and cities show their own landscape in the page header instead of today's placeholder mark (all 235 places in a seeded world have one). Veto line: "places keep the placeholder". Window closes about 06:45 this morning.
+- [Art-led pass, slice 2 — every other Inspector page](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions): towns and cities show their own landscape in the page header instead of today's placeholder mark (all 235 places in a seeded world have one). Veto line: "places keep the placeholder". Window closes about 06:45 this morning (within the hour).
 - Same ticket: the Mandate is the god page's one highlighted line, in words ("Rising." and the current objective); the progress bar stays on the god rail. Veto line: "put the Mandate bar on the god page".
 - Same ticket: lists of strengths become chips ("Might · Strong"), one-fact rows become sentences ("Here you are Accepted."), and the bars beside single words drop. Veto line: "keep the bars".
 - Same ticket: relics lying at a place or held by a faction show as painted tiles, like The First's carried relics. Veto line: "no relic gallery on places and factions".
@@ -47,7 +47,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([evening 
 
 ## Queue
 
-**Healthy: the builder is waiting on veto windows, as it should.** It finished [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1: the ten most-met board encounters rewritten), merged in [#2672](https://github.com/christianspliid-ui/threadbare/pull/2672) and live. Three more are ready and wait on their veto windows: [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages) about 06:45, [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 12:45, and [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments), handed off by the design lane tonight, about 14:30 UTC.
+**Healthy: the builder is waiting on veto windows, as it should; the first one opens within the hour.** It finished [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1: the ten most-met board encounters rewritten), merged in [#2672](https://github.com/christianspliid-ui/threadbare/pull/2672) and live. Three more are ready and wait on their veto windows: [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages) about 06:45, [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 12:45, and [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments), handed off by the design lane tonight, about 14:30 UTC.
 
 - **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 10:10).
 
@@ -57,4 +57,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. The live site serves the latest commit (039b50c7, the story-text slice), the PR checks and scheduled background jobs pass, no pull request is waiting, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. Engine speed is back to normal (168 ms/tick, 4% above the weekly median), so last hour's 34% jump was the builder loading the computer, not code. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site serves the latest commit (039b50c7, the story-text slice), the PR checks and scheduled background jobs pass, no pull request is waiting, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. Engine speed is normal (183 ms/tick, 12% above the weekly median, under the 25% line). The 40-hour silence on 29–30 Oct is on your list above.
