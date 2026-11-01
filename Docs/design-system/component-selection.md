@@ -191,6 +191,7 @@ These live in `src/components/shared/` and are the building blocks. **Always che
 | `Medallion` | Circular icon frame | Ringed, clipping icon disc. sm 40 / md 64 / lg 96. Frames an already-resolved visual — never a second art path. |
 | `BondStrip` | A drawn tie | Two `Medallion` faces and the `bond` icon over a sentence (THR-2097, rule R4). Drawn only for a tie the engine holds. |
 | `QuietSlot` | Quiet empty state | One quiet line in a dashed `--border-subtle` frame (THR-2097, rule R8). Replaces a heading over nothing; no gold. |
+| `Modal.Header` `icon` | A dialog heading that names a game idea | The heading's carved shape (THR-2101, rule R2), read from `DIALOG_HEADING_ICONS` (`view-content.ts`), never a literal. `chip` size, decorative, in the title's colour. `null` = no idea yet: draw nothing (THR-2104 picks). Reference surfaces such as settings draw it on the title only (Law 30). |
 | `FlavorQuote` | Inset quote well | Flavor prose above mechanical text. Renders nothing when empty. |
 | `Tooltip` | Hover information | Progressive disclosure Tier 1. Smart-positioned, viewport-aware, supports nested hover. |
 | `Dropdown` | Menu picker | Portal-based, escape/outside-click to close. Compound: Dropdown.Item. |

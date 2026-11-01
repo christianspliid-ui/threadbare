@@ -18,6 +18,7 @@ import { outcomePhrase } from './aftermathWords';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 import { stakesLineForAction } from './encounters/stakesLine';
 import { isRoutineTemplate } from './attentionCadence';
+import { mortalFace, resolveEntityVisual, type EntityVisualDescriptor } from './views/entityVisualResolver';
 
 export interface LedgerRow {
   key: string;
@@ -135,6 +136,29 @@ export function isDefaultLedgerRow(row: Pick<LedgerRow, 'threaded' | 'routine'>)
  */
 export function selectThreadedChapters(gameState: GameState, opts: { withStakes?: boolean } = {}): LedgerRow[] {
   return sortLedgerRowsNewestFirst(buildLedgerRows(gameState, opts).filter(isDefaultLedgerRow));
+}
+
+/**
+ * THR-2101 (S5.1) — the face a Ledger row and its chapter open with: the chapter's mortal,
+ * gated by what the god knows of them (`mortalFace`), so the row and the mortal's page show
+ * the same face or the same silhouette (Law 8, PC-6). Presentation only; the reader calls it
+ * for the rows on the shown page, never the whole archive.
+ *
+ * A mortal no longer in the graph (an archived chapter whose actor has died) keeps the
+ * designed tile under the stored name (Law 4); a node that is not a mortal (a god, a
+ * faction) draws no face. Never throws.
+ */
+export function ledgerRowFace(
+  gameState: Pick<GameState, 'graph' | 'familiarityMap'>,
+  row: Pick<LedgerRow, 'actorId' | 'actorName'>,
+): EntityVisualDescriptor | null {
+  try {
+    if (!row.actorId) return null;
+    if (gameState.graph?.getNode(row.actorId)) return mortalFace(gameState.graph, row.actorId, gameState.familiarityMap);
+    return resolveEntityVisual({ id: row.actorId, kind: 'agent', name: row.actorName }, null);
+  } catch {
+    return null;
+  }
 }
 
 /**

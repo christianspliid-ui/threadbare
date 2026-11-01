@@ -13,6 +13,8 @@ import type { StepOutcome, UnifiedActionOutcome } from '../../types/unifiedActio
 import { outcomePhrase } from '../../engine/aftermathWords';
 import { EntityLink } from '../shared/EntityLink';
 import { Icon } from '../shared/Icon';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 
 interface ChapterViewProps {
   chapter: ChapterRecord;
@@ -20,6 +22,11 @@ interface ChapterViewProps {
   onOpenEntity?: (id: string) => void;
   /** Back to the ledger list (shown when provided). */
   onBack?: () => void;
+  /**
+   * THR-2101 (S5.1) — the chapter's mortal, resolved by the Ledger (`ledgerRowFace`, knowledge-
+   * gated); drawn 3:4 beside the title. Absent → the header draws as before.
+   */
+  face?: EntityVisualDescriptor | null;
 }
 
 /** Narrative lexicon for a step outcome — never a raw number (prose-first UI). */
@@ -86,7 +93,7 @@ function Prose({ text }: { text: string }) {
   );
 }
 
-export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps) {
+export function ChapterView({ chapter, onOpenEntity, onBack, face }: ChapterViewProps) {
   const finalOutcome = chapter.resolved ? chapter.outcome : undefined;
   const outcomeBand = finalOutcome
     ? {
@@ -120,8 +127,14 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
         </button>
       )}
 
-      {/* Header */}
-      <div>
+      {/* Header — the mortal's face beside the title block (THR-2101) */}
+      <div style={{ display: 'flex', gap: 'var(--space-3, 12px)', alignItems: 'flex-start' }}>
+      {face && (
+        <div data-dialog-face={face.tier} data-testid="chapter-view-face" style={{ width: 'var(--dialog-subject-portrait-w)', flexShrink: 0 }}>
+          <EntityVisual size="portrait" shape="rounded" descriptor={face} />
+        </div>
+      )}
+      <div style={{ minWidth: 0 }}>
         <div
           style={{
             fontFamily: 'var(--font-display)',
@@ -156,6 +169,7 @@ export function ChapterView({ chapter, onOpenEntity, onBack }: ChapterViewProps)
             </>
           )}
         </div>
+      </div>
       </div>
 
       {/* Opening */}

@@ -3652,7 +3652,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     foregroundIncumbentRef.current = interruptForeground;
   }, [interruptForeground]);
   // THR-1892 — `__DEBUG.getStage()` and `__DEBUG.openHomedSurface(kind)`.
-  useStageDebugBridge({ gameScreen, hexMapRef, interruptResolution, stageVM: interruptResolution.stage ? stageVMByKind[interruptResolution.stage] ?? null : null, setGameState, runtime });
+  useStageDebugBridge({
+    gameScreen, hexMapRef, interruptResolution, stageVM: interruptResolution.stage ? stageVMByKind[interruptResolution.stage] ?? null : null, setGameState, runtime,
+    // THR-2101 — the dialog levers' hands.
+    dialogs: { openCourt: handleOpenScry, openLedger: () => setChapterLedgerOpen(true), setPendingChoice, enterBeat: () => setBeatEntered(true) },
+  });
   // A set-down kind is forgotten once its own flag clears, so its next opening shows.
   const wishedHomedKey = interruptResolution.wished.join('|');
   useEffect(() => {

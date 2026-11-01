@@ -437,3 +437,44 @@ export const FIND_FACT_WORDS = {
   card: 'A card in your hand',
   codex: 'In the Codex',
 } as const;
+
+/**
+ * THR-2101 (S5.2, R2) — the carved shape each dialog heading draws, before the heading, at
+ * `chip` size, decorative, in the heading's colour (Law 27). Components read the row, never
+ * a literal (Law 58). `null` = no idea in the registry fits: the heading draws nothing and
+ * waits on Christian's pick (THR-2104), never an invented shape.
+ *
+ * Kill criterion ("the dialogs are busy"): set every row to `null`; the faces and the
+ * court's sentences stay.
+ */
+export const DIALOG_HEADING_ICONS = {
+  chapterLedger: 'chapter-ledger',
+  receipt: 'receipt',
+  choice: 'dilemma',
+  settings: 'settings',
+  courtSacredSites: 'place',
+  courtArtifacts: 'relic',
+  court: null,
+  courtTheFirst: null,
+  courtApex: null,
+  courtInner: null,
+  courtOuter: null,
+  beatEyebrow: null,
+} as const satisfies Readonly<Record<string, IconName | null>>;
+
+export type DialogHeadingKey = keyof typeof DIALOG_HEADING_ICONS;
+
+/** The dialog headings with no fitting idea (posted on THR-2104 after merge). */
+export const DIALOG_NO_IDEA_HEADINGS: readonly DialogHeadingKey[] = [
+  'court',
+  'courtTheFirst',
+  'courtApex',
+  'courtInner',
+  'courtOuter',
+  'beatEyebrow',
+];
+
+/** The shape a dialog heading draws, or null. */
+export function dialogHeadingIcon(key: DialogHeadingKey): IconName | null {
+  return (DIALOG_HEADING_ICONS as Readonly<Record<DialogHeadingKey, IconName | null>>)[key];
+}

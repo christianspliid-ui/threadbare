@@ -50,6 +50,27 @@ export const OPENING_REVEAL_SHOW_ALL_HELP = 'Skip the slow reveal and put every 
 /** THR-1880 — the Divine Court picker views' one way back to the seats (Escape does the same). */
 export const SCRY_BACK_TO_COURT_LABEL = 'Back to the court';
 
+/**
+ * THR-2101 (S5.4, R6/R8) — the Divine Court speaks in sentences, never "Label: value"
+ * (Law 16). Placeholders: `{archetype}` the seat's archetype, `{tier}` the tier word,
+ * `{cost}` / `{have}` whole essence, `{sphere}` the sphere word, `{structure}` the court
+ * structure's name, `{bonus}` its bonus sentence (first letter lowered).
+ */
+export const COURT_WORDS = {
+  // Archetypes carry their own article ("The Sovereign"), so the line does not add one.
+  seatTakes: "{archetype}'s seat takes a mortal who is {tier} or more.",
+  cost: 'Moving them costs {cost} {sphere} essence.',
+  shortfall: 'You hold {have} {sphere} essence; this needs {cost}.',
+  structureBonus: 'In {structure}, {bonus}.',
+  emptySacredSite: 'No sacred site is bound to your court yet.',
+  emptyArtifact: 'No divine artifact rests in your court yet.',
+} as const;
+
+/** Fill a `COURT_WORDS` line's `{placeholders}`; an unknown placeholder stays as written. */
+export function fillCourtWords(line: string, values: Readonly<Record<string, string | number>>): string {
+  return line.replace(/\{(\w+)\}/g, (match, key: string) => (key in values ? String(values[key]) : match));
+}
+
 /** "a", "a and b", "a, b and c" — the reveal toast's label list. */
 export function joinRevealLabels(labels: readonly string[]): string {
   if (labels.length <= 1) return labels[0] ?? '';

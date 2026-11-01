@@ -33,6 +33,9 @@ import { Button } from '../shared/Button';
 import { CHAPTER_LEDGER_NO_RECORD } from '../../data/ui-content';
 import { Tooltip } from '../shared/Tooltip';
 import { Icon } from '../shared/Icon';
+import { EntityVisual } from '../shared/EntityVisual';
+import { QuietSlot } from '../shared/QuietSlot';
+import { dialogHeadingIcon } from '../../data/view-content';
 import { ChapterView } from './ChapterView';
 import type { ChapterRecord } from '../../types/chapterRecord';
 import type { GameState } from '../../types/gameState';
@@ -43,6 +46,7 @@ import {
   activeLedgerEncounters,
   buildLedgerRows,
   isDefaultLedgerRow,
+  ledgerRowFace,
   sortLedgerRowsNewestFirst,
   type LedgerRow,
 } from '../../engine/threadedChapters';
@@ -169,6 +173,10 @@ export function ChapterLedger({
     [rows, shownKey],
   );
 
+  // THR-2101 (S5.1) — the shown chapter opens on its mortal's face, the row's own face.
+  const shownRow = shownKey ? rows.find(r => r.key === shownKey) : undefined;
+  const shownFace = shownRow ? ledgerRowFace(gameState, shownRow) : null;
+
   const noRecord = (
     <div
       data-testid="chapter-ledger-no-record"
@@ -209,13 +217,16 @@ export function ChapterLedger({
       </div>
 
       {rows.length === 0 && (
-        <div style={{ color: 'var(--text-tertiary, #6a6255)', fontStyle: 'italic', padding: 'var(--space-2, 8px) 0' }}>
+        // THR-2101 (R8): the empty list is a quiet slot, one line in a dashed frame.
+        <QuietSlot data-testid="chapter-ledger-empty">
           {dailyLife ? DAILY_LIFE_EMPTY_STATE : 'No chapters yet. Weave threads and the world will start writing them.'}
-        </div>
+        </QuietSlot>
       )}
 
       {pageRows.map(row => {
         const isSelected = twoColumn && row.key === shownKey;
+        // THR-2101 (S5.1): faces for the shown page only, never the whole archive.
+        const face = ledgerRowFace(gameState, row);
         return (
         <button
           key={row.key}
@@ -253,7 +264,12 @@ export function ChapterLedger({
               {row.stakesLine}
             </span>
           )}
-          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: 'var(--space-1, 4px)' }}>
+            {face && (
+              <span data-dialog-face={face.tier} style={{ display: 'inline-flex' }}>
+                <EntityVisual size="chip" descriptor={face} />
+              </span>
+            )}
             {row.actorName} · {row.statusLabel}
           </span>
         </button>
@@ -292,7 +308,7 @@ export function ChapterLedger({
       return (
         <div>
           {shownRecord
-            ? <ChapterView chapter={shownRecord} onOpenEntity={onOpenEntity} onBack={back} />
+            ? <ChapterView chapter={shownRecord} face={shownFace} onOpenEntity={onOpenEntity} onBack={back} />
             : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2, 8px)' }}>
                 <Button variant="ghost" size="sm" onClick={back} style={{ alignSelf: 'flex-start' }}>Back</Button>
@@ -307,11 +323,11 @@ export function ChapterLedger({
 
   return (
     <Modal open onClose={onClose ?? (() => {})} size="l" aria-label="Chapter Ledger">
-      <Modal.Header onClose={onClose}>Chapter Ledger</Modal.Header>
+      <Modal.Header onClose={onClose} icon={dialogHeadingIcon('chapterLedger')}>Chapter Ledger</Modal.Header>
       {shownKey !== null ? (
         <SheetColumns aside={index} asideLabel="Chapters" mainLabel="Chapter">
           <div data-testid="chapter-ledger-chapter">
-            {shownRecord ? <ChapterView chapter={shownRecord} onOpenEntity={onOpenEntity} /> : noRecord}
+            {shownRecord ? <ChapterView chapter={shownRecord} face={shownFace} onOpenEntity={onOpenEntity} /> : noRecord}
           </div>
         </SheetColumns>
       ) : (

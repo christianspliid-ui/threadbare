@@ -33,7 +33,44 @@ import { formatEssencePool } from '../shared/formatEssence';
 import { Modal } from '../shared/Modal';
 import { SheetColumns } from '../shared/SheetColumns';
 import { Button } from '../shared/Button';
-import { SCRY_BACK_TO_COURT_LABEL } from '../../data/ui-content';
+import { SCRY_BACK_TO_COURT_LABEL, COURT_WORDS, fillCourtWords } from '../../data/ui-content';
+import { TITLE_BONUS_WORDS, TITLE_BONUS_WORDS_BY_TYPE, TITLE_CHIP_TOOLTIPS } from '../../data/scry-content';
+import { TIER_NAMES } from '../../data/influence-content';
+import type { InfluenceTier } from '../../types/influence';
+import { dialogHeadingIcon } from '../../data/view-content';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { Icon } from '../shared/Icon';
+import { QuietSlot } from '../shared/QuietSlot';
+import { Chip } from '../shared/Chip';
+
+/**
+ * THR-2101 (decision 3) — a seat's face through the one face path, filling its frame. The
+ * descriptor comes from the dialog host (`ScryContext.faces`); none → the frame stays empty.
+ */
+function SeatFace({ face }: { face: EntityVisualDescriptor | undefined }) {
+  if (!face) return null;
+  return (
+    <div data-dialog-face={face.tier} className="absolute inset-0">
+      <EntityVisual size="portrait" shape="rounded" descriptor={face} style={{ height: '100%', aspectRatio: 'auto', borderRadius: 0, border: 'none' }} />
+    </div>
+  );
+}
+
+/** "Top 3 positions…" → "top 3 positions…", for the bonus sentence's middle. */
+function lowerFirst(text: string): string {
+  return text.length > 0 ? text.charAt(0).toLowerCase() + text.slice(1) : text;
+}
+
+/** A heading's carved shape (THR-2101, S5.2), or nothing when the heading has no idea yet. */
+function HeadingShape({ name }: { name: ReturnType<typeof dialogHeadingIcon> }) {
+  if (!name) return null;
+  return (
+    <span data-dialog-heading-icon={name} style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 6 }}>
+      <Icon name={name} size="floor" decorative />
+    </span>
+  );
+}
 
 type PickerMode = 'closed' | 'agent' | 'title';
 
@@ -66,6 +103,7 @@ interface PositionSlotProps {
 const PositionSlot = memo(function PositionSlot(
   { position, onSelect, onAgentClick, retinueAgents }: PositionSlotProps
 ) {
+  const { faces } = useScryContext();
   const rankLabel = position.rank.charAt(0).toUpperCase() + position.rank.slice(1);
   const size = SLOT_SIZES[position.rank];
 
@@ -110,21 +148,8 @@ const PositionSlot = memo(function PositionSlot(
         cursor: 'pointer',
       }}
     >
-      {/* Portrait image or gradient fallback */}
-      {agent?.portraitUrl ? (
-        <img
-          src={agent.portraitUrl}
-          alt={agent.name}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      ) : (
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `linear-gradient(135deg, ${frameColor}30, ${frameColor}10, #0a0a0e)`,
-          }}
-        />
-      )}
+      {/* The seat's face through the one face path (THR-2101) — the designed tile when unpainted */}
+      <SeatFace face={agent ? faces?.[agent.id] : undefined} />
 
       {/* Dark gradient scrim at bottom for text readability */}
       <div
@@ -274,7 +299,9 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
   onSelectAgent,
   onClose,
 }: AgentPickerPanelProps) {
+  const { faces } = useScryContext();
   const eligible = agents.filter(a => a.tier >= minTier && !assignedAgentIds.has(a.id));
+  const tierWord = TIER_NAMES[minTier as InfluenceTier] ?? TIER_NAMES[1];
 
   return (
     <div
@@ -290,10 +317,9 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
             {SCRY_BACK_TO_COURT_LABEL}
           </Button>
         </div>
-        <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
-          Position: <span style={{ color: 'var(--text-primary)' }}>{position.archetype}</span>
-          <br />
-          Minimum tier: <span style={{ color: 'var(--text-primary)' }}>{minTier}</span>
+        {/* THR-2101 (decision 4): one sentence, never "Position / Minimum tier" (Law 16). */}
+        <p className="text-xs mb-4" data-testid="scry-seat-sentence" style={{ color: 'var(--text-secondary)' }}>
+          {fillCourtWords(COURT_WORDS.seatTakes, { archetype: position.archetype, tier: tierWord })}
         </p>
 
         {eligible.length === 0 ? (
@@ -320,14 +346,10 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
                 >
                   {/* Mini portrait */}
                   <div
-                    className="w-10 h-14 rounded overflow-hidden flex-shrink-0"
+                    className="w-10 h-14 rounded overflow-hidden flex-shrink-0 relative"
                     style={{ border: `2px solid ${domainColor}` }}
                   >
-                    {agent.portraitUrl ? (
-                      <img src={agent.portraitUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    ) : (
-                      <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${domainColor}30, #0a0a0e)` }} />
-                    )}
+                    <SeatFace face={faces?.[agent.id]} />
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{agent.name}</div>
@@ -437,6 +459,34 @@ const PositionSlotRow = memo(function PositionSlotRow({
   );
 });
 
+/**
+ * THR-2101 (S5.4, R7) — a title's bonuses and weaknesses as chips of words, never counts.
+ * A bonus reads `TITLE_BONUS_WORDS[target]` (its `description` is "+N to primary_domain"); a
+ * weakness reads its own `description`. No chip prints a value; a chip with no words drops.
+ */
+export function TitleEffectChips({ title, agentName }: { title: Title; agentName: string }) {
+  const bonusWords = title.bonuses
+    .map(b => TITLE_BONUS_WORDS_BY_TYPE[b.type] ?? (TITLE_BONUS_WORDS as Readonly<Record<string, string>>)[b.target])
+    .filter((w): w is string => Boolean(w));
+  const weaknessWords = title.weaknesses.map(w => w.description).filter(Boolean);
+  if (bonusWords.length === 0 && weaknessWords.length === 0) return null;
+  const tip = (line: string) => fillCourtWords(line, { name: agentName });
+  return (
+    <div className="flex flex-wrap gap-1 mt-1" data-testid="scry-title-chips">
+      {bonusWords.map((word, i) => (
+        <Tooltip key={`b${i}`} label={word} desc={tip(TITLE_CHIP_TOOLTIPS.bonus)} focusable={false}>
+          <span data-title-chip="bonus"><Chip role="state" size="sm" tint="positive" label={word} /></span>
+        </Tooltip>
+      ))}
+      {weaknessWords.map((word, i) => (
+        <Tooltip key={`w${i}`} label={word} desc={tip(TITLE_CHIP_TOOLTIPS.weakness)} focusable={false}>
+          <span data-title-chip="weakness"><Chip role="state" size="sm" tint="negative" label={word} /></span>
+        </Tooltip>
+      ))}
+    </div>
+  );
+}
+
 const TitlePickerPanel = memo(function TitlePickerPanel({
   agent,
   proposals,
@@ -460,9 +510,10 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
           </Button>
         </div>
 
-        <div className="mb-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
-          Cost: <span style={{ color: 'var(--text-primary)' }}>{Math.ceil(reassignmentCost)}</span>{' '}
-          <span className="capitalize">{primarySphere}</span> essence
+        {/* THR-2101 (decision 4): the cost as a sentence; the essence shape explains the word. */}
+        <div className="mb-4 text-xs flex items-center gap-1" data-testid="scry-cost-sentence" style={{ color: 'var(--text-secondary)' }}>
+          <Icon name="essence" size="floor" tooltipId="ui.essence_panel" decorative />
+          {fillCourtWords(COURT_WORDS.cost, { cost: Math.ceil(reassignmentCost), sphere: primarySphere })}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -490,25 +541,20 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
                   {title.name}
                 </div>
                 <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>{proposal.rationale}</div>
-                {title.bonuses.length > 0 && (
-                  <div className="text-xs mb-1" style={{ color: 'var(--positive)' }}>
-                    {title.bonuses.length} bonus{title.bonuses.length > 1 ? 'es' : ''}
-                  </div>
-                )}
-                {title.weaknesses.length > 0 && (
-                  <div className="text-xs" style={{ color: 'var(--negative)' }}>
-                    {title.weaknesses.length} weakness{title.weaknesses.length > 1 ? 'es' : ''}
-                  </div>
-                )}
+                <TitleEffectChips title={title} agentName={agent.name} />
               </button>
             );
           })}
         </div>
 
         {!canAfford && (
-          <div className="mt-4 text-xs" style={{ color: 'var(--negative)' }}>
-            Insufficient {primarySphere} essence. Required: {Math.ceil(reassignmentCost)}, Available:{' '}
-            {formatEssencePool(essencePool[primarySphere])}
+          <div className="mt-4 text-xs flex items-center gap-1" data-testid="scry-shortfall-sentence" style={{ color: 'var(--negative)' }}>
+            <Icon name="essence" size="floor" tooltipId="ui.essence_panel" decorative />
+            {fillCourtWords(COURT_WORDS.shortfall, {
+              have: formatEssencePool(essencePool[primarySphere]),
+              sphere: primarySphere,
+              cost: Math.ceil(reassignmentCost),
+            })}
           </div>
         )}
     </div>
@@ -530,6 +576,7 @@ export function ScryOverlay() {
     onDemote,
     onClose,
     onAgentSelect,
+    faces,
   } = useScryContext();
 
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
@@ -735,52 +782,31 @@ export function ScryOverlay() {
                   color: 'var(--text-secondary)',
                 }}
               >
-                <span className="font-bold">Structure Bonus:</span> {structDef.structureBonus.description}
+                {/* THR-2101 (decision 4): a sentence in the structure's own words, no "Label:". */}
+                <span data-testid="scry-structure-bonus">
+                  {fillCourtWords(COURT_WORDS.structureBonus, {
+                    structure: structDef.name,
+                    bonus: lowerFirst(structDef.structureBonus.description),
+                  })}
+                </span>
               </div>
               {/* Sacred Sites & Artifacts */}
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div>
                   <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    <HeadingShape name={dialogHeadingIcon('courtSacredSites')} />
                     Sacred Sites
                   </h2>
-                  <div className="space-y-2">
-                    {scryState.sacredSites.slice(0, 2).map((_, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-lg text-center text-xs"
-                        style={{
-                          backgroundColor: 'var(--bg-surface)',
-                          borderColor: 'var(--border-gold)',
-                          border: '1px solid',
-                          color: 'var(--text-tertiary)',
-                        }}
-                      >
-                        ◇ Coming Soon
-                      </div>
-                    ))}
-                  </div>
+                  {/* THR-2101 (decision 5): no sacred site yet → one quiet line, not "Coming Soon". */}
+                  <QuietSlot data-testid="scry-empty-sacred-sites">{COURT_WORDS.emptySacredSite}</QuietSlot>
                 </div>
 
                 <div>
                   <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    <HeadingShape name={dialogHeadingIcon('courtArtifacts')} />
                     Divine Artifacts
                   </h2>
-                  <div className="space-y-2">
-                    {scryState.artifacts.slice(0, 2).map((_, idx) => (
-                      <div
-                        key={idx}
-                        className="p-3 rounded-lg text-center text-xs"
-                        style={{
-                          backgroundColor: 'var(--bg-surface)',
-                          borderColor: 'var(--border-gold)',
-                          border: '1px solid',
-                          color: 'var(--text-tertiary)',
-                        }}
-                      >
-                        ◇ Coming Soon
-                      </div>
-                    ))}
-                  </div>
+                  <QuietSlot data-testid="scry-empty-artifacts">{COURT_WORDS.emptyArtifact}</QuietSlot>
                 </div>
               </div>
             </>
@@ -846,20 +872,7 @@ export function ScryOverlay() {
                         cursor: 'pointer',
                       }}
                     >
-                      {theFirstAgent.portraitUrl ? (
-                        <img
-                          src={theFirstAgent.portraitUrl}
-                          alt={theFirstAgent.name}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            background: 'linear-gradient(135deg, rgba(212,160,64,0.3), rgba(212,160,64,0.08), #0a0a0e)',
-                          }}
-                        />
-                      )}
+                      <SeatFace face={faces?.[theFirstAgent.id]} />
                       <div
                         className="absolute bottom-0 left-0 right-0 p-2"
                         style={{

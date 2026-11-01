@@ -17,6 +17,7 @@ import {
   FRAME_TOKENS_PX,
   INSPECTOR_PORTRAIT_W_REM,
   STAGE_SUBJECT_PORTRAIT_W_REM,
+  DIALOG_SUBJECT_PORTRAIT_W_REM,
   LAYOUT_BREAKPOINTS_PX,
   MEASURE_PROSE_EM,
   MODAL_MAX_HEIGHT_VH,
@@ -94,6 +95,12 @@ describe('layoutContract — CSS ↔ TS parity', () => {
   it('the Stage face width matches index.css at every tier (THR-2100)', () => {
     for (const tier of TIERS) {
       expect(decl(rootBlock(tier), '--stage-subject-portrait-w'), tier).toBe(`${STAGE_SUBJECT_PORTRAIT_W_REM[tier]}rem`);
+    }
+  });
+
+  it('the dialog face width matches index.css at every tier (THR-2101)', () => {
+    for (const tier of TIERS) {
+      expect(decl(rootBlock(tier), '--dialog-subject-portrait-w'), tier).toBe(`${DIALOG_SUBJECT_PORTRAIT_W_REM[tier]}rem`);
     }
   });
 

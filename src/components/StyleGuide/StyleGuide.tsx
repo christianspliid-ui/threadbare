@@ -38,6 +38,7 @@ import { FRAME_TOKENS_PX, TYPE_SCALE_REM, layoutTierFor, remToPx, rootFontPx } f
 import { Medallion } from '../shared/Medallion';
 import { BondStrip } from '../shared/BondStrip';
 import { QuietSlot } from '../shared/QuietSlot';
+import { dialogHeadingIcon } from '../../data/view-content';
 import { FlavorQuote } from '../shared/FlavorQuote';
 import { RevealCard } from '../shared/RevealCard';
 import { REVEAL_CATEGORY_TITLES, REVEAL_KINDS, pickFallbackFlavor } from '../../data/reveal-content';
@@ -147,6 +148,7 @@ const SECTIONS = [
   { id: 'medallion', label: 'Medallion (THR-799)' },
   { id: 'bondstrip', label: 'BondStrip (THR-2097)' },
   { id: 'quietslot', label: 'QuietSlot (THR-2097)' },
+  { id: 'modal-header-icon', label: 'Modal.Header icon (THR-2101)' },
   { id: 'flavorquote', label: 'FlavorQuote (THR-799)' },
   { id: 'revealcard', label: 'RevealCard (THR-799)' },
   { id: 'tooltip', label: 'Tooltip' },
@@ -1468,6 +1470,19 @@ export default function StyleGuide() {
               <GameErrorBoundary>
                 <Label>An empty state (rule R8): one quiet line in a dashed frame, never a heading over nothing. No gold.</Label>
                 <QuietSlot label="Act on Kael">None of your cards works on Kael.</QuietSlot>
+              </GameErrorBoundary>
+            </div>
+          </section>
+
+          {/* ── Modal.Header icon (THR-2101) ───────────────────── */}
+          <section id="section-modal-header-icon" style={{ marginBottom: SECTION_GAP }}>
+            <SectionHeading ornamental>Modal.Header icon (THR-2101)</SectionHeading>
+            <div style={{ marginTop: '1.25rem', maxWidth: '520px' }}>
+              <GameErrorBoundary>
+                <Label>A dialog heading that names a game idea draws its carved shape (rule R2) from `DIALOG_HEADING_ICONS`: chip size, decorative, in the title's colour. A heading with no idea yet draws none.</Label>
+                <div style={{ border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-panel)' }}>
+                  <Modal.Header icon={dialogHeadingIcon('chapterLedger')}>Chapter Ledger</Modal.Header>
+                </div>
               </GameErrorBoundary>
             </div>
           </section>

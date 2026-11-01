@@ -315,14 +315,12 @@ function UnlockCardRow({
       {actionIds.map(actionId => {
         const template = getUnifiedTemplateById(actionId);
         if (!template) {
+          // THR-2101 (S5.5, Law 14): no template means no card name to print, so the row is
+          // dropped rather than showing the raw action id; the warning stays.
           console.warn(
-            `[AscendantBeatModal] no template for granted action "${actionId}" — rendering text fallback.`,
+            `[AscendantBeatModal] no template for granted action "${actionId}" — row dropped.`,
           );
-          return (
-            <div key={actionId} data-action-id={actionId} style={TEXT_FALLBACK_STYLE}>
-              You will learn: {actionId}
-            </div>
-          );
+          return null;
         }
         const slot = templateToPreviewSlot(template);
         return (

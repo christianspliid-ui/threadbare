@@ -234,7 +234,7 @@ describe('ScryOverlay', () => {
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[emptySlots.length - 1]); // Outer — affordable with the mock pool
     fireEvent.click(screen.getByText('Kalam'));
-    expect(screen.getByText(/Cost:/i)).toBeInTheDocument();
+    expect(screen.getByTestId('scry-cost-sentence').textContent).toMatch(/^Moving them costs \d+ force essence\.$/);
 
     const picker = screen.getByTestId('scry-title-picker');
     const proposal = within(picker).getAllByRole('button').find(btn => btn.textContent !== SCRY_BACK_TO_COURT_LABEL);
@@ -263,7 +263,8 @@ describe('ScryOverlay', () => {
 
   it('displays structure bonus description', () => {
     renderWithContext();
-    expect(screen.getByText(/Structure Bonus:/i)).toBeInTheDocument();
+    // THR-2101: a sentence in the structure's own words, no "Structure Bonus:" label.
+    expect(screen.getByTestId('scry-structure-bonus').textContent).toBe('In The High House, top 3 positions cost 1 less essence for tier maintenance.');
   });
 
   it('displays section headers for ranks', () => {
@@ -286,7 +287,7 @@ describe('ScryOverlay', () => {
     fireEvent.click(agentName);
 
     // Cost should be displayed
-    expect(screen.getByText(/Cost:/i)).toBeInTheDocument();
+    expect(screen.getByTestId('scry-cost-sentence').textContent).toMatch(/^Moving them costs \d+ force essence\.$/);
   });
 
   it('agent picker excludes agents already assigned to a court position', () => {
@@ -353,7 +354,8 @@ describe('ScryOverlay', () => {
     fireEvent.click(agentName);
 
     // Should show insufficient essence message for apex (costs 30)
-    expect(screen.getByText(/Insufficient/i)).toBeInTheDocument();
+    // THR-2101: one sentence with both numbers, never "Required: / Available:".
+    expect(screen.getByTestId('scry-shortfall-sentence').textContent).toMatch(/^You hold 1 force essence; this needs \d+\.$/);
   });
 
   describe('picker views in the court column (THR-1880)', () => {

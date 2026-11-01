@@ -19,6 +19,15 @@ import type { PlayerActionReceipt } from '../../engine/playerReceipts';
 import type { EncounterAftermathChangePolarity } from '../../types/unifiedAction';
 import { formatEssence } from '../shared/formatEssence';
 import { elapsedLabel } from '../../engine/aftermathWords';
+import { Icon } from '../shared/Icon';
+import { Medallion } from '../shared/Medallion';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { ICON_FOR_CONSEQUENCE } from '../../data/icons/conceptIcons';
+import { dialogHeadingIcon } from '../../data/view-content';
+
+/** THR-2101 (S5.3) — a relic's painting before the change that names it, in px. */
+export const RECEIPT_RELIC_TILE_PX = 40;
 
 interface DivineReceiptModalProps {
   open: boolean;
@@ -26,6 +35,13 @@ interface DivineReceiptModalProps {
   onAcknowledge: () => void;
   /** Apply an authored aftermath reaction, then acknowledge+close (handled by the caller). */
   onReaction?: (reactionId: string) => void;
+  /**
+   * THR-2101 (decision 2) — who the act touched (a mortal's face, a place, a faction's arms),
+   * resolved by the dialog host. Drawn as a medallion before the sentence that names them.
+   */
+  targetVisual?: EntityVisualDescriptor | null;
+  /** THR-2101 (S5.3) — change id → the painting of the relic it names; resolved by the host. */
+  changeArt?: Readonly<Record<string, string>>;
 }
 
 const POLARITY_COLOR: Record<EncounterAftermathChangePolarity, string> = {
@@ -64,7 +80,8 @@ function technicalSentence(receipt: PlayerActionReceipt): string {
   return `${essenceClause}${targetClause}${elapsedClause}.`;
 }
 
-export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }: DivineReceiptModalProps) {
+export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction, targetVisual, changeArt }: DivineReceiptModalProps) {
+  const headingIcon = dialogHeadingIcon('receipt');
   const accent = bandAccentColor(receipt.outcomeBand, 'var(--accent-gold)');
   const art = getActionArt(receipt.templateId);
   const framing = selectReceiptFrameLine(receipt.outcomeBand, receipt.actionId);
@@ -97,8 +114,16 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
             fontFamily: 'var(--font-display)',
             fontSize: 'var(--text-lg)',
             color: 'var(--text-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 'var(--space-2)',
           }}
         >
+          {headingIcon && (
+            <span data-dialog-heading-icon={headingIcon} style={{ display: 'inline-flex' }}>
+              <Icon name={headingIcon} size="chip" decorative />
+            </span>
+          )}
           {receipt.templateName}
         </div>
         <div
@@ -147,39 +172,74 @@ export function DivineReceiptModal({ open, receipt, onAcknowledge, onReaction }:
         {/* What changed — polarity-coloured, verbatim from the engine. */}
         {receipt.changes.length > 0 && (
           <div data-testid="divine-receipt-changes" style={{ marginBottom: 'var(--space-4)' }}>
-            {receipt.changes.map((change) => (
+            {receipt.changes.map((change) => {
+              // THR-2101 (S5.3): the shape says what kind of change; the border and words say
+              // which way (Law 31). A change naming a relic shows its painting first.
+              const relicArt = changeArt?.[change.id];
+              const shape = change.category ? ICON_FOR_CONSEQUENCE[change.category] : undefined;
+              return (
               <div
                 key={change.id}
+                data-testid="divine-receipt-change"
                 style={{
                   borderLeft: `3px solid ${POLARITY_COLOR[change.polarity]}`,
                   paddingLeft: 'var(--space-2)',
                   marginBottom: 'var(--space-2)',
+                  display: 'flex',
+                  gap: 'var(--space-2)',
+                  alignItems: 'flex-start',
                 }}
               >
-                <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontWeight: 600 }}>
-                  {change.title}
-                </div>
-                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                  {change.detail}
+                {relicArt && (
+                  <img
+                    src={relicArt}
+                    alt=""
+                    data-testid="divine-receipt-relic-tile"
+                    style={{ width: RECEIPT_RELIC_TILE_PX, height: RECEIPT_RELIC_TILE_PX, objectFit: 'cover', borderRadius: 4, flexShrink: 0 }}
+                  />
+                )}
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 'var(--space-1)' }}>
+                    {shape && (
+                      <span data-consequence-icon={shape} style={{ display: 'inline-flex' }}>
+                        <Icon name={shape} size="floor" decorative />
+                      </span>
+                    )}
+                    {change.title}
+                  </div>
+                  <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {change.detail}
+                  </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {/* Technical footer — woven sentence, not key:value chips. */}
-        <p
-          data-testid="divine-receipt-technical"
-          style={{
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-tertiary)',
-            fontStyle: 'italic',
-            margin: 0,
-            lineHeight: 1.5,
-          }}
-        >
-          {technicalSentence(receipt)}
-        </p>
+        {/* Technical footer — woven sentence, not key:value chips; the target's medallion
+            sits before the sentence that names them (THR-2101, decision 2). */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          {targetVisual && (
+            <span data-dialog-face={targetVisual.tier} data-testid="divine-receipt-target" style={{ display: 'inline-flex' }}>
+              <Medallion size="sm" title={targetVisual.alt}>
+                <EntityVisual size="chip" descriptor={targetVisual} />
+              </Medallion>
+            </span>
+          )}
+          <p
+            data-testid="divine-receipt-technical"
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              fontStyle: 'italic',
+              margin: 0,
+              lineHeight: 1.5,
+            }}
+          >
+            {technicalSentence(receipt)}
+          </p>
+        </div>
       </Modal.Body>
 
       <Modal.Footer>

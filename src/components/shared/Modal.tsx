@@ -1,5 +1,6 @@
 import { IconButton } from './IconButton';
 import { Icon } from './Icon';
+import type { IconName } from '../../data/icons/iconRegistry';
 import { Overlay, type OverlayAnimation, type OverlayProps } from './Overlay';
 import { PanelLevelScope, panelStyle } from './Panel';
 import { Z_BAND } from './zBands';
@@ -149,7 +150,11 @@ function ModalRoot({ open, onClose, size, maxWidth, animation = 'anim-fade-up', 
   );
 }
 
-function Header({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) {
+/**
+ * THR-2101 (S5.2) — `icon` draws the heading's carved shape at `chip` size before the
+ * title, decorative, in the title's colour (Law 27). Null or absent → no shape, as before.
+ */
+function Header({ children, onClose, icon }: { children: React.ReactNode; onClose?: () => void; icon?: IconName | null }) {
   return (
     <div
       style={{
@@ -162,6 +167,11 @@ function Header({ children, onClose }: { children: React.ReactNode; onClose?: ()
         color: 'var(--dlg-text, var(--text-primary))',
       }}
     >
+      {icon && (
+        <span data-dialog-heading-icon={icon} style={{ display: 'inline-flex', marginRight: 'var(--space-2)' }}>
+          <Icon name={icon} size="chip" decorative />
+        </span>
+      )}
       <span style={{ flex: 1 }}>{children}</span>
       {onClose && (
         <IconButton icon={<Icon name="close" size="chip" decorative />} variant="close" size="sm" aria-label="Close" onClick={onClose} />

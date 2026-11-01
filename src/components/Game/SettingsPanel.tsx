@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { IconButton } from '../shared/IconButton';
 import { Modal } from '../shared/Modal';
 import { Button } from '../shared/Button';
+import { Icon } from '../shared/Icon';
+import { dialogHeadingIcon } from '../../data/view-content';
 import { OPENING_REVEAL_SHOW_ALL_LABEL, OPENING_REVEAL_SHOW_ALL_HELP } from '../../data/ui-content';
 import type { NotificationPreferences, NotificationCategoryKey, NotificationMode } from '../../types/notification';
 import { NOTIFICATION_CATEGORY_ORDER, NOTIFICATION_CATEGORY_LABELS } from '../../types/notification';
@@ -214,12 +216,21 @@ export function SettingsPanel({
   };
 
   const paletteOptions = Object.values(PALETTE_THEMES);
+  const settingsIcon = dialogHeadingIcon('settings');
 
   return (
     <Modal open={open} onClose={onClose} size="m" aria-label="Settings">
       {/* Header */}
       <div style={headerStyle}>
-        <h2 style={headerTitleStyle}>Settings</h2>
+        {/* THR-2101 (decision 8): the title draws `settings`; the section headings draw none (Law 30). */}
+        <h2 style={{ ...headerTitleStyle, display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          {settingsIcon && (
+            <span data-dialog-heading-icon={settingsIcon} style={{ display: 'inline-flex' }}>
+              <Icon name={settingsIcon} size="chip" decorative />
+            </span>
+          )}
+          Settings
+        </h2>
         <IconButton
           icon={<span>×</span>}
           variant="close"
@@ -316,7 +327,7 @@ export function SettingsPanel({
                       title="Auto-expire"
                       aria-label={`Set ${NOTIFICATION_CATEGORY_LABELS[key]} to temporary mode`}
                     >
-                      ⏱
+                      <Icon name="waiting" size="floor" decorative />
                     </button>
                     <button
                       onClick={() => onSetNotificationMode(key, 'permanent')}
@@ -334,7 +345,7 @@ export function SettingsPanel({
                       title="Stay until dismissed"
                       aria-label={`Set ${NOTIFICATION_CATEGORY_LABELS[key]} to permanent mode`}
                     >
-                      📌
+                      <Icon name="held" size="floor" decorative />
                     </button>
                   </div>
                 </div>
