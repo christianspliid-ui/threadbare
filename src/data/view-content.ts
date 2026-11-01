@@ -478,3 +478,34 @@ export const DIALOG_NO_IDEA_HEADINGS: readonly DialogHeadingKey[] = [
 export function dialogHeadingIcon(key: DialogHeadingKey): IconName | null {
   return (DIALOG_HEADING_ICONS as Readonly<Record<DialogHeadingKey, IconName | null>>)[key];
 }
+
+/**
+ * THR-2102 (art-led pass, slice 6, R2) — the carved shape each ceremony heading draws, before
+ * the heading, decorative, in the heading's colour. Components read the row, never a literal
+ * (Law 58). `null` = no idea in the registry fits (decision 7): the heading draws nothing and
+ * waits on Christian's pick (THR-2104). The doom-kind shapes wait on THR-1908, so a doom
+ * ending draws the doom clock's own shape.
+ *
+ * Kill criterion ("the harvest is busy"): set every row to `null`; the pictures stay.
+ */
+export const CEREMONY_HEADING_ICONS = {
+  harvestTitle: 'harvest',
+  endingMandate: 'mandate',
+  endingDoom: 'doom',
+  echoHeading: null,
+  memoryHeading: null,
+  riteHeader: null,
+} as const satisfies Readonly<Record<string, IconName | null>>;
+
+export type CeremonyHeadingId = keyof typeof CEREMONY_HEADING_ICONS;
+
+/** The ceremony headings with no fitting idea (posted on THR-2104 after merge). */
+export const CEREMONY_NO_IDEA_HEADINGS: readonly CeremonyHeadingId[] = ['echoHeading', 'memoryHeading', 'riteHeader'];
+
+/** The shape a ceremony heading draws, or null. */
+export function ceremonyHeadingIcon(id: CeremonyHeadingId): IconName | null {
+  return (CEREMONY_HEADING_ICONS as Readonly<Record<CeremonyHeadingId, IconName | null>>)[id];
+}
+
+/** THR-2102 — one echo card at the harvest; four sit in a row at `--ceremony-panel-max-w`. */
+export const HARVEST_ECHO_TILE_W = '11rem';

@@ -387,6 +387,9 @@
     --inspector-portrait-w: 15rem;   /* Inspector wide/Full, person portrait — THR-2097 */
     --stage-subject-portrait-w: 8rem; /* the one Stage face — THR-2100 */
     --dialog-subject-portrait-w: 7rem; /* a dialog subject face (ChapterView) — THR-2101 */
+    --ceremony-portrait-w: 7rem;  /* ceremony face (end of the age, rite) — THR-2102 */
+    --ceremony-medallion-w: 6rem;  /* the god at the harvest — THR-2102 */
+    --ceremony-panel-max-w: 56rem;  /* the harvest panel — THR-2102 */
     --stage-gutter: 24px;            /* THR-1829 */
     --stage-window-w: 280px;         /* THR-1829 STAGE_WINDOW_PX */
     --stage-left-col-w: 340px;       /* THR-1829 STAGE_LEFT_COL_PX */
@@ -468,6 +471,9 @@
       --inspector-portrait-w: 15rem;
       --stage-subject-portrait-w: 8rem;
       --dialog-subject-portrait-w: 7rem;
+      --ceremony-portrait-w: 7rem;
+      --ceremony-medallion-w: 6rem;
+      --ceremony-panel-max-w: 56rem;
       --stage-gutter: 24px;
       --stage-window-w: 280px;
       --stage-left-col-w: 340px;
@@ -494,6 +500,9 @@
       --inspector-portrait-w: 18rem;
       --stage-subject-portrait-w: 10rem;
       --dialog-subject-portrait-w: 9rem;
+      --ceremony-portrait-w: 9rem;
+      --ceremony-medallion-w: 7.5rem;
+      --ceremony-panel-max-w: 56rem;
       --stage-gutter: 24px;
       --stage-window-w: 520px;
       --stage-left-col-w: 560px;
@@ -519,6 +528,9 @@
       --inspector-portrait-w: 18rem;
       --stage-subject-portrait-w: 10rem;
       --dialog-subject-portrait-w: 9rem;
+      --ceremony-portrait-w: 9rem;
+      --ceremony-medallion-w: 7.5rem;
+      --ceremony-panel-max-w: 56rem;
       --stage-gutter: 24px;
       --stage-window-w: 1400px;
       --stage-left-col-w: 560px;

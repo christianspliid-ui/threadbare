@@ -22,6 +22,9 @@ import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { Overlay } from '../shared/Overlay';
 import { EntityVisual } from '../shared/EntityVisual';
+import { resolveEntityVisual } from '../shared/entityVisualResolver';
+import { Icon } from '../shared/Icon';
+import { ceremonyHeadingIcon } from '../../data/view-content';
 import { EntityLink } from '../shared/EntityLink';
 import { surfaceHomeProps } from '../shared/surfaceHomes';
 
@@ -65,6 +68,24 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
   }, []);
   const { ending, first, memories } = beats;
   const sectionStyle: CSSProperties = { borderTop: `1px solid ${faint(tint, 20)}` };
+  // THR-2102 (S6.3) — the ending heading draws its idea's shape: a fulfilled mandate, or the
+  // doom clock (the doom-kind shapes wait on THR-1908).
+  const endingIcon = ceremonyHeadingIcon(ending.kind === 'mandate' ? 'endingMandate' : 'endingDoom');
+  const endingTitle = (
+    <>
+      {endingIcon && (
+        <span data-ceremony-heading-icon={endingIcon} style={{ display: 'inline-flex' }}>
+          <Icon name={endingIcon} size="list" decorative />
+        </span>
+      )}
+      {ending.title}
+    </>
+  );
+  // THR-2102 decision 2 — the First's face at the ceremony portrait width. The graph read is
+  // today's call, moved into a descriptor so the debug read can name its tier.
+  const firstFace = first
+    ? resolveEntityVisual({ id: first.id, kind: 'agent', name: first.name }, gameState.graph)
+    : null;
 
   // The First's line opens with their name; the name is a link to their sheet (Law 21).
   // A First whose body is gone (a death that removed the node) is named, not linked.
@@ -93,13 +114,13 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
         <section className="text-center mb-6" data-testid="age-twilight-ending">
           {ending.kind === 'mandate' ? (
             <Tooltip id="ui.mandate_tracker">
-              <h2 className="text-2xl font-bold tracking-wide cursor-help mb-3" style={{ color: tint, fontFamily: 'var(--font-display)' }}>
-                {ending.title}
+              <h2 className="text-2xl font-bold tracking-wide cursor-help mb-3 inline-flex items-center justify-center gap-2" style={{ color: tint, fontFamily: 'var(--font-display)' }}>
+                {endingTitle}
               </h2>
             </Tooltip>
           ) : (
-            <h2 className="text-2xl font-bold tracking-wide mb-3" style={{ color: tint, fontFamily: 'var(--font-display)' }}>
-              {ending.title}
+            <h2 className="text-2xl font-bold tracking-wide mb-3 flex items-center justify-center gap-2" style={{ color: tint, fontFamily: 'var(--font-display)' }}>
+              {endingTitle}
             </h2>
           )}
           {ending.line && <p className="text-base text-amber-100/90 leading-relaxed mb-2">{ending.line}</p>}
@@ -109,8 +130,13 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
         {/* 2 — your First (hidden when there is none: no empty heading) */}
         {first && (
           <section className="flex items-center gap-4 py-5" style={sectionStyle} data-testid="age-twilight-first" data-fate={first.fate}>
-            <div style={{ width: 72, flexShrink: 0 }}>
-              <EntityVisual size="portrait" entity={{ id: first.id, kind: 'agent', name: first.name }} graph={gameState.graph} />
+            <div
+              style={{ width: 'var(--ceremony-portrait-w)', flexShrink: 0 }}
+              data-ceremony-face={firstFace?.tier ?? 'none'}
+              data-ceremony-face-role="first"
+              data-testid="age-twilight-first-face"
+            >
+              {firstFace && <EntityVisual size="portrait" descriptor={firstFace} />}
             </div>
             {first.fate === 'aspect' ? (
               <Tooltip id="ui.aspect_badge">

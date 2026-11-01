@@ -166,6 +166,21 @@ export const STAGE_SUBJECT_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> 
  */
 export const DIALOG_SUBJECT_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { base: 7, fhd: 7, qhd: 9, uwqhd: 9 };
 
+/**
+ * THR-2102 — a ceremony face (the First at the end of the age, the rite's opening),
+ * `--ceremony-portrait-w`, 3:4, in rem per tier, restated in every tier block of `index.css`.
+ */
+export const CEREMONY_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { base: 7, fhd: 7, qhd: 9, uwqhd: 9 };
+
+/**
+ * THR-2102 — the god's face at the harvest, `--ceremony-medallion-w`, in rem per tier. Kill
+ * criterion: the face drops to a chip if the harvest's button falls below the fold at 1920×1080.
+ */
+export const CEREMONY_MEDALLION_W_REM: Readonly<Record<LayoutTier, number>> = { base: 6, fhd: 6, qhd: 7.5, uwqhd: 7.5 };
+
+/** THR-2102 — the harvest panel's width, `--ceremony-panel-max-w`, in rem (every tier). */
+export const CEREMONY_PANEL_MAX_W_REM = 56;
+
 /** Text-container widths in rem, declared once in `:root`, so they follow the root step-up. */
 export const TEXT_TOKENS_REM = {
   tooltipMaxW: 17.5,

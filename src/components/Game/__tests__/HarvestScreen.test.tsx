@@ -109,9 +109,9 @@ describe('HarvestScreen', () => {
     expect(screen.getByText('A bittersweet age. The Fallen King left a lasting mark.')).toBeInTheDocument();
   });
 
-  it('renders echo candidate names', () => {
+  it('renders echo candidate names, the one way every surface names an echo (THR-2102, PC-6)', () => {
     render(<HarvestScreen harvest={mockBitterSweetHarvest} cycle={1} onWakeNewWorld={vi.fn()} />);
-    expect(screen.getByText('The Fallen King')).toBeInTheDocument();
+    expect(screen.getByText('the line of The Fallen King')).toBeInTheDocument();
     expect(screen.getByText('The Sunken Tower')).toBeInTheDocument();
   });
 
