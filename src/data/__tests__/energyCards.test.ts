@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { WorldGraph } from '../../engine/graph';
 import { executeGraphOps, resetOpCounter } from '../../engine/graphOpExecutor';
 import { buildValueOverlay, getDivineInfluences } from '../../engine/interventionEffects';
-import { phaseUnifiedActionProgress } from '../../engine/unifiedActionResolution';
+import { godPushScale, phaseUnifiedActionProgress } from '../../engine/unifiedActionResolution';
 import { offerableCards, priceSphere } from '../../engine/godProgression';
 import { enableTracing, disableTracing, clearTraces, getTraces } from '../../engine/traceBuffer';
 import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../unified-action-templates';
@@ -97,7 +97,8 @@ describe('THR-2086 — Stoke the Forges', () => {
     } as unknown as GameState;
     const result = phaseUnifiedActionProgress(state, [tpl], () => 0.5) as Partial<GameState>;
     const push = (result.pendingSpherePressures ?? []).find((p) => p.sphere === 'energy' && p.source === 'divine_action');
-    expect(push).toMatchObject({ targetEntityId: TOWN, magnitude: ACTION_PRESSURE_SUCCESS });
+    // THR-2094: the god's 2-essence working pushes twice a look.
+    expect(push).toMatchObject({ targetEntityId: TOWN, magnitude: ACTION_PRESSURE_SUCCESS * godPushScale(true, tpl.essenceCost), pushScale: 2 });
   });
 });
 

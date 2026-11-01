@@ -1382,6 +1382,21 @@ export const CONTRACTS: readonly Contract[] = [
     readSites: ['src/engine/phaseMandate.ts'],
   },
   {
+    id: 'god-card-push-lands-in-town-place',
+    producerSystem: QUINTESSENCE,
+    consumerSystem: 'Mandate',
+    intent:
+      'Town cards reach the Mandate (THR-2094). The resolved card push in `phaseUnifiedActionProgress` scales by the god\'s price (`godPushScale`: `min(GOD_PUSH_ESSENCE_CAP, max(1, essenceCost))`, a look 3 and a working 6; mortal casts unchanged) and carries `pushScale`; in `phaseSpherePressure`, right after the hex resolver, `resolveTownPressureTargets` re-aims the god\'s push at a `GOD_PUSH_TOWN_SUBTYPES` town onto its Place holding least of the sphere (ties by id), setting `aimedAtId` and tracing `sphere_pressure.town_resolved`. The card\'s own effects stay on the town; the Mandate credits the Place like any location.',
+    ulTerms: ['Victory Mandate', 'Sphere', 'Place'],
+    mechanism: {
+      kind: 'function',
+      symbols: ['resolveTownPressureTargets'],
+      module: 'src/engine/townPressureTarget.ts',
+    },
+    writeSites: ['src/engine/unifiedActionResolution.ts', 'src/engine/townPressureTarget.ts'],
+    readSites: ['src/engine/phaseSpherePressure.ts'],
+  },
+  {
     id: 'mandate-milestone-prose-narrates-transitions',
     producerSystem: 'Mandate',
     consumerSystem: NARRATIVE,
