@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 10:58 local (09:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 11:58 local (10:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -55,7 +55,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([midnight
 
 ## Queue
 
-**Healthy (4 ready), and building.** The builder claimed [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) at 09:30 UTC, right after its veto window closed, and is working on it now. No pull request is open yet. The four ready tickets wait on their veto windows: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, and the new [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, after slices 4 and 5 merge.
+**Healthy (4 ready), and building.** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) is built in [PR #2678](https://github.com/christianspliid-ui/threadbare/pull/2678), with every census target met. Its first run parked it unarmed: after the change, working a town no longer moved that town's Dominion. That is how-to-build, not a call for you, and a builder run is fixing it now (a fix was committed in local worktree `optimistic-mendeleev-664ebe` a minute before this brief). The PR's required check is red until that fix is pushed; that is the builder's to clear. The four ready tickets wait on their veto windows: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, and the new [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, after slices 4 and 5 merge.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -63,6 +63,7 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed (for agents):** tick cost 222 ms/tick steady, 33% above the 7-day median (166, 128 rows since 035a6541); top phase agent_decision, 639 agents. Name the merges between 035a6541 and d3516032: `git log --oneline --merges 035a6541..d3516032`. Last hour measured the same game code at 180 ms/tick, and the builder was running beside this measurement, so this may be load on the machine rather than slower code; the next hours will tell.
+- **Engine speed (for agents):** tick cost 216 ms/tick steady, 30% above the 7-day median (167, 129 rows since 035a6541); top phase agent_decision, 639 agents. Name the merges between 035a6541 and d3516032: git log --oneline --merges 035a6541..d3516032. Main has moved only in documents since the last game build, and the builder ran beside this measurement too, so this is likely machine load, not slower code.
+- **PR [#2678](https://github.com/christianspliid-ui/threadbare/pull/2678) (THR-2094) has a failing required check** (Test · Typecheck · Build, through generated-artifact freshness). It is unarmed and the builder is working on it now. For agents.
 
 Everything else is green. The live site serves the latest game build (92bf1fa0; main has moved only in documents since), the PR checks and scheduled background jobs pass, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
