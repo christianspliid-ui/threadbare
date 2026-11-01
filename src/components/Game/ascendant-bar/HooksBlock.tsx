@@ -56,6 +56,9 @@ import { attachmentDetailFromNode } from '../../../engine/attachmentTemplateDeta
 import { readAgreement, agreementTermEnded } from '../../../engine/agreementShape';
 import { agreementLine } from '../../../engine/agentAttachments';
 import { Tooltip } from '../../shared/Tooltip';
+import { EntityVisual } from '../../shared/EntityVisual';
+import { ICON_SIZE_REM } from '../../shared/Icon';
+import { mortalFace, type EntityVisualDescriptor } from '../../../engine/views/entityVisualResolver';
 import {
   HOOK_LABEL_FALLBACK,
   HOOK_DEF_FALLBACK,
@@ -90,6 +93,11 @@ interface ChipData {
    * asking "does this chip link?" must not have to re-run the classifier to find out.
    */
   sheetId?: string;
+  /**
+   * THR-2099 (R6) — a vow whose counterparty is a mortal leads with that mortal's face,
+   * from the same resolver call as their page header (`mortalFace`). The label is unchanged.
+   */
+  face?: EntityVisualDescriptor;
 }
 
 /**
@@ -150,7 +158,9 @@ function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (sheetId: string) => 
           // reads before committing to a click. `default` is the honest rest state for
           // a chip whose only affordance is its hover explanation.
           cursor: open ? 'pointer' : 'default',
+          ...(chip.face ? { display: 'inline-flex', alignItems: 'center', gap: 4 } : {}),
         }}
+        {...(chip.face ? { 'data-rail-face': 'true' } : {})}
         {...(open
           ? {
               onClick: open,
@@ -168,6 +178,13 @@ function Chip({ chip, onOpen }: { chip: ChipData; onOpen?: (sheetId: string) => 
             }
           : {})}
       >
+        {chip.face && (
+          <EntityVisual
+            size="chip"
+            descriptor={chip.face}
+            style={{ width: `${ICON_SIZE_REM.chip}rem`, height: `${ICON_SIZE_REM.chip}rem`, flexShrink: 0 }}
+          />
+        )}
         {chip.label}
       </div>
     </Tooltip>
@@ -350,10 +367,16 @@ export function extractChips(gameState: GameState): {
     // so there is nothing for `AttachmentDetailView` to draw, and its terms are already
     // on the chip's tooltip. Law 21's fail-open: plain styled text, no control. If an
     // agreement ever becomes a node with a page, this is the one line that changes.
-    vows.push({ id: edge.id, label, def: agreement.terms ?? '', valence });
+    const face = mortalFace(graph, counterpartyId, gameState.familiarityMap);
+    vows.push({ id: edge.id, label, def: agreement.terms ?? '', valence, ...(face ? { face } : {}) });
   }
 
   return { conditions, clues, vows };
+}
+
+/** THR-2099 — vows that lead with a mortal's face, for the rail's `data-rail-faces`. */
+export function countVowFaces(gameState: GameState): number {
+  return extractChips(gameState).vows.filter((v) => v.face).length;
 }
 
 /** Chips actually rendered on the bar — the number the section header shows. */

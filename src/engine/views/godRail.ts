@@ -44,6 +44,7 @@ import {
   countWords,
 } from '../../data/frame-content';
 import { getFirstId } from '../meetingEncounter';
+import { mortalFace, type EntityVisualDescriptor } from './entityVisualResolver';
 import { payingSphere } from '../targetActions';
 import {
   selectAscendantIdentityView,
@@ -85,6 +86,8 @@ export interface GodRailArgs {
 export interface GodRailFirst {
   id: string;
   name: string;
+  /** THR-2099: The First's face tile; the Your First line draws it through the identity chip. */
+  visual?: EntityVisualDescriptor;
 }
 
 export interface GodRailIdentity {
@@ -331,7 +334,14 @@ export function buildGodRail(state: GameState, rawArgs: GodRailArgs): GodRailVM 
     identity: {
       view,
       quintessence,
-      first: firstId && firstNode ? { id: firstId, name: firstNode.name ?? firstId } : null,
+      first: firstId && firstNode
+        ? {
+          id: firstId,
+          name: firstNode.name ?? firstId,
+          // THR-2099 (R6) — The First's face, by the same resolver call as their page header (PC-6).
+          visual: mortalFace(state.graph, firstId, state.familiarityMap) ?? undefined,
+        }
+        : null,
     },
     essence: {
       rows: selectEssenceRows(state, archetype),

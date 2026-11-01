@@ -23,7 +23,8 @@
 import type { IconName } from '../../data/icons/iconRegistry';
 import type { WorldGraph } from '../graph';
 import type { GraphNode } from '../../types/graph';
-import type { KnowledgeLevel } from '../../types/familiarity';
+import type { FamiliarityMap, KnowledgeLevel } from '../../types/familiarity';
+import { getFamiliarity, getKnowledgeLevel } from '../familiarity';
 import { KNOWLEDGE_LEVELS } from '../../types/familiarity';
 import type { TerrainType } from '../../types';
 import type { SphereInfluence } from '../hexZoom';
@@ -245,4 +246,24 @@ export function resolveEntityVisual(
   return src
     ? { tier: 'art', src, glyph, gradientIndex, alt, kind }
     : { tier: 'fallback', glyph, gradientIndex, alt, kind };
+}
+
+/**
+ * THR-2099 — a mortal's face for a chrome chip (the god rail, Needs you), or null when the
+ * id is not a mortal: a missing node, a god, a faction or a culture. Gated by what the god
+ * knows of them, as the mortal's page header and the bond strip are (Law 8; `bondOf` in
+ * `detailPageResolvers.ts`): below `recognised` the tile is the silhouette, so the chip and
+ * the page cannot disagree (PC-6). A missing familiarity map reads as familiarity 0.
+ */
+export function mortalFace(
+  graph: WorldGraph | null | undefined,
+  id: string,
+  familiarityMap: FamiliarityMap | null | undefined,
+): EntityVisualDescriptor | null {
+  const node = graph?.getNode(id);
+  if (!node || node.type !== 'actor') return null;
+  const actorType = node.properties?.actorType;
+  if (actorType === 'god' || actorType === 'ascendant' || actorType === 'faction' || actorType === 'culture') return null;
+  const familiarity = familiarityMap && typeof familiarityMap.get === 'function' ? getFamiliarity(familiarityMap, id) : 0;
+  return resolveEntityVisual({ id, kind: 'agent', name: node.name }, graph, { knowledgeLevel: getKnowledgeLevel(familiarity) });
 }
