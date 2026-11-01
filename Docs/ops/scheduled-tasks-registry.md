@@ -106,7 +106,7 @@ Host-machine tasks; invisible to `list_scheduled_tasks`.
 
 | Slot | Cadence | Task | Trigger | Fires |
 |------|---------|------|---------|-------|
-| **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
+| **:40** | Hourly | `Threadbare Git Cleanup` — runs `C:/Users/chris/Dev/Projects/clean-stale-git.sh` (stops orphaned Vite servers and runaway Playwright browsers via `scripts/reap-dev-processes.ts`, prunes merged worktrees/branches, escalates stale unmerged ones) | Once at 00:40, repeat every 1h | :40 (no jitter) |
 | **:50** | Hourly | `ThreadbareRepoAutoSync` — runs `C:\Users\chris\bin\threadbare-autosync.ps1`: fast-forwards the home tree to `origin/main`, reattaches a **provably loss-free** detached park (THR-671/672), and clears a **provably loss-free** untracked-file collision (THR-937) | Once at 00:50, repeat every 1h | :50 (no jitter) |
 
 Neither host task carries a `RandomDelay`, so unlike the CC lane their slot minute *is* their fire time. Both run `Interactive`-only at `Limited` run level with `StartWhenAvailable: True`.

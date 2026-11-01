@@ -7,7 +7,7 @@ Because it is not tracked, a disk loss takes it with it. This file is a **copy f
 recoverability and review**, not the source of truth. When you change the script, update
 this mirror in the same PR (as THR-753 does).
 
-Last synced: 2026-08-15 (THR-1115 — donor `node_modules` auto-repair, liveness-gated and single-flighted).
+Last synced: 2026-11-01 (dev-process reaper — orphaned Vite servers and runaway Playwright browsers, via `scripts/reap-dev-processes.ts`).
 
 ## Full script body
 
@@ -20,6 +20,8 @@ Last synced: 2026-08-15 (THR-1115 — donor `node_modules` auto-repair, liveness
 #     bash /c/Users/chris/Dev/Projects/clean-stale-git.sh
 #
 # What it does (and what it WON'T touch):
+#   0. Stops orphaned Vite dev servers and runaway Playwright browsers
+#      (decision logic in the tracked scripts/reap-dev-processes.ts).
 #   1. Removes worktrees whose branch is merged into origin/main AND which have
 #      no substantive uncommitted work (line-ending / .codesight noise ignored).
 #   2. Prunes stale worktree metadata.
@@ -188,6 +190,25 @@ repair_home_node_modules() {
   [ -f "$script" ] || { echo "donor-repair: skipped (script not in tree yet — merged and synced?)"; return 0; }
   node --experimental-strip-types "$script" 2>&1 || true
 }
+
+# Dev-process reaper (2026-11-01). Nothing stopped a session's preview Vite server when
+# the session ended, and nothing closed the Claude app's Playwright Chrome: on 2026-11-01
+# nine orphaned servers ran up to 33h and a Playwright Chrome drew WebGL in software at
+# ~15 cores. The servers also held their worktrees open, so pass 1 below logged "removal
+# FAILED (in use?)" and kept them. Same split as repair_home_node_modules: the decisions
+# (orphan = launcher chain no longer reaches a live anchor; browser = hot two runs in a
+# row) live in the tracked, tested script; this call site has no policy of its own.
+# Runs FIRST so pass 1 sees worktrees the killed servers were holding.
+reap_dev_processes() {
+  local script="$REPO/scripts/reap-dev-processes.ts"
+  command -v node >/dev/null 2>&1 || { echo "proc-reaper: skipped (node not on PATH)"; return 0; }
+  [ -f "$script" ] || { echo "proc-reaper: skipped (script not in tree yet — merged and synced?)"; return 0; }
+  node --experimental-strip-types "$script" --repo "$REPO" \
+       --state "C:/Users/chris/Dev/Projects/clean-stale-procs.state.json" 2>&1 || true
+}
+
+# ---- 0. stop orphaned dev processes --------------------------------------
+reap_dev_processes
 
 # ---- 1. remove merged, work-free worktrees -------------------------------
 git worktree list --porcelain \

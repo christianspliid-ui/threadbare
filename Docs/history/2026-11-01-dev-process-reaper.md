@@ -1,0 +1,1 @@
+✅ **Dev-process reaper** (2026-11-01, harness, no ticket). The hourly git reaper now also stops orphaned Vite dev servers and closes a Playwright Chrome that stays hot for two runs in a row. Details: `Docs/status/2026-11-01-dev-process-reaper.md`.
