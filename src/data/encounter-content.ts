@@ -9505,7 +9505,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: '{actor} has heard the story once. It has many names and places, and {actor} must keep them straight to tell it again. If {actor} tells it wrong, the people who know it will laugh.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} keeps the story but mixes up two of the names. {actor} will have to ask again before trusting it.',
-        criticalSuccessAfterimage: '{actor} keeps every name and place, and notices where two of the tellings disagree. The disagreement is the useful part.',
+        criticalSuccessAfterimage: '{actor} keeps every name and place. Two of the tellings disagree about one name, and {actor} finds out which one is true.',
         criticalFailureAfterimage: '{actor} remembers the story wrong and repeats it in the next village. The people there know the true version and laugh at {actor}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
@@ -9676,7 +9676,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'The herders say a ley line runs somewhere near here, and that the birds will not land on it. {actor} must find it without scaring the birds off. The herders believe that brings bad luck on the flocks.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} learns where the ley line runs, but sitting on it leaves {their} hands numb for a day.',
-        criticalSuccessAfterimage: '{actor} finds where the ley line crosses the stream. Few people know that spot, and {actor} does now.',
+        criticalSuccessAfterimage: '{actor} finds where the ley line crosses the stream, a place few people know.',
         criticalFailureAfterimage: '{actor} disturbs the place instead of reading it. The birds leave the trees at once, and the local herders blame {actor} for the bad omen.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'wild'] },
         onSuccess: {
@@ -9965,7 +9965,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} works out the omen\'s meaning, but it takes until dawn, and {actor} sleeps through the next day\'s work.',
         criticalSuccessAfterimage: 'The omen names its danger plainly: an early frost. {actor} can warn the farmers before it comes.',
-        criticalFailureAfterimage: '{actor} reads the omen as good news and tells others. It was a warning, and they will remember who told them otherwise.',
+        criticalFailureAfterimage: '{actor} reads the omen as good news and tells the people so. It was a warning, and they blame {actor} when the danger comes.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
           narrative: '{actor} works out the omen: a hard season is coming. The people believe {actor} and start to prepare for it.',
@@ -10472,7 +10472,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         duration: 1,
         narrative: '{actor} needs a full night\'s sleep to be fit for the road. If {actor} sleeps badly, the cold ground will draw the heat out of {them} by morning.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: '{actor} sleeps, but wakes to find the fire out and the food gone to a fox. The rest cost tomorrow\'s meal.',
+        successAtCostAfterimage: '{actor} sleeps, but wakes to find the fire out and the food gone to a fox. {actor} starts the day with nothing to eat.',
         criticalSuccessAfterimage: '{actor} sleeps through the night and wakes before dawn with no ache left from the road.',
         criticalFailureAfterimage: '{actor} wakes in the night with a fever from the cold ground, and starts the day weaker than the one before.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'might'] },
@@ -11097,7 +11097,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // THR-1101 (batch 13, hearsay slice).
         narrative: 'A group of old talkers here hears everything that happens in {location}. Something happened this season that they will not tell strangers. The last outsider who asked about it was sent away with a lie.\n\n{actor} must win the talkers\' trust before they will say anything true.',
         // THR-1667 S3: the missing afterimages and a dealt hand.
-        successAtCostAfterimage: 'The talkers take {actor} in, but the price is a round of drinks, and then another. {actor} learns plenty and pays for all of it.',
+        successAtCostAfterimage: 'The talkers take {actor} in, but only after {actor} buys drinks for the whole table all evening. {actor} learns a lot and leaves with an empty purse.',
         criticalSuccessAfterimage: 'The oldest of the talkers takes a liking to {actor}. She tells the stories the others leave out, including the ones about her own family.',
         criticalFailureAfterimage: '{actor} laughs at a story about a drunk, and the drunk\'s son is sitting among the talkers. The talk stops, and nobody tells {actor} anything after that.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
@@ -11119,8 +11119,8 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         narrative: 'The talkers tell {actor} many versions of the story. Most are made up or improved in the retelling. Only one is true, and the talkers keep that one for people they trust.',
         // THR-1667 S3: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} finds the true account, but tests it by repeating it to the wrong listener. By evening the story is going round with {actor}\'s name on it.',
-        criticalSuccessAfterimage: 'The detail nobody bothered to alter points somewhere nobody has looked: an old quarrel between two families that neither will speak of.',
-        criticalFailureAfterimage: '{actor} trusts the account that flatters nobody. It was made up by the one talker who wanted {actor} to believe it.',
+        criticalSuccessAfterimage: 'One talker tells {actor} the true account and more besides: two families here have an old quarrel that neither will speak of.',
+        criticalFailureAfterimage: '{actor} believes the wrong account. One of the talkers made it up to fool {actor}, and {actor} repeats it as true.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'shadow'] },
         onSuccess: {
           narrative: 'Late in the evening, one of the talkers tells {actor} the true account. {actor} now knows what the locals keep from strangers.',
