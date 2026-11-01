@@ -17,7 +17,7 @@ import { WorldGraph } from '../../../engine/graph';
 import { DIALOG_HEADING_ICONS, DIALOG_NO_IDEA_HEADINGS, dialogHeadingIcon } from '../../../data/view-content';
 import { ICON_REGISTRY } from '../../../data/icons/iconRegistry';
 import { ledgerRowFace } from '../../../engine/threadedChapters';
-import { courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
+import { beatSubjectNodeId, courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
 import { Modal } from '../../shared/Modal';
 import { ChapterView } from '../ChapterView';
 import { DivineReceiptModal } from '../DivineReceiptModal';
@@ -193,13 +193,14 @@ describe('THR-2101 the court in sentences (S5.4)', () => {
       bonuses: [
         { type: 'domain_bonus', target: 'primary_domain', value: 3.2, description: '+3.20 to primary_domain' },
         { type: 'custom', target: 'unknown_target', value: 1, description: '+1 to unknown_target' },
+        { type: 'essence_gen', target: 'sphere', value: 0.4, description: '+0.40 to sphere' },
       ],
       weaknesses: [{ type: 'domain_bonus', target: 'heart', value: -1, description: 'Diminished social grace' }],
     } as unknown as Title;
     render(<TitleEffectChips title={title} agentName="Maren" />);
     const bonus = [...document.querySelectorAll('[data-title-chip="bonus"]')].map(el => el.textContent ?? '');
     const weakness = [...document.querySelectorAll('[data-title-chip="weakness"]')].map(el => el.textContent ?? '');
-    expect(bonus).toEqual(['Sharper in their first reach']);
+    expect(bonus).toEqual(['Sharper in their first reach', 'Draws more essence to you']);
     expect(weakness).toEqual(['Diminished social grace']);
     for (const word of bonus) expect(word).not.toMatch(/[\d_]/);
     expect(document.body.textContent).not.toMatch(/\d+ bonus|\d+ weakness/);
@@ -216,6 +217,14 @@ describe('THR-2101 the beat (S5.5, Law 14)', () => {
     expect(document.body.textContent).not.toContain('debug.no_such_card_thr2101');
     expect(document.body.textContent).not.toContain('You will learn:');
     warn.mockRestore();
+  });
+
+  it("an introduction beat's bound mortal is its subject; a faction or another kind of beat has no face", () => {
+    const state = { graph: world(), familiarityMap: known() };
+    const intro = (id: string) => ({ kind: 'introduction' as const, boundNodeIds: [id] });
+    expect(dialogSubjectFace(state, beatSubjectNodeId(intro('maren')))?.tier).toBe('art');
+    expect(dialogSubjectFace(state, beatSubjectNodeId(intro('fac-1')))).toBeNull();
+    expect(beatSubjectNodeId({ kind: 'offering', boundNodeIds: ['maren'] })).toBeUndefined();
   });
 
   it('a beat about a mortal shows their face in the medallion', () => {

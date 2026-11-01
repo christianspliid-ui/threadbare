@@ -34,7 +34,7 @@ import { Modal } from '../shared/Modal';
 import { SheetColumns } from '../shared/SheetColumns';
 import { Button } from '../shared/Button';
 import { SCRY_BACK_TO_COURT_LABEL, COURT_WORDS, fillCourtWords } from '../../data/ui-content';
-import { TITLE_BONUS_WORDS, TITLE_CHIP_TOOLTIPS } from '../../data/scry-content';
+import { TITLE_BONUS_WORDS, TITLE_BONUS_WORDS_BY_TYPE, TITLE_CHIP_TOOLTIPS } from '../../data/scry-content';
 import { TIER_NAMES } from '../../data/influence-content';
 import type { InfluenceTier } from '../../types/influence';
 import { dialogHeadingIcon } from '../../data/view-content';
@@ -466,7 +466,7 @@ const PositionSlotRow = memo(function PositionSlotRow({
  */
 export function TitleEffectChips({ title, agentName }: { title: Title; agentName: string }) {
   const bonusWords = title.bonuses
-    .map(b => (TITLE_BONUS_WORDS as Readonly<Record<string, string>>)[b.target])
+    .map(b => TITLE_BONUS_WORDS_BY_TYPE[b.type] ?? (TITLE_BONUS_WORDS as Readonly<Record<string, string>>)[b.target])
     .filter((w): w is string => Boolean(w));
   const weaknessWords = title.weaknesses.map(w => w.description).filter(Boolean);
   if (bonusWords.length === 0 && weaknessWords.length === 0) return null;

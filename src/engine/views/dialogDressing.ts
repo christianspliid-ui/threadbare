@@ -12,6 +12,7 @@ import type { GameState } from '../../types/gameState';
 import type { TerrainType } from '../../types';
 import type { EncounterAftermathChange } from '../../types/unifiedAction';
 import type { PlayerActionReceipt } from '../playerReceipts';
+import type { PendingBeat } from '../../types/ascendantBeat';
 import { getAttachmentArtUrl } from '../../data/artifact-category-art';
 import { mortalFace, resolveEntityVisual, type EntityVisualDescriptor } from './entityVisualResolver';
 
@@ -88,6 +89,17 @@ export function receiptChangeArt(
     }
   }
   return out;
+}
+
+/**
+ * The node a gift beat is about: an introduction beat's first bound node (the same id
+ * GameView reads for its Attend route), else none. A faction or culture id draws no face
+ * downstream, since `dialogSubjectFace` resolves mortals only.
+ */
+export function beatSubjectNodeId(
+  pending: Pick<PendingBeat, 'kind' | 'boundNodeIds'> | null | undefined,
+): string | undefined {
+  return pending?.kind === 'introduction' ? pending.boundNodeIds?.[0] : undefined;
 }
 
 /** Decision 3 — every court seat's face through the one face path, keyed by mortal id. */

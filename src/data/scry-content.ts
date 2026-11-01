@@ -236,10 +236,22 @@ export const TITLE_BONUS_WORDS: Readonly<Record<BonusRule['target'], string>> = 
   detection: 'Harder to notice',
 };
 
-/** The bonus and weakness chips' tooltips; `{name}` is the mortal the title is for. */
+/**
+ * A bonus whose `type` reads differently from its `target`'s word: essence generation and
+ * sphere influence share the `sphere` target, so essence generation takes its own word.
+ */
+export const TITLE_BONUS_WORDS_BY_TYPE: Readonly<Partial<Record<TitleEffectType, string>>> = {
+  essence_gen: 'Draws more essence to you',
+};
+
+/**
+ * The bonus and weakness chips' tooltips; `{name}` is the mortal the title is for. They name
+ * the title's gift or burden and claim no change to the mortal: the engine does not yet apply
+ * title effects (TODO(THR-2121): say what the title does once the effects are wired or retired).
+ */
 export const TITLE_CHIP_TOOLTIPS = {
-  bonus: 'This title makes {name} stronger here while they hold it.',
-  weakness: 'This title costs {name} here while they hold it.',
+  bonus: "The gift this title names for {name}.",
+  weakness: "The burden this title names for {name}.",
 } as const;
 
 export const BONUS_RULES: Record<PositionRank, BonusRule[]> = {
