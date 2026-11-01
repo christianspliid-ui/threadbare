@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { resolveTownPressureTargets } from '../townPressureTarget';
-import { isGodCausedPush, mandateCreditsFor } from '../mandateLedger';
+import { isGodCausedPush } from '../mandateLedger';
 import { phaseSpherePressure } from '../phaseSpherePressure';
 import { godPushScale, phaseUnifiedActionProgress } from '../unifiedActionResolution';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
@@ -219,19 +219,41 @@ describe('phaseSpherePressure re-aims the god\'s town push (THR-2094)', () => {
     expect(credited).not.toContain('town');
   });
 
-  it('a town copy does not dilute another god push\'s credit on the same town', () => {
+  // The town is credited as if its copy were absent: a seat push beside it earns what it
+  // would have alone — no less (dilution) and no more (the copy's level-up).
+  function seatBesideCard(townProgress: number, withCard = true) {
     const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_a', 'town');
+    const aff = graph.getNode('town')!.properties!.sphereAffinity as ReturnType<typeof createDefaultSphereAffinity>;
+    aff.progress.force = townProgress;
     const seat: SpherePressureEvent = {
       targetEntityId: 'town', sphere: 'force', magnitude: 0.25, source: 'seat', sourceId: 'seat_1',
     };
-    const echo = godPush('town', 'force', { townEcho: true });
-    const trace = { sphere: 'force', previousScore: 1, newScore: 2 } as never;
-    const isGod = (p: SpherePressureEvent) => isGodCausedPush(p, graph, ASC);
-    const withEcho = mandateCreditsFor('town', 1, [seat, echo], [trace], isGod);
-    const alone = mandateCreditsFor('town', 1, [seat], [trace], isGod);
-    expect(withEcho).toEqual(alone);
-    expect(withEcho[0].points).toBe(1);
-    expect(mandateCreditsFor('town', 1, [echo], [trace], isGod)).toEqual([]);
+    const state = {
+      tick: 4, graph, tiles: [], ascendantId: ASC,
+      pendingSpherePressures: withCard ? [seat, godPush('town')] : [seat],
+      mandateDefinition: { runtimeKind: 'sphere_growth', primarySphere: 'force', secondarySphere: 'matter' },
+      mandateState: { completed: false },
+    } as unknown as GameState;
+    const result = phaseSpherePressure(state);
+    return {
+      townScore: (graph.getNode('town')!.properties!.sphereAffinity as typeof aff).scores.force,
+      townCredit: (result.pendingMandateCredits ?? []).filter(c => c.entityId === 'town'),
+    };
+  }
+
+  it('credits a seat push on the town in full when it would have levelled the town alone', () => {
+    const { townScore, townCredit } = seatBesideCard(0.8);
+    expect(townScore).toBe(1);
+    expect(townCredit).toHaveLength(1);
+    expect(townCredit).toEqual(seatBesideCard(0.8, false).townCredit);
+  });
+
+  it('credits nothing on the town when only the copy levelled it', () => {
+    const { townScore, townCredit } = seatBesideCard(0.5);
+    expect(townScore).toBe(1);
+    expect(townCredit).toEqual([]);
   });
 
   it('carries a scaled push\'s pushScale onto the sphere_pressure trace', () => {

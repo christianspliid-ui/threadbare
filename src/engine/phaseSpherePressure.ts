@@ -547,7 +547,15 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
     if (ledgerSpheres) {
       try {
         const weight = entityAggregateWeight(node) ?? 0;
-        mandateCredits.push(...mandateCreditsFor(entityId, weight, entityPressures, tickedTraces, isGod, ledgerSpheres));
+        // THR-2094: a re-aimed push's town copy (`townEcho`) moves the town but earns
+        // nothing — its Place copy carries the credit. The town is credited as if the copy
+        // were absent: re-resolved without it, so the copy neither dilutes a seat, claim or
+        // carry push's share nor lends them a level-up it caused.
+        const creditPressures = entityPressures.filter(p => !p.townEcho);
+        const creditTraces = creditPressures.length === entityPressures.length
+          ? tickedTraces
+          : resolveSpherePressure(entityAffinity, creditPressures, presentAgents).traces;
+        mandateCredits.push(...mandateCreditsFor(entityId, weight, creditPressures, creditTraces, isGod, ledgerSpheres));
       } catch {
         // Fail-soft: this entity credits nothing this tick.
       }
