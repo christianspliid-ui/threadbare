@@ -66,7 +66,7 @@ function EchoCard({ candidate, visual }: { candidate: HarvestEchoCandidate; visu
   const name = echoDisplayName(def);
   return (
     <div
-      className="bg-stone-800/60 border border-amber-700/20 rounded-lg overflow-hidden flex-shrink-0"
+      className="bg-stone-800/60 border border-amber-700/20 rounded-panel overflow-hidden flex-shrink-0"
       style={{ width: HARVEST_ECHO_TILE_W }}
       data-testid="harvest-echo-card"
       data-echo-art={tierOf(visual)}
