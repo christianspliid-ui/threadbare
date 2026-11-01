@@ -710,13 +710,14 @@ const reputationsTheyHoldResolver: SectionResolver = (ctx) => {
   // (0–1, written only by `applyFactionReputationGain` and decayed by
   // `phaseFactionReputationDecay`). The old `faction.properties.reputations` read had no
   // writer, so every live faction showed the quiet line. Edges without a numeric
-  // reputation (army → faction, band → group) are not regard and are skipped.
+  // reputation (army → faction, band → group) are not regard and are skipped, and so
+  // are the dead: a 'retain' death (`markMortalDead`) keeps its `member_of` edge.
   const held: Array<{ member: GraphNode; reputation: number }> = [];
   for (const edge of ctx.graph.getIncomingEdges(faction.id, 'member_of')) {
     const reputation = edge.properties?.reputation;
     if (typeof reputation !== 'number') continue;
     const member = ctx.graph.getNode(edge.source);
-    if (!member) continue;
+    if (!member || member.properties?.deceased === true) continue;
     held.push({ member, reputation });
   }
   // Most-regarded first; id breaks ties so the strip is stable tick to tick.

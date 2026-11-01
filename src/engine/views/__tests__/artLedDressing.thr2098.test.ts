@@ -168,6 +168,10 @@ describe('R5–R7 — no Overview strip on these kinds (Law 16)', () => {
       { label: 'Aldric Vane', flavour: 'revered', sentiment: 'positive', clickRef: { nodeId: 'aldric', pageKind: 'actor' } },
       { label: 'Mira Hollow', flavour: 'distrusted', sentiment: 'negative', clickRef: { nodeId: 'mira', pageKind: 'actor' } },
     ]);
+    // A 'retain' death keeps the member_of edge; the dead are not held in regard.
+    g.getNode('aldric')!.properties.deceased = true;
+    const after = byId(sections('faction', 'guild', state)).get('reputations_they_hold');
+    expect(after && after.kind === 'chips' ? after.chips.map(c => c.label) : []).toEqual(['Mira Hollow']);
   });
 
   it('an event\'s callback is prose, with no "Then" label', () => {
