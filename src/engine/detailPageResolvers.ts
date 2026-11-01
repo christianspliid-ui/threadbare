@@ -35,6 +35,7 @@ import {
 import { latestBloodshedRecord } from './battleRecord';
 import { BLOOD_SOAKED_WINDOW_TICKS } from '../data/location-trait-constants';
 import { NO_REPUTATIONS_LINE } from '../data/subject-sheet-words';
+import { getReputationWord } from '../data/domain-words';
 
 /** Plain text into prose markup: escaped, nothing else is markup. */
 function escapeProse(text: string): string {
@@ -705,25 +706,34 @@ const opposedResolver: SectionResolver = (ctx) => {
 const reputationsTheyHoldResolver: SectionResolver = (ctx) => {
   const faction = ctx.graph.getNode(ctx.nodeId);
   if (!faction) return null;
-  const reps = faction.properties?.reputations as
-    | Record<string, { phrase?: string; sentiment?: number }>
-    | undefined;
-  // THR-2098 (rule R7): chips — "Ironhold · wary" — each linking the one they regard, its
-  // sentiment kept. None → the quiet line, not a `—` strip (rule R8).
+  // THR-2111: the regard a faction holds lives on its members' `member_of.reputation`
+  // (0–1, written only by `applyFactionReputationGain` and decayed by
+  // `phaseFactionReputationDecay`). The old `faction.properties.reputations` read had no
+  // writer, so every live faction showed the quiet line. Edges without a numeric
+  // reputation (army → faction, band → group) are not regard and are skipped.
+  const held: Array<{ member: GraphNode; reputation: number }> = [];
+  for (const edge of ctx.graph.getIncomingEdges(faction.id, 'member_of')) {
+    const reputation = edge.properties?.reputation;
+    if (typeof reputation !== 'number') continue;
+    const member = ctx.graph.getNode(edge.source);
+    if (!member) continue;
+    held.push({ member, reputation });
+  }
+  // Most-regarded first; id breaks ties so the strip is stable tick to tick.
+  held.sort((a, b) => b.reputation - a.reputation || a.member.id.localeCompare(b.member.id));
+  // THR-2098 (rule R7): chips — "Aldric Vane · respected" — each linking the one they
+  // regard, its sentiment kept. None → the quiet line, not a `—` strip (rule R8).
   const chips: ChipDescriptor[] = [];
-  if (reps) {
-    for (const [targetId, value] of Object.entries(reps)) {
-      const target = ctx.graph.getNode(targetId);
-      if (!target) continue;
-      const sentiment = value.sentiment ?? 0;
-      const pageKind = pageKindForRefTarget(target);
-      chips.push({
-        label: target.name,
-        flavour: value.phrase ?? (sentiment > 0.2 ? 'allied' : sentiment < -0.2 ? 'opposed' : 'neutral'),
-        sentiment: sentiment > 0.2 ? 'positive' : sentiment < -0.2 ? 'negative' : 'neutral',
-        ...(pageKind ? { clickRef: { nodeId: target.id, pageKind } } : {}),
-      });
-    }
+  for (const { member, reputation } of held.slice(0, REPUTATIONS_THEY_HOLD_MAX)) {
+    const pageKind = pageKindForRefTarget(member);
+    chips.push({
+      label: member.name,
+      flavour: getReputationWord(reputation).toLowerCase(),
+      sentiment: reputation >= REPUTATION_REGARD_POSITIVE_AT
+        ? 'positive'
+        : reputation < REPUTATION_REGARD_NEGATIVE_BELOW ? 'negative' : 'neutral',
+      ...(pageKind ? { clickRef: { nodeId: member.id, pageKind } } : {}),
+    });
   }
   if (chips.length === 0) {
     const quiet: ProseSection = {
@@ -752,6 +762,10 @@ const reputationsTheyHoldResolver: SectionResolver = (ctx) => {
 
 /** How many regarded parties the faction page lists (the strip's eight). */
 const REPUTATIONS_THEY_HOLD_MAX = 8;
+/** Member reputation at or above which the chip reads warm — "Respected" and up (THR-2111). */
+const REPUTATION_REGARD_POSITIVE_AT = 0.6;
+/** Member reputation below which the chip reads cold — "Distrusted" (THR-2111). */
+const REPUTATION_REGARD_NEGATIVE_BELOW = 0.2;
 
 /** The page a regarded node opens, or null (a node with no page renders a plain chip). */
 function pageKindForRefTarget(node: GraphNode): GraphPageKind | null {
