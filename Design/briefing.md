@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 02:58 local (01:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 03:55 local (02:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,7 +20,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
-- [Art-led pass, slice 3 — the god rail and the top bar](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (new tonight): the god's face at the top of the rail stays its current size, so your cards are not pushed down on a 1080p screen. Veto line: "make the god's face bigger". Window closes about 12:45 today.
+- [Art-led pass, slice 4 — the Stage moments](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (new tonight, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2100-art-led-stage.md)): every moment that plays over the map (encounter, premonition, vision, story beat, new-power dilemma, undertaking news) shows its mortal's face at one size, beside the title. Today three show no face and three show a small one. Veto line: "keep the Stage faces as they are". Window closes about 14:30 UTC today.
+- Same ticket: in an encounter, that face sits in the left column under the scene picture, and the tiny face beside the name goes, so the panel shows one face. Veto line: "keep the small face beside the name".
+- Same ticket: the new-power dilemma shows the face of the mortal who delved, not a picture of the ruin. The ruin is already lit on the map beside it. Veto line: "show the ruin on the dilemma".
+- Same ticket: the aftermath's SCAR / BOND / BOON / PATH chips draw their carved shapes instead of today's ✕ ◈ ✦ ◆ marks. Veto line: "keep the old chip marks".
+- Same ticket: a relic won or lost in an encounter shows its painting on its chip, and clicking it opens the relic. Veto line: "no relic pictures on encounter chips".
+- Same ticket: *At stake*, the whisper header ("A stirring in the thread"), *Let it be* and *Corrupt* have no fitting carved shape, so they draw none and join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "pick a near icon instead".
+- [Art-led pass, slice 3 — the god rail and the top bar](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar): the god's face at the top of the rail stays its current size, so your cards are not pushed down on a 1080p screen. Veto line: "make the god's face bigger". Window closes about 12:45 today.
 - Same ticket: The First, a mortal under a covenant, and a mortal you have a vow with show their face beside their name in the rail. Places and factions keep their words. Veto line: "names only in the rail".
 - Same ticket: the rail's headings (Essence, Your cards, Mandate, Signatures, Hooks) get their carved shapes. Reaches and Covenants wait for [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "no icons on the rail headings".
 - Same ticket: the Seat line shows its town's shape and still centres the map when clicked. The doom bar opens with the doom shape; the omen keeps its own mark. Veto line: "no doom icon".
@@ -32,11 +38,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: lists of strengths become chips ("Might · Strong"), one-fact rows become sentences ("Here you are Accepted."), and the bars beside single words drop. Veto line: "keep the bars".
 - Same ticket: relics lying at a place or held by a faction show as painted tiles, like The First's carried relics. Veto line: "no relic gallery on places and factions".
 - Same ticket: headings with no fitting icon draw none and join [your icon pick](https://linear.app/threadbare/issue/THR-2104) once the build merges, including the god page's own Overview tab. Veto line: "pick a near icon instead".
-- [Story text, slice 1](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets): the everyday board encounters get the full three-paragraph opening (who arrives where, what has gone wrong, the one problem), like the newer encounters. Where they can happen does not change. Veto line: "board encounters should stay short". Window closes about 03:50 tonight.
-- Same ticket: the Swollen Ford example card lines, which you approved on 9 August under the older rules, lose "A small help." / "A real help." and the "You…". The newer rules ban both. The factory copies that example, so 121 card lines picked up the habit. Veto line: "keep the Swollen Ford cards as approved".
-- Same ticket: the board's background people stay unnamed for now ("the trader"). Naming them needs proper cast slots across 168 encounters, so it would be its own job. Veto line: "name the board's people".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([afternoon report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31b.md), [evening report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31c.md), [late report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31d.md), [midnight report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31e.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([evening report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31c.md), [late report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31d.md), [midnight report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31e.md), [early report](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md))*
 
 ## This week's screens
 
@@ -44,14 +47,15 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([afternoo
 
 ## Queue
 
-**Healthy: three tickets ready, all inside their veto windows, so the builder is idle by design.** The design lane handed off [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (art-led god rail and top bar) tonight via [its plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2099-art-led-god-rail.md). The last six builder runs each stood down for exactly that reason; the first window opens within the hour. Claimable in order: [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) about 03:47, [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages, slice 2) about 06:45, THR-2099 about 12:45.
+**Healthy: the builder is working.** It claimed [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) at 02:51 UTC, as soon as its veto window closed; its branch is pushed. Three more are ready and wait on their veto windows: [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages) about 06:45, [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 12:45, and [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments), handed off by the design lane tonight, about 14:30 UTC.
 
 - **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 10:10).
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). No pushed branch or local worktree holds work for it. Agents can un-park it.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). A pushed branch `pr/1947` exists; no local worktree holds uncommitted work for it. Agents can un-park it.
 
 ## Health
 
-All green. The live site is current (only docs merged since 7d617d2a), the PR checks and scheduled background jobs pass, no pull request is waiting, and all nine enabled scheduled tasks are on time. Engine speed is normal: 163 ms/tick, 1% above the 7-day median. The worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
+- **Engine speed:** tick cost 216 ms/tick steady, 34% above the 7-day median (161, 128 rows since e91c8245); top phase agent_decision, 639 agents. Name the merges between e91c8245 and 4f3406c0: `git log --oneline --merges e91c8245..4f3406c0`. The only merges in the last hour were plan docs, and a builder run was working on this computer during the measurement, so this may be load rather than code; next hour's row will tell.
+- Everything else is green. The live site is current (only docs merged since 7d617d2a), the PR checks and scheduled background jobs pass, no pull request is waiting, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
