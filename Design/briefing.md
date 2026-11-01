@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 03:55 local (02:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 05:00 local (04:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -47,7 +47,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([evening 
 
 ## Queue
 
-**Healthy: the builder is working.** It claimed [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1) at 02:51 UTC, as soon as its veto window closed; its branch is pushed. Three more are ready and wait on their veto windows: [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages) about 06:45, [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 12:45, and [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments), handed off by the design lane tonight, about 14:30 UTC.
+**Healthy: the builder is waiting on veto windows, as it should.** It finished [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) (story text, slice 1: the ten most-met board encounters rewritten), merged in [#2672](https://github.com/christianspliid-ui/threadbare/pull/2672) and live. Three more are ready and wait on their veto windows: [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (Inspector pages) about 06:45, [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 12:45, and [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments), handed off by the design lane tonight, about 14:30 UTC.
 
 - **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 10:10).
 
@@ -57,5 +57,4 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed:** tick cost 216 ms/tick steady, 34% above the 7-day median (161, 128 rows since e91c8245); top phase agent_decision, 639 agents. Name the merges between e91c8245 and 4f3406c0: `git log --oneline --merges e91c8245..4f3406c0`. The only merges in the last hour were plan docs, and a builder run was working on this computer during the measurement, so this may be load rather than code; next hour's row will tell.
-- Everything else is green. The live site is current (only docs merged since 7d617d2a), the PR checks and scheduled background jobs pass, no pull request is waiting, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site serves the latest commit (039b50c7, the story-text slice), the PR checks and scheduled background jobs pass, no pull request is waiting, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. Engine speed is back to normal (168 ms/tick, 4% above the weekly median), so last hour's 34% jump was the builder loading the computer, not code. The 40-hour silence on 29–30 Oct is on your list above.
