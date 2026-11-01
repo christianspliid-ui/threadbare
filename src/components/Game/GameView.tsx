@@ -3655,7 +3655,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   useStageDebugBridge({
     gameScreen, hexMapRef, interruptResolution, stageVM: interruptResolution.stage ? stageVMByKind[interruptResolution.stage] ?? null : null, setGameState, runtime,
     // THR-2101 — the dialog levers' hands.
-    dialogs: { openCourt: handleOpenScry, setPendingChoice, enterBeat: () => setBeatEntered(true) },
+    dialogs: { openCourt: handleOpenScry, openLedger: () => setChapterLedgerOpen(true), setPendingChoice, enterBeat: () => setBeatEntered(true) },
   });
   // A set-down kind is forgotten once its own flag clears, so its next opening shows.
   const wishedHomedKey = interruptResolution.wished.join('|');

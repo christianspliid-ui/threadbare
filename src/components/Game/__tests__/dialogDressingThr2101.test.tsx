@@ -42,7 +42,7 @@ function world(): WorldGraph {
   graph.addNode({ id: 'maren', type: 'actor', name: 'Maren Ashfold', properties: { actorType: 'individual', portraitAssetPath: PORTRAIT } });
   graph.addNode({ id: 'fac-1', type: 'actor', name: 'The Grey Court', properties: { actorType: 'faction' } });
   graph.addNode({ id: 'loc-town', type: 'location', name: 'Varnholt', properties: { locationSubtype: 'town' } });
-  graph.addNode({ id: 'relic-1', type: 'attachment', name: 'The Ember Ring', properties: { subcategory: 'relics_talismans' } });
+  graph.addNode({ id: 'relic-1', type: 'artifact', name: 'The Ember Ring', properties: { subcategory: 'relics_talismans' } });
   return graph;
 }
 
@@ -114,7 +114,7 @@ describe('THR-2101 the receipt (decision 2, S5.3)', () => {
     essencePaid: 4, startTick: 1, resolvedTick: 5, outcome: 'success', outcomeBand: 'success', overview: '',
     changes: [
       { id: 'c1', kind: 'item', title: 'Gained a relic', detail: 'The Ember Ring is hers.', polarity: 'gain', category: 'boon',
-        concepts: [{ text: 'The Ember Ring', entityId: 'relic-1', visualKind: 'attachment' }] },
+        concepts: [{ text: 'The Ember Ring', entityId: 'relic-1', visualKind: 'artifact' }] },
       { id: 'c2', kind: 'standing', title: 'Trusted', detail: 'She trusts you more.', polarity: 'gain' },
     ],
     presentation: 'modal', acknowledged: false,

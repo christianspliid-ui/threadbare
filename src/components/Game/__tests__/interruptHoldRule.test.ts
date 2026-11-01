@@ -211,10 +211,13 @@ describe('R4 — what keeps a dialog from arriving over an open moment', () => {
   });
 
   it('an effect choice set is raised only from inside an open choice set (a nested consequence)', () => {
+    // THR-2101: the one exception is the DEV-only debug lever `openHomedSurface('choice-set')`,
+    // which stages a fixture choice for browser evidence (`import.meta.env.DEV`, never in play).
     const raising = sources
       .filter(s => /setPendingChoice\((?!null\))/.test(s.text))
-      .map(s => s.path);
-    expect(raising).toEqual(['components/Game/hosts/DialogHost.tsx']);
+      .map(s => s.path)
+      .sort();
+    expect(raising).toEqual(['components/Game/hosts/DialogHost.tsx', 'components/Game/stage/useStageDebugBridge.ts']);
     const host = sources.find(s => s.path === 'components/Game/hosts/DialogHost.tsx')!.text;
     expect(host.match(/setPendingChoice\((?!null\))[^)]*\)/g)).toEqual(['setPendingChoice(nestedPending)']);
   });

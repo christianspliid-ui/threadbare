@@ -119,6 +119,8 @@ export function useStageDebugBridge(args: {
    */
   dialogs?: {
     openCourt: () => void;
+    /** GameView's own Ledger opener — the chrome owns opening the Ledger (R4). */
+    openLedger: () => void;
     setPendingChoice: Dispatch<SetStateAction<PendingChoiceData | null>>;
     enterBeat: () => void;
   };
@@ -328,7 +330,7 @@ export function useStageDebugBridge(args: {
       });
     });
     const chapterLedger = dialogLever(
-      () => latest.current.gameScreen.setChapterLedgerOpen(true),
+      () => latest.current.dialogs?.openLedger(),
       '[data-testid="chapter-ledger-index"]',
       'open it from the Ledger rail',
     );
