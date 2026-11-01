@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 21:57 local (20:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 22:56 local (21:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -37,22 +37,15 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: an encounter's title becomes the strongest words at the top of the Stage, with the stakes line right under it. Veto line: "keep the encounter header as it is".
 - Same ticket: a dialog shows its title once, and the button you press comes last. Veto line: "keep the dialog titles".
 - Same ticket: a panel has at most two levels of heading and at most two frames. Text lines up on one left edge. Veto line: "keep the centred headers".
-- [Art-led pass, slice 7 — lists and notices](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)): a row about a mortal, a place, a faction, an army or a relic shows its small picture beside the name, in the Chronicle, Notables, Threads, Read the Threads, toasts and Find. A mortal you have not come to know shows the silhouette. Veto line: "no pictures in the lists". Window closes about 00:00 UTC tonight.
+- [Art-led pass, slice 7 — lists and notices](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)): a row about a mortal, a place, a faction, an army or a relic shows its small picture beside the name, in the Chronicle, Notables, Threads, Read the Threads, toasts and Find. A mortal you have not come to know shows the silhouette. Veto line: "no pictures in the lists". **The window closes about 00:00 UTC tonight**; the builder takes it after that.
 - Same ticket: a Chronicle entry shows one picture, for the first name it links that has one. Veto line: "a picture for every name in the Chronicle".
 - Same ticket: Threads drops its initials circles for faces or the designed tile. Veto line: "keep the initials in Threads".
 - Same ticket: a toast adds the picture of whoever it is about on the left. Veto line: "no pictures on toasts".
 - Same ticket: the hover card shows its subject's small picture beside the name. Veto line: "keep the hover card words only".
 - Same ticket: Rivals, the doom, the Mandate and omens keep their marks; past omens now carry their omen's mark. The rival and doom glyphs wait on [your shape pick](https://linear.app/threadbare/issue/THR-1908). Veto line: "leave the omen history plain".
 - Same ticket: headings get their carved shape only where one exists; the rest join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "no shapes on list headings".
-- [Art-led pass, slice 6 — the ceremonies and the front door](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2102-art-led-ceremonies.md)): the harvest opens on your god's face in a ring, above "Cycle N complete". Veto line: "no god face on the harvest". The window closed at 20:40 UTC and the builder has started on it; a veto now still reaches it before it merges.
-- Same ticket: the end of the age keeps its order; your First's face grows to a size that reads, and the ending's title gets the Mandate or doom shape. Veto line: "keep the end of the age as it is".
-- Same ticket: every echo the harvest names shows its picture. Veto line: "no pictures on the harvest echoes".
-- Same ticket: each echo has one name ("the line of Maren Ashfold"); sphere tags read "Chaos", not "chaos". Veto line: "keep the echo cards' names".
-- Same ticket: the threading rite's face uses the same face path as everywhere else. Veto line: "keep the rite's old portrait".
-- Same ticket: meeting The First and the start page stay as they are; the start menu stays words only. Veto line: "give the start menu icons".
-- Same ticket: three ceremony headings have no fitting carved shape and join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "pick a near icon instead".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md), [12:46](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01d.md), [15:24](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01e.md), [18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [20:18](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([12:46](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01d.md), [15:24](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01e.md), [18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md))*
 
 ## This week's screens
 
@@ -60,12 +53,12 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([09:40](h
 
 ## Queue
 
-**Starved (1 ready).** The builder is now building [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies): its veto window closed at 20:40 UTC and a pickup run started at 20:51 UTC, working on branch `claude/thr-2102-art-led-ceremonies`. The one ready ticket, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists), opens at midnight UTC. The design lane decided the type-size question ([THR-2118](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart)); the last open ticket on the legibility map, [Modules and composition](https://linear.app/threadbare/issue/THR-2120/modules-and-composition-the-small-set-of-blocks-every-panel-is-built), is next, and closing the map refills the shelf.
+**Starved (1 ready).** The ceremonies slice ([THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the)) merged via [PR #2693](https://github.com/christianspliid-ui/threadbare/pull/2693) and is live. The one ready ticket, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists), is on hold until its veto window closes at midnight UTC; the last three builder runs stood down for that reason, which is correct. The last open ticket on the legibility map, [Modules and composition](https://linear.app/threadbare/issue/THR-2120/modules-and-composition-the-small-set-of-blocks-every-panel-is-built), is next for the design lane, and closing the map refills the shelf.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days). It is parked because unattended runs are refused the gate and CI edits it needs. No local worktree carries its id this hour. Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or local worktree carries its id this hour. Agents can un-park it in an attended run.
 
 ## Health
 
-All green. The type-hierarchy decision merged via [PR #2692](https://github.com/christianspliid-ui/threadbare/pull/2692). No pull requests are open. The live site is up to date (only docs changed since the last game build). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 20:46 UTC. Engine speed is normal (145 ms per tick, 9% under the weekly median).
+All green. No pull requests are open. The live site serves the latest commit on main (8d8e7538, the ceremonies slice). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 21:40 UTC. Engine speed is normal (141 ms per tick, 12% under the weekly median).
