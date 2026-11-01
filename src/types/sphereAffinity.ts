@@ -67,9 +67,14 @@ export interface SpherePressureEvent {
   aimedAtId?: string;
   /**
    * How much the card's price multiplied the god's push (THR-2094), set only above 1.
-   * Read by the trace viewer to explain a larger push.
+   * Carried onto the `sphere_pressure` trace as `pushScales`, to explain a larger push.
    */
   pushScale?: number;
+  /**
+   * Keep this push on its target: the town re-aim leaves it alone (THR-2094). Set by
+   * Shift Dominion's break push, which must land on the place whose band it breaks.
+   */
+  keepOnTarget?: boolean;
 }
 
 /**

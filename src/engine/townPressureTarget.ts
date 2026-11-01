@@ -66,7 +66,8 @@ export function resolveTownPressureTargets(
   if (!enabled || !ascendantId) return { pressures, traces: [] };
 
   const qualifies = (p: SpherePressureEvent): boolean =>
-    p.source === 'divine_action' && p.causedBy === ascendantId && isTownTarget(graph, p.targetEntityId);
+    p.source === 'divine_action' && p.causedBy === ascendantId && !p.keepOnTarget &&
+    isTownTarget(graph, p.targetEntityId);
 
   if (!pressures.some(qualifies)) return { pressures, traces: [] };
 

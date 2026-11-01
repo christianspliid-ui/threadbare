@@ -78,6 +78,8 @@ export interface SpherePressureTrace {
   sources: PressureSource[];
   /** Their `sourceId`s, same order as `sources`. */
   sourceIds: string[];
+  /** Each writer's price multiplier (THR-2094), same order; present only when one is above 1. */
+  pushScales?: number[];
 }
 
 // ─── Step 1: Net pressures by sphere ────────────────────────────────
@@ -248,10 +250,14 @@ export function resolveSpherePressure(
   const primarySource: PressureSource = pressures[0]?.source ?? 'environmental';
   // THR-1768: every writer netted into a sphere — the sphere itself and its opposite,
   // since cancellation folds both into the surviving entry.
-  const writersFor = (sphere: SphereName): { sources: PressureSource[]; sourceIds: string[] } => {
+  const writersFor = (sphere: SphereName): { sources: PressureSource[]; sourceIds: string[]; pushScales?: number[] } => {
     const opp = SPHERE_OPPOSITES[sphere];
     const hits = pressures.filter(p => p.sphere === sphere || p.sphere === opp);
-    return { sources: hits.map(p => p.source), sourceIds: hits.map(p => p.sourceId) };
+    const writers = { sources: hits.map(p => p.source), sourceIds: hits.map(p => p.sourceId) };
+    // THR-2094: say why a god push is larger than a look.
+    return hits.some(p => (p.pushScale ?? 1) > 1)
+      ? { ...writers, pushScales: hits.map(p => p.pushScale ?? 1) }
+      : writers;
   };
 
   for (const sphere of SPHERE_NAMES) {

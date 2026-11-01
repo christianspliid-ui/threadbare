@@ -4452,6 +4452,8 @@ export function phaseUnifiedActionProgress(
           source: 'divine_action',
           sourceId: completing_action.actionId,
           causedBy: completing_action.actorId,
+          // THR-2094: the break reads the place's own band, so the town re-aim must skip it.
+          keepOnTarget: true,
         });
       }
     }

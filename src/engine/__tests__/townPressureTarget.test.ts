@@ -104,6 +104,16 @@ describe('resolveTownPressureTargets (THR-2094)', () => {
     expect(traces).toEqual([]);
   });
 
+  it('leaves a keepOnTarget push (Shift Dominion\'s break) on the town', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_a', 'town');
+    const push = godPush('town', 'force', { keepOnTarget: true });
+    const { pressures, traces } = resolveTownPressureTargets(graph, [push], ASC, 1);
+    expect(pressures).toEqual([push]);
+    expect(traces).toEqual([]);
+  });
+
   it('passes every push through when the switch is off', () => {
     const graph = new WorldGraph();
     addTown(graph, 'town');
@@ -152,6 +162,18 @@ describe('phaseSpherePressure re-aims the god\'s town push (THR-2094)', () => {
     expect(read('p_b')).toBeGreaterThan(0);
     expect(read('p_a')).toBe(2000);
     expect(getTraces().some(t => t.category === 'sphere_pressure.town_resolved')).toBe(true);
+  });
+
+  it('carries a scaled push\'s pushScale onto the sphere_pressure trace', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    const state = {
+      tick: 4, graph, tiles: [], ascendantId: ASC,
+      pendingSpherePressures: [godPush('town', 'force', { magnitude: 6, pushScale: 2 })],
+    } as unknown as GameState;
+    phaseSpherePressure(state);
+    const trace = getTraces().find(t => t.category === 'sphere_pressure') as { pushScales?: number[] } | undefined;
+    expect(trace?.pushScales).toEqual([2]);
   });
 });
 
