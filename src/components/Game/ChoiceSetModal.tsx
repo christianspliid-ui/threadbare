@@ -16,14 +16,21 @@ import type { PendingChoiceData } from '../../engine/effectExecutors';
 import { Button } from '../shared/Button';
 import { Modal } from '../shared/Modal';
 import { CHOICE_SET_DEFAULT_TIMEOUT_MS } from '../../data/effect-constants';
+import { Icon } from '../shared/Icon';
+import { EntityVisual } from '../shared/EntityVisual';
+import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
+import { dialogHeadingIcon } from '../../data/view-content';
 
 export interface ChoiceSetModalProps {
   pending: PendingChoiceData;
   onResolve: (choiceId: string, selectedOptionId: string) => void;
   onDismiss: () => void;
+  /** THR-2101 (S5.1) — the mortal choosing, resolved by the dialog host; absent → no face. */
+  chooserFace?: EntityVisualDescriptor | null;
 }
 
-export function ChoiceSetModal({ pending, onResolve, onDismiss }: ChoiceSetModalProps) {
+export function ChoiceSetModal({ pending, onResolve, onDismiss, chooserFace }: ChoiceSetModalProps) {
+  const headingIcon = dialogHeadingIcon('choice');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const timeoutMs = pending.timeoutMs ?? CHOICE_SET_DEFAULT_TIMEOUT_MS;
   const [msLeft, setMsLeft] = useState(timeoutMs);
@@ -76,10 +83,16 @@ export function ChoiceSetModal({ pending, onResolve, onDismiss }: ChoiceSetModal
       )}
 
       {/* Content area */}
-      <div className="px-6 pt-5 pb-5 flex flex-col gap-4 overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
+      <div data-testid="choice-set-modal" className="px-6 pt-5 pb-5 flex flex-col gap-4 overflow-y-auto" style={{ flex: 1, minHeight: 0 }}>
 
-        {/* Header */}
-        <div>
+        {/* Header — the chooser's face beside the heading (THR-2101) */}
+        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+          {chooserFace && (
+            <span data-dialog-face={chooserFace.tier} style={{ display: 'inline-flex' }}>
+              <EntityVisual size="chip" descriptor={chooserFace} />
+            </span>
+          )}
+        <div style={{ minWidth: 0 }}>
           <h3
             className="font-bold mb-1"
             style={{
@@ -87,8 +100,16 @@ export function ChoiceSetModal({ pending, onResolve, onDismiss }: ChoiceSetModal
               color: 'var(--text-primary)',
               fontSize: 'var(--text-xl)',
               lineHeight: 1.2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
             }}
           >
+            {headingIcon && (
+              <span data-dialog-heading-icon={headingIcon} style={{ display: 'inline-flex' }}>
+                <Icon name={headingIcon} size="chip" decorative />
+              </span>
+            )}
             A choice presents itself.
           </h3>
           <p
@@ -101,6 +122,7 @@ export function ChoiceSetModal({ pending, onResolve, onDismiss }: ChoiceSetModal
               ? `Choose before the moment passes — ${Math.ceil(msLeft / 1000)}s remaining`
               : 'Select an option to continue.'}
           </p>
+        </div>
         </div>
 
         {/* Option cards */}

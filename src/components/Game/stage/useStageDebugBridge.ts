@@ -29,6 +29,7 @@ import { getThreadsFrom } from '../../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../../types/influence';
 import { buildStateSnapshot, buildVignetteData, selectTemplate } from '../../../engine/journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../../../data/journey-content';
+import type { PendingChoiceData } from '../../../engine/effectExecutors';
 
 /** How long a debug-staged emergence dilemma waits before `let` auto-fires. */
 const DEBUG_EMERGENCE_WAIT_TICKS = 30;
@@ -70,6 +71,38 @@ function scrollingInside(panel: Element | null): { below: ScrollBox[]; atCap: Sc
 /** A column as tall as the panel, give or take its border, counts as at the cap. */
 const STAGE_SCROLL_CAP_TOLERANCE_PX = 2;
 
+/** THR-2101 — how long a dialog lever waits for its dialog to draw, and between its steps. */
+const DIALOG_LEVER_TIMEOUT_MS = 2000;
+const DIALOG_LEVER_SETTLE_MS = 100;
+
+/** The staged choice's two options (no consequences: choosing either only closes it). */
+const DEBUG_CHOICE_OPTIONS: PendingChoiceData['options'] = [
+  { id: 'debug_a', label: 'Stay the course', description: 'Keep to the road already chosen.', consequences: [] },
+  { id: 'debug_b', label: 'Turn aside', description: 'Leave the road for the unknown.', consequences: [] },
+];
+
+/** The dialog panel around `anchor` once it draws, or null after the timeout. */
+async function waitForPanel(anchor: string): Promise<Element | null> {
+  const deadline = Date.now() + DIALOG_LEVER_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const el = document.querySelector(anchor);
+    const panel = el?.closest('[data-dialog-size]') ?? (el?.matches('[data-dialog-size]') ? el : null);
+    if (panel) return panel;
+    await new Promise(r => setTimeout(r, DIALOG_LEVER_SETTLE_MS));
+  }
+  return null;
+}
+
+/** THR-2101 — what an open dialog drew, off its DOM. */
+function dialogDressing(panel: Element): NonNullable<DebugOpenHomedSurfaceResult['dressing']> {
+  const tier = panel.querySelector('[data-dialog-face]')?.getAttribute('data-dialog-face');
+  return {
+    face: tier === 'art' ? 'art' : tier === 'fallback' ? 'fallback' : 'none',
+    headingIcons: [...panel.querySelectorAll('[data-dialog-heading-icon]')].map(el => el.getAttribute('data-dialog-heading-icon') ?? '').filter(Boolean),
+    quietSlots: panel.querySelectorAll('[data-quiet-slot]').length,
+  };
+}
+
 const later = (kind: HomedSurfaceKind, how: string): Lever => async () => ({ opened: false, reason: `${kind} has no one-call lever yet — ${how}` });
 
 export function useStageDebugBridge(args: {
@@ -80,6 +113,15 @@ export function useStageDebugBridge(args: {
   stageVM: StageVM | null;
   setGameState: Dispatch<SetStateAction<GameState>>;
   runtime: SimulationRuntime | null;
+  /**
+   * THR-2101 — the dialog levers' hands: open the court, stage a choice, enter a held
+   * gift beat. Absent → those kinds report the hint, as before.
+   */
+  dialogs?: {
+    openCourt: () => void;
+    setPendingChoice: Dispatch<SetStateAction<PendingChoiceData | null>>;
+    enterBeat: () => void;
+  };
 }): void {
   const latest = useRef(args);
   latest.current = args;
@@ -267,6 +309,51 @@ export function useStageDebugBridge(args: {
       return { opened: false, reason: 'armed — the next undertaking checkpoint opens on the Stage; tick the world (__DEBUG.tick(n))' };
     };
 
+    // ── THR-2101 — the dialog levers. Each opens its dialog, waits for it to draw, and reads
+    // what it drew (`dressing`): the face tier, the heading shapes, the quiet slots.
+    const dialogLever = (open: () => void | Promise<unknown>, anchor: string, hint: string): Lever => async () => {
+      const hands = latest.current.dialogs;
+      if (!hands) return { opened: false, reason: hint };
+      await open();
+      const panel = await waitForPanel(anchor);
+      if (!panel) return { opened: false, reason: `the dialog did not draw (${anchor}) — ${hint}` };
+      return { opened: true, dressing: dialogDressing(panel) };
+    };
+    const firstMortalId = () => new Promise<string | null>(resolve => {
+      latest.current.setGameState(prev => {
+        resolve(getThreadsFrom(prev.graph, prev.ascendantId)
+          .find(e => (e.properties as unknown as ThreadEdgeProperties).courtPosition === 'the_first')?.target
+          ?? prev.graph.getNodesByType('actor').find(n => n.properties.actorType === 'individual')?.id ?? null);
+        return prev;
+      });
+    });
+    const chapterLedger = dialogLever(
+      () => latest.current.gameScreen.setChapterLedgerOpen(true),
+      '[data-testid="chapter-ledger-index"]',
+      'open it from the Ledger rail',
+    );
+    const divineCourt = dialogLever(
+      () => latest.current.dialogs?.openCourt(),
+      '[data-testid="scry-overlay"]',
+      'open it from the god rail',
+    );
+    const choiceSet = dialogLever(async () => {
+      const actorId = await firstMortalId();
+      if (!actorId) return;
+      latest.current.dialogs?.setPendingChoice({
+        choiceId: `debug_choice_${Date.now()}`,
+        actorId,
+        sourceId: 'debug',
+        options: DEBUG_CHOICE_OPTIONS,
+        timeoutMs: 0,
+      });
+    }, '[data-testid="choice-set-modal"]', 'cast a choice-set card from the god rail');
+    const ascendantBeat = dialogLever(async () => {
+      window.__DEBUG?.forceOffering?.();
+      await new Promise(r => setTimeout(r, DIALOG_LEVER_SETTLE_MS));
+      latest.current.dialogs?.enterBeat();
+    }, '[data-dialog-size].frame-ceremonial', 'use __DEBUG.forceOffering()');
+
     const levers: Record<HomedSurfaceKind, Lever> = {
       'warm-start': later('warm-start', 'it opens on a warm start (?warm)'),
       'meet-the-first': later('meet-the-first', 'use ?view=game&firstunmet'),
@@ -275,12 +362,12 @@ export function useStageDebugBridge(args: {
       premonition,
       'journey-vignette': journeyVignette,
       'story-beat': storyBeat,
-      'ascendant-beat': later('ascendant-beat', 'use __DEBUG.forceOffering()'),
-      'choice-set': later('choice-set', 'cast a choice-set card from the god rail'),
+      'ascendant-beat': ascendantBeat,
+      'choice-set': choiceSet,
       'emergence-dilemma': emergenceDilemma,
       'divine-receipt': later('divine-receipt', 'it opens when a divine act resolves'),
-      'chapter-ledger': later('chapter-ledger', 'open it from the Ledger rail'),
-      'divine-court': later('divine-court', 'open it from the god rail'),
+      'chapter-ledger': chapterLedger,
+      'divine-court': divineCourt,
       'undertaking-moment': undertakingMoment,
       'event-popup': later('event-popup', 'it opens on a doom stage or the Mandate'),
       'age-twilight': later('age-twilight', 'use __DEBUG.beginTwilight()'),

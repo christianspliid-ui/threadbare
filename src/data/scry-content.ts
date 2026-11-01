@@ -222,6 +222,26 @@ export interface BonusRule {
   weight: number;
 }
 
+/**
+ * THR-2101 (S5.4, R7) — the word a title's bonus chip reads, keyed by `BonusRule.target`.
+ * A bonus's own `description` is built as "+N to primary_domain" (a numeral and a raw key),
+ * so the chip never reads it; a target with no word drops its chip (Law 14). No chip prints
+ * a `value`.
+ */
+export const TITLE_BONUS_WORDS: Readonly<Record<BonusRule['target'], string>> = {
+  primary_domain: 'Sharper in their first reach',
+  secondary_domain: 'Sharper in their second reach',
+  sphere: 'Closer to your sphere',
+  tier: 'Steadier in their seat',
+  detection: 'Harder to notice',
+};
+
+/** The bonus and weakness chips' tooltips; `{name}` is the mortal the title is for. */
+export const TITLE_CHIP_TOOLTIPS = {
+  bonus: 'This title makes {name} stronger here while they hold it.',
+  weakness: 'This title costs {name} here while they hold it.',
+} as const;
+
 export const BONUS_RULES: Record<PositionRank, BonusRule[]> = {
   apex: [
     { type: 'domain_bonus', target: 'primary_domain', minValue: 2, maxValue: 4, weight: 3 },

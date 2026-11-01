@@ -17,6 +17,9 @@ import { resolveTooltip } from '../../engine/tooltipResolver';
 import { formatWarmSeason, type WarmStartProgress } from './hooks/useWarmStart';
 import { Overlay } from '../shared/Overlay';
 import { dialogSizeStyle } from '../shared/dialogSize';
+import { Icon } from '../shared/Icon';
+import { ICON_FOR_SEASON, SEASON_IDS } from '../../data/icons/conceptIcons';
+import { deriveSeasonAndYear, TICKS_PER_SEASON } from '../../types/temporal';
 
 const noop = () => {};
 
@@ -35,6 +38,10 @@ export function WarmStartOverlay({ progress, ticksPerSeason, firstName }: WarmSt
   const progressLine = progressTemplate
     .replace('{now}', formatWarmSeason(progress.currentTick, ticksPerSeason))
     .replace('{target}', formatWarmSeason(progress.targetTick, ticksPerSeason));
+  // THR-2101 (decision 7) — the current season's shape beside the season words, from the
+  // same derivation `formatWarmSeason` makes. Decorative: the words carry the meaning.
+  const { season } = deriveSeasonAndYear(progress.currentTick, ticksPerSeason ?? TICKS_PER_SEASON);
+  const seasonIcon = ICON_FOR_SEASON[SEASON_IDS[season % SEASON_IDS.length]];
   const livesOn = resolveTooltip('ui.attention.lives_on')?.desc;
   const firstLine = firstName && livesOn ? livesOn.replace(/{name}/g, firstName) : null;
   // THR-1787: the Lives-on line is true of The First's moments, but the player is then
@@ -65,6 +72,11 @@ export function WarmStartOverlay({ progress, ticksPerSeason, firstName }: WarmSt
       </h2>
       <p className="text-sm mb-3 leading-relaxed" style={{ color: 'var(--text-primary)' }}>{wait}</p>
       <p className="text-sm italic mb-3" style={{ color: 'var(--text-muted)' }} data-testid="warm-start-progress">
+        {seasonIcon && (
+          <span data-dialog-heading-icon={seasonIcon} style={{ display: 'inline-flex', verticalAlign: 'middle', marginRight: 'var(--space-1)' }}>
+            <Icon name={seasonIcon} size="chip" decorative />
+          </span>
+        )}
         {progressLine}
       </p>
       {firstLine && (

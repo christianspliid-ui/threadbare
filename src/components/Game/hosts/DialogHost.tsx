@@ -46,6 +46,7 @@ import { previewReachSignatureGrant } from '../../../engine/ascendantBeat';
 import { previewHomeSeat } from '../../../engine/ascendantBeatSeeding';
 import { describeOffering, isRungOpeningOffer } from '../../../engine/godProgression';
 import { isSpineBeatId } from '../../../data/ascendant-beat-content';
+import { courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
 import { buildCodexRunContext, type CodexRunStateFilter } from '../../Codex/codexRunState';
 import { AnimateMount } from '../../shared/AnimateMount';
 import { Modal } from '../../shared/Modal';
@@ -199,6 +200,8 @@ export function DialogHost({
             secondarySphere: archetype.sphereAlignment.secondary,
             tick: gameState.tick,
             seed: gameState.seed + gameState.tick,
+            // THR-2101 (decision 3): every seat's face, built here where the graph is held.
+            faces: courtFaces(gameState, retinueAgents),
             onAssign: handleScryAssign,
             onDemote: handleScryDemote,
             onClose: handleCloseScry,
@@ -249,6 +252,9 @@ export function DialogHost({
           receipt={activeReceipt}
           onAcknowledge={handleAcknowledgeReceipt}
           onReaction={handleReceiptReaction}
+          // THR-2101: who the act touched, and the relics its changes name.
+          targetVisual={receiptTargetVisual(gameState, activeReceipt)}
+          changeArt={receiptChangeArt(gameState, activeReceipt.changes)}
         />
       );
 
@@ -273,6 +279,8 @@ export function DialogHost({
           signatureGrantId={previewReachSignatureGrant(gameState, pendingBeat.beatId)}
           // THR-1851: an introduction beat's bound people, so "Attend" can open them.
           subjectRef={beatSubjectRef}
+          // THR-2101 (S5.1): the face of the mortal the beat is about, when it names one.
+          subjectFace={beatSubjectRef?.kind === 'agent' ? dialogSubjectFace(gameState, beatSubjectRef.id) : null}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />
@@ -515,6 +523,8 @@ export function MapAnchoredDialogs({
         {pendingChoice && (
           <ChoiceSetModal
             pending={pendingChoice}
+            // THR-2101 (S5.1): the mortal choosing.
+            chooserFace={dialogSubjectFace(gameState, pendingChoice.actorId)}
             onResolve={(choiceId, selectedOptionId) => {
               if (!pendingChoice) return; // guard: race between timeout and click
 

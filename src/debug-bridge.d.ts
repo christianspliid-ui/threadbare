@@ -292,6 +292,12 @@ export interface DebugStageState {
 export interface DebugOpenHomedSurfaceResult {
   opened: boolean;
   reason?: string;
+  /**
+   * THR-2101 — what an opened dialog drew (chapter-ledger, divine-court, choice-set,
+   * ascendant-beat), read off its DOM: the first face's tier (`data-dialog-face`), every
+   * heading shape (`data-dialog-heading-icon`) and the quiet slots.
+   */
+  dressing?: { face: 'art' | 'fallback' | 'none'; headingIcons: string[]; quietSlots: number };
 }
 
 /** `getInterruptState()` (THR-1608) — the Stellaris clock's registry, as data. */

@@ -159,6 +159,13 @@ export const INSPECTOR_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { 
  */
 export const STAGE_SUBJECT_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { base: 8, fhd: 8, qhd: 10, uwqhd: 10 };
 
+/**
+ * THR-2101 — a dialog's subject face (ChapterView), `--dialog-subject-portrait-w`, 3:4, in rem
+ * per tier, restated in every tier block of `index.css`. Kill criterion: 5rem at the 1920 tier
+ * if ChapterView's prose falls below the fold.
+ */
+export const DIALOG_SUBJECT_PORTRAIT_W_REM: Readonly<Record<LayoutTier, number>> = { base: 7, fhd: 7, qhd: 9, uwqhd: 9 };
+
 /** Text-container widths in rem, declared once in `:root`, so they follow the root step-up. */
 export const TEXT_TOKENS_REM = {
   tooltipMaxW: 17.5,

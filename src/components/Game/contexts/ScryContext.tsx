@@ -10,6 +10,7 @@ import type { ScryState, Title } from '../../../types/scry';
 import type { RetinueAgent } from '../../../engine/retinue';
 import type { EssencePool } from '../../../types/influence';
 import type { SphereName } from '../../../types';
+import type { EntityVisualDescriptor } from '../../../engine/views/entityVisualResolver';
 
 interface ScryContextValue {
   // State
@@ -20,6 +21,11 @@ interface ScryContextValue {
   secondarySphere: SphereName;
   tick: number;
   seed: number;
+  /**
+   * THR-2101 (decision 3) — every seat's face, keyed by mortal id, built by the dialog host
+   * through the one face path (`courtFaces`). A missing entry draws no face.
+   */
+  faces?: Readonly<Record<string, EntityVisualDescriptor>>;
 
   // Handlers
   onAssign: (positionId: string, agentId: string, title: Title, cost: number) => void;
