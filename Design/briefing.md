@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 23:58 local (22:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-02 00:58 local (23:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Modules and composition — the small set of blocks every panel is built from](https://linear.app/threadbare/issue/THR-2120/modules-and-composition-the-small-set-of-blocks-every-panel-is-built) ([decision](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-11-01-ui-modules-and-composition.md)): every panel is built from the same seven pieces: who it is, the one "what matters now" line, what your god can do, headed sections, links out, and a quiet line when a slot is empty. Each piece is drawn one way everywhere, so a player learns it once. Veto line: "a different set of blocks".
+- Same ticket: sections are grouped by space and their heading, never by a box. Only things you press as a whole (a card, a tile, a dialog option) and the one highlight line get a frame, and boxes never nest more than two deep. Veto line: "keep the section boxes".
+- Same ticket: one even rhythm: a wide gap between sections, a small gap under a heading, and one fixed gap between a label and its answer. Veto line: "tighter spacing".
+- Same ticket: a section heading looks the same in the Inspector, a dialog and the god rail. The rails are never more cramped than the docked Inspector. Veto line: "let the rails be denser".
+- [UI legibility and usability map](https://linear.app/threadbare/issue/THR-2114) closed, and its work is split into four plans: the shared pieces first, then Inspector pages, then the encounter screen and dialogs, then the rails, lists and hover cards. Veto line: "split it differently".
 - [Type hierarchy — can a player tell title, heading, value and label apart at a glance?](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart) ([decision](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-11-01-ui-type-hierarchy.md), [side-by-side mock](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-11-01-ui-type-hierarchy/cmp-inspector-1920.jpg)): the game keeps its six text sizes, but each panel uses only a few, so title, text and label are clearly different: one title size, 18 px for everything you read and press, and the small bold label style at 16. Veto line: "a different type ladder".
 - Same ticket: Inspector body text grows from 14.4 to 18 px and chips from 12 to 16, back above the floor. Veto line: "keep the Inspector text small".
 - Same ticket: every section heading looks the same: the small bold label, its carved icon, clear space above. The gold and brighter sub-heading styles leave Inspector sections. Carved Cinzel section headings were mocked and rejected, because they weigh as much as the name. Veto line: "headings in Cinzel".
@@ -37,15 +42,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: an encounter's title becomes the strongest words at the top of the Stage, with the stakes line right under it. Veto line: "keep the encounter header as it is".
 - Same ticket: a dialog shows its title once, and the button you press comes last. Veto line: "keep the dialog titles".
 - Same ticket: a panel has at most two levels of heading and at most two frames. Text lines up on one left edge. Veto line: "keep the centred headers".
-- [Art-led pass, slice 7 — lists and notices](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)): a row about a mortal, a place, a faction, an army or a relic shows its small picture beside the name, in the Chronicle, Notables, Threads, Read the Threads, toasts and Find. A mortal you have not come to know shows the silhouette. Veto line: "no pictures in the lists". **The window closes about 00:00 UTC tonight**; the builder takes it after that.
-- Same ticket: a Chronicle entry shows one picture, for the first name it links that has one. Veto line: "a picture for every name in the Chronicle".
-- Same ticket: Threads drops its initials circles for faces or the designed tile. Veto line: "keep the initials in Threads".
-- Same ticket: a toast adds the picture of whoever it is about on the left. Veto line: "no pictures on toasts".
-- Same ticket: the hover card shows its subject's small picture beside the name. Veto line: "keep the hover card words only".
-- Same ticket: Rivals, the doom, the Mandate and omens keep their marks; past omens now carry their omen's mark. The rival and doom glyphs wait on [your shape pick](https://linear.app/threadbare/issue/THR-1908). Veto line: "leave the omen history plain".
-- Same ticket: headings get their carved shape only where one exists; the rest join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "no shapes on list headings".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([12:46](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01d.md), [15:24](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01e.md), [18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([15:24](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01e.md), [18:25](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01f.md), [21:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01g.md), [00:27](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01h.md))*
 
 ## This week's screens
 
@@ -53,12 +51,12 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([12:46](h
 
 ## Queue
 
-**Starved (1 ready).** The ceremonies slice ([THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the)) merged via [PR #2693](https://github.com/christianspliid-ui/threadbare/pull/2693) and is live. The one ready ticket, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists), is on hold until its veto window closes at midnight UTC, about an hour from now; the last five builder runs stood down for that reason, which is correct, and the first run after midnight should take it. The last open ticket on the legibility map, [Modules and composition](https://linear.app/threadbare/issue/THR-2120/modules-and-composition-the-small-set-of-blocks-every-panel-is-built), is next for the design lane, and closing the map refills the shelf.
+**Starved (1 ready).** The one ready ticket, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (pictures in the lists and notices, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)), comes off hold at 00:00 UTC, minutes from now; the builder's last eight runs stood down for that reason, which is correct, and its 00:10 UTC run should take it. The UI legibility map is closed and split into four plans (above), which refills the shelf once they reach Ready for Dev.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or local worktree carries its id this hour. Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (13 days). It is parked because unattended runs are refused the gate and CI edits it needs. No local worktree carries its id this hour. Agents can un-park it in an attended run.
 
 ## Health
 
-All green. No pull requests are open. The live site serves the latest commit on main (8d8e7538, the ceremonies slice). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 22:53 UTC. Engine speed is normal (139 ms per tick, 13% under the weekly median).
+All green. No pull requests are open. The live site is current: the only commit since the ceremonies slice (8d8e7538) is the modules decision doc, which needs no rebuild. Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 23:40 UTC. Engine speed is normal (176 ms per tick, 11% over the weekly median, inside the 25% line).
