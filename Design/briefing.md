@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 09:58 local (08:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 10:58 local (09:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -47,10 +47,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: the rail's headings (Essence, Your cards, Mandate, Signatures, Hooks) get their carved shapes. Veto line: "no icons on the rail headings".
 - Same ticket: the Seat line shows its town's shape; the doom bar opens with the doom shape. Veto line: "no doom icon".
 - Same ticket: a "Needs you" row about a mortal shows that mortal's face after the row's icon. Veto line: "no faces in Needs you".
-- [Cheap place cards plateau](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26): a god's sphere push on a town lands in the town's quietest Place. A Reshape god then reaches 66 of 87 instead of 34. Veto line: "the push should stay on the town". Window closes about 09:10 UTC.
-- Same ticket: a card that changes the world pushes twice what a look pushes (Vision stays at 3; cards costing 2 essence or more push 6). Veto line: "keep every push at 3".
-
-Say "veto <title>" to reverse any of these. *— from the design lane ([31 Oct late](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31d.md), [midnight](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31e.md), [early](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md), [this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md), [09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([midnight](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31e.md), [early](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md), [this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md), [09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md))*
 
 ## This week's screens
 
@@ -58,9 +55,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([31 Oct l
 
 ## Queue
 
-**Healthy (4 ready), and resting until 11:45 UTC.** The [rulebook review](https://linear.app/threadbare/issue/THR-2112/rulebook-review-2026-11-14-findings) (14 fixes to the rules text) merged via [#2677](https://github.com/christianspliid-ui/threadbare/pull/2677); it changed only documents, so the live game did not need rebuilding. No pull requests are open. All four ready tickets wait on their veto windows, so builder runs stand down on purpose until the first one opens: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, and the new [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, after slices 4 and 5 merge.
-
-- **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 09:10 UTC).
+**Healthy (4 ready), and building.** The builder claimed [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) at 09:30 UTC, right after its veto window closed, and is working on it now. No pull request is open yet. The four ready tickets wait on their veto windows: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, and the new [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, after slices 4 and 5 merge.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
@@ -68,4 +63,6 @@ Two items for agents, not you:
 
 ## Health
 
-All green. The live site serves the latest game build (92bf1fa0; main has moved only in documents since), the PR checks and scheduled background jobs pass, all nine enabled scheduled tasks are on time, the worktree reaper ran within the hour, and engine speed is in range (180 ms/tick, 8% above the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.
+- **Engine speed (for agents):** tick cost 222 ms/tick steady, 33% above the 7-day median (166, 128 rows since 035a6541); top phase agent_decision, 639 agents. Name the merges between 035a6541 and d3516032: `git log --oneline --merges 035a6541..d3516032`. Last hour measured the same game code at 180 ms/tick, and the builder was running beside this measurement, so this may be load on the machine rather than slower code; the next hours will tell.
+
+Everything else is green. The live site serves the latest game build (92bf1fa0; main has moved only in documents since), the PR checks and scheduled background jobs pass, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
