@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 07:57 local (06:57 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 08:58 local (07:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -51,7 +51,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([31 Oct l
 
 ## Queue
 
-**Healthy: the builder is at work.** [THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions) (art-led pass, slice 2: every other Inspector page) merged via [#2674](https://github.com/christianspliid-ui/threadbare/pull/2674) and is live. The builder has moved on to [THR-2111](https://linear.app/threadbare/issue/THR-2111/faction-page-reputations-they-hold-reads-a-property-nothing-writes) (a faction page's "Reputations they hold" is always empty), with its fix open as [#2675](https://github.com/christianspliid-ui/threadbare/pull/2675), not yet queued to merge. Three more are ready and wait on their veto windows: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, and [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC.
+**Healthy, and resting until 11:45 UTC.** [THR-2111](https://linear.app/threadbare/issue/THR-2111/faction-page-reputations-they-hold-reads-a-property-nothing-writes) (a faction page's "Reputations they hold" was always empty) merged via [#2675](https://github.com/christianspliid-ui/threadbare/pull/2675) and is live. No pull requests are open. The three ready tickets wait on their veto windows, so the last three builder runs stood down on purpose: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, and [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC.
 
 - **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 09:10 UTC).
 
@@ -61,5 +61,4 @@ Two items for agents, not you:
 
 ## Health
 
-- **Engine speed:** tick cost 209 ms/tick steady, 25% above the 7-day median (167, 129 rows since 81faa81c); top phase agent_decision, 639 agents. Name the merges between 81faa81c and d6e9228a: git log --oneline --merges 81faa81c..d6e9228a. *(One reading, taken while a builder run was working on the same machine; the run an hour earlier read 172. The executor's to watch, not yours.)*
-- Everything else is green. The live site serves the latest commit on main (d6e9228a), the PR checks and scheduled background jobs pass, all nine enabled scheduled tasks are on time, and the worktree reaper ran within the hour. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site serves the latest commit on main (92bf1fa0), the PR checks and scheduled background jobs pass, all nine enabled scheduled tasks are on time, the worktree reaper ran within the hour, and engine speed is back in range (188 ms/tick, 13% above the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.
