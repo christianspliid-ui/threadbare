@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-01 17:58 local (16:58 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-01 18:56 local (17:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -9,6 +9,14 @@
 [The workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md) read the computer's power log. Every time the computer started or woke recently, the lanes came back hours later. That points to the Claude app not reopening by itself. **Turning on "open at login" for the Claude app** closes these gaps without anyone noticing them. Only you can change that setting. Say "done" and the next silence check will confirm it.
 
 Recent gaps: 12–13 Oct overnight (03:57–13:57), Thursday 15 Oct (14:50–20:44), Friday 16 into Saturday 17 Oct (18:31–11:34, 21 jobs ready), Sunday 18 into Monday 19 Oct (20:26 Sunday – about 19:42 Monday, 25 jobs ready), **Wednesday 21 into Friday 23 Oct (about 23:07 Wednesday – 23:11 Friday, 48 hours, 20 jobs ready)**, and **Thursday 29 into Friday 30 Oct (about 02:57 Thursday – 19:12 Friday, 40 hours)**.
+
+### Type hierarchy: keep the question, or hand it to the design lane? (new 1 Nov)
+
+The UI legibility map is now waiting on the one question you kept for yourself: [Type hierarchy — can a player tell title, heading, value and label apart at a glance?](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart). The research is in, and the design lane has settled two things. Every panel now reads in one order (who, now, act, detail, out), and labels sit above their values. Both decisions leave **text sizes and heading style** to this question.
+
+The census found that the side-panel pages use four to seven text sizes, and that body text sits below the readable floor. The question is whether each panel should use fewer sizes, with weight and colour doing more of the work.
+
+**Keep it:** open a chat and say "work the map". **Hand it to the design lane:** it will mock up the options, decide, and invite your veto. Map: [UI legibility and usability](https://linear.app/threadbare/issue/THR-2114/map-ui-legibility-and-usability-do-the-core-panels-read-the-way-people). *— from [the orchestrator](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/orchestrator-2026-11-01g.md)*
 
 ### Your writing-checks conversation can start (new 31 Oct)
 
