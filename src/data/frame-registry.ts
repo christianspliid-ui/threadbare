@@ -157,6 +157,14 @@ export function godRailSectionIcon(id: GodRailSectionId): IconName | null {
   return GOD_RAIL_SECTIONS.find((s) => s.id === id)?.icon ?? null;
 }
 
+/**
+ * THR-2099 — the tallest an opened folded row's body may grow, in vh, before it scrolls
+ * inside itself. Keeps the rail inside one viewport (Law 33) when a row holds many
+ * chips: the seeded world's eleven hooks, with faces on its vows, ran 46 px past the
+ * fold at 1920×1080 (8 px without faces).
+ */
+export const GOD_RAIL_OPEN_ROW_MAX_VH = 30;
+
 /** The folded rows the player opened (Law 51). Every row starts closed. */
 export const GOD_RAIL_OPEN_ROWS_KEY = 'threadbare.ui.godRail.openRows';
 /** The hand group the player last opened, when the hand groups at the rail's limit (Law 51). */

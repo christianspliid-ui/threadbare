@@ -22,7 +22,7 @@ import { countHooks, countVowFaces } from './HooksBlock';
 import styles from './styles.module.css';
 import { NEWLY_REVEALED_STYLE, type OpeningRevealShow } from '../GameView/openingReveal';
 import type { OpeningRevealSurfaceId } from '../../../data/opening-reveal-table';
-import { GOD_RAIL_OPEN_ROWS_KEY, GOD_RAIL_SECTIONS, type GodRailSectionDef, type GodRailSectionId } from '../../../data/frame-registry';
+import { GOD_RAIL_OPEN_ROW_MAX_VH, GOD_RAIL_OPEN_ROWS_KEY, GOD_RAIL_SECTIONS, type GodRailSectionDef, type GodRailSectionId } from '../../../data/frame-registry';
 import { GOD_RAIL_ARIA } from '../../../data/frame-content';
 import { godRailSelector, godRailStamp, type GodRailArgs, type GodRailVM } from '../../../engine/views/godRail';
 import { readView } from '../../../engine/views/readView';
@@ -118,7 +118,11 @@ function FoldedRow({
   );
   return (
     <div data-god-rail-section={def.id} data-place="folded" data-open={open ? 'true' : 'false'} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      {open && children && <div data-testid={`god-rail-row-body-${def.id}`}>{children}</div>}
+      {open && children && (
+        <div data-testid={`god-rail-row-body-${def.id}`} style={{ maxHeight: `${GOD_RAIL_OPEN_ROW_MAX_VH}vh`, overflowY: 'auto', minHeight: 0 }}>
+          {children}
+        </div>
+      )}
       <button
         type="button"
         className={`focus-ring ${styles.foldedRow}`}
