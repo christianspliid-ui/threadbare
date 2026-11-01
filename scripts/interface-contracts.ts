@@ -606,6 +606,10 @@ export const CONTRACTS: readonly Contract[] = [
       'src/engine/secretGeneration.ts',
       'src/engine/views/subjects/placeRows.ts',
       'src/engine/views/subjects/personRows.ts',
+      // THR-2111: the faction page's "Reputations they hold" reads the membership leg
+      // (`member_of.reputation`, banded by `getReputationWord`). It used to read a
+      // `faction.properties.reputations` that nothing writes.
+      'src/engine/detailPageResolvers.ts',
     ],
     verifiedLive: {
       date: '2026-08-23',
