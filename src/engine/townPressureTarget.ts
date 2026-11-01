@@ -6,6 +6,8 @@
  * `GOD_PUSH_TOWN_SUBTYPES` location lands in that town's Place (a sublocation, a
  * `location` node whose `parentLocationId` is the town) holding least of the sphere,
  * ties by id. A town with no Places keeps the push. Every other push passes through.
+ * While `GOD_PUSH_TOWN_KEEPS_ECHO` holds, a copy at the unscaled size stays on the town
+ * (`townEcho`, never Mandate credit), so the town's Dominion reads move as before.
  *
  * Pure: reads the graph, writes nothing. Deterministic (score then id, no PRNG).
  * Runs in `phaseSpherePressure` right after `resolveHexPressureTargets`, so a hex push
@@ -16,7 +18,9 @@
 
 import type { WorldGraph } from './graph';
 import type { SphereAffinity, SpherePressureEvent } from '../types/sphereAffinity';
-import { GOD_PUSH_LANDS_IN_SUBLOCATION, GOD_PUSH_TOWN_SUBTYPES } from '../types/sphereAffinity';
+import {
+  GOD_PUSH_LANDS_IN_SUBLOCATION, GOD_PUSH_TOWN_KEEPS_ECHO, GOD_PUSH_TOWN_SUBTYPES,
+} from '../types/sphereAffinity';
 import type { TownPressureTrace } from '../types/traces/sphere-traces';
 import { getPlaceNodes } from './sublocationShape';
 
@@ -26,6 +30,7 @@ export type TownPressureTraceInput = Omit<TownPressureTrace, 'id' | 'timestamp'>
 /** Optional overrides, for tests and the constant's revert switch. */
 export interface TownPressureOptions {
   enabled?: boolean;
+  keepEcho?: boolean;
 }
 
 function isTownTarget(graph: WorldGraph, id: string): boolean {
@@ -64,6 +69,7 @@ export function resolveTownPressureTargets(
 ): { pressures: SpherePressureEvent[]; traces: TownPressureTraceInput[] } {
   const enabled = options.enabled ?? GOD_PUSH_LANDS_IN_SUBLOCATION;
   if (!enabled || !ascendantId) return { pressures, traces: [] };
+  const keepEcho = options.keepEcho ?? GOD_PUSH_TOWN_KEEPS_ECHO;
 
   const qualifies = (p: SpherePressureEvent): boolean =>
     p.source === 'divine_action' && p.causedBy === ascendantId && !p.keepOnTarget &&
@@ -98,6 +104,11 @@ export function resolveTownPressureTargets(
         }
       }
       out.push({ ...p, targetEntityId: bestId, aimedAtId: p.targetEntityId });
+      if (keepEcho) {
+        // The town still feels the push as it did before the re-aim: unscaled, no credit.
+        const { pushScale, ...rest } = p;
+        out.push({ ...rest, magnitude: p.magnitude / (pushScale ?? 1), townEcho: true });
+      }
       const townName = graph.getNode(p.targetEntityId)?.name ?? p.targetEntityId;
       const placeName = graph.getNode(bestId)?.name ?? bestId;
       traces.push({

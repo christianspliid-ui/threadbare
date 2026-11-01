@@ -75,6 +75,12 @@ export interface SpherePressureEvent {
    * Shift Dominion's break push, which must land on the place whose band it breaks.
    */
   keepOnTarget?: boolean;
+  /**
+   * The copy of a re-aimed god push left on the town at its unscaled size (THR-2094), so
+   * the town's own scores — and every Dominion read of the town — move as before. Never
+   * the god's for the Mandate: the Place copy carries that credit.
+   */
+  townEcho?: boolean;
 }
 
 /**
@@ -108,6 +114,12 @@ export const HEX_PRESSURE_FALLBACK_RADIUS = 2;
  * that sphere (THR-2094 Decision 1). `false` keeps every push on the town.
  */
 export const GOD_PUSH_LANDS_IN_SUBLOCATION = true;
+/**
+ * A re-aimed push also stays on the town at its unscaled size, crediting no Mandate, so
+ * working a town still moves its Dominion band and tending (THR-2094 review). `false`
+ * moves the whole push to the Place.
+ */
+export const GOD_PUSH_TOWN_KEEPS_ECHO = true;
 /** Which target subtypes count as towns for that re-aim — the set the town cards name. */
 export const GOD_PUSH_TOWN_SUBTYPES: readonly string[] = ['settlement', 'hamlet', 'town', 'city', 'capital'];
 /**

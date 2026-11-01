@@ -3,12 +3,14 @@
  *
  * Decision 1: the god's sphere push at a town lands in the town's Place holding least of
  * that sphere (ties by id); a town with no Places keeps it; every other push passes through.
+ * The town keeps an unscaled copy (`townEcho`) that moves its scores but credits no Mandate.
  * Decision 2: a god card's push scales by its price, capped at GOD_PUSH_ESSENCE_CAP
  * (a 1-essence look pushes 3, a 2- or 8-essence working pushes 6); mortal casts push 3.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { resolveTownPressureTargets } from '../townPressureTarget';
+import { isGodCausedPush } from '../mandateLedger';
 import { phaseSpherePressure } from '../phaseSpherePressure';
 import { godPushScale, phaseUnifiedActionProgress } from '../unifiedActionResolution';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
@@ -63,7 +65,10 @@ describe('resolveTownPressureTargets (THR-2094)', () => {
     addPlace(graph, 'p_c', 'town', 'force', 2);
     const push = godPush('town');
     const { pressures, traces } = resolveTownPressureTargets(graph, [push], ASC, 9);
-    expect(pressures).toEqual([{ ...push, targetEntityId: 'p_b', aimedAtId: 'town' }]);
+    expect(pressures).toEqual([
+      { ...push, targetEntityId: 'p_b', aimedAtId: 'town' },
+      { ...push, townEcho: true },
+    ]);
     expect(traces).toHaveLength(1);
     expect(traces[0]).toMatchObject({
       category: 'sphere_pressure.town_resolved', townId: 'town', sublocationId: 'p_b',
@@ -124,6 +129,29 @@ describe('resolveTownPressureTargets (THR-2094)', () => {
     expect(traces).toEqual([]);
   });
 
+  it('leaves the town an unscaled copy that is never the god\'s for the Mandate', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_a', 'town');
+    const push = godPush('town', 'force', { magnitude: ACTION_PRESSURE_SUCCESS * 2, pushScale: 2 });
+    const { pressures } = resolveTownPressureTargets(graph, [push], ASC, 1);
+    expect(pressures[0]).toMatchObject({ targetEntityId: 'p_a', magnitude: 6, pushScale: 2 });
+    const echo = pressures[1];
+    expect(echo).toMatchObject({ targetEntityId: 'town', magnitude: ACTION_PRESSURE_SUCCESS, townEcho: true });
+    expect(echo.pushScale).toBeUndefined();
+    expect(isGodCausedPush(pressures[0], graph, ASC)).toBe(true);
+    expect(isGodCausedPush(echo, graph, ASC)).toBe(false);
+  });
+
+  it('moves the whole push to the Place when the echo switch is off', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_a', 'town');
+    const push = godPush('town');
+    const { pressures } = resolveTownPressureTargets(graph, [push], ASC, 1, { keepEcho: false });
+    expect(pressures).toEqual([{ ...push, targetEntityId: 'p_a', aimedAtId: 'town' }]);
+  });
+
   it('emits one trace per re-aimed push', () => {
     const graph = new WorldGraph();
     addTown(graph, 'town_1');
@@ -134,7 +162,7 @@ describe('resolveTownPressureTargets (THR-2094)', () => {
     const { pressures, traces } = resolveTownPressureTargets(
       graph, [godPush('town_1'), godPush('town_2', 'matter'), godPush('town_3')], ASC, 1,
     );
-    expect(pressures.map(p => p.targetEntityId)).toEqual(['p_1', 'p_2', 'town_3']);
+    expect(pressures.map(p => p.targetEntityId)).toEqual(['p_1', 'town_1', 'p_2', 'town_2', 'town_3']);
     expect(traces.map(t => t.sublocationId)).toEqual(['p_1', 'p_2']);
   });
 });
@@ -145,7 +173,7 @@ describe('phaseSpherePressure re-aims the god\'s town push (THR-2094)', () => {
     enableTracing();
   });
 
-  it('moves the Place\'s progress, not the town\'s, and emits the trace', () => {
+  it('moves the Place\'s progress and the town\'s own, and emits the trace', () => {
     const graph = new WorldGraph();
     addTown(graph, 'town');
     addPlace(graph, 'p_a', 'town', 'force', 2);
@@ -158,10 +186,37 @@ describe('phaseSpherePressure re-aims the god\'s town push (THR-2094)', () => {
       const aff = graph.getNode(id)!.properties!.sphereAffinity as ReturnType<typeof createDefaultSphereAffinity>;
       return aff.scores.force * 1000 + aff.progress.force;
     };
-    expect(read('town')).toBe(0);
+    // The town feels the push as before the re-aim, so its Dominion reads still move.
+    expect(read('town')).toBeGreaterThan(0);
     expect(read('p_b')).toBeGreaterThan(0);
     expect(read('p_a')).toBe(2000);
     expect(getTraces().some(t => t.category === 'sphere_pressure.town_resolved')).toBe(true);
+  });
+
+  it('credits the Mandate on the Place only, not on the town\'s copy', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_a', 'town', 'force', 0);
+    const lift = (id: string) => {
+      const aff = graph.getNode(id)!.properties!.sphereAffinity as ReturnType<typeof createDefaultSphereAffinity>;
+      aff.progress.force = 0.99;
+    };
+    lift('town');
+    lift('p_a');
+    const state = {
+      tick: 4, graph, tiles: [], ascendantId: ASC,
+      pendingSpherePressures: [godPush('town', 'force', { magnitude: 6, pushScale: 2 })],
+      mandateDefinition: { runtimeKind: 'sphere_growth', primarySphere: 'force', secondarySphere: 'matter' },
+      mandateState: { completed: false },
+    } as unknown as GameState;
+    const result = phaseSpherePressure(state);
+    const scoreOf = (id: string) =>
+      (graph.getNode(id)!.properties!.sphereAffinity as ReturnType<typeof createDefaultSphereAffinity>).scores.force;
+    expect(scoreOf('town')).toBeGreaterThan(0);
+    expect(scoreOf('p_a')).toBeGreaterThan(0);
+    const credited = (result.pendingMandateCredits ?? []).map(c => c.entityId);
+    expect(credited).toContain('p_a');
+    expect(credited).not.toContain('town');
   });
 
   it('carries a scaled push\'s pushScale onto the sphere_pressure trace', () => {
