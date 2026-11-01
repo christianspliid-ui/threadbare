@@ -29,6 +29,7 @@ import { elapsedLabel } from '../aftermathWords';
 import type { ViewSelector } from './readView';
 import type { GameState } from '../../types/gameState';
 import type { WorldGraph } from '../graph';
+import type { FamiliarityMap } from '../../types/familiarity';
 import { mortalFace, type EntityVisualDescriptor } from './entityVisualResolver';
 
 export type NeedsYouGroup = 'waiting' | 'held' | 'news';
@@ -86,19 +87,30 @@ export interface NeedsYouRowVM {
 }
 
 /** THR-2099 — the face of the mortal a row points at, or null. */
-export function needsYouRowFace(row: Pick<NeedsYouRowVM, 'navigationTarget'>, graph: WorldGraph | null | undefined): EntityVisualDescriptor | null {
+export function needsYouRowFace(
+  row: Pick<NeedsYouRowVM, 'navigationTarget'>,
+  graph: WorldGraph | null | undefined,
+  familiarityMap?: FamiliarityMap | null,
+): EntityVisualDescriptor | null {
   const t = row.navigationTarget;
   if (!t || (t.kind !== 'agent' && t.kind !== 'journey')) return null;
-  return mortalFace(graph, t.agentId);
+  return mortalFace(graph, t.agentId, familiarityMap);
 }
 
-/** Dress every row (and a burst's members) with its mortal's face. Fail-soft: a row that throws stays undressed. */
-export function withNeedsYouFaces(vm: NeedsYouVM, graph: WorldGraph | null | undefined): NeedsYouVM {
+/**
+ * Dress every row (and a burst's members) with its mortal's face, gated by what the god
+ * knows of them (Law 8). Fail-soft: a row that throws stays undressed.
+ */
+export function withNeedsYouFaces(
+  vm: NeedsYouVM,
+  graph: WorldGraph | null | undefined,
+  familiarityMap?: FamiliarityMap | null,
+): NeedsYouVM {
   if (!graph) return vm;
   const dress = (row: NeedsYouRowVM): NeedsYouRowVM => {
     let face: EntityVisualDescriptor | null = null;
     try {
-      face = needsYouRowFace(row, graph);
+      face = needsYouRowFace(row, graph, familiarityMap);
     } catch {
       face = null;
     }
@@ -457,7 +469,7 @@ export const needsYouSelector: ViewSelector<NeedsYouArgs, NeedsYouVM> = {
   },
   build: (ctx, a) => {
     const src = a?.sources ?? a?.needsYouSources;
-    return src ? withNeedsYouFaces(buildNeedsYou(src), ctx?.graph) : emptyNeedsYou();
+    return src ? withNeedsYouFaces(buildNeedsYou(src), ctx?.graph, ctx?.state?.familiarityMap) : emptyNeedsYou();
   },
   fallback: () => emptyNeedsYou(),
 };

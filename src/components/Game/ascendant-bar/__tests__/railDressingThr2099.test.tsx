@@ -82,11 +82,22 @@ describe('THR-2099 rail heading icons (S3.1)', () => {
 describe('THR-2099 faces on named mortals (S3.2)', () => {
   it('mortalFace names mortals only', () => {
     const g = world();
-    expect(mortalFace(g, 'kael')?.alt).toBe('Kael Thornweaver');
-    expect(mortalFace(g, 'fac-1')).toBeNull();
-    expect(mortalFace(g, 'asc-1')).toBeNull();
-    expect(mortalFace(g, 'loc-town')).toBeNull();
-    expect(mortalFace(g, 'gone')).toBeNull();
+    expect(mortalFace(g, 'kael', null)?.alt).toBe('Kael Thornweaver');
+    expect(mortalFace(g, 'fac-1', null)).toBeNull();
+    expect(mortalFace(g, 'asc-1', null)).toBeNull();
+    expect(mortalFace(g, 'loc-town', null)).toBeNull();
+    expect(mortalFace(g, 'gone', null)).toBeNull();
+  });
+
+  // Law 8 — the face is gated by what the god knows, as the mortal's page header is.
+  it("a stranger's face is the silhouette even when their portrait exists; a known mortal's is the art", () => {
+    const g = world();
+    g.getNode('kael')!.properties.portraitAssetPath = '/portraits/kael.png';
+    expect(mortalFace(g, 'kael', new Map())?.tier).toBe('fallback');
+    expect(mortalFace(g, 'kael', null)?.tier).toBe('fallback');
+    const known = mortalFace(g, 'kael', new Map([['kael', 1]]));
+    expect(known?.tier).toBe('art');
+    expect(known?.src).toBe('/portraits/kael.png');
   });
 
   // A covenant is held on a place or a land (`spawnControlEffect` refuses any other target),

@@ -3908,7 +3908,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
     needsYouFixtureAlerts, needsYouFixtureHeld]);
   // THR-2099 — rows about a mortal carry their face; sources change every tick, so the memo refreshes with them.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph is mutated in place (never a dep)
-  const needsYouVM = useMemo(() => withNeedsYouFaces(buildNeedsYou(needsYouSources), gameState.graph), [needsYouSources]);
+  const needsYouVM = useMemo(() => withNeedsYouFaces(buildNeedsYou(needsYouSources), gameState.graph, gameState.familiarityMap), [needsYouSources]);
   // Rows are read-only while a moment holds the clock — not while the player's own surface
   // (the Chapter Ledger, the court) does: the THR-1809 raised pill exists to open a gift over
   // those, so they must not guard its row (review gate, THR-1875).

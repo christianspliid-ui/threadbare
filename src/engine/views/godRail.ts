@@ -44,7 +44,7 @@ import {
   countWords,
 } from '../../data/frame-content';
 import { getFirstId } from '../meetingEncounter';
-import { resolveEntityVisual, type EntityVisualDescriptor } from './entityVisualResolver';
+import { mortalFace, type EntityVisualDescriptor } from './entityVisualResolver';
 import { payingSphere } from '../targetActions';
 import {
   selectAscendantIdentityView,
@@ -339,7 +339,7 @@ export function buildGodRail(state: GameState, rawArgs: GodRailArgs): GodRailVM 
           id: firstId,
           name: firstNode.name ?? firstId,
           // THR-2099 (R6) — The First's face, by the same resolver call as their page header (PC-6).
-          visual: resolveEntityVisual({ id: firstId, kind: 'agent', name: firstNode.name ?? firstId }, state.graph),
+          visual: mortalFace(state.graph, firstId, state.familiarityMap) ?? undefined,
         }
         : null,
     },

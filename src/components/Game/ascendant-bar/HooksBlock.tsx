@@ -367,7 +367,7 @@ export function extractChips(gameState: GameState): {
     // so there is nothing for `AttachmentDetailView` to draw, and its terms are already
     // on the chip's tooltip. Law 21's fail-open: plain styled text, no control. If an
     // agreement ever becomes a node with a page, this is the one line that changes.
-    const face = mortalFace(graph, counterpartyId);
+    const face = mortalFace(graph, counterpartyId, gameState.familiarityMap);
     vows.push({ id: edge.id, label, def: agreement.terms ?? '', valence, ...(face ? { face } : {}) });
   }
 
