@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 14:00 local (13:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 14:55 local (13:55 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -58,13 +58,12 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([early](h
 
 ## Queue
 
-**Healthy (5 ready).** The god-rail slice ([THR-2099](https://linear.app/threadbare/issue/THR-2099)) merged in [PR #2683](https://github.com/christianspliid-ui/threadbare/pull/2683) and is live. Slices 4–7 wait on their veto windows: [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC. So the builder stands down until 14:30, which is correct.
+**Healthy (4 ready).** The town-card fix ([THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26)) was re-scoped to ship as it was, merged in [PR #2678](https://github.com/christianspliid-ui/threadbare/pull/2678), and is live. Art-led slices 4–7 wait on their veto windows: [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC. So the builder stands down until 14:30, which is correct.
 
-Three items for agents, not you:
-- **The town-card fix is on hold for a re-scope.** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26)'s [PR #2678](https://github.com/christianspliid-ui/threadbare/pull/2678) went through four code-review rounds this morning, and each fix turned up a new serious finding. The builder put it on hold until the ticket is split into smaller pieces. The hold note says the ticket moved to Todo, but Linear still shows it in Ready for Dev.
+Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No branch or worktree carries its id. Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or dirty worktree carries its id (checked this run). Agents can un-park it in an attended run.
 
 ## Health
 
-All green. The live site serves the latest commit on main (6faf7c32, the god-rail slice). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, the builder is running normally, and the worktree reaper ran at 13:40. Engine speed is normal (154 ms per tick, 8% below the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site serves the latest commit on main (4dd364cf, the town-card fix). Checks on main and the scheduled background jobs pass, and no pull request is waiting to merge. All nine enabled scheduled tasks are on time, the builder is running normally, and the worktree reaper is running now (started 14:40). Engine speed is normal (169 ms per tick, 2% above the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.

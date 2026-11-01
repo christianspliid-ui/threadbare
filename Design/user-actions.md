@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-01 14:00 local (13:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-01 14:55 local (13:55 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-01: the cheap town cards now push a god's first sphere far enough to reach the Mandate, and it is live** ([THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26)). Merged via [#2678](https://github.com/christianspliid-ui/threadbare/pull/2678).
 - **2026-11-01: the god rail and the top bar now lead with art, and it is live** ([THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar)). Merged via [#2683](https://github.com/christianspliid-ui/threadbare/pull/2683).
 - **2026-11-01: the rulebook's monthly review (14 fixes to the rules text) is merged** ([THR-2112](https://linear.app/threadbare/issue/THR-2112/rulebook-review-2026-11-14-findings)). Merged via [#2677](https://github.com/christianspliid-ui/threadbare/pull/2677).
 - **2026-11-01: a faction's page now lists the reputations its living members hold, and it is live** ([THR-2111](https://linear.app/threadbare/issue/THR-2111/faction-page-reputations-they-hold-reads-a-property-nothing-writes)). Merged via [#2675](https://github.com/christianspliid-ui/threadbare/pull/2675).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-10-31: card lean sentence — you chose B, effect only** ("B", Discord 15:58). Cards on a choice step drop "It argues for the honest way." and keep the effect line. Passed to the builder of [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) via the briefing.
 - **2026-10-31: heavy simulation tests are green on main again** ([THR-2107](https://linear.app/threadbare/issue/THR-2107/heavy-simulation-tests-red-on-main-the-thr-2068-compelled-journey)). Merged via [#2664](https://github.com/christianspliid-ui/threadbare/pull/2664).
 - **2026-10-31: a person’s page now leads with their art, and it is live** ([THR-2097](https://linear.app/threadbare/issue/THR-2097/art-led-pass-slice-1-inspector-art-and-icon-primitives-dressed-on-the)). Merged via [#2663](https://github.com/christianspliid-ui/threadbare/pull/2663).
-- **2026-10-31: the faction set-pieces now name the faction they are about, and it is live** ([THR-2096](https://linear.app/threadbare/issue/THR-2096/faction-bounty-names-no-faction-the-eight-generic-faction-set-pieces)). Merged via [#2661](https://github.com/christianspliid-ui/threadbare/pull/2661).
 
 ---
 
