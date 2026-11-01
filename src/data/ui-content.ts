@@ -57,7 +57,8 @@ export const SCRY_BACK_TO_COURT_LABEL = 'Back to the court';
  * structure's name, `{bonus}` its bonus sentence (first letter lowered).
  */
 export const COURT_WORDS = {
-  seatTakes: "The {archetype}'s seat takes a mortal who is {tier} or more.",
+  // Archetypes carry their own article ("The Sovereign"), so the line does not add one.
+  seatTakes: "{archetype}'s seat takes a mortal who is {tier} or more.",
   cost: 'Moving them costs {cost} {sphere} essence.',
   shortfall: 'You hold {have} {sphere} essence; this needs {cost}.',
   structureBonus: 'In {structure}, {bonus}.',

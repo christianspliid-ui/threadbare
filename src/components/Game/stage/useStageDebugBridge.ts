@@ -350,11 +350,16 @@ export function useStageDebugBridge(args: {
         timeoutMs: 0,
       });
     }, '[data-testid="choice-set-modal"]', 'cast a choice-set card from the god rail');
-    const ascendantBeat = dialogLever(async () => {
-      window.__DEBUG?.forceOffering?.();
-      await new Promise(r => setTimeout(r, DIALOG_LEVER_SETTLE_MS));
+    // Anchored on the beat's own name, not `.frame-ceremonial` (RevealCard surfaces share it).
+    const beatLever = dialogLever(async () => {
       latest.current.dialogs?.enterBeat();
-    }, '[data-dialog-size].frame-ceremonial', 'use __DEBUG.forceOffering()');
+    }, '[aria-label^="Ascendant beat"] [data-dialog-size], [data-dialog-size][aria-label^="Ascendant beat"]', 'use __DEBUG.forceOffering()');
+    const ascendantBeat: Lever = async () => {
+      const offered = window.__DEBUG?.forceOffering?.();
+      if (!offered?.success) return { opened: false, reason: offered?.message ?? 'no offering lever' };
+      await new Promise(r => setTimeout(r, DIALOG_LEVER_SETTLE_MS));
+      return beatLever();
+    };
 
     const levers: Record<HomedSurfaceKind, Lever> = {
       'warm-start': later('warm-start', 'it opens on a warm start (?warm)'),

@@ -183,7 +183,8 @@ describe('THR-2101 the court in sentences (S5.4)', () => {
   it('the seat picker speaks one sentence with the tier word', () => {
     render(<ScryProvider value={context}><ScryOverlay /></ScryProvider>);
     fireEvent.click(screen.getAllByText(/Empty/i)[0]);
-    expect(screen.getByTestId('scry-seat-sentence').textContent).toMatch(/^The .+'s seat takes a mortal who is Champion or more\.$/);
+    expect(screen.getByTestId('scry-seat-sentence').textContent).toMatch(/^The \w+'s seat takes a mortal who is Champion or more\.$/);
+    expect(screen.getByTestId('scry-seat-sentence').textContent).not.toMatch(/^The The /);
     expect(document.querySelector('[data-testid="scry-agent-picker"] [data-dialog-face]')?.getAttribute('data-dialog-face')).toBe('art');
   });
 
