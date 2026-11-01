@@ -28,6 +28,8 @@ import { NEEDS_YOU_NEWS_KEEP_DAYS } from './viewConstants';
 import { elapsedLabel } from '../aftermathWords';
 import type { ViewSelector } from './readView';
 import type { GameState } from '../../types/gameState';
+import type { WorldGraph } from '../graph';
+import { mortalFace, type EntityVisualDescriptor } from './entityVisualResolver';
 
 export type NeedsYouGroup = 'waiting' | 'held' | 'news';
 export type NeedsYouProducerId = 'beat_offer' | 'receipt_unacked' | 'named_pause' | 'held_moment' | 'alert';
@@ -75,6 +77,42 @@ export interface NeedsYouRowVM {
   alertIds?: string[];
   /** A burst's members, one row each, newest first (opened in place). */
   burst?: NeedsYouRowVM[];
+  /**
+   * THR-2099 (decision 6) — the mortal a row points at (`navigationTarget` of kind `agent`
+   * or `journey`), drawn after the row's icon. Absent when the target is not a mortal or
+   * its node is gone; the row then renders as before.
+   */
+  face?: EntityVisualDescriptor;
+}
+
+/** THR-2099 — the face of the mortal a row points at, or null. */
+export function needsYouRowFace(row: Pick<NeedsYouRowVM, 'navigationTarget'>, graph: WorldGraph | null | undefined): EntityVisualDescriptor | null {
+  const t = row.navigationTarget;
+  if (!t || (t.kind !== 'agent' && t.kind !== 'journey')) return null;
+  return mortalFace(graph, t.agentId);
+}
+
+/** Dress every row (and a burst's members) with its mortal's face. Fail-soft: a row that throws stays undressed. */
+export function withNeedsYouFaces(vm: NeedsYouVM, graph: WorldGraph | null | undefined): NeedsYouVM {
+  if (!graph) return vm;
+  const dress = (row: NeedsYouRowVM): NeedsYouRowVM => {
+    let face: EntityVisualDescriptor | null = null;
+    try {
+      face = needsYouRowFace(row, graph);
+    } catch {
+      face = null;
+    }
+    const burst = row.burst?.map(dress);
+    return { ...row, ...(face ? { face } : {}), ...(burst ? { burst } : {}) };
+  };
+  return {
+    ...vm,
+    groups: {
+      waiting: vm.groups.waiting.map(dress),
+      held: vm.groups.held.map(dress),
+      news: vm.groups.news.map(dress),
+    },
+  };
 }
 
 export interface NeedsYouVM {
@@ -417,9 +455,9 @@ export const needsYouSelector: ViewSelector<NeedsYouArgs, NeedsYouVM> = {
     const src = a?.sources ?? a?.needsYouSources;
     return a?.stamp ?? a?.needsYouStamp ?? (src ? needsYouStamp(src) : '');
   },
-  build: (_ctx, a) => {
+  build: (ctx, a) => {
     const src = a?.sources ?? a?.needsYouSources;
-    return src ? buildNeedsYou(src) : emptyNeedsYou();
+    return src ? withNeedsYouFaces(buildNeedsYou(src), ctx?.graph) : emptyNeedsYou();
   },
   fallback: () => emptyNeedsYou(),
 };

@@ -8,7 +8,10 @@
  */
 import type { ReactElement } from 'react';
 import type { GameState } from '../../../types/gameState';
-import type { GodRailSectionId } from '../../../data/frame-registry';
+import { godRailSectionIcon, type GodRailSectionId } from '../../../data/frame-registry';
+import { Chip } from '../../shared/Chip';
+import { Icon } from '../../shared/Icon';
+import { QuietSlot } from '../../shared/QuietSlot';
 import type { GodRailVM } from '../../../engine/views/godRail';
 import type { CodexRunStateFilter } from '../../Codex/codexRunState';
 import { IdentityStrip } from '../ascendant-bar/IdentityStrip';
@@ -62,11 +65,20 @@ function IdentityBody({ vm, onOpenSheet }: GodRailBag): ReactElement | null {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <IdentityStrip identity={view} quintessence={quintessence} treatment="breathe" onOpen={onOpenSheet} />
-      {/* THR-1828 call 2 — after the bond, The First by name, as an identity link (Laws 1, 21, 56). */}
+      {/* THR-1828 call 2 — after the bond, The First by name, as an identity link (Laws 1, 21, 56).
+          THR-2099 (R6) — with their face: the identity chip, the same tile as their page header. */}
       {first && (
-        <div data-testid="god-rail-your-first" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', paddingLeft: 8 }}>
-          {YOUR_FIRST_LABEL}:{' '}
-          <EntityLink id={first.id} name={first.name} entityRef={{ kind: 'agent', id: first.id }} />
+        <div
+          data-testid="god-rail-your-first"
+          {...(first.visual ? { 'data-rail-face': 'true' } : {})}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', paddingLeft: 8 }}
+        >
+          <span>{YOUR_FIRST_LABEL}:</span>
+          {first.visual ? (
+            <Chip role="identity" size="sm" target={{ kind: 'agent', id: first.id }} label={first.name} visual={first.visual} />
+          ) : (
+            <EntityLink id={first.id} name={first.name} entityRef={{ kind: 'agent', id: first.id }} />
+          )}
         </div>
       )}
     </div>
@@ -76,10 +88,15 @@ function IdentityBody({ vm, onOpenSheet }: GodRailBag): ReactElement | null {
 function EssenceBody({ vm, shown, newly, onCenterOnSeat }: GodRailBag): ReactElement {
   const primary = vm.essence.primary;
   const att = vm.attention;
+  const icon = godRailSectionIcon('essence');
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span style={labelStyle}>{ESSENCE_LABEL}</span>
+        {/* THR-2099 (R2) — the heading's carved shape, read from its rail row. */}
+        <span style={{ ...labelStyle, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          {icon && <Icon name={icon} size="floor" decorative />}
+          {ESSENCE_LABEL}
+        </span>
         {primary && (
           <span style={{ marginLeft: 'auto', fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
             {ESSENCE_PRIMARY_LABEL}:{' '}
@@ -141,7 +158,12 @@ function ReachesBody({ vm, shown }: GodRailBag): ReactElement {
     </>
   );
   if (vm.bodies.reaches.length === 0) {
-    return <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontStyle: 'italic' }}>{REACH_EMPTY_COPY}{captions}</div>;
+    // THR-2099 (R8) — the empty line in a quiet slot; the words are unchanged.
+    return (
+      <QuietSlot data-testid="god-rail-reaches-empty" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', padding: '4px 8px' }}>
+        {REACH_EMPTY_COPY}{captions}
+      </QuietSlot>
+    );
   }
   return (
     <FirstUseCaptionZone id="reaches">

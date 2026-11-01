@@ -20,6 +20,7 @@ import {
   COVENANT_CONTESTED_COPY,
 } from '../../../data/ascendant-bar-content';
 import type { CovenantRowView } from './selectors';
+import { Chip } from '../../shared/Chip';
 
 interface CovenantsBlockProps {
   rows: CovenantRowView[];
@@ -86,17 +87,23 @@ export function CovenantsBlock({ rows, onRelease }: CovenantsBlockProps) {
             )}
           </div>
 
-          {/* Target */}
-          <span
-            style={{
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-xs)',
-              fontWeight: 600,
-              color: 'var(--text-muted)',
-            }}
-          >
-            {row.target}
-          </span>
+          {/* Target — THR-2099 (R6): a covenant held on a mortal names them by face chip. */}
+          {row.targetRef ? (
+            <span data-rail-face="true" style={{ alignSelf: 'flex-start' }}>
+              <Chip role="identity" size="sm" target={{ kind: 'agent', id: row.targetRef.id }} label={row.target} visual={row.targetRef.visual} />
+            </span>
+          ) : (
+            <span
+              style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-xs)',
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+              }}
+            >
+              {row.target}
+            </span>
+          )}
 
           {/* Upkeep line + Release */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

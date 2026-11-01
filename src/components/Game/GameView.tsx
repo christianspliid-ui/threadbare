@@ -78,7 +78,7 @@ import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { GameViewTopBar, type TopBarFrameFixture } from './GameView/GameViewTopBar';
 import { beatOfferWords } from './AscendantBeatModal';
-import { buildNeedsYou, needsYouFixtureSubject, needsYouStamp, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
+import { buildNeedsYou, withNeedsYouFaces, needsYouFixtureSubject, needsYouStamp, type NeedsYouNamedPause, type NeedsYouRowVM, type NeedsYouSources } from '../../engine/views/needsYou';
 import type { AlertItem } from '../../types/notification';
 import { shouldCenterOnAgentMove } from './cameraInteractionGate';
 import { REACH_TO_SPHERE, SPHERE_COLORS } from '../icons/constants';
@@ -3906,7 +3906,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize, asce
   }, [pendingBeat, beatEntered, interruptsSuppressed, gameState.playerActionReceipts, gameState.tick, gameState.doomDefinition,
     notificationState.popupQueue, notificationState.alerts, interruptResolution.held, beatProseOverride, namedPause,
     needsYouFixtureAlerts, needsYouFixtureHeld]);
-  const needsYouVM = useMemo(() => buildNeedsYou(needsYouSources), [needsYouSources]);
+  // THR-2099 — rows about a mortal carry their face; sources change every tick, so the memo refreshes with them.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- the graph is mutated in place (never a dep)
+  const needsYouVM = useMemo(() => withNeedsYouFaces(buildNeedsYou(needsYouSources), gameState.graph), [needsYouSources]);
   // Rows are read-only while a moment holds the clock — not while the player's own surface
   // (the Chapter Ledger, the court) does: the THR-1809 raised pill exists to open a gift over
   // those, so they must not guard its row (review gate, THR-1875).

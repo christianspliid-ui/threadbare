@@ -246,3 +246,16 @@ export function resolveEntityVisual(
     ? { tier: 'art', src, glyph, gradientIndex, alt, kind }
     : { tier: 'fallback', glyph, gradientIndex, alt, kind };
 }
+
+/**
+ * THR-2099 — a mortal's face for a chrome chip (the god rail, Needs you), or null when the
+ * id is not a mortal: a missing node, a god, a faction or a culture. The same
+ * `resolveEntityVisual` call as the mortal's page header, so the two cannot disagree (PC-6).
+ */
+export function mortalFace(graph: WorldGraph | null | undefined, id: string): EntityVisualDescriptor | null {
+  const node = graph?.getNode(id);
+  if (!node || node.type !== 'actor') return null;
+  const actorType = node.properties?.actorType;
+  if (actorType === 'god' || actorType === 'ascendant' || actorType === 'faction' || actorType === 'culture') return null;
+  return resolveEntityVisual({ id, kind: 'agent', name: node.name }, graph);
+}

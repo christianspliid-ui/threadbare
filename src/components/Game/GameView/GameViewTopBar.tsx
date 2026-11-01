@@ -54,6 +54,9 @@ export const TOPBAR_INERT_OPACITY = 0.4;
  */
 export const TOP_BAR_CENTRE_MIN_REM = 15;
 
+/** THR-2099 — the doom slot's carved shape, read from its `TOP_BAR_ITEMS` row (Law 58). */
+const doomIcon = TOP_BAR_ITEMS.find(i => i.id === 'doom')?.icon ?? null;
+
 /** THR-1875 — the debug lever's display-only overrides for the one-row check (§ Debug inspection). */
 export interface TopBarFrameFixture {
   revealAll?: boolean;
@@ -349,10 +352,12 @@ export function GameViewTopBar({
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (!encounterOpen) setDoomDetailOpen(true); } }}
         className="cursor-pointer min-w-0"
         data-newly-revealed={opening?.newly.has('doom') ? 'true' : undefined}
-        style={opening?.newly.has('doom') ? NEWLY_REVEALED_STYLE : undefined}
+        style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-1)', ...(opening?.newly.has('doom') ? NEWLY_REVEALED_STYLE : {}) }}
         aria-label="View doom clock details"
         aria-disabled={encounterOpen || undefined}
       >
+        {/* THR-2099 (R2) — the doom bar opens with its carved shape; the omen keeps its own mark. */}
+        {doomIcon && <Icon name={doomIcon} size="chip" decorative style={{ flexShrink: 0, color: 'var(--text-secondary)' }} />}
         <DoomBar
           definition={gameState.doomDefinition}
           state={gameState.doomClock}

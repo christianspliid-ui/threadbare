@@ -18,7 +18,7 @@ import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { AscendantIdentity } from '../../../types/remembrance';
 import type { CodexRunStateFilter } from '../../Codex/codexRunState';
-import { countHooks } from './HooksBlock';
+import { countHooks, countVowFaces } from './HooksBlock';
 import styles from './styles.module.css';
 import { NEWLY_REVEALED_STYLE, type OpeningRevealShow } from '../GameView/openingReveal';
 import type { OpeningRevealSurfaceId } from '../../../data/opening-reveal-table';
@@ -85,6 +85,17 @@ function useGodRailView(gameState: GameState, args: GodRailArgs): GodRailVM {
     : readView(null, gameState, godRailSelector, args);
 }
 
+/**
+ * THR-2099 — how many mortals the rail names by face (The First, covenants held on a
+ * mortal, vows with a mortal counterparty), whether or not their row is open. Read by
+ * the `data-rail-faces` debug attribute only.
+ */
+function railFaceCount(vm: GodRailVM, gameState: GameState): string {
+  const first = vm.identity?.first?.visual ? 1 : 0;
+  const covenants = vm.bodies.covenants.filter((r) => r.targetRef).length;
+  return String(first + covenants + countVowFaces(gameState));
+}
+
 function FoldedRow({
   def,
   summary,
@@ -98,7 +109,13 @@ function FoldedRow({
   onToggle: () => void;
   children: ReactElement | null;
 }) {
-  const label = <span style={{ fontWeight: 700, color: 'var(--text-tertiary)', whiteSpace: 'nowrap' }}>{def.label}</span>;
+  // THR-2099 (R2) — the row's carved shape before its word, in the word's colour.
+  const label = (
+    <span style={{ fontWeight: 700, color: 'var(--text-tertiary)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      {def.icon && <Icon name={def.icon} size="floor" decorative />}
+      {def.label}
+    </span>
+  );
   return (
     <div data-god-rail-section={def.id} data-place="folded" data-open={open ? 'true' : 'false'} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       {open && children && <div data-testid={`god-rail-row-body-${def.id}`}>{children}</div>}
@@ -210,6 +227,8 @@ export function AscendantBar({
       aria-label={GOD_RAIL_ARIA}
       data-testid="god-rail"
       data-sections-rendered={visible.map((d) => d.id).join(',')}
+      data-rail-icons={visible.map((d) => `${d.id}:${d.icon ?? 'none'}`).join(',')}
+      data-rail-faces={railFaceCount(vm, gameState)}
       data-rows-open={openRows.filter((id) => folded.some((d) => d.id === id)).join(',')}
     >
       {pinned.map((def) => (

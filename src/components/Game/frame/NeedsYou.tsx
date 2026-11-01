@@ -15,7 +15,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, typ
 import { createPortal } from 'react-dom';
 import { Button } from '../../shared/Button';
 import { Chip } from '../../shared/Chip';
-import { Icon } from '../../shared/Icon';
+import { EntityVisual } from '../../shared/EntityVisual';
+import { Icon, ICON_SIZE_REM } from '../../shared/Icon';
 import { Tooltip } from '../../shared/Tooltip';
 import { useEscapeLayer } from '../../shared/useEscapeLayer';
 import { Z_BAND } from '../../shared/zBands';
@@ -373,6 +374,15 @@ function Row({
   const body = (
     <>
       <Icon name={row.icon} size="chip" decorative />
+      {/* THR-2099 — a row about a mortal shows who, after the icon that says what kind of row it is. */}
+      {row.face && (
+        <EntityVisual
+          size="chip"
+          descriptor={row.face}
+          data-testid="needs-you-face"
+          style={{ width: `${ICON_SIZE_REM.chip}rem`, height: `${ICON_SIZE_REM.chip}rem`, flexShrink: 0 }}
+        />
+      )}
       {/* A burst's "· and {n} more like it" never ellipsizes away (Law 49): the head line gives way first. */}
       <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
         {row.burst && row.burst.length > 1 ? row.burst[0].line : row.line}
