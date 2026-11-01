@@ -71,10 +71,14 @@ function EchoCard({ candidate, visual }: { candidate: HarvestEchoCandidate; visu
       data-testid="harvest-echo-card"
       data-echo-art={tierOf(visual)}
     >
-      {/* Decision 3 — the card opens on what the echo is of (R1, R3). */}
-      {visual && <EntityVisual size="hero" descriptor={{ ...visual, alt: name }} style={{ borderRadius: 0, border: 'none' }} />}
       <div className="p-3">
-        <span className="block text-xs font-bold text-amber-100/90 truncate mb-1" data-testid="harvest-echo-name">{name}</span>
+        {/* Decision 3 — the card opens on what the echo is of (R1, R3). Drawn as a chip beside
+            the name, the plan's second kill criterion: a 16:9 band pushed a five-card harvest's
+            button below the fold at 1920×1080 (measured 2026-11-01, panel 1145px). */}
+        <div className="flex items-center gap-2 mb-1 min-w-0">
+          {visual && <EntityVisual size="chip" shape="rounded" descriptor={{ ...visual, alt: name }} />}
+          <span className="block text-xs font-bold text-amber-100/90 truncate" data-testid="harvest-echo-name">{name}</span>
+        </div>
         <p className="text-xs text-amber-200/70 leading-relaxed mb-2">{def.summary}</p>
         <div className="flex flex-wrap gap-1">
           {/* Decision 4 — the sphere's word and tint, with its tooltip (Law 14). */}
@@ -155,14 +159,14 @@ export function HarvestScreen({
               <EntityVisual size="portrait" shape="circle" descriptor={godFace} style={{ aspectRatio: '1 / 1' }} />
             </div>
           )}
-          <Tooltip id="ui.harvest_cycle">
+          <Tooltip id="ui.harvest_cycle" block>
             <p className="text-xs text-amber-200/70 mb-1 cursor-help">
               Cycle {cycle} complete
             </p>
           </Tooltip>
-          <Tooltip id="ui.harvest_type">
+          <Tooltip id="ui.harvest_type" block>
             <h2
-              className="text-2xl font-bold tracking-wide cursor-help inline-flex items-center justify-center gap-2"
+              className="text-2xl font-bold tracking-wide cursor-help flex items-center justify-center gap-2"
               style={{ color: style.color, fontFamily: 'var(--font-display)' }}
             >
               {titleIcon && (
@@ -211,7 +215,7 @@ export function HarvestScreen({
         )}
 
         {remembered ? (
-          <Tooltip id="ui.harvest_leaves">
+          <Tooltip id="ui.harvest_leaves" block>
             <p className="text-sm text-amber-100/85 text-center mb-6 cursor-help" data-testid="harvest-leaves" data-leave-count={leaves.length}>
               {leaves.length > 0 ? ACCOUNT_WORDS.harvestLeavesBehind(leaves) : ACCOUNT_WORDS.harvestLeavesLittle}
             </p>

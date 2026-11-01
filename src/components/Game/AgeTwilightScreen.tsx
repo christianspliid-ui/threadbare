@@ -114,7 +114,7 @@ export function AgeTwilightScreen({ beats, gameState, primarySphere, remembered,
         <section className="text-center mb-6" data-testid="age-twilight-ending">
           {ending.kind === 'mandate' ? (
             <Tooltip id="ui.mandate_tracker">
-              <h2 className="text-2xl font-bold tracking-wide cursor-help mb-3 inline-flex items-center justify-center gap-2" style={{ color: tint, fontFamily: 'var(--font-display)' }}>
+              <h2 className="text-2xl font-bold tracking-wide cursor-help mb-3 flex items-center justify-center gap-2" style={{ color: tint, fontFamily: 'var(--font-display)' }}>
                 {endingTitle}
               </h2>
             </Tooltip>
