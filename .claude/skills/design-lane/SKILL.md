@@ -1,7 +1,7 @@
 ---
 name: design-lane
 description: The unattended design lane (tb-design-lane, four runs a day). Progresses agreed design work without Christian present — decides a wayfinder map's frontier ticket under the 2026-09-11 delegation with outputs attached and a veto invited, closes a cleared map with its carve-up, or authors, gates and hands off one plan doc for agreed-but-undesigned work. Never charts a map, never picks direction, never touches a ticket reserved for Christian. Christian's ruling 2026-09-25 (THR-1611).
-last_validated_against: 2026-10-27
+last_validated_against: 2026-11-01
 ---
 
 # Design lane
@@ -124,6 +124,25 @@ Build the candidate set, then take the first that applies:
 3. **A map with no open tickets and no fog** → **close it** (Step 3b).
 4. **Agreed-but-undesigned tickets exist** → **plan doc** (Step 3c).
 5. **Nothing agreed** → exit with no report. Do not pick an un-agreed roadmap item to stay busy.
+
+**Period focus — UI legibility and usability, 2026-11-01 to 2026-11-29 (Christian, chat 2026-11-01).** His
+words: *"get the design lane to focus on UI and UX improvements for the next period. specifically legibility
+and usability of the different UI modules: are we using tried and true ux patterns for how humans read UI
+panels..."* Until the end date, **focus work** is: the map
+[UI legibility and usability](https://linear.app/threadbare/issue/THR-2114) and its children, then any other
+agreed ticket in the *UI Visual Overhaul — Design System v1* project (the art-led slices, UX-review findings
+that need design), then any agreed plan-doc candidate whose UI pillar is its main work. While it runs:
+
+- Within each numbered rule above, focus candidates sort first. Rule 2 takes THR-2114's frontier before any
+  other map's, whatever their resolved counts.
+- Rule 1 (shelf thin) picks a focus plan-doc candidate if one exists. Non-focus agreed work runs only when no
+  focus unit is workable this run, and the report says why.
+- The lane may take a `wayfinder:research` ticket on THR-2114 as its unit at once, without waiting the 24h for
+  the orchestrator. Its two research tickets block every decision on the map.
+- The map's `## Reserved for Christian` binds as usual. The type-hierarchy prototype is reserved until he answers.
+- After 2026-11-29 this paragraph is inert. Rule order goes back to normal, and the next attended session or
+  retrospective deletes it (or renews it with his say-so). It is a priority order with an end date. It adds no
+  gate, probe or check, so the pipeline freeze (THR-1946) does not cover it.
 
 **Plan-doc candidates**, in this order: tickets named in a closed map's carve-up; items the orchestrator's T2
 staged into `In Design` (unassigned, design-request comment); `Todo` tickets whose Done-when is a plan doc in
