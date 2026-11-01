@@ -10,7 +10,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { resolveTownPressureTargets } from '../townPressureTarget';
-import { isGodCausedPush } from '../mandateLedger';
+import { isGodCausedPush, mandateCreditsFor } from '../mandateLedger';
 import { phaseSpherePressure } from '../phaseSpherePressure';
 import { godPushScale, phaseUnifiedActionProgress } from '../unifiedActionResolution';
 import { createUnifiedAction, resetUnifiedActionCounter } from '../unifiedActionLifecycle';
@@ -217,6 +217,21 @@ describe('phaseSpherePressure re-aims the god\'s town push (THR-2094)', () => {
     const credited = (result.pendingMandateCredits ?? []).map(c => c.entityId);
     expect(credited).toContain('p_a');
     expect(credited).not.toContain('town');
+  });
+
+  it('a town copy does not dilute another god push\'s credit on the same town', () => {
+    const graph = new WorldGraph();
+    const seat: SpherePressureEvent = {
+      targetEntityId: 'town', sphere: 'force', magnitude: 0.25, source: 'seat', sourceId: 'seat_1',
+    };
+    const echo = godPush('town', 'force', { townEcho: true });
+    const trace = { sphere: 'force', previousScore: 1, newScore: 2 } as never;
+    const isGod = (p: SpherePressureEvent) => isGodCausedPush(p, graph, ASC);
+    const withEcho = mandateCreditsFor('town', 1, [seat, echo], [trace], isGod);
+    const alone = mandateCreditsFor('town', 1, [seat], [trace], isGod);
+    expect(withEcho).toEqual(alone);
+    expect(withEcho[0].points).toBe(1);
+    expect(mandateCreditsFor('town', 1, [echo], [trace], isGod)).toEqual([]);
   });
 
   it('carries a scaled push\'s pushScale onto the sphere_pressure trace', () => {

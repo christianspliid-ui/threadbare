@@ -113,7 +113,9 @@ export function mandateCreditsFor(
     if (spheres && !spheres.has(t.sphere)) continue;
     const delta = t.newScore - t.previousScore;
     if (delta > 0) {
-      const godShare = share(pressures, t.sphere, isGod);
+      // THR-2094: a re-aimed push's town copy is neither the god's nor anyone else's here,
+      // so it cannot dilute the share of a seat, claim or carry push on the same town.
+      const godShare = share(pressures.filter(p => !p.townEcho), t.sphere, isGod);
       const points = delta * weight * godShare;
       if (points > 0) credits.push({ entityId, sphere: t.sphere, points, cause: 'god', sources: t.sources });
     } else if (delta < 0) {
