@@ -54,6 +54,9 @@ export const FIRED_TEMPLATE_COMPLETION: readonly string[] = [
   'encounter.trace_ley_lines',
   'star.turning.comet_omen',
   'veil.truth.page_beneath_saint',
+  // THR-2105 slice 1: the one top-ten board template (2026-10-31 attended census)
+  // not yet complete.
+  'encounter.market_day_festival',
 ];
 
 /** Templates per slice: one executor run's worth of prose (~60–80 lines). */

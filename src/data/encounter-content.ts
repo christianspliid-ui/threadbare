@@ -10,7 +10,7 @@
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { LocationSubtype } from '../types/index';
 import type { UnifiedActionTemplate } from '../types/unifiedAction';
-import { compileOpeningEnvelope, expandSettings, type SettingClass } from './settingClasses';
+import { compileOpeningEnvelope, expandSettings, SETTING_CLASSES, type SettingClass } from './settingClasses';
 import { compileOpeningColoration } from '../engine/fragmentResolution';
 import { DEAL_DEFAULT_COUNT } from './nudge-constants';
 import {
@@ -5660,6 +5660,13 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Market Day Festival',
     locationTypes: ['hamlet', 'town', 'city', 'capital'],
+    // THR-2105: the arrival line (doctrine v2 P1). The envelope stays as narrow as
+    // today's placement: `urban` plus the hamlet override below; a hamlet resolves to
+    // `rural`, which falls back to the one declared opening.
+    settings: ['urban'],
+    openings: {
+      urban: '{name} arrives at {location} on the morning of the market festival.',
+    },
     sublocationTypes: ['sublocation-type.market-district'],
     reachPrimary: 'gold',
     reachSecondary: 'heart',
@@ -5674,13 +5681,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'The whole settlement floods the market square. Banners fly, prices drop, and strangers share tables. {actor} moves through the crowd, coin and conversation flowing freely.',
+        narrative: 'The whole of {location} is in the market square. Prices are low, and strangers share tables. A merchant from out of town has set up by the well and knows traders in every town on the road. Locals have already tried to win the merchant over and been turned away.\n\n{actor} must catch the merchant\'s eye before the day ends.',
+        // THR-2105: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: '{actor} wins the merchant\'s attention by buying at the stall at full price. {actor} spends most of {their} coin to do it.',
+        criticalSuccessAfterimage: 'The merchant takes a liking to {actor} early in the day. They spend the afternoon together at the stalls.',
+        criticalFailureAfterimage: '{actor} bumps the merchant\'s table and knocks the goods into the mud. The merchant tells the whole square about it.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
-          narrative: '{actor} works the festival steadily — a word here, a purchase there. By dusk, new faces have become familiar ones, and the stalls have taken more coin than on any market day this year.',
+          narrative: '{actor} spends the day at the stalls and gets talking with the merchant. The merchant agrees to share a drink when the fires are lit.',
           reputationDelta: 0.05,
         },
         onFailure: {
-          narrative: '{actor} misreads the mood and steps on toes {they} never saw. The festival carries on without {them}.',
+          narrative: '{actor} spends the day in the crowd and never gets near the merchant. {actor} must try again after dark.',
           reputationDelta: -0.02,
         },
       },
@@ -5690,9 +5702,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
         duration: 2,
-        narrative: 'As the fires are lit and the crowd thins, {actor} has a chance to build on the acquaintances the day has made — follow up, leave a mark, or let the hour pass.',
+        narrative: 'The fires are lit, and the crowd thins. The merchant leaves at dawn. {actor} has this one evening to turn a friendly talk into a promise of help.',
+        // THR-2105: the missing afterimages and a dealt hand.
+        successAtCostAfterimage: 'The merchant agrees to help, but only after {actor} pays for every drink that night. {actor} wakes with an empty purse.',
+        criticalSuccessAfterimage: 'The merchant gives {actor} a name and writes a letter to go with it. {actor} leaves with a contact and the proof of it.',
+        criticalFailureAfterimage: '{actor} pushes for a promise the merchant will not give. The merchant leaves early and warns the other traders about {actor}.',
+        deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
-          narrative: '{actor} finds the right words at the right moment. A stranger becomes a contact; a contact becomes a name that will answer when called.',
+          narrative: 'The merchant gives {actor} a name to use in any town on the road. {actor} has a contact who will answer when called.',
           reputationDelta: 0.09,
           tierPromotionEligible: true,
           rewardPool: {
@@ -5700,7 +5717,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} presses too hard and the stranger drifts back into the crowd. The festival ends without its promise kept.',
+          narrative: '{actor} presses too hard, and the merchant goes back into the crowd. The festival ends with no contact made.',
           reputationDelta: -0.03,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
@@ -8642,6 +8659,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Barter for Supplies',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} in the morning, on the day the trader\'s cart comes through.',
+      urban: '{name} arrives at the market in {location} in the middle of the morning.',
+      stronghold: '{name} comes to the gate of {location}, where traders sell to the garrison.',
+      sacred: '{name} arrives at {location} as the pilgrims gather in the yard to trade.',
+      arcane: '{name} climbs to {location}, where a trader brings supplies up each season.',
+      ruin: '{name} reaches the broken walls of {location} late in the afternoon.',
+      wayside: 'Travelling the road, {name} stops for the night at {location}.',
+      battlefield: '{name} reaches the camp market behind the lines at {location}.',
+    },
     reachPrimary: 'gold',
     reachSecondary: 'heart',
     encounterType: 'trade',
@@ -8655,18 +8686,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} approaches with goods to trade — a skill, a trinket, a day of labor. The art of exchange begins.',
+        narrative: 'There {they} find{s} a trader selling meal, salt and lamp oil. {actor}\'s food ran out on the road, and {their} purse is nearly empty.\n\n{actor} has goods and a day\'s labor to offer instead. The trader will deal, but only for a fair offer.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The trader takes the offer, but only after {actor} adds a day of work to it. {actor} pays more than the goods are worth.',
         criticalSuccessAfterimage: 'The trader wants what {actor} brought more than {actor} guessed, and says so. {actor} sets the price for the rest of the trade.',
         criticalFailureAfterimage: 'The offer insults the trader, who ends the talk and turns to the next customer.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'labor'] },
         onSuccess: {
-          narrative: 'A nod, a handshake. What {actor} carried in is worth what {they} walk{s} out with. Fair dealing.',
+          narrative: 'The trader likes the offer and names a price for the whole load. {actor} has a deal on the table.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'No deal. {actor}\'s offer falls flat — too little, too strange, too late in the day.',
+          narrative: 'The trader turns the offer down as too small. {actor} must offer more before the trader will talk again.',
           reputationDelta: -0.01,
         },
       },
@@ -8676,14 +8707,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Trust is the final currency. {actor} meets the trader\'s eyes, each measuring the other\'s intent.',
+        narrative: 'The trader wants proof before handing anything over. A buyer cheated this trader last week with a cracked pot sold as sound. {actor} must show that the goods are what {they} say{s} they are.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The deal closes, but the trader keeps back part of what was promised. {actor} takes the short measure rather than lose the trade.',
         criticalSuccessAfterimage: 'The deal closes, and the trader adds a second sack of meal at no charge.',
         criticalFailureAfterimage: 'At the last word the trader accuses {actor} of cheating, loud enough for the next stalls to hear. The deal is off, and the story spreads through the market.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
-          narrative: 'The exchange is done. Both parties walk away satisfied — rare enough to be worth remembering.',
+          narrative: 'The trader checks the goods and finds them sound. The deal closes, and {actor} leaves with the meal, salt and oil.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -8691,7 +8722,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Doubt creeps in at the last. The deal collapses, and {actor} leaves with what {they} came with.',
+          narrative: 'The trader does not trust the goods and calls off the deal. {actor} leaves with what {they} came with.',
           reputationDelta: -0.01,
         },
       },
@@ -8708,6 +8739,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     // THR-1314: id keeps the engine literal; the player-facing name says *Freeholds*.
     name: 'Take Stock of Freeholds',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} on market day, with a purse to spend.',
+      urban: '{name} arrives at {location} and takes a room for the night above the market.',
+      stronghold: '{name} reaches {location} and is given a corner of the barracks for the night.',
+      sacred: '{name} arrives at {location} and sits down in the quiet of the outer yard.',
+      arcane: '{name} arrives at {location} and is given a table in the lower hall.',
+      ruin: '{name} makes camp in the ruins of {location} for the night.',
+      wayside: 'Travelling the road, {name} stops for the night at {location}.',
+      battlefield: '{name} reaches the camp at {location}, where the sutlers sell to the soldiers.',
+    },
     reachPrimary: 'gold',
     reachSecondary: 'eye',
     encounterType: 'trade',
@@ -8721,18 +8766,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'gold',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} lays out every coin, every scrap of value. The arithmetic of survival.',
+        narrative: 'Prices here are higher than {actor} expected. {actor} has already spent more than planned on the road, and does not know how much is left.\n\n{actor} must count everything {they} own{s} before buying anything else.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The count comes out right, but it takes the whole day. {actor} loses a day\'s work to the ledger.',
         criticalSuccessAfterimage: '{actor} finds three coins sewn into the lining of an old coat. The holdings are larger than {actor} thought.',
         criticalFailureAfterimage: 'The count shows a real loss: coin {actor} was sure of is gone. {actor} traces it to the last market and knows who short-changed {them}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'craft'] },
         onSuccess: {
-          narrative: 'The accounting is done. {actor} knows exactly what {they} hold{s} — and what it can buy.',
+          narrative: '{actor} counts every coin and every thing of value. {actor} now knows exactly what there is to spend.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The numbers do not add up. A coin was lost or a tally miscounted, and {actor} cannot say which.',
+          narrative: 'The count does not add up, and {actor} cannot find the mistake. {actor} must plan without a sure number.',
           reputationDelta: -0.01,
         },
       },
@@ -8742,14 +8787,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Knowing what {they} hold{s} matters less than knowing what {they} need{s}. {actor} weighs priorities with care.',
+        narrative: '{actor} needs more things than the coin can buy. A wrong choice now will leave {actor} short of something later. {actor} must decide what to buy and what to do without.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'A plan forms, but it needs {actor} to sell a tool {they} would rather keep. {actor} marks it for sale.',
         criticalSuccessAfterimage: '{actor} learns that the smith sells cheaper the day after market. {actor} plans the purchase for then.',
         criticalFailureAfterimage: '{actor} commits to the wrong purchase. The coin is spent before the mistake is plain.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'lore'] },
         onSuccess: {
-          narrative: 'A clear plan forms — what to buy, what to save, what to trade. {actor} is ready for the next exchange.',
+          narrative: '{actor} makes a plan: what to buy here, what to save, and what to trade at the next market.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -8757,7 +8802,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Too many needs, too few resources. {actor} sets the ledger aside, no clearer than before.',
+          narrative: '{actor} cannot settle on a plan. {actor} sets the ledger aside no clearer than before.',
           reputationDelta: -0.01,
         },
       },
@@ -9408,6 +9453,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Gather Local Tales',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} in the evening and joins the families at the fire.',
+      urban: '{name} arrives at {location} and finds a seat in the oldest tavern there.',
+      stronghold: '{name} reaches {location} in the evening, when the old soldiers sit by the hearth.',
+      sacred: '{name} arrives at {location}, where the old keepers sit out in the evening.',
+      arcane: '{name} arrives at {location} and is shown to the hall where the servants eat.',
+      ruin: '{name} makes camp in the ruins of {location} as night falls.',
+      wayside: 'Travelling the road, {name} stops for the night at {location}.',
+      battlefield: '{name} reaches the camp at {location}, where the old soldiers talk by the fires.',
+    },
     reachPrimary: 'heart',
     reachSecondary: 'eye',
     encounterType: 'create',
@@ -9422,18 +9481,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Every place has stories. {actor} sits among the people who know this land and lets them talk.',
+        narrative: 'The old people here remember a story about this land that is not written down anywhere. Each year fewer of them are left to tell it, and the young have stopped listening.\n\n{actor} has one evening to hear it before moving on.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The locals talk, but only after {actor} buys the room a round. {actor} leaves with the stories and a lighter purse.',
         criticalSuccessAfterimage: 'An old woman takes a liking to {actor} and tells the story the others will not: a name, and where that person is buried.',
         criticalFailureAfterimage: '{actor} asks one question too many. The locals decide {actor} is a spy, and the keeper asks {them} to leave.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
-          narrative: 'Words flow freely. {actor} earns a fragment of history — a name, a warning, a half-remembered song.',
+          narrative: 'The old people talk freely to {actor}. {actor} hears the whole story, with its names and places.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Suspicion closes mouths. {actor} hears the room resume its own conversation, one table over.',
+          narrative: 'The old people go quiet when {actor} asks. {actor} hears only scraps of the story.',
           reputationDelta: -0.01,
         },
       },
@@ -9443,14 +9502,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'eye',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Details fade fast. {actor} fixes the tales in mind — names, places, the shape of truth beneath the telling.',
+        narrative: '{actor} has heard the story once. It has many names and places, and {actor} must keep them straight to tell it again. If {actor} tells it wrong, the people who know it will laugh.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} keeps the story but mixes up two of the names. {actor} will have to ask again before trusting it.',
         criticalSuccessAfterimage: '{actor} keeps every name and place, and notices where two of the tellings disagree. The disagreement is the useful part.',
         criticalFailureAfterimage: '{actor} remembers the story wrong and repeats it in the next village. The people there know the true version and laugh at {actor}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
-          narrative: 'The story takes root. {actor} carries knowledge of what came before, which is worth more than coin.',
+          narrative: '{actor} fixes the story in mind, with every name and place in order. {actor} can tell it again the way the old people told it.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
@@ -9458,7 +9517,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The details blur and tangle overnight. {actor} keeps the shape of it and loses the names.',
+          narrative: 'By morning the names have run together. {actor} keeps the shape of the story and loses the names.',
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
@@ -9479,6 +9538,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Tend the Weary',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} in the late afternoon, as the field hands come in.',
+      urban: '{name} arrives at {location} and stops at the well in the main square.',
+      stronghold: '{name} reaches the gate of {location} in the late afternoon.',
+      sacred: '{name} arrives at {location}, where travelers rest on the steps.',
+      arcane: '{name} climbs the long path to {location} and stops at the door to rest.',
+      ruin: '{name} reaches the broken walls of {location} late in the day.',
+      wayside: 'Travelling the road, {name} stops for a rest at {location}.',
+      battlefield: '{name} reaches the camp at {location} as the wounded are carried back from the line.',
+    },
     reachPrimary: 'heart',
     reachSecondary: 'star',
     encounterType: 'assist',
@@ -9492,35 +9565,35 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'Someone nearby is struggling — exhaustion, grief, or the accumulated weight of days without rest. {actor} draws near.',
+        narrative: 'There {they} find{s} a traveler sitting by the path, too tired to stand. The traveler has walked for days without food and has fallen twice today. Others have passed by without stopping.\n\nThe traveler will not last the night out here without help.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The weary one accepts the comfort and then talks until dark. {actor} loses the evening to it.',
         criticalSuccessAfterimage: 'The weary one accepts the comfort, gives {actor} their name, and says how far they have walked and why.',
         criticalFailureAfterimage: 'The weary one takes the help as pity and shouts at {actor} in front of the other travelers. {actor} is marked as a meddler here.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['presence', 'social'] },
         onSuccess: {
-          narrative: 'A word, a steady hand, a moment of presence. {actor} eases a burden that was not {their} own.',
+          narrative: 'The traveler lets {actor} help. {actor} gets them sitting up and talking, and they agree to take food.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The weary one flinches away. Some wounds are too raw for a stranger\'s touch.',
+          narrative: 'The traveler pulls away from {actor} and will not talk. {actor} must try again with food instead of words.',
           reputationDelta: -0.01,
         },
       },
       {
         id: 'tend_the_weary.sustain',
-        name: 'Share What You Have',
+        name: 'Share Food and Warmth',
         reach: 'star',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Comfort is not enough. {actor} offers what can be used — food, warmth, an hour of undivided attention.',
+        narrative: 'The traveler needs food and warmth more than words. {actor} has little of either to spare. Whatever {actor} gives tonight, {actor} goes without.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The weary one recovers on {actor}\'s own food. {actor} goes hungry that night.',
         criticalSuccessAfterimage: 'The weary one recovers and presses a carved bone keepsake into {actor}\'s hand as thanks.',
         criticalFailureAfterimage: 'The food {actor} shares has turned. The weary one is sicker by morning, and their family blames {actor}.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'presence'] },
         onSuccess: {
-          narrative: 'Color returns to a drawn face. The weary one nods, once, and that is thanks enough.',
+          narrative: 'The traveler eats and warms up by the fire. By morning they are back on their feet and able to walk on.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -9528,7 +9601,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: '{actor} has too little to share. The gesture is kind but hollow, and both of {them} know it.',
+          narrative: '{actor} has too little food to make a difference. The traveler is still too weak to stand, and both of them know it.',
           reputationDelta: -0.01,
         },
       },
@@ -9548,6 +9621,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Study the Surroundings',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} in the morning and asks the way to the high ground.',
+      urban: '{name} arrives at {location} and climbs to the top of the town wall.',
+      stronghold: '{name} reaches {location} and is allowed up onto the tower roof.',
+      sacred: '{name} arrives at {location}, which stands on a hill above the country.',
+      arcane: '{name} climbs to the top of {location} in the clear morning.',
+      ruin: '{name} reaches {location} and climbs the highest of the broken walls.',
+      wayside: 'Travelling through the wilds, {name} stops at {location} and climbs the nearest hill.',
+      battlefield: '{name} reaches {location} and climbs the ridge above the camp.',
+    },
     reachPrimary: 'eye',
     reachSecondary: 'veil',
     encounterType: 'explore',
@@ -9565,18 +9652,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         // The two failure lines also carried pre-existing `nothing` (a natural indefinite,
         // enforced at zero in outcome prose) on untokened lines — fixed here per the
         // batch-5 rule that a template being authored gets its whole prose read.
-        narrative: '{actor} climbs to the highest ground within an hour\'s walk and sits down to look properly. Paths, water, smoke, and where the shadows fall at this hour.',
+        narrative: 'The herders here say the land around {location} is hard to cross. Paths vanish in it, and one herder lost a whole flock there last spring.\n\n{actor} must learn the land from the high ground before going on.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} maps the land, but the climb down in poor light costs {them} a twisted ankle.',
         criticalSuccessAfterimage: '{actor} spots a pass through the hills that the road does not use. It will cut a day off the next journey.',
         criticalFailureAfterimage: '{actor} misreads the ground and takes the wrong path down. {actor} spends the night lost in the scrub.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'journey'] },
         onSuccess: {
-          narrative: 'Patterns emerge — trade routes, game trails, places where the land folds inward. {actor} maps it all.',
+          narrative: '{actor} maps the land below: the paths, the water and the safe ground. {actor} knows the way on.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Haze and distance defeat the eye. {actor} comes back down knowing what any traveller on the road already knew.',
+          narrative: 'Haze hides the land below. {actor} learns nothing the road did not already show.',
           reputationDelta: -0.01,
         },
       },
@@ -9586,14 +9673,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'The visible terrain tells one story. {actor} sits still long enough to hear the other one — where the birds will not settle, where the frost holds past noon.',
+        narrative: 'The herders say a ley line runs somewhere near here, and that the birds will not land on it. {actor} must find it without scaring the birds off. The herders believe that brings bad luck on the flocks.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} learns where the ley line runs, but sitting on it leaves {their} hands numb for a day.',
         criticalSuccessAfterimage: '{actor} finds where the ley line crosses the stream. Few people know that spot, and {actor} does now.',
         criticalFailureAfterimage: '{actor} disturbs the place instead of reading it. The birds leave the trees at once, and the local herders blame {actor} for the bad omen.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'wild'] },
         onSuccess: {
-          narrative: 'The land whispers back. {actor} feels the pull of ley and root — this place has secrets worth knowing.',
+          narrative: '{actor} finds where the ley line runs, under a hill where no bird lands. {actor} now knows where the power in this land runs.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
@@ -9601,7 +9688,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The silence holds all afternoon. {actor} learns only that this place keeps its own counsel, which is itself a fact about the place.',
+          narrative: '{actor} cannot find the ley line. The land shows {actor} nothing more than the road did.',
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
@@ -9826,6 +9913,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Commune with the Stars',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} at dusk, as the farmers bring the animals in.',
+      urban: '{name} arrives at {location} as the lamps are lit along the streets.',
+      stronghold: '{name} reaches {location} at nightfall and is given a place on the wall.',
+      sacred: '{name} arrives at {location} at dusk, as the keepers close the doors for the night.',
+      arcane: '{name} climbs to the top of {location} as the sun goes down.',
+      ruin: '{name} makes camp in the ruins of {location} as night falls.',
+      wayside: 'Travelling through the wilds, {name} stops for the night at {location}.',
+      battlefield: '{name} reaches the camp at {location} after dark, when the fighting has stopped for the day.',
+    },
     reachPrimary: 'star',
     reachSecondary: 'veil',
     encounterType: 'create',
@@ -9839,18 +9940,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'star',
         difficulty: UNIVERSAL_DIFFICULTY_BASE,
         duration: 1,
-        narrative: 'When the sky clears, {actor} turns {their} face upward. The constellations have moved since the last clear night, and moved exactly as far as they should have.',
+        narrative: 'The sky is clear tonight for the first time in many nights. The last reader here told everyone the signs were good, and the floods came a month later.\n\nThe people ask {actor} to read the stars and tell them what is coming.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} reads the omen, but only by staying out through the cold night. {actor} is worn out the next day.',
         criticalSuccessAfterimage: '{actor} reads the omen and sees the same sign repeated low in the east. It concerns this place and this season.',
         criticalFailureAfterimage: '{actor} reads a warning of death in the stars and cannot put it aside. {actor} is shaken for days.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
-          narrative: 'The stars speak to those who know how to listen. {actor} reads an omen — faint, but unmistakable.',
+          narrative: '{actor} finds an omen: the same sign, twice, in the same part of the sky. {actor} knows it is a true sign, but not yet what it means.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'Cloud comes in from the west, or the mind wanders. {actor} sees cold light and no sign in it.',
+          narrative: 'Cloud comes in from the west before {actor} can find a clear sign. {actor} has only a glimpse of the omen to work from.',
           reputationDelta: -0.01,
         },
       },
@@ -9860,14 +9961,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'veil',
         difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'An omen means little until it is read against what is already known. {actor} sets the two side by side and looks for the place they disagree.',
+        narrative: '{actor} has the sign but not its meaning. The people are waiting for an answer, and they will act on whatever {actor} tells them. If {actor} reads it wrong, they will prepare for the wrong danger.',
         // THR-1634 S1: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} works out the omen\'s meaning, but it takes until dawn, and {actor} sleeps through the next day\'s work.',
         criticalSuccessAfterimage: 'The omen names its danger plainly: an early frost. {actor} can warn the farmers before it comes.',
         criticalFailureAfterimage: '{actor} reads the omen as good news and tells others. It was a warning, and they will remember who told them otherwise.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['lore', 'insight'] },
         onSuccess: {
-          narrative: 'The pattern resolves. {actor} glimpses a thread of fate — where it leads, only time will tell.',
+          narrative: '{actor} works out the omen: a hard season is coming. The people believe {actor} and start to prepare for it.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
@@ -9875,7 +9976,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The meaning slips away like smoke. {actor} is left holding a sign with no sentence around it.',
+          narrative: '{actor} cannot work out what the omen means. {actor} tells the people the truth: there is a sign, but no answer.',
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
@@ -10321,6 +10422,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Rest and Recover',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} after dark, and every barn is already full.',
+      urban: '{name} arrives at {location} after dark, too late to find a bed at any inn.',
+      stronghold: '{name} reaches {location} after dark, and the gate is shut for the night.',
+      sacred: '{name} arrives at {location} after dark, and the doors are closed to travelers.',
+      arcane: '{name} arrives at {location} after dark, and no one answers the door.',
+      ruin: '{name} reaches the ruins of {location} as night falls.',
+      wayside: 'Travelling through the wilds, {name} stops for the night at {location}.',
+      battlefield: '{name} reaches {location} after dark, and the camp has no room to spare.',
+    },
     reachPrimary: 'heart',
     reachSecondary: 'stone',
     encounterType: 'assist',
@@ -10334,18 +10449,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'heart',
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
-        narrative: '{actor} searches for a sheltered spot to rest. The land offers little comfort, but a dry hollow and a windbreak will serve.',
+        narrative: '{actor} has walked for days on little sleep and is close to falling down. Rain is coming, and the ground is already cold.\n\n{actor} needs a dry place out of the wind before the rain starts.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} finds a dry hollow, but only after walking an extra hour in the dark. {actor} lies down with sore feet.',
         criticalSuccessAfterimage: '{actor} finds a dry hollow with a spring beside it and dead wood for a fire. It is the best camp of the road.',
         criticalFailureAfterimage: '{actor} settles in a hollow that floods when the rain starts, and spends the night on {their} feet, soaked through.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'journey'] },
         onSuccess: {
-          narrative: '{actor} settles into stillness, letting the weight of the road lift from aching limbs.',
+          narrative: '{actor} finds a dry hollow under a bank, out of the wind, and lies down before the rain starts.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'No shelter holds. {actor} shivers against the cold, unable to find true rest.',
+          narrative: '{actor} finds no dry place before the rain starts. {actor} lies down wet and cold.',
           reputationDelta: -0.01,
         },
       },
@@ -10355,14 +10470,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Rest is its own kind of work. {actor} surrenders to the pull of exhaustion.',
+        narrative: '{actor} needs a full night\'s sleep to be fit for the road. If {actor} sleeps badly, the cold ground will draw the heat out of {them} by morning.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} sleeps, but wakes to find the fire out and the food gone to a fox. The rest cost tomorrow\'s meal.',
         criticalSuccessAfterimage: '{actor} sleeps through the night and wakes before dawn with no ache left from the road.',
         criticalFailureAfterimage: '{actor} wakes in the night with a fever from the cold ground, and starts the day weaker than the one before.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'might'] },
         onSuccess: {
-          narrative: 'Sleep comes deep and dreamless. {actor} wakes stiff but renewed, ready for what comes next.',
+          narrative: '{actor} sleeps through the night and wakes rested. {actor} is fit for the road again.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -10370,7 +10485,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'The ground is hard, the noises too close. {actor} rises no more rested than when {they} lay down.',
+          narrative: '{actor} wakes again and again in the cold. {actor} rises no more rested than when {they} lay down.',
           reputationDelta: -0.01,
         },
       },
@@ -10387,6 +10502,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Forage for Provisions',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} with an empty pack and walks out past the last field.',
+      urban: '{name} arrives at {location} with no coin for food and walks out past the walls.',
+      stronghold: '{name} reaches {location}, where the garrison has no food to spare for travelers.',
+      sacred: '{name} arrives at {location}, where the keepers have nothing left to give.',
+      arcane: '{name} arrives at {location} and goes down to the wild ground below the tower.',
+      ruin: '{name} reaches the ruins of {location}, where weeds grow over everything.',
+      wayside: 'Travelling through the wilds, {name} stops at {location} with an empty pack.',
+      battlefield: '{name} reaches {location}, where the armies have taken every crop nearby.',
+    },
     reachPrimary: 'eye',
     reachSecondary: 'stone',
     encounterType: 'explore',
@@ -10401,18 +10530,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
         // THR-1101: authored out of the mad-lib shape (explore-family batch, survey slice).
-        narrative: 'Hunger sharpens the eye. {actor} works the ground with a forager\'s list: what can be eaten raw, what needs boiling twice, what is best left where it grows.',
+        narrative: '{actor}\'s food ran out yesterday, and the last water was bad. Some roots here are good to eat, and some will make a person sick.\n\n{actor} must find enough food and clean water for the next day.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} finds roots and clean water, but loses {their} knife in the reeds digging them out.',
         criticalSuccessAfterimage: '{actor} finds wild onion, a clean spring and a hare\'s run. There is food for three days, not one.',
         criticalFailureAfterimage: '{actor} eats a root that looked safe and was not. The day is lost to sickness, and the satchel stays empty.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['wild', 'insight'] },
         onSuccess: {
-          narrative: '{actor} spots what others miss — a cluster of roots, a clean spring, enough to sustain {them} another day.',
+          narrative: '{actor} finds good roots and a clean spring. There is enough here to eat for another day.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The land gives up bitter root and water that has stood too long. {actor} comes back with an empty satchel and the day spent.',
+          narrative: '{actor} finds only bitter roots and standing water. {actor} must dig harder to bring back enough.',
           reputationDelta: -0.01,
         },
       },
@@ -10422,14 +10551,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'stone',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'What the eye found, the back has to carry. {actor} bends to it — digging, cutting, and tying the load so it rides high enough to walk with.',
+        narrative: 'The roots are deep, and the spring is a long walk from camp. {actor} must dig the food out and carry it back with the water. Wild boar feed on this ground too.',
         // THR-1666 S2: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} carries the load home, but a strap breaks at the ford and the best of it goes downstream.',
         criticalSuccessAfterimage: '{actor} ties the load so well that it rides without shifting, and there is light enough for a second trip. Twice the food comes home.',
         criticalFailureAfterimage: 'A boar has claimed the same patch and charges while {actor} is digging. {actor} drops the load and spends the evening up a tree.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['labor', 'wild'] },
         onSuccess: {
-          narrative: 'Arms full, {actor} hauls {their} findings back. Not a feast — but enough. Always enough.',
+          narrative: '{actor} brings the roots and water back to camp. {actor} eats tonight and has some left for tomorrow.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -10437,7 +10566,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Too heavy and too far. The load shifts at the second ford, and {actor} arrives with half of what {they} dug and a shoulder that will complain for a week.',
+          narrative: 'The load slips at the stream, and half of it is lost. {actor} comes back with half the food and a sore shoulder.',
           reputationDelta: -0.01,
         },
       },
@@ -10937,6 +11066,20 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
     },
     name: 'Local Gossip',
     locationTypes: [...ALL_LOCATION_SUBTYPES],
+    // THR-2105: all eight classes, so each gets a doctrine v2 P1 arrival line. Expands
+    // to exactly ALL_LOCATION_SUBTYPES (pinned both ways by settingClasses.test.ts):
+    // placement is unchanged.
+    settings: SETTING_CLASSES,
+    openings: {
+      rural: '{name} arrives at {location} in the evening, when the day\'s work is done.',
+      urban: '{name} arrives at {location} and takes a seat in a busy tavern.',
+      stronghold: '{name} reaches {location} in the evening, when the garrison is off duty.',
+      sacred: '{name} arrives at {location} as the pilgrims settle for the evening.',
+      arcane: '{name} arrives at {location}, where the servants eat together after dark.',
+      ruin: '{name} reaches {location} and finds scavengers camped in the old walls.',
+      wayside: 'Travelling the road, {name} stops for the evening at {location}.',
+      battlefield: '{name} reaches the camp at {location} as the soldiers gather round the fires.',
+    },
     reachPrimary: 'heart',
     reachSecondary: 'shadow',
     encounterType: 'explore',
@@ -10952,18 +11095,18 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         difficulty: AGNOSTIC_DIFFICULTY_BASE,
         duration: 1,
         // THR-1101 (batch 13, hearsay slice).
-        narrative: 'Every place keeps its own historians, and they are not the ones with the records. {actor} has to find them and then be worth the telling.',
+        narrative: 'A group of old talkers here hears everything that happens in {location}. Something happened this season that they will not tell strangers. The last outsider who asked about it was sent away with a lie.\n\n{actor} must win the talkers\' trust before they will say anything true.',
         // THR-1667 S3: the missing afterimages and a dealt hand.
         successAtCostAfterimage: 'The talkers take {actor} in, but the price is a round of drinks, and then another. {actor} learns plenty and pays for all of it.',
         criticalSuccessAfterimage: 'The oldest of the talkers takes a liking to {actor}. She tells the stories the others leave out, including the ones about her own family.',
         criticalFailureAfterimage: '{actor} laughs at a story about a drunk, and the drunk\'s son is sitting among the talkers. The talk stops, and nobody tells {actor} anything after that.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['social', 'presence'] },
         onSuccess: {
-          narrative: '{actor} is handed a stool before asking for one. The talk gets ahead of itself inside ten minutes.',
+          narrative: 'The talkers make room for {actor} and start telling stories. They do not trust {actor} yet, but they are talking.',
           reputationDelta: 0.02,
         },
         onFailure: {
-          narrative: 'The talk goes on around {actor} and never once toward {them}. It is not hostility. The locals simply have not decided yet.',
+          narrative: 'The talkers keep to themselves and ignore {actor}. {actor} must work harder to be let in.',
           reputationDelta: -0.01,
         },
       },
@@ -10973,14 +11116,14 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
         reach: 'shadow',
         difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
         duration: 1,
-        narrative: 'Half of it is wishful, a quarter is spite, and the rest has been improved in the retelling. The true account is the one the talkers keep from strangers, and {actor} has to be trusted enough to hear it.',
+        narrative: 'The talkers tell {actor} many versions of the story. Most are made up or improved in the retelling. Only one is true, and the talkers keep that one for people they trust.',
         // THR-1667 S3: the missing afterimages and a dealt hand.
         successAtCostAfterimage: '{actor} finds the true account, but tests it by repeating it to the wrong listener. By evening the story is going round with {actor}\'s name on it.',
         criticalSuccessAfterimage: 'The detail nobody bothered to alter points somewhere nobody has looked: an old quarrel between two families that neither will speak of.',
         criticalFailureAfterimage: '{actor} trusts the account that flatters nobody. It was made up by the one talker who wanted {actor} to believe it.',
         deal: { count: DEAL_DEFAULT_COUNT, tags: ['insight', 'shadow'] },
         onSuccess: {
-          narrative: 'Late in the evening one of the talkers lowers her voice and tells {actor} the version they do not tell outsiders. It flatters none of them. {actor} takes that one and leaves the rest where it lies.',
+          narrative: 'Late in the evening, one of the talkers tells {actor} the true account. {actor} now knows what the locals keep from strangers.',
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
@@ -10988,7 +11131,7 @@ const ENCOUNTER_TEMPLATES_RAW: EncounterEntry[] = [
           },
         },
         onFailure: {
-          narrative: 'Nobody trusts {actor} with the version they keep for themselves. Every account {actor} hears agrees, and {actor} leaves knowing only what this place would prefer to be the case.',
+          narrative: 'No one trusts {actor} with the true account. {actor} leaves knowing only what the locals tell everyone.',
           reputationDelta: -0.01,
         },
       },

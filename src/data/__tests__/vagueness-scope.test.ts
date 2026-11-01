@@ -197,8 +197,9 @@ describe('the THR-899 acceptance sentences', () => {
  */
 describe('second person is scoped to the narrative classes (THR-1045)', () => {
   it('does not fail the exemplar, whose cards address the player-god', () => {
-    // Three `effectLine`s open with "You …". Narrative surfaces are clean, so
-    // the only second person in this template is the correctly-addressed kind.
+    // Since THR-2105 the exemplar's effectLines use the bare command register
+    // ("Thin the overcast…"); this pins that the narrative surfaces stay clean
+    // and the effectLine carve-out holds if a card does address the god.
     expect(auditTemplate(NUDGE_GOLDEN_EXEMPLAR).failures.filter(f => f.includes('second person')))
       .toEqual([]);
   });
