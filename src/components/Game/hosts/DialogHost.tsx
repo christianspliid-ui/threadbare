@@ -46,7 +46,7 @@ import { previewReachSignatureGrant } from '../../../engine/ascendantBeat';
 import { previewHomeSeat } from '../../../engine/ascendantBeatSeeding';
 import { describeOffering, isRungOpeningOffer } from '../../../engine/godProgression';
 import { isSpineBeatId } from '../../../data/ascendant-beat-content';
-import { beatSubjectNodeId, courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
+import { courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
 import { buildCodexRunContext, type CodexRunStateFilter } from '../../Codex/codexRunState';
 import { AnimateMount } from '../../shared/AnimateMount';
 import { Modal } from '../../shared/Modal';
@@ -279,10 +279,6 @@ export function DialogHost({
           signatureGrantId={previewReachSignatureGrant(gameState, pendingBeat.beatId)}
           // THR-1851: an introduction beat's bound people, so "Attend" can open them.
           subjectRef={beatSubjectRef}
-          // THR-2101 (S5.1): the face of the mortal the beat is about, when it names one. Read
-          // from the beat's own bound id: `beatSubjectRef` is narrowed to a faction (THR-1851's
-          // Attend route), and `dialogSubjectFace` draws nothing for a node that is not a mortal.
-          subjectFace={dialogSubjectFace(gameState, beatSubjectNodeId(pendingBeat))}
           // Spine beats are not dismissable (onboarding); pool beats can be deferred.
           onClose={isSpineBeatId(pendingBeat.beatId) ? undefined : () => setBeatEntered(false)}
         />

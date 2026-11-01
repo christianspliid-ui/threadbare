@@ -17,7 +17,7 @@ import { WorldGraph } from '../../../engine/graph';
 import { DIALOG_HEADING_ICONS, DIALOG_NO_IDEA_HEADINGS, dialogHeadingIcon } from '../../../data/view-content';
 import { ICON_REGISTRY } from '../../../data/icons/iconRegistry';
 import { ledgerRowFace } from '../../../engine/threadedChapters';
-import { beatSubjectNodeId, courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
+import { courtFaces, dialogSubjectFace, receiptChangeArt, receiptTargetVisual } from '../../../engine/views/dialogDressing';
 import { Modal } from '../../shared/Modal';
 import { ChapterView } from '../ChapterView';
 import { DivineReceiptModal } from '../DivineReceiptModal';
@@ -220,20 +220,4 @@ describe('THR-2101 the beat (S5.5, Law 14)', () => {
     warn.mockRestore();
   });
 
-  it("an introduction beat's bound mortal is its subject; a faction or another kind of beat has no face", () => {
-    const state = { graph: world(), familiarityMap: known() };
-    const intro = (id: string) => ({ kind: 'introduction' as const, boundNodeIds: [id] });
-    expect(dialogSubjectFace(state, beatSubjectNodeId(intro('maren')))?.tier).toBe('art');
-    expect(dialogSubjectFace(state, beatSubjectNodeId(intro('fac-1')))).toBeNull();
-    expect(beatSubjectNodeId({ kind: 'offering', boundNodeIds: ['maren'] })).toBeUndefined();
-  });
-
-  it('a beat about a mortal shows their face in the medallion', () => {
-    const face = dialogSubjectFace({ graph: world(), familiarityMap: known() }, 'maren');
-    render(
-      <AscendantBeatModal open pending={{ beatId: 'beat.pool.not_authored_anywhere', kind: 'investment', offeredTurn: 1 } as PendingBeat}
-        onResolve={vi.fn()} subjectFace={face} />,
-    );
-    expect(screen.getByTestId('reveal-medallion').closest('[data-dialog-face]')?.getAttribute('data-dialog-face')).toBe('art');
-  });
 });

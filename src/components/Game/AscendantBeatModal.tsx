@@ -28,8 +28,6 @@ import { BEAT_MODAL_M_MIN_CARDS, type DialogSize } from '../shared/dialogSize';
 import { useRefRouterContext } from '../../contexts/RefRouterContext';
 import type { WorldRef } from '../../types/worldRef';
 import { RevealCard } from '../shared/RevealCard';
-import { EntityVisual } from '../shared/EntityVisual';
-import type { EntityVisualDescriptor } from '../../engine/views/entityVisualResolver';
 import { ActionCard } from './ActionCard';
 import { CARD_WIDTH_PX } from '../shared/CardFace';
 import type { WheelSlot } from '../../engine/wheel';
@@ -98,11 +96,6 @@ interface AscendantBeatModalProps {
    * beat and then opens that people's sheet — the popup used to lead nowhere.
    */
   subjectRef?: WorldRef;
-  /**
-   * THR-2101 (S5.1) — the face of the mortal the beat is about, resolved by the dialog host
-   * when `subjectRef` names one (knowledge-gated). Absent → the beat draws as before.
-   */
-  subjectFace?: EntityVisualDescriptor | null;
 }
 
 // ─── Kind-derived presentation (placeholder until THR-514 prose) ─────
@@ -473,7 +466,6 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
   rungOpening,
   signatureGrantId,
   subjectRef,
-  subjectFace,
 }: AscendantBeatModalProps) {
   const router = useRefRouterContext();
   const def = useMemo(() => getBeatDefinitionById(pending.beatId), [pending.beatId]);
@@ -524,13 +516,6 @@ export const AscendantBeatModal = memo(function AscendantBeatModal({
           never push it past the panel edge. */}
       <div style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
         <RevealCard.Frame>
-          {subjectFace && (
-            <div data-dialog-face={subjectFace.tier}>
-              <RevealCard.Medallion title={subjectFace.alt}>
-                <EntityVisual size="portrait" shape="circle" descriptor={subjectFace} />
-              </RevealCard.Medallion>
-            </div>
-          )}
           <RevealCard.Title>{presentation.eyebrow}</RevealCard.Title>
           <RevealCard.Banner>{title}</RevealCard.Banner>
 
