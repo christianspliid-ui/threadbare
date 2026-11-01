@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 14:55 local (13:55 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 15:58 local (14:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,11 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Panel anatomy — one reading order that every core panel follows](https://linear.app/threadbare/issue/THR-2117/panel-anatomy-one-reading-order-that-every-core-panel-follows) ([decision](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-11-01-ui-panel-anatomy.md)): every panel reads in the same order. First who or what it is, then one line saying what is going on with it now, then what your god can do, then the detail, then the links out. Veto line: "a different panel order".
+- Same ticket: on a wide page, a mortal's or god's name sits above their portrait, not under it. The portrait stays just as big. Veto line: "the portrait comes first".
+- Same ticket: an encounter's title becomes the strongest words at the top of the Stage (today it is the faintest), and the line saying what is at stake sits right under it. Veto line: "keep the encounter header as it is".
+- Same ticket: a dialog shows its title once (the choice dialog shows it twice today), and the button you press comes last. Veto line: "keep the dialog titles".
+- Same ticket: a panel has at most two levels of heading and at most two frames, one inside the other. Text lines up on one left edge and is never centred. Veto line: "keep the centred headers".
 - [Art-led pass, slice 7 — lists and notices](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2103-art-led-lists.md)): a row about a mortal, a place, a faction, an army or a relic shows its small picture beside the name, in the Chronicle, Notables, Threads, Read the Threads, toasts and Find. A mortal you have not come to know shows the silhouette. Veto line: "no pictures in the lists". Window closes about 00:00 UTC tonight.
 - Same ticket: a Chronicle entry shows one picture, for the first name it links that has one. The other names stay links, and hovering them shows their face. Veto line: "a picture for every name in the Chronicle".
 - Same ticket: Threads drops its initials circles. Each mortal shows their face, or the game's designed tile. Veto line: "keep the initials in Threads".
@@ -43,14 +48,8 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: the warm-start wait shows the current season's carved shape beside the season words, and no face. Veto line: "show The First on the warm start".
 - Same ticket: Settings stays plain; its title gets the cog, and its two emoji (⏱ 📌) become carved shapes. Veto line: "leave settings alone".
 - Same ticket: "Divine Court", "The First", "Apex", "Inner Circle", "Outer Reaches" and the beat's heading have no fitting carved shape, so they draw none and join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "pick a near icon instead".
-- [Art-led pass, slice 4 — the Stage moments](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2100-art-led-stage.md)): every moment that plays over the map shows its mortal's face at one size, beside the title. Veto line: "keep the Stage faces as they are". Window closes about 14:30 UTC today.
-- Same ticket: in an encounter, that face sits in the left column under the scene picture, and the tiny face beside the name goes. Veto line: "keep the small face beside the name".
-- Same ticket: the new-power dilemma shows the face of the mortal who delved, not a picture of the ruin. Veto line: "show the ruin on the dilemma".
-- Same ticket: the aftermath's SCAR / BOND / BOON / PATH chips draw their carved shapes instead of today's ✕ ◈ ✦ ◆ marks. Veto line: "keep the old chip marks".
-- Same ticket: a relic won or lost in an encounter shows its painting on its chip, and clicking it opens the relic. Veto line: "no relic pictures on encounter chips".
-- Same ticket: *At stake*, the whisper header, *Let it be* and *Corrupt* draw no shape and join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "pick a near icon instead".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([early](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md), [this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md), [09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md), [12:46](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01d.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md), [09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md), [12:46](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01d.md), [15:24](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01e.md))*
 
 ## This week's screens
 
@@ -58,12 +57,14 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([early](h
 
 ## Queue
 
-**Healthy (4 ready).** The town-card fix ([THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26)) was re-scoped to ship as it was, merged in [PR #2678](https://github.com/christianspliid-ui/threadbare/pull/2678), and is live. Art-led slices 4–7 wait on their veto windows: [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC. So the builder stands down until 14:30, which is correct.
+**Healthy (3 ready).** The builder took [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (the Stage moments) when its veto window closed at 14:30 UTC and is building it now on [branch `claude/thr-2100-art-led-stage`](https://github.com/christianspliid-ui/threadbare/tree/claude/thr-2100-art-led-stage). The other art-led slices wait on their windows: [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC. The type-size question on [the UI legibility map](https://linear.app/threadbare/issue/THR-2114) stays yours from charting; the panel census it waited on is done, so it is ready when you are.
 
 Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or dirty worktree carries its id (checked this run). Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or worktree carries its id (checked this run). Agents can un-park it in an attended run.
 
 ## Health
 
-All green. The live site serves the latest commit on main (4dd364cf, the town-card fix). Checks on main and the scheduled background jobs pass, and no pull request is waiting to merge. All nine enabled scheduled tasks are on time, the builder is running normally, and the worktree reaper is running now (started 14:40). Engine speed is normal (169 ms per tick, 2% above the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.
+- Engine speed check: "tick cost 377 ms/tick steady, 130% above the 7-day median (164, 128 rows since e67e0517); top phase agent_decision, 639 agents. Name the merges between e67e0517 and 71fcf9d5: git log --oneline --merges e67e0517..71fcf9d5". No engine code changed since last hour's 169 ms reading (only docs merged), so this is most likely the machine being busy with the builder's run; the next hourly reading will tell.
+
+Everything else is green. The live site is up to date (only docs merged since the last publish). Checks on main and the scheduled background jobs pass, and no pull request is waiting to merge. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 15:40. The 40-hour silence on 29–30 Oct is on your list above.
