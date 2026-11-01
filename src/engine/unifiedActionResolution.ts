@@ -124,7 +124,7 @@ import { accruePlayerReachPractice } from './reachPractice';
 import type { ControlEffect } from '../types/controlEffect';
 import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
-import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
+import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE, GOD_PUSH_ESSENCE_CAP } from '../types/sphereAffinity';
 import { castTargetBand, dominionSphereFactor, placeOf, shiftBreakSphere } from './dominion';
 import { DOMINION_BREAK_PRESSURE, DOMINION_SHIFT_TEMPLATE_ID } from '../data/dominion-content';
 import { resolveRevelationAction } from './revelationEmitter';
@@ -255,6 +255,21 @@ import {
   PLAYER_CAST_PUSH_ENABLED,
   ascendantCastRawBonus,
 } from '../data/player-cast-constants';
+
+/**
+ * How much a resolved card's price multiplies its sphere push (THR-2094 Decision 2).
+ * Only the god's casts scale: `min(cap, max(1, essenceCost))`. Mortal and rival casts,
+ * and a missing or zero price, are 1.
+ */
+export function godPushScale(
+  isGodCast: boolean,
+  essenceCost: number | undefined,
+  cap: number = GOD_PUSH_ESSENCE_CAP,
+): number {
+  if (!isGodCast) return 1;
+  const cost = typeof essenceCost === 'number' && Number.isFinite(essenceCost) ? essenceCost : 1;
+  return Math.max(1, Math.min(cap, Math.max(1, cost)));
+}
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -4468,16 +4483,19 @@ export function phaseUnifiedActionProgress(
     // Sphere pressure: push pressure on action's target entity on resolution.
     // Fail-soft: skip if template has no sphereAffinity or action has no targetId.
     if (updatedAction.resolved && template.sphereAffinity && completing_action.targetId) {
-      const magnitude = isActionSuccess(updatedAction.outcome)
+      const base = isActionSuccess(updatedAction.outcome)
         ? ACTION_PRESSURE_SUCCESS
         : ACTION_PRESSURE_FAILURE;
+      // THR-2094 Decision 2: the god's card pushes by its price, capped (a look 3, a working 6).
+      const pushScale = godPushScale(completing_action.actorId === state.ascendantId, template.essenceCost);
       spherePressures.push({
         targetEntityId: completing_action.targetId,
         sphere: template.sphereAffinity,
-        magnitude,
+        magnitude: base * pushScale,
         source: 'divine_action',
         sourceId: completing_action.actionId,
         causedBy: completing_action.actorId,
+        ...(pushScale > 1 ? { pushScale } : {}),
       });
     }
 

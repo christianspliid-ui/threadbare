@@ -41,6 +41,7 @@ import { MANDATE_GOD_LEDGER_ENABLED } from '../data/game-config';
 import { isGodCausedPush, mandateCreditsFor } from './mandateLedger';
 import { entityAggregateWeight } from './phaseSphereAggregation';
 import { resolveHexPressureTargets } from './hexPressureTarget';
+import { resolveTownPressureTargets } from './townPressureTarget';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity
@@ -435,6 +436,16 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
     for (const t of resolved.traces) emitTrace(t);
   } catch {
     // Fail-soft: hex pushes stay unanchored and are skipped below, as before.
+  }
+
+  // THR-2094: the god's push at a town lands in the town's Place holding least of the
+  // sphere; the card's own effects stay on the town.
+  try {
+    const resolved = resolveTownPressureTargets(state.graph, pressures, state.ascendantId, state.tick);
+    pressures = resolved.pressures;
+    for (const t of resolved.traces) emitTrace(t);
+  } catch {
+    // Fail-soft: pushes stay on their towns.
   }
 
   // Group pressures by target entity

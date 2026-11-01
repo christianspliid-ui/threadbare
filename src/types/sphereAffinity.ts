@@ -60,6 +60,16 @@ export interface SpherePressureEvent {
    * resolved action. Absent reads as not the god's.
    */
   causedBy?: string;
+  /**
+   * The town the card was aimed at, when `resolveTownPressureTargets` re-aimed the god's
+   * push onto one of its Places (THR-2094). Absent on every other push.
+   */
+  aimedAtId?: string;
+  /**
+   * How much the card's price multiplied the god's push (THR-2094), set only above 1.
+   * Read by the trace viewer to explain a larger push.
+   */
+  pushScale?: number;
 }
 
 /**
@@ -88,6 +98,18 @@ export const ACTION_PRESSURE_SUCCESS = 3;
  * 2 reaches 99.4% of land hexes on the seeded medium world; 1 reaches 87%.
  */
 export const HEX_PRESSURE_FALLBACK_RADIUS = 2;
+/**
+ * When the god works a town, its sphere push lands in the town's Place holding least of
+ * that sphere (THR-2094 Decision 1). `false` keeps every push on the town.
+ */
+export const GOD_PUSH_LANDS_IN_SUBLOCATION = true;
+/** Which target subtypes count as towns for that re-aim — the set the town cards name. */
+export const GOD_PUSH_TOWN_SUBTYPES: readonly string[] = ['settlement', 'hamlet', 'town', 'city', 'capital'];
+/**
+ * The most a god card's essence price multiplies its push (THR-2094 Decision 2): a
+ * 1-essence look pushes 3, every card at 2 essence or more pushes 6. `1` restores today.
+ */
+export const GOD_PUSH_ESSENCE_CAP = 2;
 /** Pressure applied to target on failed divine action */
 export const ACTION_PRESSURE_FAILURE = 1;
 /**
