@@ -31,7 +31,7 @@ import type {
   MonsterMintedTrace,
   HuntTrackCompletedTrace,
 } from './traces/monster-traces';
-import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace, HexPressureTrace } from './traces/sphere-traces';
+import type { SpherePressureResolvedTrace, SphereSeededTrace, SpherePointsFallbackTrace, HexPressureTrace, TownPressureTrace } from './traces/sphere-traces';
 import type { AccountLoadedTrace, AccountSavedTrace, AccountUnreadableTrace, HarvestDivineEchoPickedTrace, AccountWorldShapedTrace, AccountPlacesTiltedTrace, EchoSeededTrace, EchoSeedSkippedTrace, AgeEndedTrace, TwilightBeatsBuiltTrace, TwilightFallbackTrace, ResonanceMemoryCapturedTrace, ResonanceMemoryEvictedTrace, AccountHungerWokenTrace, AccountCardsUnsealedTrace } from './traces/account-traces';
 import type { DominionBandChangeTrace, DominionTendTrace, DominionNeglectTrace, DominionRaidTrace, DominionAttunementTrace, DominionSeatFloorTrace, DominionReadTrace, DominionLensRebuiltTrace } from './traces/dominion-traces';
 import type { ItemGeneratedTrace, ItemGenerateFallbackTrace, RewardGeneratedTrace } from './traces/item-generator-traces';
@@ -705,6 +705,8 @@ export type TraceCategory =
   // A hex-aimed push anchored on a place, or dropped (THR-2087)
   | 'sphere_pressure.hex_resolved'
   | 'sphere_pressure.hex_unanchored'
+  // The god's push at a town re-aimed onto one of its Places (THR-2094)
+  | 'sphere_pressure.town_resolved'
   // Buy your spheres — the bought vector was missing or invalid, preset used (THR-1749)
   | 'sphere_points.fallback'
   // Dominion — the god's home turf (THR-1748). Interfaces in `src/types/traces/dominion-traces.ts`.
@@ -1087,6 +1089,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   // Hex-aimed pushes (THR-2087)
   'sphere_pressure.hex_resolved',
   'sphere_pressure.hex_unanchored',
+  // Town pushes re-aimed onto a Place (THR-2094)
+  'sphere_pressure.town_resolved',
   // Buy your spheres — preset fallback (THR-1749)
   'sphere_points.fallback',
   // Dominion (THR-1748)
@@ -5890,6 +5894,7 @@ export type TraceEntry =
   | SphereSeededTrace
   | SpherePointsFallbackTrace
   | HexPressureTrace
+  | TownPressureTrace
   // Dominion (THR-1748)
   | DominionBandChangeTrace
   | DominionTendTrace

@@ -20,8 +20,8 @@ remediation ticket or the build fails.
 | 🔴 LEAKED | 7 |
 | 🟣 HOLLOW | 0 |
 | ⚫ UNWIRED | 0 |
-| 🔵 UNVERIFIED-OK | 108 |
-| **Total** | **344** |
+| 🔵 UNVERIFIED-OK | 109 |
+| **Total** | **345** |
 
 ## Contracts by producing subsystem
 
@@ -436,6 +436,7 @@ remediation ticket or the build fails.
 | `echo-lift-reads-dominion` | An earlier god's monument is raised until the new god feels it: ground already theirs when the old god was kin, ground that stands against them when it was opposed. | function: `dominionOf`, `matchOfScores` | World Generation, Terrain & Places | 🔵 UNVERIFIED-OK | — |
 | `essence-earned-unlocks-attunement-cards` | Working a sphere teaches you its deeper tricks: essence drawn through a sphere over a lifetime widens what that sphere deals you, so a god who actually uses their power ends the run holding more of it than a god who hoarded. | state-field: `essenceEarnedBySphere` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `faction-sphere-aggregate-reaches-battle-aftermath` | A faction's sphere character is what its people carry, so a sacked town is pressed toward the sphere the victors live by — and a faction with no sphere at all presses nothing. | node-prop: `computeFactionSphereAggregates`, `getFactionSphereScores`, `FactionSphereAggregate` | War, Armies & Battles | 🟢 LIVE | — |
+| `god-card-push-lands-in-town-place` | Town cards reach the Mandate (THR-2094). The resolved card push in `phaseUnifiedActionProgress` scales by the god's price (`godPushScale`: `min(GOD_PUSH_ESSENCE_CAP, max(1, essenceCost))`, a look 3 and a working 6; mortal casts unchanged) and carries `pushScale`; in `phaseSpherePressure`, right after the hex resolver, `resolveTownPressureTargets` re-aims the god's push at a `GOD_PUSH_TOWN_SUBTYPES` town onto its Place holding least of the sphere (ties by id), setting `aimedAtId` and tracing `sphere_pressure.town_resolved`. The card's own effects stay on the town, and while `GOD_PUSH_TOWN_KEEPS_ECHO` holds an unscaled copy of the push (`townEcho`) stays on it too, so the town's Dominion reads move as before; `isGodCausedPush` never counts that copy, and `phaseSpherePressure` credits the town as if the copy were absent (re-resolved without it), so the Mandate credits the card only on the Place. | function: `resolveTownPressureTargets` | Mandate | 🔵 UNVERIFIED-OK | — |
 | `nudge-hand-runtime-filters-and-sphere-discount` | The hand the player is dealt reflects the world as it actually is — group cards only in groups, favor calls only when a favor is owed — and a sphere the god is aligned to makes its own work cheaper. | function: `buildNudgeHand`, `effectiveNudgeCost`, `totalNudgeCost` | Encounters & Dilemmas | 🔵 UNVERIFIED-OK | THR-883 |
 | `place-sphere-reaches-encounter-opening` | Where no culture holds a place but one sphere clearly dominates it, the encounter opening states what that power does to this kind of trouble — never naming the sphere as game jargon. | node-prop: `seedLocationSphereAffinity`, `getNodeSphereAffinity`, `sphereShareOf`, `SPHERE_FACTS` | Encounters & Dilemmas | 🟢 LIVE | — |
 | `quintessence-threshold-gates-candidacy-and-movement` | A mortal worn to nothing goes out of the story rather than grinding on unchanged — the previously missing consumer of the weakened/critical threshold states. Without it, quintessence loss has no behavioural consequence at all. | node-prop: `isBrokenMortal`, `brokenGateActive`, `computeBrokenDriftBonus`, `brokenSince` | Encounters & Dilemmas | 🟠 PARTIAL | THR-778 |
@@ -2455,6 +2456,17 @@ exit
 - **Other hits:** `src/data/spell-generator-cores.ts`, `src/debug-bridge.ts`, `src/engine/spellGenerator/describeSpell.ts`
 - **Verdict:** Verified 2026-10-03: THR-1572. spellGenerator.gate.test.ts: for seeds 7, 42, 99 × all 34 traditions (612 spells), zero validator problems and zero read-back failures — carried spells are borne through has_trait and read back by the item read-back's readers (readBackEffects); deliberate spells are cast through resolveCast on success and failure from identical worlds, each write present after the landed cast and absent after the fizzle. Every one of the 24 surviving cores fires. The dishonest control batch fails: a cast duration, a doom_rate_multiplier, an enemy-filtered encounter cast, a notice no template answers, a stateful carried primitive, a carried self_remove (it deletes the shared definition node for every bearer), a holy tradition paying transgression.
 
+### `god-card-push-lands-in-town-place` — 🔵 UNVERIFIED-OK
+
+- **Intent:** Town cards reach the Mandate (THR-2094). The resolved card push in `phaseUnifiedActionProgress` scales by the god's price (`godPushScale`: `min(GOD_PUSH_ESSENCE_CAP, max(1, essenceCost))`, a look 3 and a working 6; mortal casts unchanged) and carries `pushScale`; in `phaseSpherePressure`, right after the hex resolver, `resolveTownPressureTargets` re-aims the god's push at a `GOD_PUSH_TOWN_SUBTYPES` town onto its Place holding least of the sphere (ties by id), setting `aimedAtId` and tracing `sphere_pressure.town_resolved`. The card's own effects stay on the town, and while `GOD_PUSH_TOWN_KEEPS_ECHO` holds an unscaled copy of the push (`townEcho`) stays on it too, so the town's Dominion reads move as before; `isGodCausedPush` never counts that copy, and `phaseSpherePressure` credits the town as if the copy were absent (re-resolved without it), so the Mandate credits the card only on the Place.
+- **Producer → Consumer:** Spheres & Quintessence → Mandate
+- **UL terms:** *Victory Mandate*, *Sphere*, *Place*
+- **Module:** `src/engine/townPressureTarget.ts`
+- **Production hits:** 2 total — 1 write, 1 read, 0 unclassified
+- **Write sites:** `src/engine/townPressureTarget.ts`
+- **Read sites:** `src/engine/phaseSpherePressure.ts`
+- **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
+
 ### `god-reads-mortal-intention` — 🟢 LIVE
 
 - **Intent:** The god reads what a mortal is set on — the ambition and the work it heads toward — through one rule everywhere: having watched them, or a followed mortal’s mark on them, or a followed network’s people near them. A mortal’s intelligence work counts as the god’s own knowledge, so running a ring or digging up a secret changes what the player can see on a sheet; and a secret work (the plot) is never read by watching alone.
@@ -3295,10 +3307,10 @@ exit
 
 - **Intent:** A receipt toast carries its outcome band so the toast accent matches how the cast landed.
 - **Producer → Consumer:** Encounters & Dilemmas → Attention, Chronicle & Narrative
-- **Production hits:** 473 total — 1 write, 1 read, 471 unclassified
+- **Production hits:** 474 total — 1 write, 1 read, 472 unclassified
 - **Write sites:** `src/engine/playerReceipts.ts`
 - **Read sites:** `src/engine/notificationRouter.ts`
-- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +466 more
+- **Other hits:** `src/components/CMS/encounter-package/buildEncounterPackage.ts`, `src/components/CMS/encounter-package/EncounterPackageViewer.tsx`, `src/components/CMS/encounter-package/PackageBlocks.tsx`, `src/components/CMS/registry.ts`, `src/components/CMS/tunableConstants.ts` +467 more
 - **Verdict:** Tier 2: production writes and reads both present. Not proof of liveness — payloads are unchecked.
 
 ### `recovered-town-keeps-faith` — 🟢 LIVE
@@ -3534,10 +3546,10 @@ exit
 - **Producer → Consumer:** Ambitions & Undertakings → Ruins, Clues & Delves
 - **UL terms:** *Undertaking*
 - **Module:** `src/data/undertaking-objects.ts`
-- **Production hits:** 141 total — 1 write, 1 read, 139 unclassified
+- **Production hits:** 142 total — 1 write, 1 read, 140 unclassified
 - **Write sites:** `src/data/undertaking-objects.ts`
 - **Read sites:** `src/engine/ruins/delveVariant.ts`
-- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +134 more
+- **Other hits:** `src/components/Game/debug/ArmiesTabContent.tsx`, `src/components/Game/debug/DebugTabContent.tsx`, `src/components/Game/debug/EconomyDebugTab.tsx`, `src/components/Game/GameView.tsx`, `src/components/Game/hooks/useAvatarData.ts` +135 more
 - **Verdict:** Verified 2026-09-07: THR-1428 R2. The `destroy × Location` semantic stamps `ruinMagnitude` from `RUINED_SETTLEMENT_MAGNITUDE_BY_SUBTYPE`; `phaseDelveAdmission` widens its filter from `locationType === 'elder_ruin'` to also admit a `ruins`-subtype Location once `ruinedTick + RUINED_SETTLEMENT_DELVE_DECAY_TICKS <= tick`, with the located-clue requirement unchanged. Non-vacuous by four tests in `src/engine/ruins/__tests__/delveVariant.test.ts` that assert the admit arm, the still-fresh refuse arm, the worldgen-ruin refuse arm (no `ruinedTick`) and the narrowed-clue refuse arm — a scan that admitted every `ruins` location passes the first alone, one that admitted none passes the second alone. **`sphereAlignment` is deliberately not written:** the plan named a new `ruinSphereAlignment`, but `delveVariant` reads `sphereAlignment`, so the new name would have been another write nobody reads; the existing property is carried through untouched and a settlement without one takes the vault archetype.
 
 ### `rule-overrides-reach-owning-sites` — 🟢 LIVE

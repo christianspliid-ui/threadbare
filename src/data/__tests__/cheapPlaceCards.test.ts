@@ -9,7 +9,7 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../../engine/graph';
 import { executeGraphOps, resetOpCounter } from '../../engine/graphOpExecutor';
-import { phaseUnifiedActionProgress } from '../../engine/unifiedActionResolution';
+import { godPushScale, phaseUnifiedActionProgress } from '../../engine/unifiedActionResolution';
 import { getFortificationModifier } from '../../engine/siegeResolution';
 import { offerableCards, priceSphere, godCards } from '../../engine/godProgression';
 import { checkGodCardProgression, CHEAP_PLACE_CARD_MAX_COST } from '../../engine/godCardProgressionCheck';
@@ -163,7 +163,8 @@ describe('THR-2089 — the three cards', () => {
     } as unknown as GameState;
     const result = phaseUnifiedActionProgress(state, [tpl], () => 0.5) as Partial<GameState>;
     const push = (result.pendingSpherePressures ?? []).find((p) => p.sphere === sphere && p.source === 'divine_action');
-    expect(push).toMatchObject({ targetEntityId: TOWN, magnitude: ACTION_PRESSURE_SUCCESS });
+    // THR-2094: the god's 2-essence working pushes twice a look.
+    expect(push).toMatchObject({ targetEntityId: TOWN, magnitude: ACTION_PRESSURE_SUCCESS * godPushScale(true, tpl.essenceCost), pushScale: 2 });
   });
 });
 

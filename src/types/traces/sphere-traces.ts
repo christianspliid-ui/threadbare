@@ -69,6 +69,22 @@ export interface HexPressureTrace extends TraceBase {
   distance?: number;
 }
 
+/**
+ * The god's push at a town re-aimed onto the town's Place holding least of that sphere
+ * (THR-2094). One per re-aimed push; a town with no Places emits nothing.
+ */
+export interface TownPressureTrace extends TraceBase {
+  category: 'sphere_pressure.town_resolved';
+  /** Where the card was aimed. */
+  townId: string;
+  /** The Place the push landed in. */
+  sublocationId: string;
+  sphere: SphereName;
+  sourceId: string;
+  /** That Place's score in the sphere before the push. */
+  sublocationScore: number;
+}
+
 /** Why a bought sphere vector was rejected (THR-1749). */
 export type SpherePointsInvalidReason = 'foundation_sphere' | 'over_cap' | 'not_whole' | 'wrong_total' | 'both_poles';
 

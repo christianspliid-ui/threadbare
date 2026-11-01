@@ -460,6 +460,7 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 | `tick` (1) | `tickHealthMonitor.ts` | — |
 | `tier` (1) | `tierPromotion.ts` | — |
 | `tooltip` (1) | `tooltipResolver.ts` | `THR-1159`, `THR-1172`, `THR-1486`, `THR-1551`, `THR-1553`, `THR-1923` |
+| `town` (1) | `townPressureTarget.ts` | `THR-2094` |
 | `trace` (1) | `traceBuffer.ts` | `THR-1514` |
 | `trade` (3) | `tradeRoute.ts`, `tradeRouteMarkers.ts`, `tradeRouteOps.ts` | `Phase 1`, `THR-1188`, `THR-1636`, `THR-611`, `THR-616`, `THR-670`, `THR-830` |
 | `trait` (4) | `traitDefinitionSeeding.ts`, `traitRefIndex.ts`, `traitRefValidation.ts`, `traitShape.ts` | `THR-1394`, `THR-1395`, `THR-1503`, `THR-786`, `THR-809` |
@@ -486,4 +487,4 @@ completeness guarantee — if a system is coded, it is in this table. Sorted alp
 
 ---
 
-_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 241 engine domains · 808 modules._
+_Counts: 28 registered subsystems (2 dormant) · 114 tick phases · 242 engine domains · 809 modules._

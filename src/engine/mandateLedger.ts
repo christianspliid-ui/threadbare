@@ -67,6 +67,8 @@ const THREADED_SCENE_SOURCES: ReadonlySet<PressureSource> = new Set<PressureSour
  * god's (fail-soft: an unlisted writer cannot inflate the Mandate).
  */
 export function isGodCausedPush(p: SpherePressureEvent, graph: Graph, ascendantId: string): boolean {
+  // THR-2094: a re-aimed push's town copy; its Place copy carries the credit.
+  if (p.townEcho) return false;
   if (GOD_ONLY_SOURCES.has(p.source)) return true;
   if (!p.causedBy || !ascendantId) return false;
   if (p.causedBy === ascendantId) return true;

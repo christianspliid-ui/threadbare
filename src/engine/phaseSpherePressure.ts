@@ -41,6 +41,13 @@ import { MANDATE_GOD_LEDGER_ENABLED } from '../data/game-config';
 import { isGodCausedPush, mandateCreditsFor } from './mandateLedger';
 import { entityAggregateWeight } from './phaseSphereAggregation';
 import { resolveHexPressureTargets } from './hexPressureTarget';
+import {
+  TOWN_ECHO_BANK_KEY,
+  readTownEchoBank,
+  resolveTownPressureTargets,
+  townEchoBankAfter,
+  withoutTownEchoBank,
+} from './townPressureTarget';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity
@@ -77,6 +84,8 @@ export interface SpherePressureTrace {
   sources: PressureSource[];
   /** Their `sourceId`s, same order as `sources`. */
   sourceIds: string[];
+  /** Each writer's price multiplier (THR-2094), same order; present only when one is above 1. */
+  pushScales?: number[];
 }
 
 // ─── Step 1: Net pressures by sphere ────────────────────────────────
@@ -247,10 +256,14 @@ export function resolveSpherePressure(
   const primarySource: PressureSource = pressures[0]?.source ?? 'environmental';
   // THR-1768: every writer netted into a sphere — the sphere itself and its opposite,
   // since cancellation folds both into the surviving entry.
-  const writersFor = (sphere: SphereName): { sources: PressureSource[]; sourceIds: string[] } => {
+  const writersFor = (sphere: SphereName): { sources: PressureSource[]; sourceIds: string[]; pushScales?: number[] } => {
     const opp = SPHERE_OPPOSITES[sphere];
     const hits = pressures.filter(p => p.sphere === sphere || p.sphere === opp);
-    return { sources: hits.map(p => p.source), sourceIds: hits.map(p => p.sourceId) };
+    const writers = { sources: hits.map(p => p.source), sourceIds: hits.map(p => p.sourceId) };
+    // THR-2094: say why a god push is larger than a look.
+    return hits.some(p => (p.pushScale ?? 1) > 1)
+      ? { ...writers, pushScales: hits.map(p => p.pushScale ?? 1) }
+      : writers;
   };
 
   for (const sphere of SPHERE_NAMES) {
@@ -437,6 +450,16 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
     // Fail-soft: hex pushes stay unanchored and are skipped below, as before.
   }
 
+  // THR-2094: the god's push at a town lands in the town's Place holding least of the
+  // sphere; the card's own effects stay on the town.
+  try {
+    const resolved = resolveTownPressureTargets(state.graph, pressures, state.ascendantId, state.tick);
+    pressures = resolved.pressures;
+    for (const t of resolved.traces) emitTrace(t);
+  } catch {
+    // Fail-soft: pushes stay on their towns.
+  }
+
   // Group pressures by target entity
   const byEntity = new Map<string, SpherePressureEvent[]>();
   for (const p of pressures) {
@@ -527,10 +550,44 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
       });
     }
 
+    // THR-2094: a re-aimed push's town copy (`townEcho`) moves the town but earns
+    // nothing — its Place copy carries the credit. The town is credited as if no copy had
+    // ever reached it: re-resolved without this tick's copies, from its progress less what
+    // earlier copies banked (`TOWN_ECHO_BANK_KEY`), so a copy neither dilutes a seat, claim
+    // or carry push's share nor lends them a level-up it filled, this tick or later.
+    const creditPressures = entityPressures.filter(p => !p.townEcho);
+    let copyFree: { updated: SphereAffinity; traces: SpherePressureTrace[] } | null = null;
+    try {
+      const echoBank = readTownEchoBank(node.properties, entityAffinity);
+      if (echoBank || creditPressures.length < entityPressures.length) {
+        copyFree = resolveSpherePressure(withoutTownEchoBank(entityAffinity, echoBank), creditPressures, presentAgents);
+      }
+    } catch {
+      // Fail-soft: credit the real resolve, keep the old bank.
+    }
+
     if (ledgerSpheres) {
       try {
         const weight = entityAggregateWeight(node) ?? 0;
-        mandateCredits.push(...mandateCreditsFor(entityId, weight, entityPressures, tickedTraces, isGod, ledgerSpheres));
+        // Only gains come from the copy-free resolve, and only up to what the town really
+        // gained; wear is debited from the real resolve, so an opposition push a copy
+        // cancelled debits nothing.
+        if (!copyFree) {
+          mandateCredits.push(...mandateCreditsFor(entityId, weight, entityPressures, tickedTraces, isGod, ledgerSpheres));
+        } else {
+          const realRise = new Map<SphereName, number>();
+          for (const t of tickedTraces) realRise.set(t.sphere, t.newScore - t.previousScore);
+          const gainTraces = copyFree.traces
+            .map(t => {
+              const rise = Math.min(t.newScore - t.previousScore, realRise.get(t.sphere) ?? 0);
+              return { ...t, newScore: t.previousScore + Math.max(0, rise) };
+            });
+          const lossTraces = tickedTraces.filter(t => t.newScore < t.previousScore);
+          mandateCredits.push(
+            ...mandateCreditsFor(entityId, weight, creditPressures, gainTraces, isGod, ledgerSpheres),
+            ...mandateCreditsFor(entityId, weight, entityPressures, lossTraces, isGod, ledgerSpheres),
+          );
+        }
       } catch {
         // Fail-soft: this entity credits nothing this tick.
       }
@@ -538,7 +595,10 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
 
     // Write updated affinity back to graph
     updatedGraph.updateNode(entityId, {
-      properties: { sphereAffinity: updated },
+      properties: {
+        sphereAffinity: updated,
+        ...(copyFree ? { [TOWN_ECHO_BANK_KEY]: townEchoBankAfter(updated, copyFree.updated) } : {}),
+      },
     });
 
     // Emit QuintessenceEvent for overchannel pressure — each overchannel event erodes the caster's quintessence

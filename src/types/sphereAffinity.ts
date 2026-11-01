@@ -60,6 +60,22 @@ export interface SpherePressureEvent {
    * resolved action. Absent reads as not the god's.
    */
   causedBy?: string;
+  /**
+   * How much the card's price multiplied the god's push (THR-2094), set only above 1.
+   * Carried onto the `sphere_pressure` trace as `pushScales`, to explain a larger push.
+   */
+  pushScale?: number;
+  /**
+   * Keep this push on its target: the town re-aim leaves it alone (THR-2094). Set by
+   * Shift Dominion's break push, which must land on the place whose band it breaks.
+   */
+  keepOnTarget?: boolean;
+  /**
+   * The copy of a re-aimed god push left on the town at its unscaled size (THR-2094), so
+   * the town's own scores — and every Dominion read of the town — move as before. Never
+   * the god's for the Mandate: the Place copy carries that credit.
+   */
+  townEcho?: boolean;
 }
 
 /**
@@ -88,6 +104,24 @@ export const ACTION_PRESSURE_SUCCESS = 3;
  * 2 reaches 99.4% of land hexes on the seeded medium world; 1 reaches 87%.
  */
 export const HEX_PRESSURE_FALLBACK_RADIUS = 2;
+/**
+ * When the god works a town, its sphere push lands in the town's Place holding least of
+ * that sphere (THR-2094 Decision 1). `false` keeps every push on the town.
+ */
+export const GOD_PUSH_LANDS_IN_SUBLOCATION = true;
+/**
+ * A re-aimed push also stays on the town at its unscaled size, crediting no Mandate, so
+ * working a town still moves its Dominion band and tending (THR-2094 review). `false`
+ * moves the whole push to the Place.
+ */
+export const GOD_PUSH_TOWN_KEEPS_ECHO = true;
+/** Which target subtypes count as towns for that re-aim — the set the town cards name. */
+export const GOD_PUSH_TOWN_SUBTYPES: readonly string[] = ['settlement', 'hamlet', 'town', 'city', 'capital'];
+/**
+ * The most a god card's essence price multiplies its push (THR-2094 Decision 2): a
+ * 1-essence look pushes 3, every card at 2 essence or more pushes 6. `1` restores today.
+ */
+export const GOD_PUSH_ESSENCE_CAP = 2;
 /** Pressure applied to target on failed divine action */
 export const ACTION_PRESSURE_FAILURE = 1;
 /**
