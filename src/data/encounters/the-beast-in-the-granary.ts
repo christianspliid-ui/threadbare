@@ -226,7 +226,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
           narrativeTemplate: '{name} reaches the pack and stops. The bear is asleep across the floor, and every bin of the '
             + 'settlement\'s winter sits behind it.\n\n'
             + 'There is a second door at the far end, barred from the inside. A bear will go toward cold air if '
-            + 'there is cold air to go toward. {They} leave the pack by the near door and go the long way '
+            + 'there is cold air to go toward. {They} leave{s} the pack by the near door and go the long way '
             + 'round.',
           criticalSuccessAfterimage: 'They opened the far door and walked the animal out of the building without laying a hand on it.',
           successAfterimage: 'They got the far door open, and the bear went out through it.',

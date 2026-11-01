@@ -341,7 +341,7 @@ const step0FindTheStairDown: ActionStep = {
   // token). The rival is introduced here, before any later prose refers to
   // them.
   narrativeTemplate:
-    'There {they} find the keepers packing to leave. The seal on the stair down has been broken open. ' +
+    'There {they} find{s} the keepers packing to leave. The seal on the stair down has been broken open. ' +
     'Two of them went below yesterday and one came back.\n\n' +
     'The keepers will stop anyone who goes near the stair. It was shut before any of them were born, ' +
     'and that is reason enough. Another treasure hunter, {cast:rival}, went down an hour ago.',

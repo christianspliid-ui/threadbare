@@ -1021,7 +1021,7 @@ exchange bind every draft:
 
 The approved spine, verbatim (P1 varies by setting class above it):
 
-> There \{they} find a magic relic lying in the open: black iron, freezing cold.
+> There \{they} find\{s} a magic relic lying in the open: black iron, freezing cold.
 > Everyone who tried to carry it away got frostbitten hands and dropped it. No one
 > dares to touch it now.
 >

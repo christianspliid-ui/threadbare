@@ -280,7 +280,7 @@ export const ROUTINE_TEMPLATES: Record<string, ShapedTemplate[]> = {
     },
     {
       shape: 'compound',
-      template: '{name} crossed over — the {adj} {noun} is what {they} leave behind{?has_faction}, and {faction} will carry it{/has_faction}.',
+      template: '{name} crossed over — the {adj} {noun} is what {they} leave{s} behind{?has_faction}, and {faction} will carry it{/has_faction}.',
     },
   ],
   doom_escalation: [

@@ -215,7 +215,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.06,
     imageTag: 'generic.focus',
     effectLine:
-      'You settle their nerve, so the eye rests on the water instead of the crossing to come. A small help.',
+      'Settle their nerve, so the eye rests on the water and not on the crossing to come.',
     bandProse: {
       success: 'Read calm, the river showed its seams.',
       near_miss: 'The calm held to the end. The daylight did not.',
@@ -231,7 +231,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.light',
     effectLine:
-      'You thin the overcast, and low sun crosses the water: shallows show pale, the channel shows dark. A real help.',
+      'Thin the overcast, and let low sun cross the water: shallows show pale, the channel shows dark.',
     bandProse: {
       critical_success:
         'Under the sudden sun the whole ford showed itself, pale stake to pale stake.',
@@ -248,7 +248,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.memory',
     effectLine:
-      'You surface every crossing they have made before this one, so the river reads familiar. A real help.',
+      'Bring back every crossing they have made before this one, so the river reads familiar.',
     bandProse: {
       success_at_cost:
         'Old crossings guided them, and one old crossing put its fear back in their chest.',
@@ -300,7 +300,7 @@ const STEP_0_HAND: readonly StepNudge[] = [
     imageTag: 'generic.decay',
     costs: { doomDelta: 0.05 },
     effectLine:
-      'No essence changes hands: the world’s doom clock runs a shade faster instead. A strong help.',
+      'Clear the way across the river and spend no essence: the world’s doom clock runs a little faster instead.',
     bandProse: {
       success: 'The line came clear at no cost they could see. The clock ran on.',
       failure: 'The debt was taken on, and the river kept no side of the bargain.',
@@ -345,7 +345,7 @@ const STEP_1_HAND: readonly StepNudge[] = [
     forecastDelta: 0.1,
     imageTag: 'generic.strength',
     effectLine:
-      'When their arms go dead on the rope, the body finds one more pull. A real help.',
+      'When their arms go dead on the rope, give the body one more pull.',
     bandProse: {
       success: 'The last pull came from a reserve they had never needed before.',
       failure: 'There was one more pull in them. The river asked for three.',

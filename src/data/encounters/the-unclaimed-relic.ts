@@ -241,7 +241,7 @@ const step0HoldOnToIt: ActionStep = {
   // `opening` fragment slot). The claimant is introduced here, before any
   // later prose refers to them.
   narrativeTemplate:
-    'There {they} find a magic relic lying in the open: black iron, freezing cold. Everyone who tried to ' +
+    'There {they} find{s} a magic relic lying in the open: black iron, freezing cold. Everyone who tried to ' +
     'carry it away got frostbitten hands and dropped it. No one dares to touch it now.\n\n' +
     'The relic is unclaimed — whoever carries it out may keep it. Another treasure hunter, {cast:claimant}, ' +
     'is waiting nearby, ready to try again.',

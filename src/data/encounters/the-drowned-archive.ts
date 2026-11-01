@@ -493,7 +493,7 @@ const step0GoDownUnheard: ActionStep = {
   // token). The keeper and the warden are both introduced here, before any
   // later prose refers to them.
   narrativeTemplate:
-    'There {they} find the record vault under water. A page floated up this morning: the founding ' +
+    'There {they} find{s} the record vault under water. A page floated up this morning: the founding ' +
     'families never owned this ground. {cast:keeper} went down as far as the water and turned back. A ' +
     'warden sits in the dark below.\n\n' +
     'The water is rising. By dark it will be over the shelves, and the rest of the record is gone.',

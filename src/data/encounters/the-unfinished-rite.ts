@@ -141,7 +141,7 @@ const TEMPLATE_BASE: UnifiedActionTemplate = {
       onSuccess: [],
       onFailure: [],
       failBehavior: 'fail_action',
-      narrativeTemplate: 'The makers lead {them} down into a sealed room beneath, and there {they} find a working '
+      narrativeTemplate: 'The makers lead {them} down into a sealed room beneath, and there {they} find{s} a working '
         + 'half-finished. {cast:keeper} and five others began a rite to end '
         + 'their own deaths, and two of them are already dead.\n\n'
         + 'They have asked {name} to read the working and say whether it will hold. Another reader, '
