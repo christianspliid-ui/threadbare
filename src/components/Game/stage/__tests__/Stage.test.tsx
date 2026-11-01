@@ -32,6 +32,7 @@ const VM: StageVM = {
   placeTag: 'Millbrook · where it is happening',
   placeTagSuffix: STAGE_WORDS.placeTagSuffix,
   subject: { ref: { kind: 'agent', id: 'maren' }, name: 'Maren Ashfold' },
+  subjectVisual: null,
   contextLine: null,
   layout: 'compact',
 };

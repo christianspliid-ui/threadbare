@@ -35,6 +35,7 @@ import { isHexKnown } from '../knowledge';
 import type { ViewContext } from '../viewContext';
 import type { ViewSelector } from '../readView';
 import type { RefRow } from '../types';
+import { mortalFace, type EntityVisualDescriptor } from '../entityVisualResolver';
 
 export type StageLitSource = 'beat' | 'agent_location' | 'ruin_location';
 export type StageLayout = 'full' | 'compact';
@@ -91,6 +92,13 @@ export interface StageVM {
   /** The words after the place's name in the tag (" · where it is happening"). */
   placeTagSuffix: string | null;
   subject: RefRow | null;
+  /**
+   * THR-2100 (S4.1) — the subject mortal's face, the one face every Stage moment draws.
+   * Resolved here with the knowledge gate (`mortalFace`, the god rail's and the page's
+   * gate), so a mortal below `recognised` is the silhouette on the Stage and on their page
+   * alike (Law 8, PC-6). Null when the moment has no mortal subject.
+   */
+  subjectVisual: EntityVisualDescriptor | null;
   /** The compact header's line; null when it has neither a subject nor a place. */
   contextLine: StageContextLineVM | null;
   layout: StageLayout;
@@ -249,6 +257,7 @@ export function buildStageView(ctx: ViewContext, input: StageMomentInput): Stage
     placeTag: place && suffix ? `${place.name}${suffix}` : null,
     placeTagSuffix: suffix,
     subject,
+    subjectVisual: input.subjectAgentId ? mortalFace(ctx.graph, input.subjectAgentId, ctx.state.familiarityMap) : null,
     contextLine: stageContextLine(subject, place),
     layout: stageLayoutFor(input),
   };
@@ -268,6 +277,7 @@ export function fallbackStageView(input: StageMomentInput): StageVM {
     placeTag: null,
     placeTagSuffix: null,
     subject: null,
+    subjectVisual: null,
     contextLine: null,
     layout: stageLayoutFor(input),
   };

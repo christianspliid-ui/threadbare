@@ -280,6 +280,12 @@ export interface DebugStageState {
    * `nudge-hand-more` reads). 0 when the hand fits, no hand is up, or every card is in view.
    */
   handCardsBelowBar: number;
+  /**
+   * THR-2100 — the art-led dressing the open Stage drew, read off its DOM: the subject's face
+   * tier (`'none'` when no face is drawn), every Stage label's carved shape, every consequence
+   * chip's carved shape, and the relic paintings on chips. Reports what was drawn, not why.
+   */
+  dressing: { face: 'art' | 'fallback' | 'none'; labelIcons: string[]; consequenceIcons: string[]; relicTiles: number };
 }
 
 /** `openHomedSurface(kind)` (THR-1892) — whether the lever opened the moment, and why not. */

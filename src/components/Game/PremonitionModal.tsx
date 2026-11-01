@@ -19,7 +19,8 @@
 import { useMemo, useState } from 'react';
 import { Stage } from './stage/Stage';
 import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
-import { EntityVisual } from '../shared/EntityVisual';
+import { StageSubjectPortrait } from './stage/StageSubjectPortrait';
+import { StageLabelIcon } from './stage/StageLabelIcon';
 import { Tooltip } from '../shared/Tooltip';
 import type { PremonitionEvent, WhisperNudge, CompulsionCandidate } from '../../types/premonition';
 import type { EssencePool } from '../../types/influence';
@@ -92,14 +93,6 @@ const accent = (isWhisper: boolean, alphaToken: string) =>
 
 // ─── Subject header (THR-1139) ──────────────────────────────────
 
-/**
- * Portrait width in the 520px modal (NFP #1). The `chip` size (40px) is too small
- * to recognise a face at a glance; `portrait` is 3:4, so this reads 84×112 —
- * present enough to identify the mortal, short enough that the vignette stays the
- * surface's subject. Rounded rather than circular to match the character sheet the
- * portrait opens, so the player sees one face in two places.
- */
-const SUBJECT_PORTRAIT_PX = 84;
 
 /** Minimum hit area for the name control (Law 46). */
 const SUBJECT_NAME_MIN_HIT_PX = 24;
@@ -306,7 +299,6 @@ export function PremonitionModal({
   open,
   premonition,
   essencePool,
-  graph,
   tooltipContext,
   onWhisperChoice,
   onCompulsionChoice,
@@ -348,29 +340,21 @@ export function PremonitionModal({
       className="flex flex-col items-center text-center"
       style={{ color: fullText(isWhisper), fontFamily: 'var(--font-prose)', padding: 'var(--panel-padding, 20px)' }}
     >
-      {/* Law 1 — the subject carries its image. Entity Visual Header pattern
-          (THR-637); the resolver is knowledge-gated but fail-open when no
-          level is passed, and a threaded mortal always resolves to art or
-          the authored fallback tile. Clicking it does what the name does. */}
-      <EntityVisual
-        size="portrait"
-        shape="rounded"
-        entity={{ id: premonition.agentId, kind: 'agent', name: premonition.agentName }}
-        graph={graph ?? null}
-        onClick={onViewAgent ? () => onViewAgent(premonition.agentId) : undefined}
-        aria-label={
-          onViewAgent
-            ? `Open ${premonition.agentName}'s page`
-            : `Portrait of ${premonition.agentName}`
-        }
-        data-testid="premonition-subject-portrait"
-        style={{
-          width: SUBJECT_PORTRAIT_PX,
-          minWidth: SUBJECT_PORTRAIT_PX,
-          height: Math.round(SUBJECT_PORTRAIT_PX * 4 / 3),
-          marginBottom: 10,
-        }}
-      />
+      {/* Law 1 — the subject carries its image. THR-2100 (R1): the Stage's one face,
+          `vm.subjectVisual`, resolved with the knowledge gate in the view model; the
+          same size as every other Stage moment. Clicking it does what the name does. */}
+      <div style={{ marginBottom: 10 }}>
+        <StageSubjectPortrait
+          visual={vm.subjectVisual}
+          onOpen={onViewAgent ? () => onViewAgent(premonition.agentId) : undefined}
+          aria-label={
+            onViewAgent
+              ? `Open ${premonition.agentName}'s page`
+              : `Portrait of ${premonition.agentName}`
+          }
+          data-testid="premonition-subject-portrait"
+        />
+      </div>
       {/* Law 45: was `opacity-40` (~2.5:1 composed). Which mortal the
           premonition is about is the one thing on this surface that cannot
           be inferred from anything else on it.
@@ -424,6 +408,7 @@ export function PremonitionModal({
             fontSize: 'var(--text-xs)',
           }}
         >
+          <StageLabelIcon label={isWhisper ? 'premonitionWhisper' : 'premonitionWill'} />
           {headerText}
         </div>
       </div>

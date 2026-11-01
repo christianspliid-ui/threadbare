@@ -21,6 +21,7 @@ import type { UnifiedAction } from '../../../types/unifiedAction';
 import { resolveAnchorDeclaration } from '../../../data/content-eval/chipAnchorDeclarations';
 import type { RealmProjectionThunk } from '../../sceneRealm';
 import { resolveEntityVisual } from '../entityVisualResolver';
+import { getAttachmentArtUrl } from '../../../data/artifact-category-art';
 import { isMonster } from '../../monsters/isMonster';
 import type { ChipIconResolver } from './buildAftermathConsequences';
 import type { FightChipWorld } from './buildFightChanges';
@@ -36,11 +37,19 @@ export function buildChipIconResolver(graph: WorldGraph): ChipIconResolver {
     const kind = concept.visualKind;
     if (!kind) return undefined;
     // THR-1120 — an attachment has a page but no entity-visual family: its art
-    // lives on its own template node and `AttachmentDetailView` draws it. It
-    // takes the link tier and no tile, which is the documented fail-open path
-    // rather than a wrong glyph. `EntityVisualKind` excludes it, so removing
-    // this guard is a type error, not a silent regression.
-    if (kind === 'attachment') return undefined;
+    // lives on its own template node and `AttachmentDetailView` draws it.
+    // THR-2100 (S4.3, R3) — a relic gained or lost shows its painting, the same
+    // plate the person page's "What they carry" tiles draw (`getAttachmentArtUrl`:
+    // bespoke, else the category plate). It tiles as an `artifact` and routes as
+    // the attachment, so the click opens the relic's page. No plate → no tile, the
+    // documented fail-open path rather than a wrong glyph.
+    if (kind === 'attachment') {
+      const entityId = concept.entityId ?? concept.visualName ?? concept.text;
+      const subcategory = graph.getNode(entityId)?.properties?.subcategory;
+      const src = getAttachmentArtUrl(entityId, typeof subcategory === 'string' ? subcategory : null);
+      if (!src) return undefined;
+      return { entityId, kind: 'artifact', name: concept.visualName ?? concept.text, src, routeKind: 'attachment' };
+    }
     // THR-1155 — an Area is the second kind with a route and no tile. It is a
     // stretch of ground: the map draws its dotted border and its label, and there is
     // no portrait of a mountain range that a chip could carry. Same guard, same

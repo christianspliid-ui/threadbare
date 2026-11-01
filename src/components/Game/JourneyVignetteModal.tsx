@@ -18,6 +18,8 @@ import { memo, useState, useCallback } from 'react';
 import { Button } from '../shared/Button';
 import { Stage } from './stage/Stage';
 import { StageContextLine } from './StoryBeatModal';
+import { StageLabelIcon } from './stage/StageLabelIcon';
+import { StageSubjectPortrait } from './stage/StageSubjectPortrait';
 import { fallbackStageView, type StageVM } from '../../engine/views/stage/stageView';
 import type { JourneyVignetteData, BeatChoice } from '../../types/journeyEngine';
 import { formatPhaseName } from '../../engine/journeyEngine';
@@ -198,13 +200,16 @@ export const JourneyVignetteModal = memo(function JourneyVignetteModal({
       tick={tick}
       right={(
     <div data-journey-vignette-stage="" style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, padding: 'var(--panel-padding, 20px)' }}>
-      <header style={{ paddingBottom: 'var(--space-3)' }}>
+      <header style={{ paddingBottom: 'var(--space-3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'var(--space-4)' }}>
+        {/* THR-2100 (R1) — the mortal's face at the left of the title block. */}
+        <StageSubjectPortrait visual={vm.subjectVisual} subject={vm.subject} />
         <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-1)' }}>
           <div style={{
             fontFamily: 'var(--font-display)',
             fontSize: 'var(--text-lg)',
             color: vignette.isOrdeal ? 'var(--accent-gold)' : 'var(--text-primary)',
           }}>
+            <StageLabelIcon label="journeyTitle" />
             {title}
           </div>
           <StageContextLine line={vm.contextLine} />

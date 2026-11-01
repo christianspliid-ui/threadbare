@@ -24,9 +24,12 @@
  * | STAGE_CLOSE_CENTRE_BAND_FRACTION | 1/3 | on close, the middle band of the visible map the place must sit in, or the camera re-centres it (THR-2056) |
  * | STAGE_OPTION_RING_DASH | { dash: 0.18, gap: 0.12 } | a premonition option ring's dashes, as shares of an edge (S4) |
  * | STAGE_OPTION_RING_COLOR_VAR | whisper / compulsion text rgb | an option ring's colour, the premonition's dream tone (S4) |
+ * | STAGE_LABEL_ICONS | one row per Stage label | the carved shape each Stage label draws; null = no fitting idea yet (THR-2100) |
+ * | STAGE_NO_IDEA_LABELS | at stake, aftermath, watched, whisper header, let it be, corrupt | labels waiting on the icon pick (THR-2104) |
  */
 import { DOMINION_DIM_COLOR } from './dominion-ui-content';
 import type { StageHomedKind } from './homed-surfaces';
+import type { IconName } from './icons/iconRegistry';
 
 /**
  * The Stage-home kinds that play on the Stage frame in this slice. The others keep their
@@ -78,3 +81,56 @@ export const STAGE_OPTION_RING_COLOR_FALLBACK = { whisper: '#c8b8d8', compulsion
 
 /** The panel's entrance once the camera lands (Law 41's ceremonial tier); reduced motion uses `--anim-fast`. */
 export const STAGE_PANEL_ENTRANCE_S = 0.6;
+
+/**
+ * THR-2100 (S4.2, R2) — the carved shape each Stage label draws, before the label, at
+ * `chip` size, decorative, in the label's colour (no gold of its own, Law 31). Components
+ * read the row, never a literal (Law 58). `null` = no idea in the registry fits: the label
+ * draws nothing and waits on Christian's pick (THR-2104) — never an invented shape.
+ *
+ * Kill criterion ("the Stage is busy"): set every row to `null`; faces and consequence
+ * shapes stay.
+ */
+export const STAGE_LABEL_ICONS = {
+  /** The encounter's uppercase title. */
+  encounterTitle: 'encounter',
+  /** The cast eyebrow ("Maren casts Ember Ward · it lands"), in place of ✦. */
+  encounterCast: 'spell',
+  /** Essence counts and costs on the encounter, in place of ◆; carries the essence tooltip. */
+  encounterEssence: 'essence',
+  encounterAtStake: null,
+  encounterAftermath: null,
+  encounterWatched: null,
+  /** The premonition's "The God's will" header. */
+  premonitionWill: 'compel',
+  premonitionWhisper: null,
+  /** The journey vision's title. */
+  journeyTitle: 'journey',
+  /** The story beat's "Story beat" eyebrow — a beat is an encounter the world plays out. */
+  storyBeatEyebrow: 'encounter',
+  /** The emergence dilemma's header. */
+  dilemmaHeader: 'dilemma',
+  dilemmaClaim: 'claim',
+  dilemmaBargain: 'bargain',
+  dilemmaLetItBe: null,
+  dilemmaCorrupt: null,
+  /** The undertaking moment's title eyebrow. */
+  undertakingTitle: 'undertaking',
+} as const satisfies Readonly<Record<string, IconName | null>>;
+
+export type StageLabelKey = keyof typeof STAGE_LABEL_ICONS;
+
+/** The Stage labels with no fitting idea (posted on THR-2104 after merge). */
+export const STAGE_NO_IDEA_LABELS: readonly StageLabelKey[] = [
+  'encounterAtStake',
+  'encounterAftermath',
+  'encounterWatched',
+  'premonitionWhisper',
+  'dilemmaLetItBe',
+  'dilemmaCorrupt',
+];
+
+/** The shape a Stage label draws, or null. */
+export function stageLabelIcon(key: StageLabelKey): IconName | null {
+  return (STAGE_LABEL_ICONS as Readonly<Record<StageLabelKey, IconName | null>>)[key];
+}
