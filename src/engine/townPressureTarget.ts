@@ -23,6 +23,7 @@ import {
 } from '../types/sphereAffinity';
 import type { TownPressureTrace } from '../types/traces/sphere-traces';
 import { getPlaceNodes } from './sublocationShape';
+import { DOMINION_READS_PARENT_KEY } from './dominion';
 
 /** A town-pressure trace before the buffer stamps `id` and `timestamp`. */
 export type TownPressureTraceInput = Omit<TownPressureTrace, 'id' | 'timestamp'>;
@@ -46,6 +47,9 @@ function buildChildMap(graph: WorldGraph): Map<string, string[]> {
   for (const node of getPlaceNodes(graph)) {
     const parent = node.properties?.parentLocationId;
     if (typeof parent !== 'string') continue;
+    // A Place that reads its host's scores (an echo monument, THR-1843) is no landing:
+    // its own scores move no Dominion read.
+    if (node.properties?.[DOMINION_READS_PARENT_KEY] === true) continue;
     const list = map.get(parent);
     if (list) list.push(node.id);
     else map.set(parent, [node.id]);
@@ -103,7 +107,7 @@ export function resolveTownPressureTargets(
           bestScore = score;
         }
       }
-      out.push({ ...p, targetEntityId: bestId, aimedAtId: p.targetEntityId });
+      out.push({ ...p, targetEntityId: bestId });
       if (keepEcho) {
         // The town still feels the push as it did before the re-aim: unscaled, no credit.
         const { pushScale, ...rest } = p;

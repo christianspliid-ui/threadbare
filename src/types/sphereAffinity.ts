@@ -61,11 +61,6 @@ export interface SpherePressureEvent {
    */
   causedBy?: string;
   /**
-   * The town the card was aimed at, when `resolveTownPressureTargets` re-aimed the god's
-   * push onto one of its Places (THR-2094). Absent on every other push.
-   */
-  aimedAtId?: string;
-  /**
    * How much the card's price multiplied the god's push (THR-2094), set only above 1.
    * Carried onto the `sphere_pressure` trace as `pushScales`, to explain a larger push.
    */

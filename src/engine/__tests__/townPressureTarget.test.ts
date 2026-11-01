@@ -66,7 +66,7 @@ describe('resolveTownPressureTargets (THR-2094)', () => {
     const push = godPush('town');
     const { pressures, traces } = resolveTownPressureTargets(graph, [push], ASC, 9);
     expect(pressures).toEqual([
-      { ...push, targetEntityId: 'p_b', aimedAtId: 'town' },
+      { ...push, targetEntityId: 'p_b' },
       { ...push, townEcho: true },
     ]);
     expect(traces).toHaveLength(1);
@@ -149,7 +149,31 @@ describe('resolveTownPressureTargets (THR-2094)', () => {
     addPlace(graph, 'p_a', 'town');
     const push = godPush('town');
     const { pressures } = resolveTownPressureTargets(graph, [push], ASC, 1, { keepEcho: false });
-    expect(pressures).toEqual([{ ...push, targetEntityId: 'p_a', aimedAtId: 'town' }]);
+    expect(pressures).toEqual([{ ...push, targetEntityId: 'p_a' }]);
+  });
+
+  it('never lands on a Place that reads its host\'s scores (an echo monument)', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_b', 'town', 'force', 2);
+    graph.addNode({
+      id: 'echo_monument_a', type: 'location', name: 'monument',
+      properties: { parentLocationId: 'town', dominionReadsParent: true },
+    } as never);
+    const { pressures } = resolveTownPressureTargets(graph, [godPush('town')], ASC, 1);
+    expect(pressures[0].targetEntityId).toBe('p_b');
+  });
+
+  it('keeps the push on a town whose only Place is an echo monument', () => {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    graph.addNode({
+      id: 'echo_monument_a', type: 'location', name: 'monument',
+      properties: { parentLocationId: 'town', dominionReadsParent: true },
+    } as never);
+    const push = godPush('town');
+    const { pressures } = resolveTownPressureTargets(graph, [push], ASC, 1);
+    expect(pressures).toEqual([push]);
   });
 
   it('emits one trace per re-aimed push', () => {
