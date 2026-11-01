@@ -280,6 +280,38 @@ describe('phaseSpherePressure re-aims the god\'s town push (THR-2094)', () => {
     expect(townCredit).toEqual([]);
   });
 
+  // A rival push the copy cancelled wore nothing, so it debits nothing (cycle 3 finding).
+  function rivalBesideCard(withCard: boolean) {
+    const graph = new WorldGraph();
+    addTown(graph, 'town');
+    addPlace(graph, 'p_a', 'town');
+    const aff = graph.getNode('town')!.properties!.sphereAffinity as ReturnType<typeof createDefaultSphereAffinity>;
+    aff.scores.force = 2;
+    const rival: SpherePressureEvent = {
+      targetEntityId: 'town', sphere: 'mind', magnitude: 5, source: 'rival', sourceId: 'rival_1',
+    };
+    const state = {
+      tick: 4, graph, tiles: [], ascendantId: ASC,
+      pendingSpherePressures: withCard ? [rival, godPush('town')] : [rival],
+      mandateDefinition: { runtimeKind: 'sphere_growth', primarySphere: 'force', secondarySphere: 'matter' },
+      mandateState: { completed: false },
+    } as unknown as GameState;
+    const result = phaseSpherePressure(state);
+    return {
+      townForce: (graph.getNode('town')!.properties!.sphereAffinity as typeof aff).scores.force,
+      townDebits: (result.pendingMandateCredits ?? []).filter(c => c.entityId === 'town' && c.points < 0),
+    };
+  }
+
+  it('debits the town for wear only when it really wore', () => {
+    const alone = rivalBesideCard(false);
+    expect(alone.townForce).toBeLessThan(2);
+    expect(alone.townDebits.length).toBeGreaterThan(0);
+    const withCard = rivalBesideCard(true);
+    expect(withCard.townForce).toBe(2);
+    expect(withCard.townDebits).toEqual([]);
+  });
+
   it('carries a scaled push\'s pushScale onto the sphere_pressure trace', () => {
     const graph = new WorldGraph();
     addTown(graph, 'town');

@@ -550,12 +550,26 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
         // THR-2094: a re-aimed push's town copy (`townEcho`) moves the town but earns
         // nothing — its Place copy carries the credit. The town is credited as if the copy
         // were absent: re-resolved without it, so the copy neither dilutes a seat, claim or
-        // carry push's share nor lends them a level-up it caused.
+        // carry push's share nor lends them a level-up it caused. Only gains come from that
+        // re-resolve, and only up to what the town really gained; wear is debited from the
+        // real resolve, so an opposition push the copy cancelled debits nothing.
         const creditPressures = entityPressures.filter(p => !p.townEcho);
-        const creditTraces = creditPressures.length === entityPressures.length
-          ? tickedTraces
-          : resolveSpherePressure(entityAffinity, creditPressures, presentAgents).traces;
-        mandateCredits.push(...mandateCreditsFor(entityId, weight, creditPressures, creditTraces, isGod, ledgerSpheres));
+        if (creditPressures.length === entityPressures.length) {
+          mandateCredits.push(...mandateCreditsFor(entityId, weight, entityPressures, tickedTraces, isGod, ledgerSpheres));
+        } else {
+          const realRise = new Map<SphereName, number>();
+          for (const t of tickedTraces) realRise.set(t.sphere, t.newScore - t.previousScore);
+          const gainTraces = resolveSpherePressure(entityAffinity, creditPressures, presentAgents).traces
+            .map(t => {
+              const rise = Math.min(t.newScore - t.previousScore, realRise.get(t.sphere) ?? 0);
+              return { ...t, newScore: t.previousScore + Math.max(0, rise) };
+            });
+          const lossTraces = tickedTraces.filter(t => t.newScore < t.previousScore);
+          mandateCredits.push(
+            ...mandateCreditsFor(entityId, weight, creditPressures, gainTraces, isGod, ledgerSpheres),
+            ...mandateCreditsFor(entityId, weight, entityPressures, lossTraces, isGod, ledgerSpheres),
+          );
+        }
       } catch {
         // Fail-soft: this entity credits nothing this tick.
       }
