@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 08:58 local (07:58 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 09:58 local (08:58 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -20,6 +20,13 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 
 ## Decided for you
 
+- [Art-led pass, slice 6 — the ceremonies and the front door](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (new this morning, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2102-art-led-ceremonies.md)): the harvest opens on your god's face in a ring, above "Cycle N complete". No painting of the age exists, and new art is out of scope. Veto line: "no god face on the harvest". Window closes about 20:40 UTC today.
+- Same ticket: the end of the age keeps its order (how it ended, then your First, then what the world remembers). Your First's face grows from a thumbnail to a size that reads, and the ending's title gets the Mandate or doom shape. Veto line: "keep the end of the age as it is".
+- Same ticket: every echo the harvest names shows its picture: a face for a family line, a place picture for a monument, the painting for a relic. Each of your god's own echoes gets a small picture above the line that names it. Veto line: "no pictures on the harvest echoes".
+- Same ticket: each echo has one name. The card now says "the line of Maren Ashfold", as the line under the cards already does. The sphere tags read "Chaos", not "chaos", with their tooltip. Veto line: "keep the echo cards' names".
+- Same ticket: the threading rite's face uses the same face path as everywhere else, so an unpainted mortal shows the game's designed tile, not a coloured smear or an empty circle. Veto line: "keep the rite's old portrait".
+- Same ticket: meeting The First and the start page stay as they are. Both already open on art. The start menu stays words only, because only two of its items have a carved shape. Veto line: "give the start menu icons".
+- Same ticket: "Echoes preserved", "What the world will remember" and "The Rite of the Thread" have no fitting carved shape, so they draw none and join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "pick a near icon instead".
 - [Art-led pass, slice 5 — the dialogs](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (new this morning, [plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-art-led-dialogs.md)): a dialog about a mortal shows that mortal's face: the Chapter Ledger (each row and the open chapter), a choice, and a beat. Veto line: "no faces in the dialogs". Window closes about 17:45 UTC today.
 - Same ticket: What your act bought keeps the act's painting on top and adds the face (or place picture, or faction arms) of whoever it touched. Veto line: "no target picture on the receipt".
 - Same ticket: your court's seats draw faces the same way as everywhere else, so an unknown or unpainted mortal gets the game's designed tile instead of a coloured smear. Veto line: "keep the court's old portraits".
@@ -43,7 +50,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - [Cheap place cards plateau](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26): a god's sphere push on a town lands in the town's quietest Place. A Reshape god then reaches 66 of 87 instead of 34. Veto line: "the push should stay on the town". Window closes about 09:10 UTC.
 - Same ticket: a card that changes the world pushes twice what a look pushes (Vision stays at 3; cards costing 2 essence or more push 6). Veto line: "keep every push at 3".
 
-Say "veto <title>" to reverse any of these. *— from the design lane ([31 Oct late](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31d.md), [midnight](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31e.md), [early](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md), [this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md))*
+Say "veto <title>" to reverse any of these. *— from the design lane ([31 Oct late](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31d.md), [midnight](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-10-31e.md), [early](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01a.md), [this morning](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01b.md), [09:40](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/design-lane-2026-11-01c.md))*
 
 ## This week's screens
 
@@ -51,7 +58,7 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([31 Oct l
 
 ## Queue
 
-**Healthy, and resting until 11:45 UTC.** [THR-2111](https://linear.app/threadbare/issue/THR-2111/faction-page-reputations-they-hold-reads-a-property-nothing-writes) (a faction page's "Reputations they hold" was always empty) merged via [#2675](https://github.com/christianspliid-ui/threadbare/pull/2675) and is live. No pull requests are open. The three ready tickets wait on their veto windows, so the last three builder runs stood down on purpose: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, and [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC.
+**Healthy (4 ready), and resting until 11:45 UTC.** The [rulebook review](https://linear.app/threadbare/issue/THR-2112/rulebook-review-2026-11-14-findings) (14 fixes to the rules text) merged via [#2677](https://github.com/christianspliid-ui/threadbare/pull/2677); it changed only documents, so the live game did not need rebuilding. No pull requests are open. All four ready tickets wait on their veto windows, so builder runs stand down on purpose until the first one opens: [THR-2099](https://linear.app/threadbare/issue/THR-2099/art-led-pass-slice-3-the-god-rail-and-the-top-bar) (god rail) about 11:45 UTC, [THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision) (Stage moments) about 14:30 UTC, [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (dialogs) about 17:45 UTC, and the new [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) about 20:40 UTC, after slices 4 and 5 merge.
 
 - **Next:** [THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26) (town cards reach the Mandate) sits in Todo with its plan merged; the orchestrator can promote it once its veto window closes (about 09:10 UTC).
 
@@ -61,4 +68,4 @@ Two items for agents, not you:
 
 ## Health
 
-All green. The live site serves the latest commit on main (92bf1fa0), the PR checks and scheduled background jobs pass, all nine enabled scheduled tasks are on time, the worktree reaper ran within the hour, and engine speed is back in range (188 ms/tick, 13% above the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.
+All green. The live site serves the latest game build (92bf1fa0; main has moved only in documents since), the PR checks and scheduled background jobs pass, all nine enabled scheduled tasks are on time, the worktree reaper ran within the hour, and engine speed is in range (180 ms/tick, 8% above the 7-day median). The 40-hour silence on 29–30 Oct is on your list above.
