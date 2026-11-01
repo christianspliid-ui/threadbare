@@ -156,6 +156,27 @@ function whereOf(state: GameState, node: GraphNode): WhereRowVM[] {
   return dress(containmentRows(graph, state, at ? graph.getNode(at.target) : undefined, true));
 }
 
+/** The place subtypes whose own art leads their header over the landscape (THR-2098) — the lair, as on the land page. */
+const PLACE_OWN_ART_SUBTYPES: ReadonlySet<string> = new Set(['lair', 'cleared_lair']);
+
+/**
+ * A town's header art (THR-2098, rule R1; plan decision 1): a lair's own art wins, as on the
+ * land page; otherwise the place's tile terrain, so the resolver's `location` branch picks
+ * the landscape. No hex or no tile ⇒ nothing, and the header draws the glyph tile (Law 4).
+ */
+export function placeArt(state: GameState, node: GraphNode): Pick<SubjectHeaderVM['visual'], 'src' | 'terrain'> {
+  // Only a lair's own art beats the land: a town's subtype plate is a generic town, while
+  // its landscape is its own country (plan decision 1).
+  const subtype = node.properties.locationSubtype as string | undefined;
+  const own = subtype && PLACE_OWN_ART_SUBTYPES.has(subtype) ? getOwnLocationConceptArtUrl(subtype) : null;
+  if (own) return { src: own };
+  const col = node.properties.hexCol;
+  const row = node.properties.hexRow;
+  if (typeof col !== 'number' || typeof row !== 'number') return {};
+  const terrain = tileAt(state, col, row)?.terrain;
+  return terrain ? { terrain } : {};
+}
+
 /** The body for a graph page kind, from the table, with the god as the protagonist. */
 /**
  * THR-1911 — what only GameView holds, passed into the compose context when the Inspector
@@ -286,6 +307,7 @@ function graphPage(state: GameState, ref: WorldRef, node: GraphNode, extras: Sub
       layoutKind: 'place',
       header: {
         ...base.header,
+        ...(ref.kind === 'location' && !isPlaceNode(node) ? { visual: { ...base.header.visual, ...placeArt(state, node) } } : {}),
         kindLabel: node.type === 'region' ? 'Area' : sentenceCase(subtitleForNode(node, 'place')),
         standing: dominionChip(state, node.id),
       },

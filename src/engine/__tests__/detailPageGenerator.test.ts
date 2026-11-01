@@ -238,7 +238,7 @@ describe('generateDetailPage — Item', () => {
 });
 
 describe('generateDetailPage — Faction', () => {
-  it('always renders mandatory how_they_hold_her + reputations panel', () => {
+  it('always renders mandatory how_they_hold_her + reputations (chips, or the quiet line — THR-2098)', () => {
     const graph = fixtureGraph();
     const page = generateDetailPage({
       nodeId: 'iron-guard',
@@ -254,7 +254,9 @@ describe('generateDetailPage — Faction', () => {
     expect(holds?.kind).toBe('prose');
     if (holds?.kind === 'prose') expect(holds.gold).toBe(true);
     expect(reps).toBeDefined();
-    expect(reps?.kind).toBe('panel');
+    // THR-2098 (rule R7): a chips row, never a label strip; the highlight is "How they hold her".
+    expect(reps?.kind).toBe('chips');
+    if (holds?.kind === 'prose') expect(holds.highlight?.icon).toBe('standing');
   });
 
   it('opposed section surfaces hostile_to chips with negative sentiment', () => {

@@ -15,8 +15,6 @@
 import type {
   ChipDescriptor,
   ChipsSection,
-  PanelRow,
-  PanelSection,
   ProseSection,
   TriggerRow,
   TriggersSection,
@@ -37,14 +35,16 @@ import { CONDITION_DURATIONS } from '../../../data/condition-trait-content';
 import {
   AGREEMENT_TYPE_WORDS,
   ITEM_LINES,
-  SUBJECT_FACT_WORDS,
+  LOSS_CONDITION_CLAUSES,
   SUBJECT_ROW_LABELS,
+  SUBJECT_SENTENCE_CLAUSES,
   TRIGGER_EVENT_WORDS,
   TRIGGER_ONCE,
   TRIGGER_PAYLOAD_WORDS,
 } from '../../../data/subject-sheet-words';
 import { proseMarkupToHtml } from './pageResolvers';
 import { linkedProseSection, type ProsePart } from './linkedProse';
+import { asSentence, fillClause, sentenceSection } from './sentenceRows';
 
 // ─── Artifact (§ D7.6) ───────────────────────────────────────────────────────
 
@@ -133,10 +133,6 @@ export function attachmentTemplateOf(ctx: SectionResolverContext): GraphNode | n
   return node && attachmentDetailFromNode(node) ? node : null;
 }
 
-function panel(typeId: string, label: string, rows: PanelRow[], source: string): PanelSection | null {
-  return rows.length > 0 ? { kind: 'panel', typeId, label, gold: false, tier: 'routine', source, rows } : null;
-}
-
 /**
  * Effect: what a condition does (THR-1475, the hover's own reading), when it is lost, who
  * grants it, and its agreement kind in words. `mechanicalSummary` is not shown (Law 13).
@@ -145,14 +141,20 @@ const effect: SectionResolver = (ctx) => {
   const node = attachmentTemplateOf(ctx);
   const detail = node ? attachmentDetailFromNode(node) : undefined;
   if (!node || !detail) return null;
-  const rows: PanelRow[] = [];
+  // THR-2098 (rule R6): the strip becomes sentences — the effect line, how it is lost, who
+  // grants it, its agreement kind. The raw loss key is worded (Law 14); an unknown one drops.
   const reading = resolveConditionEffectLine(node.id);
-  if (reading?.line) rows.push({ left: SUBJECT_ROW_LABELS.effect, right: reading.line });
-  if (detail.lossCondition) rows.push({ left: SUBJECT_FACT_WORDS.loss, right: detail.lossCondition });
-  if (detail.grantedBy) rows.push({ left: SUBJECT_FACT_WORDS.grantedBy, right: detail.grantedBy });
+  const granter = detail.grantedBy?.trim().replace(/^granted by\s+/i, '').replace(/[.]$/, '');
   const agreement = node.properties.agreementType;
-  if (typeof agreement === 'string' && agreement) rows.push({ left: SUBJECT_FACT_WORDS.kind, right: AGREEMENT_TYPE_WORDS[agreement] ?? humanizeKeySegment(agreement) });
-  return panel('effect', SUBJECT_ROW_LABELS.effect, rows, 'attachmentDetailFromNode');
+  const loss = detail.lossCondition?.trim() ?? '';
+  return sentenceSection('effect', SUBJECT_ROW_LABELS.effect, [
+    reading?.line ? [asSentence(reading.line)] : null,
+    LOSS_CONDITION_CLAUSES[loss] ? [LOSS_CONDITION_CLAUSES[loss]]
+      : loss && !/^[a-z]+(_[a-z]+)*$/.test(loss) ? fillClause(SUBJECT_SENTENCE_CLAUSES.lostWhen, { loss: loss.replace(/[.]$/, '') })
+      : null,
+    granter ? fillClause(SUBJECT_SENTENCE_CLAUSES.grantedBy, { granter }) : null,
+    typeof agreement === 'string' && agreement ? [asSentence(AGREEMENT_TYPE_WORDS[agreement] ?? humanizeKeySegment(agreement))] : null,
+  ], 'attachmentDetailFromNode');
 };
 
 /**
@@ -165,7 +167,8 @@ const duration: SectionResolver = (ctx) => {
   if (!node) return null;
   const ticks = CONDITION_DURATIONS[node.id];
   if (typeof ticks !== 'number' || ticks <= 0) return null;
-  return panel('duration', SUBJECT_ROW_LABELS.duration, [{ left: SUBJECT_FACT_WORDS.lasts, right: durationLabel(ticks) }], 'templateDuration');
+  // THR-2098 (rule R6): "It lasts three days."
+  return sentenceSection('duration', SUBJECT_ROW_LABELS.duration, [fillClause(SUBJECT_SENTENCE_CLAUSES.lasts, { term: durationLabel(ticks) })], 'templateDuration');
 };
 
 function triggerSummary(t: ActionTriggerEffect): string {

@@ -35,6 +35,23 @@ describe('SubjectHeader — the avatar as the player\'s mortal shape (THR-1990)'
     expect(container.querySelector('[data-inspector-god-title]')?.textContent).toBe('You are Vara, the Witness');
   });
 
+  it('THR-2098: a town with its terrain leads with its landscape; without one, the glyph tile', () => {
+    const town = (terrain?: 'grassland'): SubjectHeaderVM => ({
+      ...person('Ashford', null),
+      ref: { kind: 'location', id: 'town' },
+      kindLabel: 'Town',
+      visual: { kind: 'location', id: 'town', portraitGate: 'shown', ...(terrain ? { terrain } : {}) },
+    });
+    const wide = render(<SubjectHeader header={town('grassland')} compact={false} />).container;
+    expect(wide.querySelector('[data-header-lead]')?.getAttribute('data-header-lead')).toBe('hero');
+    expect(wide.querySelector('[data-entity-visual-tier]')?.getAttribute('data-entity-visual-tier')).toBe('art');
+    const bare = render(<SubjectHeader header={town()} compact={false} />).container;
+    expect(bare.querySelector('[data-entity-visual-tier]')?.getAttribute('data-entity-visual-tier')).not.toBe('art');
+    // Docked keeps the thumbnail beside the name.
+    const docked = render(<SubjectHeader header={town('grassland')} compact />).container;
+    expect(docked.querySelector('[data-header-lead]')).toBeNull();
+  });
+
   it('an ordinary mortal\'s page shows neither', () => {
     const { container } = render(<SubjectHeader header={person('Bren', null)} compact={false} />);
     expect(container.querySelector('[data-inspector-heading]')?.textContent).toBe('Bren');

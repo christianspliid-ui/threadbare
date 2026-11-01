@@ -7,7 +7,8 @@
  * They read `GameState` stores, so they need `ctx.state`; without it (the hover card,
  * graph-only tests) they return null and the section is skipped (§ Fail-soft).
  */
-import type { PanelRow, PanelSection, ProseSection, Section, SentencePart } from '../../../types/detailPage';
+import type { ChipDescriptor, ProseSection, Section, SentencePart } from '../../../types/detailPage';
+import { asSentence, chipsSection, sentenceSection } from './sentenceRows';
 import type { SectionResolver, SectionResolverContext } from '../../detailPageResolvers';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile, SphereName } from '../../../types';
@@ -150,61 +151,54 @@ const divineNatureResolver: SectionResolver = (ctx) => {
   return proseSection('divine_nature', 'Divine nature', [text], 'godSheet.divineNature', true);
 };
 
+/** THR-2098 (rule R7): the god's essence as sphere chips — "Chaos · A current". */
 const essenceResolver: SectionResolver = (ctx) => {
   if (!ctx.state) return null;
   const spheres = godSpheres(ctx.state);
   if (!spheres) return null;
   const archetype = { sphereAlignment: spheres } as unknown as AscendantArchetype;
-  const rows: PanelRow[] = selectEssenceRows(ctx.state, archetype).map((row) => ({
-    left: capitalize(row.sphere),
-    right: essenceToProseDescriptor(row.level),
+  const chips: ChipDescriptor[] = selectEssenceRows(ctx.state, archetype).map((row) => ({
+    label: capitalize(row.sphere),
+    flavour: essenceToProseDescriptor(row.level),
+    sphere: row.sphere,
     tooltipId: `sphere.${row.sphere}`,
   }));
-  if (rows.length === 0) return null;
-  const section: PanelSection = { kind: 'panel', typeId: 'essence', label: 'Essence', gold: false, tier: 'routine', source: 'godSheet.selectEssenceRows', rows };
-  return section;
+  return chipsSection('essence', 'Essence', chips, 'godSheet.selectEssenceRows', { labelTooltipId: 'ui.essence.row' });
 };
 
+/**
+ * THR-2098 (rule R5; plan decision 2): the Mandate is the god page's one highlighted line —
+ * its name as the headline, then "{trend}. {objective}". The progress bar stays on the god
+ * rail and is not repeated here. The objective is the stage's authored line, unchanged.
+ */
 const mandateResolver: SectionResolver = (ctx) => {
   if (!ctx.state) return null;
   const mandate = selectMandateRow(ctx.state);
   if (!mandate) return null;
-  const section: PanelSection = {
-    kind: 'panel',
-    typeId: 'mandate',
-    label: 'Mandate',
-    gold: false,
-    tier: 'routine',
-    source: 'godSheet.selectMandateRow',
-    rows: [
-      // The rail draws this bar today (the mandate progress bar); the word beside it is the trend.
-      { left: mandate.name, right: INSPECTOR_WORDS.mandateTrend[mandate.trend], meter: mandate.progress },
-      { left: INSPECTOR_WORDS.mandateNow, right: mandate.flavorLine },
-    ],
-  };
-  return section;
+  return sentenceSection('mandate', 'Mandate', [
+    [`${INSPECTOR_WORDS.mandateTrend[mandate.trend]}.`],
+    mandate.flavorLine.trim() ? [asSentence(mandate.flavorLine)] : null,
+  ], 'godSheet.selectMandateRow', { labelTooltipId: 'ui.mandate_tracker', highlight: { icon: 'mandate', headline: mandate.name } });
 };
 
+/** THR-2098 (rule R7): signature paths as chips — "Might · The Iron Path · Yours to call". */
 const signaturesResolver: SectionResolver = (ctx) => {
   if (!ctx.state) return null;
-  const rows: PanelRow[] = selectSignaturePaths(ctx.state)
+  const chips: ChipDescriptor[] = selectSignaturePaths(ctx.state)
     .filter((p) => p.state !== 'locked_incarnation')
-    .map((p) => ({ left: `${p.reachLabel} · ${p.name}`, right: SIGNATURE_STATE_COPY[p.state] }));
-  if (rows.length === 0) return null;
-  const section: PanelSection = { kind: 'panel', typeId: 'signatures', label: 'Signatures', gold: false, tier: 'routine', source: 'godSheet.selectSignaturePaths', rows };
-  return section;
+    .map((p) => ({ label: `${p.reachLabel} · ${p.name}`, flavour: SIGNATURE_STATE_COPY[p.state].replace(/[.]$/, '') }));
+  return chipsSection('signatures', 'Signatures', chips, 'godSheet.selectSignaturePaths', { labelTooltipId: 'ui.signatures' });
 };
 
+/** THR-2098 (rule R7): the god's Reaches as chips — "Might · Adept". */
 const reachesResolver: SectionResolver = (ctx) => {
   if (!ctx.state) return null;
-  const rows: PanelRow[] = selectReachRows(ctx.state).map((r) => ({
-    left: r.label,
-    right: r.tierWord,
+  const chips: ChipDescriptor[] = selectReachRows(ctx.state).map((r) => ({
+    label: r.label,
+    flavour: r.tierWord,
     tooltipId: `reach.${r.reach}`,
   }));
-  if (rows.length === 0) return null;
-  const section: PanelSection = { kind: 'panel', typeId: 'reaches', label: 'Reaches', gold: false, tier: 'routine', source: 'godSheet.selectReachRows', rows };
-  return section;
+  return chipsSection('reaches', 'Reaches', chips, 'godSheet.selectReachRows');
 };
 
 export const GOD_RESOLVERS = {

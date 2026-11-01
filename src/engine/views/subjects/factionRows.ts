@@ -10,11 +10,11 @@
  * Rows read `ctx.state` and return null without it.
  */
 import type {
+  ChipDescriptor,
   EventCardSection,
   EventEntry,
-  PanelRow,
-  PanelSection,
   ProseSection,
+  SentencePart,
 } from '../../../types/detailPage';
 import type { GraphNode } from '../../../types/graph';
 import type { FactionActionRecord } from '../../../types/factionAction';
@@ -39,10 +39,14 @@ import {
   FACTION_OUTCOME_WORDS,
   FACTION_RECENT_ACTIONS_MAX,
   FACTION_STRONGEST_REACHES_MAX,
-  SUBJECT_FACT_WORDS,
+  FACTION_MEANS_CLAUSES,
+  SUBJECT_GALLERY_LABELS,
   SUBJECT_ROW_LABELS,
+  SUBJECT_SENTENCE_CLAUSES,
   factionReachWord,
 } from '../../../data/subject-sheet-words';
+import { chipsSection, fillClause, lowerFirst, sentenceSection } from './sentenceRows';
+import { relicGallery } from './relicGallery';
 import { proseMarkupToHtml } from './pageResolvers';
 import { linkedProseSection, type ProsePart } from './linkedProse';
 import { pilgrimWayParts } from './placeRows';
@@ -82,10 +86,6 @@ function prose(typeId: string, label: string, text: string, source: string, extr
   return { kind: 'prose', typeId, label, gold: false, tier: 'routine', source, prose: proseMarkupToHtml(text), ...extra };
 }
 
-function panel(typeId: string, label: string, rows: PanelRow[], source: string): PanelSection | null {
-  return rows.length > 0 ? { kind: 'panel', typeId, label, gold: false, tier: 'routine', source, rows } : null;
-}
-
 function sentenceCase(text: string): string {
   return text.length > 0 ? text.charAt(0).toUpperCase() + text.slice(1) : text;
 }
@@ -122,9 +122,11 @@ const agenda: SectionResolver = (ctx) => {
   const a = f.summary?.activeAmbition;
   if (!a) return prose('agenda', SUBJECT_ROW_LABELS.agenda, FACTION_LINES.noAgenda, 'factionNetwork');
   const status = AGENDA_STATUS_WORDS[a.status] ?? sentenceCase(humanizeKeySegment(a.status));
-  const rows: PanelRow[] = [{ left: a.name, right: status }];
-  if (a.kindled) rows.push({ left: FACTION_LINES.kindledLabel, right: FACTION_LINES.kindled });
-  return panel('agenda', SUBJECT_ROW_LABELS.agenda, rows, 'factionNetwork');
+  // THR-2098 (rule R6): "Hold the river crossings: under way." then the kindled line.
+  return sentenceSection('agenda', SUBJECT_ROW_LABELS.agenda, [
+    fillClause(SUBJECT_SENTENCE_CLAUSES.agenda, { agenda: a.name, status: lowerFirst(status) }),
+    a.kindled ? [FACTION_LINES.kindled] : null,
+  ], 'factionNetwork');
 };
 
 /** An active conclave: its term in words and its question. */
@@ -136,14 +138,20 @@ const conclave: SectionResolver = (ctx) => {
   return prose('conclave', SUBJECT_ROW_LABELS.conclave, c.question ? `${lead} ${c.question}` : lead, 'activeConclave');
 };
 
-/** The purse's band (THR-1931), else the wealth tier word (THR-1428). */
+/**
+ * The purse's band (THR-1931), else the wealth tier word (THR-1428). THR-2098 (rule R6):
+ * one sentence — "They live in comfort." — the band phrase a term with its tooltip.
+ */
 const means: SectionResolver = (ctx) => {
   const f = factionOf(ctx);
   if (!f) return null;
   const band = readMeansBand(f.node);
-  if (band) return panel('means', SUBJECT_ROW_LABELS.means, [{ left: SUBJECT_FACT_WORDS.means, right: band, tooltipId: 'ui.econ.means.faction' }], 'readMeansBand');
   const wealth = f.node.properties.wealth;
-  return typeof wealth === 'number' ? panel('means', SUBJECT_ROW_LABELS.means, [{ left: SUBJECT_FACT_WORDS.means, right: getWealthTier(wealth) }], 'getWealthTier') : null;
+  const tier = band ?? (typeof wealth === 'number' ? getWealthTier(wealth) : null);
+  const clause = tier ? FACTION_MEANS_CLAUSES[tier] : undefined;
+  if (!clause) return null;
+  const term: SentencePart = band ? { text: clause.term, tooltipId: 'ui.econ.means.faction' } : clause.term;
+  return sentenceSection('means', SUBJECT_ROW_LABELS.means, [[clause.lead, term, '.']], band ? 'readMeansBand' : 'getWealthTier');
 };
 
 /** The purse's day in sentences (THR-1931): income, fealty paid, spending. Names link. */
@@ -192,17 +200,20 @@ const fealty: SectionResolver = (ctx) => {
   return linkedProseSection('fealty', SUBJECT_ROW_LABELS.fealty, parts, 'fealtyView', { labelTooltipId: 'ui.crown.standing' });
 };
 
-/** The top Reaches as words beside the bar the sheet drew; the score numeral goes (Law 13). */
+/**
+ * The top Reaches as words; the score numeral goes (Law 13). THR-2098 (rule R7): chips —
+ * "Might · Strong" — and the bar drops, because the word already carries the size.
+ */
 const strongestReaches: SectionResolver = (ctx) => {
   const f = factionOf(ctx);
   if (!f?.summary) return null;
   const caps = f.summary.domainCapabilities;
-  const rows: PanelRow[] = [...REACH_DOMAINS]
+  const chips: ChipDescriptor[] = [...REACH_DOMAINS]
     .filter(d => (caps[d] ?? 0) > 0)
     .sort((a, b) => (caps[b] ?? 0) - (caps[a] ?? 0))
     .slice(0, FACTION_STRONGEST_REACHES_MAX)
-    .map(d => ({ left: reachDisplayName(d), right: factionReachWord(caps[d] ?? 0), meter: Math.min(1, Math.max(0, (caps[d] ?? 0) / 100)), tooltipId: `reach.${d}` }));
-  return panel('strongest_reaches', SUBJECT_ROW_LABELS.strongestReaches, rows, 'factionNetwork');
+    .map(d => ({ label: reachDisplayName(d), flavour: factionReachWord(caps[d] ?? 0), tooltipId: `reach.${d}` }));
+  return chipsSection('strongest_reaches', SUBJECT_ROW_LABELS.strongestReaches, chips, 'factionNetwork');
 };
 
 /**
@@ -223,12 +234,26 @@ const customs: SectionResolver = (ctx) => {
   return text ? prose('customs', SUBJECT_ROW_LABELS.customs, text, 'composeCultureMores') : null;
 };
 
-/** Rank tiers and the band each opens at; "(N slots)" goes (Law 13). */
+/**
+ * Rank tiers and the band each opens at; "(N slots)" goes (Law 13). THR-2098 (rule R7):
+ * chips — "Initiate · Accepted and above" — band words only, never a raw 0–1 value.
+ */
 const ranks: SectionResolver = (ctx) => {
   const f = factionOf(ctx);
   if (!f?.definition?.rankTiers?.length) return null;
-  const rows: PanelRow[] = f.definition.rankTiers.map(t => ({ left: t.name, right: FACTION_LINES.rankBand.replace('{band}', getReputationWord(t.minReputation)) }));
-  return panel('ranks', SUBJECT_ROW_LABELS.ranks, rows, 'factionDefinition');
+  const chips: ChipDescriptor[] = f.definition.rankTiers.map(t => ({ label: t.name, flavour: FACTION_LINES.rankBand.replace('{band}', getReputationWord(t.minReputation)) }));
+  return chipsSection('ranks', SUBJECT_ROW_LABELS.ranks, chips, 'factionDefinition');
+};
+
+/**
+ * THR-2098 (rule R3) — the relics this faction holds, as art tiles in the aside: the
+ * `possesses` edges the Connections block reads. "Relics they hold · 2". None → no row.
+ */
+const relicsHeld: SectionResolver = (ctx) => {
+  const f = factionOf(ctx);
+  if (!f) return null;
+  const ids = f.graph.getOutgoingEdges(f.node.id, 'possesses').map(e => e.target);
+  return relicGallery(f.graph, ids, 'relics_held', SUBJECT_GALLERY_LABELS.relicsHeld);
 };
 
 // ─── Story ───────────────────────────────────────────────────────────────────
@@ -281,5 +306,6 @@ export const FACTION_ROW_RESOLVERS = {
   strongest_reaches: strongestReaches,
   customs,
   ranks,
+  relics_held: relicsHeld,
   recent_actions: recentActions,
 } satisfies Record<string, SectionResolver>;

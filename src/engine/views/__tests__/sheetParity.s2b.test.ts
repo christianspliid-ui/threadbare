@@ -395,11 +395,12 @@ describe('the S2b rows resolve in the engine (THR-1910)', () => {
   });
 
   it('an Area page carries its facts — size, feature, danger and no numeral', () => {
+    // THR-2098 (rule R6): the facts are a sentence — size, danger, then the feature.
     const row = sections('place', 'area', world()).find(s => s.typeId === 'area_facts');
-    expect(row?.kind).toBe('panel');
-    const text = JSON.stringify(row);
-    expect(text).toContain('Size');
-    expect(text).toContain('Danger');
+    expect(row?.kind).toBe('prose');
+    const text = row?.kind === 'prose' ? row.prose : '';
+    expect(text).toMatch(/lands, \w+ country\./);
+    expect(text).not.toMatch(/\d/);
   });
 
   it('the faction rows word their actions and outcomes, newest first, and print the conclave\'s term in words', () => {
@@ -431,7 +432,9 @@ describe('the S2b rows resolve in the engine (THR-1910)', () => {
     const row = triggers && triggers.kind === 'triggers' ? triggers.triggers[0] : null;
     expect(row?.condition).toBe('Rest');
     expect(row?.effectSummary).toBe('lifts a condition');
-    expect(JSON.stringify(byId.get('duration'))).toContain('Lasts');
+    // THR-2098 (rule R6): "It is lost when rest heals it." / "It lasts …"
+    expect(JSON.stringify(byId.get('effect'))).toContain('It is lost when rest heals it.');
+    expect(JSON.stringify(byId.get('duration'))).toContain('It lasts ');
     expect(byId.get('what_it_is')?.kind).toBe('prose');
     // The attachment page composes through the table.
     const page = buildSubjectPage(state, { kind: 'attachment', id: 'trait.condition.wounded', name: 'Wounded' });

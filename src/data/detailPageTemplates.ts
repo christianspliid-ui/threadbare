@@ -212,8 +212,15 @@ const ACTOR_SCHEMA: SectionSchemaEntry[] = [
 ];
 
 /** A row ported from a retiring sheet (THR-1910, S2b): engine-resolved, never mandatory. */
-function sheetRow(typeId: string, resolver: SectionResolver, order: number, tab: InspectorTabId | undefined, visibleAt: readonly PageSurface[]): SectionSchemaEntry {
-  return { typeId, order, mandatory: false, defaultResolver: resolver, showcaseOverridable: false, visibleAt, ...(tab ? { tab } : {}) };
+function sheetRow(
+  typeId: string,
+  resolver: SectionResolver,
+  order: number,
+  tab: InspectorTabId | undefined,
+  visibleAt: readonly PageSurface[],
+  dress: Pick<SectionSchemaEntry, 'icon' | 'placement'> = {},
+): SectionSchemaEntry {
+  return { typeId, order, mandatory: false, defaultResolver: resolver, showcaseOverridable: false, visibleAt, ...(tab ? { tab } : {}), ...dress };
 }
 
 /**
@@ -231,6 +238,7 @@ const ITEM_SCHEMA: SectionSchemaEntry[] = [
     fallbackResolver: itemIconFallback,
     visibleAt: ALL,
     tab: 'overview',
+    icon: 'artifact',
   },
   {
     typeId: 'who_gave_it',
@@ -242,7 +250,7 @@ const ITEM_SCHEMA: SectionSchemaEntry[] = [
   },
   sheetRow('made_by', ITEM_ROW_RESOLVERS.made_by, 30, 'overview', DWF),
   sheetRow('what_it_does', ITEM_ROW_RESOLVERS.what_it_does, 40, 'overview', DWF),
-  sheetRow('traits', ITEM_ROW_RESOLVERS.traits, 45, 'overview', DWF),
+  sheetRow('traits', ITEM_ROW_RESOLVERS.traits, 45, 'overview', DWF, { icon: 'trait' }),
   sheetRow('tags', ITEM_ROW_RESOLVERS.tags, 50, 'overview', DWF),
   {
     typeId: 'dominion',
@@ -252,6 +260,7 @@ const ITEM_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: false,
     visibleAt: DWF,
     tab: 'overview',
+    icon: 'lens-dominion',
   },
   {
     typeId: 'how_it_tilts_this_scene',
@@ -268,6 +277,7 @@ const ITEM_SCHEMA: SectionSchemaEntry[] = [
     defaultResolver: ITEM_RESOLVERS.previous_uses,
     showcaseOverridable: false,
     tab: 'story',
+    icon: 'chronicle',
   },
 ];
 
@@ -288,10 +298,11 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     fallbackResolver: factionRepFallback,
     visibleAt: ALL,
     tab: 'overview',
+    icon: 'standing',
   },
-  sheetRow('description', FACTION_ROW_RESOLVERS.description, 15, 'overview', DWF),
-  sheetRow('venerates', FACTION_ROW_RESOLVERS.venerates, 20, 'overview', DWF),
-  sheetRow('pilgrim_ways', FACTION_ROW_RESOLVERS.pilgrim_ways, 22, 'overview', DWF),
+  sheetRow('description', FACTION_ROW_RESOLVERS.description, 15, 'overview', DWF, { icon: 'faction' }),
+  sheetRow('venerates', FACTION_ROW_RESOLVERS.venerates, 20, 'overview', DWF, { icon: 'devotion' }),
+  sheetRow('pilgrim_ways', FACTION_ROW_RESOLVERS.pilgrim_ways, 22, 'overview', DWF, { icon: 'pilgrimage' }),
   {
     typeId: 'dominion',
     order: 25,
@@ -300,13 +311,14 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: false,
     visibleAt: DWF,
     tab: 'overview',
+    icon: 'lens-dominion',
   },
   sheetRow('crown', FACTION_ROW_RESOLVERS.crown, 26, 'overview', DWF),
-  sheetRow('fealty', FACTION_ROW_RESOLVERS.fealty, 28, 'overview', DWF),
-  sheetRow('agenda', FACTION_ROW_RESOLVERS.agenda, 30, 'overview', DWF),
+  sheetRow('fealty', FACTION_ROW_RESOLVERS.fealty, 28, 'overview', DWF, { icon: 'pact' }),
+  sheetRow('agenda', FACTION_ROW_RESOLVERS.agenda, 30, 'overview', DWF, { icon: 'ambition' }),
   sheetRow('conclave', FACTION_ROW_RESOLVERS.conclave, 35, 'overview', DWF),
-  sheetRow('means', FACTION_ROW_RESOLVERS.means, 40, 'overview', DWF),
-  sheetRow('purse', FACTION_ROW_RESOLVERS.purse, 42, 'overview', DWF),
+  sheetRow('means', FACTION_ROW_RESOLVERS.means, 40, 'overview', DWF, { icon: 'resources' }),
+  sheetRow('purse', FACTION_ROW_RESOLVERS.purse, 42, 'overview', DWF, { icon: 'resources' }),
   sheetRow('strongest_reaches', FACTION_ROW_RESOLVERS.strongest_reaches, 45, 'overview', DWF),
   {
     typeId: 'reputations_they_hold',
@@ -315,9 +327,12 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     defaultResolver: FACTION_RESOLVERS.reputations_they_hold,
     showcaseOverridable: false,
     tab: 'overview',
+    icon: 'standing',
   },
   sheetRow('customs', FACTION_ROW_RESOLVERS.customs, 55, 'overview', WF),
-  sheetRow('ranks', FACTION_ROW_RESOLVERS.ranks, 60, 'overview', WF),
+  sheetRow('ranks', FACTION_ROW_RESOLVERS.ranks, 60, 'overview', WF, { icon: 'standing' }),
+  // THR-2098 (rule R3): the relics they hold, as art tiles in the aside.
+  sheetRow('relics_held', FACTION_ROW_RESOLVERS.relics_held, 70, 'overview', DWF, { icon: 'artifact', placement: 'aside' }),
   {
     typeId: 'allied_with',
     order: 20,
@@ -335,7 +350,7 @@ const FACTION_SCHEMA: SectionSchemaEntry[] = [
     visibleAt: HOVER,
   },
   // Source replaced (S2b): the sheet's `factionActionHistory`, not one encounter.
-  sheetRow('recent_actions', FACTION_ROW_RESOLVERS.recent_actions, 100, 'story', DWF),
+  sheetRow('recent_actions', FACTION_ROW_RESOLVERS.recent_actions, 100, 'story', DWF, { icon: 'chronicle' }),
 ];
 
 /**
@@ -354,7 +369,8 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: true,
     visibleAt: HOVER,
   },
-  sheetRow('place_prose', PLACE_ROW_RESOLVERS.place_prose, 10, 'overview', DWF),
+  // The resolver sets the page's own idea (`place` / `place-within`); this is its fallback.
+  sheetRow('place_prose', PLACE_ROW_RESOLVERS.place_prose, 10, 'overview', DWF, { icon: 'place' }),
   {
     typeId: 'what_this_place_wants',
     order: 12,
@@ -365,16 +381,16 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     // Hover only (§ D7.2): in the Inspector `place_prose` is the one place prose.
     visibleAt: HOVER,
   },
-  sheetRow('past_line', PLACE_ROW_RESOLVERS.past_line, 15, 'overview', DWF),
-  sheetRow('founded_by', PLACE_ROW_RESOLVERS.founded_by, 16, 'overview', DWF),
+  sheetRow('past_line', PLACE_ROW_RESOLVERS.past_line, 15, 'overview', DWF, { icon: 'chronicle' }),
+  sheetRow('founded_by', PLACE_ROW_RESOLVERS.founded_by, 16, 'overview', DWF, { icon: 'founder' }),
   // THR-1923 — the settlement economy's size line, under the place's own words.
   sheetRow('settlement_size', PLACE_ROW_RESOLVERS.settlement_size, 16.5, 'overview', DWF),
-  sheetRow('fortunes', PLACE_ROW_RESOLVERS.fortunes, 17, 'overview', DWF),
-  sheetRow('lair_monster', PLACE_ROW_RESOLVERS.lair_monster, 12, 'overview', DWF),
-  sheetRow('settlement_notable', PLACE_ROW_RESOLVERS.settlement_notable, 14, 'overview', DWF),
-  sheetRow('prayer', PLACE_ROW_RESOLVERS.prayer, 18, 'overview', DWF),
-  sheetRow('pilgrim_way', PLACE_ROW_RESOLVERS.pilgrim_way, 19, 'overview', DWF),
-  sheetRow('livelihood', PLACE_ROW_RESOLVERS.livelihood, 20, 'overview', DWF),
+  sheetRow('fortunes', PLACE_ROW_RESOLVERS.fortunes, 17, 'overview', DWF, { icon: 'trade' }),
+  sheetRow('lair_monster', PLACE_ROW_RESOLVERS.lair_monster, 12, 'overview', DWF, { icon: 'monster' }),
+  sheetRow('settlement_notable', PLACE_ROW_RESOLVERS.settlement_notable, 14, 'overview', DWF, { icon: 'notables' }),
+  sheetRow('prayer', PLACE_ROW_RESOLVERS.prayer, 18, 'overview', DWF, { icon: 'devotion' }),
+  sheetRow('pilgrim_way', PLACE_ROW_RESOLVERS.pilgrim_way, 19, 'overview', DWF, { icon: 'pilgrimage' }),
+  sheetRow('livelihood', PLACE_ROW_RESOLVERS.livelihood, 20, 'overview', DWF, { icon: 'work' }),
   {
     typeId: 'dominion',
     order: 25,
@@ -383,16 +399,21 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: false,
     visibleAt: DWF,
     tab: 'overview',
+    icon: 'lens-dominion',
   },
-  sheetRow('contested', PLACE_ROW_RESOLVERS.contested, 30, 'overview', DWF),
+  sheetRow('contested', PLACE_ROW_RESOLVERS.contested, 30, 'overview', DWF, { icon: 'strife' }),
   sheetRow('walls', PLACE_ROW_RESOLVERS.walls, 35, 'overview', DWF),
   // Source replaced (S2b): the place's `has_trait` edges, the modal's source.
-  sheetRow('conditions_here', PLACE_ROW_RESOLVERS.conditions_here, 40, 'overview', DWF),
-  sheetRow('standing', PLACE_ROW_RESOLVERS.standing, 45, 'overview', DWF),
-  sheetRow('place_of_power', PLACE_ROW_RESOLVERS.place_of_power, 50, 'overview', DWF),
-  sheetRow('area_facts', PLACE_ROW_RESOLVERS.area_facts, 55, 'overview', DWF),
+  sheetRow('conditions_here', PLACE_ROW_RESOLVERS.conditions_here, 40, 'overview', DWF, { icon: 'condition' }),
+  sheetRow('standing', PLACE_ROW_RESOLVERS.standing, 45, 'overview', DWF, { icon: 'standing' }),
+  sheetRow('place_of_power', PLACE_ROW_RESOLVERS.place_of_power, 50, 'overview', DWF, { icon: 'source-bound' }),
+  sheetRow('area_facts', PLACE_ROW_RESOLVERS.area_facts, 55, 'overview', DWF, { icon: 'area' }),
+  // THR-2098 (rule R7): the Area's sphere strengths as chips, under its facts.
+  sheetRow('area_spheres', PLACE_ROW_RESOLVERS.area_spheres, 56, 'overview', DWF),
+  // THR-2098 (rule R3): the relics lying here, as art tiles in the aside.
+  sheetRow('relics_here', PLACE_ROW_RESOLVERS.relics_here, 60, 'overview', DWF, { icon: 'artifact', placement: 'aside' }),
   sheetRow('guild_postings', PLACE_ROW_RESOLVERS.guild_postings, 100, 'here_now', DWF),
-  sheetRow('encounters_here', PLACE_ROW_RESOLVERS.encounters_here, 110, 'here_now', DWF),
+  sheetRow('encounters_here', PLACE_ROW_RESOLVERS.encounters_here, 110, 'here_now', DWF, { icon: 'encounter' }),
   {
     typeId: 'memory',
     order: 200,
@@ -400,6 +421,7 @@ const PLACE_SCHEMA: SectionSchemaEntry[] = [
     defaultResolver: PLACE_RESOLVERS.memory,
     showcaseOverridable: true,
     tab: 'story',
+    icon: 'chronicle',
   },
 ];
 
@@ -457,6 +479,7 @@ const GROUP_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: true,
     fallbackResolver: groupMusterFallback,
     visibleAt: ALL,
+    icon: 'army',
   },
   // Retires to Connections (S2b): *who* the commander, *belongs to* the raising power.
   {
@@ -504,7 +527,7 @@ const CONTENT_SCHEMA: SectionSchemaEntry[] = [
     showcaseOverridable: false,
   },
   // The attachment rows (S2b, THR-1910): resolve only for an attachment template.
-  sheetRow('effect', ATTACHMENT_ROW_RESOLVERS.effect, 40, undefined, DWF),
+  sheetRow('effect', ATTACHMENT_ROW_RESOLVERS.effect, 40, undefined, DWF, { icon: 'attachment' }),
   sheetRow('duration', ATTACHMENT_ROW_RESOLVERS.duration, 50, undefined, DWF),
   sheetRow('triggers', ATTACHMENT_ROW_RESOLVERS.triggers, 60, undefined, DWF),
   sheetRow('source', ATTACHMENT_ROW_RESOLVERS.source, 70, undefined, WF),
@@ -512,17 +535,17 @@ const CONTENT_SCHEMA: SectionSchemaEntry[] = [
 
 /** D7.3 The land page — HexChronicle's three prose blocks, moved unchanged. One fixed order, no tabs. */
 const LAND_SCHEMA: SectionSchemaEntry[] = [
-  { typeId: 'the_land', order: 10, mandatory: false, defaultResolver: LAND_RESOLVERS.the_land, showcaseOverridable: false, visibleAt: DWF },
+  { typeId: 'the_land', order: 10, mandatory: false, defaultResolver: LAND_RESOLVERS.the_land, showcaseOverridable: false, visibleAt: DWF, icon: 'hex' },
   { typeId: 'its_soul', order: 20, mandatory: false, defaultResolver: LAND_RESOLVERS.its_soul, showcaseOverridable: false, visibleAt: DWF },
-  { typeId: 'what_came_before', order: 30, mandatory: false, defaultResolver: LAND_RESOLVERS.what_came_before, showcaseOverridable: false, visibleAt: DWF },
+  { typeId: 'what_came_before', order: 30, mandatory: false, defaultResolver: LAND_RESOLVERS.what_came_before, showcaseOverridable: false, visibleAt: DWF, icon: 'chronicle' },
 ];
 
 /** D7.9 The god's own sheet — rows over the moved `godSheet.ts` selectors. */
 const GOD_SCHEMA: SectionSchemaEntry[] = [
   { typeId: 'divine_nature', order: 10, mandatory: false, defaultResolver: GOD_RESOLVERS.divine_nature, showcaseOverridable: false, visibleAt: DWF, tab: 'overview' },
-  { typeId: 'essence', order: 20, mandatory: false, defaultResolver: GOD_RESOLVERS.essence, showcaseOverridable: false, visibleAt: DWF, tab: 'overview' },
-  { typeId: 'mandate', order: 30, mandatory: false, defaultResolver: GOD_RESOLVERS.mandate, showcaseOverridable: false, visibleAt: DWF, tab: 'overview' },
-  { typeId: 'signatures', order: 40, mandatory: false, defaultResolver: GOD_RESOLVERS.signatures, showcaseOverridable: false, visibleAt: DWF, tab: 'overview' },
+  { typeId: 'essence', order: 20, mandatory: false, defaultResolver: GOD_RESOLVERS.essence, showcaseOverridable: false, visibleAt: DWF, tab: 'overview', icon: 'essence' },
+  { typeId: 'mandate', order: 30, mandatory: false, defaultResolver: GOD_RESOLVERS.mandate, showcaseOverridable: false, visibleAt: DWF, tab: 'overview', icon: 'mandate' },
+  { typeId: 'signatures', order: 40, mandatory: false, defaultResolver: GOD_RESOLVERS.signatures, showcaseOverridable: false, visibleAt: DWF, tab: 'overview', icon: 'signature' },
   { typeId: 'reaches', order: 100, mandatory: false, defaultResolver: GOD_RESOLVERS.reaches, showcaseOverridable: false, visibleAt: DWF, tab: 'reaches' },
 ];
 
@@ -551,6 +574,25 @@ export const DETAIL_PAGE_REGISTRY: DetailPageRegistry = {
   land: LAND_SCHEMA,
   god: GOD_SCHEMA,
   record: RECORD_SCHEMA,
+};
+
+/**
+ * THR-2098 (rule R2; plan § R2, decision 5) — the non-person headings with no fitting carved
+ * idea yet. They draw no icon (never a near-miss shape) until Christian's icon pick
+ * (THR-2104) names one; each is then a one-line `icon` on its row above. A registry-walk test
+ * holds every non-person Inspector row to "sets `icon`, or is listed here". The god page's
+ * Overview tab has no idea either (`overviewIconFor('god')` is null) and is on the same list.
+ */
+export const NO_IDEA_ROWS: Readonly<Record<Exclude<PageLayoutKind, 'actor'>, readonly string[]>> = {
+  item: ['made_by', 'what_it_does', 'tags'],
+  faction: ['crown', 'conclave', 'strongest_reaches', 'customs'],
+  place: ['settlement_size', 'walls', 'guild_postings', 'area_spheres'],
+  group: ['what_they_are_doing'],
+  event: ['what_happened', 'what_it_became', 'how_it_invokes_now'],
+  record: ['what_happened', 'outcome'],
+  content: ['what_it_is', 'its_voice', 'marks', 'duration', 'triggers', 'source'],
+  land: ['its_soul'],
+  god: ['divine_nature', 'reaches'],
 };
 
 /** Page kind → display label for the modal header. */
