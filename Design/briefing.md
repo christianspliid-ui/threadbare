@@ -1,13 +1,12 @@
 # Briefing
-**Generated:** 2026-11-01 18:56 local (17:56 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 20:00 local (19:00 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
 **Set the Claude app to open when Windows starts.** Every lane stopped at about 02:57 Thursday morning and came back together at 19:12 Friday evening: 40 hours with nothing built. The worktree reaper, which runs on its own Windows timer, stopped at the same time, so the computer was probably off or asleep. Turning on "open at login" for the Claude app closes these gaps. Only you can change that setting. Say "done" and the next silence check confirms it. *— from [the workflow retro](https://github.com/christianspliid-ui/threadbare/blob/main/Design/retros/workflow-retro-2026-10-08.md)*
 
-## Also waiting (9)
+## Also waiting (8)
 
-- **New: the type-size question is now the only thing holding the UI legibility map.** [Type hierarchy](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart): keep it ("work the map" in a chat) or hand it to the design lane to decide with a veto. *— from the orchestrator*
 - **Your writing-checks conversation can start.** [The story-text audit](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/audits/2026-10-31-encounter-story-text-quality.md#the-writing-checks-against-these-examples-done-when-1b) reviewed every writing check against real lines, which is what [Writing evals — with Christian](https://linear.app/threadbare/issue/THR-2106) needs. *— from the design lane*
 - **Thursday 29 to Friday 30 Oct:** "The scheduled lanes went silent for 40.3h (2026-10-29T01:56:50.000Z → 2026-10-30T18:17:35.000Z) and have since resumed, with no pause marker covering that window. If that was a deliberate pause, nothing recorded it; if it was not, this is the outage no lane reported at the time." *— silence check*
 - **Wednesday night to Friday night (21–23 Oct):** the lanes were silent for 48 hours and no pause was recorded. Was the app closed or the computer off, or was this a pause?
@@ -53,14 +52,21 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([09:40](h
 
 [Contact sheet — the twelve screens of the fixed journey](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-10-27/contact-sheet.jpg) — first week, so there is nothing to compare yet. The opening holds up. Opening a page brings two visible faults, and the mid-game cannot be reached because the seeded world ends after 41 ticks.
 
+## From Christian
+
+- **19:04 local, Discord: "Let the design lane do the work."** This answers the type-size question: [Type hierarchy](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart) is no longer reserved for him. **For the design lane (next run about 20:17 UTC):** take THR-2118 under the delegation rule, mock up the options, decide, and put the decision under § Decided for you with a veto line. Record "human gate released via Discord 2026-11-01" on the ticket when you pick it up. Receipt sent.
+
 ## Queue
 
-**Healthy but thin (2 ready).** The builder claimed [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) (the dialogs) at 17:52 UTC, as soon as its window closed, and is building it now. Next up: [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) after about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) from midnight UTC.
+**Healthy but thin (2 ready).** Both are inside their veto windows: [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) opens about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) at midnight UTC.
 
-Two items for agents, not you:
+- **The dialogs slice is built but not merged.** [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) is In Dev with no owner, parked about 25 min. [PR #2690](https://github.com/christianspliid-ui/threadbare/pull/2690) passes every gate but is not armed: the code review used its two rounds with three findings open. Two are fixed on the branch and need a fresh review. The third (no gift beat ever names a mortal, so the beat's face never shows) needs the builder's verdict. The next pickup run reviews again and arms it. Builder work, not yours.
+
+Two more items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or worktree carries its id (checked this run). Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or dirty worktree carries its id (checked this run). Agents can un-park it in an attended run.
 
 ## Health
 
-All green. The live site is current (only docs merged since the last build). Checks on main and the scheduled background jobs pass, and no pull request is waiting to merge. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 18:40. Engine speed is normal (143 ms a tick, 12% under the weekly median). The 40-hour silence on 29–30 Oct is on your list above.
+- **Engine speed reading high (builder's job):** "tick cost 232 ms/tick steady, 44% above the 7-day median (161, 128 rows since 01cd21b6); top phase agent_decision, 639 agents. Name the merges between 01cd21b6 and 1280fa40: git log --oneline --merges 01cd21b6..1280fa40". The same commit measured 143 ms an hour ago and only docs merged since, so this is likely the machine being busy (a pickup run was active). If the next hour reads high too, it is real.
+- Everything else is green. The live site is current (only docs merged since the last build). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 18:40 UTC. The one open pull request is THR-2101's, above. The 40-hour silence on 29–30 Oct is on your list above.
