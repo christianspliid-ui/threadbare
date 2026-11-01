@@ -1,6 +1,6 @@
 # User Action Required
 
-**Last updated:** 2026-11-01 20:00 local (19:00 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
+**Last updated:** 2026-11-01 20:56 local (19:56 UTC). Standing asks only, per [THR-1077](https://linear.app/threadbare/issue/THR-1077). Board read live this run.
 
 ## Standing asks
 
@@ -46,6 +46,7 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 
 ## Resolved this period
 
+- **2026-11-01: the dialogs (chapter ledger, what your act bought) now lead with art, and it is live** ([THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought)). Merged via [#2690](https://github.com/christianspliid-ui/threadbare/pull/2690).
 - **2026-11-01: type-size question handed to the design lane** ("Let the design lane do the work", Discord 19:04). [THR-2118](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart) is no longer reserved; the design lane decides it and invites your veto.
 - **2026-11-01: the Stage moments (encounter, premonition, vision, story beat, new power, undertaking) now lead with art, and it is live** ([THR-2100](https://linear.app/threadbare/issue/THR-2100/art-led-pass-slice-4-the-stage-moments-encounter-premonition-vision)). Merged via [#2686](https://github.com/christianspliid-ui/threadbare/pull/2686).
 - **2026-11-01: the cheap town cards now push a god's first sphere far enough to reach the Mandate, and it is live** ([THR-2094](https://linear.app/threadbare/issue/THR-2094/cheap-place-cards-plateau-reshapepreservebind-first-sphere-reaches-26)). Merged via [#2678](https://github.com/christianspliid-ui/threadbare/pull/2678).
@@ -55,7 +56,6 @@ Found while building [THR-1461](https://linear.app/threadbare/issue/THR-1461). R
 - **2026-11-01: every other Inspector page (places, lands, factions, armies, relics, the god, cards, records) now leads with its art, and it is live** ([THR-2098](https://linear.app/threadbare/issue/THR-2098/art-led-pass-slice-2-every-other-inspector-page-places-lands-factions)). Merged via [#2674](https://github.com/christianspliid-ui/threadbare/pull/2674).
 - **2026-11-01: the ten most-met encounters now read in the new story-text style, and it is live** ([THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets), slice 1). Merged via [#2672](https://github.com/christianspliid-ui/threadbare/pull/2672).
 - **2026-10-31: spirit, life and entropy gods now have cheap town cards (Tend the Sick, Let the Damp In, Keep the Vigil), and they are live** ([THR-2090](https://linear.app/threadbare/issue/THR-2090/spirit-life-and-entropy-get-a-cheap-place-card-and-doom-wears-a-life)). Merged via [#2668](https://github.com/christianspliid-ui/threadbare/pull/2668).
-- **2026-10-31: card lean sentence — you chose B, effect only** ("B", Discord 15:58). Cards on a choice step drop "It argues for the honest way." and keep the effect line. Passed to the builder of [THR-2105](https://linear.app/threadbare/issue/THR-2105/story-text-quality-in-encounters-read-the-prose-the-way-a-player-meets) via the briefing.
 
 ---
 

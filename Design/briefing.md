@@ -1,5 +1,5 @@
 # Briefing
-**Generated:** 2026-11-01 20:00 local (19:00 UTC) · keep-work-flowing-cc
+**Generated:** 2026-11-01 20:56 local (19:56 UTC) · keep-work-flowing-cc
 
 ## The one thing
 
@@ -38,7 +38,7 @@ Detail for each: [user-actions.md](https://github.com/christianspliid-ui/threadb
 - Same ticket: the hover card shows its subject's small picture beside the name. Veto line: "keep the hover card words only".
 - Same ticket: Rivals, the doom, the Mandate and omens keep their marks; past omens now carry their omen's mark. The rival and doom glyphs wait on [your shape pick](https://linear.app/threadbare/issue/THR-1908). Veto line: "leave the omen history plain".
 - Same ticket: headings get their carved shape only where one exists; the rest join [your icon pick](https://linear.app/threadbare/issue/THR-2104). Veto line: "no shapes on list headings".
-- [Art-led pass, slice 6 — the ceremonies and the front door](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2102-art-led-ceremonies.md)): the harvest opens on your god's face in a ring, above "Cycle N complete". Veto line: "no god face on the harvest". Window closes about 20:40 UTC today.
+- [Art-led pass, slice 6 — the ceremonies and the front door](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) ([plan](https://github.com/christianspliid-ui/threadbare/blob/main/Docs/plans/2026-11-01-thr-2102-art-led-ceremonies.md)): the harvest opens on your god's face in a ring, above "Cycle N complete". Veto line: "no god face on the harvest". Window closes about 20:40 UTC today (in under an hour).
 - Same ticket: the end of the age keeps its order; your First's face grows to a size that reads, and the ending's title gets the Mandate or doom shape. Veto line: "keep the end of the age as it is".
 - Same ticket: every echo the harvest names shows its picture. Veto line: "no pictures on the harvest echoes".
 - Same ticket: each echo has one name ("the line of Maren Ashfold"); sphere tags read "Chaos", not "chaos". Veto line: "keep the echo cards' names".
@@ -52,21 +52,14 @@ Say "veto <title>" to reverse any of these. *— from the design lane ([09:40](h
 
 [Contact sheet — the twelve screens of the fixed journey](https://github.com/christianspliid-ui/threadbare/blob/ops/Docs/ops/ux-review/2026-10-27/contact-sheet.jpg) — first week, so there is nothing to compare yet. The opening holds up. Opening a page brings two visible faults, and the mid-game cannot be reached because the seeded world ends after 41 ticks.
 
-## From Christian
-
-- **19:04 local, Discord: "Let the design lane do the work."** This answers the type-size question: [Type hierarchy](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart) is no longer reserved for him. **For the design lane (next run about 20:17 UTC):** take THR-2118 under the delegation rule, mock up the options, decide, and put the decision under § Decided for you with a veto line. Record "human gate released via Discord 2026-11-01" on the ticket when you pick it up. Receipt sent.
-
 ## Queue
 
-**Healthy but thin (2 ready).** Both are inside their veto windows: [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) opens about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) at midnight UTC.
+**Healthy but thin (2 ready).** Both are inside their veto windows, so the builder is idle by design: [THR-2102](https://linear.app/threadbare/issue/THR-2102/art-led-pass-slice-6-the-ceremonies-and-the-front-door-meeting-the) (ceremonies) opens about 20:40 UTC, [THR-2103](https://linear.app/threadbare/issue/THR-2103/art-led-pass-slice-7-lists-and-notices-chronicle-notables-rivals) (lists) at midnight UTC. The design lane runs about 20:17 UTC and takes the type-size question ([THR-2118](https://linear.app/threadbare/issue/THR-2118/type-hierarchy-can-a-player-tell-title-heading-value-and-label-apart)) you handed it.
 
-- **The dialogs slice is built but not merged.** [THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought) is In Dev with no owner, parked about 25 min. [PR #2690](https://github.com/christianspliid-ui/threadbare/pull/2690) passes every gate but is not armed: the code review used its two rounds with three findings open. Two are fixed on the branch and need a fresh review. The third (no gift beat ever names a mortal, so the beat's face never shows) needs the builder's verdict. The next pickup run reviews again and arms it. Builder work, not yours.
-
-Two more items for agents, not you:
+Two items for agents, not you:
 - **A finished fix is still waiting to be queued.** [THR-2091](https://linear.app/threadbare/issue/THR-2091/hex-cards-sphere-push-picks-the-nearest-place-on-the-wrong-hex-grid) (a god's push onto a hex can pick the wrong nearest place) is built on [branch `thr-2091-oddq`](https://github.com/christianspliid-ui/threadbare/tree/thr-2091-oddq), but the ticket is still in Idea, so no builder run will take it.
-- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or dirty worktree carries its id (checked this run). Agents can un-park it in an attended run.
+- **The paperwork-cut ticket is still parked.** [THR-1947](https://linear.app/threadbare/issue/THR-1947/cut-per-pr-paperwork-to-one-status-line-drop-the-changelogproject) has had no owner since 20 Oct (12 days, last touched 28 Oct). It is parked because unattended runs are refused the gate and CI edits it needs. No pushed branch or dirty worktree carried its id at last hour's check. Agents can un-park it in an attended run.
 
 ## Health
 
-- **Engine speed reading high (builder's job):** "tick cost 232 ms/tick steady, 44% above the 7-day median (161, 128 rows since 01cd21b6); top phase agent_decision, 639 agents. Name the merges between 01cd21b6 and 1280fa40: git log --oneline --merges 01cd21b6..1280fa40". The same commit measured 143 ms an hour ago and only docs merged since, so this is likely the machine being busy (a pickup run was active). If the next hour reads high too, it is real.
-- Everything else is green. The live site is current (only docs merged since the last build). Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 18:40 UTC. The one open pull request is THR-2101's, above. The 40-hour silence on 29–30 Oct is on your list above.
+All green. The dialogs slice ([THR-2101](https://linear.app/threadbare/issue/THR-2101/art-led-pass-slice-5-the-dialogs-chapter-ledger-what-your-act-bought)) merged via [PR #2690](https://github.com/christianspliid-ui/threadbare/pull/2690) and is live. No pull requests are open. Checks on main and the scheduled background jobs pass. All nine enabled scheduled tasks are on time, and the worktree reaper last ran at 19:40 UTC. Engine speed is back to normal (148 ms per tick, 8% under the weekly median), so last hour's high reading was the machine being busy.
